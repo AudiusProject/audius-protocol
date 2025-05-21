@@ -68,7 +68,8 @@ export const TrackRemixesScreen = () => {
   const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
     useRemixes({
       trackId: track?.track_id,
-      includeOriginal: true
+      includeOriginal: true,
+      includeWinners: true
     })
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
@@ -83,11 +84,39 @@ export const TrackRemixesScreen = () => {
   const isTrackOwner = currentUserId === track?.owner_id
   const showPickWinnersButton =
     isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+  const winnerCount = contest?.eventData?.winners?.length ?? 0
 
   const styles = useStyles()
 
   const remixesText = pluralize(legacyMessages.remix, count, 'es', !count)
   const remixesCountText = `${count || ''} ${remixesText} ${legacyMessages.of}`
+
+  const winnersDelineator = (
+    <Flex ph='l' pt='xl'>
+      <Text variant='title'>{messages.winners}</Text>
+    </Flex>
+  )
+
+  const remixesDelineator = (
+    <Flex justifyContent='space-between' ph='l' pt='xl'>
+      {count ? (
+        <Text variant='title'>
+          {messages.remixesTitle}
+          {count !== undefined ? ` (${count})` : ''}
+        </Text>
+      ) : null}
+    </Flex>
+  )
+
+  const delineatorMap =
+    winnerCount > 0
+      ? {
+          0: winnersDelineator,
+          [winnerCount]: remixesDelineator
+        }
+      : {
+          0: remixesDelineator
+        }
 
   return (
     <Screen>
@@ -125,16 +154,10 @@ export const TrackRemixesScreen = () => {
                 actions={tracksActions}
                 pageSize={pageSize}
                 hasMore={false}
-                leadingElementId={0}
-                leadingElementDelineator={
-                  <Flex justifyContent='space-between' ph='l' pt='xl'>
-                    {count ? (
-                      <Text variant='title'>
-                        {messages.remixesTitle}
-                        {count !== undefined ? ` (${count})` : ''}
-                      </Text>
-                    ) : null}
-                  </Flex>
+                delineatorMap={delineatorMap}
+                maxEntries={
+                  // remix count + winner count + original track
+                  count && winnerCount ? count + winnerCount + 1 : undefined
                 }
               />
             </ScrollView>

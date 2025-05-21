@@ -222,6 +222,11 @@ export type LineupProps = {
    */
   leadingElementDelineator?: ReactElement
 
+  /**
+   * Map of indices to JSX Elements that can be used to delineate the elements from the rest
+   */
+  delineatorMap?: Record<number, JSX.Element>
+
   /** The number of tracks to fetch in each request */
   limit?: number
 
@@ -332,6 +337,7 @@ export const TanQueryLineup = ({
   lazy,
   leadingElementId,
   leadingElementDelineator,
+  delineatorMap,
   lineup,
   LineupEmptyComponent,
   loadNextPage,
@@ -394,23 +400,30 @@ export const TanQueryLineup = ({
   const renderItem = useCallback(
     ({
       index,
-      item
+      item,
+      indexOffset = 0
     }: {
       index: number
       item: LineupItem | LoadingLineupItem
+      indexOffset?: number
     }) => {
       return (
-        <LineupItemTile
-          index={index}
-          item={item}
-          isTrending={isTrending}
-          leadingElementId={leadingElementId}
-          rankIconCount={rankIconCount}
-          togglePlay={togglePlay}
-          onPress={onPressItem}
-          itemStyles={itemStyles}
-          actions={actions}
-        />
+        <>
+          <LineupItemTile
+            index={index}
+            item={item}
+            isTrending={isTrending}
+            leadingElementId={leadingElementId}
+            rankIconCount={rankIconCount}
+            togglePlay={togglePlay}
+            onPress={onPressItem}
+            itemStyles={itemStyles}
+            actions={actions}
+          />
+          {delineatorMap?.[index + indexOffset]
+            ? delineatorMap[index + indexOffset]
+            : null}
+        </>
       )
     },
     [
@@ -420,7 +433,8 @@ export const TanQueryLineup = ({
       togglePlay,
       onPressItem,
       itemStyles,
-      actions
+      actions,
+      delineatorMap
     ]
   )
 

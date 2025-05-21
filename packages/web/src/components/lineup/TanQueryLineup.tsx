@@ -83,7 +83,7 @@ export interface TanQueryLineupProps {
   leadingElementDelineator?: JSX.Element | null
 
   /**
-   * Map of indeces to JSX Elements that can be used to delineate the elements from the rest
+   * Map of indices to JSX Elements that can be used to delineate the elements from the rest
    */
   delineatorMap?: Record<number, JSX.Element>
 
