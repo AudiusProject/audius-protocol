@@ -9,6 +9,7 @@ import {
   useRemixes
 } from '@audius/common/api'
 import { remixMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import dayjs from 'dayjs'
@@ -22,6 +23,7 @@ import {
   Button,
   TextLink
 } from '@audius/harmony-native'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 import { DateTimeInput, TextInput } from '../core'
@@ -140,6 +142,14 @@ export const HostRemixContestDrawer = () => {
         },
         userId
       })
+
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_UPDATE,
+          remixContestId: remixContest.eventId,
+          trackId
+        })
+      )
     } else {
       createEvent({
         eventType: EventEventTypeEnum.RemixContest,
@@ -153,6 +163,13 @@ export const HostRemixContestDrawer = () => {
           winners: []
         }
       })
+
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_CREATE,
+          trackId
+        })
+      )
     }
 
     onClose()
@@ -175,8 +192,19 @@ export const HostRemixContestDrawer = () => {
   const handleDeleteEvent = useCallback(() => {
     if (!remixContest || !userId) return
     deleteEvent({ eventId: remixContest.eventId, userId })
+
+    if (trackId) {
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_DELETE,
+          remixContestId: remixContest.eventId,
+          trackId
+        })
+      )
+    }
+
     onClose()
-  }, [remixContest, userId, deleteEvent, onClose])
+  }, [remixContest, userId, deleteEvent, onClose, trackId])
 
   return (
     <AppDrawer

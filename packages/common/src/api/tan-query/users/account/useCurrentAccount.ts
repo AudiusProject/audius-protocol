@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
@@ -29,26 +31,32 @@ export const useCurrentAccount = <
   const currentUserWallet = walletAddresses.currentUser
   const { localStorage } = useAppContext()
 
+  // We intentionally cache account data in local storage to quickly render the account details
+  // This initialData primes our query slice up front and will cause the hook to return synchronously (if the data exists)
+  const initialData = useMemo(() => {
+    const localAccount = localStorage.getAudiusAccountSync?.() // Assume you implement a sync version
+    const localAccountUser = localStorage.getAudiusAccountUserSync?.()
+
+    if (localAccount && localAccountUser) {
+      const account: AccountUserMetadata = {
+        user: {
+          ...localAccountUser,
+          playlists: localAccount.collections
+        },
+        playlists: localAccount.collections,
+        track_save_count: localAccount.trackSaveCount,
+        playlist_library: localAccount.playlistLibrary
+      }
+      return account
+    }
+
+    return undefined
+  }, [localStorage])
+
   return useQuery({
     queryKey: getCurrentAccountQueryKey(),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const localAccount = await localStorage.getAudiusAccount()
-      const localAccountUser = await localStorage.getAudiusAccountUser()
-      if (localAccount && localAccountUser) {
-        // feature-tan-query TODO: when removing account sagas,
-        //    need to add wallets and local account user from local storage
-        const account: AccountUserMetadata = {
-          user: {
-            ...localAccountUser,
-            playlists: localAccount.collections
-          },
-          playlists: localAccount.collections,
-          track_save_count: localAccount.trackSaveCount,
-          playlist_library: localAccount.playlistLibrary
-        }
-        return account
-      }
       const { data } = await sdk.full.users.getUserAccount({
         wallet: currentUserWallet!
       })
@@ -64,6 +72,7 @@ export const useCurrentAccount = <
     staleTime: options?.staleTime ?? Infinity,
     gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserWallet,
+    initialData: initialData ?? undefined,
     ...options
   })
 }

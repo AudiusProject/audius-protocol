@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useCollection, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { CollectionImage } from 'components/collection/CollectionImage'
 import { CollectionLink } from 'components/link/CollectionLink'
@@ -19,20 +20,25 @@ type CollectionArtCardProps = {
 const ARTWORK_SIZE = 240
 
 export const CollectionArtCard = ({ id }: CollectionArtCardProps) => {
-  const [isPerspectiveDisabled, setIsPerspectiveDisabled] = useState(false)
-
+  const [isPerspectiveDisabled] = useState(false)
+  const navigate = useNavigate()
   const { data: partialCollection } = useCollection(id)
+
+  const goToPlaylist = useCallback(() => {
+    if (!partialCollection?.permalink) return
+    navigate(partialCollection.permalink)
+  }, [navigate, partialCollection?.permalink])
+
   const { data: user } = useUser(partialCollection?.playlist_owner_id)
 
   if (!partialCollection || !user) return null
 
   const { playlist_id, playlist_name } = partialCollection ?? {}
   const { user_id } = user
-
   return (
     <Flex column alignItems='center' gap='s'>
       <PerspectiveCard
-        onClick={() => setIsPerspectiveDisabled(false)}
+        onClick={goToPlaylist}
         isDisabled={isPerspectiveDisabled}
       >
         <CollectionImage

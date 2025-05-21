@@ -8,8 +8,12 @@ import { ViewLayout } from './types'
 
 type SearchResultsProps = {
   tracksLayout?: ViewLayout
+  handleSearchTab?: (tab: string) => void
 }
-export const SearchResults = ({ tracksLayout }: SearchResultsProps) => {
+export const SearchResults = ({
+  tracksLayout,
+  handleSearchTab
+}: SearchResultsProps) => {
   const [category] = useSearchCategory()
 
   switch (category) {
@@ -22,6 +26,6 @@ export const SearchResults = ({ tracksLayout }: SearchResultsProps) => {
     case 'playlists':
       return <PlaylistResultsPage />
     default:
-      return <AllResults />
+      return <AllResults handleSearchTab={handleSearchTab} />
   }
 }

@@ -12,7 +12,11 @@ import { TrackArtwork } from 'components/track/TrackArtwork'
 
 const messages = {
   deadline: (releaseDate?: string) =>
-    `Deadline ${releaseDate ? (new Date(releaseDate) < new Date() ? formatDate(releaseDate) : 'Ended') : releaseDate}`
+    releaseDate
+      ? new Date(releaseDate) < new Date()
+        ? `Deadline: ${formatDate(releaseDate)}`
+        : 'Ended'
+      : releaseDate
 }
 
 type RemixContestCardProps = Omit<CardProps, 'id'> & {

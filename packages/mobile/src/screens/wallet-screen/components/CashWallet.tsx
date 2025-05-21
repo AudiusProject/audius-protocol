@@ -6,7 +6,7 @@ import {
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
-import { useAddFundsModal } from '@audius/common/store'
+import { useAddCashModal } from '@audius/common/store'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -26,7 +26,7 @@ import { make, track } from 'app/services/analytics'
 
 export const CashWallet = () => {
   const isManagedAccount = useIsManagedAccount()
-  const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { onOpen: openAddCashModal } = useAddCashModal()
   const { balanceFormatted, isLoading } = useFormattedUSDCBalance()
   const insets = useSafeAreaInsets()
   const { color } = useTheme()
@@ -35,13 +35,13 @@ export const CashWallet = () => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 
   const handleAddCash = useCallback(() => {
-    openAddFundsModal()
+    openAddCashModal()
     track(
       make({
         eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
       })
     )
-  }, [openAddFundsModal])
+  }, [openAddCashModal])
 
   // Function to handle opening the bottom sheet
   const handleOpenInfoModal = useCallback(() => {
@@ -68,17 +68,19 @@ export const CashWallet = () => {
             />
           </Flex>
 
-          {isLoading ? (
-            <Skeleton h='4xl' w='5xl' />
-          ) : (
-            <Text variant='display' size='m' color='default'>
-              {balanceFormatted}
-            </Text>
-          )}
+          <Flex h='4xl' justifyContent='center'>
+            {isLoading ? (
+              <Skeleton h='4xl' w='5xl' />
+            ) : (
+              <Text variant='display' size='m' color='default'>
+                {balanceFormatted}
+              </Text>
+            )}
+          </Flex>
 
           {!isManagedAccount ? (
             <Button variant='secondary' onPress={handleAddCash} fullWidth>
-              {walletMessages.addFunds}
+              {walletMessages.addCash}
             </Button>
           ) : null}
         </Flex>

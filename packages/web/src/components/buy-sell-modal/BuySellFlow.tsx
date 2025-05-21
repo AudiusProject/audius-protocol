@@ -23,13 +23,13 @@ import { SUPPORTED_TOKEN_PAIRS } from './constants'
 
 type BuySellFlowProps = {
   onClose: () => void
-  openAddFundsModal: () => void
+  openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddFundsModal, onScreenChange, onLoadingStateChange } =
+  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
   const { toast } = useContext(ToastContext)
 
@@ -149,7 +149,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
                 href='#'
                 onClick={() => {
                   onClose()
-                  openAddFundsModal()
+                  openAddCashModal()
                 }}
               >
                 {messages.addCash}
