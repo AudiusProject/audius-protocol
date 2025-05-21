@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import {
   buyUSDCActions,
@@ -28,12 +29,6 @@ import zIndex from 'utils/zIndex'
 import styles from './AddCashModal.module.css'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
-
-const messages = {
-  addCash: 'Add Cash',
-  cryptoTransfer: 'Crypto Transfer',
-  poweredBy: 'Powered by'
-}
 
 type Page = 'add-cash' | 'crypto-transfer'
 
@@ -102,7 +97,9 @@ export const AddCashModal = () => {
       >
         <ModalTitle
           title={
-            page === 'add-cash' ? messages.addCash : messages.cryptoTransfer
+            page === 'add-cash'
+              ? walletMessages.addCash
+              : walletMessages.cryptoTransfer
           }
         />
       </ModalHeader>
@@ -123,7 +120,7 @@ export const AddCashModal = () => {
           pv='2xs'
         >
           <Text variant='label' size='s' color='subdued'>
-            {messages.poweredBy}
+            {walletMessages.poweredBy}
           </Text>
           <IconLogoLinkByStripe width={100} color='subdued' />
         </Flex>
