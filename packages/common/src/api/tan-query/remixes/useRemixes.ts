@@ -197,7 +197,7 @@ export const useRemixes = (
       }
     },
     placeholderData: (prev) => {
-      if (!prev) return undefined
+      if (!prev || !(includeOriginal || includeWinners)) return undefined
       return {
         pages: [
           {

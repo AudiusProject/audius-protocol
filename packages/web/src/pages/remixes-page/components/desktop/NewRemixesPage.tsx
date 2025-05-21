@@ -196,6 +196,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
           actions={remixesPageLineupActions}
           delineatorMap={delineatorMap}
           maxEntries={
+            // remix count + winner count + original track
             count && winnerCount ? count + winnerCount + 1 : undefined
           }
         />
