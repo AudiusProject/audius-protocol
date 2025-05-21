@@ -1,10 +1,7 @@
 import { useCallback } from 'react'
 
 import { useNotificationEntity } from '@audius/common/api'
-import {
-  ArtistRemixContestEndedNotification as ArtistRemixContestEndedNotificationType,
-  TrackEntity
-} from '@audius/common/store'
+import { ArtistRemixContestEndedNotification as ArtistRemixContestEndedNotificationType } from '@audius/common/store'
 import { Flex, IconTrophy } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -34,7 +31,7 @@ export const ArtistRemixContestEndedNotification = (
   const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
 
-  const entity = useNotificationEntity(notification) as TrackEntity | null
+  const entity = useNotificationEntity(notification)
 
   const handleClick = useCallback(() => {
     if (entity) {
