@@ -221,7 +221,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ph='unit15'
         gap='3xl'
         alignItems='stretch'
-        w={isLarge ? '95%' : 1200}
+        w={isLarge ? '100%' : 1200}
       >
         {/* Header Section */}
         <Paper
@@ -252,22 +252,22 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           >
             {messages.description}
           </Text>
-          <Flex w={400}>
+          <Flex w='100%' css={{ maxWidth: 400 }}>
             <TextInput
               ref={searchBarRef}
-              width={400}
               label={messages.searchPlaceholder}
               value={inputValue}
-              size={TextInputSize.DEFAULT}
               startIcon={IconSearch}
+              size={TextInputSize.SMALL}
               onChange={handleSearch}
               onClear={handleClearSearch}
+              css={{ '& > *': { height: 48 } }}
             />
           </Flex>
         </Paper>
 
         {/* Tabs and Filters */}
-        <Flex direction='column' gap='l'>
+        <Flex direction='column' gap='2xl'>
           <Flex direction='column'>
             <Flex alignSelf='flex-start'>{tabs}</Flex>
             <Divider orientation='horizontal' />
@@ -277,8 +277,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               direction='row'
               justifyContent='space-between'
               alignItems='center'
+              css={{ flexWrap: 'wrap' }}
             >
-              <Flex direction='row' gap='s' mv='m'>
+              <Flex direction='row' gap='s' mv='m' css={{ flexWrap: 'wrap' }}>
                 {filterKeys.map((filterKey) => {
                   const FilterComponent =
                     filters[filterKey as keyof typeof filters]
@@ -314,29 +315,30 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           />
         ) : (
           <>
-            <ExploreSection
-              title={messages.featuredPlaylists}
-              data={exploreContent?.featuredPlaylists}
-              Card={CollectionCard}
-            />
-            <ExploreSection
-              title={messages.featuredRemixContests}
-              data={exploreContent?.featuredRemixContests}
-              Card={RemixContestCard}
-            />
+            <Flex direction='column'>
+              <ExploreSection
+                title={messages.featuredPlaylists}
+                data={exploreContent?.featuredPlaylists}
+                Card={CollectionCard}
+              />
+              <ExploreSection
+                title={messages.featuredRemixContests}
+                data={exploreContent?.featuredRemixContests}
+                Card={RemixContestCard}
+              />
 
-            <ExploreSection
-              title={messages.artistSpotlight}
-              data={exploreContent?.featuredProfiles}
-              Card={UserCard}
-            />
+              <ExploreSection
+                title={messages.artistSpotlight}
+                data={exploreContent?.featuredProfiles}
+                Card={UserCard}
+              />
 
-            <ExploreSection
-              title={messages.labelSpotlight}
-              data={exploreContent?.featuredLabels}
-              Card={UserCard}
-            />
-
+              <ExploreSection
+                title={messages.labelSpotlight}
+                data={exploreContent?.featuredLabels}
+                Card={UserCard}
+              />
+            </Flex>
             {/* Explore by mood */}
             <Flex direction='column' gap='l' alignItems='center'>
               <Text variant='heading'>{messages.exploreByMood}</Text>
@@ -362,7 +364,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       }}
                       css={{
                         ':hover': {
-                          background: color.neutral.n100,
+                          background: color.neutral.n25,
                           border: `1px solid ${color.neutral.n150}`
                         }
                       }}
@@ -382,7 +384,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               <Flex
                 wrap='wrap'
                 gap='l'
-                direction='row'
+                direction={isLarge ? 'column' : 'row'}
                 justifyContent='space-between'
               >
                 {justForYouTiles.map((tile) => {
@@ -404,7 +406,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       isIncentivized={!!tile.incentivized}
                       sensitivity={tile.cardSensitivity}
                     >
-                      <Flex w={532} h={200}>
+                      <Flex w={isLarge ? '100%' : 532} h={200}>
                         <TextInterior
                           title={tile.title}
                           subtitle={tile.subtitle}

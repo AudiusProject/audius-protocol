@@ -16,6 +16,7 @@ import {
   IconLibrary,
   IconMessages,
   IconPlaylists,
+  IconSearch,
   IconSettings,
   IconTrending,
   IconWallet,
@@ -120,7 +121,7 @@ export const useNavConfig = () => {
       }),
       createNavItemWithSpeaker({
         label: 'Explore',
-        leftIcon: IconExplore,
+        leftIcon: IconSearch,
         targetRoute: EXPLORE_PAGE,
         playingFromRoute,
         restriction: 'none' as RestrictionType

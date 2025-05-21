@@ -20,7 +20,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   Card
 }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { isLarge } = useMedia()
 
@@ -61,6 +61,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
         {canScrollLeft || canScrollRight ? (
           <Flex gap='l'>
             <IconButton
+              ripple
               icon={IconCaretLeft}
               color={canScrollLeft ? 'default' : 'disabled'}
               aria-label={`${title} scroll left`}
@@ -72,6 +73,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
               }}
             />
             <IconButton
+              ripple
               icon={IconCaretRight}
               color={canScrollRight ? 'default' : 'disabled'}
               aria-label={`${title} scroll right`}
@@ -106,11 +108,24 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             '&::-webkit-scrollbar': {
               display: 'none' // Chrome/Safari
             },
+
+            // Some logic to make sure card shadows are not cut off
+            marginLeft: !canScrollLeft && !isLarge ? -18 : undefined,
             paddingRight: isLarge ? '50vw' : undefined,
-            paddingLeft: isLarge ? '50vw' : undefined
+            paddingLeft: isLarge
+              ? 'calc(50vw + 2px)'
+              : !canScrollLeft
+                ? 18
+                : undefined,
+            paddingTop: 2
           }}
+          pb='3xl'
         >
-          <Flex gap='l' css={{ minWidth: 'max-content' }} pv='2xs'>
+          <Flex
+            gap='m'
+            css={{ minWidth: 'max-content', overflow: 'visible' }}
+            pv='2xs'
+          >
             {data?.map((id) => <Card key={id} id={id} size='s' />)}
           </Flex>
         </Flex>

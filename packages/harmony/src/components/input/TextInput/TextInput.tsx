@@ -56,7 +56,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
+      endAdornment = <EndIcon color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -88,8 +88,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       required && hideLabel
         ? `${placeholder} *`
         : size === TextInputSize.SMALL
-          ? labelText
-          : placeholder
+        ? labelText
+        : placeholder
     const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
 
     // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
@@ -184,7 +184,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         >
           {StartIcon ? (
             <StartIcon
-              size={size === TextInputSize.SMALL ? 's' : 'm'}
+              size={size === TextInputSize.SMALL ? 's' : undefined}
               color='subdued'
               {...IconProps}
             />
