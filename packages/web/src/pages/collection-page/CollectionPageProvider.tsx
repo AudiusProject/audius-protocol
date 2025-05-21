@@ -1,5 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -16,10 +17,10 @@ import {
   ID,
   UID,
   isContentUSDCPurchaseGated,
-  ModalSource
+  ModalSource,
+  AccountCollection
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   lineupSelectors,
   collectionPageLineupActions as tracksActions,
@@ -110,8 +111,6 @@ const {
   deletePlaylist
 } = cacheCollectionsActions
 
-const { getUserId, getAccountCollections } = accountSelectors
-
 type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
@@ -126,7 +125,10 @@ type OwnProps = {
 type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    userId: number | null | undefined
+    userPlaylists: AccountCollection[] | undefined
+  }
 
 type CollectionPageState = {
   filterText: string
@@ -655,7 +657,11 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackSave = () => {
-    const { userPlaylists, collection: metadata, smartCollection } = this.props
+    const {
+      userPlaylists = [],
+      collection: metadata,
+      smartCollection
+    } = this.props
     const { playlistId } = this.props
     const isSaved =
       (metadata && playlistId
@@ -843,9 +849,7 @@ function makeMapStateToProps() {
       userUid: getUserUid(state) || '',
       status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),
-      userId: getUserId(state),
       playlistId: (getCollection(state) as Collection)?.playlist_id,
-      userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,
@@ -1053,6 +1057,27 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
+const withHooks = (WrappedComponent: typeof CollectionPage) => {
+  return function WithHooksComponent(props: CollectionPageProps) {
+    const { data: accountData } = useCurrentAccount({
+      select: (account) => ({
+        userId: account?.userId,
+        userPlaylists: Object.values(account?.collections ?? {})?.filter(
+          (c) => !c.is_album
+        )
+      })
+    })
+    const { userId, userPlaylists } = accountData ?? {}
+    return (
+      <WrappedComponent
+        {...props}
+        userId={userId}
+        userPlaylists={userPlaylists}
+      />
+    )
+  }
+}
+
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(CollectionPage)
+  connect(makeMapStateToProps, mapDispatchToProps)(withHooks(CollectionPage))
 )

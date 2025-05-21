@@ -279,7 +279,7 @@ export const useFormattedAlbumData = () => {
     select: (album) => formatAlbumMetadata(album)
   })
 
-  return formattedAlbums ?? []
+  return (formattedAlbums as unknown as DataSourceAlbum[]) ?? {}
 }
 
 const useSegregatedAlbumData = () => {

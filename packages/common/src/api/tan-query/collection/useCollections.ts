@@ -27,7 +27,7 @@ export const useCollections = <TResult>(
   const dispatch = useDispatch()
 
   const queriesResults = useQueries({
-    // @ts-expect-error - The select option doesnt agree - for some reason the select on the query is typed with unknowns
+    // @ts-ignore - The select option doesnt agree - for some reason the select on the query is typed with unknowns
     queries: collectionIds?.map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {

@@ -3,13 +3,10 @@ import { createSelector } from '@reduxjs/toolkit'
 import { ID } from '~/models/Identifiers'
 import { getUsers } from '~/store/cache/users/selectors'
 
-import { getAccountStatus } from '../account/selectors'
 import { getCollections } from '../cache/collections/selectors'
 import { CommonState } from '../commonStore'
 
 import { CollectionType } from './types'
-
-const getAccountCollections = (state: CommonState) => state.account.collections
 
 export const getSavedCollectionsState = (
   state: CommonState,
@@ -44,22 +41,4 @@ export const getVisibleCollectionIds = createSelector(
       return accum
     }, new Set<ID>())
   }
-)
-
-/** Returns a list of albums saved to the current account */
-export const getAccountAlbums = createSelector(
-  [getAccountCollections, getAccountStatus],
-  (collections, status) => ({
-    status,
-    data: Object.values(collections).filter((c) => c.is_album)
-  })
-)
-
-/** Returns a list of playlists saved to the current account */
-export const getAccountPlaylists = createSelector(
-  [getAccountCollections, getAccountStatus],
-  (collections, status) => ({
-    status,
-    data: Object.values(collections).filter((c) => !c.is_album)
-  })
 )

@@ -1,4 +1,5 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
+import { queryCollections, queryCurrentAccount } from '@audius/common/api'
 import {
   accountSelectors,
   savedPageSelectors,
@@ -9,7 +10,6 @@ import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas
 import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
-import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { make, track } from 'app/services/analytics'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { EventNames } from 'app/types/analytics'
@@ -85,10 +85,17 @@ function* downloadAllFavorites() {
   // AccountCollections don't include track lists, so retrieve all the collections
   // first
   yield* call(fetchAllAccountCollections)
-  const favoritedCollections = yield* select(getAccountCollections)
+  const account = yield* queryCurrentAccount()
+  const accountCollectionsMap = account?.collections ?? {}
+  const accountCollectionsArr = Object.values(accountCollectionsMap)
+  const favoritedAlbums = accountCollectionsArr.filter((c) => c.is_album)
+  const collectionsMap = yield* queryCollections(
+    accountCollectionsArr.map((c) => c.id)
+  )
+  const collections = Object.values(collectionsMap)
 
-  for (const favoritedCollection of favoritedCollections) {
-    const { playlist_id } = favoritedCollection
+  for (const favoritedCollection of favoritedAlbums) {
+    const { id: playlist_id } = favoritedCollection
     const downloadReason = { is_from_favorites: true }
 
     offlineItemsToAdd.push({
@@ -100,7 +107,7 @@ function* downloadAllFavorites() {
     })
   }
 
-  for (const favoritedCollection of favoritedCollections) {
+  for (const favoritedCollection of collections) {
     const {
       playlist_id,
       playlist_contents: { track_ids }

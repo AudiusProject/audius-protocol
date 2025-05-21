@@ -15,26 +15,12 @@ import {
 const { fetchCollections } = savedCollectionsActions
 
 const {
-  getAccountAlbums,
   getSavedCollectionsState,
   getFetchedCollectionIds,
-  getVisibleCollectionIds,
-  getAccountPlaylists
+  getVisibleCollectionIds
 } = savedCollectionsSelectors
 
 const DEFAULT_PAGE_SIZE = 50
-
-/** Selects a list of albums saved to the account. Records include only id/name information
- * for the collection and owning user **/
-export function useAccountAlbums() {
-  return useSelector(getAccountAlbums)
-}
-
-/** Selects a list of playlists saved to the account. Records include only id/name information
- * for the collection and owning user **/
-export function useAccountPlaylists() {
-  return useSelector(getAccountPlaylists)
-}
 
 type UseFetchedCollectionsConfig = {
   /** Full list of collection IDs to be fetched, will be batched into pages */
