@@ -1,23 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
+import {
+  useBuySellScreen,
+  useBuySellSwap,
+  useBuySellTabs,
+  useBuySellTransactionData,
+  useSwapDisplayData,
+  BuySellTab,
+  Screen
+} from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
 import { ModalLoading } from 'components/modal-loading'
+import { ToastContext } from 'components/toast/ToastContext'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 import { SUPPORTED_TOKEN_PAIRS } from './constants'
-import {
-  useBuySellScreen,
-  useBuySellSwap,
-  useBuySellTabs,
-  useBuySellTransactionData,
-  useSwapDisplayData
-} from './hooks'
-import { BuySellTab, Screen } from './types'
 
 type BuySellFlowProps = {
   onClose: () => void
@@ -29,6 +31,7 @@ type BuySellFlowProps = {
 export const BuySellFlow = (props: BuySellFlowProps) => {
   const { onClose, openAddFundsModal, onScreenChange, onLoadingStateChange } =
     props
+  const { toast } = useContext(ToastContext)
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
@@ -52,7 +55,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     isContinueButtonLoading,
     isConfirmButtonLoading,
     swapStatus,
-    swapResult
+    swapResult,
+    swapError
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -64,6 +68,12 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   useEffect(() => {
     onLoadingStateChange?.(isConfirmButtonLoading)
   }, [isConfirmButtonLoading, onLoadingStateChange])
+
+  useEffect(() => {
+    if (swapStatus === 'error' && swapError) {
+      toast(swapError.message || messages.transactionFailed, 5000)
+    }
+  }, [swapStatus, swapError, toast])
 
   const [selectedPairIndex] = useState(0)
 

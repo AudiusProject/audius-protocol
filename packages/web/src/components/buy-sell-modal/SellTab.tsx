@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
-import { useTotalBalanceWithFallback } from '@audius/common/src/hooks/useAudioBalance'
-import { isNullOrUndefined } from '@audius/common/src/utils'
+import { useTotalBalanceWithFallback } from '@audius/common/hooks'
+import { TokenPair } from '@audius/common/store'
+import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
-import { TokenPair } from './types'
 
 type SellTabProps = {
   tokenPair: TokenPair

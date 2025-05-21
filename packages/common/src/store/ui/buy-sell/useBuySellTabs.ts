@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import type { BuySellTab, Screen } from '../types'
+import type { BuySellTab, Screen } from './types'
 
 type UseBuySellTabsProps = {
   setCurrentScreen: (screen: Screen) => void

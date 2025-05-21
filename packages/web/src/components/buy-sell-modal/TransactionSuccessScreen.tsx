@@ -1,9 +1,9 @@
 import { buySellMessages as messages } from '@audius/common/messages'
+import { TokenInfo } from '@audius/common/store'
 import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
 import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
-import { TokenInfo } from './types'
 
 type TransactionSuccessScreenProps = {
   payTokenInfo: TokenInfo

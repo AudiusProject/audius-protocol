@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { TokenInfo, TokenAmountSectionProps } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
   Button,
@@ -13,7 +14,6 @@ import {
 import { useTheme } from '@emotion/react'
 
 import { useTokenAmountFormatting } from './hooks'
-import { TokenAmountSectionProps, TokenInfo } from './types'
 
 const messages = {
   available: 'Available',

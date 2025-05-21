@@ -1,10 +1,10 @@
 import { buySellMessages as baseMessages } from '@audius/common/messages'
+import { TokenInfo } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
 import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
-import { TokenInfo } from './types'
 
 const messages = {
   ...baseMessages,

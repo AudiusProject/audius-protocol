@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import { useTokenExchangeRate } from '@audius/common/src/api'
 import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
+import { TokenInfo } from '@audius/common/store'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { createSwapFormSchema, SwapFormValues } from '../schemas/swapFormSchema'
-import { TokenInfo } from '../types'
 
 export type BalanceConfig = {
   get: () => number | undefined

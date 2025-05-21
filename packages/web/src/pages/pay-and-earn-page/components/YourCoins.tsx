@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
+import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { useBuySellModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -19,12 +20,6 @@ import { push } from 'redux-first-history'
 
 const DIMENSIONS = 64
 const { WALLET_AUDIO_PAGE } = route
-
-const messages = {
-  audio: '$AUDIO',
-  yourCoins: 'Your Coins',
-  buySell: 'Buy/sell'
-}
 
 const TokensHeader = () => {
   const { color } = useTheme()
@@ -114,7 +109,7 @@ export const YourCoins = () => {
                 {audioBalanceFormatted}
               </Text>
               <Text variant='heading' size='l' color='subdued'>
-                {messages.audio}
+                {messages.audioTicker}
               </Text>
             </Flex>
             <Text variant='heading' size='s' color='subdued'>
