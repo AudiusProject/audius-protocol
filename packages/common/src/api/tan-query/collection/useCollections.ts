@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { keyBy } from 'lodash'
+import { keyBy, omit } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
@@ -17,9 +17,9 @@ import { useQueries } from '../utils/useQueries'
 
 import { getCollectionQueryKey } from './useCollection'
 
-export const useCollections = (
+export const useCollections = <TResult>(
   collectionIds: ID[] | null | undefined,
-  options?: QueryOptions
+  options?: QueryOptions & { select?: (data: TQCollection) => TResult }
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -27,6 +27,7 @@ export const useCollections = (
   const dispatch = useDispatch()
 
   const queriesResults = useQueries({
+    // @ts-expect-error - The select option doesnt agree - for some reason the select on the query is typed with unknowns
     queries: collectionIds?.map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {

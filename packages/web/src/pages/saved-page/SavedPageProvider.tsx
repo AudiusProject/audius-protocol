@@ -1,18 +1,22 @@
 import { ComponentType, PureComponent } from 'react'
 
 import {
+  useCurrentAccount,
+  selectNameSortedPlaylistsAndAlbums
+} from '@audius/common/api'
+import {
   Name,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
   ID,
   UID,
-  LineupTrack
+  LineupTrack,
+  AccountCollection
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
   accountActions,
-  accountSelectors,
   lineupSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
@@ -25,7 +29,8 @@ import {
   playlistUpdatesSelectors,
   LibraryCategoryType,
   SavedPageTrack,
-  TrackRecord
+  TrackRecord,
+  AccountState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
@@ -54,7 +59,6 @@ const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetTableMetadatas } = lineupSelectors
 
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const messages = {
   title: 'Library',
@@ -83,7 +87,14 @@ type OwnProps = {
 type SavedPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    account?:
+      | (AccountState & {
+          playlists: AccountCollection[]
+          albums: AccountCollection[]
+        })
+      | undefined
+  }
 
 type SavedPageState = {
   currentTab: ProfileTabs
@@ -487,8 +498,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
 }
 
 type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
-type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
-let accountRef: AccountData
 let tracksRef: LineupData
 
 function makeMapStateToProps() {
@@ -496,17 +505,12 @@ function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
     const tracks = getLineupMetadatas(state)
-    const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
 
     if (!isEqual(tracksRef, tracks)) {
       tracksRef = tracks
     }
-    if (!isEqual(accountRef, account)) {
-      accountRef = account
-    }
 
     return {
-      account: accountRef,
       tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
@@ -580,7 +584,25 @@ function mapDispatchToProps(dispatch: Dispatch) {
     record: (event: TrackEvent) => dispatch(event)
   }
 }
+const withHook = (Component: typeof SavedPage) => {
+  return function WrappedComponent(props: SavedPageProps) {
+    const { data: account } = useCurrentAccount({
+      select: (account) => {
+        if (!account) return undefined
+        const sortedCollections = selectNameSortedPlaylistsAndAlbums(account)
+        if (!sortedCollections) return undefined
+        return {
+          ...account,
+          playlists: sortedCollections.playlists ?? [],
+          albums: sortedCollections.albums ?? []
+        }
+      }
+    })
+
+    return <Component {...props} account={account} />
+  }
+}
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(SavedPage)
+  connect(makeMapStateToProps, mapDispatchToProps)(withHook(SavedPage))
 )

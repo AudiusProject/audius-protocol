@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useCollections, useCurrentAccount } from '@audius/common/api'
 import {
   Collection,
   Track,
@@ -8,7 +9,6 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import {
   IconCart,
   IconCollectible,
@@ -27,8 +27,6 @@ import {
   DataSourceTrack,
   TrackFilters
 } from './types'
-
-const { getAccountOwnAlbums } = accountSelectors
 
 const messages = {
   public: 'Public',
@@ -269,11 +267,19 @@ const formatAlbumMetadata = (album: Collection): DataSourceAlbum => {
 
 /** Returns the logged-in user's albums, formatted for Artist Dashboard albums table */
 export const useFormattedAlbumData = () => {
-  const albums = useSelector(getAccountOwnAlbums)
-  const albumsFormatted = useMemo(() => {
-    return albums?.map((album) => formatAlbumMetadata(album))
-  }, [albums])
-  return albumsFormatted ?? []
+  const { data: accountCollectionIds } = useCurrentAccount({
+    select: (account) => {
+      if (!account) return []
+      return Object.values(account.collections)
+        .filter((c) => c.is_album && account.userId === c.user.id)
+        .map((c) => c.id)
+    }
+  })
+  const { data: formattedAlbums } = useCollections(accountCollectionIds, {
+    select: (album) => formatAlbumMetadata(album)
+  })
+
+  return formattedAlbums ?? []
 }
 
 const useSegregatedAlbumData = () => {
