@@ -184,7 +184,7 @@ export const EnterTransferDetails = () => {
         </Flex>
       )}
       <Button
-        variant='secondary'
+        variant='primary'
         fullWidth
         disabled={disableContinue}
         onClick={handleContinue}

@@ -114,12 +114,7 @@ export const ConfirmTransferDetails = () => {
         </>
       )}
       <Flex gap='s' w='100%'>
-        <Button
-          iconLeft={IconCaretLeft}
-          variant='secondary'
-          onClick={handleGoBack}
-          fullWidth
-        >
+        <Button variant='secondary' onClick={handleGoBack} fullWidth>
           {messages.goBack}
         </Button>
         <Button variant='primary' onClick={handleContinue} fullWidth>
