@@ -1,6 +1,12 @@
 import { useEffect } from 'react'
 
-import { Id, OptionalId, EntityType, full } from '@audius/sdk'
+import {
+  Id,
+  OptionalId,
+  EntityType,
+  full,
+  EventEventTypeEnum
+} from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -9,6 +15,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
+import { eventMetadataListFromSDK } from '~/adapters/event'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
@@ -18,6 +25,7 @@ import {
   remixesPageActions
 } from '~/store/pages'
 
+import { RemixContestData } from '../events'
 import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryKey } from '../tracks/useTrack'
@@ -31,6 +39,7 @@ const DEFAULT_PAGE_SIZE = 10
 export type UseRemixesArgs = {
   trackId: number | null | undefined
   includeOriginal?: Boolean
+  includeWinners?: Boolean
   pageSize?: number
   sortMethod?: full.GetTrackRemixesSortMethodEnum
   isCosign?: boolean
@@ -39,12 +48,14 @@ export type UseRemixesArgs = {
 
 type RemixesQueryData = {
   count: number
+  winnerCount: number | null
   tracks: { id: ID; type: EntityType }[]
 }
 
 export const getRemixesQueryKey = ({
   trackId,
   includeOriginal = false,
+  includeWinners = false,
   pageSize = DEFAULT_PAGE_SIZE,
   sortMethod = 'recent',
   isCosign = false,
@@ -53,13 +64,21 @@ export const getRemixesQueryKey = ({
   [
     QUERY_KEYS.remixes,
     trackId,
-    { pageSize, includeOriginal, sortMethod, isCosign, isContestEntry }
+    {
+      pageSize,
+      includeOriginal,
+      includeWinners,
+      sortMethod,
+      isCosign,
+      isContestEntry
+    }
   ] as unknown as QueryKey<InfiniteData<RemixesQueryData[]>>
 
 export const useRemixes = (
   {
     trackId,
     includeOriginal = false,
+    includeWinners = false,
     pageSize = DEFAULT_PAGE_SIZE,
     sortMethod = 'recent',
     isCosign = false,
@@ -83,6 +102,7 @@ export const useRemixes = (
       trackId,
       pageSize,
       includeOriginal,
+      includeWinners,
       sortMethod,
       isCosign,
       isContestEntry
@@ -114,6 +134,36 @@ export const useRemixes = (
         userTrackMetadataFromSDK
       )
 
+      let winnerCount = null
+
+      if (trackId) {
+        const { data: eventsData } = await sdk.events.getEntityEvents({
+          entityId: [Id.parse(trackId)],
+          userId: OptionalId.parse(currentUserId)
+        })
+
+        const events = eventMetadataListFromSDK(eventsData)
+        const remixContest = events.find(
+          (event) => event.eventType === EventEventTypeEnum.RemixContest
+        )
+        const winnerIds = (remixContest?.eventData as RemixContestData)?.winners
+        winnerCount = winnerIds.length
+
+        if (includeWinners && remixContest && winnerIds) {
+          const { data: winnersData } = await sdk.full.tracks.getBulkTracks({
+            id: winnerIds.map((id) => Id.parse(id)),
+            userId: OptionalId.parse(currentUserId)
+          })
+
+          const winners = transformAndCleanList(
+            winnersData,
+            userTrackMetadataFromSDK
+          )
+
+          processedTracks.splice(0, 0, ...winners)
+        }
+      }
+
       primeTrackData({ tracks: processedTracks, queryClient, dispatch })
 
       if (includeOriginal && pageParam === 0) {
@@ -142,7 +192,24 @@ export const useRemixes = (
           id: t.track_id,
           type: EntityType.TRACK
         })),
-        count: data.count
+        count: data.count,
+        winnerCount
+      }
+    },
+    placeholderData: (prev) => {
+      if (!prev) return undefined
+      return {
+        pages: [
+          {
+            tracks: prev?.pages[0]?.tracks.slice(
+              0,
+              (includeWinners ? (prev.pages[0].winnerCount ?? 0) : 0) +
+                (includeOriginal ? 1 : 0)
+            ),
+            count: prev?.pages[0]?.count,
+            winnerCount: prev?.pages[0]?.winnerCount
+          }
+        ]
       }
     },
     ...options,

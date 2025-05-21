@@ -60,8 +60,9 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
-  const { data: contest } = useRemixContest(originalTrack?.track_id)
   const { data: currentUserId } = useCurrentUserId()
+  const { data: contest } = useRemixContest(originalTrack?.track_id)
+  const winnerCount = contest?.eventData?.winners?.length ?? 0
 
   const isRemixContest = isRemixContestEnabled && contest
   const isTrackOwner = currentUserId === originalTrack.owner_id
@@ -86,6 +87,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   } = useRemixes({
     trackId: originalTrack?.track_id,
     includeOriginal: true,
+    includeWinners: true,
     sortMethod,
     isCosign,
     isContestEntry
@@ -120,6 +122,57 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
     />
   )
 
+  const winnersDelineator = (
+    <Flex justifyContent='space-between' mb='xl'>
+      <Text variant='heading'>{messages.winners}</Text>
+    </Flex>
+  )
+
+  const remixesDelineator = (
+    <Flex justifyContent='space-between' mb='xl'>
+      <Text variant='heading'>
+        {messages.remixesTitle}
+        {count !== undefined ? ` (${count})` : ''}
+      </Text>
+      <Flex gap='s'>
+        <FilterButton
+          label={messages.coSigned}
+          value={isCosign ? 'true' : null}
+          onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
+        />
+        {isRemixContest ? (
+          <FilterButton
+            label={messages.contestEntries}
+            value={isContestEntry ? 'true' : null}
+            onClick={() =>
+              updateIsContestEntryParam(isContestEntry ? '' : 'true')
+            }
+          />
+        ) : null}
+        <FilterButton
+          value={sortMethod ?? 'recent'}
+          variant='replaceLabel'
+          onChange={updateSortParam}
+          options={[
+            { label: 'Most Recent', value: 'recent' },
+            { label: 'Most Plays', value: 'plays' },
+            { label: 'Most Likes', value: 'likes' }
+          ]}
+        />
+      </Flex>
+    </Flex>
+  )
+
+  const delineatorMap =
+    winnerCount > 0
+      ? {
+          0: winnersDelineator,
+          [winnerCount]: remixesDelineator
+        }
+      : {
+          0: remixesDelineator
+        }
+
   return (
     <Page
       title={title}
@@ -141,40 +194,9 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
           lineup={lineup}
           pageSize={REMIXES_PAGE_SIZE}
           actions={remixesPageLineupActions}
-          leadingElementId={0}
-          leadingElementDelineator={
-            <Flex justifyContent='space-between'>
-              <Text variant='heading'>
-                {messages.remixesTitle}
-                {count !== undefined ? ` (${count})` : ''}
-              </Text>
-              <Flex gap='s' mb='xl'>
-                <FilterButton
-                  label={messages.coSigned}
-                  value={isCosign ? 'true' : null}
-                  onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
-                />
-                {isRemixContest ? (
-                  <FilterButton
-                    label={messages.contestEntries}
-                    value={isContestEntry ? 'true' : null}
-                    onClick={() =>
-                      updateIsContestEntryParam(isContestEntry ? '' : 'true')
-                    }
-                  />
-                ) : null}
-                <FilterButton
-                  value={sortMethod ?? 'recent'}
-                  variant='replaceLabel'
-                  onChange={updateSortParam}
-                  options={[
-                    { label: 'Most Recent', value: 'recent' },
-                    { label: 'Most Plays', value: 'plays' },
-                    { label: 'Most Likes', value: 'likes' }
-                  ]}
-                />
-              </Flex>
-            </Flex>
+          delineatorMap={delineatorMap}
+          maxEntries={
+            count && winnerCount ? count + winnerCount + 1 : undefined
           }
         />
       </Flex>

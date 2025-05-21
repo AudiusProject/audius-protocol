@@ -82,6 +82,11 @@ export interface TanQueryLineupProps {
   leadingElementDelineator?: JSX.Element | null
 
   /**
+   * Map of indeces to JSX Elements that can be used to delineate the elements from the rest
+   */
+  delineatorMap?: Record<number, JSX.Element>
+
+  /**
    * JSX Element that can be used to adorn the tile
    */
   elementAdornment?: (elementId: ID, index: number) => JSX.Element | null
@@ -148,6 +153,7 @@ export const TanQueryLineup = ({
   leadingElementId,
   lineupContainerStyles,
   leadingElementDelineator,
+  delineatorMap,
   elementAdornment,
   tileContainerStyles,
   tileStyles,
@@ -249,7 +255,11 @@ export const TanQueryLineup = ({
   )
 
   const renderSkeletons = useCallback(
-    (skeletonCount: number | undefined, isInitialLoad: boolean) => {
+    (
+      skeletonCount: number | undefined,
+      isInitialLoad: boolean,
+      indexOffset: number = 0
+    ) => {
       // This means no skeletons are desired
       if (!skeletonCount) {
         return <></>
@@ -295,6 +305,9 @@ export const TanQueryLineup = ({
                       <Divider css={{ width: '100%' }} />
                     )
                   ) : null}
+                  {delineatorMap?.[index + indexOffset]
+                    ? delineatorMap[index + indexOffset]
+                    : null}
                 </Flex>
               )
             })}
@@ -309,7 +322,8 @@ export const TanQueryLineup = ({
       tileStyles,
       isSmallTrackTile,
       TrackTile,
-      leadingElementDelineator
+      leadingElementDelineator,
+      delineatorMap
     ]
   )
 
@@ -479,13 +493,17 @@ export const TanQueryLineup = ({
                         <Divider />
                       )
                     ) : null}
+                    {delineatorMap?.[index] ? delineatorMap[index] : null}
                   </Flex>
                 ))}
 
-            {isFetching &&
-              shouldLoadMore &&
-              hasNextPage &&
-              renderSkeletons(Math.min(maxEntries, pageSize), false)}
+            {isFetching && tiles.length > 0
+              ? renderSkeletons(
+                  Math.min(maxEntries - tiles.length, pageSize),
+                  false,
+                  tiles.length
+                )
+              : null}
           </InfiniteScroll>
         </div>
       </div>
