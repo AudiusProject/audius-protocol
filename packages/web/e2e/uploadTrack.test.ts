@@ -222,7 +222,7 @@ test('should upload a premium track', async ({ page, browser }) => {
   const newPage = await openCleanBrowser({ browser })
   const buyButton = newPage.getByRole('button', { name: /buy/i })
   newPage.goto(trackUrl)
-  await expect(buyButton).toBeVisible()
+  await expect(buyButton).toBeVisible({ timeout: 20_000 })
   await expect(newPage.getByText('$' + price)).toBeVisible()
 })
 

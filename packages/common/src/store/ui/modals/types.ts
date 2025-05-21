@@ -2,7 +2,7 @@ import { Action } from '@reduxjs/toolkit'
 
 import { ModalSource } from '~/models/Analytics'
 
-import { AddFundsModalState } from './add-funds-modal'
+import { AddCashModalState } from './add-cash-modal'
 import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
 import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
@@ -14,6 +14,7 @@ import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-m
 import { DownloadTrackArchiveModalState } from './download-track-archive-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
+import { FinalizeWinnersConfirmationModalState } from './finalize-winners-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
 import { HostRemixContestModalState } from './host-remix-contest-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
@@ -98,7 +99,7 @@ export type Modals =
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
   | 'USDCManualTransferModal'
-  | 'AddFundsModal'
+  | 'AddCashModal'
   | 'Welcome'
   | 'CoinflowWithdraw'
   | 'WaitForDownloadModal'
@@ -113,6 +114,7 @@ export type Modals =
   | 'DownloadTrackArchive'
   | 'BuySellModal'
   | 'HostRemixContest'
+  | 'FinalizeWinnersConfirmation'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -128,7 +130,7 @@ export type StatefulModalsState = {
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
   USDCTransactionDetailsModal: USDCTransactionDetailsModalState
   USDCManualTransferModal: USDCManualTransferModalState
-  AddFundsModal: AddFundsModalState
+  AddCashModal: AddCashModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
   CoinflowWithdraw: CoinflowWithdrawModalState
   WaitForDownloadModal: WaitForDownloadModalState
@@ -142,6 +144,7 @@ export type StatefulModalsState = {
   DeleteTrackConfirmation: DeleteTrackConfirmationModalState
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
   ReplaceTrackProgress: ReplaceTrackProgressModalState
+  FinalizeWinnersConfirmation: FinalizeWinnersConfirmationModalState
   Announcement: AnnouncementModalState
   Notification: BaseModalState
   DownloadTrackArchive: DownloadTrackArchiveModalState

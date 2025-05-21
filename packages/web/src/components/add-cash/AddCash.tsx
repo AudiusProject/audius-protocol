@@ -11,7 +11,7 @@ import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track } from 'services/analytics'
 
-import styles from './AddFunds.module.css'
+import styles from './AddCash.module.css'
 import { CashBalanceSection } from './CashBalanceSection'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
@@ -21,7 +21,7 @@ const messages = {
   continue: 'Continue'
 }
 
-export const AddFunds = ({
+export const AddCash = ({
   onContinue
 }: {
   onContinue: (

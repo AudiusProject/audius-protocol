@@ -67,7 +67,7 @@ export const initialState: BasicModalsState = {
   USDCTransactionDetailsModal: { isOpen: false },
   USDCManualTransferModal: { isOpen: false },
   CoinflowOnramp: { isOpen: false },
-  AddFundsModal: { isOpen: false },
+  AddCashModal: { isOpen: false },
   Welcome: { isOpen: false },
   CoinflowWithdraw: { isOpen: false },
   WaitForDownloadModal: { isOpen: false },
@@ -80,7 +80,8 @@ export const initialState: BasicModalsState = {
   Notification: { isOpen: false },
   DownloadTrackArchive: { isOpen: false },
   BuySellModal: { isOpen: false },
-  HostRemixContest: { isOpen: false }
+  HostRemixContest: { isOpen: false },
+  FinalizeWinnersConfirmation: { isOpen: false }
 }
 
 const slice = createSlice({
