@@ -19,7 +19,7 @@ import {
   useWithdrawUSDCModal,
   WithdrawMethod
 } from '@audius/common/store'
-import { formatUSDCWeiToFloorCentsNumber, Nullable } from '@audius/common/utils'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import {
   Modal,
   ModalContent,
