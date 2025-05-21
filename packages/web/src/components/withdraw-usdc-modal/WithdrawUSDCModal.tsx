@@ -50,7 +50,7 @@ const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
 
 const messages = {
-  title: 'Withdraw Funds',
+  title: 'Withdraw Cash',
   errors: {
     insufficientBalance:
       'Your USDC wallet does not have enough funds to cover this transaction.',
@@ -58,7 +58,7 @@ const messages = {
     invalidAddress: 'A valid Solana USDC wallet address is required.',
     minCashTransfer: 'A minimum of $5 is required for cash withdrawals.',
     pleaseConfirm:
-      'Please confirm you have reviewed the details and accept responsibility for any errors resulting in lost funds.'
+      'Please confirm you have reviewed this transaction and accept responsibility for errors.'
   }
 }
 
@@ -151,20 +151,12 @@ export const WithdrawUSDCModal = () => {
     IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS
   )
   const { page } = data
+  // const page = WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
   const withdrawalStatus = useSelector(getWithdrawStatus)
-
-  const [priorBalanceCents, setPriorBalanceCents] =
-    useState<Nullable<number>>(null)
-
-  useEffect(() => {
-    if (balanceNumberCents && priorBalanceCents === null) {
-      setPriorBalanceCents(balanceNumberCents)
-    }
-  }, [balanceNumberCents, priorBalanceCents, setPriorBalanceCents])
 
   useEffect(() => {
     if (withdrawalStatus === Status.ERROR) {
@@ -214,12 +206,7 @@ export const WithdrawUSDCModal = () => {
       formPage = <TransferInProgress />
       break
     case WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL:
-      formPage = (
-        <TransferSuccessful
-          onClickDone={onClose}
-          priorBalanceCents={priorBalanceCents || 0}
-        />
-      )
+      formPage = <TransferSuccessful onClickDone={onClose} />
       break
     case WithdrawUSDCModalPages.ERROR:
       formPage = <ErrorPage />
@@ -243,12 +230,14 @@ export const WithdrawUSDCModal = () => {
       dismissOnClickOutside={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
       bodyClassName={styles.modal}
     >
-      <ModalHeader
-        onClose={onClose}
-        showDismissButton={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
-      >
-        <ModalTitle icon={<IconTransaction />} title={messages.title} />
-      </ModalHeader>
+      {page !== WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS ? (
+        <ModalHeader
+          onClose={onClose}
+          showDismissButton={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
+        >
+          <ModalTitle icon={<IconTransaction />} title={messages.title} />
+        </ModalHeader>
+      ) : null}
       <ModalContent>
         <Formik
           innerRef={formRef}
