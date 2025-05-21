@@ -13,6 +13,7 @@ import {
   getJupiterQuoteByMint,
   jupiterInstance
 } from '~/services/Jupiter'
+import { walletActions } from '~/store'
 
 import { QUERY_KEYS } from '../queryKeys'
 
@@ -25,13 +26,16 @@ import {
 } from './types'
 import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
 
+const { getBalance } = walletActions
+
 /**
  * Hook for executing token swaps using Jupiter.
  * Swaps any supported SPL token (or SOL) for another.
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk, dispatch } =
+    useQueryContext()
   const { data: user } = useGetCurrentUser({})
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
@@ -171,9 +175,7 @@ export const useSwapTokens = () => {
           queryClient.invalidateQueries({
             queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
           })
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.audioBalance]
-          })
+          dispatch(getBalance())
         }
 
         return {

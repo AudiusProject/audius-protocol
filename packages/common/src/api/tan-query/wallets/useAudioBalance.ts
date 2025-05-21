@@ -1,13 +1,13 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 
-import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
+import {
+  useQueryContext,
+  type QueryContextType
+} from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
-import type { Env } from '~/services'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
@@ -37,9 +37,15 @@ export const getWalletAudioBalanceQueryKey = ({
   ] as unknown as QueryKey<AudioWei>
 
 const fetchWalletAudioBalance = async (
-  { sdk, env }: { sdk: AudiusSdk; env: Env },
+  {
+    sdk,
+    audiusBackend
+  }: {
+    sdk: AudiusSdk
+    audiusBackend: QueryContextType['audiusBackend']
+  },
   { address, includeStaked, chain }: UseWalletAudioBalanceParams
-) => {
+): Promise<AudioWei> => {
   if (chain === Chain.Eth) {
     const checksumWallet = getAddress(address)
     const balance = await sdk.services.audiusTokenClient.balanceOf({
@@ -58,16 +64,11 @@ const fetchWalletAudioBalance = async (
 
     return AUDIO(balance + delegatedBalance + stakedBalance).value
   } else {
-    const connection = sdk.services.solanaClient.connection
-    const associatedTokenAccountAddress = getAssociatedTokenAddressSync(
-      new PublicKey(env.WAUDIO_MINT_ADDRESS),
-      new PublicKey(address)
-    )
-    const associatedTokenAccount = await getAccount(
-      connection,
-      associatedTokenAccountAddress
-    )
-    return AUDIO(wAUDIO(associatedTokenAccount.amount)).value
+    const wAudioSolBalance = await audiusBackend.getAddressWAudioBalance({
+      address,
+      sdk
+    })
+    return AUDIO(wAUDIO(BigInt(wAudioSolBalance.toString()))).value
   }
 }
 
@@ -78,14 +79,14 @@ export const useWalletAudioBalance = (
   { address, includeStaked, chain }: UseWalletAudioBalanceParams,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, env } = useQueryContext()
+  const { audiusSdk, audiusBackend } = useQueryContext()
 
   return useQuery({
     queryKey: getWalletAudioBalanceQueryKey({ address, includeStaked, chain }),
     queryFn: async () => {
       const sdk = await audiusSdk()
       return await fetchWalletAudioBalance(
-        { sdk, env },
+        { sdk, audiusBackend },
         { address, includeStaked, chain }
       )
     },
@@ -103,9 +104,9 @@ type UseAudioBalancesParams = {
  */
 export const useWalletAudioBalances = (
   params: UseAudioBalancesParams,
-  options?: QueryOptions<AudioWei>
+  options?: QueryOptions
 ) => {
-  const { audiusSdk, env } = useQueryContext()
+  const { audiusSdk, audiusBackend } = useQueryContext()
   return useQueries({
     queries: params.wallets.map(({ address, chain }) => ({
       queryKey: getWalletAudioBalanceQueryKey({
@@ -116,7 +117,7 @@ export const useWalletAudioBalances = (
       queryFn: async () => {
         const sdk = await audiusSdk()
         return await fetchWalletAudioBalance(
-          { sdk, env },
+          { sdk, audiusBackend },
           {
             address,
             chain,
@@ -155,7 +156,7 @@ export const useAudioBalance = () => {
   )
   let accountBalance = BigInt(0)
   for (const balanceRes of accountBalances) {
-    accountBalance += balanceRes?.data ?? BigInt(0)
+    accountBalance += (balanceRes?.data ?? BigInt(0)) as bigint
   }
 
   // Get linked/connected wallets balances
@@ -163,13 +164,13 @@ export const useAudioBalance = () => {
     useConnectedWallets()
   const connectedWalletsBalances = useWalletAudioBalances(
     {
-      wallets: connectedWallets!
+      wallets: connectedWallets ?? []
     },
     { enabled: isConnectedWalletsFetched }
   )
   let connectedWalletsBalance = BigInt(0)
   for (const balanceRes of connectedWalletsBalances) {
-    connectedWalletsBalance += balanceRes?.data ?? BigInt(0)
+    connectedWalletsBalance += (balanceRes?.data ?? BigInt(0)) as bigint
   }
 
   // Together they are the total balance
