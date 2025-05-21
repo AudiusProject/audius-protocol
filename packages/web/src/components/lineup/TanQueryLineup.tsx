@@ -1,6 +1,7 @@
 import { useRef, useCallback, useMemo } from 'react'
 
 import { LineupData } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   PlaybackSource,
@@ -183,11 +184,12 @@ export const TanQueryLineup = ({
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
   const currentQueueItem = useSelector(getCurrentQueueItem)
+  const currentTrack = useCurrentTrack()
   const isBuffering = useSelector(getBuffering)
 
   const playingUid = currentQueueItem?.uid
   const playingSource = currentQueueItem?.source
-  const playingTrackId = currentQueueItem?.track?.track_id ?? null
+  const playingTrackId = currentTrack?.track_id ?? null
 
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)

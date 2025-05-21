@@ -47,7 +47,7 @@ import { CollectionPageProps as MobileCollectionPageProps } from '../collection-
 import styles from './CollectiblesPlaylistPage.module.css'
 
 const { AUDIO_NFT_PLAYLIST_PAGE, profilePage } = route
-const { getPlaying, makeGetCurrent } = playerSelectors
+const { getPlaying, getCollectible, getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { setCollectible } = collectibleDetailsUIActions
 const { add, clear, pause, play } = queueActions
@@ -89,13 +89,12 @@ const hasAudio = (video: HTMLMediaElement) => {
   return false
 }
 
-const getCurrent = makeGetCurrent()
-
 export const CollectiblesPlaylistPageProvider = ({
   children: Children
 }: CollectiblesPlaylistPageProviderProps) => {
   const dispatch = useDispatch()
-  const currentPlayerItem = useSelector(getCurrent)
+  const collectible = useSelector(getCollectible)
+  const uid = useSelector(getUid)
   const playing = useSelector(getPlaying)
 
   // Getting user data
@@ -260,10 +259,10 @@ export const CollectiblesPlaylistPageProvider = ({
   const isPlayingACollectible = useMemo(
     () =>
       audioCollectibles.some(
-        (collectible) =>
-          collectible && collectible.id === currentPlayerItem?.collectible?.id
+        (audioCollectible) =>
+          audioCollectible && audioCollectible.id === collectible?.id
       ),
-    [audioCollectibles, currentPlayerItem]
+    [audioCollectibles, collectible]
   )
 
   const firstCollectible = useMemo(
@@ -283,17 +282,17 @@ export const CollectiblesPlaylistPageProvider = ({
       source: QueueSource.COLLECTIBLE_PLAYLIST_TRACKS
     }))
 
-  const onClickRow = (collectible: Collectible, index: number) => {
-    if (playing && collectible.id === currentPlayerItem?.collectible?.id) {
+  const onClickRow = (clickedCollectible: Collectible, index: number) => {
+    if (playing && clickedCollectible.id === collectible?.id) {
       dispatch(pause({}))
-    } else if (collectible.id === currentPlayerItem?.collectible?.id) {
+    } else if (clickedCollectible.id === collectible?.id) {
       dispatch(play({}))
     } else {
       if (!isPlayingACollectible) {
         dispatch(clear({}))
         dispatch(add({ entries }))
       }
-      dispatch(play({ collectible }))
+      dispatch(play({ collectible: clickedCollectible }))
     }
   }
 
@@ -333,12 +332,8 @@ export const CollectiblesPlaylistPageProvider = ({
   }
 
   const getPlayingUid = useCallback(() => {
-    return currentPlayerItem.uid
-      ? currentPlayerItem.uid
-      : currentPlayerItem.collectible
-        ? currentPlayerItem.collectible.id
-        : null
-  }, [currentPlayerItem])
+    return uid ?? collectible?.id ?? null
+  }, [uid, collectible])
 
   const formatMetadata = useCallback(
     (trackMetadatas: CollectionTrack[]): CollectionPageTrackRecord[] => {
@@ -377,10 +372,8 @@ export const CollectiblesPlaylistPageProvider = ({
   )
 
   const isQueued = useCallback(() => {
-    return entries.some(
-      (entry) => currentPlayerItem?.collectible?.id === entry.id
-    )
-  }, [entries, currentPlayerItem])
+    return entries.some((entry) => entry.id === collectible?.id)
+  }, [entries, collectible])
 
   const columns = [
     {
@@ -390,7 +383,7 @@ export const CollectiblesPlaylistPageProvider = ({
       render: (val: string, record: Collectible, index: number) => (
         <TablePlayButton
           paused={!playing}
-          playing={record.id === currentPlayerItem?.collectible?.id}
+          playing={record.id === collectible?.id}
           className={styles.playButtonFormatting}
         />
       )
@@ -404,7 +397,7 @@ export const CollectiblesPlaylistPageProvider = ({
       render: (val: string, record: Collectible) => (
         <div
           className={cn(styles.collectibleName, {
-            [styles.active]: record.id === currentPlayerItem?.collectible?.id
+            [styles.active]: record.id === collectible?.id
           })}
           onClick={(e) => {
             e.stopPropagation()

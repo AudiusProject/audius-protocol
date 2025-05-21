@@ -30,7 +30,6 @@ import {
   stemsUploadActions,
   stemsUploadSelectors,
   getSDK,
-  cacheTracksSelectors,
   cacheUsersSelectors
 } from '@audius/common/store'
 import {
@@ -55,7 +54,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getUserId, getAccountUser } = accountSelectors
-const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
 function* fetchRepostInfo(entries: Entry<Collection>[]) {
@@ -322,7 +320,7 @@ function* deleteTrackAsync(
   }
   const userId = user.user_id
 
-  const track = yield* select(getTrack, { id: action.trackId })
+  const track = yield* queryTrack(action.trackId)
   if (!track) return
 
   // Before deleting, check if the track is set as the artist pick & delete if so
@@ -369,7 +367,7 @@ function* confirmDeleteTrack(track: Track) {
           trackId: Id.parse(trackId)
         })
 
-        const track = yield* select(getTrack, { id: trackId })
+        const track = yield* queryTrack(trackId)
 
         if (!track) return
         const { data } = yield* call(

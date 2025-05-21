@@ -1,7 +1,6 @@
-import { Track } from '@audius/common/models'
+import { queryTrack } from '@audius/common/api'
 import {
   cacheTracksActions as trackCacheActions,
-  cacheTracksSelectors,
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
@@ -14,13 +13,12 @@ import trackLineupSagas from './lineups/sagas'
 
 const { tracksActions } = trackPageLineupActions
 const { getTrackId } = trackPageSelectors
-const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
 function* watchRefetchLineup() {
   yield* takeEvery(trackPageActions.REFETCH_LINEUP, function* (action) {
     const trackId = yield* select(getTrackId)
-    const track = yield* select(getTrack, { id: trackId })
+    const track = yield* queryTrack(trackId)
     const user = yield* select(getUser, { id: track?.owner_id })
 
     yield* put(tracksActions.reset())
@@ -38,7 +36,7 @@ function* watchTrackPageMakePublic() {
     trackPageActions.MAKE_TRACK_PUBLIC,
     function* (action: ReturnType<typeof trackPageActions.makeTrackPublic>) {
       const { trackId } = action
-      let track: Track | null = yield* select(getTrack, { id: trackId })
+      let track = yield* queryTrack(trackId)
 
       if (!track) return
       track = {
