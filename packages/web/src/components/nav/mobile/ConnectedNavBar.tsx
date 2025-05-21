@@ -2,7 +2,10 @@ import { useCallback, useContext } from 'react'
 
 import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  searchResultsPageSelectors
+} from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -20,6 +23,7 @@ import { push, goBack } from 'utils/navigation'
 import NavBar from './NavBar'
 
 const { NOTIFICATION_PAGE, SETTINGS_PAGE, REWARDS_PAGE } = route
+const { getSearchStatus } = searchResultsPageSelectors
 const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
@@ -31,6 +35,7 @@ const ConnectedNavBar = ({
   hasAccount,
   accountStatus,
   history,
+  searchStatus,
   goBack
 }: ConnectedNavBarProps) => {
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
@@ -80,6 +85,7 @@ const ConnectedNavBar = ({
       goToNotificationPage={goToNotificationPage}
       goToSettingsPage={goToSettingsPage}
       search={search}
+      searchStatus={searchStatus}
       goBack={goBack}
       history={history}
       goToRewardsPage={goToRewardsPage}
@@ -90,7 +96,8 @@ const ConnectedNavBar = ({
 function mapStateToProps(state: AppState) {
   return {
     hasAccount: getHasAccount(state),
-    accountStatus: getAccountStatus(state)
+    accountStatus: getAccountStatus(state),
+    searchStatus: getSearchStatus(state)
   }
 }
 
