@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import {
+  useOrderedCompletionStages,
   accountSelectors,
   challengesSelectors,
   musicConfettiActions
-} from '@audius/common/store'
+} from '@audius/common/src/store'
 import { Flex, Text, TextLink } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -15,7 +16,7 @@ import { SegmentedProgressBar } from 'components/segmented-progress-bar/Segmente
 import { ProfileCompletionTooltip } from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 
-const { getOrderedCompletionStages, getIsAccountLoaded } = challengesSelectors
+const { getIsAccountLoaded } = challengesSelectors
 const { getHasAccount } = accountSelectors
 const { show: showMusicConfetti } = musicConfettiActions
 
@@ -33,7 +34,7 @@ const messages = {
  */
 export const ProfileCompletionPanel = () => {
   const dispatch = useDispatch()
-  const completionStages = useSelector(getOrderedCompletionStages)
+  const completionStages = useOrderedCompletionStages()
   const isAccountLoaded = useSelector(getIsAccountLoaded)
   const isLoggedIn = useSelector(getHasAccount)
 

@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import type { User } from '@audius/common/models'
@@ -27,12 +28,14 @@ export const useSelectProfileRoot = <K extends keyof User>(
   const params = paramsProp ?? paramsRoute
   const { handle } = params
   const isAccountUser = handle === 'accountUser'
+  const { data: accountUser } = useCurrentAccountUser()
 
   const profile = useProxySelector(
     (state) => {
-      const profile = isAccountUser
-        ? getAccountUser(state)
-        : getProfileUser(state, params)
+      const profile =
+        isAccountUser && accountUser
+          ? accountUser
+          : getProfileUser(state, params)
       if (!profile) return null
 
       const profileSlice = {} as Partial<User>

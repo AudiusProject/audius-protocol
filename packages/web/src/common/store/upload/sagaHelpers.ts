@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import {
   Name,
   isContentCollectibleGated,

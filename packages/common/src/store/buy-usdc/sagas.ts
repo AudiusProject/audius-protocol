@@ -11,6 +11,7 @@ import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
+import { queryAccountUser } from '~/api'
 import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { PurchaseVendor } from '~/models/PurchaseContent'
