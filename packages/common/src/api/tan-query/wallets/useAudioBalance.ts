@@ -159,12 +159,19 @@ export const useWalletAudioBalances = (
   })
 }
 
+type UseAudioBalanceOptions = {
+  /** Whether to include connected/linked wallets in the balance calculation. Defaults to true. */
+  includeConnectedWallets?: boolean
+}
+
 /**
- * Hook for getting the AUDIO balance of the current user, including connected wallets.
+ * Hook for getting the AUDIO balance of the current user, optionally including connected wallets.
  *
  * NOTE: Does not stay in sync with the store. Won't reflect optimism.
  */
-export const useAudioBalance = () => {
+export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
+  const { includeConnectedWallets = true } = options
+
   // Get account balances
   const { data: currentUserId } = useCurrentUserId()
   const { data, isSuccess: isUserFetched } = useUser(currentUserId)
@@ -195,11 +202,13 @@ export const useAudioBalance = () => {
     {
       wallets: connectedWallets ?? []
     },
-    { enabled: isConnectedWalletsFetched }
+    { enabled: isConnectedWalletsFetched && includeConnectedWallets }
   )
   let connectedWalletsBalance = BigInt(0)
-  for (const balanceRes of connectedWalletsBalances) {
-    connectedWalletsBalance += (balanceRes?.data ?? BigInt(0)) as bigint
+  if (includeConnectedWallets) {
+    for (const balanceRes of connectedWalletsBalances) {
+      connectedWalletsBalance += (balanceRes?.data ?? BigInt(0)) as bigint
+    }
   }
 
   // Together they are the total balance
