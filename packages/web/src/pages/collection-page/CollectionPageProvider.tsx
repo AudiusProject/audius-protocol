@@ -51,7 +51,8 @@ import {
   albumTrackRemoveConfirmationModalActions,
   AlbumTrackRemoveConfirmationModalState,
   PlayerBehavior,
-  playerActions
+  playerActions,
+  useLineupTable
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
@@ -103,7 +104,7 @@ const {
   getCollectionPermalink
 } = collectionPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
+const { makeGetLineupOrder } = lineupSelectors
 const {
   editPlaylist,
   removeTrackFromPlaylist,
@@ -143,11 +144,24 @@ type PlaylistTrack = { time: number; track: ID; uid?: UID }
 
 const CollectionPage = (props: CollectionPageProps) => {
   const currentTrack = useCurrentTrack()
-  return <CollectionPageClassComponen {...props} currentTrack={currentTrack} />
+  const tracks = useLineupTable(getCollectionTracksLineup)
+  return (
+    <CollectionPageClassComponen
+      {...props}
+      currentTrack={currentTrack}
+      tracks={tracks}
+    />
+  )
 }
 
 class CollectionPageClassComponen extends Component<
-  CollectionPageProps & { currentTrack: Track | null },
+  CollectionPageProps & {
+    currentTrack: Track | null
+    tracks: {
+      status: Status
+      entries: CollectionTrack[]
+    }
+  },
   CollectionPageState
 > {
   state: CollectionPageState = {
@@ -834,13 +848,11 @@ class CollectionPageClassComponen extends Component<
 }
 
 function makeMapStateToProps() {
-  const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
   const getLineupOrder = makeGetLineupOrder(getCollectionTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState) => {
     return {
-      tracks: getTracksLineup(state),
       trackCount: (getCollection(state) as Collection)?.playlist_contents
         .track_ids.length,
       collectionUid: getCollectionUid(state) || '',

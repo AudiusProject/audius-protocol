@@ -112,26 +112,9 @@ export const primeTrackData = ({
     forceReplace,
     skipQueryData
   })
-  if (!forceReplace) {
-    dispatch(addEntries(entries, false, undefined, 'react-query'))
-  } else {
-    dispatch(
-      addEntries(
-        { [Kind.TRACKS]: entries[Kind.TRACKS] },
-        forceReplace,
-        undefined,
-        'react-query'
-      )
-    )
-    dispatch(
-      addEntries(
-        { ...entries, [Kind.TRACKS]: {} },
-        false,
-        undefined,
-        'react-query'
-      )
-    )
-  }
+
+  dispatch(addEntries(entries, false, undefined, 'react-query'))
+  return formattedTracks
 }
 
 export const primeTrackDataInternal = ({
@@ -146,16 +129,12 @@ export const primeTrackDataInternal = ({
   skipQueryData?: boolean
 }): EntriesByKind => {
   // Set up entries for Redux
-  const entries: SetRequired<EntriesByKind, Kind.TRACKS | Kind.USERS> = {
-    [Kind.TRACKS]: {},
+  const entries: SetRequired<EntriesByKind, Kind.USERS> = {
     [Kind.USERS]: {}
   }
 
   tracks.forEach((track) => {
     if (!track.track_id) return
-
-    // Add track to entries
-    entries[Kind.TRACKS][track.track_id] = track
 
     // Prime track data only if it doesn't exist and skipQueryData is false
     if (
@@ -201,5 +180,5 @@ export function* primeTrackDataSaga(tracks: (UserTrackMetadata | Track)[]) {
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
 
-  primeTrackData({ tracks, queryClient, dispatch })
+  return primeTrackData({ tracks, queryClient, dispatch })
 }
