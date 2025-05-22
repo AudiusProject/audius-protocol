@@ -138,7 +138,6 @@ export * from './tan-query/jupiter/useTokenExchangeRate'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
-export * from './tan-query/utils/defaultConfig'
 export * from './tan-query/utils'
 
 // New authorized-apps exports
