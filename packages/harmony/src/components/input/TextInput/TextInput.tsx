@@ -56,7 +56,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon color='subdued' {...IconProps} />
+      endAdornment = <EndIcon size='l' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -150,7 +150,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={(ariaLabel ?? shouldShowLabel) ? labelText : undefined}
+          aria-label={ariaLabel ?? shouldShowLabel ? labelText : undefined}
           aria-required={required}
           id={id}
           autoComplete='off'
@@ -184,7 +184,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         >
           {StartIcon ? (
             <StartIcon
-              size={size === TextInputSize.SMALL ? 's' : undefined}
+              size={size === TextInputSize.SMALL ? 'l' : undefined}
               color='subdued'
               {...IconProps}
             />

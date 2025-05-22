@@ -114,7 +114,7 @@
 .input.small {
   /* overflowing the height to improve password-manager icon size */
   height: 34px;
-  font-size: var(--harmony-font-s);
+  font-size: var(--harmony-font-l);
 }
 
 .input.default {

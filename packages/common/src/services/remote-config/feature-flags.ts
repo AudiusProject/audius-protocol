@@ -79,7 +79,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.DOWNLOAD_ALL_TRACK_FILES]: false,
   [FeatureFlags.REMIX_CONTEST]: false,
   [FeatureFlags.WALLET_UI_UPDATE]: false,
-  [FeatureFlags.SEARCH_EXPLORE]: false,
+  [FeatureFlags.SEARCH_EXPLORE]: true,
   [FeatureFlags.EXPLORE_REMIX_SECTION]: false,
   [FeatureFlags.WALLET_UI_BUY_SELL]: false,
   [FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE]: false

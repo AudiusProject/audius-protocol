@@ -267,7 +267,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         </Paper>
 
         {/* Tabs and Filters */}
-        <Flex direction='column' gap='2xl'>
+        <Flex direction='column' gap='l'>
           <Flex direction='column'>
             <Flex alignSelf='flex-start'>{tabs}</Flex>
             <Divider orientation='horizontal' />
