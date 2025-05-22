@@ -38,6 +38,7 @@ export const buySellMessages = {
   done: 'Done',
   yourCoins: 'Your Coins',
   buySell: 'Buy/Sell',
+  emptyAmount: 'Please enter an amount',
   priceEach: (price: number) => {
     const formatted = USDC(price).toLocaleString('en-US')
     return `(${formatted} ea.)`

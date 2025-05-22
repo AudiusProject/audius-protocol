@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useMemo } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import {
@@ -65,6 +65,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     onClose
   })
 
+  // Track if user has attempted to submit the form
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+
   useEffect(() => {
     onLoadingStateChange?.(isConfirmButtonLoading)
   }, [isConfirmButtonLoading, onLoadingStateChange])
@@ -97,13 +100,35 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     selectedPair
   })
 
-  const isContinueButtonDisabled =
-    !transactionData?.isValid || isContinueButtonLoading
+  const handleContinueClick = () => {
+    setHasAttemptedSubmit(true)
+    if (transactionData?.isValid && !isContinueButtonLoading) {
+      handleShowConfirmation()
+    }
+  }
 
-  const errorMessage =
-    activeTab === 'sell' && !hasSufficientBalance
-      ? messages.insufficientAUDIOForSale
-      : undefined
+  useEffect(() => {
+    setHasAttemptedSubmit(false)
+  }, [activeTab])
+
+  const isTransactionInvalid = !transactionData?.isValid
+
+  const displayErrorMessage = useMemo(() => {
+    if (activeTab === 'sell' && !hasSufficientBalance) {
+      return messages.insufficientAUDIOForSale
+    }
+    if (hasAttemptedSubmit && isTransactionInvalid) {
+      return messages.emptyAmount
+    }
+    return undefined
+  }, [
+    activeTab,
+    hasSufficientBalance,
+    hasAttemptedSubmit,
+    isTransactionInvalid
+  ])
+
+  const shouldShowError = !!displayErrorMessage
 
   if (isConfirmButtonLoading && currentScreen !== 'success') {
     return <ModalLoading />
@@ -129,14 +154,15 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             <BuyTab
               tokenPair={selectedPair}
               onTransactionDataChange={handleTransactionDataChange}
-              error={!hasSufficientBalance}
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
             />
           ) : (
             <SellTab
               tokenPair={selectedPair}
               onTransactionDataChange={handleTransactionDataChange}
-              error={!hasSufficientBalance}
-              errorMessage={errorMessage}
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
             />
           )}
 
@@ -172,9 +198,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
           <Button
             variant='primary'
             fullWidth
-            disabled={isContinueButtonDisabled}
             isLoading={isContinueButtonLoading}
-            onClick={handleShowConfirmation}
+            onClick={handleContinueClick}
           >
             {messages.continue}
           </Button>

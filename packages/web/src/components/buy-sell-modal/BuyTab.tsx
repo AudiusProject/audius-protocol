@@ -15,12 +15,14 @@ type BuyTabProps = {
     isValid: boolean
   }) => void
   error?: boolean
+  errorMessage?: string
 }
 
 export const BuyTab = ({
   tokenPair,
   onTransactionDataChange,
-  error
+  error,
+  errorMessage
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
   const { status: balanceStatus, data: usdcBalance } = useUSDCBalance()
@@ -55,6 +57,7 @@ export const BuyTab = ({
       }}
       onTransactionDataChange={onTransactionDataChange}
       error={error}
+      errorMessage={errorMessage}
       tokenPrice={tokenPrice}
       isTokenPriceLoading={isTokenPriceLoading}
       tokenPriceDecimalPlaces={decimalPlaces}
