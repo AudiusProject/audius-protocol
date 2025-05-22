@@ -222,6 +222,7 @@ export const useRemixes = (
     queryKey: getRemixesQueryKey({
       trackId,
       includeOriginal,
+      includeWinners,
       pageSize,
       sortMethod,
       isCosign,
