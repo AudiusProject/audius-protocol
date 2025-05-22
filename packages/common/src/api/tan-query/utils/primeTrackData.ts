@@ -8,6 +8,7 @@ import { Track, TrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
+import { getContext } from '~/store/effects'
 
 import { getTrackQueryKey } from '../tracks/useTrack'
 import { getTrackByPermalinkQueryKey } from '../tracks/useTrackByPermalink'
@@ -194,4 +195,11 @@ export const primeTrackDataInternal = ({
   })
 
   return entries
+}
+
+export function* primeTrackDataSaga(tracks: (UserTrackMetadata | Track)[]) {
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
+
+  primeTrackData({ tracks, queryClient, dispatch })
 }
