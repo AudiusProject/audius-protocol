@@ -2,13 +2,10 @@ import { createSelector } from 'reselect'
 
 import { UID } from '../../models'
 import { Uid } from '../../utils/uid'
-import { cacheUsersSelectors, cacheTracksSelectors } from '../cache'
 import { PlayerBehavior, playerSelectors } from '../player'
 import { CommonState } from '../reducers'
 
-const { getUid: getPlayerUid, getTrackId: getPlayerTrackId } = playerSelectors
-const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
+const { getUid: getPlayerUid } = playerSelectors
 
 export const getOrder = (state: CommonState) => state.queue.order
 export const getLength = (state: CommonState) => state.queue.order.length
@@ -49,32 +46,13 @@ export const getCollectionId = (state: CommonState) => {
   return Uid.getCollectionId(uid)
 }
 
-const getCurrentTrack = (state: CommonState) =>
-  getTrack(state, { id: getPlayerTrackId(state) })
-
-export const getCurrentArtist = (state: CommonState) => {
-  const track = getCurrentTrack(state)
-  const queueable = state.queue.order[state.queue.index]
-  if (track || queueable?.artistId) {
-    return getUser(state, { id: track?.owner_id ?? queueable.artistId })
-  }
-  return null
-}
-
 export const makeGetCurrent = () => {
   return createSelector(
-    [
-      getPlayerUid,
-      getSource,
-      getCurrentTrack,
-      getCurrentArtist,
-      getCollectible
-    ],
-    (uid, source, track, user, collectible) => ({
+    [getPlayerUid, getSource, getCollectible],
+    (uid, source, collectible) => ({
       uid,
       source,
-      track,
-      user,
+      // user,
       collectible
     })
   )

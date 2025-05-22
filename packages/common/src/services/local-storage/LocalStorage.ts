@@ -35,12 +35,29 @@ export class LocalStorage {
     return await this.localStorage.getItem(key)
   }
 
+  getItemSync = (key: string) => {
+    return this.localStorage.getItem(key)
+  }
+
   getValue = async (key: string) => {
     return await this.localStorage.getItem(key)
   }
 
   async getJSONValue<T>(key: string): Promise<T | null> {
     const val = await this.getValue(key)
+    if (val) {
+      try {
+        const parsed = JSON.parse(val)
+        return parsed
+      } catch (e) {
+        return null
+      }
+    }
+    return null
+  }
+
+  getJSONValueSync = <T>(key: string): T | null => {
+    const val = this.getItemSync(key) as string | null
     if (val) {
       try {
         const parsed = JSON.parse(val)
@@ -96,6 +113,9 @@ export class LocalStorage {
   getAudiusAccount = async (): Promise<CachedAccount | null> =>
     this.getJSONValue(AUDIUS_ACCOUNT_KEY)
 
+  getAudiusAccountSync = (): CachedAccount | null =>
+    this.getJSONValueSync(AUDIUS_ACCOUNT_KEY)
+
   setAudiusAccount = async (value: object) => {
     await this.setJSONValue(AUDIUS_ACCOUNT_KEY, value)
   }
@@ -113,6 +133,9 @@ export class LocalStorage {
 
   getAudiusAccountUser = async (): Promise<User | null> =>
     this.getJSONValue(AUDIUS_ACCOUNT_USER_KEY)
+
+  getAudiusAccountUserSync = (): User | null =>
+    this.getJSONValueSync(AUDIUS_ACCOUNT_USER_KEY)
 
   setAudiusAccountUser = async (value: UserMetadata) =>
     this.setJSONValue(AUDIUS_ACCOUNT_USER_KEY, value)

@@ -1,22 +1,18 @@
-import { ID } from '@audius/common/src/models'
-import { getCollectionTracks } from '@audius/common/src/store/cache/collections/selectors'
+import { Collection } from '@audius/common/src/models'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import { Artwork } from '@audius/harmony/src/components/artwork/Artwork'
 import { IconButton } from '@audius/harmony/src/components/button/IconButton/IconButton'
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { TextLink } from '@audius/harmony/src/components/text-link'
 
-import { useSelector } from 'utils/reducer'
-
 type ServerTrackListProps = {
-  collectionId: ID
+  collection: Collection
 }
 
 export const ServerTrackList = (props: ServerTrackListProps) => {
-  const { collectionId } = props
-  const tracks = useSelector((state) =>
-    getCollectionTracks(state, { id: collectionId })
-  )
+  const { collection } = props
+  const { tracks } = collection
+
   if (!tracks) return null
 
   return (

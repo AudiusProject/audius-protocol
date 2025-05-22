@@ -1,6 +1,6 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
-import { addFundsModalReducer } from './add-funds-modal'
+import { addCashModalReducer } from './add-cash-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
 import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
@@ -15,6 +15,7 @@ import { downloadTrackArchiveModalReducer } from './download-track-archive-modal
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
+import { finalizeWinnersConfirmationModalReducer } from './finalize-winners-confirmation-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
 import { hostRemixContestModalReducer } from './host-remix-contest-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
@@ -58,7 +59,7 @@ const combinedReducers = combineReducers({
   WithdrawUSDCModal: withdrawUSDCModalReducer,
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
   USDCManualTransferModal: usdcManualTransferModalReducer,
-  AddFundsModal: addFundsModalReducer,
+  AddCashModal: addCashModalReducer,
   BuySellModal: buySellModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
@@ -80,7 +81,8 @@ const combinedReducers = combineReducers({
   Announcement: announcementModalReducer,
   Notification: notificationModalReducer,
   DownloadTrackArchive: downloadTrackArchiveModalReducer,
-  HostRemixContest: hostRemixContestModalReducer
+  HostRemixContest: hostRemixContestModalReducer,
+  FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer
 })
 
 /**

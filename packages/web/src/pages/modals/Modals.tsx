@@ -2,7 +2,7 @@ import { ComponentType, lazy } from 'react'
 
 import { Modals as ModalTypes } from '@audius/common/store'
 
-import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
+import { AddCashModal } from 'components/add-cash-modal/AddCashModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import { AlbumTrackRemoveConfirmationModal } from 'components/album-track-remove-confirmation-modal/AlbumTrackRemoveConfirmationModal'
@@ -25,6 +25,7 @@ import { EditAccessConfirmationModal } from 'components/edit-access-confirmation
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
+import { FinalizeWinnersConfirmationModal } from 'components/finalize-winners-confirmation-modal/FinalizeWinnersConfirmationModal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { HostRemixContestModal } from 'components/host-remix-contest-modal/HostRemixContestModal'
@@ -94,6 +95,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   ReplaceTrackProgress: ReplaceTrackProgressModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
+  FinalizeWinnersConfirmation: FinalizeWinnersConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   EditAccessConfirmation: EditAccessConfirmationModal,
@@ -125,7 +127,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  AddFundsModal,
+  AddCashModal,
   CoinflowWithdraw: CoinflowWithdrawModal,
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,

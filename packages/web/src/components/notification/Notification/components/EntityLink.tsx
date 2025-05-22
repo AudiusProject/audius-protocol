@@ -1,6 +1,11 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { Name, Collection, Track, User } from '@audius/common/models'
+import {
+  Name,
+  User,
+  TrackMetadata,
+  CollectionMetadata
+} from '@audius/common/models'
 import { Entity, useNotificationModal } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
@@ -12,7 +17,9 @@ import { getEntityLink } from '../utils'
 
 import styles from './EntityLink.module.css'
 
-type EntityType = (Collection | Track) & { user: Nullable<User> }
+type EntityType = (CollectionMetadata | TrackMetadata) & {
+  user: Nullable<User>
+}
 
 type EntityLinkProps = {
   entity: EntityType

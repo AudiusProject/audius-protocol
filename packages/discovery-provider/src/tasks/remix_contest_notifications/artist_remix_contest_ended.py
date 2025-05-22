@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from src.models.events.event import Event, EventType
 from src.models.notifications.notification import Notification
+from src.models.tracks.track import Track
 from src.utils.structured_logger import StructuredLogger
 
 ARTIST_REMIX_CONTEST_ENDED = "artist_remix_contest_ended"
@@ -33,6 +34,19 @@ def create_artist_remix_contest_ended_notifications(session, now=None):
     new_notifications = []
     for event in ended_contests:
         group_id = get_artist_remix_contest_ended_group_id(event.event_id)
+        parent_track = (
+            session.query(Track)
+            .filter(
+                Track.track_id == event.entity_id,
+                Track.is_current == True,
+                Track.is_delete == False,
+            )
+            .first()
+        )
+        # Don't create notifications for private tracks
+        if parent_track.is_unlisted:
+            continue
+
         exists = (
             session.query(Notification)
             .filter(

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
@@ -8,24 +8,26 @@ import { ModalLoading } from 'components/modal-loading'
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { SellTab } from './SellTab'
+import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 import { SUPPORTED_TOKEN_PAIRS } from './constants'
 import {
   useBuySellScreen,
   useBuySellSwap,
   useBuySellTabs,
-  useBuySellTransactionData
+  useBuySellTransactionData,
+  useSwapDisplayData
 } from './hooks'
-import { BuySellTab } from './types'
+import { BuySellTab, Screen } from './types'
 
 type BuySellFlowProps = {
   onClose: () => void
-  openAddFundsModal: () => void
-  onScreenChange: (screen: 'input' | 'confirm') => void
+  openAddCashModal: () => void
+  onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddFundsModal, onScreenChange, onLoadingStateChange } =
+  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
@@ -48,7 +50,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     handleShowConfirmation,
     handleConfirmSwap,
     isContinueButtonLoading,
-    isConfirmButtonLoading
+    isConfirmButtonLoading,
+    swapStatus,
+    swapResult
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -70,27 +74,18 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
-  const confirmationScreenData = useMemo(() => {
-    if (!transactionData) return null
-
-    const payInfo =
-      activeTab === 'buy' ? selectedPair.quoteToken : selectedPair.baseToken
-    const receiveInfo =
-      activeTab === 'buy' ? selectedPair.baseToken : selectedPair.quoteToken
-    const price =
-      activeTab === 'buy'
-        ? transactionData.inputAmount / transactionData.outputAmount
-        : transactionData.outputAmount / transactionData.inputAmount
-
-    return {
-      payTokenInfo: payInfo,
-      receiveTokenInfo: receiveInfo,
-      pricePerBaseToken: price,
-      baseTokenSymbol: selectedPair.baseToken.symbol,
-      payAmount: transactionData.inputAmount,
-      receiveAmount: transactionData.outputAmount
-    }
-  }, [activeTab, selectedPair, transactionData])
+  const {
+    successDisplayData,
+    resetSuccessDisplayData,
+    confirmationScreenData
+  } = useSwapDisplayData({
+    swapStatus,
+    currentScreen,
+    transactionData,
+    swapResult,
+    activeTab,
+    selectedPair
+  })
 
   const isContinueButtonDisabled =
     !transactionData?.isValid || isContinueButtonLoading
@@ -100,7 +95,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
       ? messages.insufficientAUDIOForSale
       : undefined
 
-  if (isConfirmButtonLoading) {
+  if (isConfirmButtonLoading && currentScreen !== 'success') {
     return <ModalLoading />
   }
 
@@ -144,7 +139,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
                 href='#'
                 onClick={() => {
                   onClose()
-                  openAddFundsModal()
+                  openAddCashModal()
                 }}
               >
                 {messages.addCash}
@@ -186,6 +181,23 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             onBack={() => setCurrentScreen('input')}
             onConfirm={handleConfirmSwap}
             isConfirming={isConfirmButtonLoading}
+          />
+        ) : null}
+      </Flex>
+
+      <Flex
+        direction='column'
+        style={{ display: currentScreen === 'success' ? 'flex' : 'none' }}
+      >
+        {currentScreen === 'success' && successDisplayData ? (
+          <TransactionSuccessScreen
+            {...successDisplayData}
+            onDone={() => {
+              onClose()
+              resetTransactionData()
+              resetSuccessDisplayData()
+              setCurrentScreen('input')
+            }}
           />
         ) : null}
       </Flex>

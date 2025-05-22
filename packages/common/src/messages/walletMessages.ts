@@ -2,7 +2,9 @@ export const walletMessages = {
   // CashWallet messages
   cashBalance: 'Cash Balance',
   withdraw: 'Withdraw',
-  addFunds: 'Add Cash',
+  addCash: 'Add Cash',
+  cryptoTransfer: 'Crypto Transfer',
+  poweredBy: 'Powered by',
   cashBalanceTooltip:
     'Your cash balance is stored as USDC in your built-in wallet',
   usdc: 'USDC',
