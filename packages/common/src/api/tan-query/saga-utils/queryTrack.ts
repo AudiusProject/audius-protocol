@@ -5,11 +5,13 @@ import { ID } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getSDK } from '~/store/sdkUtils'
-import { removeNullable } from '~/utils'
+import { removeNullable, Uid } from '~/utils'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
+
+import { queryCollection } from './queryCollection'
 
 export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
   if (!id) return null
@@ -57,4 +59,32 @@ export function* queryAllTracks() {
     },
     {} as Record<ID, TQTrack>
   )
+}
+
+export function* queryTrackByUid(
+  uid: string | null | undefined,
+  forceRetrieve = false
+) {
+  if (!uid) return null
+  const trackId = Number(Uid.fromString(uid).id)
+  return yield* queryTrack(trackId, forceRetrieve)
+}
+
+export function* queryCollectionTracks(
+  collectionId: ID | null | undefined,
+  forceRetrieve = false
+): Generator<any, Track[], any> {
+  if (!collectionId) return [] as Track[]
+
+  // Get collection data
+  const collection = yield* call(queryCollection, collectionId)
+  if (!collection) return [] as Track[]
+
+  // Extract track IDs from collection
+  const trackIds = collection.playlist_contents.track_ids.map(
+    ({ track }: { track: ID }) => track
+  )
+
+  // Query all tracks in parallel
+  return yield* call(queryTracks, trackIds, forceRetrieve)
 }

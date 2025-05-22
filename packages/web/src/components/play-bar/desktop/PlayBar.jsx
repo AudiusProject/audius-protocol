@@ -1,9 +1,9 @@
 import { Component } from 'react'
 
+import { useTracks } from '@audius/common/api'
 import { Name, RepostSource, PlaybackSource, Kind } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksSelectors,
   lineupSelectors,
   queueActions,
   queueSelectors,
@@ -55,14 +55,30 @@ const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
 const { getUserId } = accountSelectors
-const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200
 const RESTART_THRESHOLD_SEC = 3
 const SKIP_DURATION_SEC = 15
 
-class PlayBar extends Component {
+const PlayBar = (props) => {
+  const { trackIds } = props
+  const { data: tracks } = useTracks(trackIds)
+
+  const lineupHasAccessibleTracks = tracks?.some((track) => {
+    const { access, is_stream_gated: isStreamGated } = track ?? {}
+    return !isStreamGated || !!access?.stream
+  })
+
+  return (
+    <PlayBarClassComponent
+      {...props}
+      lineupHasAccessibleTracks={lineupHasAccessibleTracks}
+    />
+  )
+}
+
+class PlayBarClassComponent extends Component {
   constructor(props) {
     super(props)
 
@@ -457,16 +473,6 @@ const makeMapStateToProps = () => {
     // the track by pressing spacebar. This will prevent the track
     // from attempting to play in that case, and consequently avoiding the
     // infinite loading loop on the playbar.
-    const lineupHasAccessibleTracks = lineupEntries.some((entry) => {
-      if (entry.kind !== Kind.TRACKS) return false
-
-      const { id } = entry
-      const { access, is_stream_gated: isStreamGated } =
-        getTrack(state, { id }) ?? {}
-
-      return !isStreamGated || !!access?.stream
-    })
-
     return {
       seek: getSeek(state),
       accountUserId: getUserId(state),
@@ -477,7 +483,9 @@ const makeMapStateToProps = () => {
       isBuffering: getBuffering(state),
       playingUid: getPlayingUid(state),
       playbackRate: getPlaybackRate(state),
-      lineupHasAccessibleTracks,
+      trackIds: lineupEntries
+        .filter((entry) => entry.kind === Kind.TRACKS)
+        .map((entry) => entry.id),
       userId: getUserId(state),
       theme: getTheme(state)
     }

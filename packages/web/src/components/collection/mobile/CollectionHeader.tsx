@@ -1,17 +1,12 @@
 import { memo, useCallback } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCollection, useCollectionTracks } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
   useGatedContentAccess
 } from '@audius/common/hooks'
 import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
-import {
-  CommonState,
-  cacheCollectionsSelectors,
-  OverflowAction,
-  PurchaseableContentType
-} from '@audius/common/store'
+import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
 import { dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Box,
@@ -26,7 +21,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { pick } from 'lodash'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -45,8 +39,6 @@ import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
-
-const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
@@ -133,9 +125,7 @@ const CollectionHeader = ({
     permalink
   } = partialCollection ?? {}
 
-  const tracks = useSelector((state: CommonState) =>
-    getCollectionTracks(state, { id: collectionId })
-  )
+  const { data: tracks } = useCollectionTracks(collectionId)
   const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
     ({ hasStreamAccess }) => hasStreamAccess

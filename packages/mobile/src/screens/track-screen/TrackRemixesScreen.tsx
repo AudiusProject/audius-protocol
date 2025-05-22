@@ -1,19 +1,16 @@
 import {
   useCurrentUserId,
   useRemixContest,
+  useRemixersCount,
   useRemixes,
   useTrackByParams
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  remixesPageLineupActions as tracksActions,
-  remixesPageSelectors
-} from '@audius/common/store'
-import { dayjs, pluralize } from '@audius/common/utils'
+import { remixesPageLineupActions as tracksActions } from '@audius/common/store'
+import { pluralize, dayjs } from '@audius/common/utils'
 import { Text as RNText, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import {
   Button,
@@ -37,7 +34,6 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-const { getCount } = remixesPageSelectors
 const legacyMessages = {
   remix: 'Remix',
   of: 'of',
@@ -68,11 +64,12 @@ export const TrackRemixesScreen = () => {
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
   const trackId = track?.track_id
-  const count = useSelector(getCount)
+  const { data: count } = useRemixersCount({ trackId })
   const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
     useRemixes({
       trackId: track?.track_id,
-      includeOriginal: true
+      includeOriginal: true,
+      includeWinners: true
     })
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
@@ -87,11 +84,39 @@ export const TrackRemixesScreen = () => {
   const isTrackOwner = currentUserId === track?.owner_id
   const showPickWinnersButton =
     isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+  const winnerCount = contest?.eventData?.winners?.length ?? 0
 
   const styles = useStyles()
 
   const remixesText = pluralize(legacyMessages.remix, count, 'es', !count)
   const remixesCountText = `${count || ''} ${remixesText} ${legacyMessages.of}`
+
+  const winnersDelineator = (
+    <Flex ph='l' pt='xl'>
+      <Text variant='title'>{messages.winners}</Text>
+    </Flex>
+  )
+
+  const remixesDelineator = (
+    <Flex justifyContent='space-between' ph='l' pt='xl'>
+      {count ? (
+        <Text variant='title'>
+          {messages.remixesTitle}
+          {count !== undefined ? ` (${count})` : ''}
+        </Text>
+      ) : null}
+    </Flex>
+  )
+
+  const delineatorMap =
+    winnerCount > 0
+      ? {
+          0: winnersDelineator,
+          [winnerCount]: remixesDelineator
+        }
+      : {
+          0: remixesDelineator
+        }
 
   return (
     <Screen>
@@ -115,7 +140,9 @@ export const TrackRemixesScreen = () => {
                 <Text variant='title'>{messages.originalTrack}</Text>
                 {showPickWinnersButton ? (
                   <Button size='xs' onPress={openPickWinnersDrawer}>
-                    {messages.pickWinners}
+                    {winnerCount > 0
+                      ? messages.editWinners
+                      : messages.pickWinners}
                   </Button>
                 ) : null}
               </Flex>
@@ -129,16 +156,10 @@ export const TrackRemixesScreen = () => {
                 actions={tracksActions}
                 pageSize={pageSize}
                 hasMore={false}
-                leadingElementId={0}
-                leadingElementDelineator={
-                  <Flex justifyContent='space-between' ph='l' pt='xl'>
-                    {count ? (
-                      <Text variant='title'>
-                        {messages.remixesTitle}
-                        {count !== undefined ? ` (${count})` : ''}
-                      </Text>
-                    ) : null}
-                  </Flex>
+                delineatorMap={delineatorMap}
+                maxEntries={
+                  // remix count + winner count + original track
+                  count && winnerCount ? count + winnerCount + 1 : undefined
                 }
               />
             </ScrollView>

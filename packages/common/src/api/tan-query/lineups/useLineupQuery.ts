@@ -154,7 +154,7 @@ export const useLineupQuery = <T>({
   }, [
     dispatch,
     lineupActions,
-    lineupData.length,
+    lineupData,
     queryClient,
     lineup.prefix,
     reportToSentry

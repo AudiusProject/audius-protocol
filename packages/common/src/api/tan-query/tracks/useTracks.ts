@@ -46,8 +46,14 @@ export const useTracks = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
+  // Filter out duplicate IDs
+  const uniqueTrackIds = useMemo(
+    () => trackIds?.filter((id, index, self) => self.indexOf(id) === index),
+    [trackIds]
+  )
+
   const queryResults = useQueries({
-    queries: trackIds?.map((trackId) => ({
+    queries: uniqueTrackIds?.map((trackId) => ({
       queryKey: getTrackQueryKey(trackId),
       queryFn: async () => {
         const sdk = await audiusSdk()
@@ -70,7 +76,7 @@ export const useTracks = (
   const byId = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
 
   const isSavedToRedux = useSelector((state: CommonState) =>
-    trackIds?.every((trackId) => !!state.tracks.entries[trackId])
+    uniqueTrackIds?.every((trackId) => !!state.tracks.entries[trackId])
   )
 
   return {

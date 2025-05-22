@@ -1,13 +1,13 @@
-import { useCallback, useMemo, useRef, MouseEvent, useEffect } from 'react'
+import { MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { IconNotificationOn, NotificationCount } from '@audius/harmony'
+import { Flex, IconNotificationOn, NotificationCount } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useSearchParam, useToggle } from 'react-use'
 
-import { useRecord, make } from 'common/store/analytics/actions'
+import { make, useRecord } from 'common/store/analytics/actions'
 import { NotificationPanel } from 'components/notification'
 import { AnnouncementModal } from 'components/notification/AnnouncementModal'
 import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
@@ -67,18 +67,22 @@ export const NotificationsButton = () => {
         ref={buttonRef}
         icon={IconNotificationOn}
         aria-label={messages.label(notificationCount)}
-        onClick={handleToggleNotificationPanel}
         isActive={isNotificationPanelOpen}
       />
     )
     if (shouldShowCount) {
       return (
-        <NotificationCount size='m' count={notificationCount}>
-          {button}
-        </NotificationCount>
+        <Flex
+          css={{ cursor: 'pointer' }}
+          onClick={handleToggleNotificationPanel}
+        >
+          <NotificationCount size='m' count={notificationCount}>
+            {button}
+          </NotificationCount>
+        </Flex>
       )
     }
-    return button
+    return <Flex onClick={handleToggleNotificationPanel}>{button}</Flex>
   }, [
     notificationCount,
     handleToggleNotificationPanel,

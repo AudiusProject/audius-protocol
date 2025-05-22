@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntity } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import type {
   TrackEntity,
   TrendingUndergroundNotification as TrendingUndergroundNotificationType
 } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { IconTrending } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -20,7 +19,6 @@ import {
   NotificationTitle,
   NotificationTwitterButton
 } from '../Notification'
-const { getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: "You're Trending",
@@ -39,20 +37,18 @@ export const TrendingUndergroundNotification = (
 ) => {
   const { notification } = props
   const { rank } = notification
-  const track = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
+  const entity = useNotificationEntity(notification) as Nullable<TrackEntity>
   const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
-    if (track) {
+    if (entity) {
       navigation.navigate(notification)
     }
-  }, [navigation, notification, track])
+  }, [navigation, notification, entity])
 
-  if (!track) return null
+  if (!entity) return null
 
-  const shareText = messages.twitterShareText(track.title)
+  const shareText = messages.twitterShareText(entity.title)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -60,7 +56,7 @@ export const TrendingUndergroundNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        <EntityLink entity={track} /> {messages.is} #{rank} {messages.trending}
+        <EntityLink entity={entity} /> {messages.is} #{rank} {messages.trending}
       </NotificationText>
       <NotificationTwitterButton
         type='static'

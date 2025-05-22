@@ -1,9 +1,8 @@
-import { queryAccountUser } from '@audius/common/api'
+import { queryAccountUser, queryTracks } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
-  cacheTracksSelectors,
   profilePageFeedLineupActions as feedActions,
   profilePageSelectors,
   collectionsSocialActions,
@@ -22,7 +21,6 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
 const { getProfileUserId, getProfileFeedLineup } = profilePageSelectors
-const { getTracks } = cacheTracksSelectors
 const { getCollections } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 const { getConfirmCalls } = confirmerSelectors
@@ -54,7 +52,6 @@ function* getReposts({ offset, limit, handle }) {
         reposts.map((r) => r.playlist_id).filter(Boolean)
       )
 
-      const tracks = yield select(getTracks)
       const collections = yield select(getCollections)
 
       // For each confirming entry, check if it's a track or collection,
@@ -62,17 +59,12 @@ function* getReposts({ offset, limit, handle }) {
       // sure we're not already getting back that same track or collection from the
       // backend.
       // If we aren't, this is an unconfirmed repost, prepend it to the lineup.
+      const trackIds = []
       Object.keys(confirming).forEach((kindId) => {
         const kind = getKindFromKindId(kindId)
         const id = getIdFromKindId(kindId)
         if (kind === Kind.TRACKS) {
-          const track = tracks[id]?.metadata
-          if (
-            track.has_current_user_reposted &&
-            !repostTrackIds.has(track.track_id)
-          ) {
-            reposts = [track, ...reposts]
-          }
+          trackIds.push(id)
         } else if (kind === Kind.COLLECTIONS) {
           const collection = collections[id]?.metadata
           if (
@@ -81,6 +73,19 @@ function* getReposts({ offset, limit, handle }) {
           ) {
             reposts = [collection, ...reposts]
           }
+        }
+      })
+
+      // Query all tracks in parallel
+      const tracks = yield call(queryTracks, trackIds)
+
+      // Process track results
+      tracks.forEach((track) => {
+        if (
+          track?.has_current_user_reposted &&
+          !repostTrackIds.has(track.track_id)
+        ) {
+          reposts = [track, ...reposts]
         }
       })
     }

@@ -56,7 +56,8 @@ const RemixesPage = nullGuard(
       pageSize
     } = useRemixes({
       trackId: originalTrack?.track_id,
-      includeOriginal: true
+      includeOriginal: true,
+      includeWinners: true
     })
 
     const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
@@ -64,6 +65,7 @@ const RemixesPage = nullGuard(
     )
     const { data: contest } = useRemixContest(originalTrack?.track_id)
     const isRemixContest = isRemixContestEnabled && contest
+    const winnerCount = contest?.eventData?.winners?.length ?? 0
 
     const { setHeader } = useContext(HeaderContext)
     useEffect(() => {
@@ -96,6 +98,31 @@ const RemixesPage = nullGuard(
       isRemixContest
     ])
 
+    const winnersDelineator = (
+      <Flex justifyContent='space-between' gap='l' mb='xl'>
+        <Text variant='title'>{messages.winners}</Text>
+      </Flex>
+    )
+
+    const remixesDelineator = (
+      <Flex justifyContent='space-between' gap='l' mb='xl'>
+        <Text variant='title'>
+          {messages.remixesTitle}
+          {count !== undefined && count !== null ? ` (${count})` : ''}
+        </Text>
+      </Flex>
+    )
+
+    const delineatorMap =
+      winnerCount > 0
+        ? {
+            0: winnersDelineator,
+            [winnerCount]: remixesDelineator
+          }
+        : {
+            0: remixesDelineator
+          }
+
     return (
       <MobilePageContainer
         title={title}
@@ -117,14 +144,10 @@ const RemixesPage = nullGuard(
             lineup={lineup}
             actions={remixesPageLineupActions}
             pageSize={pageSize}
-            leadingElementId={0}
-            leadingElementDelineator={
-              <Flex justifyContent='space-between' gap='l' mb='xl'>
-                <Text variant='title'>
-                  {messages.remixesTitle}
-                  {count !== undefined ? ` (${count})` : ''}
-                </Text>
-              </Flex>
+            delineatorMap={delineatorMap}
+            maxEntries={
+              // remix count + winner count + original track
+              count && winnerCount ? count + winnerCount + 1 : undefined
             }
           />
         </Flex>

@@ -1,13 +1,10 @@
-import type { ID, TrackMetadata } from '@audius/common/models'
-import { cacheTracksSelectors } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import type { ID } from '@audius/common/models'
 
 import type { AppState } from 'app/store'
 
 import { DOWNLOAD_REASON_FAVORITES } from './constants'
 import type { CollectionId } from './slice'
 import { OfflineDownloadStatus } from './slice'
-const { getTrack } = cacheTracksSelectors
 
 export const getOfflineTrackStatus = (state: AppState) =>
   state.offlineDownloads.trackStatus
@@ -78,39 +75,6 @@ export const getOfflineTrackIds = (state: AppState) =>
       ([id, downloadStatus]) => downloadStatus === OfflineDownloadStatus.SUCCESS
     )
     .map(([id, downloadstatus]) => id)
-
-export const getOfflineTrack =
-  (trackId: ID) =>
-  (state: AppState): TrackMetadata | null => {
-    if (
-      getTrackOfflineDownloadStatus(trackId)(state) !==
-      OfflineDownloadStatus.SUCCESS
-    )
-      return null
-    const track = getTrack(state, { id: trackId })
-    if (!track) return null
-    const offlineMetadata = getTrackOfflineMetadata(trackId)(state)
-    return {
-      ...track,
-      offline: offlineMetadata || undefined
-    }
-  }
-
-export const getOfflineTracks = (state: AppState): TrackMetadata[] => {
-  const offlineTrackIds = getOfflineTrackIds(state)
-  return offlineTrackIds
-    .map((trackIdStr) => {
-      const trackId = parseInt(trackIdStr)
-      const track = getTrack(state, { id: trackId })
-      if (!track) return null
-      const offlineMetadata = getTrackOfflineMetadata(trackId)(state)
-      return {
-        ...track,
-        offline: offlineMetadata || undefined
-      }
-    })
-    .filter(removeNullable)
-}
 
 export const getPreferredDownloadNetworkType = (state: AppState) =>
   state.offlineDownloads.preferredDownloadNetworkType

@@ -34,8 +34,7 @@ const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 const { getWalletAddresses } = accountSelectors
 
-const USDCLearnMore =
-  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+const USDCLearnMore = 'https://support.audius.co/product/usdc'
 const DIMENSIONS = 160
 
 const messages = {
@@ -138,7 +137,7 @@ export const USDCManualTransfer = ({
               {messages.copy}
             </Button>
             {isMobile ? null : (
-              <Button variant='tertiary' fullWidth onClick={onClose}>
+              <Button variant='secondary' fullWidth onClick={onClose}>
                 {messages.close}
               </Button>
             )}

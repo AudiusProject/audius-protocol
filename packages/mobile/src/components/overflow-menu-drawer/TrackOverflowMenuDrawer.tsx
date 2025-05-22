@@ -45,7 +45,7 @@ import { setVisibility } from 'app/store/drawers/slice'
 
 import { useCommentDrawer } from '../comments/CommentDrawerContext'
 
-const { makeGetCurrent } = playerSelectors
+const { getUid } = playerSelectors
 const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -76,7 +76,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const currentQueueItem = useSelector(makeGetCurrent())
+  const uid = useSelector(getUid)
 
   const { open } = useCommentDrawer()
 
@@ -128,10 +128,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         entityId: track.track_id,
         navigation,
         actions: playerActions,
-        uid: currentQueueItem.uid as string
+        uid: uid as string
       })
     }
-  }, [currentQueueItem.uid, navigation, open, track?.track_id])
+  }, [uid, navigation, open, track?.track_id])
 
   const handleOpenRemixContestDrawer = useCallback(() => {
     if (track?.track_id) {

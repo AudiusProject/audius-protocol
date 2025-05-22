@@ -1,6 +1,7 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
 import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -18,6 +19,7 @@ import {
   UID,
   isContentUSDCPurchaseGated,
   ModalSource,
+  Track,
   AccountCollection
 } from '@audius/common/models'
 import {
@@ -141,8 +143,13 @@ type CollectionPageState = {
 
 type PlaylistTrack = { time: number; track: ID; uid?: UID }
 
-class CollectionPage extends Component<
-  CollectionPageProps,
+const CollectionPage = (props: CollectionPageProps) => {
+  const currentTrack = useCurrentTrack()
+  return <CollectionPageClassComponen {...props} currentTrack={currentTrack} />
+}
+
+class CollectionPageClassComponen extends Component<
+  CollectionPageProps & { currentTrack: Track | null },
   CollectionPageState
 > {
   state: CollectionPageState = {
@@ -417,8 +424,8 @@ class CollectionPage extends Component<
   }
 
   getPlayingId = () => {
-    const { currentQueueItem } = this.props
-    return currentQueueItem.track ? currentQueueItem.track.track_id : null
+    const { currentTrack } = this.props
+    return currentTrack?.track_id ?? null
   }
 
   formatMetadata = (

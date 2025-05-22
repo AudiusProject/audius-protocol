@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useNotificationEntities } from '@audius/common/api'
 import type { TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 
-import { IconStars } from '@audius/harmony-native'
+import { IconPlaylists } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
@@ -17,13 +16,13 @@ import {
   UserNameLink,
   NotificationProfilePicture
 } from '../Notification'
-const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
-  title: 'New Release',
-  released: ' released a new track ',
-  onAlbum: ' on the album you purchased, '
+  title: 'Track Added to Album',
+  addedTrack: ' added your track ',
+  toAlbum: ' to their album '
 }
+
 type TrackAddedToPurchasedAlbumNotificationProps = {
   notification: TrackAddedToPurchasedAlbumNotificationType
 }
@@ -33,22 +32,21 @@ export const TrackAddedToPurchasedAlbumNotification = (
 ) => {
   const { notification } = props
   const navigation = useNotificationNavigation()
-  const entities = useProxySelector(
-    (state) => getNotificationEntities(state, notification),
-    [notification]
-  )
+  const entities = useNotificationEntities(notification)
   const { track, playlist } = entities
-  const playlistOwner = playlist.user
+  const playlistOwner = playlist?.user
 
   const handlePress = useCallback(() => {
-    navigation.navigate(notification)
-  }, [navigation, notification])
+    if (playlist) {
+      navigation.navigate(notification)
+    }
+  }, [playlist, navigation, notification])
 
   if (!playlistOwner || !track || !playlist) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
-      <NotificationHeader icon={IconStars}>
+      <NotificationHeader icon={IconPlaylists}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -56,9 +54,9 @@ export const TrackAddedToPurchasedAlbumNotification = (
         <View style={{ flex: 1 }}>
           <NotificationText>
             <UserNameLink user={playlistOwner} />
-            {messages.released}
+            {messages.addedTrack}
             <EntityLink entity={track} />
-            {messages.onAlbum}
+            {messages.toAlbum}
             <EntityLink entity={playlist} />
           </NotificationText>
         </View>

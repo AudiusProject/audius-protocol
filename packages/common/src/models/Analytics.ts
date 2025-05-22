@@ -575,6 +575,13 @@ export enum Name {
   TRACK_REPLACE_PREVIEW = 'Track Replace: Preview',
   TRACK_REPLACE_REPLACE = 'Track Replace: Replace',
 
+  // Remix Contests
+  REMIX_CONTEST_CREATE = 'Remix Contest: Create',
+  REMIX_CONTEST_UPDATE = 'Remix Contest: Update',
+  REMIX_CONTEST_DELETE = 'Remix Contest: Delete',
+  REMIX_CONTEST_PICK_WINNERS_OPEN = 'Remix Contest: Pick Winners Open',
+  REMIX_CONTEST_PICK_WINNERS_FINALIZE = 'Remix Contest: Finalize Winners',
+
   // Android App Lifecycle
   ANDROID_APP_RESTART_HEARTBEAT = 'Android App: Restart Due to Heartbeat',
   ANDROID_APP_RESTART_STALE = 'Android App: Restart Due to Stale Time',
@@ -2753,6 +2760,35 @@ export type TrackReplacePreview = {
   source: 'upload' | 'edit'
 }
 
+export type RemixContestCreate = {
+  eventName: Name.REMIX_CONTEST_CREATE
+  trackId: ID
+}
+
+export type RemixContestUpdate = {
+  eventName: Name.REMIX_CONTEST_UPDATE
+  remixContestId: ID
+  trackId: ID
+}
+
+export type RemixContestDelete = {
+  eventName: Name.REMIX_CONTEST_DELETE
+  remixContestId: ID
+  trackId: ID
+}
+
+export type RemixContestPickWinnersOpen = {
+  eventName: Name.REMIX_CONTEST_PICK_WINNERS_OPEN
+  remixContestId: ID
+  trackId: ID
+}
+
+export type RemixContestPickWinnersFinalize = {
+  eventName: Name.REMIX_CONTEST_PICK_WINNERS_FINALIZE
+  remixContestId: ID
+  trackId: ID
+}
+
 export type AndroidAppRestartHeartbeat = {
   eventName: Name.ANDROID_APP_RESTART_HEARTBEAT
   timeSinceLastHeartbeat: number
@@ -3136,6 +3172,11 @@ export type AllTrackingEvents =
   | TrackReplaceDownload
   | TrackReplacePreview
   | TrackReplaceReplace
+  | RemixContestCreate
+  | RemixContestUpdate
+  | RemixContestDelete
+  | RemixContestPickWinnersOpen
+  | RemixContestPickWinnersFinalize
   | AndroidAppRestartHeartbeat
   | AndroidAppRestartStale
   | AndroidAppRestartForceQuit
