@@ -2,16 +2,17 @@ import { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import { useConnectedWallets } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
+import { buySellMessages } from '@audius/common/messages'
 import { Client, BNWei } from '@audius/common/models'
 import { StringKeys, FeatureFlags, Location } from '@audius/common/services'
 import {
   tokenDashboardPageActions,
   walletSelectors,
-  buyAudioActions,
   OnRampProvider,
-  useConnectedWalletsModal
+  useConnectedWalletsModal,
+  useBuySellModal
 } from '@audius/common/store'
-import { isNullOrUndefined, formatWei, route } from '@audius/common/utils'
+import { isNullOrUndefined, formatWei } from '@audius/common/utils'
 import {
   IconReceive,
   IconSend,
@@ -29,7 +30,6 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -40,18 +40,15 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
 import { getClient } from 'utils/clientUtil'
-import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
-const { TRENDING_PAGE } = route
 const { pressReceive, pressSend } = tokenDashboardPageActions
 const {
   getAccountBalance,
   getAccountTotalBalance,
   getTotalBalanceLoadDidFail
 } = walletSelectors
-const { startBuyAudioFlow } = buyAudioActions
 
 const messages = {
   receiveLabel: 'Receive',
@@ -123,30 +120,20 @@ const WalletActions = () => {
 }
 
 type OnRampTooltipButtonProps = {
-  provider: OnRampProvider
   isDisabled: boolean
   bannedState: string | boolean
 }
 
 const OnRampTooltipButton = ({
-  provider,
   isDisabled,
   bannedState
 }: OnRampTooltipButtonProps) => {
-  const dispatch = useDispatch()
-  const { history } = useHistoryContext()
+  const { onOpen: openBuySellModal } = useBuySellModal()
 
   const onClick = useCallback(() => {
-    dispatch(
-      startBuyAudioFlow({
-        provider,
-        onSuccess: {
-          action: pushUniqueRoute(history.location, TRENDING_PAGE),
-          message: messages.findArtists
-        }
-      })
-    )
-  }, [dispatch, provider, history])
+    openBuySellModal()
+  }, [openBuySellModal])
+
   const disabledText = messages.buyAudioNotSupported
   return (
     <Tooltip
@@ -163,7 +150,7 @@ const OnRampTooltipButton = ({
           fullWidth
           onClick={onClick}
         >
-          {messages.buyAudio}
+          {buySellMessages.buySell}
         </Button>
       </div>
     </Tooltip>
@@ -334,7 +321,6 @@ export const WalletManagementTile = () => {
         !isMobileWeb() &&
         onRampProviders[primaryProvider].isEnabled ? (
           <OnRampTooltipButton
-            provider={primaryProvider}
             isDisabled={!isAnyProviderAllowed}
             bannedState={onRampProviders[primaryProvider].bannedState}
           />
