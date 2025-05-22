@@ -138,7 +138,7 @@ export const USDCManualTransfer = ({
               {messages.copy}
             </Button>
             {isMobile ? null : (
-              <Button variant='tertiary' fullWidth onClick={onClose}>
+              <Button variant='secondary' fullWidth onClick={onClose}>
                 {messages.close}
               </Button>
             )}
