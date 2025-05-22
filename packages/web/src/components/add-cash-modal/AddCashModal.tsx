@@ -99,7 +99,7 @@ export const AddCashModal = () => {
           title={
             page === 'add-cash'
               ? walletMessages.addCash
-              : walletMessages.cryptoTransfer
+              : walletMessages.usdcTransfer
           }
         />
       </ModalHeader>
