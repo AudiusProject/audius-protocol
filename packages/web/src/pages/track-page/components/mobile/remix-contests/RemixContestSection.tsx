@@ -95,6 +95,7 @@ export const RemixContestSection = ({
 
   const { tabs: TabBar, body: TabBody } = useTabs({
     tabs,
+    initialTab: hasWinners ? 'winners' : undefined,
     elements,
     isMobile: false,
     isMobileV2: true
