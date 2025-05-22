@@ -221,7 +221,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ph='unit15'
         gap='3xl'
         alignItems='stretch'
-        w={isLarge ? '100%' : 1200}
+        css={{
+          minWidth: isLarge ? '100%' : 1200,
+          maxWidth: isLarge ? '100%' : 1200
+        }}
       >
         {/* Header Section */}
         <Paper
@@ -386,6 +389,17 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 gap='l'
                 direction={isLarge ? 'column' : 'row'}
                 justifyContent='space-between'
+                css={
+                  !isLarge
+                    ? {
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateRows: '1fr 1fr',
+                        gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
+                        width: '100%'
+                      }
+                    : undefined
+                }
               >
                 {justForYouTiles.map((tile) => {
                   const Icon = tile.icon
@@ -406,7 +420,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       isIncentivized={!!tile.incentivized}
                       sensitivity={tile.cardSensitivity}
                     >
-                      <Flex w={isLarge ? '100%' : 532} h={200}>
+                      <Flex w={'100%'} h={200}>
                         <TextInterior
                           title={tile.title}
                           subtitle={tile.subtitle}

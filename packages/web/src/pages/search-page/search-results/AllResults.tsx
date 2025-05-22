@@ -63,7 +63,7 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.profiles}
             </Text>
-            <PlainButton size='large'>
+            <PlainButton size='large' asChild>
               <Link to={`/search/profiles?query=${query}`}>
                 {messages.showAll}
               </Link>
@@ -85,7 +85,7 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.tracks}
             </Text>
-            <PlainButton size='large'>
+            <PlainButton size='large' asChild>
               <Link to={`/search/tracks?query=${query}`}>
                 {messages.showAll}
               </Link>
@@ -108,7 +108,7 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.albums}
             </Text>
-            <PlainButton size='large'>
+            <PlainButton size='large' asChild>
               <Link to={`/search/albums?query=${query}`}>
                 {messages.showAll}
               </Link>
@@ -130,7 +130,7 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.playlists}
             </Text>
-            <PlainButton size='large'>
+            <PlainButton size='large' asChild>
               <Link to={`/search/playlists?query=${query}`}>
                 {messages.showAll}
               </Link>
