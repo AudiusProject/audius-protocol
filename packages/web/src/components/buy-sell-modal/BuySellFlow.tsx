@@ -128,7 +128,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     isTransactionInvalid
   ])
 
-  const shouldShowError = !!displayErrorMessage
+  const shouldShowError =
+    !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
 
   if (isConfirmButtonLoading && currentScreen !== 'success') {
     return <ModalLoading />
