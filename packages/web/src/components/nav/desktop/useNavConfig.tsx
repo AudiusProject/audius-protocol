@@ -10,7 +10,6 @@ import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
   IconCloudUpload,
-  IconExplore,
   IconFeed,
   IconGift,
   IconLibrary,
