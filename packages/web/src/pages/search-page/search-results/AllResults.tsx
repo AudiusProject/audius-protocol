@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import { useSearchAllResults } from '@audius/common/api'
 import { SearchKind } from '@audius/common/store'
 import { Flex, PlainButton, Text } from '@audius/harmony'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router-dom-v5-compat'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -31,7 +31,6 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
   const { query, ...filters } = useSearchParams()
-  const navigate = useNavigate()
 
   const queryData = useSearchAllResults({
     query,
@@ -64,15 +63,10 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.profiles}
             </Text>
-            <PlainButton
-              onClick={() => {
-                navigate(`/search/profiles?query=${query}`)
-                handleSearchTab?.('Profiles')
-              }}
-            >
-              <Text strength='strong' size='l'>
+            <PlainButton size='large'>
+              <Link to={`/search/profiles?query=${query}`}>
                 {messages.showAll}
-              </Text>
+              </Link>
             </PlainButton>
           </Flex>
           <ProfileResultsTiles
@@ -91,12 +85,10 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.tracks}
             </Text>
-            <PlainButton
-              onClick={() => navigate(`/search/tracks?query=${query}`)}
-            >
-              <Text strength='strong' size='l'>
+            <PlainButton size='large'>
+              <Link to={`/search/tracks?query=${query}`}>
                 {messages.showAll}
-              </Text>
+              </Link>
             </PlainButton>
           </Flex>
           <TrackResults
@@ -116,12 +108,10 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.albums}
             </Text>
-            <PlainButton
-              onClick={() => navigate(`/search/albums?query=${query}`)}
-            >
-              <Text strength='strong' size='l'>
+            <PlainButton size='large'>
+              <Link to={`/search/albums?query=${query}`}>
                 {messages.showAll}
-              </Text>
+              </Link>
             </PlainButton>
           </Flex>
           <AlbumResults
@@ -140,12 +130,10 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             <Text variant='heading' textAlign='left'>
               {messages.playlists}
             </Text>
-            <PlainButton
-              onClick={() => navigate(`/search/playlists?query=${query}`)}
-            >
-              <Text strength='strong' size='l'>
+            <PlainButton size='large'>
+              <Link to={`/search/playlists?query=${query}`}>
                 {messages.showAll}
-              </Text>
+              </Link>
             </PlainButton>
           </Flex>
           <PlaylistResults
