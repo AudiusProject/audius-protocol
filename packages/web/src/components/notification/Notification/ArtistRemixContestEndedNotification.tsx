@@ -1,9 +1,12 @@
 import { useCallback } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useNotificationEntity } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { ArtistRemixContestEndedNotification as ArtistRemixContestEndedNotificationType } from '@audius/common/store'
+import {
+  ArtistRemixContestEndedNotification as ArtistRemixContestEndedNotificationType,
+  TrackEntity
+} from '@audius/common/store'
 import { Button, Flex, IconTrophy } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -16,6 +19,7 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
+import { getEntityLink } from './utils'
 
 const messages = {
   title: 'Your Remix Contest Ended',
@@ -33,29 +37,23 @@ export const ArtistRemixContestEndedNotification = (
   props: ArtistRemixContestEndedNotificationProps
 ) => {
   const { notification } = props
-  const { timeLabel, isViewed, entityId } = notification
+  const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
 
-  const { data: track } = useTrack(entityId)
+  const entity = useNotificationEntity(notification) as TrackEntity | null
 
-  const pickWinnersRoute = track ? pickWinnersPage(track?.permalink) : ''
+  const pickWinnersRoute = entity ? pickWinnersPage(entity?.permalink) : ''
 
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(
-        push(
-          isRemixContestWinnersMilestoneEnabled
-            ? pickWinnersRoute
-            : track.permalink
-        )
-      )
+    if (entity) {
+      dispatch(push(getEntityLink(entity)))
     }
-  }, [track, dispatch, isRemixContestWinnersMilestoneEnabled, pickWinnersRoute])
+  }, [entity, dispatch])
 
-  if (!track) return null
+  if (!entity) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

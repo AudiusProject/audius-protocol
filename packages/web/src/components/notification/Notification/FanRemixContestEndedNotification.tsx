@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useTrack, useUser } from '@audius/common/api'
+import { useNotificationEntity } from '@audius/common/api'
 import {
   FanRemixContestEndedNotification as FanRemixContestEndedNotificationType,
   TrackEntity
@@ -17,6 +17,7 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TrackContent } from './components/TrackContent'
 import { UserNameLink } from './components/UserNameLink'
+import { getEntityLink } from './utils'
 
 const messages = {
   title: 'Remix Contest',
@@ -32,19 +33,18 @@ export const FanRemixContestEndedNotification = (
   props: FanRemixContestEndedNotificationProps
 ) => {
   const { notification } = props
-  const { timeLabel, isViewed, entityId, entityUserId } = notification
+  const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
 
-  const { data: user } = useUser(entityUserId)
-  const { data: track } = useTrack(entityId)
+  const entity = useNotificationEntity(notification) as TrackEntity | null
 
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(push(track.permalink))
+    if (entity) {
+      dispatch(push(getEntityLink(entity)))
     }
-  }, [track, dispatch])
+  }, [entity, dispatch])
 
-  if (!user || !track) return null
+  if (!entity || !entity.user) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -52,9 +52,9 @@ export const FanRemixContestEndedNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <Flex alignItems='flex-start'>
-        <TrackContent track={track as TrackEntity} hideTitle />
+        <TrackContent track={entity} hideTitle />
         <NotificationBody>
-          <UserNameLink user={user} notification={notification} />{' '}
+          <UserNameLink user={entity.user} notification={notification} />{' '}
           {messages.description}
         </NotificationBody>
       </Flex>

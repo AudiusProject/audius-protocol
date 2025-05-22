@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntity } from '@audius/common/api'
 import { StringUSDC } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -28,7 +29,7 @@ import { UserNameLink } from './components/UserNameLink'
 import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
 
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
@@ -51,9 +52,9 @@ export const USDCPurchaseSellerNotification = (
   const { notification } = props
   const { entityType } = notification
   const dispatch = useDispatch()
-  const content = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity | CollectionEntity>
+  const content = useNotificationEntity(notification) as Nullable<
+    TrackEntity | CollectionEntity
+  >
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )
