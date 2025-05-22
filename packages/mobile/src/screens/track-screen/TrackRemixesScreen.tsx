@@ -140,7 +140,9 @@ export const TrackRemixesScreen = () => {
                 <Text variant='title'>{messages.originalTrack}</Text>
                 {showPickWinnersButton ? (
                   <Button size='xs' onPress={openPickWinnersDrawer}>
-                    {messages.pickWinners}
+                    {winnerCount > 0
+                      ? messages.editWinners
+                      : messages.pickWinners}
                   </Button>
                 ) : null}
               </Flex>
