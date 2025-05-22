@@ -20,7 +20,7 @@ const messages = {
   max: 'MAX',
   amountInputLabel: (symbol: string) => `Amount (${symbol})`,
   tokenPrice: (price: string, decimalPlaces: number) => {
-    return USDC(price).toLocaleString('en-US', {
+    return USDC(price.replace(/,/g, '')).toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: decimalPlaces
     })

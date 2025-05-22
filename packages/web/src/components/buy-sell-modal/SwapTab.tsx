@@ -20,12 +20,6 @@ const TokenSectionSkeleton = ({ title }: { title: string }) => (
   </Flex>
 )
 
-const ExchangeRateSkeleton = () => (
-  <Flex justifyContent='center' p='s'>
-    <Skeleton w='unit30' h='xl' />
-  </Flex>
-)
-
 const SwapFormSkeleton = () => (
   <Flex direction='column' gap='l'>
     <TokenSectionSkeleton title='input' />
@@ -74,7 +68,6 @@ export const SwapTab = ({
   const {
     formik,
     inputAmount,
-    numericInputAmount,
     outputAmount,
     isExchangeRateLoading,
     isBalanceLoading,
@@ -138,10 +131,6 @@ export const SwapTab = ({
               />
             </>
           )}
-
-          {isExchangeRateLoading &&
-            numericInputAmount > 0 &&
-            !isInitialLoading && <ExchangeRateSkeleton />}
         </Flex>
       </Form>
     </FormikProvider>

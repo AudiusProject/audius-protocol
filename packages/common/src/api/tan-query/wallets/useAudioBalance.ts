@@ -8,6 +8,8 @@ import {
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
+import { Feature } from '~/models/ErrorReporting'
+import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
@@ -64,11 +66,18 @@ const fetchWalletAudioBalance = async (
 
     return AUDIO(balance + delegatedBalance + stakedBalance).value
   } else {
-    const wAudioSolBalance = await audiusBackend.getAddressWAudioBalance({
-      address,
-      sdk
-    })
-    return AUDIO(wAUDIO(BigInt(wAudioSolBalance.toString()))).value
+    try {
+      const wAudioSolBalance = await audiusBackend.getAddressWAudioBalance({
+        address,
+        sdk
+      })
+
+      return AUDIO(wAUDIO(BigInt(wAudioSolBalance.toString()))).value
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch Solana AUDIO balance: ${toErrorWithMessage(error).message}`
+      )
+    }
   }
 }
 
@@ -79,16 +88,26 @@ export const useWalletAudioBalance = (
   { address, includeStaked, chain }: UseWalletAudioBalanceParams,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, audiusBackend } = useQueryContext()
+  const { audiusSdk, audiusBackend, reportToSentry } = useQueryContext()
 
   return useQuery({
     queryKey: getWalletAudioBalanceQueryKey({ address, includeStaked, chain }),
     queryFn: async () => {
-      const sdk = await audiusSdk()
-      return await fetchWalletAudioBalance(
-        { sdk, audiusBackend },
-        { address, includeStaked, chain }
-      )
+      try {
+        const sdk = await audiusSdk()
+        return await fetchWalletAudioBalance(
+          { sdk, audiusBackend },
+          { address, includeStaked, chain }
+        )
+      } catch (error) {
+        reportToSentry({
+          error: toErrorWithMessage(error),
+          name: 'AudioBalanceFetchError',
+          feature: Feature.TanQuery,
+          additionalInfo: { address, chain, includeStaked }
+        })
+        throw error
+      }
     },
     ...options
   })
@@ -106,7 +125,7 @@ export const useWalletAudioBalances = (
   params: UseAudioBalancesParams,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, audiusBackend } = useQueryContext()
+  const { audiusSdk, audiusBackend, reportToSentry } = useQueryContext()
   return useQueries({
     queries: params.wallets.map(({ address, chain }) => ({
       queryKey: getWalletAudioBalanceQueryKey({
@@ -115,15 +134,25 @@ export const useWalletAudioBalances = (
         includeStaked: true
       }),
       queryFn: async () => {
-        const sdk = await audiusSdk()
-        return await fetchWalletAudioBalance(
-          { sdk, audiusBackend },
-          {
-            address,
-            chain,
-            includeStaked: true
-          }
-        )
+        try {
+          const sdk = await audiusSdk()
+          return await fetchWalletAudioBalance(
+            { sdk, audiusBackend },
+            {
+              address,
+              chain,
+              includeStaked: true
+            }
+          )
+        } catch (error) {
+          reportToSentry({
+            error: toErrorWithMessage(error),
+            name: 'AudioBalancesFetchError',
+            feature: Feature.TanQuery,
+            additionalInfo: { address, chain }
+          })
+          throw error
+        }
       },
       ...options
     }))

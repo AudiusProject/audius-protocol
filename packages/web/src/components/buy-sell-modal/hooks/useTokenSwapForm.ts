@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useTokenExchangeRate } from '@audius/common/src/api'
 import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
@@ -107,18 +107,29 @@ export const useTokenSwapForm = ({
     inputAmount: numericInputAmount > 0 ? numericInputAmount : 1
   })
 
+  // Create ref to store the last valid output amount
+  const lastValidOutputAmountRef = useRef(0)
+
   // Calculate the output amount based on the exchange rate
   const outputAmount = useMemo(() => {
     if (numericInputAmount <= 0) return 0
-    if (isExchangeRateLoading || !exchangeRateData) return 0
 
-    return exchangeRateData.rate * numericInputAmount
+    // Only calculate new amount if we have data and not loading
+    if (!isExchangeRateLoading && exchangeRateData) {
+      const newAmount = exchangeRateData.rate * numericInputAmount
+      // Store the new valid amount
+      lastValidOutputAmountRef.current = newAmount
+      return newAmount
+    }
+
+    // During loading, return the last valid amount (if input is the same or similar)
+    // Only use cached value if we've calculated something before
+    return lastValidOutputAmountRef.current
   }, [numericInputAmount, exchangeRateData, isExchangeRateLoading])
 
   useEffect(() => {
     if (onTransactionDataChange) {
-      const isValid =
-        numericInputAmount > 0 && !errors.inputAmount && !isExchangeRateLoading
+      const isValid = numericInputAmount > 0 && !errors.inputAmount
 
       onTransactionDataChange({
         inputAmount: numericInputAmount,
