@@ -18,7 +18,8 @@ import {
   queryCollection,
   queryTrack,
   getUserCollectiblesQueryKey,
-  queryAllTracks
+  queryAllTracks,
+  queryAccountUser
 } from '~/api'
 import {
   Chain,
@@ -36,7 +37,6 @@ import {
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
-import { accountSelectors } from '~/store/account'
 import { cacheActions } from '~/store/cache'
 import { collectiblesActions } from '~/store/collectibles'
 import { getContext } from '~/store/effects'
@@ -72,8 +72,6 @@ const { updateUserEthCollectibles, updateUserSolCollectibles } =
 
 const { getNftAccessSignatureMap, getFolloweeIds, getTippedUserIds } =
   gatedContentSelectors
-
-const { getAccountUser, getUserId } = accountSelectors
 
 function* hasNotFetchedAllCollectibles(account: User) {
   const { collectibleList, solanaCollectibleList } = account
@@ -198,7 +196,8 @@ function* getTokenIdMap({
 // This happens in rare race conditions where gated tracks are being loaded
 // from an artist and the logged in user just very recently unlocked the tracks.
 function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
-  const currentUserId = yield* select(getUserId)
+  const currentUser = yield* call(queryAccountUser)
+  const currentUserId = currentUser?.user_id
   if (!currentUserId) return
 
   const followeeIds = yield* select(getFolloweeIds)
@@ -266,7 +265,7 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
 // Request gated content signatures for the relevant nft-gated tracks
 // which the client believes the user should have access to.
 function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   if (!account) return
 
   const sdk = yield* getSDK()
@@ -362,7 +361,7 @@ function* updateGatedContentAccess(
     | ReturnType<typeof updateUserSolCollectibles>
     | ReturnType<typeof cacheActions.addSucceeded>
 ) {
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
 
   // Halt if nfts fetched are not for logged in account
   const areCollectiblesFetched = [
@@ -599,7 +598,8 @@ function* updateSpecialAccessTracks(
   gate: 'follow' | 'tip',
   sourceTrackId?: Nullable<ID>
 ) {
-  const currentUserId = yield* select(getUserId)
+  const currentUser = yield* call(queryAccountUser)
+  const currentUserId = currentUser?.user_id
   if (!currentUserId) return
 
   // Add followee or tipped user id to gated content store to subscribe to

@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   accountSelectors,
@@ -18,7 +19,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { afterDeactivationSignOut, deactivateAccount, deactivateAccountFailed } =
   deactivateAccountActions
 const { signOut } = signOutActions
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 const { requestConfirmation } = confirmerActions
 const { getConfirmCalls } = confirmerSelectors
 
@@ -31,7 +32,7 @@ function* handleDeactivateAccount() {
     yield* waitForWrite()
 
     const accountUserId = yield* select(getUserId)
-    const userMetadata = yield* select(getAccountUser)
+    const userMetadata = yield* call(queryAccountUser)
     if (!accountUserId || !userMetadata) return
     yield* put(
       requestConfirmation(

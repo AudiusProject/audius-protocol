@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { SolanaWalletAddress } from '@audius/common/models'
-import { accountSelectors, profilePageActions } from '@audius/common/store'
+import { profilePageActions } from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -42,8 +43,6 @@ import {
   isValidSolAddress
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
-
-const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Payout Wallet',
@@ -173,7 +172,7 @@ const PayoutWalletModalForm = ({
 
 export const PayoutWalletModal = () => {
   const [isOpen, setIsOpen] = useModalState('PayoutWallet')
-  const user = useSelector(getAccountUser)
+  const { data: user } = useCurrentAccountUser()
   const dispatch = useDispatch()
   const [isSubmitting, setIsSubmitting] = useState(false)
 

@@ -24,7 +24,7 @@ import { cacheActions } from '../cache'
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
-import { getUserId, getAccountUser, getAccount } from './selectors'
+import { getUserId, getAccount } from './selectors'
 import {
   fetchAccount,
   fetchAccountFailed,
@@ -443,7 +443,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
       handle
     )
 
-    const account = yield* select(getAccountUser)
+    const account = yield* call(queryAccountUser)
     const { verified } = profile
     if (account && !account.is_verified && verified) {
       yield* put(
@@ -494,7 +494,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
       handle
     )
 
-    const account = yield* select(getAccountUser)
+    const account = yield* call(queryAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
       yield* put(
@@ -545,7 +545,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
       handle
     )
 
-    const account = yield* select(getAccountUser)
+    const account = yield* call(queryAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
       yield* put(

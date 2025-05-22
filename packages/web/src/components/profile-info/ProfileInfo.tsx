@@ -8,7 +8,7 @@ import { useProfilePicture } from 'hooks/useProfilePicture'
 import styles from './ProfileInfo.module.css'
 
 type ProfileInfoProps = {
-  user: Nullable<User>
+  user: Nullable<User> | undefined
   className?: string
   imgClassName?: string
   centered?: boolean

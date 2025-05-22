@@ -14,7 +14,7 @@ import { useRoute } from 'app/hooks/useRoute'
 
 const { getProfileUser, getProfileStatus, makeGetProfile, getProfileUserId } =
   profilePageSelectors
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 /*
  * Selects profile user and ensures rerenders occur only for changes specified in deps

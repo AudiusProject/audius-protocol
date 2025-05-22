@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import {
   Name,
   ErrorLevel,
@@ -48,7 +49,6 @@ const {
   inputSendData
 } = tokenDashboardPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
-const getAccountUser = accountSelectors.getAccountUser
 
 // TODO: handle errors
 const errors = {
@@ -75,7 +75,7 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
 
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
@@ -186,7 +186,7 @@ function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
 
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   if (!account || !account.wallet) return
 
   try {

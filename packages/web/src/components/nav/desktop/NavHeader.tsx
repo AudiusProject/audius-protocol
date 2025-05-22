@@ -1,5 +1,6 @@
 import { MouseEvent, ReactNode } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -17,7 +18,7 @@ import { NavHeaderButton } from './NavHeaderButton'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE, SETTINGS_PAGE, DASHBOARD_PAGE } = route
-const { getHasAccount, getIsAccountComplete, getAccountUser } = accountSelectors
+const { getHasAccount, getIsAccountComplete } = accountSelectors
 
 const messages = {
   homeLink: 'Go to Home',
@@ -68,7 +69,9 @@ const RestrictedLink = ({
 }
 
 export const NavHeader = () => {
-  const accountUser = useSelector(getAccountUser)
+  const { data: trackCount } = useCurrentAccountUser({
+    select: (user) => user?.track_count
+  })
 
   return (
     <Flex
@@ -84,7 +87,7 @@ export const NavHeader = () => {
         <IconAudiusLogoHorizontalNew color='subdued' size='m' width='auto' />
       </Link>
       <Flex justifyContent='center' alignItems='center'>
-        {accountUser?.track_count ? (
+        {trackCount ? (
           <RestrictedLink to={DASHBOARD_PAGE} restriction='account'>
             <NavHeaderButton
               icon={IconDashboard}

@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
@@ -13,7 +14,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
 
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -68,7 +69,7 @@ function* watchSetAiAttribution() {
     actions.SET_AI_ATTRIBUTION,
     function* (action: actions.SetAiAttribution) {
       const { allowAiAttribution } = action
-      const accountUser = yield* select(getAccountUser)
+      const accountUser = yield* call(queryAccountUser)
       if (!accountUser) return
       if (accountUser.allow_ai_attribution === allowAiAttribution) return
 

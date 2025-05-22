@@ -2,7 +2,8 @@ import {
   getSupportedUsersQueryKey,
   getSupporterQueryKey,
   getSupportersQueryKey,
-  getUserQueryKey
+  getUserQueryKey,
+  queryAccountUser
 } from '@audius/common/api'
 import { Name, BNWei, SolanaWalletAddress } from '@audius/common/models'
 import {
@@ -41,7 +42,7 @@ const {
 } = tippingActions
 const { getSendTipData } = tippingSelectors
 
-const { getAccountUser, getWalletAddresses } = accountSelectors
+const { getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
 
 /**
@@ -126,7 +127,7 @@ function* sendTipAsync() {
   const sdk = yield* call(audiusSdk)
   const isNativeMobile = yield* getContext('isNativeMobile')
 
-  const sender = yield* select(getAccountUser)
+  const sender = yield* call(queryAccountUser)
   const {
     trackId,
     user: receiver,

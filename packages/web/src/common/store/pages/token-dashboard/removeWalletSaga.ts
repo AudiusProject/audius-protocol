@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import {
   accountSelectors,
   tokenDashboardPageActions,
@@ -18,7 +19,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
 
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const {
   confirmRemoveWallet,
   updateWalletError,
@@ -62,7 +63,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     yield* put(getBalance())
     yield* put(removeWalletAction({ wallet: removeWallet, chain: removeChain }))
 
-    const user = yield* select(getAccountUser)
+    const user = yield* call(queryAccountUser)
 
     yield* fork(fetchSolanaCollectibles, user)
     yield* fork(fetchEthereumCollectibles, user)

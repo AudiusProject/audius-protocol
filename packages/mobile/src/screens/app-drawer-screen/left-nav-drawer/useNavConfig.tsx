@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import {
   useAccountHasClaimableRewards,
   useChallengeCooldownSchedule,
@@ -9,9 +10,9 @@ import {
   useUSDCBalance
 } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
-import type { BNUSDC, User } from '@audius/common/models'
+import type { BNUSDC } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
@@ -43,7 +44,6 @@ import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { make } from 'app/services/analytics'
 import { env } from 'app/services/env'
 
-const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages, getUnreadMessagesCount } = chatSelectors
 
 const messages = {
@@ -83,8 +83,9 @@ export const useNavConfig = () => {
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
   })
-  const accountUser = useSelector(getAccountUser)
-  const { user_id } = accountUser ?? ({} as User)
+  const { data: user_id } = useCurrentAccountUser({
+    select: (user) => user?.user_id
+  })
   const { tier } = useSelectTierInfo(user_id)
   const audioBalance = useTotalBalanceWithFallback()
   const audioBalanceFormatted = audioBalance

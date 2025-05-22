@@ -7,7 +7,12 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { getStemsQueryKey, queryTracks, queryUser } from '@audius/common/api'
+import {
+  getStemsQueryKey,
+  queryAccountUser,
+  queryTracks,
+  queryUser
+} from '@audius/common/api'
 import {
   Collection,
   Feature,
@@ -87,7 +92,7 @@ import {
 } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
@@ -1114,7 +1119,7 @@ export function* uploadMultipleTracks(
   }
 
   // Make sure track count changes for this user
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   yield* call(adjustUserField, {
     user: account!,
     fieldName: 'track_count',

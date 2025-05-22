@@ -1,4 +1,4 @@
-import { queryTracks } from '@audius/common/api'
+import { queryAccountUser, queryTracks } from '@audius/common/api'
 import { Feature, StemUploadWithFile } from '@audius/common/models'
 import {
   TrackForUpload,
@@ -106,7 +106,7 @@ describe('upload', () => {
         )
         .provide([
           [call.fn(waitForWrite), undefined],
-          [select(accountSelectors.getAccountUser), {}],
+          [call.fn(queryAccountUser), {}],
           [select(accountSelectors.getUserId), 12345],
           [call.fn(uploadMultipleTracks), undefined],
           [call.fn(addPremiumMetadata), testTrack],
@@ -156,7 +156,7 @@ describe('upload', () => {
         )
         .provide([
           [call.fn(waitForWrite), undefined],
-          [select(accountSelectors.getAccountUser), {}],
+          [call.fn(queryAccountUser), {}],
           [select(accountSelectors.getUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
@@ -262,7 +262,7 @@ describe('upload', () => {
       expectSaga(handleUploads, { tracks: [testTrack], kind: 'tracks' })
         .provide([
           [call.fn(waitForWrite), undefined],
-          [select(accountSelectors.getAccountUser), {}],
+          [call.fn(queryAccountUser), {}],
           [select(accountSelectors.getUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [

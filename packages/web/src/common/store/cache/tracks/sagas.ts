@@ -54,7 +54,7 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUser } = cacheUsersSelectors
 
@@ -315,7 +315,7 @@ function* deleteTrackAsync(
   action: ReturnType<typeof trackActions.deleteTrack>
 ) {
   yield* waitForWrite()
-  const user = yield* select(getAccountUser)
+  const user = yield* call(queryAccountUser)
   if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return

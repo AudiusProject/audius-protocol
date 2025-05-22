@@ -7,17 +7,15 @@ import {
   USDCPurchaseConditions
 } from '@audius/common/models'
 import {
-  accountSelectors,
   getOrCreateUSDCUserBank,
   TrackForUpload,
   TrackMetadataForUpload
 } from '@audius/common/store'
 import { BN_USDC_CENT_WEI } from '@audius/common/utils'
 import BN from 'bn.js'
-import { all, call, put, select } from 'typed-redux-saga'
+import { all, call, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-const { getAccountUser } = accountSelectors
 
 /** Records gated track uploads. */
 export function* recordGatedTracks(
@@ -99,7 +97,7 @@ export function* recordGatedTracks(
 }
 
 export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
-  const ownerAccount = yield* select(getAccountUser)
+  const ownerAccount = yield* call(queryAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
   const ownerUserbank = yield* call(getOrCreateUSDCUserBank, wallet)
   const priceCents = stream_conditions.usdc_purchase.price

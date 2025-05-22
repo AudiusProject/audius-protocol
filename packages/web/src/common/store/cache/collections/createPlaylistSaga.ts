@@ -2,7 +2,12 @@ import {
   playlistMetadataForCreateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryTrack,
+  queryUser
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -37,7 +42,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { addLocalCollection } = savedPageActions
 
 const { requestConfirmation } = confirmerActions
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { collectionPage } = route
 
 export function* createPlaylistSaga() {
@@ -105,7 +110,7 @@ function* optimisticallySavePlaylist(
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
-  const accountUser = yield* select(getAccountUser)
+  const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
   const { user_id, handle, _collectionIds = [] } = accountUser
   const playlist: Partial<Collection> = {

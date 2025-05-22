@@ -23,11 +23,7 @@ import {
   pollForTokenBalanceChange,
   recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
-import {
-  getAccountUser,
-  getHasAccount,
-  getWalletAddresses
-} from '~/store/account/selectors'
+import { getHasAccount, getWalletAddresses } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
@@ -424,7 +420,7 @@ function* recoverPurchaseIfNecessary() {
       })
     )
 
-    const user = yield* select(getAccountUser)
+    const user = yield* call(queryAccountUser)
     const ethWallet = user?.wallet
     if (!ethWallet) {
       throw new Error('User is not signed in')

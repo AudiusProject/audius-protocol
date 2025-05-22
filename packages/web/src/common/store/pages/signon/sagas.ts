@@ -1,6 +1,7 @@
 import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
+  queryAccountUser,
   queryUserByHandle,
   queryUsers
 } from '@audius/common/api'
@@ -90,7 +91,7 @@ import { Pages } from './types'
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountUser, getHasAccount, getUserId } = accountSelectors
+const { getHasAccount, getUserId } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -479,7 +480,7 @@ function* createGuestAccount(
         yield put(accountActions.resetAccount())
         yield put(accountActions.setGuestEmail({ guestEmail }))
 
-        const currentUser = yield* select(getAccountUser)
+        const currentUser = yield* call(queryAccountUser)
 
         if (currentUser) {
           throw new Error('User already exists')

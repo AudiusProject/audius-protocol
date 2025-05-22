@@ -4,7 +4,12 @@ import {
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryTrack,
+  queryUser
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -58,7 +63,7 @@ import { retrieveCollection } from './utils/retrieveCollections'
 
 const { manualClearToast, toast } = toastActions
 const { getCollectionTracks } = cacheCollectionsSelectors
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   editToast: 'Changes saved!',
@@ -755,7 +760,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete playlist ${playlistId}`)
         const playlist = yield* queryCollection(playlistId)
-        const user = yield* select(getAccountUser)
+        const user = yield* call(queryAccountUser)
         if (!playlist || !user) return
 
         yield* all([

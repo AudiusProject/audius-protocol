@@ -10,7 +10,7 @@ import { IconAudioBadge } from 'app/components/audio-rewards'
 import { useThemePalette } from 'app/utils/theme'
 
 type UserBadgesProps = {
-  user: Pick<User, 'user_id' | 'name' | 'is_verified'>
+  user: Pick<User, 'user_id' | 'name' | 'is_verified'> | undefined
   badgeSize?: number
   style?: StyleProp<ViewStyle>
   nameStyle?: StyleProp<TextStyle>
@@ -38,8 +38,10 @@ export const UserBadges = (props: UserBadgesProps) => {
     hideName,
     as: Component = View
   } = props
-  const { tier } = useSelectTierInfo(user.user_id)
+  const { tier } = useSelectTierInfo(user?.user_id)
   const palette = useThemePalette()
+
+  if (!user) return null
 
   return (
     <Component style={[styles.container, style]}>

@@ -2,7 +2,12 @@ import {
   albumMetadataForSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryTrack,
+  queryUser
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -32,7 +37,7 @@ import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { requestConfirmation } = confirmerActions
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { collectionPage } = route
 
 export function* createAlbumSaga() {
@@ -90,7 +95,7 @@ function* optimisticallySaveAlbum(
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
-  const accountUser = yield* select(getAccountUser)
+  const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
   const { user_id, handle, _collectionIds = [] } = accountUser
   const album: Partial<Collection> = {

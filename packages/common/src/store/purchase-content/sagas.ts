@@ -17,7 +17,7 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { queryCollection, queryTrack, queryUser } from '~/api'
+import { queryAccountUser, queryCollection, queryTrack, queryUser } from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection, Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
@@ -85,7 +85,7 @@ import {
 } from './types'
 import { getBalanceNeeded } from './utils'
 
-const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
+const { getUserId, getWalletAddresses } = accountSelectors
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -241,7 +241,7 @@ function* getCoinflowPurchaseMetadata({
     contentId,
     contentType
   })
-  const currentUser = yield* select(getAccountUser)
+  const currentUser = yield* call(queryAccountUser)
 
   const data: CoinflowPurchaseMetadata = {
     productName: `${artistInfo.name}:${title}`,
