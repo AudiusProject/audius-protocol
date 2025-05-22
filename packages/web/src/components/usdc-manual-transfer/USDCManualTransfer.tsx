@@ -34,8 +34,7 @@ const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 const { getWalletAddresses } = accountSelectors
 
-const USDCLearnMore =
-  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+const USDCLearnMore = 'https://support.audius.co/product/usdc'
 const DIMENSIONS = 160
 
 const messages = {
