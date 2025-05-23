@@ -44,7 +44,13 @@ export const useTokenAmountFormatting = ({
       minimumFractionDigits: defaultDecimalPlaces,
       maximumFractionDigits: decimals
     })
-  }, [availableBalance, exchangeRate, getDisplayDecimalPlaces, placeholder, isStablecoin])
+  }, [
+    availableBalance,
+    exchangeRate,
+    getDisplayDecimalPlaces,
+    placeholder,
+    isStablecoin
+  ])
 
   const formattedAmount = useMemo(() => {
     if (!amount && amount !== 0) return placeholder

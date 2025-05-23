@@ -1,5 +1,5 @@
-import { buySellMessages as baseMessages } from '@audius/common/messages'
 import { formatUSDCValue } from '@audius/common/api'
+import { buySellMessages as baseMessages } from '@audius/common/messages'
 import { TokenInfo } from '@audius/common/store'
 import { Button, Flex, Text } from '@audius/harmony'
 

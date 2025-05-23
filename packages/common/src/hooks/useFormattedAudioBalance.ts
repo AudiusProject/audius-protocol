@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { AUDIO } from '@audius/fixed-decimal'
 
-import { useTokenPrice, useAudioBalance } from '../api'
+import { useAudioBalance, useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
 import { getCurrencyDecimalPlaces, isNullOrUndefined } from '../utils'
 
