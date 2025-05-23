@@ -115,7 +115,9 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       rightDecorator={
         showPickWinnersButton ? (
           <Button size='small' asChild onClick={handlePickWinnersClick}>
-            <Link to={pickWinnersRoute}>{messages.pickWinners}</Link>
+            <Link to={pickWinnersRoute}>
+              {winnerCount > 0 ? messages.editWinners : messages.pickWinners}
+            </Link>
           </Button>
         ) : null
       }
