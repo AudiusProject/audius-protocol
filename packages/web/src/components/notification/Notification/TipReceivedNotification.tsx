@@ -1,9 +1,9 @@
 import { ComponentType, useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
-  notificationsSelectors,
   reactionsUIActions,
   reactionsUISelectors,
   reactionOrder,
@@ -31,7 +31,6 @@ import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
 const { writeReactionValue } = reactionsUIActions
 const { makeGetReactionForSignature } = reactionsUISelectors
-const { getNotificationUser } = notificationsSelectors
 
 const reactionList: [ReactionTypes, ComponentType<ReactionProps>][] =
   reactionOrder.map((r) => [r, reactionMap[r]])
@@ -68,7 +67,7 @@ export const TipReceivedNotification = (
   const { notification } = props
   const { amount, timeLabel, isViewed, tipTxSignature } = notification
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const reactionValue = useSelector(makeGetReactionForSignature(tipTxSignature))
   const setReaction = useSetReaction(tipTxSignature)

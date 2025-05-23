@@ -1,12 +1,10 @@
 import React, { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useNotificationEntity, useUser } from '@audius/common/api'
 import type { StringUSDC } from '@audius/common/models'
 import type { USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
 import { capitalize } from 'lodash'
-import { useSelector } from 'react-redux'
 
 import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -19,8 +17,6 @@ import {
   UserNameLink,
   EntityLink
 } from '../Notification'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   title: (type: string) => `${capitalize(type)} Sold`,
@@ -43,10 +39,7 @@ export const USDCPurchaseSellerNotification = (
   const { entityType } = notification
   const navigation = useNotificationNavigation()
   const content = useNotificationEntity(notification)
-  const notificationUsers = useSelector((state) =>
-    getNotificationUsers(state, notification, 1)
-  )
-  const buyerUser = notificationUsers ? notificationUsers[0] : null
+  const { data: buyerUser } = useUser(notification.userIds[0])
   const { amount, extraAmount } = notification
 
   const handlePress = useCallback(() => {

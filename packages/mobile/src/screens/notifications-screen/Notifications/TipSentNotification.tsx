@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type { TipSendNotification } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { Platform, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconTipping } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -20,8 +19,6 @@ import {
 } from '../Notification'
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
-
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Your Tip Was Sent!',
@@ -50,7 +47,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)

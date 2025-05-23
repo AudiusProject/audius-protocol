@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUserId, useNotificationEntity } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useNotificationEntity,
+  useUsers
+} from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import type { CommentThreadNotification as CommentThreadNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -20,8 +22,6 @@ import {
   NotificationText,
   EntityLink
 } from '../Notification'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -42,8 +42,8 @@ export const CommentThreadNotification = (
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
 
   const firstUser = users?.[0]

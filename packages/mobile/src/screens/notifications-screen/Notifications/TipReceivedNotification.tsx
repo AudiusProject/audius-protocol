@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type {
   TipReceiveNotification,
   ReactionTypes
 } from '@audius/common/store'
-import {
-  notificationsSelectors,
-  reactionsUIActions,
-  reactionsUISelectors
-} from '@audius/common/store'
+import { reactionsUIActions, reactionsUISelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
@@ -36,7 +33,6 @@ import { ReactionList } from '../Reaction'
 
 const { writeReactionValue } = reactionsUIActions
 const { makeGetReactionForSignature } = reactionsUISelectors
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'You Received a Tip!',
@@ -79,7 +75,7 @@ export const TipReceivedNotification = (
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const reactionValue = useSelector(makeGetReactionForSignature(tipTxSignature))
 

@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import {
-  notificationsSelectors,
-  SupporterRankUpNotification
-} from '@audius/common/store'
+import { SupporterRankUpNotification } from '@audius/common/store'
 import { IconTrending } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'
 import { env } from 'services/env'
-import { useSelector } from 'utils/reducer'
 
 import styles from './TopSupporterNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -22,7 +19,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Top Supporter',
@@ -42,7 +38,7 @@ export const TopSupporterNotification = (
   const { notification } = props
   const { rank, timeLabel, isViewed } = notification
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const handleClick = useGoToProfile(user)
 
