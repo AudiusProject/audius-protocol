@@ -191,6 +191,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
     { enabled: isUserFetched }
   )
   let accountBalance = BigInt(0)
+  const isAccountBalanceLoading = accountBalances.some(balanceRes => balanceRes.isPending)
   for (const balanceRes of accountBalances) {
     accountBalance += (balanceRes?.data ?? BigInt(0)) as bigint
   }
@@ -205,6 +206,9 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
     { enabled: isConnectedWalletsFetched && includeConnectedWallets }
   )
   let connectedWalletsBalance = BigInt(0)
+  const isConnectedWalletsBalanceLoading = includeConnectedWallets 
+    ? connectedWalletsBalances.some(balanceRes => balanceRes.isPending)
+    : false
   if (includeConnectedWallets) {
     for (const balanceRes of connectedWalletsBalances) {
       connectedWalletsBalance += (balanceRes?.data ?? BigInt(0)) as bigint
@@ -213,5 +217,12 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
 
   // Together they are the total balance
   const totalBalance = accountBalance + connectedWalletsBalance
-  return { accountBalance, connectedWalletsBalance, totalBalance }
+  const isLoading = isAccountBalanceLoading || isConnectedWalletsBalanceLoading
+  
+  return { 
+    accountBalance, 
+    connectedWalletsBalance, 
+    totalBalance,
+    isLoading
+  }
 }

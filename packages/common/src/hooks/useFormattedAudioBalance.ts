@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { AUDIO } from '@audius/fixed-decimal'
 
@@ -19,20 +19,20 @@ type UseFormattedAudioBalanceReturn = {
 }
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
-  const { totalBalance } = useAudioBalance()
+  const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
-  const audioBalance = totalBalance || null
-  const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
+  const hasFetchedAudioBalance = !isNullOrUndefined(totalBalance)
+  const audioBalance = hasFetchedAudioBalance ? totalBalance : null
 
   const decimalPlaces = useMemo(() => {
     if (!audioPrice) return 2
     return getCurrencyDecimalPlaces(parseFloat(audioPrice))
   }, [audioPrice])
 
-  const audioBalanceFormatted = audioBalance
-    ? AUDIO(audioBalance).toLocaleString('en-US', {
+  const audioBalanceFormatted = hasFetchedAudioBalance
+    ? AUDIO(totalBalance).toLocaleString('en-US', {
         maximumFractionDigits: decimalPlaces
       })
     : null
