@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { formatUSDCValue } from '../../../api'
 import { getCurrencyDecimalPlaces } from '../../../utils'
 
 export type UseTokenAmountFormattingProps = {
@@ -33,13 +34,17 @@ export const useTokenAmountFormatting = ({
   const formattedAvailableBalance = useMemo(() => {
     if (isNaN(availableBalance)) return placeholder
 
+    if (isStablecoin) {
+      return formatUSDCValue(availableBalance)
+    }
+
     const decimals = getDisplayDecimalPlaces(exchangeRate)
 
     return availableBalance.toLocaleString('en-US', {
       minimumFractionDigits: defaultDecimalPlaces,
       maximumFractionDigits: decimals
     })
-  }, [availableBalance, exchangeRate, getDisplayDecimalPlaces, placeholder])
+  }, [availableBalance, exchangeRate, getDisplayDecimalPlaces, placeholder, isStablecoin])
 
   const formattedAmount = useMemo(() => {
     if (!amount && amount !== 0) return placeholder
@@ -47,13 +52,17 @@ export const useTokenAmountFormatting = ({
       typeof amount === 'string' ? parseFloat(amount) : amount
     if (isNaN(numericAmount)) return placeholder
 
+    if (isStablecoin) {
+      return formatUSDCValue(numericAmount)
+    }
+
     const decimals = getDisplayDecimalPlaces(exchangeRate)
 
     return numericAmount.toLocaleString('en-US', {
       minimumFractionDigits: defaultDecimalPlaces,
       maximumFractionDigits: decimals
     })
-  }, [amount, exchangeRate, getDisplayDecimalPlaces, placeholder])
+  }, [amount, exchangeRate, getDisplayDecimalPlaces, placeholder, isStablecoin])
 
   return {
     formattedAvailableBalance,

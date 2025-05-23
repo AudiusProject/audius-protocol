@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
+import { formatTokenPrice } from '@audius/common/api'
 import { TokenInfo, TokenAmountSectionProps } from '@audius/common/store'
-import { USDC } from '@audius/fixed-decimal'
 import {
   Button,
   Divider,
@@ -20,10 +20,7 @@ const messages = {
   max: 'MAX',
   amountInputLabel: (symbol: string) => `Amount (${symbol})`,
   tokenPrice: (price: string, decimalPlaces: number) => {
-    return USDC(price.replace(/,/g, '')).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: decimalPlaces
-    })
+    return formatTokenPrice(price, decimalPlaces)
   },
   stackedBalance: (formattedAvailableBalance: string) =>
     `${formattedAvailableBalance}  Available`,
@@ -33,7 +30,7 @@ const messages = {
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
-  formattedAvailableBalance: string
+  formattedAvailableBalance: string | null
   tokenInfo: TokenInfo
 }
 
@@ -44,6 +41,11 @@ const DefaultBalanceSection = ({
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
   const { icon: TokenIcon } = tokenInfo
+
+  if (!formattedAvailableBalance) {
+    return null
+  }
+
   return (
     <Flex
       direction='column'
@@ -81,6 +83,11 @@ const StackedBalanceSection = ({
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
   const { icon: TokenIcon, symbol } = tokenInfo
+
+  if (!formattedAvailableBalance) {
+    return null
+  }
+
   return (
     <Flex
       direction='column'
@@ -243,6 +250,10 @@ export const TokenAmountSection = ({
   ])
 
   const youReceiveSection = useMemo(() => {
+    if (!formattedAmount) {
+      return null
+    }
+
     if (isStablecoin) {
       return (
         <Text variant='display' size='s'>
