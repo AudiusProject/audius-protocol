@@ -80,7 +80,8 @@ export const initialState: BasicModalsState = {
   Notification: { isOpen: false },
   DownloadTrackArchive: { isOpen: false },
   BuySellModal: { isOpen: false },
-  HostRemixContest: { isOpen: false }
+  HostRemixContest: { isOpen: false },
+  FinalizeWinnersConfirmation: { isOpen: false }
 }
 
 const slice = createSlice({

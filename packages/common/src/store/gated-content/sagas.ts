@@ -18,7 +18,8 @@ import {
   queryCollection,
   queryTrack,
   getUserCollectiblesQueryKey,
-  queryAllTracks
+  queryAllTracks,
+  updateTrackData
 } from '~/api'
 import {
   Chain,
@@ -32,7 +33,8 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus
+  GatedContentStatus,
+  UserTrackMetadata
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -319,16 +321,11 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
     // Update access fields for tracks that have a nft access signature.
     const metadatas = Object.keys(nftGatedTrackSignatureResponse).map(
       (trackId) => {
-        const id = parseInt(trackId)
-        return {
-          id,
-          metadata: {
-            access: { stream: true, download: true }
-          }
-        }
+        const track_id = parseInt(trackId)
+        return { track_id, access: { stream: true, download: true } }
       }
     )
-    yield* put(cacheActions.update(Kind.TRACKS, metadatas))
+    yield* call(updateTrackData, metadatas)
 
     // Record when collectible gated tracks are in an unlocked state.
     const analytics = yield* getContext('analytics')
@@ -505,14 +502,18 @@ export function* pollGatedContent({
 
     // Update the cache with the new metadata so that the UI
     // can update and the content can be streamed or downloaded properly.
-    yield* put(
-      cacheActions.update(isAlbum ? Kind.COLLECTIONS : Kind.TRACKS, [
-        {
-          id: contentId,
-          metadata: apiEntity
-        }
-      ])
-    )
+    if (isAlbum) {
+      yield* put(
+        cacheActions.update(Kind.COLLECTIONS, [
+          {
+            id: contentId,
+            metadata: apiEntity
+          }
+        ])
+      )
+    } else {
+      yield* call(updateTrackData, [apiEntity as UserTrackMetadata])
+    }
     if (initiallyHadNoStreamAccess && currentlyHasStreamAccess) {
       yield* put(updateGatedContentStatus({ contentId, status: 'UNLOCKED' }))
       // note: if necessary, update some ui status to show that the download is unlocked
@@ -721,17 +722,14 @@ function* handleTipGatedTracks(
 function* handleRevokeAccess(action: ReturnType<typeof revokeAccess>) {
   const { revokeAccessMap } = action.payload
   const metadatas = Object.keys(revokeAccessMap).map((trackId) => {
-    const id = parseInt(trackId)
+    const track_id = parseInt(trackId)
     const access =
-      revokeAccessMap[id] === 'stream'
+      revokeAccessMap[track_id] === 'stream'
         ? { stream: false, download: false }
         : { stream: true, download: false }
-    return {
-      id,
-      metadata: { access }
-    }
+    return { track_id, access }
   })
-  yield* put(cacheActions.update(Kind.TRACKS, metadatas))
+  yield* call(updateTrackData, metadatas)
 }
 
 function* watchGatedTracks() {

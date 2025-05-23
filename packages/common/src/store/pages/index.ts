@@ -72,7 +72,6 @@ export {
   default as pickWinnersPageReducer,
   actions as pickWinnersPageActions
 } from './pick-winners/slice'
-export * as pickWinnersPageSelectors from './pick-winners/selectors'
 
 export {
   default as remixesPageLineupReducer,

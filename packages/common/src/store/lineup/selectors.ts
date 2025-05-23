@@ -1,11 +1,12 @@
 import { createSelector } from 'reselect'
 
-import { Kind } from '~/models'
-import { getTracksByUid } from '~/store/cache/tracks/selectors'
+import { Kind, Track } from '~/models'
 import { getUsers } from '~/store/cache/users/selectors'
+import { Uid } from '~/utils'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { LineupState } from '../../models/Lineup'
+import { CommonState } from '../commonStore'
 
 // Some lineups can have additional properties (T)
 // e.g. collections have dateAdded in entries
@@ -24,6 +25,19 @@ export const getLineupEntries = <T, State>(
   state: State
 ) => {
   return selector(state)?.entries
+}
+
+const getTracksByUid = (state: CommonState) => {
+  return Object.keys(state.tracks.uids).reduce(
+    (entries, uid) => {
+      const id = Uid.fromString(uid).id
+      if (typeof id === 'number') {
+        entries[uid] = state.tracks.entries[id]?.metadata
+      }
+      return entries
+    },
+    {} as { [uid: string]: Track | null }
+  )
 }
 
 export const makeGetTableMetadatas = <T, State>(

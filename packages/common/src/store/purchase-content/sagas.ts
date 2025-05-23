@@ -17,9 +17,9 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { queryCollection, queryTrack, queryUser } from '~/api'
+import { queryCollection, queryTrack, queryUser, updateTrackData } from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
-import { Collection, Kind } from '~/models'
+import { Collection } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel, Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -61,7 +61,6 @@ import {
 import { waitForValue } from '~/utils'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { getSDK } from '../sdkUtils'
@@ -300,16 +299,9 @@ function* pollForPurchaseConfirmation({
         const track = data ? userTrackMetadataFromSDK(data) : null
 
         if (track) {
-          yield* put(
-            cacheActions.update(Kind.TRACKS, [
-              {
-                id: track.track_id,
-                metadata: {
-                  access: track.access
-                }
-              }
-            ])
-          )
+          yield* call(updateTrackData, [
+            { track_id: track.track_id, access: track.access }
+          ])
         }
       }
     }

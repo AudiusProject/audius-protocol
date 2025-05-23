@@ -1,5 +1,6 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import { useNotificationEntity } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -27,7 +28,7 @@ import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   commented: ' commented on your '
@@ -46,9 +47,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
 
-  const entity = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  )
+  const entity = useNotificationEntity(notification)
 
   const dispatch = useDispatch()
   const isMobile = useIsMobile()

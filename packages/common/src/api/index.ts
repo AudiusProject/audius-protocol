@@ -11,6 +11,7 @@ export * from './tan-query/collection/useCollections'
 export * from './tan-query/collection/useCollectionByPermalink'
 export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
+export * from './tan-query/collection/useCollectionTracks'
 export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
@@ -39,6 +40,8 @@ export * from './tan-query/lineups/useTrackPageLineup'
 // Notifications
 export * from './tan-query/notifications/useMarkNotificationsAsViewed'
 export * from './tan-query/notifications/useNotifications'
+export * from './tan-query/notifications/useNotificationEntities'
+export * from './tan-query/notifications/useNotificationEntity'
 export * from './tan-query/notifications/useNotificationUnreadCount'
 export * from './tan-query/notifications/useNotificationValidTypes'
 
@@ -135,7 +138,6 @@ export * from './tan-query/jupiter/useTokenExchangeRate'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
-export * from './tan-query/utils/defaultConfig'
 export * from './tan-query/utils'
 
 // New authorized-apps exports

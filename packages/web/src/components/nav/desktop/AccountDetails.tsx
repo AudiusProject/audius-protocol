@@ -112,6 +112,7 @@ const SignedInView = ({
         <Flex alignItems='center' justifyContent='space-between' gap='s' h={20}>
           <Flex css={{ maxWidth: '85%' }}>
             <UserLink
+              popover
               textVariant='title'
               size='s'
               userId={userId}

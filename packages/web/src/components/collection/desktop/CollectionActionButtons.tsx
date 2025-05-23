@@ -1,23 +1,19 @@
-import { useCollection } from '@audius/common/api'
+import { useCollection, useCollectionTracks } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useGatedContentAccessMap
 } from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
-import { CommonState, cacheCollectionsSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
 import { pick } from 'lodash'
-import { useSelector } from 'react-redux'
 
 import styles from './CollectionHeader.module.css'
 import { OwnerActionButtons } from './OwnerActionButtons'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
-
-const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   actionGroupLabel: 'collection actions',
@@ -66,10 +62,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   })
   const { hasStreamAccess } = useGatedContentAccess(partialCollection)
   // Dirty hack to get around the possibility that collectionId is a SmartCollectionVariant
-  const tracks = useSelector((state: CommonState) =>
-    getCollectionTracks(state, {
-      id: typeof collectionId === 'number' ? collectionId : -1
-    })
+  const { data: tracks } = useCollectionTracks(
+    typeof collectionId === 'number' ? collectionId : null
   )
   const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(

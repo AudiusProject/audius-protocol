@@ -15,7 +15,8 @@ import {
   playerSelectors,
   queueActions,
   queueSelectors,
-  QueueSource
+  QueueSource,
+  useFinalizeWinnersConfirmationModal
 } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
 import {
@@ -84,6 +85,8 @@ export const PickWinnersPage = () => {
 
   const updateSortParam = useUpdateSearchParams('sortMethod')
   const updateIsCosignParam = useUpdateSearchParams('isCosign')
+  const { onOpen: openFinalizeWinnersConfirmationModal } =
+    useFinalizeWinnersConfirmationModal()
 
   const { sortMethod, isCosign } = usePickWinnersPageParams()
   const {
@@ -158,12 +161,23 @@ export const PickWinnersPage = () => {
     winners
   ])
 
+  const openConfirmationModal = useCallback(() => {
+    openFinalizeWinnersConfirmationModal({
+      confirmCallback: handleFinalize,
+      cancelCallback: () => {}
+    })
+  }, [handleFinalize, openFinalizeWinnersConfirmationModal])
+
   const pageHeader = (
     <Header
       primary={messages.pickWinnersTitle}
       showBackButton
       rightDecorator={
-        <Button size='small' disabled={!canFinalize} onClick={handleFinalize}>
+        <Button
+          size='small'
+          disabled={!canFinalize}
+          onClick={openConfirmationModal}
+        >
           {messages.finalizeWinners}
         </Button>
       }

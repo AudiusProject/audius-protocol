@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntities } from '@audius/common/api'
 import { Name, Track } from '@audius/common/models'
 import {
-  notificationsSelectors,
   Entity,
   CollectionEntity,
   AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType
@@ -12,7 +12,6 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -25,7 +24,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconAddTrackToPlaylist } from './components/icons'
 import { getEntityLink } from './utils'
-const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
   title: 'Track Added to Playlist',
@@ -46,10 +44,9 @@ export const AddTrackToPlaylistNotification = (
 ) => {
   const { notification } = props
   const { timeLabel, isViewed } = notification
-  const { track, playlist } = useSelector((state) =>
-    getNotificationEntities(state, notification)
-  )
-  const playlistOwner = playlist.user
+  const entities = useNotificationEntities(notification)
+  const { track, playlist } = entities
+  const playlistOwner = playlist?.user
 
   const dispatch = useDispatch()
 
@@ -73,10 +70,12 @@ export const AddTrackToPlaylistNotification = (
   )
 
   const handleClick = useCallback(() => {
-    dispatch(push(getEntityLink(playlist)))
+    if (playlist) {
+      dispatch(push(getEntityLink(playlist)))
+    }
   }, [playlist, dispatch])
 
-  if (!playlistOwner || !track) return null
+  if (!playlistOwner || !track || !playlist) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>

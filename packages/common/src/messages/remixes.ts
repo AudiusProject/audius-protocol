@@ -8,6 +8,7 @@ export const remixMessages = {
   originalTrack: 'Original Track',
   pickWinnersTitle: 'Pick Your Winners',
   pickWinners: 'Pick Winners',
+  editWinners: 'Edit Winners',
   finalizeWinners: 'Finalize Winners',
   winners: 'Winners',
   winnersDescription: 'Pick up to 5 winners in ranked order.',

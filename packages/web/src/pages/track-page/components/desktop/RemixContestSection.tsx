@@ -82,12 +82,6 @@ export const RemixContestSection = ({
           }
         ]
       : []),
-    {
-      text: remixCount
-        ? `${messages.submissions} (${remixCount})`
-        : messages.submissions,
-      label: 'submissions'
-    },
     ...(hasWinners
       ? [
           {
@@ -95,11 +89,19 @@ export const RemixContestSection = ({
             label: 'winners'
           }
         ]
-      : [])
+      : [
+          {
+            text: remixCount
+              ? `${messages.submissions} (${remixCount})`
+              : messages.submissions,
+            label: 'submissions'
+          }
+        ])
   ]
 
   const { tabs: TabBar, body: ContentBody } = useTabs({
     tabs,
+    initialTab: hasWinners ? 'winners' : undefined,
     elements: [
       <TabBody key='details' onHeightChange={handleHeightChange}>
         <RemixContestDetailsTab trackId={trackId} />
@@ -111,12 +113,6 @@ export const RemixContestSection = ({
             </TabBody>
           ]
         : []),
-      <TabBody key='submissions' onHeightChange={handleHeightChange}>
-        <RemixContestSubmissionsTab
-          trackId={trackId}
-          submissions={remixes.slice(0, 10)}
-        />
-      </TabBody>,
       ...(hasWinners
         ? [
             <TabBody key='winners' onHeightChange={handleHeightChange}>
@@ -126,7 +122,14 @@ export const RemixContestSection = ({
               />
             </TabBody>
           ]
-        : [])
+        : [
+            <TabBody key='submissions' onHeightChange={handleHeightChange}>
+              <RemixContestSubmissionsTab
+                trackId={trackId}
+                submissions={remixes.slice(0, 10)}
+              />
+            </TabBody>
+          ])
     ],
     isMobile: false
   })

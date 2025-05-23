@@ -1,18 +1,15 @@
-import { playerSelectors } from '@audius/common/store'
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Genre } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import BackwardSkipButton, {
   BackwardSkipButtonProps
 } from './BackwardSkipButton'
 import PreviousButton, { PreviousButtonProps } from './PreviousButton'
 
-const { makeGetCurrent } = playerSelectors
-
 type PreviousButtonProviderProps = PreviousButtonProps | BackwardSkipButtonProps
 
 const PreviousButtonProvider = (props: PreviousButtonProviderProps) => {
-  const { track } = useSelector(makeGetCurrent())
+  const track = useCurrentTrack()
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   return isLongFormContent ? (

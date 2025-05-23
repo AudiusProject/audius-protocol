@@ -168,6 +168,7 @@ export const CashWallet = () => {
               }}
               onClick={handleWithdraw}
               disabled={isLoading}
+              fullWidth
             >
               {walletMessages.withdraw}
             </Button>
@@ -178,6 +179,7 @@ export const CashWallet = () => {
               }}
               onClick={handleAddCash}
               disabled={isLoading}
+              fullWidth
             >
               {walletMessages.addCash}
             </Button>

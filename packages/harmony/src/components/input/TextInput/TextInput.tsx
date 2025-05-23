@@ -56,7 +56,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
+      endAdornment = <EndIcon size='l' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -184,7 +184,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         >
           {StartIcon ? (
             <StartIcon
-              size={size === TextInputSize.SMALL ? 's' : 'm'}
+              size={size === TextInputSize.SMALL ? 'l' : undefined}
               color='subdued'
               {...IconProps}
             />

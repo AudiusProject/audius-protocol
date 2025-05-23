@@ -1,20 +1,17 @@
-import { useSelector } from 'react-redux'
-
+import { useTrack } from '~/api'
 import {
   ID,
   isContentCollectibleGated,
   isContentSpecialAccess,
   isContentUSDCPurchaseGated
 } from '~/models'
-import { CommonState } from '~/store'
-import { getTrack } from '~/store/cache/tracks/selectors'
 import { Nullable } from '~/utils'
 
 import { LockedStatusVariant } from './types'
 
 export const useTrackLockedStatusVariant = (trackId: ID) => {
-  const streamConditions = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.stream_conditions
+  const { data: streamConditions } = useTrack(trackId, {
+    select: (track) => track?.stream_conditions
   })
 
   const isPurchaseable = isContentUSDCPurchaseGated(streamConditions)

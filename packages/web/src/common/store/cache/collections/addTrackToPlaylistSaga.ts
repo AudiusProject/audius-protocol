@@ -2,7 +2,7 @@ import {
   fileToSdk,
   playlistMetadataForUpdateWithSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack } from '@audius/common/api'
+import { queryCollection, queryTrack, queryTracks } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -12,7 +12,6 @@ import {
 } from '@audius/common/models'
 import {
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   cacheActions,
   PlaylistOperations,
   reformatCollection,
@@ -29,7 +28,7 @@ import {
   Nullable
 } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
@@ -38,7 +37,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
-const { getCollectionTracks } = cacheCollectionsSelectors
 const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 
 const { toast } = toastActions
@@ -75,7 +73,10 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* queryCollection(playlistId)
-  const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
+  const playlistTracks = yield* call(
+    queryTracks,
+    playlist?.playlist_contents.track_ids.map(({ track }) => track) ?? []
+  )
   const track = yield* queryTrack(trackId)
 
   if (!playlist || !playlistTracks || !track) return

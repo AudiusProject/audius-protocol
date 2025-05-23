@@ -15,8 +15,7 @@ import type { AllEvents } from 'app/types/analytics'
 import { CashBalanceSection } from '../add-funds-drawer/CashBalanceSection'
 import { AddressTile } from '../core/AddressTile'
 
-const USDCLearnMore =
-  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+const USDCLearnMore = 'https://support.audius.co/product/usdc'
 
 const messages = {
   explainer:
