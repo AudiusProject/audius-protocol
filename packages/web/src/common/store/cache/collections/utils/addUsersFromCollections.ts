@@ -1,16 +1,11 @@
+import { queryCurrentUserId } from '@audius/common/api'
 import { Kind, UserCollectionMetadata } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheActions,
-  reformatUser
-} from '@audius/common/store'
+import { cacheActions, reformatUser } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'
-import { put, select } from 'typed-redux-saga'
+import { put, call } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
-
-const { getUserId } = accountSelectors
 
 /**
  * Adds users from collection metadata to cache.
@@ -21,7 +16,7 @@ export function* addUsersFromCollections(
   metadataArray: Array<UserCollectionMetadata>
 ) {
   yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   let users = metadataArray.map((m) => ({
     id: m.user.user_id,
     uid: makeUid(Kind.USERS, m.user.user_id),

@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheUsersSelectors,
   chatActions,
   chatSelectors,
@@ -119,7 +119,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   const { callToAction } = useSelector((state) =>
     getCanCreateChat(state, { userId })
   )
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const handleUnblockPress = useCallback(() => {
     if (!userId) {

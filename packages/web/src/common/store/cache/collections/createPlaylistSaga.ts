@@ -5,6 +5,7 @@ import {
 import {
   queryAccountUser,
   queryCollection,
+  queryCurrentUserId,
   queryTrack,
   queryUser
 } from '@audius/common/api'
@@ -19,7 +20,6 @@ import {
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions,
   cacheActions,
   reformatCollection,
@@ -32,7 +32,7 @@ import {
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
@@ -42,7 +42,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { addLocalCollection } = savedPageActions
 
 const { requestConfirmation } = confirmerActions
-const { getUserId } = accountSelectors
 const { collectionPage } = route
 
 export function* createPlaylistSaga() {
@@ -207,7 +206,7 @@ function* createAndConfirmPlaylist(
   yield* put(event)
 
   function* confirmPlaylist() {
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     if (!userId) {
       throw new Error('No userId set, cannot repost collection')
     }

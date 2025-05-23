@@ -1,6 +1,6 @@
+import { queryCurrentUserId } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
 import {
-  accountSelectors,
   tokenDashboardPageActions,
   walletActions,
   confirmerActions,
@@ -8,10 +8,9 @@ import {
   getSDK
 } from '@audius/common/store'
 import { Id } from '@audius/sdk'
-import { call, put, select } from 'typed-redux-saga'
+import { call, put } from 'typed-redux-saga'
 
 import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
-const { getUserId } = accountSelectors
 const { getBalance } = walletActions
 const { setWalletAddedConfirmed, updateWalletError } = tokenDashboardPageActions
 const { requestConfirmation } = confirmerActions
@@ -25,7 +24,7 @@ export function* addWalletToUser(
   disconnect: () => Generator
 ) {
   const sdk = yield* getSDK()
-  const accountUserId = yield* select(getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
   if (!accountUserId) return
 
   function* transactMetadata() {

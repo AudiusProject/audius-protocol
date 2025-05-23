@@ -4,18 +4,15 @@ import { useCurrentAccountUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import type { User } from '@audius/common/models'
-import { accountSelectors, profilePageSelectors } from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
+import { profilePageSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
-import { createSelector } from 'reselect'
 
 import { CollapsibleTabNavigatorContext } from 'app/components/top-tab-bar'
 import { useRoute } from 'app/hooks/useRoute'
 
-const { getProfileUser, getProfileStatus, makeGetProfile, getProfileUserId } =
+const { getProfileUser, getProfileStatus, makeGetProfile } =
   profilePageSelectors
-const { getUserId } = accountSelectors
 
 /*
  * Selects profile user and ensures rerenders occur only for changes specified in deps
@@ -60,12 +57,6 @@ export const useSelectProfile = <K extends keyof User>(deps: K[]) => {
 }
 
 export const getProfile = makeGetProfile()
-
-export const getIsOwner = createSelector(
-  (state: CommonState, handle: string) => getProfileUserId(state, handle),
-  getUserId,
-  (profileUserId, accountUserId) => accountUserId === profileUserId
-)
 
 export const useIsProfileLoaded = () => {
   const { params } = useRoute<'Profile'>()

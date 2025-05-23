@@ -2,14 +2,11 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import { FavoriteSource } from '@audius/common/models'
-import {
-  accountSelectors,
-  collectionsSocialActions,
-  getSDK
-} from '@audius/common/store'
+import { collectionsSocialActions, getSDK } from '@audius/common/store'
 import { Id, OptionalId } from '@audius/sdk'
-import { takeEvery, select, put, call } from 'typed-redux-saga'
+import { takeEvery, put, call } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
@@ -18,8 +15,6 @@ import type { CollectionAction, OfflineEntry } from '../slice'
 import { addOfflineEntries, requestDownloadCollection } from '../slice'
 
 const { saveCollection } = collectionsSocialActions
-
-const { getUserId } = accountSelectors
 
 export function* requestDownloadCollectionSaga() {
   yield* takeEvery(requestDownloadCollection.type, downloadCollection)
@@ -34,7 +29,7 @@ function* downloadCollection(action: CollectionAction) {
     })
   )
 
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return
 
   const sdk = yield* getSDK()

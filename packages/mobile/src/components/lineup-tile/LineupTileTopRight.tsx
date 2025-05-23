@@ -1,7 +1,5 @@
-import {
-  accountSelectors,
-  playbackPositionSelectors
-} from '@audius/common/store'
+import { useCurrentUserId } from '@audius/common/api'
+import { playbackPositionSelectors } from '@audius/common/store'
 import { formatLineupTileDuration } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
@@ -16,7 +14,6 @@ import { ProgressBar } from '../progress-bar'
 
 import { useStyles as useTrackTileStyles } from './styles'
 
-const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
@@ -66,7 +63,7 @@ export const LineupTileTopRight = ({
 }: Props) => {
   const { secondary } = useThemeColors()
   const trackTileStyles = useTrackTileStyles()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )

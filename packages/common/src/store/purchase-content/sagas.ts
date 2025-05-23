@@ -17,7 +17,13 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { queryAccountUser, queryCollection, queryTrack, queryUser } from '~/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryCurrentUserId,
+  queryTrack,
+  queryUser
+} from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection, Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
@@ -85,7 +91,7 @@ import {
 } from './types'
 import { getBalanceNeeded } from './utils'
 
-const { getUserId, getWalletAddresses } = accountSelectors
+const { getWalletAddresses } = accountSelectors
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -264,7 +270,7 @@ function* pollForPurchaseConfirmation({
   contentId: ID
   contentType: PurchaseableContentType
 }) {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) {
     throw new Error(
       'Failed to fetch current user id while polling for purchase confirmation'
@@ -592,7 +598,7 @@ function* collectEmailAfterPurchase({
     const identityService = yield* getContext('identityService')
     const isAlbum = 'playlist_id' in metadata
 
-    const purchaserUserId = yield* select(getUserId)
+    const purchaserUserId = yield* call(queryCurrentUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
 
     const email = yield* call([identityService, identityService.getUserEmail])
@@ -668,7 +674,7 @@ function* doStartPurchaseContentFlow({
   })
 
   const totalAmount = (price + (extraAmount ?? 0)) / 100
-  const purchaserUserId = yield* select(getUserId)
+  const purchaserUserId = yield* call(queryCurrentUserId)
 
   const analyticsInfo = {
     price: price / 100,

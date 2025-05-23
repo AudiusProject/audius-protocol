@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useCanSendMessage } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import type { ChatMessageWithExtras } from '@audius/common/models'
 import {
-  accountSelectors,
   chatActions,
   chatSelectors,
   playerSelectors
@@ -86,7 +86,6 @@ const {
   fetchBlockees,
   fetchPermissions
 } = chatActions
-const { getUserId } = accountSelectors
 const { getHasTrack } = playerSelectors
 
 const messages = {
@@ -245,7 +244,7 @@ export const ChatScreen = () => {
   const insets = useSafeAreaInsets()
 
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const userIdEncoded = OptionalId.parse(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
   const { is_blast: isBlast } = chat ?? {}

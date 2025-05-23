@@ -1,10 +1,10 @@
+import { queryCurrentUserId } from '@audius/common/api'
 import { TimeRange, Track, Collection } from '@audius/common/models'
 import {
-  accountSelectors,
   trendingPageLineupActions,
   trendingPageSelectors
 } from '@audius/common/store'
-import { select } from 'typed-redux-saga'
+import { call, select } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -19,13 +19,12 @@ const {
   trendingMonthActions,
   trendingAllTimeActions
 } = trendingPageLineupActions
-const getUserId = accountSelectors.getUserId
 
 function getTracks(timeRange: TimeRange) {
   return function* ({ offset, limit }: { offset: number; limit: number }) {
     yield* waitForRead()
     const genreAtStart = yield* select(getTrendingGenre)
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     try {
       const tracks = yield* retrieveTrending({
         timeRange,

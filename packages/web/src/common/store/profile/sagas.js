@@ -2,10 +2,13 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { queryUser, queryUserByHandle } from '@audius/common/api'
+import {
+  queryCurrentUserId,
+  queryUser,
+  queryUserByHandle
+} from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheActions,
   profilePageActions as profileActions,
   chatActions,
@@ -45,8 +48,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
-
-const { getUserId } = accountSelectors
 
 const {
   updateUserEthCollectibles,
@@ -320,7 +321,7 @@ export function* updateProfileAsync(action) {
   const metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
-  const accountUserId = yield select(getUserId)
+  const accountUserId = yield call(queryCurrentUserId)
   yield put(
     cacheActions.update(Kind.USERS, [
       { id: accountUserId, metadata: { name: metadata.name } }
@@ -373,7 +374,7 @@ function* confirmUpdateProfile(userId, metadata) {
           )
         }
         yield waitForAccount()
-        const currentUserId = yield select(getUserId)
+        const currentUserId = yield call(queryCurrentUserId)
         const { data = [] } = yield call(
           [sdk.full.users, sdk.full.users.getUser],
           {

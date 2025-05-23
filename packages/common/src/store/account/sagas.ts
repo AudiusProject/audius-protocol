@@ -14,7 +14,8 @@ import {
   getWalletAccountQueryKey,
   queryAccountUser,
   getCurrentAccountQueryKey,
-  queryCurrentAccount
+  queryCurrentAccount,
+  queryCurrentUserId
 } from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
@@ -25,7 +26,6 @@ import { cacheActions } from '../cache'
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
-import { getUserId } from './selectors'
 import {
   fetchAccount,
   fetchAccountFailed,
@@ -55,7 +55,7 @@ const { fetchBlockees, fetchBlockers } = chatActions
 const IP_STORAGE_KEY = 'user-ip-timestamp'
 
 function* handleFetchTrackCount() {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   const sdk = yield* getSDK()
@@ -420,7 +420,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
   const { uuid: twitterId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   if (!userId || !handle) {
@@ -471,7 +471,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
   const { uuid: instagramId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   if (!userId || !handle) {
@@ -522,7 +522,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
   const { uuid: tikTokId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   if (!userId || !handle) {
@@ -586,7 +586,7 @@ function* watchFetchAccountFailed() {
   yield* takeEvery(
     fetchAccountFailed.type,
     function* (action: ReturnType<typeof fetchAccountFailed>) {
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
       const reportToSentry = yield* getContext('reportToSentry')
       if (userId) {
         yield* call(reportToSentry, {

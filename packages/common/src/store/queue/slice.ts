@@ -28,7 +28,7 @@ type PlayPayload = {
 type QueueAutoplayPayload = {
   genre: string
   exclusionList: number[]
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
 }
 
 type PausePayload = {}

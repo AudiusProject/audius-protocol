@@ -1,14 +1,12 @@
-import { queryCurrentAccount } from '@audius/common/api'
+import { queryCurrentAccount, queryCurrentUserId } from '@audius/common/api'
 import { AccountCollection } from '@audius/common/models'
-import { accountActions, accountSelectors } from '@audius/common/store'
-import { call, fork, select, takeEvery } from 'typed-redux-saga'
+import { accountActions } from '@audius/common/store'
+import { call, fork, takeEvery } from 'typed-redux-saga'
 
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
-
-const { getUserId } = accountSelectors
 
 const { signedIn, fetchSavedPlaylists } = accountActions
 
@@ -20,7 +18,7 @@ function* onSignedIn() {
 
 function* fetchSavedPlaylistsAsync() {
   yield* waitForRead()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const account = yield* call(queryCurrentAccount)
 
   // Fetch other people's playlists you've saved

@@ -1,5 +1,6 @@
 import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import {
   AudioTiers,
   BadgeTier,
@@ -7,7 +8,6 @@ import {
   tierFeatureMap
 } from '@audius/common/models'
 import {
-  accountSelectors,
   badgeTiers,
   getTierNumber,
   vipDiscordModalActions,
@@ -33,12 +33,10 @@ import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useSelector } from 'utils/reducer'
 
 import styles from './Tiers.module.css'
 const { show } = musicConfettiActions
 const { pressDiscord } = vipDiscordModalActions
-const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Reward Perks',
@@ -291,7 +289,7 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
 
 /** Tile with multiple tiers */
 const Tiers = () => {
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const userId = accountUserId ?? 0
   const { tier } = useTierAndVerifiedForUser(userId)
 

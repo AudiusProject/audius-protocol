@@ -1,10 +1,13 @@
-import { queryAccountUser, queryTracks } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCurrentUserId,
+  queryTracks
+} from '@audius/common/api'
 import { Feature, StemUploadWithFile } from '@audius/common/models'
 import {
   TrackForUpload,
   TrackMetadataForUpload,
   UploadType,
-  accountSelectors,
   confirmTransaction,
   uploadActions
 } from '@audius/common/store'
@@ -12,7 +15,7 @@ import { waitForAccount } from '@audius/common/utils'
 import { EntityManagerAction } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import { expectSaga } from 'redux-saga-test-plan'
-import { call, getContext, select } from 'redux-saga-test-plan/matchers'
+import { call, getContext } from 'redux-saga-test-plan/matchers'
 import { all, fork } from 'typed-redux-saga'
 import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
@@ -107,7 +110,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [call.fn(queryAccountUser), {}],
-          [select(accountSelectors.getUserId), 12345],
+          [call.fn(queryCurrentUserId), 12345],
           [call.fn(uploadMultipleTracks), undefined],
           [call.fn(addPremiumMetadata), testTrack],
           [
@@ -157,7 +160,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [call.fn(queryAccountUser), {}],
-          [select(accountSelectors.getUserId), 12345],
+          [call.fn(queryCurrentUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
             getContext('audiusSdk'),
@@ -263,7 +266,7 @@ describe('upload', () => {
         .provide([
           [call.fn(waitForWrite), undefined],
           [call.fn(queryAccountUser), {}],
-          [select(accountSelectors.getUserId), 12345],
+          [call.fn(queryCurrentUserId), 12345],
           [call.fn(addPremiumMetadata), testTrack.metadata],
           [
             getContext('audiusSdk'),

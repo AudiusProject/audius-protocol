@@ -3,7 +3,8 @@ import {
   searchResultsFromSDK
 } from '@audius/common/adapters'
 import { Name } from '@audius/common/models'
-import { accountSelectors, SearchKind, getSDK } from '@audius/common/store'
+import { queryCurrentUserId } from '@audius/common/src/api'
+import { SearchKind, getSDK } from '@audius/common/store'
 import { OptionalId } from '@audius/sdk'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
@@ -13,13 +14,11 @@ import { waitForRead } from 'utils/sagaHelpers'
 import * as searchActions from './actions'
 import { getSearch } from './selectors'
 
-const getUserId = accountSelectors.getUserId
-
 function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
   const sdk = yield* getSDK()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
 
   const { data } = yield* call(
     [sdk.full.search, sdk.full.search.searchAutocomplete],

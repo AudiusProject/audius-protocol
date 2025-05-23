@@ -1,7 +1,10 @@
-import { queryAccountUser, queryTracks } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCurrentUserId,
+  queryTracks
+} from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsSelectors,
   profilePageFeedLineupActions as feedActions,
   profilePageSelectors,
@@ -22,7 +25,6 @@ import { waitForRead } from 'utils/sagaHelpers'
 import { retrieveUserReposts } from './retrieveUserReposts'
 const { getProfileUserId, getProfileFeedLineup } = profilePageSelectors
 const { getCollections } = cacheCollectionsSelectors
-const { getUserId } = accountSelectors
 const { getConfirmCalls } = confirmerSelectors
 
 function* getReposts({ offset, limit, handle }) {
@@ -30,7 +32,7 @@ function* getReposts({ offset, limit, handle }) {
 
   const profileId = yield select((state) => getProfileUserId(state, handle))
 
-  const currentUserId = yield select(getUserId)
+  const currentUserId = yield call(queryCurrentUserId)
   let reposts = yield call(retrieveUserReposts, {
     handle,
     currentUserId,

@@ -1,8 +1,7 @@
 import React, { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import {
-  accountSelectors,
   chatActions,
   chatSelectors,
   ChatPermissionAction,
@@ -25,7 +24,6 @@ import { makeStyles } from 'app/styles'
 
 const { createChat } = chatActions
 const { getCanCreateChat } = chatSelectors
-const { getUserId } = accountSelectors
 
 const messages = {
   followsYou: 'Follows You',
@@ -153,7 +151,7 @@ export const ChatUserListItem = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const { callToAction, canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: user?.user_id })
   )

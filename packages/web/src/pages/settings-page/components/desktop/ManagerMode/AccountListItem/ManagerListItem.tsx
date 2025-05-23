@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { useRemoveManager } from '@audius/common/api'
+import { useCurrentUserId, useRemoveManager } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { Name, UserManagerMetadata } from '@audius/common/models'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -25,7 +25,6 @@ import zIndex from 'utils/zIndex'
 import { ArtistInfo } from './ArtistInfo'
 
 const { profilePage } = route
-const { getUserId } = accountSelectors
 const { getCanCreateChat } = chatSelectors
 
 const messages = {
@@ -46,7 +45,7 @@ export const ManagerListItem = ({
   managerData: { manager, grant },
   onRemoveManager
 }: ManagerListItemProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const isManagerMode = useIsManagedAccount()
   const isPending = grant?.is_approved == null
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
+  useCurrentUserId,
   useFollowers,
   useSearchUserResults,
   useUsers
@@ -22,7 +23,7 @@ import { useSelector } from 'react-redux'
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 
-const { getAccountStatus, getUserId } = accountSelectors
+const { getAccountStatus } = accountSelectors
 
 const messages = {
   searchUsers: 'Search User',
@@ -43,7 +44,7 @@ export const UserMentionAutocompleteText = (
   const [isOpen, setIsOpen] = useState(true)
   const searchText = text.slice(1)
   const accountStatus = useSelector(getAccountStatus)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const {
     data: followerIds,
     isPending: followerDataPending,

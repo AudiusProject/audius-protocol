@@ -1,15 +1,11 @@
+import { queryCurrentUserId } from '@audius/common/api'
 import { Kind, TrackMetadata, User } from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheActions,
-  reformatUser
-} from '@audius/common/store'
+import { cacheActions, reformatUser } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'
-import { put, select } from 'typed-redux-saga'
+import { put, call } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
-const { getUserId } = accountSelectors
 
 /**
  * Adds users from track metadata to cache.
@@ -20,7 +16,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   metadataArray: T[]
 ) {
   yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   let users = metadataArray
     .filter((m) => m.user)
     .map((m) => {

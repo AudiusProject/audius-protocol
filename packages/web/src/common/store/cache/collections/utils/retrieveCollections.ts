@@ -4,6 +4,7 @@ import {
 } from '@audius/common/adapters'
 import {
   playlistPermalinkToHandleAndSlug,
+  queryCurrentUserId,
   queryTracks
 } from '@audius/common/api'
 import {
@@ -13,7 +14,6 @@ import {
   ID
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheSelectors,
@@ -37,7 +37,6 @@ import { addUsersFromCollections } from './addUsersFromCollections'
 const { getEntryTimestamp } = cacheSelectors
 const { getCollections } = cacheCollectionsSelectors
 const { setPermalink } = cacheCollectionsActions
-const getUserId = accountSelectors.getUserId
 
 const TRACKS_BATCH_LIMIT = 200
 
@@ -120,7 +119,7 @@ export function* retrieveCollection({
 }: retrieveCollectionArgs) {
   yield* waitForRead()
   const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (permalink) {
     const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
     const { data = [] } = yield* call(

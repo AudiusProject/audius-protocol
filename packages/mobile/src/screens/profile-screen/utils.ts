@@ -1,8 +1,6 @@
-import { useUserCollectibles } from '@audius/common/api'
-import type { CommonState } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { useCurrentUserId, useUserCollectibles } from '@audius/common/api'
 
-import { getIsOwner, useSelectProfile } from './selectors'
+import { useSelectProfile } from './selectors'
 
 /**
  *
@@ -16,20 +14,16 @@ import { getIsOwner, useSelectProfile } from './selectors'
  * need to be ordered
  */
 export const useShouldShowCollectiblesTab = () => {
-  const {
-    handle,
-    has_collectibles,
-    collectibleList,
-    solanaCollectibleList,
-    user_id
-  } = useSelectProfile([
-    'handle',
-    'user_id',
-    'has_collectibles',
-    'collectibleList',
-    'solanaCollectibleList'
-  ])
-  const isOwner = useSelector((state: CommonState) => getIsOwner(state, handle))
+  const { has_collectibles, collectibleList, solanaCollectibleList, user_id } =
+    useSelectProfile([
+      'handle',
+      'user_id',
+      'has_collectibles',
+      'collectibleList',
+      'solanaCollectibleList'
+    ])
+  const { data: accountUserId } = useCurrentUserId()
+  const isOwner = accountUserId === user_id
   const { data: profileCollectibles } = useUserCollectibles({
     userId: user_id
   })

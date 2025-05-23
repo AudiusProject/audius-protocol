@@ -1,4 +1,5 @@
 import { transformAndCleanList } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import { AudiusBackend } from '@audius/common/services'
 import {
   reactionsUIActions,
@@ -6,7 +7,6 @@ import {
   getReactionFromRawValue,
   getContext,
   ReactionTypes,
-  accountSelectors,
   getSDK
 } from '@audius/common/store'
 import {
@@ -19,7 +19,6 @@ import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { getUserId } = accountSelectors
 const { fetchReactionValues, setLocalReactionValues, writeReactionValue } =
   reactionsUIActions
 const { makeGetReactionForSignature } = reactionsUISelectors
@@ -119,7 +118,7 @@ function* writeReactionValueAsync({
   const sdk = yield* call(audiusSdk)
 
   yield* waitForWrite()
-  const accountId = yield* select(getUserId)
+  const accountId = yield* call(queryCurrentUserId)
   const userId = Id.parse(accountId!)
 
   yield* call(submitReaction, {

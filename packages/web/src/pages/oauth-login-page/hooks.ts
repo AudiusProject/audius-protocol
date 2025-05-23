@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import {
   Name,
   ErrorLevel,
@@ -35,7 +36,7 @@ import {
   WriteOnceTx
 } from './utils'
 
-const { getAccountStatus, getUserId } = accountSelectors
+const { getAccountStatus } = accountSelectors
 
 const useParsedQueryParams = () => {
   const { search } = useLocation()
@@ -195,7 +196,7 @@ export const useOAuthSetup = ({
     const status = getAccountStatus(state)
     return statusIsNotFinalized(status)
   })
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const isLoggedIn = Boolean(accountUserId)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [queryParamsError, setQueryParamsError] = useState<string | null>(

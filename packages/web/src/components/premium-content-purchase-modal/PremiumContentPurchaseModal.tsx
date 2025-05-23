@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 
 import {
   useCollection,
+  useCurrentAccount,
   useGetCurrentUser,
   useTrack,
   useUser
@@ -73,7 +74,7 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getIsAccountComplete, getGuestEmail } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 const { createGuestAccount } = signOnActions
 
 const messages = {
@@ -219,7 +220,9 @@ export const PremiumContentPurchaseModal = () => {
   )
   const [, setGuestEmailInLocalStorage] = useLocalStorage(GUEST_EMAIL, '')
 
-  const guestEmail = useSelector(getGuestEmail)
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
 
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useTrack(contentId, { enabled: !isAlbum })

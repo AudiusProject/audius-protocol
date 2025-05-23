@@ -1,8 +1,7 @@
-import { call, select, all } from 'typed-redux-saga'
+import { call, all } from 'typed-redux-saga'
 
 import { Track } from '~/models'
 import { ID } from '~/models/Identifiers'
-import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getSDK } from '~/store/sdkUtils'
 import { removeNullable, Uid } from '~/utils'
@@ -12,12 +11,13 @@ import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
 
 import { queryCollection } from './queryCollection'
+import { queryCurrentUserId } from './queryUser'
 
 export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const dispatch = yield* getContext('dispatch')
 
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {

@@ -1,8 +1,9 @@
 import { memo, useCallback, useState } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import type { ReactionTypes } from '@audius/common/store'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
   isCollectionUrl,
@@ -28,7 +29,6 @@ import { LinkPreview } from './LinkPreview'
 import { ResendMessageButton } from './ResendMessageButton'
 import { REACTION_LONGPRESS_DELAY } from './constants'
 
-const { getUserId } = accountSelectors
 const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
@@ -179,7 +179,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     itemsRef
   } = props
   const styles = useStyles()
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )

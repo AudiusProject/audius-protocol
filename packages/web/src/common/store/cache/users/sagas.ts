@@ -1,7 +1,6 @@
-import { queryUserByHandle } from '@audius/common/api'
+import { queryCurrentUserId, queryUserByHandle } from '@audius/common/api'
 import { Kind, User } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheActions,
   cacheUsersActions as userActions,
   getContext,
@@ -9,11 +8,10 @@ import {
 } from '@audius/common/store'
 import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, takeEvery } from 'typed-redux-saga'
 import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
 
 const { mergeCustomizer } = cacheReducer
-const { getUserId } = accountSelectors
 
 // For updates and adds, sync the account user to local storage.
 // We use the same mergeCustomizer we use in cacheSagas to merge
@@ -26,7 +24,7 @@ function* watchSyncLocalStorageUser() {
     >
   ) {
     yield* waitForAccount()
-    const currentUserId = yield* select(getUserId)
+    const currentUserId = yield* call(queryCurrentUserId)
     if (!currentUserId) return
     if (
       action.kind === Kind.USERS &&

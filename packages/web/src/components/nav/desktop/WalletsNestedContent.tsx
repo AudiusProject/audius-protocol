@@ -1,3 +1,4 @@
+import { useCurrentUserId } from '@audius/common/api'
 import {
   useUSDCBalance,
   useTotalBalanceWithFallback
@@ -32,7 +33,7 @@ import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { LeftNavLink } from './LeftNavLink'
 
 const { AUDIO_PAGE, PAYMENTS_PAGE } = route
-const { getIsAccountComplete, getUserId } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -44,7 +45,7 @@ export const WalletsNestedContent = () => {
   const isUSDCEnabled = useIsUSDCEnabled()
   const { data: usdcBalance } = useUSDCBalance()
   const audioBalance = useTotalBalanceWithFallback()
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const { tier } = useTierAndVerifiedForUser(userId ?? 0)
   const usdcCentBalance =
     formatUSDCWeiToFloorCentsNumber((usdcBalance ?? new BN(0)) as BNUSDC) / 100

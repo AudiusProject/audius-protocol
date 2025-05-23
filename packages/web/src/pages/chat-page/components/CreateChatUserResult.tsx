@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import {
   ChatPermissionAction,
-  accountSelectors,
   chatActions,
   chatSelectors
 } from '@audius/common/store'
@@ -101,7 +101,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   const dispatch = useDispatch()
   const { user, closeParentModal, openInboxUnavailableModal, presetMessage } =
     props
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const blockeeList = useSelector(chatSelectors.getBlockees)
   const isBlockee = blockeeList.includes(user.user_id)
 

@@ -1,20 +1,17 @@
-import { queryAccountUser } from '@audius/common/api'
+import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheActions,
   settingsPageActions as actions,
   getContext,
   getSDK
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
-import { call, put, takeEvery, select } from 'typed-redux-saga'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
-
-const { getUserId } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -22,7 +19,7 @@ function* watchGetSettings() {
     try {
       yield* call(waitForWrite)
       const sdk = yield* getSDK()
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) return
 
       const emailSettings = yield* call(
@@ -48,7 +45,7 @@ function* watchUpdateEmailFrequency() {
     function* (action: actions.UpdateEmailFrequency) {
       const { frequency: emailFrequency, updateServer } = action
 
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
 
       if (userId && updateServer) {
         const sdk = yield* getSDK()

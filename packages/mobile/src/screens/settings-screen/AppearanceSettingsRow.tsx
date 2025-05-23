@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { settingsMessages as messages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
 import {
   useTierAndVerifiedForUser,
-  accountSelectors,
   themeActions,
   themeSelectors
 } from '@audius/common/store'
@@ -19,7 +19,6 @@ import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
-const { getUserId } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 
@@ -27,7 +26,7 @@ const isStaging = env.ENVIRONMENT === 'staging'
 
 export const AppearanceSettingsRow = () => {
   const theme = useSelector(getTheme)
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
   const dispatch = useDispatch()
 
   const { tier } = useTierAndVerifiedForUser(accountId)

@@ -1,10 +1,9 @@
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, Text } from '@audius/harmony'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
@@ -23,7 +22,6 @@ import { RelatedArtists } from './RelatedArtists'
 import { SupportingList } from './SupportingList'
 import { TopSupporters } from './TopSupporters'
 import { PROFILE_LEFT_COLUMN_WIDTH_PX } from './constants'
-const { getUserId } = accountSelectors
 
 const messages = {
   aboutYou: 'About You',
@@ -93,7 +91,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     isOwner
   } = props
 
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
   const isRecentCommentsEnabled =
     recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled

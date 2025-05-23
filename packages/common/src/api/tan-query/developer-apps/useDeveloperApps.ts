@@ -16,7 +16,7 @@ export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => {
 }
 
 export const useDeveloperApps = <TResult = DeveloperApp[]>(
-  userId: Nullable<ID>,
+  userId: Nullable<ID> | undefined,
   options?: SelectableQueryOptions<DeveloperApp[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()

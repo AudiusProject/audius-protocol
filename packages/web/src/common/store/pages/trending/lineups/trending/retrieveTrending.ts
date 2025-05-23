@@ -28,7 +28,7 @@ type RetrieveTrendingArgs = {
   genre: Nullable<Genre>
   offset: number
   limit: number
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
 }
 
 export function* retrieveTrending({

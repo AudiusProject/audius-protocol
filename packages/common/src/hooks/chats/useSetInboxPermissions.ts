@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
+import { useCurrentUserId } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
-import { accountSelectors } from '~/store/account'
 import {
   chatActions,
   chatSelectors,
@@ -15,7 +15,6 @@ import { transformMapToPermitList } from '~/utils/chatUtils'
 
 const { fetchPermissions } = chatActions
 const { getChatPermissionsStatus, getUserChatPermissions } = chatSelectors
-const { getUserId } = accountSelectors
 
 export const useSetInboxPermissions = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
@@ -25,7 +24,7 @@ export const useSetInboxPermissions = () => {
     analytics: { track, make }
   } = useAppContext()
   const permissionsStatus = useSelector(getChatPermissionsStatus)
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
 
   const doFetchPermissions = useCallback(() => {
     if (userId) {

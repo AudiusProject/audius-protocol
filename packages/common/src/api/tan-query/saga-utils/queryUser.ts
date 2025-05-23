@@ -3,7 +3,7 @@ import { call, select } from 'typed-redux-saga'
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 import { AccountState } from '~/store'
-import { getUserId, getWalletAddresses } from '~/store/account/selectors'
+import { getWalletAddresses } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getSDK } from '~/store/sdkUtils'
 
@@ -24,7 +24,7 @@ export function* queryUser(id: ID | null | undefined) {
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
   const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
 
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserQueryKey(id),
@@ -39,7 +39,7 @@ export function* queryUserByHandle(handle: string | null | undefined) {
   if (!handle) return undefined
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const sdk = yield* getSDK()
   const userId = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserByHandleQueryKey(handle),
@@ -104,6 +104,11 @@ export function* queryAccountUser() {
   if (!account) return undefined
   const accountUser = yield* call(queryUser, account?.userId)
   return accountUser
+}
+
+export function* queryCurrentUserId() {
+  const account = yield* call(queryCurrentAccount)
+  return account?.userId
 }
 
 export function* queryAllCachedUsers() {

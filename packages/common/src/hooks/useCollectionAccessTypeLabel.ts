@@ -1,10 +1,10 @@
 import { useSelector } from 'react-redux'
 
+import { useCurrentUserId } from '~/api'
 import { AccessType } from '~/models/AccessType'
 import { ID } from '~/models/Identifiers'
 import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { CommonState } from '~/store'
-import { getUserId } from '~/store/account/selectors'
 import { getCollection } from '~/store/cache/collections/selectors'
 import { Nullable } from '~/utils'
 
@@ -37,10 +37,12 @@ export const useCollectionAccessTypeLabel = (
     return getCollection(state, { id: collectionId })?.is_private
   })
 
+  const { data: accountUserId } = useCurrentUserId()
+
   const isOwner = useSelector((state: CommonState) => {
     return (
       getCollection(state, { id: collectionId })?.playlist_owner_id ===
-      getUserId(state)
+      accountUserId
     )
   })
 

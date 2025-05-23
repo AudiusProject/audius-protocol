@@ -1,18 +1,14 @@
 import { useMemo } from 'react'
 
-import { useSelector } from 'react-redux'
-
-import { useSupporter, useSupporters } from '~/api'
+import { useCurrentUserId, useSupporter, useSupporters } from '~/api'
 import { BNWei, StringWei } from '~/models'
-import { accountSelectors } from '~/store'
 import { Nullable } from '~/utils/typeUtils'
 import { parseAudioInputToWei, stringWeiToBN } from '~/utils/wallet'
 
-const { getUserId } = accountSelectors
 const zeroWei = stringWeiToBN('0' as StringWei)
 
 export const useSupporterPrompt = (receiverId?: Nullable<number>) => {
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
 
   // Get the top supporter
   const { data: supporters = [], isPending: isSupportersPending } =

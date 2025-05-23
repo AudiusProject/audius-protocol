@@ -2,6 +2,7 @@ import {
   transformAndCleanList,
   userFeedItemFromSDK
 } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import {
   FeedFilter,
   Kind,
@@ -12,7 +13,6 @@ import {
   LineupTrack
 } from '@audius/common/models'
 import {
-  accountSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
   CommonState,
@@ -28,7 +28,6 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { getFollowIds } from '../../signon/selectors'
 const { getFeedFilter } = feedPageSelectors
-const { getUserId } = accountSelectors
 
 type FeedItem = LineupTrack | Collection
 
@@ -46,7 +45,7 @@ function* getTracks({
   limit: number
 }): Generator<any, FeedItem[] | null, any> {
   yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return []
   const filterEnum: FeedFilter = yield* select(getFeedFilter)
   const sdk = yield* getSDK()

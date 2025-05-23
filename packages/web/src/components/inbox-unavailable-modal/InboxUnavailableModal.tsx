@@ -1,8 +1,8 @@
 import { ReactNode, useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { FollowSource, User } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheUsersSelectors,
   chatActions,
   chatSelectors,
@@ -124,7 +124,7 @@ export const InboxUnavailableModal = () => {
     cacheUsersSelectors.getUser(state, { id: userId })
   )
   const dispatch = useDispatch()
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const { callToAction } = useSelector((state) =>
     getCanCreateChat(state, { userId })
   )

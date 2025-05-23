@@ -12,12 +12,10 @@ export const getIsAccountComplete = (state: CommonState) => {
   return Boolean(handle && name)
 }
 
-export const getGuestEmail = (state: CommonState) => {
-  return state.account.guestEmail ?? null
-}
-
 export const getUserId = (state: CommonState) => state.account.userId
+// TODO: how does this fit with tq mindset
 export const getAccountStatus = (state: CommonState) => state.account.status
 
+// TODO: how do I put this in the slice?
 export const getWalletAddresses = (state: CommonState) =>
   state.account.walletAddresses

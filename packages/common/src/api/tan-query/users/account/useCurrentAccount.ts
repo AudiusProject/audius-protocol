@@ -9,14 +9,13 @@ import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Status } from '~/models'
-import { User, UserMetadata } from '~/models/User'
+import { UserMetadata } from '~/models/User'
 import { LocalStorage } from '~/services'
 import { AccountState } from '~/store'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
-import { useUser } from '../useUser'
 
 export const getCurrentAccountQueryKey = () =>
   [QUERY_KEYS.accountUser] as unknown as QueryKey<AccountState>
@@ -126,18 +125,4 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
     initialData: initialData ?? undefined,
     ...options
   })
-}
-
-export const useCurrentAccountUser = <TResult = User>(
-  options?: SelectableQueryOptions<User, TResult>
-) => {
-  const { data: currentAccount } = useCurrentAccount()
-  return useUser(currentAccount?.userId, options)
-}
-
-export const useHasAccount = () => {
-  const { data: hasUserId } = useCurrentAccount({
-    select: (account) => !!account?.userId
-  })
-  return !!hasUserId
 }

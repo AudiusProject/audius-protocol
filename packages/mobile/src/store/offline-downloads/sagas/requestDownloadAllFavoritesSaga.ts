@@ -1,10 +1,10 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
-import { queryCollections, queryCurrentAccount } from '@audius/common/api'
 import {
-  accountSelectors,
-  savedPageSelectors,
-  getSDK
-} from '@audius/common/store'
+  queryCollections,
+  queryCurrentAccount,
+  queryCurrentUserId
+} from '@audius/common/api'
+import { savedPageSelectors, getSDK } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import moment from 'moment'
@@ -17,8 +17,6 @@ import { EventNames } from 'app/types/analytics'
 import type { OfflineEntry } from '../slice'
 import { addOfflineEntries, requestDownloadAllFavorites } from '../slice'
 
-const { getUserId } = accountSelectors
-
 const { getLocalTrackFavorites } = savedPageSelectors
 
 export function* requestDownloadAllFavoritesSaga() {
@@ -27,7 +25,7 @@ export function* requestDownloadAllFavoritesSaga() {
 
 function* downloadAllFavorites() {
   track(make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON }))
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return
 
   const offlineItemsToAdd: OfflineEntry[] = []

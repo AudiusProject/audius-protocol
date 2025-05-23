@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFollowers, useUsers } from '@audius/common/api'
+import { useCurrentUserId, useFollowers, useUsers } from '@audius/common/api'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
 import type { User } from '@audius/common/models'
 import {
-  accountSelectors,
   chatActions,
   chatSelectors,
   searchUsersModalActions,
@@ -32,7 +31,6 @@ import { makeStyles } from 'app/styles'
 import { ChatBlastCTA } from './ChatBlastCTA'
 import { ChatUserListItem } from './ChatUserListItem'
 
-const { getUserId } = accountSelectors
 const { searchUsers } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
@@ -150,7 +148,7 @@ const ListEmpty = () => {
 const useDefaultUserList = (
   defaultUserList: CreateChatModalState['defaultUserList']
 ) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const followersQuery = useFollowers(
     { userId: currentUserId },
     { enabled: defaultUserList === 'followers' }

@@ -1,6 +1,11 @@
 import { User } from '~/models/User'
 import { AccountState } from '~/store/account/types'
 
+import { SelectableQueryOptions } from '../../types'
+import { useUser } from '../useUser'
+
+import { useCurrentAccount } from './useCurrentAccount'
+
 /**
  * Some helper utils that can be used to pass into the select option
  */
@@ -33,4 +38,18 @@ export const selectNameSortedPlaylistsAndAlbums = (
     playlists: nameSortedCollections.filter((c) => !c.is_album),
     albums: nameSortedCollections.filter((c) => c.is_album)
   }
+}
+
+export const useCurrentAccountUser = <TResult = User>(
+  options?: SelectableQueryOptions<User, TResult>
+) => {
+  const { data: currentAccount } = useCurrentAccount()
+  return useUser(currentAccount?.userId, options)
+}
+
+export const useHasAccount = () => {
+  const { data: hasUserId } = useCurrentAccount({
+    select: (account) => !!account?.userId
+  })
+  return !!hasUserId
 }

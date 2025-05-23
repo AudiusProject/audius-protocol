@@ -1,7 +1,12 @@
 import type { ComponentType } from 'react'
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import { useCollection, useUser, useTrack } from '@audius/common/api'
+import {
+  useCollection,
+  useUser,
+  useTrack,
+  useCurrentUserId
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   type ID,
@@ -10,7 +15,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
-  accountSelectors,
   mobileOverflowMenuUIActions,
   OverflowAction,
   OverflowSource,
@@ -50,7 +54,6 @@ import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownload
 import { TrackArtwork } from './TrackArtwork'
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 
-const { getUserId } = accountSelectors
 const { getPlaying, getUid } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -252,7 +255,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     }
   }
 
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const isTrackOwner = currentUserId && currentUserId === owner_id
   const isContextPlaylistOwner =
     currentUserId && contextPlaylist?.playlist_owner_id === currentUserId

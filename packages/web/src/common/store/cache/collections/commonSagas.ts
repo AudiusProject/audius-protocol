@@ -8,6 +8,7 @@ import {
   queryAccountUser,
   queryCollection,
   queryCollectionTracks,
+  queryCurrentUserId,
   queryTrack,
   queryUser
 } from '@audius/common/api'
@@ -21,7 +22,6 @@ import {
 } from '@audius/common/models'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions as collectionActions,
   cacheActions,
   PlaylistOperations,
@@ -62,7 +62,6 @@ import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
 const { manualClearToast, toast } = toastActions
-const { getUserId } = accountSelectors
 
 const messages = {
   editToast: 'Changes saved!',
@@ -436,7 +435,7 @@ function* publishPlaylistAsync(
   action: ReturnType<typeof collectionActions.publishPlaylist>
 ) {
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -563,7 +562,7 @@ function* deletePlaylistAsync(
   action: ReturnType<typeof collectionActions.deletePlaylist>
 ) {
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -627,7 +626,7 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
       // deleting an album we know it's persisted to chain already
       // thus we have it's permanent ID.
       function* () {
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete collection')
         }
@@ -714,7 +713,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete collection')
         }

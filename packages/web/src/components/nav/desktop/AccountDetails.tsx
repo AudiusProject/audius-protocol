@@ -1,4 +1,4 @@
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -12,7 +12,7 @@ import { backgroundOverlay } from 'utils/styleUtils'
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
-const { getIsAccountComplete, getGuestEmail } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 const messages = {
   haveAccount: 'Have an account?',
   managedAccount: 'Managed Account',
@@ -160,7 +160,9 @@ const SignedOutView = () => (
 )
 
 const GuestView = () => {
-  const guestEmail = useSelector(getGuestEmail)
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
   return (
     <AccountContentWrapper>
       <Avatar userId={null} h={48} w={48} />
@@ -184,7 +186,9 @@ export const AccountDetails = () => {
     })
   })
   const { userId, handle: accountHandle } = user ?? {}
-  const guestEmail = useSelector(getGuestEmail)
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
   const isManagedAccount = useIsManagedAccount()
   const hasCompletedAccount = useSelector(getIsAccountComplete)
 

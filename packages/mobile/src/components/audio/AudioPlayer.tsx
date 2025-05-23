@@ -1,11 +1,10 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 
-import { useTracks } from '@audius/common/api'
+import { useCurrentUserId, useTracks } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheUsersSelectors,
   savedPageTracksLineupActions,
   queueActions,
@@ -69,7 +68,6 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
-const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 const { getPlaying, getSeek, getCounter, getPlaybackRate, getUid } =
   playerSelectors
@@ -163,7 +161,7 @@ export const AudioPlayer = () => {
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
   const playbackRate = useSelector(getPlaybackRate)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const uid = useSelector(getUid)
   const playerBehavior = useSelector(getPlayerBehavior)
   const previousUid = usePrevious(uid)

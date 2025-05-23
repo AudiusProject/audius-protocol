@@ -1,16 +1,16 @@
 import { useContext, useEffect } from 'react'
 
-import { useCurrentAccountUser, useManagedAccounts } from '@audius/common/api'
+import {
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useManagedAccounts
+} from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { useNavigateToPage } from './useNavigateToPage'
-
-const { getUserId } = accountSelectors
 
 const { FEED_PAGE } = route
 const messages = {
@@ -73,7 +73,7 @@ export const useIsUnauthorizedForHandleRedirect = (
   const { data: accountHandle } = useCurrentAccountUser({
     select: (user: { handle?: string }) => user?.handle
   })
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
 

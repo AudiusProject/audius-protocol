@@ -10,6 +10,7 @@ import {
 import {
   getStemsQueryKey,
   queryAccountUser,
+  queryCurrentUserId,
   queryTracks,
   queryUser
 } from '@audius/common/api'
@@ -34,7 +35,6 @@ import {
   TrackForUpload,
   UploadType,
   accountActions,
-  accountSelectors,
   cacheActions,
   confirmerActions,
   getContext,
@@ -68,10 +68,10 @@ import {
   cancel,
   fork,
   put,
-  select,
   takeLatest,
   take,
-  delay
+  delay,
+  select
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -92,7 +92,6 @@ import {
 } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
-const { getUserId } = accountSelectors
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
@@ -213,7 +212,7 @@ const makeOnProgress = (
  */
 export function* deleteTracks(trackIds: ID[]) {
   const sdk = yield* getSDK()
-  const userId = Id.parse(yield* select(accountSelectors.getUserId))
+  const userId = Id.parse(yield* call(queryCurrentUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
@@ -244,7 +243,7 @@ function* uploadWorker(
     const { trackIndex, stemIndex, track } = task
     try {
       const sdk = yield* getSDK()
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
@@ -306,7 +305,7 @@ function* publishWorker(
     const { trackIndex, stemIndex, metadata } = task
     try {
       const sdk = yield* getSDK()
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
@@ -421,7 +420,7 @@ export function* handleUploads({
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
   const queryClient = yield* getContext('queryClient')
-  const userId = (yield* select(getUserId))!
+  const userId = (yield* call(queryCurrentUserId))!
 
   // Queue for the upload tasks (uploading files to storage)
   const uploadQueue = yield* call(
@@ -834,7 +833,7 @@ export function* uploadCollection(
   const sdk = yield* getSDK()
 
   yield waitForAccount()
-  const userId = (yield* select(getUserId))!
+  const userId = (yield* call(queryCurrentUserId))!
   // This field will get replaced
   let albumTrackPrice: number | undefined
 
@@ -1288,7 +1287,7 @@ function* updateTrackAudioAsync(
     }
     const track = tracks[0]
     const sdk = yield* getSDK()
-    const userId = yield* select(accountSelectors.getUserId)
+    const userId = yield* call(queryCurrentUserId)
 
     if (!userId) {
       throw new Error('No user id found during upload. Not signed in?')
