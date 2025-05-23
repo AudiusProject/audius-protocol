@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import {
+  selectIsGuestAccount,
+  useCurrentAccountUser,
+  selectAccountHasTracks
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
@@ -11,7 +15,7 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -27,7 +31,6 @@ import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
-const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
   title: 'USDC Wallet',
@@ -46,19 +49,24 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const accountHasTracks = useSelector(getAccountHasTracks)
-  const isGuest = useSelector(getIsGuestAccount)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      hasTracks: selectAccountHasTracks(user),
+      isGuest: selectIsGuestAccount(user)
+    })
+  })
+  const { hasTracks, isGuest } = accountData ?? {}
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {
-    if (accountHasTracks !== null || isGuest) {
-      const tableOptions = accountHasTracks
+    if (hasTracks !== null || isGuest) {
+      const tableOptions = hasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)
       setSelectedTable(tableView ?? tableOptions[0])
     }
-  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
+  }, [hasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
 
   const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
     FeatureFlags.OWN_YOUR_FANS

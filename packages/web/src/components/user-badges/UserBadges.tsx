@@ -27,7 +27,7 @@ export const audioTierMap: {
 }
 
 type UserBadgesProps = {
-  userId: ID
+  userId?: ID
   size?: IconSize
   className?: string
   inline?: boolean

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -18,8 +18,8 @@ const { getAccountStatus } = accountSelectors
 
 const CheckPage = () => {
   const dispatch = useDispatch()
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const accountStatus = useSelector(getAccountStatus)
 

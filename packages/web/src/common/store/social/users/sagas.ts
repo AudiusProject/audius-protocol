@@ -1,7 +1,11 @@
-import { queryUser, queryUsers } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryUsers,
+  selectIsGuestAccount,
+  queryUser
+} from '@audius/common/api'
 import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheActions,
   profilePageActions,
   usersSocialActions as socialActions,
@@ -24,7 +28,6 @@ import errorSagas from './errorSagas'
 
 const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
-const { getUserId, getIsGuestAccount } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 
 /* FOLLOW */
@@ -37,8 +40,9 @@ export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
   yield* call(waitForWrite)
-  const accountId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: accountId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -200,8 +204,9 @@ export function* unfollowUser(
 ) {
   /* Make Async Backend Call */
   yield* call(waitForWrite)
-  const accountId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: accountId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -321,7 +326,8 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
 export function* subscribeToUserAsync(userId: ID) {
   yield* call(waitForWrite)
 
-  const accountId = yield* select(getUserId)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: accountId } = accountUser ?? {}
   if (!accountId) {
     return
   }
@@ -392,7 +398,8 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
 export function* unsubscribeFromUserAsync(userId: ID) {
   yield* call(waitForWrite)
 
-  const accountId = yield* select(getUserId)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: accountId } = accountUser ?? {}
   if (!accountId) {
     return
   }

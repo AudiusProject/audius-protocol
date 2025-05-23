@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { fillString, route } from '@audius/common/utils'
 import {
   Modal,
@@ -31,15 +31,16 @@ import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner
 import { useSelector } from 'utils/reducer'
 
 const { UPLOAD_PAGE } = route
-const { getUserId, getUserName } = accountSelectors
 
 export const WelcomeModal = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
   const { value: nameField } = useSelector(getNameField)
-  const accountName = useSelector(getUserName)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({ userId: user?.user_id, accountName: user?.name })
+  })
   const profileImageField = useSelector(getProfileImageField)
-  const userId = useSelector(getUserId)
+  const { userId, accountName } = accountData ?? {}
   const presavedProfilePic = useProfilePicture({
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150

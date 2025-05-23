@@ -9,17 +9,12 @@ import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 import { CommonState } from '~/store'
 
-import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, QueryOptions } from '../types'
+import { QueryOptions } from '../types'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
 import { getUserQueryFn, getUserQueryKey } from './useUser'
-
-export const getUsersQueryKey = (userIds: ID[] | null | undefined) => {
-  return [QUERY_KEYS.users, userIds] as unknown as QueryKey<UserMetadata[]>
-}
 
 export const useUsers = (
   userIds: ID[] | null | undefined,

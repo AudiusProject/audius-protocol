@@ -261,7 +261,7 @@ function* fetchProfileAsync(action) {
   try {
     let user
     if (action.handle) {
-      user = yield call(queryUserByHandle, action.handle)
+      user = yield call(queryUserByHandle, action.handle?.replace('/', ''))
     } else if (action.userId) {
       const users = yield call(queryUser, action.userId)
       user = users.entries[action.userId].metadata

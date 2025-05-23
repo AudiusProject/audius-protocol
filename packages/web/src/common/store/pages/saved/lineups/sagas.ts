@@ -1,4 +1,8 @@
-import { queryTrack, queryTracks } from '@audius/common/api'
+import {
+  queryCurrentAccount,
+  queryTrack,
+  queryTracks
+} from '@audius/common/api'
 import { Collection, ID, Kind, LineupEntry, UID } from '@audius/common/models'
 import {
   savedPageTracksLineupActions as savedTracksActions,
@@ -15,9 +19,9 @@ import {
   purchaseContentActions,
   PurchaseableContentType,
   SavedPageTrack,
-  accountSelectors
+  AccountState
 } from '@audius/common/store'
-import { makeUid, waitForAccount } from '@audius/common/utils'
+import { makeUid } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'typed-redux-saga'
@@ -140,8 +144,9 @@ function* watchFetchSaves() {
   yield* takeEvery(
     [FETCH_SAVES, FETCH_MORE_SAVES],
     function* (_action: ReturnType<typeof saveActions.fetchSaves>) {
-      yield waitForAccount()
-      const trackSaveCount = yield* select(accountSelectors.getTrackSaveCount)
+      const accountData = (yield* call(queryCurrentAccount)) as AccountState
+      if (!accountData) return
+      const { trackSaveCount } = accountData
 
       if (trackSaveCount) {
         yield* put(savedTracksActions.setMaxEntries(trackSaveCount))

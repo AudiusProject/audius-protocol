@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useCurrentAccount, useQueryContext } from '@audius/common/api'
+import { useCurrentAccountUser, useQueryContext } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Nullable, shortenSPLAddress } from '@audius/common/utils'
@@ -33,8 +33,8 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { toast } = useContext(ToastContext)
   const record = useRecord()
   const isMobile = useIsMobile()
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const accountUserId = useSelector(getUserId)
   const handleClick = useCallback(() => {

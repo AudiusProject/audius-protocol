@@ -1,9 +1,12 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import {
+  selectAccountHasTracks,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -20,7 +23,6 @@ import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
-const { getAccountHasTracks } = accountSelectors
 
 const messages = {
   title: 'Pay & Earn',
@@ -38,19 +40,21 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const accountHasTracks = useSelector(getAccountHasTracks)
+  const { data: hasTracks } = useCurrentAccountUser({
+    select: (user) => selectAccountHasTracks(user)
+  })
 
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {
-    if (accountHasTracks !== null) {
-      const tableOptions = accountHasTracks
+    if (hasTracks !== null) {
+      const tableOptions = hasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)
       setSelectedTable(tableView ?? tableOptions[0])
     }
-  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
+  }, [hasTracks, setSelectedTable, tableView, setTableOptions])
 
   const {
     count: salesCount,

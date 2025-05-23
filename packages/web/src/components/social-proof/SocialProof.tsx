@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
@@ -181,8 +181,8 @@ const SocialProof = ({ onSuccess }: SocialProofProps) => {
   const [error, setError] = useState<string | undefined>()
   const [status, setStatus] = useState(Status.IDLE)
   const [isOpen, setIsOpen] = useModalState('SocialProof')
-  const { data: handle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: handle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
 
   const onClick = useCallback(() => setStatus(Status.LOADING), [setStatus])
