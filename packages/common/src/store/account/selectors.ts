@@ -30,8 +30,3 @@ export const getNeedsAccountRecovery = (state: CommonState) =>
 
 export const getWalletAddresses = (state: CommonState) =>
   state.account.walletAddresses
-
-export const getAccountUser = createSelector(
-  [internalGetAccountUser],
-  (user) => user
-)

@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 
-import { useCollections, useCurrentAccount } from '@audius/common/api'
+import {
+  useCollections,
+  useCurrentAccount,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import {
   Collection,
   Track,
@@ -54,7 +58,8 @@ const formatTrackMetadata = (metadata: Track, i: number): DataSourceTrack => {
 
 /** Returns the logged-in user's tracks, formatted for Artist Dashboard tracks table */
 export const useFormattedTrackData = () => {
-  const { tracks } = useSelector(makeGetDashboard())
+  const { data: accountUser } = useCurrentAccountUser()
+  const { tracks } = useSelector(makeGetDashboard(accountUser))
   const tracksFormatted = useMemo(() => {
     return tracks
       .map((track: Track, i: number) => formatTrackMetadata(track, i))

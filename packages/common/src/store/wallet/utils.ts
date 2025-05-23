@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux'
 
 import { useCurrentAccountUser } from '~/api'
 import { useUser } from '~/api/tan-query/users/useUser'
-import { getAccountUser } from '~/store/account/selectors'
 import { getUser } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
 import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
