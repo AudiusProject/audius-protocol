@@ -42,6 +42,13 @@ const nullGuard = withNullGuard(
 const RemixesPage = nullGuard(
   ({ title, count, originalTrack, user, goToTrackPage, goToArtistPage }) => {
     useSubPageHeader()
+    const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+      FeatureFlags.REMIX_CONTEST
+    )
+    const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+      FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+    )
+
     const {
       data,
       isFetching,
@@ -57,12 +64,9 @@ const RemixesPage = nullGuard(
     } = useRemixes({
       trackId: originalTrack?.track_id,
       includeOriginal: true,
-      includeWinners: true
+      includeWinners: isRemixContestWinnersMilestoneEnabled
     })
 
-    const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
-      FeatureFlags.REMIX_CONTEST
-    )
     const { data: contest } = useRemixContest(originalTrack?.track_id)
     const isRemixContest = isRemixContestEnabled && contest
     const winnerCount = contest?.eventData?.winners?.length ?? 0
@@ -114,7 +118,7 @@ const RemixesPage = nullGuard(
     )
 
     const delineatorMap =
-      winnerCount > 0
+      isRemixContestWinnersMilestoneEnabled && winnerCount > 0
         ? {
             0: winnersDelineator,
             [winnerCount]: remixesDelineator

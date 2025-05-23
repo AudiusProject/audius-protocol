@@ -87,7 +87,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   } = useRemixes({
     trackId: originalTrack?.track_id,
     includeOriginal: true,
-    includeWinners: true,
+    includeWinners: isRemixContestWinnersMilestoneEnabled,
     sortMethod,
     isCosign,
     isContestEntry
@@ -166,7 +166,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   )
 
   const delineatorMap =
-    winnerCount > 0
+    isRemixContestWinnersMilestoneEnabled && winnerCount > 0
       ? {
           0: winnersDelineator,
           [winnerCount]: remixesDelineator
