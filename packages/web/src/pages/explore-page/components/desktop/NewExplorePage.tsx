@@ -264,7 +264,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               size={TextInputSize.SMALL}
               onChange={handleSearch}
               onClear={handleClearSearch}
-              css={{ '& > *': { height: 48 } }}
             />
           </Flex>
         </Paper>
