@@ -29,7 +29,7 @@ const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
 }
 
 type FeedArgs = {
-  userId: Nullable<ID>
+  userId: Nullable<ID> | undefined
   filter?: FeedFilter
   initialPageSize?: number
   loadMorePageSize?: number

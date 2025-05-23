@@ -25,7 +25,7 @@ export const SET_NOTIFICATION_SUBSCRIPTION =
 export type FetchProfileAction = {
   type: typeof FETCH_PROFILE
   handle: string | null
-  userId: ID | null
+  userId: ID | null | undefined
   forceUpdate: boolean
   shouldSetLoading: boolean
   deleteExistingEntry: boolean
@@ -105,7 +105,7 @@ export type ProfilePageAction =
 // TODO: Move this to redux toolkit
 export function fetchProfile(
   handle: Nullable<string>,
-  userId: Nullable<ID>,
+  userId: Nullable<ID> | undefined,
   forceUpdate: boolean,
   shouldSetLoading: boolean,
   deleteExistingEntry: boolean,

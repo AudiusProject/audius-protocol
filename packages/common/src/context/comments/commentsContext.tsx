@@ -63,7 +63,7 @@ export type ReplyingAndEditingState = {
 }
 
 type CommentSectionContextType<NavigationProp> = {
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
   artistId: ID
   isEntityOwner: boolean
   commentCount: number | undefined

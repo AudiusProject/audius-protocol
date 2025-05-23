@@ -9,7 +9,7 @@ import { Nullable } from '~/utils/typeUtils'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 
-export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => {
+export const getDeveloperAppsQueryKey = (userId: Nullable<ID> | undefined) => {
   return [QUERY_KEYS.developerApps, userId] as unknown as QueryKey<
     DeveloperApp[]
   >

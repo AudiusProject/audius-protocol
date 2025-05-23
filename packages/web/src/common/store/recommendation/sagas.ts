@@ -14,7 +14,7 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 export function* getRecommendedTracks(
   genre: string,
   exclusionList: number[],
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
 ) {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 

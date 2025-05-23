@@ -13,6 +13,7 @@ export const getIsAccountComplete = (state: CommonState) => {
 }
 
 export const getUserId = (state: CommonState) => state.account.userId
+
 // TODO: how does this fit with tq mindset
 export const getAccountStatus = (state: CommonState) => state.account.status
 

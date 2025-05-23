@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { keyBy, omit } from 'lodash'
+import { keyBy } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'

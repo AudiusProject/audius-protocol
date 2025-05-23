@@ -18,7 +18,7 @@ type BaseAvatarProps = Omit<AvatarProps, 'source' | 'accessibilityLabel'>
 // User should prefer userId, and provide user if it's not in the cache
 type ProfilePictureUserProps =
   | {
-      userId: ID | undefined
+      userId: ID | undefined | null
     }
   | { user: Pick<User, 'user_id' | 'name' | 'profile_picture_sizes'> }
 

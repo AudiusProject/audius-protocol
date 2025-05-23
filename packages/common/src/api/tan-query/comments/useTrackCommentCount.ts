@@ -16,7 +16,7 @@ const COMMENT_COUNT_POLL_INTERVAL = 10 * 1000 // 10 secs
 
 export const useTrackCommentCount = (
   trackId: Nullable<ID> | undefined,
-  userId: Nullable<ID>,
+  userId: Nullable<ID> | undefined,
   shouldPoll = false
 ) => {
   const { audiusSdk } = useQueryContext()
