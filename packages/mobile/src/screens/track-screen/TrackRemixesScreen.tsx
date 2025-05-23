@@ -118,6 +118,14 @@ export const TrackRemixesScreen = () => {
           0: remixesDelineator
         }
 
+  const winnersMaxEntries =
+    count && winnerCount ? count + winnerCount + 1 : undefined
+  const defaultMaxEntries = count ? count + 1 : undefined
+
+  const maxEntries = isRemixContestWinnersMilestoneEnabled
+    ? winnersMaxEntries
+    : defaultMaxEntries
+
   return (
     <Screen>
       <ScreenHeader
@@ -157,10 +165,7 @@ export const TrackRemixesScreen = () => {
                 pageSize={pageSize}
                 hasMore={false}
                 delineatorMap={delineatorMap}
-                maxEntries={
-                  // remix count + winner count + original track
-                  count && winnerCount ? count + winnerCount + 1 : undefined
-                }
+                maxEntries={maxEntries}
               />
             </ScrollView>
           </ScreenPrimaryContent>

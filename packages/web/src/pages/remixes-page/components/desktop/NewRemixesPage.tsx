@@ -175,6 +175,14 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
           0: remixesDelineator
         }
 
+  const winnersMaxEntries =
+    count && winnerCount ? count + winnerCount + 1 : undefined
+  const defaultMaxEntries = count ? count + 1 : undefined
+
+  const maxEntries = isRemixContestWinnersMilestoneEnabled
+    ? winnersMaxEntries
+    : defaultMaxEntries
+
   return (
     <Page
       title={title}
@@ -197,10 +205,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
           pageSize={REMIXES_PAGE_SIZE}
           actions={remixesPageLineupActions}
           delineatorMap={delineatorMap}
-          maxEntries={
-            // remix count + winner count + original track
-            count && winnerCount ? count + winnerCount + 1 : undefined
-          }
+          maxEntries={maxEntries}
         />
       </Flex>
     </Page>
