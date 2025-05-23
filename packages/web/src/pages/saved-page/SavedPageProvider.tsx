@@ -512,7 +512,6 @@ let accountRef: AccountData
 function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
-    // const tracks = getLineupMetadatas(state)
     const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
 
     if (!isEqual(accountRef, account)) {
@@ -521,7 +520,6 @@ function makeMapStateToProps() {
 
     return {
       account: accountRef,
-      // tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),

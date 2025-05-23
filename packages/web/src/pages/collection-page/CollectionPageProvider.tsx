@@ -146,7 +146,7 @@ const CollectionPage = (props: CollectionPageProps) => {
   const currentTrack = useCurrentTrack()
   const tracks = useLineupTable(getCollectionTracksLineup)
   return (
-    <CollectionPageClassComponen
+    <CollectionPageClassComponent
       {...props}
       currentTrack={currentTrack}
       tracks={tracks}
@@ -154,7 +154,7 @@ const CollectionPage = (props: CollectionPageProps) => {
   )
 }
 
-class CollectionPageClassComponen extends Component<
+class CollectionPageClassComponent extends Component<
   CollectionPageProps & {
     currentTrack: Track | null
     tracks: {
