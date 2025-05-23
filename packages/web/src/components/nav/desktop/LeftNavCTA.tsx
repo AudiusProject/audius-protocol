@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -11,7 +12,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { SignOnLink } from 'components/SignOnLink'
 
 const { SIGN_UP_PAGE } = route
-const { getAccountStatus, getHasAccount, getIsAccountComplete, getGuestEmail } =
+const { getAccountStatus, getIsAccountComplete, getGuestEmail } =
   accountSelectors
 
 const messages = {
@@ -23,7 +24,7 @@ const messages = {
 
 export const LeftNavCTA = () => {
   const record = useRecord()
-  const isSignedIn = useSelector(getHasAccount)
+  const isSignedIn = useHasAccount()
   const accountStatus = useSelector(getAccountStatus)
   const hasCompletedAccount = useSelector(getIsAccountComplete)
   const guestEmail = useSelector(getGuestEmail)

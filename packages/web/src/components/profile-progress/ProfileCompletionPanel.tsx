@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import {
   useOrderedCompletionStages,
-  accountSelectors,
   challengesSelectors,
   musicConfettiActions
 } from '@audius/common/src/store'
@@ -17,7 +17,6 @@ import { ProfileCompletionTooltip } from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 
 const { getIsAccountLoaded } = challengesSelectors
-const { getHasAccount } = accountSelectors
 const { show: showMusicConfetti } = musicConfettiActions
 
 const ORIGINAL_HEIGHT_PIXELS = 134
@@ -36,7 +35,7 @@ export const ProfileCompletionPanel = () => {
   const dispatch = useDispatch()
   const completionStages = useOrderedCompletionStages()
   const isAccountLoaded = useSelector(getIsAccountLoaded)
-  const isLoggedIn = useSelector(getHasAccount)
+  const isLoggedIn = useHasAccount()
 
   const [isDismissed, setIsDismissed] = useState(false)
   const [isTooltipDisabled, setIsTooltipDisabled] = useState(false)

@@ -1,6 +1,6 @@
 import { MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { useNotificationUnreadCount } from '@audius/common/api'
+import { useHasAccount, useNotificationUnreadCount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Flex, IconNotificationOn, NotificationCount } from '@audius/harmony'
@@ -15,7 +15,7 @@ import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
 import { canAccess } from './NavHeader'
 import { NavHeaderButton } from './NavHeaderButton'
 
-const { getHasAccount, getIsAccountComplete } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   label: (count: number) => `${count} unread notifications`
@@ -23,7 +23,7 @@ const messages = {
 
 export const NotificationsButton = () => {
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   const isAccountComplete = useSelector(getIsAccountComplete)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [isNotificationPanelOpen, toggleIsNotificationPanelOpen] =

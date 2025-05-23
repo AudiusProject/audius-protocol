@@ -19,12 +19,12 @@ import {
 } from 'typed-redux-saga'
 import { ulid } from 'ulid'
 
-import { queryUsers } from '~/api'
+import { queryHasAccount, queryUsers } from '~/api'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import { getHasAccount, getUserId } from '~/store/account/selectors'
+import { getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
@@ -339,7 +339,7 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const hasAccount = yield* select(getHasAccount)
+    const hasAccount = yield* call(queryHasAccount)
     if (!hasAccount) {
       throw new Error('User not found')
     }

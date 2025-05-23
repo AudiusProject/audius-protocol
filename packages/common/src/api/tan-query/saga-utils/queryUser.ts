@@ -86,6 +86,19 @@ export function* queryCurrentAccount() {
   return queryData as AccountState | null | undefined
 }
 
+export function* queryHasAccount() {
+  const account = yield* call(queryCurrentAccount)
+  return !!account?.userId
+}
+
+export function* queryIsAccountComplete() {
+  const account = yield* call(queryCurrentAccount)
+  if (!account) return false
+  const accountUser = yield* call(queryUser, account?.userId)
+  // an account is complete if it has a handle and name
+  return !!accountUser?.handle && !!accountUser?.name
+}
+
 export function* queryAccountUser() {
   const account = yield* call(queryCurrentAccount)
   if (!account) return undefined

@@ -1,7 +1,6 @@
 import { useCallback, useContext } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
@@ -12,7 +11,6 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'

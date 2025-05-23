@@ -42,7 +42,7 @@ const getLocalAccount = (localStorage: LocalStorage) => {
       guestEmail: null
     } as AccountState
   }
-  return undefined
+  return null
 }
 
 export const getCurrentAccountQueryFn = async (
@@ -55,6 +55,10 @@ export const getCurrentAccountQueryFn = async (
   const localAccount = getLocalAccount(localStorage)
   if (localAccount) {
     return localAccount
+  }
+
+  if (!currentUserWallet) {
+    return null
   }
 
   const { data } = await sdk.full.users.getUserAccount({
@@ -129,4 +133,11 @@ export const useCurrentAccountUser = <TResult = User>(
 ) => {
   const { data: currentAccount } = useCurrentAccount()
   return useUser(currentAccount?.userId, options)
+}
+
+export const useHasAccount = () => {
+  const { data: hasUserId } = useCurrentAccount({
+    select: (account) => !!account?.userId
+  })
+  return !!hasUserId
 }

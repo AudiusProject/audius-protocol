@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 
 import {
   useCollectionByPermalink,
+  useHasAccount,
   useTracks,
   useUsers
 } from '@audius/common/api'
@@ -12,7 +13,6 @@ import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
 import {
   EditCollectionValues,
-  accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions
 } from '@audius/common/store'
@@ -45,7 +45,6 @@ import RemovePlaylistTrackDrawer from './RemoveCollectionTrackDrawer'
 
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
-const { getHasAccount } = accountSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   editPlaylist: `Edit ${capitalize(collectionType)}`,
@@ -68,7 +67,7 @@ type EditCollectionPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: EditCollectionPageProps) => {
-  const { hasAccount } = props
+  const hasAccount = useHasAccount()
   if (hasAccount) return { ...props }
 })
 
@@ -455,9 +454,7 @@ const EditCollectionPage = g(
 )
 
 function mapStateToProps(state: AppState) {
-  return {
-    hasAccount: getHasAccount(state)
-  }
+  return {}
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {

@@ -13,7 +13,8 @@ import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
   queryAccountUser,
-  getCurrentAccountQueryKey
+  getCurrentAccountQueryKey,
+  queryCurrentAccount
 } from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
@@ -24,7 +25,7 @@ import { cacheActions } from '../cache'
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
-import { getUserId, getAccount } from './selectors'
+import { getUserId } from './selectors'
 import {
   fetchAccount,
   fetchAccountFailed,
@@ -382,7 +383,7 @@ function* setLocalStorageAccountAndUser(
 function* syncAccountToLocalStorage() {
   const localStorage = yield* getContext('localStorage')
   const { userId, collections, playlistLibrary, guestEmail } =
-    yield* select(getAccount)
+    (yield* call(queryCurrentAccount)) ?? {}
   yield* call([localStorage, localStorage.setAudiusAccount], {
     userId,
     collections,

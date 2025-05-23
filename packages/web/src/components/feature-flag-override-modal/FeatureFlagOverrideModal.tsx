@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import {
   OverrideSetting,
   FEATURE_FLAG_OVERRIDE_KEY
 } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { fuzzySearch } from '@audius/common/utils'
 import {
   Box,
@@ -23,11 +23,9 @@ import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useDevModeHotkey } from 'hooks/useDevModeHotkey'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 
 import styles from './FeatureFlagOverrideModal.module.css'
-const { getHasAccount } = accountSelectors
 
 const flags = Object.values(FeatureFlags)
 const messages = {
@@ -56,7 +54,7 @@ export const FeatureFlagOverrideModal = () => {
   const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
   const [isOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   const [overrideSettings, setOverrideSettings] = useState(
     flags.reduce<Record<string, OverrideSetting>>(
       (acc, flag) => ({ ...acc, [flag]: getOverrideSetting(flag) }),

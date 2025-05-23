@@ -1,8 +1,8 @@
 import { PureComponent } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  accountSelectors,
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
@@ -25,7 +25,6 @@ const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { getDiscoverFeedLineup, getFeedFilter } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
-const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   feedTitle: 'Feed',
@@ -116,7 +115,6 @@ const makeMapStateToProps = () => {
   const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 
   const mapStateToProps = (state) => ({
-    hasAccount: getHasAccount(state),
     feed: getFeedLineup(state),
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
@@ -149,7 +147,10 @@ const mapDispatchToProps = (dispatch) => ({
 
 const FeedPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
-  return <FeedPageProvider isMobile={isMobile} {...props} />
+  const hasAccount = useHasAccount()
+  return (
+    <FeedPageProvider isMobile={isMobile} hasAccount={hasAccount} {...props} />
+  )
 }
 
 export default withRouter(

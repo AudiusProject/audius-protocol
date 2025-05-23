@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from 'react'
 
 import { useCurrentAccountUser, useUserCollectibles } from '@audius/common/api'
 import { RandomImage } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import {
   Flex,

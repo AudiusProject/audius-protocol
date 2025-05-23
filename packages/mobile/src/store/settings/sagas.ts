@@ -1,7 +1,6 @@
-import { queryAccountUser } from '@audius/common/api'
+import { queryAccountUser, queryHasAccount } from '@audius/common/api'
 import type { PushNotifications as TPushNotifications } from '@audius/common/store'
 import {
-  accountSelectors,
   settingsPageSelectors,
   settingsPageInitialState as initialState,
   settingsPageActions,
@@ -24,7 +23,6 @@ const { getPushNotificationSettings, SET_PUSH_NOTIFICATION_SETTINGS } =
   settingsPageActions
 const { getPushNotificationSettings: selectPushNotificationSettings } =
   settingsPageSelectors
-const { getHasAccount } = accountSelectors
 
 function* getIsMobilePushEnabled() {
   yield* put(getPushNotificationSettings())
@@ -60,7 +58,7 @@ function* registerDeviceToken() {
 
 function* reregisterDeviceTokenOnStartup() {
   yield* call(waitForAccount)
-  const isSignedIn = yield* select(getHasAccount)
+  const isSignedIn = yield* call(queryHasAccount)
   if (!isSignedIn) return
 
   const { status } = yield* call(checkNotifications)
@@ -126,7 +124,7 @@ function* watchGetPushNotificationSettings() {
     settingsPageActions.GET_PUSH_NOTIFICATION_SETTINGS,
     function* () {
       yield* call(waitForRead)
-      const hasAccount = yield* select(getHasAccount)
+      const hasAccount = yield* call(queryHasAccount)
       if (!hasAccount) return
 
       try {

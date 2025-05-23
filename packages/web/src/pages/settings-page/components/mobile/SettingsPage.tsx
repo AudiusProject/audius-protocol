@@ -33,7 +33,6 @@ import Page from 'components/page/Page'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import useScrollToTop from 'hooks/useScrollToTop'
 import { env } from 'services/env'
-import { AppState } from 'store/types'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'

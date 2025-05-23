@@ -59,7 +59,6 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
-import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,
   isSafariPushAvailable,

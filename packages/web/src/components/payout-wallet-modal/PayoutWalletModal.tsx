@@ -28,7 +28,7 @@ import {
 } from '@solana/spl-token'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'

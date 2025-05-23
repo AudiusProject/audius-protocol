@@ -1,10 +1,9 @@
 import { useCallback, useState } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import { Client } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { localStorage } from 'services/local-storage'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
 import { getClient } from 'utils/clientUtil'
@@ -12,8 +11,6 @@ import { getClient } from 'utils/clientUtil'
 import { CallToActionBanner } from './CallToActionBanner'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
-
-const { getHasAccount } = accountSelectors
 
 const messages = {
   text: 'Download the Audius App',
@@ -26,11 +23,11 @@ const messages = {
  */
 export const DownloadAppBanner = () => {
   const dispatch = useDispatch()
-  const signedIn = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   const hasDismissed = localStorage.getItem(MOBILE_BANNER_LOCAL_STORAGE_KEY)
   const isDesktopWeb = getClient() === Client.DESKTOP
   const [isVisible, setIsVisible] = useState(
-    !hasDismissed && isDesktopWeb && !signedIn
+    !hasDismissed && isDesktopWeb && !hasAccount
   )
   const handleClose = useCallback(() => {
     setIsVisible(false)

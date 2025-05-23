@@ -11,7 +11,7 @@ import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
-import { queryAccountUser } from '~/api'
+import { queryHasAccount, queryAccountUser } from '~/api'
 import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { PurchaseVendor } from '~/models/PurchaseContent'
@@ -24,7 +24,7 @@ import {
   pollForTokenBalanceChange,
   recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
-import { getHasAccount, getWalletAddresses } from '~/store/account/selectors'
+import { getWalletAddresses } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
@@ -356,7 +356,7 @@ function* doBuyUSDC({
 
 function* recoverPurchaseIfNecessary() {
   yield* waitForRead()
-  const hasAccount = yield* select(getHasAccount)
+  const hasAccount = yield* call(queryHasAccount)
   if (!hasAccount) return
 
   const reportToSentry = yield* getContext('reportToSentry')

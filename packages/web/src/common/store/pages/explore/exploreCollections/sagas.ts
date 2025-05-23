@@ -1,7 +1,6 @@
 import { queryAccountUser } from '@audius/common/api'
 import { Collection, UserCollectionMetadata } from '@audius/common/models'
 import {
-  accountSelectors,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
   getContext

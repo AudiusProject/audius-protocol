@@ -1,6 +1,6 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser, useHasAccount } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -18,7 +18,7 @@ import { NavHeaderButton } from './NavHeaderButton'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE, SETTINGS_PAGE, DASHBOARD_PAGE } = route
-const { getHasAccount, getIsAccountComplete } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   homeLink: 'Go to Home',
@@ -48,7 +48,7 @@ const RestrictedLink = ({
   children
 }: RestrictedLinkProps) => {
   const { requiresAccount } = useRequiresAccountFn(undefined, restriction)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   const isAccountComplete = useSelector(getIsAccountComplete)
 
   const handleClick = (e: MouseEvent) => {

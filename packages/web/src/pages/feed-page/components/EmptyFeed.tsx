@@ -1,12 +1,11 @@
-import { accountSelectors } from '@audius/common/store'
+import { useHasAccount } from '@audius/common/api'
 
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
-import { useSelector } from 'utils/reducer'
 
 import FollowArtists from './FollowUsers'
 
 const EmptyFeed = () => {
-  const hasAccount = useSelector(accountSelectors.getHasAccount)
+  const hasAccount = useHasAccount()
   useRequiresAccount()
 
   return hasAccount ? <FollowArtists /> : null

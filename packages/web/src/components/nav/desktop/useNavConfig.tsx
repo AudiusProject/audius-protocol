@@ -1,5 +1,6 @@
 import { ReactNode, useMemo } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import {
   useChallengeCooldownSchedule,
   useFeatureFlag
@@ -50,7 +51,7 @@ const {
 } = route
 
 const { getUnreadMessagesCount } = chatSelectors
-const { getIsAccountComplete, getHasAccount } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 export type NavItemConfig = {
   label: string
@@ -85,7 +86,7 @@ const createNavItemWithSpeaker = ({
 })
 
 export const useNavConfig = () => {
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   const isAccountComplete = useSelector(getIsAccountComplete)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
   const { isUploading, isOnUploadPage } = useNavUploadStatus()

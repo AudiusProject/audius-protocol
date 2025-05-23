@@ -2,6 +2,8 @@ import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
   queryAccountUser,
+  queryHasAccount,
+  queryIsAccountComplete,
   queryUserByHandle,
   queryUsers
 } from '@audius/common/api'
@@ -27,7 +29,6 @@ import {
 } from '@audius/common/services'
 import {
   accountActions,
-  accountSelectors,
   settingsPageActions,
   collectionsSocialActions,
   usersSocialActions as socialActions,
@@ -38,7 +39,8 @@ import {
   fetchAccountAsync,
   getOrCreateUSDCUserBank,
   changePasswordActions,
-  confirmTransaction
+  confirmTransaction,
+  accountSelectors
 } from '@audius/common/store'
 import {
   parseHandleReservedStatusFromSocial,
@@ -91,7 +93,6 @@ import { Pages } from './types'
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
-const { getHasAccount, getUserId } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -1041,9 +1042,11 @@ function* followCollections(
   favoriteSource: FavoriteSource
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
+  const accountUser = yield* call(queryAccountUser)
   try {
-    const result = yield* call(retrieveCollections, collectionIds, { userId })
+    const result = yield* call(retrieveCollections, collectionIds, {
+      userId: accountUser?.user_id
+    })
 
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i]
@@ -1066,7 +1069,7 @@ function* followCollections(
 function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
-  const isAccountComplete = yield* select(accountSelectors.getIsAccountComplete)
+  const isAccountComplete = yield* call(queryIsAccountComplete)
   if (isAccountComplete) {
     // If account creation has finished we need to make sure followArtists gets called
     // Also we specifically request to not follow the defaults (Audius user, Hot & New Playlist) since that should have already occurred
@@ -1217,7 +1220,7 @@ function* watchSendWelcomeEmail() {
   yield* takeLatest(
     signOnActions.SEND_WELCOME_EMAIL,
     function* (action: ReturnType<typeof signOnActions.sendWelcomeEmail>) {
-      const hasAccount = yield* select(getHasAccount)
+      const hasAccount = yield* call(queryHasAccount)
       if (!hasAccount) return
       yield* call(audiusBackendInstance.sendWelcomeEmail, {
         sdk,
