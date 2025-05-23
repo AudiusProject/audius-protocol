@@ -6,6 +6,7 @@ import { FeatureFlags } from '@audius/common/services'
 import { ThemeProvider } from '@audius/harmony'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, RenderOptions } from '@testing-library/react'
+import { setupServer } from 'msw/node'
 import { Provider } from 'react-redux'
 import { Router } from 'react-router-dom'
 import { CompatRouter } from 'react-router-dom-v5-compat'
@@ -100,3 +101,5 @@ const customRender = (ui: ReactElement, options?: CustomRenderOptions) =>
 export * from '@testing-library/react'
 export type { CustomRenderOptions as RenderOptions }
 export { customRender as render }
+
+export const mswServer = setupServer()

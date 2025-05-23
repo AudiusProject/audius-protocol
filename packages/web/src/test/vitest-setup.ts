@@ -9,12 +9,16 @@ import { queryClient } from 'services/query-client'
 // Mock console.error to filter out React prop warnings
 const originalError = console.error
 console.error = (...args) => {
-  if (
-    typeof args[0] === 'string' &&
-    args[0].includes('React does not recognize the `') &&
-    args[0].includes('` prop on a DOM element')
-  ) {
-    return
+  if (typeof args[0] === 'string') {
+    if (
+      args[0].includes('React does not recognize the `') &&
+      args[0].includes('` prop on a DOM element')
+    ) {
+      return
+    }
+    if (args[0].includes('Error initializing fingerprint client')) {
+      return
+    }
   }
   originalError.call(console, ...args)
 }

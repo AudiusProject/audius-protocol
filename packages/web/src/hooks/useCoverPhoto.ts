@@ -32,7 +32,6 @@ export const useCoverPhoto = ({
     select: (user) => pick(user, 'cover_photo', 'updatedCoverPhoto')
   })
   const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
-
   const image = useImageSize({
     artwork: cover_photo,
     targetSize: size,

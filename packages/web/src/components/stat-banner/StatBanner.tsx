@@ -292,7 +292,12 @@ export const StatBanner = (props: StatsBannerProps) => {
   }
 
   return (
-    <Flex justifyContent='space-between' alignItems='center' flex='1 1 100%'>
+    <Flex
+      justifyContent='space-between'
+      alignItems='center'
+      flex='1 1 100%'
+      data-testid='stat-banner'
+    >
       <Box w={330}>
         <Stats clickable userId={profileId!} stats={stats} size='large' />
       </Box>
