@@ -182,7 +182,7 @@ export const ProfileResultsPage = () => {
             isFetching={isFetching}
             isPending={isPending}
             data={ids}
-            skeletonCount={10}
+            skeletonCount={5}
           />
         )}
       </Flex>

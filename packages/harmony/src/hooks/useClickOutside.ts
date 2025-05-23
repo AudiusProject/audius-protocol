@@ -16,7 +16,8 @@ export const useClickOutside = (
   onClick: () => void,
   isVisible: boolean,
   ignoreClick?: (target: EventTarget) => boolean,
-  defaultRef?: MutableRefObject<any> | null
+  defaultRef?: MutableRefObject<any> | null,
+  anchorRef?: MutableRefObject<any> | null
 ) => {
   const ref = useRef(defaultRef?.current ?? null)
 
@@ -26,7 +27,9 @@ export const useClickOutside = (
         if (
           ignoreClick
             ? ignoreClick(e.target)
-            : !ref.current || (ref.current && ref.current.contains(e.target))
+            : !ref.current ||
+              (ref.current && ref.current.contains(e.target)) ||
+              anchorRef?.current?.contains(e.target)
         ) {
           return
         }
@@ -52,7 +55,7 @@ export const useClickOutside = (
         document.removeEventListener('mousedown', handleClick)
       }, 0)
     }
-  }, [onClick, ignoreClick, isVisible])
+  }, [onClick, ignoreClick, isVisible, anchorRef])
 
   return ref
 }
