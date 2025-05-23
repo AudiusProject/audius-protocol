@@ -45,6 +45,8 @@ export const TransactionSuccessScreen = (
     ? messages.priceEach(pricePerBaseToken)
     : undefined
 
+  if (!formattedPayAmount || !formattedReceiveAmount) return null
+
   return (
     <Flex direction='column' gap='xl'>
       <Flex direction='row' gap='xs' alignItems='center'>
