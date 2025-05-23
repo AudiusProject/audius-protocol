@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { useConnectedWallets } from '@audius/common/api'
+import { useConnectedWallets, useAudioBalance } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { Client, BNWei } from '@audius/common/models'
@@ -12,7 +12,8 @@ import {
   useConnectedWalletsModal,
   useBuySellModal
 } from '@audius/common/store'
-import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import { isNullOrUndefined } from '@audius/common/utils'
+import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
 import {
   IconReceive,
   IconSend,
@@ -45,9 +46,7 @@ import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
 const { pressReceive, pressSend } = tokenDashboardPageActions
 const {
-  getAccountBalance,
-  getAccountTotalBalance,
-  getTotalBalanceLoadDidFail
+  getAccountBalance
 } = walletSelectors
 
 const messages = {
@@ -257,9 +256,8 @@ const ManageWalletsButton = () => {
 }
 export const WalletManagementTile = () => {
   const isManagedAccount = useIsManagedAccount()
-  const totalBalance = useSelector(getAccountTotalBalance)
+  const { totalBalance, isLoading: isBalanceLoading } = useAudioBalance({ includeConnectedWallets: true })
   const { data: connectedWallets } = useConnectedWallets()
-  const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
   const { toast } = useContext(ToastContext)
   const [, setOpen] = useModalState('AudioBreakdown')
 
@@ -284,24 +282,15 @@ export const WalletManagementTile = () => {
     setOpen(true)
   }, [setOpen])
 
-  useEffect(() => {
-    if (balanceLoadDidFail) {
-      toast(
-        'Could not load your $AUDIO balance. Please try again later.',
-        10000
-      )
-    }
-  }, [balanceLoadDidFail, toast])
-
   return (
     <Flex className={styles.walletManagementTile} shadow='mid'>
       <div className={styles.balanceContainer}>
-        {isNullOrUndefined(totalBalance) ? (
+        {isBalanceLoading || totalBalance === null ? (
           <LoadingSpinner className={styles.spinner} />
         ) : (
-          <TokenHoverTooltip balance={totalBalance}>
+          <TokenHoverTooltip balance={totalBalance as AudioWei}>
             <div className={styles.balanceAmount}>
-              {formatWei(totalBalance, true, 0)}
+              {AUDIO(totalBalance).toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </div>
           </TokenHoverTooltip>
         )}
