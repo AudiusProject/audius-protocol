@@ -104,17 +104,21 @@
 }
 
 .searchBar :global(.ant-select-dropdown .rc-virtual-list-holder) {
+  padding: 16px 8px;
   max-height: unset !important;
 }
 .searchBar :global(.ant-select-dropdown) {
   -webkit-app-region: none;
   animation-duration: 0.2s !important;
-  box-shadow: 0 2px 5px 0 rgba(133, 129, 153, 0.15);
+  box-shadow:
+    0px 0px 4px 0px rgba(0, 0, 0, 0.04),
+    0px 4px 8px 0px rgba(0, 0, 0, 0.06);
   position: absolute;
   background: var(--harmony-white);
   width: 100%;
   top: 32px !important;
-  border-radius: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--harmony-n-100);
   padding: 0;
 }
 
@@ -124,7 +128,7 @@
 }
 
 .searchBox :global(.ant-select-item-option) {
-  margin: auto 8px;
+  margin: auto 0px;
   padding: 0px;
   display: flex;
   flex-direction: row;
@@ -157,17 +161,14 @@
 
 .searchBox :global(.ant-select-item-group) {
   height: 14px;
-  min-height: 8px;
-  margin-top: 16px;
-  margin-left: 16px;
-  margin-bottom: 2px;
+  min-height: 26px;
   color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-bold);
   letter-spacing: 0.7px;
   line-height: 14px;
   text-transform: uppercase;
-  padding: 0;
+  padding: 8px;
 }
 
 .searchBoxEmpty :global(.ant-select-item-group) {
@@ -218,8 +219,14 @@
  */
 .searchBox :global(.ant-select-item-option.ant-select-item-option-active) {
   border-radius: 4px;
-  border: 1px solid var(--harmony-n-100);
-  background-color: var(--harmony-n-50) !important;
+  border: 1px solid var(--border-border-default);
+  background-color: var(--harmony-bg-surface-2) !important;
+}
+.searchBox
+  :global(.ant-select-item-option.ant-select-item-option-active):has(
+    :global(.dropdown-action)
+  ) {
+  background-color: transparent !important;
 }
 .searchBox :global(.ant-select-item-option:hover) {
   background-color: unset;
@@ -329,11 +336,6 @@
 .tagSearchPopup:hover path,
 .focused path {
   fill: var(--harmony-white);
-}
-
-:global(.ant-select-item-option-active) .primary,
-:global(.ant-select-item-option-active) .secondary {
-  color: var(--harmony-static-white);
 }
 
 :global(.ant-select-item-option-active) .iconArrow path {

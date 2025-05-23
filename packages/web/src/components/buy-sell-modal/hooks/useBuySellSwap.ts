@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { SLIPPAGE_BPS, useSwapTokens } from '@audius/common/api'
 import { buySellMessages as messages } from '@audius/common/messages'
@@ -18,20 +18,21 @@ type UseBuySellSwapProps = {
   onClose: () => void
 }
 
+export type SwapResult = {
+  inputAmount: number
+  outputAmount: number
+}
+
 export const useBuySellSwap = (props: UseBuySellSwapProps) => {
-  const {
-    transactionData,
-    currentScreen,
-    setCurrentScreen,
-    activeTab,
-    onClose
-  } = props
+  const { transactionData, currentScreen, setCurrentScreen, activeTab } = props
   const { toast } = useContext(ToastContext)
+  const [swapResult, setSwapResult] = useState<SwapResult | null>(null)
 
   const {
     mutate: swapTokens,
     status: swapStatus,
-    error: swapError
+    error: swapError,
+    data: swapData
   } = useSwapTokens()
 
   const handleShowConfirmation = useCallback(() => {
@@ -72,21 +73,28 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
   }, [activeTab, transactionData, swapTokens, currentScreen])
 
   useEffect(() => {
-    if (swapStatus === 'success') {
-      setCurrentScreen('input')
-      toast(
-        activeTab === 'buy' ? messages.buySuccess : messages.sellSuccess,
-        3000
-      )
-      const timer = setTimeout(() => {
-        onClose()
-      }, 1000)
-      return () => clearTimeout(timer)
+    if (swapStatus === 'success' && swapData) {
+      // Store the swap result when transaction is successful
+      setSwapResult({
+        inputAmount:
+          swapData.inputAmount?.uiAmount ?? (transactionData?.inputAmount || 0),
+        outputAmount:
+          swapData.outputAmount?.uiAmount ??
+          (transactionData?.outputAmount || 0)
+      })
+      setCurrentScreen('success')
     } else if (swapStatus === 'error') {
       setCurrentScreen('input')
       toast(swapError?.message || messages.transactionFailed, 5000)
     }
-  }, [swapStatus, swapError, activeTab, onClose, toast, setCurrentScreen])
+  }, [
+    swapStatus,
+    swapError,
+    swapData,
+    toast,
+    setCurrentScreen,
+    transactionData
+  ])
 
   const isContinueButtonLoading =
     swapStatus === 'pending' && currentScreen === 'input'
@@ -98,6 +106,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     handleConfirmSwap,
     isContinueButtonLoading,
     isConfirmButtonLoading,
-    swapError
+    swapError,
+    swapStatus,
+    swapResult
   }
 }

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntities } from '@audius/common/api'
 import {
-  notificationsSelectors,
   Entity,
   TrackAddedToPurchasedAlbumNotification as TrackAddedToPurchasedAlbumNotificationType
 } from '@audius/common/store'
@@ -9,7 +9,6 @@ import { Flex, IconStars } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -20,7 +19,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
 import { UserNameLink } from './components/UserNameLink'
 import { getEntityLink } from './utils'
-const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
   title: 'New Release',
@@ -36,35 +34,39 @@ export const TrackAddedToPurchasedAlbumNotification = (
   props: TrackAddedToPurchasedAlbumNotificationProps
 ) => {
   const { notification } = props
+  const entities = useNotificationEntities(notification)
+  const { track, playlist } = entities
+  const playlistOwner = playlist?.user
   const { timeLabel, isViewed } = notification
-  const { track, playlist } = useSelector((state) =>
-    getNotificationEntities(state, notification)
-  )
-  const playlistOwner = playlist.user
 
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
-    dispatch(push(getEntityLink(playlist), { forceFetch: true }))
-  }, [playlist, dispatch])
+    if (playlist) {
+      const link = getEntityLink(playlist)
+      dispatch(push(link))
+    }
+  }, [dispatch, playlist])
 
-  if (!playlistOwner || !track) return null
+  if (!playlistOwner || !track || !playlist) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
-      <NotificationHeader icon={<IconStars color='accent' />}>
+      <NotificationHeader icon={<IconStars />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <Flex as={NotificationBody} alignItems='center' gap='s'>
-        <ProfilePicture user={playlistOwner} />
-        <span>
-          <UserNameLink user={playlistOwner} notification={notification} />
-          {messages.released}
-          <EntityLink entity={track} entityType={Entity.Track} />
-          {messages.onAlbum}
-          <EntityLink entity={playlist} entityType={Entity.Playlist} />
-        </span>
-      </Flex>
+      <NotificationBody>
+        <Flex gap='s' alignItems='center'>
+          <ProfilePicture user={playlistOwner} />
+          <span>
+            <UserNameLink user={playlistOwner} notification={notification} />
+            {messages.released}
+            <EntityLink entity={track} entityType={Entity.Track} />
+            {messages.onAlbum}
+            <EntityLink entity={playlist} entityType={Entity.Playlist} />
+          </span>
+        </Flex>
+      </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
   )

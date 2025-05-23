@@ -12,7 +12,7 @@ import { backgroundOverlay } from 'utils/styleUtils'
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
-const { getUserId, getIsAccountComplete, getGuestEmail } = accountSelectors
+const { getIsAccountComplete, getGuestEmail } = accountSelectors
 const messages = {
   haveAccount: 'Have an account?',
   managedAccount: 'Managed Account',
@@ -112,6 +112,7 @@ const SignedInView = ({
         <Flex alignItems='center' justifyContent='space-between' gap='s' h={20}>
           <Flex css={{ maxWidth: '85%' }}>
             <UserLink
+              popover
               textVariant='title'
               size='s'
               userId={userId}
@@ -177,10 +178,8 @@ const GuestView = () => {
 }
 
 export const AccountDetails = () => {
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
-  })
-  const userId = useSelector(getUserId)
+  const { data } = useCurrentAccount()
+  const { user_id: userId, handle: accountHandle } = data?.user ?? {}
   const guestEmail = useSelector(getGuestEmail)
   const isManagedAccount = useIsManagedAccount()
   const hasCompletedAccount = useSelector(getIsAccountComplete)

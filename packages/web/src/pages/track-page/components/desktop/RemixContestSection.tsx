@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react'
 
 import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -49,6 +51,9 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: remixContest } = useRemixContest(trackId)
+  const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+  )
   const { data: remixes, count: remixCount } = useRemixes({
     trackId,
     isContestEntry: true
@@ -56,7 +61,9 @@ export const RemixContestSection = ({
 
   const [contentHeight, setContentHeight] = useState(0)
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
-  const hasWinners = (remixContest?.eventData?.winners?.length ?? 0) > 0
+  const hasWinners =
+    isRemixContestWinnersMilestoneEnabled &&
+    (remixContest?.eventData?.winners?.length ?? 0) > 0
 
   const handleHeightChange = useCallback((height: number) => {
     setContentHeight(height)
@@ -75,12 +82,6 @@ export const RemixContestSection = ({
           }
         ]
       : []),
-    {
-      text: remixCount
-        ? `${messages.submissions} (${remixCount})`
-        : messages.submissions,
-      label: 'submissions'
-    },
     ...(hasWinners
       ? [
           {
@@ -88,11 +89,19 @@ export const RemixContestSection = ({
             label: 'winners'
           }
         ]
-      : [])
+      : [
+          {
+            text: remixCount
+              ? `${messages.submissions} (${remixCount})`
+              : messages.submissions,
+            label: 'submissions'
+          }
+        ])
   ]
 
   const { tabs: TabBar, body: ContentBody } = useTabs({
     tabs,
+    initialTab: hasWinners ? 'winners' : undefined,
     elements: [
       <TabBody key='details' onHeightChange={handleHeightChange}>
         <RemixContestDetailsTab trackId={trackId} />
@@ -104,12 +113,6 @@ export const RemixContestSection = ({
             </TabBody>
           ]
         : []),
-      <TabBody key='submissions' onHeightChange={handleHeightChange}>
-        <RemixContestSubmissionsTab
-          trackId={trackId}
-          submissions={remixes.slice(0, 10)}
-        />
-      </TabBody>,
       ...(hasWinners
         ? [
             <TabBody key='winners' onHeightChange={handleHeightChange}>
@@ -119,7 +122,14 @@ export const RemixContestSection = ({
               />
             </TabBody>
           ]
-        : [])
+        : [
+            <TabBody key='submissions' onHeightChange={handleHeightChange}>
+              <RemixContestSubmissionsTab
+                trackId={trackId}
+                submissions={remixes.slice(0, 10)}
+              />
+            </TabBody>
+          ])
     ],
     isMobile: false
   })

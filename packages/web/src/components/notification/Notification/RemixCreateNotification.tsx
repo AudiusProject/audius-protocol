@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common/models'
+import { useNotificationEntities } from '@audius/common/api'
+import { Name, TrackMetadata } from '@audius/common/models'
 import {
   notificationsSelectors,
-  TrackEntity,
-  RemixCreateNotification as RemixCreateNotificationType
+  RemixCreateNotification as RemixCreateNotificationType,
+  TrackEntity
 } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -22,12 +23,12 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
-const { getNotificationUser, getNotificationTrack } = notificationsSelectors
+const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New remix of your track',
   by: 'by',
-  shareTwitterText: (track: TrackEntity, handle: string) =>
+  shareTwitterText: (track: TrackMetadata, handle: string) =>
     `New remix of ${track.title} by ${handle} on @audius #Audius $AUDIO`
 }
 
@@ -44,50 +45,51 @@ export const RemixCreateNotification = (
   const dispatch = useDispatch()
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  const childTrack = useSelector((state) =>
-    getNotificationTrack(state, childTrackId)
+  const entities = useNotificationEntities(notification) as TrackEntity[] | null
+  const childTrackEntity = entities?.find(
+    (track) => track.track_id === childTrackId
   )
-  const parentTrack = useSelector((state) =>
-    getNotificationTrack(state, parentTrackId)
+  const parentTrackEntity = entities?.find(
+    (track) => track.track_id === parentTrackId
   )
 
   const handleClick = useCallback(() => {
-    if (childTrack) {
-      dispatch(push(getEntityLink(childTrack)))
+    if (childTrackEntity) {
+      dispatch(push(getEntityLink(childTrackEntity)))
     }
-  }, [childTrack, dispatch])
+  }, [childTrackEntity, dispatch])
 
   const handleShare = useCallback(
     (twitterHandle: string) => {
-      if (!parentTrack) return null
-      const shareText = messages.shareTwitterText(parentTrack, twitterHandle)
+      if (!parentTrackEntity) return null
+      const shareText = messages.shareTwitterText(
+        parentTrackEntity,
+        twitterHandle
+      )
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_REMIX_CREATE_TWITTER_SHARE,
         { text: shareText }
       )
       return { shareText, analytics }
     },
-    [parentTrack]
+    [parentTrackEntity]
   )
 
-  if (!user || !parentTrack || !childTrack) return null
+  if (!user || !parentTrackEntity || !childTrackEntity) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconRemix />}>
-        <NotificationTitle>
-          {messages.title}{' '}
-          <EntityLink entity={parentTrack} entityType={entityType} />
-        </NotificationTitle>
+        <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <EntityLink entity={childTrack} entityType={entityType} /> {messages.by}{' '}
-        <UserNameLink user={user} notification={notification} />
+        <EntityLink entity={childTrackEntity} entityType={entityType} />{' '}
+        {messages.by} <UserNameLink user={user} notification={notification} />
       </NotificationBody>
       <TwitterShareButton
         type='dynamic'
         handle={user.handle}
-        url={getEntityLink(parentTrack, true)}
+        url={getEntityLink(parentTrackEntity, true)}
         shareData={handleShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

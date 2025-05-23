@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 
-import { useUSDCBalance } from '@audius/common/api'
+import { useTokenPrice, useUSDCBalance } from '@audius/common/api'
 import { Status } from '@audius/common/src/models/Status'
+import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
 import { SwapTab } from './SwapTab'
 import { TokenPair } from './types'
@@ -21,14 +22,19 @@ export const BuyTab = ({
   onTransactionDataChange,
   error
 }: BuyTabProps) => {
-  // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
-  // Fetch real USDC balance
-  const { status: balanceStatus, data: usdcBalance } = useUSDCBalance({
-    isPolling: false
-  })
+  const { status: balanceStatus, data: usdcBalance } = useUSDCBalance()
 
-  // Get USDC balance in UI format
+  const { data: tokenPriceData, isPending: isTokenPriceLoading } =
+    useTokenPrice(baseToken.address)
+
+  const tokenPrice = tokenPriceData?.price || null
+
+  const decimalPlaces = useMemo(() => {
+    if (!tokenPrice) return 2
+    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
+  }, [tokenPrice])
+
   const getUsdcBalance = useMemo(() => {
     return () => {
       if (balanceStatus === Status.SUCCESS && usdcBalance) {
@@ -49,6 +55,9 @@ export const BuyTab = ({
       }}
       onTransactionDataChange={onTransactionDataChange}
       error={error}
+      tokenPrice={tokenPrice}
+      isTokenPriceLoading={isTokenPriceLoading}
+      tokenPriceDecimalPlaces={decimalPlaces}
     />
   )
 }

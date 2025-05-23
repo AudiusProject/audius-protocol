@@ -1,6 +1,6 @@
 export type BuySellTab = 'buy' | 'sell'
 
-export type Screen = 'input' | 'confirm'
+export type Screen = 'input' | 'confirm' | 'success'
 
 export type TokenType = 'AUDIO' | 'USDC'
 
@@ -33,4 +33,17 @@ export type TokenAmountSectionProps = {
   isDefault?: boolean
   error?: boolean
   errorMessage?: string
+  tokenPrice?: string | null
+  isTokenPriceLoading?: boolean
+  tokenPriceDecimalPlaces?: number
+}
+
+// Data structure for the transaction success screen
+export type SuccessDisplayData = {
+  payTokenInfo: TokenInfo
+  receiveTokenInfo: TokenInfo
+  payAmount: number
+  receiveAmount: number
+  pricePerBaseToken: number
+  baseTokenSymbol: string
 }

@@ -1,5 +1,6 @@
 import { ComponentType, PureComponent } from 'react'
 
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   RepostSource,
@@ -7,13 +8,14 @@ import {
   PlaybackSource,
   ID,
   UID,
-  LineupTrack
+  LineupTrack,
+  Track,
+  Lineup
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
   accountActions,
   accountSelectors,
-  lineupSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -25,7 +27,8 @@ import {
   playlistUpdatesSelectors,
   LibraryCategoryType,
   SavedPageTrack,
-  TrackRecord
+  TrackRecord,
+  useLineupTable
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
@@ -51,7 +54,6 @@ const {
   getCollectionsCategory
 } = savedPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { makeGetTableMetadatas } = lineupSelectors
 
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
@@ -97,7 +99,25 @@ type SavedPageState = {
   shouldReturnToTrackPurchases: boolean
 }
 
-class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
+const SavedPage = (props: SavedPageProps) => {
+  const currentTrack = useCurrentTrack()
+  const tracks = useLineupTable(getSavedTracksLineup)
+  return (
+    <SavedPageClassComponent
+      {...props}
+      currentTrack={currentTrack}
+      tracks={tracks}
+    />
+  )
+}
+
+class SavedPageClassComponent extends PureComponent<
+  SavedPageProps & {
+    currentTrack: Track | null
+    tracks: Lineup<SavedPageTrack>
+  },
+  SavedPageState
+> {
   static contextType = SsrContext
   declare context: React.ContextType<typeof SsrContext>
   state: SavedPageState = {
@@ -216,8 +236,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   getPlayingId = () => {
-    const { currentQueueItem } = this.props
-    return currentQueueItem.track ? currentQueueItem.track.track_id : null
+    const { currentTrack } = this.props
+    return currentTrack?.track_id ?? null
   }
 
   getFormattedData = (
@@ -385,7 +405,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
         this.props.tracks.entries.reduce(
           (acc, track) => ({
             ...acc,
-            [track.id]: track
+            [track.track_id]: track
           }),
           {}
         )
@@ -486,28 +506,20 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 }
 
-type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
 type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
 let accountRef: AccountData
-let tracksRef: LineupData
 
 function makeMapStateToProps() {
-  const getLineupMetadatas = makeGetTableMetadatas(getSavedTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
-    const tracks = getLineupMetadatas(state)
     const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
 
-    if (!isEqual(tracksRef, tracks)) {
-      tracksRef = tracks
-    }
     if (!isEqual(accountRef, account)) {
       accountRef = account
     }
 
     return {
       account: accountRef,
-      tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),

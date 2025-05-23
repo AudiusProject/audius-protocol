@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import type { RefObject } from 'react'
 
 import { useRemixContest, useTrack, useCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { css } from '@emotion/native'
 import type { FlatList } from 'react-native'
 import Animated, {
@@ -82,11 +84,17 @@ export const RemixContestSection = ({
 
   const { data: track } = useTrack(trackId)
   const { data: currentUserId } = useCurrentUserId()
+  const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+    FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+  )
+
   const isOwner = track?.owner_id === currentUserId
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
-  const hasWinners = (remixContest?.eventData?.winners?.length ?? 0) > 0
+  const hasWinners =
+    isRemixContestWinnersMilestoneEnabled &&
+    (remixContest?.eventData?.winners?.length ?? 0) > 0
 
-  const [index, setIndex] = useState(0)
+  const [index, setIndex] = useState(hasWinners ? 2 : 0)
   const [routes, setRoutes] = useState<Route[]>([])
   const [heights, setHeights] = useState({})
   const [firstRender, setFirstRender] = useState(true)

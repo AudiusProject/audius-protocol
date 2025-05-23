@@ -1,5 +1,6 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
+import { useCurrentTrack } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -61,6 +62,7 @@ const AiPageProvider = ({
   resetTracks
 }: AiPageProviderProps) => {
   const { handle } = useParams<{ handle: string }>()
+  const currentTrack = useCurrentTrack()
 
   useEffect(() => {
     fetchAiUser(handle)
@@ -93,7 +95,7 @@ const AiPageProvider = ({
       lineup: tracks,
       playingUid: currentQueueItem.uid,
       playingSource: currentQueueItem.source,
-      playingTrackId: currentQueueItem.track && currentQueueItem.track.track_id,
+      playingTrackId: currentTrack?.track_id ?? null,
       playing: isPlaying,
       buffering: isBuffering,
       pauseTrack: pause,

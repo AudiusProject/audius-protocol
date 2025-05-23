@@ -38,7 +38,6 @@ export const MobileServerCollectionPage = () => {
   if (!collection || !user) return null
 
   const {
-    playlist_id,
     cover_art,
     is_album,
     playlist_name,
@@ -119,7 +118,7 @@ export const MobileServerCollectionPage = () => {
           <ServerUserGeneratedText>{description}</ServerUserGeneratedText>
         </Flex>
         <Divider />
-        <ServerTrackList collectionId={playlist_id} />
+        <ServerTrackList collection={collection} />
       </Paper>
     </Flex>
   )

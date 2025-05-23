@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useTracks, useUsers } from '@audius/common/api'
 import { PlaybackSource, Status } from '@audius/common/models'
 import type { ID, UID, Track, User } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
-  cacheUsersSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions,
   savedPageSelectors,
@@ -12,8 +11,8 @@ import {
   SavedPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
-import { debounce, isEqual } from 'lodash'
+import { Uid, type Nullable } from '@audius/common/utils'
+import { debounce } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -21,7 +20,6 @@ import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { FilterInput } from 'app/components/filter-input'
 import { TrackList } from 'app/components/track-list'
-import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
@@ -41,8 +39,6 @@ const {
   getCategory
 } = savedPageSelectors
 const { getIsReachable } = reachabilitySelectors
-const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
 
 const messages = {
   emptyTracksFavoritesText: "You haven't favorited any tracks yet.",
@@ -70,6 +66,18 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 const FETCH_LIMIT = 50
+
+function useTracksWithUsers(trackUids: string[]) {
+  const trackIds = trackUids.map((uid) => Uid.fromString(uid).id as ID)
+  const { data: tracks = [], byId: tracksById } = useTracks(trackIds)
+  const { byId: usersById } = useUsers(tracks.map((track) => track.owner_id))
+
+  return trackUids.map((uid) => {
+    const track = tracksById[Uid.fromString(uid).id]
+    const user = usersById[track?.owner_id]
+    return { uid, track, user }
+  })
+}
 
 export const TracksTab = () => {
   const dispatch = useDispatch()
@@ -130,24 +138,28 @@ export const TracksTab = () => {
   const { entries } = useFavoritesLineup(fetchSaves)
   const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
 
-  const filterTrack = (
-    track: Nullable<Track>,
-    user: Nullable<User>
-  ): track is TrackMetadata => {
-    if (!track || !user) {
-      return false
-    }
+  const filterTrack = useCallback(
+    (track: Nullable<Track>, user: Nullable<User>) => {
+      if (!track || !user) return false
+      if (!filterValue) return true
 
-    if (!filterValue.length) {
-      return true
-    }
+      const searchValue = filterValue.toLowerCase()
+      return (
+        track.title.toLowerCase().includes(searchValue) ||
+        user.name.toLowerCase().includes(searchValue) ||
+        user.handle.toLowerCase().includes(searchValue)
+      )
+    },
+    [filterValue]
+  )
 
-    const matchValue = filterValue?.toLowerCase()
-    return (
-      track.title?.toLowerCase().indexOf(matchValue) > -1 ||
-      user.name?.toLowerCase().indexOf(matchValue) > -1
-    )
-  }
+  const trackData = useTracksWithUsers(trackUids)
+
+  const filteredTrackUids = useMemo(() => {
+    return trackData
+      .filter(({ track, user }) => filterTrack(track, user))
+      .map(({ uid }) => uid)
+  }, [trackData, filterTrack])
 
   const allTracksFetched = useMemo(() => {
     return trackUids.length === saveCount && !filterValue
@@ -185,14 +197,6 @@ export const TracksTab = () => {
     isReachable,
     trackUids.length
   ])
-
-  const filteredTrackUids: string[] = useSelector((state) => {
-    return trackUids.filter((uid) => {
-      const track = getTrack(state, { uid })
-      const user = getUserFromTrack(state, { uid })
-      return filterTrack(track, user)
-    })
-  }, isEqual)
 
   const togglePlay = useCallback(
     (uid: UID, id: ID) => {

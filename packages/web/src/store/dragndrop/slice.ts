@@ -7,9 +7,9 @@ export type DragDropKind =
   | PlaylistLibraryKind
   | 'track'
   | 'album'
-  | 'track'
-  | 'album'
   | 'table-row'
+  // Special kind for the winner tile in the pick winners page
+  | 'winner-tile'
 
 export type DragnDropState = {
   dragging: boolean

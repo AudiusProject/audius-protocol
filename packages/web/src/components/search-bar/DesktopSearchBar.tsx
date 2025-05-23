@@ -20,8 +20,8 @@ import Input from 'antd/lib/input'
 import type { InputRef } from 'antd/lib/input'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useHistory, useLocation, matchPath } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, usePrevious } from 'react-use'
 
 import { searchResultsPage } from 'utils/route'
@@ -49,25 +49,21 @@ const messages = {
   }
 }
 
-const ViewMoreButton = ({ query }: { query: string }) => (
-  <Flex
-    as={Link}
-    // @ts-expect-error
-    to={searchResultsPage('all', query)}
-    alignItems='center'
-    ph='l'
-    pv='m'
-    gap='2xs'
-    css={{
-      cursor: 'pointer'
-    }}
-  >
-    <Text variant='label' size='s' color='subdued' className={styles.primary}>
-      {messages.viewMoreResults}
-    </Text>
-    <IconArrowRight size='s' color='subdued' className={styles.iconArrow} />
-  </Flex>
-)
+const ViewMoreButton = ({ query }: { query: string }) => {
+  const navigate = useNavigate()
+
+  return (
+    <Flex alignItems='center' pt='l' gap='2xs' justifyContent='center'>
+      <PlainButton
+        iconRight={IconArrowRight}
+        onClick={() => navigate(searchResultsPage('all', query))}
+        className='dropdown-action'
+      >
+        {messages.viewMoreResults}
+      </PlainButton>
+    </Flex>
+  )
+}
 
 const ClearRecentSearchesButton = () => {
   const dispatch = useDispatch()
@@ -76,8 +72,8 @@ const ClearRecentSearchesButton = () => {
   }, [dispatch])
 
   return (
-    <Flex alignItems='center' ph='l' pv='m' gap='2xs'>
-      <PlainButton onClick={handleClickClear}>
+    <Flex alignItems='center' pt='l' gap='2xs' justifyContent='center'>
+      <PlainButton onClick={handleClickClear} className='dropdown-action'>
         {messages.clearRecentSearches}
       </PlainButton>
     </Flex>
@@ -176,6 +172,7 @@ export const DesktopSearchBar = () => {
           color='subdued'
           onClick={handleClear}
           aria-label={messages.clearSearch}
+          onMouseDown={(e) => e.preventDefault()}
         />
       )
     }
@@ -223,14 +220,11 @@ export const DesktopSearchBar = () => {
     const hasResults = baseOptions.length > 0
 
     if (hasResults && inputValue) {
-      baseOptions.push({
-        options: [
-          {
-            label: <ViewMoreButton query={inputValue} />,
-            // @ts-expect-error
-            value: 'viewMore'
-          }
-        ]
+      // append to last group to avoid extra spacing between groups
+      baseOptions[baseOptions.length - 1].options.push({
+        label: <ViewMoreButton query={inputValue} />,
+        // @ts-expect-error
+        value: 'viewMore'
       })
     } else if (hasNoResults) {
       baseOptions.push({
@@ -255,7 +249,7 @@ export const DesktopSearchBar = () => {
   )
 
   const recentSearchOptions = useMemo(() => {
-    if (!searchHistory || inputValue) return []
+    if (!searchHistory.length || inputValue) return []
     const searchHistoryOptions = searchHistory.map((searchItem) => {
       if (searchItem.kind === Kind.USERS) {
         return {
@@ -317,8 +311,6 @@ export const DesktopSearchBar = () => {
     autocompleteOptions.length === 1 &&
     String(autocompleteOptions[0].options?.[0]?.value) === 'no-results'
 
-  const [isFocused, setIsFocused] = useState(false)
-
   const handleFocus = useCallback(() => {
     const searchElement = inputRef.current?.input?.closest(
       '.ant-select-selection-search'
@@ -326,7 +318,6 @@ export const DesktopSearchBar = () => {
     if (searchElement) {
       searchElement.classList.add('expanded')
     }
-    setIsFocused(true)
   }, [])
 
   const handleBlur = useCallback(() => {
@@ -342,7 +333,6 @@ export const DesktopSearchBar = () => {
         showResults ? 100 : 0
       )
     }
-    setIsFocused(false)
   }, [showResults])
 
   return (
@@ -357,7 +347,6 @@ export const DesktopSearchBar = () => {
         onSearch={handleSearch}
         onSelect={handleSelect}
         getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
-        open={showResults && isFocused}
       >
         <Input
           inputMode='search'

@@ -41,7 +41,7 @@ import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
-import searchResultsSagas from 'common/store/pages/search-page/sagas'
+import searchTracksLineupSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import signOnSaga from 'common/store/pages/signon/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
 import trendingPageSagas from 'common/store/pages/trending/sagas'
@@ -115,7 +115,6 @@ export default function* rootSaga() {
     reactionSagas(),
     rewardsPageSagas(),
     savedSagas(),
-    searchResultsSagas(),
     settingsSagas(),
     signOnSaga(),
     socialSagas(),
@@ -125,6 +124,7 @@ export default function* rootSaga() {
     trendingUndergroundSagas(),
     uploadSagas(),
     premiumTracksSagas(),
+    searchTracksLineupSagas(),
 
     modalsSagas(),
 

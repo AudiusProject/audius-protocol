@@ -45,7 +45,6 @@ export default function render(pageContext: TrackPageContext) {
     <ServerWebPlayer
       isMobile={isMobile}
       initialState={{
-        tracks: { entries: { [track_id]: { metadata: track } } },
         users: { entries: { [user_id]: { metadata: user } } },
         pages: {
           track: { trackId: track_id, trackPermalink: permalink }

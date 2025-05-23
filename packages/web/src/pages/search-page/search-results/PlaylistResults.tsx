@@ -185,7 +185,7 @@ export const PlaylistResultsPage = () => {
             data={playlists ?? []}
             isFetching={isFetching}
             isPending={isPending}
-            skeletonCount={10}
+            skeletonCount={5}
           />
         )}
       </Flex>

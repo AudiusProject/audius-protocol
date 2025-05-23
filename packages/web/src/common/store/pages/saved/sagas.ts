@@ -2,6 +2,7 @@ import {
   trackActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
+import { primeTrackDataSaga } from '@audius/common/api'
 import { FavoriteType, Favorite, User } from '@audius/common/models'
 import {
   accountSelectors,
@@ -15,7 +16,6 @@ import { waitForValue, Nullable } from '@audius/common/utils'
 import { full, HashId, Id } from '@audius/sdk'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
@@ -155,7 +155,7 @@ function* watchFetchSaves() {
           yield* put(actions.fetchSavesRequested())
           const { saves, tracks } = yield* call(sendLibraryRequest, params)
 
-          yield* processAndCacheTracks(tracks)
+          yield* call(primeTrackDataSaga, tracks)
 
           const fullSaves = Array(trackSaveCount)
             .fill(0)
@@ -196,7 +196,7 @@ function* watchFetchMoreSaves() {
 
       try {
         const { saves, tracks } = yield* call(sendLibraryRequest, params)
-        yield* processAndCacheTracks(tracks)
+        yield* call(primeTrackDataSaga, tracks)
         yield* put(actions.fetchMoreSavesSucceeded(saves, offset))
 
         if (limit > 0 && saves.length < limit) {

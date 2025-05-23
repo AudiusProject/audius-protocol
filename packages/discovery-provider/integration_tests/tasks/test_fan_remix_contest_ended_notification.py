@@ -198,3 +198,77 @@ def test_fan_remix_contest_ended_notification_no_duplicate_for_multiple_remixes(
                 assert notification.type == NotificationType.FAN_REMIX_CONTEST_ENDED
                 assert notification.group_id.startswith("fan_remix_contest_ended:")
         assert notif_count == 1
+
+
+def test_fan_remix_contest_ended_notification_private_parent_track(app):
+    """Test that no notification is created for remixers if the parent track is private (unlisted)"""
+    with app.app_context():
+        db = get_db()
+
+    now = datetime.now()
+    event_time = now - timedelta(hours=1)
+    remix_time = now - timedelta(minutes=30)
+    PRIVATE_TRACK_ID = 400
+    PRIVATE_TRACK_OWNER_ID = 10
+    REMIXER_ID = 11
+
+    entities = {
+        "users": [
+            {
+                "user_id": PRIVATE_TRACK_OWNER_ID,
+                "is_current": True,
+                "created_at": now,
+                "updated_at": now,
+            },
+            {
+                "user_id": REMIXER_ID,
+                "is_current": True,
+                "created_at": now,
+                "updated_at": now,
+            },
+        ],
+        "tracks": [
+            {
+                "track_id": PRIVATE_TRACK_ID,
+                "owner_id": PRIVATE_TRACK_OWNER_ID,
+                "is_current": True,
+                "is_delete": False,
+                "is_unlisted": True,  # Mark as private
+                "created_at": now,
+                "updated_at": now,
+            },
+            # Remix by REMIXER_ID
+            {
+                "track_id": 401,
+                "owner_id": REMIXER_ID,
+                "is_current": True,
+                "is_delete": False,
+                "created_at": remix_time,
+                "updated_at": remix_time,
+                "remix_of": {"tracks": [{"parent_track_id": PRIVATE_TRACK_ID}]},
+            },
+        ],
+        "events": [
+            {
+                "event_type": "remix_contest",
+                "user_id": PRIVATE_TRACK_OWNER_ID,
+                "entity_id": PRIVATE_TRACK_ID,
+                "entity_type": "track",
+                "is_deleted": False,
+                "end_date": event_time,
+                "created_at": event_time,
+                "updated_at": event_time,
+            }
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        create_fan_remix_contest_ended_notifications(session)
+        notifications = (
+            session.query(Notification)
+            .filter(Notification.type == NotificationType.FAN_REMIX_CONTEST_ENDED)
+            .all()
+        )
+        # Should not notify any remixers for private parent tracks
+        assert len(notifications) == 0

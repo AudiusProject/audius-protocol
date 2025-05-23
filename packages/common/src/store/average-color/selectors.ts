@@ -1,5 +1,5 @@
 import { CID, Color, Track } from '~/models'
-import { Nullable } from '~/utils'
+import { Maybe, Nullable } from '~/utils'
 
 import { CommonState } from '../reducers'
 
@@ -20,7 +20,9 @@ export const getAverageColorByTrack = (
 
 export const getDominantColorsByTrack = (
   state: CommonState,
-  { track }: { track: Nullable<Track> }
+  {
+    track
+  }: { track: Maybe<Nullable<Pick<Track, 'cover_art_sizes' | 'cover_art'>>> }
 ): Nullable<Color[]> => {
   const multihash = track?.cover_art_sizes ?? track?.cover_art
   if (!multihash) return null
