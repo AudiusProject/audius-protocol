@@ -16,8 +16,7 @@
   background-color: var(--harmony-bg-surface-1);
   transition: border ease-in-out 0.1s;
   box-sizing: border-box;
-  box-shadow:
-    1px 1px 4px 0px rgba(0, 0, 0, 0.02) inset,
+  box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.02) inset,
     1px 1px 2px 0px rgba(0, 0, 0, 0.02) inset;
 }
 
@@ -37,7 +36,7 @@
   /* gap between icons & content */
   gap: var(--harmony-spacing-s);
   font-size: var(--harmony-font-s);
-  height: 34px;
+  height: 48px;
 }
 
 /* default input size */
@@ -115,7 +114,7 @@
 .input.small {
   /* overflowing the height to improve password-manager icon size */
   height: 34px;
-  font-size: var(--harmony-font-s);
+  font-size: var(--harmony-font-l);
 }
 
 .input.default {

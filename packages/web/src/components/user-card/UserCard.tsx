@@ -7,6 +7,7 @@ import { Box, Skeleton, Text, TextLink } from '@audius/harmony'
 import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
@@ -89,13 +90,15 @@ export const UserCard = (props: UserCardProps) => {
           onClick={onUserLinkClick}
           popover={true}
         />
-        <TextLink
-          onClick={onUserLinkClick}
-          ellipses
-          css={{ textAlign: 'center' }}
-        >
-          @{handle}
-        </TextLink>
+        <ArtistPopover handle={handle}>
+          <TextLink
+            onClick={onUserLinkClick}
+            ellipses
+            css={{ textAlign: 'center' }}
+          >
+            @{handle}
+          </TextLink>
+        </ArtistPopover>
       </CardContent>
       <CardFooter>
         <Text variant='body' size='s' strength='strong'>

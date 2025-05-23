@@ -271,7 +271,8 @@ export const PopupInternal = forwardRef<
     handleClose,
     isVisible,
     checkIfClickInside,
-    typeof ref === 'function' ? undefined : ref
+    typeof ref === 'function' ? undefined : ref,
+    anchorRef
   )
 
   const wrapperRef = useRef<HTMLDivElement>(null)
