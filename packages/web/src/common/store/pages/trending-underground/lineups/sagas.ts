@@ -2,6 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
+import { primeTrackDataSaga } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
@@ -15,7 +16,6 @@ import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -66,8 +66,7 @@ function* getTrendingUnderground({
     })
   }
 
-  const processed = yield* processAndCacheTracks(tracks)
-  return processed
+  return yield* call(primeTrackDataSaga, tracks)
 }
 
 class UndergroundTrendingSagas extends LineupSagas<Track> {
