@@ -63,20 +63,20 @@ export const TrackRemixesScreen = () => {
   const { data: currentUserId } = useCurrentUserId()
   const { params } = useRoute<'TrackRemixes'>()
   const { data: track } = useTrackByParams(params)
-  const trackId = track?.track_id
-  const { data: count } = useRemixersCount({ trackId })
-  const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
-    useRemixes({
-      trackId: track?.track_id,
-      includeOriginal: true,
-      includeWinners: true
-    })
   const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST
   )
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
+  const trackId = track?.track_id
+  const { data: count } = useRemixersCount({ trackId })
+  const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
+    useRemixes({
+      trackId: track?.track_id,
+      includeOriginal: true,
+      includeWinners: isRemixContestWinnersMilestoneEnabled
+    })
   const { data: contest } = useRemixContest(trackId)
   const isRemixContest = isRemixContestEnabled && contest
   const isRemixContestEnded =
@@ -109,7 +109,7 @@ export const TrackRemixesScreen = () => {
   )
 
   const delineatorMap =
-    winnerCount > 0
+    isRemixContestWinnersMilestoneEnabled && winnerCount > 0
       ? {
           0: winnersDelineator,
           [winnerCount]: remixesDelineator
@@ -117,6 +117,14 @@ export const TrackRemixesScreen = () => {
       : {
           0: remixesDelineator
         }
+
+  const winnersMaxEntries =
+    count && winnerCount ? count + winnerCount + 1 : undefined
+  const defaultMaxEntries = count ? count + 1 : undefined
+
+  const maxEntries = isRemixContestWinnersMilestoneEnabled
+    ? winnersMaxEntries
+    : defaultMaxEntries
 
   return (
     <Screen>
@@ -157,10 +165,7 @@ export const TrackRemixesScreen = () => {
                 pageSize={pageSize}
                 hasMore={false}
                 delineatorMap={delineatorMap}
-                maxEntries={
-                  // remix count + winner count + original track
-                  count && winnerCount ? count + winnerCount + 1 : undefined
-                }
+                maxEntries={maxEntries}
               />
             </ScrollView>
           </ScreenPrimaryContent>
