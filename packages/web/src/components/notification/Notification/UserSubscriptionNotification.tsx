@@ -40,7 +40,7 @@ export const UserSubscriptionNotification = (
 ) => {
   const { notification } = props
   const { entityType, entityIds, timeLabel, isViewed, type } = notification
-  const { data: user } = useUser(notification.entityId)
+  const { data: user } = useUser(notification.userId)
   const entities = useNotificationEntities(notification)
   const uploadCount = entityIds.length
   const isSingleUpload = uploadCount === 1

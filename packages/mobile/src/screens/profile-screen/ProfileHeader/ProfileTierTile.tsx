@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
-import { modalsActions } from '@audius/common/store'
+import { useTierAndVerifiedForUser, modalsActions } from '@audius/common/store'
 import type { ViewStyle, StyleProp } from 'react-native'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -57,7 +56,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
   const profile = useSelectProfile(['user_id'])
   const styles = useStyles()
 
-  const { tier, tierNumber } = useSelectTierInfo(profile.user_id)
+  const { tier, tierNumber } = useTierAndVerifiedForUser(profile.user_id)
 
   const dispatch = useDispatch()
 

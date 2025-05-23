@@ -17,8 +17,8 @@ import {
   themeSelectors,
   themeActions,
   signOutActions,
-  getTierAndVerifiedForUser,
-  musicConfettiActions
+  musicConfettiActions,
+  useTierAndVerifiedForUser
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -108,7 +108,6 @@ const {
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   TERMS_OF_SERVICE
 } = route
-const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 
 const isStaging = env.ENVIRONMENT === 'staging'
@@ -137,9 +136,7 @@ export const SettingsPage = () => {
   const theme = useSelector(getTheme)
   const emailFrequency = useSelector(getEmailFrequency)
   const notificationSettings = useSelector(getBrowserNotificationSettings)
-  const tier = useSelector(
-    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
-  )
+  const { tier } = useTierAndVerifiedForUser(userId)
   const showMatrix =
     tier === 'gold' ||
     tier === 'platinum' ||
@@ -371,7 +368,9 @@ export const SettingsPage = () => {
     return options
   }, [showMatrix])
 
-  const allowAiAttribution = useSelector(getAllowAiAttribution)
+  const { data: allowAiAttribution } = useCurrentAccountUser({
+    select: (user) => user?.allow_ai_attribution
+  })
   const { isEnabled: isCommentsEnabled } = useFlag(
     FeatureFlags.COMMENTS_ENABLED
   )

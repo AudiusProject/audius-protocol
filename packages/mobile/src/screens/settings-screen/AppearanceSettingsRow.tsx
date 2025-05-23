@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { settingsMessages as messages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
 import {
+  useTierAndVerifiedForUser,
   accountSelectors,
   themeActions,
   themeSelectors
@@ -30,7 +30,7 @@ export const AppearanceSettingsRow = () => {
   const accountId = useSelector(getUserId)
   const dispatch = useDispatch()
 
-  const { tier } = useSelectTierInfo(accountId ?? 0)
+  const { tier } = useTierAndVerifiedForUser(accountId)
 
   const appearanceOptions = [
     { key: Theme.DEFAULT, text: messages.lightMode },

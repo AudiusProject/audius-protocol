@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import type { User } from '@audius/common/models'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
 import { StyleSheet, View, Text } from 'react-native'
 
@@ -38,7 +38,7 @@ export const UserBadges = (props: UserBadgesProps) => {
     hideName,
     as: Component = View
   } = props
-  const { tier } = useSelectTierInfo(user?.user_id)
+  const { tier } = useTierAndVerifiedForUser(user?.user_id)
   const palette = useThemePalette()
 
   if (!user) return null

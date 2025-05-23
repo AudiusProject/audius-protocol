@@ -1,5 +1,8 @@
-import { useSelectTierInfo } from '@audius/common/hooks'
-import { accountSelectors, profilePageSelectors } from '@audius/common/store'
+import {
+  useTierAndVerifiedForUser,
+  accountSelectors,
+  profilePageSelectors
+} from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 const { getProfileUser } = profilePageSelectors
@@ -15,6 +18,6 @@ export const useProfileTier = () => {
   const profile = useSelector(getProfileUser)
   const accountUserId = useSelector(getUserId)
   const userId = profile?.user_id ?? accountUserId ?? 0
-  const { tier } = useSelectTierInfo(userId)
+  const { tier } = useTierAndVerifiedForUser(userId)
   return tier === 'none' ? 'gold' : tier
 }

@@ -1,6 +1,5 @@
 import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import {
   AudioTiers,
   BadgeTier,
@@ -12,7 +11,8 @@ import {
   badgeTiers,
   getTierNumber,
   vipDiscordModalActions,
-  musicConfettiActions
+  musicConfettiActions,
+  useTierAndVerifiedForUser
 } from '@audius/common/store'
 import { formatNumberCommas, Nullable } from '@audius/common/utils'
 import {
@@ -293,7 +293,7 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
 const Tiers = () => {
   const accountUserId = useSelector(getUserId)
   const userId = accountUserId ?? 0
-  const { tier } = useSelectTierInfo(userId)
+  const { tier } = useTierAndVerifiedForUser(userId)
 
   const dispatch = useDispatch()
   const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
@@ -336,5 +336,4 @@ const Tiers = () => {
     </div>
   )
 }
-
 export default Tiers

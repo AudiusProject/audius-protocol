@@ -5,14 +5,13 @@ import {
   useAccountHasClaimableRewards,
   useChallengeCooldownSchedule,
   useFeatureFlag,
-  useSelectTierInfo,
   useTotalBalanceWithFallback,
   useUSDCBalance
 } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
 import type { BNUSDC } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
-import { chatSelectors } from '@audius/common/store'
+import { chatSelectors, useTierAndVerifiedForUser } from '@audius/common/store'
 import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
@@ -86,7 +85,7 @@ export const useNavConfig = () => {
   const { data: user_id } = useCurrentAccountUser({
     select: (user) => user?.user_id
   })
-  const { tier } = useSelectTierInfo(user_id)
+  const { tier } = useTierAndVerifiedForUser(user_id)
   const audioBalance = useTotalBalanceWithFallback()
   const audioBalanceFormatted = audioBalance
     ? AUDIO(audioBalance).toLocaleString()

@@ -1,10 +1,12 @@
 import {
-  useSelectTierInfo,
   useUSDCBalance,
   useTotalBalanceWithFallback
 } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  useTierAndVerifiedForUser
+} from '@audius/common/store'
 import {
   formatCount,
   formatUSDCWeiToFloorCentsNumber,
@@ -43,7 +45,7 @@ export const WalletsNestedContent = () => {
   const { data: usdcBalance } = useUSDCBalance()
   const audioBalance = useTotalBalanceWithFallback()
   const userId = useSelector(getUserId)
-  const { tier } = useSelectTierInfo(userId ?? 0)
+  const { tier } = useTierAndVerifiedForUser(userId ?? 0)
   const usdcCentBalance =
     formatUSDCWeiToFloorCentsNumber((usdcBalance ?? new BN(0)) as BNUSDC) / 100
 

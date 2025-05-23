@@ -5,9 +5,9 @@ import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
   settingsPageActions,
   themeSelectors,
-  getTierAndVerifiedForUser,
   themeActions,
-  musicConfettiActions
+  musicConfettiActions,
+  useTierAndVerifiedForUser
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -113,9 +113,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
   })
   const { userId, handle, name } = accountData ?? {}
   const theme = useSelector(getTheme)
-  const tier = useSelector(
-    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
-  )
+  const { tier } = useTierAndVerifiedForUser(userId)
   const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
 
   useEffect(() => {

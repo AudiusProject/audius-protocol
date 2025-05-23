@@ -41,7 +41,7 @@ export const SupporterDethronedNotification = (
   const navigation = useNotificationNavigation()
   const { data: usurpingUser } = useUser(notification.entityId)
 
-  const supportedUser = useUser(notification.supportedUserId)
+  const { data: supportedUser } = useUser(notification.supportedUserId)
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
