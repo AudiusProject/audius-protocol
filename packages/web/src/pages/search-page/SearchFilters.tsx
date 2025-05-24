@@ -163,13 +163,13 @@ const KeyFilter = () => {
 
 const IsPremiumFilter = () => {
   const [urlSearchParams] = useSearchParams()
-  const isPremium = urlSearchParams.get('isPremium')
+  const isPremium = urlSearchParams.get('isPremium') === 'true'
   const updateSearchParams = useUpdateSearchParams('isPremium')
 
   return (
     <FilterButton
       label={messages.isPremium}
-      value={isPremium}
+      value={isPremium ? 'true' : null}
       onClick={() => updateSearchParams(isPremium ? '' : 'true')}
     />
   )
@@ -177,13 +177,13 @@ const IsPremiumFilter = () => {
 
 const HasDownloadsFilter = () => {
   const [urlSearchParams] = useSearchParams()
-  const hasDownloads = urlSearchParams.get('hasDownloads')
+  const hasDownloads = urlSearchParams.get('hasDownloads') === 'true'
   const updateSearchParams = useUpdateSearchParams('hasDownloads')
 
   return (
     <FilterButton
       label={messages.hasDownloads}
-      value={hasDownloads}
+      value={hasDownloads ? 'true' : null}
       onClick={() => {
         updateSearchParams(hasDownloads ? '' : 'true')
       }}
@@ -193,13 +193,13 @@ const HasDownloadsFilter = () => {
 
 const IsVerifiedFilter = () => {
   const [urlSearchParams] = useSearchParams()
-  const isVerified = urlSearchParams.get('isVerified')
+  const isVerified = urlSearchParams.get('isVerified') === 'true'
   const updateSearchParams = useUpdateSearchParams('isVerified')
 
   return (
     <FilterButton
       label={messages.isVerified}
-      value={isVerified}
+      value={isVerified ? 'true' : null}
       onClick={() => {
         updateSearchParams(isVerified ? '' : 'true')
       }}
