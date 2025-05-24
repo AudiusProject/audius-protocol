@@ -27,8 +27,6 @@ import { ViewLayout, viewLayoutOptions } from '../types'
 const { addItem: addRecentSearch } = searchActions
 
 const PAGE_WIDTH = 1080
-const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
-
 const messages = {
   tracks: 'Tracks',
   layoutOptionsLabel: 'View As',
