@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import type { Screen } from '../types'
+import type { Screen } from './types'
 
 type UseBuySellScreenProps = {
   onScreenChange: (screen: Screen) => void

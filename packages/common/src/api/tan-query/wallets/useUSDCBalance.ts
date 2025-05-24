@@ -1,3 +1,4 @@
+import { TokenAccountNotFoundError } from '@solana/spl-token'
 import { Commitment } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
 import BN from 'bn.js'
@@ -71,6 +72,12 @@ export const useUSDCBalance = ({
 
         return balance
       } catch (e) {
+        // If user doesn't have a USDC token account yet, return 0 balance
+        if (e instanceof TokenAccountNotFoundError) {
+          const balance = new BN(0) as BNUSDC
+          dispatch(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
+          return balance
+        }
         console.error('Error fetching USDC balance:', e)
         throw e
       }
@@ -100,6 +107,7 @@ export const useUSDCBalance = ({
   return {
     status,
     data,
+    error: result.error,
     refresh: result.refetch
   }
 }

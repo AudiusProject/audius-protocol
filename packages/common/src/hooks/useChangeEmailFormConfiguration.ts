@@ -51,20 +51,21 @@ const initialValues: ChangeEmailFormValues = {
   otp: ''
 }
 
-const confirmPasswordFormikSchema = toFormikValidationSchema(
-  z.object({
-    password: z.string({
-      required_error: messages.passwordRequired
-    })
-  })
-)
-const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
-
 export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
   const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
   const queryContext = useQueryContext()
   const { authService } = queryContext
   const queryClient = useQueryClient()
+
+  // Move schema initializations inside the hook to prevent initialization timing issues
+  const confirmPasswordFormikSchema = toFormikValidationSchema(
+    z.object({
+      password: z.string({
+        required_error: messages.passwordRequired
+      })
+    })
+  )
+  const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
   const EmailSchema = useMemo(
     () => toFormikValidationSchema(emailSchema(queryContext, queryClient)),

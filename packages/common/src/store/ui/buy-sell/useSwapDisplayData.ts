@@ -4,11 +4,10 @@ import type {
   BuySellTab,
   Screen,
   SuccessDisplayData,
-  TokenPair
-} from '../types'
-
-import type { SwapResult } from './useBuySellSwap'
-import type { TransactionData } from './useBuySellTransactionData'
+  TokenPair,
+  SwapResult,
+  TransactionData
+} from './types'
 
 const calculatePriceInternal = (
   currentTransactionData:

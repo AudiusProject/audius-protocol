@@ -17,6 +17,7 @@ import {
 import { QUERY_KEYS } from '../queryKeys'
 
 import { USER_BANK_MANAGED_TOKENS } from './constants'
+import { updateAudioBalanceOptimistically } from './optimisticUpdates'
 import {
   SwapErrorType,
   SwapStatus,
@@ -171,9 +172,14 @@ export const useSwapTokens = () => {
           queryClient.invalidateQueries({
             queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
           })
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.audioBalance]
-          })
+        }
+        if (user?.spl_wallet) {
+          updateAudioBalanceOptimistically(
+            queryClient,
+            params,
+            quoteResult?.outputAmount?.uiAmount,
+            user.spl_wallet
+          )
         }
 
         return {

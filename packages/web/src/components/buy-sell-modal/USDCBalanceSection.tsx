@@ -1,6 +1,5 @@
+import { TokenInfo } from '@audius/common/store'
 import { Divider, Flex, IconInfo, Text } from '@audius/harmony'
-
-import { TokenInfo } from './types'
 
 const messages = {
   amount: (amount: string) => `$${amount}`

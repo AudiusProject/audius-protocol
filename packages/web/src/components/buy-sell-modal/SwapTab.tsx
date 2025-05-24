@@ -1,11 +1,11 @@
 import { useRef } from 'react'
 
+import { TokenInfo } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
 import { useTokenSwapForm } from './hooks/useTokenSwapForm'
-import { TokenInfo } from './types'
 
 const messages = {
   youPay: 'You Pay',
@@ -17,12 +17,6 @@ const TokenSectionSkeleton = ({ title }: { title: string }) => (
   <Flex direction='column' gap='s'>
     <Skeleton h='xl' w={title === 'input' ? 'unit20' : 'unit24'} />
     <Skeleton h='unit14' w='100%' />
-  </Flex>
-)
-
-const ExchangeRateSkeleton = () => (
-  <Flex justifyContent='center' p='s'>
-    <Skeleton w='unit30' h='xl' />
   </Flex>
 )
 
@@ -74,7 +68,6 @@ export const SwapTab = ({
   const {
     formik,
     inputAmount,
-    numericInputAmount,
     outputAmount,
     isExchangeRateLoading,
     isBalanceLoading,
@@ -138,10 +131,6 @@ export const SwapTab = ({
               />
             </>
           )}
-
-          {isExchangeRateLoading &&
-            numericInputAmount > 0 &&
-            !isInitialLoading && <ExchangeRateSkeleton />}
         </Flex>
       </Form>
     </FormikProvider>
