@@ -183,7 +183,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   )
 
   useEffect(() => {
-    if (debouncedValue !== previousDebouncedValue) {
+    if (
+      debouncedValue !== previousDebouncedValue &&
+      debouncedValue !== searchParams.get('query') // prevents duplicate history from other searchbar
+    ) {
       const newParams = new URLSearchParams(searchParams)
       newParams.set('query', debouncedValue)
       setSearchParams(newParams)

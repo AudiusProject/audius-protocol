@@ -41,8 +41,7 @@ export const useSearchCategory = () => {
   const category = isMobile ? (categoryParam ?? 'profiles') : categoryParam
 
   const { history } = useHistoryContext()
-  const { query, genre, mood, isPremium, hasDownloads, isVerified } =
-    useSearchParams()
+  const searchParams = useSearchParams()
   const { setStackReset } = useContext(RouterContext)
 
   const setCategory = useCallback(
@@ -50,28 +49,11 @@ export const useSearchCategory = () => {
       // Do not animate on mobile
       setStackReset(true)
 
-      const commonFilters = intersection(
-        categories[category]?.filters ?? [],
-        categories[newCategory]?.filters ?? []
+      const commonFilterParams = Object.fromEntries(
+        Object.entries(searchParams)
+          .filter(([key, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)])
       )
-      const commonFilterParams = {
-        ...(query && { query }),
-        ...(genre && commonFilters.includes('genre') && { genre }),
-        ...(mood && commonFilters.includes('mood') && { mood }),
-        ...(isPremium &&
-          commonFilters.includes('isPremium') && {
-            isPremium: String(isPremium)
-          }),
-        ...(hasDownloads &&
-          commonFilters.includes('hasDownloads') && {
-            hasDownloads: String(hasDownloads)
-          }),
-        ...(isVerified &&
-          commonFilters.includes('isVerified') && {
-            isVerified: String(isVerified)
-          })
-      }
-
       const pathname =
         newCategory === 'all'
           ? generatePath(SEARCH_BASE_ROUTE)
@@ -80,22 +62,19 @@ export const useSearchCategory = () => {
       history.push({
         pathname,
         search: !isEmpty(commonFilterParams)
-          ? new URLSearchParams(commonFilterParams).toString()
+          ? new URLSearchParams(
+              Object.fromEntries(
+                Object.entries(commonFilterParams).map(([k, v]) => [
+                  k,
+                  String(v)
+                ])
+              )
+            ).toString()
           : undefined,
         state: {}
       })
     },
-    [
-      category,
-      genre,
-      hasDownloads,
-      history,
-      isPremium,
-      isVerified,
-      mood,
-      query,
-      setStackReset
-    ]
+    [searchParams, history, setStackReset]
   )
 
   return [category || CategoryView.ALL, setCategory] as const
