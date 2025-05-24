@@ -6,8 +6,7 @@ import { Status, ChatMessageWithExtras } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
-  chatSelectors,
-  ReactionTypes
+  chatSelectors
 } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -15,7 +14,7 @@ import {
   isTrackUrl
 } from '@audius/common/utils'
 import { Flex, IconError, IconPlus } from '@audius/harmony'
-import { HashId, Id, OptionalHashId } from '@audius/sdk'
+import { HashId, Id, OptionalHashId, ReactionTypes } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'

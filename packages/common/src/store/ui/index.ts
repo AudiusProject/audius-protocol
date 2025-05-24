@@ -41,14 +41,6 @@ export {
 } from './now-playing/slice'
 
 export {
-  default as reactionsUIReducer,
-  actions as reactionsUIActions
-} from './reactions/slice'
-export { selectors as reactionsUISelectors } from './reactions/selectors'
-export * from './reactions/types'
-export * from './reactions/utils'
-
-export {
   default as shareModalUIReducer,
   actions as shareModalUIActions
 } from './share-modal/slice'
