@@ -1,37 +1,20 @@
 import { useCallback, useState } from 'react'
 
 import { useUSDCBalance } from '@audius/common/hooks'
-import { BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
   WithdrawMethod
 } from '@audius/common/store'
-import {
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common/utils'
-import {
-  Button,
-  IconQuestionCircle,
-  Switch,
-  IconCaretLeft,
-  Text
-} from '@audius/harmony'
-import BN from 'bn.js'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
+import { Button, Text, Flex, Checkbox } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 
+import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 
 import { ADDRESS, AMOUNT, CONFIRM, METHOD } from '../types'
-
-import styles from './ConfirmTransferDetails.module.css'
-import { Hint } from './Hint'
-import { TextRow } from './TextRow'
-
-const LEARN_MORE_LINK =
-  'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
   currentBalance: 'Current Balance',
@@ -39,16 +22,13 @@ const messages = {
   destinationAddress: 'Destination Address',
   review: 'Review Details Carefully',
   byProceeding:
-    'By proceeding, you accept full responsibility for any errors, understanding that mistakes may lead to irreversible loss of funds. Transfers are final and cannot be reversed.',
+    'By proceeding, you accept full responsibility for any errors, including the risk of irreversible loss of funds. Transfers are final and cannot be reversed.',
   haveCarefully:
-    'I have carefully reviewed the accuracy of this information and I understand transfers are final and cannot be reversed.',
+    'I have reviewed the information and understand that transfers are final.',
   goBack: 'Go Back',
-  confirm: 'Confirm Transfer',
-  continue: 'Continue Transfer',
-  notSure: `Not sure what you’re doing? Visit the help center for guides & more info.`,
+  confirm: 'Confirm',
   cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
-  guide: 'Guide to USDC Transfers on Audius'
+    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
 }
 
 export const ConfirmTransferDetails = () => {
@@ -63,10 +43,6 @@ export const ConfirmTransferDetails = () => {
   })
 
   const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const handleGoBack = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
@@ -87,23 +63,17 @@ export const ConfirmTransferDetails = () => {
   }, [methodValue, setData, submitForm, confirmError])
 
   return (
-    <div className={styles.root}>
-      {methodValue === WithdrawMethod.MANUAL_TRANSFER ? (
-        <Hint
-          text={messages.notSure}
-          link={LEARN_MORE_LINK}
-          icon={IconQuestionCircle}
-          linkText={messages.guide}
-        />
-      ) : null}
-      <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
+    <Flex column gap='xl'>
+      <CashBalanceSection balance={balance} />
       <Divider style={{ margin: 0 }} />
-      <div className={styles.amount}>
-        <TextRow
-          left={messages.amountToWithdraw}
-          right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
-        />
-      </div>
+      <Flex justifyContent='space-between'>
+        <Text variant='heading' size='s' color='subdued'>
+          {messages.amountToWithdraw}
+        </Text>
+        <Text variant='heading' size='s'>
+          -${decimalIntegerToHumanReadable(amountValue)}
+        </Text>
+      </Flex>
       <Divider style={{ margin: 0 }} />
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
@@ -111,45 +81,46 @@ export const ConfirmTransferDetails = () => {
         </Text>
       ) : (
         <>
-          <div className={styles.destination}>
-            <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='m' strength='default'>
-              {addressValue}
+          <Flex column gap='s'>
+            <Text variant='heading' size='s' color='subdued'>
+              {messages.destinationAddress}
             </Text>
-          </div>
-          <div className={styles.details}>
-            <Text variant='title' size='m' strength='default'>
+            <Text variant='body'>{addressValue}</Text>
+          </Flex>
+          <Flex
+            column
+            p='l'
+            gap='s'
+            backgroundColor='surface1'
+            border='default'
+            borderRadius='m'
+          >
+            <Text variant='title' size='m'>
               {messages.review}
             </Text>
-            <Text variant='body' size='s' strength='default'>
+            <Text variant='body' size='s'>
               {messages.byProceeding}
             </Text>
-            <div className={styles.acknowledge}>
-              <Switch {...confirmField} />
-              <Text variant='body' size='s' strength='default'>
+            <Flex alignItems='center' gap='xl'>
+              <Checkbox {...confirmField} />
+              <Text variant='body' size='s' color='subdued'>
                 {messages.haveCarefully}
               </Text>
-            </div>
+            </Flex>
             {touchedContinue && confirmError ? (
               <HelperText error>{confirmError}</HelperText>
             ) : null}
-          </div>
+          </Flex>
         </>
       )}
-      <div className={styles.buttons}>
-        <Button
-          iconLeft={IconCaretLeft}
-          variant='secondary'
-          onClick={handleGoBack}
-        >
+      <Flex gap='s' w='100%'>
+        <Button variant='secondary' onClick={handleGoBack} fullWidth>
           {messages.goBack}
         </Button>
-        <Button variant='secondary' onClick={handleContinue}>
-          {methodValue === WithdrawMethod.COINFLOW
-            ? messages.continue
-            : messages.confirm}
+        <Button variant='primary' onClick={handleContinue} fullWidth>
+          {messages.confirm}
         </Button>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }

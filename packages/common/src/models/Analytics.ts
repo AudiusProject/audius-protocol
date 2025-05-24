@@ -2188,7 +2188,6 @@ export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
 
 export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
   eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED
-  priorBalance: number
   signature: string
 }
 
