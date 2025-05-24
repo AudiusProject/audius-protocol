@@ -119,9 +119,6 @@ export const TrackResults = (props: TrackResultsProps) => {
                 : '1fr',
               gap: '4px 16px',
               justifyContent: 'space-between'
-            }),
-            tileStyles: css({
-              maxWidth: isTrackGridLayout ? undefined : PAGE_WIDTH
             })
           }
         : {})}
