@@ -160,7 +160,7 @@ export const useRemixes = (
             userTrackMetadataFromSDK
           )
 
-          processedTracks.splice(0, 0, ...winners)
+          processedTracks = [...winners, ...processedTracks]
         }
       }
 
