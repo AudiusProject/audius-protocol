@@ -49,3 +49,15 @@ class MissingEthRecipientError(Base):
 
 class IndexingValidationError(Exception):
     pass
+
+
+class DataAccessError(Base):
+    """Error during database access."""
+
+    pass
+
+
+class EntityNotFoundError(Base):
+    """Entity not found in the database."""
+
+    pass
