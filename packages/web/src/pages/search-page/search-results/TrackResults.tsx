@@ -26,7 +26,6 @@ import { ViewLayout, viewLayoutOptions } from '../types'
 
 const { addItem: addRecentSearch } = searchActions
 
-const PAGE_WIDTH = 1080
 const messages = {
   tracks: 'Tracks',
   layoutOptionsLabel: 'View As',
