@@ -6,8 +6,6 @@ import { Button, Flex, IconCloudUpload } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = {
-  contestEnded: 'Contest Ended',
-  contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix'
 }
 

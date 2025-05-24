@@ -3,6 +3,7 @@ import { createModal } from '../createModal'
 export type FinalizeWinnersConfirmationModalState = {
   confirmCallback: () => void
   cancelCallback?: () => void
+  isInitialSave: boolean
 }
 
 const finalizeWinnersConfirmationModal =
@@ -11,7 +12,8 @@ const finalizeWinnersConfirmationModal =
     initialState: {
       isOpen: false,
       confirmCallback: () => {},
-      cancelCallback: () => {}
+      cancelCallback: () => {},
+      isInitialSave: false
     },
     sliceSelector: (state) => state.ui.modals
   })
