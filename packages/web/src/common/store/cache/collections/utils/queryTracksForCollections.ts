@@ -6,7 +6,7 @@ import { all, call } from 'typed-redux-saga'
 
 const TRACKS_BATCH_LIMIT = 200
 
-export function* retrieveTracksForCollections(
+export function* queryTracksForCollections(
   collections: CollectionMetadata[],
   excludedTrackIdSet: Set<ID>
 ) {

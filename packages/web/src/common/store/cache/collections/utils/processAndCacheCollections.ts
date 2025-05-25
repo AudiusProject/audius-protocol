@@ -10,7 +10,7 @@ import { put, call } from 'redux-saga/effects'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
-import { retrieveTracksForCollections } from './retrieveTracksForCollections'
+import { queryTracksForCollections } from './queryTracksForCollections'
 
 function isUserCollections(
   collections: CollectionMetadata[] | UserCollectionMetadata[]
@@ -44,7 +44,7 @@ export function* processAndCacheCollections(
     // Retrieve the tracks
     const excludedSet = new Set(excludedTrackIds)
     reformattedCollections = yield call(
-      retrieveTracksForCollections,
+      queryTracksForCollections,
       reformattedCollections,
       excludedSet
     )
