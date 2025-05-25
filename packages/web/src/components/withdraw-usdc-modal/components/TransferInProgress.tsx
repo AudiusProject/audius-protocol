@@ -1,53 +1,24 @@
-import { useUSDCBalance } from '@audius/common/hooks'
-import { BNUSDC } from '@audius/common/models'
-import {
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common/utils'
-import { Text } from '@audius/harmony'
-import BN from 'bn.js'
-import { useField } from 'formik'
+import { Flex, Text } from '@audius/harmony'
 
-import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
-import { ADDRESS, AMOUNT } from '../types'
-
-import { TextRow } from './TextRow'
-import styles from './TransferInProgress.module.css'
-
 const messages = {
-  currentBalance: 'Current Balance',
-  amountToWithdraw: 'Amount to Withdraw',
-  destinationAddress: 'Destination Address'
+  transferInProgress: 'Transfer in Progress',
+  moment: 'This may take a moment.'
 }
 
 export const TransferInProgress = () => {
-  const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
-
-  const [{ value: amountValue }] = useField(AMOUNT)
-  const [{ value: addressValue }] = useField(ADDRESS)
-
   return (
-    <div className={styles.root}>
-      <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
-      <Divider style={{ margin: 0 }} />
-      <TextRow
-        left={messages.amountToWithdraw}
-        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
-      />
-      <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='m' strength='default'>
-          {addressValue}
+    <Flex column gap='xl' alignItems='center' justifyContent='center' h={600}>
+      <LoadingSpinner />
+      <Flex column gap='s' alignItems='center'>
+        <Text variant='heading' size='l'>
+          {messages.transferInProgress}
         </Text>
-      </div>
-      <LoadingSpinner className={styles.spinner} />
-    </div>
+        <Text variant='title' size='l' strength='weak'>
+          {messages.moment}
+        </Text>
+      </Flex>
+    </Flex>
   )
 }
