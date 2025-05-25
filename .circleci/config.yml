@@ -59,36 +59,36 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+            # Primary cache key with Node version
+            - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Environment.NODE_VERSION }}
+            # Fallback cache key without Node version
+            - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+            # Fallback to most recent cache
+            - npm-cache-v1-
 
       - run: sudo apt-get update
       - run: sudo apt-get install -y build-essential libssl-dev
       - run:
           name: Install dependencies
-          # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
           command: |
-            [[ ! -d node_modules ]] || CI=true npm run postinstall
-            [[ -d node_modules ]] || CI=true npm ci
+            if [[ -d node_modules ]]; then
+              echo "Using cached node_modules, running postinstall..."
+              CI=true npm run postinstall
+            else
+              echo "No cache found, running fresh install..."
+              CI=true npm ci --prefer-offline
+            fi
 
       - save_cache:
-          key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          key: npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Environment.NODE_VERSION }}
           paths:
+            # Root node_modules
             - ./node_modules
-            - ./packages/protocol-dashboard/node_modules
-            - ./packages/web/node_modules
-            - ./packages/mobile/node_modules
-            - ./packages/embed/node_modules
-            - ./packages/harmony/node_modules
-            - ./packages/common/node_modules
-            - ./packages/libs/node_modules
-            - ./packages/sdk/node_modules
-            - ./packages/identity-service/node_modules
-            - ./packages/es-indexer/node_modules
-            - ./packages/ddex-entrypoint/node_modules
-            - ./packages/create-audius-app/node_modules
+            # Package-specific node_modules
+            - ./packages/*/node_modules
+            # Special cases
             - ./packages/dotenv-linter/bin
-            - ./packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
-            - ./packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
+            - ./packages/discovery-provider/plugins/pedalboard/apps/*/node_modules
 
   generate-release-branch:
     working_directory: ~/audius-protocol
