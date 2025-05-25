@@ -18,7 +18,6 @@ export type FetchCollectionAction = {
 export type FetchCollectionSucceededAction = {
   type: typeof FETCH_COLLECTION_SUCCEEDED
   collectionId: ID
-  collectionUid: string
   collectionPermalink: string
   userUid: string
 }
@@ -30,8 +29,6 @@ export type FetchCollectionFailedAction = {
 
 export type ResetCollectionAction = {
   type: typeof RESET_COLLECTION
-  collectionUid?: UID | null
-  userUid?: UID | null
 }
 
 export type SetSmartCollectionAction = {
@@ -61,13 +58,11 @@ export const fetchCollection = (
 
 export const fetchCollectionSucceeded = (
   collectionId: ID,
-  collectionUid: string,
   collectionPermalink: string,
   userUid: string
 ): FetchCollectionSucceededAction => ({
   type: FETCH_COLLECTION_SUCCEEDED,
   collectionId,
-  collectionUid,
   collectionPermalink,
   userUid
 })
@@ -79,13 +74,8 @@ export const fetchCollectionFailed = (
   userUid
 })
 
-export const resetCollection = (
-  collectionUid?: UID | null,
-  userUid?: UID | null
-): ResetCollectionAction => ({
-  type: RESET_COLLECTION,
-  collectionUid,
-  userUid
+export const resetCollection = (): ResetCollectionAction => ({
+  type: RESET_COLLECTION
 })
 
 export const setSmartCollection = (

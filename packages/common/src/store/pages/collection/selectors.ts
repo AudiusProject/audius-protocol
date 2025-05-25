@@ -1,15 +1,10 @@
-import { createSelector } from 'reselect'
-
-import { ID, UID } from '~/models/Identifiers'
-import { Status } from '~/models/Status'
+import { ID } from '~/models/Identifiers'
 import { getCollection as getCachedCollection } from '~/store/cache/collections/selectors'
 import { getUser as getCachedUser } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
 import { getCollection as getSmartCollection } from '~/store/pages/smart-collection/selectors'
 import { Nullable } from '~/utils/typeUtils'
 
-export const getCollectionUid = (state: CommonState) =>
-  state.pages.collection.collectionUid
 export const getCollectionId = (state: CommonState) =>
   state.pages.collection.collectionId
 export const getUserUid = (state: CommonState) => state.pages.collection.userUid
@@ -33,35 +28,15 @@ export const getCollection = (
   }
 
   const permalink = getCollectionPermalink(state)
-  if (permalink) {
-    return getCachedCollection(state, { permalink })
-  } else {
-    const config = params?.id
-      ? { id: params.id }
-      : { uid: getCollectionUid(state) }
+  const config = permalink ? { permalink } : { id: getCollectionId(state) }
 
-    return getCachedCollection(state, config)
-  }
+  return getCachedCollection(state, config)
 }
 
 export const getUser = (state: CommonState, params?: { id?: ID }) => {
   const props = params?.id ? { id: params.id } : { uid: getUserUid(state) }
   return getCachedUser(state, props)
 }
-
-export const makeGetCollection = () =>
-  createSelector(
-    [getCollectionUid, getUserUid, getCollectionStatus, getCollection, getUser],
-    (collectionUid, userUid, status, metadata, user) => {
-      return {
-        collectionUid: collectionUid as UID,
-        userUid: userUid as UID,
-        status: status as Status,
-        metadata,
-        user
-      }
-    }
-  )
 
 export const getCollectionTracksLineup = (state: CommonState) =>
   state.pages.collection.tracks

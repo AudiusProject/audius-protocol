@@ -98,7 +98,6 @@ const { open } = mobileOverflowMenuUIActions
 const {
   getCollection,
   getCollectionTracksLineup,
-  getCollectionUid,
   getUser,
   getUserUid,
   getCollectionPermalink
@@ -276,12 +275,7 @@ class CollectionPageClassComponent extends Component<
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
       const collectionId = Uid.fromString(metadata._moved).id as number
-      fetchCollectionSucceeded(
-        collectionId,
-        metadata._moved,
-        metadata.permalink || '',
-        userUid
-      )
+      fetchCollectionSucceeded(collectionId, metadata.permalink || '', userUid)
       const newPath = pathname.replace(
         `${metadata.playlist_id}`,
         collectionId.toString()
@@ -413,8 +407,7 @@ class CollectionPageClassComponent extends Component<
   }
 
   resetCollection = () => {
-    const { collectionUid, userUid } = this.props
-    this.props.resetCollection(collectionUid, userUid)
+    this.props.resetCollection()
   }
 
   refreshCollection = () => {
@@ -855,7 +848,6 @@ function makeMapStateToProps() {
     return {
       trackCount: (getCollection(state) as Collection)?.playlist_contents
         .track_ids.length,
-      collectionUid: getCollectionUid(state) || '',
       collection: getCollection(state) as Collection,
       collectionPermalink: getCollectionPermalink(state),
       user: getUser(state),
@@ -899,8 +891,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
-    resetCollection: (collectionUid: string, userUid: string) =>
-      dispatch(collectionActions.resetCollection(collectionUid, userUid)),
+    resetCollection: () => dispatch(collectionActions.resetCollection()),
     goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
@@ -1002,14 +993,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     fetchCollectionSucceeded: (
       collectionId: ID,
-      collectionUid: string,
       collectionPermalink: string,
       userId: string
     ) =>
       dispatch(
         collectionActions.fetchCollectionSucceeded(
           collectionId,
-          collectionUid,
           collectionPermalink,
           userId
         )

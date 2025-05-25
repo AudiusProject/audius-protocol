@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
@@ -19,6 +19,22 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
   ] as unknown as QueryKey<TQCollection>
 }
 
+export const getCollectionQueryFn = async (
+  collectionId: ID,
+  currentUserId: number | null,
+  queryClient: QueryClient,
+  sdk: any,
+  dispatch: any
+) => {
+  const batchGetCollections = getCollectionsBatcher({
+    sdk,
+    currentUserId,
+    queryClient,
+    dispatch
+  })
+  return await batchGetCollections.fetch(collectionId)
+}
+
 export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,
   options?: SelectableQueryOptions<TQCollection, TResult>
@@ -35,13 +51,13 @@ export const useCollection = <TResult = TQCollection>(
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const batchGetCollections = getCollectionsBatcher({
-        sdk,
+      return getCollectionQueryFn(
+        collectionId!,
         currentUserId,
         queryClient,
+        sdk,
         dispatch
-      })
-      return await batchGetCollections.fetch(collectionId!)
+      )
     },
     ...options,
     select,
