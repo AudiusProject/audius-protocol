@@ -13,7 +13,7 @@ import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
 
 import { queryCollection } from './queryCollection'
 
-export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
+export function* queryTrack(id: ID | null | undefined) {
   if (!id) return null
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
@@ -23,23 +23,17 @@ export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getTrackQueryKey(id),
     queryFn: async () =>
-      getTrackQueryFn(id!, currentUserId, queryClient, sdk, dispatch),
-    staleTime: forceRetrieve ? 0 : undefined
+      getTrackQueryFn(id!, currentUserId, queryClient, sdk, dispatch)
   })
 
   return queryData as TQTrack | undefined
 }
 
-export function* queryTracks(
-  ids: ID[],
-  forceRetrieve = false
-): Generator<any, Track[], any> {
+export function* queryTracks(ids: ID[]): Generator<any, Track[], any> {
   if (!ids.length) return [] as Track[]
 
   // Query each track in parallel using queryTrack
-  const tracks = yield* all(
-    ids.map((id) => call(queryTrack, id, forceRetrieve))
-  )
+  const tracks = yield* all(ids.map((id) => call(queryTrack, id)))
 
   // Filter out null and undefined results and return as Track[]
   return tracks.filter(removeNullable)
@@ -61,18 +55,14 @@ export function* queryAllTracks() {
   )
 }
 
-export function* queryTrackByUid(
-  uid: string | null | undefined,
-  forceRetrieve = false
-) {
+export function* queryTrackByUid(uid: string | null | undefined) {
   if (!uid) return null
   const trackId = Number(Uid.fromString(uid).id)
-  return yield* queryTrack(trackId, forceRetrieve)
+  return yield* queryTrack(trackId)
 }
 
 export function* queryCollectionTracks(
-  collectionId: ID | null | undefined,
-  forceRetrieve = false
+  collectionId: ID | null | undefined
 ): Generator<any, Track[], any> {
   if (!collectionId) return [] as Track[]
 
@@ -86,5 +76,5 @@ export function* queryCollectionTracks(
   )
 
   // Query all tracks in parallel
-  return yield* call(queryTracks, trackIds, forceRetrieve)
+  return yield* call(queryTracks, trackIds)
 }
