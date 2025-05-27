@@ -4,18 +4,18 @@
     "build": {
       "outputs": ["dist/**"],
       "dependsOn": ["^build"],
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     },
     "test": {
       "cache": false,
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "dependsOn": ["build"]
     },
     "watch": {
       "cache": false,
       "dependsOn": ["^build"],
       "persistent": true,
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     }
   }
 }

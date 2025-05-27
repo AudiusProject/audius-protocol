@@ -2,7 +2,7 @@
   "extends": ["//"],
   "pipeline": {
     "lint": {
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "dependsOn": ["^build"],
       "env": ["audius_db_url", "identity_db_url"]
     }
