@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react'
 
-import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useRemixContest, useRemixes, useTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { ID } from '@audius/common/models'
+import { ID, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
+import { dayjs } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -15,10 +16,13 @@ import {
   spacing,
   Text
 } from '@audius/harmony'
+import { Link } from 'react-router-dom'
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import useTabs from 'hooks/useTabs/useTabs'
+import { track, make } from 'services/analytics'
+import { pickWinnersPage } from 'utils/route'
 
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
@@ -32,7 +36,9 @@ const messages = {
   prizes: 'Prizes',
   winners: 'Winners',
   submissions: 'Submissions',
-  uploadRemixButtonText: 'Upload Your Remix'
+  uploadRemixButtonText: 'Upload Your Remix',
+  pickWinners: 'Pick Winners',
+  editWinners: 'Edit Winners'
 }
 
 const TAB_BAR_HEIGHT = 56
@@ -50,6 +56,7 @@ export const RemixContestSection = ({
   isOwner
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
+  const { data: originalTrack } = useTrack(trackId)
   const { data: remixContest } = useRemixContest(trackId)
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
@@ -61,6 +68,7 @@ export const RemixContestSection = ({
 
   const [contentHeight, setContentHeight] = useState(0)
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
+  const isContestEnded = dayjs(remixContest?.endDate).isBefore(dayjs())
   const hasWinners =
     isRemixContestWinnersMilestoneEnabled &&
     (remixContest?.eventData?.winners?.length ?? 0) > 0
@@ -134,6 +142,20 @@ export const RemixContestSection = ({
     isMobile: false
   })
 
+  const pickWinnersRoute = pickWinnersPage(originalTrack?.permalink ?? '')
+
+  const handlePickWinnersClick = useCallback(() => {
+    if (remixContest?.eventId) {
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_PICK_WINNERS_OPEN,
+          remixContestId: remixContest.eventId,
+          trackId
+        })
+      )
+    }
+  }, [remixContest?.eventId, trackId])
+
   const goToUploadWithRemix = useRequiresAccountCallback(() => {
     if (!trackId) return
 
@@ -182,6 +204,18 @@ export const RemixContestSection = ({
                   iconLeft={IconCloudUpload}
                 >
                   {messages.uploadRemixButtonText}
+                </Button>
+              </Flex>
+            ) : isContestEnded && isRemixContestWinnersMilestoneEnabled ? (
+              <Flex mb='m'>
+                <Button
+                  variant='secondary'
+                  size='small'
+                  onClick={handlePickWinnersClick}
+                >
+                  <Link to={pickWinnersRoute}>
+                    {hasWinners ? messages.editWinners : messages.pickWinners}
+                  </Link>
                 </Button>
               </Flex>
             ) : (
