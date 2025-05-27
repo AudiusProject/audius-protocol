@@ -39,19 +39,14 @@ const ResultWrapper = ({
       css={{
         minWidth: 0
       }}
+      as={Link}
+      gap='s'
+      onClick={() => {
+        dispatch(addRecentSearch({ searchItem: { kind, id } }))
+        navigate(to)
+      }}
     >
-      <Flex
-        as={Link}
-        gap='s'
-        alignItems='center'
-        css={{ minWidth: 0 }}
-        onClick={() => {
-          dispatch(addRecentSearch({ searchItem: { kind, id } }))
-          navigate(to)
-        }}
-      >
-        {children}
-      </Flex>
+      {children}
       {onRemove ? (
         <IconCloseAlt
           onClick={onRemove}
