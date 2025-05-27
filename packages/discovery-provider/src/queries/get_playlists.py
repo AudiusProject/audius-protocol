@@ -41,6 +41,7 @@ class GetPlaylistsArgs(TypedDict, total=False):
     limit: int
     offset: int
     sort_method: str
+    query: Optional[str]  # Optional query parameter for filtering by name
 
 
 def _get_unpopulated_playlists(session, args):
@@ -48,6 +49,13 @@ def _get_unpopulated_playlists(session, args):
     routes = args.get("routes", None)
 
     current_user_id = args.get("current_user_id")
+
+    # Handle query filtering if provided
+    if "query" in args and args["query"]:
+        query = args["query"].lower()
+        playlist_query = playlist_query.filter(
+            Playlist.playlist_name.ilike(f"%{query}%")
+        )
 
     # Handle sorting
     sort_method = args.get("sort_method")

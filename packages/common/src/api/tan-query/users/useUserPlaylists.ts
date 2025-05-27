@@ -22,6 +22,7 @@ type GetPlaylistsOptions = {
   userId: number | null
   pageSize?: number
   sortMethod?: full.GetPlaylistsByUserSortMethodEnum
+  query?: string
 }
 
 export const getUserPlaylistsQueryKey = (params: GetPlaylistsOptions) => {
@@ -42,7 +43,7 @@ export const useUserPlaylists = (
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const { userId, pageSize = 10, sortMethod = 'recent' } = params
+  const { userId, pageSize = 5, sortMethod = 'recent', query } = params
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -63,7 +64,8 @@ export const useUserPlaylists = (
         userId: OptionalId.parse(currentUserId),
         limit: pageSize,
         offset: pageParam as number,
-        sortMethod
+        sortMethod,
+        query
       })
 
       const collections = transformAndCleanList(

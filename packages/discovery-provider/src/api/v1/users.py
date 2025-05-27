@@ -924,6 +924,7 @@ class PlaylistsFull(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         sort_method = args.get("sort_method", CollectionSortMethod.recent)
+        query = format_query(args)
 
         args = GetPlaylistsArgs(
             user_id=decoded_id,
@@ -934,6 +935,7 @@ class PlaylistsFull(Resource):
             offset=offset,
             kind="Playlist",
             sort_method=sort_method,
+            query=query,
         )
         playlists = get_playlists(args)
         playlists = list(map(extend_playlist, playlists))
@@ -1001,6 +1003,7 @@ class AlbumsFull(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         sort_method = args.get("sort_method", CollectionSortMethod.recent)
+        query = format_query(args)
 
         args = GetPlaylistsArgs(
             user_id=decoded_id,
@@ -1011,6 +1014,7 @@ class AlbumsFull(Resource):
             offset=offset,
             kind="Album",
             sort_method=sort_method,
+            query=query,
         )
         albums = get_playlists(args)
         albums = list(map(extend_playlist, albums))
