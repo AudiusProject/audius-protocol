@@ -153,7 +153,7 @@ export const ChatUserListItem = ({
   const { data: user } = useUser(userId)
   const { data: currentUserId } = useCurrentUserId()
   const { callToAction, canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id })
+    getCanCreateChat(state, { userId: user?.user_id, currentUserId })
   )
   const { onOpen: openInboxUnavailableDrawer } = useInboxUnavailableModal()
 

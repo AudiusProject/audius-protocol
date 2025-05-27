@@ -2,7 +2,8 @@ import { ComponentType, PureComponent, RefObject } from 'react'
 
 import {
   selectAccountHasTracks,
-  useCurrentAccountUser
+  useCurrentAccountUser,
+  useCurrentUserId
 } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
@@ -44,7 +45,7 @@ import {
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
@@ -982,9 +983,7 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      chatPermissions: getCanCreateChat(state, {
-        userId: profile.profile?.user_id
-      }),
+
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state)
     }
@@ -1157,6 +1156,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 type HookStateProps = {
   accountUserId?: ID | undefined
   accountHasTracks?: boolean | undefined
+  chatPermissions?: ReturnType<typeof getCanCreateChat>
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
@@ -1166,7 +1166,20 @@ const hookStateToProps = (Component: typeof ProfilePage) => {
         accountHasTracks: selectAccountHasTracks(user)
       })
     })
-    return <ProfilePage {...(accountData as HookStateProps)} {...props} />
+    const { data: currentUserId } = useCurrentUserId()
+    const chatPermissions = useSelector((state: AppState) =>
+      getCanCreateChat(state, {
+        userId: props.profile.profile?.user_id,
+        currentUserId
+      })
+    )
+    return (
+      <ProfilePage
+        {...(accountData as HookStateProps)}
+        chatPermissions={chatPermissions}
+        {...props}
+      />
+    )
   }
 }
 

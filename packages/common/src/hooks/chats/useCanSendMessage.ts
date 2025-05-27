@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
 
+import { useCurrentUserId } from '~/api'
 import { useProxySelector } from '~/hooks/useProxySelector'
 import { User } from '~/models/User'
 import { ChatPermissionAction, CommonState } from '~/store/index'
@@ -19,8 +20,9 @@ export const useCanSendMessage = (
   // Explicitly define type as undefinable since users could be empty
   firstOtherUser: User | undefined
 } => {
+  const { data: currentUserId } = useCurrentUserId()
   const users = useProxySelector(
-    (state) => getOtherChatUsers(state, currentChatId),
+    (state) => getOtherChatUsers(state, currentUserId, currentChatId),
     [currentChatId]
   )
 

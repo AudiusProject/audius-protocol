@@ -126,7 +126,7 @@ export const InboxUnavailableModal = () => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId })
+    getCanCreateChat(state, { userId, currentUserId })
   )
   const hasAction =
     callToAction === ChatPermissionAction.TIP ||

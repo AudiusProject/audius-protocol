@@ -628,7 +628,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
     yield* put(fetchBlockers())
     if (userId) {
       const otherUsers = yield* select((state) =>
-        getOtherChatUsers(state, chatId)
+        getOtherChatUsers(state, userId, chatId)
       )
       // Get permissions of ourselves and other users in the chat
       yield* put(

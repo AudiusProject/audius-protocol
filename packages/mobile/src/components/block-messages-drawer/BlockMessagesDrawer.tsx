@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -13,6 +13,7 @@ import { ConfirmationDrawer } from '../drawers'
 
 const { getDoesBlockUser, getCanCreateChat } = chatSelectors
 const { blockUser, unblockUser, createChat } = chatActions
+const { ChatPermissionAction } = chatSelectors
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
 
@@ -40,10 +41,11 @@ export const BlockMessagesDrawer = () => {
   const { data } = useDrawer('BlockMessages')
   const { userId, shouldOpenChat, isReportAbuse } = data
   const { data: user } = useUser(userId)
+  const { data: currentUserId } = useCurrentUserId()
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
   const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId })
+    getCanCreateChat(state, { userId, currentUserId })
   )
 
   const handleConfirmPress = useCallback(() => {

@@ -106,7 +106,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   const isBlockee = blockeeList.includes(user.user_id)
 
   const { canCreateChat, callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user.user_id })
+    getCanCreateChat(state, { userId: user.user_id, currentUserId })
   )
 
   const handleComposeClicked = useComposeChat({

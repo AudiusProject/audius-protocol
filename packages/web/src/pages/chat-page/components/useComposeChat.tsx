@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -21,9 +22,10 @@ export const useComposeChat = ({
   presetMessage?: string
 }) => {
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
   const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id })
+    getCanCreateChat(state, { userId: user?.user_id, currentUserId })
   )
 
   const composeChat = useCallback(() => {

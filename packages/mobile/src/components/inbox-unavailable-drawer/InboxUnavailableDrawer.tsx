@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
+import type { useInboxUnavailableModal } from '@audius/common/store'
 import {
   cacheUsersSelectors,
   chatActions,
@@ -10,7 +11,6 @@ import {
   makeChatId,
   ChatPermissionAction,
   tippingActions,
-  useInboxUnavailableModal,
   usersSocialActions
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
@@ -112,14 +112,14 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
+  const { data: currentUserId } = useCurrentUserId()
   const { userId, presetMessage } = data
   const user = useSelector((state) =>
     cacheUsersSelectors.getUser(state, { id: userId })
   )
   const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId })
+    getCanCreateChat(state, { userId, currentUserId })
   )
-  const { data: currentUserId } = useCurrentUserId()
 
   const handleUnblockPress = useCallback(() => {
     if (!userId) {
@@ -286,23 +286,4 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
     default:
       return null
   }
-}
-
-export const InboxUnavailableDrawer = () => {
-  const styles = useStyles()
-  const neutralLight2 = useColor('neutralLight2')
-  const { isOpen, onClose, onClosed, data } = useInboxUnavailableModal()
-
-  return (
-    <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
-      <View style={styles.drawer}>
-        <View style={styles.titleContainer}>
-          <IconMessageLocked fill={neutralLight2} />
-          <Text style={styles.title}>{messages.title}</Text>
-        </View>
-        <View style={styles.border} />
-        <DrawerContent data={data} onClose={onClose} />
-      </View>
-    </Drawer>
-  )
 }

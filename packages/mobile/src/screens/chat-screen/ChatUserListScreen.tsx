@@ -153,7 +153,9 @@ const useDefaultUserList = (
     { userId: currentUserId },
     { enabled: defaultUserList === 'followers' }
   )
-  const chatsUserList = useSelector(getChatsUserList)
+  const chatsUserList = useSelector((state) =>
+    getChatsUserList(currentUserId)(state)
+  )
 
   const userIds =
     defaultUserList === 'followers'

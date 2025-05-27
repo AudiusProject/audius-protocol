@@ -139,11 +139,14 @@ export const getHasUnreadMessages = (state: CommonState) => {
   return false
 }
 
-export const getOtherChatUsersFromChat = (state: CommonState, chat?: Chat) => {
+export const getOtherChatUsersFromChat = (
+  state: CommonState,
+  currentUserId: ID | null | undefined,
+  chat?: Chat
+) => {
   if (!chat || chat.is_blast) {
     return []
   }
-  const currentUserId = getUserId(state)
   const ids = chat.chat_members
     .filter((u) => HashId.parse(u.user_id) !== currentUserId)
     .map((u) => HashId.parse(u.user_id) ?? -1)
@@ -154,19 +157,24 @@ export const getOtherChatUsersFromChat = (state: CommonState, chat?: Chat) => {
   return Object.values(users).map((user) => user.metadata)
 }
 
-export const getOtherChatUsers = (state: CommonState, chatId?: string) => {
+export const getOtherChatUsers = (
+  state: CommonState,
+  currentUserId: ID | null | undefined,
+  chatId?: string
+) => {
   if (!chatId) {
     return []
   }
   const chat = getChat(state, chatId)
-  return getOtherChatUsersFromChat(state, chat)
+  return getOtherChatUsersFromChat(state, currentUserId, chat)
 }
 
 export const getSingleOtherChatUser = (
   state: CommonState,
+  currentUserId: ID | null | undefined,
   chatId?: string
 ): User | undefined => {
-  return getOtherChatUsers(state, chatId)[0]
+  return getOtherChatUsers(state, currentUserId, chatId)[0]
 }
 
 /**
@@ -174,25 +182,26 @@ export const getSingleOtherChatUser = (
  * Note that this only takes the first user of each chat that doesn't match the current one,
  * so this will need to be adjusted when we do group chats.
  **/
-export const getUserList = createSelector(
-  [getUserId, getChats, getHasMoreChats, getChatsStatus],
-  (currentUserId, chats, hasMore, chatsStatus) => {
-    const chatUserListIds = chats
-      .filter((c) => !c.is_blast)
-      .map(
-        (c) =>
-          (c as UserChat).chat_members
-            .filter((u) => HashId.parse(u.user_id) !== currentUserId)
-            .map((u) => HashId.parse(u.user_id))[0]
-      )
-      .filter(removeNullable)
-    return {
-      userIds: chatUserListIds,
-      hasMore,
-      loading: chatsStatus === Status.LOADING
+export const getUserList = (currentUserId: ID | null | undefined) =>
+  createSelector(
+    [getChats, getHasMoreChats, getChatsStatus],
+    (chats, hasMore, chatsStatus) => {
+      const chatUserListIds = chats
+        .filter((c) => !c.is_blast)
+        .map(
+          (c) =>
+            (c as UserChat).chat_members
+              .filter((u) => HashId.parse(u.user_id) !== currentUserId)
+              .map((u) => HashId.parse(u.user_id))[0]
+        )
+        .filter(removeNullable)
+      return {
+        userIds: chatUserListIds,
+        hasMore,
+        loading: chatsStatus === Status.LOADING
+      }
     }
-  }
-)
+  )
 
 export const getChatMessageByIndex = (
   state: CommonState,
@@ -250,24 +259,28 @@ export const getDoesBlockUser = createSelector(
 
 export const getCanCreateChat = createSelector(
   [
-    getUserId,
     getBlockees,
     getBlockers,
     getChatPermissions,
     getChats,
-    (state: CommonState, { userId }: { userId: Maybe<ID> }) => {
+    (
+      state: CommonState,
+      {
+        userId,
+        currentUserId
+      }: { userId: Maybe<ID>; currentUserId: ID | null | undefined }
+    ) => {
       if (!userId) return null
       const usersMap = getUsers(state, { ids: [userId] })
-      return usersMap[userId]?.metadata
+      return { user: usersMap[userId]?.metadata, currentUserId }
     }
   ],
   (
-    currentUserId,
     blockees,
     blockers,
     chatPermissions,
     chats,
-    user
+    { user, currentUserId }
   ): { canCreateChat: boolean; callToAction: ChatPermissionAction } => {
     if (!currentUserId) {
       return {

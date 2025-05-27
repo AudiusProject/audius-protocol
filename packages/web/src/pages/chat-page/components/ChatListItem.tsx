@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { chatSelectors } from '@audius/common/store'
 import type { UserChat } from '@audius/sdk'
@@ -22,10 +23,11 @@ type ChatListItemProps = {
 
 export const ChatListItem = (props: ChatListItemProps) => {
   const { chat, currentChatId, onChatClicked } = props
+  const { data: currentUserId } = useCurrentUserId()
   const isCurrentChat = currentChatId && currentChatId === chat.chat_id
 
   const users = useProxySelector(
-    (state) => getOtherChatUsersFromChat(state, chat),
+    (state) => getOtherChatUsersFromChat(state, currentUserId, chat),
     [chat]
   )
 
