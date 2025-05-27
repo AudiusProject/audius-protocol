@@ -217,217 +217,229 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   return (
     <Flex
-      direction='column'
-      pv='3xl'
-      ph='unit15'
-      gap='3xl'
-      alignItems='stretch'
+      justifyContent='center'
       css={{
-        minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH,
-        maxWidth: isLarge ? '100%' : NORMAL_WIDTH
+        minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH
       }}
     >
-      {/* Header Section */}
-      <Paper
-        alignItems='center'
+      <Flex
         direction='column'
-        gap='xl'
-        pv='xl'
-        ph='unit14'
+        pv='3xl'
+        ph='unit15'
+        gap='3xl'
+        alignItems='stretch'
         css={{
-          backgroundImage: `url(${BackgroundWaves})`,
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-          opacity: bannerIsVisible ? 1 : 0,
-          transition: `opacity ${motion.quick}`
+          minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH,
+          maxWidth: isLarge ? '100%' : NORMAL_WIDTH
         }}
-        borderRadius='l'
-        alignSelf='stretch'
       >
-        <Text variant='display' size='s' color='staticWhite'>
-          {messages.explore}
-        </Text>
-        <Text variant='heading' size='s' color='staticWhite' textAlign='center'>
-          {messages.description}
-        </Text>
-        <Flex w='100%' css={{ maxWidth: 400 }}>
-          <TextInput
-            ref={searchBarRef}
-            label={messages.searchPlaceholder}
-            value={inputValue}
-            startIcon={IconSearch}
-            size={TextInputSize.SMALL}
-            onChange={handleSearch}
-            onClear={handleClearSearch}
-          />
-        </Flex>
-      </Paper>
-
-      {/* Tabs and Filters */}
-      <Flex direction='column' gap='l'>
-        <Flex direction='column'>
-          <Flex alignSelf='flex-start'>{tabs}</Flex>
-          <Divider orientation='horizontal' />
-        </Flex>
-        {filterKeys.length ? (
-          <Flex
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            css={{ flexWrap: 'wrap' }}
+        {/* Header Section */}
+        <Paper
+          alignItems='center'
+          direction='column'
+          gap='xl'
+          pv='xl'
+          ph='unit14'
+          css={{
+            backgroundImage: `url(${BackgroundWaves})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            opacity: bannerIsVisible ? 1 : 0,
+            transition: `opacity ${motion.quick}`
+          }}
+          borderRadius='l'
+          alignSelf='stretch'
+        >
+          <Text variant='display' size='s' color='staticWhite'>
+            {messages.explore}
+          </Text>
+          <Text
+            variant='heading'
+            size='s'
+            color='staticWhite'
+            textAlign='center'
           >
-            <Flex direction='row' gap='s' mv='m' css={{ flexWrap: 'wrap' }}>
-              {filterKeys.map((filterKey) => {
-                const FilterComponent =
-                  filters[filterKey as keyof typeof filters]
-                return <FilterComponent key={filterKey} />
-              })}
-            </Flex>
-            <Flex gap='s'>
-              <SortMethodFilterButton />
-              {categoryKey === CategoryView.TRACKS ? (
-                <FilterButton
-                  value={tracksLayout}
-                  variant='replaceLabel'
-                  optionsLabel={messages.layoutOptionsLabel}
-                  onChange={setTracksLayout}
-                  options={viewLayoutOptions}
-                />
-              ) : null}
-            </Flex>
+            {messages.description}
+          </Text>
+          <Flex w='100%' css={{ maxWidth: 400 }}>
+            <TextInput
+              ref={searchBarRef}
+              label={messages.searchPlaceholder}
+              value={inputValue}
+              startIcon={IconSearch}
+              size={TextInputSize.SMALL}
+              onChange={handleSearch}
+              onClear={handleClearSearch}
+            />
           </Flex>
-        ) : null}
-      </Flex>
+        </Paper>
 
-      {/* Content Section */}
-      {!showSearchResults && categoryKey !== 'all' ? (
-        <Flex direction='column' alignItems='center' gap={'xl'}>
-          <SearchCatalogTile />
-          <RecentSearches />
-        </Flex>
-      ) : inputValue || showSearchResults ? (
-        <SearchResults
-          tracksLayout={tracksLayout}
-          handleSearchTab={handleSearchTab}
-        />
-      ) : (
-        <>
+        {/* Tabs and Filters */}
+        <Flex direction='column' gap='l'>
           <Flex direction='column'>
-            <ExploreSection
-              title={messages.featuredPlaylists}
-              data={exploreContent?.featuredPlaylists}
-              Card={CollectionCard}
-            />
-            <ExploreSection
-              title={messages.featuredRemixContests}
-              data={exploreContent?.featuredRemixContests}
-              Card={RemixContestCard}
-            />
-
-            <ExploreSection
-              title={messages.artistSpotlight}
-              data={exploreContent?.featuredProfiles}
-              Card={UserCard}
-            />
-
-            <ExploreSection
-              title={messages.labelSpotlight}
-              data={exploreContent?.featuredLabels}
-              Card={UserCard}
-            />
+            <Flex alignSelf='flex-start'>{tabs}</Flex>
+            <Divider orientation='horizontal' />
           </Flex>
-          {/* Explore by mood */}
-          <Flex direction='column' gap='l' alignItems='center'>
-            <Text variant='heading'>{messages.exploreByMood}</Text>
+          {filterKeys.length ? (
             <Flex
-              gap='m'
-              justifyContent='center'
-              alignItems='flex-start'
-              wrap='wrap'
-            >
-              {Object.entries(MOODS)
-                .sort()
-                .map(([mood, moodInfo]) => (
-                  <Paper
-                    key={mood}
-                    pv='l'
-                    ph='xl'
-                    gap='m'
-                    borderRadius='m'
-                    border='default'
-                    backgroundColor='white'
-                    onClick={() => {
-                      navigate(`/search/tracks?mood=${mood}`)
-                    }}
-                    css={{
-                      ':hover': {
-                        background: color.neutral.n25,
-                        border: `1px solid ${color.neutral.n150}`
-                      }
-                    }}
-                  >
-                    {moodInfo.icon}
-                    <Text variant='title' size='s'>
-                      {moodInfo.label}
-                    </Text>
-                  </Paper>
-                ))}
-            </Flex>
-          </Flex>
-
-          {/* Just For You */}
-          <Flex direction='column' gap='l'>
-            <Text variant='heading'>{messages.bestOfAudius}</Text>
-            <Flex
-              wrap='wrap'
-              gap='l'
-              direction={isLarge ? 'column' : 'row'}
+              direction='row'
               justifyContent='space-between'
-              css={
-                !isLarge
-                  ? {
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gridTemplateRows: '1fr 1fr',
-                      gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
-                      width: '100%'
-                    }
-                  : undefined
-              }
+              alignItems='center'
+              css={{ flexWrap: 'wrap' }}
             >
-              {justForYouTiles.map((tile) => {
-                const Icon = tile.icon
-                return (
-                  <PerspectiveCard
-                    key={tile.title}
-                    backgroundGradient={tile.gradient}
-                    shadowColor={tile.shadow}
-                    useOverlayBlendMode={
-                      tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                    }
-                    backgroundIcon={
-                      Icon ? (
-                        <Icon height={180} width={180} color='inverse' />
-                      ) : undefined
-                    }
-                    onClick={() => onClickCard(tile.link)}
-                    isIncentivized={!!tile.incentivized}
-                    sensitivity={tile.cardSensitivity}
-                  >
-                    <Flex w={'100%'} h={200}>
-                      <TextInterior
-                        title={tile.title}
-                        subtitle={tile.subtitle}
-                      />
-                    </Flex>
-                  </PerspectiveCard>
-                )
-              })}
+              <Flex direction='row' gap='s' mv='m' css={{ flexWrap: 'wrap' }}>
+                {filterKeys.map((filterKey) => {
+                  const FilterComponent =
+                    filters[filterKey as keyof typeof filters]
+                  return <FilterComponent key={filterKey} />
+                })}
+              </Flex>
+              <Flex gap='s'>
+                <SortMethodFilterButton />
+                {categoryKey === CategoryView.TRACKS ? (
+                  <FilterButton
+                    value={tracksLayout}
+                    variant='replaceLabel'
+                    optionsLabel={messages.layoutOptionsLabel}
+                    onChange={setTracksLayout}
+                    options={viewLayoutOptions}
+                  />
+                ) : null}
+              </Flex>
             </Flex>
+          ) : null}
+        </Flex>
+
+        {/* Content Section */}
+        {!showSearchResults && categoryKey !== 'all' ? (
+          <Flex direction='column' alignItems='center' gap={'xl'}>
+            <SearchCatalogTile />
+            <RecentSearches />
           </Flex>
-        </>
-      )}
+        ) : inputValue || showSearchResults ? (
+          <SearchResults
+            tracksLayout={tracksLayout}
+            handleSearchTab={handleSearchTab}
+          />
+        ) : (
+          <>
+            <Flex direction='column'>
+              <ExploreSection
+                title={messages.featuredPlaylists}
+                data={exploreContent?.featuredPlaylists}
+                Card={CollectionCard}
+              />
+              <ExploreSection
+                title={messages.featuredRemixContests}
+                data={exploreContent?.featuredRemixContests}
+                Card={RemixContestCard}
+              />
+
+              <ExploreSection
+                title={messages.artistSpotlight}
+                data={exploreContent?.featuredProfiles}
+                Card={UserCard}
+              />
+
+              <ExploreSection
+                title={messages.labelSpotlight}
+                data={exploreContent?.featuredLabels}
+                Card={UserCard}
+              />
+            </Flex>
+            {/* Explore by mood */}
+            <Flex direction='column' gap='l' alignItems='center'>
+              <Text variant='heading'>{messages.exploreByMood}</Text>
+              <Flex
+                gap='m'
+                justifyContent='center'
+                alignItems='flex-start'
+                wrap='wrap'
+              >
+                {Object.entries(MOODS)
+                  .sort()
+                  .map(([mood, moodInfo]) => (
+                    <Paper
+                      key={mood}
+                      pv='l'
+                      ph='xl'
+                      gap='m'
+                      borderRadius='m'
+                      border='default'
+                      backgroundColor='white'
+                      onClick={() => {
+                        navigate(`/search/tracks?mood=${mood}`)
+                      }}
+                      css={{
+                        ':hover': {
+                          background: color.neutral.n25,
+                          border: `1px solid ${color.neutral.n150}`
+                        }
+                      }}
+                    >
+                      {moodInfo.icon}
+                      <Text variant='title' size='s'>
+                        {moodInfo.label}
+                      </Text>
+                    </Paper>
+                  ))}
+              </Flex>
+            </Flex>
+
+            {/* Just For You */}
+            <Flex direction='column' gap='l'>
+              <Text variant='heading'>{messages.bestOfAudius}</Text>
+              <Flex
+                wrap='wrap'
+                gap='l'
+                direction={isLarge ? 'column' : 'row'}
+                justifyContent='space-between'
+                css={
+                  !isLarge
+                    ? {
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateRows: '1fr 1fr',
+                        gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
+                        width: '100%'
+                      }
+                    : undefined
+                }
+              >
+                {justForYouTiles.map((tile) => {
+                  const Icon = tile.icon
+                  return (
+                    <PerspectiveCard
+                      key={tile.title}
+                      backgroundGradient={tile.gradient}
+                      shadowColor={tile.shadow}
+                      useOverlayBlendMode={
+                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
+                      }
+                      backgroundIcon={
+                        Icon ? (
+                          <Icon height={180} width={180} color='inverse' />
+                        ) : undefined
+                      }
+                      onClick={() => onClickCard(tile.link)}
+                      isIncentivized={!!tile.incentivized}
+                      sensitivity={tile.cardSensitivity}
+                    >
+                      <Flex w={'100%'} h={200}>
+                        <TextInterior
+                          title={tile.title}
+                          subtitle={tile.subtitle}
+                        />
+                      </Flex>
+                    </PerspectiveCard>
+                  )
+                })}
+              </Flex>
+            </Flex>
+          </>
+        )}
+      </Flex>
     </Flex>
   )
 }
