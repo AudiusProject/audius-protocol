@@ -3,7 +3,6 @@ import {
   Status,
   WithdrawUSDCTransferEventFields
 } from '@audius/common/models'
-import { getUserQueryKey } from '@audius/common/src/api/tan-query/users/useUser'
 import { getUSDCBalanceQueryKey } from '@audius/common/src/api/tan-query/wallets/useUSDCBalance'
 import { transferFromUserBank } from '@audius/common/src/services/audius-backend/solana'
 import {
