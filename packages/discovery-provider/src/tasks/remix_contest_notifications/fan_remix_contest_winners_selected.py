@@ -4,6 +4,7 @@ from src.models.events.event import Event, EventType
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.models.users.user import User
+from src.tasks.entity_manager.utils import safe_add_notification
 from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
@@ -69,22 +70,9 @@ def create_fan_remix_contest_winners_selected_notification(session, event_id, no
         logger.warning(f"Contest host {event.user_id} not found")
         return
 
-    # Check if notification already exists for this event
-    existing_notification = (
-        session.query(Notification)
-        .filter(
-            Notification.group_id == group_id,
-            Notification.type == FAN_REMIX_CONTEST_WINNERS_SELECTED,
-        )
-        .first()
-    )
-
-    if existing_notification:
-        logger.info(f"Notification already exists for event {event_id}")
-        return
-
     # Find all users who submitted remixes to this contest
     # Only include remixes uploaded after the contest was created
+    # Exclude the contest host from notifications
     remixer_user_ids = (
         session.query(Track.owner_id)
         .filter(
@@ -94,6 +82,7 @@ def create_fan_remix_contest_winners_selected_notification(session, event_id, no
                 {"tracks": [{"parent_track_id": contest_track_id}]}
             ),
             Track.created_at > event.created_at,
+            Track.owner_id != event.user_id,  # Exclude contest host
         )
         .distinct()
         .all()
@@ -106,22 +95,24 @@ def create_fan_remix_contest_winners_selected_notification(session, event_id, no
         return
 
     for user_id in remixer_user_ids:
-        new_notification = Notification(
-            specifier=str(event.user_id),
-            group_id=group_id,
-            blocknumber=None,
-            user_ids=[user_id],
-            type=FAN_REMIX_CONTEST_WINNERS_SELECTED,
-            data={
-                "entity_id": contest_track_id,
-                "entity_user_id": event.user_id,
-            },
-            timestamp=now,
+        # Create unique group_id per user to prevent conflicts
+        user_group_id = f"{group_id}:user:{user_id}"
+        safe_add_notification(
+            session,
+            Notification(
+                specifier=str(event.user_id),
+                group_id=user_group_id,
+                blocknumber=None,
+                user_ids=[user_id],
+                type=FAN_REMIX_CONTEST_WINNERS_SELECTED,
+                data={
+                    "entity_id": contest_track_id,
+                    "entity_user_id": event.user_id,
+                },
+                timestamp=now,
+            ),
         )
-        session.add(new_notification)
 
     logger.info(
         f"Created {len(remixer_user_ids)} winners selected notifications for event {event_id}"
     )
-
-    session.commit()

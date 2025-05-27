@@ -103,21 +103,21 @@ def test_fan_remix_contest_winners_selected_notification_for_remixers(app):
 
         assert len(notifications) == 2  # One notification per remixer
 
-        # Extract user IDs from all notifications
-        notified_user_ids = set()
+        # Check that all notifications have the correct base group_id pattern
         for notification in notifications:
             assert (
                 len(notification.user_ids) == 1
             )  # Each notification should have exactly one user
-            notified_user_ids.add(notification.user_ids[0])
+            user_id = notification.user_ids[0]
+            expected_group_id = (
+                f"fan_remix_contest_winners_selected:1:user:{user_id}"  # event_id is 1
+            )
+            assert notification.group_id == expected_group_id
             assert notification.data["entity_user_id"] == TEST_EVENT_CREATOR_ID
             assert notification.data["entity_id"] == TEST_TRACK_ID
-            assert notification.type == "fan_remix_contest_winners_selected"
-            assert notification.group_id.startswith(
-                "fan_remix_contest_winners_selected:"
-            )
 
         # Should notify both remixers but not the contest host
+        notified_user_ids = {notification.user_ids[0] for notification in notifications}
         assert notified_user_ids == {TEST_REMIXER_ID_1, TEST_REMIXER_ID_2}
 
 
@@ -205,7 +205,12 @@ def test_fan_remix_contest_winners_selected_no_duplicate_for_multiple_remixes(ap
         assert (
             len(notification.user_ids) == 1
         )  # Each notification should have exactly one user
-        assert notification.user_ids[0] == TEST_REMIXER_ID_3
+        user_id = notification.user_ids[0]
+        assert user_id == TEST_REMIXER_ID_3
+        expected_group_id = (
+            f"fan_remix_contest_winners_selected:2:user:{user_id}"  # event_id is 2
+        )
+        assert notification.group_id == expected_group_id
         assert notification.data["entity_user_id"] == TEST_EVENT_CREATOR_ID
         assert notification.data["entity_id"] == TEST_TRACK_ID
 
@@ -360,7 +365,12 @@ def test_fan_remix_contest_winners_selected_no_duplicate_notification(app):
         assert (
             len(notification.user_ids) == 1
         )  # Each notification should have exactly one user
-        assert notification.user_ids[0] == TEST_REMIXER_ID_1
+        user_id = notification.user_ids[0]
+        assert user_id == TEST_REMIXER_ID_1
+        expected_group_id = (
+            f"fan_remix_contest_winners_selected:4:user:{user_id}"  # event_id is 4
+        )
+        assert notification.group_id == expected_group_id
 
 
 def test_fan_remix_contest_winners_selected_excludes_contest_host(app):
@@ -450,8 +460,15 @@ def test_fan_remix_contest_winners_selected_excludes_contest_host(app):
         assert (
             len(notification.user_ids) == 1
         )  # Each notification should have exactly one user
-        assert notification.user_ids[0] == TEST_REMIXER_ID_1
-        assert TEST_EVENT_CREATOR_ID not in notification.user_ids
+        user_id = notification.user_ids[0]
+        assert user_id == TEST_REMIXER_ID_1
+        expected_group_id = (
+            f"fan_remix_contest_winners_selected:5:user:{user_id}"  # event_id is 5
+        )
+        assert notification.group_id == expected_group_id
+        assert TEST_EVENT_CREATOR_ID not in [
+            notification.user_ids[0] for notification in notifications
+        ]
 
 
 def test_fan_remix_contest_winners_selected_only_notifies_post_contest_remixes(app):
@@ -539,10 +556,13 @@ def test_fan_remix_contest_winners_selected_only_notifies_post_contest_remixes(a
             .all()
         )
 
-        # Should only notify REMIXER_ID_2 whose remix was created after the contest
+        # Should only notify the post-contest remixer, not the pre-contest one
         assert len(notifications) == 1
         notification = notifications[0]
         assert len(notification.user_ids) == 1
-        assert notification.user_ids[0] == TEST_REMIXER_ID_2
-        # REMIXER_ID_1 should not be notified since their remix was created before the contest
-        assert TEST_REMIXER_ID_1 not in [n.user_ids[0] for n in notifications]
+        user_id = notification.user_ids[0]
+        assert user_id == TEST_REMIXER_ID_2
+        expected_group_id = (
+            f"fan_remix_contest_winners_selected:6:user:{user_id}"  # event_id is 6
+        )
+        assert notification.group_id == expected_group_id
