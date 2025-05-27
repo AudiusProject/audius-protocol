@@ -49,9 +49,9 @@ export const TransactionSuccessScreen = (
 
   return (
     <Flex direction='column' gap='xl'>
-      <Flex direction='row' gap='xs' alignItems='center'>
+      <Flex direction='row' gap='s' alignItems='center'>
         <CompletionCheck value='complete' />
-        <Text variant='heading' size='s' color='subdued'>
+        <Text variant='heading' size='s' color='default'>
           {messages.transactionComplete}
         </Text>
       </Flex>
