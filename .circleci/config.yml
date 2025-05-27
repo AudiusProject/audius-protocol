@@ -59,12 +59,7 @@ jobs:
 
       - restore_cache:
           keys:
-            # Primary cache key with Node version
-            - npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Environment.NODE_VERSION }}
-            # Fallback cache key without Node version
             - npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-            # Fallback to most recent cache
-            - npm-cache-
 
       - run: sudo apt-get update
       - run: sudo apt-get install -y build-essential libssl-dev
