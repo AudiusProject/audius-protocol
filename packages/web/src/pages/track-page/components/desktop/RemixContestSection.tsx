@@ -211,7 +211,7 @@ export const RemixContestSection = ({
               remixCount > 0 ? (
               <Flex mb='m'>
                 <Button
-                  variant='secondary'
+                  variant={hasWinners ? 'secondary' : 'primary'}
                   size='small'
                   onClick={handlePickWinnersClick}
                 >
