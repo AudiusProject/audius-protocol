@@ -29,7 +29,7 @@ type TrackPageContext = PageContextServer & {
 
 export default function render(pageContext: TrackPageContext) {
   const { pageProps, userAgent } = pageContext
-  const { collection, user, tracks } = pageProps
+  const { collection, user } = pageProps
   const { playlist_id, playlist_name, permalink, is_album } = collection
   const { user_id, name: userName, handle: userHandle } = user
 
@@ -53,12 +53,6 @@ export default function render(pageContext: TrackPageContext) {
           permalinks: { [permalink.toLowerCase()]: playlist_id }
         },
         users: { entries: { [user_id]: { metadata: user } } },
-        tracks: {
-          entries: tracks.reduce((acc, track) => {
-            const { track_id } = track
-            return { ...acc, [track_id]: { metadata: track } }
-          }, {})
-        },
         pages: {
           collection: {
             collectionId: playlist_id,

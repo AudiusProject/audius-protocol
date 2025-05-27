@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { Kind } from '@audius/common/models'
 import {
-  cacheActions,
   savedPageTracksLineupActions,
   savedPageSelectors
 } from '@audius/common/store'
@@ -45,14 +44,6 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
         dateSaved: track.offline?.favorite_created_at,
         kind: Kind.TRACKS
       }))
-
-    const cacheTracks = lineupTracks.map((track) => ({
-      id: track.id,
-      uid: track.uid,
-      metadata: track
-    }))
-
-    dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
     // Reorder lineup tracks according to favorite time
     const sortedTracks = orderBy(lineupTracks, (track) => track.dateSaved, [

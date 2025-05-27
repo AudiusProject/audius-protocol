@@ -58,7 +58,6 @@ import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { createAlbumSaga } from './createAlbumSaga'
 import { createPlaylistSaga } from './createPlaylistSaga'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
-import { retrieveCollection } from './utils/retrieveCollections'
 
 const { manualClearToast, toast } = toastActions
 const { getAccountUser, getUserId } = accountSelectors
@@ -338,9 +337,11 @@ function* confirmRemoveTrackFromPlaylist(
         return confirmedPlaylistId
       },
       function* (confirmedPlaylistId: ID) {
-        const [confirmedPlaylist] = yield* call(retrieveCollection, {
-          playlistId: confirmedPlaylistId
-        })
+        const confirmedPlaylist = yield* call(
+          queryCollection,
+          confirmedPlaylistId
+        )
+        if (!confirmedPlaylist) return
         yield* put(
           cacheActions.update(Kind.COLLECTIONS, [
             {

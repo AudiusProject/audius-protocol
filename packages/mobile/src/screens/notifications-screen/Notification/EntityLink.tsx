@@ -27,6 +27,8 @@ export const EntityLink = (props: EntityLinkProps) => {
     }
   }, [entity, navigation])
 
+  if (!entity) return null
+
   return (
     <Text fontSize='large' weight='medium' color='secondary' onPress={onPress}>
       {'title' in entity ? entity.title : entity.playlist_name}

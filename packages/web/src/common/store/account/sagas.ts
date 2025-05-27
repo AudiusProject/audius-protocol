@@ -1,12 +1,11 @@
+import { queryCollections } from '@audius/common/api'
 import { accountActions, accountSelectors } from '@audius/common/store'
 import { call, fork, select, takeEvery } from 'typed-redux-saga'
 
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
-import { retrieveCollections } from '../cache/collections/utils'
-
-const { getUserId, getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
+const { getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
   accountSelectors
 
 const { signedIn, fetchSavedPlaylists } = accountActions
@@ -19,13 +18,12 @@ function* onSignedIn() {
 
 function* fetchSavedPlaylistsAsync() {
   yield* waitForRead()
-  const userId = yield* select(getUserId)
 
   // Fetch other people's playlists you've saved
   yield* fork(function* () {
     const savedPlaylists = yield* select(getAccountSavedPlaylistIds)
     if (savedPlaylists.length > 0) {
-      yield* call(retrieveCollections, savedPlaylists, { userId })
+      yield* call(queryCollections, savedPlaylists)
     }
   })
 
@@ -33,7 +31,7 @@ function* fetchSavedPlaylistsAsync() {
   yield* fork(function* () {
     const ownPlaylists = yield* select(getAccountOwnedPlaylistIds)
     if (ownPlaylists.length > 0) {
-      yield* call(retrieveCollections, ownPlaylists, { userId })
+      yield* call(queryCollections, ownPlaylists)
     }
   })
 }

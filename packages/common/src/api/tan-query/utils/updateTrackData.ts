@@ -1,10 +1,8 @@
 import { QueryClient } from '@tanstack/react-query'
 import { mergeWith } from 'lodash'
-import { AnyAction, Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
-import { ID, Kind, Track } from '~/models'
-import { cacheActions } from '~/store/cache'
+import { ID, Track } from '~/models'
 import { mergeCustomizer } from '~/store/cache/mergeCustomizer'
 
 import { getTrackQueryKey } from '../tracks/useTrack'
@@ -28,7 +26,6 @@ type PartialTrackUpdate = Partial<Track> & { track_id: ID }
  */
 export const updateTrackData = function* (partialTracks: PartialTrackUpdate[]) {
   const queryClient = yield* getContext<QueryClient>('queryClient')
-  const dispatch = yield* getContext<Dispatch<AnyAction>>('dispatch')
 
   partialTracks.forEach((partialTrack) => {
     const { track_id } = partialTrack
@@ -40,14 +37,4 @@ export const updateTrackData = function* (partialTracks: PartialTrackUpdate[]) {
       (prev) => prev && mergeWith(prev, partialTrack, mergeCustomizer)
     )
   })
-
-  dispatch(
-    cacheActions.update(
-      Kind.TRACKS,
-      partialTracks.map((partialTrack) => ({
-        id: partialTrack.track_id,
-        metadata: partialTrack
-      }))
-    )
-  )
 }

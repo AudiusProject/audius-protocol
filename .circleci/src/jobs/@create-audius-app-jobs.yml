@@ -13,7 +13,7 @@ create-audius-app-init:
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          - npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
     - run:
         name: lint & typecheck
         command: |

@@ -2,6 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
+import { primeTrackDataSaga } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import {
   accountSelectors,
@@ -14,7 +15,6 @@ import {
 import { OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getAiUserId, getLineup } = aiPageSelectors
@@ -53,9 +53,7 @@ function* getTracks({
 
   yield* put(setCount({ count }))
 
-  const processedTracks = yield* call(processAndCacheTracks, tracks)
-
-  return processedTracks
+  return yield* call(primeTrackDataSaga, tracks)
 }
 
 const sourceSelector = (state: CommonState) =>

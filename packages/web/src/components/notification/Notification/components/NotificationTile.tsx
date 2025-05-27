@@ -31,7 +31,14 @@ export const NotificationTile = (props: NotificationTileProps) => {
   )
 
   return (
-    <Paper column shadow='flat' p='l' onClick={handleClick} border='strong'>
+    <Paper
+      column
+      shadow='flat'
+      as='li'
+      p='l'
+      onClick={handleClick}
+      border='strong'
+    >
       {children}
     </Paper>
   )

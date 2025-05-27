@@ -2,6 +2,7 @@ import {
   trackActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
+import { primeTrackDataSaga } from '@audius/common/api'
 import {
   SmartCollectionVariant,
   Track,
@@ -20,7 +21,6 @@ import { full, Id } from '@audius/sdk'
 import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -90,14 +90,14 @@ function* fetchBestNewReleases() {
     window: GetBestNewReleasesWindowEnum.Month
   })
 
+  yield* call(primeTrackDataSaga, tracks)
+
   const trackIds = tracks
     .filter((track) => !track.user.is_deactivated)
     .map((track: UserTrackMetadata) => ({
       time: track.created_at,
       track: track.track_id
     }))
-
-  yield* call(processAndCacheTracks, tracks)
 
   return {
     ...BEST_NEW_RELEASES,
@@ -123,7 +123,7 @@ function* fetchUnderTheRadar() {
       track: track.track_id
     }))
 
-  yield* call(processAndCacheTracks, tracks)
+  yield* call(primeTrackDataSaga, tracks)
 
   // feed minus listened
   return {
@@ -150,7 +150,7 @@ function* fetchMostLoved() {
       track: track.track_id
     }))
 
-  yield* call(processAndCacheTracks, tracks)
+  yield* call(primeTrackDataSaga, tracks)
 
   return {
     ...MOST_LOVED,
@@ -211,7 +211,7 @@ function* fetchRemixables() {
   })
 
   const processedTracks = yield* call(
-    processAndCacheTracks,
+    primeTrackDataSaga,
     filteredTracks.slice(0, COLLECTIONS_LIMIT)
   )
 

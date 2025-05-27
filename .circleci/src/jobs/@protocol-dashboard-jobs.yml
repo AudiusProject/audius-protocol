@@ -14,7 +14,7 @@ protocol-dashboard-init:
     # Download and cache dependencies
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          - npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
     # Lint
     - run:

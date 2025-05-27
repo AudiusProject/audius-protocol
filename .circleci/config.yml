@@ -59,19 +59,23 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+            - npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
       - run: sudo apt-get update
       - run: sudo apt-get install -y build-essential libssl-dev
       - run:
           name: Install dependencies
-          # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
           command: |
-            [[ ! -d node_modules ]] || CI=true npm run postinstall
-            [[ -d node_modules ]] || CI=true npm ci
+            if [[ -d node_modules ]]; then
+              echo "Using cached node_modules, running postinstall..."
+              CI=true npm run postinstall
+            else
+              echo "No cache found, running fresh install..."
+              CI=true npm ci --prefer-offline
+            fi
 
       - save_cache:
-          key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          key: npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
             - ./packages/protocol-dashboard/node_modules

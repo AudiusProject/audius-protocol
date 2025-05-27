@@ -8,20 +8,17 @@ import {
   queryAccountUser,
   queryTrack,
   queryUser,
-  queryUsers,
   updateTrackData
 } from '@audius/common/api'
 import {
   Name,
   Kind,
   Track,
-  Collection,
   ID,
   Remix,
   StemUploadWithFile
 } from '@audius/common/models'
 import {
-  Entry,
   getContext,
   accountSelectors,
   cacheTracksActions as trackActions,
@@ -56,37 +53,6 @@ const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getUserId, getAccountUser } = accountSelectors
 const { getUser } = cacheUsersSelectors
-
-function* fetchRepostInfo(entries: Entry<Collection>[]) {
-  const userIds: ID[] = []
-  entries.forEach((entry) => {
-    if (entry.metadata.followee_reposts) {
-      entry.metadata.followee_reposts.forEach((repost) =>
-        userIds.push(repost.user_id)
-      )
-    }
-  })
-
-  if (userIds.length) {
-    yield* call(queryUsers, userIds)
-  }
-}
-
-function* watchAdd() {
-  yield* takeEvery(
-    cacheActions.ADD_SUCCEEDED,
-    function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
-      // This code only applies to tracks
-      if (action.kind !== Kind.TRACKS) return
-
-      // Fetch repost data
-      const isNativeMobile = yield* getContext('isNativeMobile')
-      if (!isNativeMobile) {
-        yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
-      }
-    }
-  )
-}
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
@@ -397,7 +363,7 @@ function* watchDeleteTrack() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack]
+  return [watchEditTrack, watchDeleteTrack]
 }
 
 export default sagas
