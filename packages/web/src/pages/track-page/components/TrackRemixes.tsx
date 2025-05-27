@@ -58,10 +58,9 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const currentTrack = useCurrentTrack()
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
+  console.log('REED trackId', trackId)
   const { data: track } = useTrack(trackId)
-  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
+  console.log('REED track', track)
   const handlePlay = useCallback(
     (uid?: string) => {
       dispatch(tracksActions.play(uid))
@@ -95,7 +94,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     permalink,
     comments_disabled
   } = track as unknown as Track
-  const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
+  const isCommentingEnabled = !comments_disabled
   const remixTrackIds = remixes?.map(({ track_id }) => track_id) ?? null
 
   const lineupVariant =

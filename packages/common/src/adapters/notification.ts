@@ -677,8 +677,18 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.FanRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
-        entityType: Entity.Track,
         entityUserId: HashId.parse(data.entityUserId),
+        entityType: Entity.Track,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'fan_remix_contest_winners_selected': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestWinnersSelected,
+        entityId: HashId.parse(data.entityId),
+        entityUserId: HashId.parse(data.entityUserId),
+        entityType: Entity.Track,
         ...formatBaseNotification(notification)
       }
     }
