@@ -16,7 +16,9 @@ type UseFormattedUSDCBalanceReturn = {
 }
 
 export const useFormattedUSDCBalance = (): UseFormattedUSDCBalanceReturn => {
-  const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const { data: balance, status: balanceStatus } = useUSDCBalance({
+    isPolling: true
+  })
   const usdcValue = USDC(balance ?? new BN(0)).floor(2)
   const balanceCents = Number(usdcValue.floor(2).toString()) * 100
   const balanceFormatted = useMemo(() => {
