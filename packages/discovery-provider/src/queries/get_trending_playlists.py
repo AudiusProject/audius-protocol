@@ -1,32 +1,26 @@
 import logging  # pylint: disable=C0302
-from datetime import datetime
 from typing import Optional, TypedDict, cast
 
-from sqlalchemy import Integer, desc, func
+from sqlalchemy import Integer, desc
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
-from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_trending_score import PlaylistTrendingScore
 from src.models.social.repost import RepostType
-from src.models.social.save import Save, SaveType
-from src.models.users.aggregate_user import AggregateUser
-from src.queries import response_name_constants
+from src.models.social.save import SaveType
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.queries.query_helpers import (
     add_users_to_tracks,
-    get_karma,
-    get_repost_counts,
     get_users_by_id,
     get_users_ids,
     populate_playlist_metadata,
     populate_track_metadata,
 )
-from src.tasks.generate_trending import time_delta_map
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
@@ -57,166 +51,48 @@ TRENDING_TTL_SEC = 30 * 60
 PLAYLIST_TRACKS_LIMIT = 5
 
 
-def get_scorable_playlist_data(session, time_range, strategy):
-    """Gets data about playlists to be scored. Returns:
-    Array<{
-        "playlist_id": number
-        "created_at": string
-        "release_date": string
-        "owner_id": string
-        "windowed_save_count": number
-        "save_count": number
-        "repost_count: number,
-        "windowed_repost_count: number
-        "listens": number (always 1)
-    }>
-    """
-    score_params = strategy.get_score_params()
-    zq = score_params["zq"]
-    xf = score_params["xf"]
-    pt = score_params["pt"]
-    mt = score_params["mt"]
-
-    delta = time_delta_map.get(time_range) or time_delta_map.get("week")
-
-    # Get all playlists saved within time range (windowed_save_count):
-    # Queries by Playlists Joined with Saves,
-    # where a given playlist was saved at least once in the past `time_delta`.
-    # Limits to `TRENDING_LIMIT` and sorts by saves for later scoring.
-    playlists = (
-        session.query(
-            Save.save_item_id,
-            Playlist.created_at,
-            Playlist.release_date,
-            Playlist.playlist_owner_id,
-            func.count(Save.save_item_id),
-        )
-        .join(Playlist, Playlist.playlist_id == Save.save_item_id)
-        .join(AggregateUser, AggregateUser.user_id == Playlist.playlist_owner_id)
-        .filter(
-            Save.is_current == True,
-            Save.is_delete == False,
-            Save.save_type == SaveType.playlist,  # Albums are filtered out
-            Save.created_at > datetime.now() - delta,
-            Playlist.is_current == True,
-            Playlist.is_delete == False,
-            Playlist.is_private == False,
-            Playlist.is_album == False,
-            jsonb_array_length(Playlist.playlist_contents["track_ids"]) >= mt,
-            AggregateUser.following_count < zq,
-        )
-        .group_by(
-            Save.save_item_id,
-            Playlist.created_at,
-            Playlist.release_date,
-            Playlist.playlist_owner_id,
-        )
-        .order_by(desc(func.count(Save.save_item_id)))
-        .limit(TRENDING_LIMIT)
-    ).all()
-
-    # Build up a map of playlist data
-    # playlist_id -> data
-    # Some fields initialized at zero
-    playlist_map = {
-        record[0]: {
-            response_name_constants.playlist_id: record[0],
-            response_name_constants.created_at: record[1].isoformat(timespec="seconds"),
-            "release_date": record[2].isoformat(timespec="seconds"),
-            response_name_constants.owner_id: record[3],
-            response_name_constants.windowed_save_count: record[4],
-            response_name_constants.save_count: 0,
-            response_name_constants.repost_count: 0,
-            response_name_constants.windowed_repost_count: 0,
-            response_name_constants.owner_follower_count: 0,
-            "karma": 1,
-            "listens": 1,
-        }
-        for record in playlists
-    }
-
-    playlist_ids = [record[0] for record in playlists]
-    # map owner_id -> [playlist_id], accounting for multiple playlists with the same ID
-    # used in follows
-    playlist_owner_id_map = {}
-    for playlist_id, _, _, owner_id, _ in playlists:
-        if owner_id not in playlist_owner_id_map:
-            playlist_owner_id_map[owner_id] = [playlist_id]
-        else:
-            playlist_owner_id_map[owner_id].append(playlist_id)
-
-    # Add repost counts
-    repost_counts = (
-        session.query(AggregatePlaylist.playlist_id, AggregatePlaylist.repost_count)
-        .filter(AggregatePlaylist.playlist_id.in_(playlist_ids))
-        .all()
-    )
-    for playlist_id, repost_count in repost_counts:
-        playlist_map[playlist_id][response_name_constants.repost_count] = repost_count
-
-    # Add windowed repost counts
-    repost_counts_for_time = get_repost_counts(
-        session, False, False, playlist_ids, [RepostType.playlist], None, time_range
-    )
-    for playlist_id, repost_count in repost_counts_for_time:
-        playlist_map[playlist_id][
-            response_name_constants.windowed_repost_count
-        ] = repost_count
-
-    # Add save counts
-    save_counts = (
-        session.query(AggregatePlaylist.playlist_id, AggregatePlaylist.save_count)
-        .filter(AggregatePlaylist.playlist_id.in_(playlist_ids))
-        .all()
-    )
-    for playlist_id, save_count in save_counts:
-        playlist_map[playlist_id][response_name_constants.save_count] = save_count
-
-    # Add follower counts
-    follower_counts = (
-        session.query(AggregateUser.user_id, AggregateUser.follower_count)
-        .filter(
-            AggregateUser.user_id.in_(list(playlist_owner_id_map.keys())),
-        )
-        .all()
-    )
-
-    for followee_user_id, follower_count in follower_counts:
-        if follower_count >= pt:
-            owned_playlist_ids = playlist_owner_id_map[followee_user_id]
-            for playlist_id in owned_playlist_ids:
-                playlist_map[playlist_id][
-                    response_name_constants.owner_follower_count
-                ] = follower_count
-
-    # Add karma
-    karma_scores = get_karma(session, tuple(playlist_ids), strategy, None, True, xf)
-    for playlist_id, karma in karma_scores:
-        playlist_map[playlist_id]["karma"] = karma
-
-    return playlist_map.values()
-
-
-def make_get_unpopulated_playlists(session, time_range, strategy):
+def make_get_unpopulated_playlists(session, time_range, limit, offset, strategy):
     """Gets scorable data, scores and sorts, then returns full unpopulated playlists.
     Returns a function, because this is used in a Redis cache hook"""
 
     def wrapped():
-        playlist_scoring_data = get_scorable_playlist_data(
-            session, time_range, strategy
+        trending_scores_query = session.query(
+            PlaylistTrendingScore.playlist_id, PlaylistTrendingScore.score
+        ).filter(
+            PlaylistTrendingScore.type == strategy.trending_type.name,
+            PlaylistTrendingScore.version == strategy.version.name,
+            PlaylistTrendingScore.time_range == time_range,
         )
 
-        # score the playlists
-        scored_playlists = [
-            strategy.get_track_score(time_range, playlist)
-            for playlist in playlist_scoring_data
-        ]
-        sorted_playlists = sorted(
-            scored_playlists, key=lambda k: k["score"], reverse=True
+        trending_playlist_ids_subquery = trending_scores_query.subquery()
+
+        trending_playlist_ids = (
+            session.query(
+                trending_playlist_ids_subquery.c.playlist_id,
+                trending_playlist_ids_subquery.c.score,
+                Playlist.playlist_id,
+            )
+            .join(
+                trending_playlist_ids_subquery,
+                Playlist.playlist_id == trending_playlist_ids_subquery.c.playlist_id,
+            )
+            .filter(
+                Playlist.is_current == True,
+                Playlist.is_delete == False,
+                Playlist.is_private == False,
+                Playlist.is_album == False,
+            )
+            .order_by(
+                desc(trending_playlist_ids_subquery.c.score),
+                desc(trending_playlist_ids_subquery.c.playlist_id),
+            )
+            .limit(limit)
+            .offset(offset)
+            .all()
         )
 
+        playlist_ids = [playlist_id[0] for playlist_id in trending_playlist_ids]
         # Get the unpopulated playlist metadata
-        playlist_ids = [playlist["playlist_id"] for playlist in sorted_playlists]
         playlists = get_unpopulated_playlists(session, playlist_ids)
 
         playlist_tracks_map = get_playlist_tracks(session, {"playlists": playlists})
@@ -283,7 +159,9 @@ def _get_trending_playlists_with_session(
     # Get unpopulated playlists,
     # cached if it exists.
     (playlists, playlist_ids) = use_redis_cache(
-        key, None, make_get_unpopulated_playlists(session, time, strategy)
+        key,
+        None,
+        make_get_unpopulated_playlists(session, time, limit, offset, strategy),
     )
 
     # Apply limit + offset early to reduce the amount of
