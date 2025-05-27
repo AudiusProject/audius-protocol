@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
 import { useTrack } from '@audius/common/api'
-import { useCurrentTrack, useFeatureFlag } from '@audius/common/hooks'
+import { useCurrentTrack } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   playerSelectors,
@@ -58,9 +57,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const currentTrack = useCurrentTrack()
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
-  console.log('REED trackId', trackId)
   const { data: track } = useTrack(trackId)
-  console.log('REED track', track)
   const handlePlay = useCallback(
     (uid?: string) => {
       dispatch(tracksActions.play(uid))
