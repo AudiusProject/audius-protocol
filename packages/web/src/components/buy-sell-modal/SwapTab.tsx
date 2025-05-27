@@ -22,7 +22,7 @@ const TokenSectionSkeleton = ({ title }: { title: string }) => (
 )
 
 const SwapFormSkeleton = () => (
-  <Flex direction='column' gap='l'>
+  <Flex direction='column'>
     <TokenSectionSkeleton title='input' />
     <TokenSectionSkeleton title='output' />
   </Flex>
@@ -102,7 +102,7 @@ export const SwapTab = ({
   return (
     <FormikProvider value={formik}>
       <Form>
-        <Flex direction='column' gap='l'>
+        <Flex direction='column'>
           {isInitialLoading ? (
             <SwapFormSkeleton />
           ) : (
