@@ -17,9 +17,14 @@ const messages = {
 export const ExplorePage = () => {
   const isMobile = useIsMobile()
 
-  const { isEnabled: isSearchExploreEnabled } = useFlag(
+  const { isEnabled: isSearchExploreEnabled, isLoaded } = useFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
+
+  if (!isLoaded || isSearchExploreEnabled === undefined) {
+    // prevent flicker while loading feature flag
+    return null
+  }
 
   const props = {
     title: messages.title,
