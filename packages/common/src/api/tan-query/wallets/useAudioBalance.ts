@@ -1,6 +1,10 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { getAccount, getAssociatedTokenAddressSync, TokenAccountNotFoundError } from '@solana/spl-token'
+import {
+  getAccount,
+  getAssociatedTokenAddressSync,
+  TokenAccountNotFoundError
+} from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
@@ -71,7 +75,7 @@ const fetchWalletAudioBalance = async (
       return AUDIO(wAUDIO(associatedTokenAccount.amount)).value
     } catch (e) {
       if (e instanceof TokenAccountNotFoundError) {
-      // If the account does not exist, return 0 AUDIO balance
+        // If the account does not exist, return 0 AUDIO balance
         return AUDIO(0).value
       }
       throw e
