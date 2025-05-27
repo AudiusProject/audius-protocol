@@ -229,6 +229,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         gap='3xl'
         alignItems='stretch'
         css={{
+          minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH,
           maxWidth: isLarge ? '100%' : NORMAL_WIDTH
         }}
       >
