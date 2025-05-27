@@ -9,7 +9,7 @@ import {
 } from '@audius/common/store'
 import { parseAudioInputToWei, stringWeiToBN } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
-import { Platform } from 'react-native'
+import { Platform, ScrollView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconArrowRight, IconClose, Button } from '@audius/harmony-native'
@@ -79,26 +79,28 @@ export const SendTipScreen = () => {
       title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
       topbarLeft={<TopBarIconButton icon={IconClose} onPress={handleBack} />}
     >
-      <DegradationNotice />
-      <ReceiverDetails />
-      <SupporterPrompt receiverId={receiver?.user_id} />
-      <TipInput value={tipAmount} onChangeText={setTipAmount} />
-      <AvailableAudio />
-      <Button
-        variant='primary'
-        onPress={handleSendTip}
-        iconRight={IconArrowRight}
-        fullWidth
-        disabled={
-          !tipAmount || tipAmountWei?.lte(zeroWei) || hasInsufficientBalance
-        }
-        style={styles.sendButton}
-      >
-        {Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
-      </Button>
-      {hasInsufficientBalance ? (
-        <ErrorText>{messages.insufficientBalance}</ErrorText>
-      ) : null}
+      <ScrollView>
+        <DegradationNotice />
+        <ReceiverDetails />
+        <SupporterPrompt receiverId={receiver?.user_id} />
+        <TipInput value={tipAmount} onChangeText={setTipAmount} />
+        <AvailableAudio />
+        <Button
+          variant='primary'
+          onPress={handleSendTip}
+          iconRight={IconArrowRight}
+          fullWidth
+          disabled={
+            !tipAmount || tipAmountWei?.lte(zeroWei) || hasInsufficientBalance
+          }
+          style={styles.sendButton}
+        >
+          {Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
+        </Button>
+        {hasInsufficientBalance ? (
+          <ErrorText>{messages.insufficientBalance}</ErrorText>
+        ) : null}
+      </ScrollView>
     </TipScreen>
   )
 }
