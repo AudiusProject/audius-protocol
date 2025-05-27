@@ -59,9 +59,10 @@ export * from './tan-query/purchases/usePurchasersCount'
 export * from './tan-query/purchases/useSalesAggregate'
 
 // Remixes
-export * from './tan-query/remixes/useRemixes'
+export * from './tan-query/remixes/useRemixesLineup'
 export * from './tan-query/remixes/useRemixers'
 export * from './tan-query/remixes/useRemixersCount'
+export * from './tan-query/remixes/useRemixes'
 
 // Search
 export * from './tan-query/search/useSearchAutocomplete'
