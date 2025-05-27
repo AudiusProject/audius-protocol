@@ -75,7 +75,7 @@ jobs:
             fi
 
       - save_cache:
-          key: npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-{{ .Environment.NODE_VERSION }}
+          key: npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
             - ./packages/protocol-dashboard/node_modules
