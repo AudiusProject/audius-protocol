@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react'
 
+import { TooltipPlacement } from 'antd/lib/tooltip'
+
 export type BuySellTab = 'buy' | 'sell'
 
 export type Screen = 'input' | 'confirm' | 'success'
@@ -40,6 +42,7 @@ export type TokenAmountSectionProps = {
   tokenPrice?: string | null
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
+  tooltipPlacement?: TooltipPlacement
 }
 
 // Data structure for the transaction success screen

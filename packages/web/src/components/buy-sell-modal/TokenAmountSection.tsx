@@ -1,18 +1,12 @@
 import { useMemo } from 'react'
 
 import { formatTokenPrice } from '@audius/common/api'
-import { TokenInfo, TokenAmountSectionProps } from '@audius/common/store'
-import {
-  Button,
-  Divider,
-  Flex,
-  IconButton,
-  IconInfo,
-  Text,
-  TextInput
-} from '@audius/harmony'
+import { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
+import { Button, Divider, Flex, Text, TextInput } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
+import { TooltipPlacement } from 'antd/lib/tooltip'
 
+import { TooltipInfoIcon } from './TooltipInfoIcon'
 import { useTokenAmountFormatting } from './hooks'
 
 const messages = {
@@ -32,12 +26,14 @@ type BalanceSectionProps = {
   isStablecoin?: boolean
   formattedAvailableBalance: string | null
   tokenInfo: TokenInfo
+  tooltipPlacement?: TooltipPlacement
 }
 
 const DefaultBalanceSection = ({
   isStablecoin,
   formattedAvailableBalance,
-  tokenInfo
+  tokenInfo,
+  tooltipPlacement
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
   const { icon: TokenIcon } = tokenInfo
@@ -60,12 +56,9 @@ const DefaultBalanceSection = ({
         <Text variant='heading' size='s' color='subdued'>
           {messages.available}
         </Text>
-        <IconButton
-          size='s'
-          color='subdued'
-          css={{ borderRadius: cornerRadius.circle }}
-          icon={IconInfo}
-          aria-label='Available balance'
+        <TooltipInfoIcon
+          ariaLabel='Available balance'
+          placement={tooltipPlacement}
         />
       </Flex>
       <Text variant='heading' size='xl'>
@@ -171,9 +164,10 @@ export const TokenAmountSection = ({
   errorMessage,
   tokenPrice,
   isTokenPriceLoading,
-  tokenPriceDecimalPlaces = 2
+  tokenPriceDecimalPlaces = 2,
+  tooltipPlacement
 }: TokenAmountSectionProps) => {
-  const { spacing, cornerRadius } = useTheme()
+  const { spacing } = useTheme()
 
   const { icon: TokenIcon, symbol, isStablecoin } = tokenInfo
 
@@ -224,6 +218,7 @@ export const TokenAmountSection = ({
             isStablecoin={!!isStablecoin}
             formattedAvailableBalance={formattedAvailableBalance}
             tokenInfo={tokenInfo}
+            tooltipPlacement={tooltipPlacement}
           />
         ) : (
           <StackedBalanceSection
@@ -244,9 +239,10 @@ export const TokenAmountSection = ({
     onAmountChange,
     onMaxClick,
     placeholder,
-    spacing.unit16,
+    spacing,
     symbol,
-    tokenInfo
+    tokenInfo,
+    tooltipPlacement
   ])
 
   const youReceiveSection = useMemo(() => {
@@ -280,12 +276,9 @@ export const TokenAmountSection = ({
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
-          <IconButton
-            size='s'
-            color='subdued'
-            css={{ borderRadius: cornerRadius.circle }}
-            icon={IconInfo}
-            aria-label='You receive'
+          <TooltipInfoIcon
+            ariaLabel='You receive'
+            placement={tooltipPlacement}
           />
         </Flex>
       )
@@ -295,7 +288,7 @@ export const TokenAmountSection = ({
         {title}
       </Text>
     )
-  }, [TokenIcon, cornerRadius.circle, isInput, isStablecoin, title])
+  }, [TokenIcon, isInput, isStablecoin, title, tooltipPlacement])
 
   return (
     <Flex direction='column' gap='m'>

@@ -52,6 +52,7 @@ export const SellTab = ({
       isDefault={false}
       error={error}
       errorMessage={errorMessage}
+      tooltipPlacement='right'
     />
   )
 }

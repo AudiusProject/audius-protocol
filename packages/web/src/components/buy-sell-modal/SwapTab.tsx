@@ -2,6 +2,7 @@ import { useRef } from 'react'
 
 import { TokenInfo } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
+import { TooltipPlacement } from 'antd/lib/tooltip'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
@@ -49,6 +50,7 @@ export type SwapTabProps = {
   tokenPrice?: string | null
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
+  tooltipPlacement?: TooltipPlacement
 }
 
 export const SwapTab = ({
@@ -63,7 +65,8 @@ export const SwapTab = ({
   errorMessage,
   tokenPrice,
   isTokenPriceLoading,
-  tokenPriceDecimalPlaces = 2
+  tokenPriceDecimalPlaces = 2,
+  tooltipPlacement
 }: SwapTabProps) => {
   const {
     formik,
@@ -116,6 +119,7 @@ export const SwapTab = ({
                 isDefault={isDefault}
                 error={error}
                 errorMessage={errorMessage}
+                tooltipPlacement={tooltipPlacement}
               />
 
               <TokenAmountSection
@@ -128,6 +132,7 @@ export const SwapTab = ({
                 tokenPrice={tokenPrice}
                 isTokenPriceLoading={isTokenPriceLoading}
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
+                tooltipPlacement={tooltipPlacement}
               />
             </>
           )}

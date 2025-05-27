@@ -14,7 +14,12 @@ export const SwapBalanceSection = (props: SwapBalanceSectionProps) => {
   const { title, tokenInfo, amount, priceLabel } = props
   if (tokenInfo.symbol === 'USDC') {
     return (
-      <USDCBalanceSection title={title} tokenInfo={tokenInfo} amount={amount} />
+      <USDCBalanceSection
+        title={title}
+        tokenInfo={tokenInfo}
+        amount={amount}
+        tooltipPlacement='right'
+      />
     )
   }
   return (
