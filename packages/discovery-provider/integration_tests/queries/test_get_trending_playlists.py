@@ -49,6 +49,10 @@ def test_get_trending_playlists(app):
                 },
             },
         ],
+        "playlist_trending_scores": [
+            {"playlist_id": 1, "score": 100},
+            {"playlist_id": 2, "score": 200},
+        ],
         "users": [
             {"user_id": 1},
             {"user_id": 2},
@@ -67,32 +71,8 @@ def test_get_trending_playlists(app):
             {"track_id": 8, "owner_id": 5},
         ],
     }
-    test_social_feature_entities = {
-        "reposts": [
-            {"repost_item_id": 1, "repost_type": "playlist", "user_id": 2},
-            {"repost_item_id": 2, "repost_type": "playlist", "user_id": 1},
-            {"repost_item_id": 2, "repost_type": "playlist", "user_id": 3},
-        ],
-        "saves": [
-            {"save_item_id": 1, "save_type": "playlist", "user_id": 2},
-            {"save_item_id": 2, "save_type": "playlist", "user_id": 1},
-        ],
-        "follows": [
-            {"follower_user_id": 1, "followee_user_id": 1},
-            {"follower_user_id": 2, "followee_user_id": 1},
-            {"follower_user_id": 3, "followee_user_id": 1},
-            {"follower_user_id": 4, "followee_user_id": 1},
-            {"follower_user_id": 5, "followee_user_id": 1},
-            {"follower_user_id": 1, "followee_user_id": 2},
-            {"follower_user_id": 2, "followee_user_id": 2},
-            {"follower_user_id": 3, "followee_user_id": 2},
-            {"follower_user_id": 4, "followee_user_id": 2},
-            {"follower_user_id": 5, "followee_user_id": 2},
-        ],
-    }
 
     populate_mock_db(db, test_entities)
-    populate_mock_db(db, test_social_feature_entities)
 
     with db.scoped_session() as session:
         res = _get_trending_playlists_with_session(
@@ -101,7 +81,7 @@ def test_get_trending_playlists(app):
             TrendingPlaylistsStrategypnagD(),
             use_request_context=False,
         )
-        # Second playlist ranks above first with 1 more repost
+        # Playlists are sorted by score
         assert res[0]["playlist_id"] == 2
         assert res[1]["playlist_id"] == 1
 
@@ -113,12 +93,13 @@ def test_get_trending_playlists_filters(app):
 
     test_entities = {
         "playlists": [
-            # Playlist 1 has not enough unique owners represented
+            # Playlist 1 is an album
             {
                 "playlist_id": 1,
                 "playlist_owner_id": 1,
                 "playlist_name": "playlist 1",
                 "description": "playlist 1",
+                "is_album": True,
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 1, "time": round(time() * 1000)},
@@ -129,12 +110,13 @@ def test_get_trending_playlists_filters(app):
                     ]
                 },
             },
-            # Playlist 2 has not enough available tracks
+            # Playlist 2 is hidden
             {
                 "playlist_id": 2,
                 "playlist_owner_id": 2,
                 "playlist_name": "playlist 2",
                 "description": "playlist 2",
+                "is_private": True,
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 5, "time": round(time() * 1000)},
@@ -144,6 +126,26 @@ def test_get_trending_playlists_filters(app):
                     ]
                 },
             },
+            # Playlist 3 is deleted
+            {
+                "playlist_id": 3,
+                "playlist_owner_id": 3,
+                "playlist_name": "playlist 3",
+                "is_delete": True,
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 5, "time": round(time() * 1000)},
+                        {"track": 6, "time": round(time() * 1000)},
+                        {"track": 7, "time": round(time() * 1000)},
+                        {"track": 8, "time": round(time() * 1000)},
+                    ]
+                },
+            },
+        ],
+        "playlist_trending_scores": [
+            {"playlist_id": 1, "score": 100},
+            {"playlist_id": 2, "score": 200},
+            {"playlist_id": 3, "score": 300},
         ],
         "users": [
             {"user_id": 1},
@@ -159,36 +161,12 @@ def test_get_trending_playlists_filters(app):
             {"track_id": 4, "owner_id": 2},
             {"track_id": 5, "owner_id": 3},
             {"track_id": 6, "owner_id": 4},
-            {"track_id": 7, "owner_id": 5, "is_delete": True},
-            {"track_id": 8, "owner_id": 5, "is_delete": True},
-        ],
-    }
-    test_social_feature_entities = {
-        "reposts": [
-            {"repost_item_id": 1, "repost_type": "playlist", "user_id": 2},
-            {"repost_item_id": 2, "repost_type": "playlist", "user_id": 1},
-            {"repost_item_id": 2, "repost_type": "playlist", "user_id": 3},
-        ],
-        "saves": [
-            {"save_item_id": 1, "save_type": "playlist", "user_id": 2},
-            {"save_item_id": 2, "save_type": "playlist", "user_id": 1},
-        ],
-        "follows": [
-            {"follower_user_id": 1, "followee_user_id": 1},
-            {"follower_user_id": 2, "followee_user_id": 1},
-            {"follower_user_id": 3, "followee_user_id": 1},
-            {"follower_user_id": 4, "followee_user_id": 1},
-            {"follower_user_id": 5, "followee_user_id": 1},
-            {"follower_user_id": 1, "followee_user_id": 2},
-            {"follower_user_id": 2, "followee_user_id": 2},
-            {"follower_user_id": 3, "followee_user_id": 2},
-            {"follower_user_id": 4, "followee_user_id": 2},
-            {"follower_user_id": 5, "followee_user_id": 2},
+            {"track_id": 7, "owner_id": 5},
+            {"track_id": 8, "owner_id": 5},
         ],
     }
 
     populate_mock_db(db, test_entities)
-    populate_mock_db(db, test_social_feature_entities)
 
     with db.scoped_session() as session:
         res = _get_trending_playlists_with_session(
