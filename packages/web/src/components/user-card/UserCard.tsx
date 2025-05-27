@@ -83,11 +83,11 @@ export const UserCard = (props: UserCardProps) => {
           onClick={onUserLinkClick}
           popover={true}
         />
-        <ArtistPopover handle={handle}>
+        <ArtistPopover handle={handle} css={{ width: '100%' }}>
           <TextLink
             onClick={onUserLinkClick}
             ellipses
-            css={{ textAlign: 'center' }}
+            css={{ textAlign: 'center', display: 'block' }}
           >
             @{handle}
           </TextLink>
