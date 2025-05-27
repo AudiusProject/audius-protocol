@@ -21,6 +21,8 @@ import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 import { SUPPORTED_TOKEN_PAIRS } from './constants'
 
+const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
+
 type BuySellFlowProps = {
   onClose: () => void
   openAddCashModal: () => void
@@ -211,10 +213,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
           {hasSufficientBalance ? (
             <Hint>
               {messages.helpCenter}{' '}
-              <TextLink
-                variant='visible'
-                href='#' // Replace with actual URL when available
-              >
+              <TextLink variant='visible' href={WALLET_GUIDE_URL}>
                 {messages.walletGuide}
               </TextLink>
             </Hint>
