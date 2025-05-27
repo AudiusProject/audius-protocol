@@ -117,7 +117,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     if (activeTab === 'sell' && !hasSufficientBalance) {
       return messages.insufficientAUDIOForSale
     }
-    if (hasAttemptedSubmit && isTransactionInvalid) {
+    if (
+      hasAttemptedSubmit &&
+      isTransactionInvalid &&
+      !(activeTab === 'buy' && !hasSufficientBalance)
+    ) {
       return messages.emptyAmount
     }
     return undefined
