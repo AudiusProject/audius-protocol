@@ -13,7 +13,7 @@ lint-discovery-provider:
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          - npm-cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
     - restore_cache:
         key: python-requirements-{{ checksum "packages/discovery-provider/requirements.txt" }}
