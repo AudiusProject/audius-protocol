@@ -46,7 +46,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
       container.removeEventListener('scroll', updateScrollButtons)
       window.removeEventListener('resize', updateScrollButtons)
     }
-  }, [updateScrollButtons])
+  })
   if (!data) return null
 
   return (
