@@ -1,6 +1,8 @@
+import { useCallback } from 'react'
+
 import { TokenAccountNotFoundError } from '@solana/spl-token'
 import { Commitment } from '@solana/web3.js'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -47,6 +49,7 @@ export const useUSDCBalance = ({
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
   const recoveryStatus = useSelector(getRecoveryStatus)
+  const queryClient = useQueryClient()
 
   const result = useQuery({
     queryKey: getUSDCBalanceQueryKey(ethAddress, commitment),
@@ -83,6 +86,10 @@ export const useUSDCBalance = ({
       }
     },
     enabled: !!ethAddress,
+    // TanStack Query's built-in polling - only poll when isPolling is true
+    refetchInterval: isPolling ? pollingInterval : false,
+    // Prevent refetching when window regains focus during polling to avoid conflicts
+    refetchOnWindowFocus: !isPolling,
     ...queryOptions
   })
 
@@ -104,10 +111,19 @@ export const useUSDCBalance = ({
     status = Status.LOADING
   }
 
+  // Function to cancel polling by invalidating and refetching the query
+  // This effectively stops the current polling cycle
+  const cancelPolling = useCallback(() => {
+    queryClient.cancelQueries({
+      queryKey: getUSDCBalanceQueryKey(ethAddress, commitment)
+    })
+  }, [queryClient, ethAddress, commitment])
+
   return {
     status,
     data,
     error: result.error,
-    refresh: result.refetch
+    refresh: result.refetch,
+    cancelPolling
   }
 }

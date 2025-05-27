@@ -3,6 +3,7 @@ import {
   Status,
   WithdrawUSDCTransferEventFields
 } from '@audius/common/models'
+import { getUSDCBalanceQueryKey } from '@audius/common/src/api/tan-query/wallets/useUSDCBalance'
 import { transferFromUserBank } from '@audius/common/src/services/audius-backend/solana'
 import {
   withdrawUSDCActions,
@@ -43,6 +44,7 @@ function* doWithdrawUSDCCoinflow({
   'amount' | 'currentBalance'
 >) {
   const { track, make } = yield* getContext('analytics')
+  const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
   const solanaWalletService = yield* getContext('solanaWalletService')
   yield* put(beginCoinflowWithdrawal())
@@ -147,6 +149,11 @@ function* doWithdrawUSDCCoinflow({
         track,
         make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
       )
+
+      // Invalidate tan-query cache key for USDC balance
+      queryClient.invalidateQueries({
+        queryKey: getUSDCBalanceQueryKey(ethWallet, 'processed')
+      })
     } else {
       yield* call(
         track,
@@ -212,6 +219,7 @@ function* doWithdrawUSDCManualTransfer({
   const { track, make } = yield* getContext('analytics')
   const withdrawalAmountDollars = amount / 100
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
+  const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
   const connection = yield* call(getSolanaConnection)
 
@@ -263,6 +271,10 @@ function* doWithdrawUSDCManualTransfer({
       track,
       make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
     )
+    // Invalidate tan-query cache key for USDC balance
+    queryClient.invalidateQueries({
+      queryKey: getUSDCBalanceQueryKey(ethWallet, 'processed')
+    })
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')
