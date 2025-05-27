@@ -63,13 +63,20 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const { data: currentUserId } = useCurrentUserId()
   const { data: contest } = useRemixContest(originalTrack?.track_id)
   const winnerCount = contest?.eventData?.winners?.length ?? 0
+  const { count: remixCount = 0 } = useRemixes({
+    trackId: originalTrack?.track_id,
+    isContestEntry: true
+  })
 
   const isRemixContest = isRemixContestEnabled && contest
   const isTrackOwner = currentUserId === originalTrack.owner_id
   const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
   const showPickWinnersButton =
-    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+    isRemixContestWinnersMilestoneEnabled &&
+    isTrackOwner &&
+    isRemixContestEnded &&
+    remixCount > 0
 
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
   const {

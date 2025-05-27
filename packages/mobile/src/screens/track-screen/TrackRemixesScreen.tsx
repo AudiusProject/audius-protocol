@@ -82,8 +82,15 @@ export const TrackRemixesScreen = () => {
   const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
   const isTrackOwner = currentUserId === track?.owner_id
+  const { count: remixCount = 0 } = useRemixes({
+    trackId: track?.track_id,
+    isContestEntry: true
+  })
   const showPickWinnersButton =
-    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+    isRemixContestWinnersMilestoneEnabled &&
+    isTrackOwner &&
+    isRemixContestEnded &&
+    remixCount > 0
   const winnerCount = contest?.eventData?.winners?.length ?? 0
 
   const styles = useStyles()
