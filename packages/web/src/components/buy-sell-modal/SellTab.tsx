@@ -16,13 +16,17 @@ type SellTabProps = {
   }) => void
   error?: boolean
   errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
 export const SellTab = ({
   tokenPair,
   onTransactionDataChange,
   error,
-  errorMessage
+  errorMessage,
+  initialInputValue,
+  onInputValueChange
 }: SellTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
@@ -53,6 +57,8 @@ export const SellTab = ({
       error={error}
       errorMessage={errorMessage}
       tooltipPlacement='right'
+      initialInputValue={initialInputValue}
+      onInputValueChange={onInputValueChange}
     />
   )
 }

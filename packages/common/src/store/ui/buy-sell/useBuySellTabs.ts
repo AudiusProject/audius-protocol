@@ -15,14 +15,14 @@ export const useBuySellTabs = (props: UseBuySellTabsProps) => {
   const handleActiveTabChange = useCallback(
     (newTab: string) => {
       setActiveTab(newTab as BuySellTab)
-      resetTransactionData()
       setCurrentScreen('input')
     },
-    [setCurrentScreen, resetTransactionData]
+    [setCurrentScreen]
   )
 
   return {
     activeTab,
-    handleActiveTabChange
+    handleActiveTabChange,
+    resetTransactionData
   }
 }

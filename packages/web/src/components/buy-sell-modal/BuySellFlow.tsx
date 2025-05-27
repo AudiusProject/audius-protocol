@@ -49,6 +49,22 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     resetTransactionData
   })
 
+  // Persistent state for each tab's input values
+  const [tabInputValues, setTabInputValues] = useState<
+    Record<BuySellTab, string>
+  >({
+    buy: '',
+    sell: ''
+  })
+
+  // Update input value for current tab
+  const handleTabInputValueChange = (value: string) => {
+    setTabInputValues((prev) => ({
+      ...prev,
+      [activeTab]: value
+    }))
+  }
+
   const {
     handleShowConfirmation,
     handleConfirmSwap,
@@ -161,6 +177,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               onTransactionDataChange={handleTransactionDataChange}
               error={shouldShowError}
               errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.buy}
+              onInputValueChange={handleTabInputValueChange}
             />
           ) : (
             <SellTab
@@ -168,6 +186,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               onTransactionDataChange={handleTransactionDataChange}
               error={shouldShowError}
               errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.sell}
+              onInputValueChange={handleTabInputValueChange}
             />
           )}
 
@@ -237,6 +257,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               resetTransactionData()
               resetSuccessDisplayData()
               setCurrentScreen('input')
+              // Clear all tab input values on completion
+              setTabInputValues({ buy: '', sell: '' })
             }}
           />
         ) : null}

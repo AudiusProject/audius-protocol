@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { useTokenExchangeRate } from '@audius/common/src/api'
 import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
@@ -43,6 +43,14 @@ export type TokenSwapFormProps = {
     outputAmount: number
     isValid: boolean
   }) => void
+  /**
+   * Initial value for the input field
+   */
+  initialInputValue?: string
+  /**
+   * Callback for when input value changes (for persistence)
+   */
+  onInputValueChange?: (value: string) => void
 }
 
 /**
@@ -54,7 +62,9 @@ export const useTokenSwapForm = ({
   min = 0,
   max = Number.MAX_SAFE_INTEGER,
   balance,
-  onTransactionDataChange
+  onTransactionDataChange,
+  initialInputValue = '',
+  onInputValueChange
 }: TokenSwapFormProps) => {
   // Get token symbols for the exchange rate API
   const inputTokenSymbol = inputToken.symbol as JupiterTokenSymbol
@@ -77,7 +87,8 @@ export const useTokenSwapForm = ({
   // Initialize form with Formik
   const formik = useFormik<SwapFormValues>({
     initialValues: {
-      inputAmount: ''
+      inputAmount: initialInputValue,
+      outputAmount: '0'
     },
     validationSchema,
     validateOnBlur: true,
@@ -89,6 +100,13 @@ export const useTokenSwapForm = ({
   })
 
   const { values, errors, touched, setFieldValue, setFieldTouched } = formik
+
+  // Update form value when initialInputValue changes (tab switch)
+  useEffect(() => {
+    if (initialInputValue !== values.inputAmount) {
+      setFieldValue('inputAmount', initialInputValue, false)
+    }
+  }, [initialInputValue, values.inputAmount, setFieldValue])
 
   // Calculate the numeric value of the input amount
   const numericInputAmount = useMemo(() => {
@@ -107,25 +125,29 @@ export const useTokenSwapForm = ({
     inputAmount: numericInputAmount > 0 ? numericInputAmount : 1
   })
 
-  // Create ref to store the last valid output amount
-  const lastValidOutputAmountRef = useRef(0)
-
-  // Calculate the output amount based on the exchange rate
-  const outputAmount = useMemo(() => {
-    if (numericInputAmount <= 0) return 0
-
-    // Only calculate new amount if we have data and not loading
-    if (!isExchangeRateLoading && exchangeRateData) {
-      const newAmount = exchangeRateData.rate * numericInputAmount
-      // Store the new valid amount
-      lastValidOutputAmountRef.current = newAmount
-      return newAmount
+  // Update output amount when exchange rate or input amount changes
+  useEffect(() => {
+    if (numericInputAmount <= 0) {
+      setFieldValue('outputAmount', '0', false)
+      return
     }
 
-    // During loading, return the last valid amount (if input is the same or similar)
-    // Only use cached value if we've calculated something before
-    return lastValidOutputAmountRef.current
-  }, [numericInputAmount, exchangeRateData, isExchangeRateLoading])
+    if (!isExchangeRateLoading && exchangeRateData) {
+      const newAmount = exchangeRateData.rate * numericInputAmount
+      setFieldValue('outputAmount', newAmount.toString(), false)
+    }
+  }, [
+    numericInputAmount,
+    exchangeRateData,
+    isExchangeRateLoading,
+    setFieldValue
+  ])
+
+  const numericOutputAmount = useMemo(() => {
+    if (!values.outputAmount) return 0
+    const parsed = parseFloat(values.outputAmount)
+    return isNaN(parsed) ? 0 : parsed
+  }, [values.outputAmount])
 
   useEffect(() => {
     if (onTransactionDataChange) {
@@ -133,13 +155,13 @@ export const useTokenSwapForm = ({
 
       onTransactionDataChange({
         inputAmount: numericInputAmount,
-        outputAmount,
+        outputAmount: numericOutputAmount,
         isValid
       })
     }
   }, [
     numericInputAmount,
-    outputAmount,
+    numericOutputAmount,
     errors.inputAmount,
     isExchangeRateLoading,
     onTransactionDataChange
@@ -152,9 +174,11 @@ export const useTokenSwapForm = ({
       if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
         setFieldValue('inputAmount', value, true)
         setFieldTouched('inputAmount', true, false)
+        // Call the persistence callback
+        onInputValueChange?.(value)
       }
     },
-    [setFieldValue, setFieldTouched]
+    [setFieldValue, setFieldTouched, onInputValueChange]
   )
 
   // Handle max button click
@@ -162,10 +186,13 @@ export const useTokenSwapForm = ({
     const balance = getInputBalance()
     if (balance !== undefined) {
       const finalAmount = Math.min(balance, max)
-      setFieldValue('inputAmount', finalAmount.toString(), true)
+      const finalAmountString = finalAmount.toString()
+      setFieldValue('inputAmount', finalAmountString, true)
       setFieldTouched('inputAmount', true, false)
+      // Call the persistence callback
+      onInputValueChange?.(finalAmountString)
     }
-  }, [getInputBalance, max, setFieldValue, setFieldTouched])
+  }, [getInputBalance, max, setFieldValue, setFieldTouched, onInputValueChange])
 
   const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
 
@@ -175,7 +202,8 @@ export const useTokenSwapForm = ({
   return {
     inputAmount: values.inputAmount, // Raw string input for display
     numericInputAmount,
-    outputAmount,
+    outputAmount: values.outputAmount,
+    numericOutputAmount,
     error,
     exchangeRateError,
     isExchangeRateLoading,

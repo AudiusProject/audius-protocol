@@ -51,6 +51,8 @@ export type SwapTabProps = {
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
   tooltipPlacement?: TooltipPlacement
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
 export const SwapTab = ({
@@ -66,7 +68,9 @@ export const SwapTab = ({
   tokenPrice,
   isTokenPriceLoading,
   tokenPriceDecimalPlaces = 2,
-  tooltipPlacement
+  tooltipPlacement,
+  initialInputValue,
+  onInputValueChange
 }: SwapTabProps) => {
   const {
     formik,
@@ -84,7 +88,9 @@ export const SwapTab = ({
     min,
     max,
     balance,
-    onTransactionDataChange
+    onTransactionDataChange,
+    initialInputValue,
+    onInputValueChange
   })
 
   // Track if an exchange rate has ever been successfully fetched
