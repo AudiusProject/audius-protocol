@@ -44,10 +44,12 @@ export const ArtistRemixContestEndedNotification = (
   )
 
   const entity = useNotificationEntity(notification) as TrackEntity | null
-  const { count: remixCount = 0 } = useRemixes({
+  const { data: remixes } = useRemixes({
     trackId: entity?.track_id,
     isContestEntry: true
   })
+
+  const remixCount = remixes?.pages[0]?.count ?? 0
 
   const pickWinnersRoute = entity ? pickWinnersPage(entity?.permalink) : ''
 
