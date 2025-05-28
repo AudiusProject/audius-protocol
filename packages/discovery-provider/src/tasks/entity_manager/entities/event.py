@@ -160,6 +160,22 @@ def update_event(params: ManageEntityParameters):
     validate_update_event_tx(params)
     event_record = params.existing_records[EntityType.EVENT.value][params.entity_id]
 
+    # Check if this is a remix contest and winners are being selected for the first time
+    should_notify_winners_selected = False
+    if (
+        event_record.event_type == EventType.remix_contest
+        and params.metadata.get("event_data")
+        and isinstance(params.metadata["event_data"], dict)
+        and isinstance(event_record.event_data, dict)
+    ):
+        current_event_data = event_record.event_data
+        new_event_data = params.metadata["event_data"]
+        current_winners = current_event_data.get("winners", [])
+        new_winners = new_event_data.get("winners", [])
+
+        if len(current_winners) == 0 and len(new_winners) > 0:
+            should_notify_winners_selected = True
+
     # Update the event record with new values from params.metadata
     event_record.end_date = params.metadata.get("end_date", event_record.end_date)
     event_record.event_data = params.metadata.get("event_data", event_record.event_data)

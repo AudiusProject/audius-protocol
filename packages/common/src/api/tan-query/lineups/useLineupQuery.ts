@@ -96,7 +96,9 @@ export const useLineupQuery = <T>({
   }
 
   const prevQueryKey = usePrevious(queryKey)
+  const prevLineupData = usePrevious(lineupData)
   const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
+  const hasLineupDataChanged = !isEqual(lineupData, prevLineupData)
 
   // Function to handle loading cached data into the lineup
   const loadCachedDataIntoLineup = useCallback(() => {
@@ -162,13 +164,17 @@ export const useLineupQuery = <T>({
 
   // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
   useEffect(() => {
-    if (!disableAutomaticCacheHandling && hasQueryKeyChanged) {
+    if (
+      !disableAutomaticCacheHandling &&
+      (hasQueryKeyChanged || hasLineupDataChanged)
+    ) {
       loadCachedDataIntoLineup()
     }
   }, [
     disableAutomaticCacheHandling,
     hasQueryKeyChanged,
-    loadCachedDataIntoLineup
+    loadCachedDataIntoLineup,
+    hasLineupDataChanged
   ])
 
   const status = combineStatuses([
