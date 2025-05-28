@@ -30,8 +30,14 @@ export const useUsers = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
+  // Filter out duplicate IDs
+  const uniqueUserIds = useMemo(
+    () => userIds?.filter((id, index, self) => self.indexOf(id) === index),
+    [userIds]
+  )
+
   const queryResults = useQueries({
-    queries: userIds?.map((userId) => ({
+    queries: uniqueUserIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () =>
         getUserQueryFn(

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-import { useRemixContest, useRemixes, useTrack } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup, useTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -24,10 +24,11 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { track, make } from 'services/analytics'
 import { pickWinnersPage } from 'utils/route'
 
+import { RemixContestSubmissionsTab } from '../shared/RemixContestSubmissionsTab'
+import { RemixContestWinnersTab } from '../shared/RemixContestWinnersTab'
+
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
-import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
-import { RemixContestWinnersTab } from './RemixContestWinnersTab'
 import { TabBody } from './TabBody'
 
 const messages = {
@@ -61,7 +62,7 @@ export const RemixContestSection = ({
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
-  const { data: remixes, count: remixCount } = useRemixes({
+  const { data: remixes, count: remixCount = 0 } = useRemixesLineup({
     trackId,
     isContestEntry: true
   })
@@ -206,10 +207,12 @@ export const RemixContestSection = ({
                   {messages.uploadRemixButtonText}
                 </Button>
               </Flex>
-            ) : isContestEnded && isRemixContestWinnersMilestoneEnabled ? (
+            ) : isContestEnded &&
+              isRemixContestWinnersMilestoneEnabled &&
+              remixCount > 0 ? (
               <Flex mb='m'>
                 <Button
-                  variant='secondary'
+                  variant={hasWinners ? 'secondary' : 'primary'}
                   size='small'
                   onClick={handlePickWinnersClick}
                 >
