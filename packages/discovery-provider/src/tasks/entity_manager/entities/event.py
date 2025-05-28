@@ -7,6 +7,9 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     validate_signer,
 )
+from src.tasks.remix_contest_notifications.fan_remix_contest_winners_selected import (
+    create_fan_remix_contest_winners_selected_notification,
+)
 from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
@@ -155,6 +158,22 @@ def update_event(params: ManageEntityParameters):
     validate_update_event_tx(params)
     event_record = params.existing_records[EntityType.EVENT.value][params.entity_id]
 
+    # Check if this is a remix contest and winners are being selected for the first time
+    should_notify_winners_selected = False
+    if (
+        event_record.event_type == EventType.remix_contest
+        and params.metadata.get("event_data")
+        and isinstance(params.metadata["event_data"], dict)
+        and isinstance(event_record.event_data, dict)
+    ):
+        current_event_data = event_record.event_data
+        new_event_data = params.metadata["event_data"]
+        current_winners = current_event_data.get("winners", [])
+        new_winners = new_event_data.get("winners", [])
+
+        if len(current_winners) == 0 and len(new_winners) > 0:
+            should_notify_winners_selected = True
+
     # Update the event record with new values from params.metadata
     event_record.end_date = params.metadata.get("end_date", event_record.end_date)
     event_record.event_data = params.metadata.get("event_data", event_record.event_data)
@@ -162,6 +181,12 @@ def update_event(params: ManageEntityParameters):
     event_record.txhash = params.txhash
     event_record.blockhash = params.event_blockhash
     event_record.blocknumber = params.block_number
+
+    # Trigger notification when winners are first selected
+    if should_notify_winners_selected:
+        create_fan_remix_contest_winners_selected_notification(
+            params.session, event_record.event_id, params.block_datetime
+        )
 
 
 def validate_delete_event_tx(params: ManageEntityParameters):

@@ -1103,6 +1103,35 @@ artist_remix_contest_submissions_notification = ns.clone(
     },
 )
 
+fan_remix_contest_winners_selected_notification_action_data = ns.model(
+    "fan_remix_contest_winners_selected_notification_action_data",
+    {
+        "entity_user_id": fields.String(required=True),
+        "entity_id": fields.String(required=True),
+    },
+)
+fan_remix_contest_winners_selected_notification_action = ns.clone(
+    "fan_remix_contest_winners_selected_notification_action",
+    notification_action_base,
+    {
+        "data": fields.Nested(
+            fan_remix_contest_winners_selected_notification_action_data, required=True
+        )
+    },
+)
+fan_remix_contest_winners_selected_notification = ns.clone(
+    "fan_remix_contest_winners_selected_notification",
+    notification_base,
+    {
+        "actions": fields.List(
+            fields.Nested(
+                fan_remix_contest_winners_selected_notification_action, required=True
+            ),
+            required=True,
+        )
+    },
+)
+
 notification = ns.add_model(
     "notification",
     OneOfModel(
@@ -1148,6 +1177,7 @@ notification = ns.add_model(
             "artist_remix_contest_ended": artist_remix_contest_ended_notification,
             "artist_remix_contest_ending_soon": artist_remix_contest_ending_soon_notification,
             "artist_remix_contest_submissions": artist_remix_contest_submissions_notification,
+            "fan_remix_contest_winners_selected": fan_remix_contest_winners_selected_notification,
         },
         discriminator="type",
     ),
