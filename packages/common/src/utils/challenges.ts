@@ -530,17 +530,6 @@ export const getChallengeStatusLabel = (
     case ChallengeName.ListenStreakEndless:
       return `Day ${challenge.current_step_count}`
     case ChallengeName.Cosign:
-      if (
-        challenge.undisbursedSpecifiers.length &&
-        !challenge.claimableAmount &&
-        challenge.cooldown_days
-      ) {
-        return DEFAULT_STATUS_LABELS.REWARD_PENDING
-      }
-      if (challenge.claimableAmount > 0) {
-        return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
-      }
-      return 'Available'
     case ChallengeName.RemixContestWinner:
       if (
         challenge.undisbursedSpecifiers.length &&
