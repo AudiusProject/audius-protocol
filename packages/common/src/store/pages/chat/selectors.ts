@@ -280,8 +280,9 @@ export const getCanCreateChat = createSelector(
     blockers,
     chatPermissions,
     chats,
-    { user, currentUserId }
+    userInfo
   ): { canCreateChat: boolean; callToAction: ChatPermissionAction } => {
+    const { user, currentUserId } = userInfo ?? {}
     if (!currentUserId) {
       return {
         canCreateChat: false,
