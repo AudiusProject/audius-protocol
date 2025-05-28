@@ -39,4 +39,5 @@ export const createSwapFormSchema = (
 
 export type SwapFormValues = {
   inputAmount: string
+  outputAmount: string
 }

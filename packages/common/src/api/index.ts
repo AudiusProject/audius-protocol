@@ -59,9 +59,10 @@ export * from './tan-query/purchases/usePurchasersCount'
 export * from './tan-query/purchases/useSalesAggregate'
 
 // Remixes
-export * from './tan-query/remixes/useRemixes'
+export * from './tan-query/remixes/useRemixesLineup'
 export * from './tan-query/remixes/useRemixers'
 export * from './tan-query/remixes/useRemixersCount'
+export * from './tan-query/remixes/useRemixes'
 
 // Search
 export * from './tan-query/search/useSearchAutocomplete'
@@ -135,6 +136,7 @@ export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
+export * from './tan-query/jupiter/utils'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

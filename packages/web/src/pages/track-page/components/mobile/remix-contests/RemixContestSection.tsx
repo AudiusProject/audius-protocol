@@ -1,4 +1,4 @@
-import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -29,7 +29,7 @@ export const RemixContestSection = ({
   isOwner
 }: RemixContestSectionProps) => {
   const { data: remixContest } = useRemixContest(trackId)
-  const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
+  const { data: remixes } = useRemixesLineup({ trackId, isContestEntry: true })
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )

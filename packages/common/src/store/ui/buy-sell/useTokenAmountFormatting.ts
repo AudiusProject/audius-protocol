@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import { formatUSDCValue } from '@audius/common/api'
-import { getCurrencyDecimalPlaces } from '@audius/common/utils'
+import { formatUSDCValue } from '../../../api'
+import { getCurrencyDecimalPlaces } from '../../../utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number

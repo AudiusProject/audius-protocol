@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { useBuySellModal, useAddCashModal } from '@audius/common/store'
@@ -23,6 +23,14 @@ export const BuySellModal = () => {
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
+
+  // Reset modal state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setModalScreen('input')
+      setIsFlowLoading(false)
+    }
+  }, [isOpen])
 
   const title = useMemo(() => {
     if (isFlowLoading) return ''

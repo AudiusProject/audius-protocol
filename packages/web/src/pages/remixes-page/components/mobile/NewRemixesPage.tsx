@@ -1,6 +1,6 @@
 import { useEffect, useContext } from 'react'
 
-import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
@@ -61,7 +61,7 @@ const RemixesPage = nullGuard(
       isPlaying,
       lineup,
       pageSize
-    } = useRemixes({
+    } = useRemixesLineup({
       trackId: originalTrack?.track_id,
       includeOriginal: true,
       includeWinners: isRemixContestWinnersMilestoneEnabled

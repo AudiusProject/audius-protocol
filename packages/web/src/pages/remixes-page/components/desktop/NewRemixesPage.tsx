@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import {
-  useRemixes,
+  useRemixesLineup,
   useRemixContest,
   useCurrentUserId
 } from '@audius/common/api'
@@ -91,7 +91,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
     loadNextPage,
     isPlaying,
     lineup
-  } = useRemixes({
+  } = useRemixesLineup({
     trackId: originalTrack?.track_id,
     includeOriginal: true,
     includeWinners: isRemixContestWinnersMilestoneEnabled,

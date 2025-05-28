@@ -1,6 +1,8 @@
-import { Divider, Flex, IconInfo, Text } from '@audius/harmony'
+import { TokenInfo } from '@audius/common/store'
+import { Divider, Flex, Text } from '@audius/harmony'
+import { TooltipPlacement } from 'antd/lib/tooltip'
 
-import { TokenInfo } from './types'
+import { TooltipInfoIcon } from './TooltipInfoIcon'
 
 const messages = {
   amount: (amount: string) => `$${amount}`
@@ -10,12 +12,14 @@ type USDCBalanceSectionProps = {
   title: string
   tokenInfo: TokenInfo
   amount: string
+  tooltipPlacement?: TooltipPlacement
 }
 
 export const USDCBalanceSection = ({
   title,
   tokenInfo,
-  amount
+  amount,
+  tooltipPlacement
 }: USDCBalanceSectionProps) => {
   return (
     <Flex direction='column' gap='l'>
@@ -26,7 +30,7 @@ export const USDCBalanceSection = ({
         <Text variant='heading' size='s' color='subdued'>
           {title}
         </Text>
-        <IconInfo size='s' color='subdued' />
+        <TooltipInfoIcon placement={tooltipPlacement} />
         <Divider css={{ flexGrow: 1 }} />
       </Flex>
       <Text variant='heading' size='xl'>
