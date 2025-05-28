@@ -2,11 +2,10 @@ import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 import { developmentConfig } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
-import { setupServer } from 'msw/node'
 import { Route, Routes } from 'react-router-dom-v5-compat'
 import { describe, expect, it, beforeAll, afterEach, afterAll } from 'vitest'
 
-import { RenderOptions, render, screen } from 'test/test-utils'
+import { RenderOptions, mswServer, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
 
@@ -24,12 +23,10 @@ const testUser = {
   follower_count: 1
 }
 
-const server = setupServer()
-
 function renderUserCard(overrides = {}, options?: RenderOptions) {
   const user = { ...testUser, ...overrides }
 
-  server.use(
+  mswServer.use(
     http.get(`${apiEndpoint}/v1/full/users`, ({ request }) => {
       const url = new URL(request.url)
       const id = url.searchParams.get('id')
@@ -54,15 +51,15 @@ function renderUserCard(overrides = {}, options?: RenderOptions) {
 
 describe('UserCard', () => {
   beforeAll(() => {
-    server.listen()
+    mswServer.listen()
   })
 
   afterEach(() => {
-    server.resetHandlers()
+    mswServer.resetHandlers()
   })
 
   afterAll(() => {
-    server.close()
+    mswServer.close()
   })
 
   it('renders with a label comprising the display name, handle, and follower count', async () => {

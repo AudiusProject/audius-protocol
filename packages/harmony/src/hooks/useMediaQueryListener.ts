@@ -18,8 +18,8 @@ export const useMediaQueryListener = (mediaQuery: string) => {
       // Set initial value
       setIsMatch(matcher.matches)
       // Use modern event listener API
-      matcher.addEventListener('change', listener)
-      return () => matcher.removeEventListener('change', listener)
+      matcher.addEventListener?.('change', listener)
+      return () => matcher.removeEventListener?.('change', listener)
     }
     return () => {}
   }, [mediaQuery, listener])
