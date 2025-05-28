@@ -35,7 +35,6 @@ export const RemixContestWinnersTab = ({
 
   return (
     <RemixTab
-      trackId={trackId}
       trackIds={winnerIds}
       size={size}
       emptyState={{

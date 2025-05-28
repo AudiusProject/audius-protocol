@@ -35,7 +35,6 @@ export const RemixContestSubmissionsTab = ({
 
   return (
     <RemixTab
-      trackId={trackId}
       trackIds={submissions.map((s) => s.id)}
       size={size}
       emptyState={{

@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom-v5-compat'
 import { RemixGrid, RemixSubmissionCardSize } from './RemixGrid'
 
 type RemixTabProps = {
-  trackId: ID
   trackIds: ID[]
   size?: RemixSubmissionCardSize
   emptyState: {
@@ -20,7 +19,6 @@ type RemixTabProps = {
 }
 
 export const RemixTab = ({
-  trackId,
   trackIds,
   size = 'desktop',
   emptyState,
