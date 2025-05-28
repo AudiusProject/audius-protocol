@@ -33,7 +33,7 @@ export const useDeleteComment = () => {
     },
     onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
       // Subtract from the comment count
-      subtractCommentCount(dispatch, queryClient, trackId)
+      subtractCommentCount(queryClient, trackId)
       // If reply, filter it from the parent's list of replies
       if (parentCommentId) {
         queryClient.setQueryData(

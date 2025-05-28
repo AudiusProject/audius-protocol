@@ -65,7 +65,7 @@ const actionsMap = {
   [ADD_ENTRIES](
     state: CollectionsCacheState,
     action: AddEntriesAction<Collection>,
-    kind: Kind
+    kind: Exclude<Kind, Kind.TRACKS>
   ) {
     const { entriesByKind } = action
     const matchingEntries = entriesByKind[kind]
@@ -96,7 +96,11 @@ const actionsMap = {
   }
 }
 
-const reducer = (state = initialState, action: any, kind: Kind) => {
+const reducer = (
+  state = initialState,
+  action: any,
+  kind: Exclude<Kind, Kind.TRACKS>
+) => {
   const matchingReduceFunction = actionsMap[action.type]
   if (!matchingReduceFunction) return state
   return matchingReduceFunction(state, action, kind)

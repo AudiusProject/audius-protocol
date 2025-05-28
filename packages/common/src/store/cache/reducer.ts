@@ -122,7 +122,11 @@ const actionsMap = {
     const { entries, replace } = action
     return addEntries(state, entries, replace)
   },
-  [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
+  [ADD_ENTRIES](
+    state: CacheState,
+    action: AddEntriesAction,
+    kind: Exclude<Kind, Kind.TRACKS>
+  ) {
     const { entriesByKind, replace } = action
     const matchingEntries = entriesByKind[kind] ?? {}
     const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(

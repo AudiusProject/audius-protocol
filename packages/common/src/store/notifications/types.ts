@@ -705,29 +705,34 @@ export type FanRemixContestStartedNotification = BaseNotification & {
   type: NotificationType.FanRemixContestStarted
   entityId: ID
   entityUserId: ID
+  entityType: Entity.Track
 }
 
 export type FanRemixContestEndingSoonNotification = BaseNotification & {
   type: NotificationType.FanRemixContestEndingSoon
   entityId: ID
   entityUserId: ID
+  entityType: Entity.Track
 }
 
 export type ArtistRemixContestEndedNotification = BaseNotification & {
   type: NotificationType.ArtistRemixContestEnded
   entityId: ID
+  entityType: Entity.Track
 }
 
 export type FanRemixContestEndedNotification = BaseNotification & {
   type: NotificationType.FanRemixContestEnded
   entityId: ID
   entityUserId: ID
+  entityType: Entity.Track
 }
 
 export type ArtistRemixContestEndingSoonNotification = BaseNotification & {
   type: NotificationType.ArtistRemixContestEndingSoon
   entityId: ID
   entityUserId: ID
+  entityType: Entity.Track
 }
 
 export type ArtistRemixContestSubmissionsNotification = BaseNotification & {
@@ -735,6 +740,7 @@ export type ArtistRemixContestSubmissionsNotification = BaseNotification & {
   eventId: ID
   milestone: number
   entityId: ID
+  entityType: Entity.Track
 }
 
 export type Notification =

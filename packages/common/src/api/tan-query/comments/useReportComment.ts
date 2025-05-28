@@ -68,7 +68,7 @@ export const useReportComment = () => {
         queryKey: getCommentQueryKey(commentId)
       })
       // Decrease the track comment count
-      subtractCommentCount(dispatch, queryClient, trackId)
+      subtractCommentCount(queryClient, trackId)
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args

@@ -17,13 +17,6 @@ const messages = {
   followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
 }
 
-const avatarSizeMap = {
-  xs: SquareSizes.SIZE_150_BY_150,
-  s: SquareSizes.SIZE_150_BY_150,
-  m: SquareSizes.SIZE_480_BY_480,
-  l: SquareSizes.SIZE_480_BY_480
-}
-
 export type UserCardProps = Omit<CardProps, 'id'> & {
   id: ID
   loading?: boolean
@@ -78,7 +71,7 @@ export const UserCard = (props: UserCardProps) => {
         aria-hidden
         p='l'
         pb='s'
-        imageSize={avatarSizeMap[size]}
+        imageSize={SquareSizes.SIZE_480_BY_480}
       />
       <CardContent p='s' pt={0} gap='xs' alignItems='center'>
         <UserLink
@@ -90,11 +83,11 @@ export const UserCard = (props: UserCardProps) => {
           onClick={onUserLinkClick}
           popover={true}
         />
-        <ArtistPopover handle={handle}>
+        <ArtistPopover handle={handle} css={{ width: '100%' }}>
           <TextLink
             onClick={onUserLinkClick}
             ellipses
-            css={{ textAlign: 'center' }}
+            css={{ textAlign: 'center', display: 'block' }}
           >
             @{handle}
           </TextLink>

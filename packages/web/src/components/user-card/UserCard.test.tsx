@@ -84,7 +84,7 @@ describe('UserCard', () => {
     renderUserCard()
     expect(await screen.findByRole('img')).toHaveAttribute(
       'src',
-      `${apiEndpoint}/image-profile-small.jpg`
+      `${apiEndpoint}/image-profile-medium.jpg`
     )
   })
 

@@ -32,7 +32,6 @@ export const WalletPage = () => {
       w='100%'
       css={{
         '@media (min-width: 768px) and (max-width: 1024px)': {
-          maxWidth: '90%',
           margin: '0 auto',
           marginBottom: spacing.xl
         }

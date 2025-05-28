@@ -119,6 +119,8 @@ const justForYou = [
   DOWNLOADS_AVAILABLE
 ]
 const DEBOUNCE_MS = 400
+const MIN_WIDTH = 840
+const NORMAL_WIDTH = 1200
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const [categoryKey, setCategory] = useSearchCategory()
@@ -214,7 +216,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   }, [])
 
   return (
-    <Flex justifyContent='center'>
+    <Flex
+      justifyContent='center'
+      css={{
+        minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH
+      }}
+    >
       <Flex
         direction='column'
         pv='3xl'
@@ -222,8 +229,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         gap='3xl'
         alignItems='stretch'
         css={{
-          minWidth: isLarge ? '100%' : 1200,
-          maxWidth: isLarge ? '100%' : 1200
+          minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH,
+          maxWidth: isLarge ? '100%' : NORMAL_WIDTH
         }}
       >
         {/* Header Section */}

@@ -196,11 +196,12 @@ export const Notification = (props: NotificationProps) => {
       }
     }
   }
+
   return (
     <ErrorWrapper
       errorMessage={`Could not render notification ${notification.id}`}
     >
-      <li>{getNotificationElement()}</li>
+      {getNotificationElement()}
     </ErrorWrapper>
   )
 }

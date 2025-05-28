@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react'
 
-export type TransactionData = {
-  inputAmount: number
-  outputAmount: number
-  isValid: boolean
-} | null
+import type { TransactionData } from './types'
 
 export const useBuySellTransactionData = () => {
   const [transactionData, setTransactionData] = useState<TransactionData>(null)

@@ -70,7 +70,6 @@ export const primeCollectionDataInternal = ({
   // Set up entries for Redux
   const entries: SetRequired<EntriesByKind, Kind.COLLECTIONS> = {
     [Kind.COLLECTIONS]: {},
-    [Kind.TRACKS]: {},
     [Kind.USERS]: {}
   }
 
@@ -131,11 +130,6 @@ export const primeCollectionDataInternal = ({
         forceReplace
       })
 
-      // Merge track and user entries
-      entries[Kind.TRACKS] = {
-        ...entries[Kind.TRACKS],
-        ...trackEntries[Kind.TRACKS]
-      }
       if (trackEntries[Kind.USERS]) {
         entries[Kind.USERS] = {
           ...entries[Kind.USERS],

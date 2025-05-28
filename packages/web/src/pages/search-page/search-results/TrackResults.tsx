@@ -26,9 +26,6 @@ import { ViewLayout, viewLayoutOptions } from '../types'
 
 const { addItem: addRecentSearch } = searchActions
 
-const PAGE_WIDTH = 1080
-const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
-
 const messages = {
   tracks: 'Tracks',
   layoutOptionsLabel: 'View As',
@@ -116,12 +113,11 @@ export const TrackResults = (props: TrackResultsProps) => {
             lineupContainerStyles: css({ width: '100%' }),
             tileContainerStyles: css({
               display: 'grid',
-              gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
+              gridTemplateColumns: isTrackGridLayout
+                ? 'repeat(auto-fit, minmax(450px, 1fr))' // wrap columns to fit
+                : '1fr',
               gap: '4px 16px',
               justifyContent: 'space-between'
-            }),
-            tileStyles: css({
-              maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
             })
           }
         : {})}
