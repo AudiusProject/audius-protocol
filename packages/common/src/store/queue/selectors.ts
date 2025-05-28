@@ -52,7 +52,6 @@ export const makeGetCurrent = () => {
     (uid, source, collectible) => ({
       uid,
       source,
-      // user,
       collectible
     })
   )
