@@ -167,7 +167,7 @@ export const ProfileResultsPage = () => {
         gap='xl'
         css={isMobile ? { backgroundColor: color.background.default } : {}}
       >
-        {!isMobile && !isSearchExploreEnabled ? (
+        {!isMobile && isSearchExploreEnabled === false ? (
           <Flex justifyContent='space-between' alignItems='center'>
             <Text variant='heading' textAlign='left'>
               {messages.profiles}
