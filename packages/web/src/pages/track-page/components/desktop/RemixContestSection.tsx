@@ -61,7 +61,7 @@ export const RemixContestSection = ({
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
-  const { data: remixes, count: remixCount } = useRemixesLineup({
+  const { data: remixes, count: remixCount = 0 } = useRemixesLineup({
     trackId,
     isContestEntry: true
   })
@@ -206,10 +206,12 @@ export const RemixContestSection = ({
                   {messages.uploadRemixButtonText}
                 </Button>
               </Flex>
-            ) : isContestEnded && isRemixContestWinnersMilestoneEnabled ? (
+            ) : isContestEnded &&
+              isRemixContestWinnersMilestoneEnabled &&
+              remixCount > 0 ? (
               <Flex mb='m'>
                 <Button
-                  variant='secondary'
+                  variant={hasWinners ? 'secondary' : 'primary'}
                   size='small'
                   onClick={handlePickWinnersClick}
                 >
