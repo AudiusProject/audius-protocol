@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   useCurrentUserId,
   useRemixContest,
-  useRemixes,
+  useRemixesLineup,
   useTrackByPermalink,
   useUpdateEvent
 } from '@audius/common/api'
@@ -101,7 +101,7 @@ export const PickWinnersPage = () => {
     loadNextPage,
     isPlaying,
     lineup
-  } = useRemixes({
+  } = useRemixesLineup({
     trackId: originalTrack?.track_id,
     sortMethod,
     isCosign,
