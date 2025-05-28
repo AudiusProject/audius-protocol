@@ -6,10 +6,12 @@ import { Box, Flex, Text, IconTrophy } from '@audius/harmony'
 
 import useTabs from 'hooks/useTabs/useTabs'
 
+import { RemixContestSubmissionsTab } from '../../shared/RemixContestSubmissionsTab'
+import { RemixContestWinnersTab } from '../../shared/RemixContestWinnersTab'
+
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
-import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
-import { RemixContestWinnersTab } from './RemixContestWinnersTab'
+
 const messages = {
   title: 'Remix Contest',
   details: 'Details',
@@ -82,6 +84,7 @@ export const RemixContestSection = ({
             key='winners'
             trackId={trackId}
             winnerIds={remixContest?.eventData?.winners ?? []}
+            size='mobile'
           />
         ]
       : [
@@ -89,6 +92,7 @@ export const RemixContestSection = ({
             key='submissions'
             trackId={trackId}
             submissions={remixes.slice(0, 6)}
+            size='mobile'
           />
         ])
   ]

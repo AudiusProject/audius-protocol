@@ -24,10 +24,11 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { track, make } from 'services/analytics'
 import { pickWinnersPage } from 'utils/route'
 
+import { RemixContestSubmissionsTab } from '../shared/RemixContestSubmissionsTab'
+import { RemixContestWinnersTab } from '../shared/RemixContestWinnersTab'
+
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
-import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
-import { RemixContestWinnersTab } from './RemixContestWinnersTab'
 import { TabBody } from './TabBody'
 
 const messages = {
