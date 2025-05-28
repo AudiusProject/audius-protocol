@@ -92,7 +92,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   useEffect(() => {
     if (swapStatus === 'error' && swapError) {
-      toast(swapError.message || messages.transactionFailed, 5000)
+      toast(swapError.message ?? messages.transactionFailed, 5000)
     }
   }, [swapStatus, swapError, toast])
 
