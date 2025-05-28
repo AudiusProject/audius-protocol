@@ -43,7 +43,6 @@ export const RemixContestWinnerChallengeModalContent = ({
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
 
-  // Following the pattern from mobile implementation
   const modifiedChallenge = challenge
     ? {
         ...challenge,

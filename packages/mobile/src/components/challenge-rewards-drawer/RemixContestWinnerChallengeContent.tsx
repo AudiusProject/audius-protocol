@@ -48,6 +48,7 @@ export const RemixContestWinnerChallengeContent = ({
   const statusText = challenge
     ? getChallengeStatusLabel(challenge, challengeName)
     : ''
+  const modifiedAmount = challenge?.amount ?? 0
 
   const statusLabel = (
     <Flex
@@ -114,8 +115,6 @@ export const RemixContestWinnerChallengeContent = ({
         {messages.close}
       </Button>
     )
-
-  const modifiedAmount = challenge?.amount ?? 0
 
   return (
     <ChallengeRewardsLayout
