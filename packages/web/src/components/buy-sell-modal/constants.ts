@@ -1,6 +1,27 @@
+import { TOKENS as BASE_TOKENS } from '@audius/common/src/store/ui/buy-sell'
 import {
-  TOKENS,
-  SUPPORTED_TOKEN_PAIRS
-} from '@audius/common/src/store/ui/buy-sell'
+  TokenInfo,
+  TokenPair
+} from '@audius/common/src/store/ui/buy-sell/types'
+import { IconLogoCircleUSDC, IconTokenAUDIO } from '@audius/harmony'
 
-export { TOKENS, SUPPORTED_TOKEN_PAIRS }
+// Token metadata with icons for web
+export const TOKENS: Record<string, TokenInfo> = {
+  AUDIO: {
+    ...BASE_TOKENS.AUDIO,
+    icon: IconTokenAUDIO
+  },
+  USDC: {
+    ...BASE_TOKENS.USDC,
+    icon: IconLogoCircleUSDC
+  }
+}
+
+// Define supported token pairs with icons for web
+export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
+  {
+    baseToken: TOKENS.AUDIO,
+    quoteToken: TOKENS.USDC,
+    exchangeRate: null
+  }
+]

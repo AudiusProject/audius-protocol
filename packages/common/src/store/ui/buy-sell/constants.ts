@@ -1,15 +1,12 @@
-import { IconLogoCircleUSDC, IconTokenAUDIO } from '@audius/harmony'
-
 import { TOKEN_LISTING_MAP } from '../buy-audio/constants'
 
 import { TokenInfo, TokenPair } from './types'
 
-// Token metadata
+// Token metadata without icons (to avoid circular dependency with harmony)
 export const TOKENS: Record<string, TokenInfo> = {
   AUDIO: {
     symbol: 'AUDIO',
     name: 'Audius',
-    icon: IconTokenAUDIO,
     decimals: TOKEN_LISTING_MAP.AUDIO.decimals,
     balance: null,
     isStablecoin: false,
@@ -18,7 +15,6 @@ export const TOKENS: Record<string, TokenInfo> = {
   USDC: {
     symbol: 'USDC',
     name: 'USD Coin',
-    icon: IconLogoCircleUSDC,
     decimals: TOKEN_LISTING_MAP.USDC.decimals,
     balance: null,
     isStablecoin: true,
@@ -26,7 +22,7 @@ export const TOKENS: Record<string, TokenInfo> = {
   }
 }
 
-// Define supported token pairs
+// Define supported token pairs without icons
 export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   {
     baseToken: TOKENS.AUDIO,

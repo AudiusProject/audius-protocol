@@ -11,7 +11,7 @@ export type TokenType = 'AUDIO' | 'USDC'
 export type TokenInfo = {
   symbol: string // e.g., 'AUDIO', 'USDC', 'WETH'
   name: string // e.g., 'Audius', 'USD Coin', 'Wrapped Ether'
-  icon: ComponentType<any> // Component for the token's icon
+  icon?: ComponentType<any> // Component for the token's icon (optional to avoid circular deps)
   decimals: number // Number of decimal places (e.g., 18 for ETH)
   balance: number | null // User's balance for this token
   address?: string // Optional contract address

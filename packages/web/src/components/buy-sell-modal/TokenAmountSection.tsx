@@ -38,7 +38,7 @@ const DefaultBalanceSection = ({
   const { cornerRadius } = useTheme()
   const { icon: TokenIcon } = tokenInfo
 
-  if (!formattedAvailableBalance) {
+  if (!formattedAvailableBalance || !TokenIcon) {
     return null
   }
 
@@ -77,7 +77,7 @@ const StackedBalanceSection = ({
   const { cornerRadius } = useTheme()
   const { icon: TokenIcon, symbol } = tokenInfo
 
-  if (!formattedAvailableBalance) {
+  if (!formattedAvailableBalance || !TokenIcon) {
     return null
   }
 
@@ -122,6 +122,10 @@ const CryptoAmountSection = ({
   const { spacing, cornerRadius } = useTheme()
   const { icon: TokenIcon, symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
+
+  if (!TokenIcon) {
+    return null
+  }
 
   return (
     <Flex p='l' alignItems='center' gap='s'>
@@ -269,7 +273,7 @@ export const TokenAmountSection = ({
   }, [formattedAmount, isStablecoin, priceDisplay, tokenInfo])
 
   const titleText = useMemo(() => {
-    if (isStablecoin && !isInput) {
+    if (isStablecoin && !isInput && TokenIcon) {
       return (
         <Flex alignItems='center' gap='s'>
           <TokenIcon size='l' />
