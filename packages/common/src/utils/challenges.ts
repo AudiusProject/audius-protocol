@@ -360,6 +360,16 @@ export const challengeRewardsConfig: Record<
       'Leave a comment that gets pinned by a verified artist to earn an $AUDIO reward.',
     progressLabel: 'Not Earned',
     panelButtonText: 'Comment on a Track'
+  },
+  [ChallengeName.RemixContestWinner]: {
+    id: ChallengeName.RemixContestWinner,
+    title: 'Remix Contest Winner',
+    description: () =>
+      'Win a remix contest hosted by a verified artist, and you may earn a reward!',
+    fullDescription: () =>
+      'Win a remix contest hosted by a verified artist, and you may earn a reward!',
+    progressLabel: 'Active',
+    panelButtonText: 'More Info'
   }
 }
 
@@ -488,7 +498,8 @@ const newChallengeIds: ChallengeRewardID[] = [
   ChallengeName.PlayCount10000,
   ChallengeName.Tastemaker,
   ChallengeName.CommentPin,
-  ChallengeName.Cosign
+  ChallengeName.Cosign,
+  ChallengeName.RemixContestWinner
 ]
 
 export const isNewChallenge = (challengeId: ChallengeRewardID) =>
@@ -519,6 +530,18 @@ export const getChallengeStatusLabel = (
     case ChallengeName.ListenStreakEndless:
       return `Day ${challenge.current_step_count}`
     case ChallengeName.Cosign:
+      if (
+        challenge.undisbursedSpecifiers.length &&
+        !challenge.claimableAmount &&
+        challenge.cooldown_days
+      ) {
+        return DEFAULT_STATUS_LABELS.REWARD_PENDING
+      }
+      if (challenge.claimableAmount > 0) {
+        return DEFAULT_STATUS_LABELS.READY_TO_CLAIM
+      }
+      return 'Available'
+    case ChallengeName.RemixContestWinner:
       if (
         challenge.undisbursedSpecifiers.length &&
         !challenge.claimableAmount &&

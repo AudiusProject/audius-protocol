@@ -86,6 +86,12 @@ const challengeMessages = {
     description:
       'If a remix you’ve uploaded is co-signed by a verified artist, you may earn a reward!',
     imageUrl: 'recycle-trophy.png'
+  },
+  rc: {
+    title: 'Remix Contest Winner',
+    description:
+      'Win a remix contest hosted by a verified artist, and you may earn a reward!',
+    imageUrl: 'trophy.png'
   }
 }
 

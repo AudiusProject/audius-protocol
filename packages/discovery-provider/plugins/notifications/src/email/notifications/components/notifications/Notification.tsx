@@ -72,6 +72,10 @@ const challengeRewardsConfig: {
   o: {
     title: 'Airdrop 2: Artist Appreciation',
     icon: <TrebleClefIcon />
+  },
+  rc: {
+    title: 'Remix Contest Winner',
+    icon: <TrebleClefIcon />
   }
 }
 

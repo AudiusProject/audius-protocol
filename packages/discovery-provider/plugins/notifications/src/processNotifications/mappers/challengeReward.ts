@@ -69,6 +69,10 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     },
     o: {
       title: 'Airdrop 2: Artist Appreciation'
+    },
+    rc: {
+      title: '🏆 Remix Contest Winner',
+      amount: 1000
     }
   }
 

@@ -29,7 +29,8 @@ export enum ChallengeId {
   PLAY_COUNT_10000_MILESTONE_2025 = 'p3',
   TASTEMAKER = 't',
   COSIGN = 'cs',
-  PINNED_COMMENT = 'cp'
+  PINNED_COMMENT = 'cp',
+  REMIX_CONTEST_WINNER = 'rc'
 }
 
 const DefaultSpecifier = z.object({
