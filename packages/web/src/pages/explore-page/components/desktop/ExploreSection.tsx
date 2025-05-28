@@ -47,7 +47,6 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
       window.removeEventListener('resize', updateScrollButtons)
     }
   })
-  if (!data) return null
 
   return (
     <Flex direction='column' gap='l'>
@@ -108,6 +107,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             '&::-webkit-scrollbar': {
               display: 'none' // Chrome/Safari
             },
+            overscrollBehaviorX: 'contain', // prevents back gesture on chrome
 
             // Some logic to make sure card shadows are not cut off
             marginLeft: !canScrollLeft && !isLarge ? -18 : undefined,
@@ -126,7 +126,12 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             css={{ minWidth: 'max-content', overflow: 'visible' }}
             pv='2xs'
           >
-            {data?.map((id) => <Card key={id} id={id} size='s' />)}
+            {data
+              ? data?.map((id) => <Card key={id} id={id} size='s' />)
+              : Array.from({ length: 6 }).map((_, i) => (
+                  // loading skeletons
+                  <Card key={i} id={0} size='s' />
+                ))}
           </Flex>
         </Flex>
       </Flex>
