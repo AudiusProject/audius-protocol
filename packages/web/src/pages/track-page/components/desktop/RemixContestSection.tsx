@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-import { useRemixContest, useRemixes, useTrack } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup, useTrack } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -61,7 +61,7 @@ export const RemixContestSection = ({
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
-  const { data: remixes, count: remixCount } = useRemixes({
+  const { data: remixes, count: remixCount } = useRemixesLineup({
     trackId,
     isContestEntry: true
   })
