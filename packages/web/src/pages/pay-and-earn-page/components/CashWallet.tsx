@@ -163,9 +163,6 @@ export const CashWallet = () => {
           <>
             <Button
               variant='primary'
-              css={{
-                flex: 1
-              }}
               onClick={handleWithdraw}
               disabled={isLoading}
               fullWidth
@@ -174,9 +171,6 @@ export const CashWallet = () => {
             </Button>
             <Button
               variant='secondary'
-              css={{
-                flex: 1
-              }}
               onClick={handleAddCash}
               disabled={isLoading}
               fullWidth
