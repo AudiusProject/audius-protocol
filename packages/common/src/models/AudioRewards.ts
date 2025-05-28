@@ -62,7 +62,7 @@ export enum ChallengeName {
   Tastemaker = 't',
   CommentPin = 'cp',
   Cosign = 'cs',
-  RemixContestWinner = 'rc'
+  RemixContestWinner = 'w'
 }
 
 export type ChallengeRewardID =

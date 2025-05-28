@@ -225,7 +225,7 @@
     "weekly_pool": 50000
   },
   {
-    "id": "rc",
+    "id": "w",
     "name": "REMIX_CONTEST_WINNER",
     "type": "aggregate",
     "amount": 1000,

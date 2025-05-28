@@ -139,5 +139,5 @@ class RemixContestWinnerChallengeUpdater(ChallengeUpdater):
 
 
 remix_contest_winner_challenge_manager = ChallengeManager(
-    "rc", RemixContestWinnerChallengeUpdater()
+    "w", RemixContestWinnerChallengeUpdater()
 )

@@ -30,7 +30,7 @@ export enum ChallengeId {
   TASTEMAKER = 't',
   COSIGN = 'cs',
   PINNED_COMMENT = 'cp',
-  REMIX_CONTEST_WINNER = 'rc'
+  REMIX_CONTEST_WINNER = 'w'
 }
 
 const DefaultSpecifier = z.object({
