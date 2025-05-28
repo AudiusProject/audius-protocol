@@ -252,7 +252,8 @@ app.get('/attestation/ui', async (c) => {
               {dateHeader(new Date(recentClaim.disbursement_date))}
               <tr
                 className={
-                  userScores[recentClaim.handle].overallScore < 0
+                  userScores[recentClaim.handle].overallScore <
+                  recentClaim.amount / 10
                     ? 'bg-red-100'
                     : ''
                 }

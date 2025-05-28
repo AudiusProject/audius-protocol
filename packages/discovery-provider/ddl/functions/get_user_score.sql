@@ -1,7 +1,7 @@
 -- identical to get_user_scores but for a single user
 -- used to generate a user score for attestations and in UI tool
-drop function if exists get_user_score(integer);
-create or replace function get_user_score(target_user_id integer) returns table(
+drop function if exists test_get_user_score(integer);
+create or replace function test_get_user_score(target_user_id integer) returns table(
         -- order matters
         user_id integer,
         handle_lc text,
@@ -15,7 +15,7 @@ create or replace function get_user_score(target_user_id integer) returns table(
         score bigint
     ) language sql as $function$ with play_activity as (
         select p.user_id,
-            count(distinct date_trunc('hour', p.created_at)) as play_count,
+            count(distinct date_trunc('day', p.created_at)) as play_count,
             count(distinct p.play_item_id) as distinct_tracks_played
         from plays p
         where p.user_id = target_user_id
@@ -70,7 +70,7 @@ create or replace function get_user_score(target_user_id integer) returns table(
             and u.handle_lc is not null
     )
 select a.*,
-    compute_user_score(
+    test_compute_user_score(
         a.play_count,
         a.follower_count,
         a.challenge_count,
