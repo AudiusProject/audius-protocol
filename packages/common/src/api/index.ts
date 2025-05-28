@@ -135,6 +135,7 @@ export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
+export * from './tan-query/jupiter/utils'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

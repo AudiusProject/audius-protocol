@@ -1,8 +1,12 @@
 import React, { useCallback } from 'react'
 
-import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
+import { buySellMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
+import { useBuySellModal } from '@audius/common/store'
 
 import {
+  Button,
   Flex,
   IconCaretRight,
   IconTokenAUDIO,
@@ -13,8 +17,36 @@ import {
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+const TokensHeader = () => {
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
+  const handleBuySellClick = useCallback(() => {
+    openBuySellModal()
+  }, [openBuySellModal])
+
+  return (
+    <Flex
+      direction='row'
+      alignItems='center'
+      justifyContent='space-between'
+      p='l'
+      borderBottom='default'
+    >
+      <Text variant='heading' size='s' color='heading'>
+        {messages.yourCoins}
+      </Text>
+      <Button variant='secondary' size='small' onPress={handleBuySellClick}>
+        {messages.buySell}
+      </Button>
+    </Flex>
+  )
+}
+
 export const YourCoins = () => {
   const navigation = useNavigation()
+  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_BUY_SELL
+  )
 
   const {
     audioBalanceFormatted,
@@ -29,6 +61,7 @@ export const YourCoins = () => {
 
   return (
     <Paper onPress={handleTokenClick}>
+      {isWalletUIBuySellEnabled ? <TokensHeader /> : null}
       <Flex
         p='l'
         direction='row'
@@ -47,7 +80,7 @@ export const YourCoins = () => {
                     {audioBalanceFormatted}
                   </Text>
                   <Text variant='heading' size='l' color='subdued'>
-                    $AUDIO
+                    {messages.audioTicker}
                   </Text>
                 </>
               )}
