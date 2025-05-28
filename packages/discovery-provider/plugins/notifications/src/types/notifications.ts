@@ -347,6 +347,11 @@ export type FanRemixContestStartedNotification = {
   entityUserId: number
 }
 
+export type FanRemixContestWinnersSelectedNotification = {
+  entityId: number
+  entityUserId: number
+}
+
 export type ArtistRemixContestEndingSoonNotification = {
   entityId: number
   entityUserId: number
@@ -398,6 +403,7 @@ export type NotificationData =
   | FanRemixContestEndedNotification
   | FanRemixContestEndingSoonNotification
   | FanRemixContestStartedNotification
+  | FanRemixContestWinnersSelectedNotification
   | ArtistRemixContestEndingSoonNotification
   | ArtistRemixContestSubmissionsNotification
 

@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
 import { useTrack } from '@audius/common/api'
-import { useCurrentTrack, useFeatureFlag } from '@audius/common/hooks'
+import { useCurrentTrack } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   playerSelectors,
@@ -59,9 +58,6 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
   const { data: track } = useTrack(trackId)
-  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
   const handlePlay = useCallback(
     (uid?: string) => {
       dispatch(tracksActions.play(uid))
@@ -95,7 +91,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     permalink,
     comments_disabled
   } = track as unknown as Track
-  const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
+  const isCommentingEnabled = !comments_disabled
   const remixTrackIds = remixes?.map(({ track_id }) => track_id) ?? null
 
   const lineupVariant =
