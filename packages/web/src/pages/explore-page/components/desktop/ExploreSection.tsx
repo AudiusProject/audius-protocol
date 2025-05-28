@@ -107,7 +107,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             '&::-webkit-scrollbar': {
               display: 'none' // Chrome/Safari
             },
-            overscrollBehaviorX: 'contain', // Prevents rubber banding on iOS
+            overscrollBehaviorX: 'contain', // prevents back gesture on chrome
 
             // Some logic to make sure card shadows are not cut off
             marginLeft: !canScrollLeft && !isLarge ? -18 : undefined,
