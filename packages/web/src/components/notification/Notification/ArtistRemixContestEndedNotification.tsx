@@ -74,7 +74,9 @@ export const ArtistRemixContestEndedNotification = (
         </NotificationBody>
         {isRemixContestWinnersMilestoneEnabled && remixCount > 0 && (
           <Button css={{ width: 'fit-content' }} size='small' asChild>
-            <Link to={pickWinnersRoute}>Pick Winners</Link>
+            <Link to={pickWinnersRoute} onClick={(e) => e.stopPropagation()}>
+              Pick Winners
+            </Link>
           </Button>
         )}
       </Flex>
