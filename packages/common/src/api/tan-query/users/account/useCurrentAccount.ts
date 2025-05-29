@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { AnyAction, Dispatch } from 'redux'
 
 import { accountFromSDK } from '~/adapters/user'
@@ -12,10 +12,11 @@ import { Status } from '~/models'
 import { UserMetadata } from '~/models/User'
 import { LocalStorage } from '~/services'
 import { AccountState } from '~/store'
-import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
+
+import { useWalletAddresses } from './useWalletAddresses'
 
 export const getCurrentAccountQueryKey = () =>
   [QUERY_KEYS.accountUser] as unknown as QueryKey<AccountState>
@@ -97,8 +98,8 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
   options?: SelectableQueryOptions<AccountState | null | undefined, TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
-  const walletAddresses = useSelector(getWalletAddresses)
-  const currentUserWallet = walletAddresses.currentUser
+  const { data: walletAddresses } = useWalletAddresses()
+  const currentUserWallet = walletAddresses?.currentUser
   const { localStorage } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -115,7 +116,7 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
       getCurrentAccountQueryFn(
         await audiusSdk(),
         localStorage,
-        currentUserWallet,
+        currentUserWallet!,
         queryClient,
         dispatch
       ),

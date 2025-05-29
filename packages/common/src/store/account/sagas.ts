@@ -15,7 +15,8 @@ import {
   queryAccountUser,
   getCurrentAccountQueryKey,
   queryCurrentAccount,
-  queryCurrentUserId
+  queryCurrentUserId,
+  QUERY_KEYS
 } from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
@@ -277,6 +278,10 @@ export function* fetchAccountAsync({
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
+  queryClient.setQueryData([QUERY_KEYS.walletAddresses], {
+    currentUser: wallet,
+    web3User: web3WalletAddress
+  })
 
   try {
     yield* call(initializeMetricsForUser, {

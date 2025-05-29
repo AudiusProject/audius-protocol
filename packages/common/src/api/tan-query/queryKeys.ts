@@ -3,6 +3,7 @@ export const QUERY_KEYS = {
   accountUser: 'accountUser',
   walletUser: 'walletUser',
   walletAccount: 'walletAccount',
+  walletAddresses: 'walletAddresses',
   trackCommentList: 'trackCommentList',
   userCommentList: 'userCommentList',
   comment: 'comment',

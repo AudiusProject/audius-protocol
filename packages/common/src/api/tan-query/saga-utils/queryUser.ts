@@ -12,6 +12,7 @@ import {
   getCurrentAccountQueryFn,
   getCurrentAccountQueryKey
 } from '../users/account/useCurrentAccount'
+import { getWalletAddressesQueryKey } from '../users/account/useWalletAddresses'
 import { getUserQueryFn, getUserQueryKey } from '../users/useUser'
 import {
   getUserByHandleQueryFn,
@@ -67,7 +68,12 @@ export function* queryCurrentAccount() {
   const sdk = yield* getSDK()
   const queryClient = yield* getContext('queryClient')
   const localStorage = yield* getContext('localStorage')
-  const walletAddresses = yield* select(getWalletAddresses)
+  const walletAddresses = queryClient.getQueryData(
+    getWalletAddressesQueryKey()
+  ) ?? {
+    currentUser: null,
+    web3User: null
+  }
   const dispatch = yield* getContext('dispatch')
   const currentUserWallet = walletAddresses.currentUser
 
