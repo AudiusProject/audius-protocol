@@ -74,28 +74,37 @@ export const useRemixesLineup = (
 
     // Add original track if included (should be first)
     if (includeOriginal && trackId) {
-      const originalTrack = remixTracks.find((track) => track.id === trackId)
-      if (originalTrack) {
-        orderedTracks.push(originalTrack)
-      }
+      orderedTracks.push({
+        id: trackId,
+        type: EntityType.TRACK
+      })
     }
 
     // Add winner tracks if included (should be second)
     if (includeWinners && winnerIds?.length) {
+      // Create a Set of winner IDs for efficient lookup
+      const winnerIdSet = new Set(winnerIds)
       const winnerTracks = winnerIds.map((id) => ({
         id,
         type: EntityType.TRACK
       }))
       orderedTracks.push(...winnerTracks)
-    }
 
-    // Add remaining remix tracks (excluding original and winners)
-    const remainingTracks = remixTracks.filter((track) => {
-      if (includeOriginal && track.id === trackId) return false
-      if (includeWinners && winnerIds?.includes(track.id)) return false
-      return true
-    })
-    orderedTracks.push(...remainingTracks)
+      // Add remaining remix tracks (excluding original and winners)
+      const remainingTracks = remixTracks.filter((track) => {
+        if (track.id === trackId) return false // Always exclude original track
+        if (winnerIdSet.has(track.id)) return false
+        return true
+      })
+      orderedTracks.push(...remainingTracks)
+    } else {
+      // If not including winners, just filter out original track
+      const remainingTracks = remixTracks.filter((track) => {
+        if (track.id === trackId) return false // Always exclude original track
+        return true
+      })
+      orderedTracks.push(...remainingTracks)
+    }
 
     return orderedTracks
   }, [
