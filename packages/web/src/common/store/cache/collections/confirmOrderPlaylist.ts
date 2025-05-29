@@ -1,9 +1,8 @@
 import { playlistMetadataForUpdateWithSDK } from '@audius/common/adapters'
-import { queryCollection } from '@audius/common/api'
+import { queryCollection, updateCollectionData } from '@audius/common/api'
 import { Kind, Collection, ID } from '@audius/common/models'
 import {
   cacheCollectionsActions as collectionActions,
-  cacheActions,
   PlaylistOperations,
   confirmerActions,
   getSDK
@@ -39,14 +38,7 @@ export function* confirmOrderPlaylist(
 
         if (!confirmedPlaylist) return
 
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: confirmedPlaylist
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
       },
       function* ({ error, timeout }) {
         // Fail Call

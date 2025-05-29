@@ -7,8 +7,6 @@ import { Kind } from '../models'
 import account from './account/slice'
 import averageColorReducer from './average-color/slice'
 import { buyUSDCReducer } from './buy-usdc'
-import collectionsReducer from './cache/collections/reducer'
-import { CollectionsCacheState } from './cache/collections/types'
 import { asCache } from './cache/reducer'
 import usersReducer from './cache/users/reducer'
 import { UsersCacheState } from './cache/users/types'
@@ -138,9 +136,6 @@ export const reducers = (storage: Storage, history?: History) => ({
 
   // Cache
   // @ts-ignore
-  collections: asCache(collectionsReducer, Kind.COLLECTIONS),
-  // TODO: Fix type error
-  // @ts-ignore
   users: asCache(usersReducer, Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
@@ -257,7 +252,6 @@ export type CommonState = {
   // confirmer: ConfirmerState
 
   // Cache
-  collections: CollectionsCacheState
   users: UsersCacheState
 
   // TODO: missing types for internally managed api slice state

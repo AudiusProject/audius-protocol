@@ -1,3 +1,4 @@
+import { primeCollectionDataSaga } from '@audius/common/api'
 import { Collection, UserCollectionMetadata } from '@audius/common/models'
 import {
   accountSelectors,
@@ -9,7 +10,6 @@ import { route } from '@audius/common/utils'
 import { uniq } from 'lodash'
 import { takeEvery, call, select, put } from 'typed-redux-saga'
 
-import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -78,11 +78,7 @@ function* watchFetch() {
     }
     if (!collections) return
 
-    yield* call(
-      processAndCacheCollections,
-      collections,
-      /* shouldRetrieveTracks= */ false
-    )
+    yield* call(primeCollectionDataSaga, collections)
 
     const collectionIds = uniq(
       collections.map((c: UserCollectionMetadata | Collection) => c.playlist_id)

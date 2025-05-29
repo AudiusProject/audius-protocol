@@ -1,6 +1,6 @@
-import { Kind, Collection } from '@audius/common/models'
-import { cacheActions } from '@audius/common/store'
-import { put } from 'typed-redux-saga'
+import { updateCollectionData } from '@audius/common/api'
+import { Collection } from '@audius/common/models'
+import { call } from 'typed-redux-saga'
 
 export function* optimisticUpdateCollection(collection: Collection) {
   const optimisticCollection = { ...collection }
@@ -9,9 +9,5 @@ export function* optimisticUpdateCollection(collection: Collection) {
     optimisticCollection.artwork = artwork
   }
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      { id: optimisticCollection.playlist_id, metadata: optimisticCollection }
-    ])
-  )
+  yield* call(updateCollectionData, [optimisticCollection])
 }

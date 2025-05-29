@@ -1,12 +1,4 @@
-import {
-  Track,
-  UID,
-  User,
-  ID,
-  Cache,
-  Collection,
-  Cacheable
-} from '../../../models'
+import { Track, UID, User, Collection } from '../../../models'
 
 export enum PlaylistOperations {
   ADD_TRACK = 'ADD_TRACK',
@@ -15,10 +7,6 @@ export enum PlaylistOperations {
 }
 
 export type EnhancedCollectionTrack = Track & { user: User; uid: UID }
-
-export interface CollectionsCacheState extends Cache<Collection> {
-  permalinks: { [permalink: string]: ID }
-}
 
 export type Image = {
   height?: number
@@ -35,5 +23,3 @@ export type EditCollectionValues = Collection & {
   artwork: Image
   tracks?: { metadata: Track }[]
 }
-
-export type BatchCachedCollections = Omit<Cacheable<Collection>, '_timestamp'>

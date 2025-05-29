@@ -14,7 +14,7 @@ import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { spacing } from 'app/styles/spacing'
 
 import { TOP_ALBUMS } from '../../collections'
-const { getCollections, getStatus } = explorePageCollectionsSelectors
+const { getCollectionIds, getStatus } = explorePageCollectionsSelectors
 const { fetch } = explorePageCollectionsActions
 
 export const TopAlbumsScreen = () => {
@@ -28,8 +28,8 @@ export const TopAlbumsScreen = () => {
     getStatus(state, { variant: ExploreCollectionsVariant.TOP_ALBUMS })
   )
 
-  const exploreData = useSelector((state) =>
-    getCollections(state, { variant: ExploreCollectionsVariant.TOP_ALBUMS })
+  const collectionIds = useSelector((state) =>
+    getCollectionIds(state, { variant: ExploreCollectionsVariant.TOP_ALBUMS })
   )
 
   return (
@@ -39,7 +39,7 @@ export const TopAlbumsScreen = () => {
         <WithLoader loading={status === Status.LOADING}>
           <CollectionList
             style={{ paddingTop: spacing(3) }}
-            collection={exploreData}
+            collectionIds={collectionIds}
           />
         </WithLoader>
       </ScreenContent>

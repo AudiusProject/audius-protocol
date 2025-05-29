@@ -1,10 +1,6 @@
 import { Collection } from '@audius/common/src/models/Collection'
-import {
-  getCollection,
-  getUser
-} from '@audius/common/src/store/pages/collection/selectors'
+import { getUser } from '@audius/common/src/store/pages/collection/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
-import { Nullable } from '@audius/common/src/utils/typeUtils'
 import { route } from '@audius/common/utils'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
@@ -27,8 +23,14 @@ import { useSelector } from 'utils/reducer'
 
 const { profilePage } = route
 
-export const DesktopServerCollectionPage = () => {
-  const collection = useSelector(getCollection) as Nullable<Collection>
+type DesktopServerCollectionPageProps = {
+  collection: Collection
+}
+
+export const DesktopServerCollectionPage = (
+  props: DesktopServerCollectionPageProps
+) => {
+  const { collection } = props
   const user = useSelector((state) =>
     getUser(state, { id: collection?.playlist_owner_id })
   )

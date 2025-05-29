@@ -125,7 +125,7 @@ const actionsMap = {
   [ADD_ENTRIES](
     state: CacheState,
     action: AddEntriesAction,
-    kind: Exclude<Kind, Kind.TRACKS>
+    kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>
   ) {
     const { entriesByKind, replace } = action
     const matchingEntries = entriesByKind[kind] ?? {}
