@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { LineupQueryData, useTracks } from '@audius/common/api'
+import { LineupQueryData, useTracks, useUsers } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -66,6 +66,7 @@ export const TrackTableLineup = ({
     pageSize
   } = lineupQueryData
   const { data: tracks } = useTracks(trackIds?.map((entry) => entry.id))
+  const { byId: usersMap } = useUsers(tracks?.map((entry) => entry.owner_id))
 
   // Get current queue item
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
@@ -81,14 +82,15 @@ export const TrackTableLineup = ({
         const track = tracks.find((track) => track.track_id === entry.id)
         return {
           ...entry,
-          ...track
+          ...track,
+          user: usersMap[track?.owner_id ?? '']
         }
       }
     )
     return hasNextPage
       ? entries.concat(new Array(pageSize).fill({ kind: Kind.EMPTY }))
       : entries
-  }, [lineup.entries, tracks, hasNextPage, pageSize])
+  }, [lineup.entries, tracks, hasNextPage, pageSize, usersMap])
 
   // Get the active index by finding the current track in the data
   const activeIndex = useMemo(() => {
