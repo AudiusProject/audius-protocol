@@ -64,6 +64,8 @@ create or replace function get_user_score(target_user_id integer) returns table(
             end as is_audius_impersonator,
             case
                 when (
+                    -- give max karma to users with more than 1000 followers
+                    -- karma is too slow for users with many followers
                     au.follower_count > 1000
                 ) then 100
                 when (
@@ -77,7 +79,7 @@ create or replace function get_user_score(target_user_id integer) returns table(
                     from follows
                         join aggregate_user fau on follows.follower_user_id = fau.user_id
                     where follows.followee_user_id = target_user_id
-                        and fau.following_count < 10000
+                        and fau.following_count < 10000 -- ignore users with too many following
                         and follows.is_delete = false
                 )
             end as karma
