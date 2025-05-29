@@ -96,13 +96,16 @@ export const useLineupQuery = <T>({
   }
 
   const prevQueryKey = usePrevious(queryKey)
-  const prevLineupData = usePrevious(lineupData)
   const hasQueryKeyChanged = !isEqual(prevQueryKey, queryKey)
+  const prevLineupData = usePrevious(lineupData)
   const hasLineupDataChanged = !isEqual(lineupData, prevLineupData)
 
   // Function to handle loading cached data into the lineup
   const loadCachedDataIntoLineup = useCallback(() => {
-    dispatch(lineupActions.reset())
+    // Only reset if we're handling a cache hit (query key changed)
+    if (hasQueryKeyChanged) {
+      dispatch(lineupActions.reset())
+    }
     // NOTE: This squashes all previously cached pages into the first page of the lineup.
     // This means the first page may have more entries than the pageSize.
     // If this causes issues we can slice the data back into pages, but this seems more inefficient.
@@ -145,12 +148,26 @@ export const useLineupQuery = <T>({
           }
         })
         .filter(Boolean)
-      // Put the full entities in the lineup
-      dispatch(
-        lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
-          items: fullLineupItems
-        })
-      )
+
+      // If we're handling a cache hit or initial load, load all data
+      // Otherwise, only load the new items
+      const startIndex = hasQueryKeyChanged ? 0 : lineup.entries.length
+      const newItems = hasQueryKeyChanged
+        ? fullLineupItems
+        : fullLineupItems.slice(startIndex)
+
+      if (newItems.length > 0) {
+        dispatch(
+          lineupActions.fetchLineupMetadatas(
+            startIndex,
+            newItems.length,
+            false,
+            {
+              items: newItems
+            }
+          )
+        )
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -159,14 +176,16 @@ export const useLineupQuery = <T>({
     lineupData,
     queryClient,
     lineup.prefix,
-    reportToSentry
+    reportToSentry,
+    hasQueryKeyChanged,
+    lineup.entries.length
   ])
 
-  // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
+  // Load data into lineup on initial load or cache hit
   useEffect(() => {
     if (
       !disableAutomaticCacheHandling &&
-      (hasQueryKeyChanged || hasLineupDataChanged)
+      (hasQueryKeyChanged || !lineup.entries.length)
     ) {
       loadCachedDataIntoLineup()
     }
@@ -174,7 +193,23 @@ export const useLineupQuery = <T>({
     disableAutomaticCacheHandling,
     hasQueryKeyChanged,
     loadCachedDataIntoLineup,
-    hasLineupDataChanged
+    lineup.entries.length
+  ])
+
+  // Handle lineup data updates (like from fetchNextPage)
+  useEffect(() => {
+    if (
+      !disableAutomaticCacheHandling &&
+      hasLineupDataChanged &&
+      !hasQueryKeyChanged
+    ) {
+      loadCachedDataIntoLineup()
+    }
+  }, [
+    disableAutomaticCacheHandling,
+    hasLineupDataChanged,
+    hasQueryKeyChanged,
+    loadCachedDataIntoLineup
   ])
 
   const status = combineStatuses([
