@@ -1,4 +1,4 @@
--- shared computation function used in get_user_score(s)
+-- drop existing compute_user_score function if it exists disregarding number of arguments
 DO $$
 DECLARE r RECORD;
 BEGIN FOR r IN
@@ -8,6 +8,7 @@ FROM pg_proc p
 WHERE p.proname = 'compute_user_score' LOOP EXECUTE r.stmt;
 END LOOP;
 END $$;
+-- shared computation function used in get_user_score(s)
 create or replace function compute_user_score(
         play_count bigint,
         follower_count bigint,
