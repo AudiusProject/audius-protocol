@@ -12,11 +12,11 @@ import {
 import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
+  getWalletAddressesQueryKey,
   queryAccountUser,
   getCurrentAccountQueryKey,
   queryCurrentAccount,
-  queryCurrentUserId,
-  QUERY_KEYS
+  queryCurrentUserId
 } from '~/api'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
@@ -278,7 +278,7 @@ export function* fetchAccountAsync({
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
-  queryClient.setQueryData([QUERY_KEYS.walletAddresses], {
+  queryClient.setQueryData(getWalletAddressesQueryKey(), {
     currentUser: wallet,
     web3User: web3WalletAddress
   })

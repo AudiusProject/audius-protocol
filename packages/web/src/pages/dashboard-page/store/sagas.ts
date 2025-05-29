@@ -2,12 +2,9 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
-import {
-  queryAccountUser,
-  queryCurrentUserId
-} from '@audius/common/src/api/tan-query/saga-utils/queryUser'
 import { walletActions, getContext, getSDK } from '@audius/common/store'
 import { doEvery, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'

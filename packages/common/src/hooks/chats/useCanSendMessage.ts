@@ -31,7 +31,8 @@ export const useCanSendMessage = (
   const { canSendMessage, callToAction } = useSelector((state: CommonState) =>
     getCanSendMessage(state, {
       userId: users[0]?.user_id,
-      chatId: currentChatId
+      chatId: currentChatId,
+      currentUserId
     })
   )
   return { canSendMessage, callToAction, firstOtherUser }

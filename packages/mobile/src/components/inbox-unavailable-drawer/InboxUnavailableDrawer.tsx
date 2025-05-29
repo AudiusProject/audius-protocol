@@ -3,8 +3,8 @@ import { useCallback } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
-import type { useInboxUnavailableModal } from '@audius/common/store'
 import {
+  useInboxUnavailableModal,
   cacheUsersSelectors,
   chatActions,
   chatSelectors,
@@ -286,4 +286,22 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
     default:
       return null
   }
+}
+export const InboxUnavailableDrawer = () => {
+  const styles = useStyles()
+  const neutralLight2 = useColor('neutralLight2')
+  const { isOpen, onClose, onClosed, data } = useInboxUnavailableModal()
+
+  return (
+    <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
+      <View style={styles.drawer}>
+        <View style={styles.titleContainer}>
+          <IconMessageLocked fill={neutralLight2} />
+          <Text style={styles.title}>{messages.title}</Text>
+        </View>
+        <View style={styles.border} />
+        <DrawerContent data={data} onClose={onClose} />
+      </View>
+    </Drawer>
+  )
 }

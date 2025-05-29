@@ -61,7 +61,7 @@ export const ManagerListItem = ({
   const { mutate: cancelPendingInvite } = useRemoveManager()
 
   const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: manager.user_id })
+    getCanCreateChat(state, { userId: manager.user_id, currentUserId })
   )
 
   const composeChat = useComposeChat({

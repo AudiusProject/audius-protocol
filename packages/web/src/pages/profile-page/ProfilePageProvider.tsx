@@ -699,7 +699,7 @@ class ProfilePageClassComponent extends PureComponent<
     } = this.props
     // Handle logged-out case, redirect to signup
     if (
-      this.props.chatPermissions.callToAction === ChatPermissionAction.SIGN_UP
+      this.props.chatPermissions?.callToAction === ChatPermissionAction.SIGN_UP
     ) {
       return this.props.redirectUnauthenticatedAction()
     }
@@ -939,8 +939,8 @@ class ProfilePageClassComponent extends PureComponent<
         : false,
       canCreateChat:
         // In the signed out case, we show the chat button (but redirect to signup)
-        this.props.chatPermissions.canCreateChat ||
-        this.props.chatPermissions.callToAction ===
+        this.props.chatPermissions?.canCreateChat ||
+        this.props.chatPermissions?.callToAction ===
           ChatPermissionAction.SIGN_UP,
       showBlockUserConfirmationModal: this.state.showBlockUserConfirmationModal,
       onCloseBlockUserConfirmationModal: this.onCloseBlockUserConfirmationModal,

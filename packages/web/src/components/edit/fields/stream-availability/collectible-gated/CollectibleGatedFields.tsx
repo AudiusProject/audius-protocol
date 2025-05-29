@@ -62,7 +62,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
 
   const { data: userId } = useCurrentUserId()
   const { ethCollectionMap, solCollectionMap, isLoading } = useSelector(
-    (state: CommonState) => getSupportedUserCollections(state, userId)
+    (state: CommonState) => getSupportedUserCollections(state, { userId })
   )
 
   const ethCollectibleItems = useMemo(() => {

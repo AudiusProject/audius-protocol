@@ -13,7 +13,6 @@ import { ConfirmationDrawer } from '../drawers'
 
 const { getDoesBlockUser, getCanCreateChat } = chatSelectors
 const { blockUser, unblockUser, createChat } = chatActions
-const { ChatPermissionAction } = chatSelectors
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
 

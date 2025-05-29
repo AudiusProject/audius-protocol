@@ -10,8 +10,8 @@ import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
 
+import { queryCurrentUserId } from './queryAccount'
 import { queryCollection } from './queryCollection'
-import { queryCurrentUserId } from './queryUser'
 
 export function* queryTrack(id: ID | null | undefined, forceRetrieve = false) {
   if (!id) return null

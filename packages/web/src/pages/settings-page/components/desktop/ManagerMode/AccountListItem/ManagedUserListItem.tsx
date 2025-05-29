@@ -69,7 +69,7 @@ export const ManagedUserListItem = ({
   const { switchAccount } = useAccountSwitcher()
 
   const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id })
+    getCanCreateChat(state, { userId: user?.user_id, currentUserId })
   )
 
   const composeChat = useComposeChat({

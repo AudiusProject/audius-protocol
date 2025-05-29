@@ -61,7 +61,7 @@ const toEntityType = (
  */
 export const notificationFromSDK = (
   notification: full.Notification
-): Notification => {
+): Notification | undefined => {
   switch (notification.type) {
     case 'follow': {
       const userIds = notification.actions.map((action) => {
@@ -702,4 +702,5 @@ export const notificationFromSDK = (
       }
     }
   }
+  return undefined
 }
