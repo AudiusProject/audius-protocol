@@ -1,7 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { AnyAction, Dispatch } from 'redux'
-import { SetRequired } from 'type-fest'
 import { getContext } from 'typed-redux-saga'
 
 import { Kind } from '~/models'
@@ -35,26 +34,7 @@ export const primeCollectionData = ({
     forceReplace,
     skipQueryData
   })
-  if (!forceReplace) {
-    dispatch(addEntries(entries, false, undefined, 'react-query'))
-  } else {
-    dispatch(
-      addEntries(
-        { [Kind.COLLECTIONS]: entries[Kind.COLLECTIONS] },
-        forceReplace,
-        undefined,
-        'react-query'
-      )
-    )
-    dispatch(
-      addEntries(
-        { ...entries, [Kind.COLLECTIONS]: {} },
-        false,
-        undefined,
-        'react-query'
-      )
-    )
-  }
+  dispatch(addEntries(entries, false, undefined, 'react-query'))
 }
 
 export const primeCollectionDataInternal = ({
@@ -69,15 +49,11 @@ export const primeCollectionDataInternal = ({
   skipQueryData?: boolean
 }): EntriesByKind => {
   // Set up entries for Redux
-  const entries: SetRequired<EntriesByKind, Kind.COLLECTIONS> = {
-    [Kind.COLLECTIONS]: {},
+  const entries: EntriesByKind = {
     [Kind.USERS]: {}
   }
 
   collections.forEach((collection) => {
-    // Add collection to entries and prime collection data
-    entries[Kind.COLLECTIONS][collection.playlist_id] = collection
-
     // Prime collection data only if it doesn't exist and skipQueryData is false
     if (
       forceReplace ||

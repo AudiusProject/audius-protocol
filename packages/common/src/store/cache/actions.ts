@@ -15,7 +15,7 @@ export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
 export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
 
 type BaseAddAction<EntryT extends Metadata = Metadata> = {
-  kind: Exclude<Kind, Kind.TRACKS>
+  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>
   entries: Entry<EntryT>[]
   // replace optionally replaces the entire entry instead of joining metadata
   replace?: boolean
@@ -110,7 +110,7 @@ export const update = (
  * would yield an update to the cached followee_count of id 2 by 1.
  */
 export const increment = (
-  kind: Exclude<Kind, Kind.TRACKS>,
+  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
   entries: Entry[]
 ) => ({
   type: INCREMENT,
@@ -122,7 +122,7 @@ export const increment = (
  * Sets the status of N entries.
  */
 export const setStatus = (
-  kind: Exclude<Kind, Kind.TRACKS>,
+  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
   statuses: { id: ID | string; status: Status }[]
 ) => ({
   type: SET_STATUS,
@@ -144,7 +144,10 @@ export const subscribe = (kind: Kind, subscribers: SubscriberInfo[]) => ({
  * @param {Kind} kind
  * @param {string} id
  */
-export const setExpired = (kind: Exclude<Kind, Kind.TRACKS>, id: ID) => ({
+export const setExpired = (
+  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
+  id: ID
+) => ({
   type: SET_EXPIRED,
   kind,
   id

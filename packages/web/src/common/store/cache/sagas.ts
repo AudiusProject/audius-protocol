@@ -15,7 +15,7 @@ const { getConfirmCalls } = confirmerSelectors
 const { getCache } = cacheSelectors
 
 function* add(
-  kind: Exclude<Kind, Kind.TRACKS>,
+  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
   entries: Entry[],
   replace?: boolean,
   persist?: boolean
