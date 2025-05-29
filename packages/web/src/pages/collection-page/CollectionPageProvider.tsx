@@ -162,6 +162,9 @@ const CollectionPage = (props: CollectionPageProps) => {
   const playlistId = collection?.playlist_id
   const currentTrack = useCurrentTrack()
   const tracks = useLineupTable(getCollectionTracksLineup)
+
+  if (!collection) return
+
   return (
     <CollectionPageClassComponent
       {...props}
