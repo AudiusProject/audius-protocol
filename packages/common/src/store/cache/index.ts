@@ -7,7 +7,6 @@ export const cacheUsersSelectors = {
 export * as cacheCollectionsActions from './collections/actions'
 export { default as cacheCollectionsReducer } from './collections/reducer'
 export * from './collections/types'
-export * from './collections/utils'
 export * as cacheTracksActions from './tracks/actions'
 export * as cacheUsersActions from './users/actions'
 export { default as cacheUsersReducer } from './users/reducer'

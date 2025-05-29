@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
+import { getContext } from 'typed-redux-saga'
 
 import { Kind } from '~/models'
 import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
@@ -140,4 +141,13 @@ export const primeCollectionDataInternal = ({
   })
 
   return entries
+}
+
+export function* primeCollectionDataSaga(
+  collections: (UserCollectionMetadata | CollectionMetadata)[]
+) {
+  const queryClient = (yield* getContext('queryClient')) as QueryClient
+  const dispatch = (yield* getContext('dispatch')) as Dispatch<AnyAction>
+
+  return primeCollectionData({ collections, queryClient, dispatch })
 }
