@@ -5,7 +5,8 @@ import {
   queryHasAccount,
   queryIsAccountComplete,
   queryUserByHandle,
-  queryUsers
+  queryUsers,
+  selectIsAccountComplete
 } from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
@@ -813,7 +814,6 @@ function* signUp() {
             null,
             (value: ID[]) => value.length > 0
           )
-          yield* call(waitForValue, accountSelectors.getIsAccountComplete)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())

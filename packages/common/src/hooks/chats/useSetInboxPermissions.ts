@@ -6,6 +6,7 @@ import { useCurrentUserId } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
+import { CommonState } from '~/store'
 import {
   chatActions,
   chatSelectors,
@@ -19,12 +20,14 @@ const { getChatPermissionsStatus, getUserChatPermissions } = chatSelectors
 export const useSetInboxPermissions = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
   const dispatch = useDispatch()
-  const permissions = useSelector(getUserChatPermissions)
+  const { data: userId } = useCurrentUserId()
+  const permissions = useSelector((state: CommonState) =>
+    getUserChatPermissions(state, userId)
+  )
   const {
     analytics: { track, make }
   } = useAppContext()
   const permissionsStatus = useSelector(getChatPermissionsStatus)
-  const { data: userId } = useCurrentUserId()
 
   const doFetchPermissions = useCallback(() => {
     if (userId) {

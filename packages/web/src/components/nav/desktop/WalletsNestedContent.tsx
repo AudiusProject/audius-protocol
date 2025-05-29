@@ -1,13 +1,14 @@
-import { useCurrentUserId } from '@audius/common/api'
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser,
+  useCurrentUserId
+} from '@audius/common/api'
 import {
   useUSDCBalance,
   useTotalBalanceWithFallback
 } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
-import {
-  accountSelectors,
-  useTierAndVerifiedForUser
-} from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import {
   formatCount,
   formatUSDCWeiToFloorCentsNumber,
@@ -26,14 +27,12 @@ import {
   IconTokenNoTier
 } from '@audius/harmony'
 import BN from 'bn.js'
-import { useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { LeftNavLink } from './LeftNavLink'
 
 const { AUDIO_PAGE, PAYMENTS_PAGE } = route
-const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -41,7 +40,9 @@ const messages = {
 }
 
 export const WalletsNestedContent = () => {
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const isUSDCEnabled = useIsUSDCEnabled()
   const { data: usdcBalance } = useUSDCBalance()
   const audioBalance = useTotalBalanceWithFallback()

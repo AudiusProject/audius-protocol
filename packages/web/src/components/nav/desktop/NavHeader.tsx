@@ -1,7 +1,10 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import { useCurrentAccountUser, useHasAccount } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser,
+  useHasAccount
+} from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -12,13 +15,11 @@ import {
 import { Link } from 'react-router-dom'
 
 import { RestrictionType, useRequiresAccountFn } from 'hooks/useRequiresAccount'
-import { useSelector } from 'utils/reducer'
 
 import { NavHeaderButton } from './NavHeaderButton'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE, SETTINGS_PAGE, DASHBOARD_PAGE } = route
-const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   homeLink: 'Go to Home',
@@ -49,7 +50,9 @@ const RestrictedLink = ({
 }: RestrictedLinkProps) => {
   const { requiresAccount } = useRequiresAccountFn(undefined, restriction)
   const hasAccount = useHasAccount()
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
 
   const handleClick = (e: MouseEvent) => {
     if (restriction === 'none') return

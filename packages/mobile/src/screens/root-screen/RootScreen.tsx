@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import {
+  useCurrentAccountUser,
+  selectIsAccountComplete
+} from '@audius/common/api'
 import { MobileOS, Status } from '@audius/common/models'
 import {
   accountSelectors,
@@ -11,7 +15,7 @@ import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
-  getHasCompletedAccount,
+  getFinishedSignUpProcess,
   getRouteOnCompletion,
   getStartedSignUpProcess,
   getWelcomeModalShown
@@ -59,7 +63,11 @@ export const RootScreen = () => {
   const { updateRequired } = useUpdateRequired()
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
-  const showHomeStack = useSelector(getHasCompletedAccount)
+  const { data: hasCompleteAccount } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
+  const hasFinishedSignUp = useSelector(getFinishedSignUpProcess)
+  const showHomeStack = hasCompleteAccount && hasFinishedSignUp
   const startedSignUp = useSelector(getStartedSignUpProcess)
   const welcomeModalShown = useSelector(getWelcomeModalShown)
   const isAndroid = Platform.OS === MobileOS.ANDROID

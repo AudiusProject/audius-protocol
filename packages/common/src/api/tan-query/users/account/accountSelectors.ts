@@ -21,6 +21,13 @@ export const selectHasAccount = (user?: User | null) => {
   return Boolean(user?.handle && user?.name)
 }
 
+export const selectIsAccountComplete = (user?: User | null) => {
+  if (!user) return false
+
+  const { handle, name } = user
+  return Boolean(handle && name)
+}
+
 /**
  * Returns the account with collections sorted by name, separated into playlists and albums
  */

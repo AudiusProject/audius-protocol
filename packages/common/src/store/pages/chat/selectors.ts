@@ -4,7 +4,6 @@ import { createSelector } from 'reselect'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { User } from '~/models/User'
-import { getUserId } from '~/store/account/selectors'
 import { getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/reducers'
 import { Maybe, removeNullable } from '~/utils/typeUtils'
@@ -246,7 +245,10 @@ export const getUnfurlMetadata = (
 }
 
 export const getUserChatPermissions = createSelector(
-  [getChatPermissions, getUserId],
+  [
+    getChatPermissions,
+    (_: CommonState, userId: ID | null | undefined) => userId
+  ],
   (permissions, userId) => {
     return userId ? permissions[userId] : undefined
   }

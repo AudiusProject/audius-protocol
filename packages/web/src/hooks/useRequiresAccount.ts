@@ -1,5 +1,9 @@
 import { MouseEvent as ReactMouseEvent, useCallback, useEffect } from 'react'
 
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -13,7 +17,7 @@ import {
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
 
-const { getAccountStatus, getIsAccountComplete } = accountSelectors
+const { getAccountStatus } = accountSelectors
 
 export type RestrictionType = 'none' | 'guest' | 'account'
 
@@ -38,7 +42,9 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
   returnRouteOverride?: string,
   restriction: RestrictionType = 'account'
 ) => {
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const accountStatus = useSelector(getAccountStatus)
   const dispatch = useDispatch()
   const location = useLocation()

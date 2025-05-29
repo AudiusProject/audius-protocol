@@ -1,10 +1,13 @@
 import { MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { useHasAccount, useNotificationUnreadCount } from '@audius/common/api'
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser,
+  useHasAccount,
+  useNotificationUnreadCount
+} from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Flex, IconNotificationOn, NotificationCount } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { useSearchParam, useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -15,8 +18,6 @@ import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
 import { canAccess } from './NavHeader'
 import { NavHeaderButton } from './NavHeaderButton'
 
-const { getIsAccountComplete } = accountSelectors
-
 const messages = {
   label: (count: number) => `${count} unread notifications`
 }
@@ -24,7 +25,9 @@ const messages = {
 export const NotificationsButton = () => {
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
   const hasAccount = useHasAccount()
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [isNotificationPanelOpen, toggleIsNotificationPanelOpen] =
     useToggle(false)
