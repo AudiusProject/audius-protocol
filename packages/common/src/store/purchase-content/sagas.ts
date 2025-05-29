@@ -22,7 +22,8 @@ import {
   queryCollection,
   queryCurrentUserId,
   queryTrack,
-  queryUser
+  queryUser,
+  queryWalletAddresses
 } from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection, Kind } from '~/models'
@@ -38,7 +39,6 @@ import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
-import { accountSelectors } from '~/store/account'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -90,8 +90,6 @@ import {
   PurchaseErrorCode
 } from './types'
 import { getBalanceNeeded } from './utils'
-
-const { getWalletAddresses } = accountSelectors
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -657,7 +655,7 @@ function* doStartPurchaseContentFlow({
   // wait for guest account creation
   yield* call(
     waitForValue,
-    getWalletAddresses,
+    queryWalletAddresses,
     null,
     (value) => !!value?.currentUser
   )

@@ -1,3 +1,4 @@
+import { queryWalletAddresses } from '@audius/common/api'
 import { Name, ErrorLevel, BNWei } from '@audius/common/models'
 import {
   IntKeys,
@@ -6,7 +7,6 @@ import {
   LocalStorage,
   MEMO_PROGRAM_ID
 } from '@audius/common/services'
-import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   walletSelectors,
   walletActions,
@@ -356,7 +356,7 @@ function* getAudioPurchaseInfo({
     }
 
     // Ensure userbank is created
-    const { currentUser } = yield* select(getWalletAddresses)
+    const { currentUser } = yield* call(queryWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
     }
@@ -788,7 +788,7 @@ function* getTransferTransaction({
 }: TransferTransactionParams) {
   const sdk = yield* getSDK()
   const env = yield* getContext('env')
-  const { currentUser } = yield* select(getWalletAddresses)
+  const { currentUser } = yield* call(queryWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to get current user wallet address')
   }
@@ -953,7 +953,7 @@ function* doBuyAudio({
     )
 
     // Ensure userbank is created
-    const { currentUser } = yield* select(getWalletAddresses)
+    const { currentUser } = yield* call(queryWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
     }
@@ -1074,9 +1074,9 @@ function* recoverPurchaseIfNecessary() {
     const identityService = yield* getContext('identityService')
     yield* call(
       waitForValue,
-      getWalletAddresses,
+      queryWalletAddresses,
       {},
-      (arg: ReturnType<typeof getWalletAddresses>) => arg.currentUser !== null
+      (arg: ReturnType<typeof queryWalletAddresses>) => arg.currentUser !== null
     )
 
     if (
