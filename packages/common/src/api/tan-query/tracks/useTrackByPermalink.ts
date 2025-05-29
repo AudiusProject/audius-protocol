@@ -62,7 +62,7 @@ export const useTrackByPermalink = <TResult = TQTrack>(
       return track?.track_id
     },
     staleTime: simpleOptions?.staleTime ?? Infinity,
-    throwOnError: simpleOptions?.throwOnError ?? true,
+    throwOnError: simpleOptions?.throwOnError ?? false,
     enabled:
       simpleOptions?.enabled !== false &&
       !!permalink &&
