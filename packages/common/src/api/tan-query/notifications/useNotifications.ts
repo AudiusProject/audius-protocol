@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
+
 import { Id } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
+import { usePrevious } from 'react-use'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
@@ -17,6 +20,7 @@ import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUsers } from '../users/useUsers'
 
+import { useNotificationUnreadCount } from './useNotificationUnreadCount'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
 
 const DEFAULT_LIMIT = 20
@@ -186,6 +190,8 @@ export const useNotifications = (options?: QueryOptions) => {
   const { data: currentUserId } = useCurrentUserId()
   const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT
+  const { data: unreadCount } = useNotificationUnreadCount()
+  const prevUnreadCount = usePrevious(unreadCount)
 
   const query = useInfiniteQuery({
     queryKey: getNotificationsQueryKey({
@@ -221,6 +227,20 @@ export const useNotifications = (options?: QueryOptions) => {
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
+
+  // Refetch when new notifications arrive
+  useEffect(() => {
+    if (
+      prevUnreadCount !== undefined &&
+      unreadCount !== undefined &&
+      unreadCount > prevUnreadCount
+    ) {
+      // Only refetch if we're not already fetching
+      if (!query.isFetching) {
+        query.refetch()
+      }
+    }
+  }, [unreadCount, prevUnreadCount, query])
 
   const lastPage = query.data?.pages[query.data.pages.length - 1]
   const { userIds, trackIds, collectionIds } = lastPage
