@@ -94,7 +94,10 @@ export const addEntries = (
 /**
  * Updates an entry in the cache.
  */
-export const update = (kind: Exclude<Kind, Kind.TRACKS>, entries: Entry[]) => ({
+export const update = (
+  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
+  entries: Entry[]
+) => ({
   type: UPDATE,
   kind,
   entries
