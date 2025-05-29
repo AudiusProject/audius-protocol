@@ -1,19 +1,12 @@
 import { useCallback } from 'react'
 
-import { useSelector } from 'react-redux'
-
-import { useCollectionTracks } from '~/api'
+import { useCollection, useCollectionTracks } from '~/api'
 import { useAppContext } from '~/context'
 import { ID } from '~/models/Identifiers'
-import { getCollection } from '~/store/cache/collections/selectors'
-import { CommonState } from '~/store/index'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
 export const useGeneratePlaylistArtwork = (collectionId: ID) => {
-  const collection = useSelector((state: CommonState) =>
-    getCollection(state, { id: collectionId })
-  )
-
+  const { data: collection } = useCollection(collectionId)
   const { data: collectionTracks } = useCollectionTracks(collectionId)
 
   const { imageUtils } = useAppContext()

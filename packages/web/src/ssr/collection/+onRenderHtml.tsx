@@ -64,9 +64,9 @@ export default function render(pageContext: TrackPageContext) {
       <>
         <MetaTags {...seoMetadata} />
         {isMobile ? (
-          <MobileServerCollectionPage />
+          <MobileServerCollectionPage collection={collection} />
         ) : (
-          <DesktopServerCollectionPage />
+          <DesktopServerCollectionPage collection={collection} />
         )}
       </>
     </ServerWebPlayer>

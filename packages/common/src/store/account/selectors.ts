@@ -1,14 +1,10 @@
 import { createSelector } from 'reselect'
 
 import { AccountCollection } from '~/models/Collection'
-import { getCollections } from '~/store/cache/collections/selectors'
-import { getUser, getUsers } from '~/store/cache/users/selectors'
-import { removeNullable } from '~/utils/typeUtils'
+import { getUser } from '~/store/cache/users/selectors'
 
 import { CommonState } from '../commonStore'
 
-const internalGetUserPlaylists = (state: CommonState) =>
-  Object.values(state.account.collections)
 export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
 const hasTracksInternal = (state: CommonState) => state.account.hasTracks
@@ -90,35 +86,6 @@ export const getAccountERCWallet = createSelector(
 export const getAccountSplWallet = createSelector(
   [internalGetAccountUser],
   (user) => user?.spl_usdc_payout_wallet ?? null
-)
-
-/**
- * Gets the account and full playlist metadatas.
- * TODO: Add handle directly to playlist metadata so we don't need to join against users.
- */
-export const getAccountWithCollections = createSelector(
-  [getAccountUser, internalGetUserPlaylists, getCollections, getUsers],
-  (account, userPlaylists, collections, users) => {
-    if (!account) return undefined
-    return {
-      ...account,
-      collections: [...userPlaylists]
-        .map((collection) =>
-          collections[collection.id]?.metadata &&
-          !collections[collection.id]?.metadata?._marked_deleted &&
-          !collections[collection.id]?.metadata?.is_delete &&
-          collection.user.id in users &&
-          !users[collection.user.id].metadata.is_deactivated
-            ? {
-                ...collections[collection.id].metadata,
-                ownerHandle: collection.user.handle,
-                ownerName: users[collection.user.id].metadata.name
-              }
-            : null
-        )
-        .filter(removeNullable)
-    }
-  }
 )
 
 /**

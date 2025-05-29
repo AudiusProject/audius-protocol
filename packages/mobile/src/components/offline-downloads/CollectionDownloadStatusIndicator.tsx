@@ -1,8 +1,9 @@
+import { getCollectionQueryKey } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 
 import { useProxySelector } from 'app/hooks/useProxySelector'
+import { queryClient } from 'app/services/query-client'
 import type { AppState } from 'app/store'
 import {
   getIsCollectionMarkedForDownload,
@@ -13,8 +14,6 @@ import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import type { DownloadStatusIndicatorProps } from './DownloadStatusIndicator'
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
 
-const { getCollection } = cacheCollectionsSelectors
-
 type CollectionDownloadIndicatorProps =
   Partial<DownloadStatusIndicatorProps> & {
     collectionId?: number
@@ -24,7 +23,9 @@ export const getCollectionDownloadStatus = (
   state: AppState,
   collectionId?: ID
 ): OfflineDownloadStatus | null => {
-  const collection = getCollection(state, { id: collectionId })
+  const collection = queryClient.getQueryData(
+    getCollectionQueryKey(collectionId)
+  )
   if (!collection) return OfflineDownloadStatus.INACTIVE
 
   const isMarkedForDownload =
