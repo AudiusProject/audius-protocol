@@ -125,6 +125,11 @@ type OwnProps = {
   smartCollection?: SmartCollection
 }
 
+type CollectionPageProps = OwnProps &
+  ReturnType<ReturnType<typeof makeMapStateToProps>> &
+  ReturnType<typeof mapDispatchToProps> &
+  RouteComponentProps
+
 type CollectionClassProps = CollectionPageProps & {
   collection: Collection
   currentTrack: Track | null
@@ -135,11 +140,6 @@ type CollectionClassProps = CollectionPageProps & {
   trackCount: number
   playlistId: number
 }
-
-type CollectionPageProps = OwnProps &
-  ReturnType<ReturnType<typeof makeMapStateToProps>> &
-  ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
 
 type CollectionPageState = {
   filterText: string
@@ -163,7 +163,7 @@ const CollectionPage = (props: CollectionPageProps) => {
   const currentTrack = useCurrentTrack()
   const tracks = useLineupTable(getCollectionTracksLineup)
 
-  if (!collection) return
+  if (!collection) return null
 
   return (
     <CollectionPageClassComponent
