@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { getReactionFromRawValue } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
-  getReactionFromRawValue,
   ReactionNotification
 } from '@audius/common/store'
 

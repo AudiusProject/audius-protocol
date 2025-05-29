@@ -58,7 +58,6 @@ import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
-import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
@@ -112,7 +111,6 @@ export default function* rootSaga() {
     historySagas(),
     passwordResetSagas(),
     profileSagas(),
-    reactionSagas(),
     rewardsPageSagas(),
     savedSagas(),
     settingsSagas(),
