@@ -1,17 +1,15 @@
 import { useMemo } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import { PlaylistLibraryID } from '@audius/common/models'
 import {
-  cacheCollectionsSelectors,
   playerSelectors,
   queueSelectors,
-  QueueSource,
-  CommonState
+  QueueSource
 } from '@audius/common/store'
 import { Uid } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-const { getCollection } = cacheCollectionsSelectors
 const { getTrackId, getPlaying } = playerSelectors
 const { getSource, getUid } = queueSelectors
 
@@ -27,16 +25,19 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
   const queueSource = useSelector(getSource)
   const currentUid = useSelector(getUid)
 
-  const collection = useSelector((state: CommonState) =>
-    getCollection(state, { id: typeof id === 'string' ? null : id })
+  const { data: collectionTracks } = useCollection(
+    typeof id === 'string' ? null : id,
+    {
+      select: (collection) => collection?.playlist_contents.track_ids,
+      // ensure read only so we dont fetch all collections in left-nav
+      enabled: false
+    }
   )
 
   return useMemo(() => {
-    const hasTracks = collection?.playlist_contents?.track_ids
+    if (!collectionTracks || !currentTrackId || !isPlaying) return false
 
-    if (!hasTracks || !currentTrackId || !isPlaying) return false
-
-    const hasTrack = collection.playlist_contents.track_ids.some(
+    const hasTrack = collectionTracks.some(
       (trackItem) => trackItem.track === currentTrackId
     )
 
@@ -46,5 +47,5 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
       Uid.fromString(currentUid).source === `collection:${id}`
 
     return hasTrack && isSource
-  }, [collection, currentTrackId, isPlaying, currentUid, queueSource, id])
+  }, [collectionTracks, currentTrackId, isPlaying, currentUid, queueSource, id])
 }

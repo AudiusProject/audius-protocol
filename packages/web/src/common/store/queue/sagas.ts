@@ -1,4 +1,9 @@
-import { queryTrack, queryTrackByUid, queryUser } from '@audius/common/api'
+import {
+  queryCollection,
+  queryTrack,
+  queryTrackByUid,
+  queryUser
+} from '@audius/common/api'
 import {
   Kind,
   ID,
@@ -13,7 +18,6 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheCollectionsSelectors,
   cacheActions,
   lineupRegistry,
   queueActions,
@@ -59,7 +63,6 @@ const {
 } = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous } = queueActions
-const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -75,7 +78,7 @@ export function* getToQueue(
   entry: LineupEntry<Track | Collection>
 ) {
   if (entry.kind === Kind.COLLECTIONS) {
-    const collection = yield* select(getCollection, { uid: entry.uid })
+    const collection = yield* call(queryCollection, entry.id)
     if (!collection) return
 
     const {
