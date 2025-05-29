@@ -106,6 +106,15 @@
   "dependencies": {
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@babel/core": "7.23.7",
+    "@babel/compat-data": "7.27.1",
+    "@babel/generator": "7.27.1",
+    "@babel/helper-compilation-targets": "7.27.1",
+    "@babel/helper-module-transforms": "7.27.1",
+    "@babel/helpers": "7.27.1",
+    "@babel/parser": "7.27.1",
+    "@babel/template": "7.27.1",
+    "@babel/traverse": "7.27.1",
+    "@babel/types": "7.27.1",
     "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",
@@ -118,6 +127,9 @@
     "react-native-google-cast": "4.6.2",
     "elliptic": "6.6.1",
     "valtio": "1.13.2"
+  },
+  "resolutions": {
+    "@babel/core": "7.25.2"
   },
   "overrides": {
     "@types/prop-types": "15.7.5",

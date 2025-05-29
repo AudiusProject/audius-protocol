@@ -3,6 +3,7 @@ import {
   useRemixContest,
   useRemixersCount,
   useRemixes,
+  useRemixesLineup,
   useTrackByParams
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -72,7 +73,7 @@ export const TrackRemixesScreen = () => {
   const trackId = track?.track_id
   const { data: count } = useRemixersCount({ trackId })
   const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
-    useRemixes({
+    useRemixesLineup({
       trackId: track?.track_id,
       includeOriginal: true,
       includeWinners: isRemixContestWinnersMilestoneEnabled
@@ -82,8 +83,16 @@ export const TrackRemixesScreen = () => {
   const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
   const isTrackOwner = currentUserId === track?.owner_id
+  const { data: remixes } = useRemixes({
+    trackId: track?.track_id,
+    isContestEntry: true
+  })
+  const remixCount = remixes?.pages[0]?.count ?? 0
   const showPickWinnersButton =
-    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+    isRemixContestWinnersMilestoneEnabled &&
+    isTrackOwner &&
+    isRemixContestEnded &&
+    remixCount > 0
   const winnerCount = contest?.eventData?.winners?.length ?? 0
 
   const styles = useStyles()

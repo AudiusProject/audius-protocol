@@ -25,8 +25,14 @@ export const useCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
+  const uniqueCollectionIds = useMemo(
+    () =>
+      collectionIds?.filter((id, index, self) => self.indexOf(id) === index),
+    [collectionIds]
+  )
+
   const queriesResults = useQueries({
-    queries: collectionIds?.map((collectionId) => ({
+    queries: uniqueCollectionIds?.map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {
         const sdk = await audiusSdk()

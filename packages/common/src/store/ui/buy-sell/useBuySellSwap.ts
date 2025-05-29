@@ -1,14 +1,9 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { SLIPPAGE_BPS, useSwapTokens } from '@audius/common/api'
-import { buySellMessages as messages } from '@audius/common/messages'
-import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/buy-audio/constants'
+import { SLIPPAGE_BPS, useSwapTokens } from '../../../api'
+import { TOKEN_LISTING_MAP } from '../buy-audio/constants'
 
-import { ToastContext } from 'components/toast/ToastContext'
-
-import type { BuySellTab, Screen } from '../types'
-
-import type { TransactionData } from './useBuySellTransactionData'
+import type { BuySellTab, Screen, SwapResult, TransactionData } from './types'
 
 type UseBuySellSwapProps = {
   transactionData: TransactionData
@@ -18,14 +13,8 @@ type UseBuySellSwapProps = {
   onClose: () => void
 }
 
-export type SwapResult = {
-  inputAmount: number
-  outputAmount: number
-}
-
 export const useBuySellSwap = (props: UseBuySellSwapProps) => {
   const { transactionData, currentScreen, setCurrentScreen, activeTab } = props
-  const { toast } = useContext(ToastContext)
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null)
 
   const {
@@ -74,7 +63,6 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
 
   useEffect(() => {
     if (swapStatus === 'success' && swapData) {
-      // Store the swap result when transaction is successful
       setSwapResult({
         inputAmount:
           swapData.inputAmount?.uiAmount ?? (transactionData?.inputAmount || 0),
@@ -85,16 +73,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       setCurrentScreen('success')
     } else if (swapStatus === 'error') {
       setCurrentScreen('input')
-      toast(swapError?.message || messages.transactionFailed, 5000)
     }
-  }, [
-    swapStatus,
-    swapError,
-    swapData,
-    toast,
-    setCurrentScreen,
-    transactionData
-  ])
+  }, [swapStatus, swapError, swapData, setCurrentScreen, transactionData])
 
   const isContinueButtonLoading =
     swapStatus === 'pending' && currentScreen === 'input'

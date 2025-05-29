@@ -74,7 +74,7 @@ export const RemixContestCard = forwardRef(
         <Flex direction='column' p='s' gap='s'>
           <TrackArtwork
             trackId={track.track_id}
-            size={SquareSizes.SIZE_150_BY_150}
+            size={SquareSizes.SIZE_480_BY_480}
             mr='xs'
             css={{ minHeight: 24, minWidth: 24 }}
           />
@@ -92,7 +92,9 @@ export const RemixContestCard = forwardRef(
           </CardContent>
         </Flex>
         <CardFooter>
-          <Text>{messages.deadline(remixContest?.endDate)} </Text>
+          <Text strength='strong' size='s' color='subdued'>
+            {messages.deadline(remixContest?.endDate)}
+          </Text>
         </CardFooter>
       </Card>
     )

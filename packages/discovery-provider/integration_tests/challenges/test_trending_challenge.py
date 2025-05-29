@@ -299,11 +299,21 @@ def test_trending_challenge_job(app):
             TrendingType.TRACKS
         ).keys()
 
+        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.PLAYLISTS
+        ).keys()
+
         for version in trending_track_versions:
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
             strategy.update_track_score_query(session)
+
+        for version in trending_playlist_versions:
+            strategy = trending_strategy_factory.get_strategy(
+                TrendingType.PLAYLISTS, version
+            )
+            strategy.update_playlist_score_query(session)
 
         session.commit()
         core = MockCore()

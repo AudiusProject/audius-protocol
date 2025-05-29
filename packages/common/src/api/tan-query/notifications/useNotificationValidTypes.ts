@@ -23,6 +23,7 @@ export const useNotificationValidTypes = () => {
     ValidTypes.FanRemixContestStarted,
     ValidTypes.FanRemixContestEnded,
     ValidTypes.FanRemixContestEndingSoon,
-    ValidTypes.ArtistRemixContestSubmissions
+    ValidTypes.ArtistRemixContestSubmissions,
+    ValidTypes.FanRemixContestWinnersSelected
   ]
 }

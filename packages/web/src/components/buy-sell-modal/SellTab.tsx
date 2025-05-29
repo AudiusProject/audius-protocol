@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
-import { useTotalBalanceWithFallback } from '@audius/common/src/hooks/useAudioBalance'
-import { isNullOrUndefined } from '@audius/common/src/utils'
+import { useAudioBalance } from '@audius/common/api'
+import { TokenPair } from '@audius/common/store'
+import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
-import { TokenPair } from './types'
 
 type SellTabProps = {
   tokenPair: TokenPair
@@ -16,29 +16,32 @@ type SellTabProps = {
   }) => void
   error?: boolean
   errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
 export const SellTab = ({
   tokenPair,
   onTransactionDataChange,
   error,
-  errorMessage
+  errorMessage,
+  initialInputValue,
+  onInputValueChange
 }: SellTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
-  // Fetch real AUDIO balance using Redux (more reliable than tan-query in this context)
-  const totalBalance = useTotalBalanceWithFallback()
-  const isBalanceLoading = isNullOrUndefined(totalBalance)
+  const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
+  const isBalanceLoading = isNullOrUndefined(accountBalance)
 
   // Get AUDIO balance in UI format
   const getAudioBalance = useMemo(() => {
     return () => {
-      if (!isBalanceLoading && totalBalance) {
-        return parseFloat(AUDIO(totalBalance).toString())
+      if (!isBalanceLoading && accountBalance) {
+        return parseFloat(AUDIO(accountBalance).toString())
       }
       return undefined
     }
-  }, [totalBalance, isBalanceLoading])
+  }, [accountBalance, isBalanceLoading])
 
   return (
     <SwapTab
@@ -53,6 +56,9 @@ export const SellTab = ({
       isDefault={false}
       error={error}
       errorMessage={errorMessage}
+      tooltipPlacement='right'
+      initialInputValue={initialInputValue}
+      onInputValueChange={onInputValueChange}
     />
   )
 }

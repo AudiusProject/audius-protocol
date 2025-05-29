@@ -20,6 +20,7 @@ from src.queries.get_notifications import (
     FanRemixContestEndedNotification,
     FanRemixContestEndingSoonNotification,
     FanRemixContestStartedNotification,
+    FanRemixContestWinnersSelectedNotification,
     FollowerMilestoneNotification,
     FollowNotification,
     ListenStreakReminderNotification,
@@ -816,6 +817,23 @@ def extend_fan_remix_contest_ending_soon(action: NotificationAction):
     }
 
 
+def extend_fan_remix_contest_winners_selected(action: NotificationAction):
+    data: FanRemixContestWinnersSelectedNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": (
+            datetime.timestamp(action["timestamp"])
+            if action["timestamp"]
+            else action["timestamp"]
+        ),
+        "data": {
+            "entity_user_id": encode_int_id(data["entity_user_id"]),
+            "entity_id": encode_int_id(data["entity_id"]),
+        },
+    }
+
+
 def extend_artist_remix_contest_ended(action: NotificationAction):
     data: ArtistRemixContestEndedNotification = action["data"]  # type: ignore
     return {
@@ -905,6 +923,7 @@ notification_action_handler = {
     "fan_remix_contest_started": extend_fan_remix_contest_started,
     "fan_remix_contest_ended": extend_fan_remix_contest_ended,
     "fan_remix_contest_ending_soon": extend_fan_remix_contest_ending_soon,
+    "fan_remix_contest_winners_selected": extend_fan_remix_contest_winners_selected,
     "artist_remix_contest_ended": extend_artist_remix_contest_ended,
     "artist_remix_contest_ending_soon": extend_artist_remix_contest_ending_soon,
     "artist_remix_contest_submissions": extend_artist_remix_contest_submissions,
