@@ -136,9 +136,6 @@ export const reducers = (storage: Storage, history?: History) => ({
 
   // Cache
   // @ts-ignore
-  // collections: asCache(collectionsReducer, Kind.COLLECTIONS),
-  // TODO: Fix type error
-  // @ts-ignore
   users: asCache(usersReducer, Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
@@ -255,7 +252,6 @@ export type CommonState = {
   // confirmer: ConfirmerState
 
   // Cache
-  // collections: CollectionsCacheState
   users: UsersCacheState
 
   // TODO: missing types for internally managed api slice state

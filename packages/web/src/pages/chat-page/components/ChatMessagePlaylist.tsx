@@ -7,16 +7,8 @@ import {
   useUsers
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
+import { Name, Kind, Status, ID, ModalSource } from '@audius/common/models'
 import {
-  Name,
-  SquareSizes,
-  Kind,
-  Status,
-  ID,
-  ModalSource
-} from '@audius/common/models'
-import {
-  cacheCollectionsActions,
   QueueSource,
   playerSelectors,
   ChatMessageTileProps
@@ -28,7 +20,6 @@ import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
 const { getTrackId } = playerSelectors
-const { fetchCoverArt } = cacheCollectionsActions
 
 export const ChatMessagePlaylist = ({
   link,
@@ -44,12 +35,6 @@ export const ChatMessagePlaylist = ({
 
   const collectionId = playlist?.playlist_id
   const { data: collection } = useCollection(collectionId)
-
-  useEffect(() => {
-    if (collectionId) {
-      dispatch(fetchCoverArt(collectionId, SquareSizes.SIZE_150_BY_150))
-    }
-  }, [collectionId, dispatch])
 
   const uid = useMemo(() => {
     return collectionId ? makeUid(Kind.COLLECTIONS, collectionId) : null
