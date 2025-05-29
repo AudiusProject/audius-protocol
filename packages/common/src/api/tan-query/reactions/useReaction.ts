@@ -20,7 +20,6 @@ export const useReaction = <TResult = Reaction>(
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
-  const validEntityId = !!entityId
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(() => options?.select, [])
@@ -39,7 +38,7 @@ export const useReaction = <TResult = Reaction>(
     },
     ...options,
     select,
-    enabled: options?.enabled !== false && validEntityId,
+    enabled: options?.enabled !== false && !!entityId,
     // Disable refetching since reactions are only updated through mutations
     refetchOnWindowFocus: false,
     refetchOnMount: false,
