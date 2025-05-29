@@ -1,5 +1,6 @@
 import { PureComponent } from 'react'
 
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Name, TimeRange } from '@audius/common/models'
 import {
   accountSelectors,
@@ -22,9 +23,9 @@ import { push as pushRoute, replace as replaceRoute } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 const { TRENDING_GENRES } = route
-const { makeGetCurrent } = queueSelectors
+const { getSource } = queueSelectors
 
-const { getBuffering, getPlaying } = playerSelectors
+const { getBuffering, getPlaying, getUid } = playerSelectors
 const {
   getDiscoverTrendingAllTimeLineup,
   getDiscoverTrendingMonthLineup,
@@ -124,13 +125,18 @@ class TrendingPageProvider extends PureComponent {
   }
 
   getLineupProps = (lineup) => {
-    const { currentQueueItem, playing, buffering } = this.props
-    const { uid: playingUid, track, source } = currentQueueItem
+    const {
+      playing,
+      buffering,
+      uid: playingUid,
+      source,
+      currentTrack
+    } = this.props
     return {
       lineup,
       playingUid,
       playingSource: source,
-      playingTrackId: track ? track.track_id : null,
+      playingTrackId: currentTrack ? currentTrack.track_id : null,
       playing,
       buffering,
       scrollParent: this.props.containerRef,
@@ -217,7 +223,6 @@ class TrendingPageProvider extends PureComponent {
 }
 
 const makeMapStateToProps = () => {
-  const getCurrentQueueItem = makeGetCurrent()
   const getTrendingWeekLineup = makeGetLineupMetadatas(
     getDiscoverTrendingWeekLineup
   )
@@ -233,7 +238,8 @@ const makeMapStateToProps = () => {
     trendingWeek: getTrendingWeekLineup(state),
     trendingMonth: getTrendingMonthLineup(state),
     trendingAllTime: getTrendingAllTimeLineup(state),
-    currentQueueItem: getCurrentQueueItem(state),
+    uid: getUid(state),
+    source: getSource(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
     trendingTimeRange: getTrendingTimeRange(state),
@@ -305,7 +311,14 @@ const mapDispatchToProps = (dispatch) => ({
 
 const TrendingPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
-  return <TrendingPageProvider isMobile={isMobile} {...props} />
+  const currentTrack = useCurrentTrack()
+  return (
+    <TrendingPageProvider
+      isMobile={isMobile}
+      currentTrack={currentTrack}
+      {...props}
+    />
+  )
 }
 
 export default withRouter(

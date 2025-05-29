@@ -1,12 +1,12 @@
 import { Component } from 'react'
 
-import { useTracks } from '@audius/common/api'
+import { useTracks, useUser } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Name, RepostSource, PlaybackSource, Kind } from '@audius/common/models'
 import {
   accountSelectors,
   lineupSelectors,
   queueActions,
-  queueSelectors,
   RepeatMode,
   tracksSocialActions,
   themeSelectors,
@@ -38,13 +38,12 @@ import styles from './PlayBar.module.css'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
 import { SocialActions } from './components/SocialActions'
 const { profilePage } = route
-const { makeGetCurrent } = queueSelectors
 const {
   getCollectible,
   getSeek,
   getPlaying,
   getCounter,
-  getUid: getPlayingUid,
+  getUid,
   getBuffering,
   getPlaybackRate
 } = playerSelectors
@@ -64,6 +63,8 @@ const SKIP_DURATION_SEC = 15
 const PlayBar = (props) => {
   const { trackIds } = props
   const { data: tracks } = useTracks(trackIds)
+  const currentTrack = useCurrentTrack()
+  const { data: currentUser } = useUser(currentTrack?.owner_id)
 
   const lineupHasAccessibleTracks = tracks?.some((track) => {
     const { access, is_stream_gated: isStreamGated } = track ?? {}
@@ -73,6 +74,8 @@ const PlayBar = (props) => {
   return (
     <PlayBarClassComponent
       {...props}
+      track={currentTrack}
+      user={currentUser}
       lineupHasAccessibleTracks={lineupHasAccessibleTracks}
     />
   )
@@ -146,11 +149,7 @@ class PlayBarClassComponent extends Component {
   }
 
   goToTrackPage = () => {
-    const {
-      currentQueueItem: { track, user },
-      collectible,
-      goToRoute
-    } = this.props
+    const { track, user, collectible, goToRoute } = this.props
 
     if (track && user) {
       goToRoute(track.permalink)
@@ -160,10 +159,7 @@ class PlayBarClassComponent extends Component {
   }
 
   goToArtistPage = () => {
-    const {
-      currentQueueItem: { user },
-      goToRoute
-    } = this.props
+    const { user, goToRoute } = this.props
 
     if (user) {
       goToRoute(profilePage(user.handle))
@@ -171,13 +167,7 @@ class PlayBarClassComponent extends Component {
   }
 
   togglePlay = () => {
-    const {
-      currentQueueItem: { track },
-      isPlaying,
-      play,
-      pause,
-      record
-    } = this.props
+    const { track, isPlaying, play, pause, record } = this.props
 
     if (audioPlayer && isPlaying) {
       pause()
@@ -239,12 +229,7 @@ class PlayBarClassComponent extends Component {
   }
 
   onPrevious = () => {
-    const {
-      seek,
-      previous,
-      reset,
-      currentQueueItem: { track }
-    } = this.props
+    const { seek, previous, reset, track } = this.props
     const isLongFormContent =
       track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
     if (isLongFormContent) {
@@ -266,11 +251,7 @@ class PlayBarClassComponent extends Component {
   }
 
   onNext = () => {
-    const {
-      seek,
-      next,
-      currentQueueItem: { track }
-    } = this.props
+    const { seek, next, track } = this.props
     const isLongFormContent =
       track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
     if (isLongFormContent) {
@@ -287,13 +268,15 @@ class PlayBarClassComponent extends Component {
   }
 
   playable = () =>
-    !!this.props.currentQueueItem.uid ||
+    !!this.props.uid ||
     this.props.lineupHasAccessibleTracks ||
     this.props.collectible
 
   render() {
     const {
-      currentQueueItem: { uid, track, user },
+      uid,
+      user,
+      track,
       collectible,
       isPlaying,
       isBuffering,
@@ -457,8 +440,6 @@ class PlayBarClassComponent extends Component {
 }
 
 const makeMapStateToProps = () => {
-  const getCurrentQueueItem = makeGetCurrent()
-
   const mapStateToProps = (state) => {
     const location = getLocation(state)
     const lineupEntries =
@@ -476,12 +457,11 @@ const makeMapStateToProps = () => {
     return {
       seek: getSeek(state),
       accountUserId: getUserId(state),
-      currentQueueItem: getCurrentQueueItem(state),
       playCounter: getCounter(state),
       collectible: getCollectible(state),
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state),
-      playingUid: getPlayingUid(state),
+      uid: getUid(state),
       playbackRate: getPlaybackRate(state),
       trackIds: lineupEntries
         .filter((entry) => entry.kind === Kind.TRACKS)
