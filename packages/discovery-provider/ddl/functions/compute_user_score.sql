@@ -19,7 +19,7 @@ create or replace function compute_user_score(
         distinct_tracks_played bigint,
         karma bigint
     ) returns bigint as $$
-select (play_count / 7) + follower_count - challenge_count - (chat_block_count * 100) + karma + case
+select (play_count / 2) + follower_count - challenge_count - (chat_block_count * 100) + karma + case
         when following_count < 5 then -1
         else 0
     end + case
