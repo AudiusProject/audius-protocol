@@ -16,6 +16,11 @@ export const useCashWalletStyles = makeResponsiveStyles<Styles>(
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing.m
+      },
+      mobile: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: theme.spacing.m
       }
     },
 
@@ -35,7 +40,7 @@ export const useCashWalletStyles = makeResponsiveStyles<Styles>(
 
     // Transaction history link
     transactionLink: {
-      tablet: {
+      mobile: {
         alignSelf: 'flex-start'
       }
     },

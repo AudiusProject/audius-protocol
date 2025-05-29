@@ -12,6 +12,7 @@ import {
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
+import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
 
@@ -213,9 +214,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
           {hasSufficientBalance ? (
             <Hint>
               {messages.helpCenter}{' '}
-              <TextLink variant='visible' href={WALLET_GUIDE_URL}>
+              <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
                 {messages.walletGuide}
-              </TextLink>
+              </ExternalTextLink>
             </Hint>
           ) : null}
 
