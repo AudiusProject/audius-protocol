@@ -2,7 +2,12 @@ import {
   fileToSdk,
   playlistMetadataForUpdateWithSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryTracks } from '@audius/common/api'
+import {
+  queryCollection,
+  queryTrack,
+  queryTracks,
+  updateCollectionData
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -197,14 +202,7 @@ function* confirmAddTrackToPlaylist(
 
         if (!confirmedPlaylist) return
 
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: { ...confirmedPlaylist, artwork: {} }
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
       },
       function* ({ error, timeout, message }) {
         // Fail Call

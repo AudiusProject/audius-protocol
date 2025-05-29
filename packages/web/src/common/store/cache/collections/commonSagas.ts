@@ -8,7 +8,8 @@ import {
   queryCollection,
   queryCollectionTracks,
   queryTrack,
-  queryUser
+  queryUser,
+  updateCollectionData
 } from '@audius/common/api'
 import {
   Name,
@@ -24,7 +25,6 @@ import {
   cacheCollectionsActions as collectionActions,
   cacheActions,
   PlaylistOperations,
-  reformatCollection,
   savedPageActions,
   LibraryCategory,
   toastActions,
@@ -215,18 +215,7 @@ function* confirmEditPlaylist(
         return playlist?.[0] ? userCollectionMetadataFromSDK(playlist[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: {
-                ...reformatCollection({
-                  collection: confirmedPlaylist
-                })
-              }
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
       },
       function* ({ error, timeout, message }) {
         yield* put(
@@ -342,14 +331,7 @@ function* confirmRemoveTrackFromPlaylist(
           confirmedPlaylistId
         )
         if (!confirmedPlaylist) return
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: confirmedPlaylist
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
         yield* put(manualClearToast({ key: `remove-track-${trackId}` }))
         yield* put(
           toast({
@@ -448,14 +430,9 @@ function* publishPlaylistAsync(
   const playlist = yield* queryCollection(action.playlistId)
   if (!playlist) return
   playlist._is_publishing = true
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: playlist.playlist_id,
-        metadata: { _is_publishing: true }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    { playlist_id: playlist.playlist_id, _is_publishing: true }
+  ])
 
   yield* call(
     confirmPublishPlaylist,
@@ -500,14 +477,7 @@ function* confirmPublishPlaylist(
       function* (confirmedPlaylist: Collection) {
         confirmedPlaylist.is_private = false
         confirmedPlaylist._is_publishing = false
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: confirmedPlaylist
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
 
         const playlistTracks = yield* call(queryCollectionTracks, playlistId)
         // Publish all hidden tracks
@@ -589,14 +559,9 @@ function* deletePlaylistAsync(
     // for this playlist, which prevent the delete confirmation
     // from running immediately, which would leave
     // the playlist visible before it runs.
-    yield* put(
-      cacheActions.update(Kind.COLLECTIONS, [
-        {
-          id: action.playlistId,
-          metadata: { _marked_deleted: true }
-        }
-      ])
-    )
+    yield* call(updateCollectionData, [
+      { playlist_id: action.playlistId, _marked_deleted: true }
+    ])
     yield* call(confirmDeletePlaylist, userId, action.playlistId)
   }
 
@@ -621,11 +586,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
-
-      // we don't have to worry about passing in a confirmed ID
-      // here because unlike deleting a playlist, when
-      // deleting an album we know it's persisted to chain already
-      // thus we have it's permanent ID.
       function* () {
         const userId = yield* select(getUserId)
         if (!userId) {
@@ -634,14 +594,9 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
 
         // Optimistically mark everything as deleted
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: true }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: true }
+          ]),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
@@ -671,14 +626,9 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
         if (!playlist || !user) return
 
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: false }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: false }
+          ]),
           put(
             accountActions.addAccountPlaylist({
               id: playlist.playlist_id,
@@ -721,14 +671,9 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
 
         // Optimistically mark playlist as removed
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: true }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: true }
+          ]),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
@@ -759,14 +704,9 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
         if (!playlist || !user) return
 
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: false }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: false }
+          ]),
           put(
             accountActions.addAccountPlaylist({
               id: playlist.playlist_id,

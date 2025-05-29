@@ -1,7 +1,8 @@
 import {
   queryCollection,
   queryUser,
-  queryUserByHandle
+  queryUserByHandle,
+  updateCollectionData
 } from '@audius/common/api'
 import {
   Name,
@@ -114,17 +115,13 @@ export function* repostCollectionAsync(
     repostMetadata
   )
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_reposted: true,
-          repost_count: collection.repost_count + 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_reposted: true,
+      repost_count: collection.repost_count + 1
+    }
+  ])
 }
 
 export function* confirmRepostCollection(
@@ -223,17 +220,13 @@ export function* undoRepostCollectionAsync(
     user
   )
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_reposted: false,
-          repost_count: collection.repost_count - 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_reposted: false,
+      repost_count: collection.repost_count - 1
+    }
+  ])
 }
 
 export function* confirmUndoRepostCollection(
@@ -406,17 +399,13 @@ export function* saveCollectionAsync(
     })
   )
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_saved: true,
-          save_count: collection.save_count + 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_saved: true,
+      save_count: collection.save_count + 1
+    }
+  ])
   yield* put(socialActions.saveCollectionSucceeded(action.collectionId))
 }
 
@@ -533,17 +522,13 @@ export function* unsaveCollectionAsync(
   )
 
   yield* call(removePlaylistFromLibrary, action.collectionId)
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_saved: false,
-          save_count: collection.save_count - 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_saved: false,
+      save_count: collection.save_count - 1
+    }
+  ])
   yield* put(socialActions.unsaveCollectionSucceeded(action.collectionId))
 }
 

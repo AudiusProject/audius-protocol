@@ -10,21 +10,21 @@ import {
   queryCollection,
   queryTrack,
   queryAllTracks,
-  updateTrackData
+  updateTrackData,
+  updateCollectionData
 } from '~/api'
 import {
   ID,
-  Kind,
   Name,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
   GatedContentStatus,
-  UserTrackMetadata
+  UserTrackMetadata,
+  UserCollectionMetadata
 } from '~/models'
 import { IntKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
-import { cacheActions } from '~/store/cache'
 import { getContext } from '~/store/effects'
 import { musicConfettiActions } from '~/store/music-confetti'
 import { usersSocialActions } from '~/store/social'
@@ -115,14 +115,7 @@ export function* pollGatedContent({
     // Update the cache with the new metadata so that the UI
     // can update and the content can be streamed or downloaded properly.
     if (isAlbum) {
-      yield* put(
-        cacheActions.update(Kind.COLLECTIONS, [
-          {
-            id: contentId,
-            metadata: apiEntity
-          }
-        ])
-      )
+      yield* call(updateCollectionData, [apiEntity as UserCollectionMetadata])
     } else {
       yield* call(updateTrackData, [apiEntity as UserTrackMetadata])
     }
