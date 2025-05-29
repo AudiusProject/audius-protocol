@@ -105,7 +105,6 @@ export async function getRecentClaims(page: number) {
     select challenge_disbursements.created_at as disbursement_date, handle_lc as handle, users.wallet as wallet, users.user_id, users.created_at as sign_up_date, challenge_disbursements.challenge_id, ROUND(CAST(challenge_disbursements.amount AS numeric) / 100000000, 0) as amount
     from challenge_disbursements
     join users on users.user_id = challenge_disbursements.user_id
-    where challenge_id = 'p3'
     order by challenge_disbursements.created_at desc 
     limit 10 offset ${page * 10}
   `
