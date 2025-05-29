@@ -68,7 +68,7 @@ class RemixContestWinnerChallengeUpdater(ChallengeUpdater):
         existing_winner_challenge = (
             session.query(UserChallenge)
             .filter(
-                UserChallenge.challenge_id == "rc",
+                UserChallenge.challenge_id == "w",
                 UserChallenge.specifier == f"{hex(contest_id)[2:]}:{hex(user_id)[2:]}",
             )
             .first()
@@ -85,7 +85,7 @@ class RemixContestWinnerChallengeUpdater(ChallengeUpdater):
         existing_contest_winners = (
             session.query(UserChallenge)
             .filter(
-                UserChallenge.challenge_id == "rc",
+                UserChallenge.challenge_id == "w",
                 UserChallenge.specifier.like(f"{contest_prefix}%"),
             )
             .count()
@@ -107,7 +107,7 @@ class RemixContestWinnerChallengeUpdater(ChallengeUpdater):
         weekly_challenges = (
             session.query(UserChallenge)
             .filter(
-                UserChallenge.challenge_id == "rc",
+                UserChallenge.challenge_id == "w",
                 UserChallenge.created_at >= one_week_ago,
             )
             .all()

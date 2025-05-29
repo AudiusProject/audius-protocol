@@ -102,7 +102,7 @@ def setup_challenges(session):
     session.flush()
 
     # Activate the remix contest winner challenge
-    session.query(Challenge).filter(Challenge.id == "rc").update(
+    session.query(Challenge).filter(Challenge.id == "w").update(
         {"active": True, "starting_block": BLOCK_NUMBER}
     )
 
