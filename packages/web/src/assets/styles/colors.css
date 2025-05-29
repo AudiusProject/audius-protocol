@@ -29,7 +29,6 @@
     var(--harmony-red) 100%
   );
   --play-button-triangle: var(--harmony-white);
-  --action-sheet-text: var(--harmony-secondary);
   --track-slider-rail: var(--harmony-neutral);
   --track-slider-handle: var(--harmony-white);
 }
@@ -157,7 +156,6 @@ html[data-theme='dark-v2'] {
   --page-header-text-shadow: 0px 2px 4px var(--page-header-text-shadow-color);
   --next-and-previous-buttons: var(--harmony-neutral);
   --play-button-triangle: var(--harmony-white);
-  --action-sheet-text: var(--harmony-secondary);
   --track-slider-rail: var(--harmony-neutral);
   --track-slider-handle: var(--harmony-white);
 }
@@ -218,7 +216,6 @@ html[data-theme='matrix-v2'] {
   --next-and-previous-buttons: var(--harmony-n-400);
   --secondary-gradient: linear-gradient(0deg, #2f8b27 0%, #00ff29 95.45%);
   --play-button-triangle: var(--harmony-white);
-  --action-sheet-text: var(--harmony-neutral);
   --track-slider-rail: linear-gradient(
     294.99deg,
     #4ff069 -8.52%,
