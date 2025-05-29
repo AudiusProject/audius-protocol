@@ -90,7 +90,7 @@ export const useConnectAndAssociateWallets = (
   const { open } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
   const { data: currentAccount } = useCurrentAccount()
-  const currentUser = currentAccount!.user
+  const currentUser = currentAccount?.user
   const { data: connectedWallets } = useConnectedWallets()
   const { switchAccountAsync } = useSwitchAccount()
   const { disconnect } = useDisconnect()
@@ -154,7 +154,7 @@ export const useConnectAndAssociateWallets = (
         await switchAccountAsync({ connector })
       }
     }
-  }, [currentUser.wallet, switchAccountAsync])
+  }, [currentUser?.wallet, switchAccountAsync])
 
   /**
    * Associates any Reown connected wallets to the user's account.
@@ -219,7 +219,7 @@ export const useConnectAndAssociateWallets = (
           })
         )
         const signature = await signMessageAgnostic(
-          `AudiusUserID:${currentUser.user_id}`,
+          `AudiusUserID:${currentUser?.user_id}`,
           address,
           namespace
         )
@@ -260,8 +260,8 @@ export const useConnectAndAssociateWallets = (
   }, [
     addConnectedWalletAsync,
     connectedWallets,
-    currentUser.user_id,
-    currentUser.wallet,
+    currentUser?.user_id,
+    currentUser?.wallet,
     make,
     onError,
     onSuccess,
