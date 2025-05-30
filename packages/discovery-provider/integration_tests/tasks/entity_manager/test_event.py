@@ -368,3 +368,81 @@ def test_create_duplicate_remix_contest_fails(app, mocker):
         # Verify the duplicate event with id 4 was not created
         duplicate_event = session.query(Event).filter_by(event_id=4).first()
         assert duplicate_event is None
+
+
+def test_create_remix_contest_after_previous_ended(app, mocker):
+    """Test that creating a remix contest succeeds when previous contest for same track has ended"""
+    block_datetime = datetime.now()
+
+    # Create test data with an ended remix contest
+    test_entities_with_ended_contest = {
+        "events": [
+            {
+                "event_id": 10,
+                "event_type": EventType.remix_contest,
+                "user_id": 1,
+                "entity_type": EventEntityType.track,
+                "entity_id": 1,
+                "end_date": block_datetime - timedelta(days=1),  # Ended yesterday
+                "is_deleted": False,
+                "created_at": datetime(2024, 1, 1),
+                "updated_at": datetime(2024, 1, 1),
+                "txhash": "0x123",
+                "blockhash": "0xabc",
+                "blocknumber": 1000,
+            },
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "title": "Track 1", "owner_id": 1},
+        ],
+    }
+
+    metadata = {
+        "event_type": EventType.remix_contest,
+        "entity_type": EventEntityType.track,
+        "entity_id": 1,  # Same entity_id as the ended contest
+        "end_date": (block_datetime + timedelta(days=7)).isoformat(),
+        "is_deleted": False,
+        "event_data": {
+            "title": "New Remix Contest",
+            "description": "This should succeed since previous contest ended",
+        },
+    }
+
+    tx_receipts = {
+        "CreateNewRemixContest": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 11,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.CREATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(
+        app, mocker, test_entities_with_ended_contest, tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        # Verify the new event was created successfully
+        created_event = session.query(Event).filter_by(event_id=11).first()
+        assert created_event is not None
+        assert created_event.event_id == 11
+        assert created_event.user_id == 1
+        assert created_event.event_type == metadata["event_type"]
+        assert created_event.entity_type == metadata["entity_type"]
+        assert created_event.entity_id == metadata["entity_id"]
+        assert created_event.end_date.isoformat() == metadata["end_date"]
+        assert created_event.is_deleted == False

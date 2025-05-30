@@ -98,6 +98,7 @@ def validate_create_event_tx(params: ManageEntityParameters):
                 Event.entity_id == metadata["entity_id"],
                 Event.event_type == EventType.remix_contest,
                 Event.is_deleted == False,
+                Event.end_date > params.block_datetime,  # Only active contests
             )
             .first()
         )
