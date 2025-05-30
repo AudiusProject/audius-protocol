@@ -109,8 +109,6 @@ contract EthRewardsManagerV2 is InitializableV2 {
     audiusToken.approve(address(wormhole), balance);
 
     uint256 wormholeFee = wormhole.wormhole().messageFee();
-    require(msg.value >= wormholeFee, 'Insufficient value for wormhole fee');
-
     wormhole.transferTokens.value(wormholeFee)(
       address(audiusToken),
       balance,
