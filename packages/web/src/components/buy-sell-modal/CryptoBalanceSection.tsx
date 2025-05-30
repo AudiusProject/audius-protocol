@@ -1,7 +1,6 @@
+import { TokenInfo } from '@audius/common/store'
 import { Divider, Flex, Text } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
-
-import { TokenInfo } from './types'
 
 const messages = {
   symbol: (symbol: string) => `$${symbol}`

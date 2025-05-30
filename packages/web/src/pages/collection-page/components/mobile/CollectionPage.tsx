@@ -73,7 +73,6 @@ export type CollectionPageProps = {
     entries: CollectionTrack[]
   }
   userId?: ID | null
-  userPlaylists?: any
   isQueued: () => boolean
   onPlay: (record: any) => void
   onPreview: (record: any) => void
@@ -102,7 +101,6 @@ const CollectionPage = ({
   collection: { status, metadata, user },
   tracks,
   userId,
-  userPlaylists,
   isQueued,
   onPlay,
   onPreview,
@@ -152,8 +150,7 @@ const CollectionPage = ({
   const playlistOwnerId = user?.user_id ?? null
   const isOwner = userId === playlistOwnerId
 
-  const isSaved =
-    metadata?.has_current_user_saved || playlistId in (userPlaylists ?? {})
+  const isSaved = metadata?.has_current_user_saved
   const isPublishing =
     metadata && metadata?.variant !== Variant.SMART
       ? metadata._is_publishing

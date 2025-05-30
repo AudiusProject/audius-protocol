@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useNotificationEntity, useRemixes } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -44,6 +44,12 @@ export const ArtistRemixContestEndedNotification = (
   )
 
   const entity = useNotificationEntity(notification) as TrackEntity | null
+  const { data: remixes } = useRemixes({
+    trackId: entity?.track_id,
+    isContestEntry: true
+  })
+
+  const remixCount = remixes?.pages[0]?.count ?? 0
 
   const pickWinnersRoute = entity ? pickWinnersPage(entity?.permalink) : ''
 
@@ -66,9 +72,11 @@ export const ArtistRemixContestEndedNotification = (
             ? messages.pickWinnersDescription
             : messages.description}
         </NotificationBody>
-        {isRemixContestWinnersMilestoneEnabled && (
+        {isRemixContestWinnersMilestoneEnabled && remixCount > 0 && (
           <Button css={{ width: 'fit-content' }} size='small' asChild>
-            <Link to={pickWinnersRoute}>Pick Winners</Link>
+            <Link to={pickWinnersRoute} onClick={(e) => e.stopPropagation()}>
+              Pick Winners
+            </Link>
           </Button>
         )}
       </Flex>

@@ -12,6 +12,7 @@ type ProfilePageProps = {
 
 const ProfilePage = ({ containerRef }: ProfilePageProps) => {
   const isMobile = useIsMobile()
+
   const content = isMobile ? MobileProfilePage : DesktopProfilePage
 
   return (

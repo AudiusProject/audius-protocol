@@ -177,6 +177,7 @@ class NotificationType(str, Enum):
     FAN_REMIX_CONTEST_STARTED = "fan_remix_contest_started"
     FAN_REMIX_CONTEST_ENDED = "fan_remix_contest_ended"
     FAN_REMIX_CONTEST_ENDING_SOON = "fan_remix_contest_ending_soon"
+    FAN_REMIX_CONTEST_WINNERS_SELECTED = "fan_remix_contest_winners_selected"
     ARTIST_REMIX_CONTEST_ENDED = "artist_remix_contest_ended"
     ARTIST_REMIX_CONTEST_ENDING_SOON = "artist_remix_contest_ending_soon"
     ARTIST_REMIX_CONTEST_SUBMISSIONS = "artist_remix_contest_submissions"
@@ -503,6 +504,11 @@ class FanRemixContestEndingSoonNotification(TypedDict):
     entity_id: int
 
 
+class FanRemixContestWinnersSelectedNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
 class ArtistRemixContestEndedNotification(TypedDict):
     entity_id: int
 
@@ -553,6 +559,7 @@ NotificationData = Union[
     FanRemixContestStartedNotification,
     FanRemixContestEndedNotification,
     FanRemixContestEndingSoonNotification,
+    FanRemixContestWinnersSelectedNotification,
     ArtistRemixContestEndedNotification,
     ArtistRemixContestEndingSoonNotification,
     ArtistRemixContestSubmissionsNotification,

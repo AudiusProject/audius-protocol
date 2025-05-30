@@ -99,9 +99,9 @@ export const useSearchParams = () => {
       mood: (mood || undefined) as Mood,
       bpm: bpm || undefined,
       key: key || undefined,
-      isVerified: isVerified === 'true',
-      hasDownloads: hasDownloads === 'true',
-      isPremium: isPremium === 'true',
+      isVerified: isVerified === 'true' ? true : undefined,
+      hasDownloads: hasDownloads === 'true' ? true : undefined,
+      isPremium: isPremium === 'true' ? true : undefined,
       sortMethod: sortMethod || undefined
     }),
     [

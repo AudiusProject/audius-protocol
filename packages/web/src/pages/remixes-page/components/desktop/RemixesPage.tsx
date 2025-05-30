@@ -1,4 +1,4 @@
-import { useRemixes } from '@audius/common/api'
+import { useRemixesLineup } from '@audius/common/api'
 import { Track, User } from '@audius/common/models'
 import { remixesPageLineupActions } from '@audius/common/store'
 import { pluralize } from '@audius/common/utils'
@@ -49,7 +49,7 @@ const RemixesPage = g(({ title, count = 0, originalTrack, user }) => {
     isPlaying,
     lineup,
     pageSize
-  } = useRemixes({
+  } = useRemixesLineup({
     trackId: originalTrack?.track_id
   })
 

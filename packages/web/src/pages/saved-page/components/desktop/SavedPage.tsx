@@ -1,13 +1,16 @@
 import { useCallback } from 'react'
 
-import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useFavoriteTrack,
+  useUnfavoriteTrack
+} from '@audius/common/api'
 import {
   Kind,
   Status,
   ID,
   UID,
   Lineup,
-  User,
   FavoriteSource,
   Track
 } from '@audius/common/models'
@@ -17,7 +20,6 @@ import {
   SavedPageTabs,
   SavedPageTrack,
   TrackRecord,
-  SavedPageCollection,
   QueueItem,
   CommonState
 } from '@audius/common/store'
@@ -90,7 +92,6 @@ export type SavedPageProps = {
   filterText: string
   initialOrder: UID[] | null
   currentTab: SavedPageTabs
-  account: (User & { albums: SavedPageCollection[] }) | undefined
   tracks: Lineup<SavedPageTrack>
   currentQueueItem: QueueItem
   playing: boolean
@@ -110,7 +111,6 @@ export type SavedPageProps = {
 const SavedPage = ({
   title,
   description,
-  account,
   tracks: { status, entries },
   goToRoute,
   playing,
@@ -131,6 +131,7 @@ const SavedPage = ({
 }: SavedPageProps) => {
   const mainContentRef = useMainContentRef()
   const initFetch = useSelector(getInitialFetchStatus)
+  const { data: currentUserId } = useCurrentUserId()
 
   const { mutate: favoriteTrack } = useFavoriteTrack()
   const { mutate: unfavoriteTrack } = useUnfavoriteTrack()
@@ -277,7 +278,7 @@ const SavedPage = ({
           scrollRef={mainContentRef}
           useLocalSort={allTracksFetched}
           fetchBatchSize={50}
-          userId={account ? account.user_id : 0}
+          userId={currentUserId}
         />
       ),
       <AlbumsTabPage key='albums' />,

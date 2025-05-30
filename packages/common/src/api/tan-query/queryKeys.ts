@@ -93,5 +93,7 @@ export const QUERY_KEYS = {
   usdcBalance: 'usdcBalance',
   fileSizes: 'fileSizes',
   managedAccounts: 'managedAccounts',
-  userManagers: 'userManagers'
+  userManagers: 'userManagers',
+  reactions: 'reactions',
+  entityReaction: 'entityReaction'
 } as const

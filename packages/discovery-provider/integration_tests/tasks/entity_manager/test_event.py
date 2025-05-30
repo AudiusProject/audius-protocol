@@ -55,6 +55,7 @@ test_entities = {
     "tracks": [
         {"track_id": 1, "title": "Track 1", "owner_id": 1},
         {"track_id": 2, "title": "Track 2", "owner_id": 2},
+        {"track_id": 3, "title": "Track 3", "owner_id": 1},
     ],
 }
 
@@ -132,7 +133,7 @@ def test_create_event(app, mocker):
     metadata = {
         "event_type": EventType.remix_contest,
         "entity_type": EventEntityType.track,
-        "entity_id": 1,
+        "entity_id": 3,  # Track 3 - no existing remix contest
         "end_date": (block_datetime + timedelta(days=7)).isoformat(),
         "is_deleted": False,
         "event_data": {
@@ -317,3 +318,311 @@ def test_delete_event(app, mocker):
         # Verify the event was marked as deleted
         deleted_event = session.query(Event).filter_by(event_id=1).first()
         assert deleted_event.is_deleted == True
+
+
+def test_create_duplicate_remix_contest_fails(app, mocker):
+    """Test that creating a duplicate remix contest for the same entity_id fails validation"""
+    block_datetime = datetime.now()
+    metadata = {
+        "event_type": EventType.remix_contest,
+        "entity_type": EventEntityType.track,
+        "entity_id": 1,  # Same entity_id as the existing event in test_entities
+        "end_date": (block_datetime + timedelta(days=7)).isoformat(),
+        "is_deleted": False,
+        "event_data": {
+            "title": "Another Remix Contest",
+            "description": "This should fail",
+        },
+    }
+
+    tx_receipts = {
+        "CreateDuplicateRemixContest": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 4,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.CREATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, test_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # Get count of events before attempting to create duplicate
+        initial_event_count = session.query(Event).count()
+
+        # Try to create duplicate remix contest
+        index_transaction(session)
+
+        # Verify no new event was created (due to validation failure)
+        final_event_count = session.query(Event).count()
+        assert final_event_count == initial_event_count
+
+        # Verify the duplicate event with id 4 was not created
+        duplicate_event = session.query(Event).filter_by(event_id=4).first()
+        assert duplicate_event is None
+
+
+def test_create_remix_contest_after_previous_ended(app, mocker):
+    """Test that creating a remix contest succeeds when previous contest for same track has ended"""
+    block_datetime = datetime.now()
+
+    # Create test data with an ended remix contest
+    test_entities_with_ended_contest = {
+        "events": [
+            {
+                "event_id": 10,
+                "event_type": EventType.remix_contest,
+                "user_id": 1,
+                "entity_type": EventEntityType.track,
+                "entity_id": 1,
+                "end_date": block_datetime - timedelta(days=1),  # Ended yesterday
+                "is_deleted": False,
+                "created_at": datetime(2024, 1, 1),
+                "updated_at": datetime(2024, 1, 1),
+                "txhash": "0x123",
+                "blockhash": "0xabc",
+                "blocknumber": 1000,
+            },
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "title": "Track 1", "owner_id": 1},
+        ],
+    }
+
+    metadata = {
+        "event_type": EventType.remix_contest,
+        "entity_type": EventEntityType.track,
+        "entity_id": 1,  # Same entity_id as the ended contest
+        "end_date": (block_datetime + timedelta(days=7)).isoformat(),
+        "is_deleted": False,
+        "event_data": {
+            "title": "New Remix Contest",
+            "description": "This should succeed since previous contest ended",
+        },
+    }
+
+    tx_receipts = {
+        "CreateNewRemixContest": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 11,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.CREATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(
+        app, mocker, test_entities_with_ended_contest, tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        # Verify the new event was created successfully
+        created_event = session.query(Event).filter_by(event_id=11).first()
+        assert created_event is not None
+        assert created_event.event_id == 11
+        assert created_event.user_id == 1
+        assert created_event.event_type == metadata["event_type"]
+        assert created_event.entity_type == metadata["entity_type"]
+        assert created_event.entity_id == metadata["entity_id"]
+        assert created_event.end_date.isoformat() == metadata["end_date"]
+        assert created_event.is_deleted == False
+
+
+def test_remix_contest_winners_selected_notification(app, mocker):
+    """Test that fan_remix_contest_winners_selected notification is created when winners are first selected"""
+    block_datetime = datetime.now()
+
+    # Create test data with a remix contest without winners
+    test_entities_remix_contest = {
+        "events": [
+            {
+                "event_id": 20,
+                "event_type": EventType.remix_contest,
+                "user_id": 1,
+                "entity_type": EventEntityType.track,
+                "entity_id": 1,
+                "end_date": block_datetime + timedelta(days=7),
+                "event_data": {
+                    "title": "Test Remix Contest",
+                    "description": "Test description",
+                    "winners": [],  # No winners initially
+                },
+                "is_deleted": False,
+                "created_at": datetime(2024, 1, 1),
+                "updated_at": datetime(2024, 1, 1),
+                "txhash": "0x123",
+                "blockhash": "0xabc",
+                "blocknumber": 1000,
+            },
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user2", "wallet": "user2wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "title": "Track 1", "owner_id": 1},
+            {
+                "track_id": 2,
+                "title": "Winning Remix",
+                "owner_id": 2,
+            },  # This will be the winner
+            {"track_id": 3, "title": "Track 3", "owner_id": 1},
+        ],
+    }
+
+    # Mock the notification creation function
+    mock_notification = mocker.patch(
+        "src.tasks.entity_manager.entities.event.create_fan_remix_contest_winners_selected_notification",
+        autospec=True,
+    )
+
+    # Update metadata to add winners
+    metadata = {
+        "event_data": {
+            "title": "Test Remix Contest",
+            "description": "Test description",
+            "winners": [2],  # Track 2 is the winner
+        },
+    }
+
+    tx_receipts = {
+        "UpdateRemixContestWithWinners": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 20,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.UPDATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(
+        app, mocker, test_entities_remix_contest, tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        # Verify the event was updated with winners
+        updated_event = session.query(Event).filter_by(event_id=20).first()
+        assert updated_event.event_data["winners"] == [2]
+
+        # Verify the notification function was called
+        mock_notification.assert_called_once()
+
+        # Get the arguments passed to the notification function
+        call_args = mock_notification.call_args
+        assert call_args[0][1] == 20  # event_id
+        # The session and block_datetime are also passed but harder to assert exactly
+
+
+def test_remix_contest_winners_notification_not_triggered_on_subsequent_updates(
+    app, mocker
+):
+    """Test that notification is NOT triggered when winners are updated (not first time)"""
+    block_datetime = datetime.now()
+
+    # Create test data with a remix contest that already has winners
+    test_entities_with_winners = {
+        "events": [
+            {
+                "event_id": 21,
+                "event_type": EventType.remix_contest,
+                "user_id": 1,
+                "entity_type": EventEntityType.track,
+                "entity_id": 1,
+                "end_date": block_datetime + timedelta(days=7),
+                "event_data": {
+                    "title": "Test Remix Contest",
+                    "description": "Test description",
+                    "winners": [2],  # Already has winners
+                },
+                "is_deleted": False,
+                "created_at": datetime(2024, 1, 1),
+                "updated_at": datetime(2024, 1, 1),
+                "txhash": "0x123",
+                "blockhash": "0xabc",
+                "blocknumber": 1000,
+            },
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user1", "wallet": "user1wallet"},
+        ],
+        "tracks": [
+            {"track_id": 1, "title": "Track 1", "owner_id": 1},
+            {"track_id": 2, "title": "Winning Remix", "owner_id": 1},
+            {"track_id": 3, "title": "Another Remix", "owner_id": 1},
+        ],
+    }
+
+    # Mock the notification creation function
+    mock_notification = mocker.patch(
+        "src.tasks.entity_manager.entities.event.create_fan_remix_contest_winners_selected_notification",
+        autospec=True,
+    )
+
+    # Update metadata to change winners (add another winner)
+    metadata = {
+        "event_data": {
+            "title": "Test Remix Contest",
+            "description": "Test description",
+            "winners": [2, 3],  # Adding another winner
+        },
+    }
+
+    tx_receipts = {
+        "UpdateRemixContestAddWinner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 21,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.UPDATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(
+        app, mocker, test_entities_with_winners, tx_receipts
+    )
+
+    with db.scoped_session() as session:
+        index_transaction(session)
+
+        # Verify the event was updated
+        updated_event = session.query(Event).filter_by(event_id=21).first()
+        assert updated_event.event_data["winners"] == [2, 3]
+
+        # Verify the notification function was NOT called (since winners already existed)
+        mock_notification.assert_not_called()

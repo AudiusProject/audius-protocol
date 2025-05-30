@@ -1,9 +1,8 @@
 import { getAllEntries, getEntry } from '~/store/cache/selectors'
-import { getUser as getUserById } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
 
-import type { ID, UID, Collection, User } from '../../../models'
-import { Status, Kind } from '../../../models'
+import type { ID, UID } from '../../../models'
+import { Kind } from '../../../models'
 
 import type { BatchCachedCollections } from './types'
 
@@ -62,42 +61,4 @@ export const getCollections = (
     return collections
   }
   return getAllEntries(state, { kind: Kind.COLLECTIONS })
-}
-
-export const getCollectionsByUid = (state: CommonState) => {
-  return Object.keys(state.collections.uids).reduce(
-    (entries, uid) => {
-      entries[uid] = getCollection(state, { uid })
-      return entries
-    },
-    {} as { [uid: string]: Collection | null }
-  )
-}
-
-export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
-  const statuses: { [id: number]: Status } = {}
-  props.ids.forEach((id) => {
-    const status = getStatus(state, { id })
-    if (status) {
-      statuses[id] = status
-    }
-  })
-  return statuses
-}
-
-export type EnhancedCollection = Collection & { user: User }
-export const getCollectionWithUser = (
-  state: CommonState,
-  props: { id?: ID }
-): EnhancedCollection | null => {
-  const collection = getCollection(state, { id: props.id })
-  const userId = collection?.playlist_owner_id
-  const user = getUserById(state, { id: userId })
-  if (collection && user) {
-    return {
-      ...collection,
-      user
-    }
-  }
-  return null
 }

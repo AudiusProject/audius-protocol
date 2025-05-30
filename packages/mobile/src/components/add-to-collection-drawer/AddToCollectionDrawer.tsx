@@ -1,21 +1,22 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 
+import {
+  useCurrentUserId,
+  useUserAlbums,
+  useUserPlaylists
+} from '@audius/common/api'
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
-import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions
 } from '@audius/common/store'
-import { fuzzySearch } from '@audius/common/utils'
-import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
+import { Flex, LoadingSpinner } from '@audius/harmony-native'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -29,21 +30,8 @@ const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
 const { getTrackId, getTrackTitle, getCollectionType } =
   addToCollectionUISelectors
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
-
-const selectCollectionsToAddTo = (state: CommonState) => {
-  const collectionType = getCollectionType(state)
-  const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
-  if (!account) return []
-  const { albums, playlists, user_id } = account
-  const collections = collectionType === 'album' ? albums : playlists
-
-  return collections.filter(
-    (collection) => collection.playlist_owner_id === user_id
-  )
-}
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   title: `Add To ${capitalize(collectionType)}`,
@@ -70,25 +58,28 @@ export const AddToCollectionDrawer = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const [filter, setFilter] = useState('')
+  const { data: currentUserId } = useCurrentUserId()
 
   const messages = getMessages(collectionType)
 
-  useEffectOnce(() => {
-    dispatch(fetchAccountCollections())
+  const useUserCollections = isAlbumType ? useUserAlbums : useUserPlaylists
+
+  const {
+    data: collections = [],
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isPending
+  } = useUserCollections({
+    userId: currentUserId,
+    query: filter
   })
 
-  const collectionsToAddTo = useSelector(selectCollectionsToAddTo)
-
-  const filteredCollectionsToAddTo = useMemo(() => {
-    return filter
-      ? fuzzySearch(
-          filter,
-          collectionsToAddTo,
-          3,
-          (collection) => collection.playlist_name
-        )
-      : collectionsToAddTo
-  }, [collectionsToAddTo, filter])
+  const handleLoadMore = useCallback(() => {
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage])
 
   const handleAddToNewCollection = useCallback(() => {
     const metadata = {
@@ -160,6 +151,15 @@ export const AddToCollectionDrawer = () => {
     ]
   )
 
+  const renderFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null
+    return (
+      <Flex p='l' alignItems='center'>
+        <LoadingSpinner />
+      </Flex>
+    )
+  }, [isFetchingNextPage])
+
   if (!trackId || !trackTitle) {
     return null
   }
@@ -179,10 +179,14 @@ export const AddToCollectionDrawer = () => {
               onChangeText={setFilter}
             />
           }
+          ListFooterComponent={renderFooter}
           contentContainerStyle={styles.cardList}
-          collection={filteredCollectionsToAddTo}
+          collection={collections}
           showCreateCollectionTile
           renderItem={renderCard}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          refreshing={isPending}
         />
       </View>
     </AppDrawer>

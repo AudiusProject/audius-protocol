@@ -1,9 +1,9 @@
 import { buySellMessages as messages } from '@audius/common/messages'
+import { TokenInfo } from '@audius/common/store'
 import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
 import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
-import { TokenInfo } from './types'
 
 type TransactionSuccessScreenProps = {
   payTokenInfo: TokenInfo
@@ -45,11 +45,13 @@ export const TransactionSuccessScreen = (
     ? messages.priceEach(pricePerBaseToken)
     : undefined
 
+  if (!formattedPayAmount || !formattedReceiveAmount) return null
+
   return (
     <Flex direction='column' gap='xl'>
-      <Flex direction='row' gap='xs' alignItems='center'>
+      <Flex direction='row' gap='s' alignItems='center'>
         <CompletionCheck value='complete' />
-        <Text variant='heading' size='s' color='subdued'>
+        <Text variant='heading' size='s' color='default'>
           {messages.transactionComplete}
         </Text>
       </Flex>

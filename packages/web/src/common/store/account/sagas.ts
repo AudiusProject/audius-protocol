@@ -1,14 +1,9 @@
-import { queryCollections } from '@audius/common/api'
-import { accountActions, accountSelectors } from '@audius/common/store'
-import { call, fork, select, takeEvery } from 'typed-redux-saga'
+import { accountActions } from '@audius/common/store'
+import { fork, takeEvery } from 'typed-redux-saga'
 
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
-import { waitForRead } from 'utils/sagaHelpers'
 
-const { getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
-  accountSelectors
-
-const { signedIn, fetchSavedPlaylists } = accountActions
+const { signedIn } = accountActions
 
 function* onSignedIn() {
   // Add playlists that might not have made it into the user's library.
@@ -16,34 +11,10 @@ function* onSignedIn() {
   yield* fork(addPlaylistsNotInLibrary)
 }
 
-function* fetchSavedPlaylistsAsync() {
-  yield* waitForRead()
-
-  // Fetch other people's playlists you've saved
-  yield* fork(function* () {
-    const savedPlaylists = yield* select(getAccountSavedPlaylistIds)
-    if (savedPlaylists.length > 0) {
-      yield* call(queryCollections, savedPlaylists)
-    }
-  })
-
-  // Fetch your own playlists
-  yield* fork(function* () {
-    const ownPlaylists = yield* select(getAccountOwnedPlaylistIds)
-    if (ownPlaylists.length > 0) {
-      yield* call(queryCollections, ownPlaylists)
-    }
-  })
-}
-
 function* watchSignedIn() {
   yield* takeEvery(signedIn.type, onSignedIn)
 }
 
-function* watchFetchSavedPlaylists() {
-  yield* takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
-}
-
 export default function sagas() {
-  return [watchSignedIn, watchFetchSavedPlaylists]
+  return [watchSignedIn]
 }

@@ -6,7 +6,7 @@ import {
   useRemixContest,
   useUpdateEvent,
   useDeleteEvent,
-  useRemixes
+  useRemixesLineup
 } from '@audius/common/api'
 import { remixMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
@@ -72,7 +72,7 @@ export const HostRemixContestDrawer = () => {
   const { data: userId } = useCurrentUserId()
   const { trackId } = data
   const { data: remixContest } = useRemixContest(trackId)
-  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+  const { data: remixes, isLoading: remixesLoading } = useRemixesLineup({
     trackId,
     isContestEntry: true
   })

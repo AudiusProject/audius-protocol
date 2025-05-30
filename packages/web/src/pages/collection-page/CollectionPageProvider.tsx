@@ -112,7 +112,7 @@ const {
   deletePlaylist
 } = cacheCollectionsActions
 
-const { getUserId, getAccountCollections } = accountSelectors
+const { getUserId } = accountSelectors
 
 type OwnProps = {
   type: CollectionsPageType
@@ -669,12 +669,10 @@ class CollectionPageClassComponent extends Component<
   }
 
   onHeroTrackSave = () => {
-    const { userPlaylists, collection: metadata, smartCollection } = this.props
+    const { collection: metadata, smartCollection } = this.props
     const { playlistId } = this.props
     const isSaved =
-      (metadata && playlistId
-        ? metadata.has_current_user_saved || playlistId in userPlaylists
-        : false) ||
+      (metadata && playlistId ? metadata.has_current_user_saved : false) ||
       (smartCollection && smartCollection.has_current_user_saved)
 
     if (smartCollection && metadata) {
@@ -749,7 +747,6 @@ class CollectionPageClassComponent extends Component<
       user,
       tracks,
       userId,
-      userPlaylists,
       smartCollection,
       trackCount
     } = this.props
@@ -785,7 +782,6 @@ class CollectionPageClassComponent extends Component<
         : { status, metadata, user },
       tracks,
       userId,
-      userPlaylists,
       getPlayingUid: this.getPlayingUid,
       getFilteredData: this.getFilteredData,
       isQueued: this.isQueued,
@@ -856,7 +852,6 @@ function makeMapStateToProps() {
       order: getLineupOrder(state),
       userId: getUserId(state),
       playlistId: (getCollection(state) as Collection)?.playlist_id,
-      userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,

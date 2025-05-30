@@ -1,6 +1,7 @@
+import { TokenInfo } from '@audius/common/store'
+
 import { CryptoBalanceSection } from './CryptoBalanceSection'
 import { USDCBalanceSection } from './USDCBalanceSection'
-import { TokenInfo } from './types'
 
 type SwapBalanceSectionProps = {
   title: string
@@ -13,7 +14,12 @@ export const SwapBalanceSection = (props: SwapBalanceSectionProps) => {
   const { title, tokenInfo, amount, priceLabel } = props
   if (tokenInfo.symbol === 'USDC') {
     return (
-      <USDCBalanceSection title={title} tokenInfo={tokenInfo} amount={amount} />
+      <USDCBalanceSection
+        title={title}
+        tokenInfo={tokenInfo}
+        amount={amount}
+        tooltipPlacement='right'
+      />
     )
   }
   return (

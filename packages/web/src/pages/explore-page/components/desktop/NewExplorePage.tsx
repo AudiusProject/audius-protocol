@@ -189,8 +189,19 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
       const newParams = new URLSearchParams(searchParams)
       newParams.set('query', debouncedValue)
       setSearchParams(newParams)
+    } else if (categoryKey === SearchTabs.ALL.toLowerCase()) {
+      // clear filters when searching all
+      const newParams = new URLSearchParams()
+      newParams.set('query', debouncedValue)
+      setSearchParams(newParams)
     }
-  }, [debouncedValue, setSearchParams, searchParams, previousDebouncedValue])
+  }, [
+    debouncedValue,
+    setSearchParams,
+    searchParams,
+    previousDebouncedValue,
+    categoryKey
+  ])
 
   const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {

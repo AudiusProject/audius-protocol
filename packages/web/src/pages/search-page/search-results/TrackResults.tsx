@@ -139,7 +139,7 @@ export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
     FeatureFlags.SEARCH_EXPLORE
   )
 
-  return !isMobile && !isSearchExploreEnabled ? (
+  return !isMobile && isSearchExploreEnabled === false ? (
     <Flex direction='column' gap='xl' wrap='wrap'>
       <Flex justifyContent='space-between' alignItems='center'>
         <Text variant='heading' textAlign='left'>

@@ -148,7 +148,7 @@ const SignedInView = ({
 
 const SignedOutView = () => (
   <AccountContentWrapper>
-    <Avatar userId={null} h={48} w={48} />
+    <Avatar userId={null} h={48} w={48} borderWidth='thin' />
     <AccountInfo>
       <Text variant='title' size='s'>
         {messages.haveAccount}

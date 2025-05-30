@@ -5,7 +5,7 @@ import {
   useCurrentUserId,
   useDeleteEvent,
   useRemixContest,
-  useRemixes,
+  useRemixesLineup,
   useUpdateEvent
 } from '@audius/common/api'
 import { remixMessages } from '@audius/common/messages'
@@ -44,7 +44,7 @@ export const HostRemixContestModal = () => {
   const { mutate: updateEvent } = useUpdateEvent()
   const { mutate: deleteEvent } = useDeleteEvent()
   const { data: userId } = useCurrentUserId()
-  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+  const { data: remixes, isLoading: remixesLoading } = useRemixesLineup({
     trackId,
     isContestEntry: true
   })
