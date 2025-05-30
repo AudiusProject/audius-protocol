@@ -266,15 +266,15 @@ describe('UserSubscriptionNotification', () => {
     // Check that the notification title is rendered
     expect(await screen.findByText('New Release')).toBeInTheDocument()
 
-    // Check that the user's name is rendered
+    // Check that the artist's name is rendered
     expect(await screen.findByText(mockUser.name)).toBeInTheDocument()
 
-    // Check that the notification footer is rendered
+    // Check for the time label in the footer
     expect(
       await screen.findByText(mockNotification.timeLabel!)
     ).toBeInTheDocument()
 
-    // Check that the track link is rendered
+    // Check that the track link with the title in it is rendered
     const trackLink = await screen.findByText(mockTrack.title)
     expect(trackLink).toBeInTheDocument()
 
