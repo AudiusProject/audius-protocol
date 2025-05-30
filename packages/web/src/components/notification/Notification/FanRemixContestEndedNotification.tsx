@@ -54,7 +54,7 @@ export const FanRemixContestEndedNotification = (
       <Flex alignItems='flex-start'>
         <TrackContent track={entity} hideTitle />
         <NotificationBody>
-          <UserNameLink user={entity.user} notification={notification} />{' '}
+          <UserNameLink user={entity.user} notification={notification} />
           {messages.description}
         </NotificationBody>
       </Flex>

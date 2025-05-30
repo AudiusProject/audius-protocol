@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useTrack, useUser } from '@audius/common/api'
 import type { FanRemixContestWinnersSelectedNotification as FanRemixContestWinnersSelectedNotificationType } from '@audius/common/store'
 
-import { IconTrophy } from '@audius/harmony-native'
+import { IconTrophy, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import {
@@ -49,7 +49,10 @@ export const FanRemixContestWinnersSelectedNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        <UserNameLink user={user} /> {messages.description}{' '}
+        <UserNameLink user={user} />
+        <Text variant='body' size='l'>
+          {messages.description}
+        </Text>
       </NotificationText>
     </NotificationTile>
   )

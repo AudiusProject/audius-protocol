@@ -158,7 +158,9 @@ app.post('/attestation/:handle', async (c) => {
 
   // pass / fail
   const userScore = await getUserNormalizedScore(user.user_id, user.wallet)
-  if (userScore.overallScore < 0) {
+
+  // Reward attestation proportional to user score confidence
+  if (userScore.overallScore < (amount as number) / 10) {
     return c.json({ error: 'denied' }, 400)
   }
 
@@ -252,7 +254,8 @@ app.get('/attestation/ui', async (c) => {
               {dateHeader(new Date(recentClaim.disbursement_date))}
               <tr
                 className={
-                  userScores[recentClaim.handle].overallScore < 0
+                  userScores[recentClaim.handle].overallScore <
+                  recentClaim.amount / 10
                     ? 'bg-red-100'
                     : ''
                 }
