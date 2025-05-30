@@ -43,6 +43,7 @@ export type UserMetadata = {
   has_collectibles: boolean
   is_deactivated: boolean
   is_verified: boolean
+  profile_type: Nullable<'label'>
   twitter_handle: Nullable<string>
   instagram_handle: Nullable<string>
   tiktok_handle: Nullable<string>
