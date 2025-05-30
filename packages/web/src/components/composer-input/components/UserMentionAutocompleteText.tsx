@@ -2,13 +2,13 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
+  useAccountStatus,
   useCurrentUserId,
   useFollowers,
   useSearchUserResults,
   useUsers
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import {
   Flex,
   LoadingSpinner,
@@ -18,12 +18,9 @@ import {
   Text,
   OptionKeyHandler
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
-
-const { getAccountStatus } = accountSelectors
 
 const messages = {
   searchUsers: 'Search User',
@@ -43,7 +40,7 @@ export const UserMentionAutocompleteText = (
   const anchorRef = useRef<HTMLElement>(null)
   const [isOpen, setIsOpen] = useState(true)
   const searchText = text.slice(1)
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: accountStatus } = useAccountStatus()
   const { data: currentUserId } = useCurrentUserId()
   const {
     data: followerIds,

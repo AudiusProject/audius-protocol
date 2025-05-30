@@ -18,6 +18,7 @@ import {
   queryCurrentAccount,
   queryCurrentUserId
 } from '~/api'
+import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
@@ -48,7 +49,9 @@ import {
   renameAccountPlaylist,
   fetchSavedPlaylistsSucceeded,
   incrementTrackSaveCount,
-  decrementTrackSaveCount
+  decrementTrackSaveCount,
+  fetchAccountNoInternet,
+  setReachable
 } from './slice'
 import { AccountState } from './types'
 
@@ -688,6 +691,32 @@ function* syncAccountToQueryClient() {
   )
 }
 
+function* syncAccountStatusToQueryClient() {
+  const queryClient = yield* getContext('queryClient')
+
+  // Listen to all account slice actions that could modify status
+  yield* takeEvery(
+    [
+      fetchAccountRequested.type,
+      fetchAccountSucceeded.type,
+      fetchAccountFailed.type,
+      fetchAccountNoInternet.type,
+      setReachable.type,
+      resetAccount.type
+    ],
+    function* () {
+      const state: AccountState = yield* select((state) => state.account)
+
+      // Update the query client with just the status
+      yield* call(
+        [queryClient, queryClient.setQueryData],
+        getAccountStatusQueryKey(),
+        state.status
+      )
+    }
+  )
+}
+
 export default function sagas() {
   return [
     watchFetchAccount,
@@ -701,6 +730,7 @@ export default function sagas() {
     watchTwitterLogin,
     watchUploadTrack,
     watchUpdatePlaylistLibrary,
-    syncAccountToQueryClient
+    syncAccountToQueryClient,
+    syncAccountStatusToQueryClient
   ]
 }

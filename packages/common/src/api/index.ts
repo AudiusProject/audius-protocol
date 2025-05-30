@@ -129,6 +129,7 @@ export * from './tan-query/users/account/usePlaylistLibrary'
 export * from './tan-query/users/account/useReorderLibrary'
 export * from './tan-query/users/account/useUpdatePlaylistLibrary'
 export * from './tan-query/users/account/useWalletAddresses'
+export * from './tan-query/users/account/useAccountStatus'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'

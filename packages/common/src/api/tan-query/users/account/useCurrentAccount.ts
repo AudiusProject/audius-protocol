@@ -16,6 +16,7 @@ import { AccountState } from '~/store'
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
 
+import { getAccountStatusQueryKey } from './useAccountStatus'
 import { useWalletAddresses } from './useWalletAddresses'
 
 export const getCurrentAccountQueryKey = () =>
@@ -73,14 +74,18 @@ export const getCurrentAccountQueryFn = async (
   const account = accountFromSDK(data)
 
   if (account) {
+    console.log('setting account status to success')
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
     primeUserData({ users: [account.user], queryClient, dispatch })
+  } else {
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
   }
 
   return {
     collections: account?.playlists,
     userId: account?.user?.user_id,
     hasTracks: (account?.user?.track_count ?? 0) > 0,
-    status: Status.SUCCESS,
+    status: account ? Status.SUCCESS : Status.ERROR,
     reason: null,
     connectivityFailure: false,
     needsAccountRecovery: false,

@@ -2,22 +2,20 @@ import { useCallback } from 'react'
 
 import {
   selectIsAccountComplete,
+  useAccountStatus,
   useCurrentAccount,
   useCurrentAccountUser,
   useHasAccount
 } from '@audius/common/api'
 import { Name, Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box, Button, IconArrowRight } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { SignOnLink } from 'components/SignOnLink'
 
 const { SIGN_UP_PAGE } = route
-const { getAccountStatus } = accountSelectors
 
 const messages = {
   signUp: 'Sign up',
@@ -29,7 +27,7 @@ const messages = {
 export const LeftNavCTA = () => {
   const record = useRecord()
   const isSignedIn = useHasAccount()
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: accountStatus } = useAccountStatus()
   const { data: hasCompletedAccount } = useCurrentAccountUser({
     select: selectIsAccountComplete
   })

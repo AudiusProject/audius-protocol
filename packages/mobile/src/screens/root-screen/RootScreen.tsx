@@ -2,14 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   useCurrentAccountUser,
-  selectIsAccountComplete
+  selectIsAccountComplete,
+  useAccountStatus
 } from '@audius/common/api'
 import { MobileOS, Status } from '@audius/common/models'
-import {
-  accountSelectors,
-  chatActions,
-  playerActions
-} from '@audius/common/store'
+import { chatActions, playerActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
@@ -38,7 +35,6 @@ import { SignOnStack } from '../sign-on-screen'
 import { StatusBar } from './StatusBar'
 import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount'
 
-const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playerActions
@@ -62,7 +58,7 @@ export type RootScreenParamList = {
 export const RootScreen = () => {
   const { updateRequired } = useUpdateRequired()
   const dispatch = useDispatch()
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: accountStatus } = useAccountStatus()
   const { data: hasCompleteAccount } = useCurrentAccountUser({
     select: selectIsAccountComplete
   })
