@@ -4,7 +4,7 @@ const { expectEvent } = require('@openzeppelin/test-helpers')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 const MockWormhole = artifacts.require('MockWormhole')
-const EthRewardsManager = artifacts.require('EthRewardsManager')
+const EthRewardsManager = artifacts.require('EthRewardsManagerV2')
 const Staking = artifacts.require('Staking')
 const AudiusAdminUpgradeabilityProxy = artifacts.require(
   'AudiusAdminUpgradeabilityProxy'
@@ -398,8 +398,16 @@ contract('EthRewardsManager', async (accounts) => {
       amount
     )
 
+    // Send funds to ensure that we can cover the wormhole fee
+    await web3.eth.sendTransaction({
+      from: accounts[0],
+      to: accounts[7],
+      value: 1
+    })
+
     const tx = await ethRewardsManager.transferToSolana(0, 1, {
-      from: accounts[7]
+      from: accounts[7],
+      value: 1
     })
 
     await expectEvent.inTransaction(
