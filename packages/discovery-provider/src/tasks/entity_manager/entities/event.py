@@ -187,21 +187,14 @@ def update_event(params: ManageEntityParameters):
         if len(current_winners) == 0 and len(new_winners) > 0:
             should_notify_winners_selected = True
 
-    # Update the event record with new values from params.metadata
-    event_record.end_date = params.metadata.get("end_date", event_record.end_date)
-    event_record.event_data = params.metadata.get("event_data", event_record.event_data)
-    event_record.updated_at = params.block_datetime
-    event_record.txhash = params.txhash
-    event_record.blockhash = params.event_blockhash
-    event_record.blocknumber = params.block_number
-
     # Check if this is a remix contest and winners are being selected for the first time
     should_notify_winners_selected = False
     new_winners = []
+    event_data = params.metadata.get("event_data")
     if (
         event_record.event_type == EventType.remix_contest
-        and params.metadata.get("event_data")
-        and isinstance(params.metadata["event_data"], dict)
+        and event_data
+        and isinstance(event_data, dict)
         and isinstance(event_record.event_data, dict)
     ):
         current_event_data = event_record.event_data
@@ -217,6 +210,14 @@ def update_event(params: ManageEntityParameters):
         create_fan_remix_contest_winners_selected_notification(
             params.session, event_record.event_id, params.block_datetime
         )
+
+    # Update the event record with new values from params.metadata
+    event_record.end_date = params.metadata.get("end_date", event_record.end_date)
+    event_record.event_data = params.metadata.get("event_data", event_record.event_data)
+    event_record.updated_at = params.block_datetime
+    event_record.txhash = params.txhash
+    event_record.blockhash = params.event_blockhash
+    event_record.blocknumber = params.block_number
 
     # Trigger challenge update when winners are selected
     for winner_track_id in new_winners:
