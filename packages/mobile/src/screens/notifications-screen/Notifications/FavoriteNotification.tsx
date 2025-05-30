@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
 import type { FavoriteNotification as FavoriteNotificationType } from '@audius/common/store'
 import { notificationsSelectors, Entity } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { IconHeart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -19,7 +18,7 @@ import {
   EntityLink
 } from '../Notification'
 
-const { getNotificationUsers } = notificationsSelectors
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -36,14 +35,18 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const users = useProxySelector(
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    [notification]
   )
 
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useNotificationEntity(notification)
+  const entity = useProxySelector(
+    (state) => getNotificationEntity(state, notification),
+    [notification]
+  )
 
   const entityTypeText =
     entity && 'is_album' in entity && entity.is_album
@@ -63,7 +66,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
       </NotificationHeader>
       <NotificationText>
         <UserNameLink user={firstUser} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
+        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.favorited} {entityTypeText.toLowerCase()}{' '}
         <EntityLink entity={entity} />
       </NotificationText>

@@ -1,9 +1,4 @@
-import {
-  useToggleFavoriteTrack,
-  useUser,
-  useTrack,
-  useCollection
-} from '@audius/common/api'
+import { useToggleFavoriteTrack } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -14,6 +9,10 @@ import {
 } from '@audius/common/models'
 import {
   cacheCollectionsActions,
+  cacheCollectionsSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  queueSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
@@ -40,6 +39,7 @@ import { collectibleDetailsPage } from 'utils/route'
 import MobileOverflowModal from './components/MobileOverflowModal'
 
 const { profilePage, collectionPage } = route
+const { makeGetCurrent } = queueSelectors
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -56,25 +56,35 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
+const { getTrack } = cacheTracksSelectors
+const { getUser } = cacheUsersSelectors
+const { getCollection } = cacheCollectionsSelectors
 const { publishPlaylist } = cacheCollectionsActions
 
-type ConnectedMobileOverflowModalProps = {
-  id: ID | string | null
-  source: OverflowSource
-  overflowActions: any
-  overflowActionCallbacks: any
-  isOpen: boolean
-  onClose: () => void
-} & ReturnType<typeof mapDispatchToProps>
+type ConnectedMobileOverflowModalProps = {} & ReturnType<
+  typeof mapStateToProps
+> &
+  ReturnType<typeof mapDispatchToProps>
+
+const getCurrent = makeGetCurrent()
 
 // A connected `MobileOverflowModal`. Builds and injects callbacks for it's contained MobileOverflowModal component.
 const ConnectedMobileOverflowModal = ({
   id,
-  source,
   overflowActions,
   overflowActionCallbacks,
   isOpen,
   onClose,
+  source,
+  notification,
+  ownerId,
+  handle,
+  artistName,
+  title,
+  permalink,
+  collectionPermalink,
+  isAlbum,
+  shareCollection,
   repostTrack,
   unrepostTrack,
   repostCollection,
@@ -99,21 +109,6 @@ const ConnectedMobileOverflowModal = ({
     [openPremiumContentModal]
   )
   const navigate = useNavigate()
-
-  // Fetch data based on source
-  const { data: track } = useTrack(
-    source === OverflowSource.TRACKS ? (id as number) : null
-  )
-  const { data: collection } = useCollection(
-    source === OverflowSource.COLLECTIONS ? (id as number) : null
-  )
-  const { data: user } = useUser(
-    source === OverflowSource.PROFILE
-      ? (id as number)
-      : source === OverflowSource.TRACKS
-        ? track?.owner_id
-        : collection?.playlist_owner_id
-  )
 
   const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id as number,
@@ -158,29 +153,27 @@ const ConnectedMobileOverflowModal = ({
     onUnfollow?: () => void
     onPurchase?: () => void
   } => {
-    if (!id || !user) return {}
-
     switch (source) {
       case OverflowSource.TRACKS: {
-        if (!track) return {}
+        if (!id || !ownerId || !handle || !title || isAlbum === undefined)
+          return {}
         return {
           onRepost: () => repostTrack(id as ID),
           onUnrepost: () => unrepostTrack(id as ID),
           onFavorite: () => toggleSaveTrack(),
           onUnfavorite: () => toggleSaveTrack(),
-          onAddToAlbum: () => addToCollection('album', id as ID, track.title),
-          onAddToPlaylist: () =>
-            addToCollection('playlist', id as ID, track.title),
+          onAddToAlbum: () => addToCollection('album', id as ID, title),
+          onAddToPlaylist: () => addToCollection('playlist', id as ID, title),
           onVisitCollectiblePage: () => {
-            visitCollectiblePage(user.handle, id as string)
+            visitCollectiblePage(handle, id as string)
           },
           onVisitTrackPage: () =>
-            track.permalink
-              ? visitTrackPage(track.permalink)
-              : console.error(`Permalink missing for track ${id}`),
-          onVisitArtistPage: () => visitArtistPage(user.handle),
-          onFollow: () => follow(track.owner_id),
-          onUnfollow: () => unfollow(track.owner_id),
+            permalink === undefined
+              ? console.error(`Permalink missing for track ${id}`)
+              : visitTrackPage(permalink),
+          onVisitArtistPage: () => visitArtistPage(handle),
+          onFollow: () => follow(ownerId),
+          onUnfollow: () => unfollow(ownerId),
           onPurchase: () =>
             openPurchaseModal(
               {
@@ -192,35 +185,34 @@ const ConnectedMobileOverflowModal = ({
         }
       }
       case OverflowSource.COLLECTIONS: {
-        if (!collection) return {}
+        if (!id || !handle || !title || isAlbum === undefined) return {}
         return {
           onRepost: () => repostCollection(id as ID),
           onUnrepost: () => unrepostCollection(id as ID),
           onFavorite: () => saveCollection(id as ID),
           onUnfavorite: () => unsaveCollection(id as ID),
-          onShare: () => shareCollection(id as ID, ShareSource.OVERFLOW),
-          onVisitArtistPage: () => visitArtistPage(user.handle),
+          onShare: () => shareCollection(id as ID),
+          onVisitArtistPage: () => visitArtistPage(handle),
           onVisitCollectionPage: () =>
             visitPlaylistPage(
               id as ID,
-              user.handle,
-              collection.playlist_name,
-              collection.permalink,
-              collection.is_album
+              handle,
+              title,
+              collectionPermalink || '',
+              isAlbum
             ),
           onVisitCollectiblePage: () =>
-            visitCollectiblePage(user.handle, id as string),
-          onEditPlaylist: () => navigate(`${collection.permalink}/edit`),
-          onDeletePlaylist: collection.is_album
-            ? () => {}
-            : () => deletePlaylist(id as ID),
-          onPublishPlaylist: collection.is_album
+            visitCollectiblePage(handle, id as string),
+          onEditPlaylist: () => navigate(`${permalink}/edit`),
+          onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
+          onPublishPlaylist: isAlbum
             ? () => {}
             : () => publishPlaylist(id as ID)
         }
       }
 
       case OverflowSource.PROFILE: {
+        if (!id || !handle || !artistName) return {}
         return {
           onFollow: () => follow(id as ID),
           onUnfollow: () => unfollow(id as ID),
@@ -257,12 +249,92 @@ const ConnectedMobileOverflowModal = ({
   )
 }
 
+// Returns { handle, title, isAlbum }, used in mapStateToProps
+const getAdditionalInfo = ({
+  state,
+  id,
+  source
+}: {
+  state: AppState
+  id: ID | string | null
+  source: OverflowSource
+}): {
+  id?: string
+  handle?: string
+  artistName?: string
+  title?: string
+  permalink?: string
+  isAlbum?: boolean
+  notification?: Notification
+  ownerId?: ID
+  collectionPermalink?: string
+} => {
+  if (!id) return {}
+
+  switch (source) {
+    case OverflowSource.TRACKS: {
+      const track = getTrack(state, { id: id as number })
+      if (!track) {
+        const { collectible, user } = getCurrent(state)
+        if (!collectible || !user) return {}
+
+        return {
+          id: collectible.id,
+          title: collectible.name ?? '',
+          ownerId: user.user_id,
+          handle: user.handle,
+          artistName: user.name,
+          permalink: '',
+          isAlbum: false
+        }
+      }
+
+      const user = getUser(state, { id: track.owner_id })
+      if (!user) return {}
+      return {
+        handle: user.handle,
+        artistName: user.name,
+        title: track.title,
+        permalink: track.permalink,
+        isAlbum: false,
+        ownerId: track.owner_id
+      }
+    }
+    case OverflowSource.COLLECTIONS: {
+      const col = getCollection(state, { id: id as number })
+      if (!col) return {}
+      const user = getUser(state, { id: col.playlist_owner_id })
+      if (!user) return {}
+      return {
+        handle: user.handle,
+        artistName: user.name,
+        title: col.playlist_name,
+        isAlbum: col.is_album,
+        collectionPermalink: col.permalink
+      }
+    }
+    case OverflowSource.PROFILE: {
+      const user = getUser(state, { id: id as number })
+      if (!user) return {}
+      return {
+        handle: user.handle,
+        artistName: user.name
+      }
+    }
+  }
+}
+
 const mapStateToProps = (state: AppState) => {
   const modalState = getMobileOverflowModal(state)
   const modalVisibleState = getModalVisibility(state, 'Overflow')
   return {
     ...modalState,
-    isOpen: modalVisibleState === true
+    isOpen: modalVisibleState === true,
+    ...getAdditionalInfo({
+      state,
+      id: modalState.id,
+      source: modalState.source
+    })
   }
 }
 

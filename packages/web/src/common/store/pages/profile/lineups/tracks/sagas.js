@@ -1,9 +1,10 @@
-import { queryAccountUser, queryTrackByUid } from '@audius/common/api'
+import { queryAccountUser } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   profilePageTracksLineupActions as tracksActions,
   accountSelectors,
   cacheTracksActions,
+  cacheTracksSelectors,
   profilePageTracksLineupActions as lineupActions,
   profilePageSelectors,
   TracksSortMode,
@@ -19,6 +20,7 @@ import { watchUploadTracksSaga } from './watchUploadTracksSaga'
 
 const { SET_ARTIST_PICK } = tracksSocialActions
 const { getProfileTracksLineup, getTrackSource } = profilePageSelectors
+const { getTrack } = cacheTracksSelectors
 const { DELETE_TRACK_REQUESTED } = cacheTracksActions
 const { getUserId } = accountSelectors
 const PREFIX = tracksActions.prefix
@@ -65,7 +67,7 @@ function* watchSetArtistPick() {
     )
     const updatedOrderUid = []
     for (const [entryUid, order] of Object.entries(lineup.order)) {
-      const track = yield queryTrackByUid(entryUid)
+      const track = yield select(getTrack, { uid: entryUid })
       const isArtistPick = track.track_id === action.trackId
 
       if (isArtistPick) updatedOrderUid.push({ uid: entryUid, order: 0 })

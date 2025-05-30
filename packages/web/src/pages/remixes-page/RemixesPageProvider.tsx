@@ -4,10 +4,9 @@ import {
   useUser,
   useTrack,
   useTrackByPermalink,
-  useRemixContest,
-  useRemixersCount
+  useRemixContest
 } from '@audius/common/api'
-import { useCurrentTrack, useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -34,7 +33,7 @@ import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getTrackId, getLineup } = remixesPageSelectors
+const { getTrackId, getLineup, getCount } = remixesPageSelectors
 const { fetchTrackSucceeded, reset } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
@@ -53,6 +52,7 @@ type RemixesPageProviderProps = OwnProps &
 const RemixesPageProvider = ({
   containerRef,
   children: Children,
+  count,
   originalTrackId,
   tracks,
   currentQueueItem,
@@ -71,7 +71,6 @@ const RemixesPageProvider = ({
     FeatureFlags.REMIX_CONTEST
   )
   const { data: remixContest } = useRemixContest(originalTrackId)
-  const { data: count = null } = useRemixersCount({ trackId: originalTrackId })
   const isRemixContest = isRemixContestEnabled && remixContest
 
   const { data: originalTrackByPermalink } = useTrackByPermalink(
@@ -81,8 +80,6 @@ const RemixesPageProvider = ({
   const { data: user } = useUser(track?.owner_id)
   const dispatch = useDispatch()
   const trackId = track?.track_id
-
-  const currentTrack = useCurrentTrack()
 
   useEffect(() => {
     if (trackId) {
@@ -117,7 +114,7 @@ const RemixesPageProvider = ({
       lineup: tracks,
       playingUid: currentQueueItem.uid,
       playingSource: currentQueueItem.source,
-      playingTrackId: currentTrack?.track_id ?? null,
+      playingTrackId: currentQueueItem.track && currentQueueItem.track.track_id,
       playing: isPlaying,
       buffering: isBuffering,
       pauseTrack: pause,
@@ -156,6 +153,7 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       originalTrackId: getTrackId(state),
+      count: getCount(state),
       tracks: getRemixesTracksLineup(state),
       currentQueueItem: getCurrentQueueItem(state),
       isPlaying: getPlaying(state),

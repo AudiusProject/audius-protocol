@@ -2,7 +2,6 @@ import {
   repostActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { primeTrackDataSaga } from '@audius/common/api'
 import {
   ID,
   Track,
@@ -14,6 +13,7 @@ import { OptionalId, full } from '@audius/sdk'
 import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 const getTracksAndCollections = (
@@ -64,7 +64,7 @@ export function* retrieveUserReposts({
   const [tracks, collections] = getTracksAndCollections(reposts)
   const trackIds = tracks.map((t) => t.track_id)
   const [processedTracks, processedCollections] = yield all([
-    primeTrackDataSaga(tracks),
+    processAndCacheTracks(tracks),
     processAndCacheCollections(
       collections,
       /* shouldRetrieveTracks */ false,

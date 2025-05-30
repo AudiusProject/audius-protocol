@@ -1,6 +1,7 @@
 import { CommentMention, EntityType } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Comment, Feature, ID } from '~/models'
@@ -27,6 +28,7 @@ export type PostCommentArgs = {
 
 export const usePostComment = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
+  const dispatch = useDispatch()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -103,7 +105,7 @@ export const usePostComment = () => {
       queryClient.setQueryData(getCommentQueryKey(newId), newComment)
 
       // Add to the comment count
-      addCommentCount(queryClient, trackId)
+      addCommentCount(dispatch, queryClient, trackId)
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args
@@ -114,7 +116,7 @@ export const usePostComment = () => {
         feature: Feature.Comments
       })
       // Undo comment count change
-      subtractCommentCount(queryClient, trackId)
+      subtractCommentCount(dispatch, queryClient, trackId)
       // Toast generic error message
       toast({
         content: 'There was an error posting that comment. Please try again'

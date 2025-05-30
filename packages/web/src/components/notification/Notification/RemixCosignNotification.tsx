@@ -1,16 +1,18 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntities } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
+  notificationsSelectors,
   TrackEntity,
   RemixCosignNotification as RemixCosignNotificationType
 } from '@audius/common/store'
+import { Nullable } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 import { Flex } from '~harmony/components/layout/Flex'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
+import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -23,6 +25,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Remix was Co-signed',
@@ -42,13 +45,18 @@ export const RemixCosignNotification = (
   const { entityType, timeLabel, isViewed, childTrackId, parentTrackUserId } =
     notification
 
-  const entities = useNotificationEntities(notification)
-  const tracks = entities as TrackEntity[]
-  const user = tracks?.[0]?.user
+  const user = useSelector((state) => getNotificationUser(state, notification))
+
+  // TODO: casting from EntityType to TrackEntity here, but
+  // getNotificationEntities should be smart enough based on notif type
+  const tracks = useSelector((state) =>
+    getNotificationEntities(state, notification)
+  ) as Nullable<TrackEntity[]>
 
   const dispatch = useDispatch()
 
   const childTrack = tracks?.find((track) => track.track_id === childTrackId)
+
   const parentTrack = tracks?.find(
     (track) => track.owner_id === parentTrackUserId
   )

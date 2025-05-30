@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { useCurrentTrack } from '@audius/common/hooks'
 import { LineupState } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -55,8 +54,6 @@ export const useLineupProps = ({
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
 
-  const currentTrack = useCurrentTrack()
-
   // Selectors
   const currentQueueItem = useSelector(getCurrentQueueItem)
   const lineup = useSelector(getLineup)
@@ -76,7 +73,7 @@ export const useLineupProps = ({
     variant: variant ?? LineupVariant.MAIN,
     playingUid: currentQueueItem?.uid,
     playingSource: currentQueueItem?.source,
-    playingTrackId: currentTrack?.track_id ?? null,
+    playingTrackId: currentQueueItem?.track?.track_id ?? null,
     playing: isPlaying,
     buffering: isBuffering,
     pauseTrack,
@@ -97,13 +94,12 @@ export const useTanQueryLineupProps = () => {
 
   // Selectors
   const currentQueueItem = useSelector(getCurrentQueueItem)
-  const currentTrack = useCurrentTrack()
   const isBuffering = useSelector(getBuffering)
 
   return {
     playingUid: currentQueueItem?.uid,
     playingSource: currentQueueItem?.source,
-    playingTrackId: currentTrack?.track_id ?? null,
+    playingTrackId: currentQueueItem?.track?.track_id ?? null,
     buffering: isBuffering
   }
 }

@@ -10,7 +10,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions as tracksActions } from '@audius/common/store'
-import { pluralize, dayjs } from '@audius/common/utils'
+import { dayjs, pluralize } from '@audius/common/utils'
 import { Text as RNText, View } from 'react-native'
 
 import {

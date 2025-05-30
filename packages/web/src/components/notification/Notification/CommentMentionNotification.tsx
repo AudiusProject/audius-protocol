@@ -1,6 +1,6 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { useGetCurrentUserId, useNotificationEntity } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -28,7 +28,7 @@ import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
-const { getNotificationUsers } = notificationsSelectors
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   mentioned: ' tagged you in a comment on ',
@@ -52,7 +52,9 @@ export const CommentMentionNotification = (
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
 
-  const entity = useNotificationEntity(notification)
+  const entity = useSelector((state) =>
+    getNotificationEntity(state, notification)
+  )
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId

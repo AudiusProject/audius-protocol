@@ -1,10 +1,9 @@
 import { Component } from 'react'
 
-import { useTracks, useUser } from '@audius/common/api'
-import { useCurrentTrack } from '@audius/common/hooks'
 import { Name, RepostSource, PlaybackSource, Kind } from '@audius/common/models'
 import {
   accountSelectors,
+  cacheTracksSelectors,
   lineupSelectors,
   queueActions,
   RepeatMode,
@@ -54,34 +53,14 @@ const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
 const { getUserId } = accountSelectors
+const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200
 const RESTART_THRESHOLD_SEC = 3
 const SKIP_DURATION_SEC = 15
 
-const PlayBar = (props) => {
-  const { trackIds } = props
-  const { data: tracks } = useTracks(trackIds)
-  const currentTrack = useCurrentTrack()
-  const { data: currentUser } = useUser(currentTrack?.owner_id)
-
-  const lineupHasAccessibleTracks = tracks?.some((track) => {
-    const { access, is_stream_gated: isStreamGated } = track ?? {}
-    return !isStreamGated || !!access?.stream
-  })
-
-  return (
-    <PlayBarClassComponent
-      {...props}
-      track={currentTrack}
-      user={currentUser}
-      lineupHasAccessibleTracks={lineupHasAccessibleTracks}
-    />
-  )
-}
-
-class PlayBarClassComponent extends Component {
+class PlayBar extends Component {
   constructor(props) {
     super(props)
 
@@ -454,6 +433,16 @@ const makeMapStateToProps = () => {
     // the track by pressing spacebar. This will prevent the track
     // from attempting to play in that case, and consequently avoiding the
     // infinite loading loop on the playbar.
+    const lineupHasAccessibleTracks = lineupEntries.some((entry) => {
+      if (entry.kind !== Kind.TRACKS) return false
+
+      const { id } = entry
+      const { access, is_stream_gated: isStreamGated } =
+        getTrack(state, { id }) ?? {}
+
+      return !isStreamGated || !!access?.stream
+    })
+
     return {
       seek: getSeek(state),
       accountUserId: getUserId(state),
@@ -463,9 +452,7 @@ const makeMapStateToProps = () => {
       isBuffering: getBuffering(state),
       uid: getUid(state),
       playbackRate: getPlaybackRate(state),
-      trackIds: lineupEntries
-        .filter((entry) => entry.kind === Kind.TRACKS)
-        .map((entry) => entry.id),
+      lineupHasAccessibleTracks,
       userId: getUserId(state),
       theme: getTheme(state)
     }

@@ -1,6 +1,5 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
-import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -17,8 +16,7 @@ import {
   ID,
   UID,
   isContentUSDCPurchaseGated,
-  ModalSource,
-  Track
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -51,8 +49,7 @@ import {
   albumTrackRemoveConfirmationModalActions,
   AlbumTrackRemoveConfirmationModalState,
   PlayerBehavior,
-  playerActions,
-  useLineupTable
+  playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
@@ -104,7 +101,7 @@ const {
   getCollectionPermalink
 } = collectionPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { makeGetLineupOrder } = lineupSelectors
+const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
 const {
   editPlaylist,
   removeTrackFromPlaylist,
@@ -142,26 +139,8 @@ type CollectionPageState = {
 
 type PlaylistTrack = { time: number; track: ID; uid?: UID }
 
-const CollectionPage = (props: CollectionPageProps) => {
-  const currentTrack = useCurrentTrack()
-  const tracks = useLineupTable(getCollectionTracksLineup)
-  return (
-    <CollectionPageClassComponent
-      {...props}
-      currentTrack={currentTrack}
-      tracks={tracks}
-    />
-  )
-}
-
-class CollectionPageClassComponent extends Component<
-  CollectionPageProps & {
-    currentTrack: Track | null
-    tracks: {
-      status: Status
-      entries: CollectionTrack[]
-    }
-  },
+class CollectionPage extends Component<
+  CollectionPageProps,
   CollectionPageState
 > {
   state: CollectionPageState = {
@@ -436,8 +415,8 @@ class CollectionPageClassComponent extends Component<
   }
 
   getPlayingId = () => {
-    const { currentTrack } = this.props
-    return currentTrack?.track_id ?? null
+    const { currentQueueItem } = this.props
+    return currentQueueItem.track ? currentQueueItem.track.track_id : null
   }
 
   formatMetadata = (
@@ -848,11 +827,13 @@ class CollectionPageClassComponent extends Component<
 }
 
 function makeMapStateToProps() {
+  const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
   const getLineupOrder = makeGetLineupOrder(getCollectionTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState) => {
     return {
+      tracks: getTracksLineup(state),
       trackCount: (getCollection(state) as Collection)?.playlist_contents
         .track_ids.length,
       collectionUid: getCollectionUid(state) || '',

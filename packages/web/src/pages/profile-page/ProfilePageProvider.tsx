@@ -1,6 +1,5 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
-import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -8,8 +7,7 @@ import {
   CreatePlaylistSource,
   Status,
   ID,
-  UID,
-  Track
+  UID
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
 import {
@@ -126,15 +124,7 @@ type ProfilePageState = {
   showUnmuteUserConfirmationModal: boolean
 }
 
-const ProfilePage = (props: ProfilePageProps) => {
-  const currentTrack = useCurrentTrack()
-  return <ProfilePageClassComponent {...props} currentTrack={currentTrack} />
-}
-
-class ProfilePageClassComponent extends PureComponent<
-  ProfilePageProps & { currentTrack: Track | null },
-  ProfilePageState
-> {
+class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   state: ProfilePageState = {
     activeTab: null,
     editMode: false,
@@ -425,14 +415,13 @@ class ProfilePageClassComponent extends PureComponent<
   }
 
   getLineupProps = (lineup: any) => {
-    const { currentQueueItem, currentTrack, playing, buffering, containerRef } =
-      this.props
-    const { uid: playingUid, source } = currentQueueItem
+    const { currentQueueItem, playing, buffering, containerRef } = this.props
+    const { uid: playingUid, track, source } = currentQueueItem
     return {
       lineup,
       variant: 'condensed',
       playingSource: source,
-      playingTrackId: currentTrack?.track_id ?? null,
+      playingTrackId: track ? track.track_id : null,
       playingUid,
       playing,
       buffering,

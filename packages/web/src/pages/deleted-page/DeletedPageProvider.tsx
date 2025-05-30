@@ -1,6 +1,5 @@
 import { useEffect, useCallback, ComponentType } from 'react'
 
-import { useCurrentTrack } from '@audius/common/hooks'
 import { Playable, User } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -62,7 +61,6 @@ const DeletedPageProvider = ({
   resetTracks,
   moreBy
 }: DeletedPageProviderProps) => {
-  const currentTrack = useCurrentTrack()
   useEffect(() => {
     return function cleanup() {
       resetTracks()
@@ -81,7 +79,7 @@ const DeletedPageProvider = ({
       count: 5,
       playingUid: currentQueueItem.uid,
       playingSource: currentQueueItem.source,
-      playingTrackId: currentTrack?.track_id ?? null,
+      playingTrackId: currentQueueItem.track && currentQueueItem.track.track_id,
       playing: isPlaying,
       buffering: isBuffering,
       pauseTrack: pause,

@@ -51,7 +51,7 @@ type RetrieveArgs<T> = {
   retrieveFromSource: (
     ids: (ID | string)[]
   ) => Promise<T[]> | Generator<any, T[], any>
-  kind: Exclude<Kind, Kind.TRACKS>
+  kind: Kind
   idField: string
   requiredFields?: Set<string>
   forceRetrieveFromSource?: boolean
@@ -165,7 +165,7 @@ export function* retrieve<T>({
 
 type RetrieveFromSourceThenCacheArgs<T> = {
   idsToFetch: (ID | string)[]
-  kind: Exclude<Kind, Kind.TRACKS>
+  kind: Kind
   retrieveFromSource: (
     ids: (ID | string)[]
   ) => Promise<T[]> | Generator<any, T[], any>
@@ -251,7 +251,7 @@ function* retrieveFromSourceThenCache<T>({
 }
 
 function* add(
-  kind: Exclude<Kind, Kind.TRACKS>,
+  kind: Kind,
   entries: Entry[],
   replace?: boolean,
   persist?: boolean

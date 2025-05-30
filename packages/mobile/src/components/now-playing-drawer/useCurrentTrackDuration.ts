@@ -1,12 +1,11 @@
-import { useCurrentTrack } from '@audius/common/hooks'
 import { playerSelectors } from '@audius/common/store'
 import { getTrackPreviewDuration } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-const { getPreviewing } = playerSelectors
+const { getCurrentTrack, getPreviewing } = playerSelectors
 
 export const useCurrentTrackDuration = () => {
-  const track = useCurrentTrack()
+  const track = useSelector(getCurrentTrack)
   const isPreviewing = useSelector(getPreviewing)
 
   return !track

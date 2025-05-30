@@ -1,6 +1,7 @@
-import { primeTrackDataSaga } from '@audius/common/api'
 import { CollectionMetadata, UserTrackMetadata } from '@audius/common/models'
-import { call } from 'typed-redux-saga'
+// Move all to web
+
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 
 export function* addTracksFromCollections(
   metadataArray: Array<CollectionMetadata>
@@ -14,5 +15,5 @@ export function* addTracksFromCollections(
       })
     }
   })
-  yield* call(primeTrackDataSaga, tracks)
+  yield processAndCacheTracks(tracks)
 }

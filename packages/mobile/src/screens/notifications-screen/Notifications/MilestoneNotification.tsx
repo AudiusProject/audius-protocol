@@ -1,18 +1,20 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
 import type { User } from '@audius/common/models'
 import type {
   EntityType,
   MilestoneNotification as MilestoneNotificationType
 } from '@audius/common/store'
-import { Achievement, notificationsSelectors } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
-import { formatCount, isEntityHidden, route } from '@audius/common/utils'
+import { notificationsSelectors, Achievement } from '@audius/common/store'
+import { isEntityHidden, route, type Nullable } from '@audius/common/utils'
+import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { IconTrophy } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { env } from 'app/services/env'
+import { EventNames } from 'app/types/analytics'
 
 import {
   EntityLink,
@@ -23,9 +25,7 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 import { getEntityRoute } from '../Notification/utils'
-
-const AUDIUS_URL = 'https://audius.co'
-const { getNotificationUser } = notificationsSelectors
+const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Milestone Reached!',
@@ -42,7 +42,8 @@ const messages = {
   ) => {
     const achievementText =
       achievement === Achievement.Listens ? 'plays' : achievement
-    return `My ${type} ${name} has more than ${value} ${achievementText} on @audius\nCheck it out! #Audius $AUDIO`
+    return `My ${type} ${name} has more than ${value} ${achievementText} on @audius
+Check it out! #Audius $AUDIO`
   }
 }
 
@@ -55,7 +56,7 @@ const getTwitterShareData = (
   switch (achievement) {
     case Achievement.Followers: {
       if (user) {
-        const link = `${AUDIUS_URL}${route.profilePage(user.handle)}`
+        const link = `${env.AUDIUS_URL}${route.profilePage(user.handle)}`
         const text = messages.followerAchievementText(value)
         return { text, link }
       }
@@ -90,8 +91,12 @@ type MilestoneNotificationProps = {
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const { achievement } = notification
-  const entity = useNotificationEntity(notification)
+  const entity = useProxySelector(
+    (state) => getNotificationEntity(state, notification),
+    [notification]
+  )
   const user = useSelector((state) => getNotificationUser(state, notification))
+
   const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
@@ -134,7 +139,15 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       </NotificationHeader>
       <NotificationText>{renderBody()}</NotificationText>
       {link && text ? (
-        <NotificationTwitterButton type='static' url={link} shareText={text} />
+        <NotificationTwitterButton
+          type='static'
+          url={link}
+          shareText={text}
+          analytics={{
+            eventName: EventNames.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE,
+            milestone: text
+          }}
+        />
       ) : null}
     </NotificationTile>
   )

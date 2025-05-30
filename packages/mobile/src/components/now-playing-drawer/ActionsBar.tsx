@@ -48,7 +48,7 @@ import { useCommentDrawer } from '../comments/CommentDrawerContext'
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
-const { getUid } = playerSelectors
+const { makeGetCurrent } = playerSelectors
 const { getUserId } = accountSelectors
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
@@ -121,7 +121,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const uid = useSelector(getUid)
+  const currentQueueItem = useSelector(makeGetCurrent())
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
@@ -170,10 +170,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         entityId: track.track_id,
         navigation,
         actions: playerActions,
-        uid: uid as string
+        uid: currentQueueItem.uid as string
       })
     }
-  }, [uid, navigation, open, track])
+  }, [currentQueueItem.uid, navigation, open, track])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, {

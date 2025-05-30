@@ -1,4 +1,4 @@
-import { queryTrack, queryTrackByUid, queryUser } from '@audius/common/api'
+import { queryUser } from '@audius/common/api'
 import {
   Kind,
   ID,
@@ -14,6 +14,7 @@ import {
 import {
   accountSelectors,
   cacheCollectionsSelectors,
+  cacheTracksSelectors,
   cacheActions,
   lineupRegistry,
   queueActions,
@@ -59,6 +60,7 @@ const {
 } = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous } = queueActions
+const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -98,7 +100,7 @@ export function* getToQueue(
       }
     })
   } else if (entry.kind === Kind.TRACKS) {
-    const track = yield* queryTrackByUid(entry.uid)
+    const track = yield* select(getTrack, { uid: entry.uid })
     if (!track) return {}
     return {
       id: track.track_id,
@@ -177,12 +179,10 @@ function* watchPlay() {
     const playerPlayerBehavior = yield* select(getPlayerBehavior)
 
     if (uid || trackId) {
-      let playActionTrack
-      if (trackId) {
-        playActionTrack = yield* queryTrack(trackId)
-      } else if (uid) {
-        playActionTrack = yield* queryTrackByUid(uid)
-      }
+      const playActionTrack = yield* select(
+        getTrack,
+        trackId ? { id: trackId } : { uid }
+      )
 
       if (!playActionTrack) return
 
@@ -278,7 +278,9 @@ function* watchPlay() {
           const flattenedQueue = flatten(toQueue)
           yield* put(add({ entries: flattenedQueue }))
 
-          const playTrack = yield* queryTrackByUid(flattenedQueue[0].uid)
+          const playTrack = yield* select(getTrack, {
+            uid: flattenedQueue[0].uid
+          })
 
           if (!playTrack) return
 
@@ -382,7 +384,7 @@ function* watchNext() {
     const playerBehavior = (yield* select(getPlayerBehavior) || undefined) as
       | PlayerBehavior
       | undefined
-    const track = yield* queryTrack(id)
+    const track = yield* select(getTrack, { id })
     const user = yield* queryUser(track?.owner_id)
     const doesUserHaveStreamAccess =
       !track?.is_stream_gated || !!track?.access?.stream
@@ -495,7 +497,7 @@ function* watchPrevious() {
       const playerBehavior = (yield* select(getPlayerBehavior) || undefined) as
         | PlayerBehavior
         | undefined
-      const track = yield* queryTrack(id)
+      const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
       const user = yield* queryUser(track?.owner_id)
       const doesUserHaveStreamAccess =

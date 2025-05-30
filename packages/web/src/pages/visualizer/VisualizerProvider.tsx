@@ -33,8 +33,6 @@ import {
   useTrackCoverArtDominantColors
 } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
-import { useCurrentTrack } from '@audius/common/hooks'
-import { useUser } from '@audius/common/api'
 
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
@@ -78,9 +76,6 @@ const Visualizer = ({
   // Used to show/hide the visualizer (display: block/none) through a css class
   const [showVisualizer, setShowVisualizer] = useState(false)
 
-  const currentTrack = useCurrentTrack()
-  const { data: user } = useUser(currentTrack?.owner_id)
-
   useEffect(() => {
     if (showVisualizer) {
       let browser
@@ -99,13 +94,13 @@ const Visualizer = ({
 
   // Update Colors
   const dominantColors = useTrackCoverArtDominantColors({
-    trackId: currentTrack?.track_id
+    trackId: currentQueueItem.track?.track_id
   })
   useEffect(() => {
     if (dominantColors !== null) {
       Visualizer1?.setDominantColors(dominantColors)
     }
-  }, [isVisible, dominantColors, playing])
+  }, [isVisible, dominantColors, playing, currentQueueItem])
 
   // Rebind audio
   useEffect(() => {
@@ -121,7 +116,7 @@ const Visualizer = ({
         })
       }
     }
-  }, [isVisible, playing])
+  }, [isVisible, playing, currentQueueItem])
 
   useEffect(() => {
     if (isVisible) {
@@ -152,35 +147,37 @@ const Visualizer = ({
   }, [fadeVisualizer])
 
   const goToTrackPage = useCallback(() => {
-    if (currentTrack && user) {
-      goToRoute(currentTrack.permalink)
+    const { track, user } = currentQueueItem
+    if (track && user) {
+      goToRoute(track.permalink)
     }
-  }, [currentTrack, user])
+  }, [currentQueueItem])
 
   const goToArtistPage = useCallback(() => {
+    const { user } = currentQueueItem
     if (user) {
       goToRoute(profilePage(user.handle))
     }
-  }, [user])
+  }, [currentQueueItem])
 
   const renderTrackInfo = () => {
-    const { uid } = currentQueueItem
+    const { uid, track, user } = currentQueueItem
     const dominantColor = dominantColors
       ? dominantColors[0]
       : { r: 0, g: 0, b: 0 }
-    return currentTrack && user && uid ? (
+    return track && user && uid ? (
       <div className={styles.trackInfoWrapper}>
         <PlayingTrackInfo
-          trackId={currentTrack.track_id}
-          isOwner={currentTrack.owner_id === user.user_id}
-          trackTitle={currentTrack.title}
-          trackPermalink={currentTrack.permalink}
+          trackId={track.track_id}
+          isOwner={track.owner_id === user.user_id}
+          trackTitle={track.title}
+          trackPermalink={track.permalink}
           artistName={user.name}
           artistHandle={user.handle}
           artistUserId={user.user_id}
           isVerified={user.is_verified}
-          isTrackUnlisted={currentTrack.is_unlisted}
-          isStreamGated={currentTrack.is_stream_gated}
+          isTrackUnlisted={track.is_unlisted}
+          isStreamGated={track.is_stream_gated}
           onClickTrackTitle={() => {
             goToTrackPage()
             onClose()
@@ -198,6 +195,7 @@ const Visualizer = ({
     )
   }
 
+  const { track } = currentQueueItem
   return (
     <div
       className={cn(styles.visualizer, {
@@ -228,14 +226,14 @@ const Visualizer = ({
       <div className={styles.infoOverlayTile}>
         <div
           className={cn(styles.artworkWrapper, {
-            [styles.playing]: currentTrack
+            [styles.playing]: track
           })}
           onClick={() => {
             goToTrackPage()
             onClose()
           }}
         >
-          <Artwork track={currentTrack} />
+          <Artwork track={track} />
         </div>
         {renderTrackInfo()}
       </div>

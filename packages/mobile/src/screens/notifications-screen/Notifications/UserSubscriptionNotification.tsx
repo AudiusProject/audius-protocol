@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntities } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
 import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
@@ -18,7 +18,7 @@ import {
   UserNameLink,
   NotificationProfilePicture
 } from '../Notification'
-const { getNotificationUser } = notificationsSelectors
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Release',
@@ -37,7 +37,10 @@ export const UserSubscriptionNotification = (
   const { entityType, entityIds } = notification
   const navigation = useNotificationNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
-  const entities = useNotificationEntities(notification)
+  const entities = useProxySelector(
+    (state) => getNotificationEntities(state, notification),
+    [notification]
+  )
 
   const uploadCount = entityIds.length
   const isSingleUpload = uploadCount === 1

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useTrack, useUser } from '@audius/common/api'
 import {
   FanRemixContestStartedNotification as FanRemixContestStartedNotificationType,
   TrackEntity
@@ -18,7 +18,6 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TrackContent } from './components/TrackContent'
 import { UserNameLink } from './components/UserNameLink'
-import { getEntityLink } from './utils'
 
 const messages = {
   title: 'New Remix Contest',
@@ -33,18 +32,19 @@ export const FanRemixContestStartedNotification = (
   props: FanRemixContestStartedNotificationProps
 ) => {
   const { notification } = props
-  const { timeLabel, isViewed } = notification
+  const { timeLabel, isViewed, entityId, entityUserId } = notification
   const dispatch = useDispatch()
 
-  const entity = useNotificationEntity(notification) as TrackEntity | null
+  const { data: user } = useUser(entityUserId)
+  const { data: track } = useTrack(entityId)
 
   const handleClick = useCallback(() => {
-    if (entity) {
-      dispatch(push(getEntityLink(entity)))
+    if (track) {
+      dispatch(push(track.permalink))
     }
-  }, [entity, dispatch])
+  }, [track, dispatch])
 
-  if (!entity || !entity.user) return null
+  if (!user || !track) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -52,15 +52,15 @@ export const FanRemixContestStartedNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <Flex alignItems='flex-start'>
-        <TrackContent track={entity} hideTitle />
+        <TrackContent track={track as TrackEntity} hideTitle />
         <NotificationBody>
-          <UserNameLink user={entity.user} notification={notification} />{' '}
+          <UserNameLink user={user} notification={notification} />{' '}
           {messages.description}
           <TrackLink
             css={{ display: 'inline' }}
             variant='secondary'
             size='l'
-            trackId={entity.track_id}
+            trackId={track.track_id}
           />
         </NotificationBody>
       </Flex>

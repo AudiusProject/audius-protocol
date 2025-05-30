@@ -2,7 +2,6 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { primeTrackDataSaga } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import {
   accountSelectors,
@@ -13,6 +12,7 @@ import {
 import { OptionalId } from '@audius/sdk'
 import { call, select } from 'typed-redux-saga'
 
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -34,7 +34,8 @@ function* getPremiumTracks({
     { limit, offset, userId: OptionalId.parse(currentUserId) }
   )
   const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-  return yield* call(primeTrackDataSaga, tracks)
+  const processedTracks = yield* call(processAndCacheTracks, tracks)
+  return processedTracks
 }
 
 class PremiumTracksSagas extends LineupSagas<Track> {

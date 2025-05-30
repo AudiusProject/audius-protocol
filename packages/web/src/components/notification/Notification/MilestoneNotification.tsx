@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
 import { Name, User } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -32,7 +31,7 @@ import { IconMilestone } from './components/icons'
 import { getEntityLink } from './utils'
 
 const { profilePage } = route
-const { getNotificationUser } = notificationsSelectors
+const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Milestone Reached!',
@@ -98,7 +97,9 @@ type MilestoneNotificationProps = {
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const { timeLabel, isViewed, achievement } = notification
-  const entity = useNotificationEntity(notification)
+  const entity = useSelector((state) =>
+    getNotificationEntity(state, notification)
+  )
   const user = useSelector((state) => getNotificationUser(state, notification))
   const dispatch = useDispatch()
 

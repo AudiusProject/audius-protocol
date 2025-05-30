@@ -8,8 +8,6 @@ import { QueueSource, Queueable, queueActions } from '~/store/queue'
 import { makeGetCurrent } from '~/store/queue/selectors'
 import { Nullable } from '~/utils'
 
-import { useCurrentTrack } from '../useCurrentTrack'
-
 import { TrackPlayback } from './types'
 
 const { clear, add, play, pause } = queueActions
@@ -115,11 +113,10 @@ export const useToggleTrack = ({
   id
 }: UseToggleTrack) => {
   const currentQueueItem = useSelector(makeGetCurrent())
-  const currentTrack = useCurrentTrack()
   const playing = useSelector(getPlaying)
   const isTrackPlaying = !!(
     playing &&
-    currentTrack &&
+    currentQueueItem.track &&
     currentQueueItem.uid === uid
   )
 

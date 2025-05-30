@@ -1,29 +1,32 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import { useGetCurrentUserId, useNotificationEntity } from '@audius/common/api'
-import { notificationsSelectors } from '@audius/common/store'
+import { useGetCurrentUserId } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import type { CommentReactionNotification as CommentReactionNotificationType } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { notificationsSelectors } from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { make, track } from 'app/services/analytics'
 
 import {
-  EntityLink,
   NotificationHeader,
-  NotificationText,
   NotificationTile,
   ProfilePictureList,
-  UserNameLink
+  UserNameLink,
+  USER_LENGTH_LIMIT,
+  NotificationText,
+  EntityLink
 } from '../Notification'
 
-const { getNotificationUsers } = notificationsSelectors
-
-const USER_LENGTH_LIMIT = 3
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  others: (count: number) => ` and ${count} other${count > 1 ? 's' : ''}`,
-  liked: 'liked',
+  others: (userCount: number) =>
+    ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
+  liked: ' liked your comment on',
   your: 'your',
   their: 'their'
 }
@@ -39,21 +42,33 @@ export const CommentReactionNotification = (
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const users = useProxySelector(
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    [notification]
   )
 
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useNotificationEntity(notification)
+  const entity = useProxySelector(
+    (state) => getNotificationEntity(state, notification),
+    [notification]
+  )
+
   const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReaction =
-    firstUser?.user_id === currentUserId && otherUsersCount === 0
+    entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
+    track(
+      make({
+        eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+        commentId: notification.entityId,
+        notificationType: 'reaction'
+      })
+    )
   }, [navigation, notification])
 
   if (!users || !firstUser || !entity || !entity.user) return null
@@ -65,7 +80,7 @@ export const CommentReactionNotification = (
       </NotificationHeader>
       <NotificationText>
         <UserNameLink user={firstUser} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
+        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.liked}{' '}
         {isOwner ? (
           messages.your

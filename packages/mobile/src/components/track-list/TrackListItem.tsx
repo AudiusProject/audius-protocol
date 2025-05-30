@@ -11,6 +11,8 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
   mobileOverflowMenuUIActions,
   OverflowAction,
   OverflowSource,
@@ -20,8 +22,7 @@ import {
 import {
   Genre,
   getNumericIdFromUid,
-  removeNullable,
-  Uid
+  removeNullable
 } from '@audius/common/utils'
 import type {
   NativeSyntheticEvent,
@@ -51,6 +52,8 @@ import { TrackArtwork } from './TrackArtwork'
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 
 const { getUserId } = accountSelectors
+const { getUserFromTrack } = cacheUsersSelectors
+const { getTrack } = cacheTracksSelectors
 const { getPlaying, getUid } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -164,16 +167,14 @@ export type TrackListItemProps = {
 export const TrackListItem = memo((props: TrackListItemProps) => {
   const { id, uid } = props
 
-  const trackId = id || (uid ? (Uid.fromString(uid).id as ID) : undefined)
-  const { data: track } = useTrack(trackId, {
-    select: (track) => ({ owner_id: track.owner_id })
-  })
-  const user = useUser(track?.owner_id, { select: (user) => !!user })
+  const track = useSelector((state) => getTrack(state, { id, uid }))
+  const user = useSelector((state) => getUserFromTrack(state, { id, uid }))
 
   if (!track || !user) {
     console.warn('Track or user missing for TrackListItem, preventing render')
     return null
   }
+
   return <TrackListItemComponent {...props} />
 })
 

@@ -2,13 +2,13 @@ import { useEffect } from 'react'
 
 import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
+import { setTrackCommentCount } from '~/store/cache/tracks/actions'
 import { Nullable } from '~/utils'
-
-import { getTrackQueryKey } from '../tracks/useTrack'
 
 import { getTrackCommentCountQueryKey } from './utils'
 
@@ -20,6 +20,7 @@ export const useTrackCommentCount = (
   shouldPoll = false
 ) => {
   const { audiusSdk } = useQueryContext()
+  const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const queryData = useQuery({
     queryKey: getTrackCommentCountQueryKey(trackId),
@@ -58,15 +59,8 @@ export const useTrackCommentCount = (
     ) {
       // This keeps the legacy cache in sync with tanquery here - since we update the comment count here more often than the legacy cache
       // We want to keep these values in sync
-      queryClient.setQueryData(
-        getTrackQueryKey(trackId),
-        (prevTrack) =>
-          prevTrack && {
-            ...prevTrack,
-            comment_count: currentCountValue
-          }
-      )
+      dispatch(setTrackCommentCount(trackId as ID, currentCountValue))
     }
-  }, [currentCountValue, previousCurrentCount, queryClient, trackId])
+  }, [currentCountValue, dispatch, previousCurrentCount, trackId])
   return queryData
 }

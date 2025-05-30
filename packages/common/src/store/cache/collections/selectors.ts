@@ -1,11 +1,20 @@
+import { createSelector } from 'reselect'
+
 import { getAllEntries, getEntry } from '~/store/cache/selectors'
-import { getUser as getUserById } from '~/store/cache/users/selectors'
+import { getTrack, getTracks } from '~/store/cache/tracks/selectors'
+import {
+  getUser,
+  getUser as getUserById,
+  getUsers
+} from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
+import { removeNullable } from '~/utils/typeUtils'
+import { Uid } from '~/utils/uid'
 
 import type { ID, UID, Collection, User } from '../../../models'
 import { Status, Kind } from '../../../models'
 
-import type { BatchCachedCollections } from './types'
+import type { BatchCachedCollections, EnhancedCollectionTrack } from './types'
 
 /** @deprecated Use useCollection instead */
 export const getCollection = (
@@ -74,6 +83,43 @@ export const getCollectionsByUid = (state: CommonState) => {
   )
 }
 
+export const getCollectionTracks = (
+  state: CommonState,
+  { id }: { id?: ID }
+) => {
+  const collection = getCollection(state, { id })
+  if (!collection) return null
+
+  const trackIds = collection.playlist_contents.track_ids.map(
+    ({ track }) => track
+  )
+  const tracks = trackIds
+    .map((trackId) => getTrack(state, { id: trackId }))
+    .filter(removeNullable)
+
+  return tracks
+}
+
+export const getCollectionDuration = createSelector(
+  [getCollectionTracks],
+  (collectionTracks) =>
+    collectionTracks?.reduce((acc, track) => acc + track.duration, 0) ?? 0
+)
+
+export const getCollectionTracksWithUsers = (
+  state: CommonState,
+  { id }: { id?: ID }
+) => {
+  const tracks = getCollectionTracks(state, { id })
+  return tracks
+    ?.map((track) => {
+      const user = getUser(state, { id: track.owner_id })
+      if (!user) return null
+      return { ...track, user }
+    })
+    .filter(removeNullable)
+}
+
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   const statuses: { [id: number]: Status } = {}
   props.ids.forEach((id) => {
@@ -83,6 +129,59 @@ export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
     }
   })
   return statuses
+}
+
+const emptyList: EnhancedCollectionTrack[] = []
+export const getTracksFromCollection = (
+  state: CommonState,
+  props: { uid: UID }
+) => {
+  const collection = getCollection(state, props)
+
+  if (
+    !collection ||
+    !collection.playlist_contents ||
+    !collection.playlist_contents.track_ids
+  )
+    return emptyList
+
+  const collectionSource = Uid.fromString(props.uid).source
+
+  const ids = collection.playlist_contents.track_ids.map((t) => t.track)
+  const tracks = getTracks(state, { ids })
+
+  const userIds = Object.keys(tracks)
+    .map((id) => {
+      const track = tracks[id as unknown as number].metadata
+      if (track?.owner_id) {
+        return track.owner_id
+      }
+      console.error(`Found empty track ${id}, expected it to have an owner_id`)
+      return null
+    })
+    .filter((userId) => userId !== null) as number[]
+  const users = getUsers(state, { ids: userIds })
+
+  if (!users || Object.keys(users).length === 0) return emptyList
+
+  // Return tracks & rebuild UIDs for the track so they refer directly to this collection
+  return collection.playlist_contents.track_ids
+    .map((t, i) => {
+      const trackUid = Uid.fromString(t.uid ?? '')
+      trackUid.source = `${collectionSource}:${trackUid.source}`
+      trackUid.count = i
+
+      if (!tracks[t.track]) {
+        console.error(`Found empty track ${t.track}`)
+        return null
+      }
+      return {
+        ...tracks[t.track].metadata,
+        uid: trackUid.toString(),
+        user: users[tracks[t.track].metadata.owner_id].metadata
+      }
+    })
+    .filter(Boolean) as EnhancedCollectionTrack[]
 }
 
 export type EnhancedCollection = Collection & { user: User }

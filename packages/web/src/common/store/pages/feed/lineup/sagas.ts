@@ -2,7 +2,6 @@ import {
   transformAndCleanList,
   userFeedItemFromSDK
 } from '@audius/common/adapters'
-import { primeTrackDataSaga } from '@audius/common/api'
 import {
   FeedFilter,
   Kind,
@@ -23,6 +22,7 @@ import { Id, full } from '@audius/sdk'
 import { all, call, select } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -79,7 +79,7 @@ function* getTracks({
 
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
-    primeTrackDataSaga(tracks),
+    processAndCacheTracks(tracks),
     processAndCacheCollections(collections, false)
   ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(

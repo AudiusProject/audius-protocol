@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntities } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
 import type { AddTrackToPlaylistNotification as AddTrackToPlaylistNotificationType } from '@audius/common/store'
+import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
 
 import { IconPlaylists } from '@audius/harmony-native'
@@ -16,13 +17,13 @@ import {
   UserNameLink,
   NotificationProfilePicture
 } from '../Notification'
+const { getNotificationEntities } = notificationsSelectors
 
 const messages = {
-  title: 'Added to Playlist',
+  title: 'Track Added to Playlist',
   addedTrack: ' added your track ',
   toPlaylist: ' to their playlist '
 }
-
 type AddTrackToPlaylistNotificationProps = {
   notification: AddTrackToPlaylistNotificationType
 }
@@ -32,9 +33,12 @@ export const AddTrackToPlaylistNotification = (
 ) => {
   const { notification } = props
   const navigation = useNotificationNavigation()
-  const entities = useNotificationEntities(notification)
+  const entities = useProxySelector(
+    (state) => getNotificationEntities(state, notification),
+    [notification]
+  )
   const { track, playlist } = entities
-  const playlistOwner = playlist?.user
+  const playlistOwner = playlist.user
 
   const handlePress = useCallback(() => {
     if (playlist) {
@@ -42,7 +46,7 @@ export const AddTrackToPlaylistNotification = (
     }
   }, [playlist, navigation, notification])
 
-  if (!playlistOwner || !track || !playlist) return null
+  if (!playlistOwner) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>

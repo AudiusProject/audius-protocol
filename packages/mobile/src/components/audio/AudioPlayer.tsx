@@ -1,12 +1,11 @@
-import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { useTracks } from '@audius/common/api'
-import { useCurrentTrack } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import type { ID, Track } from '@audius/common/models'
+import type { Track } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
+  cacheTracksSelectors,
   savedPageTracksLineupActions,
   queueActions,
   queueSelectors,
@@ -32,7 +31,7 @@ import {
 import type { Nullable } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { getMirrorStreamUrl } from '@audius/web/src/common/store/player/sagas'
-import { isEqual, uniq } from 'lodash'
+import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
@@ -71,8 +70,15 @@ export const DEFAULT_IMAGE_URL =
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
-const { getPlaying, getSeek, getCounter, getPlaybackRate, getUid } =
-  playerSelectors
+const { getTracks } = cacheTracksSelectors
+const {
+  getPlaying,
+  getSeek,
+  getCurrentTrack,
+  getCounter,
+  getPlaybackRate,
+  getUid
+} = playerSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
@@ -157,7 +163,7 @@ type QueueableTrack = {
 } & Pick<Queueable, 'playerBehavior'>
 
 export const AudioPlayer = () => {
-  const track = useCurrentTrack()
+  const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
@@ -186,28 +192,21 @@ export const AudioPlayer = () => {
   const queueOrder = useSelector(getOrder)
   const queueSource = useSelector(getSource)
   const queueCollectionId = useSelector(getCollectionId)
-  const queueTrackUids = useMemo(
-    () => queueOrder.map((trackData) => trackData.uid),
-    [queueOrder]
+  const queueTrackUids = queueOrder.map((trackData) => trackData.uid)
+  const queueTrackIds = queueOrder.map((trackData) => trackData.id)
+  const queueTrackMap = useSelector(
+    (state) => getTracks(state, { uids: queueTrackUids }),
+    shallowCompare
   )
-  const queueTrackIds = useMemo(
-    () => queueOrder.map((trackData) => trackData.id as ID),
-    [queueOrder]
+  const queueTracks: QueueableTrack[] = queueOrder.map(
+    ({ id, playerBehavior }) => ({
+      track: queueTrackMap[id]?.metadata,
+      playerBehavior
+    })
   )
-  const { byId: tracksById } = useTracks(uniq(queueTrackIds))
-  const queueTracks = useMemo(
-    () =>
-      queueOrder.map(({ id, playerBehavior }) => ({
-        track: tracksById[id],
-        playerBehavior
-      })),
-    [queueOrder, tracksById]
-  )
-  const queueTrackOwnerIds = useMemo(
-    () =>
-      queueTracks.map(({ track }) => track?.owner_id).filter(removeNullable),
-    [queueTracks]
-  )
+  const queueTrackOwnerIds = queueTracks
+    .map(({ track }) => track?.owner_id)
+    .filter(removeNullable)
 
   const queueTrackOwnersMap = useSelector(
     (state) => getUsers(state, { ids: queueTrackOwnerIds }),

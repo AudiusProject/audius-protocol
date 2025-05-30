@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -23,11 +22,10 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTastemaker } from './components/icons'
 import { getEntityLink } from './utils'
-
-const { getNotificationUser } = notificationsSelectors
+const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
-  title: "You're a Tastemaker!",
+  title: 'You’re a Tastemaker!',
   is: 'is',
   tastemaker: 'now trending thanks to you! Great work 🙌',
   twitterShare: (trackOwnerHandle: string, trackTitle: string) => {
@@ -43,7 +41,9 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
   const { notification } = props
   const { entityType, timeLabel, isViewed } = notification
   const dispatch = useDispatch()
-  const track = useNotificationEntity(notification) as Nullable<TrackEntity>
+  const track = useSelector((state) =>
+    getNotificationEntity(state, notification)
+  ) as Nullable<TrackEntity>
   const trackOwnerUser = useSelector((state) =>
     getNotificationUser(state, notification)
   )

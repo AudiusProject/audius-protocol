@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntities } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -26,7 +25,7 @@ import { UserNameLink } from './components/UserNameLink'
 import { IconRelease } from './components/icons'
 import { getEntityLink } from './utils'
 const { profilePage } = route
-const { getNotificationUser } = notificationsSelectors
+const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Release',
@@ -44,7 +43,9 @@ export const UserSubscriptionNotification = (
   const { notification } = props
   const { entityType, entityIds, timeLabel, isViewed, type } = notification
   const user = useSelector((state) => getNotificationUser(state, notification))
-  const entities = useNotificationEntities(notification)
+  const entities = useSelector((state) =>
+    getNotificationEntities(state, notification)
+  )
   const uploadCount = entityIds.length
   const isSingleUpload = uploadCount === 1
 

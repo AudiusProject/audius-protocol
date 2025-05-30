@@ -1,10 +1,15 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
 import type { StringUSDC } from '@audius/common/models'
-import type { USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType } from '@audius/common/store'
+import type {
+  CollectionEntity,
+  Entity,
+  TrackEntity,
+  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
+} from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
 import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 import { useSelector } from 'react-redux'
 
@@ -12,21 +17,22 @@ import { IconCart } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
-  NotificationTile,
+  EntityLink,
   NotificationHeader,
   NotificationText,
+  NotificationTile,
   NotificationTitle,
-  UserNameLink,
-  EntityLink
+  UserNameLink
 } from '../Notification'
 
-const { getNotificationUsers } = notificationsSelectors
+const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
-  title: (type: string) => `${capitalize(type)} Sold`,
-  congrats: 'Congrats, ',
+  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
+  congrats: 'Congrats,',
   someone: 'someone',
-  justBoughtYourTrack: (type: string) => ` just bought your ${type} `,
+  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
+    ` just bought your ${type} `,
   for: ' for ',
   exclamation: '!',
   dollar: '$'
@@ -42,7 +48,9 @@ export const USDCPurchaseSellerNotification = (
   const { notification } = props
   const { entityType } = notification
   const navigation = useNotificationNavigation()
-  const content = useNotificationEntity(notification)
+  const content = useSelector((state) =>
+    getNotificationEntity(state, notification)
+  ) as Nullable<TrackEntity | CollectionEntity>
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )

@@ -1,11 +1,6 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect } from 'react'
 
-import {
-  useCollection,
-  useCollectionTracks,
-  useTracks
-} from '@audius/common/api'
-import { useCurrentTrack, useGatedContentAccessMap } from '@audius/common/hooks'
+import { useCollection } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -18,23 +13,27 @@ import type {
   UID,
   AccessConditions
 } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
+  cacheCollectionsSelectors,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
   reachabilitySelectors,
   playerSelectors,
+  cacheTracksSelectors,
   PurchaseableContentType,
   queueActions,
   collectionPageActions
 } from '@audius/common/store'
-import { formatReleaseDate, Uid } from '@audius/common/utils'
+import { formatReleaseDate } from '@audius/common/utils'
 import type { Maybe, Nullable } from '@audius/common/utils'
 import dayjs from 'dayjs'
-import { pick, uniq } from 'lodash'
+import { pick } from 'lodash'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
+import { useGatedContentAccessMap } from '~/hooks'
 
 import {
   Box,
@@ -72,9 +71,11 @@ import { makeStyles } from 'app/styles'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
 import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
-const { getPlaying, getPreviewing, getUid } = playerSelectors
+const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
+const { getCollectionTracks } = cacheCollectionsSelectors
+const { getTracks } = cacheTracksSelectors
 const { resetCollection, fetchCollection } = collectionPageActions
 
 const selectTrackUids = createSelector(
@@ -246,7 +247,9 @@ export const CollectionScreenDetailsTile = ({
 
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined
-  const { data: collectionTracks } = useCollectionTracks(numericCollectionId)
+  const collectionTracks = useSelector((state: CommonState) =>
+    getCollectionTracks(state, { id: numericCollectionId })
+  )
   const trackAccessMap = useGatedContentAccessMap(collectionTracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
     ({ hasStreamAccess }) => hasStreamAccess
@@ -260,7 +263,7 @@ export const CollectionScreenDetailsTile = ({
   const isPlaying = isPlaybackActive && isQueued
   const isPreviewing = useSelector(getPreviewing)
   const isPlayingPreview = isPreviewing && isPlaying
-  const playingTrack = useCurrentTrack()
+  const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
   const messages = getMessages(isAlbum ? 'album' : 'playlist', isStreamGated)
@@ -278,14 +281,12 @@ export const CollectionScreenDetailsTile = ({
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
 
   const uids = isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids
-  const trackIds = useMemo(
-    () => uniq(uids.map((uid) => Uid.fromString(uid)?.id as ID)),
-    [uids]
+  const tracks = useSelector((state) => getTracks(state, { uids }))
+  const areAllTracksDeleted = Object.values(tracks).every(
+    (track) => track?.metadata?.is_delete
   )
-  const { data: tracks = [] } = useTracks(trackIds)
-  const areAllTracksDeleted = tracks.every((track) => track.is_delete)
   const isPlayable =
-    tracks.length === 0
+    Object.values(tracks).length === 0
       ? true
       : !areAllTracksDeleted && (isQueued || (trackCount > 0 && !!firstTrack))
 

@@ -5,13 +5,14 @@ import {
   cacheActions,
   cacheUsersActions as userActions,
   getContext,
-  mergeCustomizer
+  cacheReducer
 } from '@audius/common/store'
 import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
 
+const { mergeCustomizer } = cacheReducer
 const { getUserId } = accountSelectors
 
 // For updates and adds, sync the account user to local storage.

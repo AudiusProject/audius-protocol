@@ -1,10 +1,14 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import type { USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType } from '@audius/common/store'
+import type {
+  CollectionEntity,
+  Entity,
+  TrackEntity,
+  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
+} from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
-import { getEntityTitle } from '@audius/common/utils'
+import { getEntityTitle, type Nullable } from '@audius/common/utils'
 import { make } from '@audius/web/src/common/store/analytics/actions'
 import { lowerCase } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -23,19 +27,22 @@ import {
 } from '../Notification'
 import { getEntityRoute } from '../Notification/utils'
 
-const { getNotificationUsers } = notificationsSelectors
+const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: 'Purchase Successful',
   youJustPurchased: 'You just purchased',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (title: string, sellerUsername: string, type: string) =>
+  twitterShare: (
+    title: string,
+    sellerUsername: string,
+    type: Entity.Track | Entity.Album
+  ) =>
     `I bought the ${lowerCase(
       type
     )} ${title} by ${sellerUsername} on @Audius! $AUDIO #AudiusPremium`
 }
-
 type USDCPurchaseBuyerNotificationProps = {
   notification: USDCPurchaseBuyerNotificationType
 }
@@ -45,7 +52,9 @@ export const USDCPurchaseBuyerNotification = ({
 }: USDCPurchaseBuyerNotificationProps) => {
   const { entityType } = notification
   const navigation = useNotificationNavigation()
-  const content = useNotificationEntity(notification)
+  const content = useSelector((state) =>
+    getNotificationEntity(state, notification)
+  ) as Nullable<TrackEntity | CollectionEntity>
   const notificationUsers = useSelector((state) =>
     getNotificationUsers(state, notification, 1)
   )
@@ -53,7 +62,6 @@ export const USDCPurchaseBuyerNotification = ({
 
   const handleShare = useCallback(
     (sellerHandle: string) => {
-      if (!content) return null
       const trackTitle = getEntityTitle(content)
       const shareText = messages.twitterShare(
         trackTitle,
@@ -64,7 +72,7 @@ export const USDCPurchaseBuyerNotification = ({
         Name.NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE,
         { text: shareText }
       )
-      return { shareText, analytics }
+      return { shareText: content ? shareText : '', analytics }
     },
     [content, entityType]
   )

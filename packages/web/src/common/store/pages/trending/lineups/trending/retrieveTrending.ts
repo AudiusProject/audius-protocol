@@ -2,10 +2,10 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { primeTrackDataSaga, queryTracks } from '@audius/common/api'
 import { TimeRange, ID, Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
+  cacheTracksSelectors,
   trendingPageLineupSelectors,
   trendingPageActions,
   trendingPageSelectors,
@@ -15,12 +15,15 @@ import {
 import { Genre, Nullable } from '@audius/common/utils'
 import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
-import { call, put, select } from 'typed-redux-saga'
+import { call, put, select } from 'redux-saga/effects'
 
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
+import { AppState } from 'store/types'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
 const { setLastFetchedTrendingGenre } = trendingPageActions
 const { getTrendingEntries } = trendingPageLineupSelectors
+const { getTracks } = cacheTracksSelectors
 
 type RetrieveTrendingArgs = {
   timeRange: TimeRange
@@ -60,8 +63,13 @@ export function* retrieveTrending({
 
   if (useCached) {
     const trackIds = cachedTracks.slice(offset, limit + offset).map((t) => t.id)
-    const tracks: Track[] = yield* call(queryTracks, trackIds)
-    return tracks.filter((t: Track) => !t.is_unlisted)
+    const tracksMap: ReturnType<typeof getTracks> = yield select(
+      (state: AppState) => getTracks(state, { ids: trackIds })
+    )
+    const tracks = trackIds
+      .map((id) => tracksMap[id].metadata)
+      .filter((t) => t && !t.is_unlisted)
+    return tracks
   }
 
   const args = {
@@ -82,13 +90,12 @@ export function* retrieveTrending({
   // it will still be returned in the trending api for a little while.
   // We check the store to see if any of the returned tracks are locally hidden,
   // if so, we filter them out.
-  const tracks: Track[] = yield* call(
-    queryTracks,
-    apiTracks.map((t) => t.track_id)
+  const tracksMap: ReturnType<typeof getTracks> = yield select(
+    (state: AppState) =>
+      getTracks(state, { ids: apiTracks.map((t) => t.track_id) })
   )
   apiTracks = apiTracks.filter(
-    (t) =>
-      !tracks.find((track: Track) => track.track_id === t.track_id)?.is_unlisted
+    (t) => !tracksMap[t.track_id] || !tracksMap[t.track_id].metadata.is_unlisted
   )
 
   if (TF.size > 0) {
@@ -103,5 +110,6 @@ export function* retrieveTrending({
   // If we changed genres, do nothing
   if (currentGenre !== genre) return []
 
-  return yield* call(primeTrackDataSaga, apiTracks)
+  const processed: Track[] = yield processAndCacheTracks(apiTracks)
+  return processed
 }

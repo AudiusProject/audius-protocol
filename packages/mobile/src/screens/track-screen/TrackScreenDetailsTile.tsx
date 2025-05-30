@@ -7,7 +7,7 @@ import {
   useTrackRank,
   useStems
 } from '@audius/common/api'
-import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
+import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -324,7 +324,6 @@ export const TrackScreenDetailsTile = ({
   )
 
   const currentQueueItem = useSelector(getCurrentQueueItem)
-  const currentTrack = useCurrentTrack()
   const play = useCallback(
     ({ isPreview = false } = {}) => {
       if (isLineupLoading) return
@@ -334,8 +333,8 @@ export const TrackScreenDetailsTile = ({
         recordPlay(trackId, false, true)
       } else if (
         currentQueueItem.uid !== uid &&
-        currentTrack &&
-        currentTrack.track_id === trackId
+        currentQueueItem.track &&
+        currentQueueItem.track.track_id === trackId
       ) {
         dispatch(tracksActions.play())
         recordPlay(trackId)
@@ -345,15 +344,14 @@ export const TrackScreenDetailsTile = ({
       }
     },
     [
-      isLineupLoading,
+      trackId,
+      currentQueueItem,
+      uid,
+      dispatch,
       isPlaying,
       isPlayingId,
       isPreviewing,
-      currentQueueItem.uid,
-      uid,
-      currentTrack,
-      trackId,
-      dispatch
+      isLineupLoading
     ]
   )
 

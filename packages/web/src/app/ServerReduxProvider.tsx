@@ -2,6 +2,7 @@ import { ReactElement } from 'react'
 
 import { Kind } from '@audius/common/src/models/Kind'
 import {
+  cacheTracksReducer,
   cacheCollectionsReducer,
   cacheUsersReducer
 } from '@audius/common/src/store/cache'
@@ -23,6 +24,8 @@ type ServerReduxProviderProps = {
 const reducers = {
   // @ts-ignore
   users: asCache(cacheUsersReducer, Kind.USERS),
+  // @ts-ignore
+  tracks: asCache(cacheTracksReducer, Kind.TRACKS),
   // @ts-ignore
   collections: asCache(cacheCollectionsReducer, Kind.COLLECTIONS),
   pages: combineReducers({

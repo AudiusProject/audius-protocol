@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useCurrentTrack, useImageSize } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import {
   cacheUsersSelectors,
@@ -20,7 +20,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 const { setIsCasting } = castActions
-const { getPlaying, getSeek, getCounter } = playerSelectors
+const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
 
 const { getUser } = cacheUsersSelectors
 
@@ -31,7 +31,7 @@ export const useChromecast = () => {
 
   // Data hooks
   const counter = useSelector(getCounter)
-  const track = useCurrentTrack()
+  const track = useSelector(getCurrentTrack)
   const prevTrack = usePrevious(track)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)

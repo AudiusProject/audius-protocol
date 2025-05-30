@@ -15,7 +15,7 @@ export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
 export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
 
 type BaseAddAction<EntryT extends Metadata = Metadata> = {
-  kind: Exclude<Kind, Kind.TRACKS>
+  kind: Kind
   entries: Entry<EntryT>[]
   // replace optionally replaces the entire entry instead of joining metadata
   replace?: boolean
@@ -32,7 +32,7 @@ export type AddAction<EntryT extends Metadata = Metadata> =
  * Signals to add an entity to the cache.
  */
 export const add = (
-  kind: Exclude<Kind, Kind.TRACKS>,
+  kind: Kind,
   entries: Entry[],
   replace = false,
   persist = true
@@ -94,7 +94,7 @@ export const addEntries = (
 /**
  * Updates an entry in the cache.
  */
-export const update = (kind: Exclude<Kind, Kind.TRACKS>, entries: Entry[]) => ({
+export const update = (kind: Kind, entries: Entry[]) => ({
   type: UPDATE,
   kind,
   entries
@@ -106,10 +106,7 @@ export const update = (kind: Exclude<Kind, Kind.TRACKS>, entries: Entry[]) => ({
  *  entries = [{ id: 2, metadata: { followee_count: 1 } }]
  * would yield an update to the cached followee_count of id 2 by 1.
  */
-export const increment = (
-  kind: Exclude<Kind, Kind.TRACKS>,
-  entries: Entry[]
-) => ({
+export const increment = (kind: Kind, entries: Entry[]) => ({
   type: INCREMENT,
   kind,
   entries
@@ -119,7 +116,7 @@ export const increment = (
  * Sets the status of N entries.
  */
 export const setStatus = (
-  kind: Exclude<Kind, Kind.TRACKS>,
+  kind: Kind,
   statuses: { id: ID | string; status: Status }[]
 ) => ({
   type: SET_STATUS,
@@ -141,7 +138,7 @@ export const subscribe = (kind: Kind, subscribers: SubscriberInfo[]) => ({
  * @param {Kind} kind
  * @param {string} id
  */
-export const setExpired = (kind: Exclude<Kind, Kind.TRACKS>, id: ID) => ({
+export const setExpired = (kind: Kind, id: ID) => ({
   type: SET_EXPIRED,
   kind,
   id

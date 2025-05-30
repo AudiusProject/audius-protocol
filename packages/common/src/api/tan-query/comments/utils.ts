@@ -1,9 +1,10 @@
 import { InfiniteData, QueryClient } from '@tanstack/react-query'
+import { Dispatch } from 'redux'
 
 import { ID } from '~/models'
+import { incrementTrackCommentCount } from '~/store/cache/tracks/actions'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { getTrackQueryKey } from '../tracks/useTrack'
 import { QueryKey } from '../types'
 
 import { CommentOrReply, TrackCommentCount } from './types'
@@ -75,34 +76,28 @@ export const resetPreviousCommentCount = (
   trackId: ID
 ) => setPreviousCommentCount(queryClient, trackId)
 
-export const addCommentCount = (queryClient: QueryClient, trackId: ID) => {
+export const addCommentCount = (
+  dispatch: Dispatch,
+  queryClient: QueryClient,
+  trackId: ID
+) => {
   // Increment the track comment count
   setPreviousCommentCount(queryClient, trackId, (prevData) => ({
     previousValue: (prevData?.previousValue ?? 0) + 1,
     currentValue: (prevData?.currentValue ?? 0) + 1
   }))
-  queryClient.setQueryData(
-    getTrackQueryKey(trackId),
-    (prevTrack) =>
-      prevTrack && {
-        ...prevTrack,
-        comment_count: (prevTrack.comment_count ?? 0) + 1
-      }
-  )
+  dispatch(incrementTrackCommentCount(trackId, 1))
 }
 
-export const subtractCommentCount = (queryClient: QueryClient, trackId: ID) => {
+export const subtractCommentCount = (
+  dispatch: Dispatch,
+  queryClient: QueryClient,
+  trackId: ID
+) => {
   // Increment the track comment count
   setPreviousCommentCount(queryClient, trackId, (prevData) => ({
     previousValue: (prevData?.previousValue ?? 0) - 1,
     currentValue: (prevData?.currentValue ?? 0) - 1
   }))
-  queryClient.setQueryData(
-    getTrackQueryKey(trackId),
-    (prevTrack) =>
-      prevTrack && {
-        ...prevTrack,
-        comment_count: (prevTrack.comment_count ?? 1) - 1
-      }
-  )
+  dispatch(incrementTrackCommentCount(trackId, -1))
 }

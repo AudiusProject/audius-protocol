@@ -4,6 +4,7 @@ import type { SmartCollectionVariant } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
+  cacheActions,
   collectionPageLineupActions,
   collectionPageSelectors,
   queueSelectors
@@ -91,6 +92,19 @@ export const useFetchCollectionLineup = (
               typeof time === 'string' ? moment(time) : moment.unix(time)
           }
         })
+      const lineupTracks = sortedTracks.map((track) => ({
+        id: track.id,
+        kind: Kind.TRACKS,
+        uid: track.uid
+      }))
+
+      const cacheTracks = lineupTracks.map((track) => ({
+        id: track.id,
+        uid: track.uid,
+        metadata: track
+      }))
+
+      dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
       dispatch(
         collectionPageLineupActions.fetchLineupMetadatasSucceeded(

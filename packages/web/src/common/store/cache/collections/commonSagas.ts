@@ -4,12 +4,7 @@ import {
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import {
-  queryCollection,
-  queryCollectionTracks,
-  queryTrack,
-  queryUser
-} from '@audius/common/api'
+import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -22,6 +17,7 @@ import {
   accountActions,
   accountSelectors,
   cacheCollectionsActions as collectionActions,
+  cacheCollectionsSelectors,
   cacheActions,
   PlaylistOperations,
   reformatCollection,
@@ -61,6 +57,7 @@ import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
 const { manualClearToast, toast } = toastActions
+const { getCollectionTracks } = cacheCollectionsSelectors
 const { getAccountUser, getUserId } = accountSelectors
 
 const messages = {
@@ -111,7 +108,7 @@ function* editPlaylistAsync(
   )
 
   let playlist: Collection = { ...formFields }
-  const playlistTracks = yield* call(queryCollectionTracks, playlistId)
+  const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
   const updatedTracks = (yield* all(
     formFields.playlist_contents.track_ids.map(({ track }) =>
       call(queryTrack, track)
@@ -151,7 +148,9 @@ function* editPlaylistAsync(
   yield* put(toast({ content: messages.editToast }))
 
   if (playlistBeforeEdit?.is_private && !playlist.is_private) {
-    const playlistTracks = yield* call(queryCollectionTracks, playlistId)
+    const playlistTracks = yield* select(getCollectionTracks, {
+      id: playlistId
+    })
 
     // Publish all hidden tracks
     // If the playlist is a scheduled release
@@ -262,7 +261,7 @@ function* removeTrackFromPlaylistAsync(
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* queryCollection(playlistId)
-  const playlistTracks = yield* call(queryCollectionTracks, playlistId)
+  const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
   const removedTrack = yield* queryTrack(trackId)
 
   const updatedPlaylist = yield* call(
@@ -394,7 +393,7 @@ function* orderPlaylistAsync(
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* queryCollection(playlistId)
-  const tracks = yield* call(queryCollectionTracks, playlistId)
+  const tracks = yield* select(getCollectionTracks, { id: playlistId })
 
   const trackIds = trackIdsAndTimes.map(({ id }) => id)
 
@@ -508,7 +507,9 @@ function* confirmPublishPlaylist(
           ])
         )
 
-        const playlistTracks = yield* call(queryCollectionTracks, playlistId)
+        const playlistTracks = yield* select(getCollectionTracks, {
+          id: playlistId
+        })
         // Publish all hidden tracks
         // If the playlist is a scheduled release
         //    AND all tracks are scheduled releases, publish them all

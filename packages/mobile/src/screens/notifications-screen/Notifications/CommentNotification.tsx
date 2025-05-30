@@ -1,29 +1,31 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
+import { Name } from '@audius/common/models'
 import type { CommentNotification as CommentNotificationType } from '@audius/common/store'
 import { notificationsSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { track, make } from 'app/services/analytics'
 
 import {
-  EntityLink,
   NotificationHeader,
-  NotificationText,
   NotificationTile,
   ProfilePictureList,
-  UserNameLink
+  UserNameLink,
+  USER_LENGTH_LIMIT,
+  NotificationText,
+  EntityLink
 } from '../Notification'
 
-const { getNotificationUsers } = notificationsSelectors
-
-const USER_LENGTH_LIMIT = 3
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
-  others: (count: number) => ` and ${count} other${count > 1 ? 's' : ''}`,
-  commented: 'commented on your'
+  others: (userCount: number) =>
+    ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
+  commented: ' commented on your'
 }
 
 type CommentNotificationProps = {
@@ -35,18 +37,28 @@ export const CommentNotification = (props: CommentNotificationProps) => {
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const users = useProxySelector(
+    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
+    [notification]
   )
 
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useNotificationEntity(notification)
+  const entity = useProxySelector(
+    (state) => getNotificationEntity(state, notification),
+    [notification]
+  )
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
-    // Optionally keep analytics tracking here
+    track(
+      make({
+        eventName: Name.COMMENTS_NOTIFICATION_OPEN,
+        commentId: notification.entityId,
+        notificationType: 'comment'
+      })
+    )
   }, [navigation, notification])
 
   if (!users || !firstUser || !entity) return null

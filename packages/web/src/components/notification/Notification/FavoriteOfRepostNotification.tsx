@@ -1,4 +1,3 @@
-import { useNotificationEntity } from '@audius/common/api'
 import {
   notificationsSelectors,
   Entity,
@@ -17,7 +16,7 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFavorite } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
-const { getNotificationUsers } = notificationsSelectors
+const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   favorited: ' favorited your repost of '
@@ -37,7 +36,9 @@ export const FavoriteOfRepostNotification = (
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useNotificationEntity(notification)
+  const entity = useSelector((state) =>
+    getNotificationEntity(state, notification)
+  )
 
   const entityTypeText =
     entity && 'is_album' in entity && entity.is_album
