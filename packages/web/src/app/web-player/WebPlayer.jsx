@@ -11,6 +11,7 @@ import {
 import {
   selectHasAccount,
   selectIsGuestAccount,
+  useAccountStatus,
   useCurrentAccount
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -240,16 +241,15 @@ const WebPlayer = (props) => {
     select: (account) => ({
       hasAccount: selectHasAccount(account),
       userHandle: account?.user?.handle,
-      isGuestAccount: selectIsGuestAccount(account),
-      accountStatus: account?.status
+      isGuestAccount: selectIsGuestAccount(account)
     })
   })
   const {
     userHandle,
     isGuestAccount = false,
-    accountStatus,
     hasAccount = false
   } = accountData || {}
+  const { data: accountStatus } = useAccountStatus()
   const showCookieBanner = useSelector(getShowCookieBanner)
 
   // Convert mapDispatchToProps to useCallback with useDispatch
