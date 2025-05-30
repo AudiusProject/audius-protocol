@@ -18,6 +18,7 @@ export const settingsMessages = {
   appearanceTitle: 'Appearance',
   inboxSettingsCardTitle: 'Inbox Settings',
   commentSettingsCardTitle: 'Comment Settings',
+  labelAccountCardTitle: 'Label Account',
   notificationsCardTitle: 'Configure Notifications',
   accountRecoveryCardTitle: 'Resend Recovery Email',
   changeEmailCardTitle: 'Change Email',
@@ -44,6 +45,8 @@ export const settingsMessages = {
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
   desktopAppCardDescription:
     'For the best experience, we recommend downloading the Audius App.',
+  labelAccountCardDescription:
+    'Identify as a record label on your Audius profile.',
 
   aiGeneratedEnabled: 'Enabled',
   aiGeneratedButtonText: 'AI Generated Music Settings',
@@ -55,6 +58,7 @@ export const settingsMessages = {
   changePasswordButtonText: 'Change Password',
   desktopAppButtonText: 'Get The App',
   showPrivateKey: 'Show Private Key (Advanced)',
+  labelAccountButtonText: 'Change',
   signOutModalText: `
   Are you sure you want to sign out?
   Double check that you have an account recovery email just in case (resend from your settings).

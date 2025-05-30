@@ -43,6 +43,7 @@ export const initialState: BasicModalsState = {
   StripeOnRamp: { isOpen: false },
   InboxSettings: { isOpen: false },
   CommentSettings: { isOpen: false },
+  LabelAccount: { isOpen: false },
   PrivateKeyExporter: { isOpen: false },
   LockedContent: { isOpen: false },
   PlaybackRate: { isOpen: false },

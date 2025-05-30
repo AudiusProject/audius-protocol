@@ -1,8 +1,9 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { userMetadataToSdk } from '~/adapters/user'
-import { useQueryContext } from '~/api/tan-query/utils'
+import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
 import { Feature } from '~/models/ErrorReporting'
 import { UserMetadata, WriteableUserMetadata } from '~/models/User'
 import { dataURLtoFile } from '~/utils'
@@ -19,6 +20,7 @@ export const useUpdateProfile = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  const dispatch = useDispatch()
 
   return useMutation({
     mutationFn: async (metadata: WriteableUserMetadata) => {
@@ -84,9 +86,11 @@ export const useUpdateProfile = () => {
 
       // Optimistically update user data
       if (previousMetadata) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
-          ...previousMetadata,
-          ...metadata
+        primeUserData({
+          queryClient,
+          users: [{ ...previousMetadata, ...metadata }],
+          dispatch,
+          forceReplace: true
         })
       }
 
@@ -95,9 +99,11 @@ export const useUpdateProfile = () => {
     onError: (error, metadata, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousMetadata) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
-          ...context.previousMetadata,
-          ...metadata
+        primeUserData({
+          queryClient,
+          users: [{ ...context.previousMetadata, ...metadata }],
+          dispatch,
+          forceReplace: true
         })
       }
 
