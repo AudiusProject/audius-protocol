@@ -58,6 +58,7 @@ export const settingsMessages = {
   changePasswordButtonText: 'Change Password',
   desktopAppButtonText: 'Get The App',
   showPrivateKey: 'Show Private Key (Advanced)',
+  labelAccountButtonText: 'Change',
   signOutModalText: `
   Are you sure you want to sign out?
   Double check that you have an account recovery email just in case (resend from your settings).

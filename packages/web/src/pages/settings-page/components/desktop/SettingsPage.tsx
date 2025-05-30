@@ -526,7 +526,7 @@ export const SettingsPage = () => {
           description={settingsMessages.labelAccountCardDescription}
         >
           <Button variant='secondary' fullWidth onClick={openLabelAccountModal}>
-            {settingsMessages.labelAccountCardTitle}
+            {settingsMessages.labelAccountButtonText}
           </Button>
         </SettingsCard>
         <AccountsManagingYouSettingsCard />
