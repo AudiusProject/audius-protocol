@@ -55,6 +55,7 @@ test_entities = {
     "tracks": [
         {"track_id": 1, "title": "Track 1", "owner_id": 1},
         {"track_id": 2, "title": "Track 2", "owner_id": 2},
+        {"track_id": 3, "title": "Track 3", "owner_id": 1},
     ],
 }
 
@@ -132,7 +133,7 @@ def test_create_event(app, mocker):
     metadata = {
         "event_type": EventType.remix_contest,
         "entity_type": EventEntityType.track,
-        "entity_id": 1,
+        "entity_id": 3,  # Track 3 - no existing remix contest
         "end_date": (block_datetime + timedelta(days=7)).isoformat(),
         "is_deleted": False,
         "event_data": {
@@ -317,3 +318,53 @@ def test_delete_event(app, mocker):
         # Verify the event was marked as deleted
         deleted_event = session.query(Event).filter_by(event_id=1).first()
         assert deleted_event.is_deleted == True
+
+
+def test_create_duplicate_remix_contest_fails(app, mocker):
+    """Test that creating a duplicate remix contest for the same entity_id fails validation"""
+    block_datetime = datetime.now()
+    metadata = {
+        "event_type": EventType.remix_contest,
+        "entity_type": EventEntityType.track,
+        "entity_id": 1,  # Same entity_id as the existing event in test_entities
+        "end_date": (block_datetime + timedelta(days=7)).isoformat(),
+        "is_deleted": False,
+        "event_data": {
+            "title": "Another Remix Contest",
+            "description": "This should fail",
+        },
+    }
+
+    tx_receipts = {
+        "CreateDuplicateRemixContest": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 4,
+                        "_entityType": EntityType.EVENT,
+                        "_userId": 1,
+                        "_action": Action.CREATE,
+                        "_metadata": f'{{"cid": "", "data": {json.dumps(metadata)}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, test_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # Get count of events before attempting to create duplicate
+        initial_event_count = session.query(Event).count()
+
+        # Try to create duplicate remix contest
+        index_transaction(session)
+
+        # Verify no new event was created (due to validation failure)
+        final_event_count = session.query(Event).count()
+        assert final_event_count == initial_event_count
+
+        # Verify the duplicate event with id 4 was not created
+        duplicate_event = session.query(Event).filter_by(event_id=4).first()
+        assert duplicate_event is None
