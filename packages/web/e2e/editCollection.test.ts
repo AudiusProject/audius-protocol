@@ -29,8 +29,14 @@ test('should persist collection edits', async ({ page }) => {
   await priceAndAudienceModal.save()
 
   // We warned the user about changing the audience if this is the first attempt
-  if (await page.getByText(/confirm update/i).isVisible()) {
+  // But if it's the second attempt, we might not be warned again
+  // So we try to click the confirmation button, but if it doesn't exist, we just continue
+  try {
     await page.getByRole('button', { name: /update audience/i }).click()
+  } catch (e) {
+    if (e.name !== 'TimeoutError') {
+      throw e
+    }
   }
 
   const confirmationPromise = waitForConfirmation(page)
