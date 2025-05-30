@@ -69,7 +69,7 @@ export const useUSDCBalance = ({
           commitment
         )
         const balance =
-          !!account && account.amount !== undefined && account.amount !== null
+          account?.amount !== undefined && account?.amount !== null
             ? (new BN(account.amount.toString()) as BNUSDC)
             : null
 
