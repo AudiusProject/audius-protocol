@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { BuyUSDCStage, buyUSDCSelectors } from '@audius/common/store'
 import { Button, Flex } from '@audius/harmony'

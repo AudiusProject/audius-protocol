@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  useFeatureFlag,
-  useRemoteVar,
-  useUSDCBalance
-} from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { useFeatureFlag, useRemoteVar } from '@audius/common/hooks'
 import {
   Name,
   Status,

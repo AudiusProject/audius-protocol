@@ -1,4 +1,4 @@
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
 import type { BNUSDC } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 

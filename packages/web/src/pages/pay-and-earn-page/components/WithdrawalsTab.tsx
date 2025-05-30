@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   useUSDCTransactions,
-  useUSDCTransactionsCount
+  useUSDCTransactionsCount,
+  useUSDCBalance
 } from '@audius/common/api'
-import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC, ID, Name, USDCTransactionDetails } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,

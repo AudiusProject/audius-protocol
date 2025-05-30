@@ -5,7 +5,8 @@ import {
   useState
 } from 'react'
 
-import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {

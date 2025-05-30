@@ -1,10 +1,9 @@
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
 import type { BNUSDC } from '@audius/common/models'
 import {
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
-import BN from 'bn.js'
 import { View } from 'react-native'
 
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
@@ -45,9 +44,7 @@ export const USDCBalanceRow = ({
     commitment: 'confirmed'
   })
   const isUsdcBalanceLoading = usdcBalance === null
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (usdcBalance ?? new BN(0)) as BNUSDC
-  )
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(usdcBalance as BNUSDC)
   const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
 
   return (

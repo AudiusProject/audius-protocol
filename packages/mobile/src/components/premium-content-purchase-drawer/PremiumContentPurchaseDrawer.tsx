@@ -1,10 +1,14 @@
 import React, { useCallback, type ReactNode, useEffect } from 'react'
 
-import { useCollection, useTrack, useUser } from '@audius/common/api'
+import {
+  useCollection,
+  useTrack,
+  useUser,
+  useUSDCBalance
+} from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
   useRemoteVar,
-  useUSDCBalance,
   usePurchaseContentFormConfiguration,
   usePurchaseContentErrorMessage,
   usePayExtraPresets,

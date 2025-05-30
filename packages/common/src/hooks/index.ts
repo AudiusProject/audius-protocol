@@ -1,4 +1,3 @@
-export * from './useUSDCBalance'
 export * from './useUploadCompletionRoute'
 export * from './useUIAudio'
 export * from './useTwitterButtonStatus'
