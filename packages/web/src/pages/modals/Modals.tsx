@@ -30,6 +30,7 @@ import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { HostRemixContestModal } from 'components/host-remix-contest-modal/HostRemixContestModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
+import { LabelAccountModal } from 'components/label-account-modal/LabelAccountModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
@@ -108,6 +109,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
   CommentSettings: CommentSettingsModal,
+  LabelAccount: LabelAccountModal,
   LockedContent: LockedContentModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,

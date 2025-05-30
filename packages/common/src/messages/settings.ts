@@ -18,6 +18,7 @@ export const settingsMessages = {
   appearanceTitle: 'Appearance',
   inboxSettingsCardTitle: 'Inbox Settings',
   commentSettingsCardTitle: 'Comment Settings',
+  labelAccountCardTitle: 'Label Account',
   notificationsCardTitle: 'Configure Notifications',
   accountRecoveryCardTitle: 'Resend Recovery Email',
   changeEmailCardTitle: 'Change Email',
