@@ -105,7 +105,7 @@ export const useUSDCBalance = ({
     status = Status.SUCCESS
   }
 
-  // For compatibility with existing code - ensure we always return BNUSDC | null
+  // For compatibility with existing code
   const data = result.data ?? null
 
   // If we're actively recovering, then we will be in loading state regardless
