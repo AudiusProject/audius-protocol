@@ -87,6 +87,7 @@ export const userMetadataFromSDK = (
     tiktok_handle: input.tiktokHandle ?? null,
     website: input.website ?? null,
     donation: input.donation ?? null,
+    profile_type: input.profileType === 'label' ? 'label' : null,
     cover_photo_sizes: input.coverPhotoSizes ?? null,
     creator_node_endpoint: input.creatorNodeEndpoint ?? null,
     location: input.location ?? null,
@@ -158,7 +159,13 @@ export const userMetadataToSdk = (
   input: WriteableUserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
 ): UpdateProfileRequest['metadata'] => ({
   ...camelcaseKeys(
-    pick(input, ['name', 'handle', 'is_deactivated', 'allow_ai_attribution'])
+    pick(input, [
+      'name',
+      'handle',
+      'is_deactivated',
+      'allow_ai_attribution',
+      'profile_type'
+    ])
   ),
   bio: input.bio ?? undefined,
   website: input.website ?? undefined,

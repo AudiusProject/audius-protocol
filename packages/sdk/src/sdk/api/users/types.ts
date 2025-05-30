@@ -121,6 +121,7 @@ export const UpdateProfileSchema = z
         website: z.optional(z.string()),
         donation: z.optional(z.string()),
         location: z.optional(z.string()),
+        profileType: z.optional(z.enum(['label']).nullable()),
         metadataMultihash: z.optional(z.string()),
         events: z.optional(UserEventsSchema),
         isDeactivated: z.optional(z.boolean()),

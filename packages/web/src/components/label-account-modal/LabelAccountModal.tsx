@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useUpdateProfile } from '@audius/common/api'
+import { useCurrentUserId, useUpdateProfile, useUser } from '@audius/common/api'
 import {
   Flex,
   Text,
@@ -23,18 +23,20 @@ const messages = {
 export const LabelAccountModal = () => {
   const [isVisible, setIsVisible] = useModalState('LabelAccount')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
-  // const account = useCurrentAccount()
-  // const isLabel = account?.data?.user?.profile_type === 'label'
-  const [isLabel, setIsLabel] = useState(false)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: user } = useUser(currentUserId)
+  const [isLabel, setIsLabel] = useState(user?.profile_type === 'label')
   const updateProfile = useUpdateProfile()
 
   const handleToggle = useCallback(() => {
+    if (!user) return
     const newIsLabel = !isLabel
     setIsLabel(newIsLabel)
     updateProfile.mutate({
+      ...user,
       profile_type: newIsLabel ? 'label' : null
     })
-  }, [updateProfile, isLabel])
+  }, [updateProfile, isLabel, user])
 
   return (
     <Modal onClose={handleClose} isOpen={isVisible}>
