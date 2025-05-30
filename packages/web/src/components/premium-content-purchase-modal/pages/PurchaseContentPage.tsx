@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
+import { useUSDCBalance } from '@audius/common/api'
 import {
   useFeatureFlag,
   useRemoteVar,
-  useUSDCBalance,
   usePayExtraPresets,
   PURCHASE_METHOD,
   PURCHASE_VENDOR,

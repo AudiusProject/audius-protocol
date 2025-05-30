@@ -68,7 +68,9 @@ export const useUSDCBalance = ({
           },
           commitment
         )
-        const balance = (account?.amount ?? new BN(0)) as BNUSDC
+        const balance = new BN(
+          (account?.amount ?? BigInt(0)).toString()
+        ) as BNUSDC
 
         // Still update Redux for compatibility with existing code
         dispatch(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
@@ -103,7 +105,7 @@ export const useUSDCBalance = ({
     status = Status.SUCCESS
   }
 
-  // For compatibility with existing code
+  // For compatibility with existing code - ensure we always return BNUSDC | null
   const data = result.data ?? null
 
   // If we're actively recovering, then we will be in loading state regardless

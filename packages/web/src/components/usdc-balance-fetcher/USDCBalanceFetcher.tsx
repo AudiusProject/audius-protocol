@@ -1,4 +1,4 @@
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
 
 export const USDCBalanceFetcher = () => {
   useUSDCBalance()

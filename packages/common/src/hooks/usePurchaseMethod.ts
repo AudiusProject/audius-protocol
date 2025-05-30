@@ -5,7 +5,7 @@ import BN from 'bn.js'
 
 import { PurchaseMethod } from '~/models/PurchaseContent'
 
-import { useUSDCBalance } from './useUSDCBalance'
+import { useUSDCBalance } from '../api'
 
 type UsePurchaseMethodProps = {
   price: number
