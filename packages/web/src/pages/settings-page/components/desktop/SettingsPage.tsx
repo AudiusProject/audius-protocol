@@ -522,8 +522,8 @@ export const SettingsPage = () => {
         ) : null}
         <SettingsCard
           icon={<IconUserList />}
-          title='Label Account'
-          description='Identify as a record label on your Audius profile.'
+          title={settingsMessages.labelAccountCardTitle}
+          description={settingsMessages.labelAccountCardDescription}
         >
           <Button variant='secondary' fullWidth onClick={openLabelAccountModal}>
             {settingsMessages.labelAccountCardTitle}
