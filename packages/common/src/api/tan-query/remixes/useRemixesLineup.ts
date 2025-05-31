@@ -1,8 +1,10 @@
 import { useEffect, useMemo } from 'react'
 
 import { EntityType } from '@audius/sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
+import { useQueryContext } from '~/api'
 import { useRemixContestWinners } from '~/api/tan-query/events/useRemixContestWinners'
 import { PlaybackSource } from '~/models/Analytics'
 import {
@@ -11,7 +13,10 @@ import {
   remixesPageActions
 } from '~/store/pages'
 
-import { useLineupQuery } from '../lineups/useLineupQuery'
+import {
+  mapLineupDataToFullLineupItems,
+  useLineupQuery
+} from '../lineups/useLineupQuery'
 import { LineupData, QueryOptions } from '../types'
 
 import { UseRemixesArgs, useRemixes, getRemixesQueryKey } from './useRemixes'
@@ -30,7 +35,9 @@ export const useRemixesLineup = (
   }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
+  const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const { reportToSentry } = useQueryContext()
 
   // Get winner IDs
   const { data: winnerIds, isLoading: isWinnersLoading } =
@@ -115,6 +122,28 @@ export const useRemixesLineup = (
     winnerIds
   ])
 
+  useEffect(() => {
+    if (processedLineupData) {
+      const fullLineupItems = mapLineupDataToFullLineupItems(
+        processedLineupData,
+        queryClient,
+        reportToSentry,
+        'remix'
+      )
+
+      dispatch(
+        remixesPageLineupActions.fetchLineupMetadatas(
+          0,
+          fullLineupItems.length,
+          false,
+          {
+            items: fullLineupItems
+          }
+        )
+      )
+    }
+  }, [processedLineupData, dispatch, queryClient, reportToSentry])
+
   const queryKey = getRemixesQueryKey({
     trackId,
     includeOriginal,
@@ -129,6 +158,8 @@ export const useRemixesLineup = (
     lineupData: processedLineupData,
     queryData,
     queryKey,
+    // We're manually dispatching the lineup data to the redux store, so we don't need to automatically cache it
+    disableAutomaticCacheHandling: true,
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,
     playbackSource: PlaybackSource.TRACK_TILE,
