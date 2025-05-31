@@ -29,8 +29,8 @@ export const useRemixContestWinners = (
 
   // Extract winner IDs from contest data
   const winnerIds = useMemo(
-    () => remixContest?.eventData.winners ?? [],
-    [remixContest?.eventData.winners]
+    () => remixContest?.eventData?.winners ?? [],
+    [remixContest?.eventData?.winners]
   )
 
   // Pre-fetch the winner tracks into the cache
