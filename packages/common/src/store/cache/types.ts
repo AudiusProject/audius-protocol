@@ -13,7 +13,7 @@ export type EntryMap<EntryT extends Metadata = Metadata> = {
 }
 
 export type EntriesByKind<EntryT extends Metadata = Metadata> = {
-  [key in Kind]?: EntryMap<EntryT>
+  [key in Exclude<Kind, Kind.TRACKS>]?: EntryMap<EntryT>
 }
 
 export type Metadata = {

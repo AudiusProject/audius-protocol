@@ -34,6 +34,7 @@ import {
   IconRobot,
   IconSettings,
   IconSignOut,
+  IconUserList,
   IconVerified,
   Modal,
   ModalContent,
@@ -155,6 +156,7 @@ export const SettingsPage = () => {
   const [emailToastText, setEmailToastText] = useState(
     settingsMessages.emailSent
   )
+  const [, setIsLabelAccountModalVisible] = useModalState('LabelAccount')
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
   const [, setIsCommentSettingsModalVisible] = useModalState('CommentSettings')
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
@@ -223,6 +225,10 @@ export const SettingsPage = () => {
   const openChangePasswordModal = useCallback(() => {
     setIsChangePasswordModalVisible(true)
   }, [setIsChangePasswordModalVisible])
+
+  const openLabelAccountModal = useCallback(() => {
+    setIsLabelAccountModalVisible(true)
+  }, [setIsLabelAccountModalVisible])
 
   const closeChangePasswordModal = useCallback(() => {
     setIsChangePasswordModalVisible(false)
@@ -512,6 +518,15 @@ export const SettingsPage = () => {
             </Button>
           </SettingsCard>
         ) : null}
+        <SettingsCard
+          icon={<IconUserList />}
+          title={settingsMessages.labelAccountCardTitle}
+          description={settingsMessages.labelAccountCardDescription}
+        >
+          <Button variant='secondary' fullWidth onClick={openLabelAccountModal}>
+            {settingsMessages.labelAccountButtonText}
+          </Button>
+        </SettingsCard>
         <AccountsManagingYouSettingsCard />
         <AccountsYouManageSettingsCard />
         <SettingsCard

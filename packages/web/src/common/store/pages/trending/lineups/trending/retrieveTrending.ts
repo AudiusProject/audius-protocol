@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryTracks } from '@audius/common/api'
+import { primeTrackDataSaga, queryTracks } from '@audius/common/api'
 import { TimeRange, ID, Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
@@ -17,7 +17,6 @@ import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
 import { call, put, select } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getLastFetchedTrendingGenre, getTrendingGenre } = trendingPageSelectors
 const { setLastFetchedTrendingGenre } = trendingPageActions
@@ -104,6 +103,5 @@ export function* retrieveTrending({
   // If we changed genres, do nothing
   if (currentGenre !== genre) return []
 
-  const processed: Track[] = yield processAndCacheTracks(apiTracks)
-  return processed
+  return yield* call(primeTrackDataSaga, apiTracks)
 }

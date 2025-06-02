@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
 import {
-  useCollections,
-  useCurrentAccount,
+  useCurrentUserId,
+  useUserAlbums,
   useCurrentAccountUser
 } from '@audius/common/api'
 import {
@@ -272,19 +272,15 @@ const formatAlbumMetadata = (album: Collection): DataSourceAlbum => {
 
 /** Returns the logged-in user's albums, formatted for Artist Dashboard albums table */
 export const useFormattedAlbumData = () => {
-  const { data: accountCollectionIds } = useCurrentAccount({
-    select: (account) => {
-      if (!account) return []
-      return Object.values(account.collections)
-        .filter((c) => c.is_album && account.userId === c.user.id)
-        .map((c) => c.id)
-    }
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: albums } = useUserAlbums({
+    userId: currentUserId,
+    pageSize: 50
   })
-  const { data: formattedAlbums } = useCollections(accountCollectionIds, {
-    select: (album) => formatAlbumMetadata(album)
-  })
-
-  return (formattedAlbums as unknown as DataSourceAlbum[]) ?? {}
+  const albumsFormatted = useMemo(() => {
+    return albums?.map((album) => formatAlbumMetadata(album))
+  }, [albums])
+  return albumsFormatted ?? []
 }
 
 const useSegregatedAlbumData = () => {

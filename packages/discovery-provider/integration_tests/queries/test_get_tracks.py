@@ -459,6 +459,122 @@ def test_get_remixes_of(app):
         assert tracks[0]["track_id"] == 4
 
 
+def test_get_remixes_of_with_multiple_events(app):
+    """Test that get_remixes_of doesn't return duplicate tracks when there are multiple active events for the same track.
+    Note that this should not happen, but we've encountered this bug before so worth adding a test case.
+    """
+    with app.app_context():
+        db = get_db()
+
+        populate_tracks(db)
+        populate_mock_db(
+            db,
+            {
+                "tracks": [
+                    {
+                        "track_id": 2,
+                        "title": "remix track 2",
+                        "owner_id": 1287289,
+                        "created_at": datetime(
+                            2018, 5, 10
+                        ),  # Outside contest period (before 2018-05-15)
+                        "remix_of": {"tracks": [{"parent_track_id": 1}]},
+                    },
+                    {
+                        "track_id": 3,
+                        "title": "remix track 3",
+                        "owner_id": 1287289,
+                        "created_at": datetime(2020, 5, 17),
+                        "remix_of": {"tracks": [{"parent_track_id": 1}]},
+                    },
+                    {
+                        "track_id": 4,
+                        "title": "remix track 4",
+                        "owner_id": 1287289,
+                        "created_at": datetime(
+                            2018, 5, 20
+                        ),  # Within the contest period 2018-05-15 to 2018-05-30
+                        "remix_of": {"tracks": [{"parent_track_id": 1}]},
+                    },
+                ],
+                "remixes": [
+                    {"parent_track_id": 1, "child_track_id": 2},
+                    {"parent_track_id": 1, "child_track_id": 3},
+                    {"parent_track_id": 1, "child_track_id": 4},
+                ],
+                "aggregate_plays": [
+                    {"play_item_id": 2, "count": 100},
+                    {"play_item_id": 4, "count": 50},
+                    {"play_item_id": 3, "count": 2},
+                ],
+                "saves": [
+                    {"user_id": 1287289, "save_item_id": 2},
+                ],
+                "reposts": [
+                    {"user_id": 1287289, "repost_item_id": 4},
+                ],
+                # Multiple active events for the same track - this would cause duplicates without DISTINCT ON fix
+                "events": [
+                    {
+                        "user_id": 1287289,
+                        "entity_id": 1,
+                        "event_type": "remix_contest",
+                        "is_deleted": False,
+                        "created_at": datetime(2018, 5, 15),
+                        "end_date": datetime(2018, 5, 30),
+                    },
+                    {
+                        "user_id": 1287289,
+                        "entity_id": 1,
+                        "event_type": "remix_contest",
+                        "is_deleted": False,
+                        "created_at": datetime(2018, 5, 15),
+                        "end_date": datetime(2018, 5, 30),
+                    },
+                    {
+                        "user_id": 1287289,
+                        "entity_id": 1,
+                        "event_type": "remix_contest",
+                        "is_deleted": False,
+                        "created_at": datetime(2018, 5, 15),
+                        "end_date": datetime(2018, 5, 30),
+                    },
+                ],
+            },
+        )
+
+        # Test basic query - should return 3 unique tracks, not 9 (3 tracks × 3 events)
+        tracks = get_remixes_of({"track_id": 1, "sort_method": "plays"})["tracks"]
+        assert (
+            len(tracks) == 3
+        ), f"Expected 3 unique tracks, got {len(tracks)} - possible duplication from multiple events"
+        assert tracks[0]["track_id"] == 2
+        assert tracks[1]["track_id"] == 4
+        assert tracks[2]["track_id"] == 3
+
+        # Test cosigns filter - should return 2 unique tracks, not 6
+        tracks = get_remixes_of({"track_id": 1, "only_cosigns": True})["tracks"]
+        assert (
+            len(tracks) == 2
+        ), f"Expected 2 unique tracks with cosigns, got {len(tracks)} - possible duplication from multiple events"
+        assert tracks[0]["track_id"] == 4
+        assert tracks[1]["track_id"] == 2
+
+        # Test contest entries filter - should return 1 unique track that falls within ANY contest period
+        # Track 4 (created 2018-05-19) falls within the second contest period (2018-05-19 to 2018-05-22)
+        tracks = get_remixes_of({"track_id": 1, "only_contest_entries": True})["tracks"]
+        assert (
+            len(tracks) == 1
+        ), f"Expected 1 track matching contest criteria, got {len(tracks)} - possible duplication from multiple events"
+        assert tracks[0]["track_id"] == 4
+
+        # Test that count in response is also correct (not inflated by duplicates)
+        response = get_remixes_of({"track_id": 1, "sort_method": "plays"})
+        assert (
+            response["count"] == 3
+        ), f"Expected count of 3, got {response['count']} - count may be inflated by duplicates"
+
+
 def test_get_ai_attributed_tracks(app):
     """Test getting tracks with AI attribution"""
 

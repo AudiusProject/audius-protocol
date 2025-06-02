@@ -11,6 +11,7 @@ import { PinnedCommentChallengeContent } from './PinnedCommentChallengeContent'
 import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ProfileCompletionChallengeContent } from './ProfileCompletionChallengeContent'
 import { ReferralChallengeContent } from './ReferralChallengeContent'
+import { RemixContestWinnerChallengeContent } from './RemixContestWinnerChallengeContent'
 import { TastemakerChallengeContent } from './TastemakerChallengeContent'
 import type { ChallengeContentProps } from './types'
 
@@ -33,6 +34,7 @@ export const challengeContentRegistry: ChallengeContentMap = {
   [ChallengeName.Tastemaker]: TastemakerChallengeContent,
   [ChallengeName.CommentPin]: PinnedCommentChallengeContent,
   [ChallengeName.Cosign]: CosignChallengeContent,
+  [ChallengeName.RemixContestWinner]: RemixContestWinnerChallengeContent,
 
   default: DefaultChallengeContent
 }

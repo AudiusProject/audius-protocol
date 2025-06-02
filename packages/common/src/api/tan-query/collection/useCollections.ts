@@ -8,14 +8,13 @@ import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
 import { CommonState } from '~/store'
 
-import { getCollectionsBatcher } from '../batchers/getCollectionsBatcher'
 import { TQCollection } from '../models'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
 import { useQueries } from '../utils/useQueries'
 
-import { getCollectionQueryKey } from './useCollection'
+import { getCollectionQueryKey, getCollectionQueryFn } from './useCollection'
 
 export const useCollections = <TResult>(
   collectionIds: ID[] | null | undefined,
@@ -26,19 +25,26 @@ export const useCollections = <TResult>(
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
+  const uniqueCollectionIds = useMemo(
+    () =>
+      collectionIds?.filter(
+        (id, index, self) => self.indexOf(id) === index && !!id
+      ),
+    [collectionIds]
+  )
+
   const queriesResults = useQueries({
-    // @ts-ignore - The select option doesnt agree - for some reason the select on the query is typed with unknowns
-    queries: collectionIds?.map((collectionId) => ({
+    queries: uniqueCollectionIds?.map((collectionId) => ({
       queryKey: getCollectionQueryKey(collectionId),
       queryFn: async () => {
         const sdk = await audiusSdk()
-        const batchGetCollections = getCollectionsBatcher({
-          sdk,
+        return getCollectionQueryFn(
+          collectionId,
           currentUserId,
           queryClient,
+          sdk,
           dispatch
-        })
-        return await batchGetCollections.fetch(collectionId)
+        )
       },
       ...options,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0

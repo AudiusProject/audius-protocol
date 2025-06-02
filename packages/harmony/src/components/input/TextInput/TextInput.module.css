@@ -37,7 +37,7 @@
   /* gap between icons & content */
   gap: var(--harmony-spacing-s);
   font-size: var(--harmony-font-s);
-  height: 34px;
+  height: 48px;
 }
 
 /* default input size */
@@ -115,7 +115,7 @@
 .input.small {
   /* overflowing the height to improve password-manager icon size */
   height: 34px;
-  font-size: var(--harmony-font-s);
+  font-size: var(--harmony-font-l);
 }
 
 .input.default {

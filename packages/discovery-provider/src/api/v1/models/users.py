@@ -114,6 +114,7 @@ user_model_full = ns.clone(
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
         "allow_ai_attribution": fields.Boolean(required=True),
+        "profile_type": fields.String(allow_null=True),
     },
 )
 

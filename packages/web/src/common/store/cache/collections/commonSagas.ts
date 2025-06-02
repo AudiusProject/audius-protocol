@@ -41,7 +41,7 @@ import {
   updatePlaylistArtwork
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { all, call, put, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
@@ -59,7 +59,6 @@ import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { createAlbumSaga } from './createAlbumSaga'
 import { createPlaylistSaga } from './createPlaylistSaga'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
-import { retrieveCollection } from './utils/retrieveCollections'
 
 const { manualClearToast, toast } = toastActions
 
@@ -338,9 +337,11 @@ function* confirmRemoveTrackFromPlaylist(
         return confirmedPlaylistId
       },
       function* (confirmedPlaylistId: ID) {
-        const [confirmedPlaylist] = yield* call(retrieveCollection, {
-          playlistId: confirmedPlaylistId
-        })
+        const confirmedPlaylist = yield* call(
+          queryCollection,
+          confirmedPlaylistId
+        )
+        if (!confirmedPlaylist) return
         yield* put(
           cacheActions.update(Kind.COLLECTIONS, [
             {

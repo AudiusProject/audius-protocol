@@ -1,12 +1,10 @@
 import {
+  useUSDCBalance,
   selectIsAccountComplete,
   useCurrentAccountUser,
   useCurrentUserId
 } from '@audius/common/api'
-import {
-  useUSDCBalance,
-  useTotalBalanceWithFallback
-} from '@audius/common/hooks'
+import { useTotalBalanceWithFallback } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
 import {

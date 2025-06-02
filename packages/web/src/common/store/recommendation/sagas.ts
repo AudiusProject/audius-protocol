@@ -2,14 +2,13 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
+import { primeTrackDataSaga } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import { getContext, getSDK } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { OptionalId } from '@audius/sdk'
 import { call } from 'typed-redux-saga'
-
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 
 export function* getRecommendedTracks(
   genre: string,
@@ -30,6 +29,6 @@ export function* getRecommendedTracks(
     }
   )
   const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-  yield* call(processAndCacheTracks, tracks)
+  yield* call(primeTrackDataSaga, tracks)
   return tracks
 }

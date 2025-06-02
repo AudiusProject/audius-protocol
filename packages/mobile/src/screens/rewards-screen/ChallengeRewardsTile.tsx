@@ -67,7 +67,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.PlayCount10000,
   ChallengeName.Tastemaker,
   ChallengeName.Cosign,
-  ChallengeName.CommentPin
+  ChallengeName.CommentPin,
+  ChallengeName.RemixContestWinner
 ])
 
 type ClaimableSummaryTableItem = SummaryTableItem & {

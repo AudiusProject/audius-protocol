@@ -3,14 +3,14 @@ import { useCallback, useRef, useState } from 'react'
 import { useCurrentUserId, useUsers } from '@audius/common/api'
 import { useCanSendMessage } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
-import { chatActions, chatSelectors, ReactionTypes } from '@audius/common/store'
+import { chatActions, chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
 import { Flex, IconError, IconPlus } from '@audius/harmony'
-import { HashId, Id, OptionalHashId } from '@audius/sdk'
+import { HashId, Id, OptionalHashId, ReactionTypes } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'

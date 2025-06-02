@@ -3,7 +3,7 @@ import { useCallback, useContext, useMemo } from 'react'
 import { SearchSortMethod } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
-import { intersection, isEmpty } from 'lodash'
+import { isEmpty } from 'lodash'
 import { generatePath, useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
@@ -11,7 +11,6 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { categories } from './categories'
 import { CategoryKey, CategoryView } from './types'
 import { urlSearchParamsToObject } from './utils'
 
@@ -41,8 +40,7 @@ export const useSearchCategory = () => {
   const category = isMobile ? (categoryParam ?? 'profiles') : categoryParam
 
   const { history } = useHistoryContext()
-  const { query, genre, mood, isPremium, hasDownloads, isVerified } =
-    useSearchParams()
+  const searchParams = useSearchParams()
   const { setStackReset } = useContext(RouterContext)
 
   const setCategory = useCallback(
@@ -50,28 +48,11 @@ export const useSearchCategory = () => {
       // Do not animate on mobile
       setStackReset(true)
 
-      const commonFilters = intersection(
-        categories[category]?.filters ?? [],
-        categories[newCategory]?.filters ?? []
+      const commonFilterParams = Object.fromEntries(
+        Object.entries(searchParams)
+          .filter(([key, value]) => value !== undefined && value !== null)
+          .map(([key, value]) => [key, String(value)])
       )
-      const commonFilterParams = {
-        ...(query && { query }),
-        ...(genre && commonFilters.includes('genre') && { genre }),
-        ...(mood && commonFilters.includes('mood') && { mood }),
-        ...(isPremium &&
-          commonFilters.includes('isPremium') && {
-            isPremium: String(isPremium)
-          }),
-        ...(hasDownloads &&
-          commonFilters.includes('hasDownloads') && {
-            hasDownloads: String(hasDownloads)
-          }),
-        ...(isVerified &&
-          commonFilters.includes('isVerified') && {
-            isVerified: String(isVerified)
-          })
-      }
-
       const pathname =
         newCategory === 'all'
           ? generatePath(SEARCH_BASE_ROUTE)
@@ -80,22 +61,19 @@ export const useSearchCategory = () => {
       history.push({
         pathname,
         search: !isEmpty(commonFilterParams)
-          ? new URLSearchParams(commonFilterParams).toString()
+          ? new URLSearchParams(
+              Object.fromEntries(
+                Object.entries(commonFilterParams).map(([k, v]) => [
+                  k,
+                  String(v)
+                ])
+              )
+            ).toString()
           : undefined,
         state: {}
       })
     },
-    [
-      category,
-      genre,
-      hasDownloads,
-      history,
-      isPremium,
-      isVerified,
-      mood,
-      query,
-      setStackReset
-    ]
+    [searchParams, history, setStackReset]
   )
 
   return [category || CategoryView.ALL, setCategory] as const
@@ -121,9 +99,9 @@ export const useSearchParams = () => {
       mood: (mood || undefined) as Mood,
       bpm: bpm || undefined,
       key: key || undefined,
-      isVerified: isVerified === 'true',
-      hasDownloads: hasDownloads === 'true',
-      isPremium: isPremium === 'true',
+      isVerified: isVerified === 'true' ? true : undefined,
+      hasDownloads: hasDownloads === 'true' ? true : undefined,
+      isPremium: isPremium === 'true' ? true : undefined,
       sortMethod: sortMethod || undefined
     }),
     [

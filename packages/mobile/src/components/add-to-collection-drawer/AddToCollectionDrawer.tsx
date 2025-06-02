@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
-  useCurrentAccount,
-  selectNameSortedPlaylistsAndAlbums,
-  useCurrentAccountUser,
-  useCollections
+  useCurrentUserId,
+  useUserAlbums,
+  useUserPlaylists
 } from '@audius/common/api'
 import type { Collection } from '@audius/common/models'
 import { CreatePlaylistSource } from '@audius/common/models'
@@ -13,13 +12,11 @@ import {
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions
 } from '@audius/common/store'
-import { fuzzySearch } from '@audius/common/utils'
-import { fetchAccountCollections } from 'common/store/saved-collections/actions'
 import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
+import { Flex, LoadingSpinner } from '@audius/harmony-native'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -61,34 +58,28 @@ export const AddToCollectionDrawer = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const [filter, setFilter] = useState('')
-
-  const { data: nameSortedPlaylistsAndAlbums } = useCurrentAccount({
-    select: (account) => selectNameSortedPlaylistsAndAlbums(account)
-  })
-  const { data: currentUser } = useCurrentAccountUser()
-
-  const accountCollectionsToAddTo = useMemo(() => {
-    if (!nameSortedPlaylistsAndAlbums) return []
-    const collections =
-      collectionType === 'album'
-        ? nameSortedPlaylistsAndAlbums.albums
-        : nameSortedPlaylistsAndAlbums.playlists
-    const userCollections = collections.filter(
-      (collection) => collection.user.id === currentUser?.user_id
-    )
-    return filter
-      ? fuzzySearch(filter, userCollections, 3, (collection) => collection.name)
-      : userCollections
-  }, [nameSortedPlaylistsAndAlbums, collectionType, currentUser, filter])
-  const { data: fullCollectionsToAddTo } = useCollections(
-    accountCollectionsToAddTo.map((c) => c.id)
-  )
+  const { data: currentUserId } = useCurrentUserId()
 
   const messages = getMessages(collectionType)
 
-  useEffectOnce(() => {
-    dispatch(fetchAccountCollections())
+  const useUserCollections = isAlbumType ? useUserAlbums : useUserPlaylists
+
+  const {
+    data: collections = [],
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isPending
+  } = useUserCollections({
+    userId: currentUserId,
+    query: filter
   })
+
+  const handleLoadMore = useCallback(() => {
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage()
+    }
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage])
 
   const handleAddToNewCollection = useCallback(() => {
     const metadata = {
@@ -160,6 +151,15 @@ export const AddToCollectionDrawer = () => {
     ]
   )
 
+  const renderFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null
+    return (
+      <Flex p='l' alignItems='center'>
+        <LoadingSpinner />
+      </Flex>
+    )
+  }, [isFetchingNextPage])
+
   if (!trackId || !trackTitle) {
     return null
   }
@@ -179,10 +179,14 @@ export const AddToCollectionDrawer = () => {
               onChangeText={setFilter}
             />
           }
+          ListFooterComponent={renderFooter}
           contentContainerStyle={styles.cardList}
-          collection={fullCollectionsToAddTo}
+          collection={collections}
           showCreateCollectionTile
           renderItem={renderCard}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          refreshing={isPending}
         />
       </View>
     </AppDrawer>

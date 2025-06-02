@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useUser, getReactionFromRawValue } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type { ReactionNotification } from '@audius/common/store'
-import { getReactionFromRawValue } from '@audius/common/store'
 import { Platform, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'

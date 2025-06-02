@@ -29,7 +29,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './PrivateKeyExporterPage.module.css'

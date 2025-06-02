@@ -1,12 +1,9 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { getReactionFromRawValue, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import {
-  getReactionFromRawValue,
-  ReactionNotification
-} from '@audius/common/store'
+import { ReactionNotification } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
 

@@ -58,10 +58,17 @@ export * from './tan-query/purchases/usePurchasers'
 export * from './tan-query/purchases/usePurchasersCount'
 export * from './tan-query/purchases/useSalesAggregate'
 
+// Reactions
+export * from './tan-query/reactions/useReaction'
+export * from './tan-query/reactions/useWriteReaction'
+export * from './tan-query/reactions/types'
+export * from './tan-query/reactions/utils'
+
 // Remixes
-export * from './tan-query/remixes/useRemixes'
+export * from './tan-query/remixes/useRemixesLineup'
 export * from './tan-query/remixes/useRemixers'
 export * from './tan-query/remixes/useRemixersCount'
+export * from './tan-query/remixes/useRemixes'
 
 // Search
 export * from './tan-query/search/useSearchAutocomplete'
@@ -90,6 +97,8 @@ export * from './tan-query/tracks/useRemixedTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 
 // Users
+export * from './tan-query/users/useUpdateProfile'
+export * from './tan-query/users/useUpdateUser'
 export * from './tan-query/users/useFeaturedProfiles'
 export * from './tan-query/users/useFollowers'
 export * from './tan-query/users/useFollowing'
@@ -140,10 +149,10 @@ export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
+export * from './tan-query/jupiter/utils'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
-export * from './tan-query/utils/defaultConfig'
 export * from './tan-query/utils'
 
 // New authorized-apps exports

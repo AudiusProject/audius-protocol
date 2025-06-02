@@ -1,14 +1,9 @@
-import { queryCurrentAccount, queryCurrentUserId } from '@audius/common/api'
-import { AccountCollection } from '@audius/common/models'
 import { accountActions } from '@audius/common/store'
-import { call, fork, takeEvery } from 'typed-redux-saga'
+import { fork, takeEvery } from 'typed-redux-saga'
 
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
-import { waitForRead } from 'utils/sagaHelpers'
 
-import { retrieveCollections } from '../cache/collections/utils'
-
-const { signedIn, fetchSavedPlaylists } = accountActions
+const { signedIn } = accountActions
 
 function* onSignedIn() {
   // Add playlists that might not have made it into the user's library.
@@ -16,44 +11,10 @@ function* onSignedIn() {
   yield* fork(addPlaylistsNotInLibrary)
 }
 
-function* fetchSavedPlaylistsAsync() {
-  yield* waitForRead()
-  const userId = yield* call(queryCurrentUserId)
-  const account = yield* call(queryCurrentAccount)
-
-  // Fetch other people's playlists you've saved
-  yield* fork(function* () {
-    if (!account) return
-    const savedPlaylists: number[] = Object.values(account.collections)
-      .filter((c: AccountCollection) => !c.is_album && c.user.id !== userId)
-      .map((c: AccountCollection) => c.id)
-    if (savedPlaylists.length > 0) {
-      yield* call(retrieveCollections, savedPlaylists, { userId })
-    }
-  })
-
-  // Fetch your own playlists
-  yield* fork(function* () {
-    if (!account) return
-
-    const ownPlaylists: number[] = Object.values(account.collections)
-      .filter((c: AccountCollection) => !c.is_album && c.user.id === userId)
-      .map((c: AccountCollection) => c.id)
-
-    if (ownPlaylists.length > 0) {
-      yield* call(retrieveCollections, ownPlaylists, { userId })
-    }
-  })
-}
-
 function* watchSignedIn() {
   yield* takeEvery(signedIn.type, onSignedIn)
 }
 
-function* watchFetchSavedPlaylists() {
-  yield* takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
-}
-
 export default function sagas() {
-  return [watchSignedIn, watchFetchSavedPlaylists]
+  return [watchSignedIn]
 }

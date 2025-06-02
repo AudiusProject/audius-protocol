@@ -6,7 +6,6 @@ import {
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
@@ -114,6 +113,7 @@ const SignedInView = ({
         <Flex alignItems='center' justifyContent='space-between' gap='s' h={20}>
           <Flex css={{ maxWidth: '85%' }}>
             <UserLink
+              popover
               textVariant='title'
               size='s'
               userId={userId}
@@ -149,7 +149,7 @@ const SignedInView = ({
 
 const SignedOutView = () => (
   <AccountContentWrapper>
-    <Avatar userId={null} h={48} w={48} />
+    <Avatar userId={null} h={48} w={48} borderWidth='thin' />
     <AccountInfo>
       <Text variant='title' size='s'>
         {messages.haveAccount}

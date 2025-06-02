@@ -1106,7 +1106,7 @@ export function* uploadMultipleTracks(
   let retries = 20
   let newTracks: Track[] = []
   while (retries > 0) {
-    newTracks = yield* call(queryTracks, trackIds, true)
+    newTracks = yield* call(queryTracks, trackIds)
     if (newTracks.length > 0) {
       break
     }

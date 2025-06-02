@@ -2,14 +2,14 @@ import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import type { ReactionTypes } from '@audius/common/store'
 import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
-import { HashId, type ChatMessageReaction } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
+import type { ReactionTypes, ChatMessageReaction } from '@audius/sdk'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
 import { Dimensions, Keyboard, View } from 'react-native'

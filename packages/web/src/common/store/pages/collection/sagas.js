@@ -1,4 +1,4 @@
-import { queryCurrentUserId } from '@audius/common/api'
+import { queryCollection, queryCollectionByPermalink } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   cacheActions,
@@ -9,10 +9,6 @@ import {
 import { makeUid, route } from '@audius/common/utils'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
-import {
-  retrieveCollections,
-  retrieveCollectionByPermalink
-} from 'common/store/cache/collections/utils'
 import { push as pushRoute } from 'utils/navigation'
 
 import tracksSagas from './lineups/sagas'
@@ -23,40 +19,20 @@ const { getIsReachable } = reachabilitySelectors
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
-    const userId = yield call(queryCurrentUserId)
     const { id: collectionId, permalink, fetchLineup, forceFetch } = action
-    let retrievedCollections
+    let collection
     if (permalink) {
-      retrievedCollections = yield call(
-        retrieveCollectionByPermalink,
-        permalink,
-        {
-          deleteExistingEntry: true,
-          forceRetrieveFromSource: forceFetch,
-          userId
-        }
-      )
+      collection = yield call(queryCollectionByPermalink, permalink, forceFetch)
     } else {
-      retrievedCollections = yield call(retrieveCollections, [collectionId], {
-        deleteExistingEntry: true,
-        forceRetrieveFromSource: forceFetch,
-        userId
-      })
+      collection = yield call(queryCollection, collectionId, forceFetch)
     }
-
-    const { collections, uids: collectionUids } = retrievedCollections
 
     const isReachable = yield select(getIsReachable)
-    if (Object.values(collections).length === 0) {
-      if (isReachable) {
-        yield put(pushRoute(NOT_FOUND_PAGE))
-        return
-      }
+    if (!collection && isReachable) {
+      yield put(pushRoute(NOT_FOUND_PAGE))
+      return
     }
-    const identifier = collectionId || permalink
-    const collection = collections[identifier].metadata
     const userUid = makeUid(Kind.USERS, collection.playlist_owner_id)
-    const collectionUid = collectionUids[identifier]
     if (collection) {
       yield put(
         cacheActions.subscribe(Kind.USERS, [
@@ -66,7 +42,6 @@ function* watchFetchCollection() {
       yield put(
         fetchCollectionSucceeded(
           collection.playlist_id,
-          collectionUid,
           collection.permalink,
           userUid,
           collection.playlist_contents.track_ids.length

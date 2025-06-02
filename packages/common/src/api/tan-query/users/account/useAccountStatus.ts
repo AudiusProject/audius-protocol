@@ -12,6 +12,8 @@ export const useAccountStatus = () => {
   return useQuery({
     queryKey: getAccountStatusQueryKey(),
     // This query data will get updated by the useCurrentAccount hook
-    queryFn: () => Status.IDLE
+    queryFn: () => Status.IDLE,
+    staleTime: Infinity,
+    gcTime: Infinity
   })
 }

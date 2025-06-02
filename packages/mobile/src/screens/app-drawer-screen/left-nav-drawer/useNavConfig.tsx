@@ -1,31 +1,17 @@
 import { useMemo, type ReactNode } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
 import {
   useAccountHasClaimableRewards,
   useChallengeCooldownSchedule,
-  useFeatureFlag,
-  useTotalBalanceWithFallback,
-  useUSDCBalance
+  useFeatureFlag
 } from '@audius/common/hooks'
-import { Name, Status } from '@audius/common/models'
-import type { BNUSDC } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
-import { chatSelectors, useTierAndVerifiedForUser } from '@audius/common/store'
-import {
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorCentsNumber,
-  isNullOrUndefined
-} from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
-import BN from 'bn.js'
+import { chatSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
 import {
-  BalancePill,
-  IconCrown,
-  IconDonate,
   IconEmbed,
   IconMessages,
   IconSettings,
@@ -33,11 +19,8 @@ import {
   IconUser,
   IconGift,
   IconWallet,
-  useTheme,
   NotificationCount
 } from '@audius/harmony-native'
-import LogoUSDC from 'app/assets/images/logoUSDC.svg'
-import { IconAudioBadge } from 'app/components/audio-rewards'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { make } from 'app/services/analytics'
@@ -47,14 +30,11 @@ const { getHasUnreadMessages, getUnreadMessagesCount } = chatSelectors
 
 const messages = {
   profile: 'My Profile',
-  usdc: 'USDC',
-  audio: '$AUDIO',
   rewards: 'Rewards',
   upload: 'Upload',
   settings: 'Settings',
   featureFlags: 'Feature Flags',
-  wallet: 'Wallet',
-  usdcDollarSign: (balance: string) => `$${balance}`
+  wallet: 'Wallet'
 }
 
 type NavItem = {
@@ -68,12 +48,8 @@ type NavItem = {
 }
 
 export const useNavConfig = () => {
-  const { spacing } = useTheme()
   const { isEnabled: isFeatureFlagAccessEnabled } = useFeatureFlag(
     FeatureFlags.FEATURE_FLAG_ACCESS
-  )
-  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
-    FeatureFlags.WALLET_UI_UPDATE
   )
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
@@ -82,22 +58,6 @@ export const useNavConfig = () => {
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
   })
-  const { data: user_id } = useCurrentAccountUser({
-    select: (user) => user?.user_id
-  })
-  const { tier } = useTierAndVerifiedForUser(user_id)
-  const audioBalance = useTotalBalanceWithFallback()
-  const audioBalanceFormatted = audioBalance
-    ? AUDIO(audioBalance).toLocaleString()
-    : null
-  const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
-
-  const { data: usdcBalance, status: usdcBalanceStatus } = useUSDCBalance()
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (usdcBalance ?? new BN(0)) as BNUSDC
-  )
-  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
-  const isUSDCBalanceLoading = usdcBalanceStatus === Status.LOADING
 
   const navItems = useMemo(() => {
     const items: NavItem[] = [
@@ -119,45 +79,12 @@ export const useNavConfig = () => {
           unreadMessagesCount > 0 ? (
             <NotificationCount count={unreadMessagesCount} />
           ) : undefined
-      }
-    ]
-
-    if (isWalletUIUpdateEnabled) {
-      items.push({
+      },
+      {
         icon: IconWallet,
         label: messages.wallet,
         to: 'wallet'
-      })
-    } else {
-      items.push(
-        {
-          icon: IconCrown,
-          label: messages.audio,
-          to: 'AudioScreen',
-          rightIcon: (
-            <BalancePill
-              balance={audioBalanceFormatted}
-              icon={<IconAudioBadge tier={tier} showNoTier size='m' />}
-              isLoading={isAudioBalanceLoading}
-            />
-          )
-        },
-        {
-          icon: IconDonate,
-          label: messages.usdc,
-          to: 'PayAndEarnScreen',
-          rightIcon: (
-            <BalancePill
-              balance={messages.usdcDollarSign(usdcBalanceFormatted)}
-              icon={<LogoUSDC height={spacing.unit5} width={spacing.unit5} />}
-              isLoading={isUSDCBalanceLoading}
-            />
-          )
-        }
-      )
-    }
-
-    items.push(
+      },
       {
         icon: IconGift,
         label: messages.rewards,
@@ -177,7 +104,7 @@ export const useNavConfig = () => {
         label: messages.settings,
         to: 'SettingsScreen'
       }
-    )
+    ]
 
     if (env.ENVIRONMENT === 'staging' || isFeatureFlagAccessEnabled) {
       items.push({
@@ -192,15 +119,8 @@ export const useNavConfig = () => {
     hasUnreadMessages,
     unreadMessagesCount,
     claimableAmount,
-    audioBalanceFormatted,
-    tier,
-    spacing.unit5,
-    isAudioBalanceLoading,
-    usdcBalanceFormatted,
-    isUSDCBalanceLoading,
     hasClaimableRewards,
-    isFeatureFlagAccessEnabled,
-    isWalletUIUpdateEnabled
+    isFeatureFlagAccessEnabled
   ])
 
   return {

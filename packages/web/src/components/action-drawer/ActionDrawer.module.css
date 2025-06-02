@@ -21,7 +21,7 @@
   font-size: 16px;
   font-weight: 500;
   line-height: 18px;
-  color: var(--harmony-neutral);
+  color: var(--harmony-text-default);
 }
 
 .row {
@@ -30,7 +30,7 @@
   font-weight: 600;
   letter-spacing: 0.23px;
   line-height: 26px;
-  color: var(--action-sheet-text);
+  color: var(--harmony-text-default);
 }
 
 .row:last-child {

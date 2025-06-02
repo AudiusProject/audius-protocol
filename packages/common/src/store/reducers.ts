@@ -10,8 +10,6 @@ import { buyUSDCReducer } from './buy-usdc'
 import collectionsReducer from './cache/collections/reducer'
 import { CollectionsCacheState } from './cache/collections/types'
 import { asCache } from './cache/reducer'
-import tracksReducer from './cache/tracks/reducer'
-import { TracksCacheState } from './cache/tracks/types'
 import usersReducer from './cache/users/reducer'
 import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
@@ -98,7 +96,6 @@ import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
-import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import stripeModalReducer from './ui/stripe-modal/slice'
@@ -144,9 +141,6 @@ export const reducers = (storage: Storage, history?: History) => ({
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
-  tracks: asCache(tracksReducer, Kind.TRACKS),
-  // TODO: Fix type error
-  // @ts-ignore
   users: asCache(usersReducer, Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
@@ -180,7 +174,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     modals: modalsReducer,
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
-    reactions: reactionsReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
     coinflowModal: coinflowModalReducer,
@@ -265,7 +258,6 @@ export type CommonState = {
 
   // Cache
   collections: CollectionsCacheState
-  tracks: TracksCacheState
   users: UsersCacheState
 
   // TODO: missing types for internally managed api slice state
@@ -299,7 +291,6 @@ export type CommonState = {
     modals: ModalsState
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
-    reactions: ReactionsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     stripeModal: StripeModalState

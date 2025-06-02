@@ -13,7 +13,7 @@ const messages = {
   deadline: (deadline?: string) => {
     if (!deadline) return ''
     const date = dayjs(deadline)
-    return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')}`
+    return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')}`
   },
   ended: 'Contest Ended',
   fallbackDescription:

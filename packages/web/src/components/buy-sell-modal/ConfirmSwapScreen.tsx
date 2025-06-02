@@ -1,15 +1,15 @@
+import { formatUSDCValue } from '@audius/common/api'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
-import { USDC } from '@audius/fixed-decimal'
+import { TokenInfo } from '@audius/common/store'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
 import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
-import { TokenInfo } from './types'
 
 const messages = {
   ...baseMessages,
   priceEach: (price: number) => {
-    const formatted = USDC(price).toLocaleString('en-US')
+    const formatted = formatUSDCValue(price, { includeDollarSign: true })
     return `(${formatted} ea.)`
   }
 }
@@ -56,6 +56,10 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
   const priceLabel = isReceivingBaseToken
     ? messages.priceEach(pricePerBaseToken)
     : undefined
+
+  if (!formattedPayAmount || !formattedReceiveAmount) {
+    return null
+  }
 
   return (
     <Flex direction='column' gap='l'>

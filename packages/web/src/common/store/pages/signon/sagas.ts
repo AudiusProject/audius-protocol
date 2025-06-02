@@ -5,8 +5,7 @@ import {
   queryHasAccount,
   queryIsAccountComplete,
   queryUserByHandle,
-  queryUsers,
-  selectIsAccountComplete
+  queryUsers
 } from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
@@ -40,8 +39,7 @@ import {
   fetchAccountAsync,
   getOrCreateUSDCUserBank,
   changePasswordActions,
-  confirmTransaction,
-  accountSelectors
+  confirmTransaction
 } from '@audius/common/store'
 import {
   parseHandleReservedStatusFromSocial,
@@ -72,7 +70,6 @@ import {
 } from 'typed-redux-saga'
 
 import { identify, make } from 'common/store/analytics/actions'
-import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -1042,17 +1039,9 @@ function* followCollections(
   favoriteSource: FavoriteSource
 ) {
   yield* call(waitForWrite)
-  const accountUser = yield* call(queryAccountUser)
   try {
-    const result = yield* call(retrieveCollections, collectionIds, {
-      userId: accountUser?.user_id
-    })
-
-    for (let i = 0; i < collectionIds.length; i++) {
-      const id = collectionIds[i]
-      if (result?.collections?.[id]) {
-        yield* put(saveCollection(id, favoriteSource))
-      }
+    for (const collectionId of collectionIds) {
+      yield* put(saveCollection(collectionId, favoriteSource))
     }
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')

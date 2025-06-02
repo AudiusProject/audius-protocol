@@ -54,7 +54,7 @@ const NavBanner = (props: NavBannerProps) => {
   ].filter(removeNullable)
 
   return (
-    <Flex w='100%' justifyContent='space-between'>
+    <Flex w='100%' justifyContent='space-between' data-testid='nav-banner'>
       <Box w='100%'>{tabs}</Box>
 
       {isArtist && !hideSortButton && (

@@ -712,7 +712,7 @@ const WebPlayer = (props) => {
                         }).toString()
                       }}
                     />
-                  ) : isSearchExploreEnabled ? (
+                  ) : isSearchExploreEnabled && !isMobile ? (
                     <ExplorePage />
                   ) : (
                     <SearchPage />

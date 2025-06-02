@@ -1,10 +1,8 @@
-import { queryCurrentAccount, queryCurrentUserId } from '@audius/common/api'
+import { queryCollections, queryCurrentAccount } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { savedCollectionsActions, CollectionType } from '@audius/common/store'
 import { waitForRead } from '@audius/common/utils'
 import { all, call, put, takeEvery } from 'typed-redux-saga'
-
-import { retrieveCollections } from '../cache/collections/utils'
 
 import { FETCH_ACCOUNT_COLLECTIONS } from './actions'
 
@@ -17,8 +15,7 @@ type FetchCollectionsConfig = {
 
 function* fetchCollectionsAsync({ ids, type }: FetchCollectionsConfig) {
   yield waitForRead()
-  const userId = yield* call(queryCurrentUserId)
-  yield* call(retrieveCollections, ids, { userId })
+  yield* call(queryCollections, ids)
 
   yield* put(
     fetchCollectionsSucceeded({

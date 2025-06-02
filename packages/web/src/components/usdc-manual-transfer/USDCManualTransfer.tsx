@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import { useWalletAddresses } from '@audius/common/api'
-import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { useWalletAddresses, useUSDCBalance } from '@audius/common/api'
+import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   purchaseContentSelectors,

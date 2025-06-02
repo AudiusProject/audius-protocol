@@ -5,7 +5,8 @@ import {
   useState
 } from 'react'
 
-import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -19,39 +20,36 @@ import {
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber
 } from '@audius/common/utils'
-import { Button, SegmentedControl, Text } from '@audius/harmony'
+import { Button, Flex, SegmentedControl, Text } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
+import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { make, track } from 'services/analytics'
 
 import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 
-import styles from './EnterTransferDetails.module.css'
-import { TextRow } from './TextRow'
-
 const messages = {
   currentBalance: 'Current Balance',
   amountToWithdraw: 'Amount to Withdraw',
+  amountToWithdrawLabel: 'Amount (USDC)',
   destinationAddress: 'Destination Address',
-  specify: `Specify how much USDC you’d like to withdraw from your Audius Account.`,
-  destinationDetails: 'Provide a Solana Wallet address to transfer funds to.',
+  howMuch: 'How much do you want to withdraw?',
+  destinationDetails: 'Solana USDC wallet address to receive funds.',
   solanaWallet: 'USDC Wallet (Solana)',
-  amountInputLabel: 'Amount of USDC to withdraw',
   continue: 'Continue',
   dollars: '$',
   transferMethod: 'Transfer Method',
-  cash: 'Cash',
+  bankAccount: 'Bank Account',
   crypto: 'Crypto',
   cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.',
-  usdc: '(USDC)'
+    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
 }
 
 const WithdrawMethodOptions = [
-  { key: WithdrawMethod.COINFLOW, text: messages.cash },
+  { key: WithdrawMethod.COINFLOW, text: messages.bankAccount },
   { key: WithdrawMethod.MANUAL_TRANSFER, text: messages.crypto }
 ]
 
@@ -68,11 +66,10 @@ export const EnterTransferDetails = () => {
     (balance ?? new BN(0)) as BNUSDC
   )
   const analyticsBalance = balanceNumber / 100
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [
     { value },
-    _ignoredAmountMeta,
+    { error: amountError },
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
@@ -97,14 +94,15 @@ export const EnterTransferDetails = () => {
 
   const [
     { value: address },
-    _ignoredAddressMeta,
+    { error: addressError },
     { setTouched: setAddressTouched }
   ] = useField(ADDRESS)
 
+  const isBalanceLessThanMinimum = balance ? balance.lt(new BN(5)) : false
   const disableContinue =
     methodValue === WithdrawMethod.COINFLOW
       ? !!balance?.isZero()
-      : !address || !!balance?.isZero()
+      : !address || !!addressError || !!amountError || isBalanceLessThanMinimum
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
@@ -133,28 +131,27 @@ export const EnterTransferDetails = () => {
   }, [setData, methodValue, validateForm, setAmountTouched, setAddressTouched])
 
   return (
-    <div className={styles.root}>
-      <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
+    <Flex column gap='xl'>
+      <CashBalanceSection balance={balance} />
       <Divider style={{ margin: 0 }} />
-      <div className={styles.amount}>
-        <div className={styles.amountText}>
-          <TextRow left={messages.amountToWithdraw} />
-          <Text variant='body' size='m' strength='default'>
-            {messages.specify}
+      <Flex column gap='l'>
+        <Flex column gap='s'>
+          <Text variant='heading' size='s' color='subdued'>
+            {messages.amountToWithdraw}
           </Text>
-        </div>
+          <Text variant='body'>{messages.howMuch}</Text>
+        </Flex>
         <TextField
-          title={messages.amountToWithdraw}
-          label={messages.amountToWithdraw}
-          aria-label={messages.amountToWithdraw}
+          title={messages.amountToWithdrawLabel}
+          label={messages.amountToWithdrawLabel}
+          aria-label={messages.amountToWithdrawLabel}
           name={AMOUNT}
           value={humanizedValue}
           onChange={handleAmountChange}
           onBlur={handleAmountBlur}
           startAdornmentText={messages.dollars}
-          endAdornmentText={messages.usdc}
         />
-      </div>
+      </Flex>
       <Divider style={{ margin: 0 }} />
       {isCoinflowEnabled ? (
         <SegmentedControl
@@ -170,13 +167,13 @@ export const EnterTransferDetails = () => {
           {messages.cashTransferDescription}
         </Text>
       ) : (
-        <div className={styles.destination}>
-          <div className={styles.destinationText}>
-            <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='m' strength='default'>
-              {messages.destinationDetails}
+        <Flex column gap='l'>
+          <Flex column gap='s'>
+            <Text variant='heading' size='s' color='subdued'>
+              {messages.destinationAddress}
             </Text>
-          </div>
+            <Text variant='body'>{messages.destinationDetails}</Text>
+          </Flex>
           <TextField
             title={messages.destinationAddress}
             onPaste={handlePasteAddress}
@@ -185,17 +182,16 @@ export const EnterTransferDetails = () => {
             name={ADDRESS}
             placeholder=''
           />
-        </div>
+        </Flex>
       )}
-
       <Button
-        variant='secondary'
+        variant='primary'
         fullWidth
         disabled={disableContinue}
         onClick={handleContinue}
       >
         {messages.continue}
       </Button>
-    </div>
+    </Flex>
   )
 }

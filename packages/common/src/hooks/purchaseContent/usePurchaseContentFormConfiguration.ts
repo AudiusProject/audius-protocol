@@ -6,7 +6,7 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 
-import { useCurrentAccount, useGetCurrentUser } from '~/api'
+import { useCurrentAccount, useGetCurrentUser, useUSDCBalance } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
@@ -22,7 +22,6 @@ import {
 import { isContentCollection, isContentTrack } from '~/utils'
 
 import { useFeatureFlag } from '../useFeatureFlag'
-import { useUSDCBalance } from '../useUSDCBalance'
 
 import {
   AMOUNT_PRESET,

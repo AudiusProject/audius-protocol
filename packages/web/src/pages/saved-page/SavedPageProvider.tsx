@@ -14,12 +14,11 @@ import {
   UID,
   LineupTrack,
   Track,
+  Lineup,
   AccountCollection
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
-  accountActions,
-  lineupSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -32,11 +31,12 @@ import {
   LibraryCategoryType,
   SavedPageTrack,
   TrackRecord,
+  useLineupTable,
   AccountState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { debounce, isEqual } from 'lodash'
+import { debounce } from 'lodash'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -58,7 +58,6 @@ const {
   getCollectionsCategory
 } = savedPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { makeGetTableMetadatas } = lineupSelectors
 
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 
@@ -112,11 +111,21 @@ type SavedPageState = {
 
 const SavedPage = (props: SavedPageProps) => {
   const currentTrack = useCurrentTrack()
-  return <SavedPageClassComponent {...props} currentTrack={currentTrack} />
+  const tracks = useLineupTable(getSavedTracksLineup)
+  return (
+    <SavedPageClassComponent
+      {...props}
+      currentTrack={currentTrack}
+      tracks={tracks}
+    />
+  )
 }
 
 class SavedPageClassComponent extends PureComponent<
-  SavedPageProps & { currentTrack: Track | null },
+  SavedPageProps & {
+    currentTrack: Track | null
+    tracks: Lineup<SavedPageTrack>
+  },
   SavedPageState
 > {
   static contextType = SsrContext
@@ -160,9 +169,6 @@ class SavedPageClassComponent extends PureComponent<
       this.state.sortMethod,
       this.state.sortDirection
     )
-    if (this.context.isMobile) {
-      this.props.fetchSavedPlaylists()
-    }
   }
 
   componentWillUnmount() {
@@ -406,7 +412,7 @@ class SavedPageClassComponent extends PureComponent<
         this.props.tracks.entries.reduce(
           (acc, track) => ({
             ...acc,
-            [track.id]: track
+            [track.track_id]: track
           }),
           {}
         )
@@ -448,7 +454,6 @@ class SavedPageClassComponent extends PureComponent<
       allowReordering: this.state.allowReordering,
 
       // Props from AppState
-      account: this.props.account,
       tracks: this.props.tracks,
       currentQueueItem: this.props.currentQueueItem,
       playing: this.props.playing,
@@ -507,21 +512,10 @@ class SavedPageClassComponent extends PureComponent<
   }
 }
 
-type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
-let tracksRef: LineupData
-
 function makeMapStateToProps() {
-  const getLineupMetadatas = makeGetTableMetadatas(getSavedTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
-    const tracks = getLineupMetadatas(state)
-
-    if (!isEqual(tracksRef, tracks)) {
-      tracksRef = tracks
-    }
-
     return {
-      tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
@@ -575,7 +569,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     resetSavedTracks: () => dispatch(tracksActions.reset()),
     updateLineupOrder: (updatedOrderIndices: UID[]) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
-    fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
     goToRoute: (route: string) => dispatch(push(route)),
