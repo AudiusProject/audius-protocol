@@ -4,6 +4,8 @@ embed-init:
     - image: cimg/node:18.17
   steps:
     - checkout
+    - attach_workspace:
+        at: ./
 
     - create_concatenated_patch_file:
         filename: combined-patch-file.txt

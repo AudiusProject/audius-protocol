@@ -4,6 +4,9 @@ mobile-init:
     - image: cimg/node:18.17
   steps:
     - checkout
+    - attach_workspace:
+        at: ./
+
     - run:
         name: copy staging env
         command: |
@@ -15,13 +18,6 @@ mobile-init:
           cd packages/mobile
           echo -e "\nAMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
 
-    - create_concatenated_patch_file:
-        filename: combined-patch-file.txt
-
-    - restore_cache:
-        keys:
-          - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-
     - run:
         name: lint & typecheck
         command: |
@@ -30,14 +26,6 @@ mobile-init:
     - persist_to_workspace:
         root: ./
         paths:
-          - node_modules
-          - packages/web/node_modules
-          - packages/mobile/node_modules
-          - packages/common/node_modules
-          - packages/libs/node_modules
-          - packages/libs/dist
-          - packages/sdk/node_modules
-          - packages/sdk/dist
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
           - packages/mobile/android/libs

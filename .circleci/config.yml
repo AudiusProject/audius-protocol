@@ -26,6 +26,60 @@ commands:
           name: Combine patch-files to single file
           command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>
 
+  setup-dependencies:
+    description: "Setup and cache root node_modules for the monorepo"
+    steps:
+      - checkout
+      
+      # Create combined patch file for cache key
+      - create_concatenated_patch_file:
+          filename: combined-patch-file.txt
+
+      # Restore cache
+      - restore_cache:
+          keys:
+            - npm-cache-v2-{{ checksum "package-lock.json" }}-{{ checksum "package.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+      # Install dependencies
+      - run:
+          name: Install dependencies
+          command: |
+            if [[ -d node_modules ]]; then
+              echo "Using cached node_modules (skipping postinstall)..."
+            else
+              echo "No cache found, running fresh install with postinstall..."
+              # Run fresh install with postinstall (which includes patch-package)
+              CI=true npm ci
+            fi
+
+      # Save cache
+      - save_cache:
+          key: npm-cache-v2-{{ checksum "package-lock.json" }}-{{ checksum "package.json" }}-{{ checksum "combined-patch-file.txt" }}
+          paths:
+            - ./node_modules
+            - ./packages/*/node_modules
+            - ./packages/discovery-provider/plugins/*/apps/*/node_modules
+
+      # Persist all node_modules to workspace
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - node_modules
+            - packages/*/node_modules
+            - packages/*/dist
+            - packages/discovery-provider/plugins/*/apps/*/node_modules
+
+  prune-old-caches:
+    description: "Prune old caches to prevent storage issues"
+    steps:
+      - run:
+          name: List and prune old caches
+          command: |
+            echo "Listing current caches..."
+            circleci cache list
+            echo "Pruning caches older than 30 days..."
+            circleci cache prune --older-than 30d
+
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
   generate-config:
@@ -52,47 +106,11 @@ jobs:
       - image: cimg/node:18.17
     resource_class: large
     steps:
-      - checkout
-
-      - create_concatenated_patch_file:
-          filename: combined-patch-file.txt
-
-      - restore_cache:
-          keys:
-            - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-
+      - setup-dependencies
       - run: sudo apt-get update
       - run: sudo apt-get install -y build-essential libssl-dev
-      - run:
-          name: Install dependencies
-          command: |
-            if [[ -d node_modules ]]; then
-              echo "Using cached node_modules, running postinstall..."
-              CI=true npm run postinstall
-            else
-              echo "No cache found, running fresh install..."
-              CI=true npm ci --prefer-offline
-            fi
-
-      - save_cache:
-          key: npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-          paths:
-            - ./node_modules
-            - ./packages/protocol-dashboard/node_modules
-            - ./packages/web/node_modules
-            - ./packages/mobile/node_modules
-            - ./packages/embed/node_modules
-            - ./packages/harmony/node_modules
-            - ./packages/common/node_modules
-            - ./packages/libs/node_modules
-            - ./packages/sdk/node_modules
-            - ./packages/identity-service/node_modules
-            - ./packages/es-indexer/node_modules
-            - ./packages/ddex-entrypoint/node_modules
-            - ./packages/create-audius-app/node_modules
-            - ./packages/dotenv-linter/bin
-            - ./packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
-            - ./packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
+      - prune-old-caches:
+          when: on_success
 
   generate-release-branch:
     working_directory: ~/audius-protocol

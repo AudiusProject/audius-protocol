@@ -8,14 +8,6 @@ protocol-dashboard-init:
     - attach_workspace:
         at: ./
 
-    - create_concatenated_patch_file:
-        filename: combined-patch-file.txt
-
-    # Download and cache dependencies
-    - restore_cache:
-        keys:
-          - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-
     # Lint
     - run:
         name: lint

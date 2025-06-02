@@ -7,24 +7,10 @@ sdk-init:
     - attach_workspace:
         at: ./
 
-    - create_concatenated_patch_file:
-        filename: combined-patch-file.txt
-
-    - restore_cache:
-        keys:
-          - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-
     - run:
         name: lint & typecheck
         command: |
           npx turbo run verify --filter=@audius/sdk
-
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - node_modules
-          - packages/sdk/node_modules
-          - packages/sdk/dist
 
 sdk-test:
   working_directory: ~/audius-protocol
