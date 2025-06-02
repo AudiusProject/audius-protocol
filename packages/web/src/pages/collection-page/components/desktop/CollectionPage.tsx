@@ -165,7 +165,7 @@ const CollectionPage = ({
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
       : [[], -1]
-  const collectionLoading = status === Status.LOADING
+  const collectionLoading = status === Status.LOADING || status === Status.IDLE
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading =

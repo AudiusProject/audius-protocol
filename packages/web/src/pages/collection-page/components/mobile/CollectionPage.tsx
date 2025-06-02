@@ -134,7 +134,7 @@ const CollectionPage = ({
   }, [setHeader])
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const collectionLoading = status === Status.LOADING
+  const collectionLoading = status === Status.LOADING || status === Status.IDLE
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
