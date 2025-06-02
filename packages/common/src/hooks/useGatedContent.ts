@@ -47,15 +47,14 @@ export const useGatedTrackAccess = (trackId: ID) => {
 }
 
 export const useGatedCollectionAccess = (collectionId: ID) => {
-  const { data: collection } = useCollection(collectionId, {
-    select: (collection) => ({
-      is_stream_gated: collection?.is_stream_gated,
-      access: collection?.access
-    })
+  const { data: hasStreamAccess } = useCollection(collectionId, {
+    select: (collection) => {
+      const { is_stream_gated, access } = collection ?? {}
+      return !is_stream_gated || !!access?.stream
+    }
   })
 
-  const { is_stream_gated, access } = collection ?? {}
-  return { hasStreamAccess: !is_stream_gated || !!access?.stream }
+  return { hasStreamAccess }
 }
 
 type PartialTrack = Pick<

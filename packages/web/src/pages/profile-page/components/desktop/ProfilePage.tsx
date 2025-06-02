@@ -26,6 +26,7 @@ import {
   IconAlbum,
   IconCollectible as IconCollectibles,
   IconArtistBadge as BadgeArtist,
+  IconLabelBadge as BadgeLabel,
   IconNote,
   IconPlaylists,
   IconRepost as IconReposts,
@@ -645,12 +646,16 @@ const ProfilePage = ({
                 }}
                 className={styles.nameWrapper}
               >
-                <BadgeArtist
-                  className={cn(styles.badgeArtist, {
-                    [styles.hide]:
-                      !isArtist || status === Status.LOADING || isDeactivated
-                  })}
-                />
+                {profile?.profile_type === 'label' ? (
+                  <BadgeLabel className={styles.badge} />
+                ) : (
+                  <BadgeArtist
+                    className={cn(styles.badge, {
+                      [styles.hide]:
+                        !isArtist || status === Status.LOADING || isDeactivated
+                    })}
+                  />
+                )}
                 {!isDeactivated && userId && (
                   <>
                     <EditableName

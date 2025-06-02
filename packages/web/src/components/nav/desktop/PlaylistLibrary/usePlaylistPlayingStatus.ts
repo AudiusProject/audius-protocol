@@ -25,7 +25,7 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
   const queueSource = useSelector(getSource)
   const currentUid = useSelector(getUid)
 
-  const { data: collectionTracks } = useCollection(
+  const { data: collectionTrackIds } = useCollection(
     typeof id === 'string' ? null : id,
     {
       select: (collection) => collection?.playlist_contents.track_ids,
@@ -35,9 +35,9 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
   )
 
   return useMemo(() => {
-    if (!collectionTracks || !currentTrackId || !isPlaying) return false
+    if (!collectionTrackIds || !currentTrackId || !isPlaying) return false
 
-    const hasTrack = collectionTracks.some(
+    const hasTrack = collectionTrackIds.some(
       (trackItem) => trackItem.track === currentTrackId
     )
 
@@ -47,5 +47,12 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
       Uid.fromString(currentUid).source === `collection:${id}`
 
     return hasTrack && isSource
-  }, [collectionTracks, currentTrackId, isPlaying, currentUid, queueSource, id])
+  }, [
+    collectionTrackIds,
+    currentTrackId,
+    isPlaying,
+    currentUid,
+    queueSource,
+    id
+  ])
 }

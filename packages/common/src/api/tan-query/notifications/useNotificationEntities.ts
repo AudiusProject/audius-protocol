@@ -86,7 +86,7 @@ export const useNotificationEntities = <T extends Notification>(
     return tracks?.map((track) => track?.owner_id).filter(removeNullable)
   }, [tracks])
 
-  const { data: trackUsers } = useUsers(userIds)
+  const { byId: trackUsers } = useUsers(userIds)
 
   // Combine tracks with their users
   const trackEntities = useMemo(() => {

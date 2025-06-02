@@ -1,8 +1,10 @@
 import { useEffect, useMemo } from 'react'
 
 import { EntityType } from '@audius/sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
+import { useQueryContext } from '~/api'
 import { useRemixContestWinners } from '~/api/tan-query/events/useRemixContestWinners'
 import { PlaybackSource } from '~/models/Analytics'
 import {
@@ -11,7 +13,10 @@ import {
   remixesPageActions
 } from '~/store/pages'
 
-import { useLineupQuery } from '../lineups/useLineupQuery'
+import {
+  mapLineupDataToFullLineupItems,
+  useLineupQuery
+} from '../lineups/useLineupQuery'
 import { LineupData, QueryOptions } from '../types'
 
 import { UseRemixesArgs, useRemixes, getRemixesQueryKey } from './useRemixes'
@@ -30,7 +35,9 @@ export const useRemixesLineup = (
   }: UseRemixesArgs,
   options?: QueryOptions
 ) => {
+  const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const { reportToSentry } = useQueryContext()
 
   // Get winner IDs
   const { data: winnerIds, isLoading: isWinnersLoading } =
@@ -74,28 +81,37 @@ export const useRemixesLineup = (
 
     // Add original track if included (should be first)
     if (includeOriginal && trackId) {
-      const originalTrack = remixTracks.find((track) => track.id === trackId)
-      if (originalTrack) {
-        orderedTracks.push(originalTrack)
-      }
+      orderedTracks.push({
+        id: trackId,
+        type: EntityType.TRACK
+      })
     }
 
     // Add winner tracks if included (should be second)
     if (includeWinners && winnerIds?.length) {
+      // Create a Set of winner IDs for efficient lookup
+      const winnerIdSet = new Set(winnerIds)
       const winnerTracks = winnerIds.map((id) => ({
         id,
         type: EntityType.TRACK
       }))
       orderedTracks.push(...winnerTracks)
-    }
 
-    // Add remaining remix tracks (excluding original and winners)
-    const remainingTracks = remixTracks.filter((track) => {
-      if (includeOriginal && track.id === trackId) return false
-      if (includeWinners && winnerIds?.includes(track.id)) return false
-      return true
-    })
-    orderedTracks.push(...remainingTracks)
+      // Add remaining remix tracks (excluding original and winners)
+      const remainingTracks = remixTracks.filter((track) => {
+        if (track.id === trackId) return false // Always exclude original track
+        if (winnerIdSet.has(track.id)) return false
+        return true
+      })
+      orderedTracks.push(...remainingTracks)
+    } else {
+      // If not including winners, just filter out original track
+      const remainingTracks = remixTracks.filter((track) => {
+        if (track.id === trackId) return false // Always exclude original track
+        return true
+      })
+      orderedTracks.push(...remainingTracks)
+    }
 
     return orderedTracks
   }, [
@@ -105,6 +121,28 @@ export const useRemixesLineup = (
     trackId,
     winnerIds
   ])
+
+  useEffect(() => {
+    if (processedLineupData) {
+      const fullLineupItems = mapLineupDataToFullLineupItems(
+        processedLineupData,
+        queryClient,
+        reportToSentry,
+        'remix'
+      )
+
+      dispatch(
+        remixesPageLineupActions.fetchLineupMetadatas(
+          0,
+          fullLineupItems.length,
+          false,
+          {
+            items: fullLineupItems
+          }
+        )
+      )
+    }
+  }, [processedLineupData, dispatch, queryClient, reportToSentry])
 
   const queryKey = getRemixesQueryKey({
     trackId,
@@ -120,6 +158,8 @@ export const useRemixesLineup = (
     lineupData: processedLineupData,
     queryData,
     queryKey,
+    // We're manually dispatching the lineup data to the redux store, so we don't need to automatically cache it
+    disableAutomaticCacheHandling: true,
     lineupActions: remixesPageLineupActions,
     lineupSelector: remixesPageSelectors.getLineup,
     playbackSource: PlaybackSource.TRACK_TILE,

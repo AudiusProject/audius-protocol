@@ -25,11 +25,11 @@ type CollectionParams =
 export const useCollectionByParams = <
   TResult extends { playlist_id: ID } = TQCollection
 >(
-  params: CollectionParams | null = {},
+  collectionParams: CollectionParams | null = {},
   options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
   let permalink: string | null | undefined = null
-  params = params ?? {}
+  const params = collectionParams ?? {}
   if ('permalink' in params) {
     permalink = params.permalink
   } else if ('handle' in params) {

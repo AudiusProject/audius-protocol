@@ -37,16 +37,18 @@ export const CollectionDownloadStatusRow = (
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
       pick(collection, [
+        'playlist_id',
         'playlist_owner_id',
         'has_current_user_saved',
-        'access'
+        'access',
+        'playlist_contents'
       ])
   })
   const { playlist_owner_id, has_current_user_saved, access } =
     partialCollection ?? {}
 
   const isMarkedForDownload = useSelector((state) =>
-    Boolean(getCollectionDownloadStatus(state, collectionId))
+    Boolean(getCollectionDownloadStatus(state, partialCollection))
   )
 
   const isSwitchDisabled = useSelector((state) => {
@@ -63,7 +65,7 @@ export const CollectionDownloadStatusRow = (
   const downloadStatus = useProxySelector(
     (state) => {
       const status =
-        getCollectionDownloadStatus(state, collectionId) ??
+        getCollectionDownloadStatus(state, partialCollection) ??
         OfflineDownloadStatus.INACTIVE
 
       return downloadSwitchValue && status === OfflineDownloadStatus.INACTIVE

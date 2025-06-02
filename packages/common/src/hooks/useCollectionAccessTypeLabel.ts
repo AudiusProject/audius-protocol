@@ -41,7 +41,7 @@ export const useCollectionAccessTypeLabel = (
     return collection?.playlistOwnerId === getUserId(state)
   })
 
-  const isUnlockedStream = !isOwner && hasStreamAccess
+  const isUnlockedStream = Boolean(!isOwner && hasStreamAccess)
 
   let type: Nullable<AccessType> = null
   let isUnlocked = false
