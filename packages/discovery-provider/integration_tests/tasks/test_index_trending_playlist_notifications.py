@@ -6,7 +6,6 @@ from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.models.playlists.playlist import Playlist
 from src.queries.get_trending_playlists import make_trending_playlists_cache_key
-from src.tasks.cache_trending_playlists import index_trending_playlist_notifications
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import helpers
@@ -47,6 +46,7 @@ def cache_trending_playlists_mock(db, playlist_ids: list[int]) -> None:
         set_json_cached_key(redis, trending_key, trending_playlists)
 
 
+# TODO: Port to the index trending tests
 def test_cache_trending_playlist_notifications(app):
     with app.app_context():
         db = get_db()

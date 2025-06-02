@@ -1035,7 +1035,6 @@ class Trending(Resource):
     @record_metrics
     @ns.expect(trending_parser)
     @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=TRENDING_TRACKS_TTL_SEC)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS

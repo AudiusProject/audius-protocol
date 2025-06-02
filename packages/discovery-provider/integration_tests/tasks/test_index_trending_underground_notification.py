@@ -5,28 +5,24 @@ from sqlalchemy import asc
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
-from src.queries.get_underground_trending import make_underground_trending_cache_key
 from src.tasks.index_trending import index_trending_underground_notifications
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-from src.utils.redis_cache import set_json_cached_key
-from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 
 BASE_TIME = datetime(2023, 1, 1, 0, 0)
 
 
+# TODO: Follow whatever pattern we use for regular trending, no cache usage here
 def index_trending_underground_mock(db, track_ids: list[int]) -> None:
-    redis = get_redis()
     trending_strategy_factory = TrendingStrategyFactory()
     trending_strategy = trending_strategy_factory.get_strategy(
         TrendingType.UNDERGROUND_TRACKS
     )
-    trending_key = make_underground_trending_cache_key(trending_strategy.version)
 
     with db.scoped_session() as session:
         trending_underground_tracks = (
@@ -45,7 +41,6 @@ def index_trending_underground_mock(db, track_ids: list[int]) -> None:
         ]
 
         trending_underground_tracks = (trending_underground_tracks, track_ids)
-        set_json_cached_key(redis, trending_key, trending_underground_tracks)
 
 
 def test_index_trending_underground_notification(app):

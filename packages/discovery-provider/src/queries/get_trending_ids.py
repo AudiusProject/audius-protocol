@@ -1,10 +1,8 @@
 import logging
 
-from src.queries.generate_unpopulated_trending_tracks import TRENDING_TRACKS_TTL_SEC
 from src.queries.get_trending import get_trending
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +16,7 @@ def get_time_trending(cache_args, time, limit, strategy):
     if strategy.version != DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS]:
         path += f"/{strategy.version.value}"
 
-    time_cache_key = extract_key(path, time_params.items())
-    time_trending = use_redis_cache(
-        time_cache_key,
-        TRENDING_TRACKS_TTL_SEC,
-        lambda: get_trending(time_params, strategy),
-    )
+    time_trending = get_trending(time_params, strategy)
     time_trending_track_ids = [
         {"track_id": track["track_id"]} for track in time_trending
     ]

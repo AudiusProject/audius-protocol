@@ -8,7 +8,6 @@ from src.queries.generate_unpopulated_trending_tracks import (
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
-from src.utils.redis_cache import use_redis_cache
 
 logger = logging.getLogger(__name__)
 
@@ -34,17 +33,13 @@ def get_usdc_purchase_tracks(args, strategy):
 
         # Will try to hit cached trending from task, falling back
         # to generating it here if necessary and storing it with no TTL
-        (tracks, track_ids) = use_redis_cache(
-            key,
-            None,
-            make_generate_unpopulated_trending(
-                session=session,
-                genre=genre,
-                time_range=time_range,
-                strategy=strategy,
-                exclude_gated=False,
-                usdc_purchase_only=True,
-            ),
+        (tracks, track_ids) = make_generate_unpopulated_trending(
+            session=session,
+            genre=genre,
+            time_range=time_range,
+            strategy=strategy,
+            exclude_gated=False,
+            usdc_purchase_only=True,
         )
 
         # apply limit and offset

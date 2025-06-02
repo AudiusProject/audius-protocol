@@ -45,6 +45,7 @@ from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
+from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.collectibles import Collectibles
@@ -194,6 +195,7 @@ def populate_mock_db(db, entities, block_offset=None):
         encrypted_emails = entities.get("encrypted_emails", [])
         email_access = entities.get("email_access", [])
         collectibles = entities.get("collectibles", [])
+        track_trending_scores = entities.get("track_trending_scores", [])
         playlist_trending_scores = entities.get("playlist_trending_scores", [])
 
         num_blocks = max(
@@ -983,6 +985,18 @@ def populate_mock_db(db, entities, block_offset=None):
                 listen_streak=challenge_listen_streak.get("listen_streak", 1),
             )
             session.add(streak)
+
+        for i, track_trending_score in enumerate(track_trending_scores):
+            score = TrackTrendingScore(
+                track_id=track_trending_score.get("track_id", i),
+                type=track_trending_score.get("type", TrendingType.TRACKS.name),
+                score=track_trending_score.get("score", 0),
+                version=track_trending_score.get("version", TrendingVersion.pnagD.name),
+                genre=track_trending_score.get("genre", ""),
+                time_range=track_trending_score.get("time_range", "week"),
+                created_at=track_trending_score.get("created_at", datetime.now()),
+            )
+            session.add(score)
 
         for i, playlist_trending_score in enumerate(playlist_trending_scores):
             score = PlaylistTrendingScore(

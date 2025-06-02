@@ -128,14 +128,11 @@ def make_generate_unpopulated_trending(
     """Wraps a call for use in `use_redis_cache`, which
     expects to be passed a function with no arguments."""
 
-    def wrapped():
-        return generate_unpopulated_trending_from_mat_views(
-            session=session,
-            genre=genre,
-            time_range=time_range,
-            strategy=strategy,
-            exclude_gated=exclude_gated,
-            usdc_purchase_only=usdc_purchase_only,
-        )
-
-    return wrapped
+    return generate_unpopulated_trending_from_mat_views(
+        session=session,
+        genre=genre,
+        time_range=time_range,
+        strategy=strategy,
+        exclude_gated=exclude_gated,
+        usdc_purchase_only=usdc_purchase_only,
+    )
