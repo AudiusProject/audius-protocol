@@ -8,7 +8,8 @@ import {
   ModalHeader,
   ModalTitle,
   IconUserList,
-  Switch
+  Switch,
+  Button
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -17,7 +18,8 @@ const messages = {
   title: 'Label Account',
   error: 'Something went wrong. Please try again.',
   description: 'Identify as a record label on your Audius profile.',
-  identifyAsLabel: 'Identify as a label'
+  identifyAsLabel: 'Identify as a label',
+  done: 'Done'
 }
 
 export const LabelAccountModal = () => {
@@ -39,7 +41,7 @@ export const LabelAccountModal = () => {
   }, [updateProfile, isLabel, user])
 
   return (
-    <Modal onClose={handleClose} isOpen={isVisible}>
+    <Modal onClose={handleClose} isOpen={isVisible} size='small'>
       <ModalHeader onClose={handleClose}>
         <ModalTitle title={messages.title} icon={<IconUserList />} />
       </ModalHeader>
@@ -52,6 +54,9 @@ export const LabelAccountModal = () => {
           <Switch checked={isLabel} onChange={handleToggle} />
           <Text>{messages.identifyAsLabel}</Text>
         </Flex>
+        <Button variant='secondary' fullWidth onClick={handleClose}>
+          {messages.done}
+        </Button>
       </Flex>
     </Modal>
   )
