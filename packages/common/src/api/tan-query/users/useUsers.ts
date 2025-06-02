@@ -32,7 +32,8 @@ export const useUsers = (
 
   // Filter out duplicate IDs
   const uniqueUserIds = useMemo(
-    () => userIds?.filter((id, index, self) => self.indexOf(id) === index),
+    () =>
+      userIds?.filter((id, index, self) => self.indexOf(id) === index && !!id),
     [userIds]
   )
 
