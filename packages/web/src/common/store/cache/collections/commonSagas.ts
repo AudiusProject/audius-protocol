@@ -23,7 +23,6 @@ import {
   accountActions,
   accountSelectors,
   cacheCollectionsActions as collectionActions,
-  cacheActions,
   PlaylistOperations,
   savedPageActions,
   LibraryCategory,
@@ -564,21 +563,6 @@ function* deletePlaylistAsync(
     ])
     yield* call(confirmDeletePlaylist, userId, action.playlistId)
   }
-
-  const user = yield* queryUser(userId)
-  if (!user) return
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: {
-          _collectionIds: (user._collectionIds || []).filter(
-            (cId) => cId !== action.playlistId
-          )
-        }
-      }
-    ])
-  )
 }
 
 function* confirmDeleteAlbum(playlistId: ID, userId: ID) {

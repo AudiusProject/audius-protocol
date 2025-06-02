@@ -957,18 +957,6 @@ export function* uploadCollection(
           })
         )
         const user = yield* queryUser(userId)
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
-                _collectionIds: (user?._collectionIds ?? []).concat(
-                  confirmedPlaylist.playlist_id
-                )
-              }
-            }
-          ])
-        )
 
         yield* call(primeCollectionDataSaga, [confirmedPlaylist])
         yield* put(

@@ -26,8 +26,7 @@ import {
   confirmerActions,
   EditCollectionValues,
   RequestConfirmationError,
-  getSDK,
-  cacheActions
+  getSDK
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
@@ -111,7 +110,7 @@ function* optimisticallySavePlaylist(
 ) {
   const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
-  const { user_id, handle, _collectionIds = [] } = accountUser
+  const { user_id, handle } = accountUser
   const playlist: Partial<Collection> & { playlist_id: ID } = {
     playlist_id: playlistId,
     ...formFields
@@ -148,14 +147,6 @@ function* optimisticallySavePlaylist(
     playlist.is_album
   )
 
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user_id,
-        metadata: { _collectionIds: _collectionIds.concat(playlistId) }
-      }
-    ])
-  )
   yield* call(updateCollectionData, [playlist])
 
   yield* put(
