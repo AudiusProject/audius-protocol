@@ -111,6 +111,8 @@
 @media (max-height: 990px) {
   .searchBar :global(.ant-select-dropdown .rc-virtual-list-holder) {
     max-height: 560px !important;
+
+    /* Prevent dropdown scroll from propagating */
     overscroll-behavior-y: contain;
   }
 }

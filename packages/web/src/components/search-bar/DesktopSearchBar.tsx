@@ -335,34 +335,9 @@ export const DesktopSearchBar = () => {
     }
   }, [showResults])
 
-  useEffect(() => {
-    const dropdown = document.querySelector(`.rc-virtual-list-holder`)
-    console.log('asdf dropdown', dropdown)
-    if (!dropdown) return
-
-    const handleWheel = (e: Event) => {
-      const wheelEvent = e as WheelEvent
-      const target = wheelEvent.currentTarget as HTMLElement
-      const { scrollTop, scrollHeight, clientHeight } = target
-      const isAtTop = scrollTop === 0
-      const isAtBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight
-      console.log('asdf scrollTop', scrollTop, isAtTop, isAtBottom)
-      if (isAtBottom) {
-        // wheelEvent.preventDefault()
-        console.log('asdf stop propogation')
-        wheelEvent.stopPropagation()
-      }
-      // Always stop propagation so the page doesn't scroll
-      wheelEvent.stopPropagation()
-    }
-    dropdown.addEventListener('scroll', handleWheel, { passive: false })
-    return () => dropdown.removeEventListener('scroll', handleWheel)
-  }, [hasNoResults, data])
-
   return (
     <Flex className={styles.searchBar}>
       <AutoComplete
-        open={true}
         dropdownClassName={cn(styles.searchBox, {
           [styles.searchBoxEmpty]: hasNoResults
         })}
