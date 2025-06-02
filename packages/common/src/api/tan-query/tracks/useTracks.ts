@@ -51,7 +51,8 @@ export const useTracks = (
 
   // Filter out duplicate IDs
   const uniqueTrackIds = useMemo(
-    () => trackIds?.filter((id, index, self) => self.indexOf(id) === index),
+    () =>
+      trackIds?.filter((id, index, self) => self.indexOf(id) === index && !!id),
     [trackIds]
   )
 
