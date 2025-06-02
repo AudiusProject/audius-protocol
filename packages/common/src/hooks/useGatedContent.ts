@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useCurrentAccount, useTrack } from '~/api'
+import { useCollection, useCurrentAccount, useTrack } from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -16,7 +16,7 @@ import {
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
 import { getHasAccount } from '~/store/account/selectors'
-import { cacheCollectionsSelectors, cacheUsersSelectors } from '~/store/cache'
+import { cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
 import {
@@ -27,7 +27,6 @@ import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { useFeatureFlag } from './useFeatureFlag'
 
-const { getCollection } = cacheCollectionsSelectors
 const { getUser, getUsers } = cacheUsersSelectors
 const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
@@ -48,11 +47,11 @@ export const useGatedTrackAccess = (trackId: ID) => {
 }
 
 export const useGatedCollectionAccess = (collectionId: ID) => {
-  const hasStreamAccess = useSelector((state: CommonState) => {
-    const collection = getCollection(state, { id: collectionId })
-    if (!collection) return false
-    const { is_stream_gated, access } = collection
-    return !is_stream_gated || !!access?.stream
+  const { data: hasStreamAccess } = useCollection(collectionId, {
+    select: (collection) => {
+      const { is_stream_gated, access } = collection ?? {}
+      return !is_stream_gated || !!access?.stream
+    }
   })
 
   return { hasStreamAccess }

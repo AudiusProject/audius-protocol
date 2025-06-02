@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { useCollection } from '@audius/common/api'
 import type { SmartCollectionVariant } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
 import {
-  cacheCollectionsSelectors,
   collectionPageLineupActions,
   collectionPageSelectors,
   queueSelectors
@@ -17,7 +17,6 @@ import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
 import { useHasCollectionChanged } from './useHasCollectionChanged'
 
-const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getPositions } = queueSelectors
 
@@ -34,9 +33,14 @@ export const useFetchCollectionLineup = (
     (state) => new Set(getOfflineTrackIds(state) || []),
     areSetsEqual
   )
-  const collection = useSelector((state) => {
-    return getCollection(state, { id: collectionId as number })
-  })
+
+  const { data: collectionTrackIds } = useCollection(
+    typeof collectionId === 'string' ? null : collectionId,
+    {
+      select: (collection) => collection?.playlist_contents.track_ids,
+      enabled: false
+    }
+  )
 
   const collectionUidSource = `collection:${collectionId}`
   const queuePositions = useSelector(getPositions)
@@ -71,9 +75,9 @@ export const useFetchCollectionLineup = (
   ) as Record<number, string[]>
 
   const fetchLineupOffline = useCallback(() => {
-    if (collectionId && collection) {
+    if (collectionId && collectionTrackIds) {
       const trackIdEncounters = {} as Record<number, number>
-      const sortedTracks = collection.playlist_contents.track_ids
+      const sortedTracks = collectionTrackIds
         .filter(({ track: trackId }) => offlineTrackIds.has(trackId.toString()))
         .map(({ track: trackId, time }) => {
           trackIdEncounters[trackId] = trackIdEncounters[trackId]
@@ -106,7 +110,7 @@ export const useFetchCollectionLineup = (
     }
   }, [
     collectionId,
-    collection,
+    collectionTrackIds,
     dispatch,
     offlineTrackIds,
     queueUidsByTrackId,
