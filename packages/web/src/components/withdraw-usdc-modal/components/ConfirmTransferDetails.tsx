@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,

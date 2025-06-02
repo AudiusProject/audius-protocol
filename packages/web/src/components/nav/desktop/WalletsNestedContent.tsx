@@ -1,6 +1,6 @@
+import { useUSDCBalance } from '@audius/common/api'
 import {
   useSelectTierInfo,
-  useUSDCBalance,
   useTotalBalanceWithFallback
 } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'

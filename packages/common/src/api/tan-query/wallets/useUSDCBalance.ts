@@ -68,10 +68,13 @@ export const useUSDCBalance = ({
           },
           commitment
         )
-        const balance = (account?.amount ?? new BN(0)) as BNUSDC
+        const balance =
+          account?.amount !== undefined && account?.amount !== null
+            ? (new BN(account.amount.toString()) as BNUSDC)
+            : null
 
         // Still update Redux for compatibility with existing code
-        dispatch(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
+        dispatch(setUSDCBalance({ amount: balance?.toString() as StringUSDC }))
 
         return balance
       } catch (e) {
