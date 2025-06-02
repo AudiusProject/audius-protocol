@@ -28,7 +28,9 @@ export const useCollections = (
 
   const uniqueCollectionIds = useMemo(
     () =>
-      collectionIds?.filter((id, index, self) => self.indexOf(id) === index),
+      collectionIds?.filter(
+        (id, index, self) => self.indexOf(id) === index && !!id
+      ),
     [collectionIds]
   )
 
