@@ -14,6 +14,7 @@ create or replace function get_user_scores(
         challenge_count bigint,
         chat_block_count bigint,
         is_audius_impersonator boolean,
+        karma bigint,
         score bigint
     ) language sql as $function$ with play_activity as (
         select plays.user_id,
