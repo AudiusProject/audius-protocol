@@ -41,7 +41,7 @@ def test_index_trending_notification(app):
                 }
                 for i in range(1, 21)
             ],
-            "users": [{"user_id": i} for i in range(1, 2)],
+            "users": [{"user_id": i} for i in range(1, 3)],
         }
 
         populate_mock_db(db, entities)

@@ -1004,7 +1004,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 type=playlist_trending_score.get("type", TrendingType.PLAYLISTS.name),
                 score=playlist_trending_score.get("score", 0),
                 version=playlist_trending_score.get(
-                    "version", TrendingVersion.pnagD.name
+                    "version", TrendingVersion.pnagD.value
                 ),
                 time_range=playlist_trending_score.get("time_range", "week"),
                 created_at=playlist_trending_score.get("created_at", datetime.now()),
