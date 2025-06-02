@@ -107,6 +107,14 @@
   padding: 16px 8px;
   max-height: unset !important;
 }
+
+@media (max-height: 990px) {
+  .searchBar :global(.ant-select-dropdown .rc-virtual-list-holder) {
+    max-height: 560px !important;
+    overscroll-behavior-y: contain;
+  }
+}
+
 .searchBar :global(.ant-select-dropdown) {
   -webkit-app-region: none;
   animation-duration: 0.2s !important;
