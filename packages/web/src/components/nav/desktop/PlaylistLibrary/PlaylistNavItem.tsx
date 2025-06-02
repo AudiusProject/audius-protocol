@@ -45,14 +45,16 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const { data: playlistOwnerHandle } = useUser(partialPlaylist?.ownerId, {
     select: (user) => user.handle
   })
-  const playlistUrl = useMemo(() => {
-    return collectionPage(
-      playlistOwnerHandle,
-      partialPlaylist?.name,
-      playlistId,
-      partialPlaylist?.permalink
-    )
-  }, [partialPlaylist, playlistOwnerHandle, playlistId])
+  const playlistUrl = useMemo(
+    () =>
+      collectionPage(
+        playlistOwnerHandle,
+        partialPlaylist?.name,
+        playlistId,
+        partialPlaylist?.permalink
+      ),
+    [partialPlaylist, playlistOwnerHandle, playlistId]
+  )
 
   const hasPlaylistUpdate = useSelector(
     (state) => !!selectPlaylistUpdateById(state, playlistId)
