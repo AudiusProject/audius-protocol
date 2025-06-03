@@ -36,7 +36,7 @@ const messages = {
   amountToWithdraw: 'Amount to Withdraw',
   amountToWithdrawLabel: 'Amount (USDC)',
   destinationAddress: 'Destination Address',
-  howMuch: 'How much do you want to withdraw?',
+  destinationAddressLabel: 'Solana USDC wallet address to receive funds.',
   destinationDetails: 'Solana USDC wallet address to receive funds.',
   solanaWallet: 'USDC Wallet (Solana)',
   continue: 'Continue',
@@ -45,7 +45,7 @@ const messages = {
   bankAccount: 'Bank Account',
   crypto: 'Crypto',
   cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
+    'Transfer your cash balance to your bank account or debit card. $5 minimum.'
 }
 
 const WithdrawMethodOptions = [
@@ -139,7 +139,7 @@ export const EnterTransferDetails = () => {
           <Text variant='heading' size='s' color='subdued'>
             {messages.amountToWithdraw}
           </Text>
-          <Text variant='body'>{messages.howMuch}</Text>
+          <Text variant='body'>{messages.destinationAddressLabel}</Text>
         </Flex>
         <TextField
           title={messages.amountToWithdrawLabel}
