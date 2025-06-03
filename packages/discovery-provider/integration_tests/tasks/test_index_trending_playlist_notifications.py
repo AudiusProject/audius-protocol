@@ -4,7 +4,6 @@ from sqlalchemy import asc, delete
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
-from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_trending_score import PlaylistTrendingScore
 from src.tasks.index_trending import index_trending_playlist_notifications
 from src.trending_strategies.trending_type_and_version import (

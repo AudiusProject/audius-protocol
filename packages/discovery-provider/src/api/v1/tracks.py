@@ -1119,7 +1119,7 @@ class UndergroundTrending(Resource):
     @ns.marshal_with(tracks_response)
     def get(self, version):
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(
-            TrendingType.UNDERGROUND_TRACKS
+            TrendingType.TRACKS
         ).keys()
         version_list = list(
             filter(lambda v: v.name == version, underground_trending_versions)
@@ -1129,7 +1129,7 @@ class UndergroundTrending(Resource):
 
         args = pagination_parser.parse_args()
         strategy = trending_strategy_factory.get_strategy(
-            TrendingType.UNDERGROUND_TRACKS, version_list[0]
+            TrendingType.TRACKS, version_list[0]
         )
         trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
@@ -1164,7 +1164,7 @@ class FullUndergroundTrending(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(
-            TrendingType.UNDERGROUND_TRACKS
+            TrendingType.T
         ).keys()
         version_list = list(
             filter(lambda v: v.name == version, underground_trending_versions)

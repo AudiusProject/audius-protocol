@@ -4,10 +4,10 @@ from typing import Any, Optional, TypedDict
 from sqlalchemy.orm.session import Session
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset
-from src.gated_content.constants import (
-    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
-    SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
-)
+from src.gated_content.constants import SHOULD_TRENDING_EXCLUDE_GATED_TRACKS
+from src.models.tracks.track import Track
+from src.models.tracks.track_trending_score import TrackTrendingScore
+from src.models.users.aggregate_user import AggregateUser
 from src.queries.generate_unpopulated_trending_tracks import TRENDING_TRACKS_LIMIT
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
@@ -23,34 +23,69 @@ logger = logging.getLogger(__name__)
 UNDERGROUND_TRENDING_LENGTH = 50
 
 
-def make_get_unpopulated_tracks(session, strategy):
-    # TODO: Update to pull from scores table
-
-    # If SHOULD_TRENDING_EXCLUDE_GATED_TRACKS is true, then filter out track ids
-    # belonging to gated tracks before applying the limit.
-    if SHOULD_TRENDING_EXCLUDE_GATED_TRACKS:
-        track_scoring_data = list(
-            filter(lambda item: not item["is_stream_gated"], track_scoring_data)
+def make_get_unpopulated_tracks(session, limit, offset, strategy):
+    # Get top 100 trending tracks to exclude
+    top_trending_subquery = (
+        session.query(TrackTrendingScore.track_id)
+        .join(
+            Track,
+            Track.track_id == TrackTrendingScore.track_id,
         )
-    # If SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS is true, then filter out track ids
-    # belonging to collectible gated tracks before applying the limit.
-    elif SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS:
-        track_scoring_data = list(
-            filter(
-                lambda item: (item["stream_conditions"] is None)
-                or ("nft_collection" not in item["stream_conditions"]),
-                track_scoring_data,
-            )
+        .filter(
+            TrackTrendingScore.type == strategy.trending_type.name,
+            TrackTrendingScore.version == strategy.version.name,
+            TrackTrendingScore.time_range == "week",
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.is_unlisted == False,
+            Track.is_available == True,
         )
+        .order_by(
+            TrackTrendingScore.score.desc(),
+            TrackTrendingScore.track_id.desc(),
+        )
+        .limit(100)
+        .subquery()
+    )
 
-    scored_tracks = [
-        strategy.get_track_score("week", track) for track in track_scoring_data
-    ]
-    sorted_tracks = sorted(scored_tracks, key=lambda k: k["score"], reverse=True)
-    sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
+    # Main query to get underground trending tracks
+    underground_tracks_query = (
+        session.query(
+            TrackTrendingScore.track_id,
+            TrackTrendingScore.score,
+        )
+        .join(
+            Track,
+            Track.track_id == TrackTrendingScore.track_id,
+        )
+        .join(
+            AggregateUser,
+            AggregateUser.user_id == Track.owner_id,
+        )
+        .filter(
+            TrackTrendingScore.type == strategy.trending_type.name,
+            TrackTrendingScore.version == strategy.version.name,
+            TrackTrendingScore.time_range == "week",
+            Track.is_current == True,
+            Track.is_delete == False,
+            Track.is_unlisted == False,
+            Track.is_available == True,
+            AggregateUser.follower_count < 1500,
+            AggregateUser.following_count < 1500,
+            TrackTrendingScore.track_id.notin_(top_trending_subquery),
+        )
+        .order_by(
+            TrackTrendingScore.score.desc(),
+            TrackTrendingScore.track_id.desc(),
+        )
+        .limit(limit)
+        .offset(offset)
+    )
+
+    underground_tracks = underground_tracks_query.all()
 
     # Get unpopulated metadata
-    track_ids = [track["track_id"] for track in sorted_tracks]
+    track_ids = [track[0] for track in underground_tracks]
     tracks = get_unpopulated_tracks(
         session,
         track_ids,
@@ -75,12 +110,7 @@ def _get_underground_trending_with_session(
     current_user_id = args.get("current_user_id", None)
     limit, offset = args.get("limit"), args.get("offset")
 
-    (tracks, track_ids) = make_get_unpopulated_tracks(session, strategy)
-
-    # Apply limit + offset early to reduce the amount of
-    # population work we have to do
-    if limit is not None and offset is not None:
-        track_ids = track_ids[offset : limit + offset]
+    (tracks, track_ids) = make_get_unpopulated_tracks(session, limit, offset, strategy)
 
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 

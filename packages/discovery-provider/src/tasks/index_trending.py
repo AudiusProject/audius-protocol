@@ -12,15 +12,9 @@ from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
-from src.queries.generate_unpopulated_trending_tracks import (
-    generate_unpopulated_trending_from_mat_views,
-)
 from src.queries.get_trending_playlists import _get_trending_playlists_with_session
 from src.queries.get_trending_tracks import _get_trending_tracks_with_session
-from src.queries.get_underground_trending import (
-    _get_underground_trending_with_session,
-    make_get_unpopulated_tracks,
-)
+from src.queries.get_underground_trending import _get_underground_trending_with_session
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.index_tastemaker import index_tastemaker
@@ -104,63 +98,13 @@ def index_trending(
 
         update_view(session, AGGREGATE_INTERVAL_PLAYS)
         update_view(session, TRENDING_PARAMS)
+
+        # Update trending tracks (used for underground as well)
         for version in trending_track_versions:
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
             strategy.update_track_score_query(session)
-
-        for version in trending_track_versions:
-            strategy = trending_strategy_factory.get_strategy(
-                TrendingType.TRACKS, version
-            )
-            for genre in genres:
-                for time_range in time_ranges:
-                    cache_start_time = time.time()
-                    res = generate_unpopulated_trending_from_mat_views(
-                        session=session,
-                        genre=genre,
-                        time_range=time_range,
-                        strategy=strategy,
-                    )
-                    cache_end_time = time.time()
-                    total_time = cache_end_time - cache_start_time
-                    logger.debug(
-                        f"index_trending.py | Cached trending ({version.name} version) \
-                        for {genre}-{time_range} in {total_time} seconds"
-                    )
-            # Cache premium tracks
-            cache_start_time = time.time()
-            res = generate_unpopulated_trending_from_mat_views(
-                session=session,
-                genre=genre,
-                time_range="week",
-                strategy=strategy,
-                usdc_purchase_only=True,
-            )
-            cache_end_time = time.time()
-            total_time = cache_end_time - cache_start_time
-            logger.debug(
-                f"index_trending.py | Cached premium tracks ({version.name} version) \
-                -in {total_time} seconds"
-            )
-
-        # Cache underground trending
-        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
-            TrendingType.UNDERGROUND_TRACKS
-        ).keys()
-        for version in underground_trending_versions:
-            strategy = trending_strategy_factory.get_strategy(
-                TrendingType.UNDERGROUND_TRACKS, version
-            )
-            cache_start_time = time.time()
-            res = make_get_unpopulated_tracks(session, strategy)
-            cache_end_time = time.time()
-            total_time = cache_end_time - cache_start_time
-            logger.debug(
-                f"index_trending.py | Cached underground trending ({version.name} version) \
-                in {total_time} seconds"
-            )
 
         # Update trending playlists
         for version in trending_playlist_versions:
