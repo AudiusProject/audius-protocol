@@ -11,6 +11,7 @@ import { TQCollection } from '../models'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { useQueries } from '../utils/useQueries'
 
 import { getCollectionQueryKey, getCollectionQueryFn } from './useCollection'
@@ -46,6 +47,7 @@ export const useCollections = (
         )
       },
       ...options,
+      ...entityCacheOptions,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
     combine: combineQueryResults<TQCollection[]>

@@ -13,6 +13,7 @@ import { getUserId } from '~/store/account/selectors'
 import { getUsersBatcher } from '../batchers/getUsersBatcher'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 export const getUserQueryKey = (userId: ID | null | undefined) => {
   return [QUERY_KEYS.user, userId] as unknown as QueryKey<User>
@@ -67,6 +68,7 @@ export const useUser = <TResult = User>(
       ),
     ...options,
     select,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && validUserId
   })
 }

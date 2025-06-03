@@ -12,6 +12,7 @@ import { TQTrack } from '../models'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { useQueries } from '../utils/useQueries'
 
 import { getTrackQueryFn, getTrackQueryKey } from './useTrack'
@@ -65,6 +66,7 @@ export const useTracks = (
           dispatch
         )
       },
+      ...entityCacheOptions,
       ...options,
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
