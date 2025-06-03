@@ -39,7 +39,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingLeft: spacing(3)
   },
   card: {
-    width: spacing(30),
+    width: spacing(40),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
   }

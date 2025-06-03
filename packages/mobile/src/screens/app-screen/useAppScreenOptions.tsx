@@ -105,7 +105,6 @@ export const useAppScreenOptions = (
           },
           title: '',
           headerTitle: ({ children }) => {
-            console.log('asdf children: ', children)
             if (children === 'none') return null
             if (children) {
               return (
@@ -115,7 +114,7 @@ export const useAppScreenOptions = (
               )
             }
             return (
-              <View style={{ backgroundColor: 'red' }}>
+              <View>
                 <IconAudiusLogoHorizontal
                   height={24}
                   width={100}

@@ -244,7 +244,7 @@ export const TextInput = forwardRef(
             <InsetShadow
               containerStyle={css({
                 width: '100%',
-                height: isSmall ? 34 : 64,
+                height: isSmall ? 48 : 64,
                 borderRadius: cornerRadius.s
               })}
               shadowOpacity={0.05}
@@ -266,7 +266,7 @@ export const TextInput = forwardRef(
               >
                 {StartIcon ? (
                   <StartIcon
-                    size={isSmall ? 's' : 'm'}
+                    size={isSmall ? 'l' : 'm'}
                     color='subdued'
                     {...IconProps}
                   />

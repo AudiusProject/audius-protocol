@@ -1,8 +1,5 @@
 import { useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { Feature } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services/remote-config/feature-flags'
 import { walletActions } from '@audius/common/store'
 import { useAppState } from '@react-native-community/hooks'
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
@@ -10,7 +7,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { useDispatch } from 'react-redux'
 
-import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
 import { usePhantomConnect } from '../external-wallets/usePhantomConnect'
 
 import { AppTabBar } from './AppTabBar'

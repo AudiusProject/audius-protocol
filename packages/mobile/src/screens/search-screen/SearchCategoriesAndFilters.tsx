@@ -7,7 +7,12 @@ import type {
 import { useFocusEffect } from '@react-navigation/native'
 import { ScrollView } from 'react-native'
 
-import { Flex, IconCloseAlt, SelectablePill } from '@audius/harmony-native'
+import {
+  Flex,
+  IconCloseAlt,
+  SelectablePill,
+  useTheme
+} from '@audius/harmony-native'
 
 import { BpmFilter } from './BpmFilter'
 import {
@@ -84,6 +89,8 @@ const searchFilterButtons = {
 }
 
 export const SearchCategoriesAndFilters = () => {
+  const { color } = useTheme()
+
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
 
@@ -103,13 +110,13 @@ export const SearchCategoriesAndFilters = () => {
   const sortedFilterKeys = [...activeFilterKeys, ...inactiveFilterKeys]
 
   return (
-    <Flex backgroundColor='white'>
+    <Flex>
       <ScrollView
         horizontal
         keyboardShouldPersistTaps='handled'
         ref={scrollViewRef}
       >
-        <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
+        <Flex direction='row' alignItems='center' gap='s' p='l'>
           <SearchCategory category='users' />
           <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
