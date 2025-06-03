@@ -1164,7 +1164,7 @@ class FullUndergroundTrending(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(
-            TrendingType.T
+            TrendingType.TRACKS
         ).keys()
         version_list = list(
             filter(lambda v: v.name == version, underground_trending_versions)
