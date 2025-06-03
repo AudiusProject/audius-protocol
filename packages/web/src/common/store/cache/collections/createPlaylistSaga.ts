@@ -2,7 +2,12 @@ import {
   playlistMetadataForCreateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryCollection,
+  queryTrack,
+  queryUser,
+  updateCollectionData
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -16,8 +21,6 @@ import {
   accountActions,
   accountSelectors,
   cacheCollectionsActions,
-  cacheActions,
-  reformatCollection,
   savedPageActions,
   LibraryCategory,
   confirmerActions,
@@ -107,8 +110,8 @@ function* optimisticallySavePlaylist(
 ) {
   const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
-  const { user_id, handle, _collectionIds = [] } = accountUser
-  const playlist: Partial<Collection> = {
+  const { user_id, handle } = accountUser
+  const playlist: Partial<Collection> & { playlist_id: ID } = {
     playlist_id: playlistId,
     ...formFields
   }
@@ -144,23 +147,7 @@ function* optimisticallySavePlaylist(
     playlist.is_album
   )
 
-  yield* put(
-    cacheActions.add(
-      Kind.COLLECTIONS,
-      [{ id: playlistId, metadata: playlist }],
-      /* replace= */ true, // forces cache update
-      /* persistent cache */ false // Do not persistent cache since it's missing data
-    )
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user_id,
-        metadata: { _collectionIds: _collectionIds.concat(playlistId) }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [playlist])
 
   yield* put(
     accountActions.addAccountPlaylist({
@@ -236,22 +223,13 @@ function* createAndConfirmPlaylist(
     const optimisticPlaylist = yield* queryCollection(playlistId)
 
     const reformattedPlaylist = {
-      ...reformatCollection({
-        collection: confirmedPlaylist
-      }),
+      ...confirmedPlaylist,
       ...optimisticPlaylist,
       cover_art_cids: confirmedPlaylist.cover_art_cids,
       playlist_id: confirmedPlaylist.playlist_id
     }
 
-    yield* put(
-      cacheActions.update(Kind.COLLECTIONS, [
-        {
-          id: confirmedPlaylist.playlist_id,
-          metadata: reformattedPlaylist
-        }
-      ])
-    )
+    yield* call(updateCollectionData, [reformattedPlaylist])
 
     yield* call(addPlaylistsNotInLibrary)
 

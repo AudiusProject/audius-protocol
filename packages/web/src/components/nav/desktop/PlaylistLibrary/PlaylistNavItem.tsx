@@ -1,11 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
@@ -14,7 +13,6 @@ import { CollectionNavItem } from './CollectionNavItem'
 
 const { selectPlaylistUpdateById } = playlistUpdatesSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { collectionPage } = route
 
 type PlaylistNavItemProps = {
   playlistId: number
@@ -25,36 +23,14 @@ type PlaylistNavItemProps = {
 export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const { playlistId, level, isChild } = props
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
-  const playlistName = useSelector(
-    (state) => state.account.collections[playlistId]?.name
-  )
-  const isOwnedByCurrentUser = useSelector(
-    (state) =>
-      state.account.collections[playlistId]?.user.id === state.account.userId
-  )
-
-  const { data: partialPlaylist } = useCollection(playlistId, {
-    select: (playlist) => ({
-      permalink: playlist.permalink,
-      name: playlist.playlist_name,
-      ownerId: playlist.playlist_owner_id
-    })
+  const accountCollection = useSelector((state) => {
+    return state.account.collections[playlistId]
   })
+  const { name, permalink, user } = accountCollection
 
-  const { data: playlistOwnerHandle } = useUser(partialPlaylist?.ownerId, {
-    select: (user) => user.handle
-  })
-  const playlistUrl = useMemo(
-    () =>
-      collectionPage(
-        playlistOwnerHandle,
-        partialPlaylist?.name,
-        playlistId,
-        partialPlaylist?.permalink
-      ),
-    [partialPlaylist, playlistOwnerHandle, playlistId]
-  )
+  const isOwnedByCurrentUser = user.id === currentUserId
 
   const hasPlaylistUpdate = useSelector(
     (state) => !!selectPlaylistUpdateById(state, playlistId)
@@ -66,13 +42,11 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
     }
   }, [hasPlaylistUpdate, dispatch, playlistId])
 
-  if (!playlistName || !playlistUrl) return null
-
   return (
     <CollectionNavItem
       id={playlistId}
-      name={playlistName}
-      url={playlistUrl}
+      name={name}
+      url={permalink}
       isOwned={isOwnedByCurrentUser}
       level={level}
       isChild={isChild}

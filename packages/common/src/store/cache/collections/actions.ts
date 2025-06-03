@@ -1,4 +1,4 @@
-import { ID, UID, SquareSizes, Collection } from '../../../models'
+import { ID, UID, Collection } from '../../../models'
 
 import { EditCollectionValues } from './types'
 
@@ -27,10 +27,6 @@ export const DELETE_PLAYLIST = 'DELETE_PLAYLIST'
 export const DELETE_PLAYLIST_REQUESTED = 'DELETE_PLAYLIST_REQUESTED'
 export const DELETE_PLAYLIST_SUCCEEDED = 'DELETE_PLAYLIST_SUCCEEDED'
 export const DELETE_PLAYLIST_FAILED = 'DELETE_PLAYLIST_FAILED'
-
-export const SET_PERMALINK = 'CACHE/COLLECTION/SET_PERMALINK'
-
-export const FETCH_COVER_ART = 'CACHE/COLLECTION/FETCH_COVER_ART'
 
 /**
  * @param initTrackId optional track id to pull artwork from.
@@ -192,12 +188,4 @@ export function deletePlaylistFailed(
   metadata: Record<string, unknown>
 ) {
   return { type: DELETE_PLAYLIST_FAILED, error, params, metadata }
-}
-
-export function setPermalink(permalink: string, collectionId: ID) {
-  return { type: SET_PERMALINK, permalink, collectionId }
-}
-
-export function fetchCoverArt(collectionId: ID, size: SquareSizes) {
-  return { type: FETCH_COVER_ART, collectionId, size }
 }
