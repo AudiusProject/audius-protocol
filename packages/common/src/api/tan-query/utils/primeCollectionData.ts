@@ -35,6 +35,7 @@ export const primeCollectionData = ({
     skipQueryData
   })
   dispatch(addEntries(entries, false, undefined, 'react-query'))
+  return collections
 }
 
 export const primeCollectionDataInternal = ({

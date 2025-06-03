@@ -79,7 +79,7 @@ function* getTracks({
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
     primeTrackDataSaga(tracks),
-    yield* call(primeCollectionDataSaga, collections)
+    primeCollectionDataSaga(collections)
   ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),
