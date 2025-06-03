@@ -2,11 +2,11 @@ import {
   queryAccountUser,
   queryTrack,
   queryUser,
-  updateTrackData
+  updateTrackData,
+  selectIsGuestAccount
 } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
-  accountSelectors,
   accountActions,
   cacheActions,
   tracksSocialActions as socialActions,
@@ -19,7 +19,6 @@ import {
 import {
   formatShareText,
   makeKindId,
-  waitForValue,
   removeNullable,
   getFilename
 } from '@audius/common/utils'
@@ -42,7 +41,6 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-const { getUserId, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
 const { setVisibility } = modalsActions
@@ -56,8 +54,9 @@ export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -202,8 +201,9 @@ export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -302,8 +302,9 @@ export function* saveTrackAsync(
   action: ReturnType<typeof socialActions.saveTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -434,8 +435,9 @@ export function* unsaveTrackAsync(
   action: ReturnType<typeof socialActions.unsaveTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -529,7 +531,8 @@ export function* watchSetArtistPick() {
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* call(waitForWrite)
-      const userId: ID | null = yield* select(getUserId)
+      const accountUser = yield* queryAccountUser()
+      const { user_id: userId } = accountUser ?? {}
 
       if (!userId) return
       yield* put(
@@ -554,7 +557,8 @@ export function* watchSetArtistPick() {
 export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     yield* call(waitForWrite)
-    const userId = yield* select(getUserId)
+    const accountUser = yield* queryAccountUser()
+    const { user_id: userId } = accountUser ?? {}
 
     if (!userId) return
     yield* put(
@@ -601,7 +605,8 @@ function* downloadTracks({
     const trackDownload = yield* getContext('trackDownload')
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const userId = yield* select(getUserId)
+    const accountUser = yield* queryAccountUser()
+    const { user_id: userId } = accountUser ?? {}
     const { data, signature } = yield* call(
       audiusBackend.signGatedContentRequest,
       { sdk }
@@ -671,13 +676,8 @@ function* watchDownloadTrack() {
         const { trackIds, parentTrackId, original } = action
         yield* call(waitForRead)
 
-        // Check if there is a logged in account and if not,
-        // wait for one so we can trigger the download immediately after
-        // logging in.
-        const accountUserId = yield* select(getUserId)
-        if (!accountUserId) {
-          yield* call(waitForValue, getUserId)
-        }
+        // Make sure we have an account before proceeding
+        yield* queryAccountUser()
 
         const mainTrackId = parentTrackId ?? trackIds[0]
         const mainTrack = yield* queryTrack(mainTrackId)

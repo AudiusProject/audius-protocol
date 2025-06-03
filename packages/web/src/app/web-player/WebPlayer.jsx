@@ -8,7 +8,11 @@ import {
   useCallback
 } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import {
+  selectHasAccount,
+  selectIsGuestAccount,
+  useCurrentAccount
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
@@ -201,7 +205,7 @@ const {
   SOLANA_TOOLS_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus, getIsGuestAccount } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
@@ -241,12 +245,16 @@ const WebPlayer = (props) => {
 
   // Convert mapStateToProps to useSelector
   const hasAccount = useSelector(getHasAccount)
-  const accountStatus = useSelector(getAccountStatus)
-  const { data: userHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => ({
+      hasAccount: selectHasAccount(account),
+      userHandle: account?.user?.handle,
+      isGuestAccount: selectIsGuestAccount(account),
+      accountStatus: account?.status
+    })
   })
+  const { userHandle, isGuestAccount, accountStatus } = accountData || {}
   const showCookieBanner = useSelector(getShowCookieBanner)
-  const isGuestAccount = useSelector(getIsGuestAccount)
 
   // Convert mapDispatchToProps to useCallback with useDispatch
   const updateRouteOnSignUpCompletion = useCallback(

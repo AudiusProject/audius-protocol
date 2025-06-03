@@ -1,5 +1,9 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
+import {
+  selectAccountHasTracks,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -14,7 +18,6 @@ import {
 import { newUserMetadata } from '@audius/common/schemas'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions,
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
@@ -75,7 +78,6 @@ const { createPlaylist } = cacheCollectionsActions
 
 const { makeGetProfile, getProfileFeedLineup, getProfileTracksLineup } =
   profilePageSelectors
-const { getUserId, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
 const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
 
@@ -102,7 +104,8 @@ type OwnProps = {
 type ProfilePageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps &
+  HookStateProps
 
 type ProfilePageState = {
   activeTab: ProfilePageTabs | null
@@ -163,7 +166,7 @@ class ProfilePageClassComponent extends PureComponent<
         action === 'POP'
       ) {
         const params = parseUserRoute(getPathname(location))
-        if (params?.handle) {
+        if (params) {
           // Fetch profile if this is a new profile page
           this.fetchProfile(getPathname(location))
         }
@@ -176,9 +179,6 @@ class ProfilePageClassComponent extends PureComponent<
   }
 
   componentWillUnmount() {
-    // Reset current user to prevent jarring users with previous profile state
-    // e.g. profile -> explore -> profile
-    this.props.setCurrentUser(null)
     if (this.unlisten) {
       // Push unlisten to end of event loop. On some browsers, the back button
       // will cause the component to unmount and remove the unlisten faster than
@@ -298,9 +298,9 @@ class ProfilePageClassComponent extends PureComponent<
     shouldSetLoading = true
   ) => {
     const params = parseUserRoute(pathname)
-    if (params?.handle) {
+    if (params) {
       this.props.fetchProfile(
-        params.handle.toLowerCase(),
+        params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
         shouldSetLoading
@@ -974,13 +974,7 @@ function makeMapStateToProps() {
     const handleLower = params?.handle?.toLowerCase() as string
 
     const profile = getProfile(state)
-    const accountUserId = getUserId(state)
-    const accountHasTracks =
-      accountUserId === profile.profile?.user_id
-        ? getAccountHasTracks(state)
-        : null
     return {
-      accountUserId,
       profile,
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),
@@ -992,8 +986,7 @@ function makeMapStateToProps() {
         userId: profile.profile?.user_id
       }),
       blockeeList: getBlockees(state),
-      blockerList: getBlockers(state),
-      accountHasTracks
+      blockerList: getBlockers(state)
     }
   }
   return mapStateToProps
@@ -1022,8 +1015,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           deleteExistingEntry
         )
       ),
-    setCurrentUser: (handle: string | null) =>
-      dispatch(profileActions.setCurrentUser(handle)),
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },
@@ -1163,6 +1154,25 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
   }
 }
 
+type HookStateProps = {
+  accountUserId?: ID | undefined
+  accountHasTracks?: boolean | undefined
+}
+const hookStateToProps = (Component: typeof ProfilePage) => {
+  return (props: ProfilePageProps) => {
+    const { data: accountData } = useCurrentAccountUser({
+      select: (user) => ({
+        accountUserId: user?.user_id,
+        accountHasTracks: selectAccountHasTracks(user)
+      })
+    })
+    return <ProfilePage {...(accountData as HookStateProps)} {...props} />
+  }
+}
+
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePage)
+  connect(
+    makeMapStateToProps,
+    mapDispatchToProps
+  )(hookStateToProps(ProfilePage))
 )

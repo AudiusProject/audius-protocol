@@ -2463,8 +2463,8 @@ type JupiterQuoteResponse = {
 // Export Private Key
 type ExportPrivateKeyLinkClicked = {
   eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
-  handle: string
-  userId: ID
+  handle?: string
+  userId?: ID
 }
 
 type ExportPrivateKeyPageOpened = {

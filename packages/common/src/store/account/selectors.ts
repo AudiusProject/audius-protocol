@@ -7,7 +7,6 @@ import { CommonState } from '../commonStore'
 
 export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
-const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 
 export const getAccount = (state: CommonState) => state.account
 export const getHasAccount = (state: CommonState) => !!state.account.userId
@@ -21,22 +20,10 @@ export const getIsAccountComplete = (state: CommonState) => {
   return Boolean(handle && name)
 }
 
-export const getTrackSaveCount = (state: CommonState) =>
-  state.account.trackSaveCount ?? 0
-
 export const getGuestEmail = (state: CommonState) => {
   return state.account.guestEmail ?? null
 }
 
-export const getIsGuestAccount = (state: CommonState) => {
-  const { userId } = state.account
-
-  const user = getUser(state, { id: userId })
-  if (!user) return false
-
-  const { handle, name } = user
-  return Boolean(!handle && !name)
-}
 export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status
 export const getNeedsAccountRecovery = (state: CommonState) =>
@@ -50,31 +37,6 @@ export const getAccountUser = createSelector(
   (user) => user
 )
 
-export const getUserName = createSelector([internalGetAccountUser], (user) =>
-  user ? user.name : null
-)
-export const getAccountVerified = createSelector(
-  [internalGetAccountUser],
-  (user) => (user ? user.is_verified : false)
-)
-export const getAccountHasTracks = createSelector(
-  [hasTracksInternal, internalGetAccountUser],
-  (hasTracks, user) =>
-    hasTracks === null
-      ? null // still loading
-      : hasTracks || (user ? user.track_count > 0 : false)
-)
-export const getAccountFolloweeCount = createSelector(
-  [internalGetAccountUser],
-  (user) => user?.followee_count ?? null
-)
-export const getAccountCollectibles = createSelector(
-  [internalGetAccountUser],
-  (user) => [
-    ...(user?.collectibleList ?? []),
-    ...(user?.solanaCollectibleList ?? [])
-  ]
-)
 export const getPlaylistLibrary = (state: CommonState) => {
   return state.account.playlistLibrary
 }

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { useUploadCompletionRoute } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
@@ -110,8 +110,8 @@ export const FinishPage = (props: FinishPageProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType } = formState
   const upload = useSelector((state: CommonState) => state.upload)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const fullUploadPercent = useSelector(getCombinedUploadPercentage)
   const dispatch = useDispatch()

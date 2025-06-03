@@ -53,7 +53,7 @@ const messages = {
 }
 
 type VerifyBodyProps = {
-  handle: string
+  handle?: string
   onClick: () => void
   onFailure: () => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
@@ -155,9 +155,9 @@ const LoadingBody = () => {
 }
 
 type SuccessBodyProps = {
-  userId: ID
-  handle: string
-  name: string
+  userId: ID | undefined
+  handle: string | undefined
+  name: string | undefined
   goToRoute: (route: string) => void
 }
 
@@ -203,9 +203,9 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
 }
 
 type VerificationModalProps = {
-  userId: ID
-  handle: string
-  name: string
+  userId?: ID
+  handle?: string
+  name?: string
   isVerified?: boolean
   goToRoute: (route: string) => void
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
@@ -234,7 +234,7 @@ const VerificationModal = (props: VerificationModalProps) => {
       if (!profile.is_verified) {
         setError(messages.errorVerifiedInstagram)
         setStatus(Status.ERROR)
-      } else if (profile.username.toLowerCase() !== handle.toLowerCase()) {
+      } else if (profile.username.toLowerCase() !== handle?.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
@@ -256,7 +256,7 @@ const VerificationModal = (props: VerificationModalProps) => {
       if (!profile.verified) {
         setError(messages.errorVerifiedTwitter)
         setStatus(Status.ERROR)
-      } else if (profile.screen_name.toLowerCase() !== handle.toLowerCase()) {
+      } else if (profile.screen_name.toLowerCase() !== handle?.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
@@ -282,7 +282,7 @@ const VerificationModal = (props: VerificationModalProps) => {
       if (!profile.is_verified) {
         setError(messages.errorVerifiedTikTok)
         setStatus(Status.ERROR)
-      } else if (profile.username.toLowerCase() !== handle.toLowerCase()) {
+      } else if (profile.username.toLowerCase() !== handle?.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {

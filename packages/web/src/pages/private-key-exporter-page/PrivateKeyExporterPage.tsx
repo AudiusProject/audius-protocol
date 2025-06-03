@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -345,8 +345,8 @@ const PrivateKeyExporterPage = () => {
   useRequiresAccount()
   const record = useRecord()
   const accountUserId = useSelector(getUserId)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const [hasViewed, setHasViewed] = useState(false)
   useEffect(() => {

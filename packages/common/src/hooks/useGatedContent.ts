@@ -232,7 +232,7 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
     })
   })
   const { data: currentAccount, isPending } = useCurrentAccount()
-  const isOwner = track?.owner_id === currentAccount?.user?.user_id
+  const isOwner = track?.owner_id === currentAccount?.userId
 
   const price = isContentUSDCPurchaseGated(track?.download_conditions)
     ? track?.download_conditions.usdc_purchase.price
