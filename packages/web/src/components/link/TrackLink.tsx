@@ -19,10 +19,6 @@ export const TrackLink = ({ trackId, ...props }: TrackLinkProps) => {
   return (
     <TextLink to={permalink} {...props}>
       {title}
-      {title}
-      {title}
-      {title}
-      {title}
     </TextLink>
   )
 }
