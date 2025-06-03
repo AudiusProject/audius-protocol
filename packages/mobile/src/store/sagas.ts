@@ -38,6 +38,7 @@ import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
+import searchTracksLineupSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import tokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
@@ -53,7 +54,6 @@ import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
-import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, spawn } from 'typed-redux-saga'
@@ -133,13 +133,13 @@ export default function* rootSaga() {
     ...trendingUndergroundSagas(),
     ...savedSagas(),
     ...profileSagas(),
-    ...reactionSagas(),
     ...socialSagas(),
     ...historySagas(),
     ...rewardsPageSagas(),
     ...settingsSagas(),
     ...aiSagas(),
     ...premiumTracksSagas(),
+    ...searchTracksLineupSagas(),
 
     // Cast
     ...castSagas(),

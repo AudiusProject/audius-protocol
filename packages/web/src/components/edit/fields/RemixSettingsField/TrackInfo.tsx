@@ -1,6 +1,6 @@
 import { useTrack } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
-import { Text } from '@audius/harmony'
+import { Box, Text } from '@audius/harmony'
 import { pick } from 'lodash'
 
 import { SelectedValue } from 'components/data-entry/ContextualMenu'
@@ -34,7 +34,9 @@ export const TrackInfo = (props: TrackInfoProps) => {
       />
       <Text variant='body' strength='strong'>
         {track.title} <Text color='subdued'>{messages.by}</Text>{' '}
-        <UserLink userId={track.owner_id} />
+        <Box css={{ display: 'inline-flex' }}>
+          <UserLink userId={track.owner_id} />
+        </Box>
       </Text>
     </SelectedValue>
   )

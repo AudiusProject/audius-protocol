@@ -48,7 +48,7 @@
 }
 
 .iconVerified path:nth-child(2) {
-  fill: transparent;
+  fill: var(--harmony-static-white);
 }
 
 .aiAttributionEnabled {

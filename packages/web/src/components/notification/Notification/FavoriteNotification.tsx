@@ -1,5 +1,6 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import { useNotificationEntity } from '@audius/common/api'
 import {
   notificationsSelectors,
   Entity,
@@ -26,7 +27,7 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFavorite } from './components/icons'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
+const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   favorited: ' favorited your '
@@ -45,9 +46,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
 
-  const entity = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  )
+  const entity = useNotificationEntity(notification)
 
   const entityTypeText =
     entity && 'is_album' in entity && entity.is_album

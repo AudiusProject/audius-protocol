@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
 
+import { useTrack } from '~/api'
 import { AccessType } from '~/models/AccessType'
 import { ID } from '~/models/Identifiers'
 import {
@@ -7,9 +8,7 @@ import {
   isContentSpecialAccess,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { CommonState } from '~/store'
 import { getUserId } from '~/store/account/selectors'
-import { getTrack } from '~/store/cache/tracks/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedTrackAccess } from './useGatedContent'
@@ -21,46 +20,37 @@ type TrackAccessType = {
 }
 
 export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
-  const isOwner = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.owner_id === getUserId(state)
+  const { data: track } = useTrack(trackId, {
+    select: (track) => ({
+      owner_id: track?.owner_id,
+      stream_conditions: track?.stream_conditions,
+      download_conditions: track?.download_conditions,
+      release_date: track?.release_date,
+      is_downloadable: track?.is_downloadable,
+      is_unlisted: track?.is_unlisted
+    })
   })
 
-  const streamConditions = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.stream_conditions
-  })
-
-  const downloadConditions = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.download_conditions
-  })
-
-  const releaseDate = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.release_date
-  })
-
-  const isDownloadable = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.is_downloadable
-  })
-
-  const isUnlisted = useSelector((state: CommonState) => {
-    return getTrack(state, { id: trackId })?.is_unlisted
-  })
+  const userId = useSelector(getUserId)
+  const isOwner = track?.owner_id === userId
 
   const { hasStreamAccess, hasDownloadAccess } = useGatedTrackAccess(trackId)
 
   const isUnlockedStream = !isOwner && hasStreamAccess
   const isUnlockedDownload = !isOwner && hasDownloadAccess
-  const isPurchaseable = isContentUSDCPurchaseGated(streamConditions)
-  const isCollectibleGated = isContentCollectibleGated(streamConditions)
-  const isSpecialAccess = isContentSpecialAccess(streamConditions)
-  const isDownloadGated = isContentUSDCPurchaseGated(downloadConditions)
-  const isScheduledRelease = releaseDate && new Date(releaseDate) > new Date()
+  const isPurchaseable = isContentUSDCPurchaseGated(track?.stream_conditions)
+  const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
+  const isSpecialAccess = isContentSpecialAccess(track?.stream_conditions)
+  const isDownloadGated = isContentUSDCPurchaseGated(track?.download_conditions)
+  const isScheduledRelease =
+    track?.release_date && new Date(track.release_date) > new Date()
 
   let type: Nullable<AccessType> = null
   let isUnlocked = false
 
   if (isScheduledRelease) {
     type = AccessType.SCHEDULED_RELEASE
-  } else if (isUnlisted) {
+  } else if (track?.is_unlisted) {
     type = AccessType.HIDDEN
   } else if (isPurchaseable) {
     type = AccessType.PREMIUM
@@ -74,7 +64,7 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   } else if (isDownloadGated) {
     type = AccessType.PREMIUM_EXTRAS
     isUnlocked = isUnlockedDownload
-  } else if (isDownloadable) {
+  } else if (track?.is_downloadable) {
     type = AccessType.EXTRAS
     isUnlocked = isUnlockedDownload
   }
@@ -82,6 +72,7 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   return {
     type,
     isUnlocked,
-    scheduledReleaseDate: isScheduledRelease ? releaseDate : undefined
+    scheduledReleaseDate:
+      isScheduledRelease && track?.release_date ? track.release_date : undefined
   }
 }

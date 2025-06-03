@@ -2,7 +2,12 @@ import {
   albumMetadataForSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryCollection,
+  queryTrack,
+  queryUser,
+  updateCollectionData
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -15,8 +20,6 @@ import { newCollectionMetadata } from '@audius/common/schemas'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  cacheActions,
-  reformatCollection,
   confirmerActions,
   EditCollectionValues,
   RequestConfirmationError,
@@ -92,8 +95,8 @@ function* optimisticallySaveAlbum(
 ) {
   const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
-  const { user_id, handle, _collectionIds = [] } = accountUser
-  const album: Partial<Collection> = {
+  const { user_id, handle } = accountUser
+  const album: Partial<Collection> & { playlist_id: ID } = {
     playlist_id: albumId,
     ...formFields
   }
@@ -129,23 +132,7 @@ function* optimisticallySaveAlbum(
     true
   )
 
-  yield* put(
-    cacheActions.add(
-      Kind.COLLECTIONS,
-      [{ id: albumId, metadata: album }],
-      true,
-      false
-    )
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user_id,
-        metadata: { _collectionIds: _collectionIds.concat(albumId) }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [album])
 
   yield* put(
     accountActions.addAccountPlaylist({
@@ -208,22 +195,13 @@ function* createAndConfirmAlbum(
     const optimisticAlbum = yield* queryCollection(albumId)
 
     const reformattedAlbum = {
-      ...reformatCollection({
-        collection: confirmedAlbum
-      }),
+      ...confirmedAlbum,
       ...optimisticAlbum,
       cover_art_cids: confirmedAlbum.cover_art_cids,
       playlist_id: confirmedAlbum.playlist_id
     }
 
-    yield* put(
-      cacheActions.update(Kind.COLLECTIONS, [
-        {
-          id: confirmedAlbum.playlist_id,
-          metadata: reformattedAlbum
-        }
-      ])
-    )
+    yield* call(updateCollectionData, [reformattedAlbum])
 
     yield* put(
       make(Name.PLAYLIST_COMPLETE_CREATE, {

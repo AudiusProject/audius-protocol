@@ -106,7 +106,6 @@ export type CollectionPageProps = {
     entries: CollectionTrack[]
   }
   userId?: ID | null
-  userPlaylists?: any
   isQueued: () => boolean
   onPlay: () => void
   onPreview: () => void

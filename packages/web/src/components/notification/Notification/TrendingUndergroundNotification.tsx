@@ -1,17 +1,15 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntity } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  notificationsSelectors,
   TrackEntity,
   TrendingUndergroundNotification as TrendingUndergroundNotificationType
 } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -22,7 +20,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTrending } from './components/icons'
 import { getEntityLink } from './utils'
-const { getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: "You're Trending",
@@ -42,19 +39,18 @@ export const TrendingUndergroundNotification = (
   const { notification } = props
   const { entityType, rank, timeLabel, isViewed } = notification
   const dispatch = useDispatch()
-  const track = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
+
+  const entity = useNotificationEntity(notification)
 
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(push(getEntityLink(track)))
+    if (entity) {
+      dispatch(push(getEntityLink(entity)))
     }
-  }, [dispatch, track])
+  }, [dispatch, entity])
 
-  if (!track) return null
+  if (!entity) return null
 
-  const shareText = messages.twitterShareText(track.title)
+  const shareText = messages.twitterShareText((entity as TrackEntity).title)
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -62,12 +58,12 @@ export const TrendingUndergroundNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <EntityLink entity={track} entityType={entityType} /> {messages.is} #
+        <EntityLink entity={entity} entityType={entityType} /> {messages.is} #
         {rank} {messages.trending}
       </NotificationBody>
       <TwitterShareButton
         type='static'
-        url={getEntityLink(track, true)}
+        url={getEntityLink(entity, true)}
         shareText={shareText}
         analytics={make(
           Name.NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE,

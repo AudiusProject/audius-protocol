@@ -76,6 +76,7 @@ import packageInfo from '../../../../../package.json'
 
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
+import { LabelAccountSettingsCard } from './LabelAccount/LabelAccountSettingsCard'
 import { ListeningHistorySettingsCard } from './ListeningHistory'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
@@ -514,6 +515,7 @@ export const SettingsPage = () => {
             </Button>
           </SettingsCard>
         ) : null}
+        <LabelAccountSettingsCard />
         <AccountsManagingYouSettingsCard />
         <AccountsYouManageSettingsCard />
         <SettingsCard

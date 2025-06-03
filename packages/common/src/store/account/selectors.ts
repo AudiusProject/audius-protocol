@@ -1,16 +1,10 @@
 import { createSelector } from 'reselect'
 
 import { AccountCollection } from '~/models/Collection'
-import { getCollections } from '~/store/cache/collections/selectors'
-import { getUser, getUsers } from '~/store/cache/users/selectors'
-import { removeNullable } from '~/utils/typeUtils'
+import { getUser } from '~/store/cache/users/selectors'
 
 import { CommonState } from '../commonStore'
 
-const internalGetAccountCollections = (state: CommonState) =>
-  state.account.collections
-const internalGetUserPlaylists = (state: CommonState) =>
-  Object.values(state.account.collections)
 export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
 
@@ -57,35 +51,6 @@ export const getAccountSplWallet = createSelector(
 )
 
 /**
- * Gets the account and full playlist metadatas.
- * TODO: Add handle directly to playlist metadata so we don't need to join against users.
- */
-export const getAccountWithCollections = createSelector(
-  [getAccountUser, internalGetUserPlaylists, getCollections, getUsers],
-  (account, userPlaylists, collections, users) => {
-    if (!account) return undefined
-    return {
-      ...account,
-      collections: [...userPlaylists]
-        .map((collection) =>
-          collections[collection.id]?.metadata &&
-          !collections[collection.id]?.metadata?._marked_deleted &&
-          !collections[collection.id]?.metadata?.is_delete &&
-          collection.user.id in users &&
-          !users[collection.user.id].metadata.is_deactivated
-            ? {
-                ...collections[collection.id].metadata,
-                ownerHandle: collection.user.handle,
-                ownerName: users[collection.user.id].metadata.name
-              }
-            : null
-        )
-        .filter(removeNullable)
-    }
-  }
-)
-
-/**
  * Gets the account's playlist nav bar info
  */
 export const getAccountNavigationPlaylists = (state: CommonState) => {
@@ -102,126 +67,3 @@ export const getAccountNavigationPlaylists = (state: CommonState) => {
     {} as { [id: number]: AccountCollection }
   )
 }
-
-/**
- * Gets user playlists with playlists marked delete removed.
- */
-export const getUserPlaylists = createSelector(
-  [internalGetUserPlaylists, getCollections],
-  (playlists, collections) => {
-    // Strange filter:
-    // If we haven't cached the collection (e.g. on first load), always return it.
-    // If we have cached it and it's marked delete, don't return it bc we know better now.
-    return playlists.filter(
-      (p) => !collections[p.id] || !collections[p.id]?.metadata?._marked_deleted
-    )
-  }
-)
-
-export const getAccountCollections = createSelector(
-  [internalGetAccountCollections, getCollections],
-  (accountCollections, collections) => {
-    return Object.keys(accountCollections).reduce(
-      (acc, cur) => {
-        const track = accountCollections[cur as unknown as number]
-        if (
-          !collections[track.id] ||
-          collections[track.id]?.metadata?._marked_deleted
-        )
-          return acc
-        return {
-          ...acc,
-          [track.id]: track
-        }
-      },
-      {} as { [id: number]: AccountCollection }
-    )
-  }
-)
-
-export const getAccountWithPlaylists = createSelector(
-  [getAccountWithCollections],
-  (account) => {
-    if (!account) return undefined
-    return {
-      ...account,
-      playlists: account.collections.filter((c) => !c.is_album)
-    }
-  }
-)
-
-export const getAccountWithOwnPlaylists = createSelector(
-  [getAccountWithCollections],
-  (account) => {
-    if (!account) return undefined
-    return {
-      ...account,
-      playlists: account.collections.filter(
-        (c) => account && !c.is_album && account.user_id === c.playlist_owner_id
-      )
-    }
-  }
-)
-
-export const getAccountWithAlbums = createSelector(
-  [getAccountWithCollections],
-  (account) => {
-    if (!account) return undefined
-    return {
-      ...account,
-      albums: account.collections.filter((c) => c.is_album)
-    }
-  }
-)
-
-export const getAccountOwnAlbums = createSelector(
-  [getAccountWithCollections],
-  (account) => {
-    if (!account) return undefined
-    return account.collections.filter(
-      (c) => c.is_album && account.user_id === c.playlist_owner_id
-    )
-  }
-)
-
-export const getAccountWithNameSortedPlaylistsAndAlbums = createSelector(
-  [getAccountWithCollections],
-  (account) => {
-    if (!account) return undefined
-    const nameSortedCollections = account.collections.sort((a, b) =>
-      a.playlist_name.toLowerCase().localeCompare(b.playlist_name.toLowerCase())
-    )
-    return {
-      ...account,
-      playlists: nameSortedCollections.filter((c) => !c.is_album),
-      albums: nameSortedCollections.filter((c) => c.is_album)
-    }
-  }
-)
-
-export const getAccountOwnedPlaylists = createSelector(
-  [getUserPlaylists, getUserId],
-  (collections, userId) =>
-    collections.filter((c) => !c.is_album && c.user.id === userId)
-)
-
-export const getAccountAlbumIds = createSelector(
-  [getUserPlaylists],
-  (collections) => collections.filter((c) => c.is_album).map(({ id }) => id)
-)
-
-export const getAccountSavedPlaylistIds = createSelector(
-  [getUserPlaylists, getUserId],
-  (collections, userId) =>
-    collections
-      .filter((c) => !c.is_album && c.user.id !== userId)
-      .map(({ id }) => id)
-)
-
-export const getAccountOwnedPlaylistIds = createSelector(
-  [getUserPlaylists, getUserId],
-  (collections, userId) =>
-    collections
-      .filter((c) => !c.is_album && c.user.id === userId)
-      .map(({ id }) => id)
-)

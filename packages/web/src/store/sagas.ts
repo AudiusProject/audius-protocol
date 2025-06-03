@@ -41,6 +41,7 @@ import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
+import searchTracksLineupSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import signOnSaga from 'common/store/pages/signon/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
 import trendingPageSagas from 'common/store/pages/trending/sagas'
@@ -57,7 +58,6 @@ import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
-import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
@@ -111,7 +111,6 @@ export default function* rootSaga() {
     historySagas(),
     passwordResetSagas(),
     profileSagas(),
-    reactionSagas(),
     rewardsPageSagas(),
     savedSagas(),
     settingsSagas(),
@@ -123,6 +122,7 @@ export default function* rootSaga() {
     trendingUndergroundSagas(),
     uploadSagas(),
     premiumTracksSagas(),
+    searchTracksLineupSagas(),
 
     modalsSagas(),
 
@@ -187,6 +187,99 @@ export default function* rootSaga() {
 
     // Version refresh
     reloadSagas()
+  )
+  yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
+}
+
+export function* testRootSaga() {
+  const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
+    // Config
+    backendSagas(),
+    confirmerSagas(),
+    routingSagas(),
+
+    // Account
+    // accountSagas(),
+    // playlistLibrarySagas(),
+    // playlistUpdatesSagas(),
+    // recoveryEmailSagas(),
+    // signOutSagas(),
+
+    // Pages
+    // aiSagas(),
+    // collectionSagas(),
+    // chatSagas(),
+    // dashboardSagas(),
+    // exploreCollectionsPageSagas(),
+    // feedPageSagas(),
+    // historySagas(),
+    // passwordResetSagas(),
+    profileSagas(),
+    // reactionSagas(),
+    // rewardsPageSagas(),
+    // savedSagas(),
+    // searchResultsSagas(),
+    // settingsSagas(),
+    // signOnSaga(),
+    // socialSagas(),
+    // trackPageSagas(),
+    // trendingPageSagas(),
+    // trendingPlaylistSagas(),
+    // trendingUndergroundSagas(),
+    // uploadSagas(),
+    // premiumTracksSagas(),
+
+    modalsSagas(),
+
+    // Cache
+    cacheSagas(),
+    coreCacheSagas(),
+    collectionsSagas(),
+    tracksSagas(),
+    usersSagas(),
+    savedCollectionsSagas(),
+
+    // Application
+    // addToCollectionSagas(),
+    // buyAudioSagas(),
+    // changePasswordSagas(),
+    // chatWebSagas(),
+    // deactivateAccountSagas(),
+    // deletedSagas(),
+    // deletePlaylistConfirmationModalSagas(),
+    // duplicateAddConfirmationModalSagas(),
+    // firstUploadModalSagas(),
+    // remixesSagas(),
+    // scrollLockSagas(),
+    // shareModalSagas(),
+    // stripeModalSagas(),
+    // overflowMenuSagas(),
+    // toastSagas(),
+    // smartCollectionPageSagas(),
+    // searchUsersModalSagas(),
+    // stemUploadSagas(),
+    // tokenDashboardSagas(),
+    // userListModalSagas(),
+    // vipDiscordModalSagas(),
+    // commonReachabilitySagas(),
+
+    // Remote config
+    // remoteConfigSagas(),
+
+    // Tipping
+    // tippingSagas(),
+
+    // Gated content
+    // gatedContentSagas(),
+    // buyUSDCSagas(),
+    // purchaseContentSagas(),
+    // withdrawUSDCSagas(),
+
+    // Error
+    errorSagas()
+
+    // Version refresh
+    // reloadSagas()
   )
   yield* all(sagas.map((saga) => spawn(sagaWithErrorHandler, saga)))
 }

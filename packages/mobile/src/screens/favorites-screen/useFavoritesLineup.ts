@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { Kind } from '@audius/common/models'
 import {
-  cacheActions,
   savedPageTracksLineupActions,
   savedPageSelectors
 } from '@audius/common/store'
@@ -12,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
-import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
+import { useOfflineTracks } from 'app/store/offline-downloads/hooks'
 
 const { getSavedTracksLineup } = savedPageSelectors
 
@@ -22,7 +21,7 @@ const { getSavedTracksLineup } = savedPageSelectors
  */
 export const useFavoritesLineup = (fetchLineup: () => void) => {
   const dispatch = useDispatch()
-  const offlineTracks = useSelector(getOfflineTracks)
+  const offlineTracks = useOfflineTracks()
   const savedTracks = useSelector(getSavedTracksLineup)
   const savedTracksUidMap = savedTracks.entries.reduce((acc, track) => {
     acc[track.id] = track.uid
@@ -45,14 +44,6 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
         dateSaved: track.offline?.favorite_created_at,
         kind: Kind.TRACKS
       }))
-
-    const cacheTracks = lineupTracks.map((track) => ({
-      id: track.id,
-      uid: track.uid,
-      metadata: track
-    }))
-
-    dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
     // Reorder lineup tracks according to favorite time
     const sortedTracks = orderBy(lineupTracks, (track) => track.dateSaved, [

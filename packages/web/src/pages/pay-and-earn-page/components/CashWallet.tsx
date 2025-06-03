@@ -163,21 +163,17 @@ export const CashWallet = () => {
           <>
             <Button
               variant='primary'
-              css={{
-                flex: 1
-              }}
               onClick={handleWithdraw}
               disabled={isLoading}
+              fullWidth
             >
               {walletMessages.withdraw}
             </Button>
             <Button
               variant='secondary'
-              css={{
-                flex: 1
-              }}
               onClick={handleAddCash}
               disabled={isLoading}
+              fullWidth
             >
               {walletMessages.addCash}
             </Button>

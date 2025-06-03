@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import {
   buyUSDCActions,
@@ -8,7 +9,14 @@ import {
   BuyUSDCStage,
   useAddCashModal
 } from '@audius/common/store'
-import { ModalContent, ModalHeader, ModalTitle } from '@audius/harmony'
+import {
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  Flex,
+  Text,
+  IconLogoLinkByStripe
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -21,11 +29,6 @@ import zIndex from 'utils/zIndex'
 import styles from './AddCashModal.module.css'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
-
-const messages = {
-  addCash: 'Add Cash',
-  cryptoTransfer: 'Crypto Transfer'
-}
 
 type Page = 'add-cash' | 'crypto-transfer'
 
@@ -94,7 +97,9 @@ export const AddCashModal = () => {
       >
         <ModalTitle
           title={
-            page === 'add-cash' ? messages.addCash : messages.cryptoTransfer
+            page === 'add-cash'
+              ? walletMessages.addCash
+              : walletMessages.usdcTransfer
           }
         />
       </ModalHeader>
@@ -105,6 +110,21 @@ export const AddCashModal = () => {
           <USDCManualTransfer onClose={onClose} />
         )}
       </ModalContent>
+      {page === 'add-cash' && (
+        <Flex
+          justifyContent='center'
+          alignItems='center'
+          gap='m'
+          borderTop='default'
+          backgroundColor='surface1'
+          pv='2xs'
+        >
+          <Text variant='label' size='s' color='subdued'>
+            {walletMessages.poweredBy}
+          </Text>
+          <IconLogoLinkByStripe width={100} color='subdued' />
+        </Flex>
+      )}
     </ModalDrawer>
   )
 }

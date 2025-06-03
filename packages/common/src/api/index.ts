@@ -11,9 +11,11 @@ export * from './tan-query/collection/useCollections'
 export * from './tan-query/collection/useCollectionByPermalink'
 export * from './tan-query/collection/useCollectionFavorites'
 export * from './tan-query/collection/useCollectionReposts'
+export * from './tan-query/collection/useCollectionTracks'
 export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
+export * from './tan-query/collection/useCollectionByParams'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -39,6 +41,8 @@ export * from './tan-query/lineups/useTrackPageLineup'
 // Notifications
 export * from './tan-query/notifications/useMarkNotificationsAsViewed'
 export * from './tan-query/notifications/useNotifications'
+export * from './tan-query/notifications/useNotificationEntities'
+export * from './tan-query/notifications/useNotificationEntity'
 export * from './tan-query/notifications/useNotificationUnreadCount'
 export * from './tan-query/notifications/useNotificationValidTypes'
 
@@ -55,10 +59,17 @@ export * from './tan-query/purchases/usePurchasers'
 export * from './tan-query/purchases/usePurchasersCount'
 export * from './tan-query/purchases/useSalesAggregate'
 
+// Reactions
+export * from './tan-query/reactions/useReaction'
+export * from './tan-query/reactions/useWriteReaction'
+export * from './tan-query/reactions/types'
+export * from './tan-query/reactions/utils'
+
 // Remixes
-export * from './tan-query/remixes/useRemixes'
+export * from './tan-query/remixes/useRemixesLineup'
 export * from './tan-query/remixes/useRemixers'
 export * from './tan-query/remixes/useRemixersCount'
+export * from './tan-query/remixes/useRemixes'
 
 // Search
 export * from './tan-query/search/useSearchAutocomplete'
@@ -94,6 +105,8 @@ export * from './tan-query/users/account/useCurrentAccount'
 export * from './tan-query/users/account/usePlaylistLibrary'
 export * from './tan-query/users/account/useReorderLibrary'
 export * from './tan-query/users/account/useUpdatePlaylistLibrary'
+export * from './tan-query/users/useUpdateProfile'
+export * from './tan-query/users/useUpdateUser'
 export * from './tan-query/users/useFeaturedProfiles'
 export * from './tan-query/users/useFollowers'
 export * from './tan-query/users/useFollowing'
@@ -132,10 +145,10 @@ export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
+export * from './tan-query/jupiter/utils'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'
-export * from './tan-query/utils/defaultConfig'
 export * from './tan-query/utils'
 
 // New authorized-apps exports

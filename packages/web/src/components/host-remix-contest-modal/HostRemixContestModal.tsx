@@ -5,10 +5,11 @@ import {
   useCurrentUserId,
   useDeleteEvent,
   useRemixContest,
-  useRemixes,
+  useRemixesLineup,
   useUpdateEvent
 } from '@audius/common/api'
 import { remixMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import { useHostRemixContestModal } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
@@ -29,6 +30,7 @@ import { EventEntityTypeEnum, EventEventTypeEnum } from '@audius/sdk'
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
 import { DatePicker } from 'components/edit/fields/DatePickerField'
 import { mergeReleaseDateValues } from 'components/edit/fields/visibility/mergeReleaseDateValues'
+import { track, make } from 'services/analytics'
 
 import { TimeInput, parseTime } from './TimeInput'
 
@@ -42,7 +44,7 @@ export const HostRemixContestModal = () => {
   const { mutate: updateEvent } = useUpdateEvent()
   const { mutate: deleteEvent } = useDeleteEvent()
   const { data: userId } = useCurrentUserId()
-  const { data: remixes, isLoading: remixesLoading } = useRemixes({
+  const { data: remixes, isLoading: remixesLoading } = useRemixesLineup({
     trackId,
     isContestEntry: true
   })
@@ -136,6 +138,14 @@ export const HostRemixContestModal = () => {
         endDate,
         userId
       })
+
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_UPDATE,
+          remixContestId: remixContest.eventId,
+          trackId
+        })
+      )
     } else {
       createEvent({
         eventType: EventEventTypeEnum.RemixContest,
@@ -145,6 +155,13 @@ export const HostRemixContestModal = () => {
         endDate,
         userId
       })
+
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_CREATE,
+          trackId
+        })
+      )
     }
 
     onClose()
@@ -167,8 +184,18 @@ export const HostRemixContestModal = () => {
   const handleDeleteEvent = useCallback(() => {
     if (!remixContest || !userId) return
     deleteEvent({ eventId: remixContest.eventId, userId })
+
+    if (trackId) {
+      track(
+        make({
+          eventName: Name.REMIX_CONTEST_DELETE,
+          remixContestId: remixContest.eventId,
+          trackId
+        })
+      )
+    }
     onClose()
-  }, [remixContest, userId, deleteEvent, onClose])
+  }, [remixContest, userId, deleteEvent, onClose, trackId])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size='medium'>

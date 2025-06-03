@@ -1,3 +1,4 @@
+import { primeCollectionDataSaga, primeTrackDataSaga } from '@audius/common/api'
 import type {
   CollectionMetadata,
   ID,
@@ -29,9 +30,9 @@ import {
 
 import { migrateOfflineDataPathSaga } from './migrateOfflineDataPathSaga'
 
-type CachedCollection = { id: ID; uid: UID; metadata: CollectionMetadata }
+type CachedCollection = CollectionMetadata
 type CachedUser = { id: ID; uid: UID; metadata: UserMetadata }
-type CachedTrack = { id: ID; uid: UID; metadata: TrackMetadata }
+type CachedTrack = TrackMetadata
 
 // Load offline data into redux on app start
 export function* rehydrateOfflineDataSaga() {
@@ -62,13 +63,8 @@ export function* rehydrateOfflineDataSaga() {
     }
 
     const { user, ...collection } = userCollection
-    const id = parseInt(collectionId, 10)
 
-    collectionsToCache.push({
-      id,
-      uid: makeUid(Kind.COLLECTIONS, id),
-      metadata: { ...collection, local: true }
-    })
+    collectionsToCache.push({ ...collection, local: true })
 
     if (user) {
       const { user_id } = user
@@ -96,13 +92,8 @@ export function* rehydrateOfflineDataSaga() {
     }
 
     const { user, ...track } = userTrack
-    const { track_id } = track
 
-    tracksToCache.push({
-      id: track_id,
-      uid: makeUid(Kind.TRACKS, track_id),
-      metadata: { ...track, local: true }
-    })
+    tracksToCache.push({ ...track, local: true })
 
     if (user) {
       const { user_id } = user
@@ -123,13 +114,11 @@ export function* rehydrateOfflineDataSaga() {
   }
 
   if (collectionsToCache.length > 0) {
-    yield* put(
-      cacheActions.add(Kind.COLLECTIONS, collectionsToCache, false, true)
-    )
+    yield* call(primeCollectionDataSaga, collectionsToCache)
   }
 
   if (tracksToCache.length > 0) {
-    yield* put(cacheActions.add(Kind.TRACKS, tracksToCache, false, true))
+    yield* call(primeTrackDataSaga, tracksToCache)
   }
 
   if (usersToCache.length > 0) {

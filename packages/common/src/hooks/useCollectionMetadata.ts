@@ -1,10 +1,7 @@
 import { pick } from 'lodash'
-import { useSelector } from 'react-redux'
 
-import { useCollection } from '~/api'
+import { useCollection, useCollectionTracks } from '~/api'
 import { ID } from '~/models/Identifiers'
-import { getCollectionDuration } from '~/store/cache/collections/selectors'
-import { CommonState } from '~/store/commonStore'
 import { pluralize } from '~/utils/formatUtil'
 import { formatDate, formatSecondsAsText } from '~/utils/timeUtil'
 
@@ -42,9 +39,9 @@ export const useCollectionMetadata = ({
         'playlist_contents'
       ])
   })
-  const duration = useSelector((state: CommonState) =>
-    getCollectionDuration(state, { id: collectionId })
-  )
+
+  const { data: tracks } = useCollectionTracks(collectionId)
+  const duration = tracks?.reduce((acc, track) => acc + track.duration, 0) ?? 0
 
   if (!collectionMetadata) return []
 

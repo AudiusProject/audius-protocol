@@ -1,11 +1,16 @@
 from datetime import datetime
 
+from src.challenges.challenge_event_bus import ChallengeEvent
 from src.exceptions import IndexingValidationError
 from src.models.events.event import Event, EventEntityType, EventType
+from src.models.tracks.track import Track
 from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     validate_signer,
+)
+from src.tasks.remix_contest_notifications.fan_remix_contest_winners_selected import (
+    create_fan_remix_contest_winners_selected_notification,
 )
 from src.utils.structured_logger import StructuredLogger
 
@@ -84,14 +89,25 @@ def validate_create_event_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 "For remix competitions, entity_id and entity_type must be provided"
             )
-        if any(
-            event.entity_id == metadata["entity_id"]
-            and event.event_type == EventType.remix_contest
-            for event in params.existing_records[EntityType.EVENT.value].values()
-        ):
+
+        # Query database directly for existing remix contests for this track
+        # since existing_records only contains the specific event being created
+        existing_remix_contest = (
+            params.session.query(Event)
+            .filter(
+                Event.entity_id == metadata["entity_id"],
+                Event.event_type == EventType.remix_contest,
+                Event.is_deleted == False,
+                Event.end_date > params.block_datetime,  # Only active contests
+            )
+            .first()
+        )
+
+        if existing_remix_contest:
             raise IndexingValidationError(
                 f"An existing remix contest for entity_id {metadata['entity_id']} already exists"
             )
+
         track = params.existing_records[EntityType.TRACK.value][metadata["entity_id"]]
         if track.remix_of:
             raise IndexingValidationError(
@@ -155,6 +171,46 @@ def update_event(params: ManageEntityParameters):
     validate_update_event_tx(params)
     event_record = params.existing_records[EntityType.EVENT.value][params.entity_id]
 
+    # Check if this is a remix contest and winners are being selected for the first time
+    should_notify_winners_selected = False
+    if (
+        event_record.event_type == EventType.remix_contest
+        and params.metadata.get("event_data")
+        and isinstance(params.metadata["event_data"], dict)
+        and isinstance(event_record.event_data, dict)
+    ):
+        current_event_data = event_record.event_data
+        new_event_data = params.metadata["event_data"]
+        current_winners = current_event_data.get("winners", [])
+        new_winners = new_event_data.get("winners", [])
+
+        if len(current_winners) == 0 and len(new_winners) > 0:
+            should_notify_winners_selected = True
+
+    # Check if this is a remix contest and winners are being selected for the first time
+    should_notify_winners_selected = False
+    new_winners = []
+    event_data = params.metadata.get("event_data")
+    if (
+        event_record.event_type == EventType.remix_contest
+        and event_data
+        and isinstance(event_data, dict)
+        and isinstance(event_record.event_data, dict)
+    ):
+        current_event_data = event_record.event_data
+        new_event_data = params.metadata["event_data"]
+        current_winners = current_event_data.get("winners", [])
+        new_winners = new_event_data.get("winners", [])
+
+        if len(current_winners) == 0 and len(new_winners) > 0:
+            should_notify_winners_selected = True
+
+    # Trigger notification when winners are first selected
+    if should_notify_winners_selected:
+        create_fan_remix_contest_winners_selected_notification(
+            params.session, event_record.event_id, params.block_datetime
+        )
+
     # Update the event record with new values from params.metadata
     event_record.end_date = params.metadata.get("end_date", event_record.end_date)
     event_record.event_data = params.metadata.get("event_data", event_record.event_data)
@@ -162,6 +218,28 @@ def update_event(params: ManageEntityParameters):
     event_record.txhash = params.txhash
     event_record.blockhash = params.event_blockhash
     event_record.blocknumber = params.block_number
+
+    # Trigger challenge update when winners are selected
+    for winner_track_id in new_winners:
+        # Look up the track in the database to get the owner_id (the remixer who should receive the challenge)
+        winner_track = (
+            params.session.query(Track)
+            .filter(Track.track_id == winner_track_id, Track.is_delete == False)
+            .first()
+        )
+
+        if winner_track:
+            params.challenge_bus.dispatch(
+                ChallengeEvent.remix_contest_winner,
+                params.block_number,
+                params.block_datetime,
+                winner_track.owner_id,
+                {
+                    "contest_id": event_record.event_id,
+                    "host_user_id": event_record.user_id,
+                    "event_timestamp": params.block_datetime.timestamp(),
+                },
+            )
 
 
 def validate_delete_event_tx(params: ManageEntityParameters):

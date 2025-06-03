@@ -78,3 +78,4 @@ export type ChallengeId =
   | 'ft'
   | 'fp'
   | 'o'
+  | 'w'

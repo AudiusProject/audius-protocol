@@ -2,6 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { primeCollectionDataSaga } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
@@ -15,7 +16,6 @@ import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 
-import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getLineup } = trendingPlaylistsPageLineupSelectors
@@ -90,9 +90,9 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   )
   numberOfFilteredPlaylists += playlists.length - trendingPlaylists.length
 
-  const processed = yield* processAndCacheCollections(trendingPlaylists, false)
+  yield* call(primeCollectionDataSaga, trendingPlaylists)
 
-  return processed
+  return trendingPlaylists
 }
 
 class TrendingPlaylistSagas extends LineupSagas<Collection> {

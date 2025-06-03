@@ -15,6 +15,7 @@ import { downloadTrackArchiveModalReducer } from './download-track-archive-modal
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
+import { finalizeWinnersConfirmationModalReducer } from './finalize-winners-confirmation-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
 import { hostRemixContestModalReducer } from './host-remix-contest-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
@@ -80,7 +81,8 @@ const combinedReducers = combineReducers({
   Announcement: announcementModalReducer,
   Notification: notificationModalReducer,
   DownloadTrackArchive: downloadTrackArchiveModalReducer,
-  HostRemixContest: hostRemixContestModalReducer
+  HostRemixContest: hostRemixContestModalReducer,
+  FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer
 })
 
 /**

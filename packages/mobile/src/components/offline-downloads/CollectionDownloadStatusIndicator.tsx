@@ -1,8 +1,9 @@
-import type { ID } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
+import { useCollection } from '@audius/common/api'
+import type { Collection } from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
+import { pick } from 'lodash'
+import { useSelector } from 'react-redux'
 
-import { useProxySelector } from 'app/hooks/useProxySelector'
 import type { AppState } from 'app/store'
 import {
   getIsCollectionMarkedForDownload,
@@ -13,8 +14,6 @@ import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import type { DownloadStatusIndicatorProps } from './DownloadStatusIndicator'
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
 
-const { getCollection } = cacheCollectionsSelectors
-
 type CollectionDownloadIndicatorProps =
   Partial<DownloadStatusIndicatorProps> & {
     collectionId?: number
@@ -22,10 +21,11 @@ type CollectionDownloadIndicatorProps =
 
 export const getCollectionDownloadStatus = (
   state: AppState,
-  collectionId?: ID
+  collection: Pick<Collection, 'playlist_id' | 'playlist_contents'> | undefined
 ): OfflineDownloadStatus | null => {
-  const collection = getCollection(state, { id: collectionId })
   if (!collection) return OfflineDownloadStatus.INACTIVE
+
+  const { playlist_id: collectionId } = collection
 
   const isMarkedForDownload =
     getIsCollectionMarkedForDownload(collectionId)(state)
@@ -84,10 +84,13 @@ export const CollectionDownloadStatusIndicator = (
   props: CollectionDownloadIndicatorProps
 ) => {
   const { collectionId, ...other } = props
+  const { data: collection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, ['playlist_id', 'playlist_contents'])
+  })
 
-  const status = useProxySelector(
-    (state) => getCollectionDownloadStatus(state, collectionId),
-    [collectionId]
+  const status = useSelector((state) =>
+    getCollectionDownloadStatus(state, collection)
   )
 
   return <DownloadStatusIndicator status={status} {...other} />

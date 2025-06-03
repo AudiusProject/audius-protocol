@@ -2,6 +2,7 @@ import {
   queryAccountUser,
   queryTrack,
   queryUser,
+  updateTrackData,
   selectIsGuestAccount
 } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
@@ -113,14 +114,9 @@ export function* repostTrackAsync(
     eagerlyUpdatedMetadata._co_sign = remixOf.tracks[0]
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: action.trackId,
-        metadata: eagerlyUpdatedMetadata
-      }
-    ])
-  )
+  yield* call(updateTrackData, [
+    { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+  ])
 
   if (remixTrack && isCoSign) {
     const {
@@ -259,14 +255,9 @@ export function* undoRepostTrackAsync(
     }
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: action.trackId,
-        metadata: eagerlyUpdatedMetadata
-      }
-    ])
-  )
+  yield* call(updateTrackData, [
+    { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+  ])
 }
 
 export function* confirmUndoRepostTrack(trackId: ID, user: User) {
@@ -370,14 +361,9 @@ export function* saveTrackAsync(
     eagerlyUpdatedMetadata._co_sign = remixOf.tracks[0]
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: action.trackId,
-        metadata: eagerlyUpdatedMetadata
-      }
-    ])
-  )
+  yield* call(updateTrackData, [
+    { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+  ])
   yield* put(socialActions.saveTrackSucceeded(action.trackId))
   if (isCoSign) {
     // Track Cosign Event
@@ -504,14 +490,9 @@ export function* unsaveTrackAsync(
       }
     }
 
-    yield* put(
-      cacheActions.update(Kind.TRACKS, [
-        {
-          id: action.trackId,
-          metadata: eagerlyUpdatedMetadata
-        }
-      ])
-    )
+    yield* call(updateTrackData, [
+      { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+    ])
   }
 
   yield* put(socialActions.unsaveTrackSucceeded(action.trackId))

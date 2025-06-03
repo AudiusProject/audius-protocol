@@ -156,6 +156,7 @@ const {
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHANGE_EMAIL_SETTINGS_PAGE,
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  LABEL_ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
@@ -715,7 +716,7 @@ const WebPlayer = (props) => {
                         }).toString()
                       }}
                     />
-                  ) : isSearchExploreEnabled ? (
+                  ) : isSearchExploreEnabled && !isMobile ? (
                     <ExplorePage />
                   ) : (
                     <SearchPage />
@@ -856,7 +857,8 @@ const WebPlayer = (props) => {
                   SETTINGS_PAGE,
                   AUTHORIZED_APPS_SETTINGS_PAGE,
                   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE
+                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+                  LABEL_ACCOUNT_SETTINGS_PAGE
                 ]}
                 isMobile={isMobile}
                 component={SettingsPage}

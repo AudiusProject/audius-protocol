@@ -35,6 +35,7 @@ import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import SmilingFaceLickingLips from 'app/assets/images/emojis/smiling-face-licking-lips.png'
 import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
+import Trophy from 'app/assets/images/emojis/trophy.png'
 import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
 
 export const messages = {
@@ -343,6 +344,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
     },
     [ChallengeName.Cosign]: {
       icon: Recycle,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.RemixContestWinner]: {
+      icon: Trophy,
       buttonInfo: {
         iconRight: IconCheck
       }

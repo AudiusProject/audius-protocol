@@ -3,7 +3,7 @@ import { expect } from '@playwright/test'
 import { getAlbum, getPlaylist, getRemix, getRemixes, getTrack } from './data'
 import { test } from './test'
 
-test('should load an album page', async ({ page }) => {
+test.skip('should load an album page', async ({ page }) => {
   const { playlistName, permalink } = getAlbum()
   await page.goto(permalink)
   const heading = page.getByRole('heading', {

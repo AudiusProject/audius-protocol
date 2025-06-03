@@ -4,6 +4,7 @@ import { IconComponent, SVGIconProps } from '~harmony/components/icon'
 import IconArtistBadgeSVG from '../assets/icons/ArtistBadge.svg'
 import IconContestSignSVG from '../assets/icons/ContestSign.svg'
 import IconCosignSVG from '../assets/icons/Cosign.svg'
+import IconLabelBadgeSVG from '../assets/icons/LabelBadge.svg'
 import IconMultiselectAddSVG from '../assets/icons/MultiselectAdd.svg'
 import IconMultiselectRemoveSVG from '../assets/icons/MultiselectRemove.svg'
 // Token Tier Badges
@@ -79,6 +80,7 @@ import { createImageIcon } from '../utils/createImageIcon'
 export const IconContestSign = IconContestSignSVG as IconComponent
 export const IconCosign = IconCosignSVG as IconComponent
 export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
+export const IconLabelBadge = IconLabelBadgeSVG as IconComponent
 export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 

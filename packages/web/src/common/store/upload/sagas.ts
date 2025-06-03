@@ -7,7 +7,12 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { getStemsQueryKey, queryTracks, queryUser } from '@audius/common/api'
+import {
+  getStemsQueryKey,
+  primeCollectionDataSaga,
+  queryTracks,
+  queryUser
+} from '@audius/common/api'
 import {
   Collection,
   Feature,
@@ -33,7 +38,6 @@ import {
   cacheActions,
   confirmerActions,
   getContext,
-  reformatCollection,
   savedPageActions,
   uploadActions,
   getSDK,
@@ -43,11 +47,7 @@ import {
   queueActions,
   playerActions
 } from '@audius/common/store'
-import {
-  actionChannelDispatcher,
-  makeUid,
-  waitForAccount
-} from '@audius/common/utils'
+import { actionChannelDispatcher, waitForAccount } from '@audius/common/utils'
 import {
   Id,
   OptionalId,
@@ -957,43 +957,8 @@ export function* uploadCollection(
           })
         )
         const user = yield* queryUser(userId)
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
-                _collectionIds: (user?._collectionIds ?? []).concat(
-                  confirmedPlaylist.playlist_id
-                )
-              }
-            }
-          ])
-        )
 
-        // Add images to the collection since we're not loading it the traditional way with
-        // the `fetchCollections` saga
-        confirmedPlaylist = yield* call(reformatCollection, {
-          collection: confirmedPlaylist
-        })
-        const uid = yield* makeUid(
-          Kind.COLLECTIONS,
-          confirmedPlaylist.playlist_id,
-          'account'
-        )
-        // Create a cache entry and add it to the account so the playlist shows in the left nav
-        yield* put(
-          cacheActions.add(
-            Kind.COLLECTIONS,
-            [
-              {
-                id: confirmedPlaylist.playlist_id,
-                uid,
-                metadata: confirmedPlaylist
-              }
-            ],
-            /* replace= */ true // forces cache update
-          )
-        )
+        yield* call(primeCollectionDataSaga, [confirmedPlaylist])
         yield* put(
           accountActions.addAccountPlaylist({
             id: confirmedPlaylist.playlist_id,
@@ -1102,7 +1067,7 @@ export function* uploadMultipleTracks(
   let retries = 20
   let newTracks: Track[] = []
   while (retries > 0) {
-    newTracks = yield* call(queryTracks, trackIds, true)
+    newTracks = yield* call(queryTracks, trackIds)
     if (newTracks.length > 0) {
       break
     }

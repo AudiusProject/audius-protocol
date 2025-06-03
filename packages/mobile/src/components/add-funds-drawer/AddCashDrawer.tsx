@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { buyUSDCActions, useAddCashModal } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -22,8 +23,6 @@ enum AddCashDrawerPage {
 }
 
 const messages = {
-  addCash: 'Add Cash',
-  transferUSDC: 'USDC Transfer',
   continue: 'Continue'
 }
 
@@ -67,7 +66,7 @@ export const AddCashDrawer = () => {
           <>
             <Flex row justifyContent='center' pt='xl'>
               <Text variant='label' strength='strong' size='xl' color='default'>
-                {messages.addCash}
+                {walletMessages.addCash}
               </Text>
             </Flex>
             <StripeSection />
@@ -95,7 +94,7 @@ export const AddCashDrawer = () => {
               mh='l'
             >
               <Text variant='label' strength='strong' size='xl' color='default'>
-                {messages.transferUSDC}
+                {walletMessages.usdcTransfer}
               </Text>
             </Flex>
             <USDCManualTransfer />

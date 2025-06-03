@@ -14,6 +14,7 @@ create or replace function get_user_scores(
         challenge_count bigint,
         chat_block_count bigint,
         is_audius_impersonator boolean,
+        karma bigint,
         score bigint
     ) language sql as $function$ with play_activity as (
         select plays.user_id,
@@ -69,7 +70,28 @@ create or replace function get_user_scores(
                 )
                 and users.is_verified = false then true
                 else false
-            end as is_audius_impersonator
+            end as is_audius_impersonator,
+            case
+                when (
+                    -- give max karma to users with more than 1000 followers
+                    -- karma is too slow for users with many followers
+                    aggregate_user.follower_count > 1000
+                ) then 100
+                when (
+                    aggregate_user.follower_count = 0
+                ) then 0
+                else (
+                    select LEAST(
+                            (sum(fau.follower_count) / 100)::bigint,
+                            100
+                        )
+                    from follows
+                        join aggregate_user fau on follows.follower_user_id = fau.user_id
+                    where follows.followee_user_id = users.user_id
+                        and fau.following_count < 10000 -- ignore users with too many following
+                        and follows.is_delete = false
+                )
+            end as karma
         from users
             left join play_activity on users.user_id = play_activity.user_id
             left join fast_challenge_completion on users.user_id = fast_challenge_completion.user_id
@@ -89,7 +111,8 @@ select a.*,
         a.chat_block_count,
         a.following_count,
         a.is_audius_impersonator,
-        a.distinct_tracks_played
+        a.distinct_tracks_played,
+        a.karma
     ) as score
 from aggregate_scores a;
 $function$;

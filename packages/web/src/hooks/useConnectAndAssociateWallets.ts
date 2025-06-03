@@ -153,7 +153,7 @@ export const useConnectAndAssociateWallets = (
         await switchAccountAsync({ connector })
       }
     }
-  }, [currentUser, switchAccountAsync])
+  }, [currentUser?.wallet, switchAccountAsync])
 
   /**
    * Associates any Reown connected wallets to the user's account.
@@ -259,7 +259,8 @@ export const useConnectAndAssociateWallets = (
   }, [
     addConnectedWalletAsync,
     connectedWallets,
-    currentUser,
+    currentUser?.user_id,
+    currentUser?.wallet,
     make,
     onError,
     onSuccess,

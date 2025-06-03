@@ -167,7 +167,7 @@ export const ProfileResultsPage = () => {
         gap='xl'
         css={isMobile ? { backgroundColor: color.background.default } : {}}
       >
-        {!isMobile && !isSearchExploreEnabled ? (
+        {!isMobile && isSearchExploreEnabled === false ? (
           <Flex justifyContent='space-between' alignItems='center'>
             <Text variant='heading' textAlign='left'>
               {messages.profiles}
@@ -182,7 +182,7 @@ export const ProfileResultsPage = () => {
             isFetching={isFetching}
             isPending={isPending}
             data={ids}
-            skeletonCount={10}
+            skeletonCount={5}
           />
         )}
       </Flex>

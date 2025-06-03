@@ -25,10 +25,12 @@ import { EditAccessConfirmationModal } from 'components/edit-access-confirmation
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
+import { FinalizeWinnersConfirmationModal } from 'components/finalize-winners-confirmation-modal/FinalizeWinnersConfirmationModal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { HostRemixContestModal } from 'components/host-remix-contest-modal/HostRemixContestModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
+import { LabelAccountModal } from 'components/label-account-modal/LabelAccountModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
@@ -94,6 +96,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   ReplaceTrackProgress: ReplaceTrackProgressModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
+  FinalizeWinnersConfirmation: FinalizeWinnersConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   EditAccessConfirmation: EditAccessConfirmationModal,
@@ -106,6 +109,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
   CommentSettings: CommentSettingsModal,
+  LabelAccount: LabelAccountModal,
   LockedContent: LockedContentModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,

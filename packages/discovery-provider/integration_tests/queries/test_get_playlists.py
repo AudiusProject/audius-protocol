@@ -437,3 +437,37 @@ def test_get_playlists_default_and_invalid_sort(app, test_entities):
                 playlists_invalid[0]["playlist_id"]
                 == playlists_default[0]["playlist_id"]
             )
+
+
+def test_get_playlists_query_filter(app, test_entities):
+    """Test filtering playlists by query string"""
+    with app.test_request_context():
+        db = get_db()
+        populate_mock_db(db, test_entities)
+
+        with db.scoped_session():
+            # Test exact match
+            playlists = get_playlists(GetPlaylistsArgs(user_id=1, query="playlist 1"))
+            assert len(playlists) == 1
+            assert playlists[0]["playlist_name"] == "playlist 1"
+
+            # Test partial match
+            playlists = get_playlists(GetPlaylistsArgs(user_id=1, query="playlist"))
+            assert len(playlists) == 2
+            assert all("playlist" in p["playlist_name"].lower() for p in playlists)
+
+            # Test case insensitive
+            playlists = get_playlists(GetPlaylistsArgs(user_id=1, query="PLAYLIST"))
+            assert len(playlists) == 2
+            assert all("playlist" in p["playlist_name"].lower() for p in playlists)
+
+            # Test album filtering
+            playlists = get_playlists(
+                GetPlaylistsArgs(user_id=1, query="album", kind="Album")
+            )
+            assert len(playlists) == 1
+            assert playlists[0]["playlist_name"] == "album 7"
+
+            # Test no matches
+            playlists = get_playlists(GetPlaylistsArgs(user_id=1, query="nonexistent"))
+            assert len(playlists) == 0

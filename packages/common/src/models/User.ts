@@ -43,6 +43,7 @@ export type UserMetadata = {
   has_collectibles: boolean
   is_deactivated: boolean
   is_verified: boolean
+  profile_type: Nullable<'label'>
   twitter_handle: Nullable<string>
   instagram_handle: Nullable<string>
   tiktok_handle: Nullable<string>
@@ -90,7 +91,6 @@ export type UserManagerMetadata = {
 }
 
 export type ComputedUserProperties = {
-  _collectionIds?: ID[]
   _profile_picture_color?: Color
   updatedProfilePicture?: { file: File; url: string; type?: string }
   updatedCoverPhoto?: { file: File; url: string; type?: string }

@@ -2,14 +2,10 @@ import { Cacheable } from '~/models'
 import { CommonState } from '~/store/commonStore'
 import { Uid } from '~/utils/uid'
 
-import { Collection } from '../../models/Collection'
 import { ID, UID } from '../../models/Identifiers'
 import { Kind } from '../../models/Kind'
-import { Track } from '../../models/Track'
 import { User } from '../../models/User'
 
-import { CollectionsCacheState } from './collections/types'
-import { TracksCacheState } from './tracks/types'
 import { UsersCacheState } from './users/types'
 
 /**
@@ -26,31 +22,15 @@ export function getEntry(
 export function getEntry(
   state: CommonState,
   props: {
-    kind: Kind.COLLECTIONS
+    kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>
     id?: ID | null
     uid?: UID | null
   }
-): Collection | null
+): User | null
 export function getEntry(
   state: CommonState,
   props: {
-    kind: Kind.TRACKS
-    id?: ID | null
-    uid?: UID | null
-  }
-): Track | null
-export function getEntry(
-  state: CommonState,
-  props: {
-    kind: Kind
-    id?: ID | null
-    uid?: UID | null
-  }
-): Track | User | Collection | null
-export function getEntry(
-  state: CommonState,
-  props: {
-    kind: Kind
+    kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>
     id?: ID | null
     uid?: UID | null
   }
@@ -72,7 +52,13 @@ export function getEntry(
  */
 export const getEntryTimestamp = (
   state: CommonState,
-  { kind, id }: { kind: Kind; id?: ID | string | null }
+  {
+    kind,
+    id
+  }: {
+    kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>
+    id?: ID | string | null
+  }
 ) => {
   if (kind && id) {
     const entries = getCache(state, { kind }).entries
@@ -90,25 +76,12 @@ export function getAllEntries(
 ): { [id: string]: Cacheable<User> }
 export function getAllEntries(
   state: CommonState,
-  props: { kind: Kind.COLLECTIONS }
-): { [id: string]: Cacheable<Collection> }
-export function getAllEntries(
-  state: CommonState,
-  props: { kind: Kind.TRACKS }
-): { [id: string]: Cacheable<Track> }
-export function getAllEntries(
-  state: CommonState,
   props: { kind: Kind.USERS }
 ): { [id: string]: Cacheable<User> }
 export function getAllEntries(
   state: CommonState,
-  props: { kind: Kind.TRACKS }
-): { [id: string]: Cacheable<Track> }
-export function getAllEntries(
-  state: CommonState,
-  props: { kind: Kind.COLLECTIONS }
-): { [id: string]: Cacheable<Collection> }
-export function getAllEntries(state: CommonState, props: { kind: Kind }) {
+  props: { kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS> }
+) {
   return getCache(state, props).entries
 }
 
@@ -118,36 +91,24 @@ export function getCache(
 ): UsersCacheState
 export function getCache(
   state: CommonState,
-  props: { kind: Kind.COLLECTIONS }
-): CollectionsCacheState
+  props: { kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS> }
+): UsersCacheState
 export function getCache(
   state: CommonState,
-  props: { kind: Kind.TRACKS }
-): TracksCacheState
-export function getCache(
-  state: CommonState,
-  props: { kind: Kind }
-): TracksCacheState | CollectionsCacheState | UsersCacheState
-export function getCache(state: CommonState, props: { kind: Kind }) {
+  props: { kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS> }
+) {
   switch (props.kind) {
-    case Kind.TRACKS:
-      return state.tracks
-    case Kind.COLLECTIONS:
-      return state.collections
     case Kind.USERS:
     default:
       return state.users
   }
 }
 
-export function getId(state: CommonState, props: { kind: Kind; uid: UID }) {
+export function getId(
+  state: CommonState,
+  props: { kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>; uid: UID }
+) {
   switch (props.kind) {
-    case Kind.TRACKS: {
-      return state.tracks.uids[props.uid]
-    }
-    case Kind.COLLECTIONS: {
-      return state.collections.uids[props.uid]
-    }
     case Kind.USERS:
     default: {
       return state.users.uids[props.uid]

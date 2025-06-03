@@ -1,4 +1,4 @@
-import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -6,10 +6,12 @@ import { Box, Flex, Text, IconTrophy } from '@audius/harmony'
 
 import useTabs from 'hooks/useTabs/useTabs'
 
+import { RemixContestSubmissionsTab } from '../../shared/RemixContestSubmissionsTab'
+import { RemixContestWinnersTab } from '../../shared/RemixContestWinnersTab'
+
 import { RemixContestDetailsTab } from './RemixContestDetailsTab'
 import { RemixContestPrizesTab } from './RemixContestPrizesTab'
-import { RemixContestSubmissionsTab } from './RemixContestSubmissionsTab'
-import { RemixContestWinnersTab } from './RemixContestWinnersTab'
+
 const messages = {
   title: 'Remix Contest',
   details: 'Details',
@@ -29,7 +31,7 @@ export const RemixContestSection = ({
   isOwner
 }: RemixContestSectionProps) => {
   const { data: remixContest } = useRemixContest(trackId)
-  const { data: remixes } = useRemixes({ trackId, isContestEntry: true })
+  const { data: remixes } = useRemixesLineup({ trackId, isContestEntry: true })
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
@@ -82,6 +84,7 @@ export const RemixContestSection = ({
             key='winners'
             trackId={trackId}
             winnerIds={remixContest?.eventData?.winners ?? []}
+            size='mobile'
           />
         ]
       : [
@@ -89,12 +92,14 @@ export const RemixContestSection = ({
             key='submissions'
             trackId={trackId}
             submissions={remixes.slice(0, 6)}
+            size='mobile'
           />
         ])
   ]
 
   const { tabs: TabBar, body: TabBody } = useTabs({
     tabs,
+    initialTab: hasWinners ? 'winners' : undefined,
     elements,
     isMobile: false,
     isMobileV2: true
