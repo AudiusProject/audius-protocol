@@ -1,6 +1,5 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
 import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
@@ -34,27 +33,13 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
       state.account.collections[playlistId]?.user.id === state.account.userId
   )
 
-  const { data: partialPlaylist } = useCollection(playlistId, {
-    select: (playlist) => ({
-      permalink: playlist.permalink,
-      name: playlist.playlist_name,
-      ownerId: playlist.playlist_owner_id
-    })
+  const playlistUrl = useSelector((state) => {
+    const playlist = state.account.collections[playlistId]
+    if (!playlist) return null
+    const { name, user, permalink } = playlist
+    const { handle } = user
+    return collectionPage(handle, name, playlistId, permalink)
   })
-
-  const { data: playlistOwnerHandle } = useUser(partialPlaylist?.ownerId, {
-    select: (user) => user.handle
-  })
-  const playlistUrl = useMemo(
-    () =>
-      collectionPage(
-        playlistOwnerHandle,
-        partialPlaylist?.name,
-        playlistId,
-        partialPlaylist?.permalink
-      ),
-    [partialPlaylist, playlistOwnerHandle, playlistId]
-  )
 
   const hasPlaylistUpdate = useSelector(
     (state) => !!selectPlaylistUpdateById(state, playlistId)
