@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useRemixContest } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 
 import { Flex, IconArrowRight, PlainButton, Text } from '@audius/harmony-native'
@@ -26,6 +26,10 @@ export const RemixContestWinnersTab = ({
 }: RemixContestWinnersTabProps) => {
   const navigation = useNavigation()
   const { data: remixContest } = useRemixContest(trackId)
+  const { count: submissionCount } = useRemixesLineup({
+    trackId,
+    isContestEntry: true
+  })
   const winners = remixContest?.eventData?.winners ?? []
 
   // If there are no winners, show the empty state
@@ -48,7 +52,7 @@ export const RemixContestWinnersTab = ({
             navigation.push('TrackRemixes', { trackId })
           }}
         >
-          {messages.viewAll}
+          {`${messages.viewAll}${submissionCount ? ` (${submissionCount})` : ''}`}
         </PlainButton>
       </Flex>
     </Flex>
