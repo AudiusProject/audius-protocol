@@ -18,7 +18,6 @@ import {
   QueueSource,
   useFinalizeWinnersConfirmationModal
 } from '@audius/common/store'
-import { pluralize } from '@audius/common/utils'
 import {
   Button,
   FilterButton,
@@ -244,10 +243,7 @@ export const PickWinnersPage = () => {
   )
 
   const submissionHeading = useCallback((count: number | undefined) => {
-    return `${count !== undefined ? count : '...'} ${pluralize(
-      messages.submissions,
-      count ?? 0
-    )}`
+    return `${messages.remixesTitle}${count !== undefined ? ` (${count})` : ''}`
   }, [])
 
   const TileButton = useCallback(
@@ -473,7 +469,9 @@ export const PickWinnersPage = () => {
                 justifyContent='center'
                 alignItems='center'
               >
-                <Text variant='body'>{messages.winnerPlaceholder}</Text>
+                <Text variant='body' textAlign='center' css={{ maxWidth: 400 }}>
+                  {messages.winnerPlaceholder}
+                </Text>
               </Paper>
             )}
           </Flex>

@@ -37,7 +37,7 @@ export const RemixContestDetailsTab = ({ trackId, scrollRef }: Props) => {
 
   return (
     <Flex column gap='s' p='xl' pb='2xl' borderTop='default'>
-      <Flex row gap='s'>
+      <Flex row gap='s' wrap='wrap'>
         <Text variant='title' color='accent'>
           {isContestEnded ? messages.ended : messages.due}
         </Text>

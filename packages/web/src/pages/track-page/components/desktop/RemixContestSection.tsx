@@ -128,6 +128,7 @@ export const RemixContestSection = ({
               <RemixContestWinnersTab
                 trackId={trackId}
                 winnerIds={remixContest?.eventData?.winners ?? []}
+                count={remixCount}
               />
             </TabBody>
           ]
@@ -136,6 +137,7 @@ export const RemixContestSection = ({
               <RemixContestSubmissionsTab
                 trackId={trackId}
                 submissions={remixes.slice(0, 10)}
+                count={remixCount}
               />
             </TabBody>
           ])
