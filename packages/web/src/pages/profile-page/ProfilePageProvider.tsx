@@ -1,10 +1,10 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
-import { useCurrentTrack } from '@audius/common/hooks'
 import {
   selectAccountHasTracks,
   useCurrentAccountUser
 } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
