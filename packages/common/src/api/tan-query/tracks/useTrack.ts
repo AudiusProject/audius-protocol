@@ -13,6 +13,7 @@ import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 export const getTrackQueryKey = (trackId: ID | null | undefined) => {
   return [QUERY_KEYS.track, trackId] as unknown as QueryKey<TQTrack>
@@ -60,6 +61,7 @@ export const useTrack = <TResult = TQTrack>(
       return await batchGetTracks.fetch(trackId!)
     },
     ...options,
+    ...entityCacheOptions,
     select,
     enabled: options?.enabled !== false && validTrackId
   })

@@ -1,4 +1,4 @@
-import { call, select } from 'typed-redux-saga'
+import { all, call, select } from 'typed-redux-saga'
 
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
@@ -17,6 +17,7 @@ import {
   getUserByHandleQueryFn,
   getUserByHandleQueryKey
 } from '../users/useUserByHandle'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { isValidId } from '../utils/isValidId'
 
 export function* queryUser(id: ID | null | undefined) {
@@ -44,7 +45,8 @@ export function* queryUserByHandle(handle: string | null | undefined) {
   const userId = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserByHandleQueryKey(handle),
     queryFn: async () =>
-      getUserByHandleQueryFn(handle, sdk, queryClient, dispatch, currentUserId)
+      getUserByHandleQueryFn(handle, sdk, queryClient, dispatch, currentUserId),
+    ...entityCacheOptions
   })) as ID | undefined
   if (!userId) return undefined
   const userMetadata = yield* call(queryUser, userId)
@@ -53,13 +55,14 @@ export function* queryUserByHandle(handle: string | null | undefined) {
 
 export function* queryUsers(ids: ID[]) {
   const users = {} as Record<ID, User>
-  for (const id of ids) {
-    // Call each queryUser individually. They will be batched together in the queryFn (if necessary)
-    const user = yield* call(queryUser, id)
+  const userResults = yield* all(ids.map((id) => call(queryUser, id)))
+
+  userResults.forEach((user, index) => {
     if (user) {
-      users[id] = user
+      users[ids[index]] = user
     }
-  }
+  })
+
   return users
 }
 

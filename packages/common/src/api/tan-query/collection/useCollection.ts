@@ -11,6 +11,7 @@ import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
   return [
@@ -61,6 +62,7 @@ export const useCollection = <TResult = TQCollection>(
     },
     ...options,
     select,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && !!collectionId
   })
 }
