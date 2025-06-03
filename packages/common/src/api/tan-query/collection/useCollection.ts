@@ -21,7 +21,7 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
 
 export const getCollectionQueryFn = async (
   collectionId: ID,
-  currentUserId: number | null,
+  currentUserId: number | null | undefined,
   queryClient: QueryClient,
   sdk: any,
   dispatch: any

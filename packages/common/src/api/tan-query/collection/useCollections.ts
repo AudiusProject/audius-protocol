@@ -16,9 +16,9 @@ import { useQueries } from '../utils/useQueries'
 
 import { getCollectionQueryKey, getCollectionQueryFn } from './useCollection'
 
-export const useCollections = <TResult>(
+export const useCollections = (
   collectionIds: ID[] | null | undefined,
-  options?: QueryOptions & { select?: (data: TQCollection) => TResult }
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()

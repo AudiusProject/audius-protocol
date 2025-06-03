@@ -1,4 +1,4 @@
-import { queryWalletAddresses } from '@audius/common/api'
+import { queryAccountUser, queryWalletAddresses } from '@audius/common/api'
 import { Name, ErrorLevel, BNWei } from '@audius/common/models'
 import {
   IntKeys,
@@ -1072,11 +1072,12 @@ function* recoverPurchaseIfNecessary() {
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const solanaWalletService = yield* getContext('solanaWalletService')
     const identityService = yield* getContext('identityService')
+    const currentUser = yield* call(queryAccountUser)
     yield* call(
       waitForValue,
       queryWalletAddresses,
       {},
-      (arg: ReturnType<typeof queryWalletAddresses>) => arg.currentUser !== null
+      (arg: ReturnType<typeof queryWalletAddresses>) => currentUser !== null
     )
 
     if (

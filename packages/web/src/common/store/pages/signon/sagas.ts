@@ -1,4 +1,5 @@
 import {
+  getAccountStatusQueryKey,
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
   queryAccountUser,
@@ -17,7 +18,8 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata
+  AccountUserMetadata,
+  Status
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -454,6 +456,7 @@ function* createGuestAccount(
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const queryClient = yield* getContext('queryClient')
 
   const sdk = yield* getSDK()
 
@@ -477,6 +480,7 @@ function* createGuestAccount(
         yield* call([localStorage, 'clearAudiusAccountUser'])
         yield* call([authService, authService.signOut])
         yield put(accountActions.resetAccount())
+        queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
         yield put(accountActions.setGuestEmail({ guestEmail }))
 
         const currentUser = yield* call(queryAccountUser)

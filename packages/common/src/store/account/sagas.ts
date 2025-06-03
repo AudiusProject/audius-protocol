@@ -19,7 +19,13 @@ import {
   queryCurrentUserId
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
-import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
+import {
+  AccountUserMetadata,
+  ErrorLevel,
+  Kind,
+  Status,
+  UserMetadata
+} from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
@@ -49,9 +55,7 @@ import {
   renameAccountPlaylist,
   fetchSavedPlaylistsSucceeded,
   incrementTrackSaveCount,
-  decrementTrackSaveCount,
-  fetchAccountNoInternet,
-  setReachable
+  decrementTrackSaveCount
 } from './slice'
 import { AccountState } from './types'
 
@@ -182,6 +186,7 @@ export function* fetchAccountAsync({
 
   // Don't revert successful local account fetch
   if (shouldMarkAccountAsLoading) {
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.LOADING)
     yield* put(fetchAccountRequested())
   }
 
@@ -208,6 +213,7 @@ export function* fetchAccountAsync({
   }
   if (!wallet || !web3WalletAddress) {
     yield* put(resetAccount())
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -223,6 +229,7 @@ export function* fetchAccountAsync({
 
   if (!accountData) {
     yield* put(resetAccount())
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -233,6 +240,7 @@ export function* fetchAccountAsync({
   const user = accountData.user
   if (user.is_deactivated) {
     yield* put(resetAccount())
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_DEACTIVATED'
@@ -273,6 +281,7 @@ export function* fetchAccountAsync({
     guestEmail
   }
   yield* put(fetchAccountSucceeded(formattedAccount))
+  queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
 
   // Fetch user's chat blockee and blocker list after fetching their account
   yield* put(fetchBlockees())
@@ -310,7 +319,9 @@ function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
   const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
 
+  queryClient.setQueryData(getAccountStatusQueryKey(), Status.LOADING)
   yield* put(fetchAccountRequested())
 
   const cachedAccount = yield* call([
@@ -359,6 +370,7 @@ function* fetchLocalAccountAsync() {
       ])
     )
 
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
     yield* put(fetchAccountSucceeded(cachedAccount))
   }
 }
@@ -691,32 +703,6 @@ function* syncAccountToQueryClient() {
   )
 }
 
-function* syncAccountStatusToQueryClient() {
-  const queryClient = yield* getContext('queryClient')
-
-  // Listen to all account slice actions that could modify status
-  yield* takeEvery(
-    [
-      fetchAccountRequested.type,
-      fetchAccountSucceeded.type,
-      fetchAccountFailed.type,
-      fetchAccountNoInternet.type,
-      setReachable.type,
-      resetAccount.type
-    ],
-    function* () {
-      const state: AccountState = yield* select((state) => state.account)
-
-      // Update the query client with just the status
-      yield* call(
-        [queryClient, queryClient.setQueryData],
-        getAccountStatusQueryKey(),
-        state.status
-      )
-    }
-  )
-}
-
 export default function sagas() {
   return [
     watchFetchAccount,
@@ -730,7 +716,6 @@ export default function sagas() {
     watchTwitterLogin,
     watchUploadTrack,
     watchUpdatePlaylistLibrary,
-    syncAccountToQueryClient,
-    syncAccountStatusToQueryClient
+    syncAccountToQueryClient
   ]
 }

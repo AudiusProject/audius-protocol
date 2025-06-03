@@ -33,8 +33,6 @@ import {
 } from '../Notification'
 import { ReactionList } from '../Reaction'
 
-const { getNotificationUser } = notificationsSelectors
-
 const messages = {
   title: 'You Received a Tip!',
   // NOTE: Send tip -> Send $AUDIO change

@@ -1,4 +1,5 @@
-import { Name } from '@audius/common/models'
+import { getAccountStatusQueryKey } from '@audius/common/api'
+import { Name, Status } from '@audius/common/models'
 import { TRENDING_PAGE } from '@audius/common/src/utils/route'
 import {
   accountActions,
@@ -20,6 +21,7 @@ const wagmiConfig = wagmiAdapter.wagmiConfig
 function* watchSignOut() {
   const localStorage = yield* getContext('localStorage')
   const authService = yield* getContext('authService')
+  const queryClient = yield* getContext('queryClient')
   yield takeLatest(
     signOutAction.type,
     function* (action: ReturnType<typeof signOutAction>) {
@@ -27,6 +29,7 @@ function* watchSignOut() {
         yield call(disconnect, wagmiConfig)
       }
       yield put(resetAccount())
+      queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
       yield put(unsubscribeBrowserPushNotifications())
       yield put(
         make(Name.SETTINGS_LOG_OUT, {

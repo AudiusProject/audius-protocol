@@ -41,7 +41,7 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
 
 export const getCollectionByPermalinkQueryFn = async (
   permalink: string,
-  currentUserId: number | null,
+  currentUserId: number | null | undefined,
   queryClient: QueryClient,
   sdk: any,
   dispatch: Dispatch<AnyAction>
