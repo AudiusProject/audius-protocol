@@ -82,6 +82,7 @@ const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
       ) : null}
       <Animated.FlatList
         {...other}
+        // horizontal
         scrollToOverflowEnabled
         refreshControl={
           Platform.OS === 'ios' ? undefined : (

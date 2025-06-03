@@ -32,13 +32,14 @@ const DefaultLoadingCard = () => null
 
 const useStyles = makeStyles(({ spacing }) => ({
   cardList: {
-    paddingRight: 0
+    paddingRight: 0,
+    flexGrow: 0
   },
   columnWrapper: {
     paddingLeft: spacing(3)
   },
   card: {
-    width: '50%',
+    width: spacing(30),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
   }
@@ -91,11 +92,12 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   return (
     <FlatListComponent
       style={styles.cardList}
-      columnWrapperStyle={styles.columnWrapper}
       ref={ref}
       data={data}
       renderItem={handleRenderItem}
-      numColumns={2}
+      // numColumns={2}
+      // columnWrapperStyle={styles.columnWrapper}
+      horizontal
       {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
     />
   )

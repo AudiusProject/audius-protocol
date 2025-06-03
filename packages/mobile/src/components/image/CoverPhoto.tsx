@@ -105,7 +105,7 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   }))
 
   if (!source) return null
-
+  console.log('asdf covver photo soruce: ', source, imageProps)
   return (
     <Animated.View style={animatedStyle}>
       <FastImage source={source} {...imageProps}>
