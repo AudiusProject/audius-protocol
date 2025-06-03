@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { useUSDCBalance } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
@@ -26,9 +27,7 @@ const messages = {
   haveCarefully:
     'I have reviewed the information and understand that transfers are final.',
   back: 'Back',
-  withdraw: 'Withdraw',
-  cashTransferDescription:
-    'Transfer your cash balance to your bank account or debit card. $5 minimum.'
+  withdraw: 'Withdraw'
 }
 
 export const ConfirmTransferDetails = () => {
@@ -76,7 +75,7 @@ export const ConfirmTransferDetails = () => {
       </Flex>
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
-          {messages.cashTransferDescription}
+          {walletMessages.cashTransferDescription}
         </Text>
       ) : (
         <>

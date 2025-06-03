@@ -11,6 +11,8 @@ export const walletMessages = {
   builtInWallet: 'Built-In Wallet',
   payoutWallet: 'Payout Wallet',
   transactionHistory: 'Transaction History',
+  cashTransferDescription:
+    'Transfer your cash balance to your bank account or debit card. $5 minimum.',
 
   // YourCoins messages
   yourCoins: 'Your Coins',

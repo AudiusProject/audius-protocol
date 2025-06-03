@@ -11,11 +11,6 @@ import {
 import BN from 'bn.js'
 
 import Tooltip from 'components/tooltip/Tooltip'
-import { zIndex } from 'utils/zIndex'
-
-const messages = {
-  cashBalance: 'Cash Balance'
-}
 
 type CashBalanceSectionProps = {
   balance: BNUSDC | null
@@ -30,7 +25,7 @@ export const CashBalanceSection = ({ balance }: CashBalanceSectionProps) => {
         <Flex alignItems='center' gap='s'>
           <IconLogoCircleUSDC />
           <Text variant='heading' size='s' color='subdued'>
-            {messages.cashBalance}
+            {walletMessages.cashBalance}
           </Text>
           <Tooltip
             text={walletMessages.cashBalanceTooltip}

@@ -7,6 +7,7 @@ import {
 
 import { useUSDCBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -43,9 +44,7 @@ const messages = {
   dollars: '$',
   transferMethod: 'Transfer Method',
   bankAccount: 'Bank Account',
-  crypto: 'Crypto',
-  cashTransferDescription:
-    'Transfer your cash balance to your bank account or debit card. $5 minimum.'
+  crypto: 'Crypto'
 }
 
 const WithdrawMethodOptions = [
@@ -164,7 +163,7 @@ export const EnterTransferDetails = () => {
       ) : null}
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
-          {messages.cashTransferDescription}
+          {walletMessages.cashTransferDescription}
         </Text>
       ) : (
         <Flex column gap='l'>
