@@ -66,7 +66,7 @@ export const RemixContestDetailsTab = ({
           {remixContest?.eventData?.description ?? messages.fallbackDescription}
         </UserGeneratedText>
       </Flex>
-      {!isOwner ? (
+      {!isOwner && !isContestEnded ? (
         <>
           <Divider />
           <Flex p='l' pb='s'>

@@ -45,7 +45,7 @@ export const RemixContestCountdown = ({
   const { data: remixContest } = useRemixContest(trackId)
   const timeLeft = useRemixCountdown(remixContest?.endDate)
 
-  if (!remixContest || !timeLeft || !isRemixContestEnabled) return null
+  if (!remixContest || !isRemixContestEnabled) return null
 
   return (
     <Paper row pv='m' ph='l' borderRadius='l' backgroundColor='white'>
@@ -58,27 +58,27 @@ export const RemixContestCountdown = ({
         style={{ opacity: 0.8 }}
       >
         <TimeUnit
-          value={timeLeft.days.value}
+          value={timeLeft?.days.value ?? 0}
           label={messages.days}
-          isSubdued={timeLeft.days.isSubdued}
+          isSubdued={timeLeft?.days.isSubdued ?? true}
         />
         <Divider orientation='vertical' />
         <TimeUnit
-          value={timeLeft.hours.value}
+          value={timeLeft?.hours.value ?? 0}
           label={messages.hours}
-          isSubdued={timeLeft.hours.isSubdued}
+          isSubdued={timeLeft?.hours.isSubdued ?? true}
         />
         <Divider orientation='vertical' />
         <TimeUnit
-          value={timeLeft.minutes.value}
+          value={timeLeft?.minutes.value ?? 0}
           label={messages.minutes}
-          isSubdued={timeLeft.minutes.isSubdued}
+          isSubdued={timeLeft?.minutes.isSubdued ?? true}
         />
         <Divider orientation='vertical' />
         <TimeUnit
-          value={timeLeft.seconds.value}
+          value={timeLeft?.seconds.value ?? 0}
           label={messages.seconds}
-          isSubdued={timeLeft.seconds.isSubdued}
+          isSubdued={timeLeft?.seconds.isSubdued ?? true}
         />
       </Flex>
     </Paper>
