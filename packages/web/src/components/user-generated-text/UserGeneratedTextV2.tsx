@@ -230,6 +230,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
     mentions,
     internalLinksOnly,
     suffix,
+    maxLines,
     ...other
   } = props
 
@@ -394,6 +395,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
         }
       }}
       ref={ref as ForwardedRef<'p'>}
+      maxLines={maxLines}
       {...other}
     >
       {parseText(children)}
