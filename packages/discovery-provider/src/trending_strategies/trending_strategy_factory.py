@@ -4,9 +4,6 @@ from src.trending_strategies.pnagD_trending_playlists_strategy import (
 from src.trending_strategies.pnagD_trending_tracks_strategy import (
     TrendingTracksStrategypnagD,
 )
-from src.trending_strategies.pnagD_underground_trending_tracks_strategy import (
-    UndergroundTrendingTracksStrategypnagD,
-)
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
@@ -26,7 +23,7 @@ class TrendingStrategyFactory:
                 TrendingVersion.pnagD: TrendingTracksStrategypnagD(),
             },
             TrendingType.UNDERGROUND_TRACKS: {
-                TrendingVersion.pnagD: UndergroundTrendingTracksStrategypnagD(),
+                TrendingVersion.pnagD: TrendingTracksStrategypnagD(),
             },
             TrendingType.PLAYLISTS: {
                 TrendingVersion.pnagD: TrendingPlaylistsStrategypnagD(),

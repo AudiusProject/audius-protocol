@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
 
-from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
+from src.api.v1.helpers import extend_track, format_limit, format_offset
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_trending_score import PlaylistTrendingScore
 from src.models.social.repost import RepostType
@@ -21,11 +21,8 @@ from src.queries.query_helpers import (
     populate_playlist_metadata,
     populate_track_metadata,
 )
-from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
-from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
 
 
 class jsonb_array_length(GenericFunction):  # pylint: disable=too-many-ancestors
@@ -43,99 +40,80 @@ logger = logging.getLogger(__name__)
 # How many playlists to include
 TRENDING_LIMIT = 30
 
-# Cache duration. Faster than trending tracks because
-# playlists refresh faster; we can afford to cache this more frequently.
-TRENDING_TTL_SEC = 30 * 60
-
 # Max tracks to include in a playlist.
 PLAYLIST_TRACKS_LIMIT = 5
 
 
 def make_get_unpopulated_playlists(session, time_range, limit, offset, strategy):
-    """Gets scorable data, scores and sorts, then returns full unpopulated playlists.
-    Returns a function, because this is used in a Redis cache hook"""
+    """Gets scorable data, scores and sorts, then returns full unpopulated playlists."""
 
-    def wrapped():
-        trending_scores_query = session.query(
-            PlaylistTrendingScore.playlist_id, PlaylistTrendingScore.score
-        ).filter(
-            PlaylistTrendingScore.type == strategy.trending_type.name,
-            PlaylistTrendingScore.version == strategy.version.name,
-            PlaylistTrendingScore.time_range == time_range,
-        )
-
-        trending_playlist_ids_subquery = trending_scores_query.subquery()
-
-        trending_playlist_ids = (
-            session.query(
-                trending_playlist_ids_subquery.c.playlist_id,
-                trending_playlist_ids_subquery.c.score,
-                Playlist.playlist_id,
-            )
-            .join(
-                trending_playlist_ids_subquery,
-                Playlist.playlist_id == trending_playlist_ids_subquery.c.playlist_id,
-            )
-            .filter(
-                Playlist.is_current == True,
-                Playlist.is_delete == False,
-                Playlist.is_private == False,
-                Playlist.is_album == False,
-            )
-            .order_by(
-                desc(trending_playlist_ids_subquery.c.score),
-                desc(trending_playlist_ids_subquery.c.playlist_id),
-            )
-            .limit(limit)
-            .offset(offset)
-            .all()
-        )
-
-        playlist_ids = [playlist_id[0] for playlist_id in trending_playlist_ids]
-        # Get the unpopulated playlist metadata
-        playlists = get_unpopulated_playlists(session, playlist_ids)
-
-        playlist_tracks_map = get_playlist_tracks(session, {"playlists": playlists})
-
-        for playlist in playlists:
-            playlist["tracks"] = playlist_tracks_map.get(playlist["playlist_id"], [])
-
-        playlists = [p for p in playlists if p["tracks"]]
-
-        results = []
-        for playlist in playlists:
-            playlist_owner_id = playlist["playlist_owner_id"]
-            unique_track_owner_ids = set()
-            valid_track_count = 0
-
-            for track in playlist["tracks"]:
-                is_delete = track["is_delete"]
-                if not is_delete:
-                    valid_track_count += 1
-
-                owner_id = track["owner_id"]
-                if playlist_owner_id != owner_id:
-                    unique_track_owner_ids.add(owner_id)
-
-            if len(unique_track_owner_ids) < 3 or valid_track_count < 3:
-                continue
-
-            results.append(playlist)
-
-        return (results, list(map(lambda playlist: playlist["playlist_id"], results)))
-
-    return wrapped
-
-
-def make_trending_playlists_cache_key(
-    time_range, version=DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS]
-):
-    version_name = (
-        f":{version.name}"
-        if version != DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS]
-        else ""
+    trending_scores_query = session.query(
+        PlaylistTrendingScore.playlist_id, PlaylistTrendingScore.score
+    ).filter(
+        PlaylistTrendingScore.type == strategy.trending_type.name,
+        PlaylistTrendingScore.version == strategy.version.name,
+        PlaylistTrendingScore.time_range == time_range,
     )
-    return f"generated-trending-playlists{version_name}:{time_range}"
+
+    trending_playlist_ids_subquery = trending_scores_query.subquery()
+
+    trending_playlist_ids = (
+        session.query(
+            trending_playlist_ids_subquery.c.playlist_id,
+            trending_playlist_ids_subquery.c.score,
+            Playlist.playlist_id,
+        )
+        .join(
+            trending_playlist_ids_subquery,
+            Playlist.playlist_id == trending_playlist_ids_subquery.c.playlist_id,
+        )
+        .filter(
+            Playlist.is_current == True,
+            Playlist.is_delete == False,
+            Playlist.is_private == False,
+            Playlist.is_album == False,
+        )
+        .order_by(
+            desc(trending_playlist_ids_subquery.c.score),
+            desc(trending_playlist_ids_subquery.c.playlist_id),
+        )
+        .limit(limit)
+        .offset(offset)
+        .all()
+    )
+
+    playlist_ids = [playlist_id[0] for playlist_id in trending_playlist_ids]
+    # Get the unpopulated playlist metadata
+    playlists = get_unpopulated_playlists(session, playlist_ids)
+
+    playlist_tracks_map = get_playlist_tracks(session, {"playlists": playlists})
+
+    for playlist in playlists:
+        playlist["tracks"] = playlist_tracks_map.get(playlist["playlist_id"], [])
+
+    playlists = [p for p in playlists if p["tracks"]]
+
+    results = []
+    for playlist in playlists:
+        playlist_owner_id = playlist["playlist_owner_id"]
+        unique_track_owner_ids = set()
+        valid_track_count = 0
+
+        for track in playlist["tracks"]:
+            is_delete = track["is_delete"]
+            if not is_delete:
+                valid_track_count += 1
+
+            owner_id = track["owner_id"]
+            if playlist_owner_id != owner_id:
+                unique_track_owner_ids.add(owner_id)
+
+        if len(unique_track_owner_ids) < 3 or valid_track_count < 3:
+            continue
+
+        results.append(playlist)
+
+    return (results, list(map(lambda playlist: playlist["playlist_id"], results)))
 
 
 class GetTrendingPlaylistsArgs(TypedDict, total=False):
@@ -149,19 +127,15 @@ class GetTrendingPlaylistsArgs(TypedDict, total=False):
 def _get_trending_playlists_with_session(
     session: Session, args: GetTrendingPlaylistsArgs, strategy, use_request_context=True
 ):
-    """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
+    """Returns Trending Playlists."""
     current_user_id = args.get("current_user_id", None)
     with_tracks = args.get("with_tracks", False)
     time = args.get("time")
     limit, offset = args.get("limit"), args.get("offset")
-    key = make_trending_playlists_cache_key(time, strategy.version)
 
     # Get unpopulated playlists,
-    # cached if it exists.
-    (playlists, playlist_ids) = use_redis_cache(
-        key,
-        None,
-        make_get_unpopulated_playlists(session, time, limit, offset, strategy),
+    (playlists, playlist_ids) = make_get_unpopulated_playlists(
+        session, time, limit, offset, strategy
     )
 
     # Apply limit + offset early to reduce the amount of
@@ -238,7 +212,7 @@ def _get_trending_playlists_with_session(
 
 
 def get_trending_playlists(args: GetTrendingPlaylistsArgs, strategy):
-    """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
+    """Returns Trending Playlists."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
         return _get_trending_playlists_with_session(session, args, strategy)
@@ -249,28 +223,10 @@ def get_full_trending_playlists(request, args, strategy):
     current_user_id, time = args.get("user_id"), args.get("time", "week")
     time = "week" if time not in ["week", "month", "year"] else time
 
-    # If we have a user_id, we call into `get_trending_playlist`
-    # which fetches the cached unpopulated tracks and then
-    # populates metadata. Otherwise, just
-    # retrieve the last cached value.
-    #
-    # If current_user_id,
-    # apply limit + offset inside the cached calculation.
-    # Otherwise, apply it here.
+    args = {"time": time, "with_tracks": True, "limit": limit, "offset": offset}
     if current_user_id:
-        args = {"time": time, "with_tracks": True, "limit": limit, "offset": offset}
         decoded = decode_string_id(current_user_id)
         args["current_user_id"] = decoded
-        playlists = get_trending_playlists(args, strategy)
-    else:
-        args = {
-            "time": time,
-            "with_tracks": True,
-        }
-        key = get_trending_cache_key(to_dict(request.args), request.path)
-        playlists = use_redis_cache(
-            key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args, strategy)
-        )
-        playlists = playlists[offset : limit + offset]
+    playlists = get_trending_playlists(args, strategy)
 
     return playlists
