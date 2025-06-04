@@ -106,13 +106,11 @@ export const useNavConfig = () => {
       }
     ]
 
-    if (env.ENVIRONMENT === 'staging' || isFeatureFlagAccessEnabled) {
-      items.push({
-        icon: IconEmbed,
-        label: messages.featureFlags,
-        to: 'FeatureFlagOverride' as const
-      })
-    }
+    items.push({
+      icon: IconEmbed,
+      label: messages.featureFlags,
+      to: 'FeatureFlagOverride' as const
+    })
 
     return items
   }, [

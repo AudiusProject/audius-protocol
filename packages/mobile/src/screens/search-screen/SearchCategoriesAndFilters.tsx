@@ -7,12 +7,7 @@ import type {
 import { useFocusEffect } from '@react-navigation/native'
 import { ScrollView } from 'react-native'
 
-import {
-  Flex,
-  IconCloseAlt,
-  SelectablePill,
-  useTheme
-} from '@audius/harmony-native'
+import { Flex, IconCloseAlt, SelectablePill } from '@audius/harmony-native'
 
 import { BpmFilter } from './BpmFilter'
 import {

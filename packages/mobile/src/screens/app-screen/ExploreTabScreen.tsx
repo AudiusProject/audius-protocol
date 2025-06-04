@@ -1,5 +1,5 @@
-import { useFeatureFlag } from '@audius/common/hooks/useFeatureFlag'
-import { FeatureFlags } from '@audius/common/services/remote-config/feature-flags'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 
 import { ExploreScreen } from 'app/screens/explore-screen'
 import {
@@ -77,7 +77,7 @@ export const ExploreTabScreen =
     const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
       FeatureFlags.SEARCH_EXPLORE_MOBILE
     )
-    console.log('asdf search explore enabled', isSearchExploreEnabled)
+
     if (isSearchExploreEnabled) {
       return (
         <>

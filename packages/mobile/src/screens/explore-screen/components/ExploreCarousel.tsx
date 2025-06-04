@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { Flex, Text } from '@audius/harmony-native'
-import { CollectionList } from 'app/components/collection-list'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({

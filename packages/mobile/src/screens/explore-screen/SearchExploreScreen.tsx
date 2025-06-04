@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { useCollections, useExploreContent, useUsers } from '@audius/common/api'
+import { useExploreContent, useUsers } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { MOODS } from 'pages/search-page/moods'
