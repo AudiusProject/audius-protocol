@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import type { BuySellTab, Screen } from '@audius/common/store'
 import {
   useBuySellScreen,
   useBuySellSwap,
   useBuySellTabs,
   useBuySellTransactionData,
-  SUPPORTED_TOKEN_PAIRS
+  SUPPORTED_TOKEN_PAIRS,
+  useAddCashModal
 } from '@audius/common/store'
 
-import { Button, Flex, Text } from '@audius/harmony-native'
+import { Button, Flex, Hint, TextLink } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
+import { make, track } from 'app/services/analytics'
 
 import { BuyScreen, SellScreen } from './components'
 
@@ -23,6 +26,8 @@ type BuySellFlowProps = {
   initialTab?: 'buy' | 'sell'
 }
 
+const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
+
 export const BuySellFlow = ({
   onClose,
   onNavigateToConfirm,
@@ -30,6 +35,8 @@ export const BuySellFlow = ({
   onLoadingStateChange,
   initialTab = 'buy'
 }: BuySellFlowProps) => {
+  const { onOpen: openAddCashModal } = useAddCashModal()
+
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
   })
@@ -124,6 +131,15 @@ export const BuySellFlow = ({
     isTransactionInvalid
   ])
 
+  const handleAddCash = useCallback(() => {
+    openAddCashModal()
+    track(
+      make({
+        eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
+      })
+    )
+  }, [openAddCashModal])
+
   const shouldShowError =
     !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
 
@@ -133,7 +149,7 @@ export const BuySellFlow = ({
   }
 
   return (
-    <Flex direction='column' gap='l' p='l'>
+    <Flex direction='column' gap='xl' p='l'>
       {/* Tab Control */}
       <Flex alignItems='center' justifyContent='center'>
         <SegmentedControl
@@ -167,11 +183,25 @@ export const BuySellFlow = ({
 
       {/* Insufficient Balance Message for Buy */}
       {activeTab === 'buy' && !hasSufficientBalance && (
-        <Flex p='m' backgroundColor='surface2' borderRadius='m'>
-          <Text variant='body' size='s' color='subdued'>
-            {messages.insufficientUSDC}
-          </Text>
-        </Flex>
+        <Hint
+          actions={
+            <TextLink variant='visible' onPress={handleAddCash}>
+              {messages.addCash}
+            </TextLink>
+          }
+        >
+          {messages.insufficientUSDC}
+        </Hint>
+      )}
+
+      {/* Help Center Hint */}
+      {hasSufficientBalance && (
+        <Hint>
+          {messages.helpCenter}{' '}
+          <TextLink showUnderline variant='visible' url={WALLET_GUIDE_URL}>
+            {messages.walletGuide}
+          </TextLink>
+        </Hint>
       )}
 
       {/* Continue Button */}

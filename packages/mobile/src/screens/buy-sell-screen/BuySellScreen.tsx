@@ -65,36 +65,36 @@ export const BuySellScreen = ({ route }: BuySellScreenProps) => {
     return messages.title
   }, [isFlowLoading, modalScreen])
 
-  const showFooter = modalScreen !== 'success' && !isFlowLoading
+  const shouldShowPoweredBy = modalScreen !== 'success' && !isFlowLoading
 
   return (
-    <MobileScreen title={title} variant='secondary' url='/buy-sell'>
+    <MobileScreen title={title} variant='white' url='/buy-sell'>
       <ScreenContent>
-        <BuySellFlow
-          onClose={handleClose}
-          onNavigateToConfirm={handleNavigateToConfirm}
-          onScreenChange={handleScreenChange}
-          onLoadingStateChange={handleLoadingStateChange}
-          initialTab={params?.initialTab}
-        />
-
-        {/* Footer with Jupiter branding */}
-        {showFooter && (
+        {shouldShowPoweredBy && (
           <Flex
             direction='row'
             alignItems='center'
             justifyContent='center'
-            gap='s'
+            gap='l'
             p='l'
-            borderTop='default'
+            border='default'
             backgroundColor='surface1'
           >
-            <Text variant='label' size='xs' color='subdued'>
+            <Text variant='label' size='s' color='subdued'>
               {messages.poweredBy}
             </Text>
-            <IconJupiterLogo size='xs' />
+            <IconJupiterLogo />
           </Flex>
         )}
+        <Flex mt='xl'>
+          <BuySellFlow
+            onClose={handleClose}
+            onNavigateToConfirm={handleNavigateToConfirm}
+            onScreenChange={handleScreenChange}
+            onLoadingStateChange={handleLoadingStateChange}
+            initialTab={params?.initialTab}
+          />
+        </Flex>
       </ScreenContent>
     </MobileScreen>
   )

@@ -1,17 +1,16 @@
 import React, { useMemo } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
-import { useTokenAmountFormatting } from '@audius/common/store'
 import type { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
+import { useTokenAmountFormatting } from '@audius/common/store'
 
 import {
   Button,
   Flex,
+  IconLogoCircleUSDC,
+  IconTokenAUDIO,
   Text,
   TextInput,
-  Paper,
-  IconTokenAUDIO,
-  IconLogoCircleUSDC,
   useTheme
 } from '@audius/harmony-native'
 
@@ -77,11 +76,11 @@ const StackedBalanceSection = ({
         <Text variant='heading' size='s' color='subdued'>
           {messages.tokenTicker(symbol, !!isStablecoin)}
         </Text>
-        <Text variant='body' size='s' color='default'>
+        <Text variant='title' size='s' color='default'>
           {messages.stackedBalance(formattedAvailableBalance)}
         </Text>
       </Flex>
-      <TokenIcon size='xl' style={{ borderRadius: cornerRadius.circle }} />
+      <TokenIcon size='4xl' style={{ borderRadius: cornerRadius.circle }} />
     </Flex>
   )
 }
@@ -151,8 +150,8 @@ export const TokenAmountSection = ({
   isTokenPriceLoading,
   tokenPriceDecimalPlaces = 2
 }: TokenAmountSectionProps) => {
+  const { spacing } = useTheme()
   const { symbol, isStablecoin } = tokenInfo
-
   const { formattedAvailableBalance, formattedAmount } =
     useTokenAmountFormatting({
       amount,
@@ -166,18 +165,6 @@ export const TokenAmountSection = ({
     tokenPrice && !isTokenPriceLoading
       ? messages.tokenPrice(tokenPrice, tokenPriceDecimalPlaces)
       : undefined
-
-  const handleMaxClick = () => {
-    if (onMaxClick) {
-      onMaxClick()
-    }
-  }
-
-  const handleAmountChange = (value: string) => {
-    if (onAmountChange) {
-      onAmountChange(value)
-    }
-  }
 
   const titleText = useMemo(() => {
     const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
@@ -202,7 +189,7 @@ export const TokenAmountSection = ({
 
   const youPaySection = useMemo(() => {
     return (
-      <Flex direction='column' gap='s'>
+      <Flex direction='column' gap='l'>
         <Flex
           direction='row'
           justifyContent='space-between'
@@ -237,14 +224,18 @@ export const TokenAmountSection = ({
               label={messages.amountInputLabel(symbol)}
               placeholder={placeholder}
               value={amount?.toString() || ''}
-              onChangeText={handleAmountChange}
+              onChangeText={onAmountChange}
               keyboardType='numeric'
               error={error}
             />
           </Flex>
 
           {onMaxClick && (
-            <Button variant='secondary' size='small' onPress={handleMaxClick}>
+            <Button
+              variant='secondary'
+              onPress={onMaxClick}
+              style={{ height: spacing.unit16 }}
+            >
               {messages.max}
             </Button>
           )}
@@ -266,10 +257,10 @@ export const TokenAmountSection = ({
     symbol,
     placeholder,
     amount,
-    handleAmountChange,
+    onAmountChange,
     error,
     onMaxClick,
-    handleMaxClick,
+    spacing.unit16,
     errorMessage
   ])
 
@@ -297,20 +288,18 @@ export const TokenAmountSection = ({
   }, [formattedAmount, isStablecoin, priceDisplay, tokenInfo])
 
   return (
-    <Paper p='l'>
-      <Flex direction='column' gap='m'>
-        {isInput ? (
-          youPaySection
-        ) : (
-          <Flex direction='column' gap='s'>
-            <Flex direction='row' alignItems='center' gap='xs'>
-              {titleText}
-            </Flex>
-
-            {youReceiveSection}
+    <Flex direction='column' gap='m'>
+      {isInput ? (
+        youPaySection
+      ) : (
+        <Flex direction='column' gap='s'>
+          <Flex direction='row' alignItems='center' gap='xs'>
+            {titleText}
           </Flex>
-        )}
-      </Flex>
-    </Paper>
+
+          {youReceiveSection}
+        </Flex>
+      )}
+    </Flex>
   )
 }

@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 
 import type { TokenInfo } from '@audius/common/store'
 
-import { Flex, Skeleton } from '@audius/harmony-native'
+import { Divider, Flex, Skeleton } from '@audius/harmony-native'
 
 import { TokenAmountSection } from '../../../components/buy-sell'
 
@@ -103,7 +103,7 @@ export const SwapTab = ({
     (isExchangeRateLoading && !hasRateEverBeenFetched.current)
 
   return (
-    <Flex direction='column'>
+    <Flex direction='column' gap='l'>
       {isInitialLoading ? (
         <SwapFormSkeleton />
       ) : (
@@ -121,7 +121,7 @@ export const SwapTab = ({
             error={error}
             errorMessage={errorMessage}
           />
-
+          <Divider flex={1} />
           <TokenAmountSection
             title={messages.youReceive}
             tokenInfo={outputToken}
