@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 
-import type { ID } from '@audius/common/models'
+import { useUser, useTrack } from '@audius/common/api'
+import { type ID } from '@audius/common/models'
 
 import { Button, Flex, IconCloudUpload } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -20,18 +21,30 @@ type UploadRemixFooterProps = {
  */
 export const UploadRemixFooter = ({ trackId }: UploadRemixFooterProps) => {
   const navigation = useNavigation()
+  const { data: originalTrack } = useTrack(trackId)
+  const { data: originalUser } = useUser(originalTrack?.owner_id)
 
-  const handlePressSubmitRemix = useCallback(() => {
+  const handlePressSubmitRemix = useCallback(async () => {
     if (!trackId) return
-    navigation.push('Upload', {
+
+    const state = {
       initialMetadata: {
-        is_remix: true,
+        genre: originalTrack?.genre ?? '',
         remix_of: {
-          tracks: [{ parent_track_id: trackId }]
+          tracks: [
+            {
+              parent_track_id: trackId,
+              user: originalUser,
+              has_remix_author_reposted: false,
+              has_remix_author_saved: false
+            }
+          ]
         }
       }
-    })
-  }, [navigation, trackId])
+    }
+
+    navigation.push('Upload', state)
+  }, [navigation, originalTrack?.genre, originalUser, trackId])
 
   return (
     <Flex

@@ -1,10 +1,16 @@
 import { useState, useCallback } from 'react'
 
-import { useRemixContest, useRemixesLineup, useTrack } from '@audius/common/api'
+import {
+  useRemixContest,
+  useRemixesLineup,
+  useTrack,
+  useUser
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { ID, Name } from '@audius/common/models'
+import { ID, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
+import { TrackMetadataForUpload } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
   Box,
@@ -58,6 +64,7 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: originalTrack } = useTrack(trackId)
+  const { data: originalUser } = useUser(originalTrack?.owner_id)
   const { data: remixContest } = useRemixContest(trackId)
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
@@ -159,19 +166,44 @@ export const RemixContestSection = ({
     }
   }, [remixContest?.eventId, trackId])
 
-  const goToUploadWithRemix = useRequiresAccountCallback(() => {
+  const goToUploadWithRemix = useRequiresAccountCallback(async () => {
     if (!trackId) return
 
-    const state = {
+    let file: File | undefined
+    const imageUrl =
+      originalTrack?.artwork?.[SquareSizes.SIZE_1000_BY_1000] ?? ''
+
+    if (imageUrl) {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      file = new File([blob], 'image.jpg', { type: blob.type })
+    }
+
+    const state: { initialMetadata: Partial<TrackMetadataForUpload> } = {
       initialMetadata: {
-        is_remix: true,
+        ...(file
+          ? {
+              artwork: {
+                url: imageUrl,
+                file
+              }
+            }
+          : {}),
+        genre: originalTrack?.genre ?? '',
         remix_of: {
-          tracks: [{ parent_track_id: trackId }]
+          tracks: [
+            {
+              parent_track_id: trackId,
+              user: originalUser,
+              has_remix_author_reposted: false,
+              has_remix_author_saved: false
+            }
+          ]
         }
       }
     }
     navigate(UPLOAD_PAGE, state)
-  }, [trackId, navigate])
+  }, [trackId, navigate, originalTrack, originalUser])
   if (!trackId || !remixContest) return null
 
   const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight
