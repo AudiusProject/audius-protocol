@@ -22,7 +22,6 @@ import {
   Name,
   StemTrack,
   StemUploadWithFile,
-  Track,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -66,7 +65,8 @@ import {
   select,
   takeLatest,
   take,
-  delay
+  delay,
+  retry
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -1062,21 +1062,21 @@ export function* uploadMultipleTracks(
     kind: 'tracks'
   })
 
-  // Get true track metadatas back
-  // Allow for retries in case the tracks are not immediately available
-  let retries = 20
-  let newTracks: Track[] = []
-  while (retries > 0) {
-    newTracks = yield* call(queryTracks, trackIds)
-    if (newTracks.length > 0) {
-      break
+  // Get true track metadatas back with retry logic
+  const newTracks = yield* retry(
+    20, // max attempts
+    2000, // delay between attempts in ms
+    function* () {
+      const tracks = yield* call(queryTracks, trackIds, {
+        force: true,
+        staleTime: 0
+      })
+      if (tracks.length === 0) {
+        throw new Error('No tracks found after uploading.')
+      }
+      return tracks
     }
-    yield* delay(2000)
-    retries--
-  }
-  if (newTracks.length === 0) {
-    throw new Error('No tracks found after uploading.')
-  }
+  )
 
   // Make sure track count changes for this user
   const account = yield* select(getAccountUser)
