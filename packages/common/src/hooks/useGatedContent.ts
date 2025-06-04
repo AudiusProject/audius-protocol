@@ -2,7 +2,12 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useCurrentAccount, useHasAccount, useTrack } from '~/api'
+import {
+  useCollection,
+  useCurrentAccount,
+  useHasAccount,
+  useTrack
+} from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -15,7 +20,7 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
-import { cacheCollectionsSelectors, cacheUsersSelectors } from '~/store/cache'
+import { cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
 import {

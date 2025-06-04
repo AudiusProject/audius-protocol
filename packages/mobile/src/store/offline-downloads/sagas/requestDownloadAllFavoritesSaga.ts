@@ -1,11 +1,9 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
 import {
-  queryCollection,
   queryCollections,
   queryCurrentAccount,
   queryCurrentUserId
 } from '@audius/common/api'
-import type { CommonState } from '@audius/common/store'
 import { savedPageSelectors, getSDK } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
