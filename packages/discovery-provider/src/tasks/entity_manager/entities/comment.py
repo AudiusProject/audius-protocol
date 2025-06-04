@@ -514,6 +514,17 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
     user_id = params.user_id
+
+    # Check if comment exists and is not deleted
+    if comment_id not in params.existing_records[EntityType.COMMENT.value]:
+        raise IndexingValidationError(
+            f"Cannot react to comment {comment_id} that does not exist"
+        )
+
+    comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    if comment.is_delete:
+        raise IndexingValidationError(f"Cannot react to deleted comment {comment_id}")
+
     if (
         params.action == Action.REACT
         and (user_id, comment_id)
