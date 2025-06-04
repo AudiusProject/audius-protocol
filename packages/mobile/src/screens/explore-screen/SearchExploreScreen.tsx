@@ -12,7 +12,8 @@ import {
   Paper,
   Text,
   TextInput,
-  TextInputSize
+  TextInputSize,
+  useTheme
 } from '@audius/harmony-native'
 import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
 import { CollectionList } from 'app/components/collection-list'
@@ -44,19 +45,8 @@ const tiles = [
   REMIXABLES
 ]
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  emoji: {
-    height: 20,
-    width: 20
-  },
-  tile: {
-    flex: 1,
-    flexBasis: '100%'
-  }
-}))
-
 export const SearchExploreScreen = () => {
-  const styles = useStyles()
+  const { spacing } = useTheme()
 
   const { drawerHelpers } = useContext(AppDrawerContext)
 
@@ -112,24 +102,38 @@ export const SearchExploreScreen = () => {
 
         <ScrollView>
           <Flex direction='column' ph='l' pt='xl' pb='3xl' gap='2xl'>
-            <ExploreCarousel
-              title={messages.featuredPlaylists}
-              list={
-                <CollectionList
-                  collectionIds={exploreContent?.featuredPlaylists || []}
-                />
-              }
-            />
+            <Flex gap='l'>
+              <Text variant='title' size='l'>
+                {messages.featuredPlaylists}
+              </Text>
+              <CollectionList
+                horizontal
+                collectionIds={exploreContent?.featuredPlaylists || []}
+                carouselSpacing={spacing.l}
+              />
+            </Flex>
 
-            <ExploreCarousel
-              title={messages.artistSpotlight}
-              list={<UserList profiles={featuredArtists} />}
-            />
+            <Flex gap='l'>
+              <Text variant='title' size='l'>
+                {messages.artistSpotlight}
+              </Text>
+              <UserList
+                horizontal
+                profiles={featuredArtists}
+                carouselSpacing={spacing.l}
+              />
+            </Flex>
 
-            <ExploreCarousel
-              title={messages.labelSpotlight}
-              list={<UserList profiles={featuredLabels} />}
-            />
+            <Flex gap='l'>
+              <Text variant='title' size='l'>
+                {messages.labelSpotlight}
+              </Text>
+              <UserList
+                horizontal
+                profiles={featuredLabels}
+                carouselSpacing={spacing.l}
+              />
+            </Flex>
 
             <Flex justifyContent='center' gap='l'>
               <Text variant='title' size='l' textAlign='center'>
@@ -151,7 +155,7 @@ export const SearchExploreScreen = () => {
                     >
                       <Image
                         source={moodMap[moodInfo.label]}
-                        style={styles.emoji}
+                        style={{ height: spacing.unit5, width: spacing.unit5 }}
                       />
 
                       <Text variant='title' size='s'>
@@ -167,8 +171,12 @@ export const SearchExploreScreen = () => {
                 {messages.bestOfAudius}
               </Text>
               <Flex gap='s'>
-                {filteredTiles.map((tile, idx) => (
-                  <ColorTile style={[styles.tile]} key={tile.title} {...tile} />
+                {filteredTiles.map((tile) => (
+                  <ColorTile
+                    style={{ flex: 1, flexBasis: '100%' }}
+                    key={tile.title}
+                    {...tile}
+                  />
                 ))}
               </Flex>
             </Flex>
