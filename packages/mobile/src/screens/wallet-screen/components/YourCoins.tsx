@@ -3,7 +3,6 @@ import React, { useCallback } from 'react'
 import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { useBuySellModal } from '@audius/common/store'
 
 import {
   Button,
@@ -18,11 +17,11 @@ import {
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const TokensHeader = () => {
-  const { onOpen: openBuySellModal } = useBuySellModal()
+  const navigation = useNavigation()
 
   const handleBuySellClick = useCallback(() => {
-    openBuySellModal()
-  }, [openBuySellModal])
+    navigation.navigate('BuySellScreen', { initialTab: 'buy' })
+  }, [navigation])
 
   return (
     <Flex
