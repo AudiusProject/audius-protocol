@@ -28,9 +28,6 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const accountCollection = useSelector((state) => {
     return state.account.collections[playlistId]
   })
-  const { name, permalink, user } = accountCollection
-
-  const isOwnedByCurrentUser = user.id === currentUserId
 
   const hasPlaylistUpdate = useSelector(
     (state) => !!selectPlaylistUpdateById(state, playlistId)
@@ -41,6 +38,13 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
       dispatch(updatedPlaylistViewed({ playlistId }))
     }
   }, [hasPlaylistUpdate, dispatch, playlistId])
+
+  if (!accountCollection) {
+    return null
+  }
+
+  const { name, permalink, user } = accountCollection
+  const isOwnedByCurrentUser = user.id === currentUserId
 
   return (
     <CollectionNavItem
