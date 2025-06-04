@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
 import {
@@ -67,10 +67,13 @@ export const SaleModalContent = ({
 }: SaleModalContentProps) => {
   const dispatch = useDispatch()
   const isManagedAccount = useIsManagedAccount()
-
+  const { data: currentUserId } = useCurrentUserId()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { canCreateChat } = useSelector((state: CommonState) =>
-    getCanCreateChat(state, { userId: purchaseDetails.buyerUserId })
+    getCanCreateChat(state, {
+      userId: purchaseDetails.buyerUserId,
+      currentUserId
+    })
   )
   const { data: partialUser } = useUser(purchaseDetails.buyerUserId, {
     select: (user) => ({

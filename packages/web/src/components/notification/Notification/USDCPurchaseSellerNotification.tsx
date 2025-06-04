@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useNotificationEntity, useUsers } from '@audius/common/api'
 import { StringUSDC } from '@audius/common/models'
 import {
-  notificationsSelectors,
   Entity,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType,
@@ -18,7 +17,6 @@ import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -28,8 +26,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { UserNameLink } from './components/UserNameLink'
 import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
@@ -55,10 +51,8 @@ export const USDCPurchaseSellerNotification = (
   const content = useNotificationEntity(notification) as Nullable<
     TrackEntity | CollectionEntity
   >
-  const notificationUsers = useSelector((state) =>
-    getNotificationUsers(state, notification, 1)
-  )
-  const buyerUser = notificationUsers ? notificationUsers[0] : null
+  const { data: users } = useUsers(notification.userIds.slice(0, 1))
+  const buyerUser = users?.[0]
   const { amount, extraAmount } = notification
 
   const handleClick = useCallback(() => {

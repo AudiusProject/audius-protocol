@@ -1,12 +1,10 @@
 import { useCallback, useMemo, useRef } from 'react'
 
-import { useUserCollectibles } from '@audius/common/api'
+import { useCurrentUserId, useUserCollectibles } from '@audius/common/api'
 import type { Collectible } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconShare, Button } from '@audius/harmony-native'
 import { Tile, GradientText, FlatList } from 'app/components/core'
@@ -19,7 +17,6 @@ import { getCollectiblesRoute } from 'app/utils/routes'
 
 import { CollectiblesCard } from '../CollectiblesCard'
 import { useSelectProfile } from '../selectors'
-const getUserId = accountSelectors.getUserId
 
 const messages = {
   title: 'Collectibles',
@@ -83,7 +80,7 @@ export const CollectiblesTab = () => {
       'collectibleList',
       'solanaCollectibleList'
     ])
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
   const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
     useUserCollectibles({
       userId: user_id

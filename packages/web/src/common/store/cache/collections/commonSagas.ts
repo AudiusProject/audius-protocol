@@ -5,8 +5,10 @@ import {
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
+  queryAccountUser,
   queryCollection,
   queryCollectionTracks,
+  queryCurrentUserId,
   queryTrack,
   queryUser,
   updateCollectionData
@@ -21,7 +23,6 @@ import {
 } from '@audius/common/models'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions as collectionActions,
   PlaylistOperations,
   savedPageActions,
@@ -39,7 +40,7 @@ import {
   updatePlaylistArtwork
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { all, call, put, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
@@ -59,7 +60,6 @@ import { createPlaylistSaga } from './createPlaylistSaga'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 
 const { manualClearToast, toast } = toastActions
-const { getAccountUser, getUserId } = accountSelectors
 
 const messages = {
   editToast: 'Changes saved!',
@@ -417,7 +417,7 @@ function* publishPlaylistAsync(
   action: ReturnType<typeof collectionActions.publishPlaylist>
 ) {
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -532,7 +532,7 @@ function* deletePlaylistAsync(
   action: ReturnType<typeof collectionActions.deletePlaylist>
 ) {
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -571,7 +571,7 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* () {
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete collection')
         }
@@ -648,7 +648,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete collection')
         }
@@ -684,7 +684,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete playlist ${playlistId}`)
         const playlist = yield* queryCollection(playlistId)
-        const user = yield* select(getAccountUser)
+        const user = yield* call(queryAccountUser)
         if (!playlist || !user) return
 
         yield* all([

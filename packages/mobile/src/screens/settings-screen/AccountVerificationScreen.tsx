@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
@@ -36,7 +36,6 @@ import {
 } from 'app/store/oauth/selectors'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Verification',
@@ -96,7 +95,15 @@ export const AccountVerificationScreen = () => {
   const [error, setError] = useState('')
   const [status, setStatus] = useState<Status>(Status.IDLE)
   const [didValidateHandle, setDidValidateHandle] = useState(false)
-  const accountUser = useSelector(getAccountUser)
+  const { data: accountUser } = useCurrentAccountUser({
+    select: (user) => ({
+      user_id: user?.user_id,
+      name: user?.name,
+      handle: user?.handle,
+      is_verified: user?.is_verified
+    })
+  })
+  const { name: accountName, handle: accountHandle } = accountUser ?? {}
   const navigation = useNavigation()
   const twitterInfo = useSelector(getTwitterInfo)
   const twitterError = useSelector(getTwitterError)
@@ -114,9 +121,6 @@ export const AccountVerificationScreen = () => {
   const isTikTokEnabled = useRemoteVar(BooleanKeys.DISPLAY_TIKTOK_VERIFICATION)
 
   const handleField: EditableField = useSelector(getHandleField)
-
-  const accountName = accountUser?.name
-  const accountHandle = accountUser?.handle
 
   const onVerifyButtonPress = useCallback(() => {
     setStatus(Status.LOADING)

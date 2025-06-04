@@ -1,7 +1,8 @@
 import { getAccount } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { call, delay, select } from 'typed-redux-saga'
+import { call, delay } from 'typed-redux-saga'
 
+import { queryAccountUser } from '~/api'
 import { IntKeys } from '~/services/remote-config'
 import {
   MAX_CONTENT_PRICE_CENTS,
@@ -10,7 +11,6 @@ import {
   MIN_USDC_PURCHASE_AMOUNT_CENTS
 } from '~/services/remote-config/defaults'
 
-import { getAccountUser } from '../account/selectors'
 import { getContext } from '../effects'
 import { getSDK } from '../sdkUtils'
 
@@ -26,7 +26,7 @@ export function* getOrCreateUSDCUserBank(ethAddress?: string) {
   const sdk = yield* call(audiusSdk)
   let ethWallet = ethAddress
   if (!ethWallet) {
-    const user = yield* select(getAccountUser)
+    const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
       throw new Error('Failed to create USDC user bank: No user wallet found.')
     }

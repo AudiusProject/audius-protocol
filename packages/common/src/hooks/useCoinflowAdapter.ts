@@ -6,8 +6,9 @@ import {
   Transaction,
   VersionedTransaction
 } from '@solana/web3.js'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
+import { useWalletAddresses } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
@@ -18,7 +19,6 @@ import {
   PurchaseErrorCode,
   purchaseContentActions
 } from '~/store'
-import { getWalletAddresses } from '~/store/account/selectors'
 
 type CoinflowAdapter = {
   wallet: {
@@ -40,7 +40,8 @@ export const useCoinflowWithdrawalAdapter = () => {
     analytics: { make, track }
   } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-  const { currentUser } = useSelector(getWalletAddresses)
+  const { data: walletAddresses } = useWalletAddresses()
+  const { currentUser } = walletAddresses ?? {}
   const { audiusSdk, solanaWalletService } = useQueryContext()
 
   useEffect(() => {

@@ -1,8 +1,8 @@
 import React, { useCallback, useRef } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { Name, ShareSource } from '@audius/common/models'
 import {
-  accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
@@ -43,7 +43,6 @@ const { getShareContent, getShareSource } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
-const { getUserId } = accountSelectors
 
 export const shareToastTimeout = 1500
 
@@ -79,7 +78,7 @@ export const ShareDrawer = () => {
   const dispatch = useDispatch()
   const content = useSelector(getShareContent)
   const source = useSelector(getShareSource)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const { toast } = useToast()
   const isOwner =
     content?.type === 'track' && accountUserId === content.artist.user_id

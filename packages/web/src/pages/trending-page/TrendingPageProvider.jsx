@@ -1,9 +1,9 @@
 import { PureComponent } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import { Name, TimeRange } from '@audius/common/models'
 import {
-  accountSelectors,
   lineupSelectors,
   trendingPageLineupActions,
   trendingPageActions,
@@ -41,7 +41,6 @@ const {
   trendingWeekActions
 } = trendingPageLineupActions
 const { makeGetLineupMetadatas } = lineupSelectors
-const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   trendingTitle: 'Trending',
@@ -234,7 +233,6 @@ const makeMapStateToProps = () => {
   )
 
   const mapStateToProps = (state) => ({
-    hasAccount: getHasAccount(state),
     trendingWeek: getTrendingWeekLineup(state),
     trendingMonth: getTrendingMonthLineup(state),
     trendingAllTime: getTrendingAllTimeLineup(state),
@@ -312,10 +310,12 @@ const mapDispatchToProps = (dispatch) => ({
 const TrendingPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
   const currentTrack = useCurrentTrack()
+  const hasAccount = useHasAccount()
   return (
     <TrendingPageProvider
       isMobile={isMobile}
       currentTrack={currentTrack}
+      hasAccount={hasAccount}
       {...props}
     />
   )

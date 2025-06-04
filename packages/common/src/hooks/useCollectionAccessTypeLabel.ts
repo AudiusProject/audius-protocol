@@ -1,11 +1,7 @@
-import { useSelector } from 'react-redux'
-
-import { useCollection } from '~/api'
+import { useCollection, useCurrentUserId } from '~/api'
 import { AccessType } from '~/models/AccessType'
 import { ID } from '~/models/Identifiers'
 import { isContentUSDCPurchaseGated } from '~/models/Track'
-import { CommonState } from '~/store'
-import { getUserId } from '~/store/account/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedCollectionAccess } from './useGatedContent'
@@ -37,9 +33,9 @@ export const useCollectionAccessTypeLabel = (
   const isScheduledRelease = releaseDate && new Date(releaseDate) > new Date()
   const isPrivate = collection?.isPrivate
 
-  const isOwner = useSelector((state: CommonState) => {
-    return collection?.playlistOwnerId === getUserId(state)
-  })
+  const { data: accountUserId } = useCurrentUserId()
+
+  const isOwner = collection?.playlistOwnerId === accountUserId
 
   const isUnlockedStream = Boolean(!isOwner && hasStreamAccess)
 

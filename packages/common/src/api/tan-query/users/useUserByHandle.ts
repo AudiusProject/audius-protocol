@@ -17,7 +17,10 @@ import { useCurrentUserId } from './account/useCurrentUserId'
 import { useUser } from './useUser'
 
 export const getUserByHandleQueryKey = (handle: string | null | undefined) => {
-  return [QUERY_KEYS.userByHandle, handle] as unknown as QueryKey<ID>
+  return [
+    QUERY_KEYS.userByHandle,
+    handle?.replace('/', '')?.toLowerCase()
+  ] as unknown as QueryKey<ID>
 }
 
 export const getUserByHandleQueryFn = async (

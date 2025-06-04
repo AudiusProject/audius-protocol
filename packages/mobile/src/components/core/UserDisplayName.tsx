@@ -1,6 +1,6 @@
 import { useUser } from '@audius/common/api'
-import { useSelectTierInfo } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 
 import type { TextProps } from '@audius/harmony-native'
 import {
@@ -19,7 +19,7 @@ type UserDisplayProps = TextProps & {
 
 export const UserDisplayName = (props: UserDisplayProps) => {
   const { userId, variant = 'title', size = 's', style, ...other } = props
-  const { tier, isVerified } = useSelectTierInfo(userId)
+  const { tier, isVerified } = useTierAndVerifiedForUser(userId)
   const { data: userName } = useUser(userId, {
     select: (user) => user?.name
   })

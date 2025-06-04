@@ -3,7 +3,9 @@ import {
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
+  queryAccountUser,
   queryCollection,
+  queryCurrentUserId,
   queryTrack,
   queryUser,
   updateCollectionData
@@ -19,7 +21,6 @@ import {
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions,
   savedPageActions,
   LibraryCategory,
@@ -30,7 +31,7 @@ import {
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
@@ -40,7 +41,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { addLocalCollection } = savedPageActions
 
 const { requestConfirmation } = confirmerActions
-const { getUserId, getAccountUser } = accountSelectors
 const { collectionPage } = route
 
 export function* createPlaylistSaga() {
@@ -108,7 +108,7 @@ function* optimisticallySavePlaylist(
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
-  const accountUser = yield* select(getAccountUser)
+  const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
   const { user_id, handle } = accountUser
   const playlist: Partial<Collection> & { playlist_id: ID } = {
@@ -189,7 +189,7 @@ function* createAndConfirmPlaylist(
   yield* put(event)
 
   function* confirmPlaylist() {
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     if (!userId) {
       throw new Error('No userId set, cannot repost collection')
     }

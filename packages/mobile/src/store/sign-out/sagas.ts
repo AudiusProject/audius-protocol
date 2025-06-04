@@ -1,4 +1,5 @@
-import { Name } from '@audius/common/models'
+import { getAccountStatusQueryKey } from '@audius/common/api'
+import { Name, Status } from '@audius/common/models'
 import {
   accountActions,
   tokenDashboardPageActions,
@@ -35,11 +36,13 @@ const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY, SEARCH_HISTORY_KEY]
 function* signOut() {
   yield* put(make(Name.SETTINGS_LOG_OUT, {}))
   const authService = yield* getContext('authService')
+  const queryClient = yield* getContext('queryClient')
 
   // Wait for in-flight set up to resolve
   yield* call(waitForValue, getIsSettingUp, {}, (isSettingUp) => !isSettingUp)
 
   yield* put(resetAccount())
+  queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
   yield* put(feedPageLineupActions.reset())
 
   yield* put(clearHistory())

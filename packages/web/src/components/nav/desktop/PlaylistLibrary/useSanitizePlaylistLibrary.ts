@@ -1,15 +1,16 @@
 import { useEffect } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { PlaylistLibraryFolder } from '@audius/common/models'
-import { accountSelectors, playlistLibraryActions } from '@audius/common/store'
+import { playlistLibraryActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'utils/reducer'
-const { getPlaylistLibrary } = accountSelectors
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 
 export const useSanitizePlaylistLibrary = () => {
-  const library = useSelector(getPlaylistLibrary)
+  const { data: library } = useCurrentAccount({
+    select: (account) => account?.playlistLibrary
+  })
   const dispatch = useDispatch()
 
   useEffect(() => {

@@ -1,14 +1,14 @@
 import { AudiusSdk } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { AccountUserMetadata, UserMetadata } from '~/models'
-import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
+
+import { useWalletAddresses } from './useWalletAddresses'
 
 export const getWalletAccountQueryKey = (wallet: string | null | undefined) =>
   [
@@ -67,7 +67,8 @@ export const useGetCurrentUser = <TResult = UserMetadata | undefined>(
     TResult
   >
 ) => {
-  const { currentUser } = useSelector(getWalletAddresses)
+  const { data: walletAddresses } = useWalletAddresses()
+  const { currentUser } = walletAddresses ?? {}
 
   return useWalletAccount<TResult>(currentUser, {
     select: (data: AccountUserMetadata | null | undefined): TResult =>
@@ -84,7 +85,8 @@ export const useGetCurrentWeb3User = <TResult = UserMetadata | undefined>(
     TResult
   >
 ) => {
-  const { web3User } = useSelector(getWalletAddresses)
+  const { data: walletAddresses } = useWalletAddresses()
+  const { web3User } = walletAddresses ?? {}
 
   return useWalletAccount<TResult>(web3User, {
     select: (data: AccountUserMetadata | null | undefined): TResult =>

@@ -94,6 +94,12 @@ const slice = createSlice({
       _action: PayloadAction<{ userId: ID; trackId?: Nullable<ID> }>
     ) => {
       // triggers saga
+    },
+    revokeFollowGatedAccess: (
+      _state,
+      _action: PayloadAction<{ userId: ID; trackId?: Nullable<ID> }>
+    ) => {
+      // triggers saga
     }
   }
 })
@@ -109,7 +115,8 @@ export const {
   fetchRecentTips,
   setTipToDisplay,
   setShowTip,
-  refreshTipGatedTracks
+  refreshTipGatedTracks,
+  revokeFollowGatedAccess
 } = slice.actions
 
 export const actions = slice.actions

@@ -1,9 +1,8 @@
 import { useRef, type ReactNode } from 'react'
 import { useEffect } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser, useHasAccount } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { OptionalHashId } from '@audius/sdk'
 import type {
   LinkingOptions,
@@ -17,7 +16,7 @@ import {
 } from '@react-navigation/native'
 import type { reactNavigationIntegration } from '@sentry/react-native'
 import queryString from 'query-string'
-import { useSelector } from 'react-redux'
+import { useAccountStatus } from '~/api/tan-query/users/account/useAccountStatus'
 
 import { AppTabNavigationProvider } from 'app/screens/app-screen'
 import { screen } from 'app/services/analytics'
@@ -25,8 +24,6 @@ import { getPrimaryRoute } from 'app/utils/navigation'
 import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
-
-const { getHasAccount, getAccountStatus } = accountSelectors
 
 type NavigationContainerProps = {
   children: ReactNode
@@ -88,8 +85,8 @@ const NavigationContainer = (props: NavigationContainerProps) => {
   const { data: accountHandle } = useCurrentAccountUser({
     select: (user) => user?.handle
   })
-  const hasAccount = useSelector(getHasAccount)
-  const accountStatus = useSelector(getAccountStatus)
+  const hasAccount = useHasAccount()
+  const { data: accountStatus } = useAccountStatus()
   const hasCompletedInitialLoad = useRef(false)
 
   const routeNameRef = useRef<string>()

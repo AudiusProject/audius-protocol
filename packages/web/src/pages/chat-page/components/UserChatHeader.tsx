@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
 import { chatSelectors } from '@audius/common/store'
@@ -43,8 +44,9 @@ export const UserChatHeader = ({ chatId }: { chatId?: string }) => {
   const [isReportAbuse, setIsReportAbuse] = useState(false)
   const [isDeleteChatModalVisible, setIsDeleteChatModalVisible] =
     useState(false)
+  const { data: currentUserId } = useCurrentUserId()
   const users = useProxySelector(
-    (state) => getOtherChatUsers(state, chatId),
+    (state) => getOtherChatUsers(state, currentUserId, chatId),
     [chatId]
   )
   const user: User | null = users[0] ?? null

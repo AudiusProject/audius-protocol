@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
+import { useCollection, useCurrentUserId, useUser } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +11,6 @@ import {
 } from '@audius/common/models'
 import type { Collection, Track, User } from '@audius/common/models'
 import {
-  accountSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -44,7 +43,6 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
   const {
@@ -100,7 +98,7 @@ const CollectionTileComponent = ({
 }: CollectionTileProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const currentTrack = useSelector((state: CommonState) => {
     const uid = getUid(state)
     return tracks.find((track) => track.uid === uid) ?? null

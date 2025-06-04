@@ -1,12 +1,11 @@
 import { useCallback, useContext } from 'react'
 
-import { useUSDCBalance } from '@audius/common/api'
+import { useWalletAddresses, useUSDCBalance } from '@audius/common/api'
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   purchaseContentSelectors,
-  isContentPurchaseInProgress,
-  accountSelectors
+  isContentPurchaseInProgress
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -33,7 +32,6 @@ import { copyToClipboard } from 'utils/clipboardUtil'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getWalletAddresses } = accountSelectors
 
 const USDCLearnMore = 'https://support.audius.co/product/usdc'
 const DIMENSIONS = 160
@@ -60,7 +58,8 @@ export const USDCManualTransfer = ({
 }) => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
-  const { currentUser: wallet } = useSelector(getWalletAddresses)
+  const { data: walletAddresses } = useWalletAddresses()
+  const { currentUser: wallet } = walletAddresses ?? {}
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance({
     isPolling: true

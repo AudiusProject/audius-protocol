@@ -1,12 +1,11 @@
 import { ChangeEvent, useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { AccessConditions } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Hint, IconInfo, Radio, RadioGroup, Text } from '@audius/harmony'
 import cn from 'classnames'
 import { useField } from 'formik'
-import { useSelector } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
@@ -20,8 +19,6 @@ import {
 } from '../types'
 
 import styles from './SpecialAccessFields.module.css'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   followersOnly: 'Available to Followers Only',
@@ -39,7 +36,7 @@ const SPECIAL_ACCESS_TYPE = 'special_access_type'
 
 export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const [specialAccessTypeField] = useField({
     name: SPECIAL_ACCESS_TYPE
   })

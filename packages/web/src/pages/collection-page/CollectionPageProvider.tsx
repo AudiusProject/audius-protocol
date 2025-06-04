@@ -1,6 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
-import { useCollectionByParams } from '@audius/common/api'
+import { useCurrentAccount, useCollectionByParams } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -19,10 +19,10 @@ import {
   UID,
   isContentUSDCPurchaseGated,
   ModalSource,
-  Track
+  Track,
+  AccountCollection
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   lineupSelectors,
   collectionPageLineupActions as tracksActions,
@@ -112,8 +112,6 @@ const {
   deletePlaylist
 } = cacheCollectionsActions
 
-const { getUserId } = accountSelectors
-
 type OwnProps = {
   type: CollectionsPageType
   isMobile: boolean
@@ -128,7 +126,10 @@ type OwnProps = {
 type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    userId?: number | null | undefined
+    userPlaylists?: AccountCollection[] | undefined
+  }
 
 type CollectionClassProps = CollectionPageProps & {
   collection: Collection
@@ -158,6 +159,15 @@ const CollectionPage = (props: CollectionPageProps) => {
   const params = parseCollectionRoute(pathname)
   // For now read-only
   const { data: collection } = useCollectionByParams(params, { enabled: false })
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => ({
+      userId: account?.userId,
+      userPlaylists: Object.values(account?.collections ?? {})?.filter(
+        (c) => !c.is_album
+      )
+    })
+  })
+  const { userId, userPlaylists } = accountData ?? {}
   const trackCount = collection?.playlist_contents.track_ids.length ?? 0
   const playlistId = collection?.playlist_id
   const currentTrack = useCurrentTrack()
@@ -173,6 +183,8 @@ const CollectionPage = (props: CollectionPageProps) => {
       tracks={tracks}
       trackCount={trackCount}
       currentTrack={currentTrack}
+      userId={userId}
+      userPlaylists={userPlaylists}
     />
   )
 }
@@ -865,7 +877,6 @@ function makeMapStateToProps() {
       userUid: getUserUid(state) || '',
       status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),
-      userId: getUserId(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,

@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useEffectOnce } from 'react-use'
 
+import { useHasAccount } from '~/api'
 import { useAppContext } from '~/context/appContext'
 import { Maybe } from '~/utils/typeUtils'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 
-import { useHasAccount, useHasConfigLoaded } from './helpers'
+import { useHasConfigLoaded } from './helpers'
 
 export const FEATURE_FLAG_OVERRIDE_KEY = 'FeatureFlagOverride'
 
@@ -22,7 +23,6 @@ export type OverrideSetting = 'enabled' | 'disabled' | null
  * - User ID is set on Optimizely (seen by event emission)
  **/
 export const useRecomputeToggle = (
-  useHasAccount: () => boolean,
   configLoaded: boolean,
   remoteConfigInstance: RemoteConfigInstance
 ) => {
@@ -60,13 +60,11 @@ export const createUseFeatureFlagHook =
     remoteConfigInstance,
     getLocalStorageItem,
     setLocalStorageItem,
-    useHasAccount,
     useHasConfigLoaded
   }: {
     remoteConfigInstance: RemoteConfigInstance
     getLocalStorageItem?: (key: string) => Promise<string | null>
     setLocalStorageItem?: (key: string, value: string | null) => Promise<void>
-    useHasAccount: () => boolean
     useHasConfigLoaded: () => boolean
   }) =>
   (flag: FeatureFlags, fallbackFlag?: FeatureFlags) => {
@@ -74,7 +72,6 @@ export const createUseFeatureFlagHook =
     const configLoaded = useHasConfigLoaded()
 
     const shouldRecompute = useRecomputeToggle(
-      useHasAccount,
       configLoaded,
       remoteConfigInstance
     )
@@ -125,11 +122,7 @@ export const useFeatureFlag = (
   const configLoaded = useHasConfigLoaded()
   const { localStorage, remoteConfig } = useAppContext()
 
-  const shouldRecompute = useRecomputeToggle(
-    useHasAccount,
-    configLoaded,
-    remoteConfig
-  )
+  const shouldRecompute = useRecomputeToggle(configLoaded, remoteConfig)
 
   const isEnabled = useMemo(
     () => remoteConfig.getFeatureEnabled(flag, fallbackFlag),

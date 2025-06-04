@@ -2,13 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   usePurchases as usePurchasesQuery,
-  usePurchasesCount
+  usePurchasesCount,
+  useCurrentUserId
 } from '@audius/common/api'
 import { USDCPurchaseDetails } from '@audius/common/models'
-import {
-  accountSelectors,
-  useUSDCPurchaseDetailsModal
-} from '@audius/common/store'
+import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
@@ -19,7 +17,6 @@ import { audiusSdk } from 'services/audius-sdk'
 import { handleError } from 'store/errors/actions'
 import { formatToday } from 'utils/dateUtils'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -31,7 +28,6 @@ import {
   PurchasesTableSortMethod
 } from './PurchasesTable'
 
-const { getUserId } = accountSelectors
 const { FEED_PAGE } = route
 
 const messages = {
@@ -81,7 +77,7 @@ const NoPurchases = () => {
 }
 
 export const usePurchases = () => {
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const dispatch = useDispatch()
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =

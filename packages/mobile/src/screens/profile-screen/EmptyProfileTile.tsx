@@ -1,11 +1,9 @@
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId } from '@audius/common/api'
 import type { StyleProp, ViewStyle } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { EmptyTile } from 'app/components/core'
 
 import { useSelectProfile } from './selectors'
-const getUserId = accountSelectors.getUserId
 
 const messages = {
   you: 'You',
@@ -21,7 +19,7 @@ type Tab = 'tracks' | 'albums' | 'playlists' | 'reposts'
 
 export const useEmptyProfileText = (tab: Tab) => {
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
 
   const isOwner = user_id === accountId
 

@@ -11,17 +11,14 @@ import {
 import {
   selectHasAccount,
   selectIsGuestAccount,
+  useAccountStatus,
   useCurrentAccount
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
-import {
-  accountSelectors,
-  ExploreCollectionsVariant,
-  UploadType
-} from '@audius/common/store'
+import { ExploreCollectionsVariant, UploadType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -205,8 +202,6 @@ const {
   SOLANA_TOOLS_PAGE
 } = route
 
-const { getHasAccount } = accountSelectors
-
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
@@ -243,17 +238,19 @@ const WebPlayer = (props) => {
 
   const dispatch = useDispatch()
 
-  // Convert mapStateToProps to useSelector
-  const hasAccount = useSelector(getHasAccount)
   const { data: accountData } = useCurrentAccount({
     select: (account) => ({
       hasAccount: selectHasAccount(account),
       userHandle: account?.user?.handle,
-      isGuestAccount: selectIsGuestAccount(account),
-      accountStatus: account?.status
+      isGuestAccount: selectIsGuestAccount(account)
     })
   })
-  const { userHandle, isGuestAccount, accountStatus } = accountData || {}
+  const {
+    userHandle,
+    isGuestAccount = false,
+    hasAccount = false
+  } = accountData || {}
+  const { data: accountStatus } = useAccountStatus()
   const showCookieBanner = useSelector(getShowCookieBanner)
 
   // Convert mapDispatchToProps to useCallback with useDispatch

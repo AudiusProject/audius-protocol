@@ -1,15 +1,20 @@
 import {
+  queryAccountUser,
+  queryCurrentAccount,
+  queryUser
+} from '@audius/common/api'
+import {
   PlaylistLibraryID,
   PlaylistIdentifier,
   AccountCollection
 } from '@audius/common/models'
 import {
-  accountSelectors,
+  AccountState,
   accountActions,
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
-import { fork, put, select, takeEvery } from 'typed-redux-saga'
+import { fork, put, takeEvery } from 'typed-redux-saga'
 
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -24,9 +29,6 @@ const {
   removeFromPlaylistLibrary
 } = playlistLibraryHelpers
 
-const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
-  accountSelectors
-
 function* watchUpdatePlaylistLibrary() {
   yield* takeEvery(
     update.type,
@@ -34,8 +36,8 @@ function* watchUpdatePlaylistLibrary() {
       yield* waitForWrite()
       const { playlistLibrary } = action.payload
 
-      const account = yield* select(getAccountUser)
-      if (!account) return
+      const accountUser = yield* queryAccountUser()
+      if (!accountUser) return
 
       const updatedPlaylistLibrary =
         removePlaylistLibraryDuplicates(playlistLibrary)
@@ -43,10 +45,27 @@ function* watchUpdatePlaylistLibrary() {
       yield* put(accountActions.updatePlaylistLibrary(updatedPlaylistLibrary))
 
       yield* fork(updateProfileAsync, {
-        metadata: { ...account, playlist_library: updatedPlaylistLibrary }
+        metadata: { ...accountUser, playlist_library: updatedPlaylistLibrary }
       })
     }
   )
+}
+
+/**
+ * Gets the account playlists while filtering out playlists by deactivated users
+ * @param account - The account state
+ * @returns The account playlists
+ */
+function* getAccountPlaylists(account: AccountState | null | undefined) {
+  const playlists: { [id: number]: AccountCollection } = {}
+  for (const cur of Object.keys(account?.collections ?? {})) {
+    const collection = account?.collections?.[cur as unknown as number]
+    if (collection?.is_album) continue
+    const user = yield* queryUser(collection?.user.id)
+    if (user?.is_deactivated) continue
+    playlists[cur] = collection
+  }
+  return playlists
 }
 
 /**
@@ -54,11 +73,10 @@ function* watchUpdatePlaylistLibrary() {
  * not in the user's set playlist library
  */
 export function* addPlaylistsNotInLibrary() {
-  let library = yield* select(getPlaylistLibrary)
-  if (!library) library = { contents: [] }
-  const playlists: { [id: number]: AccountCollection } = yield* select(
-    getAccountNavigationPlaylists
-  )
+  const account = yield* queryCurrentAccount()
+  const library = account?.playlistLibrary ?? { contents: [] }
+
+  const playlists = yield* getAccountPlaylists(account)
   const notInLibrary = getPlaylistsNotInLibrary(library, playlists)
   if (Object.keys(notInLibrary).length > 0) {
     const newEntries = Object.values(notInLibrary).map(
@@ -76,7 +94,8 @@ export function* addPlaylistsNotInLibrary() {
 }
 
 export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
-  const library = yield* select(getPlaylistLibrary)
+  const account = yield* queryCurrentAccount()
+  const library = account?.playlistLibrary
   if (!library) return
   const { library: updatedLibrary } = removeFromPlaylistLibrary(library, id)
   yield* put(update({ playlistLibrary: updatedLibrary }))

@@ -1,6 +1,4 @@
-import { useSelector } from 'react-redux'
-
-import { useTrack } from '~/api'
+import { useCurrentUserId, useTrack } from '~/api'
 import { AccessType } from '~/models/AccessType'
 import { ID } from '~/models/Identifiers'
 import {
@@ -8,7 +6,6 @@ import {
   isContentSpecialAccess,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { getUserId } from '~/store/account/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedTrackAccess } from './useGatedContent'
@@ -31,7 +28,7 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
     })
   })
 
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const isOwner = track?.owner_id === userId
 
   const { hasStreamAccess, hasDownloadAccess } = useGatedTrackAccess(trackId)

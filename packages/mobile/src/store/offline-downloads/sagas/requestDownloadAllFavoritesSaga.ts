@@ -1,11 +1,10 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
-import { queryCollection } from '@audius/common/api'
-import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
-  savedPageSelectors,
-  getSDK
-} from '@audius/common/store'
+  queryCollections,
+  queryCurrentAccount,
+  queryCurrentUserId
+} from '@audius/common/api'
+import { savedPageSelectors, getSDK } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import moment from 'moment'
@@ -18,8 +17,6 @@ import { EventNames } from 'app/types/analytics'
 import type { OfflineEntry } from '../slice'
 import { addOfflineEntries, requestDownloadAllFavorites } from '../slice'
 
-const { getUserId } = accountSelectors
-
 const { getLocalTrackFavorites } = savedPageSelectors
 
 export function* requestDownloadAllFavoritesSaga() {
@@ -28,7 +25,7 @@ export function* requestDownloadAllFavoritesSaga() {
 
 function* downloadAllFavorites() {
   track(make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON }))
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return
 
   const offlineItemsToAdd: OfflineEntry[] = []
@@ -86,11 +83,16 @@ function* downloadAllFavorites() {
   // AccountCollections don't include track lists, so retrieve all the collections
   // first
   yield* call(fetchAllAccountCollections)
-  const favoritedCollections = yield* select((state: CommonState) =>
-    Object.values(state.account.collections)
+  const account = yield* queryCurrentAccount()
+  const accountCollectionsMap = account?.collections ?? {}
+  const accountCollectionsArr = Object.values(accountCollectionsMap)
+  const favoritedAlbums = accountCollectionsArr.filter((c) => c.is_album)
+  const collectionsMap = yield* queryCollections(
+    accountCollectionsArr.map((c) => c.id)
   )
+  const collections = Object.values(collectionsMap)
 
-  for (const favoritedCollection of favoritedCollections) {
+  for (const favoritedCollection of favoritedAlbums) {
     const { id } = favoritedCollection
     const downloadReason = { is_from_favorites: true }
 
@@ -103,9 +105,7 @@ function* downloadAllFavorites() {
     })
   }
 
-  for (const favoritedCollection of favoritedCollections) {
-    const collection = yield* call(queryCollection, favoritedCollection.id)
-    if (!collection) continue
+  for (const collection of collections) {
     const {
       playlist_id,
       playlist_contents: { track_ids }

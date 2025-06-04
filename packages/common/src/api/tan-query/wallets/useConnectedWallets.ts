@@ -21,7 +21,7 @@ export type ConnectedWallet = {
 export const getConnectedWalletsQueryKey = ({
   userId
 }: {
-  userId: ID | null
+  userId: ID | null | undefined
 }) =>
   [QUERY_KEYS.connectedWallets, userId] as unknown as QueryKey<
     ConnectedWallet[]
@@ -62,7 +62,7 @@ type AddConnectedWalletParams = {
 export const useAddConnectedWallet = () => {
   const queryClient = useQueryClient()
   const { audiusSdk, reportToSentry } = useQueryContext()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId = null } = useCurrentUserId()
 
   // for priming cache
   const dispatch = useDispatch()

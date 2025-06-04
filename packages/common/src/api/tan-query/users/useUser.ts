@@ -2,18 +2,19 @@ import { useMemo } from 'react'
 
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { AnyAction, Dispatch } from 'redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
-import { getUserId } from '~/store/account/selectors'
 
 import { getUsersBatcher } from '../batchers/getUsersBatcher'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { entityCacheOptions } from '../utils/entityCacheOptions'
+
+import { useCurrentUserId } from './account/useCurrentUserId'
 
 export const getUserQueryKey = (userId: ID | null | undefined) => {
   return [QUERY_KEYS.user, userId] as unknown as QueryKey<User>
@@ -50,7 +51,7 @@ export const useUser = <TResult = User>(
   const { audiusSdk } = useQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const validUserId = !!userId && userId > 0
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

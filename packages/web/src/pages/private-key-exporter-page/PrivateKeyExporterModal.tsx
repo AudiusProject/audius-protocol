@@ -1,8 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser, useCurrentUserId } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import {
   ModalContent,
   ModalHeader,
@@ -21,12 +20,9 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useSelector } from 'utils/reducer'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'
 import styles from './PrivateKeyExporterPage.module.css'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   privateKey: 'PRIVATE KEY',
@@ -164,7 +160,7 @@ const PrivateKeyExporterModal = () => {
   const { data: accountHandle } = useCurrentAccountUser({
     select: (user) => user?.handle
   })
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const [isVisible, setIsVisible] = useModalState('PrivateKeyExporter')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   useEffect(() => {

@@ -5,7 +5,8 @@ import {
   useRemixContest,
   useToggleFavoriteTrack,
   useTrackRank,
-  useStems
+  useStems,
+  useCurrentUserId
 } from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -28,7 +29,6 @@ import type {
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
   trackPageLineupActions,
   queueSelectors,
   reachabilitySelectors,
@@ -98,7 +98,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { tracksActions } = trackPageLineupActions
-const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getTrackPosition } = playbackPositionSelectors
 const { makeGetCurrent } = queueSelectors
@@ -171,7 +170,7 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
 
   const isReachable = useSelector(getIsReachable)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
   const isPlaybackActive = useSelector(getPlaying)

@@ -1,11 +1,9 @@
 import { useCallback } from 'react'
 
-import { getReactionFromRawValue } from '@audius/common/api'
+import { useUser, getReactionFromRawValue } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type { ReactionNotification } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { Platform, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconTipping } from '@audius/harmony-native'
 import UserBadges from 'app/components/user-badges'
@@ -24,8 +22,6 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 import { reactionMap } from '../Reaction'
-
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   reacted: 'reacted',
@@ -80,7 +76,7 @@ export const TipReactionNotification = (
   const uiAmount = useUIAudio(amount)
   const styles = useStyles()
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)

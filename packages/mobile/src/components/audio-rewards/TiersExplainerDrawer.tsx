@@ -1,6 +1,9 @@
-import { useSelectTierInfo } from '@audius/common/hooks'
 import type { BadgeTierInfo } from '@audius/common/store'
-import { profilePageSelectors, badgeTiers } from '@audius/common/store'
+import {
+  useTierAndVerifiedForUser,
+  profilePageSelectors,
+  badgeTiers
+} from '@audius/common/store'
 import { Text, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -65,7 +68,7 @@ export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
   const profileId = useSelector(getProfileUserId)
-  const { tier, tierNumber } = useSelectTierInfo(profileId!)
+  const { tier, tierNumber } = useTierAndVerifiedForUser(profileId)
 
   const { minAudio } = badgeTiers.find(
     (tierReq) => tierReq.tier === tier

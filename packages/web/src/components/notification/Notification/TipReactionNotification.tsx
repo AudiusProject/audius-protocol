@@ -1,15 +1,11 @@
 import { useCallback } from 'react'
 
-import { getReactionFromRawValue } from '@audius/common/api'
+import { getReactionFromRawValue, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import {
-  notificationsSelectors,
-  ReactionNotification
-} from '@audius/common/store'
+import { ReactionNotification } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
-import { useSelector } from 'utils/reducer'
 
 import styles from './TipReactionNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -24,7 +20,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   reacted: 'reacted',
@@ -50,7 +45,7 @@ export const TipReactionNotification = (
 
   const uiAmount = useUIAudio(amount)
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
   const handleClick = useGoToProfile(user)
 
   const handleShare = useCallback((twitterHandle: string) => {

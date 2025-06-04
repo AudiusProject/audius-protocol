@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 import { useState, useMemo, useCallback } from 'react'
 
 import {
+  useCurrentUserId,
   useMutualFollowers,
   useRelatedArtistsUsers,
   useSupportedUsers,
@@ -13,14 +14,12 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
 import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import { Platform, View, ScrollView } from 'react-native'
 import Animated, {
   FadeIn,
   LayoutAnimationConfig,
   LinearTransition
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
 
 import {
   IconUserFollowing,
@@ -48,7 +47,6 @@ import { useSelectProfile } from '../selectors'
 
 import { ProfileTierTile } from './ProfileTierTile'
 
-const { getUserId } = accountSelectors
 const MAX_CARD_PROFILE_PICTURES = 4
 const PROFILE_CARD_PICTURE_SIZE = 24
 
@@ -345,7 +343,7 @@ export const ProfileInfoTiles = () => {
     )
   }, [user_id])
 
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
 
   const hasMutuals =
     user_id !== accountId && current_user_followee_follow_count > 0

@@ -1,3 +1,4 @@
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import {
   audioRewardsPageSelectors,
   challengesSelectors,
@@ -12,6 +13,7 @@ import { Flex, IconCheck, Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
+import { AppState } from 'store/types'
 
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimButton } from './ClaimButton'
@@ -35,7 +37,11 @@ export const RemixContestWinnerChallengeModalContent = ({
   errorContent
 }: DefaultChallengeProps) => {
   const isMobile = useIsMobile()
-  const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const userChallenge = useSelector((state: AppState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )[challengeName]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const claimStatus = useSelector(getClaimStatus)

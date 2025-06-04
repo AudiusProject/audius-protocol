@@ -12,10 +12,20 @@ import {
 import {
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
+  getWalletAddressesQueryKey,
   queryAccountUser,
-  getCurrentAccountQueryKey
+  getCurrentAccountQueryKey,
+  queryCurrentAccount,
+  queryCurrentUserId
 } from '~/api'
-import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
+import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
+import {
+  AccountUserMetadata,
+  ErrorLevel,
+  Kind,
+  Status,
+  UserMetadata
+} from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
@@ -24,7 +34,6 @@ import { cacheActions } from '../cache'
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
-import { getUserId, getAccountUser, getAccount } from './selectors'
 import {
   fetchAccount,
   fetchAccountFailed,
@@ -54,7 +63,7 @@ const { fetchBlockees, fetchBlockers } = chatActions
 const IP_STORAGE_KEY = 'user-ip-timestamp'
 
 function* handleFetchTrackCount() {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   const sdk = yield* getSDK()
@@ -177,6 +186,7 @@ export function* fetchAccountAsync({
 
   // Don't revert successful local account fetch
   if (shouldMarkAccountAsLoading) {
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.LOADING)
     yield* put(fetchAccountRequested())
   }
 
@@ -203,6 +213,7 @@ export function* fetchAccountAsync({
   }
   if (!wallet || !web3WalletAddress) {
     yield* put(resetAccount())
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -218,6 +229,7 @@ export function* fetchAccountAsync({
 
   if (!accountData) {
     yield* put(resetAccount())
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -228,6 +240,7 @@ export function* fetchAccountAsync({
   const user = accountData.user
   if (user.is_deactivated) {
     yield* put(resetAccount())
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_DEACTIVATED'
@@ -268,6 +281,7 @@ export function* fetchAccountAsync({
     guestEmail
   }
   yield* put(fetchAccountSucceeded(formattedAccount))
+  queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
 
   // Fetch user's chat blockee and blocker list after fetching their account
   yield* put(fetchBlockees())
@@ -276,6 +290,10 @@ export function* fetchAccountAsync({
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
+  queryClient.setQueryData(getWalletAddressesQueryKey(), {
+    currentUser: wallet,
+    web3User: web3WalletAddress
+  })
 
   try {
     yield* call(initializeMetricsForUser, {
@@ -301,7 +319,9 @@ function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
   const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
 
+  queryClient.setQueryData(getAccountStatusQueryKey(), Status.LOADING)
   yield* put(fetchAccountRequested())
 
   const cachedAccount = yield* call([
@@ -350,6 +370,7 @@ function* fetchLocalAccountAsync() {
       ])
     )
 
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
     yield* put(fetchAccountSucceeded(cachedAccount))
   }
 }
@@ -382,7 +403,7 @@ function* setLocalStorageAccountAndUser(
 function* syncAccountToLocalStorage() {
   const localStorage = yield* getContext('localStorage')
   const { userId, collections, playlistLibrary, guestEmail } =
-    yield* select(getAccount)
+    (yield* call(queryCurrentAccount)) ?? {}
   yield* call([localStorage, localStorage.setAudiusAccount], {
     userId,
     collections,
@@ -419,7 +440,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
   const { uuid: twitterId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   if (!userId || !handle) {
@@ -443,7 +464,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
       handle
     )
 
-    const account = yield* select(getAccountUser)
+    const account = yield* call(queryAccountUser)
     const { verified } = profile
     if (account && !account.is_verified && verified) {
       yield* put(
@@ -470,7 +491,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
   const { uuid: instagramId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   if (!userId || !handle) {
@@ -494,7 +515,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
       handle
     )
 
-    const account = yield* select(getAccountUser)
+    const account = yield* call(queryAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
       yield* put(
@@ -521,7 +542,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
   const { uuid: tikTokId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
   if (!userId || !handle) {
@@ -545,7 +566,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
       handle
     )
 
-    const account = yield* select(getAccountUser)
+    const account = yield* call(queryAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
       yield* put(
@@ -585,7 +606,7 @@ function* watchFetchAccountFailed() {
   yield* takeEvery(
     fetchAccountFailed.type,
     function* (action: ReturnType<typeof fetchAccountFailed>) {
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
       const reportToSentry = yield* getContext('reportToSentry')
       if (userId) {
         yield* call(reportToSentry, {

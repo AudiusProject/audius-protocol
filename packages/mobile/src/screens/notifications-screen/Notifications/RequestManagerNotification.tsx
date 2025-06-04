@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { RequestManagerNotification as RequestManagerNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconUserArrowRotate } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -16,8 +15,6 @@ import {
   NotificationTitle,
   UserNameLink
 } from '../Notification'
-
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Account Management Request',
@@ -34,7 +31,7 @@ export const RequestManagerNotification = (
   const { notification } = props
   const navigation = useNotificationNavigation()
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.userId)
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)

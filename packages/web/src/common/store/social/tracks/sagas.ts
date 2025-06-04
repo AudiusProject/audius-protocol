@@ -2,8 +2,8 @@ import {
   queryAccountUser,
   queryTrack,
   queryUser,
-  updateTrackData,
-  selectIsGuestAccount
+  selectIsGuestAccount,
+  updateTrackData
 } from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {

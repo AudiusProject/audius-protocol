@@ -1,13 +1,14 @@
-import { createSelector } from 'reselect'
+import { useSelector } from 'react-redux'
 
-import { getAccountUser } from '~/store/account/selectors'
+import { useCurrentAccountUser } from '~/api'
+import { useUser } from '~/api/tan-query/users/useUser'
 import { getUser } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
 import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
 
 import { BadgeTier } from '../../models/BadgeTier'
 import { ID } from '../../models/Identifiers'
-import { User } from '../../models/User'
+import { User, UserMetadata } from '../../models/User'
 import { BNAudio, StringAudio, StringWei } from '../../models/Wallet'
 
 export type BadgeTierInfo = {
@@ -54,30 +55,28 @@ export const getVerifiedForUser = (
   return !!user?.is_verified
 }
 
-export const getWeiBalanceForUser = (
-  state: CommonState,
-  { userId }: { userId?: ID }
-) => {
-  const accountUser = getAccountUser(state)
-  const user = getUser(state, { id: userId })
+/**
+ * Hook to get the tier and verification status for a user
+ * @param userId Optional user ID to check. If not provided, uses the current user
+ * @returns Object containing tier, isVerified, and tierNumber
+ */
+export const useTierAndVerifiedForUser = (userId?: ID | null) => {
+  const { data: currentUser } = useCurrentAccountUser()
+  const { data: user } = useUser(userId)
+  const currentUserBalance =
+    useSelector((state: CommonState) => state.wallet.totalBalance) ??
+    ('0' as StringWei)
 
-  if (accountUser?.user_id === userId && state.wallet.totalBalance) {
-    return state.wallet.totalBalance
-  }
-  if (!user) return '0' as StringWei
-  return getUserBalance(user)
+  const targetUser = userId ? user : currentUser
+  if (!targetUser)
+    return { tier: 'none' as BadgeTier, isVerified: false, tierNumber: 0 }
+
+  const balance = userId ? currentUserBalance : getUserBalance(targetUser)
+  const { tier, tierNumber } = getTierAndNumberForBalance(balance)
+  const isVerified = !!targetUser.is_verified
+
+  return { tier, isVerified, tierNumber }
 }
-
-export const getTierAndVerifiedForUser = createSelector(
-  [getWeiBalanceForUser, getVerifiedForUser],
-  (
-    wei,
-    isVerified
-  ): { tier: BadgeTier; isVerified: boolean; tierNumber: number } => {
-    const { tier, tierNumber } = getTierAndNumberForBalance(wei)
-    return { tier, isVerified, tierNumber }
-  }
-)
 
 // Helpers
 
@@ -98,8 +97,9 @@ export const getTierAndNumberForBalance = (balance: StringWei) => {
 export const getTierNumber = (tier: BadgeTier) =>
   badgeTiers.length - badgeTiers.findIndex((t) => t.tier === tier)
 
-export const getUserBalance = (user: User) =>
+export const getUserBalance = (user: User | UserMetadata) =>
   user?.total_balance ?? ('0' as StringWei)
+
 export const getTierForUser = (user: User) => {
   const balance = getUserBalance(user)
   return getTierAndNumberForBalance(balance).tier

@@ -3,9 +3,11 @@ import {
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
+  queryAccountUser,
   queryCollection,
   queryTrack,
   queryUser,
+  queryCurrentUserId,
   updateCollectionData
 } from '@audius/common/api'
 import {
@@ -18,7 +20,6 @@ import {
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   confirmerActions,
   EditCollectionValues,
@@ -28,14 +29,13 @@ import {
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { requestConfirmation } = confirmerActions
-const { getUserId, getAccountUser } = accountSelectors
 const { collectionPage } = route
 
 export function* createAlbumSaga() {
@@ -93,7 +93,7 @@ function* optimisticallySaveAlbum(
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
-  const accountUser = yield* select(getAccountUser)
+  const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
   const { user_id, handle } = accountUser
   const album: Partial<Collection> & { playlist_id: ID } = {
@@ -163,7 +163,7 @@ function* createAndConfirmAlbum(
   yield* put(event)
 
   function* confirmAlbum() {
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     if (!userId) {
       throw new Error('No userId set, cannot create album')
     }

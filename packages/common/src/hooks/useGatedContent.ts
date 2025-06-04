@@ -2,7 +2,12 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useCollection, useCurrentAccount, useTrack } from '~/api'
+import {
+  useCollection,
+  useCurrentAccount,
+  useHasAccount,
+  useTrack
+} from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -15,7 +20,6 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
-import { getHasAccount } from '~/store/account/selectors'
 import { cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
@@ -76,7 +80,7 @@ export const useGatedContentAccess = (
   content: Nullable<PartialTrack> | Nullable<PartialCollection> | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
 
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useMemo(() => {
@@ -126,7 +130,7 @@ export const useGatedContentAccess = (
 
 export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
 
   const result = useMemo(() => {
     const map: {

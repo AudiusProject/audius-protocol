@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useNotificationEntity, useUsers } from '@audius/common/api'
 import type { CommentNotification as CommentNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -16,8 +14,6 @@ import {
   ProfilePictureList,
   UserNameLink
 } from '../Notification'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const USER_LENGTH_LIMIT = 3
 
@@ -35,8 +31,8 @@ export const CommentNotification = (props: CommentNotificationProps) => {
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
 
   const firstUser = users?.[0]

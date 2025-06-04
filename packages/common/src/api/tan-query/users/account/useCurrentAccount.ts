@@ -2,21 +2,22 @@ import { useMemo } from 'react'
 
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { AnyAction, Dispatch } from 'redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Status } from '~/models'
-import { AccountUserMetadata, User, UserMetadata } from '~/models/User'
+import { UserMetadata } from '~/models/User'
 import { LocalStorage } from '~/services'
 import { AccountState } from '~/store'
-import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
-import { useUser } from '../useUser'
+
+import { getAccountStatusQueryKey } from './useAccountStatus'
+import { useWalletAddresses } from './useWalletAddresses'
 
 export const getCurrentAccountQueryKey = () =>
   [QUERY_KEYS.accountUser] as unknown as QueryKey<AccountState>
@@ -42,7 +43,7 @@ const getLocalAccount = (localStorage: LocalStorage) => {
       guestEmail: null
     } as AccountState
   }
-  return undefined
+  return null
 }
 
 export const getCurrentAccountQueryFn = async (
@@ -57,6 +58,10 @@ export const getCurrentAccountQueryFn = async (
     return localAccount
   }
 
+  if (!currentUserWallet) {
+    return null
+  }
+
   const { data } = await sdk.full.users.getUserAccount({
     wallet: currentUserWallet!
   })
@@ -69,14 +74,17 @@ export const getCurrentAccountQueryFn = async (
   const account = accountFromSDK(data)
 
   if (account) {
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
     primeUserData({ users: [account.user], queryClient, dispatch })
+  } else {
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
   }
 
   return {
     collections: account?.playlists,
     userId: account?.user?.user_id,
     hasTracks: (account?.user?.track_count ?? 0) > 0,
-    status: Status.SUCCESS,
+    status: account ? Status.SUCCESS : Status.ERROR,
     reason: null,
     connectivityFailure: false,
     needsAccountRecovery: false,
@@ -94,8 +102,8 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
   options?: SelectableQueryOptions<AccountState | null | undefined, TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
-  const walletAddresses = useSelector(getWalletAddresses)
-  const currentUserWallet = walletAddresses.currentUser
+  const { data: walletAddresses } = useWalletAddresses()
+  const currentUserWallet = walletAddresses?.currentUser
   const { localStorage } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -112,7 +120,7 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
       getCurrentAccountQueryFn(
         await audiusSdk(),
         localStorage,
-        currentUserWallet,
+        currentUserWallet!,
         queryClient,
         dispatch
       ),
@@ -122,35 +130,4 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
     initialData: initialData ?? undefined,
     ...options
   })
-}
-
-export const useCurrentAccountUser = <TResult = User>(
-  options?: SelectableQueryOptions<User, TResult>
-) => {
-  const { data: currentAccount } = useCurrentAccount()
-  return useUser(currentAccount?.userId, options)
-}
-
-/**
- * Some helper utils that can be used to pass into the select option
- */
-export const selectIsGuestAccount = (
-  data?: AccountUserMetadata | UserMetadata | null
-) => {
-  const user = data && 'user' in data ? data?.user : data
-  return Boolean(!user?.handle && !user?.name)
-}
-
-export const selectAccountHasTracks = (
-  data?: AccountUserMetadata | UserMetadata | null
-) => {
-  const user = data && 'user' in data ? data?.user : data
-  return (user?.track_count ?? 0) > 0
-}
-
-export const selectHasAccount = (
-  data?: AccountUserMetadata | UserMetadata | null
-) => {
-  const user = data && 'user' in data ? data?.user : data
-  return Boolean(user?.handle && user?.name)
 }
