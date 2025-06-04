@@ -89,8 +89,6 @@ const searchFilterButtons = {
 }
 
 export const SearchCategoriesAndFilters = () => {
-  const { color } = useTheme()
-
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
 

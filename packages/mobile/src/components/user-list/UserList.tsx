@@ -15,7 +15,6 @@ export type UserListProps = {
 
 export const UserList = (props: UserListProps) => {
   const { profiles, onCardPress, ...other } = props
-  console.log('asdf profiles: ', profiles?.length)
   return (
     <CardList
       data={profiles}

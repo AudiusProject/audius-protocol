@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useExploreContent } from '@audius/common/api'
+import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
   Paper,
@@ -68,20 +69,6 @@ export enum SearchTabs {
   TRACKS = 'Tracks',
   ALBUMS = 'Albums',
   PLAYLISTS = 'Playlists'
-}
-
-const messages = {
-  explore: 'Explore',
-  description: 'Discover new releases, fan favorites, and rising hits',
-  searchPlaceholder: 'What do you want to listen to?',
-  featuredPlaylists: 'Community Playlists',
-  featuredRemixContests: 'Featured Remix Contests',
-  artistSpotlight: 'Artist Spotlight',
-  labelSpotlight: 'Label Spotlight',
-  exploreByMood: 'Explore by Mood',
-  bestOfAudius: 'Best of Audius',
-  viewAll: 'View All',
-  layoutOptionsLabel: 'View As'
 }
 
 const tabHeaders = [
