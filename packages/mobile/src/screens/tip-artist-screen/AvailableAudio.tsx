@@ -43,7 +43,6 @@ const messages = {
 }
 
 export const AvailableAudio = () => {
-  // Use the new useAudioBalance hook, excluding connected wallets since they can't be used for tipping
   const { accountBalance: audioBalanceBigInt, isLoading: isBalanceLoading } =
     useAudioBalance({
       includeConnectedWallets: false
