@@ -1,6 +1,10 @@
+import { useState, useEffect } from 'react'
+
+import type { SearchCategory } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 
+import { useRoute } from 'app/hooks/useRoute'
 import { ExploreScreen } from 'app/screens/explore-screen'
 import {
   CHILL_PLAYLISTS,
@@ -28,6 +32,7 @@ import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCol
 import { SmartCollectionScreen } from 'app/screens/smart-collection-screen/SmartCollectionScreen'
 
 import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
+import { SearchContext } from '../search-screen/searchState'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
@@ -74,17 +79,35 @@ const smartCollections = [
 
 export const ExploreTabScreen =
   createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => {
-    const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
-      FeatureFlags.SEARCH_EXPLORE_MOBILE
-    )
-
-    if (isSearchExploreEnabled) {
-      return (
-        <>
-          <Stack.Screen name='SearchExplore' component={SearchExploreScreen} />
-        </>
-      )
-    }
+    // const { isEnabled: isSearchExploreEnabled, isLoaded } = useFeatureFlag(
+    //   FeatureFlags.SEARCH_EXPLORE_MOBILE
+    // )
+    // console.log(
+    //   'asdf isSearchExploreEnabled: ',
+    //   isSearchExploreEnabled,
+    //   isLoaded
+    // )
+    // // if (true) {
+    // return (
+    //   // <SearchContext.Provider
+    //   //   value={{
+    //   //     autoFocus,
+    //   //     setAutoFocus,
+    //   //     query,
+    //   //     setQuery,
+    //   //     category,
+    //   //     setCategory,
+    //   //     filters,
+    //   //     setFilters,
+    //   //     bpmType,
+    //   //     setBpmType,
+    //   //     active: true
+    //   //   }}
+    //   // >
+    //   <Stack.Screen name='SearchExplore' component={SearchExploreScreen} />
+    //   // </SearchContext.Provider>
+    // )
+    // // }
 
     return (
       <>

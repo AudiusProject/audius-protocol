@@ -1,10 +1,12 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
+import type { SearchCategory, SearchFiltersType } from '@audius/common/api'
 import { useExploreContent, useUsers } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { MOODS } from 'pages/search-page/moods'
 import { ImageBackground, ScrollView, Image } from 'react-native'
+import { useDebounce } from 'react-use'
 
 import {
   Flex,
@@ -20,12 +22,16 @@ import { Screen, ScreenContent } from 'app/components/core'
 import { UserList } from 'app/components/user-list'
 // import { useNavigation } from 'app/hooks/useNavigation'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
+import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
+import { SearchResults } from '../search-screen/search-results/SearchResults'
+import { SearchContext, useSearchQuery } from '../search-screen/searchState'
 
 import {
   PREMIUM_TRACKS,
@@ -57,8 +63,23 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export const SearchExploreScreen = () => {
   const styles = useStyles()
-
+  const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
+  const [query, setQuery] = useSearchQuery()
+
+  const [, setQueryRoute] = useState(params?.query ?? '')
+
+  const [searchInput, setSearchInput] = useState('')
+  console.log('asdf query: ', searchInput)
+
+  useDebounce(
+    () => {
+      console.log('asdf setting query ', searchInput)
+      setQuery(searchInput)
+    },
+    400,
+    [searchInput]
+  )
 
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
@@ -79,102 +100,148 @@ export const SearchExploreScreen = () => {
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 
+  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
+  const [category, setCategory] = useState<SearchCategory>(
+    params?.category ?? 'all'
+  )
+  const [filters, setFilters] = useState<SearchFiltersType>(
+    params?.filters ?? {}
+  )
+  const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
+
+  useEffect(() => {
+    setQuery(params?.query ?? '')
+    setCategory(params?.category ?? 'all')
+    setFilters(params?.filters ?? {})
+    setAutoFocus(params?.autoFocus ?? false)
+  }, [params])
+
   return (
-    <Screen url='Feed' header={() => <></>}>
-      <ScreenContent>
-        <Flex>
-          <ImageBackground source={imageSearchHeaderBackground}>
-            <Flex pt='unit14' ph='l' pb='l' gap='l'>
-              <Flex direction='row' gap='m'>
-                <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-                <Text variant='heading' color='staticWhite'>
-                  {messages.explore}
+    <SearchContext.Provider
+      value={{
+        autoFocus,
+        setAutoFocus,
+        query,
+        setQuery,
+        category,
+        setCategory,
+        filters,
+        setFilters,
+        bpmType,
+        setBpmType,
+        active: true
+      }}
+    >
+      <Screen url='Explore' header={() => <></>}>
+        <ScreenContent>
+          <Flex>
+            <ImageBackground source={imageSearchHeaderBackground}>
+              <Flex pt='unit14' ph='l' pb='l' gap='l'>
+                <Flex direction='row' gap='m'>
+                  <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                  <Text variant='heading' color='staticWhite'>
+                    {messages.explore}
+                  </Text>
+                </Flex>
+                <Text variant='title' color='staticWhite'>
+                  {messages.description}
                 </Text>
+                <Flex>
+                  <TextInput
+                    label='Search'
+                    // ref={searchBarRef}
+                    placeholder={messages.searchPlaceholder}
+                    // onChange={handleSearch}
+                    // onClear={handleClearSearch}
+                    size={TextInputSize.SMALL}
+                    startIcon={IconSearch}
+                    onChangeText={setSearchInput}
+                  />
+                </Flex>
               </Flex>
-              <Text variant='title' color='staticWhite'>
-                {messages.description}
-              </Text>
-              <Flex>
-                <TextInput
-                  label='Search'
-                  // ref={searchBarRef}
-                  placeholder={messages.searchPlaceholder}
-                  // onChange={handleSearch}
-                  // onClear={handleClearSearch}
-                  size={TextInputSize.SMALL}
-                  startIcon={IconSearch}
-                />
-              </Flex>
-            </Flex>
-          </ImageBackground>
-        </Flex>
-        <SearchCategoriesAndFilters />
-
-        <ScrollView>
-          <Flex direction='column' ph='l' pt='xl' pb='3xl' gap='2xl'>
-            <ExploreCarousel
-              title={messages.featuredPlaylists}
-              list={
-                <CollectionList
-                  collectionIds={exploreContent?.featuredPlaylists || []}
-                />
-              }
-            />
-
-            <ExploreCarousel
-              title={messages.artistSpotlight}
-              list={<UserList profiles={featuredArtists} />}
-            />
-
-            <ExploreCarousel
-              title={messages.labelSpotlight}
-              list={<UserList profiles={featuredLabels} />}
-            />
-
-            <Flex justifyContent='center' gap='l'>
-              <Text variant='title' size='l' textAlign='center'>
-                Explore By Mood
-              </Text>
-              <Flex wrap='wrap' direction='row' justifyContent='center' gap='s'>
-                {Object.entries(MOODS)
-                  .sort()
-                  .map(([mood, moodInfo]) => (
-                    <Paper
-                      direction='row'
-                      key={moodInfo.label}
-                      pv='l'
-                      ph='xl'
-                      gap='m'
-                      borderRadius='m'
-                      border='default'
-                      backgroundColor='white'
-                    >
-                      <Image
-                        source={moodMap[moodInfo.label]}
-                        style={styles.emoji}
-                      />
-
-                      <Text variant='title' size='s'>
-                        {moodInfo.label}
-                      </Text>
-                    </Paper>
-                  ))}
-              </Flex>
-            </Flex>
-
-            <Flex gap='l'>
-              <Text variant='title' size='l'>
-                {messages.bestOfAudius}
-              </Text>
-              <Flex gap='s'>
-                {filteredTiles.map((tile, idx) => (
-                  <ColorTile style={[styles.tile]} key={tile.title} {...tile} />
-                ))}
-              </Flex>
-            </Flex>
+            </ImageBackground>
           </Flex>
-        </ScrollView>
-      </ScreenContent>
-    </Screen>
+          <SearchCategoriesAndFilters />
+
+          <ScrollView>
+            {searchInput ? (
+              <SearchResults />
+            ) : (
+              <Flex direction='column' ph='l' pt='xl' pb='3xl' gap='2xl'>
+                <ExploreCarousel
+                  title={messages.featuredPlaylists}
+                  list={
+                    <CollectionList
+                      collectionIds={exploreContent?.featuredPlaylists || []}
+                    />
+                  }
+                />
+
+                <ExploreCarousel
+                  title={messages.artistSpotlight}
+                  list={<UserList profiles={featuredArtists} />}
+                />
+
+                <ExploreCarousel
+                  title={messages.labelSpotlight}
+                  list={<UserList profiles={featuredLabels} />}
+                />
+
+                <Flex justifyContent='center' gap='l'>
+                  <Text variant='title' size='l' textAlign='center'>
+                    Explore By Mood
+                  </Text>
+                  <Flex
+                    wrap='wrap'
+                    direction='row'
+                    justifyContent='center'
+                    gap='s'
+                  >
+                    {Object.entries(MOODS)
+                      .sort()
+                      .map(([mood, moodInfo]) => (
+                        <Paper
+                          direction='row'
+                          key={moodInfo.label}
+                          pv='l'
+                          ph='xl'
+                          gap='m'
+                          borderRadius='m'
+                          border='default'
+                          backgroundColor='white'
+                        >
+                          <Image
+                            source={moodMap[moodInfo.label]}
+                            style={styles.emoji}
+                          />
+
+                          <Text variant='title' size='s'>
+                            {moodInfo.label}
+                          </Text>
+                        </Paper>
+                      ))}
+                  </Flex>
+                </Flex>
+
+                <Flex gap='l'>
+                  <Text variant='title' size='l'>
+                    {messages.bestOfAudius}
+                  </Text>
+                  <Flex gap='s'>
+                    {filteredTiles.map((tile, idx) => (
+                      <ColorTile
+                        style={[styles.tile]}
+                        key={tile.title}
+                        {...tile}
+                      />
+                    ))}
+                  </Flex>
+                </Flex>
+              </Flex>
+            )}
+          </ScrollView>
+        </ScreenContent>
+      </Screen>
+    </SearchContext.Provider>
   )
 }
