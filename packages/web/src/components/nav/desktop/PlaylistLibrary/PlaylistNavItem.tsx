@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useCurrentAccount, useCurrentUserId } from '@audius/common/api'
 import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
@@ -25,12 +25,12 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
 
-  const accountCollection = useSelector((state) => {
-    return state.account.collections[playlistId]
+  const { data: accountCollection } = useCurrentAccount({
+    select: (account) => account?.collections?.[playlistId]
   })
-  const { name, permalink, user } = accountCollection
+  const { name, permalink, user } = accountCollection ?? {}
 
-  const isOwnedByCurrentUser = user.id === currentUserId
+  const isOwnedByCurrentUser = user?.id === currentUserId
 
   const hasPlaylistUpdate = useSelector(
     (state) => !!selectPlaylistUpdateById(state, playlistId)
@@ -42,6 +42,7 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
     }
   }, [hasPlaylistUpdate, dispatch, playlistId])
 
+  if (!name || !permalink) return null
   return (
     <CollectionNavItem
       id={playlistId}

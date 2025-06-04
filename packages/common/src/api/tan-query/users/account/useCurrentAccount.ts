@@ -74,7 +74,6 @@ export const getCurrentAccountQueryFn = async (
   const account = accountFromSDK(data)
 
   if (account) {
-    console.log('setting account status to success')
     queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
     primeUserData({ users: [account.user], queryClient, dispatch })
   } else {

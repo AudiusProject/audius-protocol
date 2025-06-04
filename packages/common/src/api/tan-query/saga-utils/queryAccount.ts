@@ -34,7 +34,9 @@ export function* queryCurrentAccount() {
         currentUserWallet,
         queryClient,
         dispatch
-      )
+      ),
+    staleTime: Infinity,
+    gcTime: Infinity
   })
 
   return queryData as AccountState | null | undefined
