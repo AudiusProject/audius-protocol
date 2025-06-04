@@ -1,12 +1,11 @@
 import React, { useRef } from 'react'
 
 import type { TokenInfo } from '@audius/common/store'
+import { useTokenSwapForm } from '@audius/common/store'
 
 import { Divider, Flex, Skeleton } from '@audius/harmony-native'
 
 import { TokenAmountSection } from '../../../components/buy-sell'
-
-import { useTokenSwapForm } from './hooks/useTokenSwapForm'
 
 const messages = {
   youPay: 'You Pay',
