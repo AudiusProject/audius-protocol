@@ -9,6 +9,7 @@ import { removeNullable, Uid } from '~/utils'
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryFn, getTrackQueryKey } from '../tracks/useTrack'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 import { queryCurrentUserId } from './queryAccount'
 import { queryCollection } from './queryCollection'
@@ -23,7 +24,8 @@ export function* queryTrack(id: ID | null | undefined) {
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getTrackQueryKey(id),
     queryFn: async () =>
-      getTrackQueryFn(id!, currentUserId, queryClient, sdk, dispatch)
+      getTrackQueryFn(id!, currentUserId, queryClient, sdk, dispatch),
+    ...entityCacheOptions
   })
 
   return queryData as TQTrack | undefined

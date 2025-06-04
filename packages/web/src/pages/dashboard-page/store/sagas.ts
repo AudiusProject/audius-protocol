@@ -2,7 +2,11 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
+import {
+  primeCollectionDataSaga,
+  queryAccountUser,
+  queryCurrentUserId
+} from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import { walletActions, getContext, getSDK } from '@audius/common/store'
@@ -13,7 +17,6 @@ import moment from 'moment'
 import { EventChannel } from 'redux-saga'
 import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
 
-import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -103,10 +106,8 @@ function* fetchDashboardAsync(
         .data,
       userCollectionMetadataFromSDK
     )
-    const processedCollections = yield* processAndCacheCollections([
-      ...playlists,
-      ...albums
-    ])
+    const collections = [...playlists, ...albums]
+    yield* call(primeCollectionDataSaga, [...playlists, ...albums])
 
     const trackIds = tracks.map((t) => t.track_id)
     const now = moment()
@@ -124,7 +125,7 @@ function* fetchDashboardAsync(
       yield* put(
         dashboardActions.fetchSucceeded({
           tracks,
-          collections: processedCollections
+          collections
         })
       )
     } else {

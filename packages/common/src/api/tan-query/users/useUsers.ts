@@ -11,6 +11,7 @@ import { CommonState } from '~/store'
 
 import { QueryOptions } from '../types'
 import { combineQueryResults } from '../utils/combineQueryResults'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { useQueries } from '../utils/useQueries'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
@@ -44,6 +45,7 @@ export const useUsers = (
           dispatch
         ),
       ...options,
+      ...entityCacheOptions,
       enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>

@@ -48,10 +48,6 @@ export default function render(pageContext: TrackPageContext) {
     <ServerWebPlayer
       isMobile={isMobile}
       initialState={{
-        collections: {
-          entries: { [playlist_id]: { metadata: collection } },
-          permalinks: { [permalink.toLowerCase()]: playlist_id }
-        },
         users: { entries: { [user_id]: { metadata: user } } },
         pages: {
           collection: {
@@ -64,9 +60,9 @@ export default function render(pageContext: TrackPageContext) {
       <>
         <MetaTags {...seoMetadata} />
         {isMobile ? (
-          <MobileServerCollectionPage />
+          <MobileServerCollectionPage collection={collection} />
         ) : (
-          <DesktopServerCollectionPage />
+          <DesktopServerCollectionPage collection={collection} />
         )}
       </>
     </ServerWebPlayer>

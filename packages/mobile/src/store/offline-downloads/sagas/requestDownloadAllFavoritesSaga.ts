@@ -1,9 +1,11 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
 import {
+  queryCollection,
   queryCollections,
   queryCurrentAccount,
   queryCurrentUserId
 } from '@audius/common/api'
+import type { CommonState } from '@audius/common/store'
 import { savedPageSelectors, getSDK } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
@@ -93,23 +95,23 @@ function* downloadAllFavorites() {
   const collections = Object.values(collectionsMap)
 
   for (const favoritedCollection of favoritedAlbums) {
-    const { id: playlist_id } = favoritedCollection
+    const { id } = favoritedCollection
     const downloadReason = { is_from_favorites: true }
 
     offlineItemsToAdd.push({
       type: 'collection',
-      id: playlist_id,
+      id,
       metadata: {
         reasons_for_download: [downloadReason]
       }
     })
   }
 
-  for (const favoritedCollection of collections) {
+  for (const collection of collections) {
     const {
       playlist_id,
       playlist_contents: { track_ids }
-    } = favoritedCollection
+    } = collection
 
     for (const { track: trackId } of track_ids) {
       const downloadReason = {

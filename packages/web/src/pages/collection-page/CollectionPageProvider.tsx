@@ -1,6 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccount, useCollectionByParams } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -97,7 +97,6 @@ const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const {
-  getCollection,
   getCollectionTracksLineup,
   getUser,
   getUserUid,
@@ -132,6 +131,17 @@ type CollectionPageProps = OwnProps &
     userPlaylists?: AccountCollection[] | undefined
   }
 
+type CollectionClassProps = CollectionPageProps & {
+  collection: Collection
+  currentTrack: Track | null
+  tracks: {
+    status: Status
+    entries: CollectionTrack[]
+  }
+  trackCount: number
+  playlistId: number
+}
+
 type CollectionPageState = {
   filterText: string
   initialOrder: string[] | null
@@ -144,25 +154,43 @@ type CollectionPageState = {
 type PlaylistTrack = { time: number; track: ID; uid?: UID }
 
 const CollectionPage = (props: CollectionPageProps) => {
+  const { location } = props
+  const pathname = getPathname(location)
+  const params = parseCollectionRoute(pathname)
+  // For now read-only
+  const { data: collection } = useCollectionByParams(params, { enabled: false })
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => ({
+      userId: account?.userId,
+      userPlaylists: Object.values(account?.collections ?? {})?.filter(
+        (c) => !c.is_album
+      )
+    })
+  })
+  const { userId, userPlaylists } = accountData ?? {}
+  const trackCount = collection?.playlist_contents.track_ids.length ?? 0
+  const playlistId = collection?.playlist_id
   const currentTrack = useCurrentTrack()
   const tracks = useLineupTable(getCollectionTracksLineup)
+
+  if (!collection) return null
+
   return (
     <CollectionPageClassComponent
       {...props}
-      currentTrack={currentTrack}
+      collection={collection!}
+      playlistId={playlistId!}
       tracks={tracks}
+      trackCount={trackCount}
+      currentTrack={currentTrack}
+      userId={userId}
+      userPlaylists={userPlaylists}
     />
   )
 }
 
 class CollectionPageClassComponent extends Component<
-  CollectionPageProps & {
-    currentTrack: Track | null
-    tracks: {
-      status: Status
-      entries: CollectionTrack[]
-    }
-  },
+  CollectionClassProps,
   CollectionPageState
 > {
   state: CollectionPageState = {
@@ -201,7 +229,7 @@ class CollectionPageClassComponent extends Component<
     })
   }
 
-  componentDidUpdate(prevProps: CollectionPageProps) {
+  componentDidUpdate(prevProps: CollectionClassProps) {
     const {
       collection: metadata,
       userUid,
@@ -844,15 +872,11 @@ function makeMapStateToProps() {
 
   const mapStateToProps = (state: AppState) => {
     return {
-      trackCount: (getCollection(state) as Collection)?.playlist_contents
-        .track_ids.length,
-      collection: getCollection(state) as Collection,
       collectionPermalink: getCollectionPermalink(state),
       user: getUser(state),
       userUid: getUserUid(state) || '',
       status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),
-      playlistId: (getCollection(state) as Collection)?.playlist_id,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,
@@ -1057,27 +1081,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-const withHooks = (WrappedComponent: typeof CollectionPage) => {
-  return function WithHooksComponent(props: CollectionPageProps) {
-    const { data: accountData } = useCurrentAccount({
-      select: (account) => ({
-        userId: account?.userId,
-        userPlaylists: Object.values(account?.collections ?? {})?.filter(
-          (c) => !c.is_album
-        )
-      })
-    })
-    const { userId, userPlaylists } = accountData ?? {}
-    return (
-      <WrappedComponent
-        {...props}
-        userId={userId}
-        userPlaylists={userPlaylists}
-      />
-    )
-  }
-}
-
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(withHooks(CollectionPage))
+  connect(makeMapStateToProps, mapDispatchToProps)(CollectionPage)
 )

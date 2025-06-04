@@ -31,7 +31,10 @@ export const RemixContestSection = ({
   isOwner
 }: RemixContestSectionProps) => {
   const { data: remixContest } = useRemixContest(trackId)
-  const { data: remixes } = useRemixesLineup({ trackId, isContestEntry: true })
+  const { data: remixes, count: remixCount } = useRemixesLineup({
+    trackId,
+    isContestEntry: true
+  })
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
@@ -85,6 +88,7 @@ export const RemixContestSection = ({
             trackId={trackId}
             winnerIds={remixContest?.eventData?.winners ?? []}
             size='mobile'
+            count={remixCount}
           />
         ]
       : [
@@ -93,6 +97,7 @@ export const RemixContestSection = ({
             trackId={trackId}
             submissions={remixes.slice(0, 6)}
             size='mobile'
+            count={remixCount}
           />
         ])
   ]

@@ -16,6 +16,7 @@ type RemixContestWinnersTabProps = {
   trackId: ID
   winnerIds: ID[]
   size?: RemixSubmissionCardSize
+  count?: number
 }
 
 /**
@@ -24,6 +25,7 @@ type RemixContestWinnersTabProps = {
 export const RemixContestWinnersTab = ({
   trackId,
   winnerIds,
+  count,
   size = 'desktop'
 }: RemixContestWinnersTabProps) => {
   const { data: permalink } = useTrack(trackId, {
@@ -37,6 +39,7 @@ export const RemixContestWinnersTab = ({
     <RemixTab
       trackIds={winnerIds}
       size={size}
+      count={count}
       emptyState={{
         title: messages.noWinners,
         subtitle: messages.stayTuned

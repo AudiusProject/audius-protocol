@@ -26,7 +26,6 @@ import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { useFeatureFlag } from './useFeatureFlag'
 
-const { getCollection } = cacheCollectionsSelectors
 const { getUser, getUsers } = cacheUsersSelectors
 const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
@@ -47,11 +46,11 @@ export const useGatedTrackAccess = (trackId: ID) => {
 }
 
 export const useGatedCollectionAccess = (collectionId: ID) => {
-  const hasStreamAccess = useSelector((state: CommonState) => {
-    const collection = getCollection(state, { id: collectionId })
-    if (!collection) return false
-    const { is_stream_gated, access } = collection
-    return !is_stream_gated || !!access?.stream
+  const { data: hasStreamAccess } = useCollection(collectionId, {
+    select: (collection) => {
+      const { is_stream_gated, access } = collection ?? {}
+      return !is_stream_gated || !!access?.stream
+    }
   })
 
   return { hasStreamAccess }

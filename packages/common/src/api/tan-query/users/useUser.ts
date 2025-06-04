@@ -12,6 +12,7 @@ import { User } from '~/models/User'
 import { getUsersBatcher } from '../batchers/getUsersBatcher'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
 
@@ -68,6 +69,7 @@ export const useUser = <TResult = User>(
       ),
     ...options,
     select,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && validUserId
   })
 }

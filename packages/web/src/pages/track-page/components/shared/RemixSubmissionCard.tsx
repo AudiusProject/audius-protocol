@@ -126,7 +126,11 @@ export const RemixSubmissionCard = ({
               size={size === 'mobile' ? 's' : undefined}
               popover={size === 'desktop'}
               ellipses
-              css={{ display: 'block', maxWidth: NAME_WIDTH }}
+              css={{
+                display: 'block',
+                maxWidth: NAME_WIDTH,
+                justifyContent: size === 'mobile' ? 'center' : undefined
+              }}
             />
           </>
         )}

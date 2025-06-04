@@ -2,16 +2,16 @@ import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
-import { CommonState } from '~/store'
 
 import { TQCollection } from '../models'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { useQueries } from '../utils/useQueries'
 
 import { getCollectionQueryKey, getCollectionQueryFn } from './useCollection'
@@ -47,6 +47,7 @@ export const useCollections = (
         )
       },
       ...options,
+      ...entityCacheOptions,
       enabled: options?.enabled !== false && !!collectionId && collectionId > 0
     })),
     combine: combineQueryResults<TQCollection[]>
@@ -56,18 +57,12 @@ export const useCollections = (
 
   const byId = useMemo(() => keyBy(collections, 'playlist_id'), [collections])
 
-  const isSavedToRedux = useSelector((state: CommonState) =>
-    collectionIds?.every(
-      (collectionId) => !!state.collections.entries[collectionId]
-    )
-  )
-
   return {
-    data: isSavedToRedux ? collections : undefined,
+    data: collections,
     byId,
-    status: isSavedToRedux ? queriesResults.status : 'pending',
-    isPending: queriesResults.isPending || !isSavedToRedux,
-    isLoading: queriesResults.isLoading || !isSavedToRedux,
+    status: queriesResults.status,
+    isPending: queriesResults.isPending,
+    isLoading: queriesResults.isLoading,
     isFetching: queriesResults.isFetching,
     isSuccess: queriesResults.isSuccess,
     isError: queriesResults.isError

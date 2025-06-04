@@ -1,6 +1,10 @@
 import { Flex, FlexProps } from '@audius/harmony'
 
-import { MAX_PAGE_WIDTH_PX, PAGE_GUTTER_PX } from 'common/utils/layout'
+import {
+  MAX_PAGE_WIDTH_PX,
+  MIN_PAGE_WIDTH_PX,
+  PAGE_GUTTER_PX
+} from 'common/utils/layout'
 
 export const FlushPageContainer = (props: FlexProps) => {
   const { children, ...flexProps } = props
@@ -16,7 +20,10 @@ export const FlushPageContainer = (props: FlexProps) => {
         flex='1'
         w='100%'
         justifyContent='center'
-        css={{ maxWidth: MAX_PAGE_WIDTH_PX }}
+        css={{
+          maxWidth: MAX_PAGE_WIDTH_PX,
+          minWidth: MIN_PAGE_WIDTH_PX
+        }}
       >
         {children}
       </Flex>
