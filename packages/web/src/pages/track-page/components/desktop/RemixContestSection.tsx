@@ -198,7 +198,7 @@ export const RemixContestSection = ({
         <Flex column pv='m'>
           <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
             <Flex alignItems='center'>{TabBar}</Flex>
-            {!isOwner ? (
+            {!isOwner && !isContestEnded ? (
               <Flex mb='m'>
                 <Button
                   variant='secondary'
@@ -209,7 +209,8 @@ export const RemixContestSection = ({
                   {messages.uploadRemixButtonText}
                 </Button>
               </Flex>
-            ) : isContestEnded &&
+            ) : isOwner &&
+              isContestEnded &&
               isRemixContestWinnersMilestoneEnabled &&
               remixCount > 0 ? (
               <Flex mb='m'>

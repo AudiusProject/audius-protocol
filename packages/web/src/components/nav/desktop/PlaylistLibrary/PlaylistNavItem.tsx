@@ -42,7 +42,7 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
     }
   }, [hasPlaylistUpdate, dispatch, playlistId])
 
-  if (!name || !permalink) return null
+  if (!name || !permalink || !user) return null
   return (
     <CollectionNavItem
       id={playlistId}
