@@ -1,14 +1,10 @@
 import type { ComponentType } from 'react'
 import { useMemo, useCallback, useRef } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import type { ListRenderItem, ListRenderItemInfo } from 'react-native'
 import { View } from 'react-native'
 
-import type { Spacing } from '@audius/harmony-native'
-import { Flex, useTheme } from '@audius/harmony-native'
-import { Horizontal } from 'app/harmony-native/components/layout/Divider/Divider.stories'
+import { Flex } from '@audius/harmony-native'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 

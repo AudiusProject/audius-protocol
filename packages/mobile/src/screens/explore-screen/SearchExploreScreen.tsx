@@ -21,7 +21,6 @@ import { Screen, ScreenContent } from 'app/components/core'
 import { UserList } from 'app/components/user-list'
 // import { useNavigation } from 'app/hooks/useNavigation'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
-import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
 import { AppDrawerContext } from '../app-drawer-screen'
@@ -34,7 +33,6 @@ import {
   TRENDING_UNDERGROUND
 } from './collections'
 import { ColorTile } from './components/ColorTile'
-import { ExploreCarousel } from './components/ExploreCarousel'
 import { REMIXABLES } from './smartCollections'
 
 const tiles = [
