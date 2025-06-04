@@ -44,11 +44,11 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
   },
-  cardListHorizontal: {
+  cardListCarousel: {
     paddingRight: 0,
     flexGrow: 0
   },
-  cardHorizontal: {
+  cardCarousel: {
     width: spacing(40),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
@@ -97,15 +97,28 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
           (renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null)
         )
 
-      return <View style={styles.card}>{itemElement}</View>
+      return (
+        <View
+          style={isSearchExploreEnabled ? styles.cardCarousel : styles.card}
+        >
+          {itemElement}
+        </View>
+      )
     },
-    [LoadingCardComponent, renderItem, styles.card]
+    [
+      LoadingCardComponent,
+      isSearchExploreEnabled,
+      renderItem,
+      styles.card,
+      styles.cardCarousel
+    ]
   )
 
   if (isSearchExploreEnabled) {
     return (
       <FlatListComponent
-        style={styles.cardList}
+        key='carousel'
+        style={styles.cardListCarousel}
         ref={ref}
         data={data}
         renderItem={handleRenderItem}
