@@ -13,36 +13,21 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
-from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import TrendingType
 
 logger = logging.getLogger(__name__)
 
 TRENDING_TRACKS_LIMIT = 100
-TRENDING_TRACKS_TTL_SEC = 30 * 60
 
 
-def make_trending_tracks_cache_key(
-    time_range, genre, version=DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS]
-):
-    """Makes a cache key resembling `generated-trending:week:electronic`"""
-    version_name = (
-        f":{version.name}"
-        if version != DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS]
-        else ""
-    )
-    return f"generated-trending{version_name}:{time_range}:{(genre.lower() if genre else '')}"
-
-
-def generate_unpopulated_trending_from_mat_views(
-    session,
-    genre,
-    time_range,
-    strategy,
-    exclude_gated=SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
-    exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
-    usdc_purchase_only=False,
-    limit=TRENDING_TRACKS_LIMIT,
+def make_generate_unpopulated_trending(
+    session: Session,
+    genre: Optional[str],
+    time_range: str,
+    strategy: BaseTrendingStrategy,
+    exclude_gated: bool = SHOULD_TRENDING_EXCLUDE_GATED_TRACKS,
+    usdc_purchase_only: bool = False,
+    exclude_collectible_gated: bool = SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
+    limit: int = TRENDING_TRACKS_LIMIT,
 ):
     # year time_range equates to allTime for current implementations
     if time_range == "year":
@@ -115,24 +100,3 @@ def generate_unpopulated_trending_from_mat_views(
     tracks = get_unpopulated_tracks(session, track_ids, exclude_gated=exclude_gated)
 
     return (tracks, track_ids)
-
-
-def make_generate_unpopulated_trending(
-    session: Session,
-    genre: Optional[str],
-    time_range: str,
-    strategy: BaseTrendingStrategy,
-    exclude_gated: bool,
-    usdc_purchase_only=False,
-):
-    """Wraps a call for use in `use_redis_cache`, which
-    expects to be passed a function with no arguments."""
-
-    return generate_unpopulated_trending_from_mat_views(
-        session=session,
-        genre=genre,
-        time_range=time_range,
-        strategy=strategy,
-        exclude_gated=exclude_gated,
-        usdc_purchase_only=usdc_purchase_only,
-    )

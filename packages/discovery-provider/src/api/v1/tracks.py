@@ -45,10 +45,7 @@ from src.api.v1.helpers import (
 from src.api.v1.models.comments import comment_model, comment_notification_setting_model
 from src.api.v1.models.users import user_model, user_model_full
 from src.queries.comments import get_track_comments
-from src.queries.generate_unpopulated_trending_tracks import (
-    TRENDING_TRACKS_LIMIT,
-    TRENDING_TRACKS_TTL_SEC,
-)
+from src.queries.generate_unpopulated_trending_tracks import TRENDING_TRACKS_LIMIT
 from src.queries.get_extended_purchase_gate import get_extended_purchase_gate
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
@@ -57,6 +54,7 @@ from src.queries.get_premium_tracks import get_usdc_purchase_tracks
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
+    RECOMMENDED_TRACKS_TTL_SEC,
     get_full_recommended_tracks,
     get_recommended_tracks,
 )
@@ -1203,7 +1201,7 @@ class RecommendedTrack(Resource):
     @record_metrics
     @ns.expect(recommended_track_parser)
     @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=TRENDING_TRACKS_TTL_SEC)
+    @cache(ttl_sec=RECOMMENDED_TRACKS_TTL_SEC)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
