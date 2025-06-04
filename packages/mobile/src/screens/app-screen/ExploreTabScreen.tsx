@@ -75,9 +75,9 @@ const smartCollections = [
 export const ExploreTabScreen =
   createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => {
     const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
-      FeatureFlags.SEARCH_EXPLORE
+      FeatureFlags.SEARCH_EXPLORE_MOBILE
     )
-
+    console.log('asdf search explore enabled', isSearchExploreEnabled)
     if (isSearchExploreEnabled) {
       return (
         <>

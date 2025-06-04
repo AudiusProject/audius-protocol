@@ -1,6 +1,8 @@
 import type { ComponentType } from 'react'
 import { useMemo, useCallback, useRef } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import type { ListRenderItem, ListRenderItemInfo } from 'react-native'
 import { View } from 'react-native'
 
@@ -32,13 +34,21 @@ const DefaultLoadingCard = () => null
 
 const useStyles = makeStyles(({ spacing }) => ({
   cardList: {
-    paddingRight: 0,
-    flexGrow: 0
+    paddingRight: 0
   },
   columnWrapper: {
     paddingLeft: spacing(3)
   },
   card: {
+    width: '50%',
+    paddingRight: spacing(3),
+    paddingBottom: spacing(3)
+  },
+  cardListHorizontal: {
+    paddingRight: 0,
+    flexGrow: 0
+  },
+  cardHorizontal: {
     width: spacing(40),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
@@ -59,6 +69,9 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   } = props
 
   const styles = useStyles()
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_MOBILE
+  )
   const ref = useRef<FlatListT<ItemT | LoadingCard>>(null)
   const isLoading = isLoadingProp ?? !dataProp
 
@@ -89,15 +102,27 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     [LoadingCardComponent, renderItem, styles.card]
   )
 
+  if (isSearchExploreEnabled) {
+    return (
+      <FlatListComponent
+        style={styles.cardList}
+        ref={ref}
+        data={data}
+        renderItem={handleRenderItem}
+        horizontal
+        {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
+      />
+    )
+  }
+
   return (
     <FlatListComponent
       style={styles.cardList}
+      columnWrapperStyle={styles.columnWrapper}
       ref={ref}
       data={data}
       renderItem={handleRenderItem}
-      // numColumns={2}
-      // columnWrapperStyle={styles.columnWrapper}
-      horizontal
+      numColumns={2}
       {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
     />
   )
