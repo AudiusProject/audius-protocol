@@ -38,6 +38,7 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
       dispatch(updatedPlaylistViewed({ playlistId }))
     }
   }, [hasPlaylistUpdate, dispatch, playlistId])
+
   if (!accountCollection) {
     return null
   }
