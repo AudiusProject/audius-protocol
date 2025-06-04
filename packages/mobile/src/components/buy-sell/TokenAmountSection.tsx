@@ -16,6 +16,10 @@ import {
 
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
+const toUSD = (price: string) => {
+  return `$${price}`
+}
+
 type BalanceSectionProps = {
   isStablecoin?: boolean
   formattedAvailableBalance: string | null
@@ -163,7 +167,7 @@ export const TokenAmountSection = ({
 
   const priceDisplay =
     tokenPrice && !isTokenPriceLoading
-      ? messages.tokenPrice(tokenPrice, tokenPriceDecimalPlaces)
+      ? toUSD(messages.tokenPrice(tokenPrice, tokenPriceDecimalPlaces))
       : undefined
 
   const titleText = useMemo(() => {
@@ -272,7 +276,7 @@ export const TokenAmountSection = ({
     if (isStablecoin) {
       return (
         <Text variant='display' size='s'>
-          {messages.tokenPrice(formattedAmount, 2)}
+          {toUSD(messages.tokenPrice(formattedAmount, 2))}
         </Text>
       )
     }
