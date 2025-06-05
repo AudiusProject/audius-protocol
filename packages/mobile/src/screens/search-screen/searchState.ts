@@ -78,7 +78,7 @@ export const useSearchFilter = <F extends keyof SearchFilters>(
       setFilters((filters) => {
         if (value === undefined) {
           // Remove the key if value is undefined
-          const { [filterKey]: _, ...rest } = filters
+          const { [filterKey]: ignored, ...rest } = filters
           return rest
         }
         return { ...filters, [filterKey]: value }
@@ -89,7 +89,7 @@ export const useSearchFilter = <F extends keyof SearchFilters>(
 
   const clearFilter = useCallback(() => {
     setFilters((filters) => {
-      const { [filterKey]: _, ...rest } = filters
+      const { [filterKey]: ignored, ...rest } = filters
       return rest
     })
   }, [filterKey, setFilters])

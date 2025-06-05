@@ -1,6 +1,9 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
-import type { SearchCategory, SearchFiltersType } from '@audius/common/api'
+import type {
+  SearchCategory,
+  SearchFilters as SearchFiltersType
+} from '@audius/common/api'
 import { useExploreContent, useUsers } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { Kind } from '@audius/common/models'
@@ -10,6 +13,7 @@ import {
 } from '@audius/common/store'
 import { useNavigation } from '@react-navigation/native'
 import { MOODS } from 'pages/search-page/moods'
+import type { MoodInfo } from 'pages/search-page/types'
 import { ImageBackground, ScrollView, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
@@ -30,12 +34,10 @@ import { UserList } from 'app/components/user-list'
 // import { useNavigation } from 'app/hooks/useNavigation'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
-import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
-import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 import { RecentSearches } from '../search-screen/RecentSearches'
 import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
@@ -48,7 +50,6 @@ import {
   TRENDING_UNDERGROUND
 } from './collections'
 import { ColorTile } from './components/ColorTile'
-import { ExploreCarousel } from './components/ExploreCarousel'
 import { REMIXABLES } from './smartCollections'
 
 const tiles = [
@@ -77,14 +78,10 @@ export const SearchExploreScreen = () => {
   const { drawerHelpers } = useContext(AppDrawerContext)
   const [query, setQuery] = useSearchQuery()
 
-  const [, setQueryRoute] = useState(params?.query ?? '')
-
   const [searchInput, setSearchInput] = useState('')
-  console.log('asdf query: ', searchInput)
 
   useDebounce(
     () => {
-      console.log('asdf setting query ', searchInput)
       setQuery(searchInput)
     },
     400,
@@ -118,18 +115,13 @@ export const SearchExploreScreen = () => {
     params?.filters ?? {}
   )
   const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
-  const showSearchResults =
-    query ||
-    Object.values(filters).some((filter) => filter) ||
-    category !== 'all'
-  console.log('asdf showSearchResults: ', showSearchResults, category)
 
   useEffect(() => {
     setQuery(params?.query ?? '')
     setCategory(params?.category ?? 'all')
     setFilters(params?.filters ?? {})
     setAutoFocus(params?.autoFocus ?? false)
-  }, [params])
+  }, [params, setQuery])
 
   const history = useSelector(getSearchHistory)
   const categoryKind: Kind | null = category
@@ -141,7 +133,19 @@ export const SearchExploreScreen = () => {
       ? history.filter((item) => item.kind === categoryKind)
       : history
   }, [categoryKind, history])
-  console.log('asdf filteredSearchItems: ', filteredSearchItems)
+
+  const handleMoodPress = useCallback(
+    (moodLabel: string) => {
+      // @ts-ignore
+      // TODO this kinda works but goes to old search stack
+      navigation.navigate('Search', {
+        category: 'tracks',
+        filters: { mood: moodLabel }
+      })
+    },
+    [navigation]
+  )
+  const moodEntries = Object.entries(MOODS) as [string, MoodInfo][]
   return (
     <SearchContext.Provider
       value={{
@@ -246,38 +250,33 @@ export const SearchExploreScreen = () => {
                     justifyContent='center'
                     gap='s'
                   >
-                    {Object.entries(MOODS)
-                      .sort()
-                      .map(([mood, moodInfo]) => (
-                        <Paper
-                          direction='row'
-                          key={moodInfo.label}
-                          pv='l'
-                          ph='xl'
-                          gap='m'
-                          borderRadius='m'
-                          border='default'
-                          backgroundColor='white'
-                          onPress={() => {
-                            navigation.navigate('Search', {
-                              category: 'tracks',
-                              filters: { mood: moodInfo.label }
-                            })
+                    {moodEntries.sort().map(([_, moodInfo]) => (
+                      <Paper
+                        direction='row'
+                        key={moodInfo.label}
+                        pv='l'
+                        ph='xl'
+                        gap='m'
+                        borderRadius='m'
+                        border='default'
+                        backgroundColor='white'
+                        onPress={() => {
+                          handleMoodPress(moodInfo.label)
+                        }}
+                      >
+                        <Image
+                          source={moodMap[moodInfo.label]}
+                          style={{
+                            height: spacing.unit5,
+                            width: spacing.unit5
                           }}
-                        >
-                          <Image
-                            source={moodMap[moodInfo.label]}
-                            style={{
-                              height: spacing.unit5,
-                              width: spacing.unit5
-                            }}
-                          />
+                        />
 
-                          <Text variant='title' size='s'>
-                            {moodInfo.label}
-                          </Text>
-                        </Paper>
-                      ))}
+                        <Text variant='title' size='s'>
+                          {moodInfo.label}
+                        </Text>
+                      </Paper>
+                    ))}
                   </Flex>
                 </Flex>
 

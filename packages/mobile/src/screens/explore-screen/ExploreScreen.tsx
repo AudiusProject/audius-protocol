@@ -48,7 +48,7 @@ const screens = [
 export const ExploreScreen = () => {
   useAppTabScreen()
 
-  const { isEnabled: isSearchExploreEnabled, isLoaded } = useFeatureFlag(
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_MOBILE
   )
 

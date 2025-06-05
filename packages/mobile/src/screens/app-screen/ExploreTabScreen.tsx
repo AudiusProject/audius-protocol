@@ -1,6 +1,3 @@
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
-
 import { ExploreScreen } from 'app/screens/explore-screen'
 import {
   CHILL_PLAYLISTS,
@@ -26,8 +23,6 @@ import {
 } from 'app/screens/explore-screen/tabs/ForYouTab'
 import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
 import { SmartCollectionScreen } from 'app/screens/smart-collection-screen/SmartCollectionScreen'
-
-import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'

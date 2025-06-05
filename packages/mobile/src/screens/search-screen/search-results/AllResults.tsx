@@ -107,7 +107,6 @@ const skeletonSections = [
 
 export const AllResults = () => {
   const searchParams = useContext(SearchContext)
-  console.log('asdf searchParams: ', searchParams)
   const { data, isLoading, isSuccess } = useSearchAllResults({
     ...searchParams,
     pageSize: 5

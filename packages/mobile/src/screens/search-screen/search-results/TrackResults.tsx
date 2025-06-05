@@ -71,7 +71,6 @@ export const TrackResults = () => {
     return <NoResultsTile />
   }
 
-  console.log('asdf track results', query, filters, lineup.entries)
   return (
     <Flex h='100%' backgroundColor='default'>
       <Lineup
