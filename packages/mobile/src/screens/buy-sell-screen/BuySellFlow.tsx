@@ -23,7 +23,7 @@ import { BuyScreen, SellScreen } from './components'
 
 type BuySellFlowProps = {
   onClose: () => void
-  initialTab?: 'buy' | 'sell'
+  initialTab?: BuySellTab
 }
 
 const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
@@ -36,7 +36,7 @@ export const BuySellFlow = ({
   const { onOpen: openAddCashModal } = useAddCashModal()
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
-    onScreenChange: () => {} // No-op since we handle navigation separately
+    initialScreen: 'input'
   })
 
   const {
@@ -49,7 +49,7 @@ export const BuySellFlow = ({
   const { activeTab, handleActiveTabChange } = useBuySellTabs({
     setCurrentScreen,
     resetTransactionData,
-    initialTab: (initialTab as BuySellTab) || 'buy'
+    initialTab
   })
 
   // Reset screen state to 'input' when this screen comes into focus

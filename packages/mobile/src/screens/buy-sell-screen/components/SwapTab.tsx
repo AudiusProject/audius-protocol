@@ -13,17 +13,35 @@ const messages = {
   placeholder: '0.00'
 }
 
-const TokenSectionSkeleton = ({ title }: { title: string }) => (
-  <Flex direction='column' gap='s'>
-    <Skeleton h='xl' w={title === 'input' ? 'unit20' : 'unit24'} />
-    <Skeleton h='unit14' w='100%' />
+const YouPaySkeleton = () => (
+  <Flex direction='column' gap='l'>
+    <Flex
+      direction='row'
+      justifyContent='space-between'
+      alignItems='flex-start'
+    >
+      <Skeleton h='l' w='unit15' />
+      <Flex direction='column' gap='xs' alignItems='flex-end'>
+        <Skeleton h='l' w='unit24' />
+        <Skeleton h='xl' w='unit15' />
+      </Flex>
+    </Flex>
+    <Skeleton h='unit21' w='100%' />
+  </Flex>
+)
+
+const YouReceiveSkeleton = () => (
+  <Flex direction='column' gap='l' mb='5xl'>
+    <Skeleton h='l' w='unit23' />
+    <Skeleton h='unit21' w='100%' />
   </Flex>
 )
 
 const SwapFormSkeleton = () => (
-  <Flex direction='column'>
-    <TokenSectionSkeleton title='input' />
-    <TokenSectionSkeleton title='output' />
+  <Flex direction='column' gap='3xl'>
+    <YouPaySkeleton />
+    <Divider />
+    <YouReceiveSkeleton />
   </Flex>
 )
 

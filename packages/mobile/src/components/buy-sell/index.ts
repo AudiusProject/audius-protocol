@@ -1,3 +1,5 @@
 export { TokenAmountSection } from './TokenAmountSection'
 export { SwapBalanceSection } from './SwapBalanceSection'
+export { USDCBalanceSection } from './USDCBalanceSection'
+export { CryptoBalanceSection } from './CryptoBalanceSection'
 export { TooltipInfoIcon } from './TooltipInfoIcon'

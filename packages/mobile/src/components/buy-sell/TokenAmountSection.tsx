@@ -264,7 +264,7 @@ export const TokenAmountSection = ({
     onAmountChange,
     error,
     onMaxClick,
-    spacing.unit16,
+    spacing,
     errorMessage
   ])
 

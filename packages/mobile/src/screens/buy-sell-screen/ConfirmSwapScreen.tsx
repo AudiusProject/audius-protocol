@@ -1,21 +1,29 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { formatUSDCValue } from '@audius/common/api'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import {
-  useTokenAmountFormatting,
-  useBuySellSwap,
+  SUPPORTED_TOKEN_PAIRS,
   useBuySellScreen,
+  useBuySellSwap,
   useSwapDisplayData,
-  SUPPORTED_TOKEN_PAIRS
+  useTokenAmountFormatting
 } from '@audius/common/store'
 
-import { Button, Flex, Text, LoadingSpinner } from '@audius/harmony-native'
+import {
+  Button,
+  Divider,
+  Flex,
+  LoadingSpinner,
+  Text
+} from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
+
+import { PoweredByJupiter } from './components/PoweredByJupiter'
 
 const messages = {
   ...baseMessages,
@@ -209,8 +217,9 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
       url='/buy-sell/confirm'
     >
       <ScreenContent>
-        <Flex direction='column' gap='xl' p='l'>
-          <Text variant='body' size='m' textAlign='center'>
+        <PoweredByJupiter />
+        <Flex direction='column' gap='xl' p='l' mt='xl'>
+          <Text variant='body' size='l' textAlign='left'>
             {messages.confirmReview}
           </Text>
           <Flex direction='column' gap='xl'>
@@ -219,6 +228,7 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
               tokenInfo={payTokenInfo}
               amount={formattedPayAmount}
             />
+            <Divider flex={1} />
             <SwapBalanceSection
               title={messages.youReceive}
               tokenInfo={receiveTokenInfo}

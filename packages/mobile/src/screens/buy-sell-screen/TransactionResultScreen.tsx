@@ -5,7 +5,13 @@ import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { SuccessDisplayData } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
 
-import { Button, CompletionCheck, Flex, Text } from '@audius/harmony-native'
+import {
+  Button,
+  CompletionCheck,
+  Divider,
+  Flex,
+  Text
+} from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -82,23 +88,19 @@ export const TransactionResultScreen = ({
       >
         <ScreenContent>
           <Flex direction='column' gap='xl' p='l'>
-            <Flex
-              direction='row'
-              gap='s'
-              alignItems='center'
-              justifyContent='center'
-            >
+            <Flex direction='row' gap='s' alignItems='center'>
               <CompletionCheck value='complete' />
               <Text variant='heading' size='s' color='default'>
                 {messages.transactionComplete}
               </Text>
             </Flex>
-            <Flex direction='column' gap='xl' w='100%'>
+            <Flex direction='column' gap='xl'>
               <SwapBalanceSection
                 title={messages.youPaid}
                 tokenInfo={payTokenInfo}
                 amount={formattedPayAmount}
               />
+              <Divider flex={1} />
               <SwapBalanceSection
                 title={messages.youReceived}
                 tokenInfo={receiveTokenInfo}
@@ -107,7 +109,7 @@ export const TransactionResultScreen = ({
               />
             </Flex>
 
-            <Flex>
+            <Flex mt='xl'>
               <Button variant='primary' fullWidth onPress={handleDone}>
                 {messages.done}
               </Button>
