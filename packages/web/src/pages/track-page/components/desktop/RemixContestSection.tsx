@@ -23,10 +23,12 @@ import {
   Text
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import useTabs from 'hooks/useTabs/useTabs'
+import { useUpdateSearchParams } from 'pages/search-page/hooks'
 import { track, make } from 'services/analytics'
 import { pickWinnersPage } from 'utils/route'
 
@@ -49,6 +51,7 @@ const messages = {
 }
 
 const TAB_BAR_HEIGHT = 56
+const TAB_PARAM = 'contest-tab'
 
 type RemixContestSectionProps = {
   trackId: ID
@@ -115,9 +118,15 @@ export const RemixContestSection = ({
         ])
   ]
 
+  const [urlSearchParams] = useSearchParams()
+  const updateTabSearchParam = useUpdateSearchParams(TAB_PARAM)
+  const tab =
+    urlSearchParams.get(TAB_PARAM) ?? (hasWinners ? 'winners' : undefined)
+
   const { tabs: TabBar, body: ContentBody } = useTabs({
+    onTabClick: updateTabSearchParam,
     tabs,
-    initialTab: hasWinners ? 'winners' : undefined,
+    initialTab: tab,
     elements: [
       <TabBody key='details' onHeightChange={handleHeightChange}>
         <RemixContestDetailsTab trackId={trackId} />
