@@ -1,8 +1,12 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 
 import { ErrorLevel, Feature } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
-import { UploadFormState, UploadType } from '@audius/common/store'
+import {
+  TrackMetadataForUpload,
+  UploadFormState,
+  UploadType
+} from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
@@ -21,10 +25,11 @@ type ErrorType = { reason: 'corrupted' | 'size' | 'type' } | null
 type SelectPageProps = {
   formState: UploadFormState
   onContinue: (formState: UploadFormState) => void
+  initialMetadata?: Partial<TrackMetadataForUpload>
 }
 
 const SelectPage = (props: SelectPageProps) => {
-  const { formState, onContinue } = props
+  const { formState, onContinue, initialMetadata } = props
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])
   const [uploadType, setUploadType] = useState(
@@ -32,6 +37,23 @@ const SelectPage = (props: SelectPageProps) => {
   )
   const [uploadTrackError, setUploadTrackError] =
     useState<Nullable<ErrorType>>(null)
+
+  const [isFirstUpload, setIsFirstUpload] = useState(true)
+
+  const handleContinue = useCallback(() => {
+    if (uploadType !== undefined && tracks) {
+      switch (uploadType) {
+        case UploadType.INDIVIDUAL_TRACK:
+        case UploadType.INDIVIDUAL_TRACKS:
+          onContinue({ tracks, uploadType })
+          break
+        case UploadType.ALBUM:
+        case UploadType.PLAYLIST:
+          onContinue({ tracks, uploadType, metadata: newCollectionMetadata() })
+          break
+      }
+    }
+  }, [onContinue, tracks, uploadType])
 
   const onSelectTracks = useCallback(
     async (selectedFiles: File[]) => {
@@ -73,8 +95,17 @@ const SelectPage = (props: SelectPageProps) => {
 
       setTracks([...tracks, ...processedTracks])
     },
-    [setTracks, tracks, uploadType, setUploadType]
+    [tracks, uploadType]
   )
+
+  useLayoutEffect(() => {
+    if (tracks.length === 0) return
+
+    if (isFirstUpload && tracks.length === 1 && initialMetadata?.remix_of) {
+      handleContinue()
+    }
+    setIsFirstUpload(false)
+  }, [initialMetadata?.remix_of, handleContinue, isFirstUpload, tracks])
 
   const onRemoveTrack = useCallback(
     (index: number) => {
@@ -85,21 +116,6 @@ const SelectPage = (props: SelectPageProps) => {
     },
     [setTracks, setUploadType, tracks, uploadType]
   )
-
-  const handleContinue = useCallback(() => {
-    if (uploadType !== undefined && tracks) {
-      switch (uploadType) {
-        case UploadType.INDIVIDUAL_TRACK:
-        case UploadType.INDIVIDUAL_TRACKS:
-          onContinue({ tracks, uploadType })
-          break
-        case UploadType.ALBUM:
-        case UploadType.PLAYLIST:
-          onContinue({ tracks, uploadType, metadata: newCollectionMetadata() })
-          break
-      }
-    }
-  }, [onContinue, tracks, uploadType])
 
   const textAboveIcon = tracks.length > 0 ? 'More to Upload?' : undefined
   return (
