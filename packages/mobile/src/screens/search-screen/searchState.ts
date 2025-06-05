@@ -75,13 +75,23 @@ export const useSearchFilter = <F extends keyof SearchFilters>(
 
   const setFilter = useCallback(
     (value: SearchFilters[F]) => {
-      setFilters((filters) => ({ ...filters, [filterKey]: value }))
+      setFilters((filters) => {
+        if (value === undefined) {
+          // Remove the key if value is undefined
+          const { [filterKey]: _, ...rest } = filters
+          return rest
+        }
+        return { ...filters, [filterKey]: value }
+      })
     },
     [filterKey, setFilters]
   )
 
   const clearFilter = useCallback(() => {
-    setFilters((filters) => ({ ...filters, [filterKey]: undefined }))
+    setFilters((filters) => {
+      const { [filterKey]: _, ...rest } = filters
+      return rest
+    })
   }, [filterKey, setFilters])
 
   return [filter, setFilter, clearFilter] as const

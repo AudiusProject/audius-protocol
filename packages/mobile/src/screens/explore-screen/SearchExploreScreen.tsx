@@ -1,11 +1,17 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import type { SearchCategory, SearchFiltersType } from '@audius/common/api'
 import { useExploreContent, useUsers } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ExploreCollectionsVariant } from '@audius/common/store'
+import { Kind } from '@audius/common/models'
+import {
+  ExploreCollectionsVariant,
+  searchSelectors
+} from '@audius/common/store'
+import { useNavigation } from '@react-navigation/native'
 import { MOODS } from 'pages/search-page/moods'
 import { ImageBackground, ScrollView, Image } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
 import {
@@ -30,6 +36,8 @@ import { moodMap } from 'app/utils/moods'
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
+import { RecentSearches } from '../search-screen/RecentSearches'
+import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
 import { SearchContext, useSearchQuery } from '../search-screen/searchState'
@@ -51,8 +59,19 @@ const tiles = [
   REMIXABLES
 ]
 
+const itemKindByCategory: Record<SearchCategory, Kind | null> = {
+  all: null,
+  users: Kind.USERS,
+  tracks: Kind.TRACKS,
+  playlists: Kind.COLLECTIONS,
+  albums: Kind.COLLECTIONS
+}
+
+const { getSearchHistory } = searchSelectors
+
 export const SearchExploreScreen = () => {
   const { spacing } = useTheme()
+  const navigation = useNavigation()
 
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
@@ -99,6 +118,11 @@ export const SearchExploreScreen = () => {
     params?.filters ?? {}
   )
   const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
+  const showSearchResults =
+    query ||
+    Object.values(filters).some((filter) => filter) ||
+    category !== 'all'
+  console.log('asdf showSearchResults: ', showSearchResults, category)
 
   useEffect(() => {
     setQuery(params?.query ?? '')
@@ -107,6 +131,17 @@ export const SearchExploreScreen = () => {
     setAutoFocus(params?.autoFocus ?? false)
   }, [params])
 
+  const history = useSelector(getSearchHistory)
+  const categoryKind: Kind | null = category
+    ? itemKindByCategory[category]
+    : null
+
+  const filteredSearchItems = useMemo(() => {
+    return categoryKind
+      ? history.filter((item) => item.kind === categoryKind)
+      : history
+  }, [categoryKind, history])
+  console.log('asdf filteredSearchItems: ', filteredSearchItems)
   return (
     <SearchContext.Provider
       value={{
@@ -155,8 +190,17 @@ export const SearchExploreScreen = () => {
           <SearchCategoriesAndFilters />
 
           <ScrollView>
-            {searchInput ? (
-              <SearchResults />
+            {category !== 'all' ? (
+              <>
+                {searchInput || filteredSearchItems.length === 0 ? (
+                  <SearchResults />
+                ) : (
+                  <RecentSearches
+                    ListHeaderComponent={<SearchCatalogTile />}
+                    searchItems={filteredSearchItems}
+                  />
+                )}
+              </>
             ) : (
               <Flex direction='column' ph='l' pt='xl' pb='3xl' gap='2xl'>
                 <Flex gap='l'>
@@ -194,7 +238,7 @@ export const SearchExploreScreen = () => {
 
                 <Flex justifyContent='center' gap='l'>
                   <Text variant='title' size='l' textAlign='center'>
-                    Explore By Mood
+                    {messages.exploreByMood}
                   </Text>
                   <Flex
                     wrap='wrap'
@@ -214,6 +258,12 @@ export const SearchExploreScreen = () => {
                           borderRadius='m'
                           border='default'
                           backgroundColor='white'
+                          onPress={() => {
+                            navigation.navigate('Search', {
+                              category: 'tracks',
+                              filters: { mood: moodInfo.label }
+                            })
+                          }}
                         >
                           <Image
                             source={moodMap[moodInfo.label]}

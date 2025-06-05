@@ -364,6 +364,7 @@ export const useSearchTrackResults = (
     },
     queryFn: async ({ pageParam }) => {
       const data = await queryProps.queryFn({ pageParam })
+      console.log('asdf data: ', data)
       return data.tracks.map((t) => ({
         id: t.track_id,
         type: EntityType.TRACK
