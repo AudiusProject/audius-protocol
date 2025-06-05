@@ -60,7 +60,7 @@ class TracksSagas extends LineupSagas {
 
 function* watchSetArtistPick() {
   yield takeEvery(SET_ARTIST_PICK, function* (action) {
-    const accountUser = yield* call(queryAccountUser)
+    const accountUser = yield call(queryAccountUser)
     const accountHandle = accountUser?.handle
     const lineup = yield select((state) =>
       getProfileTracksLineup(state, accountHandle)
@@ -85,7 +85,7 @@ function* watchSetArtistPick() {
 function* watchDeleteTrackRequested() {
   yield takeEvery(DELETE_TRACK_REQUESTED, function* (action) {
     const { trackId } = action
-    const accountUser = yield* call(queryAccountUser)
+    const accountUser = yield call(queryAccountUser)
     const accountHandle = accountUser?.handle
     const lineup = yield select((state) =>
       getProfileTracksLineup(state, accountHandle)
