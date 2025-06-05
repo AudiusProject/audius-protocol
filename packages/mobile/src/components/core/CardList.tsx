@@ -1,11 +1,10 @@
 import type { ComponentType } from 'react'
 import { useMemo, useCallback, useRef } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import type { ListRenderItem, ListRenderItemInfo } from 'react-native'
 import { View } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
@@ -22,6 +21,10 @@ export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
   // If total count is known, use this to aid in rendering the right number
   // of skeletons
   totalCount?: number
+
+  // Use carousel spacing to override the parent's margins
+  // e.g. make carousel start and end at edge of the screen
+  carouselSpacing?: number
 }
 
 export type LoadingCard = { _loading: true }
@@ -44,11 +47,12 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
   },
-  cardListCarousel: {
+  cardListHorizontal: {
+    paddingHorizontal: spacing(4),
     paddingRight: 0,
     flexGrow: 0
   },
-  cardCarousel: {
+  cardHorizontal: {
     width: spacing(40),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
@@ -65,13 +69,12 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     LoadingCardComponent = DefaultLoadingCard,
     FlatListComponent = FlatList,
     totalCount,
+    horizontal: isHorizontal = false,
+    carouselSpacing = 0,
     ...other
   } = props
 
   const styles = useStyles()
-  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
-    FeatureFlags.SEARCH_EXPLORE_MOBILE
-  )
   const ref = useRef<FlatListT<ItemT | LoadingCard>>(null)
   const isLoading = isLoadingProp ?? !dataProp
 
@@ -98,33 +101,36 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
         )
 
       return (
-        <View
-          style={isSearchExploreEnabled ? styles.cardCarousel : styles.card}
-        >
+        <View style={isHorizontal ? styles.cardHorizontal : styles.card}>
           {itemElement}
         </View>
       )
     },
     [
       LoadingCardComponent,
-      isSearchExploreEnabled,
       renderItem,
       styles.card,
-      styles.cardCarousel
+      styles.cardHorizontal,
+      isHorizontal
     ]
   )
 
-  if (isSearchExploreEnabled) {
+  if (isHorizontal) {
     return (
-      <FlatListComponent
-        key='carousel'
-        style={styles.cardListCarousel}
-        ref={ref}
-        data={data}
-        renderItem={handleRenderItem}
-        horizontal
-        {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
-      />
+      <Flex style={{ marginHorizontal: carouselSpacing * -1 }}>
+        <FlatListComponent
+          key='horizontal'
+          style={[
+            styles.cardListHorizontal,
+            { paddingHorizontal: carouselSpacing }
+          ]}
+          ref={ref}
+          data={data}
+          renderItem={handleRenderItem}
+          horizontal
+          {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
+        />
+      </Flex>
     )
   }
 
