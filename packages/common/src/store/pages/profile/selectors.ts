@@ -1,12 +1,7 @@
-import { QueryClient } from '@tanstack/react-query'
-
-import { getUserQueryKey } from '~/api'
-import { getUser, getUsers } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
 import { createDeepEqualSelector } from '~/utils/selectorHelpers'
 
 import { Status } from '../../../models'
-import type { ID } from '../../../models'
 
 import { initialState as initialFeedState } from './lineups/feed/reducer'
 import { PREFIX as TRACKS_PREFIX } from './lineups/tracks/actions'
@@ -43,17 +38,6 @@ export const getProfileCollectionSortMode = (
 ) => getProfile(state, handle)?.collectionSortMode
 export const getIsSubscribed = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.isNotificationSubscribed
-export const getProfileUser = (
-  state: CommonState,
-  params?: { handle?: string | null; id?: ID }
-) => {
-  const profileHandle = getProfileUserHandle(state)
-  if (!params) return getUser(state, { handle: profileHandle })
-
-  const { id, handle } = params
-  if (id) return getUser(state, params)
-  return getUser(state, { handle: handle ?? profileHandle })
-}
 
 export const getProfileFeedLineup = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.feed ?? initialFeedState

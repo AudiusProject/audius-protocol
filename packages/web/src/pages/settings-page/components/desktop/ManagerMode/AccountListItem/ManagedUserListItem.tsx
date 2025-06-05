@@ -28,7 +28,6 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 
 import { sharedMessages } from '../sharedMessages'
@@ -36,7 +35,7 @@ import { sharedMessages } from '../sharedMessages'
 import { ArtistInfo } from './ArtistInfo'
 
 const { profilePage } = route
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   moreOptions: 'more options',
@@ -68,9 +67,7 @@ export const ManagedUserListItem = ({
 
   const { switchAccount } = useAccountSwitcher()
 
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id, currentUserId })
-  )
+  const { canCreateChat } = useCanCreateChat(user?.user_id)
 
   const composeChat = useComposeChat({
     user

@@ -123,6 +123,7 @@ export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserTracksByHandle'
 export * from './tan-query/users/useProfileUser'
+export * from './tan-query/users/useOtherChatUsers'
 
 // Account
 export * from './tan-query/users/account/useResetPassword'

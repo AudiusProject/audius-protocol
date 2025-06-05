@@ -82,7 +82,7 @@ const { createPlaylist } = cacheCollectionsActions
 
 const { getProfileFeedLineup, getProfileTracksLineup } = profilePageSelectors
 const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
+const { getBlockees, getBlockers, useCanCreateChat } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -1160,7 +1160,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 type HookStateProps = {
   accountUserId?: ID | undefined
   accountHasTracks?: boolean | undefined
-  chatPermissions?: ReturnType<typeof getCanCreateChat>
+  chatPermissions?: ReturnType<typeof useCanCreateChat>
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
@@ -1170,13 +1170,7 @@ const hookStateToProps = (Component: typeof ProfilePage) => {
         accountHasTracks: selectAccountHasTracks(user)
       })
     })
-    const { data: currentUserId } = useCurrentUserId()
-    const chatPermissions = useSelector((state: AppState) =>
-      getCanCreateChat(state, {
-        userId: props.profile?.profile?.user_id,
-        currentUserId
-      })
-    )
+    const chatPermissions = useCanCreateChat(props.profile?.profile?.user_id)
     return (
       <ProfilePage
         {...(accountData as HookStateProps)}

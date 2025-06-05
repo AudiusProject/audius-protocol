@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import { useSupporters } from '@audius/common/api'
-import { profilePageSelectors } from '@audius/common/store'
+import { useProfileUser, useSupporters } from '@audius/common/api'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
 import { IconTrophy, Skeleton } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   setUsers,
@@ -18,7 +17,6 @@ import {
 import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from './ProfilePictureListTile'
-const { getProfileUser } = profilePageSelectors
 
 const messages = {
   topSupporters: 'Top Supporters'
@@ -26,7 +24,7 @@ const messages = {
 
 export const TopSupporters = () => {
   const dispatch = useDispatch()
-  const profile = useSelector(getProfileUser)
+  const { user: profile } = useProfileUser()
   const { data: supporters = [], isLoading } = useSupporters({
     userId: profile?.user_id,
     pageSize: MAX_PROFILE_TOP_SUPPORTERS

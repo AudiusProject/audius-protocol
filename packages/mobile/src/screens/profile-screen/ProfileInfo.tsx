@@ -22,7 +22,7 @@ import { MessageLockedButton } from './MessageLockedButton'
 import { SubscribeButton } from './SubscribeButton'
 import { useSelectProfile } from './selectors'
 
-const { getCanCreateChat, getChatPermissionsStatus } = chatSelectors
+const { useCanCreateChat, getChatPermissionsStatus } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getProfileUserId } = profilePageSelectors
 
@@ -43,10 +43,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const profileUserId = useSelector((state) =>
     getProfileUserId(state, params.handle)
   )
-  const { data: currentUserId } = useCurrentUserId()
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: profileUserId, currentUserId })
-  )
+  const { canCreateChat } = useCanCreateChat(profileUserId)
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 
   useEffect(() => {

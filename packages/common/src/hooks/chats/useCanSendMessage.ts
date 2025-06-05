@@ -1,13 +1,9 @@
 import { useSelector } from 'react-redux'
 
-import { useCurrentUserId } from '~/api'
-import { useProxySelector } from '~/hooks/useProxySelector'
+import { useCurrentUserId, useOtherChatUsers } from '~/api'
 import { User } from '~/models/User'
 import { ChatPermissionAction, CommonState } from '~/store/index'
-import {
-  getCanSendMessage,
-  getOtherChatUsers
-} from '~/store/pages/chat/selectors'
+import { getCanSendMessage } from '~/store/pages/chat/selectors'
 
 /**
  * Returns whether or not the current user can send messages to the current chat
@@ -21,10 +17,7 @@ export const useCanSendMessage = (
   firstOtherUser: User | undefined
 } => {
   const { data: currentUserId } = useCurrentUserId()
-  const users = useProxySelector(
-    (state) => getOtherChatUsers(state, currentUserId, currentChatId),
-    [currentChatId]
-  )
+  const users = useOtherChatUsers(currentChatId)
 
   const firstOtherUser = users[0]
 

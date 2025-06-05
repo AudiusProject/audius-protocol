@@ -29,7 +29,7 @@ import { UserBadges } from '../user-badges'
 const { followUser } = usersSocialActions
 
 const { unblockUser, createChat } = chatActions
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 const { beginTip } = tippingActions
 
 const messages = {
@@ -117,9 +117,7 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   const user = useSelector((state) =>
     cacheUsersSelectors.getUser(state, { id: userId })
   )
-  const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId, currentUserId })
-  )
+  const { callToAction } = useCanCreateChat(userId)
 
   const handleUnblockPress = useCallback(() => {
     if (!userId) {

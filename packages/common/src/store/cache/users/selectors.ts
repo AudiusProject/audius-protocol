@@ -1,8 +1,4 @@
-import {
-  getAllEntries,
-  getEntry,
-  getEntryTimestamp
-} from '~/store/cache/selectors'
+import { getAllEntries, getEntry } from '~/store/cache/selectors'
 import type { CommonState } from '~/store/commonStore'
 
 import { Kind } from '../../../models'

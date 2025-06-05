@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
-import { useProxySelector } from '@audius/common/hooks'
+import { useOtherChatUsers } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -24,7 +23,7 @@ import { ChatUser } from './ChatUser'
 import { DeleteChatConfirmationModal } from './DeleteChatConfirmationModal'
 import { UnblockUserConfirmationModal } from './UnblockUserConfirmationModal'
 
-const { getOtherChatUsers, getBlockees } = chatSelectors
+const { getBlockees } = chatSelectors
 const { profilePage } = route
 
 const messages = {
@@ -44,11 +43,7 @@ export const UserChatHeader = ({ chatId }: { chatId?: string }) => {
   const [isReportAbuse, setIsReportAbuse] = useState(false)
   const [isDeleteChatModalVisible, setIsDeleteChatModalVisible] =
     useState(false)
-  const { data: currentUserId } = useCurrentUserId()
-  const users = useProxySelector(
-    (state) => getOtherChatUsers(state, currentUserId, chatId),
-    [chatId]
-  )
+  const users = useOtherChatUsers(chatId)
   const user: User | null = users[0] ?? null
   const blockeeList = useSelector(getBlockees)
   const isBlocked = user && blockeeList.includes(user.user_id)

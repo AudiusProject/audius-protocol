@@ -33,6 +33,8 @@ import { useSelector } from 'utils/reducer'
 
 const { unblockUser, createChat } = chatActions
 const { followUser } = usersSocialActions
+const { beginTip } = tippingActions
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   title: 'Inbox Unavailable',
@@ -114,9 +116,6 @@ const actionToContent = ({
   }
 }
 
-const { beginTip } = tippingActions
-const { getCanCreateChat } = chatSelectors
-
 export const InboxUnavailableModal = () => {
   const { isOpen, onClose, onClosed, data } = useInboxUnavailableModal()
   const { userId, presetMessage, onSuccessAction, onCancelAction } = data
@@ -125,9 +124,7 @@ export const InboxUnavailableModal = () => {
   )
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
-  const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId, currentUserId })
-  )
+  const { callToAction } = useCanCreateChat(userId)
   const hasAction =
     callToAction === ChatPermissionAction.TIP ||
     callToAction === ChatPermissionAction.FOLLOW ||
