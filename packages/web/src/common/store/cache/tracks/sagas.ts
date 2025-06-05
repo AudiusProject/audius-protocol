@@ -27,16 +27,14 @@ import {
   TrackMetadataForUpload,
   stemsUploadActions,
   stemsUploadSelectors,
-  getSDK,
-  cacheUsersSelectors
+  getSDK
 } from '@audius/common/store'
 import {
   formatMusicalKey,
   makeKindId,
   squashNewLines,
   uuid,
-  waitForAccount,
-  waitForValue
+  waitForAccount
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
@@ -51,7 +49,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUser } = cacheUsersSelectors
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
@@ -287,7 +284,7 @@ function* deleteTrackAsync(
         }
       ])
     )
-    const user = yield* call(waitForValue, getUser, { id: userId })
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
   }
 

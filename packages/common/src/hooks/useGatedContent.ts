@@ -6,7 +6,9 @@ import {
   useCollection,
   useCurrentAccount,
   useHasAccount,
-  useTrack
+  useTrack,
+  useUser,
+  useUsers
 } from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
@@ -20,9 +22,7 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
-import { cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
-import { CommonState } from '~/store/reducers'
 import {
   isContentPartialCollection,
   isContentPartialTrack
@@ -31,7 +31,6 @@ import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { useFeatureFlag } from './useFeatureFlag'
 
-const { getUser, getUsers } = cacheUsersSelectors
 const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
 export const useGatedTrackAccess = (trackId: ID) => {
@@ -179,11 +178,7 @@ export const useStreamConditionsEntity = (
     ? streamConditions?.nft_collection
     : null
 
-  const users = useSelector((state: CommonState) =>
-    getUsers(state, {
-      ids: [followUserId, tipUserId].filter(removeNullable)
-    })
-  )
+  const users = useUsers([followUserId, tipUserId].filter(removeNullable))
   const followee = followUserId ? users[followUserId]?.metadata : null
   const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
 
@@ -215,9 +210,7 @@ export const useStreamConditionsEntity = (
 export const useLockedContent = () => {
   const id = useSelector(getLockedContentId)
   const { data: track } = useTrack(id)
-  const owner = useSelector((state: CommonState) => {
-    return track?.owner_id ? getUser(state, { id: track.owner_id }) : null
-  })
+  const { data: owner } = useUser(track?.owner_id)
 
   return { id, track, owner }
 }

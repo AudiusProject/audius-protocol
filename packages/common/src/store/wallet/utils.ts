@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux'
 
 import { useCurrentAccountUser } from '~/api'
 import { useUser } from '~/api/tan-query/users/useUser'
-import { getUser } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
 import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
 
@@ -44,16 +43,6 @@ export const badgeTiers: BadgeTierInfo[] = [
     humanReadableAmount: 0
   }
 ]
-
-// Selectors
-
-export const getVerifiedForUser = (
-  state: CommonState,
-  { userId }: { userId?: ID }
-) => {
-  const user = getUser(state, { id: userId })
-  return !!user?.is_verified
-}
 
 /**
  * Hook to get the tier and verification status for a user

@@ -3,14 +3,13 @@ import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   SUGGESTED_TRACK_COUNT,
   useCollection,
-  useSuggestedPlaylistTracks
+  useSuggestedPlaylistTracks,
+  useUser
 } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { Animated, LayoutAnimation, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import {
@@ -26,8 +25,6 @@ import { makeStyles } from 'app/styles'
 import { TrackImage } from '../image/TrackImage'
 import { Skeleton } from '../skeleton'
 import { UserBadges } from '../user-badges'
-
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   title: 'Add some tracks',
@@ -90,7 +87,7 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
   const { collectionId, track, onAddTrack } = props
   const { track_id, title, owner_id } = track
 
-  const user = useSelector((state) => getUser(state, { id: owner_id }))
+  const { data: user } = useUser(owner_id)
   const styles = useStyles()
 
   const { data: collection } = useCollection(collectionId)

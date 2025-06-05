@@ -1,25 +1,23 @@
-import { queryTrack } from '@audius/common/api'
+import { queryTrack, queryUser } from '@audius/common/api'
 import {
   cacheTracksActions as trackCacheActions,
   trackPageLineupActions,
   trackPageActions,
-  trackPageSelectors,
-  cacheUsersSelectors
+  trackPageSelectors
 } from '@audius/common/store'
 import moment from 'moment'
-import { put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import trackLineupSagas from './lineups/sagas'
 
 const { tracksActions } = trackPageLineupActions
 const { getTrackId } = trackPageSelectors
-const { getUser } = cacheUsersSelectors
 
 function* watchRefetchLineup() {
   yield* takeEvery(trackPageActions.REFETCH_LINEUP, function* (action) {
     const trackId = yield* select(getTrackId)
     const track = yield* queryTrack(trackId)
-    const user = yield* select(getUser, { id: track?.owner_id })
+    const user = yield* call(queryUser, track?.owner_id)
 
     yield* put(tracksActions.reset())
     yield* put(

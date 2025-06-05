@@ -11,13 +11,12 @@ import {
   usersSocialActions as socialActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
-  cacheUsersSelectors
+  confirmTransaction
 } from '@audius/common/store'
 import { makeKindId, route } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
 import { Action } from '@reduxjs/toolkit'
-import { call, select, takeEvery, put } from 'typed-redux-saga'
+import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -28,7 +27,6 @@ import errorSagas from './errorSagas'
 
 const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
-const { getUsers } = cacheUsersSelectors
 
 /* FOLLOW */
 
@@ -217,7 +215,7 @@ export function* unfollowUser(
     return
   }
 
-  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
+  const users = yield* call(queryUsers, [action.userId, accountId])
   const unfollowedUser = users[action.userId].metadata
   const currentUser = users[accountId].metadata
 
@@ -293,7 +291,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
-        const users = yield* select(getUsers, { ids: [userId, accountId] })
+        const users = yield* call(queryUsers, [userId, accountId])
         const unfollowedUser = users[userId].metadata
         const currentUser = users[accountId].metadata
 

@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
+import { useUserByHandle } from '@audius/common/api'
 import { useTwitterButtonStatus } from '@audius/common/hooks'
-import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
+import { cacheUsersActions } from '@audius/common/store'
 import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,7 +12,6 @@ import { IconTwitter, Button } from '@audius/harmony-native'
 import { useLink, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import type { AllEvents } from 'app/types/analytics'
-const { getUser } = cacheUsersSelectors
 const { fetchUserSocials } = cacheUsersActions
 
 const messages = {
@@ -47,14 +47,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
   const openLink = useOnOpenLink()
   const dispatch = useDispatch()
 
-  const user = useSelector((state) =>
-    getUser(state, { handle: 'handle' in other ? other.handle : undefined })
+  const { data: user } = useUserByHandle(
+    'handle' in other ? other.handle : undefined
   )
 
-  const additionalUser = useSelector((state) =>
-    getUser(state, {
-      handle: 'additionalHandle' in other ? other.additionalHandle : undefined
-    })
+  const additionalUser = useUserByHandle(
+    'additionalHandle' in other ? other.additionalHandle : undefined
   )
 
   const {

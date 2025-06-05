@@ -1,9 +1,3 @@
-import * as baseCacheUsersSelectors from './users/selectors'
-
-export const cacheUsersSelectors = {
-  ...baseCacheUsersSelectors
-}
-
 export * as cacheCollectionsActions from './collections/actions'
 export * from './collections/types'
 export * as cacheTracksActions from './tracks/actions'

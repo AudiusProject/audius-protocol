@@ -1,5 +1,6 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import {
@@ -11,7 +12,7 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import { useParams } from 'react-router'
 import { Dispatch } from 'redux'
 
@@ -25,7 +26,7 @@ const { profilePage } = route
 
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getAiUser, getLineup } = aiPageSelectors
+const { getAiUserId, getLineup } = aiPageSelectors
 const { fetchAiUser, reset } = aiPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
@@ -48,7 +49,6 @@ type AiPageProviderProps = OwnProps &
 const AiPageProvider = ({
   containerRef,
   children: Children,
-  user,
   tracks,
   fetchAiUser,
   currentQueueItem,
@@ -63,6 +63,8 @@ const AiPageProvider = ({
 }: AiPageProviderProps) => {
   const { handle } = useParams<{ handle: string }>()
   const currentTrack = useCurrentTrack()
+  const aiUserId = useSelector(getAiUserId)
+  const { data: user } = useUser(aiUserId)
 
   useEffect(() => {
     fetchAiUser(handle)
@@ -124,7 +126,6 @@ function makeMapStateToProps() {
 
   const mapStateToProps = (state: AppState) => {
     return {
-      user: getAiUser(state),
       tracks: getRemixesTracksLineup(state),
       currentQueueItem: getCurrentQueueItem(state),
       isPlaying: getPlaying(state),
