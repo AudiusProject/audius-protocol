@@ -69,10 +69,10 @@ export const YourCoins = () => {
       >
         <Flex direction='row' alignItems='center' gap='m'>
           <IconTokenAUDIO size='4xl' borderRadius={cornerRadius.circle} />
-          <Flex direction='column' gap='xs'>
-            <Flex direction='row' alignItems='center' gap='xs'>
+          <Flex direction='column' gap='xs' h='3xl' justifyContent='center'>
+            <Flex direction='row' alignItems='center' h='2xl' gap='xs'>
               {isAudioBalanceLoading ? (
-                <Skeleton h='4xl' w='5xl' />
+                <Skeleton h='2xl' w='5xl' />
               ) : (
                 <>
                   <Text variant='heading' size='l' color='default'>
