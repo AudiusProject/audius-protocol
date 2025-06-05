@@ -5,9 +5,9 @@ import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
   settingsPageActions,
   themeSelectors,
-  getTierAndVerifiedForUser,
   themeActions,
-  musicConfettiActions
+  musicConfettiActions,
+  useTierAndVerifiedForUser
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -33,7 +33,6 @@ import Page from 'components/page/Page'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import useScrollToTop from 'hooks/useScrollToTop'
 import { env } from 'services/env'
-import { AppState } from 'store/types'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -113,9 +112,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
   })
   const { userId, handle, name } = accountData ?? {}
   const theme = useSelector(getTheme)
-  const tier = useSelector(
-    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
-  )
+  const { tier } = useTierAndVerifiedForUser(userId)
   const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
 
   useEffect(() => {

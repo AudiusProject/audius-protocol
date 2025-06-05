@@ -1,5 +1,9 @@
 import { ComponentType, PureComponent } from 'react'
 
+import {
+  useCurrentAccount,
+  selectNameSortedPlaylistsAndAlbums
+} from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -10,7 +14,8 @@ import {
   UID,
   LineupTrack,
   Track,
-  Lineup
+  Lineup,
+  AccountCollection
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
@@ -26,7 +31,8 @@ import {
   LibraryCategoryType,
   SavedPageTrack,
   TrackRecord,
-  useLineupTable
+  useLineupTable,
+  AccountState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
@@ -82,7 +88,14 @@ type OwnProps = {
 type SavedPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    account?:
+      | (AccountState & {
+          playlists: AccountCollection[]
+          albums: AccountCollection[]
+        })
+      | undefined
+  }
 
 type SavedPageState = {
   currentTab: ProfileTabs
@@ -574,7 +587,25 @@ function mapDispatchToProps(dispatch: Dispatch) {
     record: (event: TrackEvent) => dispatch(event)
   }
 }
+const withHook = (Component: typeof SavedPage) => {
+  return function WrappedComponent(props: SavedPageProps) {
+    const { data: account } = useCurrentAccount({
+      select: (account) => {
+        if (!account) return undefined
+        const sortedCollections = selectNameSortedPlaylistsAndAlbums(account)
+        if (!sortedCollections) return undefined
+        return {
+          ...account,
+          playlists: sortedCollections.playlists ?? [],
+          albums: sortedCollections.albums ?? []
+        }
+      }
+    })
+
+    return <Component {...props} account={account} />
+  }
+}
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(SavedPage)
+  connect(makeMapStateToProps, mapDispatchToProps)(withHook(SavedPage))
 )

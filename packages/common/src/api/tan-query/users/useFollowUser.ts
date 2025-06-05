@@ -9,10 +9,9 @@ import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { AccountUserMetadata, UserMetadata } from '~/models/User'
+import { UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
 
-import { getCurrentAccountQueryKey } from './account/useCurrentAccount'
 import { useCurrentUserId } from './account/useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 
@@ -24,7 +23,6 @@ type FollowUserParams = {
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
-  previousAccountUser: AccountUserMetadata | undefined
 }
 
 export const useFollowUser = () => {
@@ -72,7 +70,7 @@ export const useFollowUser = () => {
     },
     onMutate: async ({ followeeUserId }): Promise<MutationContext> => {
       if (!followeeUserId || !currentUserId) {
-        return { previousUser: undefined, previousAccountUser: undefined }
+        return { previousUser: undefined }
       }
 
       await queryClient.cancelQueries({
@@ -109,50 +107,17 @@ export const useFollowUser = () => {
         })
       }
 
-      const previousAccountUser = queryClient.getQueryData(
-        getCurrentAccountQueryKey()
-      )
-
-      if (previousAccountUser) {
-        queryClient.setQueryData(getCurrentAccountQueryKey(currentUserId), {
-          ...previousAccountUser,
-          user: {
-            ...previousAccountUser.user,
-            followee_count: previousAccountUser.user.followee_count + 1
-          }
-        })
-      }
-
-      dispatch(
-        update(Kind.USERS, [
-          {
-            id: currentUserId,
-            metadata: {
-              followee_count:
-                (previousAccountUser?.user?.followee_count ?? 0) + 1
-            }
-          }
-        ])
-      )
-
-      return { previousUser, previousAccountUser }
+      return { previousUser }
     },
     onError: (
       error,
       { followeeUserId },
       context: MutationContext | undefined
     ) => {
-      const { previousUser, previousAccountUser } = context ?? {}
+      const { previousUser } = context ?? {}
 
       if (previousUser) {
         queryClient.setQueryData(getUserQueryKey(followeeUserId), previousUser)
-      }
-
-      if (previousAccountUser) {
-        queryClient.setQueryData(
-          getCurrentAccountQueryKey(),
-          previousAccountUser
-        )
       }
 
       reportToSentry({

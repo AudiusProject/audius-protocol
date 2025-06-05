@@ -4,12 +4,13 @@ import { accountFromSDK } from '@audius/common/adapters'
 import {
   useGetCurrentUserId,
   useGetCurrentWeb3User,
-  useManagedAccounts
+  useManagedAccounts,
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name, ErrorLevel, UserMetadata } from '@audius/common/models'
 import { SignInResponse } from '@audius/common/services'
-import { accountSelectors, signOutActions } from '@audius/common/store'
+import { signOutActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -23,7 +24,7 @@ import {
   TextLink
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import AppIcon from 'assets/img/appIcon.png'
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -46,12 +47,11 @@ import { WriteOnceTx } from './utils'
 
 const { SIGN_UP_PAGE } = route
 const { signOut } = signOutActions
-const { getAccountUser } = accountSelectors
 
 export const OAuthLoginPage = () => {
   const record = useRecord()
-  const account = useSelector(getAccountUser)
-  const isLoggedIn = Boolean(account)
+  const { data: account } = useCurrentAccountUser()
+  const isLoggedIn = Boolean(account?.user_id)
 
   const dispatch = useDispatch()
 

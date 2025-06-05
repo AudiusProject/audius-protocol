@@ -1,14 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
-import { useResetPassword } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useHasAccount, useResetPassword } from '@audius/common/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { NavigationProp, RouteProp } from '@react-navigation/native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { View } from 'react-native'
 import RNRestart from 'react-native-restart'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { IconClose } from '@audius/harmony-native'
@@ -20,7 +18,6 @@ import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
 import type { RootScreenParamList } from '../root-screen'
-const { getHasAccount } = accountSelectors
 
 const messages = {
   title: 'Reset Your Password',
@@ -47,7 +44,7 @@ const ResetPasswordScreen = () => {
   const { params } = useRoute<RouteProp<RootScreenParamList, 'ResetPassword'>>()
   const { login, email } = params
   const navigation = useNavigation<NavigationProp<RootScreenParamList>>()
-  const isSignedIn = useSelector(getHasAccount)
+  const isSignedIn = useHasAccount()
   const { toast } = useToast()
 
   useAsync(async () => {

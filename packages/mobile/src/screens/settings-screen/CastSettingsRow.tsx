@@ -1,11 +1,8 @@
 import { useCallback } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import type { CastMethod } from '@audius/common/store'
-import {
-  accountSelectors,
-  castSelectors,
-  castActions
-} from '@audius/common/store'
+import { castSelectors, castActions } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconVolumeLevel2 } from '@audius/harmony-native'
@@ -17,7 +14,6 @@ import { SettingsRowContent } from './SettingsRowContent'
 import { SettingsRowDescription } from './SettingsRowDescription'
 const { updateMethod } = castActions
 const { getMethod: getCastMethod } = castSelectors
-const { getHasAccount } = accountSelectors
 
 const messages = {
   cast: 'Cast to Devices',
@@ -29,7 +25,7 @@ const messages = {
 
 export const CastSettingsRow = () => {
   const dispatch = useDispatch()
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   const castMethod = useSelector(getCastMethod)
 
   const setCastMethod = useCallback(

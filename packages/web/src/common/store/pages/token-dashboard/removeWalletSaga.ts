@@ -1,5 +1,5 @@
+import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
 import {
-  accountSelectors,
   tokenDashboardPageActions,
   walletActions,
   confirmerActions,
@@ -8,7 +8,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { Id } from '@audius/sdk'
-import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
+import { call, fork, put, takeLatest } from 'typed-redux-saga'
 
 import {
   fetchEthereumCollectibles,
@@ -18,7 +18,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
 
-const { getUserId, getAccountUser } = accountSelectors
 const {
   confirmRemoveWallet,
   updateWalletError,
@@ -34,7 +33,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
   const sdk = yield* getSDK()
   const removeWallet = action.payload.wallet
   const removeChain = action.payload.chain
-  const accountUserId = yield* select(getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
 
   if (!accountUserId) {
     return
@@ -62,7 +61,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     yield* put(getBalance())
     yield* put(removeWalletAction({ wallet: removeWallet, chain: removeChain }))
 
-    const user = yield* select(getAccountUser)
+    const user = yield* call(queryAccountUser)
 
     yield* fork(fetchSolanaCollectibles, user)
     yield* fork(fetchEthereumCollectibles, user)

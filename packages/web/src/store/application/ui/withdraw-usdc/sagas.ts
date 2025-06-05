@@ -1,3 +1,4 @@
+import { queryAccountUser } from '@audius/common/api'
 import {
   Name,
   Status,
@@ -12,12 +13,11 @@ import {
   WithdrawMethod,
   getContext,
   buyUSDCActions,
-  accountSelectors,
   getSDK
 } from '@audius/common/store'
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take } from 'typed-redux-saga'
+import { call, put, race, take } from 'typed-redux-saga'
 
 import { env } from 'services/env'
 import { getSolanaConnection } from 'services/solana/solana'
@@ -76,7 +76,7 @@ function* doWithdrawUSDCCoinflow({
     const destinationAddress = rootSolanaAccount.publicKey.toString()
     const connection = yield* call(getSolanaConnection)
 
-    const user = yield* select(accountSelectors.getAccountUser)
+    const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
       throw new Error('Unable to find wallet. Is the user signed in?')
     }
@@ -238,7 +238,7 @@ function* doWithdrawUSDCManualTransfer({
       })
     )
 
-    const user = yield* select(accountSelectors.getAccountUser)
+    const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
       throw new Error('Unable to find wallet. Is the user signed in?')
     }

@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { FollowSource } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import { pick } from 'lodash'
-import { Pressable, Animated } from 'react-native'
-import { useSelector } from 'react-redux'
+import { Animated, Pressable } from 'react-native'
 
 import { Text, IconUser, Flex } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
@@ -20,8 +18,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { SupporterInfo } from './SupporterInfo'
 import { SupportingInfo } from './SupportingInfo'
-
-const getUserId = accountSelectors.getUserId
 
 const messages = {
   followers: (followerCount: number) =>
@@ -46,7 +42,7 @@ export const UserListItem = (props: UserListItemProps) => {
     select: (user) => pick(user, ['handle', 'follower_count'])
   })
   const { handle, follower_count = 0 } = user ?? {}
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const styles = useStyles()
   const navigation = useNavigation()
   const { white, neutralLight10 } = useThemeColors()

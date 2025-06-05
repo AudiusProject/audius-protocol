@@ -2,12 +2,13 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import type {
   CollectionMetadata,
   UserCollectionMetadata
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
-import { accountSelectors, getSDK } from '@audius/common/store'
+import { getSDK } from '@audius/common/store'
 import { Id, OptionalId } from '@audius/sdk'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
@@ -40,8 +41,6 @@ import { shouldAbortJob } from '../../utils/shouldAbortJob'
 import { shouldCancelJob } from '../../utils/shouldCancelJob'
 
 import { downloadFile } from './downloadFile'
-
-const { getUserId } = accountSelectors
 
 const MAX_RETRY_COUNT = 3
 
@@ -120,7 +119,7 @@ function* downloadCollectionAsync(
     return OfflineDownloadStatus.SUCCESS
   }
 
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return OfflineDownloadStatus.ERROR
 
   const sdk = yield* getSDK()

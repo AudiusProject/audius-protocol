@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useAccountStatus, useCurrentUserId } from '@audius/common/api'
 import {
   Name,
   ErrorLevel,
   statusIsNotFinalized,
   UserMetadata
 } from '@audius/common/models'
-import { accountSelectors, CommonState } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import * as queryString from 'query-string'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -34,8 +34,6 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
-
-const { getAccountStatus, getUserId } = accountSelectors
 
 const useParsedQueryParams = () => {
   const { search } = useLocation()
@@ -191,11 +189,9 @@ export const useOAuthSetup = ({
     display,
     error: initError
   } = useParsedQueryParams()
-  const accountIsLoading = useSelector((state: CommonState) => {
-    const status = getAccountStatus(state)
-    return statusIsNotFinalized(status)
-  })
-  const accountUserId = useSelector(getUserId)
+  const { data: accountStatus } = useAccountStatus()
+  const accountIsLoading = accountStatus && statusIsNotFinalized(accountStatus)
+  const { data: accountUserId } = useCurrentUserId()
   const isLoggedIn = Boolean(accountUserId)
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [queryParamsError, setQueryParamsError] = useState<string | null>(

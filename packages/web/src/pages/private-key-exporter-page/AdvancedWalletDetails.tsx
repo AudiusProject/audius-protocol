@@ -1,8 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useCurrentAccountUser, useQueryContext } from '@audius/common/api'
+import {
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useQueryContext
+} from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Nullable, shortenSPLAddress } from '@audius/common/utils'
 import { Flex, Box, Divider, IconCopy, Text, useTheme } from '@audius/harmony'
 import pkg from 'bs58'
@@ -11,9 +14,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
-import { useSelector } from 'utils/reducer'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   advancedWalletDetails: 'Advanced Wallet Details',
@@ -36,7 +36,7 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { data: accountHandle } = useCurrentAccountUser({
     select: (user) => user?.handle
   })
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const handleClick = useCallback(() => {
     copyToClipboard(value)
     if (accountHandle && accountUserId) {

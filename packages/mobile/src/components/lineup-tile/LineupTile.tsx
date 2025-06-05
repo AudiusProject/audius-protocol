@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   PurchaseableContentType,
-  accountSelectors,
   gatedContentActions
 } from '@audius/common/store'
 import { isLongFormContent } from '@audius/common/utils'
 import { View } from 'react-native'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -23,7 +23,6 @@ import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileTopRight } from './LineupTileTopRight'
 import { TrackTileStats } from './TrackTileStats'
 
-const { getUserId } = accountSelectors
 const { setLockedContentId } = gatedContentActions
 
 export const LineupTile = ({
@@ -59,7 +58,7 @@ export const LineupTile = ({
   const { has_current_user_reposted, has_current_user_saved } = item
   const dispatch = useDispatch()
   const { user_id } = user
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = user_id === currentUserId
   const isCollection = 'playlist_id' in item
   const isAlbum = 'is_album' in item && item.is_album

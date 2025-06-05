@@ -5,15 +5,14 @@ import {
   useReaction,
   useWriteReaction,
   useCurrentUserId,
-  getReactionFromRawValue
+  getReactionFromRawValue,
+  useUser
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type { TipReceiveNotification } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconTipping } from '@audius/harmony-native'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
@@ -33,8 +32,6 @@ import {
   NotificationBody
 } from '../Notification'
 import { ReactionList } from '../Reaction'
-
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'You Received a Tip!',
@@ -69,7 +66,7 @@ export const TipReceivedNotification = (
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification

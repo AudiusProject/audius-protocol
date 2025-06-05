@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
-import {
-  RequestManagerNotification as RequestManagerNotificationType,
-  notificationsSelectors
-} from '@audius/common/store'
+import { useUser } from '@audius/common/api'
+import { RequestManagerNotification as RequestManagerNotificationType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconUserArrowRotate } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -19,7 +16,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { UserNameLink } from './components/UserNameLink'
 
 const { ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE } = route
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Account Management Request',
@@ -36,9 +32,7 @@ export const RequestManagerNotification = (
   const { notification } = props
   const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
-  const managedAccountUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const { data: managedAccountUser } = useUser(notification.userId)
 
   const handleClick = useCallback(() => {
     if (managedAccountUser?.user_id) {

@@ -1,113 +1,83 @@
-import { SquareSizes, User, WidthSizes } from '~/models'
-import { getAccountUser, getAccount } from '~/store/account/selectors'
+import { useCurrentAccount, useCurrentAccountUser } from '~/api'
+import { SquareSizes, WidthSizes } from '~/models'
+import { User } from '~/models/User'
+import { AccountState } from '~/store/account/types'
 import { getProfileUserHandle } from '~/store/pages/profile/selectors'
 
 import { Status } from '../../../models/Status'
 import { CommonState } from '../../commonStore'
 
-export const getProfileDescriptionExists = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return false
-  return curUser.bio !== null && curUser.bio !== undefined
+export const getUserCompletionStages = (
+  currentAccount: AccountState | undefined | null,
+  currentUser: User | undefined
+) => {
+  if (!currentAccount || !currentUser) {
+    return {
+      hasProfileDescription: false,
+      hasFavoritedItem: false,
+      hasReposted: false,
+      hasFollowedAccounts: false,
+      hasNameAndHandle: false,
+      hasProfilePicture: false,
+      hasCoverPhoto: false
+    }
+  }
+
+  const hasProfileDescription =
+    currentUser.bio !== null && currentUser.bio !== undefined
+  const hasFavoritedItem = (currentAccount.trackSaveCount || 0) > 0
+  const hasReposted = currentUser.repost_count > 0
+  const hasFollowedAccounts = currentUser.followee_count >= 5
+  const hasNameAndHandle = !!currentUser.name && !!currentUser.handle
+
+  const validProfilePictureSizes = [
+    SquareSizes.SIZE_150_BY_150,
+    SquareSizes.SIZE_480_BY_480,
+    SquareSizes.SIZE_1000_BY_1000
+  ] as const
+
+  const hasProfilePicture =
+    (currentUser.profile_picture &&
+      Object.keys(currentUser.profile_picture).some((size) =>
+        validProfilePictureSizes.includes(size as SquareSizes)
+      )) ||
+    !!currentUser.profile_picture_sizes
+
+  const validCoverPhotoSizes = [
+    WidthSizes.SIZE_640,
+    WidthSizes.SIZE_2000
+  ] as const
+
+  const hasCoverPhoto =
+    (currentUser.cover_photo &&
+      Object.keys(currentUser.cover_photo).some(
+        (size) =>
+          validCoverPhotoSizes.includes(size as WidthSizes) &&
+          currentUser.cover_photo[size] !== undefined
+      )) ||
+    !!currentUser.cover_photo_sizes
+
+  return {
+    hasProfileDescription,
+    hasFavoritedItem,
+    hasReposted,
+    hasFollowedAccounts,
+    hasNameAndHandle,
+    hasProfilePicture,
+    hasCoverPhoto
+  }
 }
 
-export const getHasFavoritedItem = (state: CommonState) => {
-  const curUser = getAccount(state)
-  if (!curUser) return false
-  const hasSavedTrack = (curUser.trackSaveCount || 0) > 0
-  const hasSavedCollection = Object.keys(state.account.collections).length > 0
-  return hasSavedTrack || hasSavedCollection
+export const useUserCompletionStages = () => {
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  return getUserCompletionStages(currentAccount, currentUser)
 }
 
-export const getHasReposted = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return false
-  return curUser.repost_count > 0
-}
-
-export const getNumFollowedAccounts = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return 0
-  return curUser.followee_count
-}
-
-export const getNameExists = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return false
-  return !!curUser.name
-}
-
-export const getHandleExists = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return false
-  return !!curUser.handle
-}
-
-const validProfilePictureSizes = [
-  SquareSizes.SIZE_150_BY_150,
-  SquareSizes.SIZE_480_BY_480,
-  SquareSizes.SIZE_1000_BY_1000
-] as const
-const isValidProfilePicture = (input: User['profile_picture']) => {
-  if (!input) return false
-
-  return Object.keys(input).some((size) =>
-    validProfilePictureSizes.includes(size as SquareSizes)
-  )
-}
-
-export const getProfilePictureExists = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return false
-  // If the user sets the profile picture this session,
-  // we set the updatedProfilePicture field to an object (otherwise it's undefined).
-  // If the profile picture was set in a previous session, we just have to check
-  // if the profile_picture field is non-null.
-  return (
-    !!curUser.updatedProfilePicture ||
-    isValidProfilePicture(curUser.profile_picture) ||
-    !!curUser.profile_picture_sizes
-  )
-}
-
-const validCoverPhotoSizes = [
-  WidthSizes.SIZE_640,
-  WidthSizes.SIZE_2000
-] as const
-
-const isValidCoverPhoto = (input: User['cover_photo']) => {
-  if (!input) return false
-
-  return Object.keys(input).some(
-    (size) =>
-      validCoverPhotoSizes.includes(size as WidthSizes) &&
-      input[size] !== undefined
-  )
-}
-
-export const getCoverPhotoExists = (state: CommonState) => {
-  const curUser = getAccountUser(state)
-  if (!curUser) return false
-
-  // Same logic as getProfilePictureExists
-  return (
-    !!curUser.updatedCoverPhoto ||
-    isValidCoverPhoto(curUser.cover_photo) ||
-    !!curUser.cover_photo_sizes
-  )
-}
-
-export const getCompletionStages = (state: CommonState) => ({
-  hasProfileDescription: getProfileDescriptionExists(state),
-  hasFavoritedItem: getHasFavoritedItem(state),
-  hasReposted: getHasReposted(state),
-  hasFollowedAccounts: getNumFollowedAccounts(state) >= 5,
-  hasNameAndHandle: getNameExists(state) && getHandleExists(state),
-  hasProfilePicture: getProfilePictureExists(state),
-  hasCoverPhoto: getCoverPhotoExists(state)
-})
-
-export const getOrderedCompletionStages = (state: CommonState) => {
+export const getOrderedCompletionStages = (
+  currentAccount: AccountState | undefined | null,
+  currentUser: User | undefined
+) => {
   const strings = {
     profileDescription: 'Profile Description',
     favorited: 'Favorite A Track/Playlist',
@@ -118,7 +88,7 @@ export const getOrderedCompletionStages = (state: CommonState) => {
     coverPhoto: 'Cover Photo'
   }
 
-  const stages = getCompletionStages(state)
+  const stages = getUserCompletionStages(currentAccount, currentUser)
   return [
     {
       title: strings.profileDescription,
@@ -149,6 +119,12 @@ export const getOrderedCompletionStages = (state: CommonState) => {
       isCompleted: stages.hasCoverPhoto
     }
   ]
+}
+
+export const useOrderedCompletionStages = () => {
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  return getOrderedCompletionStages(currentAccount, currentUser)
 }
 
 export const getProfilePageMeterDismissed = (state: CommonState) => {

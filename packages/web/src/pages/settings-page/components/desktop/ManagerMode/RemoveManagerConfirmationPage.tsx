@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId } from '@audius/common/api'
 import { Box } from '@audius/harmony'
-
-import { useSelector } from 'common/hooks/useSelector'
 
 import { RemoveManagerConfirmationContent } from './RemoveManagerConfirmationContent'
 import {
   AccountsManagingYouPages,
   ConfirmRemoveManagerPageProps
 } from './types'
-
-const { getUserId } = accountSelectors
 
 type RemoveManagerConfirmationPageProps = ConfirmRemoveManagerPageProps
 
@@ -24,7 +20,7 @@ export const RemoveManagerConfirmationPage = (
   props: RemoveManagerConfirmationPageProps
 ) => {
   const { params, setPageState } = props
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const managerUserId = params?.managerUserId
 
   const handleSuccess = useCallback(() => {

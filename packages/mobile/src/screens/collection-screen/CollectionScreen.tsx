@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
+import { useCollection, useCurrentUserId, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -16,7 +16,6 @@ import type {
   User
 } from '@audius/common/models'
 import {
-  accountSelectors,
   collectionsSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -60,7 +59,6 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -142,7 +140,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     [playlist_id]
   )
 
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = currentUserId === playlist_owner_id
 
   const isCollectionMarkedForDownload = useSelector(

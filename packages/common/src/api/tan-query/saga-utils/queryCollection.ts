@@ -1,7 +1,6 @@
-import { call, select } from 'typed-redux-saga'
+import { call } from 'typed-redux-saga'
 
 import { ID } from '~/models/Identifiers'
-import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getSDK } from '~/store/sdkUtils'
 
@@ -14,6 +13,8 @@ import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { isValidId } from '../utils/isValidId'
 
+import { queryCurrentUserId } from './queryAccount'
+
 export function* queryCollection(
   id: ID | null | undefined,
   forceFetch = false
@@ -22,7 +23,7 @@ export function* queryCollection(
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
   const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
 
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getCollectionQueryKey(id),
@@ -53,7 +54,7 @@ export function* queryCollectionByPermalink(
   if (!permalink) return undefined
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const sdk = yield* getSDK()
   const collectionId = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: [QUERY_KEYS.collectionByPermalink, permalink],

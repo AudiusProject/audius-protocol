@@ -1,9 +1,9 @@
 import { useCallback, useContext } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { Name, PlayableType } from '@audius/common/models'
 import {
-  accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   usersSocialActions,
@@ -31,7 +31,6 @@ const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
-const { getUserId } = accountSelectors
 const { setVisibility } = modalsActions
 
 export const ShareModal = () => {
@@ -42,7 +41,7 @@ export const ShareModal = () => {
   const isMobile = useIsMobile()
   const record = useRecord()
   const { content, source } = useSelector(getShareState)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const { onOpen: openCreateChatModal } = useCreateChatModal()
   const isManagerMode = useIsManagedAccount()
 

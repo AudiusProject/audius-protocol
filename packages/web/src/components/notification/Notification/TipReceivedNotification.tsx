@@ -6,17 +6,14 @@ import {
   useReaction,
   reactionOrder,
   ReactionTypes,
-  getReactionFromRawValue
+  getReactionFromRawValue,
+  useUser
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import {
-  notificationsSelectors,
-  TipReceiveNotification
-} from '@audius/common/store'
+import { TipReceiveNotification } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
-import { useSelector } from 'utils/reducer'
 
 import styles from './TipReceivedNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -31,8 +28,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
-
-const { getNotificationUser } = notificationsSelectors
 
 const reactionList: [ReactionTypes, ComponentType<ReactionProps>][] =
   reactionOrder.map((r) => [r, reactionMap[r]])
@@ -63,7 +58,7 @@ export const TipReceivedNotification = (
     reactionValue: notificationReactionValue
   } = notification
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification

@@ -1,16 +1,13 @@
 import { useCallback } from 'react'
 
-import { useManagedAccounts } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId, useManagedAccounts } from '@audius/common/api'
 import { Box, Divider, Flex, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useSelector } from 'utils/reducer'
 
 import { ManagedUserListItem } from './AccountListItem/ManagedUserListItem'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
 import { usePendingInviteValidator } from './usePendingInviteValidator'
-const { getUserId } = accountSelectors
 
 const messages = {
   takeControl:
@@ -23,7 +20,7 @@ const messages = {
 export const AccountsYouManageHomePage = ({
   setPageState
 }: AccountsYouManagePageProps) => {
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const {
     data: managedAccounts,
     isFetching,

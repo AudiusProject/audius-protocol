@@ -2,17 +2,15 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { primeCollectionDataSaga } from '@audius/common/api'
+import {
+  primeCollectionDataSaga,
+  queryAccountUser,
+  queryCurrentUserId
+} from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
-import { queryAccountUser } from '@audius/common/src/api/tan-query/saga-utils/queryUser'
-import {
-  accountSelectors,
-  walletActions,
-  getContext,
-  getSDK
-} from '@audius/common/store'
-import { waitForValue, doEvery, route } from '@audius/common/utils'
+import { walletActions, getContext, getSDK } from '@audius/common/store'
+import { doEvery, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { each } from 'lodash'
 import moment from 'moment'
@@ -28,7 +26,6 @@ import ArtistDashboardState from './types'
 
 const { DASHBOARD_PAGE } = route
 const { getBalance } = walletActions
-const { getUserId } = accountSelectors
 
 const formatMonth = (date: moment.Moment | string) =>
   moment.utc(date).format('MMM').toUpperCase()
@@ -36,13 +33,13 @@ const formatMonth = (date: moment.Moment | string) =>
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>
 ) {
+  const accountUserId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const accountHandle = accountUser?.handle
-  const accountUserId = yield* call(waitForValue, getUserId)
   const { offset, limit } = action.payload
 
   try {
-    if (!accountHandle) {
+    if (!accountHandle || !accountUserId) {
       yield* put(dashboardActions.fetchTracksFailed({}))
       return
     }
@@ -67,7 +64,7 @@ function* fetchDashboardAsync(
 
   const accountUser = yield* call(queryAccountUser)
   const accountHandle = accountUser?.handle
-  const accountUserId: number | null = yield* call(waitForValue, getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
   if (!accountUserId) {
     yield* put(dashboardActions.fetchFailed({}))
     return
@@ -146,7 +143,7 @@ function* fetchDashboardListenDataAsync(
   const { start, end } = action.payload
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
-  const accountUserId = yield* call(waitForValue, getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
   const { data: listenData } = yield* call(
     [sdk.users, sdk.users.getUserMonthlyTrackListens],
     {

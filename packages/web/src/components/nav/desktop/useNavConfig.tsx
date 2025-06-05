@@ -1,11 +1,16 @@
 import { ReactNode, useMemo } from 'react'
 
 import {
+  useCurrentAccountUser,
+  selectIsAccountComplete,
+  useHasAccount
+} from '@audius/common/api'
+import {
   useChallengeCooldownSchedule,
   useFeatureFlag
 } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -50,7 +55,6 @@ const {
 } = route
 
 const { getUnreadMessagesCount } = chatSelectors
-const { getIsAccountComplete, getHasAccount } = accountSelectors
 
 export type NavItemConfig = {
   label: string
@@ -85,8 +89,10 @@ const createNavItemWithSpeaker = ({
 })
 
 export const useNavConfig = () => {
-  const hasAccount = useSelector(getHasAccount)
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const hasAccount = useHasAccount()
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
   const { isUploading, isOnUploadPage } = useNavUploadStatus()
   const { color, spacing } = useTheme()

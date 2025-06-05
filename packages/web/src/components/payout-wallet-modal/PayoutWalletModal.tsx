@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { SolanaWalletAddress } from '@audius/common/models'
-import { accountSelectors, profilePageActions } from '@audius/common/store'
+import { profilePageActions } from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -27,7 +28,7 @@ import {
 } from '@solana/spl-token'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -42,8 +43,6 @@ import {
   isValidSolAddress
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
-
-const { getAccountUser } = accountSelectors
 
 const messages = {
   title: 'Payout Wallet',
@@ -173,7 +172,7 @@ const PayoutWalletModalForm = ({
 
 export const PayoutWalletModal = () => {
   const [isOpen, setIsOpen] = useModalState('PayoutWallet')
-  const user = useSelector(getAccountUser)
+  const { data: user } = useCurrentAccountUser()
   const dispatch = useDispatch()
   const [isSubmitting, setIsSubmitting] = useState(false)
 

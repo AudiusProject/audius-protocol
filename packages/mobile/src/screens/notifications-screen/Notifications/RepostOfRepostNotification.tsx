@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useNotificationEntity, useUsers } from '@audius/common/api'
 import type { RepostOfRepostNotification as RepostOfRepostNotificationType } from '@audius/common/store'
-import { notificationsSelectors, Entity } from '@audius/common/store'
+import { Entity } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { IconRepost } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -18,8 +17,6 @@ import {
   NotificationText,
   EntityLink
 } from '../Notification'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -38,8 +35,8 @@ export const RepostOfRepostNotification = (
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1

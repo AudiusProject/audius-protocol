@@ -1,8 +1,7 @@
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
-import { queryTrack } from '~/api'
+import { queryCurrentUserId, queryTrack } from '~/api'
 import { AudioPlayer } from '~/services/audio-player'
-import { getUserId } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getPlaying, getTrackId } from '~/store/player/selectors'
 import { isLongFormContent } from '~/utils/isLongFormContent'
@@ -46,7 +45,7 @@ function* setInitialPlaybackPositionState() {
     yield* put(initializePlaybackPositionState({ playbackPositionState }))
   } else if (legacyLocalStorageState !== null) {
     // NOTE: Check for legacy playback position state in local storage and update to new format
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     if (!userId) return
 
     const legacyPlaybackPositionState: PlaybackPositionState[number] =
@@ -102,7 +101,7 @@ function* savePlaybackPositionWorker() {
   // eslint-disable-next-line no-unmodified-loop-condition
   while (!isNativeMobile) {
     const trackId = yield* select(getTrackId)
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     const track = yield* queryTrack(trackId)
     const playing = yield* select(getPlaying)
 

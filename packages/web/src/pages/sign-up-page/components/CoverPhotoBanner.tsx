@@ -1,5 +1,5 @@
+import { useCurrentUserId } from '@audius/common/api'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Box, useTheme, IconImage, IconButton } from '@audius/harmony'
 
 import {
@@ -9,8 +9,6 @@ import {
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useSelector } from 'utils/reducer'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   selectCoverPhoto: 'Upload a cover photo for your profile'
@@ -34,7 +32,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const coverPhotoField = useSelector(getCoverPhotoField)
   const profileImageField = useSelector(getProfileImageField)
 
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const accountProfilePic = useProfilePicture({
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150

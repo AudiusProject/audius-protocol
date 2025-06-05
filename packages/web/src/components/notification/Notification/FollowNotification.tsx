@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  notificationsSelectors,
-  FollowNotification as FollowNotificationType
-} from '@audius/common/store'
+import { useUsers } from '@audius/common/api'
+import { FollowNotification as FollowNotificationType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
@@ -17,7 +15,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -29,7 +26,6 @@ import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFollow } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
 
-const { getNotificationUsers } = notificationsSelectors
 const { profilePage } = route
 
 const messages = {
@@ -44,8 +40,8 @@ type FollowNotificationProps = {
 export const FollowNotification = (props: FollowNotificationProps) => {
   const { notification } = props
   const { id, userIds, timeLabel, isViewed } = notification
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1

@@ -2,10 +2,9 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { primeTrackDataSaga } from '@audius/common/api'
+import { primeTrackDataSaga, queryCurrentUserId } from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import {
-  accountSelectors,
   aiPageLineupActions as tracksActions,
   aiPageActions,
   aiPageSelectors,
@@ -13,13 +12,12 @@ import {
   getSDK
 } from '@audius/common/store'
 import { OptionalId } from '@audius/sdk'
-import { call, put, select } from 'typed-redux-saga'
+import { call, put } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getAiUserId, getLineup } = aiPageSelectors
 const { setCount } = aiPageActions
-const getUserId = accountSelectors.getUserId
 
 function* getTracks({
   offset,
@@ -35,7 +33,7 @@ function* getTracks({
   if (!aiUserHandle) return []
   yield* waitForRead()
 
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const { data = [] } = yield* call(
     [sdk.full.users, sdk.full.users.getAIAttributedTracksByUserHandle],
     {

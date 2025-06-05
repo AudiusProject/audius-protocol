@@ -8,7 +8,7 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 
 export type GetUserCollectiblesArgs = {
-  userId: ID | null
+  userId: ID | null | undefined
 }
 
 export const getUserCollectiblesQueryKey = ({

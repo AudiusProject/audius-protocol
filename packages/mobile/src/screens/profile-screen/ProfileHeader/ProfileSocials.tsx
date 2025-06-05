@@ -1,7 +1,9 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
-import { cacheUsersActions } from '@audius/common/store'
+import {
+  cacheUsersActions,
+  useTierAndVerifiedForUser
+} from '@audius/common/store'
 import { Animated } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -78,7 +80,7 @@ export const ProfileSocials = () => {
 
   const styles = useStyles()
 
-  const { tier } = useSelectTierInfo(user_id)
+  const { tier } = useTierAndVerifiedForUser(user_id)
   // const tier = 'none'
 
   // Need to start opacity at 1 so skeleton is visible.

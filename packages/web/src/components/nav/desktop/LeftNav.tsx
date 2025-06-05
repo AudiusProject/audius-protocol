@@ -1,8 +1,8 @@
 import { Fragment, useCallback, useRef, useState } from 'react'
 
+import { useAccountStatus } from '@audius/common/api'
 import { FavoriteSource, Status } from '@audius/common/models'
 import {
-  accountSelectors,
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
@@ -28,7 +28,6 @@ import { NavItemConfig, useNavConfig } from './useNavConfig'
 
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus } = accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
 
@@ -42,7 +41,8 @@ type NavColumnProps = OwnProps &
   RouteComponentProps
 
 const LeftNav = (props: NavColumnProps) => {
-  const { isElectron, accountStatus } = props
+  const { isElectron } = props
+  const { data: accountStatus } = useAccountStatus()
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -189,9 +189,7 @@ const LeftNav = (props: NavColumnProps) => {
 }
 
 const mapStateToProps = (state: AppState) => {
-  return {
-    accountStatus: getAccountStatus(state)
-  }
+  return {}
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

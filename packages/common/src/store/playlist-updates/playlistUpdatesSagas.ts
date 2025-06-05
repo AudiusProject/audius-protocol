@@ -2,9 +2,9 @@ import { Id } from '@audius/sdk'
 import { call, takeEvery, select, put } from 'typed-redux-saga'
 
 import { playlistUpdateFromSDK, transformAndCleanList } from '~/adapters'
+import { queryCurrentUserId } from '~/api'
 import { Name } from '~/models/Analytics'
 
-import { getUserId } from '../account/selectors'
 import { getSDK } from '../sdkUtils'
 
 import { selectPlaylistUpdatesTotal } from './playlistUpdatesSelectors'
@@ -20,7 +20,7 @@ function* watchFetchPlaylistUpdates() {
 }
 
 function* fetchPlaylistUpdatesWorker() {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return
 
   const sdk = yield* getSDK()
@@ -56,7 +56,7 @@ function* watchUpdatedPlaylistViewedSaga() {
     function* updatePlaylistLastViewedAt(action: UpdatedPlaylistViewedAction) {
       const sdk = yield* getSDK()
       const { playlistId } = action.payload
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) return
 
       yield* call(
