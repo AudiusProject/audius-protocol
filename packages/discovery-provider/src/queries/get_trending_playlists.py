@@ -189,7 +189,8 @@ def _get_trending_playlists_with_session(
         # Re-associate tracks with playlists
         # track_id -> populated_track
         populated_track_map = {
-            track["track_id"]: extend_track(track) for track in populated_tracks
+            track["track_id"]: extend_track(track, session)
+            for track in populated_tracks
         }
         for playlist in playlists_map.values():
             for i in range(len(playlist["tracks"])):
