@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { formatTokenPrice } from '@audius/common/api'
+import { buySellMessages as messages } from '@audius/common/messages'
 import { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
 import { Button, Divider, Flex, Text, TextInput } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
@@ -8,19 +8,6 @@ import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 import { useTokenAmountFormatting } from './hooks'
-
-const messages = {
-  available: 'Available',
-  max: 'MAX',
-  amountInputLabel: (symbol: string) => `Amount (${symbol})`,
-  tokenPrice: (price: string, decimalPlaces: number) => {
-    return formatTokenPrice(price, decimalPlaces)
-  },
-  stackedBalance: (formattedAvailableBalance: string) =>
-    `${formattedAvailableBalance}  Available`,
-  tokenTicker: (symbol: string, isStablecoin: boolean) =>
-    isStablecoin ? symbol : `$${symbol}`
-}
 
 type BalanceSectionProps = {
   isStablecoin?: boolean

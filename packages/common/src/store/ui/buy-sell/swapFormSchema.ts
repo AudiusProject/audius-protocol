@@ -34,7 +34,8 @@ export const createSwapFormSchema = (
       })
       .refine((val) => !balance || parseFloat(val) <= balance, {
         message: messages.insufficientBalance(tokenSymbol)
-      })
+      }),
+    outputAmount: z.string().optional()
   })
 
 export type SwapFormValues = {
