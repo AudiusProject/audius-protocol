@@ -28,7 +28,7 @@ const slice = createSlice({
     beginTip: (
       state,
       action: PayloadAction<{
-        user: User | null
+        user: User | null | undefined
         source: TipSource
         trackId?: ID
         onSuccessActions?: Action[]

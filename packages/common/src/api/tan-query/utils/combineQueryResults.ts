@@ -5,6 +5,8 @@ import {
 } from '@tanstack/react-query'
 import { sumBy } from 'lodash'
 
+import { Status } from '~/models'
+
 export const combineQueryStatuses = (
   queries: Pick<
     UseQueryResult<any, Error>,
@@ -16,13 +18,21 @@ export const combineQueryStatuses = (
   const isLoading = queries.some((query) => query.isLoading)
   const isSuccess = queries.every((query) => query.isSuccess)
   const isError = queries.some((query) => query.isError)
+  const status = isPending
+    ? Status.LOADING
+    : isError
+      ? Status.ERROR
+      : isSuccess
+        ? Status.SUCCESS
+        : Status.IDLE
 
   return {
     isPending,
     isFetching,
     isLoading,
     isSuccess,
-    isError
+    isError,
+    status
   }
 }
 

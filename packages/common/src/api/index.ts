@@ -122,6 +122,7 @@ export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserTracksByHandle'
+export * from './tan-query/users/useProfileUser'
 
 // Account
 export * from './tan-query/users/account/useResetPassword'

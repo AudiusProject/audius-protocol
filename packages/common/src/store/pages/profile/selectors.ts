@@ -1,3 +1,6 @@
+import { QueryClient } from '@tanstack/react-query'
+
+import { getUserQueryKey } from '~/api'
 import { getUser, getUsers } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
 import { createDeepEqualSelector } from '~/utils/selectorHelpers'
@@ -59,29 +62,18 @@ export const getProfileTracksLineup = (state: CommonState, handle?: string) =>
 
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
-    [
-      getProfileStatus,
-      getProfileError,
-      getProfileUserId,
-      getIsSubscribed,
-      // External
-      getUsers
-    ],
-    (status, error, userId, isSubscribed, users) => {
+    [getProfileStatus, getProfileError, getProfileUserId, getIsSubscribed],
+    (status, error, userId, isSubscribed) => {
       const emptyState = {
-        profile: null,
-        playlists: null,
-        albums: null,
-        isSubscribed: false,
-        status
+        userId: null,
+        status,
+        isSubscribed: false
       }
       if (error) return { ...emptyState, error: true }
       if (!userId) return emptyState
-      if (!(userId in users)) return emptyState
 
-      const user = users[userId].metadata
       return {
-        profile: user,
+        userId,
         status,
         isSubscribed
       }
