@@ -31,7 +31,6 @@ export const TrackResults = () => {
     query,
     ...filters
   })
-  console.log('asdf lineup', query, filters, lineup.entries)
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
 

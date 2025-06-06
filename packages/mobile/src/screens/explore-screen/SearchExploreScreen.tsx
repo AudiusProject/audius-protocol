@@ -12,7 +12,6 @@ import {
   searchSelectors
 } from '@audius/common/store'
 import type { Mood } from '@audius/sdk'
-import { useNavigation } from '@react-navigation/native'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
 import { ImageBackground, ScrollView, Image } from 'react-native'
@@ -32,7 +31,6 @@ import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBack
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent } from 'app/components/core'
 import { UserList } from 'app/components/user-list'
-// import { useNavigation } from 'app/hooks/useNavigation'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
 import { moodMap } from 'app/utils/moods'

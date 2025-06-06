@@ -135,13 +135,13 @@ export const SearchScreenStack = () => {
     FeatureFlags.SEARCH_EXPLORE_MOBILE
   )
 
-  if (isSearchExploreMobileEnabled) {
-    return (
-      <Stack.Navigator screenOptions={screenOptions}>
-        <Stack.Screen name='SearchResults' component={SearchScreen} />
-      </Stack.Navigator>
-    )
-  }
+  // if (isSearchExploreMobileEnabled) {
+  //   return (
+  //     <Stack.Navigator screenOptions={screenOptions}>
+  //       <Stack.Screen name='SearchResults' component={SearchScreen} />
+  //     </Stack.Navigator>
+  //   )
+  // }
 
   return (
     <SearchContext.Provider
