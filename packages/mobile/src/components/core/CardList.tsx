@@ -124,6 +124,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
             styles.cardListHorizontal,
             { paddingHorizontal: carouselSpacing }
           ]}
+          showsHorizontalScrollIndicator={false}
           ref={ref}
           data={data}
           renderItem={handleRenderItem}
