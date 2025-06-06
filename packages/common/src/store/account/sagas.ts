@@ -215,7 +215,7 @@ export function* fetchAccountAsync({
   }
   if (!wallet || !web3WalletAddress) {
     yield* put(resetAccount())
-    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -236,7 +236,7 @@ export function* fetchAccountAsync({
 
   if (!accountData) {
     yield* put(resetAccount())
-    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -247,7 +247,7 @@ export function* fetchAccountAsync({
   const user = accountData.user
   if (user.is_deactivated) {
     yield* put(resetAccount())
-    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_DEACTIVATED'
