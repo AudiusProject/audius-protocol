@@ -12,7 +12,6 @@ import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
-  getFinishedSignUpProcess,
   getRouteOnCompletion,
   getStartedAndFinishedSignup,
   getStartedSignUpProcess,
