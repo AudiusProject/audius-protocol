@@ -13,6 +13,7 @@ import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ClaimAllRewardsDrawer } from 'app/components/challenge-rewards-drawer/ClaimAllRewardsDrawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CoinflowOnrampDrawer } from 'app/components/coinflow-onramp-drawer/CoinflowOnrampDrawer'
+import { CoinflowWithdrawDrawer } from 'app/components/coinflow-withdraw-drawer/CoinflowWithdrawDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
@@ -44,6 +45,7 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
+import { WithdrawUSDCDrawer } from 'app/components/withdraw-usdc-drawer/WithdrawUSDCDrawer'
 import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
@@ -128,6 +130,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   PurchaseVendor: PurchaseVendorDrawer,
   StripeOnRamp: StripeOnrampDrawer,
   CoinflowOnramp: CoinflowOnrampDrawer,
+  CoinflowWithdraw: CoinflowWithdrawDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer,
   WaitForDownloadModal: WaitForDownloadDrawer,
@@ -136,7 +139,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
   ArtistPick: ArtistPickConfirmationDrawer,
   DownloadTrackArchive: DownloadTrackArchiveDrawer,
-  HostRemixContest: HostRemixContestDrawer
+  HostRemixContest: HostRemixContestDrawer,
+  WithdrawUSDCModal: WithdrawUSDCDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
