@@ -1,10 +1,9 @@
 import { Component } from 'react'
 
-import { useTracks, useUser } from '@audius/common/api'
+import { useCurrentUserId, useTracks, useUser } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import { Name, RepostSource, PlaybackSource, Kind } from '@audius/common/models'
 import {
-  accountSelectors,
   lineupSelectors,
   queueActions,
   RepeatMode,
@@ -53,7 +52,6 @@ const { getTheme } = themeSelectors
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 const { getLineupEntries } = lineupSelectors
-const { getUserId } = accountSelectors
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200
@@ -456,7 +454,6 @@ const makeMapStateToProps = () => {
     // infinite loading loop on the playbar.
     return {
       seek: getSeek(state),
-      accountUserId: getUserId(state),
       playCounter: getCounter(state),
       collectible: getCollectible(state),
       isPlaying: getPlaying(state),
@@ -466,7 +463,6 @@ const makeMapStateToProps = () => {
       trackIds: lineupEntries
         .filter((entry) => entry.kind === Kind.TRACKS)
         .map((entry) => entry.id),
-      userId: getUserId(state),
       theme: getTheme(state)
     }
   }
@@ -506,4 +502,20 @@ const mapDispatchToProps = (dispatch) => ({
   record: (event) => dispatch(event)
 })
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(PlayBar)
+const withHooks = (WrappedComponent) => {
+  return (props) => {
+    const { data: accountUserId } = useCurrentUserId()
+    return (
+      <WrappedComponent
+        {...props}
+        accountUserId={accountUserId}
+        userId={accountUserId}
+      />
+    )
+  }
+}
+
+export default connect(
+  makeMapStateToProps,
+  mapDispatchToProps
+)(withHooks(PlayBar))

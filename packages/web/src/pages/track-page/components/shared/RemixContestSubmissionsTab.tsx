@@ -16,6 +16,7 @@ type RemixContestSubmissionsTabProps = {
   trackId: ID
   submissions: LineupData[]
   size?: RemixSubmissionCardSize
+  count?: number
 }
 
 /**
@@ -24,6 +25,7 @@ type RemixContestSubmissionsTabProps = {
 export const RemixContestSubmissionsTab = ({
   trackId,
   submissions,
+  count,
   size = 'desktop'
 }: RemixContestSubmissionsTabProps) => {
   const { data: permalink } = useTrack(trackId, {
@@ -37,6 +39,7 @@ export const RemixContestSubmissionsTab = ({
     <RemixTab
       trackIds={submissions.map((s) => s.id)}
       size={size}
+      count={count}
       emptyState={{
         title: messages.noSubmissions,
         subtitle: messages.beFirst

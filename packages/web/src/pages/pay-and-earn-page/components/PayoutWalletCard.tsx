@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
@@ -11,14 +11,11 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ToastContext } from 'components/toast/ToastContext'
 import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
-
-const { getAccountSplWallet } = accountSelectors
 
 const messages = {
   payoutWallet: 'Payout Wallet',
@@ -28,8 +25,10 @@ const messages = {
 }
 
 export const PayoutWalletCard = () => {
-  const accountSplWallet = useSelector(getAccountSplWallet)
   const [, setIsOpen] = useModalState('PayoutWallet')
+  const { data: accountSplWallet } = useCurrentAccountUser({
+    select: (account) => account?.spl_usdc_payout_wallet
+  })
   const { toast } = useContext(ToastContext)
 
   const handleChangeWallet = useCallback(() => {

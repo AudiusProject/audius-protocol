@@ -40,7 +40,7 @@ const nullGuard = withNullGuard(
 )
 
 const RemixesPage = nullGuard(
-  ({ title, count, originalTrack, user, goToTrackPage, goToArtistPage }) => {
+  ({ title, originalTrack, user, goToTrackPage, goToArtistPage }) => {
     useSubPageHeader()
     const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
       FeatureFlags.REMIX_CONTEST
@@ -51,6 +51,7 @@ const RemixesPage = nullGuard(
 
     const {
       data,
+      count,
       isFetching,
       isPending,
       isError,
@@ -112,7 +113,7 @@ const RemixesPage = nullGuard(
       <Flex justifyContent='space-between' gap='l' mb='xl'>
         <Text variant='title'>
           {messages.remixesTitle}
-          {count !== undefined && count !== null ? ` (${count})` : ''}
+          {count ? ` (${count})` : ''}
         </Text>
       </Flex>
     )

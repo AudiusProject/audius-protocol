@@ -15,7 +15,7 @@ import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { spacing } from 'app/styles/spacing'
 
 import { LET_THEM_DJ } from '../../collections'
-const { getCollections, getStatus } = explorePageCollectionsSelectors
+const { getCollectionIds, getStatus } = explorePageCollectionsSelectors
 const { fetch } = explorePageCollectionsActions
 
 export const LetThemDJScreen = () => {
@@ -29,8 +29,8 @@ export const LetThemDJScreen = () => {
     getStatus(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ })
   )
 
-  const exploreData = useSelector((state) =>
-    getCollections(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ })
+  const collectionIds = useSelector((state) =>
+    getCollectionIds(state, { variant: ExploreCollectionsVariant.LET_THEM_DJ })
   )
 
   return (
@@ -41,7 +41,7 @@ export const LetThemDJScreen = () => {
           <WithLoader loading={status === Status.LOADING}>
             <CollectionList
               style={{ paddingTop: spacing(3) }}
-              collection={exploreData}
+              collectionIds={collectionIds}
             />
           </WithLoader>
         </View>

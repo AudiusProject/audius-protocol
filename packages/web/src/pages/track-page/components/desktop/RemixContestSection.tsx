@@ -1,10 +1,16 @@
 import { useState, useCallback } from 'react'
 
-import { useRemixContest, useRemixesLineup, useTrack } from '@audius/common/api'
+import {
+  useRemixContest,
+  useRemixesLineup,
+  useTrack,
+  useUser
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { ID, Name } from '@audius/common/models'
+import { ID, Name, SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
+import { TrackMetadataForUpload } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
   Box,
@@ -17,10 +23,12 @@ import {
   Text
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import useTabs from 'hooks/useTabs/useTabs'
+import { useUpdateSearchParams } from 'pages/search-page/hooks'
 import { track, make } from 'services/analytics'
 import { pickWinnersPage } from 'utils/route'
 
@@ -43,6 +51,7 @@ const messages = {
 }
 
 const TAB_BAR_HEIGHT = 56
+const TAB_PARAM = 'contest-tab'
 
 type RemixContestSectionProps = {
   trackId: ID
@@ -58,6 +67,7 @@ export const RemixContestSection = ({
 }: RemixContestSectionProps) => {
   const navigate = useNavigateToPage()
   const { data: originalTrack } = useTrack(trackId)
+  const { data: originalUser } = useUser(originalTrack?.owner_id)
   const { data: remixContest } = useRemixContest(trackId)
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
@@ -108,9 +118,15 @@ export const RemixContestSection = ({
         ])
   ]
 
+  const [urlSearchParams] = useSearchParams()
+  const updateTabSearchParam = useUpdateSearchParams(TAB_PARAM)
+  const tab =
+    urlSearchParams.get(TAB_PARAM) ?? (hasWinners ? 'winners' : undefined)
+
   const { tabs: TabBar, body: ContentBody } = useTabs({
+    onTabClick: updateTabSearchParam,
     tabs,
-    initialTab: hasWinners ? 'winners' : undefined,
+    initialTab: tab,
     elements: [
       <TabBody key='details' onHeightChange={handleHeightChange}>
         <RemixContestDetailsTab trackId={trackId} />
@@ -128,6 +144,7 @@ export const RemixContestSection = ({
               <RemixContestWinnersTab
                 trackId={trackId}
                 winnerIds={remixContest?.eventData?.winners ?? []}
+                count={remixCount}
               />
             </TabBody>
           ]
@@ -136,6 +153,7 @@ export const RemixContestSection = ({
               <RemixContestSubmissionsTab
                 trackId={trackId}
                 submissions={remixes.slice(0, 10)}
+                count={remixCount}
               />
             </TabBody>
           ])
@@ -157,19 +175,44 @@ export const RemixContestSection = ({
     }
   }, [remixContest?.eventId, trackId])
 
-  const goToUploadWithRemix = useRequiresAccountCallback(() => {
+  const goToUploadWithRemix = useRequiresAccountCallback(async () => {
     if (!trackId) return
 
-    const state = {
+    let file: File | undefined
+    const imageUrl =
+      originalTrack?.artwork?.[SquareSizes.SIZE_1000_BY_1000] ?? ''
+
+    if (imageUrl) {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      file = new File([blob], 'image.jpg', { type: blob.type })
+    }
+
+    const state: { initialMetadata: Partial<TrackMetadataForUpload> } = {
       initialMetadata: {
-        is_remix: true,
+        ...(file
+          ? {
+              artwork: {
+                url: imageUrl,
+                file
+              }
+            }
+          : {}),
+        genre: originalTrack?.genre ?? '',
         remix_of: {
-          tracks: [{ parent_track_id: trackId }]
+          tracks: [
+            {
+              parent_track_id: trackId,
+              user: originalUser,
+              has_remix_author_reposted: false,
+              has_remix_author_saved: false
+            }
+          ]
         }
       }
     }
     navigate(UPLOAD_PAGE, state)
-  }, [trackId, navigate])
+  }, [trackId, navigate, originalTrack, originalUser])
   if (!trackId || !remixContest) return null
 
   const totalBoxHeight = TAB_BAR_HEIGHT + contentHeight
@@ -196,7 +239,7 @@ export const RemixContestSection = ({
         <Flex column pv='m'>
           <Flex justifyContent='space-between' borderBottom='default' ph='xl'>
             <Flex alignItems='center'>{TabBar}</Flex>
-            {!isOwner ? (
+            {!isOwner && !isContestEnded ? (
               <Flex mb='m'>
                 <Button
                   variant='secondary'
@@ -207,7 +250,8 @@ export const RemixContestSection = ({
                   {messages.uploadRemixButtonText}
                 </Button>
               </Flex>
-            ) : isContestEnded &&
+            ) : isOwner &&
+              isContestEnded &&
               isRemixContestWinnersMilestoneEnabled &&
               remixCount > 0 ? (
               <Flex mb='m'>

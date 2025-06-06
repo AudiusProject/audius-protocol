@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useUsers } from '@audius/common/api'
 import type { FollowNotification as FollowNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import { IconUser } from '@audius/harmony-native'
@@ -16,8 +15,6 @@ import {
   USER_LENGTH_LIMIT,
   NotificationText
 } from '../Notification'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -34,9 +31,8 @@ export const FollowNotification = (props: FollowNotificationProps) => {
   const { userIds } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useProxySelector(
-    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
-    [notification]
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1

@@ -1,19 +1,18 @@
 import { useCallback, useState } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   InstagramProfile,
   TwitterProfile,
   TikTokProfile,
-  accountSelectors,
   accountActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -30,7 +29,6 @@ import { push } from 'utils/navigation'
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './VerificationPage.module.css'
 
-const { getUserId, getUserName } = accountSelectors
 const {
   twitterLogin: twitterLoginAction,
   instagramLogin: instagramLoginAction,
@@ -161,9 +159,9 @@ const LoadingBody = () => {
 }
 
 type SuccessBodyProps = {
-  userId: ID
+  userId?: ID
   handle?: string
-  name: string
+  name?: string
   goToRoute: (route: string) => void
 }
 
@@ -208,11 +206,14 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
 
 const VerificationPage = () => {
   const dispatch = useDispatch()
-  const userId = useSelector(getUserId) ?? 0
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name
+    })
   })
-  const name = useSelector(getUserName) ?? ''
+  const { userId, handle, name } = accountData ?? {}
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
 

@@ -1,7 +1,6 @@
-import { challengesSelectors } from '@audius/common/store'
+import { useUserCompletionStages } from '@audius/common/store'
 import { Flex, IconValidationCheck } from '@audius/harmony'
 import cn from 'classnames'
-import { useSelector } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -18,10 +17,8 @@ const messages = {
   profileCheckFollow: 'Follow Five People'
 }
 
-const { getCompletionStages } = challengesSelectors
-
 export const ProfileChecks = () => {
-  const completionStages = useSelector(getCompletionStages)
+  const completionStages = useUserCompletionStages()
   const wm = useWithMobileStyle(styles.mobile)
   const isMobile = useIsMobile()
 

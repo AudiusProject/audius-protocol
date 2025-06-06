@@ -1,11 +1,16 @@
+import { useCallback } from 'react'
+
 import { ID } from '@audius/common/models'
 import { Flex, IconArrowRight, PlainButton, Text } from '@audius/harmony'
-import { Link } from 'react-router-dom-v5-compat'
+
+import { useIsMobile } from 'hooks/useIsMobile'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { RemixGrid, RemixSubmissionCardSize } from './RemixGrid'
 
 type RemixTabProps = {
   trackIds: ID[]
+  count?: number
   size?: RemixSubmissionCardSize
   emptyState: {
     title: string
@@ -20,11 +25,20 @@ type RemixTabProps = {
 
 export const RemixTab = ({
   trackIds,
+  count,
   size = 'desktop',
   emptyState,
   viewAllLink,
   viewAllText = 'View All'
 }: RemixTabProps) => {
+  const isMobile = useIsMobile()
+  const navigate = useNavigateToPage()
+  const handleViewAllClick = useCallback(() => {
+    if (!viewAllLink) return
+    const urlString = `${viewAllLink.pathname}?${viewAllLink.search}`
+    navigate(urlString)
+  }, [viewAllLink, navigate])
+
   // If there are no tracks, show the empty state
   if (trackIds.length === 0) {
     return (
@@ -58,8 +72,11 @@ export const RemixTab = ({
             size={size === 'mobile' ? undefined : 'large'}
             iconRight={IconArrowRight}
             asChild
+            onClick={handleViewAllClick}
           >
-            <Link to={viewAllLink}>{viewAllText}</Link>
+            {isMobile
+              ? `${viewAllText}${count ? ` (${count})` : ''}`
+              : viewAllText}
           </PlainButton>
         </Flex>
       )}

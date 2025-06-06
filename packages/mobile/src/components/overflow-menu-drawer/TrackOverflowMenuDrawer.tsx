@@ -2,6 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import {
   useCollection,
+  useCurrentUserId,
   useToggleFavoriteTrack,
   useTrack
 } from '@audius/common/api'
@@ -14,7 +15,6 @@ import {
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
@@ -46,7 +46,6 @@ import { setVisibility } from 'app/store/drawers/slice'
 import { useCommentDrawer } from '../comments/CommentDrawerContext'
 
 const { getUid } = playerSelectors
-const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
@@ -68,7 +67,7 @@ const messages = {
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const dispatch = useDispatch()
   const { toast } = useToast()

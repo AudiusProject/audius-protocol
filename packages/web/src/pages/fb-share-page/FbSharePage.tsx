@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -30,8 +30,8 @@ export const FbSharePage = () => {
   useEffect(() => {
     injectScript()
   }, [])
-  const { data: handle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: handle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   return (
     <div className={styles.root}>

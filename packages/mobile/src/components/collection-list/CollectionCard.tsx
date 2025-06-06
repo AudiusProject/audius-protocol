@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCollection, useCurrentUserId } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, isContentUSDCPurchaseGated } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { pick } from 'lodash'
 import type { GestureResponderEvent } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import {
   Divider,
@@ -24,8 +22,6 @@ import { CollectionDogEar } from '../collection/CollectionDogEar'
 import { LockedStatusBadge } from '../core'
 import { CollectionImage } from '../image/CollectionImage'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   repost: 'Reposts',
@@ -72,7 +68,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
     is_scheduled_release,
     offline
   } = partialCollection ?? {}
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
 
   const navigation = useNavigation()
 

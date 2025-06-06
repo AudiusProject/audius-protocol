@@ -25,7 +25,10 @@ export const RemixContestSubmissionsTab = ({
   trackId
 }: RemixContestSubmissionsTabProps) => {
   const navigation = useNavigation()
-  const { data: remixes } = useRemixesLineup({ trackId, isContestEntry: true })
+  const { data: remixes, count } = useRemixesLineup({
+    trackId,
+    isContestEntry: true
+  })
   const submissions = remixes?.slice(0, 6)
 
   // If there are no submissions, show the empty state
@@ -47,7 +50,7 @@ export const RemixContestSubmissionsTab = ({
             navigation.push('TrackRemixes', { trackId })
           }}
         >
-          {messages.viewAll}
+          {`${messages.viewAll}${count ? ` (${count})` : ''}`}
         </PlainButton>
       </Flex>
     </Flex>

@@ -4,7 +4,7 @@ import {
   type ConnectedWallet,
   useConnectedWallets,
   useAddConnectedWallet,
-  useCurrentAccount
+  useCurrentAccountUser
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { Name, Chain } from '@audius/common/models'
@@ -89,8 +89,7 @@ export const useConnectAndAssociateWallets = (
   const theme = useTheme()
   const { open } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
-  const { data: currentAccount } = useCurrentAccount()
-  const currentUser = currentAccount?.user
+  const { data: currentUser } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { switchAccountAsync } = useSwitchAccount()
   const { disconnect } = useDisconnect()

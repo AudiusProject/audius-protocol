@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Nullable } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -38,7 +39,8 @@ export const ArtistDashboardAlbumsTab = ({
   filterText
 }: ArtistDashboardAlbumsTabProps) => {
   const navigate = useNavigateToPage()
-  const { account } = useSelector(makeGetDashboard())
+  const { data: accountUser } = useCurrentAccountUser()
+  const { account } = useSelector(makeGetDashboard(accountUser))
   const filteredData = useFilteredAlbumData({
     selectedFilter,
     filterText

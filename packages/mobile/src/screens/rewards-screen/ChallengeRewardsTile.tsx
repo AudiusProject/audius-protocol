@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import { Name, ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardID } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
@@ -128,8 +129,10 @@ export const ChallengeRewardsTile = () => {
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
   const optimisticUserChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, true)
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
   )
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
 

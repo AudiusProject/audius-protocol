@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   getProfileRepostsQueryKey,
-  getProfileTracksQueryKey
+  getProfileTracksQueryKey,
+  useCurrentUserId
 } from '@audius/common/api'
 import { ShareSource, Status } from '@audius/common/models'
 import {
@@ -38,7 +39,7 @@ import { makeStyles } from 'app/styles'
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
-import { getIsOwner, useSelectProfileRoot } from './selectors'
+import { useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
   fetchProfile: fetchProfileAction,
@@ -67,7 +68,8 @@ export const ProfileScreen = () => {
   const handle =
     userHandle && userHandle !== 'accountUser' ? userHandle : profile?.handle
   const handleLower = handle?.toLowerCase() ?? ''
-  const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
+  const { data: accountUserId } = useCurrentUserId()
+  const isOwner = accountUserId === profile?.user_id
   const dispatch = useDispatch()
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)

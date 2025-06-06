@@ -1,4 +1,3 @@
-import { accountSelectors } from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'
@@ -47,17 +46,13 @@ export const getHidePreviewHint = (state: AppState) =>
   state.signOn.hidePreviewHint
 export const getFollowIds = (state: AppState) => state.signOn.selectedUserIds
 
-export const getHasCompletedAccount = createSelector(
-  [
-    accountSelectors.getIsAccountComplete,
-    getStartedSignUpProcess,
-    getFinishedSignUpProcess
-  ],
-  (isAccountComplete, startedSignUpProcess, finishedSignUpProcess) => {
+export const getStartedAndFinishedSignup = createSelector(
+  [getStartedSignUpProcess, getFinishedSignUpProcess],
+  (startedSignUpProcess, finishedSignUpProcess) => {
     // If a user has started the sign up flow,
     // only return true if they finish the flow
     // (including selecting followees)
-    return isAccountComplete && (!startedSignUpProcess || finishedSignUpProcess)
+    return !startedSignUpProcess || finishedSignUpProcess
   }
 )
 

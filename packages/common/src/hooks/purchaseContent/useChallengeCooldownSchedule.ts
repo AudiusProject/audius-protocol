@@ -1,11 +1,13 @@
 import { partition, sum } from 'lodash'
 import { useSelector } from 'react-redux'
 
+import { useCurrentAccount, useCurrentAccountUser } from '~/api'
 import {
   ChallengeRewardID,
   UndisbursedUserChallenge
 } from '~/models/AudioRewards'
 import { getOptimisticUserChallenges } from '~/store/challenges/selectors'
+import { CommonState } from '~/store/commonStore'
 import { audioRewardsPageSelectors } from '~/store/pages'
 import { isCooldownChallengeClaimable } from '~/utils/challenges'
 import dayjs, { Dayjs } from '~/utils/dayjs'
@@ -77,7 +79,11 @@ export const useChallengeCooldownSchedule = ({
     .filter((c) => multiple || c.challenge_id === challengeId)
     .filter((c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id))
 
-  const optimisticChallenges = useSelector(getOptimisticUserChallenges)
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const optimisticChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )
 
   // Filter out challenges that have been optimistically claimed
   const filteredChallenges = challenges.filter((challenge) => {

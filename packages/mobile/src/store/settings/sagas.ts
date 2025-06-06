@@ -1,6 +1,6 @@
+import { queryAccountUser, queryHasAccount } from '@audius/common/api'
 import type { PushNotifications as TPushNotifications } from '@audius/common/store'
 import {
-  accountSelectors,
   settingsPageSelectors,
   settingsPageInitialState as initialState,
   settingsPageActions,
@@ -8,11 +8,7 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import {
-  getErrorMessage,
-  waitForValue,
-  waitForAccount
-} from '@audius/common/utils'
+import { getErrorMessage, waitForAccount } from '@audius/common/utils'
 import { waitForRead } from '@audius/web/src/utils/sagaHelpers'
 import commonSettingsSagas from 'common/store/pages/settings/sagas'
 import { mapValues } from 'lodash'
@@ -27,7 +23,6 @@ const { getPushNotificationSettings, SET_PUSH_NOTIFICATION_SETTINGS } =
   settingsPageActions
 const { getPushNotificationSettings: selectPushNotificationSettings } =
   settingsPageSelectors
-const { getAccountUser, getHasAccount } = accountSelectors
 
 function* getIsMobilePushEnabled() {
   yield* put(getPushNotificationSettings())
@@ -63,7 +58,7 @@ function* registerDeviceToken() {
 
 function* reregisterDeviceTokenOnStartup() {
   yield* call(waitForAccount)
-  const isSignedIn = yield* select(getHasAccount)
+  const isSignedIn = yield* call(queryHasAccount)
   if (!isSignedIn) return
 
   const { status } = yield* call(checkNotifications)
@@ -89,7 +84,7 @@ function* enablePushNotifications() {
 
   // We need a user for this to work (and in the case of sign up, we might not
   // have one right away when this function is called)
-  yield* call(waitForValue, getAccountUser)
+  yield* call(queryAccountUser)
   yield* call(audiusBackendInstance.updatePushNotificationSettings, {
     sdk,
     settings: newSettings
@@ -106,7 +101,7 @@ function* disablePushNotifications() {
     }
   )
   yield* put(settingsPageActions.setPushNotificationSettings(newSettings))
-  yield* call(waitForValue, getAccountUser)
+  yield* call(queryAccountUser)
   yield* call(audiusBackendInstance.updatePushNotificationSettings, {
     sdk,
     settings: newSettings
@@ -129,7 +124,7 @@ function* watchGetPushNotificationSettings() {
     settingsPageActions.GET_PUSH_NOTIFICATION_SETTINGS,
     function* () {
       yield* call(waitForRead)
-      const hasAccount = yield* select(getHasAccount)
+      const hasAccount = yield* call(queryHasAccount)
       if (!hasAccount) return
 
       try {

@@ -22,6 +22,7 @@ import {
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
+import { MIN_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import Page from 'components/page/Page'
@@ -198,7 +199,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
       header={renderHeader()}
     >
-      <Flex direction='column' gap='xl'>
+      <Flex direction='column' gap='xl' css={{ minWidth: MIN_PAGE_WIDTH_PX }}>
         <Text variant='heading'>{messages.originalTrack}</Text>
         <TanQueryLineup
           data={data}

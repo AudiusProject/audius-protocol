@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 
-import { useManagers } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId, useManagers } from '@audius/common/api'
 import { Box, Button, Divider, Flex, IconPlus, Text } from '@audius/harmony'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useSelector } from 'utils/reducer'
 
 import { ManagerListItem } from './AccountListItem/ManagerListItem'
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   accountManagers: 'Account Managers',
@@ -25,7 +21,7 @@ export const AccountsManagingYouHomePage = (
   props: AccountsManagingYouHomePageProps
 ) => {
   const { setPageState } = props
-  const userId = useSelector(getUserId) as number
+  const { data: userId } = useCurrentUserId()
 
   const {
     data: managers,

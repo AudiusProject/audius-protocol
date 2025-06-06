@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import {
-  accountSelectors,
+  useInboxUnavailableModal,
   cacheUsersSelectors,
   chatActions,
   chatSelectors,
   makeChatId,
   ChatPermissionAction,
   tippingActions,
-  useInboxUnavailableModal,
   usersSocialActions
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
@@ -112,14 +112,14 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
+  const { data: currentUserId } = useCurrentUserId()
   const { userId, presetMessage } = data
   const user = useSelector((state) =>
     cacheUsersSelectors.getUser(state, { id: userId })
   )
   const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId })
+    getCanCreateChat(state, { userId, currentUserId })
   )
-  const currentUserId = useSelector(accountSelectors.getUserId)
 
   const handleUnblockPress = useCallback(() => {
     if (!userId) {
@@ -287,7 +287,6 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
       return null
   }
 }
-
 export const InboxUnavailableDrawer = () => {
   const styles = useStyles()
   const neutralLight2 = useColor('neutralLight2')

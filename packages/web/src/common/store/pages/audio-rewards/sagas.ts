@@ -2,6 +2,7 @@ import {
   undisbursedUserChallengeFromSDK,
   userChallengeFromSDK
 } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import {
   UserChallenge,
   ChallengeRewardID,
@@ -19,7 +20,6 @@ import {
 } from '@audius/common/services'
 import {
   accountActions,
-  accountSelectors,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
   HCaptchaStatus,
@@ -97,8 +97,6 @@ const {
   setUndisbursedChallenges
 } = audioRewardsPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
-
-const { getUserId } = accountSelectors
 
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewards'
 
@@ -353,7 +351,7 @@ function* claimSingleChallengeRewardAsync(
     completionPollTimeout
   })
 
-  const decodedUserId = yield* select(getUserId)
+  const decodedUserId = yield* call(queryCurrentUserId)
   if (!decodedUserId) {
     throw new Error('Failed to get current userId')
   }
@@ -520,7 +518,7 @@ function* watchClaimAllChallengeRewards() {
 function* fetchUserChallengesAsync() {
   yield* call(waitForRead)
   const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return
 
   try {
@@ -741,7 +739,7 @@ function* watchUpdateHCaptchaScore() {
     updateHCaptchaScore.type,
     function* (action: ReturnType<typeof updateHCaptchaScore>): any {
       const { token } = action.payload
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         yield* put(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
         return

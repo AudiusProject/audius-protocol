@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 
 import {
+  useCurrentUserId,
   useRemixContest,
   useToggleFavoriteTrack,
   useTrack
@@ -13,7 +14,6 @@ import {
   ID
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -43,7 +43,6 @@ const { requestOpen: openAddToCollection } = addToCollectionUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { addTrackToPlaylist } = cacheCollectionsActions
-const { getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
@@ -132,7 +131,7 @@ const TrackMenu = ({
   const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const { onOpen: openDeleteTrackConfirmation } =
     useDeleteTrackConfirmationModal()
   const { onOpen: openHostRemixContest } = useHostRemixContestModal()

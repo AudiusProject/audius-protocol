@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser, useCurrentUserId } from '@audius/common/api'
 import { FollowSource, statusIsNotFinalized } from '@audius/common/models'
 import {
   profilePageSelectors,
@@ -35,16 +35,17 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { params } = useRoute<'Profile'>()
   const { getIsReachable } = reachabilitySelectors
   const isReachable = useSelector(getIsReachable)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const dispatch = useDispatch()
 
   const profileUserId = useSelector((state) =>
     getProfileUserId(state, params.handle)
   )
+  const { data: currentUserId } = useCurrentUserId()
   const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: profileUserId })
+    getCanCreateChat(state, { userId: profileUserId, currentUserId })
   )
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 

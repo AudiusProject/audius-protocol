@@ -6,6 +6,7 @@ import {
 import {
   getStemsQueryKey,
   queryAccountUser,
+  queryCurrentUserId,
   queryTrack,
   queryUser,
   updateTrackData
@@ -20,7 +21,6 @@ import {
 } from '@audius/common/models'
 import {
   getContext,
-  accountSelectors,
   cacheTracksActions as trackActions,
   cacheActions,
   confirmerActions,
@@ -51,7 +51,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUserId, getAccountUser } = accountSelectors
 const { getUser } = cacheUsersSelectors
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
@@ -210,7 +209,7 @@ function* confirmEditTrack(
       function* () {
         yield* waitForAccount()
         // Need to poll with the new track name in case it changed
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot edit track')
         }
@@ -266,7 +265,7 @@ function* deleteTrackAsync(
   action: ReturnType<typeof trackActions.deleteTrack>
 ) {
   yield* waitForWrite()
-  const user = yield* select(getAccountUser)
+  const user = yield* call(queryAccountUser)
   if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -305,7 +304,7 @@ function* confirmDeleteTrack(track: Track) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         yield* waitForAccount()
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete track')
         }

@@ -1,13 +1,13 @@
 import { userWalletsFromSDK } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import { Chain, CollectibleState } from '@audius/common/models'
 import {
-  accountSelectors,
   tokenDashboardPageActions,
   getContext,
   getSDK
 } from '@audius/common/store'
 import { Id } from '@audius/sdk'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, put, takeLatest } from 'typed-redux-saga'
 
 import {
   fetchEthereumCollectiblesForWallets,
@@ -22,8 +22,6 @@ const {
   setAssociatedWallets,
   fetchAssociatedWalletsFailed
 } = tokenDashboardPageActions
-
-const { getUserId } = accountSelectors
 
 function* fetchEthWalletInfo(wallets: string[]) {
   const walletClient = yield* getContext('walletClient')
@@ -78,7 +76,7 @@ function* fetchAccountAssociatedWallets() {
   try {
     yield* waitForRead()
     const sdk = yield* getSDK()
-    const accountUserId = yield* select(getUserId)
+    const accountUserId = yield* call(queryCurrentUserId)
     if (!accountUserId) return
 
     const { data } = yield* call([sdk.users, sdk.users.getConnectedWallets], {

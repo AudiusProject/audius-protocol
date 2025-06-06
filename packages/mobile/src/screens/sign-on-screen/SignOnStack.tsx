@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import {
+  useCurrentAccountUser,
+  selectIsAccountComplete
+} from '@audius/common/api'
 import { MobileOS } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { getFinishedPhase1, getPage } from 'common/store/pages/signon/selectors'
+import {
+  getFinishedPhase1,
+  getPage,
+  getStartedAndFinishedSignup
+} from 'common/store/pages/signon/selectors'
 import { Pages } from 'common/store/pages/signon/types'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -23,7 +30,6 @@ import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
 import type { SignOnScreenParamList } from './types'
-const { getIsAccountComplete: getHasCompletedAccount } = accountSelectors
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
@@ -41,7 +47,11 @@ export const SignOnStack = (props: SignOnStackProps) => {
     })
 
   const finishedPhase1 = useSelector(getFinishedPhase1)
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const { data: hasCompleteAccount } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
+  const hasFinishedSignUp = useSelector(getStartedAndFinishedSignup)
+  const hasCompletedAccount = hasCompleteAccount && hasFinishedSignUp
 
   const pastPhase1 = finishedPhase1 || hasCompletedAccount
 

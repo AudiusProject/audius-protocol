@@ -1,3 +1,4 @@
+import { queryAccountUser, queryWalletAddresses } from '@audius/common/api'
 import {
   Name,
   ErrorLevel,
@@ -6,7 +7,6 @@ import {
 } from '@audius/common/models'
 import {
   accountActions,
-  accountSelectors,
   tokenDashboardPageActions,
   walletSelectors,
   walletActions,
@@ -28,8 +28,6 @@ import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { getWalletAddresses } = accountSelectors
-
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
 const {
@@ -48,7 +46,6 @@ const {
   inputSendData
 } = tokenDashboardPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
-const getAccountUser = accountSelectors.getAccountUser
 
 // TODO: handle errors
 const errors = {
@@ -75,11 +72,11 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
 
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
-  const { currentUser } = yield* select(getWalletAddresses)
+  const { currentUser } = yield* call(queryWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to retrieve current user wallet address')
   }
@@ -107,7 +104,7 @@ function* sendAsync({
       })
     )
 
-    const { currentUser } = yield* select(getWalletAddresses)
+    const { currentUser } = yield* call(queryWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
     }
@@ -186,7 +183,7 @@ function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
 
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   if (!account || !account.wallet) return
 
   try {

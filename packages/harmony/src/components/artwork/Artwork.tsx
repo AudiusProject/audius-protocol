@@ -60,7 +60,12 @@ export const Artwork = (props: ArtworkProps) => {
             borderRadius={borderRadius}
             h='100%'
             w='100%'
-            css={{ zIndex: 2, position: 'absolute' }}
+            css={{
+              zIndex: 2,
+              position: 'absolute',
+              opacity: isLoading ? 1 : 0,
+              transition: `opacity ${motion.calm}`
+            }}
           />
         ) : null}
         <Box

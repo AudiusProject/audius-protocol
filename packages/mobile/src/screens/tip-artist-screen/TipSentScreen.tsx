@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import type { SolanaWalletAddress } from '@audius/common/models'
-import { accountSelectors, tippingSelectors } from '@audius/common/store'
+import { tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
@@ -20,7 +21,6 @@ import { ReceiverDetails } from './ReceiverDetails'
 import { TipHeader } from './TipHeader'
 import { TipScreen } from './TipScreen'
 const { getSendTipData } = tippingSelectors
-const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Tip Sent',
@@ -48,7 +48,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const TipSentScreen = () => {
   const dispatch = useDispatch()
-  const account = useSelector(getAccountUser)
+  const { data: { user_id, handle, spl_wallet } = {} } = useCurrentAccountUser({
+    select: (user) => ({
+      user_id: user?.user_id,
+      handle: user?.handle,
+      spl_wallet: user?.spl_wallet
+    })
+  })
   const {
     user: recipient,
     amount: sendAmount,
@@ -60,7 +66,7 @@ export const TipSentScreen = () => {
 
   const getTwitterShareText = () => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
-    if (account && recipient) {
+    if (user_id && recipient) {
       let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
       if (recipient.twitter_handle) {
         recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
@@ -82,20 +88,14 @@ export const TipSentScreen = () => {
     // After success + close, take the user to the chat they were
     // attempting to make if they were unlocking DMs by tipping.
     // The saga will create the chat once the tip is confirmed
-    if (onSuccessActions && account?.user_id && recipient?.user_id) {
+    if (onSuccessActions && user_id && recipient?.user_id) {
       for (const action of onSuccessActions) {
         dispatch(action)
       }
     } else {
       navigation.getParent()?.goBack()
     }
-  }, [
-    account?.user_id,
-    dispatch,
-    onSuccessActions,
-    navigation,
-    recipient?.user_id
-  ])
+  }, [user_id, dispatch, onSuccessActions, navigation, recipient?.user_id])
 
   return (
     <TipScreen
@@ -112,13 +112,13 @@ export const TipSentScreen = () => {
         shareText={getTwitterShareText()}
         url={recipient ? `${env.AUDIUS_URL}/${recipient.handle}` : undefined}
         analytics={
-          account && recipient
+          user_id && recipient
             ? {
                 eventName: EventNames.TIP_AUDIO_TWITTER_SHARE,
-                senderWallet: account.spl_wallet ?? ('' as SolanaWalletAddress),
+                senderWallet: spl_wallet ?? ('' as SolanaWalletAddress),
                 recipientWallet:
                   recipient.spl_wallet ?? ('' as SolanaWalletAddress),
-                senderHandle: account.handle,
+                senderHandle: handle ?? 'unknown_handle',
                 recipientHandle: recipient.handle,
                 amount: sendAmount,
                 device: 'native',

@@ -1,6 +1,11 @@
 import { Component, ComponentType } from 'react'
 
-import { useTrack, useTrackByParams, useUser } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useTrack,
+  useTrackByParams,
+  useUser
+} from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -15,7 +20,6 @@ import {
   User
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheTracksActions as cacheTrackActions,
   lineupSelectors,
   trackPageLineupActions,
@@ -67,7 +71,6 @@ const { open } = mobileOverflowMenuUIActions
 const { tracksActions } = trackPageLineupActions
 const { getLineup, getSourceSelector, getTrackPermalink } = trackPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
-const getUserId = accountSelectors.getUserId
 
 const getRemixParentTrackId = (track: Track | null) =>
   track?.remix_of?.tracks?.[0]?.parent_track_id
@@ -95,6 +98,7 @@ const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
   const params = parseTrackRoute(props.pathname)
   const { data: track, status } = useTrackByParams(params)
   const { data: user } = useUser(track?.owner_id)
+  const { data: accountUserId } = useCurrentUserId()
   const { data: remixParentTrack } = useTrack(
     track?.remix_of?.tracks?.[0]?.parent_track_id,
     {
@@ -122,6 +126,7 @@ const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
       {...props}
       track={track as Track | null}
       user={user}
+      userId={accountUserId}
       status={status}
       hasValidRemixParent={hasValidRemixParent}
       currentTrack={currentTrack}
@@ -136,6 +141,7 @@ class TrackPageProviderClass extends Component<
     status: QueryStatus
     hasValidRemixParent: boolean
     currentTrack: Track | null
+    userId: ID | null | undefined
   },
   TrackPageProviderState
 > {
@@ -491,7 +497,6 @@ function makeMapStateToProps() {
       source: getSourceSelector(state),
       trackPermalink: getTrackPermalink(state),
       moreByArtist: getMoreByArtistLineup(state),
-      userId: getUserId(state),
 
       playing: getPlaying(state),
       previewing: getPreviewing(state),

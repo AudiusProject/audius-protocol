@@ -1,5 +1,5 @@
+import { useCurrentAccountUser } from '@audius/common/api'
 import {
-  notificationsSelectors,
   badgeTiers,
   TierChangeNotification as TierChangeNotificationType,
   BadgeTierInfo
@@ -7,7 +7,6 @@ import {
 import { capitalize } from 'lodash'
 
 import { audioTierMap } from 'components/user-badges/UserBadges'
-import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
 
 import styles from './TierChangeNotification.module.css'
@@ -18,7 +17,6 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTier } from './components/icons'
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   unlocked: 'tier unlocked',
@@ -48,7 +46,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { notification } = props
 
   const { tier, timeLabel, isViewed } = notification
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useCurrentAccountUser()
 
   const tierInfo = badgeTiers.find(
     (info) => info.tier === tier

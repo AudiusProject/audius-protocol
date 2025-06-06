@@ -32,7 +32,7 @@ export const getAudioTransactionsQueryKey = ({
   sortMethod,
   sortDirection,
   pageSize
-}: GetAudioTransactionsArgs & { userId: Nullable<ID> }) =>
+}: GetAudioTransactionsArgs & { userId: Nullable<ID> | undefined }) =>
   [
     QUERY_KEYS.audioTransactions,
     userId,

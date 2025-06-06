@@ -7,7 +7,14 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { getStemsQueryKey, queryTracks, queryUser } from '@audius/common/api'
+import {
+  getStemsQueryKey,
+  queryAccountUser,
+  queryCurrentUserId,
+  queryTracks,
+  queryUser,
+  primeCollectionDataSaga
+} from '@audius/common/api'
 import {
   Collection,
   Feature,
@@ -17,7 +24,6 @@ import {
   Name,
   StemTrack,
   StemUploadWithFile,
-  Track,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -29,11 +35,9 @@ import {
   TrackForUpload,
   UploadType,
   accountActions,
-  accountSelectors,
   cacheActions,
   confirmerActions,
   getContext,
-  reformatCollection,
   savedPageActions,
   uploadActions,
   getSDK,
@@ -43,11 +47,7 @@ import {
   queueActions,
   playerActions
 } from '@audius/common/store'
-import {
-  actionChannelDispatcher,
-  makeUid,
-  waitForAccount
-} from '@audius/common/utils'
+import { actionChannelDispatcher, waitForAccount } from '@audius/common/utils'
 import {
   Id,
   OptionalId,
@@ -63,10 +63,11 @@ import {
   cancel,
   fork,
   put,
-  select,
   takeLatest,
   take,
-  delay
+  delay,
+  select,
+  retry
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -87,7 +88,6 @@ import {
 } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
-const { getUserId, getAccountUser } = accountSelectors
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
@@ -208,7 +208,7 @@ const makeOnProgress = (
  */
 export function* deleteTracks(trackIds: ID[]) {
   const sdk = yield* getSDK()
-  const userId = Id.parse(yield* select(accountSelectors.getUserId))
+  const userId = Id.parse(yield* call(queryCurrentUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
@@ -239,7 +239,7 @@ function* uploadWorker(
     const { trackIndex, stemIndex, track } = task
     try {
       const sdk = yield* getSDK()
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
@@ -301,7 +301,7 @@ function* publishWorker(
     const { trackIndex, stemIndex, metadata } = task
     try {
       const sdk = yield* getSDK()
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
@@ -416,7 +416,7 @@ export function* handleUploads({
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
   const queryClient = yield* getContext('queryClient')
-  const userId = (yield* select(getUserId))!
+  const userId = (yield* call(queryCurrentUserId))!
 
   // Queue for the upload tasks (uploading files to storage)
   const uploadQueue = yield* call(
@@ -829,7 +829,7 @@ export function* uploadCollection(
   const sdk = yield* getSDK()
 
   yield waitForAccount()
-  const userId = (yield* select(getUserId))!
+  const userId = (yield* call(queryCurrentUserId))!
   // This field will get replaced
   let albumTrackPrice: number | undefined
 
@@ -957,43 +957,8 @@ export function* uploadCollection(
           })
         )
         const user = yield* queryUser(userId)
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
-                _collectionIds: (user?._collectionIds ?? []).concat(
-                  confirmedPlaylist.playlist_id
-                )
-              }
-            }
-          ])
-        )
 
-        // Add images to the collection since we're not loading it the traditional way with
-        // the `fetchCollections` saga
-        confirmedPlaylist = yield* call(reformatCollection, {
-          collection: confirmedPlaylist
-        })
-        const uid = yield* makeUid(
-          Kind.COLLECTIONS,
-          confirmedPlaylist.playlist_id,
-          'account'
-        )
-        // Create a cache entry and add it to the account so the playlist shows in the left nav
-        yield* put(
-          cacheActions.add(
-            Kind.COLLECTIONS,
-            [
-              {
-                id: confirmedPlaylist.playlist_id,
-                uid,
-                metadata: confirmedPlaylist
-              }
-            ],
-            /* replace= */ true // forces cache update
-          )
-        )
+        yield* call(primeCollectionDataSaga, [confirmedPlaylist])
         yield* put(
           accountActions.addAccountPlaylist({
             id: confirmedPlaylist.playlist_id,
@@ -1097,24 +1062,24 @@ export function* uploadMultipleTracks(
     kind: 'tracks'
   })
 
-  // Get true track metadatas back
-  // Allow for retries in case the tracks are not immediately available
-  let retries = 20
-  let newTracks: Track[] = []
-  while (retries > 0) {
-    newTracks = yield* call(queryTracks, trackIds)
-    if (newTracks.length > 0) {
-      break
+  // Get true track metadatas back with retry logic
+  const newTracks = yield* retry(
+    20, // max attempts
+    2000, // delay between attempts in ms
+    function* () {
+      const tracks = yield* call(queryTracks, trackIds, {
+        force: true,
+        staleTime: 0
+      })
+      if (tracks.length === 0) {
+        throw new Error('No tracks found after uploading.')
+      }
+      return tracks
     }
-    yield* delay(2000)
-    retries--
-  }
-  if (newTracks.length === 0) {
-    throw new Error('No tracks found after uploading.')
-  }
+  )
 
   // Make sure track count changes for this user
-  const account = yield* select(getAccountUser)
+  const account = yield* call(queryAccountUser)
   yield* call(adjustUserField, {
     user: account!,
     fieldName: 'track_count',
@@ -1283,7 +1248,7 @@ function* updateTrackAudioAsync(
     }
     const track = tracks[0]
     const sdk = yield* getSDK()
-    const userId = yield* select(accountSelectors.getUserId)
+    const userId = yield* call(queryCurrentUserId)
 
     if (!userId) {
       throw new Error('No user id found during upload. Not signed in?')

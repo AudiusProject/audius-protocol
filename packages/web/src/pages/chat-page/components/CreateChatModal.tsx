@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import {
-  accountSelectors,
   chatActions,
   searchUsersModalActions,
   useCreateChatModal,
@@ -15,7 +15,6 @@ import {
 import { IconCompose } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
 import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
@@ -26,12 +25,11 @@ const messages = {
   title: 'New Message'
 }
 
-const { getUserId } = accountSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 const CreateChatModal = () => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { onCancelAction, presetMessage, defaultUserList } = data

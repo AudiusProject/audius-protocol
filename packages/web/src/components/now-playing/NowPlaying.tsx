@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useToggleFavoriteTrack, useUser } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useToggleFavoriteTrack,
+  useUser
+} from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -13,7 +17,6 @@ import {
   ID
 } from '@audius/common/models'
 import {
-  accountSelectors,
   queueActions,
   queueSelectors,
   RepeatMode,
@@ -76,7 +79,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
-const getUserId = accountSelectors.getUserId
 const { getGatedContentStatusMap } = gatedContentSelectors
 
 type OwnProps = {
@@ -123,7 +125,6 @@ const NowPlaying = g(
   ({
     onClose,
     currentQueueItem,
-    currentUserId,
     playCounter,
     isPlaying,
     isBuffering,
@@ -143,6 +144,8 @@ const NowPlaying = g(
   }) => {
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
+
+    const { data: currentUserId } = useCurrentUserId()
 
     const albumInfo = track?.album_backlink
 
@@ -577,7 +580,6 @@ function makeMapStateToProps() {
     return {
       currentQueueItem,
       seek: getSeek(state),
-      currentUserId: getUserId(state),
       playCounter: getCounter(state),
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state)

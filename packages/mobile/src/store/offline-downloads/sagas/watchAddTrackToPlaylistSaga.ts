@@ -1,5 +1,6 @@
+import { queryCollection } from '@audius/common/api'
 import { cacheCollectionsActions } from '@audius/common/store'
-import { put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 
@@ -20,9 +21,11 @@ function* addOfflinePlaylistTrackIfNecessary(
   const collectionId =
     typeof playlistId === 'string' ? parseInt(playlistId, 10) : playlistId
 
+  const collection = yield* call(queryCollection, collectionId)
+
   const isCollectionDownloaded = yield* select(
     getCollectionDownloadStatus,
-    collectionId
+    collection
   )
 
   if (!isCollectionDownloaded || !trackId) return

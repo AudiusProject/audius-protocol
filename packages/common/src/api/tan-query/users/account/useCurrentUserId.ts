@@ -1,11 +1,11 @@
-import { useSelector } from 'react-redux'
-
-import { getUserId } from '~/store/account/selectors'
+import { useCurrentAccount } from './useCurrentAccount'
 
 /**
  * Hook to get the currently logged in user's ID
  */
 export const useCurrentUserId = () => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentAccount({
+    select: (account) => account?.userId
+  })
   return { data: currentUserId }
 }

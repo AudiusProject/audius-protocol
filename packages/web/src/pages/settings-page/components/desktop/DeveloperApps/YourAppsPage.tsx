@@ -1,17 +1,17 @@
-import { useDeveloperApps, DeveloperApp } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import {
+  useDeveloperApps,
+  DeveloperApp,
+  useCurrentUserId
+} from '@audius/common/api'
 import { ModalContentText, IconPlus, Button } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tooltip } from 'components/tooltip'
-import { useSelector } from 'utils/reducer'
 
 import { DeveloperAppListItem } from './DeveloperAppListItem'
 import styles from './YourAppsPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
-
-const { getUserId } = accountSelectors
 
 const maxAppsAllowed = 5
 
@@ -28,7 +28,7 @@ type YourAppsPageProps = CreateAppPageProps
 
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const { data: apps, status } = useDeveloperApps(userId)
 
   const hasMaxAllowedApps = (apps?.length ?? 0) >= maxAppsAllowed

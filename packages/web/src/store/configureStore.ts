@@ -13,6 +13,7 @@ import { PartialDeep } from 'type-fest'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
+import { queryClient } from 'services/query-client'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
@@ -147,7 +148,7 @@ export const configureStore = ({
   const middlewares = isTest
     ? applyMiddleware(routerMiddleware, thunk, sagaMiddleware!)
     : applyMiddleware(
-        chatMiddleware(audiusSdk),
+        chatMiddleware(audiusSdk, queryClient),
         routerMiddleware,
         // Don't run sagas serverside
         ...(typeof window !== 'undefined' ? [sagaMiddleware!] : []),

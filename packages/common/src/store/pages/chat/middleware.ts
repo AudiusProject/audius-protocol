@@ -1,8 +1,9 @@
 import { type AudiusSdk, ChatEvents, Id } from '@audius/sdk'
+import { QueryClient } from '@tanstack/react-query'
 import { Middleware } from 'redux'
 
+import { QUERY_KEYS } from '~/api'
 import { Status } from '~/models/Status'
-import { getUserId } from '~/store/account/selectors'
 import { makeBlastChatId } from '~/utils'
 
 import { actions as chatActions } from './slice'
@@ -12,7 +13,7 @@ const { connect, disconnect, addMessage, setMessageReactionSucceeded } =
   chatActions
 
 export const chatMiddleware =
-  (audiusSdk: () => Promise<AudiusSdk>): Middleware =>
+  (audiusSdk: () => Promise<AudiusSdk>, queryClient: QueryClient): Middleware =>
   (store) => {
     let messageListener: ChatEvents['message'] | null = null
     let reactionListener: ChatEvents['reaction'] | null = null
@@ -31,7 +32,9 @@ export const chatMiddleware =
             console.debug('[chats] WebSocket opened. Listening for chats...')
           }
           messageListener = ({ chatId, message }) => {
-            const currentUserId = getUserId(store.getState())
+            const currentUserId = queryClient.getQueryData([
+              QUERY_KEYS.accountUser
+            ])
             const isSelfMessage =
               message.sender_user_id === Id.parse(currentUserId)
             store.dispatch(
@@ -49,7 +52,9 @@ export const chatMiddleware =
             audienceContentId,
             message
           }) => {
-            const currentUserId = getUserId(store.getState())
+            const currentUserId = queryClient.getQueryData([
+              QUERY_KEYS.accountUser
+            ])
             const isSelfMessage =
               message.sender_user_id === Id.parse(currentUserId)
             // Only add blasts that current user sent as blast UI should only be visible to sender.

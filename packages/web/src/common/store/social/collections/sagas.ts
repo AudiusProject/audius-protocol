@@ -1,7 +1,11 @@
 import {
+  queryAccountUser,
   queryCollection,
+  queryCurrentAccount,
   queryUser,
-  queryUserByHandle
+  queryUserByHandle,
+  updateCollectionData,
+  selectIsGuestAccount
 } from '@audius/common/api'
 import {
   Name,
@@ -13,7 +17,6 @@ import {
 } from '@audius/common/models'
 import {
   accountActions,
-  accountSelectors,
   cacheActions,
   savedPageActions,
   LibraryCategory,
@@ -32,7 +35,7 @@ import {
   route
 } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
-import { call, select, takeEvery, put } from 'typed-redux-saga'
+import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
@@ -49,7 +52,6 @@ const { updatedPlaylistViewed } = playlistUpdatesActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { addLocalCollection, removeLocalCollection } = savedPageActions
-const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
 
 /* REPOST COLLECTION */
@@ -62,8 +64,9 @@ export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -114,17 +117,13 @@ export function* repostCollectionAsync(
     repostMetadata
   )
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_reposted: true,
-          repost_count: collection.repost_count + 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_reposted: true,
+      repost_count: collection.repost_count + 1
+    }
+  ])
 }
 
 export function* confirmRepostCollection(
@@ -138,7 +137,8 @@ export function* confirmRepostCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot repost collection')
         }
@@ -183,8 +183,9 @@ export function* undoRepostCollectionAsync(
   action: ReturnType<typeof socialActions.undoRepostCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -223,17 +224,13 @@ export function* undoRepostCollectionAsync(
     user
   )
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_reposted: false,
-          repost_count: collection.repost_count - 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_reposted: false,
+      repost_count: collection.repost_count - 1
+    }
+  ])
 }
 
 export function* confirmUndoRepostCollection(
@@ -246,7 +243,8 @@ export function* confirmUndoRepostCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot undo repost collection')
         }
@@ -301,15 +299,16 @@ export function* saveSmartCollection(
   action: ReturnType<typeof socialActions.saveSmartCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const account = yield* queryCurrentAccount()
+  const { playlistLibrary, userId } = account ?? {}
+  const accountUser = yield* queryAccountUser()
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  const playlistLibrary = yield* select(getPlaylistLibrary)
   const newPlaylistLibrary: PlaylistLibrary = {
     ...playlistLibrary,
     contents: [
@@ -334,8 +333,9 @@ export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -406,17 +406,13 @@ export function* saveCollectionAsync(
     })
   )
 
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_saved: true,
-          save_count: collection.save_count + 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_saved: true,
+      save_count: collection.save_count + 1
+    }
+  ])
   yield* put(socialActions.saveCollectionSucceeded(action.collectionId))
 }
 
@@ -431,7 +427,8 @@ export function* confirmSaveCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot save collection')
         }
@@ -483,7 +480,8 @@ export function* unsaveSmartCollection(
 ) {
   yield* call(waitForWrite)
 
-  const playlistLibrary = yield* select(getPlaylistLibrary)
+  const accountData = yield* queryCurrentAccount()
+  const { playlistLibrary } = accountData ?? {}
   if (!playlistLibrary) return
 
   const newPlaylistLibrary = removeFromPlaylistLibrary(
@@ -533,17 +531,13 @@ export function* unsaveCollectionAsync(
   )
 
   yield* call(removePlaylistFromLibrary, action.collectionId)
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: action.collectionId,
-        metadata: {
-          has_current_user_saved: false,
-          save_count: collection.save_count - 1
-        }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    {
+      playlist_id: action.collectionId,
+      has_current_user_saved: false,
+      save_count: collection.save_count - 1
+    }
+  ])
   yield* put(socialActions.unsaveCollectionSucceeded(action.collectionId))
 }
 
@@ -553,7 +547,8 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const userId = yield* select(getUserId)
+        const accountUser = yield* queryAccountUser()
+        const { user_id: userId } = accountUser ?? {}
         if (!userId) {
           throw new Error('No userId set, cannot save collection')
         }

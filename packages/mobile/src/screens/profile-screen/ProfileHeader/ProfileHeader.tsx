@@ -1,12 +1,11 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { useUserComments } from '@audius/common/api'
-import { useFeatureFlag, useSelectTierInfo } from '@audius/common/hooks'
+import { useCurrentUserId, useUserComments } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
@@ -28,11 +27,9 @@ import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ProfileInfoTiles } from './ProfileInfoTiles'
 import { SocialsAndSites } from './SocialsAndSites'
 
-const getUserId = accountSelectors.getUserId
-
 // Memoized since material-top-tabs triggers unecessary rerenders
 export const ProfileHeader = memo(() => {
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpandable, setIsExpandable] = useState(false)
@@ -62,7 +59,7 @@ export const ProfileHeader = memo(() => {
   ])
 
   const { data: comments } = useUserComments({ userId, pageSize: 1 })
-  const { tier = 'none' } = useSelectTierInfo(userId)
+  const { tier } = useTierAndVerifiedForUser(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
   const hasMutuals = !isOwner && currentUserFolloweeFollowCount > 0

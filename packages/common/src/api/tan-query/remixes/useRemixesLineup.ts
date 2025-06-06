@@ -90,7 +90,6 @@ export const useRemixesLineup = (
     // Add winner tracks if included (should be second)
     if (includeWinners && winnerIds?.length) {
       // Create a Set of winner IDs for efficient lookup
-      const winnerIdSet = new Set(winnerIds)
       const winnerTracks = winnerIds.map((id) => ({
         id,
         type: EntityType.TRACK
@@ -100,7 +99,6 @@ export const useRemixesLineup = (
       // Add remaining remix tracks (excluding original and winners)
       const remainingTracks = remixTracks.filter((track) => {
         if (track.id === trackId) return false // Always exclude original track
-        if (winnerIdSet.has(track.id)) return false
         return true
       })
       orderedTracks.push(...remainingTracks)

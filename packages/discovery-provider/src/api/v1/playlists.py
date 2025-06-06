@@ -42,7 +42,6 @@ from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_top_playlists import get_top_playlists  # pylint: disable=C0302
 from src.queries.get_trending_playlists import (
     TRENDING_LIMIT,
-    TRENDING_TTL_SEC,
     get_full_trending_playlists,
     get_trending_playlists,
 )
@@ -563,7 +562,6 @@ class TrendingPlaylists(Resource):
     @record_metrics
     @ns.expect(trending_playlist_parser)
     @ns.marshal_with(trending_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.PLAYLISTS

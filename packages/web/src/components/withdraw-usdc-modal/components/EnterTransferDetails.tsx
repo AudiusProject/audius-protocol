@@ -7,6 +7,7 @@ import {
 
 import { useUSDCBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -36,16 +37,14 @@ const messages = {
   amountToWithdraw: 'Amount to Withdraw',
   amountToWithdrawLabel: 'Amount (USDC)',
   destinationAddress: 'Destination Address',
-  howMuch: 'How much do you want to withdraw?',
+  destinationAddressLabel: 'Solana USDC wallet address to receive funds.',
   destinationDetails: 'Solana USDC wallet address to receive funds.',
   solanaWallet: 'USDC Wallet (Solana)',
   continue: 'Continue',
   dollars: '$',
   transferMethod: 'Transfer Method',
   bankAccount: 'Bank Account',
-  crypto: 'Crypto',
-  cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
+  crypto: 'Crypto'
 }
 
 const WithdrawMethodOptions = [
@@ -139,7 +138,7 @@ export const EnterTransferDetails = () => {
           <Text variant='heading' size='s' color='subdued'>
             {messages.amountToWithdraw}
           </Text>
-          <Text variant='body'>{messages.howMuch}</Text>
+          <Text variant='body'>{messages.destinationAddressLabel}</Text>
         </Flex>
         <TextField
           title={messages.amountToWithdrawLabel}
@@ -164,7 +163,7 @@ export const EnterTransferDetails = () => {
       ) : null}
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
-          {messages.cashTransferDescription}
+          {walletMessages.cashTransferDescription}
         </Text>
       ) : (
         <Flex column gap='l'>

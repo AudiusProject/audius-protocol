@@ -19,7 +19,7 @@ import { primeCollectionData } from '../utils/primeCollectionData'
 import { useCurrentUserId } from './account/useCurrentUserId'
 
 type GetPlaylistsOptions = {
-  userId: number | null
+  userId: number | null | undefined
   pageSize?: number
   sortMethod?: full.GetPlaylistsByUserSortMethodEnum
   query?: string
