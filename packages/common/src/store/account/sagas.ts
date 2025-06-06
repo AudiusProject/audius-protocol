@@ -297,6 +297,7 @@ export function* fetchAccountAsync({
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
+
   queryClient.setQueryData(getWalletAddressesQueryKey(), {
     currentUser: wallet,
     web3User: web3WalletAddress
