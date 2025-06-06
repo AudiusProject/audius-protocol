@@ -1,5 +1,12 @@
 # @audius/sdk
 
+## 9.1.1
+
+### Patch Changes
+
+- 9dadb38: Remix contest winner challenge
+- 1f70f0b: Remix contest winners selected notification
+
 ## 9.1.0
 
 ### Minor Changes
