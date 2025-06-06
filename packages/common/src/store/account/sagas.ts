@@ -232,15 +232,7 @@ export function* fetchAccountAsync({
       staleTime: Infinity,
       gcTime: Infinity
     })) as AccountUserMetadata | undefined
-  } catch (e) {
-    yield* put(resetAccount())
-    yield* put(
-      fetchAccountFailed({
-        reason: 'ACCOUNT_NOT_FOUND'
-      })
-    )
-    return
-  }
+  } catch (e) {}
 
   if (!accountData) {
     yield* put(resetAccount())
