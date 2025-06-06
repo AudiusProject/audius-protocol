@@ -43,7 +43,7 @@ import { RecentSearches } from '../search-screen/RecentSearches'
 import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
-import { SearchContext, useSearchQuery } from '../search-screen/searchState'
+import { SearchContext } from '../search-screen/searchState'
 
 import {
   PREMIUM_TRACKS,
@@ -87,6 +87,14 @@ export const SearchExploreScreen = () => {
   const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
   const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
   const [searchInput, setSearchInput] = useState(params?.query ?? '')
+  const [debouncedQuery, setDebouncedQuery] = useState(searchInput)
+  useDebounce(
+    () => {
+      setDebouncedQuery(searchInput)
+    },
+    400, // debounce delay in ms
+    [searchInput]
+  )
 
   useEffect(() => {
     setSearchInput(params?.query ?? '')
@@ -141,7 +149,7 @@ export const SearchExploreScreen = () => {
   return (
     <SearchContext.Provider
       value={{
-        query: searchInput,
+        query: debouncedQuery,
         setQuery: setSearchInput,
         category,
         setCategory,
