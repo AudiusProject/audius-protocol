@@ -12,8 +12,8 @@ import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
-  getFinishedSignUpProcess,
   getRouteOnCompletion,
+  getStartedAndFinishedSignup,
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
@@ -62,7 +62,8 @@ export const RootScreen = () => {
   const { data: hasCompleteAccount } = useCurrentAccountUser({
     select: selectIsAccountComplete
   })
-  const hasFinishedSignUp = useSelector(getFinishedSignUpProcess)
+
+  const hasFinishedSignUp = useSelector(getStartedAndFinishedSignup)
   const showHomeStack = hasCompleteAccount && hasFinishedSignUp
   const startedSignUp = useSelector(getStartedSignUpProcess)
   const welcomeModalShown = useSelector(getWelcomeModalShown)
