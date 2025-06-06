@@ -588,7 +588,9 @@ function* signUp() {
                 [queryClient, queryClient.fetchQuery],
                 {
                   queryKey: getWalletAccountQueryKey(wallet),
-                  queryFn: async () => getWalletAccountQueryFn(wallet!, sdk)
+                  queryFn: async () => getWalletAccountQueryFn(wallet!, sdk),
+                  staleTime: Infinity,
+                  gcTime: Infinity
                 }
               )) as AccountUserMetadata | undefined
               // TODO: Do I need to prime the accountUser slice here?
@@ -899,7 +901,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     const account = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(signInResponse.walletAddress),
       queryFn: async () =>
-        getWalletAccountQueryFn(signInResponse.walletAddress, sdk)
+        getWalletAccountQueryFn(signInResponse.walletAddress, sdk),
+      staleTime: Infinity,
+      gcTime: Infinity
     })) as AccountUserMetadata | undefined
 
     // Login succeeded but we found no account for the user (incomplete signup)
