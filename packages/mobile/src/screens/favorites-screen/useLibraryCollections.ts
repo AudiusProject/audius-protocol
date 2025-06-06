@@ -83,6 +83,7 @@ export const useLibraryCollections = ({
     data: fetchedCollectionIds,
     isFetching,
     isSuccess,
+    isLoading,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -139,6 +140,7 @@ export const useLibraryCollections = ({
     loadNextPage,
     status,
     isPending,
+    isLoading,
     isFetchingNextPage
   }
 }

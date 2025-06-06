@@ -108,34 +108,13 @@ export const TracksTab = () => {
     [saves, localAdditions]
   )
 
-  const isLoading = savedTracksStatus !== Status.SUCCESS
-
-  let emptyTabText: string
-  if (selectedCategory === LibraryCategory.All) {
-    emptyTabText = messages.emptyTracksAllText
-  } else if (selectedCategory === LibraryCategory.Favorite) {
-    emptyTabText = messages.emptyTracksFavoritesText
-  } else if (selectedCategory === LibraryCategory.Repost) {
-    emptyTabText = messages.emptyTracksRepostsText
-  } else {
-    emptyTabText = messages.emptyTracksPurchasedText
-  }
-
   const fetchSaves = useCallback(() => {
     dispatch(
       fetchSavesAction(filterValue, selectedCategory, '', '', 0, FETCH_LIMIT)
     )
   }, [dispatch, filterValue, selectedCategory])
 
-  useEffect(() => {
-    // Need to fetch saves when the filterValue or selectedCategory (by way of fetchSaves) changes
-    if (isReachable) {
-      fetchSaves()
-      setFetchPage((fetchPage) => fetchPage + 1)
-    }
-  }, [isReachable, fetchSaves])
-
-  const { entries } = useFavoritesLineup(fetchSaves)
+  const { entries, status: lineupStatus } = useFavoritesLineup(fetchSaves)
   const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
 
   const filterTrack = useCallback(
@@ -154,6 +133,32 @@ export const TracksTab = () => {
   )
 
   const trackData = useTracksWithUsers(trackUids)
+  const isLoadingTracks = trackData.some(({ track, user }) => !track || !user)
+
+  const isLoading =
+    savedTracksStatus !== Status.SUCCESS ||
+    initialFetch ||
+    lineupStatus === Status.LOADING ||
+    isLoadingTracks
+
+  let emptyTabText: string
+  if (selectedCategory === LibraryCategory.All) {
+    emptyTabText = messages.emptyTracksAllText
+  } else if (selectedCategory === LibraryCategory.Favorite) {
+    emptyTabText = messages.emptyTracksFavoritesText
+  } else if (selectedCategory === LibraryCategory.Repost) {
+    emptyTabText = messages.emptyTracksRepostsText
+  } else {
+    emptyTabText = messages.emptyTracksPurchasedText
+  }
+
+  useEffect(() => {
+    // Need to fetch saves when the filterValue or selectedCategory (by way of fetchSaves) changes
+    if (isReachable) {
+      fetchSaves()
+      setFetchPage((fetchPage) => fetchPage + 1)
+    }
+  }, [isReachable, fetchSaves])
 
   const filteredTrackUids = useMemo(() => {
     return trackData
@@ -225,7 +230,7 @@ export const TracksTab = () => {
             placeholder={messages.inputPlaceholder}
             onChangeText={handleChangeFilterValue}
           />
-          <WithLoader loading={initialFetch}>
+          <WithLoader loading={isLoading}>
             <Animated.View layout={Layout}>
               {filteredTrackUids.length ? (
                 <Tile
@@ -244,7 +249,11 @@ export const TracksTab = () => {
                   />
                 </Tile>
               ) : null}
-              {isFetchingMore ? loadingSpinner : null}
+              {isFetchingMore &&
+              filteredTrackUids.length > 0 &&
+              !isLoadingTracks
+                ? loadingSpinner
+                : null}
             </Animated.View>
           </WithLoader>
         </>
