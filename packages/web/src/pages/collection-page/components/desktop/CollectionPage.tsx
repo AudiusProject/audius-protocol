@@ -99,7 +99,7 @@ export type CollectionPageProps = {
   collection: {
     status: string
     metadata: Collection | SmartCollection | null
-    user: User | null
+    user: User | null | undefined
   }
   tracks: {
     status: Status

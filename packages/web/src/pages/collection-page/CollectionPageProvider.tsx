@@ -130,7 +130,7 @@ type CollectionPageProps = OwnProps &
   RouteComponentProps & {
     userId?: number | null | undefined
     userPlaylists?: AccountCollection[] | undefined
-    user: User | undefined
+    user?: User | undefined
   }
 
 type CollectionClassProps = CollectionPageProps & {

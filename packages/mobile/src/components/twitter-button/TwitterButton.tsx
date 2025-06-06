@@ -51,7 +51,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     'handle' in other ? other.handle : undefined
   )
 
-  const additionalUser = useUserByHandle(
+  const { data: additionalUser } = useUserByHandle(
     'additionalHandle' in other ? other.additionalHandle : undefined
   )
 
