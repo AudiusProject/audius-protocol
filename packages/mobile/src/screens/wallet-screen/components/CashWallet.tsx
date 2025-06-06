@@ -56,26 +56,28 @@ export const CashWallet = () => {
           />
         </Flex>
 
-        <Flex h='4xl' justifyContent='center'>
-          {isLoading ? (
-            <Skeleton h='4xl' w='5xl' />
-          ) : (
-            <Text variant='display' size='m' color='default'>
-              {balanceFormatted}
-            </Text>
-          )}
-        </Flex>
-
-        {!isManagedAccount ? (
-          <Flex gap='s'>
-            <Button variant='primary' onPress={handleWithdrawCash} fullWidth>
-              {walletMessages.withdraw}
-            </Button>
-            <Button variant='secondary' onPress={handleAddCash} fullWidth>
-              {walletMessages.addCash}
-            </Button>
+        <Flex gap='xl'>
+          <Flex h='4xl' justifyContent='center'>
+            {isLoading ? (
+              <Skeleton h='4xl' w='5xl' />
+            ) : (
+              <Text variant='display' size='m' color='default'>
+                {balanceFormatted}
+              </Text>
+            )}
           </Flex>
-        ) : null}
+
+          {!isManagedAccount ? (
+            <Flex gap='s'>
+              <Button variant='primary' onPress={handleWithdrawCash} fullWidth>
+                {walletMessages.withdraw}
+              </Button>
+              <Button variant='secondary' onPress={handleAddCash} fullWidth>
+                {walletMessages.addCash}
+              </Button>
+            </Flex>
+          ) : null}
+        </Flex>
       </Flex>
     </Paper>
   )

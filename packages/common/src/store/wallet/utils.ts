@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js'
 import { useSelector } from 'react-redux'
 
 import { useCurrentAccountUser } from '~/api'

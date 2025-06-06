@@ -1,12 +1,12 @@
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take } from 'typed-redux-saga'
+import { call, put, race, take } from 'typed-redux-saga'
 
+import { queryAccountUser } from '~/api'
 import { getUSDCBalanceQueryKey } from '~/api/tan-query/wallets/useUSDCBalance'
 import { Name, Status, WithdrawUSDCTransferEventFields } from '~/models'
 import { transferFromUserBank } from '~/services/audius-backend/solana'
 
-import { accountSelectors } from '../../account'
 import { buyUSDCActions } from '../../buy-usdc'
 import { getContext } from '../../effects'
 import { getSDK } from '../../sdkUtils'
@@ -68,7 +68,7 @@ function* doWithdrawUSDCCoinflow({
     const destinationAddress = rootSolanaAccount.publicKey.toString()
     const connection = sdk.services.solanaClient.connection
 
-    const user = yield* select(accountSelectors.getAccountUser)
+    const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
       throw new Error('Unable to find wallet. Is the user signed in?')
     }
@@ -210,7 +210,6 @@ function* doWithdrawUSDCManualTransfer({
   const sdk = yield* getSDK()
   const connection = sdk.services.solanaClient.connection
   const env = yield* getContext('env')
-
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
 
   const analyticsFields: WithdrawUSDCTransferEventFields = {
@@ -228,7 +227,7 @@ function* doWithdrawUSDCManualTransfer({
       })
     )
 
-    const user = yield* select(accountSelectors.getAccountUser)
+    const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
       throw new Error('Unable to find wallet. Is the user signed in?')
     }
