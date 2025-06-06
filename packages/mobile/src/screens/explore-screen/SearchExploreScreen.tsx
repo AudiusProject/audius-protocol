@@ -134,17 +134,14 @@ export const SearchExploreScreen = () => {
       : history
   }, [categoryKind, history])
 
-  const handleMoodPress = useCallback(
-    (moodLabel: string) => {
-      // @ts-ignore
-      // TODO this kinda works but goes to old search stack
-      navigation.navigate('Search', {
-        category: 'tracks',
-        filters: { mood: moodLabel }
-      })
-    },
-    [navigation]
-  )
+  const handleMoodPress = useCallback((moodLabel: string) => {
+    // @ts-ignore
+    // TODO move this from the old search stack
+    // navigation.navigate('Search', {
+    //   category: 'tracks',
+    //   filters: { mood: moodLabel }
+    // })
+  }, [])
   const moodEntries = Object.entries(MOODS) as [string, MoodInfo][]
   return (
     <SearchContext.Provider
