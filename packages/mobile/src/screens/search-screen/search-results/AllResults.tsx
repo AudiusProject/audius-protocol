@@ -44,7 +44,7 @@ const AllResultsItem = ({
 }) => {
   const dispatch = useDispatch()
   const [query] = useSearchQuery()
-
+  console.log('asdf query', query)
   const handlePress = useCallback(() => {
     dispatch(addRecentSearch({ searchItem: item }))
 

@@ -28,11 +28,11 @@ import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
+import { SearchExploreScreen } from 'app/screens/explore-screen/SearchExploreScreen'
 import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { RewardsScreen } from 'app/screens/rewards-screen'
 import type { SearchParams } from 'app/screens/search-screen'
-import { SearchScreenStack } from 'app/screens/search-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -204,7 +204,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='Profile' component={ProfileScreen} />
       <Stack.Screen
         name='Search'
-        component={SearchScreenStack}
+        component={SearchExploreScreen}
         options={{ ...screenOptions, headerShown: false }}
       />
       <Stack.Group>

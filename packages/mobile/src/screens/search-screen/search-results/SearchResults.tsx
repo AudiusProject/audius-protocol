@@ -8,7 +8,7 @@ import { TrackResults } from './TrackResults'
 
 export const SearchResults = () => {
   const [category] = useSearchCategory()
-
+  console.log('asdf category', category)
   switch (category) {
     case 'all':
       return <AllResults />

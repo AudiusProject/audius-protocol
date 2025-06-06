@@ -4,7 +4,9 @@ import type {
   SearchCategory,
   SearchFilters as SearchFiltersType
 } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { searchSelectors } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -129,6 +131,17 @@ export const SearchScreenStack = () => {
   }, [params])
 
   const screenOptions = useAppScreenOptions()
+  const { isEnabled: isSearchExploreMobileEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_MOBILE
+  )
+
+  if (isSearchExploreMobileEnabled) {
+    return (
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen name='SearchResults' component={SearchScreen} />
+      </Stack.Navigator>
+    )
+  }
 
   return (
     <SearchContext.Provider

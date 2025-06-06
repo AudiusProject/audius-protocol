@@ -34,6 +34,7 @@ export const ProfileResults = () => {
     query,
     ...filters
   })
+  console.log('asdf profiles', query, filters, profiles)
   const hasNoResults = (!profiles || profiles.length === 0) && isSuccess
 
   const handlePress = useCallback(

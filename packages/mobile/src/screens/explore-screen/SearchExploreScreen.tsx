@@ -11,6 +11,7 @@ import {
   ExploreCollectionsVariant,
   searchSelectors
 } from '@audius/common/store'
+import type { Mood } from '@audius/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
@@ -72,42 +73,11 @@ const { getSearchHistory } = searchSelectors
 
 export const SearchExploreScreen = () => {
   const { spacing } = useTheme()
-  const navigation = useNavigation()
-
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
-  const [query, setQuery] = useSearchQuery()
-
-  const [searchInput, setSearchInput] = useState('')
-
-  useDebounce(
-    () => {
-      setQuery(searchInput)
-    },
-    400,
-    [searchInput]
-  )
-
-  const handleOpenLeftNavDrawer = useCallback(() => {
-    drawerHelpers?.openDrawer()
-  }, [drawerHelpers])
-
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
 
-  // Data fetching
-  const { data: exploreContent } = useExploreContent()
-  const { data: featuredArtists } = useUsers(exploreContent?.featuredProfiles)
-  const { data: featuredLabels } = useUsers(exploreContent?.featuredLabels)
-
-  // Derived data
-  const filteredTiles = tiles.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
-    return !isPremiumTracksTile || isUSDCPurchasesEnabled
-  })
-
-  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
+  // State
   const [category, setCategory] = useState<SearchCategory>(
     params?.category ?? 'all'
   )
@@ -115,47 +85,72 @@ export const SearchExploreScreen = () => {
     params?.filters ?? {}
   )
   const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
+  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
+  const [searchInput, setSearchInput] = useState(params?.query ?? '')
 
   useEffect(() => {
-    setQuery(params?.query ?? '')
+    setSearchInput(params?.query ?? '')
     setCategory(params?.category ?? 'all')
     setFilters(params?.filters ?? {})
     setAutoFocus(params?.autoFocus ?? false)
-  }, [params, setQuery])
+  }, [params])
+
+  // Data fetching
+  const { data: exploreContent } = useExploreContent()
+  const { data: featuredArtists } = useUsers(exploreContent?.featuredProfiles)
+  const { data: featuredLabels } = useUsers(exploreContent?.featuredLabels)
+
+  // Derived data
+  const filteredTiles = useMemo(
+    () =>
+      tiles.filter((tile) => {
+        const isPremiumTracksTile =
+          tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+          tile.title === PREMIUM_TRACKS.title
+        return !isPremiumTracksTile || isUSDCPurchasesEnabled
+      }),
+    [isUSDCPurchasesEnabled]
+  )
 
   const history = useSelector(getSearchHistory)
   const categoryKind: Kind | null = category
     ? itemKindByCategory[category]
     : null
+  const filteredSearchItems = useMemo(
+    () =>
+      categoryKind
+        ? history.filter((item) => item.kind === categoryKind)
+        : history,
+    [categoryKind, history]
+  )
 
-  const filteredSearchItems = useMemo(() => {
-    return categoryKind
-      ? history.filter((item) => item.kind === categoryKind)
-      : history
-  }, [categoryKind, history])
+  // Handlers
+  const handleOpenLeftNavDrawer = useCallback(() => {
+    drawerHelpers?.openDrawer()
+  }, [drawerHelpers])
 
-  const handleMoodPress = useCallback((moodLabel: string) => {
-    // @ts-ignore
-    // TODO move this from the old search stack
-    // navigation.navigate('Search', {
-    //   category: 'tracks',
-    //   filters: { mood: moodLabel }
-    // })
+  const handleMoodPress = useCallback((moodLabel: Mood) => {
+    setCategory('tracks')
+    setFilters({ mood: moodLabel })
   }, [])
-  const moodEntries = Object.entries(MOODS) as [string, MoodInfo][]
+
+  const moodEntries = useMemo(
+    () => Object.entries(MOODS) as [string, MoodInfo][],
+    []
+  )
   return (
     <SearchContext.Provider
       value={{
-        autoFocus,
-        setAutoFocus,
-        query,
-        setQuery,
+        query: searchInput,
+        setQuery: setSearchInput,
         category,
         setCategory,
         filters,
         setFilters,
         bpmType,
         setBpmType,
+        autoFocus,
+        setAutoFocus,
         active: true
       }}
     >
@@ -176,13 +171,11 @@ export const SearchExploreScreen = () => {
                 <Flex>
                   <TextInput
                     label='Search'
-                    // ref={searchBarRef}
                     placeholder={messages.searchPlaceholder}
-                    // onChange={handleSearch}
-                    // onClear={handleClearSearch}
                     size={TextInputSize.SMALL}
                     startIcon={IconSearch}
                     onChangeText={setSearchInput}
+                    value={searchInput}
                   />
                 </Flex>
               </Flex>
@@ -191,7 +184,7 @@ export const SearchExploreScreen = () => {
           <SearchCategoriesAndFilters />
 
           <ScrollView>
-            {category !== 'all' ? (
+            {category !== 'all' || searchInput ? (
               <>
                 {searchInput || filteredSearchItems.length === 0 ? (
                   <SearchResults />
