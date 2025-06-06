@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -93,13 +93,6 @@ export const SearchExploreScreen = () => {
     400, // debounce delay in ms
     [searchInput]
   )
-
-  useEffect(() => {
-    setSearchInput(params?.query ?? '')
-    setCategory(params?.category ?? 'all')
-    setFilters(params?.filters ?? {})
-    setAutoFocus(params?.autoFocus ?? false)
-  }, [params])
 
   // Data fetching
   const { data: exploreContent } = useExploreContent()
