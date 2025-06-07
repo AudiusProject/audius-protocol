@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
 import { SolanaWalletAddress } from '@audius/common/models'
-import { profilePageActions } from '@audius/common/store'
+import { isValidSolAddress, profilePageActions } from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -38,10 +38,7 @@ import { TextField } from 'components/form-fields'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
-import {
-  getAssociatedTokenAccountOwner,
-  isValidSolAddress
-} from 'services/solana/solana'
+import { getAssociatedTokenAccountOwner } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 const messages = {

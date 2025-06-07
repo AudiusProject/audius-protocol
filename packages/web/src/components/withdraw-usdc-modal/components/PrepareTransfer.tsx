@@ -38,6 +38,7 @@ export const PrepareTransfer = () => {
       onOpen({ amount: amountCents / 100.0 })
     }
   }, [coinflowState, setData, onOpen, amountCents])
+
   return (
     <Flex
       direction='column'

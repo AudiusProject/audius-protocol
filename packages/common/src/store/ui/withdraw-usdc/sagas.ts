@@ -1,26 +1,19 @@
-import { queryAccountUser } from '@audius/common/api'
-import {
-  Name,
-  Status,
-  WithdrawUSDCTransferEventFields
-} from '@audius/common/models'
-import { getUSDCBalanceQueryKey } from '@audius/common/src/api/tan-query/wallets/useUSDCBalance'
-import { transferFromUserBank } from '@audius/common/src/services/audius-backend/solana'
-import {
-  withdrawUSDCActions,
-  WithdrawUSDCModalPages,
-  withdrawUSDCModalActions,
-  WithdrawMethod,
-  getContext,
-  buyUSDCActions,
-  getSDK
-} from '@audius/common/store'
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, take } from 'typed-redux-saga'
 
-import { env } from 'services/env'
-import { getSolanaConnection } from 'services/solana/solana'
+import { queryAccountUser } from '~/api'
+import { getUSDCBalanceQueryKey } from '~/api/tan-query/wallets/useUSDCBalance'
+import { Name, Status, WithdrawUSDCTransferEventFields } from '~/models'
+import { transferFromUserBank } from '~/services/audius-backend/solana'
+
+import { buyUSDCActions } from '../../buy-usdc'
+import { getContext } from '../../effects'
+import { getSDK } from '../../sdkUtils'
+import { withdrawUSDCModalActions, WithdrawUSDCModalPages } from '../modals'
+
+import { actions as withdrawUSDCActions } from './slice'
+import { WithdrawMethod } from './types'
 
 const {
   beginWithdrawUSDC,
@@ -47,7 +40,9 @@ function* doWithdrawUSDCCoinflow({
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
   const solanaWalletService = yield* getContext('solanaWalletService')
+  const env = yield* getContext('env')
   yield* put(beginCoinflowWithdrawal())
+
   const mint = new PublicKey(env.USDC_MINT_ADDRESS)
 
   const analyticsFields: WithdrawUSDCTransferEventFields = {
@@ -65,16 +60,13 @@ function* doWithdrawUSDCCoinflow({
       })
     )
 
-    const rootSolanaAccount = yield* call([
-      solanaWalletService,
-      solanaWalletService.getKeypair
-    ])
+    const rootSolanaAccount = yield* call([solanaWalletService, 'getKeypair'])
     if (!rootSolanaAccount) {
       throw new Error('Missing solana root wallet')
     }
 
     const destinationAddress = rootSolanaAccount.publicKey.toString()
-    const connection = yield* call(getSolanaConnection)
+    const connection = sdk.services.solanaClient.connection
 
     const user = yield* call(queryAccountUser)
     if (!user?.wallet) {
@@ -112,11 +104,7 @@ function* doWithdrawUSDCCoinflow({
     )
 
     // Finalizes the transaction for our connection
-    yield* call(
-      [connection, connection.confirmTransaction],
-      signature,
-      'finalized'
-    )
+    yield* call([connection, 'confirmTransaction'], signature, 'finalized')
 
     yield* put(updateAmount({ amount }))
 
@@ -218,10 +206,11 @@ function* doWithdrawUSDCManualTransfer({
 >) {
   const { track, make } = yield* getContext('analytics')
   const withdrawalAmountDollars = amount / 100
-  const mint = new PublicKey(env.USDC_MINT_ADDRESS)
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* getSDK()
-  const connection = yield* call(getSolanaConnection)
+  const connection = sdk.services.solanaClient.connection
+  const env = yield* getContext('env')
+  const mint = new PublicKey(env.USDC_MINT_ADDRESS)
 
   const analyticsFields: WithdrawUSDCTransferEventFields = {
     destinationAddress,

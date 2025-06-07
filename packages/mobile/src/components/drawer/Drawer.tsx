@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react'
-import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
+import React, { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
 import type {
   GestureResponderEvent,
@@ -449,6 +449,12 @@ export const Drawer: DrawerComponent = ({
     initialOffsetOpenPosition
   ])
 
+  const handleClose = useCallback(() => {
+    if (!blockClose) {
+      onClose()
+    }
+  }, [blockClose, onClose])
+
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -589,13 +595,20 @@ export const Drawer: DrawerComponent = ({
               gestureState.moveY >
                 FULL_DRAWER_HEIGHT - MOVE_CUTOFF_CLOSE * drawerHeight
             ) {
-              if (shouldCloseToInitialOffset) {
-                slideOut(initialOffsetOpenPosition, gestureState.vy, onClose)
-                isOpenIntent.current = false
-                borderRadiusAnim.current.setValue(0)
+              // Check blockClose BEFORE starting close animation
+              if (!blockClose) {
+                if (shouldCloseToInitialOffset) {
+                  slideOut(initialOffsetOpenPosition, gestureState.vy, onClose)
+                  isOpenIntent.current = false
+                  borderRadiusAnim.current.setValue(0)
+                } else {
+                  slideOut(initialPosition, gestureState.vy, onClose)
+                  isOpenIntent.current = false
+                }
               } else {
-                slideOut(initialPosition, gestureState.vy, onClose)
-                isOpenIntent.current = false
+                // If blockClose is true, snap back to open position instead of closing
+                slideIn(openPosition, gestureState.vy, onOpen)
+                isOpenIntent.current = true
               }
             } else {
               slideIn(openPosition, gestureState.vy, onOpen)
@@ -630,7 +643,8 @@ export const Drawer: DrawerComponent = ({
       shouldCloseToInitialOffset,
       shouldHaveRoundedBordersAtInitialOffset,
       slideIn,
-      slideOut
+      slideOut,
+      blockClose
     ]
   )
 
@@ -654,7 +668,7 @@ export const Drawer: DrawerComponent = ({
         style={[styles.backgroundRoot, { zIndex }]}
       >
         <TouchableWithoutFeedback
-          onPress={isGestureSupported ? onClose : undefined}
+          onPress={isGestureSupported ? handleClose : undefined}
         >
           <Animated.View
             style={[
@@ -708,7 +722,7 @@ export const Drawer: DrawerComponent = ({
     <>
       {shouldBackgroundDim ? renderBackground() : null}
       <Animated.View
-        {...(isGestureSupported ? panResponder.panHandlers : {})}
+        {...(isGestureSupported && !blockClose ? panResponder.panHandlers : {})}
         style={[
           styles.drawer,
           drawerStyle,

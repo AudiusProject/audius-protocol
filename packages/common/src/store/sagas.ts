@@ -23,6 +23,7 @@ import {
   mobileOverflowMenuUISagas,
   shareModalUISagas,
   stripeModalUISagas,
+  withdrawUSDCSagas,
   modalsSagas
 } from '~/store/ui'
 
@@ -60,7 +61,8 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,
-  playlistUpdates: playlistUpdatesSagas
+  playlistUpdates: playlistUpdatesSagas,
+  withdrawUSDC: withdrawUSDCSagas
 
   // signOut: signOutSagas
   // recoveryEmail: recoveryEmailSagas

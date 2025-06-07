@@ -5,7 +5,8 @@ import { ChallengeRewardID, SolanaWalletAddress } from '@audius/common/models'
 import {
   TransactionType,
   TransactionMethod,
-  TransactionDetails
+  TransactionDetails,
+  isValidSolAddress
 } from '@audius/common/store'
 import {
   formatAudio,
@@ -30,7 +31,6 @@ import { isChangePositive } from 'components/audio-transactions-table/AudioTrans
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getChallengeConfig } from 'pages/rewards-page/config'
-import { isValidSolAddress } from 'services/solana/solana'
 import { push } from 'utils/navigation'
 
 import { Block, BlockContainer } from './Block'
