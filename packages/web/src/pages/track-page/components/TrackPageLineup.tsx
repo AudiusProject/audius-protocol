@@ -60,7 +60,12 @@ export const TrackPageLineup = ({
       ? LineupVariant.SECTION
       : LineupVariant.CONDENSED
 
-  if (!indices) return null
+  const willRenderNothing =
+    isRemixContest &&
+    indices?.moreBySection.index === undefined &&
+    indices?.recommendedSection.index === undefined
+
+  if (!indices || willRenderNothing) return null
 
   const renderRemixParentSection = () => {
     if (indices.remixParentSection.index === undefined || !trackId) return null
