@@ -96,7 +96,7 @@ export const RemixContestSection = ({
     isRemixContestWinnersMilestoneEnabled &&
     (remixContest?.eventData?.winners?.length ?? 0) > 0
 
-  const [index, setIndex] = useState(hasWinners ? 2 : 0)
+  const [index, setIndex] = useState(hasWinners ? (hasPrizeInfo ? 2 : 1) : 0)
   const [routes, setRoutes] = useState<Route[]>([])
   const [heights, setHeights] = useState({})
   const [firstRender, setFirstRender] = useState(true)
