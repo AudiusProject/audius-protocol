@@ -104,7 +104,7 @@ export const BuySellFlow = ({
     { key: 'sell' as BuySellTab, text: messages.sell }
   ]
 
-  const handleContinueClick = () => {
+  const handleContinueClick = useCallback(() => {
     setHasAttemptedSubmit(true)
     if (transactionData?.isValid && !isContinueButtonLoading) {
       handleShowConfirmation()
@@ -116,7 +116,14 @@ export const BuySellFlow = ({
         })
       }
     }
-  }
+  }, [
+    setHasAttemptedSubmit,
+    transactionData?.isValid,
+    isContinueButtonLoading,
+    handleShowConfirmation,
+    confirmationScreenData,
+    navigation
+  ])
 
   useEffect(() => {
     setHasAttemptedSubmit(false)
@@ -156,63 +163,65 @@ export const BuySellFlow = ({
     !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
 
   // Always show the input screen in mobile - other screens are separate
-  return (
-    <Flex direction='column' gap='xl' p='l'>
-      {/* Tab Control */}
-      <Flex alignItems='center' justifyContent='center'>
-        <SegmentedControl
-          options={tabs}
-          selected={activeTab}
-          onSelectOption={handleActiveTabChange}
-          fullWidth
-        />
-      </Flex>
+  return {
+    content: (
+      <Flex direction='column' gap='xl'>
+        {/* Tab Control */}
+        <Flex alignItems='center' justifyContent='center'>
+          <SegmentedControl
+            options={tabs}
+            selected={activeTab}
+            onSelectOption={handleActiveTabChange}
+            fullWidth
+          />
+        </Flex>
 
-      {/* Tab Content */}
-      {activeTab === 'buy' ? (
-        <BuyScreen
-          tokenPair={selectedPair}
-          onTransactionDataChange={handleTransactionDataChange}
-          error={shouldShowError}
-          errorMessage={displayErrorMessage}
-          initialInputValue={tabInputValues.buy}
-          onInputValueChange={handleTabInputValueChange}
-        />
-      ) : (
-        <SellScreen
-          tokenPair={selectedPair}
-          onTransactionDataChange={handleTransactionDataChange}
-          error={shouldShowError}
-          errorMessage={displayErrorMessage}
-          initialInputValue={tabInputValues.sell}
-          onInputValueChange={handleTabInputValueChange}
-        />
-      )}
+        {/* Tab Content */}
+        {activeTab === 'buy' ? (
+          <BuyScreen
+            tokenPair={selectedPair}
+            onTransactionDataChange={handleTransactionDataChange}
+            error={shouldShowError}
+            errorMessage={displayErrorMessage}
+            initialInputValue={tabInputValues.buy}
+            onInputValueChange={handleTabInputValueChange}
+          />
+        ) : (
+          <SellScreen
+            tokenPair={selectedPair}
+            onTransactionDataChange={handleTransactionDataChange}
+            error={shouldShowError}
+            errorMessage={displayErrorMessage}
+            initialInputValue={tabInputValues.sell}
+            onInputValueChange={handleTabInputValueChange}
+          />
+        )}
 
-      {/* Insufficient Balance Message for Buy */}
-      {activeTab === 'buy' && !hasSufficientBalance && (
-        <Hint
-          actions={
-            <TextLink variant='visible' onPress={handleAddCash}>
-              {messages.addCash}
+        {/* Insufficient Balance Message for Buy */}
+        {activeTab === 'buy' && !hasSufficientBalance && (
+          <Hint
+            actions={
+              <TextLink variant='visible' onPress={handleAddCash}>
+                {messages.addCash}
+              </TextLink>
+            }
+          >
+            {messages.insufficientUSDC}
+          </Hint>
+        )}
+
+        {/* Help Center Hint */}
+        {hasSufficientBalance && (
+          <Hint>
+            {messages.helpCenter}{' '}
+            <TextLink showUnderline variant='visible' url={WALLET_GUIDE_URL}>
+              {messages.walletGuide}
             </TextLink>
-          }
-        >
-          {messages.insufficientUSDC}
-        </Hint>
-      )}
-
-      {/* Help Center Hint */}
-      {hasSufficientBalance && (
-        <Hint>
-          {messages.helpCenter}{' '}
-          <TextLink showUnderline variant='visible' url={WALLET_GUIDE_URL}>
-            {messages.walletGuide}
-          </TextLink>
-        </Hint>
-      )}
-
-      {/* Continue Button */}
+          </Hint>
+        )}
+      </Flex>
+    ),
+    footer: (
       <Button
         variant='primary'
         fullWidth
@@ -221,6 +230,6 @@ export const BuySellFlow = ({
       >
         {messages.continue}
       </Button>
-    </Flex>
-  )
+    )
+  }
 }
