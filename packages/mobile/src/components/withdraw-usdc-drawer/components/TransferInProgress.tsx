@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
@@ -9,8 +9,7 @@ import {
 } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { Flex, spacing, Text } from '@audius/harmony-native'
-import LoadingSpinner from 'app/components/loading-spinner'
+import { Flex, LoadingSpinner, spacing, Text } from '@audius/harmony-native'
 
 const { getWithdrawStatus } = withdrawUSDCSelectors
 

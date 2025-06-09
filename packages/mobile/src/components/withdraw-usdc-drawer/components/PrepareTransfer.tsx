@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -9,9 +9,11 @@ import {
   CoinflowWithdrawState
 } from '@audius/common/store'
 import { useField } from 'formik'
+import { Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex, spacing, Text } from '@audius/harmony-native'
+import EmojiRaisedHands from 'app/assets/images/emojis/raised-hand.png'
 
 import type { WithdrawFormValues } from '../types'
 import { AMOUNT } from '../types'
@@ -34,18 +36,16 @@ export const PrepareTransfer = () => {
 
   return (
     <Flex gap='xl' alignItems='center' justifyContent='center' p='xl'>
+      <Image
+        source={EmojiRaisedHands}
+        style={{ width: spacing.unit20, height: spacing.unit20 }}
+      />
       <Flex gap='m' alignItems='center' justifyContent='center'>
         <Text variant='heading' size='xl' textAlign='center'>
           {walletMessages.holdOn}
         </Text>
-        <Text variant='body' textAlign='center' color='subdued'>
+        <Text variant='body' textAlign='center'>
           {walletMessages.preparingTransfer}
-        </Text>
-        <Text variant='body' size='s' textAlign='center' color='subdued'>
-          {walletMessages.pleaseWait}
-        </Text>
-        <Text variant='body' size='s' textAlign='center' color='accent'>
-          {walletMessages.transferringFunds}
         </Text>
       </Flex>
     </Flex>

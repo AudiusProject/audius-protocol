@@ -86,7 +86,7 @@ const WithdrawUSDCFormSchema = (userBalanceCents: number) => {
   ])
 }
 
-const WithdrawForm = ({ onClose }: { onClose: () => void }) => {
+const WithdrawUSDCForm = ({ onClose }: { onClose: () => void }) => {
   const { data } = useWithdrawUSDCModal()
   const { page } = data
   const { values } = useFormikContext<WithdrawFormValues>()
@@ -208,7 +208,7 @@ export const WithdrawUSDCDrawer = () => {
         validateOnChange
         onSubmit={handleSubmit}
       >
-        <WithdrawForm onClose={handleClose} />
+        <WithdrawUSDCForm onClose={handleClose} />
       </Formik>
     </Drawer>
   )

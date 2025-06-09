@@ -31,6 +31,9 @@ export type LoadingSpinnerProps = {
   style?: StyleProp<ViewStyle>
 }
 
+/**
+ * @deprecated Use the harmony-native LoadingSpinner component instead
+ */
 const LoadingSpinner = (props: LoadingSpinnerProps) => {
   const { neutralLight4 } = useThemeColors()
   const color = props.color ?? props.fill ?? neutralLight4

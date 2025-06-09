@@ -7,15 +7,11 @@ import {
   withdrawUSDCSelectors
 } from '@audius/common/store'
 import { CoinflowWithdraw } from '@coinflowlabs/react-native'
-import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCloseAlt } from '@audius/harmony-native'
+import { Flex, IconButton, IconCloseAlt } from '@audius/harmony-native'
 import { AppDrawer } from 'app/components/drawer'
 import { env } from 'app/services/env'
-import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
-import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
 const MODAL_NAME = 'CoinflowWithdraw'
@@ -27,40 +23,16 @@ const { getWithdrawAmount } = withdrawUSDCSelectors
 const { coinflowWithdrawalCanceled, coinflowWithdrawalSucceeded } =
   withdrawUSDCActions
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
-  headerContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8,
-    height: spacing(12),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingHorizontal: spacing(4)
-  },
-  contentContainer: {
-    paddingTop: spacing(6),
-    flex: 1
-  },
-  exitContainer: {
-    justifyContent: 'flex-start',
-    paddingHorizontal: spacing(4),
-    paddingVertical: spacing(2)
-  }
-}))
-
 const CoinflowWithdrawDrawerHeader = ({ onClose }: { onClose: () => void }) => {
-  const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
   return (
-    <View style={styles.headerContainer}>
-      <TouchableOpacity activeOpacity={0.7} onPress={onClose}>
-        <IconCloseAlt
-          width={spacing(6)}
-          height={spacing(6)}
-          fill={neutralLight4}
-        />
-      </TouchableOpacity>
-    </View>
+    <Flex row justifyContent='flex-start' alignItems='center' p='l'>
+      <IconButton
+        onPress={onClose}
+        icon={IconCloseAlt}
+        size='l'
+        color='subdued'
+      />
+    </Flex>
   )
 }
 

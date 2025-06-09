@@ -38,9 +38,7 @@ export const walletMessages = {
   // PrepareTransfer messages
   holdOn: 'Hold on!',
   preparingTransfer:
-    "We're getting your transfer ready. This could take a few moments.",
-  pleaseWait: "Please don't close this screen until the process completes.",
-  transferringFunds: 'Preparing your funds for withdrawal...',
+    "We're getting your transfer ready. This could take a few moments. Please don't leave this page.",
 
   // TransferInProgress messages
   transferInProgress: 'Transfer in Progress',
