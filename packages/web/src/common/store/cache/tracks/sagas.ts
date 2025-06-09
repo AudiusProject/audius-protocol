@@ -78,7 +78,8 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
 
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
-  action.formFields.description = squashNewLines(action.formFields.description)
+  action.formFields.description =
+    squashNewLines(action.formFields.description) ?? null
 
   const currentTrack = yield* queryTrack(action.trackId)
   if (!currentTrack) return

@@ -98,7 +98,7 @@ function* editPlaylistAsync(
   const isNative = yield* getContext('isNativeMobile')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
-  formFields.description = squashNewLines(formFields.description)
+  formFields.description = squashNewLines(formFields.description) ?? null
 
   // Updated the stored account playlist shortcut
   yield* put(

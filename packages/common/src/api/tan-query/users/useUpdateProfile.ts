@@ -23,7 +23,7 @@ export const useUpdateProfile = () => {
   return useMutation({
     mutationFn: async (metadata: WriteableUserMetadata) => {
       const sdk = await audiusSdk()
-      metadata.bio = squashNewLines(metadata.bio ?? null)
+      metadata.bio = squashNewLines(metadata.bio) ?? null
 
       // For base64 images (coming from native), convert to a blob
       if (metadata.updatedCoverPhoto?.type === 'base64') {

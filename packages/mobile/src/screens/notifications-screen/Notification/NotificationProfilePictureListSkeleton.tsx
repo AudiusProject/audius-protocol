@@ -35,7 +35,7 @@ export const ProfilePictureListSkeleton = ({
 
   return (
     <View style={styles.root}>
-      {times(Math.min(count, limit)).map((index) => (
+      {times(Math.min(count ?? 0, limit)).map((index) => (
         <View
           key={index}
           style={[

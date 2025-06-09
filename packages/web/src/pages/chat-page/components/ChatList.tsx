@@ -37,7 +37,6 @@ export const ChatList = (props: ChatListProps) => {
   const dispatch = useDispatch()
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const chats = useSelector(getChats)
-  console.log({ chats })
   const status = useSelector(getChatsStatus)
   const hasMore = useSelector(getHasMoreChats)
 

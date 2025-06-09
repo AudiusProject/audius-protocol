@@ -28,7 +28,6 @@ import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useSelector } from 'utils/reducer'
 
 const { unblockUser, createChat } = chatActions
 const { followUser } = usersSocialActions

@@ -3,7 +3,6 @@ import { ComponentProps, ComponentType, PureComponent, RefObject } from 'react'
 import {
   selectAccountHasTracks,
   useCurrentAccountUser,
-  useCurrentUserId,
   useProfileUser
 } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'

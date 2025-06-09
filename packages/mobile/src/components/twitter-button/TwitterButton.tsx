@@ -5,7 +5,7 @@ import { useTwitterButtonStatus } from '@audius/common/hooks'
 import { cacheUsersActions } from '@audius/common/store'
 import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import type { ButtonProps } from '@audius/harmony-native'
 import { IconTwitter, Button } from '@audius/harmony-native'
