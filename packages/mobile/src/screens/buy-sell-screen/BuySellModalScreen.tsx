@@ -1,3 +1,4 @@
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { useRoute } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
@@ -19,23 +20,25 @@ export const BuySellModalScreen = () => {
 
   return (
     <ModalScreen>
-      <Stack.Navigator screenOptions={screenOptions}>
-        <Stack.Screen
-          name='BuySellForm'
-          component={BuySellScreen}
-          initialParams={params}
-        />
-        <Stack.Screen
-          name='ConfirmSwapScreen'
-          component={ConfirmSwapScreen}
-          options={{ gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name='TransactionResultScreen'
-          component={TransactionResultScreen}
-          options={{ gestureEnabled: false }}
-        />
-      </Stack.Navigator>
+      <BottomSheetModalProvider>
+        <Stack.Navigator screenOptions={screenOptions}>
+          <Stack.Screen
+            name='BuySell'
+            component={BuySellScreen}
+            initialParams={params}
+          />
+          <Stack.Screen
+            name='ConfirmSwapScreen'
+            component={ConfirmSwapScreen}
+            options={{ gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name='TransactionResultScreen'
+            component={TransactionResultScreen}
+            options={{ gestureEnabled: false }}
+          />
+        </Stack.Navigator>
+      </BottomSheetModalProvider>
     </ModalScreen>
   )
 }
