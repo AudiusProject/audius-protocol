@@ -61,7 +61,8 @@ export const TransactionResultScreen = ({
   })
 
   const handleDone = () => {
-    // Navigate back to the wallet screen after successful transaction
+    // Close the modal and navigate back to the wallet screen
+    navigation.getParent()?.goBack()
     navigation.navigate('wallet')
   }
 

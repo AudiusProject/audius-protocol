@@ -23,11 +23,6 @@ import { setLastNavAction } from 'app/hooks/useNavigation'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AudioScreen } from 'app/screens/audio-screen'
-import {
-  BuySellScreen,
-  ConfirmSwapScreen,
-  TransactionResultScreen
-} from 'app/screens/buy-sell-screen'
 import { ChangeEmailModalScreen } from 'app/screens/change-email-screen/ChangeEmailScreen'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
 import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
@@ -108,9 +103,6 @@ export type AppTabScreenParamList = {
   AccountVerificationScreen: undefined
   ChangeEmail: undefined
   ChangePassword: undefined
-  BuySellScreen: undefined
-  ConfirmSwapScreen: undefined
-  TransactionResultScreen: undefined
   InboxSettingsScreen: undefined
   CommentSettingsScreen: undefined
   DownloadSettingsScreen: undefined
@@ -273,14 +265,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         />
         <Stack.Screen name='ChangeEmail' component={ChangeEmailModalScreen} />
       </Stack.Group>
-      <Stack.Group>
-        <Stack.Screen name='BuySellScreen' component={BuySellScreen} />
-        <Stack.Screen name='ConfirmSwapScreen' component={ConfirmSwapScreen} />
-        <Stack.Screen
-          name='TransactionResultScreen'
-          component={TransactionResultScreen}
-        />
-      </Stack.Group>
+
       <Stack.Screen
         name='FilterButton'
         component={FilterButtonScreen}

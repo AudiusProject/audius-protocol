@@ -20,7 +20,7 @@ const TokensHeader = () => {
   const navigation = useNavigation()
 
   const handleBuySellClick = useCallback(() => {
-    navigation.navigate('BuySellScreen', { initialTab: 'buy' })
+    navigation.navigate('BuySell', { initialTab: 'buy' })
   }, [navigation])
 
   return (
