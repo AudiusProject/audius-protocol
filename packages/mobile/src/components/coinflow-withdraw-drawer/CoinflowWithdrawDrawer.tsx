@@ -4,7 +4,9 @@ import { useCoinflowWithdrawalAdapter } from '@audius/common/hooks'
 import {
   useCoinflowWithdrawModal,
   withdrawUSDCActions,
-  withdrawUSDCSelectors
+  withdrawUSDCSelectors,
+  useWithdrawUSDCModal,
+  WithdrawUSDCModalPages
 } from '@audius/common/store'
 import { CoinflowWithdraw } from '@coinflowlabs/react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -38,6 +40,7 @@ const CoinflowWithdrawDrawerHeader = ({ onClose }: { onClose: () => void }) => {
 
 export const CoinflowWithdrawDrawer = () => {
   const { isOpen, onClose, onClosed } = useCoinflowWithdrawModal()
+  const { setData } = useWithdrawUSDCModal()
   const amount = useSelector(getWithdrawAmount)
   const dispatch = useDispatch()
 
@@ -45,8 +48,9 @@ export const CoinflowWithdrawDrawer = () => {
 
   const handleClose = useCallback(() => {
     dispatch(coinflowWithdrawalCanceled())
+    setData({ page: WithdrawUSDCModalPages.PREPARE_TRANSFER })
     onClose()
-  }, [dispatch, onClose])
+  }, [dispatch, setData, onClose])
 
   const handleSuccess = useCallback(() => {
     dispatch(coinflowWithdrawalSucceeded({ transaction: '' }))
