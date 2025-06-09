@@ -16,7 +16,9 @@ import {
   queryAccountUser,
   getCurrentAccountQueryKey,
   queryCurrentAccount,
-  queryCurrentUserId
+  queryCurrentUserId,
+  primeUserData,
+  getUserQueryKey
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import {
@@ -360,16 +362,10 @@ function* fetchLocalAccountAsync() {
     wallet &&
     !cachedAccountUser.is_deactivated
   ) {
-    yield* put(
-      cacheActions.add(Kind.USERS, [
-        {
-          id: cachedAccountUser.user_id,
-          uid: 'USER_ACCOUNT',
-          metadata: cachedAccountUser
-        }
-      ])
-    )
-
+    primeUserData({
+      users: [cachedAccountUser],
+      queryClient
+    })
     queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
     yield* put(fetchAccountSucceeded(cachedAccount))
   }
@@ -440,6 +436,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
   const { uuid: twitterId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
+  const queryClient = yield* getContext('queryClient')
   const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
@@ -467,11 +464,10 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
     const account = yield* call(queryAccountUser)
     const { verified } = profile
     if (account && !account.is_verified && verified) {
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
+      queryClient.setQueryData(getUserQueryKey(userId), {
+        ...account,
+        is_verified: true
+      })
     }
   } catch (err) {
     const error = err instanceof Error ? err : new Error(err as string)
@@ -491,6 +487,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
   const { uuid: instagramId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
+  const queryClient = yield* getContext('queryClient')
   const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
@@ -518,11 +515,10 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
     const account = yield* call(queryAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
+      queryClient.setQueryData(getUserQueryKey(userId), {
+        ...account,
+        is_verified: true
+      })
     }
   } catch (err) {
     const error = err instanceof Error ? err : new Error(err as string)
@@ -542,6 +538,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
   const { uuid: tikTokId, profile } = action.payload
   const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
+  const queryClient = yield* getContext('queryClient')
   const userId = yield* call(queryCurrentUserId)
   const accountUser = yield* call(queryAccountUser)
   const handle = accountUser?.handle
@@ -569,11 +566,10 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
     const account = yield* call(queryAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
+      queryClient.setQueryData(getUserQueryKey(userId), {
+        ...account,
+        is_verified: true
+      })
     }
   } catch (err) {
     const error = err instanceof Error ? err : new Error(err as string)

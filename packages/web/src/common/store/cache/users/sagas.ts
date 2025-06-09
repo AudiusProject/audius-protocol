@@ -14,12 +14,12 @@ import { getUserComputedPropsQueryKey } from '~/api/tan-query/users/useUser'
 // For updates and adds, sync the account user to local storage.
 // We use the same mergeCustomizer we use in cacheSagas to merge
 // with the local state.
+
+// TODO: replace this saga with a query client listener instead
 function* watchSyncLocalStorageUser() {
   const localStorage = yield* getContext('localStorage')
   function* syncLocalStorageUser(
-    action: ReturnType<
-      typeof cacheActions.update | typeof cacheActions.addSucceeded
-    >
+    action: ReturnType<typeof cacheActions.addSucceeded>
   ) {
     yield* waitForAccount()
     const currentUserId = yield* call(queryCurrentUserId)

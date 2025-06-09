@@ -1,4 +1,5 @@
 import {
+  getUserQueryKey,
   queryAccountUser,
   queryTrack,
   queryUser,
@@ -8,7 +9,6 @@ import {
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
   accountActions,
-  cacheActions,
   tracksSocialActions as socialActions,
   getContext,
   gatedContentSelectors,
@@ -531,19 +531,19 @@ export function* watchSetArtistPick() {
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* call(waitForWrite)
+      const queryClient = yield* getContext('queryClient')
       const accountUser = yield* queryAccountUser()
       const { user_id: userId } = accountUser ?? {}
 
       if (!userId) return
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: userId,
-            metadata: {
+
+      queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+        !prevUser
+          ? undefined
+          : {
+              ...prevUser,
               artist_pick_track_id: action.trackId
             }
-          }
-        ])
       )
       const user = yield* call(queryUser, userId)
       yield* fork(updateProfileAsync, { metadata: user })
@@ -557,19 +557,18 @@ export function* watchSetArtistPick() {
 export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     yield* call(waitForWrite)
+    const queryClient = yield* getContext('queryClient')
     const accountUser = yield* queryAccountUser()
     const { user_id: userId } = accountUser ?? {}
 
     if (!userId) return
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
+    queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+      !prevUser
+        ? undefined
+        : {
+            ...prevUser,
             artist_pick_track_id: null
           }
-        }
-      ])
     )
     const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })

@@ -9,7 +9,7 @@ import {
 import type { Entry, SubscriberInfo } from '@audius/common/store'
 import { getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
 const { getConfirmCalls } = confirmerSelectors
 const { getCache } = cacheSelectors
@@ -55,18 +55,6 @@ function* add(
   }
 }
 
-// Adds entries but first checks if they are confirming.
-// If they are, don't add or else we could be in an inconsistent state.
-function* watchAdd() {
-  yield* takeEvery(
-    cacheActions.ADD,
-    function* (action: ReturnType<typeof cacheActions.add>) {
-      const { kind, entries, replace, persist } = action
-      yield* call(add, kind, entries, replace, persist)
-    }
-  )
-}
-
 function* initializeCacheType() {
   const remoteConfig = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfig.waitForRemoteConfig)
@@ -81,7 +69,7 @@ function* initializeCacheType() {
 }
 
 const sagas = () => {
-  return [initializeCacheType, watchAdd]
+  return [initializeCacheType]
 }
 
 export default sagas

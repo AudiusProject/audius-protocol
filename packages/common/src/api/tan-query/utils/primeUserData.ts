@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 
 import { User } from '~/models/User'
+import { getContext } from '~/store/effects'
 
 import { getUserQueryKey } from '../users/useUser'
 import { getUserByHandleQueryKey } from '../users/useUserByHandle'
@@ -37,4 +38,9 @@ export const primeUserData = ({
       )
     }
   })
+}
+
+export function* primeUserDataSaga(users: User[]) {
+  const queryClient = yield* getContext('queryClient')
+  return primeUserData({ users, queryClient })
 }

@@ -5,6 +5,7 @@ import {
 } from '@audius/common/adapters'
 import {
   getStemsQueryKey,
+  getUserQueryKey,
   queryAccountUser,
   queryCurrentUserId,
   queryTrack,
@@ -22,7 +23,6 @@ import {
 import {
   getContext,
   cacheTracksActions as trackActions,
-  cacheActions,
   confirmerActions,
   TrackMetadataForUpload,
   stemsUploadActions,
@@ -263,6 +263,7 @@ function* deleteTrackAsync(
 ) {
   yield* waitForWrite()
   const user = yield* call(queryAccountUser)
+  const queryClient = yield* getContext('queryClient')
   if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -274,16 +275,13 @@ function* deleteTrackAsync(
 
   // Before deleting, check if the track is set as the artist pick & delete if so
   if (user.artist_pick_track_id === action.trackId) {
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
-            artist_pick_track_id: null
-          }
-        }
-      ])
-    )
+    queryClient.setQueryData(getUserQueryKey(userId), (prevUser) => {
+      if (!prevUser) return prevUser
+      return {
+        ...prevUser,
+        artist_pick_track_id: null
+      }
+    })
     const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
   }

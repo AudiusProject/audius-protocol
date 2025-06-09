@@ -5,7 +5,6 @@ import { getContext } from 'typed-redux-saga'
 
 import { Kind } from '~/models'
 import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
-import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { getCollectionQueryKey } from '../collection/useCollection'
@@ -13,7 +12,7 @@ import { getCollectionByPermalinkQueryKey } from '../collection/useCollectionByP
 import { TQCollection } from '../models'
 
 import { primeTrackDataInternal } from './primeTrackData'
-import { primeUserDataInternal } from './primeUserData'
+import { primeUserData } from './primeUserData'
 
 export const primeCollectionData = ({
   collections,
@@ -28,13 +27,12 @@ export const primeCollectionData = ({
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
-  const entries = primeCollectionDataInternal({
+  primeCollectionDataInternal({
     collections,
     queryClient,
     forceReplace,
     skipQueryData
   })
-  dispatch(addEntries(entries, false, undefined, 'react-query'))
   return collections
 }
 
@@ -87,17 +85,11 @@ export const primeCollectionDataInternal = ({
 
     // Prime user data from collection owner
     if ('user' in collection) {
-      const userEntries = primeUserDataInternal({
+      primeUserData({
         users: [collection.user],
         queryClient,
         forceReplace
       })
-
-      // Merge user entries
-      entries[Kind.USERS] = {
-        ...entries[Kind.USERS],
-        ...userEntries[Kind.USERS]
-      }
     }
 
     // Prime track and user data from tracks in collection

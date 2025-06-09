@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query'
 
 import { primeCollectionDataInternal } from '../../api/tan-query/utils/primeCollectionData'
 import { primeTrackDataInternal } from '../../api/tan-query/utils/primeTrackData'
-import { primeUserDataInternal } from '../../api/tan-query/utils/primeUserData'
+import { primeUserData } from '../../api/tan-query/utils/primeUserData'
 import type { CollectionMetadata } from '../../models/Collection'
 import { Kind } from '../../models/Kind'
 import type { Track } from '../../models/Track'
@@ -16,7 +16,7 @@ export const syncWithReactQuery = (
 ) => {
   // Process users first since tracks and collections may depend on them
   if (entriesByKind[Kind.USERS]) {
-    primeUserDataInternal({
+    primeUserData({
       users: Object.values(entriesByKind[Kind.USERS]) as User[],
       queryClient,
       forceReplace: true

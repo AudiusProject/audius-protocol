@@ -76,32 +76,16 @@ export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
 }
 
 /**
- * Signals to add an entries of multiple kinds to the cache.
- */
-export const addEntries = (
-  entriesByKind: EntriesByKind,
-  replace = false,
-  persist = true,
-  source?: 'react-query' | 'redux'
-): AddEntriesAction => ({
-  type: ADD_ENTRIES,
-  entriesByKind,
-  replace,
-  persist,
-  source
-})
-
-/**
  * Updates an entry in the cache.
  */
-export const update = (
-  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
-  entries: Entry[]
-) => ({
-  type: UPDATE,
-  kind,
-  entries
-})
+// export const update = (
+//   kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
+//   entries: Entry[]
+// ) => ({
+//   type: UPDATE,
+//   kind,
+//   entries
+// })
 
 /**
  * Issues a mathematical delta update to a cache entry's numeric field.
