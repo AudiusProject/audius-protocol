@@ -80,6 +80,7 @@ export const useLibraryCollections = ({
     data: fetchedCollectionIds,
     isFetching,
     isSuccess,
+    isLoading,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -88,7 +89,7 @@ export const useLibraryCollections = ({
     collectionType,
     category: selectedCategory,
     query: filterValue,
-    pageSize: 20,
+    pageSize: 15,
     sortMethod: 'added_date',
     sortDirection: 'desc'
   })
@@ -189,6 +190,7 @@ export const useLibraryCollections = ({
     loadNextPage,
     status,
     isPending,
+    isLoading,
     isFetchingNextPage
   }
 }
