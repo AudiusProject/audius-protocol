@@ -12,7 +12,7 @@ import { useField } from 'formik'
 import { Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex, spacing, Text } from '@audius/harmony-native'
+import { Flex, LoadingSpinner, spacing, Text } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/raised-hand.png'
 
 import type { WithdrawFormValues } from '../types'
@@ -36,14 +36,20 @@ export const PrepareTransfer = () => {
 
   return (
     <Flex gap='xl' alignItems='center' justifyContent='center' p='xl'>
-      <Image
-        source={EmojiRaisedHands}
-        style={{ width: spacing.unit20, height: spacing.unit20 }}
+      <LoadingSpinner
+        style={{ height: spacing.unit10, width: spacing.unit10 }}
       />
       <Flex gap='m' alignItems='center' justifyContent='center'>
-        <Text variant='heading' size='xl' textAlign='center'>
-          {walletMessages.holdOn}
-        </Text>
+        <Flex row gap='m' alignItems='center' justifyContent='center'>
+          <Image
+            source={EmojiRaisedHands}
+            style={{ width: spacing.unit12, height: spacing.unit12 }}
+          />
+
+          <Text variant='heading' size='xl' textAlign='center'>
+            {walletMessages.holdOn}
+          </Text>
+        </Flex>
         <Text variant='body' textAlign='center'>
           {walletMessages.preparingTransfer}
         </Text>
