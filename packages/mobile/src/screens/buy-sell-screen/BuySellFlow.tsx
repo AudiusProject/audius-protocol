@@ -68,11 +68,19 @@ export const BuySellFlow = ({
     sell: ''
   })
 
-  // Update input value for current tab
-  const handleTabInputValueChange = (value: string) => {
+  // Update input value for buy tab
+  const handleBuyInputValueChange = (value: string) => {
     setTabInputValues((prev) => ({
       ...prev,
-      [activeTab]: value
+      buy: value
+    }))
+  }
+
+  // Update input value for sell tab
+  const handleSellInputValueChange = (value: string) => {
+    setTabInputValues((prev) => ({
+      ...prev,
+      sell: value
     }))
   }
 
@@ -132,7 +140,11 @@ export const BuySellFlow = ({
   const isTransactionInvalid = !transactionData?.isValid
 
   const displayErrorMessage = useMemo(() => {
-    if (activeTab === 'sell' && !hasSufficientBalance) {
+    if (
+      activeTab === 'sell' &&
+      !hasSufficientBalance &&
+      !!tabInputValues.sell
+    ) {
       return messages.insufficientAUDIOForSale
     }
     if (
@@ -147,7 +159,8 @@ export const BuySellFlow = ({
     activeTab,
     hasSufficientBalance,
     hasAttemptedSubmit,
-    isTransactionInvalid
+    isTransactionInvalid,
+    tabInputValues
   ])
 
   const handleAddCash = useCallback(() => {
@@ -160,7 +173,8 @@ export const BuySellFlow = ({
   }, [openAddCashModal])
 
   const shouldShowError =
-    !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
+    !!displayErrorMessage ||
+    (activeTab === 'buy' && !hasSufficientBalance && !!tabInputValues.buy)
 
   // Always show the input screen in mobile - other screens are separate
   return {
@@ -177,38 +191,45 @@ export const BuySellFlow = ({
         </Flex>
 
         {/* Tab Content */}
-        {activeTab === 'buy' ? (
+        <Flex style={{ display: activeTab === 'buy' ? 'flex' : 'none' }}>
           <BuyScreen
             tokenPair={selectedPair}
-            onTransactionDataChange={handleTransactionDataChange}
+            onTransactionDataChange={
+              activeTab === 'buy' ? handleTransactionDataChange : undefined
+            }
             error={shouldShowError}
             errorMessage={displayErrorMessage}
             initialInputValue={tabInputValues.buy}
-            onInputValueChange={handleTabInputValueChange}
+            onInputValueChange={handleBuyInputValueChange}
           />
-        ) : (
+        </Flex>
+        <Flex style={{ display: activeTab === 'sell' ? 'flex' : 'none' }}>
           <SellScreen
             tokenPair={selectedPair}
-            onTransactionDataChange={handleTransactionDataChange}
+            onTransactionDataChange={
+              activeTab === 'sell' ? handleTransactionDataChange : undefined
+            }
             error={shouldShowError}
             errorMessage={displayErrorMessage}
             initialInputValue={tabInputValues.sell}
-            onInputValueChange={handleTabInputValueChange}
+            onInputValueChange={handleSellInputValueChange}
           />
-        )}
+        </Flex>
 
         {/* Insufficient Balance Message for Buy */}
-        {activeTab === 'buy' && !hasSufficientBalance && (
-          <Hint
-            actions={
-              <TextLink variant='visible' onPress={handleAddCash}>
-                {messages.addCash}
-              </TextLink>
-            }
-          >
-            {messages.insufficientUSDC}
-          </Hint>
-        )}
+        {activeTab === 'buy' &&
+          !hasSufficientBalance &&
+          !!tabInputValues.buy && (
+            <Hint
+              actions={
+                <TextLink variant='visible' onPress={handleAddCash}>
+                  {messages.addCash}
+                </TextLink>
+              }
+            >
+              {messages.insufficientUSDC}
+            </Hint>
+          )}
 
         {/* Help Center Hint */}
         {hasSufficientBalance && (
