@@ -39,7 +39,6 @@ export const AlbumsTab = () => {
     hasNextPage,
     loadNextPage,
     isPending,
-    isLoading,
     isFetchingNextPage
   } = useLibraryCollections({
     filterValue,
@@ -48,21 +47,10 @@ export const AlbumsTab = () => {
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
-    if (
-      isReachable &&
-      hasNextPage &&
-      !isFetchingNextPage &&
-      collectionIds?.length > 0
-    ) {
+    if (isReachable) {
       loadNextPage()
     }
-  }, [
-    isReachable,
-    hasNextPage,
-    isFetchingNextPage,
-    loadNextPage,
-    collectionIds
-  ])
+  }, [isReachable, loadNextPage])
 
   const emptyTabText = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -91,7 +79,7 @@ export const AlbumsTab = () => {
           <EmptyTileCTA message={emptyTabText} />
         )
       ) : (
-        <WithLoader loading={isLoading}>
+        <WithLoader loading={isPending}>
           <>
             <OfflineContentBanner />
             <FilterInput

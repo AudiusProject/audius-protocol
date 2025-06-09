@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 import { useTracks, useUsers } from '@audius/common/api'
 import { PlaybackSource, Status } from '@audius/common/models'
@@ -135,12 +135,6 @@ export const TracksTab = () => {
   const trackData = useTracksWithUsers(trackUids)
   const isLoadingTracks = trackData.some(({ track, user }) => !track || !user)
 
-  const isLoading =
-    savedTracksStatus !== Status.SUCCESS ||
-    initialFetch ||
-    lineupStatus === Status.LOADING ||
-    isLoadingTracks
-
   let emptyTabText: string
   if (selectedCategory === LibraryCategory.All) {
     emptyTabText = messages.emptyTracksAllText
@@ -151,14 +145,6 @@ export const TracksTab = () => {
   } else {
     emptyTabText = messages.emptyTracksPurchasedText
   }
-
-  useEffect(() => {
-    // Need to fetch saves when the filterValue or selectedCategory (by way of fetchSaves) changes
-    if (isReachable) {
-      fetchSaves()
-      setFetchPage((fetchPage) => fetchPage + 1)
-    }
-  }, [isReachable, fetchSaves])
 
   const filteredTrackUids = useMemo(() => {
     return trackData
@@ -171,12 +157,7 @@ export const TracksTab = () => {
   }, [trackUids, saveCount, filterValue])
 
   const handleMoreFetchSaves = useCallback(() => {
-    if (
-      allTracksFetched ||
-      isFetchingMore ||
-      !isReachable ||
-      trackUids.length < fetchPage * FETCH_LIMIT
-    ) {
+    if (allTracksFetched || isFetchingMore || !isReachable) {
       return
     }
 
@@ -199,8 +180,7 @@ export const TracksTab = () => {
     fetchPage,
     filterValue,
     isFetchingMore,
-    isReachable,
-    trackUids.length
+    isReachable
   ])
 
   const togglePlay = useCallback(
@@ -214,10 +194,15 @@ export const TracksTab = () => {
     return debounce(setFilterValue, 250)
   }, [])
 
+  const isPending =
+    lineupStatus !== Status.SUCCESS ||
+    savedTracksStatus !== Status.SUCCESS ||
+    isLoadingTracks
+
   const loadingSpinner = <LoadingMoreSpinner />
   return (
     <VirtualizedScrollView>
-      {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
+      {filteredTrackUids.length === 0 && !isPending ? (
         !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
@@ -230,14 +215,10 @@ export const TracksTab = () => {
             placeholder={messages.inputPlaceholder}
             onChangeText={handleChangeFilterValue}
           />
-          <WithLoader loading={isLoading}>
+          <WithLoader loading={initialFetch}>
             <Animated.View layout={Layout}>
               {filteredTrackUids.length ? (
-                <Tile
-                  styles={{
-                    tile: styles.container
-                  }}
-                >
+                <Tile styles={{ tile: styles.container }}>
                   <TrackList
                     style={styles.trackList}
                     hideArt
@@ -249,9 +230,7 @@ export const TracksTab = () => {
                   />
                 </Tile>
               ) : null}
-              {isFetchingMore &&
-              filteredTrackUids.length > 0 &&
-              !isLoadingTracks
+              {filteredTrackUids.length > 0 && isPending
                 ? loadingSpinner
                 : null}
             </Animated.View>

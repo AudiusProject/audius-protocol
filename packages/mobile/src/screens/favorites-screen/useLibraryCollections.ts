@@ -92,7 +92,7 @@ export const useLibraryCollections = ({
     collectionType,
     category: selectedCategory,
     query: filterValue,
-    pageSize: 20,
+    pageSize: 15,
     sortMethod: 'added_date',
     sortDirection: 'desc'
   })

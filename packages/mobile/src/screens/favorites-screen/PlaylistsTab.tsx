@@ -39,7 +39,6 @@ export const PlaylistsTab = () => {
     collectionIds,
     loadNextPage,
     isPending,
-    isLoading,
     isFetchingNextPage,
     hasNextPage
   } = useLibraryCollections({
@@ -49,21 +48,10 @@ export const PlaylistsTab = () => {
   const isReachable = useSelector(getIsReachable)
 
   const handleEndReached = useCallback(() => {
-    if (
-      isReachable &&
-      hasNextPage &&
-      !isFetchingNextPage &&
-      collectionIds?.length > 0
-    ) {
+    if (isReachable) {
       loadNextPage()
     }
-  }, [
-    isReachable,
-    hasNextPage,
-    isFetchingNextPage,
-    loadNextPage,
-    collectionIds
-  ])
+  }, [isReachable, loadNextPage])
 
   const loadingSpinner = <LoadingMoreSpinner />
   const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
@@ -90,7 +78,7 @@ export const PlaylistsTab = () => {
           <EmptyTileCTA message={emptyTabText} />
         )
       ) : (
-        <WithLoader loading={isLoading}>
+        <WithLoader loading={isPending}>
           <>
             <OfflineContentBanner />
             <FilterInput
