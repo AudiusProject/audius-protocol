@@ -245,7 +245,7 @@ const useSearchQueryProps = <T>(
       }
 
       if (users?.length) {
-        primeUserData({ users, queryClient, dispatch })
+        primeUserData({ users, queryClient })
         if (shouldPrimeCache) {
           primeSearchSlice(users, 'users')
         }

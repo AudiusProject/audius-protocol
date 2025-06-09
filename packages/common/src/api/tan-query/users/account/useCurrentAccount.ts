@@ -75,7 +75,7 @@ export const getCurrentAccountQueryFn = async (
 
   if (account) {
     queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
-    primeUserData({ users: [account.user], queryClient, dispatch })
+    primeUserData({ users: [account.user], queryClient })
   } else {
     queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
   }

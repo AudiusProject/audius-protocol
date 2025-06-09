@@ -170,32 +170,6 @@ describe('getUsersBatcher', () => {
     })
   })
 
-  it('calls primeUserData with correct parameters', async () => {
-    const batcher = getUsersBatcher(mockContext)
-    const ids = [1, 2]
-
-    await Promise.all(ids.map((id) => batcher.fetch(id)))
-    const expectedUsers = ids
-      .map((id) => userMetadataFromSDK(createMockSdkUser(id)))
-      .filter(Boolean)
-
-    expect(mockContext.dispatch).toHaveBeenCalledWith({
-      type: 'CACHE/ADD_ENTRIES',
-      entriesByKind: {
-        USERS: expectedUsers.reduce(
-          (acc, user) => ({
-            ...acc,
-            [user?.user_id ?? '']: user
-          }),
-          {}
-        )
-      },
-      persist: true,
-      replace: false,
-      source: 'react-query'
-    })
-  })
-
   it('handles missing users in batch response', async () => {
     const existingId = 1
     const missingId = 999

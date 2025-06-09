@@ -1,6 +1,5 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
@@ -20,7 +19,6 @@ export const useUpdateProfile = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
-  const dispatch = useDispatch()
 
   return useMutation({
     mutationFn: async (metadata: WriteableUserMetadata) => {
@@ -89,7 +87,6 @@ export const useUpdateProfile = () => {
         primeUserData({
           queryClient,
           users: [{ ...previousMetadata, ...metadata }],
-          dispatch,
           forceReplace: true
         })
       }
@@ -102,7 +99,6 @@ export const useUpdateProfile = () => {
         primeUserData({
           queryClient,
           users: [{ ...context.previousMetadata, ...metadata }],
-          dispatch,
           forceReplace: true
         })
       }

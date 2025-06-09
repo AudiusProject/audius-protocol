@@ -31,18 +31,18 @@ export type AddAction<EntryT extends Metadata = Metadata> =
 /**
  * Signals to add an entity to the cache.
  */
-export const add = (
-  kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
-  entries: Entry[],
-  replace = false,
-  persist = true
-): AddAction => ({
-  type: ADD,
-  kind,
-  entries,
-  replace,
-  persist
-})
+// export const add = (
+//   kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>,
+//   entries: Entry[],
+//   replace = false,
+//   persist = true
+// ): AddAction => ({
+//   type: ADD,
+//   kind,
+//   entries,
+//   replace,
+//   persist
+// })
 
 export type AddSuccededAction<EntryT extends Metadata = Metadata> =
   BaseAddAction<EntryT> & {

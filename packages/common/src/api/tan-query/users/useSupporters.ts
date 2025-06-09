@@ -4,7 +4,6 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
@@ -42,7 +41,6 @@ export const useSupporters = (
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   return useInfiniteQuery({
     queryKey: getSupportersQueryKey(userId, pageSize),
@@ -74,8 +72,7 @@ export const useSupporters = (
 
       primeUserData({
         users: supporters.map((supporter) => supporter.sender),
-        queryClient,
-        dispatch
+        queryClient
       })
       return supporters
     },

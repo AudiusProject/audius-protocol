@@ -37,7 +37,6 @@ export const primeRelatedData = ({
     primeUserData({
       users: transformAndCleanList(users, userMetadataFromSDK),
       queryClient,
-      dispatch,
       forceReplace,
       skipQueryData
     })

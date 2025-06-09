@@ -103,19 +103,3 @@ export function getCache(
       return state.users
   }
 }
-
-export function getId(
-  state: CommonState,
-  props: { kind: Exclude<Kind, Kind.TRACKS | Kind.COLLECTIONS>; uid: UID }
-) {
-  switch (props.kind) {
-    case Kind.USERS:
-    default: {
-      return state.users.uids[props.uid]
-    }
-  }
-}
-
-export function getEntryTTL(state: CommonState) {
-  return state.users.entryTTL
-}
