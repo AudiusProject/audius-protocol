@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import { useUser, useTrack } from '@audius/common/api'
-import { type ID } from '@audius/common/models'
+import { SquareSizes, type ID } from '@audius/common/models'
 
 import { Button, Flex, IconCloudUpload } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -27,8 +27,29 @@ export const UploadRemixFooter = ({ trackId }: UploadRemixFooterProps) => {
   const handlePressSubmitRemix = useCallback(async () => {
     if (!trackId) return
 
+    let file: File | undefined
+    const imageUrl = originalTrack?.artwork?.[SquareSizes.SIZE_480_BY_480] ?? ''
+
+    if (imageUrl) {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      file = new File([blob], 'image.jpg', { type: blob.type })
+    }
+
     const state = {
       initialMetadata: {
+        ...(file
+          ? {
+              artwork: {
+                url: imageUrl,
+                file: {
+                  // @ts-ignore: KJ - _data is on the file for some reason
+                  ...file._data,
+                  uri: imageUrl
+                }
+              }
+            }
+          : {}),
         genre: originalTrack?.genre ?? '',
         remix_of: {
           tracks: [
@@ -44,7 +65,13 @@ export const UploadRemixFooter = ({ trackId }: UploadRemixFooterProps) => {
     }
 
     navigation.push('Upload', state)
-  }, [navigation, originalTrack?.genre, originalUser, trackId])
+  }, [
+    navigation,
+    originalTrack?.artwork,
+    originalTrack?.genre,
+    originalUser,
+    trackId
+  ])
 
   return (
     <Flex
