@@ -16,9 +16,15 @@ import {
   Divider,
   Flex,
   LoadingSpinner,
+  spacing,
   Text
 } from '@audius/harmony-native'
-import { Screen, ScreenContent } from 'app/components/core'
+import {
+  Screen,
+  ScreenContent,
+  FixedFooter,
+  FixedFooterContent
+} from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
@@ -59,7 +65,7 @@ const LoadingScreen = () => (
     p='xl'
     flex={1}
   >
-    <LoadingSpinner />
+    <LoadingSpinner style={{ width: spacing['2xl'], height: spacing['2xl'] }} />
     <Flex direction='column' alignItems='center' gap='s'>
       <Text variant='heading' size='l' color='default' textAlign='center'>
         {messages.loadingTitle}
@@ -217,35 +223,37 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
       url='/buy-sell/confirm'
     >
       <ScreenContent>
-        <PoweredByJupiter />
-        <Flex direction='column' gap='xl' p='l' mt='xl'>
-          <Text variant='body' size='l' textAlign='left'>
-            {messages.confirmReview}
-          </Text>
-          <Flex direction='column' gap='xl'>
-            <SwapBalanceSection
-              title={messages.youPay}
-              tokenInfo={payTokenInfo}
-              amount={formattedPayAmount}
-            />
-            <Divider flex={1} />
-            <SwapBalanceSection
-              title={messages.youReceive}
-              tokenInfo={receiveTokenInfo}
-              amount={formattedReceiveAmount}
-              priceLabel={priceLabel}
-            />
+        <FixedFooterContent>
+          <PoweredByJupiter />
+          <Flex direction='column' gap='xl' p='l' mt='xl'>
+            <Text variant='body' size='l' textAlign='left'>
+              {messages.confirmReview}
+            </Text>
+            <Flex direction='column' gap='xl'>
+              <SwapBalanceSection
+                title={messages.youPay}
+                tokenInfo={payTokenInfo}
+                amount={formattedPayAmount}
+              />
+              <Divider flex={1} />
+              <SwapBalanceSection
+                title={messages.youReceive}
+                tokenInfo={receiveTokenInfo}
+                amount={formattedReceiveAmount}
+                priceLabel={priceLabel}
+              />
+            </Flex>
           </Flex>
+        </FixedFooterContent>
 
-          <Flex gap='s' mt='xl'>
-            <Button variant='secondary' fullWidth onPress={handleBack}>
-              {messages.back}
-            </Button>
-            <Button variant='primary' fullWidth onPress={handleConfirm}>
-              {messages.confirm}
-            </Button>
-          </Flex>
-        </Flex>
+        <FixedFooter>
+          <Button variant='secondary' fullWidth onPress={handleBack}>
+            {messages.back}
+          </Button>
+          <Button variant='primary' fullWidth onPress={handleConfirm}>
+            {messages.confirm}
+          </Button>
+        </FixedFooter>
       </ScreenContent>
     </Screen>
   )

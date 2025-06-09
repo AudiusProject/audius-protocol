@@ -21,7 +21,7 @@ export const BuySellModalScreen = () => {
     <ModalScreen>
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen
-          name='BuySell'
+          name='BuySellForm'
           component={BuySellScreen}
           initialParams={params}
         />
