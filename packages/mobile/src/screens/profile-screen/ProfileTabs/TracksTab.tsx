@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useProfileUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import {
   profilePageTracksLineupActions as tracksActions,
@@ -9,16 +10,21 @@ import {
 import { Lineup } from 'app/components/lineup'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
-import { useSelectProfile } from '../selectors'
 
 const { getProfileTracksLineup } = profilePageSelectors
 
 export const TracksTab = () => {
-  const { handle, user_id, artist_pick_track_id } = useSelectProfile([
-    'handle',
-    'user_id',
-    'artist_pick_track_id'
-  ])
+  const {
+    handle = '',
+    user_id,
+    artist_pick_track_id
+  } = useProfileUser({
+    select: (user) => ({
+      handle: user.handle,
+      user_id: user.user_id,
+      artist_pick_track_id: user.artist_pick_track_id
+    })
+  }).user ?? {}
 
   const handleLower = handle.toLowerCase()
 

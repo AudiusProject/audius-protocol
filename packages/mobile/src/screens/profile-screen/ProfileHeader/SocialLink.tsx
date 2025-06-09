@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import type { Nullable } from '@audius/common/utils'
+import { useProfileUser } from '@audius/common/api'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
@@ -19,8 +19,6 @@ import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 import { prependProtocol } from 'app/utils/prependProtocol'
-
-import { useSelectProfile } from '../selectors'
 
 const useStyles = makeStyles(({ spacing }) => ({
   iconSkeleton: {
@@ -49,7 +47,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export type SocialLinkProps = LinkProps &
   Pick<IconButtonProps, 'icon'> & {
     style?: StyleProp<ViewStyle>
-    text: Nullable<string>
+    text: string | null | undefined
     showText?: boolean
     hyperlink?: boolean
   }
@@ -120,12 +118,15 @@ export const SocialLink = (props: SocialLinkProps) => {
 type TwitterSocialLinkProps = Partial<SocialLinkProps>
 
 export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
-  const { handle, twitter_handle } = useSelectProfile([
-    'handle',
-    'twitter_handle'
-  ])
+  const { handle, twitter_handle = null } =
+    useProfileUser({
+      select: (user) => ({
+        handle: user.handle,
+        twitter_handle: user.twitter_handle
+      })
+    }).user ?? {}
 
-  const sanitizedHandle = handle.replace('@', '')
+  const sanitizedHandle = handle?.replace('@', '')
 
   return (
     <SocialLink
@@ -134,7 +135,7 @@ export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
       icon={IconTwitter}
       analytics={make({
         eventName: EventNames.PROFILE_PAGE_CLICK_TWITTER,
-        handle: sanitizedHandle,
+        handle: sanitizedHandle ?? 'undefined',
         twitterHandle: twitter_handle as string
       })}
       {...props}
@@ -145,12 +146,15 @@ export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
 type InstagramSocialLinkProps = Partial<SocialLinkProps>
 
 export const InstagramSocialLink = (props: InstagramSocialLinkProps) => {
-  const { handle, instagram_handle } = useSelectProfile([
-    'handle',
-    'instagram_handle'
-  ])
+  const { handle, instagram_handle } =
+    useProfileUser({
+      select: (user) => ({
+        handle: user.handle,
+        instagram_handle: user.instagram_handle
+      })
+    }).user || {}
 
-  const sanitizedHandle = handle.replace('@', '')
+  const sanitizedHandle = handle?.replace('@', '')
 
   return (
     <SocialLink
@@ -159,7 +163,7 @@ export const InstagramSocialLink = (props: InstagramSocialLinkProps) => {
       icon={IconInstagram}
       analytics={make({
         eventName: EventNames.PROFILE_PAGE_CLICK_INSTAGRAM,
-        handle: sanitizedHandle,
+        handle: sanitizedHandle ?? 'undefined',
         instagramHandle: instagram_handle as string
       })}
       {...props}
@@ -170,12 +174,15 @@ export const InstagramSocialLink = (props: InstagramSocialLinkProps) => {
 type TikTokSocialLinkProps = Partial<SocialLinkProps>
 
 export const TikTokSocialLink = (props: TikTokSocialLinkProps) => {
-  const { handle, tiktok_handle } = useSelectProfile([
-    'handle',
-    'tiktok_handle'
-  ])
+  const { handle, tiktok_handle } =
+    useProfileUser({
+      select: (user) => ({
+        handle: user.handle,
+        tiktok_handle: user.tiktok_handle
+      })
+    }).user ?? {}
 
-  const sanitizedHandle = handle.replace('@', '')
+  const sanitizedHandle = handle?.replace('@', '')
 
   return (
     <SocialLink
@@ -184,7 +191,7 @@ export const TikTokSocialLink = (props: TikTokSocialLinkProps) => {
       icon={IconTikTok}
       analytics={make({
         eventName: EventNames.PROFILE_PAGE_CLICK_TIKTOK,
-        handle: sanitizedHandle,
+        handle: sanitizedHandle ?? 'undefined',
         tikTokHandle: tiktok_handle as string
       })}
       {...props}
@@ -193,7 +200,10 @@ export const TikTokSocialLink = (props: TikTokSocialLinkProps) => {
 }
 
 export const WebsiteSocialLink = (props: Partial<SocialLinkProps>) => {
-  const { website } = useSelectProfile(['website'])
+  const { website } =
+    useProfileUser({
+      select: (user) => ({ website: user.website })
+    }).user || {}
 
   return (
     <SocialLink
@@ -206,7 +216,10 @@ export const WebsiteSocialLink = (props: Partial<SocialLinkProps>) => {
 }
 
 export const DonationSocialLink = (props: Partial<SocialLinkProps>) => {
-  const { donation } = useSelectProfile(['donation'])
+  const { donation } =
+    useProfileUser({
+      select: (user) => ({ donation: user.donation })
+    }).user || {}
 
   return (
     <SocialLink

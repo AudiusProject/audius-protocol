@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useCurrentAccountUser, useCurrentUserId } from '@audius/common/api'
+import { useCurrentAccountUser, useProfileUser } from '@audius/common/api'
 import { FollowSource, statusIsNotFinalized } from '@audius/common/models'
 import {
   profilePageSelectors,
@@ -20,7 +20,6 @@ import { EditProfileButton } from './EditProfileButton'
 import { MessageButton } from './MessageButton'
 import { MessageLockedButton } from './MessageLockedButton'
 import { SubscribeButton } from './SubscribeButton'
-import { useSelectProfile } from './selectors'
 
 const { useCanCreateChat, getChatPermissionsStatus } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
@@ -57,13 +56,20 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     }
   }, [dispatch, profileUserId])
 
-  const profile = useSelectProfile([
-    'user_id',
-    'handle',
-    'does_current_user_follow'
-  ])
+  const { user_id, handle, does_current_user_follow } =
+    useProfileUser({
+      select: (user) => ({
+        user_id: user.user_id,
+        handle: user.handle,
+        does_current_user_follow: user.does_current_user_follow
+      })
+    }).user || {}
 
-  const { user_id, handle, does_current_user_follow } = profile
+  if (!user_id) {
+    return null
+  }
+
+  const profile = { user_id, handle, does_current_user_follow }
 
   const isOwner =
     params.handle === 'accountUser' ||

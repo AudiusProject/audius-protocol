@@ -16,7 +16,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 type ProfilePictureListSkeletonProps = {
-  count: number
+  count: number | undefined
   limit: number
   imageStyles?: {
     width?: number

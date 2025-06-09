@@ -46,7 +46,7 @@ type PositionedLink = {
 
 export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
   Pick<AutolinkProps, 'matchers'> & {
-    children: string
+    children: string | null | undefined
     source?: 'profile page' | 'track page' | 'collection page'
     // Pass touches through text elements
     allowPointerEventsToPassThrough?: boolean

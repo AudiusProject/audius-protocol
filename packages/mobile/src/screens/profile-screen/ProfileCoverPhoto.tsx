@@ -1,3 +1,4 @@
+import { useProfileUser } from '@audius/common/api'
 import { BlurView } from '@react-native-community/blur'
 import { StyleSheet, View } from 'react-native'
 import { useCurrentTabScrollY } from 'react-native-collapsible-tab-view'
@@ -9,8 +10,6 @@ import Animated, {
 import BadgeArtist from 'app/assets/images/badgeArtist.svg'
 import { CoverPhoto } from 'app/components/image/CoverPhoto'
 import { makeStyles } from 'app/styles'
-
-import { useSelectProfile } from './selectors'
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
 
@@ -27,12 +26,17 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const ProfileCoverPhoto = () => {
   const styles = useStyles()
-  const user = useSelectProfile(['user_id', 'track_count'])
-  const { user_id, track_count } = user
+  const { user_id, track_count } =
+    useProfileUser({
+      select: (user) => ({
+        user_id: user.user_id,
+        track_count: user.track_count
+      })
+    }).user || {}
 
   const scrollY = useCurrentTabScrollY()
 
-  const isArtist = track_count > 0
+  const isArtist = track_count && track_count > 0
 
   const blurViewStyle = useAnimatedStyle(() => ({
     ...StyleSheet.absoluteFillObject,
@@ -54,6 +58,8 @@ export const ProfileCoverPhoto = () => {
       }
     ]
   }))
+
+  if (!user_id) return null
 
   return (
     <View pointerEvents='none'>

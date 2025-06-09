@@ -26,7 +26,7 @@ export const useUserComments = (
     userId,
     pageSize = COMMENT_ROOT_PAGE_SIZE
   }: {
-    userId: ID | null
+    userId: ID | null | undefined
     pageSize?: number
   },
   options?: QueryOptions
