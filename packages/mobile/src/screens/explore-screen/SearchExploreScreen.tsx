@@ -14,7 +14,7 @@ import {
 import type { Mood } from '@audius/sdk'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
-import { ImageBackground, ScrollView, Image, View } from 'react-native'
+import { ImageBackground, ScrollView, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -32,6 +32,7 @@ import {
 import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent } from 'app/components/core'
+import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
 import { UserList } from 'app/components/user-list'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
@@ -39,12 +40,11 @@ import { moodMap } from 'app/utils/moods'
 
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
-import { NoResultsTile } from '../search-screen/NoResultsTile'
 import { RecentSearches } from '../search-screen/RecentSearches'
 import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
-import { SearchContext, useSearchFilters } from '../search-screen/searchState'
+import { SearchContext } from '../search-screen/searchState'
 
 import {
   PREMIUM_TRACKS,
@@ -53,7 +53,6 @@ import {
 } from './collections'
 import { ColorTile } from './components/ColorTile'
 import { REMIXABLES } from './smartCollections'
-import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
 
 const tiles = [
   TRENDING_PLAYLISTS,
