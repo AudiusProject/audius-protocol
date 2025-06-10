@@ -63,7 +63,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         handle: user.handle,
         does_current_user_follow: user.does_current_user_follow
       })
-    }).user || {}
+    }).user ?? {}
 
   if (!user_id) {
     return null

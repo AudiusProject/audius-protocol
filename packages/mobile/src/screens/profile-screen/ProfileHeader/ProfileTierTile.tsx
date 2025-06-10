@@ -56,7 +56,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
   const { user_id } =
     useProfileUser({
       select: (user) => ({ user_id: user.user_id })
-    }).user || {}
+    }).user ?? {}
   const styles = useStyles()
 
   const { tier, tierNumber } = useTierAndVerifiedForUser(user_id)

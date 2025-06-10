@@ -25,7 +25,7 @@ export const useShouldShowCollectiblesTab = () => {
         collectibleList: user.collectibleList,
         solanaCollectibleList: user.solanaCollectibleList
       })
-    }).user || {}
+    }).user ?? {}
   const { data: accountUserId } = useCurrentUserId()
   const isOwner = accountUserId === user_id
   const { data: profileCollectibles } = useUserCollectibles({

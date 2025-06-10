@@ -20,7 +20,7 @@ export const RepostsTab = () => {
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
   const { lazy } = params
   const {
-    handle = '',
+    handle,
     user_id,
     repost_count = 0
   } = useProfileUser({

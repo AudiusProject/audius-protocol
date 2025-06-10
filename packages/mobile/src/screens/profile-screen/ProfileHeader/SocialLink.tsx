@@ -118,7 +118,7 @@ export const SocialLink = (props: SocialLinkProps) => {
 type TwitterSocialLinkProps = Partial<SocialLinkProps>
 
 export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
-  const { handle, twitter_handle = null } =
+  const { handle, twitter_handle } =
     useProfileUser({
       select: (user) => ({
         handle: user.handle,
@@ -152,7 +152,7 @@ export const InstagramSocialLink = (props: InstagramSocialLinkProps) => {
         handle: user.handle,
         instagram_handle: user.instagram_handle
       })
-    }).user || {}
+    }).user ?? {}
 
   const sanitizedHandle = handle?.replace('@', '')
 
@@ -203,7 +203,7 @@ export const WebsiteSocialLink = (props: Partial<SocialLinkProps>) => {
   const { website } =
     useProfileUser({
       select: (user) => ({ website: user.website })
-    }).user || {}
+    }).user ?? {}
 
   return (
     <SocialLink
@@ -219,7 +219,7 @@ export const DonationSocialLink = (props: Partial<SocialLinkProps>) => {
   const { donation } =
     useProfileUser({
       select: (user) => ({ donation: user.donation })
-    }).user || {}
+    }).user ?? {}
 
   return (
     <SocialLink

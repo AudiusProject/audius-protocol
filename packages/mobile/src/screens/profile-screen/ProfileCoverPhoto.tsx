@@ -32,7 +32,7 @@ export const ProfileCoverPhoto = () => {
         user_id: user.user_id,
         track_count: user.track_count
       })
-    }).user || {}
+    }).user ?? {}
 
   const scrollY = useCurrentTabScrollY()
 

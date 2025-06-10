@@ -19,7 +19,7 @@ export const useEmptyProfileText = (tab: Tab) => {
   const { user_id, name } =
     useProfileUser({
       select: (user) => ({ user_id: user.user_id, name: user.name })
-    }).user || {}
+    }).user ?? {}
   const { data: accountId } = useCurrentUserId()
 
   const isOwner = user_id === accountId

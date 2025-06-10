@@ -23,7 +23,7 @@ export const TipAudioButton = () => {
   const { user_id } =
     useProfileUser({
       select: (user) => ({ user_id: user.user_id })
-    }).user || {}
+    }).user ?? {}
   const { data: user } = useUser(user_id)
   const dispatch = useDispatch()
 

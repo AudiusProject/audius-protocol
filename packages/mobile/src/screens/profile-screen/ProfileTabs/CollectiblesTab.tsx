@@ -75,21 +75,16 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
-  const {
-    user_id,
-    handle = '',
-    name = '',
-    collectibleList,
-    solanaCollectibleList
-  } = useProfileUser({
-    select: (user) => ({
-      user_id: user.user_id,
-      handle: user.handle,
-      name: user.name,
-      collectibleList: user.collectibleList,
-      solanaCollectibleList: user.solanaCollectibleList
-    })
-  }).user ?? {}
+  const { user_id, handle, name, collectibleList, solanaCollectibleList } =
+    useProfileUser({
+      select: (user) => ({
+        user_id: user.user_id,
+        handle: user.handle,
+        name: user.name,
+        collectibleList: user.collectibleList,
+        solanaCollectibleList: user.solanaCollectibleList
+      })
+    }).user ?? {}
   const { data: accountId } = useCurrentUserId()
   const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
     useUserCollectibles({

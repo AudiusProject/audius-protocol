@@ -39,7 +39,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { onClose } = props
   const { spacing } = useTheme()
   const navigation = useNavigation()
-  const { user_id, name = '' } =
+  const { user_id, name } =
     useProfileUser({
       select: (user) => ({ user_id: user.user_id, name: user.name })
     }).user ?? {}

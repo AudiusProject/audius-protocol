@@ -414,7 +414,7 @@ export function* unsubscribeFromUserAsync(userId: ID) {
       ? undefined
       : {
           ...prevUser,
-          does_current_user_subscribe: true
+          does_current_user_subscribe: false
         }
   )
   yield* call(confirmUnsubscribeFromUser, userId, accountId)

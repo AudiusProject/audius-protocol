@@ -14,19 +14,16 @@ import { EmptyProfileTile } from '../EmptyProfileTile'
 const { getProfileTracksLineup } = profilePageSelectors
 
 export const TracksTab = () => {
-  const {
-    handle = '',
-    user_id,
-    artist_pick_track_id
-  } = useProfileUser({
-    select: (user) => ({
-      handle: user.handle,
-      user_id: user.user_id,
-      artist_pick_track_id: user.artist_pick_track_id
-    })
-  }).user ?? {}
+  const { handle, user_id, artist_pick_track_id } =
+    useProfileUser({
+      select: (user) => ({
+        handle: user.handle,
+        user_id: user.user_id,
+        artist_pick_track_id: user.artist_pick_track_id
+      })
+    }).user ?? {}
 
-  const handleLower = handle.toLowerCase()
+  const handleLower = handle?.toLowerCase()
 
   const lineup = useProxySelector(
     (state) => getProfileTracksLineup(state, handleLower),
