@@ -48,7 +48,6 @@ export const RemixContestCard = (props: RemixContestCardProps) => {
       <Flex p='s' gap='s'>
         <TrackImage
           trackId={track?.track_id}
-          // style={styles.artwork}
           size={SquareSizes.SIZE_480_BY_480}
         />
         <Text variant='title' textAlign='center' numberOfLines={1}>

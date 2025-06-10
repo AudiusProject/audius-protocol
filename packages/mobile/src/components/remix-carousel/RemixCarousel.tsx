@@ -1,25 +1,8 @@
-import { useRemixContest, useTracks } from '@audius/common/api'
-import {
-  SquareSizes,
-  type ID,
-  type Track,
-  type TrackMetadata
-} from '@audius/common/models'
-import { formatCount } from '@audius/common/utils'
+import { useTracks } from '@audius/common/api'
+import { type ID, type Track } from '@audius/common/models'
 
-import {
-  Divider,
-  Flex,
-  IconHeart,
-  IconRepost,
-  Paper,
-  Text
-} from '@audius/harmony-native'
 import type { CardListProps } from 'app/components/core'
 import { CardList } from 'app/components/core'
-
-import { TrackImage } from '../image/TrackImage'
-import { UserLink } from '../user-link'
 
 import { RemixContestCard } from './RemixContestCard'
 
@@ -31,10 +14,8 @@ export type UserListProps = {
 } & Partial<ListProps>
 
 export const RemixCarousel = (props: UserListProps) => {
-  const { trackIds, onCardPress, ...other } = props
-  //   const { data: remixContest, isPending: isRemixContestPending } =
-  //     useRemixContest(id)
-  const { data: tracks, isPending: isTrackPending } = useTracks(trackIds)
+  const { trackIds, ...other } = props
+  const { data: tracks } = useTracks(trackIds)
   return (
     <CardList
       data={tracks}

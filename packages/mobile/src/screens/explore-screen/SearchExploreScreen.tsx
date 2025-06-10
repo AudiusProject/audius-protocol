@@ -1,5 +1,4 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { formatCount } from '@audius/common/utils'
 
 import type {
   SearchCategory,
@@ -13,7 +12,6 @@ import {
   searchSelectors
 } from '@audius/common/store'
 import type { Mood } from '@audius/sdk'
-import { filter } from 'lodash'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
 import { ImageBackground, ScrollView, Image, View } from 'react-native'
@@ -119,7 +117,6 @@ export const SearchExploreScreen = () => {
   const hasAnyFilter = Object.values(filters).some(
     (value) => value !== undefined
   )
-  console.log('asdf hasAnyFilter', hasAnyFilter)
   const history = useSelector(getSearchHistory)
   const categoryKind: Kind | null = category
     ? itemKindByCategory[category]
@@ -208,7 +205,7 @@ export const SearchExploreScreen = () => {
               </Flex>
             </ImageBackground>
           </Flex>
-          {/* <SearchCategoriesAndFilters /> */}
+          <SearchCategoriesAndFilters />
 
           <ScrollView>
             {category !== 'all' || searchInput ? (
@@ -266,6 +263,7 @@ export const SearchExploreScreen = () => {
                     carouselSpacing={spacing.l}
                   />
                 </Flex>
+
                 <Flex justifyContent='center' gap='l'>
                   <Text variant='title' size='l' textAlign='center'>
                     {messages.exploreByMood}
