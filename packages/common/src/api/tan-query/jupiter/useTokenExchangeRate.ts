@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { QuoteResponse, SwapMode } from '@jup-ag/api'
 import { useQuery } from '@tanstack/react-query'
 
@@ -30,6 +32,10 @@ export type TokenExchangeRateResponse = {
 // Default slippage is 50 basis points (0.5%)
 export const SLIPPAGE_BPS = 50
 
+// Maximum safe amount for exchange rate queries to prevent API errors
+// This corresponds to 1 trillion tokens, which is well above any realistic amount
+const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
+
 // Define exchange rate query key
 export const getTokenExchangeRateQueryKey = ({
   inputTokenSymbol,
@@ -59,11 +65,23 @@ export const useTokenExchangeRate = (
   // Default to 1 unit of input token if no amount specified
   const inputAmount = params.inputAmount ?? 1
 
+  // Validate input amount to prevent API errors with extremely large numbers
+  const safeInputAmount = useMemo(() => {
+    if (inputAmount > MAX_SAFE_EXCHANGE_RATE_AMOUNT) {
+      console.warn(
+        'Exchange rate input amount too large, capping at safe limit:',
+        inputAmount
+      )
+      return MAX_SAFE_EXCHANGE_RATE_AMOUNT
+    }
+    return inputAmount
+  }, [inputAmount])
+
   return useQuery({
     queryKey: getTokenExchangeRateQueryKey({
       inputTokenSymbol: params.inputTokenSymbol,
       outputTokenSymbol: params.outputTokenSymbol,
-      inputAmount,
+      inputAmount: safeInputAmount,
       swapMode: params.swapMode
     }),
     queryFn: async () => {
@@ -82,7 +100,7 @@ export const useTokenExchangeRate = (
         const quoteResult = await getJupiterQuoteByMint({
           inputMint: inputToken.address,
           outputMint: outputToken.address,
-          amountUi: inputAmount,
+          amountUi: safeInputAmount,
           slippageBps: SLIPPAGE_BPS,
           swapMode: params.swapMode ?? 'ExactIn',
           onlyDirectRoutes: false

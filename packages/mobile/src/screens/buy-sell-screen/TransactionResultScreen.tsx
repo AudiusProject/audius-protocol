@@ -12,7 +12,12 @@ import {
   Flex,
   Text
 } from '@audius/harmony-native'
-import { Screen, ScreenContent } from 'app/components/core'
+import {
+  Screen,
+  ScreenContent,
+  FixedFooter,
+  FixedFooterContent
+} from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
@@ -61,7 +66,8 @@ export const TransactionResultScreen = ({
   })
 
   const handleDone = () => {
-    // Navigate back to the wallet screen after successful transaction
+    // Close the modal and navigate back to the wallet screen
+    navigation.getParent()?.goBack()
     navigation.navigate('wallet')
   }
 
@@ -87,34 +93,37 @@ export const TransactionResultScreen = ({
         url='/buy-sell/success'
       >
         <ScreenContent>
-          <Flex direction='column' gap='xl' p='l'>
-            <Flex direction='row' gap='s' alignItems='center'>
-              <CompletionCheck value='complete' />
-              <Text variant='heading' size='s' color='default'>
-                {messages.transactionComplete}
-              </Text>
-            </Flex>
-            <Flex direction='column' gap='xl'>
-              <SwapBalanceSection
-                title={messages.youPaid}
-                tokenInfo={payTokenInfo}
-                amount={formattedPayAmount}
-              />
+          <FixedFooterContent>
+            <Flex direction='column' gap='xl' p='l'>
               <Divider flex={1} />
-              <SwapBalanceSection
-                title={messages.youReceived}
-                tokenInfo={receiveTokenInfo}
-                amount={formattedReceiveAmount}
-                priceLabel={priceLabel}
-              />
+              <Flex direction='row' gap='s' alignItems='center' mb='xl'>
+                <CompletionCheck value='complete' />
+                <Text variant='heading' size='s' color='default'>
+                  {messages.transactionComplete}
+                </Text>
+              </Flex>
+              <Flex direction='column' gap='xl'>
+                <SwapBalanceSection
+                  title={messages.youPaid}
+                  tokenInfo={payTokenInfo}
+                  amount={formattedPayAmount}
+                />
+                <Divider flex={1} />
+                <SwapBalanceSection
+                  title={messages.youReceived}
+                  tokenInfo={receiveTokenInfo}
+                  amount={formattedReceiveAmount}
+                  priceLabel={priceLabel}
+                />
+              </Flex>
             </Flex>
+          </FixedFooterContent>
 
-            <Flex mt='xl'>
-              <Button variant='primary' fullWidth onPress={handleDone}>
-                {messages.done}
-              </Button>
-            </Flex>
-          </Flex>
+          <FixedFooter>
+            <Button variant='primary' fullWidth onPress={handleDone}>
+              {messages.done}
+            </Button>
+          </FixedFooter>
         </ScreenContent>
       </Screen>
     )

@@ -15,6 +15,16 @@ export type BalanceConfig = {
   formatError: (amount: number) => string
 }
 
+// Maximum safe amount for API calls to prevent errors
+const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
+
+/**
+ * Returns a safe numeric value for exchange rate API calls
+ */
+const getSafeAmountForExchangeRate = (amount: number): number => {
+  return Math.min(amount, MAX_SAFE_EXCHANGE_RATE_AMOUNT)
+}
+
 export type TokenSwapFormProps = {
   /**
    * The token the user is paying with (input)
@@ -116,6 +126,11 @@ export const useTokenSwapForm = ({
     return isNaN(parsed) ? 0 : parsed
   }, [values.inputAmount])
 
+  // Use safe amount for exchange rate API calls
+  const safeExchangeRateAmount = useMemo(() => {
+    return getSafeAmountForExchangeRate(numericInputAmount)
+  }, [numericInputAmount])
+
   const {
     data: exchangeRateData,
     isLoading: isExchangeRateLoading,
@@ -123,7 +138,7 @@ export const useTokenSwapForm = ({
   } = useTokenExchangeRate({
     inputTokenSymbol,
     outputTokenSymbol,
-    inputAmount: numericInputAmount > 0 ? numericInputAmount : 1
+    inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
   })
 
   // Update output amount when exchange rate or input amount changes
@@ -134,6 +149,7 @@ export const useTokenSwapForm = ({
     }
 
     if (!isExchangeRateLoading && exchangeRateData) {
+      // Use the actual input amount for output calculation, not the safe amount
       const newAmount = exchangeRateData.rate * numericInputAmount
       setFieldValue('outputAmount', newAmount.toString(), false)
     }

@@ -20,7 +20,7 @@ const TokensHeader = () => {
   const navigation = useNavigation()
 
   const handleBuySellClick = useCallback(() => {
-    navigation.navigate('BuySellScreen', { initialTab: 'buy' })
+    navigation.navigate('BuySell', { initialTab: 'buy' })
   }, [navigation])
 
   return (
@@ -63,6 +63,7 @@ export const YourCoins = () => {
       {isWalletUIBuySellEnabled ? <TokensHeader /> : null}
       <Flex
         p='l'
+        pv='2xl'
         direction='row'
         justifyContent='space-between'
         alignItems='center'
@@ -93,7 +94,7 @@ export const YourCoins = () => {
             )}
           </Flex>
         </Flex>
-        <IconCaretRight size='s' color='subdued' />
+        <IconCaretRight size='l' color='subdued' />
       </Flex>
     </Paper>
   )

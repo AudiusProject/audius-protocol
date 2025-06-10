@@ -68,11 +68,19 @@ export const BuySellFlow = ({
     sell: ''
   })
 
-  // Update input value for current tab
-  const handleTabInputValueChange = (value: string) => {
+  // Update input value for buy tab
+  const handleBuyInputValueChange = (value: string) => {
     setTabInputValues((prev) => ({
       ...prev,
-      [activeTab]: value
+      buy: value
+    }))
+  }
+
+  // Update input value for sell tab
+  const handleSellInputValueChange = (value: string) => {
+    setTabInputValues((prev) => ({
+      ...prev,
+      sell: value
     }))
   }
 
@@ -104,7 +112,7 @@ export const BuySellFlow = ({
     { key: 'sell' as BuySellTab, text: messages.sell }
   ]
 
-  const handleContinueClick = () => {
+  const handleContinueClick = useCallback(() => {
     setHasAttemptedSubmit(true)
     if (transactionData?.isValid && !isContinueButtonLoading) {
       handleShowConfirmation()
@@ -116,7 +124,14 @@ export const BuySellFlow = ({
         })
       }
     }
-  }
+  }, [
+    setHasAttemptedSubmit,
+    transactionData?.isValid,
+    isContinueButtonLoading,
+    handleShowConfirmation,
+    confirmationScreenData,
+    navigation
+  ])
 
   useEffect(() => {
     setHasAttemptedSubmit(false)
@@ -125,7 +140,11 @@ export const BuySellFlow = ({
   const isTransactionInvalid = !transactionData?.isValid
 
   const displayErrorMessage = useMemo(() => {
-    if (activeTab === 'sell' && !hasSufficientBalance) {
+    if (
+      activeTab === 'sell' &&
+      !hasSufficientBalance &&
+      !!tabInputValues.sell
+    ) {
       return messages.insufficientAUDIOForSale
     }
     if (
@@ -140,7 +159,8 @@ export const BuySellFlow = ({
     activeTab,
     hasSufficientBalance,
     hasAttemptedSubmit,
-    isTransactionInvalid
+    isTransactionInvalid,
+    tabInputValues
   ])
 
   const handleAddCash = useCallback(() => {
@@ -153,66 +173,76 @@ export const BuySellFlow = ({
   }, [openAddCashModal])
 
   const shouldShowError =
-    !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
+    !!displayErrorMessage ||
+    (activeTab === 'buy' && !hasSufficientBalance && !!tabInputValues.buy)
 
   // Always show the input screen in mobile - other screens are separate
-  return (
-    <Flex direction='column' gap='xl' p='l'>
-      {/* Tab Control */}
-      <Flex alignItems='center' justifyContent='center'>
-        <SegmentedControl
-          options={tabs}
-          selected={activeTab}
-          onSelectOption={handleActiveTabChange}
-          fullWidth
-        />
-      </Flex>
+  return {
+    content: (
+      <Flex direction='column' gap='xl'>
+        {/* Tab Control */}
+        <Flex alignItems='center' justifyContent='center'>
+          <SegmentedControl
+            options={tabs}
+            selected={activeTab}
+            onSelectOption={handleActiveTabChange}
+            fullWidth
+          />
+        </Flex>
 
-      {/* Tab Content */}
-      {activeTab === 'buy' ? (
-        <BuyScreen
-          tokenPair={selectedPair}
-          onTransactionDataChange={handleTransactionDataChange}
-          error={shouldShowError}
-          errorMessage={displayErrorMessage}
-          initialInputValue={tabInputValues.buy}
-          onInputValueChange={handleTabInputValueChange}
-        />
-      ) : (
-        <SellScreen
-          tokenPair={selectedPair}
-          onTransactionDataChange={handleTransactionDataChange}
-          error={shouldShowError}
-          errorMessage={displayErrorMessage}
-          initialInputValue={tabInputValues.sell}
-          onInputValueChange={handleTabInputValueChange}
-        />
-      )}
+        {/* Tab Content */}
+        <Flex style={{ display: activeTab === 'buy' ? 'flex' : 'none' }}>
+          <BuyScreen
+            tokenPair={selectedPair}
+            onTransactionDataChange={
+              activeTab === 'buy' ? handleTransactionDataChange : undefined
+            }
+            error={shouldShowError}
+            errorMessage={displayErrorMessage}
+            initialInputValue={tabInputValues.buy}
+            onInputValueChange={handleBuyInputValueChange}
+          />
+        </Flex>
+        <Flex style={{ display: activeTab === 'sell' ? 'flex' : 'none' }}>
+          <SellScreen
+            tokenPair={selectedPair}
+            onTransactionDataChange={
+              activeTab === 'sell' ? handleTransactionDataChange : undefined
+            }
+            error={shouldShowError}
+            errorMessage={displayErrorMessage}
+            initialInputValue={tabInputValues.sell}
+            onInputValueChange={handleSellInputValueChange}
+          />
+        </Flex>
 
-      {/* Insufficient Balance Message for Buy */}
-      {activeTab === 'buy' && !hasSufficientBalance && (
-        <Hint
-          actions={
-            <TextLink variant='visible' onPress={handleAddCash}>
-              {messages.addCash}
+        {/* Insufficient Balance Message for Buy */}
+        {activeTab === 'buy' &&
+          !hasSufficientBalance &&
+          !!tabInputValues.buy && (
+            <Hint
+              actions={
+                <TextLink variant='visible' onPress={handleAddCash}>
+                  {messages.addCash}
+                </TextLink>
+              }
+            >
+              {messages.insufficientUSDC}
+            </Hint>
+          )}
+
+        {/* Help Center Hint */}
+        {hasSufficientBalance && (
+          <Hint>
+            {messages.helpCenter}{' '}
+            <TextLink showUnderline variant='visible' url={WALLET_GUIDE_URL}>
+              {messages.walletGuide}
             </TextLink>
-          }
-        >
-          {messages.insufficientUSDC}
-        </Hint>
-      )}
-
-      {/* Help Center Hint */}
-      {hasSufficientBalance && (
-        <Hint>
-          {messages.helpCenter}{' '}
-          <TextLink showUnderline variant='visible' url={WALLET_GUIDE_URL}>
-            {messages.walletGuide}
-          </TextLink>
-        </Hint>
-      )}
-
-      {/* Continue Button */}
+          </Hint>
+        )}
+      </Flex>
+    ),
+    footer: (
       <Button
         variant='primary'
         fullWidth
@@ -221,6 +251,6 @@ export const BuySellFlow = ({
       >
         {messages.continue}
       </Button>
-    </Flex>
-  )
+    )
+  }
 }

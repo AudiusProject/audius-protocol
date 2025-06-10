@@ -201,12 +201,26 @@ export function formatUSDCValue(
     return null
   }
 
+  // Add early validation for extremely large numbers to prevent overflow
+  // This corresponds to ~1 trillion USDC, which is well above any realistic amount
+  const MAX_SAFE_USDC_VALUE = 1000000000000
+  if (Math.abs(numericValue) > MAX_SAFE_USDC_VALUE) {
+    console.warn('USDC value too large for safe formatting:', numericValue)
+    return null
+  }
+
   // Use the same rounding logic as CashWallet.tsx
   // Convert to wei (multiply by 1,000,000) and ensure it's an integer
   const weiValue = Math.floor(Math.abs(numericValue) * 1000000)
 
   // Ensure weiValue is valid for BN constructor
   if (weiValue < 0 || !Number.isInteger(weiValue)) {
+    return null
+  }
+
+  // Additional safety check for BN constructor limits
+  if (weiValue > Number.MAX_SAFE_INTEGER) {
+    console.warn('Wei value exceeds MAX_SAFE_INTEGER:', weiValue)
     return null
   }
 
