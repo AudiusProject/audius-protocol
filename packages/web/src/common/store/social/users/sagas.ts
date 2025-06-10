@@ -19,7 +19,6 @@ import { Action } from '@reduxjs/toolkit'
 import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -83,11 +82,14 @@ export function* followUser(
     )
   }
   // Increment the signed in user's followee count
-  yield* call(adjustUserField, {
-    user: currentUser,
-    fieldName: 'followee_count',
-    delta: 1
-  })
+  queryClient.setQueryData(getUserQueryKey(currentUser.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          followee_count: prevUser.followee_count + 1
+        }
+  )
 
   const event = make(Name.FOLLOW, { id: action.userId, source: action.source })
   yield* put(event)
@@ -163,11 +165,16 @@ export function* confirmFollowUser(
 
         if (currentUser) {
           // Revert the incremented followee count on the current user
-          yield* call(adjustUserField, {
-            user: currentUser,
-            fieldName: 'followee_count',
-            delta: -1
-          })
+          queryClient.setQueryData(
+            getUserQueryKey(currentUser.user_id),
+            (prevUser) =>
+              !prevUser
+                ? undefined
+                : {
+                    ...prevUser,
+                    followee_count: prevUser.followee_count - 1
+                  }
+          )
         }
       }
     )
@@ -231,11 +238,14 @@ export function* unfollowUser(
   )
 
   // Decrement the followee count on the current user
-  yield* call(adjustUserField, {
-    user: currentUser,
-    fieldName: 'followee_count',
-    delta: -1
-  })
+  queryClient.setQueryData(getUserQueryKey(currentUser.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          followee_count: prevUser.followee_count - 1
+        }
+  )
 
   const event = make(Name.UNFOLLOW, {
     id: action.userId,
@@ -306,11 +316,16 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
         )
 
         // Revert decremented followee count on current user
-        yield* call(adjustUserField, {
-          user: currentUser,
-          fieldName: 'followee_count',
-          delta: 1
-        })
+        queryClient.setQueryData(
+          getUserQueryKey(currentUser.user_id),
+          (prevUser) =>
+            !prevUser
+              ? undefined
+              : {
+                  ...prevUser,
+                  followee_count: prevUser.followee_count + 1
+                }
+        )
       }
     )
   )

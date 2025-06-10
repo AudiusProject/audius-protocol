@@ -34,7 +34,6 @@ import {
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
@@ -54,6 +53,7 @@ export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
   yield* call(waitForWrite)
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: userId } = accountUser ?? {}
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
@@ -75,7 +75,14 @@ export function* repostTrackAsync(
     return
   }
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          repost_count: prevUser.repost_count + 1
+        }
+  )
 
   const event = make(Name.REPOST, {
     kind: 'track',
@@ -161,6 +168,7 @@ export function* confirmRepostTrack(
   metadata?: { is_repost_of_repost: boolean }
 ) {
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
 
   yield* put(
     confirmerActions.requestConfirmation(
@@ -177,11 +185,14 @@ export function* confirmRepostTrack(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the incremented repost count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'repost_count',
-          delta: -1
-        })
+        queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                repost_count: prevUser.repost_count - 1
+              }
+        )
         yield* put(
           socialActions.trackRepostFailed(
             trackId,
@@ -201,6 +212,7 @@ export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
   yield* call(waitForWrite)
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: userId } = accountUser ?? {}
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
@@ -215,7 +227,14 @@ export function* undoRepostTrackAsync(
   const user = yield* queryUser(userId)
   if (!user) return
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          repost_count: prevUser.repost_count - 1
+        }
+  )
 
   const event = make(Name.UNDO_REPOST, {
     kind: 'track',
@@ -262,6 +281,7 @@ export function* undoRepostTrackAsync(
 
 export function* confirmUndoRepostTrack(trackId: ID, user: User) {
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -277,11 +297,14 @@ export function* confirmUndoRepostTrack(trackId: ID, user: User) {
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // revert the decremented repost count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'repost_count',
-          delta: 1
-        })
+        queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                repost_count: prevUser.repost_count + 1
+              }
+        )
         yield* put(
           socialActions.trackRepostFailed(
             trackId,
