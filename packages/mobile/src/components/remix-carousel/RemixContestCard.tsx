@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
-import { useRemixContest } from '@audius/common/api'
+import { useRemixContest, useTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
-import type { TrackMetadata } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { formatDate } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
@@ -16,6 +16,7 @@ import {
 } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
+import { CollectionCardSkeleton } from '../collection-list/CollectionCardSkeleton'
 import { TrackImage } from '../image/TrackImage'
 import { UserLink } from '../user-link'
 
@@ -29,33 +30,34 @@ const messages = {
 }
 
 type RemixContestCardProps = PaperProps & {
-  track: TrackMetadata
+  trackId: ID
   noNavigation?: boolean
 }
 
 type NavigationProp = NativeStackNavigationProp<AppTabScreenParamList>
 
 export const RemixContestCard = (props: RemixContestCardProps) => {
-  const { track } = props
-  const { data: remixContest } = useRemixContest(track?.track_id)
+  const { trackId } = props
+  const { data: track } = useTrack(trackId)
+  const { data: remixContest } = useRemixContest(trackId)
   const navigation = useNavigation<NavigationProp>()
   const handlePress = useCallback(() => {
-    navigation.navigate('Track', { trackId: track?.track_id })
-  }, [navigation, track?.track_id])
+    navigation.navigate('Track', { trackId })
+  }, [navigation, trackId])
 
+  if (!track || !remixContest) {
+    return <CollectionCardSkeleton />
+  }
   return (
     <Paper onPress={handlePress}>
       <Flex p='s' gap='s'>
-        <TrackImage
-          trackId={track?.track_id}
-          size={SquareSizes.SIZE_480_BY_480}
-        />
+        <TrackImage trackId={trackId} size={SquareSizes.SIZE_480_BY_480} />
         <Text variant='title' textAlign='center' numberOfLines={1}>
-          {track?.title}
+          {track.title}
         </Text>
 
         <UserLink
-          userId={track?.owner_id}
+          userId={track.owner_id}
           textAlign='center'
           style={{ justifyContent: 'center' }}
         />
@@ -71,7 +73,7 @@ export const RemixContestCard = (props: RemixContestCardProps) => {
         borderBottomRightRadius='m'
       >
         <Text strength='strong' size='s' color='subdued'>
-          {messages.deadline(remixContest?.endDate)}
+          {messages.deadline(remixContest.endDate)}
         </Text>
       </Flex>
     </Paper>

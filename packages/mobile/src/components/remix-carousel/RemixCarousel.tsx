@@ -1,27 +1,42 @@
-import { useTracks } from '@audius/common/api'
-import { type ID, type Track } from '@audius/common/models'
+import { useMemo } from 'react'
+
+import { type ID } from '@audius/common/models'
 
 import type { CardListProps } from 'app/components/core'
 import { CardList } from 'app/components/core'
 
 import { RemixContestCard } from './RemixContestCard'
 
-type ListProps = Omit<CardListProps<Track>, 'data'>
-
-export type UserListProps = {
+export type RemixContestCardProps = {
   trackIds: ID[] | undefined
-  onCardPress?: (user_id: ID) => void
+  onCardPress?: (trackId: ID) => void
 } & Partial<ListProps>
 
-export const RemixCarousel = (props: UserListProps) => {
+type IDCardListItem = {
+  trackId: ID
+  _create: boolean
+}
+type ListProps = Omit<CardListProps<IDCardListItem>, 'data'>
+
+export const RemixCarousel = (props: RemixContestCardProps) => {
   const { trackIds, ...other } = props
-  const { data: tracks } = useTracks(trackIds)
+
+  const idList = useMemo(() => {
+    if (!trackIds) return undefined
+    const trackIDData = trackIds.map((trackId) => ({
+      _create: true,
+      trackId
+    }))
+    return trackIDData
+  }, [trackIds])
+
   return (
     <CardList
-      data={tracks}
+      data={idList}
       renderItem={({ item }) => {
-        return <RemixContestCard track={item} />
+        return <RemixContestCard trackId={item.trackId} />
       }}
+      horizontal
       {...other}
     />
   )

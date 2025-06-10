@@ -99,10 +99,13 @@ export const SearchExploreScreen = () => {
   )
 
   // Data fetching
-  const { data: exploreContent } = useExploreContent()
-  const { data: featuredArtists } = useUsers(exploreContent?.featuredProfiles)
-  const { data: featuredLabels } = useUsers(exploreContent?.featuredLabels)
-
+  const { data: exploreContent, isLoading: isExploreContentLoading } =
+    useExploreContent()
+  const { data: featuredArtists, isLoading: isFeaturedArtistsLoading } =
+    useUsers(exploreContent?.featuredProfiles)
+  const { data: featuredLabels, isLoading: isFeaturedLabelsLoading } = useUsers(
+    exploreContent?.featuredLabels
+  )
   // Derived data
   const filteredTiles = useMemo(
     () =>
@@ -170,12 +173,12 @@ export const SearchExploreScreen = () => {
                 <Flex
                   direction='row'
                   gap='m'
-                  style={{ height: spacing.unit11 }}
+                  h={spacing.unit11}
                   alignItems='center'
                 >
-                  <View style={{ width: spacing.unit10 }}>
+                  <Flex w={spacing.unit10}>
                     <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-                  </View>
+                  </Flex>
                   <Text variant='heading' color='staticWhite'>
                     {messages.explore}
                   </Text>
@@ -192,12 +195,13 @@ export const SearchExploreScreen = () => {
                     startIcon={IconSearch}
                     onChangeText={setSearchInput}
                     value={searchInput}
-                    endIcon={() => (
+                    endIcon={(props) => (
                       <IconButton
                         icon={IconCloseAlt}
                         color='subdued'
                         onPress={handleClearSearch}
                         hitSlop={10}
+                        {...props}
                       />
                     )}
                   />
@@ -222,28 +226,29 @@ export const SearchExploreScreen = () => {
                 )}
               </>
             ) : (
-              <Flex direction='column' ph='l' pt='xl' pb='3xl' gap='2xl'>
-                <Flex gap='l'>
+              <Flex direction='column' ph='l' pt='xl' pb='3xl'>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.featuredPlaylists}
                   </Text>
                   <CollectionList
                     horizontal
-                    collectionIds={exploreContent?.featuredPlaylists || []}
+                    collectionIds={exploreContent?.featuredPlaylists ?? []}
                     carouselSpacing={spacing.l}
+                    isLoading={isExploreContentLoading}
                   />
                 </Flex>
-                <Flex gap='l'>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.featuredRemixContests}
                   </Text>
                   <RemixCarousel
-                    horizontal
-                    trackIds={exploreContent?.featuredRemixContests || []}
+                    trackIds={exploreContent?.featuredRemixContests}
                     carouselSpacing={spacing.l}
+                    isLoading={isExploreContentLoading}
                   />
                 </Flex>
-                <Flex gap='l'>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.artistSpotlight}
                   </Text>
@@ -251,9 +256,12 @@ export const SearchExploreScreen = () => {
                     horizontal
                     profiles={featuredArtists}
                     carouselSpacing={spacing.l}
+                    isLoading={
+                      isExploreContentLoading || isFeaturedArtistsLoading
+                    }
                   />
                 </Flex>
-                <Flex gap='l'>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.labelSpotlight}
                   </Text>
@@ -261,6 +269,9 @@ export const SearchExploreScreen = () => {
                     horizontal
                     profiles={featuredLabels}
                     carouselSpacing={spacing.l}
+                    isLoading={
+                      isExploreContentLoading || isFeaturedLabelsLoading
+                    }
                   />
                 </Flex>
 

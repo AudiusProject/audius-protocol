@@ -23,6 +23,8 @@ import { LockedStatusBadge } from '../core'
 import { CollectionImage } from '../image/CollectionImage'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
+import { CollectionCardSkeleton } from './CollectionCardSkeleton'
+
 const messages = {
   repost: 'Reposts',
   favorites: 'Favorites',
@@ -83,7 +85,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
 
   if (!partialCollection) {
     console.warn('Collection missing for CollectionCard, preventing render')
-    return null
+    return <CollectionCardSkeleton />
   }
 
   const isOwner = accountId === playlist_owner_id
