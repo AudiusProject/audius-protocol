@@ -223,7 +223,6 @@ export function* unfollowUser(
   }
 
   const users = yield* call(queryUsers, [action.userId, accountId])
-  const unfollowedUser = users[action.userId].metadata
   const currentUser = users[accountId].metadata
 
   // Decrement the follower count on the unfollowed user
@@ -233,7 +232,7 @@ export function* unfollowUser(
       : {
           ...prevUser,
           does_current_user_follow: false,
-          follower_count: unfollowedUser.follower_count - 1
+          follower_count: prevUser.follower_count - 1
         }
   )
 
