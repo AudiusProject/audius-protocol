@@ -92,6 +92,7 @@ export {
 } from './withdraw-usdc/slice'
 export * as withdrawUSDCSelectors from './withdraw-usdc/selectors'
 export * from './withdraw-usdc/types'
+export { default as withdrawUSDCSagas } from './withdraw-usdc/sagas'
 
 export {
   default as transactionDetailsReducer,

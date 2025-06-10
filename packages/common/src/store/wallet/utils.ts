@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js'
 import { useSelector } from 'react-redux'
 
 import { useCurrentAccountUser } from '~/api'
@@ -9,7 +10,12 @@ import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
 import { BadgeTier } from '../../models/BadgeTier'
 import { ID } from '../../models/Identifiers'
 import { User, UserMetadata } from '../../models/User'
-import { BNAudio, StringAudio, StringWei } from '../../models/Wallet'
+import {
+  BNAudio,
+  SolanaWalletAddress,
+  StringAudio,
+  StringWei
+} from '../../models/Wallet'
 
 export type BadgeTierInfo = {
   tier: BadgeTier
@@ -103,4 +109,18 @@ export const getUserBalance = (user: User | UserMetadata) =>
 export const getTierForUser = (user: User) => {
   const balance = getUserBalance(user)
   return getTierAndNumberForBalance(balance).tier
+}
+
+/**
+ * Checks whether the input address is a valid solana address.
+ */
+export const isValidSolAddress = async (address: SolanaWalletAddress) => {
+  try {
+    // @ts-ignore - need an unused variable to check if the destinationWallet is valid
+    const ignored = new PublicKey(address)
+    return true
+  } catch (err) {
+    console.debug(err)
+    return false
+  }
 }

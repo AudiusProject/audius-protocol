@@ -6,7 +6,7 @@ import {
 } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
-import { useAddCashModal } from '@audius/common/store'
+import { useAddCashModal, useWithdrawUSDCModal } from '@audius/common/store'
 
 import {
   Box,
@@ -23,6 +23,7 @@ import { make, track } from 'app/services/analytics'
 export const CashWallet = () => {
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openAddCashModal } = useAddCashModal()
+  const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { balanceFormatted, isLoading } = useFormattedUSDCBalance()
 
   const handleAddCash = useCallback(() => {
@@ -33,6 +34,10 @@ export const CashWallet = () => {
       })
     )
   }, [openAddCashModal])
+
+  const handleWithdrawCash = useCallback(() => {
+    openWithdrawUSDCModal()
+  }, [openWithdrawUSDCModal])
 
   return (
     <Paper>
@@ -51,21 +56,28 @@ export const CashWallet = () => {
           />
         </Flex>
 
-        <Flex h='4xl' justifyContent='center'>
-          {isLoading ? (
-            <Skeleton h='4xl' w='5xl' />
-          ) : (
-            <Text variant='display' size='m' color='default'>
-              {balanceFormatted}
-            </Text>
-          )}
-        </Flex>
+        <Flex gap='xl'>
+          <Flex h='4xl' justifyContent='center'>
+            {isLoading ? (
+              <Skeleton h='4xl' w='5xl' />
+            ) : (
+              <Text variant='display' size='m' color='default'>
+                {balanceFormatted}
+              </Text>
+            )}
+          </Flex>
 
-        {!isManagedAccount ? (
-          <Button variant='secondary' onPress={handleAddCash} fullWidth>
-            {walletMessages.addCash}
-          </Button>
-        ) : null}
+          {!isManagedAccount ? (
+            <Flex gap='s'>
+              <Button variant='primary' onPress={handleWithdrawCash} fullWidth>
+                {walletMessages.withdraw}
+              </Button>
+              <Button variant='secondary' onPress={handleAddCash} fullWidth>
+                {walletMessages.addCash}
+              </Button>
+            </Flex>
+          ) : null}
+        </Flex>
       </Flex>
     </Paper>
   )
