@@ -15,6 +15,8 @@ export const useWalletAddresses = () => {
     queryKey: [QUERY_KEYS.walletAddresses],
     // This should always be set whenever the account is loaded in fetchAccountAsync saga
     // This queryFn ideally should never run
-    queryFn: () => ({ currentUser: null, web3User: null })
+    queryFn: () => ({ currentUser: null, web3User: null }),
+    staleTime: Infinity,
+    gcTime: Infinity
   })
 }

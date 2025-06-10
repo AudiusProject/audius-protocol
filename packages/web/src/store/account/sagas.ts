@@ -1,8 +1,4 @@
-import {
-  queryAccountUser,
-  selectHasAccount,
-  selectIsGuestAccount
-} from '@audius/common/api'
+import { queryAccountUser, selectIsGuestAccount } from '@audius/common/api'
 import {
   accountActions,
   accountSagas as commonAccountSagas,
@@ -46,7 +42,7 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
 function* showPushNotificationConfirmation() {
   const isMobile = yield* getContext('isMobile')
   const accountUser = yield* queryAccountUser()
-  const hasAccount = yield* call(selectHasAccount, accountUser)
+  const hasAccount = Boolean(accountUser?.handle && accountUser?.name)
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
 
   if (isMobile || isElectron() || !shouldRequestBrowserPermission() || isGuest)

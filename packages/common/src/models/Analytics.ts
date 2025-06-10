@@ -303,7 +303,7 @@ export enum Name {
   BUFFER_SPINNER_SHOWN = 'Buffer Spinner Shown',
 
   // A listen is when we record against the backend vs. a play which is a UI action
-  LISTEN = 'Listen',
+  LISTEN = 'Listen', 
 
   // Navigation
   PAGE_VIEW = 'Page View',

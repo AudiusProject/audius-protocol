@@ -9,10 +9,10 @@ import {
 } from 'react'
 
 import {
-  selectHasAccount,
   selectIsGuestAccount,
   useAccountStatus,
-  useCurrentAccount
+  useCurrentAccount,
+  useHasAccount
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
@@ -240,16 +240,12 @@ const WebPlayer = (props) => {
 
   const { data: accountData } = useCurrentAccount({
     select: (account) => ({
-      hasAccount: selectHasAccount(account),
       userHandle: account?.user?.handle,
       isGuestAccount: selectIsGuestAccount(account)
     })
   })
-  const {
-    userHandle,
-    isGuestAccount = false,
-    hasAccount = false
-  } = accountData || {}
+  const hasAccount = useHasAccount()
+  const { userHandle, isGuestAccount = false } = accountData || {}
   const { data: accountStatus } = useAccountStatus()
   const showCookieBanner = useSelector(getShowCookieBanner)
 

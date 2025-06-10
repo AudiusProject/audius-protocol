@@ -17,10 +17,6 @@ export const selectAccountHasTracks = (user?: User | null) => {
   return (user?.track_count ?? 0) > 0
 }
 
-export const selectHasAccount = (user?: User | null) => {
-  return Boolean(user?.handle && user?.name)
-}
-
 export const selectIsAccountComplete = (user?: User | null) => {
   if (!user) return false
 
