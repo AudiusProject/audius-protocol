@@ -15,17 +15,13 @@ import {
   queryUser,
   primeCollectionDataSaga,
   getUserQueryKey,
-  QUERY_KEYS,
-  getProfileTracksQueryKey,
-  getTrackPageLineupQueryKey,
-  getRemixesQueryKey
+  QUERY_KEYS
 } from '@audius/common/api'
 import {
   Collection,
   Feature,
   FieldVisibility,
   ID,
-  Kind,
   Name,
   StemTrack,
   StemUploadWithFile,
@@ -40,7 +36,6 @@ import {
   TrackForUpload,
   UploadType,
   accountActions,
-  cacheActions,
   confirmerActions,
   getContext,
   savedPageActions,

@@ -2,17 +2,14 @@ import { useCallback } from 'react'
 
 import { useUserByHandle } from '@audius/common/api'
 import { useTwitterButtonStatus } from '@audius/common/hooks'
-import { cacheUsersActions } from '@audius/common/store'
 import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
 
 import type { ButtonProps } from '@audius/harmony-native'
 import { IconTwitter, Button } from '@audius/harmony-native'
 import { useLink, useOnOpenLink } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import type { AllEvents } from 'app/types/analytics'
-const { fetchUserSocials } = cacheUsersActions
 
 const messages = {
   share: 'Share to Twitter'
@@ -45,7 +42,6 @@ export type TwitterButtonProps = Partial<ButtonProps> & { url?: string } & (
 export const TwitterButton = (props: TwitterButtonProps) => {
   const { url = null, children = messages.share, ...other } = props
   const openLink = useOnOpenLink()
-  const dispatch = useDispatch()
 
   const { data: user } = useUserByHandle(
     'handle' in other ? other.handle : undefined
@@ -61,7 +57,6 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     shareTwitterStatus,
     twitterHandle,
     additionalTwitterHandle,
-    setLoading,
     setIdle
   } = useTwitterButtonStatus(user, additionalUser)
 
@@ -74,14 +69,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     if (other.type === 'static' && other.analytics) {
       track(make(other.analytics))
     }
-    if (other.type === 'dynamic') {
-      dispatch(fetchUserSocials(other.handle))
-      if (other.additionalHandle) {
-        dispatch(fetchUserSocials(other.additionalHandle))
-      }
-      setLoading()
-    }
-  }, [onPressLink, other, dispatch, setLoading])
+  }, [onPressLink, other])
 
   if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
     const handle = twitterHandle ? `@${twitterHandle}` : userName

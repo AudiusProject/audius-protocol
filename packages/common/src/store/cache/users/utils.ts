@@ -4,6 +4,7 @@ import { primeUserDataSaga } from '~/api/tan-query/utils/primeUserData'
 import { UserMetadata } from '~/models/User'
 import { waitForRead } from '~/utils/sagaHelpers'
 
+// TODO: this is rather unnecessary as its own fn
 export function* processAndCacheUsers(users: UserMetadata[]) {
   yield* waitForRead()
   const reformattedUsers = users.map((user) => {

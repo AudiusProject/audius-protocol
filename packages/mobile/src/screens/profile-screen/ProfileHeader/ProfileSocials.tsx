@@ -1,12 +1,8 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { Fragment, useLayoutEffect, useMemo, useRef } from 'react'
 
 import { useProfileUser } from '@audius/common/api'
-import {
-  cacheUsersActions,
-  useTierAndVerifiedForUser
-} from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Animated } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import { Divider, Flex } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
@@ -18,8 +14,6 @@ import {
   TwitterSocialLink,
   WebsiteSocialLink
 } from './SocialLink'
-
-const { fetchUserSocials } = cacheUsersActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   socials: {
@@ -33,14 +27,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const ProfileSocials = () => {
-  const {
-    handle,
-    user_id,
-    twitter_handle,
-    instagram_handle,
-    tiktok_handle,
-    website
-  } =
+  const { user_id, twitter_handle, instagram_handle, tiktok_handle, website } =
     useProfileUser({
       select: (user) => ({
         handle: user.handle,
@@ -51,14 +38,6 @@ export const ProfileSocials = () => {
         website: user.website
       })
     }).user ?? {}
-
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    if (handle) {
-      dispatch(fetchUserSocials(handle))
-    }
-  }, [dispatch, handle])
 
   const socialLinks = useMemo(() => {
     const links = [
