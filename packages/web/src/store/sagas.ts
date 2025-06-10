@@ -228,7 +228,6 @@ export function* testRootSaga() {
     // Cache
     collectionsSagas(),
     tracksSagas(),
-    usersSagas(),
     savedCollectionsSagas(),
 
     // Application

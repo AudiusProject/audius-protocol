@@ -1,9 +1,6 @@
 import { ReactNode, useState } from 'react'
 
-import {
-  SyncLocalStorageUserProvider,
-  useSyncLocalStorageUser
-} from '@audius/common/api'
+import { SyncLocalStorageUserProvider } from '@audius/common/api'
 import { MediaProvider } from '@audius/harmony/src/contexts'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
