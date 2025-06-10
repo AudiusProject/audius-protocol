@@ -179,7 +179,7 @@ export const FilterButton = forwardRef(function FilterButton<
             {...props}
           />
         )) as IconComponent)
-      : (iconRight ?? (hasOptions ? IconCaretDown : null))
+      : iconRight ?? (hasOptions ? IconCaretDown : null)
   }, [variant, value, iconRight, hasOptions, onClick, onChange, onReset])
 
   useEffect(() => {

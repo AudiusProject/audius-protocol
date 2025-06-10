@@ -1,4 +1,5 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
+import { formatCount } from '@audius/common/utils'
 
 import type {
   SearchCategory,
@@ -12,14 +13,17 @@ import {
   searchSelectors
 } from '@audius/common/store'
 import type { Mood } from '@audius/sdk'
+import { filter } from 'lodash'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
-import { ImageBackground, ScrollView, Image } from 'react-native'
+import { ImageBackground, ScrollView, Image, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
 import {
   Flex,
+  IconButton,
+  IconCloseAlt,
   IconSearch,
   Paper,
   Text,
@@ -37,11 +41,12 @@ import { moodMap } from 'app/utils/moods'
 
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
+import { NoResultsTile } from '../search-screen/NoResultsTile'
 import { RecentSearches } from '../search-screen/RecentSearches'
 import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
-import { SearchContext } from '../search-screen/searchState'
+import { SearchContext, useSearchFilters } from '../search-screen/searchState'
 
 import {
   PREMIUM_TRACKS,
@@ -50,6 +55,7 @@ import {
 } from './collections'
 import { ColorTile } from './components/ColorTile'
 import { REMIXABLES } from './smartCollections'
+import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
 
 const tiles = [
   TRENDING_PLAYLISTS,
@@ -110,7 +116,10 @@ export const SearchExploreScreen = () => {
       }),
     [isUSDCPurchasesEnabled]
   )
-
+  const hasAnyFilter = Object.values(filters).some(
+    (value) => value !== undefined
+  )
+  console.log('asdf hasAnyFilter', hasAnyFilter)
   const history = useSelector(getSearchHistory)
   const categoryKind: Kind | null = category
     ? itemKindByCategory[category]
@@ -131,6 +140,9 @@ export const SearchExploreScreen = () => {
   const handleMoodPress = useCallback((moodLabel: Mood) => {
     setCategory('tracks')
     setFilters({ mood: moodLabel })
+  }, [])
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('')
   }, [])
 
   const moodEntries = useMemo(
@@ -158,8 +170,15 @@ export const SearchExploreScreen = () => {
           <Flex>
             <ImageBackground source={imageSearchHeaderBackground}>
               <Flex pt='unit14' ph='l' pb='l' gap='l'>
-                <Flex direction='row' gap='m'>
-                  <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                <Flex
+                  direction='row'
+                  gap='m'
+                  style={{ height: spacing.unit11 }}
+                  alignItems='center'
+                >
+                  <View style={{ width: spacing.unit10 }}>
+                    <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                  </View>
                   <Text variant='heading' color='staticWhite'>
                     {messages.explore}
                   </Text>
@@ -170,28 +189,39 @@ export const SearchExploreScreen = () => {
                 <Flex>
                   <TextInput
                     label='Search'
+                    autoFocus={autoFocus}
                     placeholder={messages.searchPlaceholder}
                     size={TextInputSize.SMALL}
                     startIcon={IconSearch}
                     onChangeText={setSearchInput}
                     value={searchInput}
+                    endIcon={() => (
+                      <IconButton
+                        icon={IconCloseAlt}
+                        color='subdued'
+                        onPress={handleClearSearch}
+                        hitSlop={10}
+                      />
+                    )}
                   />
                 </Flex>
               </Flex>
             </ImageBackground>
           </Flex>
-          <SearchCategoriesAndFilters />
+          {/* <SearchCategoriesAndFilters /> */}
 
           <ScrollView>
             {category !== 'all' || searchInput ? (
               <>
-                {searchInput || filteredSearchItems.length === 0 ? (
+                {searchInput || hasAnyFilter ? (
                   <SearchResults />
-                ) : (
+                ) : filteredSearchItems.length > 0 ? (
                   <RecentSearches
                     ListHeaderComponent={<SearchCatalogTile />}
                     searchItems={filteredSearchItems}
                   />
+                ) : (
+                  <SearchCatalogTile />
                 )}
               </>
             ) : (
@@ -206,7 +236,16 @@ export const SearchExploreScreen = () => {
                     carouselSpacing={spacing.l}
                   />
                 </Flex>
-
+                <Flex gap='l'>
+                  <Text variant='title' size='l'>
+                    {messages.featuredRemixContests}
+                  </Text>
+                  <RemixCarousel
+                    horizontal
+                    trackIds={exploreContent?.featuredRemixContests || []}
+                    carouselSpacing={spacing.l}
+                  />
+                </Flex>
                 <Flex gap='l'>
                   <Text variant='title' size='l'>
                     {messages.artistSpotlight}
@@ -217,7 +256,6 @@ export const SearchExploreScreen = () => {
                     carouselSpacing={spacing.l}
                   />
                 </Flex>
-
                 <Flex gap='l'>
                   <Text variant='title' size='l'>
                     {messages.labelSpotlight}
@@ -228,7 +266,6 @@ export const SearchExploreScreen = () => {
                     carouselSpacing={spacing.l}
                   />
                 </Flex>
-
                 <Flex justifyContent='center' gap='l'>
                   <Text variant='title' size='l' textAlign='center'>
                     {messages.exploreByMood}
