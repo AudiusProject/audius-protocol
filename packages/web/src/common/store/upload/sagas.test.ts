@@ -116,6 +116,7 @@ describe('upload', () => {
           [
             getContext('queryClient'),
             {
+              setQueryData: () => {},
               invalidateQueries: () => {}
             }
           ]
@@ -179,6 +180,7 @@ describe('upload', () => {
           [
             getContext('queryClient'),
             {
+              setQueryData: () => {},
               invalidateQueries: () => {}
             }
           ],
@@ -282,6 +284,7 @@ describe('upload', () => {
           [
             getContext('queryClient'),
             {
+              setQueryData: () => {},
               invalidateQueries: () => {}
             }
           ],
