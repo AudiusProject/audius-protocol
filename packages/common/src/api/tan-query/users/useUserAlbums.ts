@@ -4,7 +4,6 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'

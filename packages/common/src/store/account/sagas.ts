@@ -21,18 +21,11 @@ import {
   getUserQueryKey
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
-import {
-  AccountUserMetadata,
-  ErrorLevel,
-  Kind,
-  Status,
-  UserMetadata
-} from '~/models'
+import { AccountUserMetadata, ErrorLevel, Status, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
 
-import { cacheActions } from '../cache'
 import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 

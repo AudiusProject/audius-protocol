@@ -429,7 +429,6 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
       yield* call(track, make({ eventName: Name.CREATE_CHAT_SUCCESS }))
     }
   } catch (e) {
-    console.log('doCreateChat error', e)
     yield* put(
       toast({
         type: 'error',
