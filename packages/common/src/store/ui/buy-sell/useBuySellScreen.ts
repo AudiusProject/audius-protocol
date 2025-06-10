@@ -3,12 +3,12 @@ import { useCallback, useState } from 'react'
 import type { Screen } from './types'
 
 type UseBuySellScreenProps = {
-  onScreenChange: (screen: Screen) => void
+  onScreenChange?: (screen: Screen) => void
   initialScreen?: Screen
 }
 
 export const useBuySellScreen = (props: UseBuySellScreenProps) => {
-  const { onScreenChange, initialScreen = 'input' } = props
+  const { onScreenChange = () => {}, initialScreen = 'input' } = props
   const [currentScreen, setCurrentScreenInternal] =
     useState<Screen>(initialScreen)
 

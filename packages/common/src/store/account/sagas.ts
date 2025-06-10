@@ -122,7 +122,9 @@ function* initializeMetricsForUser({
   if (accountUser && accountUser.handle && web3WalletAddress) {
     const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(web3WalletAddress),
-      queryFn: async () => getWalletAccountQueryFn(web3WalletAddress, sdk)
+      queryFn: async () => getWalletAccountQueryFn(web3WalletAddress, sdk),
+      staleTime: Infinity,
+      gcTime: Infinity
     })) as AccountUserMetadata | undefined
     const { user: web3User } = accountData ?? {}
 
@@ -208,7 +210,7 @@ export function* fetchAccountAsync({
   }
   if (!wallet || !web3WalletAddress) {
     yield* put(resetAccount())
-    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -217,14 +219,19 @@ export function* fetchAccountAsync({
     return
   }
 
-  const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
-    queryKey: getWalletAccountQueryKey(wallet),
-    queryFn: async () => getWalletAccountQueryFn(wallet!, sdk)
-  })) as AccountUserMetadata | undefined
+  let accountData: AccountUserMetadata | undefined
+  try {
+    accountData = (yield* call([queryClient, queryClient.fetchQuery], {
+      queryKey: getWalletAccountQueryKey(wallet),
+      queryFn: async () => getWalletAccountQueryFn(wallet!, sdk),
+      staleTime: Infinity,
+      gcTime: Infinity
+    })) as AccountUserMetadata | undefined
+  } catch (e) {}
 
   if (!accountData) {
     yield* put(resetAccount())
-    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -235,7 +242,7 @@ export function* fetchAccountAsync({
   const user = accountData.user
   if (user.is_deactivated) {
     yield* put(resetAccount())
-    queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+    queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_DEACTIVATED'
@@ -285,6 +292,7 @@ export function* fetchAccountAsync({
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
+
   queryClient.setQueryData(getWalletAddressesQueryKey(), {
     currentUser: wallet,
     web3User: web3WalletAddress

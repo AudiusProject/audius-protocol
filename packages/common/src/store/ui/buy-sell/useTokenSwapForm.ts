@@ -1,17 +1,28 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useTokenExchangeRate } from '@audius/common/src/api'
-import { JupiterTokenSymbol } from '@audius/common/src/services/Jupiter'
-import { TokenInfo } from '@audius/common/store'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { createSwapFormSchema, SwapFormValues } from '../schemas/swapFormSchema'
+import { useTokenExchangeRate } from '../../../api'
+import type { JupiterTokenSymbol } from '../../../services/Jupiter'
+
+import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
+import type { TokenInfo } from './types'
 
 export type BalanceConfig = {
   get: () => number | undefined
   loading: boolean
   formatError: (amount: number) => string
+}
+
+// Maximum safe amount for API calls to prevent errors
+const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
+
+/**
+ * Returns a safe numeric value for exchange rate API calls
+ */
+const getSafeAmountForExchangeRate = (amount: number): number => {
+  return Math.min(amount, MAX_SAFE_EXCHANGE_RATE_AMOUNT)
 }
 
 export type TokenSwapFormProps = {
@@ -115,6 +126,11 @@ export const useTokenSwapForm = ({
     return isNaN(parsed) ? 0 : parsed
   }, [values.inputAmount])
 
+  // Use safe amount for exchange rate API calls
+  const safeExchangeRateAmount = useMemo(() => {
+    return getSafeAmountForExchangeRate(numericInputAmount)
+  }, [numericInputAmount])
+
   const {
     data: exchangeRateData,
     isLoading: isExchangeRateLoading,
@@ -122,7 +138,7 @@ export const useTokenSwapForm = ({
   } = useTokenExchangeRate({
     inputTokenSymbol,
     outputTokenSymbol,
-    inputAmount: numericInputAmount > 0 ? numericInputAmount : 1
+    inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
   })
 
   // Update output amount when exchange rate or input amount changes
@@ -133,6 +149,7 @@ export const useTokenSwapForm = ({
     }
 
     if (!isExchangeRateLoading && exchangeRateData) {
+      // Use the actual input amount for output calculation, not the safe amount
       const newAmount = exchangeRateData.rate * numericInputAmount
       setFieldValue('outputAmount', newAmount.toString(), false)
     }

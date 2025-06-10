@@ -108,6 +108,7 @@ export const SearchCategoriesAndFilters = () => {
         horizontal
         keyboardShouldPersistTaps='handled'
         ref={scrollViewRef}
+        showsHorizontalScrollIndicator={false}
       >
         <Flex direction='row' alignItems='center' gap='s' p='l'>
           <SearchCategory category='users' />

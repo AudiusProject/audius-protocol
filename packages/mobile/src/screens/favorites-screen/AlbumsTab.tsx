@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import type { CommonState } from '@audius/common/store'
 import {
@@ -13,6 +13,7 @@ import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { FilterInput } from 'app/components/filter-input'
+import { WithLoader } from 'app/components/with-loader/WithLoader'
 
 import { LoadingMoreSpinner } from './LoadingMoreSpinner'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
@@ -78,27 +79,29 @@ export const AlbumsTab = () => {
           <EmptyTileCTA message={emptyTabText} />
         )
       ) : (
-        <>
-          <OfflineContentBanner />
-          <FilterInput
-            value={filterValue}
-            placeholder={messages.inputPlaceholder}
-            onChangeText={setFilterValue}
-          />
-          <CollectionList
-            collectionType='album'
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.5}
-            scrollEnabled={false}
-            collectionIds={collectionIds}
-            showCreateCollectionTile={!!isReachable}
-            ListFooterComponent={
-              isPending || (isFetchingNextPage && hasNextPage)
-                ? loadingSpinner
-                : null
-            }
-          />
-        </>
+        <WithLoader loading={isPending}>
+          <>
+            <OfflineContentBanner />
+            <FilterInput
+              value={filterValue}
+              placeholder={messages.inputPlaceholder}
+              onChangeText={setFilterValue}
+            />
+            <CollectionList
+              collectionType='album'
+              onEndReached={handleEndReached}
+              onEndReachedThreshold={0.5}
+              scrollEnabled={false}
+              collectionIds={collectionIds}
+              showCreateCollectionTile={!!isReachable}
+              ListFooterComponent={
+                isFetchingNextPage && hasNextPage && collectionIds?.length > 0
+                  ? loadingSpinner
+                  : null
+              }
+            />
+          </>
+        </WithLoader>
       )}
     </VirtualizedScrollView>
   )

@@ -1,7 +1,6 @@
 import {
   useCurrentUserId,
   useRemixContest,
-  useRemixersCount,
   useRemixes,
   useRemixesLineup,
   useTrackByParams
@@ -71,8 +70,7 @@ export const TrackRemixesScreen = () => {
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
   const trackId = track?.track_id
-  const { data: count } = useRemixersCount({ trackId })
-  const { data, isFetching, isPending, loadNextPage, lineup, pageSize } =
+  const { data, count, isFetching, isPending, loadNextPage, lineup, pageSize } =
     useRemixesLineup({
       trackId: track?.track_id,
       includeOriginal: true,

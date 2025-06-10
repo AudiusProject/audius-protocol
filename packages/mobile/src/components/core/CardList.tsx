@@ -49,6 +49,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   cardListHorizontal: {
     paddingHorizontal: spacing(4),
+    paddingVertical: spacing(4),
     paddingRight: 0,
     flexGrow: 0
   },
@@ -117,13 +118,14 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
 
   if (isHorizontal) {
     return (
-      <Flex style={{ marginHorizontal: carouselSpacing * -1 }}>
+      <Flex mh={carouselSpacing * -1}>
         <FlatListComponent
           key='horizontal'
           style={[
             styles.cardListHorizontal,
             { paddingHorizontal: carouselSpacing }
           ]}
+          showsHorizontalScrollIndicator={false}
           ref={ref}
           data={data}
           renderItem={handleRenderItem}

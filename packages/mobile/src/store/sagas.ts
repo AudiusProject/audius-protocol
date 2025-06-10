@@ -17,6 +17,7 @@ import {
   playbackPositionSagas,
   gatedContentSagas,
   purchaseContentSagas,
+  withdrawUSDCSagas,
   confirmerSagas
 } from '@audius/common/store'
 import { sagaWithErrorHandler } from '@audius/common/utils'
@@ -106,6 +107,7 @@ export default function* rootSaga() {
     ...gatedContentSagas(),
     ...purchaseContentSagas(),
     ...buyUSDCSagas(),
+    ...withdrawUSDCSagas(),
     ...stripeModalUISagas(),
 
     // Search Users

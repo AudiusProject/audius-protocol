@@ -17,7 +17,8 @@ import {
   playbackPositionSagas,
   gatedContentSagas,
   purchaseContentSagas,
-  confirmerSagas
+  confirmerSagas,
+  withdrawUSDCSagas
 } from '@audius/common/store'
 import { sagaWithErrorHandler } from '@audius/common/utils'
 import { all, spawn } from 'typed-redux-saga'
@@ -70,7 +71,6 @@ import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
 import scrollLockSagas from 'store/application/ui/scrollLock/sagas'
 import stemUploadSagas from 'store/application/ui/stemsUpload/sagas'
 import userListModalSagas from 'store/application/ui/userListModal/sagas'
-import withdrawUSDCSagas from 'store/application/ui/withdraw-usdc/sagas'
 import errorSagas from 'store/errors/sagas'
 import reachabilitySagas from 'store/reachability/sagas'
 import reloadSagas from 'store/reload/sagas'

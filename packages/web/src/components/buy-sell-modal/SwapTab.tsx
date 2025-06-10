@@ -1,12 +1,11 @@
 import { useRef } from 'react'
 
-import { TokenInfo } from '@audius/common/store'
+import { TokenInfo, useTokenSwapForm } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
-import { useTokenSwapForm } from './hooks/useTokenSwapForm'
 
 const messages = {
   youPay: 'You Pay',
