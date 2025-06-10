@@ -85,7 +85,6 @@ export const useDeleteTrack = () => {
           }
         ],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 
@@ -125,7 +124,6 @@ export const useDeleteTrack = () => {
           }
         ],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 

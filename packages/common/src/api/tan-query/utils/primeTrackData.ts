@@ -1,6 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
-import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
@@ -94,13 +93,11 @@ export const reformat = <T extends TrackMetadata>(track: T): Track => {
 export const primeTrackData = ({
   tracks,
   queryClient,
-  dispatch,
   forceReplace = false,
   skipQueryData = false
 }: {
   tracks: (UserTrackMetadata | Track)[]
   queryClient: QueryClient
-  dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
@@ -170,7 +167,6 @@ export const primeTrackDataInternal = ({
 
 export function* primeTrackDataSaga(tracks: (UserTrackMetadata | Track)[]) {
   const queryClient = yield* getContext('queryClient')
-  const dispatch = yield* getContext('dispatch')
 
-  return primeTrackData({ tracks, queryClient, dispatch })
+  return primeTrackData({ tracks, queryClient })
 }

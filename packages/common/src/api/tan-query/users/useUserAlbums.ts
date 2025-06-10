@@ -45,7 +45,6 @@ export const useUserAlbums = (
   const { data: currentUserId } = useCurrentUserId()
   const { userId, pageSize = 5, sortMethod = 'recent', query } = params
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({
     queryKey: getUserAlbumsQueryKey(params),
@@ -73,7 +72,7 @@ export const useUserAlbums = (
         userCollectionMetadataFromSDK
       )
 
-      primeCollectionData({ collections, queryClient, dispatch })
+      primeCollectionData({ collections, queryClient })
 
       return collections.map((collection) => collection.playlist_id)
     },

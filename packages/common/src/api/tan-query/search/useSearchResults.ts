@@ -235,7 +235,7 @@ const useSearchQueryProps = <T>(
 
       // Prime entity cache data & the individual search slice data
       if (tracks?.length) {
-        primeTrackData({ tracks, queryClient, dispatch })
+        primeTrackData({ tracks, queryClient })
         if (shouldPrimeCache) {
           primeSearchSlice(
             tracks.map((t) => ({ id: t.track_id, type: EntityType.TRACK })),
@@ -254,8 +254,7 @@ const useSearchQueryProps = <T>(
       if (albums?.length || playlists?.length) {
         primeCollectionData({
           collections: [...albums, ...playlists],
-          queryClient,
-          dispatch
+          queryClient
         })
         if (albums?.length && shouldPrimeCache) {
           primeSearchSlice(albums, 'albums')

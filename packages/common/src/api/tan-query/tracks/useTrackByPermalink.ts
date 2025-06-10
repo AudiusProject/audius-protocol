@@ -1,7 +1,6 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -29,7 +28,6 @@ export const useTrackByPermalink = <TResult = TQTrack>(
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const { data: accountStatus } = useAccountStatus()
 
@@ -56,7 +54,7 @@ export const useTrackByPermalink = <TResult = TQTrack>(
       const track = userTrackMetadataFromSDK(data[0])
 
       if (track) {
-        primeTrackData({ tracks: [track], queryClient, dispatch })
+        primeTrackData({ tracks: [track], queryClient })
       }
 
       return track?.track_id

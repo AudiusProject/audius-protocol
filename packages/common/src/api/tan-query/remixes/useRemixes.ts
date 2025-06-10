@@ -121,7 +121,7 @@ export const useRemixes = (
         }
       }
 
-      primeTrackData({ tracks: processedTracks, queryClient, dispatch })
+      primeTrackData({ tracks: processedTracks, queryClient })
 
       // Update count in store
       dispatch(remixesPageActions.setCount({ count: data.count }))

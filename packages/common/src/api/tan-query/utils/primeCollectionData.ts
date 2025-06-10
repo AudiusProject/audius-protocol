@@ -1,6 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
-import { AnyAction, Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
 import { Kind } from '~/models'
@@ -17,13 +16,11 @@ import { primeUserData } from './primeUserData'
 export const primeCollectionData = ({
   collections,
   queryClient,
-  dispatch,
   forceReplace = false,
   skipQueryData = false
 }: {
   collections: (UserCollectionMetadata | CollectionMetadata)[]
   queryClient: QueryClient
-  dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
@@ -116,7 +113,6 @@ export function* primeCollectionDataSaga(
   collections: (UserCollectionMetadata | CollectionMetadata)[]
 ) {
   const queryClient = (yield* getContext('queryClient')) as QueryClient
-  const dispatch = (yield* getContext('dispatch')) as Dispatch<AnyAction>
 
-  return primeCollectionData({ collections, queryClient, dispatch })
+  return primeCollectionData({ collections, queryClient })
 }

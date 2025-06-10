@@ -100,8 +100,8 @@ export const useFeed = (
       )
 
       // Prime caches
-      primeTrackData({ tracks, queryClient, dispatch })
-      primeCollectionData({ collections, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
+      primeCollectionData({ collections, queryClient })
 
       // Pass the data to lineup sagas
       dispatch(

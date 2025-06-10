@@ -85,15 +85,13 @@ export const useProfileReposts = (
         tracks: reposts.filter(
           (item): item is UserTrackMetadata => 'track_id' in item
         ),
-        queryClient,
-        dispatch
+        queryClient
       })
       primeCollectionData({
         collections: reposts.filter(
           (item): item is UserCollectionMetadata => 'playlist_id' in item
         ),
-        queryClient,
-        dispatch
+        queryClient
       })
 
       // Update lineup when new data arrives
