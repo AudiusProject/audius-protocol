@@ -20,6 +20,8 @@ import { useDebounce } from 'react-use'
 
 import {
   Flex,
+  IconButton,
+  IconCloseAlt,
   IconSearch,
   Paper,
   Text,
@@ -30,6 +32,7 @@ import {
 import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent } from 'app/components/core'
+import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
 import { UserList } from 'app/components/user-list'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
@@ -95,10 +98,13 @@ export const SearchExploreScreen = () => {
   )
 
   // Data fetching
-  const { data: exploreContent } = useExploreContent()
-  const { data: featuredArtists } = useUsers(exploreContent?.featuredProfiles)
-  const { data: featuredLabels } = useUsers(exploreContent?.featuredLabels)
-
+  const { data: exploreContent, isLoading: isExploreContentLoading } =
+    useExploreContent()
+  const { data: featuredArtists, isLoading: isFeaturedArtistsLoading } =
+    useUsers(exploreContent?.featuredProfiles)
+  const { data: featuredLabels, isLoading: isFeaturedLabelsLoading } = useUsers(
+    exploreContent?.featuredLabels
+  )
   // Derived data
   const filteredTiles = useMemo(
     () =>
@@ -110,7 +116,9 @@ export const SearchExploreScreen = () => {
       }),
     [isUSDCPurchasesEnabled]
   )
-
+  const hasAnyFilter = Object.values(filters).some(
+    (value) => value !== undefined
+  )
   const history = useSelector(getSearchHistory)
   const categoryKind: Kind | null = category
     ? itemKindByCategory[category]
@@ -131,6 +139,9 @@ export const SearchExploreScreen = () => {
   const handleMoodPress = useCallback((moodLabel: Mood) => {
     setCategory('tracks')
     setFilters({ mood: moodLabel })
+  }, [])
+  const handleClearSearch = useCallback(() => {
+    setSearchInput('')
   }, [])
 
   const moodEntries = useMemo(
@@ -158,8 +169,15 @@ export const SearchExploreScreen = () => {
           <Flex>
             <ImageBackground source={imageSearchHeaderBackground}>
               <Flex pt='unit14' ph='l' pb='l' gap='l'>
-                <Flex direction='row' gap='m'>
-                  <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                <Flex
+                  direction='row'
+                  gap='m'
+                  h={spacing.unit11}
+                  alignItems='center'
+                >
+                  <Flex w={spacing.unit10}>
+                    <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                  </Flex>
                   <Text variant='heading' color='staticWhite'>
                     {messages.explore}
                   </Text>
@@ -170,11 +188,21 @@ export const SearchExploreScreen = () => {
                 <Flex>
                   <TextInput
                     label='Search'
+                    autoFocus={autoFocus}
                     placeholder={messages.searchPlaceholder}
                     size={TextInputSize.SMALL}
                     startIcon={IconSearch}
                     onChangeText={setSearchInput}
                     value={searchInput}
+                    endIcon={(props) => (
+                      <IconButton
+                        icon={IconCloseAlt}
+                        color='subdued'
+                        onPress={handleClearSearch}
+                        hitSlop={10}
+                        {...props}
+                      />
+                    )}
                   />
                 </Flex>
               </Flex>
@@ -185,29 +213,41 @@ export const SearchExploreScreen = () => {
           <ScrollView>
             {category !== 'all' || searchInput ? (
               <>
-                {searchInput || filteredSearchItems.length === 0 ? (
+                {searchInput || hasAnyFilter ? (
                   <SearchResults />
-                ) : (
+                ) : filteredSearchItems.length > 0 ? (
                   <RecentSearches
                     ListHeaderComponent={<SearchCatalogTile />}
                     searchItems={filteredSearchItems}
                   />
+                ) : (
+                  <SearchCatalogTile />
                 )}
               </>
             ) : (
-              <Flex direction='column' ph='l' pt='xl' pb='3xl' gap='2xl'>
-                <Flex gap='l'>
+              <Flex direction='column' ph='l' pt='xl' pb='3xl'>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.featuredPlaylists}
                   </Text>
                   <CollectionList
                     horizontal
-                    collectionIds={exploreContent?.featuredPlaylists || []}
+                    collectionIds={exploreContent?.featuredPlaylists ?? []}
                     carouselSpacing={spacing.l}
+                    isLoading={isExploreContentLoading}
                   />
                 </Flex>
-
-                <Flex gap='l'>
+                <Flex mb='l'>
+                  <Text variant='title' size='l'>
+                    {messages.featuredRemixContests}
+                  </Text>
+                  <RemixCarousel
+                    trackIds={exploreContent?.featuredRemixContests}
+                    carouselSpacing={spacing.l}
+                    isLoading={isExploreContentLoading}
+                  />
+                </Flex>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.artistSpotlight}
                   </Text>
@@ -215,10 +255,12 @@ export const SearchExploreScreen = () => {
                     horizontal
                     profiles={featuredArtists}
                     carouselSpacing={spacing.l}
+                    isLoading={
+                      isExploreContentLoading || isFeaturedArtistsLoading
+                    }
                   />
                 </Flex>
-
-                <Flex gap='l'>
+                <Flex mb='l'>
                   <Text variant='title' size='l'>
                     {messages.labelSpotlight}
                   </Text>
@@ -226,6 +268,9 @@ export const SearchExploreScreen = () => {
                     horizontal
                     profiles={featuredLabels}
                     carouselSpacing={spacing.l}
+                    isLoading={
+                      isExploreContentLoading || isFeaturedLabelsLoading
+                    }
                   />
                 </Flex>
 

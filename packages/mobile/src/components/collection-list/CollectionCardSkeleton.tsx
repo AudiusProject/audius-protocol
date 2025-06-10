@@ -7,7 +7,7 @@ export const CollectionCardSkeleton = () => {
     <Paper border='default'>
       <Flex p='s' gap='s' alignItems='center'>
         <Skeleton style={{ width: '100%', aspectRatio: 1 }} />
-        <Skeleton height={20} width={150} style={{ marginBottom: 6 }} />
+        <Skeleton height={20} width='90%' style={{ marginBottom: 6 }} />
         <Skeleton height={18} width={100} style={{ marginBottom: 4 }} />
       </Flex>
       <Divider orientation='horizontal' />
