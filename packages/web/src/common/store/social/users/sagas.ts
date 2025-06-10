@@ -77,7 +77,7 @@ export function* followUser(
         : {
             ...prevUser,
             does_current_user_follow: true,
-            follower_count: followedUser.follower_count + 1
+            follower_count: prevUser.follower_count + 1
           }
     )
   }
@@ -158,7 +158,7 @@ export function* confirmFollowUser(
               : {
                   ...prevUser,
                   does_current_user_follow: false,
-                  follower_count: followedUser.follower_count - 1
+                  follower_count: prevUser.follower_count - 1
                 }
           )
         }
@@ -300,7 +300,6 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
           )
         )
         const users = yield* call(queryUsers, [userId, accountId])
-        const unfollowedUser = users[userId].metadata
         const currentUser = users[accountId].metadata
 
         // Revert decremented follower count on unfollowed user
@@ -310,7 +309,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
             : {
                 ...prevUser,
                 does_current_user_follow: true,
-                follower_count: unfollowedUser.follower_count + 1
+                follower_count: prevUser.follower_count + 1
               }
         )
 
