@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useTrackByPermalink } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { Name, ShareSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -81,14 +81,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const UploadCompleteScreen = () => {
   const styles = useStyles()
-  const track = useSelector(
-    (state: CommonState) => getTracks(state)?.[0]?.metadata
+  const trackId = useSelector(
+    (state: CommonState) => getTracks(state)?.[0]?.metadata.track_id
   )
-  const { permalink } = track!
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const accountUser = useSelector(getAccountUser)
-  const { data: uploadedTrack } = useTrackByPermalink(permalink)
+  const { data: track } = useTrack(trackId)
   const trackRoute = getTrackRoute(track!, true)
 
   const handleClose = useCallback(() => {
@@ -98,8 +97,8 @@ export const UploadCompleteScreen = () => {
 
   const handlePressTrack = useCallback(() => {
     handleClose()
-    navigation.push('Track', { trackId: uploadedTrack?.track_id })
-  }, [handleClose, navigation, uploadedTrack])
+    navigation.push('Track', { trackId })
+  }, [handleClose, navigation, trackId])
 
   const handleDone = useCallback(() => {
     handleClose()
@@ -107,16 +106,16 @@ export const UploadCompleteScreen = () => {
   }, [handleClose, navigation])
 
   const handleShare = useCallback(() => {
-    if (!track?.track_id) return
+    if (!trackId) return
     dispatch(
       requestOpenShareModal({
         type: 'track',
-        trackId: track.track_id,
+        trackId,
         source: ShareSource.UPLOAD
       })
     )
     handleClose()
-  }, [dispatch, handleClose, track?.track_id])
+  }, [dispatch, handleClose, trackId])
 
   const handleShareToDirectMessage = useCallback(async () => {
     dispatch(
@@ -181,13 +180,13 @@ export const UploadCompleteScreen = () => {
             </>
           ) : null}
         </Tile>
-        {accountUser && uploadedTrack ? (
+        {accountUser && track ? (
           <TrackTileComponent
-            id={uploadedTrack.track_id}
+            id={track.track_id}
             uid={''}
             index={0}
             togglePlay={() => {}}
-            track={uploadedTrack}
+            track={track}
             user={accountUser}
             TileProps={{
               pointerEvents: 'box-only',
