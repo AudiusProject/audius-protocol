@@ -1,17 +1,19 @@
 import logging  # pylint: disable=C0302
 from typing import Optional, TypedDict, cast
 
-from sqlalchemy import Integer, desc
+from sqlalchemy import Integer, and_, desc, distinct
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.functions import GenericFunction
+from sqlalchemy.sql.functions import GenericFunction, func
 from sqlalchemy.sql.type_api import TypeEngine
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.playlists.playlist_trending_score import PlaylistTrendingScore
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
+from src.models.tracks.track import Track
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.queries.query_helpers import (
@@ -57,6 +59,33 @@ def make_get_unpopulated_playlists(session, time_range, limit, offset, strategy)
 
     trending_playlist_ids_subquery = trending_scores_query.subquery()
 
+    # Subquery to get track owner counts for each playlist
+    track_owner_counts = (
+        session.query(
+            Playlist.playlist_id,
+            func.count(distinct(Track.owner_id)).label("distinct_owner_count"),
+        )
+        .join(PlaylistTrack, Playlist.playlist_id == PlaylistTrack.playlist_id)
+        .join(Track, PlaylistTrack.track_id == Track.track_id)
+        .filter(
+            Playlist.is_current == True,
+            Playlist.is_delete == False,
+            Playlist.is_private == False,
+            Playlist.is_album == False,
+            PlaylistTrack.is_removed == False,
+            Track.is_current == True,
+            Track.is_delete == False,
+        )
+        .group_by(Playlist.playlist_id)
+        .having(
+            and_(
+                func.count(distinct(Track.owner_id)) >= 5,
+                func.count(Track.track_id) >= 5,
+            )
+        )
+        .subquery()
+    )
+
     trending_playlist_ids = (
         session.query(
             trending_playlist_ids_subquery.c.playlist_id,
@@ -66,6 +95,9 @@ def make_get_unpopulated_playlists(session, time_range, limit, offset, strategy)
         .join(
             trending_playlist_ids_subquery,
             Playlist.playlist_id == trending_playlist_ids_subquery.c.playlist_id,
+        )
+        .join(
+            track_owner_counts, Playlist.playlist_id == track_owner_counts.c.playlist_id
         )
         .filter(
             Playlist.is_current == True,
@@ -93,27 +125,7 @@ def make_get_unpopulated_playlists(session, time_range, limit, offset, strategy)
 
     playlists = [p for p in playlists if p["tracks"]]
 
-    results = []
-    for playlist in playlists:
-        playlist_owner_id = playlist["playlist_owner_id"]
-        unique_track_owner_ids = set()
-        valid_track_count = 0
-
-        for track in playlist["tracks"]:
-            is_delete = track["is_delete"]
-            if not is_delete:
-                valid_track_count += 1
-
-            owner_id = track["owner_id"]
-            if playlist_owner_id != owner_id:
-                unique_track_owner_ids.add(owner_id)
-
-        if len(unique_track_owner_ids) < 3 or valid_track_count < 3:
-            continue
-
-        results.append(playlist)
-
-    return (results, list(map(lambda playlist: playlist["playlist_id"], results)))
+    return (playlists, list(map(lambda playlist: playlist["playlist_id"], playlists)))
 
 
 class GetTrendingPlaylistsArgs(TypedDict, total=False):
