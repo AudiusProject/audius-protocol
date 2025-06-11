@@ -64,6 +64,7 @@ const App = () => {
     forceRefreshConnectivity()
   })
 
+  // adding a comment to retrigger a build
   useAndroidAppLifecycleManager()
 
   return (
