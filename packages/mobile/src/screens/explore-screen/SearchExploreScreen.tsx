@@ -83,7 +83,9 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
 
 const { getSearchHistory } = searchSelectors
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
-const HEADER_SLIDE_HEIGHT = 62
+const AnimatedText = Animated.createAnimatedComponent(Text)
+
+const HEADER_SLIDE_HEIGHT = 46
 
 export const SearchExploreScreen = () => {
   const { spacing, color } = useTheme()
@@ -167,8 +169,8 @@ export const SearchExploreScreen = () => {
   )
 
   // Define the scroll threshold for when to hide/show filters
-  const SCROLL_THRESHOLD = 300
-  const FILTER_HEIGHT = spacing['4xl'] // Adjust this value based on your filter height
+  const FILTER_SCROLL_THRESHOLD = 300
+  const HEADER_COLLAPSE_THRESHOLD = 20
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -178,39 +180,18 @@ export const SearchExploreScreen = () => {
     }
   })
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, 20], [1, 0], Extrapolation.CLAMP),
-    display: scrollY.value > 20 ? 'none' : 'flex'
-  }))
-
-  const filtersAnimatedStyle = useAnimatedStyle(() => ({
-    // display: scrollY.value > 300 ? 'none' : 'flex',
-    transform: [
-      {
-        translateY:
-          interpolate(
-            scrollY.value,
-            [0, 20], // adjust as needed
-            [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
-            Extrapolation.CLAMP
-          ) +
-          interpolate(
-            scrollY.value,
-            [250, 300], // adjust as needed
-            [0, -64], // slide up by HEADER_SLIDE_HEIGHT
-            Extrapolation.CLAMP
-          )
-      }
-    ],
-    backgroundColor: interpolateColor(
+  const headerTextAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
       scrollY.value,
-      [0, 20], // scroll range
-      [color.background.default, color.neutral.n25]
+      [0, HEADER_COLLAPSE_THRESHOLD],
+      [1, 0],
+      Extrapolation.CLAMP
     ),
-    borderColor: interpolateColor(
+    height: interpolate(
       scrollY.value,
-      [0, 20], // scroll range
-      [color.border.strong, color.neutral.n25]
+      [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
+      [48, 0],
+      Extrapolation.CLAMP
     )
   }))
 
@@ -219,7 +200,7 @@ export const SearchExploreScreen = () => {
       {
         scale: interpolate(
           scrollY.value,
-          [0, 20], // scroll range
+          [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
           [1, 0.83], // scale range
           Extrapolation.CLAMP
         )
@@ -227,8 +208,8 @@ export const SearchExploreScreen = () => {
       {
         translateX: interpolate(
           scrollY.value,
-          [0, 20], // scroll range
-          [0, 30], // slide left by HEADER_SLIDE_HEIGHTpx
+          [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+          [0, 30],
           Extrapolation.CLAMP
         )
       }
@@ -240,7 +221,7 @@ export const SearchExploreScreen = () => {
       {
         translateY: interpolate(
           scrollY.value,
-          [0, 20], // adjust as needed
+          [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
           [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
           Extrapolation.CLAMP
         )
@@ -252,49 +233,74 @@ export const SearchExploreScreen = () => {
       {
         translateY: interpolate(
           scrollY.value,
-          [0, 20], // adjust as needed
+          [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
           [0, HEADER_SLIDE_HEIGHT], // slide up by 30px
           Extrapolation.CLAMP
         )
       }
-      // {
-      //   scale: interpolate(
-      //     scrollY.value,
-      //     [0, 20], // scroll range
-      //     [1, 0.9], // scale range
-      //     Extrapolation.CLAMP
-      //   )
-      // }
     ]
   }))
 
   const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
     paddingVertical: interpolate(
       scrollY.value,
-      [0, 20], // scroll range
+      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
       [spacing.l, spacing.s], // padding range
+      Extrapolation.CLAMP
+    ),
+    gap: interpolate(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+      [spacing.l, 0], // padding range
       Extrapolation.CLAMP
     )
   }))
 
-  const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
+  const filtersAnimatedStyle = useAnimatedStyle(() => ({
+    // display: scrollY.value > 300 ? 'none' : 'flex',
     transform: [
       {
         translateY:
           interpolate(
             scrollY.value,
-            [0, 20], // adjust as needed
+            [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
             [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
             Extrapolation.CLAMP
           ) +
           interpolate(
             scrollY.value,
-            [250, 300], // adjust as needed
-            [0, -64], // slide up by HEADER_SLIDE_HEIGHT
+            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD], // adjust as needed
+            [0, -spacing['4xl']], // slide up by HEADER_SLIDE_HEIGHT
             Extrapolation.CLAMP
           )
       }
-    ]
+    ],
+    backgroundColor: interpolateColor(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+      [color.background.default, color.neutral.n25]
+    ),
+    borderColor: interpolateColor(
+      scrollY.value,
+      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+      [color.border.strong, color.neutral.n25]
+    )
+  }))
+
+  const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
+    marginTop:
+      interpolate(
+        scrollY.value,
+        [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
+        [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+        Extrapolation.CLAMP
+      ) +
+      interpolate(
+        scrollY.value,
+        [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD], // adjust as needed
+        [0, -spacing['4xl']], // slide up by HEADER_SLIDE_HEIGHT
+        Extrapolation.CLAMP
+      )
   }))
 
   return (
@@ -317,12 +323,7 @@ export const SearchExploreScreen = () => {
         <ScreenContent>
           <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
             <ImageBackground source={imageSearchHeaderBackground}>
-              <AnimatedFlex
-                pt='unit14'
-                ph='l'
-                gap='l'
-                style={headerPaddingShrinkStyle}
-              >
+              <AnimatedFlex pt='unit14' ph='l' style={headerPaddingShrinkStyle}>
                 <Flex
                   direction='row'
                   gap='m'
@@ -337,22 +338,23 @@ export const SearchExploreScreen = () => {
                     </Flex>
                   </Animated.View>
                   <Animated.View
-                    style={[animatedStyle, { justifyContent: 'center' }]}
+                    style={[
+                      headerTextAnimatedStyle,
+                      { justifyContent: 'center' }
+                    ]}
                   >
                     <Text variant='heading' color='staticWhite'>
                       {messages.explore}
                     </Text>
                   </Animated.View>
                 </Flex>
-                <Animated.View style={animatedStyle}>
-                  <Text
-                    variant='title'
-                    color='staticWhite'
-                    style={animatedStyle}
-                  >
-                    {messages.description}
-                  </Text>
-                </Animated.View>
+                <AnimatedText
+                  variant='title'
+                  color='staticWhite'
+                  style={[headerTextAnimatedStyle]}
+                >
+                  {messages.description}
+                </AnimatedText>
                 <Animated.View style={inputAnimatedStyle}>
                   <TextInput
                     label='Search'
@@ -376,9 +378,9 @@ export const SearchExploreScreen = () => {
               </AnimatedFlex>
             </ImageBackground>
           </AnimatedFlex>
-          <Animated.View style={[filtersAnimatedStyle, { zIndex: 1 }]}>
+          <AnimatedFlex style={[filtersAnimatedStyle, { zIndex: 1 }]}>
             <SearchCategoriesAndFilters />
-          </Animated.View>
+          </AnimatedFlex>
 
           <Animated.ScrollView
             onScroll={scrollHandler}
