@@ -90,9 +90,13 @@ export const useRemixes = (
       if (
         lastPage?.tracks?.length < pageSize ||
         (isSecondPage && includeOriginal && lastPage?.tracks?.length - 1 === 0)
-      )
+      ) {
         return undefined
-      return allPages.reduce((acc, page) => acc + page.tracks.length, 0)
+      }
+      return (
+        allPages.reduce((acc, page) => acc + page.tracks.length, 0) -
+        (includeOriginal ? 1 : 0)
+      )
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
