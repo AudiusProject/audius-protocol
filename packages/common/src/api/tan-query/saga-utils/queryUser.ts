@@ -35,13 +35,12 @@ export function* queryUser(id: ID | null | undefined) {
 export function* queryUserByHandle(handle: string | null | undefined) {
   if (!handle) return undefined
   const queryClient = yield* getContext('queryClient')
-  const dispatch = yield* getContext('dispatch')
   const currentUserId = yield* call(queryCurrentUserId)
   const sdk = yield* getSDK()
   const userId = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserByHandleQueryKey(handle),
     queryFn: async () =>
-      getUserByHandleQueryFn(handle, sdk, queryClient, dispatch, currentUserId),
+      getUserByHandleQueryFn(handle, sdk, queryClient, currentUserId),
     ...entityCacheOptions
   })) as ID | undefined
   if (!userId) return undefined

@@ -2,25 +2,23 @@ import {
   queryAccountUser,
   queryUsers,
   selectIsGuestAccount,
-  queryUser
+  queryUser,
+  getUserQueryKey
 } from '@audius/common/api'
 import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
-  cacheActions,
   profilePageActions,
   usersSocialActions as socialActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
-  cacheUsersSelectors
+  confirmTransaction
 } from '@audius/common/store'
 import { makeKindId, route } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
 import { Action } from '@reduxjs/toolkit'
-import { call, select, takeEvery, put } from 'typed-redux-saga'
+import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -28,7 +26,6 @@ import errorSagas from './errorSagas'
 
 const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
-const { getUsers } = cacheUsersSelectors
 
 /* FOLLOW */
 
@@ -40,6 +37,7 @@ export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
   yield* call(waitForWrite)
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: accountId } = accountUser ?? {}
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
@@ -73,24 +71,25 @@ export function* followUser(
 
   if (followedUser) {
     // Increment the followed user's follower count
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: action.userId,
-          metadata: {
+    queryClient.setQueryData(getUserQueryKey(action.userId), (prevUser) =>
+      !prevUser
+        ? undefined
+        : {
+            ...prevUser,
             does_current_user_follow: true,
-            follower_count: followedUser.follower_count + 1
+            follower_count: prevUser.follower_count + 1
           }
-        }
-      ])
     )
   }
   // Increment the signed in user's followee count
-  yield* call(adjustUserField, {
-    user: currentUser,
-    fieldName: 'followee_count',
-    delta: 1
-  })
+  queryClient.setQueryData(getUserQueryKey(currentUser.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          followee_count: prevUser.followee_count + 1
+        }
+  )
 
   const event = make(Name.FOLLOW, { id: action.userId, source: action.source })
   yield* put(event)
@@ -116,6 +115,8 @@ export function* confirmFollowUser(
   onSuccessActions?: Action[]
 ) {
   const audiusSdk = yield* getContext('audiusSdk')
+  const queryClient = yield* getContext('queryClient')
+
   const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
@@ -151,26 +152,29 @@ export function* confirmFollowUser(
         const currentUser = yield* queryUser(accountId)
         if (followedUser) {
           // Revert the incremented follower count on the followed user
-          yield* put(
-            cacheActions.update(Kind.USERS, [
-              {
-                id: userId,
-                metadata: {
+          queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+            !prevUser
+              ? undefined
+              : {
+                  ...prevUser,
                   does_current_user_follow: false,
-                  follower_count: followedUser.follower_count - 1
+                  follower_count: prevUser.follower_count - 1
                 }
-              }
-            ])
           )
         }
 
         if (currentUser) {
           // Revert the incremented followee count on the current user
-          yield* call(adjustUserField, {
-            user: currentUser,
-            fieldName: 'followee_count',
-            delta: -1
-          })
+          queryClient.setQueryData(
+            getUserQueryKey(currentUser.user_id),
+            (prevUser) =>
+              !prevUser
+                ? undefined
+                : {
+                    ...prevUser,
+                    followee_count: prevUser.followee_count - 1
+                  }
+          )
         }
       }
     )
@@ -204,6 +208,7 @@ export function* unfollowUser(
 ) {
   /* Make Async Backend Call */
   yield* call(waitForWrite)
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: accountId } = accountUser ?? {}
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
@@ -217,29 +222,29 @@ export function* unfollowUser(
     return
   }
 
-  const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  const unfollowedUser = users[action.userId].metadata
+  const users = yield* call(queryUsers, [action.userId, accountId])
   const currentUser = users[accountId].metadata
 
   // Decrement the follower count on the unfollowed user
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: action.userId,
-        metadata: {
+  queryClient.setQueryData(getUserQueryKey(action.userId), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
           does_current_user_follow: false,
-          follower_count: unfollowedUser.follower_count - 1
+          follower_count: prevUser.follower_count - 1
         }
-      }
-    ])
   )
 
   // Decrement the followee count on the current user
-  yield* call(adjustUserField, {
-    user: currentUser,
-    fieldName: 'followee_count',
-    delta: -1
-  })
+  queryClient.setQueryData(getUserQueryKey(currentUser.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          followee_count: prevUser.followee_count - 1
+        }
+  )
 
   const event = make(Name.UNFOLLOW, {
     id: action.userId,
@@ -259,6 +264,7 @@ export function* unfollowUser(
 
 export function* confirmUnfollowUser(userId: ID, accountId: ID) {
   const audiusSdk = yield* getContext('audiusSdk')
+  const queryClient = yield* getContext('queryClient')
   const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
@@ -293,29 +299,31 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
-        const users = yield* select(getUsers, { ids: [userId, accountId] })
-        const unfollowedUser = users[userId].metadata
+        const users = yield* call(queryUsers, [userId, accountId])
         const currentUser = users[accountId].metadata
 
         // Revert decremented follower count on unfollowed user
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
+        queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
                 does_current_user_follow: true,
-                follower_count: unfollowedUser.follower_count + 1
+                follower_count: prevUser.follower_count + 1
               }
-            }
-          ])
         )
 
         // Revert decremented followee count on current user
-        yield* call(adjustUserField, {
-          user: currentUser,
-          fieldName: 'followee_count',
-          delta: 1
-        })
+        queryClient.setQueryData(
+          getUserQueryKey(currentUser.user_id),
+          (prevUser) =>
+            !prevUser
+              ? undefined
+              : {
+                  ...prevUser,
+                  followee_count: prevUser.followee_count + 1
+                }
+        )
       }
     )
   )
@@ -325,22 +333,20 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
 
 export function* subscribeToUserAsync(userId: ID) {
   yield* call(waitForWrite)
-
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: accountId } = accountUser ?? {}
   if (!accountId) {
     return
   }
 
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: {
+  queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
           does_current_user_subscribe: true
         }
-      }
-    ])
   )
 
   yield* call(confirmSubscribeToUser, userId, accountId)
@@ -348,6 +354,7 @@ export function* subscribeToUserAsync(userId: ID) {
 
 export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
   const audiusSdk = yield* getContext('audiusSdk')
+  const queryClient = yield* getContext('queryClient')
   const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
@@ -380,15 +387,13 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
+        queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
                 does_current_user_subscribe: false
               }
-            }
-          ])
         )
       }
     )
@@ -397,28 +402,27 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
 
 export function* unsubscribeFromUserAsync(userId: ID) {
   yield* call(waitForWrite)
-
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: accountId } = accountUser ?? {}
   if (!accountId) {
     return
   }
 
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: {
+  queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
           does_current_user_subscribe: false
         }
-      }
-    ])
   )
   yield* call(confirmUnsubscribeFromUser, userId, accountId)
 }
 
 export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
   const audiusSdk = yield* getContext('audiusSdk')
+  const queryClient = yield* getContext('queryClient')
   const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
@@ -451,15 +455,13 @@ export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
+        queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
                 does_current_user_subscribe: true
               }
-            }
-          ])
         )
       }
     )

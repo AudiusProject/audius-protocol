@@ -1,9 +1,8 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { FollowSource, User } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   chatActions,
   chatSelectors,
   makeChatId,
@@ -29,10 +28,11 @@ import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useSelector } from 'utils/reducer'
 
 const { unblockUser, createChat } = chatActions
 const { followUser } = usersSocialActions
+const { beginTip } = tippingActions
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   title: 'Inbox Unavailable',
@@ -114,20 +114,13 @@ const actionToContent = ({
   }
 }
 
-const { beginTip } = tippingActions
-const { getCanCreateChat } = chatSelectors
-
 export const InboxUnavailableModal = () => {
   const { isOpen, onClose, onClosed, data } = useInboxUnavailableModal()
   const { userId, presetMessage, onSuccessAction, onCancelAction } = data
-  const user = useSelector((state) =>
-    cacheUsersSelectors.getUser(state, { id: userId })
-  )
+  const { data: user } = useUser(userId)
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
-  const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId, currentUserId })
-  )
+  const { callToAction } = useCanCreateChat(userId)
   const hasAction =
     callToAction === ChatPermissionAction.TIP ||
     callToAction === ChatPermissionAction.FOLLOW ||

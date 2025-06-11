@@ -49,7 +49,7 @@ type UserResultComposeProps = {
 }
 
 const { blockUser, unblockUser } = chatActions
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 
 const renderTrigger = (
   anchorRef: React.MutableRefObject<any>,
@@ -105,9 +105,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   const blockeeList = useSelector(chatSelectors.getBlockees)
   const isBlockee = blockeeList.includes(user.user_id)
 
-  const { canCreateChat, callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user.user_id, currentUserId })
-  )
+  const { canCreateChat, callToAction } = useCanCreateChat(user.user_id)
 
   const handleComposeClicked = useComposeChat({
     user,

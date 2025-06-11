@@ -1,7 +1,6 @@
 import {
   buyUSDCSagas,
   castSagas,
-  cacheSagas,
   chatSagas,
   reachabilitySagas,
   remoteConfigSagas,
@@ -25,9 +24,7 @@ import { sagaWithErrorHandler } from '@audius/common/utils'
 import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
-import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
-import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
 import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
@@ -86,11 +83,8 @@ export default function* rootSaga() {
     ...playlistLibrarySagas(),
 
     // Cache
-    ...cacheSagas(),
-    ...coreCacheSagas(),
     ...collectionsSagas(),
     ...tracksSagas(),
-    ...usersSagas(),
     ...savedCollectionsSagas(),
 
     // Playback

@@ -5,7 +5,8 @@ import {
   queryUser,
   queryUserByHandle,
   updateCollectionData,
-  selectIsGuestAccount
+  selectIsGuestAccount,
+  getUserQueryKey
 } from '@audius/common/api'
 import {
   Name,
@@ -38,7 +39,6 @@ import { Id } from '@audius/sdk'
 import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   addPlaylistsNotInLibrary,
@@ -64,6 +64,7 @@ export function* repostCollectionAsync(
   action: ReturnType<typeof socialActions.repostCollection>
 ) {
   yield* call(waitForWrite)
+  const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
   const { user_id: userId } = accountUser ?? {}
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
@@ -87,7 +88,14 @@ export function* repostCollectionAsync(
     return
   }
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          repost_count: prevUser.repost_count + 1
+        }
+  )
 
   const event = make(Name.REPOST, {
     kind: collection.is_album ? 'album' : 'playlist',
@@ -133,6 +141,7 @@ export function* confirmRepostCollection(
   metadata: { is_repost_of_repost: boolean }
 ) {
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
@@ -156,11 +165,14 @@ export function* confirmRepostCollection(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the incremented repost count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'repost_count',
-          delta: -1
-        })
+        queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                repost_count: prevUser.repost_count - 1
+              }
+        )
         yield* put(
           socialActions.repostCollectionFailed(
             collectionId,
@@ -185,6 +197,7 @@ export function* undoRepostCollectionAsync(
   yield* call(waitForWrite)
   const accountUser = yield* queryAccountUser()
   const { user_id: userId } = accountUser ?? {}
+  const queryClient = yield* getContext('queryClient')
   const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
@@ -197,7 +210,14 @@ export function* undoRepostCollectionAsync(
   const user = yield* queryUser(userId)
   if (!user) return
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          repost_count: prevUser.repost_count - 1
+        }
+  )
 
   const collection = yield* queryCollection(action.collectionId)
   if (!collection) return
@@ -239,6 +259,7 @@ export function* confirmUndoRepostCollection(
   user: User
 ) {
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
@@ -259,11 +280,14 @@ export function* confirmUndoRepostCollection(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the decrement
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'repost_count',
-          delta: 1
-        })
+        queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                repost_count: prevUser.repost_count + 1
+              }
+        )
         yield* put(
           socialActions.repostCollectionFailed(
             collectionId,

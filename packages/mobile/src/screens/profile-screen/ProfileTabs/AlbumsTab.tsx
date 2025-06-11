@@ -1,18 +1,27 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId, useUserAlbums } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useUserAlbums,
+  useProfileUser
+} from '@audius/common/api'
 import { useIsFocused } from '@react-navigation/native'
 
 import { CollectionList } from 'app/components/collection-list/CollectionList'
 import { spacing } from 'app/styles/spacing'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
-import { useSelectProfile } from '../selectors'
 
 const emptyAlbums = []
 
 export const AlbumsTab = () => {
-  const { album_count, user_id } = useSelectProfile(['album_count', 'user_id'])
+  const { album_count = 0, user_id } =
+    useProfileUser({
+      select: (user) => ({
+        album_count: user.album_count,
+        user_id: user.user_id
+      })
+    }).user ?? {}
   const { data: accountUserId } = useCurrentUserId()
   const isOwner = accountUserId === user_id
   const isFocused = useIsFocused()

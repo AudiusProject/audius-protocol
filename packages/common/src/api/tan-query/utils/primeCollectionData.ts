@@ -1,11 +1,9 @@
 import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
-import { AnyAction, Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
 import { Kind } from '~/models'
 import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
-import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { getCollectionQueryKey } from '../collection/useCollection'
@@ -13,28 +11,25 @@ import { getCollectionByPermalinkQueryKey } from '../collection/useCollectionByP
 import { TQCollection } from '../models'
 
 import { primeTrackDataInternal } from './primeTrackData'
-import { primeUserDataInternal } from './primeUserData'
+import { primeUserData } from './primeUserData'
 
 export const primeCollectionData = ({
   collections,
   queryClient,
-  dispatch,
   forceReplace = false,
   skipQueryData = false
 }: {
   collections: (UserCollectionMetadata | CollectionMetadata)[]
   queryClient: QueryClient
-  dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
-  const entries = primeCollectionDataInternal({
+  primeCollectionDataInternal({
     collections,
     queryClient,
     forceReplace,
     skipQueryData
   })
-  dispatch(addEntries(entries, false, undefined, 'react-query'))
   return collections
 }
 
@@ -87,17 +82,11 @@ export const primeCollectionDataInternal = ({
 
     // Prime user data from collection owner
     if ('user' in collection) {
-      const userEntries = primeUserDataInternal({
+      primeUserData({
         users: [collection.user],
         queryClient,
         forceReplace
       })
-
-      // Merge user entries
-      entries[Kind.USERS] = {
-        ...entries[Kind.USERS],
-        ...userEntries[Kind.USERS]
-      }
     }
 
     // Prime track and user data from tracks in collection
@@ -124,7 +113,6 @@ export function* primeCollectionDataSaga(
   collections: (UserCollectionMetadata | CollectionMetadata)[]
 ) {
   const queryClient = (yield* getContext('queryClient')) as QueryClient
-  const dispatch = (yield* getContext('dispatch')) as Dispatch<AnyAction>
 
-  return primeCollectionData({ collections, queryClient, dispatch })
+  return primeCollectionData({ collections, queryClient })
 }

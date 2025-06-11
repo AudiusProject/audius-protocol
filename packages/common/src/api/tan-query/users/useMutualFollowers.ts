@@ -4,7 +4,6 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -38,7 +37,6 @@ export const useMutualFollowers = (
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   return useInfiniteQuery({
     queryKey: getMutualFollowersQueryKey({ userId, pageSize }),
@@ -56,7 +54,7 @@ export const useMutualFollowers = (
         offset: pageParam
       })
       const users = userMetadataListFromSDK(data)
-      primeUserData({ users, queryClient, dispatch })
+      primeUserData({ users, queryClient })
       return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),

@@ -164,7 +164,6 @@ export const useUpdateCollection = () => {
         primeCollectionData({
           collections: [{ ...previousCollection, ...metadata }],
           queryClient,
-          dispatch,
           forceReplace: true
         })
 

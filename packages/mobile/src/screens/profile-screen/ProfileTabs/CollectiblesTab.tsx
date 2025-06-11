@@ -1,6 +1,10 @@
 import { useCallback, useMemo, useRef } from 'react'
 
-import { useCurrentUserId, useUserCollectibles } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useUserCollectibles,
+  useProfileUser
+} from '@audius/common/api'
 import type { Collectible } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
@@ -16,7 +20,6 @@ import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 
 import { CollectiblesCard } from '../CollectiblesCard'
-import { useSelectProfile } from '../selectors'
 
 const messages = {
   title: 'Collectibles',
@@ -73,13 +76,15 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 export const CollectiblesTab = () => {
   const styles = useStyles()
   const { user_id, handle, name, collectibleList, solanaCollectibleList } =
-    useSelectProfile([
-      'user_id',
-      'handle',
-      'name',
-      'collectibleList',
-      'solanaCollectibleList'
-    ])
+    useProfileUser({
+      select: (user) => ({
+        user_id: user.user_id,
+        handle: user.handle,
+        name: user.name,
+        collectibleList: user.collectibleList,
+        solanaCollectibleList: user.solanaCollectibleList
+      })
+    }).user ?? {}
   const { data: accountId } = useCurrentUserId()
   const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
     useUserCollectibles({

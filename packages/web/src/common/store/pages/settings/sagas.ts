@@ -1,7 +1,9 @@
-import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
-import { Kind } from '@audius/common/models'
 import {
-  cacheActions,
+  getUserQueryKey,
+  queryAccountUser,
+  queryCurrentUserId
+} from '@audius/common/api'
+import {
   settingsPageActions as actions,
   getContext,
   getSDK
@@ -9,6 +11,7 @@ import {
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
+import { queryClient } from 'services/query-client'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
@@ -77,14 +80,10 @@ function* watchSetAiAttribution() {
         sdk
       })
 
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: accountUser.user_id,
-            metadata: { allow_ai_attribution: allowAiAttribution }
-          }
-        ])
-      )
+      queryClient.setQueryData(getUserQueryKey(accountUser.user_id), {
+        ...accountUser,
+        allow_ai_attribution: allowAiAttribution
+      })
     }
   )
 }

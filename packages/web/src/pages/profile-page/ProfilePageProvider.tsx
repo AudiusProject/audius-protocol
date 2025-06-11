@@ -1,9 +1,9 @@
-import { ComponentType, PureComponent, RefObject } from 'react'
+import { ComponentProps, ComponentType, PureComponent, RefObject } from 'react'
 
 import {
   selectAccountHasTracks,
   useCurrentAccountUser,
-  useCurrentUserId
+  useProfileUser
 } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
@@ -14,9 +14,11 @@ import {
   Status,
   ID,
   UID,
-  Track
+  Track,
+  User
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
+import { getIsSubscribed } from '@audius/common/src/store/pages/profile/selectors'
 import {
   accountActions,
   cacheCollectionsActions,
@@ -77,10 +79,9 @@ const { open } = mobileOverflowMenuUIActions
 const { fetchHasTracks } = accountActions
 const { createPlaylist } = cacheCollectionsActions
 
-const { makeGetProfile, getProfileFeedLineup, getProfileTracksLineup } =
-  profilePageSelectors
+const { getProfileFeedLineup, getProfileTracksLineup } = profilePageSelectors
 const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
+const { getBlockees, getBlockers, useCanCreateChat } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -100,6 +101,11 @@ type OwnProps = {
   children:
     | ComponentType<MobileProfilePageProps>
     | ComponentType<DesktopProfilePageProps>
+  profile: {
+    status: Status | null | undefined
+    isSubscribed: boolean | null | undefined
+    profile: User | undefined | null
+  }
 }
 
 type ProfilePageProps = OwnProps &
@@ -965,7 +971,6 @@ class ProfilePageClassComponent extends PureComponent<
 }
 
 function makeMapStateToProps() {
-  const getProfile = makeGetProfile()
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState, props: RouteComponentProps) => {
@@ -974,9 +979,7 @@ function makeMapStateToProps() {
     const params = parseUserRoute(pathname)
     const handleLower = params?.handle?.toLowerCase() as string
 
-    const profile = getProfile(state)
     return {
-      profile,
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),
       currentQueueItem: getCurrentQueueItem(state),
@@ -1156,7 +1159,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 type HookStateProps = {
   accountUserId?: ID | undefined
   accountHasTracks?: boolean | undefined
-  chatPermissions?: ReturnType<typeof getCanCreateChat>
+  chatPermissions?: ReturnType<typeof useCanCreateChat>
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
@@ -1166,13 +1169,7 @@ const hookStateToProps = (Component: typeof ProfilePage) => {
         accountHasTracks: selectAccountHasTracks(user)
       })
     })
-    const { data: currentUserId } = useCurrentUserId()
-    const chatPermissions = useSelector((state: AppState) =>
-      getCanCreateChat(state, {
-        userId: props.profile.profile?.user_id,
-        currentUserId
-      })
-    )
+    const chatPermissions = useCanCreateChat(props.profile?.profile?.user_id)
     return (
       <ProfilePage
         {...(accountData as HookStateProps)}
@@ -1183,9 +1180,25 @@ const hookStateToProps = (Component: typeof ProfilePage) => {
   }
 }
 
-export default withRouter(
+const ProfilePageInner = withRouter(
   connect(
     makeMapStateToProps,
     mapDispatchToProps
   )(hookStateToProps(ProfilePage))
 )
+
+const ProfilePageProviderWrapper = (
+  props: Omit<ComponentProps<typeof ProfilePageInner>, 'profile'>
+) => {
+  const profile = useProfileUser()
+  const isSubscribed = useSelector(getIsSubscribed)
+
+  return (
+    <ProfilePageInner
+      {...props}
+      profile={{ profile: profile.user, isSubscribed, status: profile.status }}
+    />
+  )
+}
+
+export default ProfilePageProviderWrapper

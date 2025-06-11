@@ -1,11 +1,10 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import {
   useInboxUnavailableModal,
-  cacheUsersSelectors,
   chatActions,
   chatSelectors,
   makeChatId,
@@ -16,7 +15,7 @@ import {
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import type { Action } from '@reduxjs/toolkit'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconMessageLocked, IconTipping, Button } from '@audius/harmony-native'
 import { Text, useLink } from 'app/components/core'
@@ -29,7 +28,7 @@ import { UserBadges } from '../user-badges'
 const { followUser } = usersSocialActions
 
 const { unblockUser, createChat } = chatActions
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 const { beginTip } = tippingActions
 
 const messages = {
@@ -114,12 +113,8 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
 
   const { data: currentUserId } = useCurrentUserId()
   const { userId, presetMessage } = data
-  const user = useSelector((state) =>
-    cacheUsersSelectors.getUser(state, { id: userId })
-  )
-  const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId, currentUserId })
-  )
+  const { data: user } = useUser(userId)
+  const { callToAction } = useCanCreateChat(userId)
 
   const handleUnblockPress = useCallback(() => {
     if (!userId) {

@@ -1,24 +1,16 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import { useUserByHandle } from '@audius/common/api'
 import { useTwitterButtonStatus } from '@audius/common/hooks'
-import {
-  cacheUsersActions,
-  cacheUsersSelectors,
-  CommonState
-} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   Button,
   ButtonProps,
   IconTwitter as IconTwitterBird
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
-
-const { fetchUserSocials } = cacheUsersActions
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   share: 'Share to Twitter'
@@ -51,16 +43,13 @@ type TwitterShareButtonProps = {
 export const TwitterShareButton = (props: TwitterShareButtonProps) => {
   const { url = null, fullWidth, size, hideText, ...other } = props
   const record = useRecord()
-  const dispatch = useDispatch()
 
-  const user = useSelector((state: CommonState) =>
-    getUser(state, { handle: 'handle' in other ? other.handle : undefined })
+  const { data: user } = useUserByHandle(
+    'handle' in other ? other.handle : undefined
   )
 
-  const additionalUser = useSelector((state: CommonState) =>
-    getUser(state, {
-      handle: 'additionalHandle' in other ? other.additionalHandle : undefined
-    })
+  const { data: additionalUser } = useUserByHandle(
+    'additionalHandle' in other ? other.additionalHandle : undefined
   )
 
   const {
@@ -69,7 +58,6 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
     shareTwitterStatus,
     twitterHandle,
     additionalTwitterHandle,
-    setLoading,
     setIdle
   } = useTwitterButtonStatus(user, additionalUser)
 
@@ -82,15 +70,8 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
           record(other.analytics)
         }
       }
-      if (other.type === 'dynamic') {
-        dispatch(fetchUserSocials(other.handle))
-        if (other.additionalHandle) {
-          dispatch(fetchUserSocials(other.additionalHandle))
-        }
-        setLoading()
-      }
     },
-    [url, other, dispatch, record, setLoading]
+    [url, other, record]
   )
 
   if (

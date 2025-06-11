@@ -22,7 +22,6 @@ export function* queryCurrentAccount() {
     currentUser: null,
     web3User: null
   }
-  const dispatch = yield* getContext('dispatch')
   const currentUserWallet = walletAddresses.currentUser
 
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
@@ -32,8 +31,7 @@ export function* queryCurrentAccount() {
         sdk,
         localStorage,
         currentUserWallet,
-        queryClient,
-        dispatch
+        queryClient
       ),
     staleTime: Infinity,
     gcTime: Infinity

@@ -1,7 +1,6 @@
 import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -25,7 +24,6 @@ export const useMutedUsers = <TResult = UserMetadata[]>(
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   const simpleOptions = pick(options, [
     'enabled',
@@ -42,7 +40,7 @@ export const useMutedUsers = <TResult = UserMetadata[]>(
         id: Id.parse(currentUserId)
       })
       const users = userMetadataListFromSDK(data)
-      primeUserData({ users, queryClient, dispatch })
+      primeUserData({ users, queryClient })
       return users.map((user) => user.user_id)
     },
     ...simpleOptions,

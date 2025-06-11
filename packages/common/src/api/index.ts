@@ -122,6 +122,8 @@ export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserTracksByHandle'
+export * from './tan-query/users/useProfileUser'
+export * from './tan-query/users/useOtherChatUsers'
 
 // Account
 export * from './tan-query/users/account/useResetPassword'
@@ -140,6 +142,7 @@ export * from './tan-query/users/account/useReorderLibrary'
 export * from './tan-query/users/account/useUpdatePlaylistLibrary'
 export * from './tan-query/users/account/useWalletAddresses'
 export * from './tan-query/users/account/useAccountStatus'
+export * from './tan-query/users/account/useSyncLocalStorageUser'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'

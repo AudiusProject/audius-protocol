@@ -1,16 +1,11 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { Fragment, useLayoutEffect, useMemo, useRef } from 'react'
 
-import {
-  cacheUsersActions,
-  useTierAndVerifiedForUser
-} from '@audius/common/store'
+import { useProfileUser } from '@audius/common/api'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Animated } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import { Divider, Flex } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
-
-import { useSelectProfile } from '../selectors'
 
 import { ProfileTierTile } from './ProfileTierTile'
 import {
@@ -19,8 +14,6 @@ import {
   TwitterSocialLink,
   WebsiteSocialLink
 } from './SocialLink'
-
-const { fetchUserSocials } = cacheUsersActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   socials: {
@@ -34,27 +27,17 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const ProfileSocials = () => {
-  const {
-    handle,
-    user_id,
-    twitter_handle,
-    instagram_handle,
-    tiktok_handle,
-    website
-  } = useSelectProfile([
-    'handle',
-    'user_id',
-    'twitter_handle',
-    'instagram_handle',
-    'tiktok_handle',
-    'website'
-  ])
-
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(fetchUserSocials(handle))
-  }, [dispatch, handle])
+  const { user_id, twitter_handle, instagram_handle, tiktok_handle, website } =
+    useProfileUser({
+      select: (user) => ({
+        handle: user.handle,
+        user_id: user.user_id,
+        twitter_handle: user.twitter_handle,
+        instagram_handle: user.instagram_handle,
+        tiktok_handle: user.tiktok_handle,
+        website: user.website
+      })
+    }).user ?? {}
 
   const socialLinks = useMemo(() => {
     const links = [

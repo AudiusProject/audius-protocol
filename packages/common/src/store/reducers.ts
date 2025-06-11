@@ -2,14 +2,9 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import { Kind } from '../models'
-
 import account from './account/slice'
 import averageColorReducer from './average-color/slice'
 import { buyUSDCReducer } from './buy-usdc'
-import { asCache } from './cache/reducer'
-import usersReducer from './cache/users/reducer'
-import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
@@ -134,10 +129,6 @@ export const reducers = (storage: Storage, history?: History) => ({
   // Config
   reachability,
 
-  // Cache
-  // @ts-ignore
-  users: asCache(usersReducer, Kind.USERS),
-
   savedCollections: savedCollectionsReducer,
 
   // Playback
@@ -250,9 +241,6 @@ export type CommonState = {
 
   // TODO: Migrate to common
   // confirmer: ConfirmerState
-
-  // Cache
-  users: UsersCacheState
 
   // TODO: missing types for internally managed api slice state
   api: any

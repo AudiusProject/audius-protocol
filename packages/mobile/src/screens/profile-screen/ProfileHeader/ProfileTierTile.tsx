@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useProfileUser } from '@audius/common/api'
 import { useTierAndVerifiedForUser, modalsActions } from '@audius/common/store'
 import type { ViewStyle, StyleProp } from 'react-native'
 import { View } from 'react-native'
@@ -11,7 +12,6 @@ import { MODAL_NAME } from 'app/components/audio-rewards/TiersExplainerDrawer'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { useSelectProfile } from '../selectors'
 const { setVisibility } = modalsActions
 
 const messages = {
@@ -53,10 +53,13 @@ type ProfileTierTileProps = {
 
 export const ProfileTierTile = (props: ProfileTierTileProps) => {
   const { interactive = true, style } = props
-  const profile = useSelectProfile(['user_id'])
+  const { user_id } =
+    useProfileUser({
+      select: (user) => ({ user_id: user.user_id })
+    }).user ?? {}
   const styles = useStyles()
 
-  const { tier, tierNumber } = useTierAndVerifiedForUser(profile.user_id)
+  const { tier, tierNumber } = useTierAndVerifiedForUser(user_id)
 
   const dispatch = useDispatch()
 

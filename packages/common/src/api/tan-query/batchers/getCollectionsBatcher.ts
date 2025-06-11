@@ -16,7 +16,7 @@ export const getCollectionsBatcher = memoize(
   (context: BatchContext) =>
     create({
       fetcher: async (ids: ID[]): Promise<TQCollection[]> => {
-        const { sdk, currentUserId, queryClient, dispatch } = context
+        const { sdk, currentUserId, queryClient } = context
         if (!ids.length) return []
 
         const { data } = await sdk.full.playlists.getBulkPlaylists({
@@ -32,7 +32,6 @@ export const getCollectionsBatcher = memoize(
         primeCollectionData({
           collections,
           queryClient,
-          dispatch,
           skipQueryData: true
         })
 

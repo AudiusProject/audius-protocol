@@ -1,6 +1,10 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { useCurrentUserId, useUserComments } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useUserComments,
+  useProfileUser
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
@@ -19,7 +23,6 @@ import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
 import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
-import { useSelectProfile } from '../selectors'
 
 import { Bio } from './Bio'
 import { CollapsedSection } from './CollapsedSection'
@@ -45,29 +48,35 @@ export const ProfileHeader = memo(() => {
     tiktok_handle: tikTokHandle,
     supporting_count: supportingCount,
     allow_ai_attribution
-  } = useSelectProfile([
-    'user_id',
-    'does_current_user_follow',
-    'current_user_followee_follow_count',
-    'website',
-    'donation',
-    'twitter_handle',
-    'instagram_handle',
-    'tiktok_handle',
-    'supporting_count',
-    'allow_ai_attribution'
-  ])
+  } = useProfileUser({
+    select: (user) => ({
+      user_id: user.user_id,
+      does_current_user_follow: user.does_current_user_follow,
+      current_user_followee_follow_count:
+        user.current_user_followee_follow_count,
+      website: user.website,
+      donation: user.donation,
+      twitter_handle: user.twitter_handle,
+      instagram_handle: user.instagram_handle,
+      tiktok_handle: user.tiktok_handle,
+      supporting_count: user.supporting_count,
+      allow_ai_attribution: user.allow_ai_attribution
+    })
+  }).user ?? {}
 
-  const { data: comments } = useUserComments({ userId, pageSize: 1 })
+  const { data: comments } = useUserComments({
+    userId: userId || 0,
+    pageSize: 1
+  })
   const { tier } = useTierAndVerifiedForUser(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
-  const hasMutuals = !isOwner && currentUserFolloweeFollowCount > 0
+  const hasMutuals = !isOwner && (currentUserFolloweeFollowCount ?? 0) > 0
   const hasMultipleSocials =
     [website, donation, twitterHandle, instagramHandle, tikTokHandle].filter(
       Boolean
     ).length > 1
-  const isSupporting = supportingCount > 0
+  const isSupporting = supportingCount && supportingCount > 0
 
   const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
     FeatureFlags.RECENT_COMMENTS

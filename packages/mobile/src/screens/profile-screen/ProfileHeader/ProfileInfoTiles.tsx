@@ -8,7 +8,8 @@ import {
   useSupportedUsers,
   useSupporters,
   useUserComments,
-  useUsers
+  useUsers,
+  useProfileUser
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
@@ -42,8 +43,6 @@ import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useThemePalette } from 'app/utils/theme'
-
-import { useSelectProfile } from '../selectors'
 
 import { ProfileTierTile } from './ProfileTierTile'
 
@@ -108,7 +107,10 @@ const ProfileInfoTile = (props: ProfileInfoTileProps) => {
   const styles = useInfoTileStyles()
   const { neutral } = useThemePalette()
   const navigation = useNavigation()
-  const { user_id } = useSelectProfile(['user_id'])
+  const { user_id } =
+    useProfileUser({
+      select: (user) => ({ user_id: user.user_id })
+    }).user ?? {}
 
   const handlePress = useCallback(() => {
     if (onPress) {
@@ -181,7 +183,13 @@ const UserListWithCount = ({
   )
 }
 
-const MutualsTile = ({ userId, count }: { userId: number; count: number }) => {
+const MutualsTile = ({
+  userId,
+  count = 0
+}: {
+  userId: number
+  count: number | undefined
+}) => {
   const { data: mutuals = [], isLoading } = useMutualFollowers({
     userId,
     pageSize: MAX_CARD_PROFILE_PICTURES
@@ -316,13 +324,16 @@ export const ProfileInfoTiles = () => {
     supporting_count,
     allow_ai_attribution: hasAiAttribution,
     supporter_count
-  } = useSelectProfile([
-    'supporting_count',
-    'supporter_count',
-    'current_user_followee_follow_count',
-    'user_id',
-    'allow_ai_attribution'
-  ])
+  } = useProfileUser({
+    select: (user) => ({
+      supporting_count: user.supporting_count,
+      supporter_count: user.supporter_count,
+      current_user_followee_follow_count:
+        user.current_user_followee_follow_count,
+      user_id: user.user_id,
+      allow_ai_attribution: user.allow_ai_attribution
+    })
+  }).user ?? {}
 
   const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
     FeatureFlags.RECENT_COMMENTS
@@ -346,7 +357,7 @@ export const ProfileInfoTiles = () => {
   const { data: accountId } = useCurrentUserId()
 
   const hasMutuals =
-    user_id !== accountId && current_user_followee_follow_count > 0
+    user_id !== accountId && (current_user_followee_follow_count ?? 0) > 0
 
   const { data: recentComments = [], isLoading: loadingComments } =
     useUserComments({ userId: user_id, pageSize: 1 })
@@ -373,6 +384,8 @@ export const ProfileInfoTiles = () => {
           .delay(animation.duration)
       : undefined
   }, [animation, shouldAnimate])
+
+  if (!user_id) return null
 
   return (
     <>
@@ -402,7 +415,7 @@ export const ProfileInfoTiles = () => {
             style={styles.staticTilesContainer}
             layout={layoutAnimation}
           >
-            {supporting_count > 0 ? (
+            {supporting_count && supporting_count > 0 ? (
               <SupportedUsersTile userId={user_id} count={supporting_count} />
             ) : null}
             {hasMutuals ? (
@@ -411,7 +424,7 @@ export const ProfileInfoTiles = () => {
                 count={current_user_followee_follow_count}
               />
             ) : null}
-            {supporter_count > 0 ? (
+            {supporter_count && supporter_count > 0 ? (
               <SupportersTile userId={user_id} count={supporter_count} />
             ) : null}
 

@@ -1,5 +1,6 @@
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
+import { useUser } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useUpdateCommentNotificationSetting,
@@ -10,7 +11,6 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, Name, ReplyComment } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import {
   Box,
   ButtonVariant,
@@ -24,17 +24,14 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track as trackEvent } from 'services/analytics'
-import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
 
 import { useCommentActionCallback } from './useCommentActionCallback'
-const { getUser } = cacheUsersSelectors
 
 type ConfirmationAction =
   | 'pin'
@@ -92,9 +89,9 @@ export const CommentActionBar = ({
   const isCommentOwner = Number(comment.userId) === currentUserId
 
   // Selectors
-  const userDisplayName = useSelector(
-    (state: AppState) => getUser(state, { id: Number(userId) })?.name
-  )
+  const { data: userDisplayName } = useUser(userId, {
+    select: (user) => user?.name
+  })
 
   const [currentConfirmationModalType, setCurrentConfirmationModalType] =
     useState<ConfirmationAction | undefined>(undefined)

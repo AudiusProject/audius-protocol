@@ -13,14 +13,15 @@ import {
   queryCurrentUserId,
   queryTracks,
   queryUser,
-  primeCollectionDataSaga
+  primeCollectionDataSaga,
+  getUserQueryKey,
+  QUERY_KEYS
 } from '@audius/common/api'
 import {
   Collection,
   Feature,
   FieldVisibility,
   ID,
-  Kind,
   Name,
   StemTrack,
   StemUploadWithFile,
@@ -35,7 +36,6 @@ import {
   TrackForUpload,
   UploadType,
   accountActions,
-  cacheActions,
   confirmerActions,
   getContext,
   savedPageActions,
@@ -78,7 +78,6 @@ import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
-import { adjustUserField } from '../cache/users/sagas'
 import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
 import {
@@ -829,6 +828,7 @@ export function* uploadCollection(
   const sdk = yield* getSDK()
 
   yield waitForAccount()
+  const queryClient = yield* getContext('queryClient')
   const userId = (yield* call(queryCurrentUserId))!
   // This field will get replaced
   let albumTrackPrice: number | undefined
@@ -978,7 +978,9 @@ export function* uploadCollection(
             category: LibraryCategory.Favorite
           })
         )
-        yield* put(cacheActions.setExpired(Kind.USERS, userId))
+        queryClient.invalidateQueries({
+          queryKey: getUserQueryKey(userId)
+        })
 
         // Finally, add to the library
         yield* call(addPlaylistsNotInLibrary)
@@ -1037,6 +1039,8 @@ export function* uploadMultipleTracks(
 ) {
   const sdk = yield* getSDK()
 
+  const queryClient = yield* getContext('queryClient')
+
   // Ensure the user is logged in
   yield* call(waitForAccount)
 
@@ -1080,11 +1084,15 @@ export function* uploadMultipleTracks(
 
   // Make sure track count changes for this user
   const account = yield* call(queryAccountUser)
-  yield* call(adjustUserField, {
-    user: account!,
-    fieldName: 'track_count',
-    delta: newTracks.length
-  })
+
+  queryClient.setQueryData(getUserQueryKey(account!.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          track_count: newTracks.length
+        }
+  )
 
   // At this point, the upload was success! The rest is metrics.
   yield* put(
@@ -1127,14 +1135,14 @@ export function* uploadMultipleTracks(
     }
   }
 
-  // Bust the cache so we refetch the user
-  yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
-
-  const queryClient = yield* getContext('queryClient')
+  // Refetch the user
+  queryClient.invalidateQueries({
+    queryKey: getUserQueryKey(account!.user_id)
+  })
 
   // Invalidate the uploader's profile tracks cache
   queryClient.invalidateQueries({
-    queryKey: ['profileTracks', account!.handle]
+    queryKey: [QUERY_KEYS.profileTracks, account!.handle]
   })
 
   for (const track of newTracks) {
@@ -1143,11 +1151,11 @@ export function* uploadMultipleTracks(
     // If it's a remix, invalidate the parent track's lineup and remixes page
     if (parentTrackId) {
       queryClient.invalidateQueries({
-        queryKey: ['trackPageLineup', parentTrackId]
+        queryKey: [QUERY_KEYS.trackPageLineup, parentTrackId]
       })
       // Invalidate all possible combinations of remixes queries for the parent track
       queryClient.invalidateQueries({
-        queryKey: ['remixes', parentTrackId],
+        queryKey: [QUERY_KEYS.remixes, parentTrackId],
         exact: false
       })
     }

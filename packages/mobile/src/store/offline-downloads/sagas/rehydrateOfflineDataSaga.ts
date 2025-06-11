@@ -1,4 +1,8 @@
-import { primeCollectionDataSaga, primeTrackDataSaga } from '@audius/common/api'
+import {
+  primeCollectionDataSaga,
+  primeTrackDataSaga,
+  primeUserDataSaga
+} from '@audius/common/api'
 import type {
   CollectionMetadata,
   ID,
@@ -7,7 +11,6 @@ import type {
   UserMetadata
 } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
-import { cacheActions } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { call, select, put } from 'typed-redux-saga'
 
@@ -122,7 +125,10 @@ export function* rehydrateOfflineDataSaga() {
   }
 
   if (usersToCache.length > 0) {
-    yield* put(cacheActions.add(Kind.USERS, usersToCache, false, true))
+    yield* call(
+      primeUserDataSaga,
+      usersToCache.map((user) => user.metadata)
+    )
   }
 
   yield* put(doneLoadingFromDisk())

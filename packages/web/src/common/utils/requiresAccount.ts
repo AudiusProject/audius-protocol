@@ -1,8 +1,4 @@
-import {
-  selectHasAccount,
-  selectIsGuestAccount,
-  queryAccountUser
-} from '@audius/common/api'
+import { selectIsGuestAccount, queryAccountUser } from '@audius/common/api'
 import { getContext } from '@audius/common/store'
 import { route, waitForAccount } from '@audius/common/utils'
 import { call, put } from 'typed-redux-saga'
@@ -30,7 +26,7 @@ export function requiresAccount<TArgs extends any[], TReturn>(
     yield* waitForAccount()
     const accountUser = yield* queryAccountUser()
     const isGuest = yield* call(selectIsGuestAccount, accountUser)
-    const hasAccount = yield* call(selectHasAccount, accountUser)
+    const hasAccount = Boolean(accountUser?.handle && accountUser?.name)
     if (!hasAccount || isGuest) {
       if (!isNativeMobile) {
         if (route) {

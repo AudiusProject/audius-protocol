@@ -4,7 +4,8 @@ import {
   useCollection,
   useCurrentUserId,
   useToggleFavoriteTrack,
-  useTrack
+  useTrack,
+  useUser
 } from '@audius/common/api'
 import {
   ShareSource,
@@ -16,7 +17,6 @@ import {
 import type { ID } from '@audius/common/models'
 import {
   cacheCollectionsActions,
-  cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
   usersSocialActions,
@@ -34,7 +34,7 @@ import {
   playerSelectors,
   useHostRemixContestModal
 } from '@audius/common/store'
-import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
+import type { OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -52,7 +52,6 @@ const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const { getUser } = cacheUsersSelectors
 const { removeTrackFromPlaylist } = cacheCollectionsActions
 
 type Props = {
@@ -87,9 +86,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
 
   const albumInfo = track?.album_backlink
 
-  const user = useSelector((state: CommonState) =>
-    getUser(state, { id: track?.owner_id })
-  )
+  const { data: user } = useUser(track?.owner_id)
 
   const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id,

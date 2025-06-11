@@ -5,6 +5,7 @@ import {
 } from '@audius/common/adapters'
 import {
   getStemsQueryKey,
+  getUserQueryKey,
   queryAccountUser,
   queryCurrentUserId,
   queryTrack,
@@ -22,21 +23,18 @@ import {
 import {
   getContext,
   cacheTracksActions as trackActions,
-  cacheActions,
   confirmerActions,
   TrackMetadataForUpload,
   stemsUploadActions,
   stemsUploadSelectors,
-  getSDK,
-  cacheUsersSelectors
+  getSDK
 } from '@audius/common/store'
 import {
   formatMusicalKey,
   makeKindId,
   squashNewLines,
   uuid,
-  waitForAccount,
-  waitForValue
+  waitForAccount
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
@@ -51,7 +49,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUser } = cacheUsersSelectors
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
@@ -81,7 +78,8 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
 
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
-  action.formFields.description = squashNewLines(action.formFields.description)
+  action.formFields.description =
+    squashNewLines(action.formFields.description) ?? null
 
   const currentTrack = yield* queryTrack(action.trackId)
   if (!currentTrack) return
@@ -266,6 +264,7 @@ function* deleteTrackAsync(
 ) {
   yield* waitForWrite()
   const user = yield* call(queryAccountUser)
+  const queryClient = yield* getContext('queryClient')
   if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -277,17 +276,14 @@ function* deleteTrackAsync(
 
   // Before deleting, check if the track is set as the artist pick & delete if so
   if (user.artist_pick_track_id === action.trackId) {
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
-            artist_pick_track_id: null
-          }
-        }
-      ])
-    )
-    const user = yield* call(waitForValue, getUser, { id: userId })
+    queryClient.setQueryData(getUserQueryKey(userId), (prevUser) => {
+      if (!prevUser) return prevUser
+      return {
+        ...prevUser,
+        artist_pick_track_id: null
+      }
+    })
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
   }
 

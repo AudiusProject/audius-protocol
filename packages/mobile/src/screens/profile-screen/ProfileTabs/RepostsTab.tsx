@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useProfileUser } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
@@ -12,18 +13,23 @@ import { Lineup } from 'app/components/lineup'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
 import type { ProfileTabRoutes } from '../routes'
-import { useSelectProfile } from '../selectors'
 
 const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
   const { lazy } = params
-  const { handle, user_id, repost_count } = useSelectProfile([
-    'handle',
-    'user_id',
-    'repost_count'
-  ])
+  const {
+    handle,
+    user_id,
+    repost_count = 0
+  } = useProfileUser({
+    select: (user) => ({
+      handle: user.handle,
+      user_id: user.user_id,
+      repost_count: user.repost_count
+    })
+  }).user ?? {}
 
   const lineup = useProxySelector(
     (state) => getProfileFeedLineup(state, handle),

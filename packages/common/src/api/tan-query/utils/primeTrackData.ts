@@ -1,12 +1,10 @@
 import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
-import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
 import { Track, TrackMetadata, UserTrackMetadata } from '~/models/Track'
 import { User } from '~/models/User'
-import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 import { getContext } from '~/store/effects'
 
@@ -14,7 +12,7 @@ import { getTrackQueryKey } from '../tracks/useTrack'
 import { getTrackByPermalinkQueryKey } from '../tracks/useTrackByPermalink'
 
 import { formatTrackData } from './formatTrackData'
-import { primeUserDataInternal } from './primeUserData'
+import { primeUserData } from './primeUserData'
 
 /**
  * Add the cosigned status to the track
@@ -95,25 +93,22 @@ export const reformat = <T extends TrackMetadata>(track: T): Track => {
 export const primeTrackData = ({
   tracks,
   queryClient,
-  dispatch,
   forceReplace = false,
   skipQueryData = false
 }: {
   tracks: (UserTrackMetadata | Track)[]
   queryClient: QueryClient
-  dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
   skipQueryData?: boolean
 }) => {
   const formattedTracks = tracks.map((track) => formatTrackData(track))
-  const entries = primeTrackDataInternal({
+  primeTrackDataInternal({
     tracks: formattedTracks,
     queryClient,
     forceReplace,
     skipQueryData
   })
 
-  dispatch(addEntries(entries, false, undefined, 'react-query'))
   return formattedTracks
 }
 
@@ -159,17 +154,11 @@ export const primeTrackDataInternal = ({
     // Prime user data from track owner
     if ('user' in track) {
       const user = (track as { user: User }).user
-      const userEntries = primeUserDataInternal({
+      primeUserData({
         users: [user],
         queryClient,
         forceReplace
       })
-
-      // Merge user entries
-      entries[Kind.USERS] = {
-        ...entries[Kind.USERS],
-        ...userEntries[Kind.USERS]
-      }
     }
   })
 
@@ -178,7 +167,6 @@ export const primeTrackDataInternal = ({
 
 export function* primeTrackDataSaga(tracks: (UserTrackMetadata | Track)[]) {
   const queryClient = yield* getContext('queryClient')
-  const dispatch = yield* getContext('dispatch')
 
-  return primeTrackData({ tracks, queryClient, dispatch })
+  return primeTrackData({ tracks, queryClient })
 }

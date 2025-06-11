@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId, useUser } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
 import {
   chatSelectors,
   chatActions,
-  useInboxUnavailableModal,
-  type CommonState
+  useInboxUnavailableModal
 } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
@@ -24,7 +23,7 @@ import {
   IconCart
 } from '@audius/harmony'
 import moment from 'moment'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { ExternalLink, UserLink } from 'components/link'
@@ -34,7 +33,7 @@ import { DetailSection } from './DetailSection'
 import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 const { createChat } = chatActions
 
 const messages = {
@@ -67,14 +66,8 @@ export const SaleModalContent = ({
 }: SaleModalContentProps) => {
   const dispatch = useDispatch()
   const isManagedAccount = useIsManagedAccount()
-  const { data: currentUserId } = useCurrentUserId()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
-  const { canCreateChat } = useSelector((state: CommonState) =>
-    getCanCreateChat(state, {
-      userId: purchaseDetails.buyerUserId,
-      currentUserId
-    })
-  )
+  const { canCreateChat } = useCanCreateChat(purchaseDetails.buyerUserId)
   const { data: partialUser } = useUser(purchaseDetails.buyerUserId, {
     select: (user) => ({
       handle: user?.handle,

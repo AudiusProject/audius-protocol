@@ -19,7 +19,12 @@ import {
 } from 'typed-redux-saga'
 import { ulid } from 'ulid'
 
-import { queryCurrentUserId, queryHasAccount, queryUsers } from '~/api'
+import {
+  getChatMemberUserIds,
+  queryCurrentUserId,
+  queryHasAccount,
+  queryUsers
+} from '~/api'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -81,13 +86,8 @@ const {
   deleteChat,
   deleteChatSucceeded
 } = chatActions
-const {
-  getChatsSummary,
-  getChat,
-  getUnfurlMetadata,
-  getNonOptimisticChat,
-  getOtherChatUsers
-} = chatSelectors
+const { getChatsSummary, getChat, getUnfurlMetadata, getNonOptimisticChat } =
+  chatSelectors
 const { toast } = toastActions
 
 const CHAT_PAGE_SIZE = 30
@@ -627,15 +627,20 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
     yield* put(fetchBlockees())
     yield* put(fetchBlockers())
     if (userId) {
-      const otherUsers = yield* select((state) =>
-        getOtherChatUsers(state, userId, chatId)
-      )
-      // Get permissions of ourselves and other users in the chat
-      yield* put(
-        fetchPermissions({
-          userIds: [userId, ...otherUsers.map((u) => u.user_id)]
-        })
-      )
+      const chat = yield* select((state) => getChat(state, chatId))
+      if (chat) {
+        const otherUserIds = getChatMemberUserIds(chat, userId)
+        const otherUsersMap = yield* call(queryUsers, otherUserIds)
+        const otherUsers = Object.values(otherUsersMap)
+        if (otherUsers) {
+          // Get permissions of ourselves and other users in the chat
+          yield* put(
+            fetchPermissions({
+              userIds: [userId, ...otherUsers.map((u) => u.user_id)]
+            })
+          )
+        }
+      }
     }
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

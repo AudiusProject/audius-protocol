@@ -4,7 +4,6 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -45,7 +44,6 @@ export const useUserPlaylists = (
   const { data: currentUserId } = useCurrentUserId()
   const { userId, pageSize = 5, sortMethod = 'recent', query } = params
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({
     queryKey: getUserPlaylistsQueryKey(params),
@@ -73,7 +71,7 @@ export const useUserPlaylists = (
         userCollectionMetadataFromSDK
       )
 
-      primeCollectionData({ collections, queryClient, dispatch })
+      primeCollectionData({ collections, queryClient })
 
       return collections.map((collection) => collection.playlist_id)
     },

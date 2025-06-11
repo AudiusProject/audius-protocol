@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 
+import { AudiusSdk } from '@audius/sdk'
 import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
+import { AnyAction, Dispatch } from 'redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
@@ -24,8 +26,8 @@ export const getCollectionQueryFn = async (
   collectionId: ID,
   currentUserId: number | null | undefined,
   queryClient: QueryClient,
-  sdk: any,
-  dispatch: any
+  sdk: AudiusSdk,
+  dispatch: Dispatch<AnyAction>
 ) => {
   const batchGetCollections = getCollectionsBatcher({
     sdk,

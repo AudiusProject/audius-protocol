@@ -1,6 +1,8 @@
-import { useCurrentUserId, useUserCollectibles } from '@audius/common/api'
-
-import { useSelectProfile } from './selectors'
+import {
+  useCurrentUserId,
+  useUserCollectibles,
+  useProfileUser
+} from '@audius/common/api'
 
 /**
  *
@@ -15,13 +17,15 @@ import { useSelectProfile } from './selectors'
  */
 export const useShouldShowCollectiblesTab = () => {
   const { has_collectibles, collectibleList, solanaCollectibleList, user_id } =
-    useSelectProfile([
-      'handle',
-      'user_id',
-      'has_collectibles',
-      'collectibleList',
-      'solanaCollectibleList'
-    ])
+    useProfileUser({
+      select: (user) => ({
+        handle: user.handle,
+        user_id: user.user_id,
+        has_collectibles: user.has_collectibles,
+        collectibleList: user.collectibleList,
+        solanaCollectibleList: user.solanaCollectibleList
+      })
+    }).user ?? {}
   const { data: accountUserId } = useCurrentUserId()
   const isOwner = accountUserId === user_id
   const { data: profileCollectibles } = useUserCollectibles({

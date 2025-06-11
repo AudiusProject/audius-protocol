@@ -1,6 +1,10 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
-import { useCurrentAccount, useCollectionByParams } from '@audius/common/api'
+import {
+  useCurrentAccount,
+  useCollectionByParams,
+  useUser
+} from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -20,7 +24,8 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource,
   Track,
-  AccountCollection
+  AccountCollection,
+  User
 } from '@audius/common/models'
 import {
   cacheCollectionsActions,
@@ -96,12 +101,8 @@ const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const {
-  getCollectionTracksLineup,
-  getUser,
-  getUserUid,
-  getCollectionPermalink
-} = collectionPageSelectors
+const { getCollectionTracksLineup, getUserUid, getCollectionPermalink } =
+  collectionPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetLineupOrder } = lineupSelectors
 const {
@@ -129,6 +130,7 @@ type CollectionPageProps = OwnProps &
   RouteComponentProps & {
     userId?: number | null | undefined
     userPlaylists?: AccountCollection[] | undefined
+    user?: User | undefined
   }
 
 type CollectionClassProps = CollectionPageProps & {
@@ -168,6 +170,7 @@ const CollectionPage = (props: CollectionPageProps) => {
     })
   })
   const { userId, userPlaylists } = accountData ?? {}
+  const { data: user } = useUser(userId)
   const trackCount = collection?.playlist_contents.track_ids.length ?? 0
   const playlistId = collection?.playlist_id
   const currentTrack = useCurrentTrack()
@@ -184,6 +187,7 @@ const CollectionPage = (props: CollectionPageProps) => {
       trackCount={trackCount}
       currentTrack={currentTrack}
       userId={userId}
+      user={user}
       userPlaylists={userPlaylists}
     />
   )
@@ -873,7 +877,6 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       collectionPermalink: getCollectionPermalink(state),
-      user: getUser(state),
       userUid: getUserUid(state) || '',
       status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),

@@ -2,8 +2,6 @@ import { useMemo } from 'react'
 
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
-import { AnyAction, Dispatch } from 'redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
@@ -50,8 +48,7 @@ export const getCurrentAccountQueryFn = async (
   sdk: AudiusSdk,
   localStorage: LocalStorage,
   currentUserWallet: string | null,
-  queryClient: QueryClient,
-  dispatch: Dispatch<AnyAction>
+  queryClient: QueryClient
 ): Promise<AccountState | null | undefined> => {
   const localAccount = getLocalAccount(localStorage)
   if (localAccount) {
@@ -75,7 +72,7 @@ export const getCurrentAccountQueryFn = async (
 
   if (account) {
     queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
-    primeUserData({ users: [account.user], queryClient, dispatch })
+    primeUserData({ users: [account.user], queryClient })
   } else {
     queryClient.setQueryData(getAccountStatusQueryKey(), Status.ERROR)
   }
@@ -106,7 +103,6 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
   const currentUserWallet = walletAddresses?.currentUser
   const { localStorage } = useAppContext()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   // We intentionally cache account data in local storage to quickly render the account details
   // This initialData primes our query slice up front and will cause the hook to return synchronously (if the data exists)
   const initialData = useMemo(
@@ -121,8 +117,7 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
         await audiusSdk(),
         localStorage,
         currentUserWallet!,
-        queryClient,
-        dispatch
+        queryClient
       ),
     staleTime: Infinity,
     gcTime: Infinity,

@@ -1,14 +1,14 @@
 import { ChatPermission, HashId, Id, UserChat } from '@audius/sdk'
+import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
+import { useCurrentUserId, useUser } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import { User } from '~/models/User'
-import { getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/reducers'
 import { Maybe, removeNullable } from '~/utils/typeUtils'
 
-import { Chat, chatMessagesAdapter, chatsAdapter } from './slice'
+import { chatMessagesAdapter, chatsAdapter } from './slice'
 import { ChatPermissionAction } from './types'
 
 const { selectById: selectChatById, selectAll: selectAllChats } =
@@ -138,44 +138,6 @@ export const getHasUnreadMessages = (state: CommonState) => {
   return false
 }
 
-export const getOtherChatUsersFromChat = (
-  state: CommonState,
-  currentUserId: ID | null | undefined,
-  chat?: Chat
-) => {
-  if (!chat || chat.is_blast) {
-    return []
-  }
-  const ids = chat.chat_members
-    .filter((u) => HashId.parse(u.user_id) !== currentUserId)
-    .map((u) => HashId.parse(u.user_id) ?? -1)
-    .filter((u) => u > -1)
-  const users = getUsers(state, {
-    ids
-  })
-  return Object.values(users).map((user) => user.metadata)
-}
-
-export const getOtherChatUsers = (
-  state: CommonState,
-  currentUserId: ID | null | undefined,
-  chatId?: string
-) => {
-  if (!chatId) {
-    return []
-  }
-  const chat = getChat(state, chatId)
-  return getOtherChatUsersFromChat(state, currentUserId, chat)
-}
-
-export const getSingleOtherChatUser = (
-  state: CommonState,
-  currentUserId: ID | null | undefined,
-  chatId?: string
-): User | undefined => {
-  return getOtherChatUsers(state, currentUserId, chatId)[0]
-}
-
 /**
  * Gets a list of the users the current user has chats with.
  * Note that this only takes the first user of each chat that doesn't match the current one,
@@ -259,136 +221,81 @@ export const getDoesBlockUser = createSelector(
   (blockees, userId) => blockees.includes(userId)
 )
 
-export const getCanCreateChat = createSelector(
-  [
-    getBlockees,
-    getBlockers,
-    getChatPermissions,
-    getChats,
-    (
-      state: CommonState,
-      {
-        userId,
-        currentUserId
-      }: { userId: Maybe<ID>; currentUserId: ID | null | undefined }
-    ) => {
-      if (!userId) return null
-      const usersMap = getUsers(state, { ids: [userId] })
-      return { user: usersMap[userId]?.metadata, currentUserId }
-    }
-  ],
-  (
+export const getChatPermissionsInfo = createSelector(
+  [getBlockees, getBlockers, getChatPermissions, getChats],
+  (blockees, blockers, chatPermissions, chats) => ({
     blockees,
     blockers,
     chatPermissions,
-    chats,
-    userInfo
-  ): { canCreateChat: boolean; callToAction: ChatPermissionAction } => {
-    const { user, currentUserId } = userInfo ?? {}
-    if (!currentUserId) {
-      return {
-        canCreateChat: false,
-        callToAction: ChatPermissionAction.SIGN_UP
-      }
-    }
-    if (!user) {
-      return {
-        canCreateChat: true,
-        callToAction: ChatPermissionAction.NOT_APPLICABLE
-      }
-    }
-
-    // Check for existing chat, since unblocked users with existing chats
-    // don't need permission to continue chatting.
-    // Use a callback fn to prevent iteration until necessary to improve perf
-    // Note: this only works if the respective chat has been fetched already, like in chatsUserList
-    const encodedUserId = Id.parse(user.user_id)
-    const existingChat = chats.find(
-      (c) =>
-        !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
-    )
-
-    const userPermissions = chatPermissions[user.user_id]
-    const isBlockee = blockees.includes(user.user_id)
-    const isBlocker = blockers.includes(user.user_id)
-    const canCreateChat =
-      !isBlockee &&
-      !isBlocker &&
-      ((userPermissions?.current_user_has_permission ?? true) ||
-        (!!existingChat &&
-          !existingChat.is_blast &&
-          !existingChat?.recheck_permissions))
-
-    let action = ChatPermissionAction.NOT_APPLICABLE
-    if (!canCreateChat) {
-      if (!userPermissions) {
-        action = ChatPermissionAction.WAIT
-      } else if (blockees.includes(user.user_id)) {
-        action = ChatPermissionAction.UNBLOCK
-      } else if (
-        userPermissions.permit_list.includes(ChatPermission.FOLLOWERS)
-      ) {
-        action = ChatPermissionAction.FOLLOW
-      } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
-        action = ChatPermissionAction.TIP
-      } else {
-        action = ChatPermissionAction.NONE
-      }
-    }
-    return {
-      canCreateChat,
-      callToAction: action
-    }
-  }
+    chats
+  })
 )
 
-export const getCanSendMessage = createSelector(
-  [
-    getBlockees,
-    getBlockers,
-    getCanCreateChat,
-    (_state: CommonState, { userId }: { userId: Maybe<ID> }) => userId,
-    (state: CommonState, { chatId }: { chatId: Maybe<string> }) => {
-      const chat = chatId ? getChat(state, chatId) : undefined
-      return chat?.is_blast || !!chat?.recheck_permissions
-    }
-  ],
-  (
-    blockees,
-    blockers,
-    { canCreateChat, callToAction: createChatCallToAction },
-    userId,
-    recheckPermissions
-  ) => {
-    if (!userId) {
-      return {
-        canSendMessage: true,
-        callToAction: ChatPermissionAction.NOT_APPLICABLE
-      }
-    }
-    const isBlockee = blockees.includes(userId)
-    const isBlocker = blockers.includes(userId)
-    if (isBlocker) {
-      return {
-        canSendMessage: false,
-        callToAction: ChatPermissionAction.NONE
-      }
-    }
-    if (isBlockee) {
-      return {
-        canSendMessage: false,
-        callToAction: ChatPermissionAction.UNBLOCK
-      }
-    }
-    if (recheckPermissions && !canCreateChat) {
-      return {
-        canSendMessage: false,
-        callToAction: createChatCallToAction
-      }
-    }
+export const useCanCreateChat = (userId: ID | null | undefined) => {
+  const { data: currentUserId } = useCurrentUserId()
+  const { blockees, blockers, chatPermissions, chats } = useSelector(
+    getChatPermissionsInfo
+  )
+  const { data: user } = useUser(userId)
+  if (!currentUserId) {
     return {
-      canSendMessage: true,
+      canCreateChat: false,
+      callToAction: ChatPermissionAction.SIGN_UP
+    }
+  }
+  // cant check for truthy because user.collectible_list may get set before the user data is loaded
+  if (!user || !user.user_id) {
+    return {
+      canCreateChat: true,
       callToAction: ChatPermissionAction.NOT_APPLICABLE
     }
   }
-)
+
+  // Check for existing chat, since unblocked users with existing chats
+  // don't need permission to continue chatting.
+  // Use a callback fn to prevent iteration until necessary to improve perf
+  // Note: this only works if the respective chat has been fetched already, like in chatsUserList
+  const encodedUserId = Id.parse(user.user_id)
+  const existingChat = chats.find(
+    (c) =>
+      !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
+  )
+
+  const userPermissions = chatPermissions[user.user_id]
+  const isBlockee = blockees.includes(user.user_id)
+  const isBlocker = blockers.includes(user.user_id)
+  const canCreateChat =
+    !isBlockee &&
+    !isBlocker &&
+    ((userPermissions?.current_user_has_permission ?? true) ||
+      (!!existingChat &&
+        !existingChat.is_blast &&
+        !existingChat?.recheck_permissions))
+
+  let action = ChatPermissionAction.NOT_APPLICABLE
+  if (!canCreateChat) {
+    if (!userPermissions) {
+      action = ChatPermissionAction.WAIT
+    } else if (blockees.includes(user.user_id)) {
+      action = ChatPermissionAction.UNBLOCK
+    } else if (userPermissions.permit_list.includes(ChatPermission.FOLLOWERS)) {
+      action = ChatPermissionAction.FOLLOW
+    } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
+      action = ChatPermissionAction.TIP
+    } else {
+      action = ChatPermissionAction.NONE
+    }
+  }
+  return {
+    canCreateChat,
+    callToAction: action
+  }
+}
+
+export const getRecheckPermissions = (
+  state: CommonState,
+  chatId: Maybe<string>
+) => {
+  const chat = chatId ? getChat(state, chatId) : undefined
+  return chat?.is_blast || !!chat?.recheck_permissions
+}

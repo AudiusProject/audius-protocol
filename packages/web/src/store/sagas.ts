@@ -1,6 +1,5 @@
 import {
   buyUSDCSagas,
-  cacheSagas,
   castSagas,
   chatSagas,
   reachabilitySagas as commonReachabilitySagas,
@@ -28,9 +27,7 @@ import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
 import collectionsSagas from 'common/store/cache/collections/webSagas'
-import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
-import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
 import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
@@ -127,11 +124,8 @@ export default function* rootSaga() {
     modalsSagas(),
 
     // Cache
-    cacheSagas(),
-    coreCacheSagas(),
     collectionsSagas(),
     tracksSagas(),
-    usersSagas(),
     savedCollectionsSagas(),
 
     // Playback
@@ -232,11 +226,8 @@ export function* testRootSaga() {
     modalsSagas(),
 
     // Cache
-    cacheSagas(),
-    coreCacheSagas(),
     collectionsSagas(),
     tracksSagas(),
-    usersSagas(),
     savedCollectionsSagas(),
 
     // Application

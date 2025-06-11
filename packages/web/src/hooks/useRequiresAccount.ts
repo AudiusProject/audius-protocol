@@ -62,7 +62,6 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
         accountStatus === Status.SUCCESS,
         isAccountComplete
       )
-
       if (!canAccessRoute) {
         // Prevent the default event from occurring
         if (args[0]?.preventDefault) {

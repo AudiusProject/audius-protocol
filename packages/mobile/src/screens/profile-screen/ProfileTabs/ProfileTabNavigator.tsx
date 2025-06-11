@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 
+import { useProfileUser } from '@audius/common/api'
 import { ProfilePageTabs } from '@audius/common/store'
 
 import {
@@ -15,7 +16,6 @@ import {
 } from 'app/components/top-tab-bar'
 import { useRoute } from 'app/hooks/useRoute'
 
-import { useSelectProfile } from '../selectors'
 import { useIsArtist } from '../useIsArtist'
 import { useShouldShowCollectiblesTab } from '../utils'
 
@@ -42,7 +42,10 @@ export const ProfileTabNavigator = ({
   refreshing,
   onRefresh
 }: ProfileTabNavigatorProps) => {
-  const { user_id } = useSelectProfile(['user_id'])
+  const { user_id } =
+    useProfileUser({
+      select: (user) => ({ user_id: user.user_id })
+    }).user ?? {}
   const { params } = useRoute<'Profile'>()
 
   const initialParams = { id: user_id, handle: params.handle }

@@ -53,7 +53,6 @@ export function* queryCollectionByPermalink(
 ) {
   if (!permalink) return undefined
   const queryClient = yield* getContext('queryClient')
-  const dispatch = yield* getContext('dispatch')
   const currentUserId = yield* call(queryCurrentUserId)
   const sdk = yield* getSDK()
   const collectionId = (yield* call([queryClient, queryClient.fetchQuery], {
@@ -63,8 +62,7 @@ export function* queryCollectionByPermalink(
         permalink,
         currentUserId,
         queryClient,
-        sdk,
-        dispatch
+        sdk
       ),
     staleTime: forceFetch ? 0 : undefined
   })) as ID | undefined

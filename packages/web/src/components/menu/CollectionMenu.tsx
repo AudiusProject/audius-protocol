@@ -1,3 +1,4 @@
+import { useUserByHandle } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -6,7 +7,6 @@ import {
   ID
 } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   shareModalUIActions,
   collectionsSocialActions as socialActions
 } from '@audius/common/store'
@@ -21,7 +21,6 @@ import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { getUser } = cacheUsersSelectors
 const { profilePage, collectionPage } = route
 
 type PlaylistId = number
@@ -64,7 +63,6 @@ const CollectionMenu = ({
   isFavorited = false,
   isReposted = false,
   includeFavorite = true,
-  isArtist = false,
   includeVisitPage = true,
   ...props
 }: CollectionMenuProps) => {
@@ -92,6 +90,11 @@ const CollectionMenu = ({
     onRepost,
     extraMenuItems
   } = props
+
+  const { data: isArtist } = useUserByHandle(
+    handle ? handle.toLowerCase() : undefined,
+    { select: (user) => user && user.track_count > 0 }
+  )
 
   const navigate = useNavigate()
 
@@ -191,12 +194,7 @@ const CollectionMenu = ({
 }
 
 function mapStateToProps(state: AppState, props: OwnProps) {
-  const user = getUser(state, {
-    handle: props.handle ? props.handle.toLowerCase() : null
-  })
-  return {
-    isArtist: user ? user.track_count > 0 : false
-  }
+  return {}
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {

@@ -126,7 +126,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 type PlayBarProps = {
   track: Nullable<Track>
   duration: number
-  user: Nullable<User>
+  user: Nullable<User> | undefined
   onPress: () => void
   translationAnim: Animated.Value
   mediaKey: string

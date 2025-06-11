@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { useSupportedUsers } from '@audius/common/api'
-import { profilePageSelectors } from '@audius/common/store'
+import { useProfileUser, useSupportedUsers } from '@audius/common/api'
 import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
 import {
   IconTipping,
@@ -13,7 +12,6 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import {
   setUsers,
   setVisibility
@@ -26,7 +24,6 @@ import {
 import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { SupportingTile } from './SupportingTile'
-const { getProfileUser } = profilePageSelectors
 
 const messages = {
   supporting: 'Supporting',
@@ -38,7 +35,7 @@ const formatViewAllMessage = (count: number) => {
 }
 
 export const SupportingList = () => {
-  const profile = useSelector(getProfileUser)
+  const { user: profile } = useProfileUser()
   const dispatch = useDispatch()
   const { data: supportedUsers = [], isLoading } = useSupportedUsers({
     userId: profile?.user_id,

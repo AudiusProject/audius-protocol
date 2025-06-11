@@ -2733,7 +2733,7 @@ export type CommentsHistoryClick = {
 
 export type CommentsHistoryDrawerOpen = {
   eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN
-  userId: ID
+  userId: ID | undefined
 }
 
 export type RecentCommentsClick = {

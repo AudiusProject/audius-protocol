@@ -100,7 +100,6 @@ export const useFavoriteTrack = () => {
       primeTrackData({
         tracks: [{ ...previousTrack, ...update }],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 

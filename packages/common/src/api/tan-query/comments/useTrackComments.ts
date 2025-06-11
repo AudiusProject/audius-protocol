@@ -64,7 +64,7 @@ export const useTrackComments = (
         commentFromSDK
       )
 
-      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
+      primeRelatedData({ related: commentsRes.related, queryClient })
 
       // Prime comment data in the cache
       primeCommentData({ comments: commentList, queryClient })

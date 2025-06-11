@@ -19,13 +19,12 @@ import {
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 
 import { ArtistInfo } from './ArtistInfo'
 
 const { profilePage } = route
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   moreOptions: 'more options',
@@ -60,9 +59,7 @@ export const ManagerListItem = ({
 
   const { mutate: cancelPendingInvite } = useRemoveManager()
 
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: manager.user_id, currentUserId })
-  )
+  const { canCreateChat } = useCanCreateChat(manager.user_id)
 
   const composeChat = useComposeChat({
     user: manager
