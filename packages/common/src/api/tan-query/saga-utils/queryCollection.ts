@@ -11,6 +11,7 @@ import {
 import { getCollectionByPermalinkQueryFn } from '../collection/useCollectionByPermalink'
 import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { isValidId } from '../utils/isValidId'
 
 import { queryCurrentUserId } from './queryAccount'
@@ -64,7 +65,7 @@ export function* queryCollectionByPermalink(
         queryClient,
         sdk
       ),
-    staleTime: forceFetch ? 0 : undefined
+    staleTime: forceFetch ? 0 : entityCacheOptions.staleTime
   })) as ID | undefined
   if (!collectionId) return undefined
   const collection = yield* call(queryCollection, collectionId, forceFetch)

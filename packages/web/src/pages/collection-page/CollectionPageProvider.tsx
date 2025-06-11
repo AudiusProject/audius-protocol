@@ -1,9 +1,9 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
 import {
-  useCurrentAccount,
   useCollectionByParams,
-  useUser
+  useUser,
+  useCurrentUserId
 } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
@@ -160,17 +160,9 @@ const CollectionPage = (props: CollectionPageProps) => {
   const pathname = getPathname(location)
   const params = parseCollectionRoute(pathname)
   // For now read-only
-  const { data: collection } = useCollectionByParams(params, { enabled: false })
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      userId: account?.userId,
-      userPlaylists: Object.values(account?.collections ?? {})?.filter(
-        (c) => !c.is_album
-      )
-    })
-  })
-  const { userId, userPlaylists } = accountData ?? {}
-  const { data: user } = useUser(userId)
+  const { data: collection } = useCollectionByParams(params)
+  const { data: user } = useUser(collection?.playlist_owner_id)
+  const { data: currentUserId } = useCurrentUserId()
   const trackCount = collection?.playlist_contents.track_ids.length ?? 0
   const playlistId = collection?.playlist_id
   const currentTrack = useCurrentTrack()
@@ -186,9 +178,8 @@ const CollectionPage = (props: CollectionPageProps) => {
       tracks={tracks}
       trackCount={trackCount}
       currentTrack={currentTrack}
-      userId={userId}
+      userId={currentUserId}
       user={user}
-      userPlaylists={userPlaylists}
     />
   )
 }
