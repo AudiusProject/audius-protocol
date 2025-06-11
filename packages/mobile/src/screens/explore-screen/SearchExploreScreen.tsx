@@ -83,6 +83,7 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
 
 const { getSearchHistory } = searchSelectors
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
+const HEADER_SLIDE_HEIGHT = 62
 
 export const SearchExploreScreen = () => {
   const { spacing, color } = useTheme()
@@ -174,9 +175,6 @@ export const SearchExploreScreen = () => {
       scrollY.value = event.contentOffset.y
       // headerHeight.value = scrollY.value <= 0 ? 1 : 0
       console.log('asdf scrollY.value', scrollY.value, headerHeight.value)
-      if (event.contentOffset.y > SCROLL_THRESHOLD) {
-        filterTranslateY.value = withTiming(-FILTER_HEIGHT - 50)
-      }
     }
   })
 
@@ -187,11 +185,32 @@ export const SearchExploreScreen = () => {
 
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     // display: scrollY.value > 300 ? 'none' : 'flex',
-    transform: [{ translateY: filterTranslateY.value }],
+    transform: [
+      {
+        translateY:
+          interpolate(
+            scrollY.value,
+            [0, 20], // adjust as needed
+            [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+            Extrapolation.CLAMP
+          ) +
+          interpolate(
+            scrollY.value,
+            [250, 300], // adjust as needed
+            [0, -64], // slide up by HEADER_SLIDE_HEIGHT
+            Extrapolation.CLAMP
+          )
+      }
+    ],
     backgroundColor: interpolateColor(
       scrollY.value,
       [0, 20], // scroll range
       [color.background.default, color.neutral.n25]
+    ),
+    borderColor: interpolateColor(
+      scrollY.value,
+      [0, 20], // scroll range
+      [color.border.strong, color.neutral.n25]
     )
   }))
 
@@ -201,19 +220,28 @@ export const SearchExploreScreen = () => {
         scale: interpolate(
           scrollY.value,
           [0, 20], // scroll range
-          [1, 0.8], // scale range
+          [1, 0.83], // scale range
+          Extrapolation.CLAMP
+        )
+      },
+      {
+        translateX: interpolate(
+          scrollY.value,
+          [0, 20], // scroll range
+          [0, 30], // slide left by HEADER_SLIDE_HEIGHTpx
           Extrapolation.CLAMP
         )
       }
     ]
   }))
+
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
         translateY: interpolate(
           scrollY.value,
           [0, 20], // adjust as needed
-          [0, -50], // slide up by 80px
+          [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
           Extrapolation.CLAMP
         )
       }
@@ -225,17 +253,46 @@ export const SearchExploreScreen = () => {
         translateY: interpolate(
           scrollY.value,
           [0, 20], // adjust as needed
-          [0, 50], // slide up by 30px
+          [0, HEADER_SLIDE_HEIGHT], // slide up by 30px
           Extrapolation.CLAMP
         )
-      },
+      }
+      // {
+      //   scale: interpolate(
+      //     scrollY.value,
+      //     [0, 20], // scroll range
+      //     [1, 0.9], // scale range
+      //     Extrapolation.CLAMP
+      //   )
+      // }
+    ]
+  }))
+
+  const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
+    paddingVertical: interpolate(
+      scrollY.value,
+      [0, 20], // scroll range
+      [spacing.l, spacing.s], // padding range
+      Extrapolation.CLAMP
+    )
+  }))
+
+  const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
       {
-        scale: interpolate(
-          scrollY.value,
-          [0, 20], // scroll range
-          [1, 0.8], // scale range
-          Extrapolation.CLAMP
-        )
+        translateY:
+          interpolate(
+            scrollY.value,
+            [0, 20], // adjust as needed
+            [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+            Extrapolation.CLAMP
+          ) +
+          interpolate(
+            scrollY.value,
+            [250, 300], // adjust as needed
+            [0, -64], // slide up by HEADER_SLIDE_HEIGHT
+            Extrapolation.CLAMP
+          )
       }
     ]
   }))
@@ -260,7 +317,12 @@ export const SearchExploreScreen = () => {
         <ScreenContent>
           <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
             <ImageBackground source={imageSearchHeaderBackground}>
-              <Flex pt='unit14' ph='l' pb='l' gap='l'>
+              <AnimatedFlex
+                pt='unit14'
+                ph='l'
+                gap='l'
+                style={headerPaddingShrinkStyle}
+              >
                 <Flex
                   direction='row'
                   gap='m'
@@ -311,16 +373,17 @@ export const SearchExploreScreen = () => {
                     )}
                   />
                 </Animated.View>
-              </Flex>
+              </AnimatedFlex>
             </ImageBackground>
           </AnimatedFlex>
-          <Animated.View
-            style={[filtersAnimatedStyle, headerSlideAnimatedStyle]}
-          >
+          <Animated.View style={[filtersAnimatedStyle, { zIndex: 1 }]}>
             <SearchCategoriesAndFilters />
           </Animated.View>
 
-          <Animated.ScrollView onScroll={scrollHandler}>
+          <Animated.ScrollView
+            onScroll={scrollHandler}
+            style={[contentSlideAnimatedStyle]}
+          >
             {category !== 'all' || searchInput ? (
               <>
                 {searchInput || hasAnyFilter ? (
