@@ -335,6 +335,10 @@ export const Lineup = ({
           ) - _offset
         )
 
+        // Don't fetch more if the limit isn't a positive number.
+        // This is a sign that we've loaded all the content for the lineup.
+        if (limit <= 0) return
+
         if (loadMore) {
           loadMore(_offset, limit, _page === 0)
         } else {
