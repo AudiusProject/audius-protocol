@@ -1,8 +1,11 @@
-import { queryAccountUser, queryTrackByUid } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCurrentUserId,
+  queryTrackByUid
+} from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   profilePageTracksLineupActions as tracksActions,
-  accountSelectors,
   cacheTracksActions,
   profilePageTracksLineupActions as lineupActions,
   profilePageSelectors,
@@ -20,12 +23,11 @@ import { watchUploadTracksSaga } from './watchUploadTracksSaga'
 const { SET_ARTIST_PICK } = tracksSocialActions
 const { getProfileTracksLineup, getTrackSource } = profilePageSelectors
 const { DELETE_TRACK_REQUESTED } = cacheTracksActions
-const { getUserId } = accountSelectors
 const PREFIX = tracksActions.prefix
 
 function* getTracks({ offset, limit, payload, handle }) {
   yield waitForRead()
-  const currentUserId = yield select(getUserId)
+  const currentUserId = yield call(queryCurrentUserId)
   const profileHandle = handle.toLowerCase()
 
   const sort = payload?.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
@@ -58,7 +60,7 @@ class TracksSagas extends LineupSagas {
 
 function* watchSetArtistPick() {
   yield takeEvery(SET_ARTIST_PICK, function* (action) {
-    const accountUser = yield* call(queryAccountUser)
+    const accountUser = yield call(queryAccountUser)
     const accountHandle = accountUser?.handle
     const lineup = yield select((state) =>
       getProfileTracksLineup(state, accountHandle)
@@ -83,7 +85,7 @@ function* watchSetArtistPick() {
 function* watchDeleteTrackRequested() {
   yield takeEvery(DELETE_TRACK_REQUESTED, function* (action) {
     const { trackId } = action
-    const accountUser = yield* call(queryAccountUser)
+    const accountUser = yield call(queryAccountUser)
     const accountHandle = accountUser?.handle
     const lineup = yield select((state) =>
       getProfileTracksLineup(state, accountHandle)

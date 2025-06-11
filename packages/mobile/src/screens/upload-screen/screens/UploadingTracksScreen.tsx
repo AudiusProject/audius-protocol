@@ -79,6 +79,7 @@ export const UploadingTracksScreen = () => {
   // This is used for logic below to detect that we got an error *after*
   // this upload attempt started
   const [uploadStarted, setUploadStarted] = useState(false)
+  const [timeoutSuccess, setTimeoutSuccess] = useState(false)
   const { toast } = useToast()
 
   useEffectOnce(() => {
@@ -92,16 +93,17 @@ export const UploadingTracksScreen = () => {
     if (trackUploadProgress === 100) {
       const timeout = setTimeout(
         () => {
-          const err = new Error('Upload error: stalled at 100% for 5+ minutes')
+          const err = new Error('Upload error: stalled at 100% for 10 seconds')
           reportToSentry({
             error: err,
             feature: Feature.Upload,
             additionalInfo: { params, trackUploadProgress }
           })
+          setTimeoutSuccess(true)
           // TODO: For now this is just logging the error so we can better understand the issue & frequency of it.
           // We need to figure out how to resolve this
         },
-        1000 * 60 * 5 // 5 minutes
+        1000 * 10 // 10 seconds
       )
       return () => clearTimeout(timeout)
     }
@@ -114,11 +116,11 @@ export const UploadingTracksScreen = () => {
     if (!uploadSuccess) {
       navigation.setOptions({ gestureEnabled: false })
     }
-    if (uploadSuccess) {
+    if (uploadSuccess || timeoutSuccess) {
       navigation.setOptions({ gestureEnabled: true })
       navigation.navigate('UploadComplete')
     }
-  }, [uploadSuccess, navigation])
+  }, [uploadSuccess, navigation, timeoutSuccess])
 
   useEffect(() => {
     if (isUploading) {

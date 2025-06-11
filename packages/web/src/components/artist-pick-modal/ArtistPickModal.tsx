@@ -1,8 +1,5 @@
-import {
-  accountSelectors,
-  tracksSocialActions,
-  useArtistPickModal
-} from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { tracksSocialActions, useArtistPickModal } from '@audius/common/store'
 import {
   Button,
   Modal,
@@ -14,10 +11,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'utils/reducer'
-
 const { setArtistPick, unsetArtistPick } = tracksSocialActions
-const getAccountUser = accountSelectors.getAccountUser
 
 const messagesMap = {
   add: {
@@ -48,9 +42,9 @@ export const ArtistPickModal = () => {
   } = useArtistPickModal()
   const dispatch = useDispatch()
 
-  const currentArtistPickId = useSelector(
-    (state) => getAccountUser(state)?.artist_pick_track_id
-  )
+  const { data: currentArtistPickId } = useCurrentAccountUser({
+    select: (user) => user.artist_pick_track_id
+  })
 
   const action = !currentArtistPickId ? 'add' : trackId ? 'update' : 'remove'
 

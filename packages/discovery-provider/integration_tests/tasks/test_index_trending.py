@@ -181,6 +181,8 @@ def test_find_min_block_above_timestamp(app):
 
 
 def test_index_trending(app, mocker):
+    # Patching this because it's not worth the difficulting in mocking
+    # the data here.
     mocker.patch(
         "src.tasks.index_trending._get_underground_trending_with_session",
         return_value=[{"track_id": 3, "owner_id": 2}],
@@ -188,24 +190,52 @@ def test_index_trending(app, mocker):
     # Add some users to the db - wihch generates that number of blocks
     entities = {
         "users": [{"user_id": i} for i in range(10)],
-        "tracks": [{"track_id": i, "owner_id": 3} for i in range(10)],
+        "tracks": [{"track_id": i, "owner_id": i} for i in range(10)],
         "playlists": [
             {
                 "playlist_id": 1,
                 "owner_id": 3,
-                "playlist_contents": {"track_ids": [1, 2, 3]},
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 1},
+                        {"track": 2},
+                        {"track": 3},
+                        {"track": 4},
+                        {"track": 5},
+                    ]
+                },
             },
             {
                 "playlist_id": 2,
                 "owner_id": 3,
-                "playlist_contents": {"track_ids": [4, 5, 6]},
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 6},
+                        {"track": 7},
+                        {"track": 8},
+                        {"track": 9},
+                        {"track": 10},
+                    ]
+                },
             },
             # Should be excluded from scoring
             {
                 "playlist_id": 3,
                 "owner_id": 3,
-                "playlist_contents": {"track_ids": [7]},
+                "playlist_contents": {"track_ids": [{"track": 11}]},
             },
+        ],
+        "playlist_tracks": [
+            {"playlist_id": 1, "track_id": 1, "is_removed": False},
+            {"playlist_id": 1, "track_id": 2, "is_removed": False},
+            {"playlist_id": 1, "track_id": 3, "is_removed": False},
+            {"playlist_id": 1, "track_id": 4, "is_removed": False},
+            {"playlist_id": 1, "track_id": 5, "is_removed": False},
+            {"playlist_id": 2, "track_id": 6, "is_removed": False},
+            {"playlist_id": 2, "track_id": 7, "is_removed": False},
+            {"playlist_id": 2, "track_id": 8, "is_removed": False},
+            {"playlist_id": 2, "track_id": 9, "is_removed": False},
+            {"playlist_id": 2, "track_id": 10, "is_removed": False},
         ],
         "saves": [
             {"save_item_id": 6, "user_id": i, "repost_type": "track"} for i in range(20)

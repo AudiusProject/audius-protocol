@@ -1,5 +1,10 @@
-import { ComponentType, PureComponent, RefObject } from 'react'
+import { ComponentProps, ComponentType, PureComponent, RefObject } from 'react'
 
+import {
+  selectAccountHasTracks,
+  useCurrentAccountUser,
+  useProfileUser
+} from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -9,12 +14,13 @@ import {
   Status,
   ID,
   UID,
-  Track
+  Track,
+  User
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
+import { getIsSubscribed } from '@audius/common/src/store/pages/profile/selectors'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions,
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
@@ -41,7 +47,7 @@ import {
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
@@ -73,11 +79,9 @@ const { open } = mobileOverflowMenuUIActions
 const { fetchHasTracks } = accountActions
 const { createPlaylist } = cacheCollectionsActions
 
-const { makeGetProfile, getProfileFeedLineup, getProfileTracksLineup } =
-  profilePageSelectors
-const { getUserId, getAccountHasTracks } = accountSelectors
+const { getProfileFeedLineup, getProfileTracksLineup } = profilePageSelectors
 const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
+const { getBlockees, getBlockers, useCanCreateChat } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -97,12 +101,18 @@ type OwnProps = {
   children:
     | ComponentType<MobileProfilePageProps>
     | ComponentType<DesktopProfilePageProps>
+  profile: {
+    status: Status | null | undefined
+    isSubscribed: boolean | null | undefined
+    profile: User | undefined | null
+  }
 }
 
 type ProfilePageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps &
+  HookStateProps
 
 type ProfilePageState = {
   activeTab: ProfilePageTabs | null
@@ -163,7 +173,7 @@ class ProfilePageClassComponent extends PureComponent<
         action === 'POP'
       ) {
         const params = parseUserRoute(getPathname(location))
-        if (params?.handle) {
+        if (params) {
           // Fetch profile if this is a new profile page
           this.fetchProfile(getPathname(location))
         }
@@ -176,9 +186,6 @@ class ProfilePageClassComponent extends PureComponent<
   }
 
   componentWillUnmount() {
-    // Reset current user to prevent jarring users with previous profile state
-    // e.g. profile -> explore -> profile
-    this.props.setCurrentUser(null)
     if (this.unlisten) {
       // Push unlisten to end of event loop. On some browsers, the back button
       // will cause the component to unmount and remove the unlisten faster than
@@ -298,9 +305,9 @@ class ProfilePageClassComponent extends PureComponent<
     shouldSetLoading = true
   ) => {
     const params = parseUserRoute(pathname)
-    if (params?.handle) {
+    if (params) {
       this.props.fetchProfile(
-        params.handle.toLowerCase(),
+        params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
         shouldSetLoading
@@ -698,7 +705,7 @@ class ProfilePageClassComponent extends PureComponent<
     } = this.props
     // Handle logged-out case, redirect to signup
     if (
-      this.props.chatPermissions.callToAction === ChatPermissionAction.SIGN_UP
+      this.props.chatPermissions?.callToAction === ChatPermissionAction.SIGN_UP
     ) {
       return this.props.redirectUnauthenticatedAction()
     }
@@ -938,8 +945,8 @@ class ProfilePageClassComponent extends PureComponent<
         : false,
       canCreateChat:
         // In the signed out case, we show the chat button (but redirect to signup)
-        this.props.chatPermissions.canCreateChat ||
-        this.props.chatPermissions.callToAction ===
+        this.props.chatPermissions?.canCreateChat ||
+        this.props.chatPermissions?.callToAction ===
           ChatPermissionAction.SIGN_UP,
       showBlockUserConfirmationModal: this.state.showBlockUserConfirmationModal,
       onCloseBlockUserConfirmationModal: this.onCloseBlockUserConfirmationModal,
@@ -964,7 +971,6 @@ class ProfilePageClassComponent extends PureComponent<
 }
 
 function makeMapStateToProps() {
-  const getProfile = makeGetProfile()
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState, props: RouteComponentProps) => {
@@ -973,27 +979,16 @@ function makeMapStateToProps() {
     const params = parseUserRoute(pathname)
     const handleLower = params?.handle?.toLowerCase() as string
 
-    const profile = getProfile(state)
-    const accountUserId = getUserId(state)
-    const accountHasTracks =
-      accountUserId === profile.profile?.user_id
-        ? getAccountHasTracks(state)
-        : null
     return {
-      accountUserId,
-      profile,
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      chatPermissions: getCanCreateChat(state, {
-        userId: profile.profile?.user_id
-      }),
+
       blockeeList: getBlockees(state),
-      blockerList: getBlockers(state),
-      accountHasTracks
+      blockerList: getBlockers(state)
     }
   }
   return mapStateToProps
@@ -1022,8 +1017,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           deleteExistingEntry
         )
       ),
-    setCurrentUser: (handle: string | null) =>
-      dispatch(profileActions.setCurrentUser(handle)),
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },
@@ -1163,6 +1156,49 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
   }
 }
 
-export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePage)
+type HookStateProps = {
+  accountUserId?: ID | undefined
+  accountHasTracks?: boolean | undefined
+  chatPermissions?: ReturnType<typeof useCanCreateChat>
+}
+const hookStateToProps = (Component: typeof ProfilePage) => {
+  return (props: ProfilePageProps) => {
+    const { data: accountData } = useCurrentAccountUser({
+      select: (user) => ({
+        accountUserId: user?.user_id,
+        accountHasTracks: selectAccountHasTracks(user)
+      })
+    })
+    const chatPermissions = useCanCreateChat(props.profile?.profile?.user_id)
+    return (
+      <ProfilePage
+        {...(accountData as HookStateProps)}
+        chatPermissions={chatPermissions}
+        {...props}
+      />
+    )
+  }
+}
+
+const ProfilePageInner = withRouter(
+  connect(
+    makeMapStateToProps,
+    mapDispatchToProps
+  )(hookStateToProps(ProfilePage))
 )
+
+const ProfilePageProviderWrapper = (
+  props: Omit<ComponentProps<typeof ProfilePageInner>, 'profile'>
+) => {
+  const profile = useProfileUser()
+  const isSubscribed = useSelector(getIsSubscribed)
+
+  return (
+    <ProfilePageInner
+      {...props}
+      profile={{ profile: profile.user, isSubscribed, status: profile.status }}
+    />
+  )
+}
+
+export default ProfilePageProviderWrapper

@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
 import {
-  useRemixes,
+  useRemixesLineup,
   useRemixContest,
-  useCurrentUserId
+  useCurrentUserId,
+  useRemixes
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
@@ -21,6 +22,7 @@ import {
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
+import { MIN_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import Page from 'components/page/Page'
@@ -63,13 +65,21 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const { data: currentUserId } = useCurrentUserId()
   const { data: contest } = useRemixContest(originalTrack?.track_id)
   const winnerCount = contest?.eventData?.winners?.length ?? 0
+  const { data: remixes } = useRemixes({
+    trackId: originalTrack?.track_id,
+    isContestEntry: true
+  })
+  const remixCount = remixes?.pages[0]?.count ?? 0
 
   const isRemixContest = isRemixContestEnabled && contest
   const isTrackOwner = currentUserId === originalTrack.owner_id
   const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
   const showPickWinnersButton =
-    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+    isRemixContestWinnersMilestoneEnabled &&
+    isTrackOwner &&
+    isRemixContestEnded &&
+    remixCount > 0
 
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
   const {
@@ -84,7 +94,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
     loadNextPage,
     isPlaying,
     lineup
-  } = useRemixes({
+  } = useRemixesLineup({
     trackId: originalTrack?.track_id,
     includeOriginal: true,
     includeWinners: isRemixContestWinnersMilestoneEnabled,
@@ -189,7 +199,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
       header={renderHeader()}
     >
-      <Flex direction='column' gap='xl'>
+      <Flex direction='column' gap='xl' css={{ minWidth: MIN_PAGE_WIDTH_PX }}>
         <Text variant='heading'>{messages.originalTrack}</Text>
         <TanQueryLineup
           data={data}

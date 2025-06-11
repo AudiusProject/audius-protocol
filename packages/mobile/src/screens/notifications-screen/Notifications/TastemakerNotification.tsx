@@ -1,9 +1,7 @@
 import React, { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
+import { useNotificationEntity, useUser } from '@audius/common/api'
 import type { TastemakerNotification as TastemakerNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import { IconTastemaker } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -15,8 +13,6 @@ import {
   NotificationTile,
   NotificationTwitterButton
 } from '../Notification'
-
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Tastemaker',
@@ -34,9 +30,7 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
   const { notification } = props
   const navigation = useNotificationNavigation()
   const entity = useNotificationEntity(notification)
-  const trackOwnerUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const { data: trackOwnerUser } = useUser(notification.userId)
 
   const handlePress = useCallback(() => {
     if (entity) {

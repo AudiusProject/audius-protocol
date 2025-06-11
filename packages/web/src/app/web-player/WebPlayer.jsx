@@ -8,16 +8,17 @@ import {
   useCallback
 } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import {
+  selectIsGuestAccount,
+  useAccountStatus,
+  useCurrentAccount,
+  useHasAccount
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
-import {
-  accountSelectors,
-  ExploreCollectionsVariant,
-  UploadType
-} from '@audius/common/store'
+import { ExploreCollectionsVariant, UploadType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -152,6 +153,7 @@ const {
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHANGE_EMAIL_SETTINGS_PAGE,
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  LABEL_ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
@@ -200,8 +202,6 @@ const {
   SOLANA_TOOLS_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus, getIsGuestAccount } = accountSelectors
-
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
@@ -238,14 +238,16 @@ const WebPlayer = (props) => {
 
   const dispatch = useDispatch()
 
-  // Convert mapStateToProps to useSelector
-  const hasAccount = useSelector(getHasAccount)
-  const accountStatus = useSelector(getAccountStatus)
-  const { data: userHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccount({
+    select: (account) => ({
+      userHandle: account?.user?.handle,
+      isGuestAccount: selectIsGuestAccount(account)
+    })
   })
+  const hasAccount = useHasAccount()
+  const { userHandle, isGuestAccount = false } = accountData || {}
+  const { data: accountStatus } = useAccountStatus()
   const showCookieBanner = useSelector(getShowCookieBanner)
-  const isGuestAccount = useSelector(getIsGuestAccount)
 
   // Convert mapDispatchToProps to useCallback with useDispatch
   const updateRouteOnSignUpCompletion = useCallback(
@@ -707,7 +709,7 @@ const WebPlayer = (props) => {
                         }).toString()
                       }}
                     />
-                  ) : isSearchExploreEnabled ? (
+                  ) : isSearchExploreEnabled && !isMobile ? (
                     <ExplorePage />
                   ) : (
                     <SearchPage />
@@ -848,7 +850,8 @@ const WebPlayer = (props) => {
                   SETTINGS_PAGE,
                   AUTHORIZED_APPS_SETTINGS_PAGE,
                   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE
+                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+                  LABEL_ACCOUNT_SETTINGS_PAGE
                 ]}
                 isMobile={isMobile}
                 component={SettingsPage}

@@ -114,7 +114,6 @@ export const useUnfavoriteTrack = () => {
       primeTrackData({
         tracks: [{ ...previousTrack, ...update }],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 

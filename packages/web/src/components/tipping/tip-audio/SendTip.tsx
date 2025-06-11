@@ -1,11 +1,11 @@
 import { cloneElement, useCallback, useState } from 'react'
 
+import { useAudioBalance } from '@audius/common/api'
 import { BadgeTier, StringWei, StringAudio } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   tippingSelectors,
   tippingActions,
-  walletSelectors,
   getTierAndNumberForBalance,
   buyAudioActions,
   OnRampProvider
@@ -39,7 +39,6 @@ import { ProfileInfo } from '../../profile-info/ProfileInfo'
 import { SupporterPrompt } from './SupporterPrompt'
 import styles from './TipAudio.module.css'
 
-const { getAccountBalance } = walletSelectors
 const { getSendUser } = tippingSelectors
 const { beginTip, resetSend, sendTip } = tippingActions
 const { startBuyAudioFlow } = buyAudioActions
@@ -61,7 +60,17 @@ const zeroWei = stringWeiToBN('0' as StringWei)
 export const SendTip = () => {
   const dispatch = useDispatch()
   const receiver = useSelector(getSendUser)
-  const accountBalance = useSelector(getAccountBalance) ?? zeroWei
+
+  const { accountBalance: audioBalanceBigInt, isLoading: isBalanceLoading } =
+    useAudioBalance({
+      includeConnectedWallets: false
+    })
+
+  // Convert BigInt to BN for compatibility with existing code
+  const accountBalance = audioBalanceBigInt
+    ? stringWeiToBN(audioBalanceBigInt.toString() as StringWei)
+    : zeroWei
+
   const [tipAmount, setTipAmount] = useState('')
 
   const { tier } = getTierAndNumberForBalance(weiToString(accountBalance))
@@ -123,7 +132,7 @@ export const SendTip = () => {
           <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
         <span className={styles.amountAvailable}>
-          {isNullOrUndefined(accountBalance) ? (
+          {isBalanceLoading || isNullOrUndefined(accountBalance) ? (
             <Skeleton width='20px' height='14px' />
           ) : (
             formatWei(accountBalance, true, 0)

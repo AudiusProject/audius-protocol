@@ -97,7 +97,6 @@ export const useUpdateTrack = () => {
         primeTrackData({
           tracks: [{ ...previousTrack, ...metadata }] as UserTrackMetadata[],
           queryClient,
-          dispatch,
           forceReplace: true
         })
       }

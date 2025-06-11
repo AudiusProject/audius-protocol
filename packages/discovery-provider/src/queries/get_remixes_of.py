@@ -53,6 +53,19 @@ def get_remixes_of(args):
             # Use the track owner id to fetch reposted/saved tracks returned first
             ParentTrack = aliased(Track)
 
+            # Create a subquery to get only the most recent event per track
+            # This prevents duplicate rows when a track has multiple remix contest events
+            DistinctEvent = aliased(
+                session.query(Event)
+                .filter(
+                    Event.event_type == EventType.remix_contest,
+                    Event.is_deleted == False,
+                )
+                .distinct(Event.entity_id)
+                .order_by(Event.entity_id, desc(Event.created_at))
+                .subquery()
+            )
+
             base_query = (
                 session.query(Track)
                 .join(
@@ -92,12 +105,8 @@ def get_remixes_of(args):
                 )
                 .outerjoin(ParentTrack, ParentTrack.track_id == Remix.parent_track_id)
                 .outerjoin(
-                    Event,
-                    and_(
-                        Event.entity_id == ParentTrack.track_id,
-                        Event.event_type == EventType.remix_contest,
-                        Event.is_deleted == False,
-                    ),
+                    DistinctEvent,
+                    DistinctEvent.c.entity_id == ParentTrack.track_id,
                 )
                 .filter(
                     Track.is_current == True,
@@ -115,8 +124,8 @@ def get_remixes_of(args):
             if only_contest_entries:
                 base_query = base_query.filter(
                     and_(
-                        Event.created_at <= Track.created_at,
-                        Track.created_at <= Event.end_date,
+                        DistinctEvent.c.created_at <= Track.created_at,
+                        Track.created_at <= DistinctEvent.c.end_date,
                     )
                 )
 

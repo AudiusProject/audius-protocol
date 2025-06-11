@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 
-import { useWalletOwner } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentAccountUser, useWalletOwner } from '@audius/common/api'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
@@ -11,9 +10,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
-
-const { getAccountUser } = accountSelectors
 
 const messages = {
   builtInWallet: 'Built-In Wallet'
@@ -39,8 +35,9 @@ const PayoutWalletDisplaySkeleton = () => {
 }
 
 export const PayoutWalletDisplay = () => {
-  const user = useSelector(getAccountUser)
-  const payoutWallet = user?.spl_usdc_payout_wallet
+  const { data: payoutWallet } = useCurrentAccountUser({
+    select: (user) => user?.spl_usdc_payout_wallet
+  })
   const { cornerRadius } = useTheme()
 
   const { data: externalWalletOwner, isLoading: isLoadingOwner } =

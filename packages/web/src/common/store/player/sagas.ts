@@ -1,7 +1,6 @@
-import { queryTrack } from '@audius/common/api'
+import { queryCurrentUserId, queryTrack } from '@audius/common/api'
 import { Kind, type Track, Feature } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheActions,
   queueActions,
   reachabilitySelectors,
@@ -24,20 +23,19 @@ import {
 import { Id, OptionalId } from '@audius/sdk'
 import { EventChannel, eventChannel } from 'redux-saga'
 import {
-  select,
   take,
   call,
   put,
   spawn,
   takeLatest,
-  delay
+  delay,
+  select
 } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
 
-const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
 const {
@@ -117,7 +115,7 @@ export function* watchPlay() {
       }
 
       yield* call(waitForWrite)
-      const currentUserId = yield* select(getUserId)
+      const currentUserId = yield* call(queryCurrentUserId)
       const audiusSdk = yield* getContext('audiusSdk')
       const sdk = yield* call(audiusSdk)
 
@@ -222,7 +220,7 @@ export function* watchPlay() {
         audioPlayer.setPlaybackRate(playbackRate)
 
         // Set playback position for track to in progress if not already tracked
-        const currentUserId = yield* select(getUserId)
+        const currentUserId = yield* call(queryCurrentUserId)
         const trackPlaybackInfo = yield* select(getTrackPosition, {
           trackId,
           userId: currentUserId
@@ -351,7 +349,7 @@ export function* watchSeek() {
 
     if (trackId) {
       const track = yield* queryTrack(trackId)
-      const currentUserId = yield* select(getUserId)
+      const currentUserId = yield* call(queryCurrentUserId)
       const isLongFormContent =
         track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 

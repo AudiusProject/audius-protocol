@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useOtherChatUsers } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { chatSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
@@ -15,7 +16,7 @@ import type { AppTabScreenParamList } from '../app-screen'
 
 import { ChatListItemSkeleton } from './ChatListItemSkeleton'
 
-const { getSingleOtherChatUser, getChat } = chatSelectors
+const { getChat } = chatSelectors
 
 const messages = {
   new: 'new'
@@ -37,10 +38,8 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
   const navigation = useNavigation<AppTabScreenParamList>()
 
   const chat = useProxySelector((state) => getChat(state, chatId), [chatId])
-  const otherUser = useProxySelector(
-    (state) => getSingleOtherChatUser(state, chatId),
-    [chatId]
-  )
+  const otherUsers = useOtherChatUsers(chatId)
+  const otherUser = otherUsers[0]
   const lastMessage = useRemoveLeadingWhitespace(
     (!chat?.is_blast && chat?.last_message) || ''
   )

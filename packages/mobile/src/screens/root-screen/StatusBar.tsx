@@ -1,11 +1,8 @@
+import { useAccountStatus } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { NavigationBar, StatusBar as RNStatusBar } from 'react-native-bars'
-import { useSelector } from 'react-redux'
 
 import { Theme, useThemeVariant } from 'app/utils/theme'
-
-const { getAccountStatus } = accountSelectors
 
 type ThemedStatusBarProps = {
   isAppLoaded: boolean
@@ -15,7 +12,7 @@ type ThemedStatusBarProps = {
 export const StatusBar = (props: ThemedStatusBarProps) => {
   const { isAppLoaded, isSplashScreenDismissed } = props
   const theme = useThemeVariant()
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: accountStatus } = useAccountStatus()
 
   // Status & nav bar content (the android software buttons) should be light
   // while in a dark theme or the splash screen is still visible

@@ -10,7 +10,7 @@ import { call } from 'typed-redux-saga'
 
 type RetrieveUserTracksArgs = {
   handle: string
-  currentUserId: ID | null
+  currentUserId: ID | null | undefined
   sort?: 'date' | 'plays'
   offset?: number
   limit?: number

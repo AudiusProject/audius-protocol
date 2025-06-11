@@ -68,29 +68,31 @@ const smartCollections = [
 ]
 
 export const ExploreTabScreen =
-  createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => (
-    <>
-      <Stack.Screen name='Explore' component={ExploreScreen} />
-      <Stack.Screen name='PremiumTracks' component={PremiumTracksScreen} />
-      <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
-      <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
-      <Stack.Screen
-        name='TrendingPlaylists'
-        component={TrendingPlaylistsScreen}
-      />
-      <Stack.Screen
-        name='TrendingUnderground'
-        component={TrendingUndergroundScreen}
-      />
-      {smartCollections.map((collection) => (
-        <Stack.Screen name={collection.screen} key={collection.screen}>
-          {() => <SmartCollectionScreen smartCollection={collection} />}
-        </Stack.Screen>
-      ))}
-      {moodCollections.map((collection) => (
-        <Stack.Screen name={collection.screen} key={collection.screen}>
-          {() => <MoodCollectionScreen collection={collection} />}
-        </Stack.Screen>
-      ))}
-    </>
-  ))
+  createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => {
+    return (
+      <>
+        <Stack.Screen name='Explore' component={ExploreScreen} />
+        <Stack.Screen name='PremiumTracks' component={PremiumTracksScreen} />
+        <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
+        <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
+        <Stack.Screen
+          name='TrendingPlaylists'
+          component={TrendingPlaylistsScreen}
+        />
+        <Stack.Screen
+          name='TrendingUnderground'
+          component={TrendingUndergroundScreen}
+        />
+        {smartCollections.map((collection) => (
+          <Stack.Screen name={collection.screen} key={collection.screen}>
+            {() => <SmartCollectionScreen smartCollection={collection} />}
+          </Stack.Screen>
+        ))}
+        {moodCollections.map((collection) => (
+          <Stack.Screen name={collection.screen} key={collection.screen}>
+            {() => <MoodCollectionScreen collection={collection} />}
+          </Stack.Screen>
+        ))}
+      </>
+    )
+  })

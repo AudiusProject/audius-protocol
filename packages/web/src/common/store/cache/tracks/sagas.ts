@@ -5,7 +5,9 @@ import {
 } from '@audius/common/adapters'
 import {
   getStemsQueryKey,
+  getUserQueryKey,
   queryAccountUser,
+  queryCurrentUserId,
   queryTrack,
   queryUser,
   updateTrackData
@@ -20,23 +22,19 @@ import {
 } from '@audius/common/models'
 import {
   getContext,
-  accountSelectors,
   cacheTracksActions as trackActions,
-  cacheActions,
   confirmerActions,
   TrackMetadataForUpload,
   stemsUploadActions,
   stemsUploadSelectors,
-  getSDK,
-  cacheUsersSelectors
+  getSDK
 } from '@audius/common/store'
 import {
   formatMusicalKey,
   makeKindId,
   squashNewLines,
   uuid,
-  waitForAccount,
-  waitForValue
+  waitForAccount
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
@@ -51,8 +49,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUserId, getAccountUser } = accountSelectors
-const { getUser } = cacheUsersSelectors
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
@@ -82,7 +78,8 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
 
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
-  action.formFields.description = squashNewLines(action.formFields.description)
+  action.formFields.description =
+    squashNewLines(action.formFields.description) ?? null
 
   const currentTrack = yield* queryTrack(action.trackId)
   if (!currentTrack) return
@@ -210,7 +207,7 @@ function* confirmEditTrack(
       function* () {
         yield* waitForAccount()
         // Need to poll with the new track name in case it changed
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot edit track')
         }
@@ -266,7 +263,8 @@ function* deleteTrackAsync(
   action: ReturnType<typeof trackActions.deleteTrack>
 ) {
   yield* waitForWrite()
-  const user = yield* select(getAccountUser)
+  const user = yield* call(queryAccountUser)
+  const queryClient = yield* getContext('queryClient')
   if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -278,17 +276,14 @@ function* deleteTrackAsync(
 
   // Before deleting, check if the track is set as the artist pick & delete if so
   if (user.artist_pick_track_id === action.trackId) {
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
-            artist_pick_track_id: null
-          }
-        }
-      ])
-    )
-    const user = yield* call(waitForValue, getUser, { id: userId })
+    queryClient.setQueryData(getUserQueryKey(userId), (prevUser) => {
+      if (!prevUser) return prevUser
+      return {
+        ...prevUser,
+        artist_pick_track_id: null
+      }
+    })
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
   }
 
@@ -305,7 +300,7 @@ function* confirmDeleteTrack(track: Track) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         yield* waitForAccount()
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete track')
         }

@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { Theme } from '@audius/common/models'
-import {
-  accountSelectors,
-  tokenDashboardPageActions
-} from '@audius/common/store'
+import { tokenDashboardPageActions } from '@audius/common/store'
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconSolana } from '@audius/harmony-native'
 import {
@@ -21,7 +19,6 @@ import { WalletConnectOption } from './WalletConnectOption'
 import useAuthorization from './useSolanaPhoneAuthorization'
 
 const { updateWalletError } = tokenDashboardPageActions
-const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Solana Mobile'
@@ -41,7 +38,7 @@ const useStyles = makeStyles(({ type }) => ({
 export const SolanaPhoneOption = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
 
   const { authorizeSession, selectedAccount } = useAuthorization()
   const handleConnectWallet = useCallback(async () => {

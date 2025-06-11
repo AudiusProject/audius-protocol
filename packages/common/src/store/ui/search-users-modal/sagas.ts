@@ -2,14 +2,13 @@ import { OptionalId } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { transformAndCleanList, userMetadataFromSDK } from '~/adapters'
-import { accountSelectors } from '~/store/account'
+import { queryCurrentUserId } from '~/api'
 import { processAndCacheUsers } from '~/store/cache/users/utils'
 import { SearchKind } from '~/store/pages/search-results/types'
 import { getSDK } from '~/store/sdkUtils'
 import * as searchUsersModalSelectors from '~/store/ui/search-users-modal/selectors'
 import { actions as searchUsersModalActions } from '~/store/ui/search-users-modal/slice'
 
-const { getUserId } = accountSelectors
 const { searchUsers, searchUsersSucceeded } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 
@@ -18,7 +17,7 @@ function* doSearchUsers(action: ReturnType<typeof searchUsers>) {
   const sdk = yield* getSDK()
   const userList = yield* select(getUserList)
   try {
-    const currentUserId = yield* select(getUserId)
+    const currentUserId = yield* call(queryCurrentUserId)
     const { data } = yield* call([sdk.full.search, sdk.full.search.search], {
       query,
       limit,

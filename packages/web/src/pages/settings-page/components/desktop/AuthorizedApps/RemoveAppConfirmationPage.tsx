@@ -1,17 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
-import { useRemoveAuthorizedApp } from '@audius/common/api'
+import { useCurrentUserId, useRemoveAuthorizedApp } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Button, ModalFooter } from '@audius/harmony'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 
 import styles from './RemoveAppConfirmationPage.module.css'
 import { AuthorizedAppPageProps, AuthorizedAppsPages } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   confirmation: 'Are you sure you want to remove this app?',
@@ -34,7 +30,7 @@ export const RemoveAppConfirmationPage = (
     isError
   } = useRemoveAuthorizedApp()
   const errorMessage = error?.message
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const record = useRecord()
   const address = params?.address
   const apiKey = address?.slice(2)

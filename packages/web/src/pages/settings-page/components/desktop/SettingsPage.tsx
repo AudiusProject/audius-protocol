@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useCurrentAccount, useQueryContext } from '@audius/common/api'
+import { useCurrentAccountUser, useQueryContext } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { settingsMessages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
@@ -17,9 +17,8 @@ import {
   themeSelectors,
   themeActions,
   signOutActions,
-  accountSelectors,
-  getTierAndVerifiedForUser,
-  musicConfettiActions
+  musicConfettiActions,
+  useTierAndVerifiedForUser
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -60,7 +59,6 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
-import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,
   isSafariPushAvailable,
@@ -77,6 +75,7 @@ import packageInfo from '../../../../../package.json'
 
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
+import { LabelAccountSettingsCard } from './LabelAccount/LabelAccountSettingsCard'
 import { ListeningHistorySettingsCard } from './ListeningHistory'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
@@ -101,7 +100,6 @@ const {
   getNotificationSettings,
   updateEmailFrequency: updateEmailFrequencyAction
 } = settingsPageActions
-const { getAccountVerified, getUserId, getUserName } = accountSelectors
 const { subscribeBrowserPushNotifications, instagramLogin } = accountActions
 
 const {
@@ -110,7 +108,6 @@ const {
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   TERMS_OF_SERVICE
 } = route
-const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 
 const isStaging = env.ENVIRONMENT === 'staging'
@@ -127,19 +124,19 @@ export const SettingsPage = () => {
   const isManagedAccount = useIsManagedAccount()
   const { authService, identityService } = useQueryContext()
 
-  const userId = useSelector(getUserId) ?? 0
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name,
+      isVerified: user?.is_verified
+    })
   })
-  const handle = accountHandle ?? ''
-  const name = useSelector(getUserName) ?? ''
-  const isVerified = useSelector(getAccountVerified)
+  const { handle, name, userId, isVerified } = accountData ?? {}
   const theme = useSelector(getTheme)
   const emailFrequency = useSelector(getEmailFrequency)
   const notificationSettings = useSelector(getBrowserNotificationSettings)
-  const tier = useSelector(
-    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
-  )
+  const { tier } = useTierAndVerifiedForUser(userId)
   const showMatrix =
     tier === 'gold' ||
     tier === 'platinum' ||
@@ -371,7 +368,9 @@ export const SettingsPage = () => {
     return options
   }, [showMatrix])
 
-  const allowAiAttribution = useSelector(getAllowAiAttribution)
+  const { data: allowAiAttribution } = useCurrentAccountUser({
+    select: (user) => user?.allow_ai_attribution
+  })
   const { isEnabled: isCommentsEnabled } = useFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
@@ -514,6 +513,7 @@ export const SettingsPage = () => {
             </Button>
           </SettingsCard>
         ) : null}
+        <LabelAccountSettingsCard />
         <AccountsManagingYouSettingsCard />
         <AccountsYouManageSettingsCard />
         <SettingsCard

@@ -1,8 +1,9 @@
 import { PureComponent } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
-  accountSelectors,
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
@@ -21,11 +22,10 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 const { TRENDING_PAGE } = route
-const { makeGetCurrent } = queueSelectors
-const { getPlaying, getBuffering } = playerSelectors
+const { getSource } = queueSelectors
+const { getPlaying, getBuffering, getUid } = playerSelectors
 const { getDiscoverFeedLineup, getFeedFilter } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
-const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   feedTitle: 'Feed',
@@ -66,13 +66,18 @@ class FeedPageProvider extends PureComponent {
   }
 
   getLineupProps = (lineup) => {
-    const { currentQueueItem, playing, buffering } = this.props
-    const { uid: playingUid, track, source } = currentQueueItem
+    const {
+      playing,
+      buffering,
+      uid: playingUid,
+      source,
+      currentTrack
+    } = this.props
     return {
       lineup,
       playingUid,
       playingSource: source,
-      playingTrackId: track ? track.track_id : null,
+      playingTrackId: currentTrack ? currentTrack.track_id : null,
       playing,
       buffering,
       scrollParent: this.props.containerRef,
@@ -112,13 +117,12 @@ class FeedPageProvider extends PureComponent {
 }
 
 const makeMapStateToProps = () => {
-  const getCurrentQueueItem = makeGetCurrent()
   const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 
   const mapStateToProps = (state) => ({
-    hasAccount: getHasAccount(state),
     feed: getFeedLineup(state),
-    currentQueueItem: getCurrentQueueItem(state),
+    source: getSource(state),
+    uid: getUid(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
     feedFilter: getFeedFilter(state)
@@ -149,7 +153,16 @@ const mapDispatchToProps = (dispatch) => ({
 
 const FeedPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
-  return <FeedPageProvider isMobile={isMobile} {...props} />
+  const currentTrack = useCurrentTrack()
+  const hasAccount = useHasAccount()
+  return (
+    <FeedPageProvider
+      isMobile={isMobile}
+      currentTrack={currentTrack}
+      hasAccount={hasAccount}
+      {...props}
+    />
+  )
 }
 
 export default withRouter(

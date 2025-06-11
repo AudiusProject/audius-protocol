@@ -1,3 +1,4 @@
+import { useProfileUser } from '@audius/common/api'
 import { View, Text } from 'react-native'
 
 import { IconDonate, IconLink } from '@audius/harmony-native'
@@ -5,8 +6,6 @@ import { Link } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { prependProtocol } from 'app/utils/prependProtocol'
 import { useThemeColors } from 'app/utils/theme'
-
-import { useSelectProfile } from './selectors'
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   sites: {
@@ -33,7 +32,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 export const Sites = () => {
   const styles = useStyles()
   const { neutral } = useThemeColors()
-  const { website, donation } = useSelectProfile(['website', 'donation'])
+  const { website, donation } =
+    useProfileUser({
+      select: (user) => ({ website: user.website, donation: user.donation })
+    }).user ?? {}
   const iconProps = {
     height: 20,
     width: 20,

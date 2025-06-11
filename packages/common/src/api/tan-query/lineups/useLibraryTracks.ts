@@ -100,7 +100,7 @@ export const useLibraryTracks = (
         .map((activity) => userTrackMetadataFromSDK(activity.item))
         .filter(removeNullable)
 
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
       // Update lineup when new data arrives
       dispatch(

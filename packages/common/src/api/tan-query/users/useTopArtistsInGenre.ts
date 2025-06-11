@@ -4,7 +4,6 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -35,7 +34,6 @@ export const useTopArtistsInGenre = (
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args
 
   const simpleOptions = pick(options, [
@@ -59,7 +57,7 @@ export const useTopArtistsInGenre = (
         offset: (pageParam as number) * pageSize
       })
       const users = transformAndCleanList(data, userMetadataFromSDK)
-      primeUserData({ users, queryClient, dispatch })
+      primeUserData({ users, queryClient })
       return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),

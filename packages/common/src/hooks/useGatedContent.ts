@@ -2,7 +2,14 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useCurrentAccount, useTrack } from '~/api'
+import {
+  useCollection,
+  useCurrentAccount,
+  useHasAccount,
+  useTrack,
+  useUser,
+  useUsers
+} from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -15,10 +22,7 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
-import { getHasAccount } from '~/store/account/selectors'
-import { cacheCollectionsSelectors, cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
-import { CommonState } from '~/store/reducers'
 import {
   isContentPartialCollection,
   isContentPartialTrack
@@ -27,8 +31,6 @@ import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { useFeatureFlag } from './useFeatureFlag'
 
-const { getCollection } = cacheCollectionsSelectors
-const { getUser, getUsers } = cacheUsersSelectors
 const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
 export const useGatedTrackAccess = (trackId: ID) => {
@@ -48,11 +50,11 @@ export const useGatedTrackAccess = (trackId: ID) => {
 }
 
 export const useGatedCollectionAccess = (collectionId: ID) => {
-  const hasStreamAccess = useSelector((state: CommonState) => {
-    const collection = getCollection(state, { id: collectionId })
-    if (!collection) return false
-    const { is_stream_gated, access } = collection
-    return !is_stream_gated || !!access?.stream
+  const { data: hasStreamAccess } = useCollection(collectionId, {
+    select: (collection) => {
+      const { is_stream_gated, access } = collection ?? {}
+      return !is_stream_gated || !!access?.stream
+    }
   })
 
   return { hasStreamAccess }
@@ -77,7 +79,7 @@ export const useGatedContentAccess = (
   content: Nullable<PartialTrack> | Nullable<PartialCollection> | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
 
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useMemo(() => {
@@ -127,7 +129,7 @@ export const useGatedContentAccess = (
 
 export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
 
   const result = useMemo(() => {
     const map: {
@@ -176,11 +178,7 @@ export const useStreamConditionsEntity = (
     ? streamConditions?.nft_collection
     : null
 
-  const users = useSelector((state: CommonState) =>
-    getUsers(state, {
-      ids: [followUserId, tipUserId].filter(removeNullable)
-    })
-  )
+  const users = useUsers([followUserId, tipUserId].filter(removeNullable))
   const followee = followUserId ? users[followUserId]?.metadata : null
   const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
 
@@ -212,9 +210,7 @@ export const useStreamConditionsEntity = (
 export const useLockedContent = () => {
   const id = useSelector(getLockedContentId)
   const { data: track } = useTrack(id)
-  const owner = useSelector((state: CommonState) => {
-    return track?.owner_id ? getUser(state, { id: track.owner_id }) : null
-  })
+  const { data: owner } = useUser(track?.owner_id)
 
   return { id, track, owner }
 }
@@ -233,7 +229,7 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
     })
   })
   const { data: currentAccount, isPending } = useCurrentAccount()
-  const isOwner = track?.owner_id === currentAccount?.user?.user_id
+  const isOwner = track?.owner_id === currentAccount?.userId
 
   const price = isContentUSDCPurchaseGated(track?.download_conditions)
     ? track?.download_conditions.usdc_purchase.price

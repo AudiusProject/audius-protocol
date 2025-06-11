@@ -2,7 +2,6 @@ import logging  # pylint: disable=C0302
 import random
 
 from src.api.v1.helpers import extend_track, to_dict
-from src.queries.generate_unpopulated_trending_tracks import TRENDING_TRACKS_TTL_SEC
 from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
@@ -10,6 +9,7 @@ from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
 logger = logging.getLogger(__name__)
 
 DEFAULT_RECOMMENDED_LIMIT = 10
+RECOMMENDED_TRACKS_TTL_SEC = 30 * 60
 
 
 def get_recommended_tracks(args, strategy):
@@ -46,6 +46,8 @@ def get_full_recommended_tracks(request, args, strategy):
     else:
         key = get_trending_cache_key(to_dict(request.args), request.path)
         full_recommended = use_redis_cache(
-            key, TRENDING_TRACKS_TTL_SEC, lambda: get_recommended_tracks(args, strategy)
+            key,
+            RECOMMENDED_TRACKS_TTL_SEC,
+            lambda: get_recommended_tracks(args, strategy),
         )
     return full_recommended

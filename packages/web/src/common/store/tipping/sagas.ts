@@ -2,11 +2,12 @@ import {
   getSupportedUsersQueryKey,
   getSupporterQueryKey,
   getSupportersQueryKey,
-  getUserQueryKey
+  getUserQueryKey,
+  queryAccountUser,
+  queryWalletAddresses
 } from '@audius/common/api'
 import { Name, BNWei, SolanaWalletAddress } from '@audius/common/models'
 import {
-  accountSelectors,
   chatActions,
   tippingSelectors,
   tippingActions,
@@ -41,7 +42,6 @@ const {
 } = tippingActions
 const { getSendTipData } = tippingSelectors
 
-const { getAccountUser, getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
 
 /**
@@ -86,7 +86,7 @@ function* confirmTipIndexed({
 
 function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const walletClient = yield* getContext('walletClient')
-  const { currentUser } = yield* select(getWalletAddresses)
+  const { currentUser } = yield* call(queryWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to retrieve current user wallet address')
   }
@@ -126,7 +126,7 @@ function* sendTipAsync() {
   const sdk = yield* call(audiusSdk)
   const isNativeMobile = yield* getContext('isNativeMobile')
 
-  const sender = yield* select(getAccountUser)
+  const sender = yield* call(queryAccountUser)
   const {
     trackId,
     user: receiver,

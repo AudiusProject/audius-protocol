@@ -19,6 +19,7 @@ import { REACHABILITY_LONG_TIMEOUT } from 'store/reachability/sagas'
 
 import * as backendActions from './actions'
 import { getIsSettingUp, getIsSetup } from './selectors'
+
 const { getIsReachable } = reachabilitySelectors
 
 /**
@@ -65,6 +66,7 @@ function* setupBackend() {
   // If we couldn't connect, just sit here waiting for reachability.
   if (!establishedReachability) {
     console.warn('No internet connectivity')
+
     yield* put(accountActions.fetchAccountNoInternet())
     yield* take(reachabilityActions.SET_REACHABLE)
     console.info('Reconnected')

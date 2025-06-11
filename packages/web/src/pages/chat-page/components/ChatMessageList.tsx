@@ -11,13 +11,10 @@ import {
   useMemo
 } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useCanSendMessage } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import {
-  accountSelectors,
-  chatActions,
-  chatSelectors
-} from '@audius/common/store'
+import { chatActions, chatSelectors } from '@audius/common/store'
 import {
   hasTail,
   isEarliestUnread,
@@ -78,7 +75,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     const { firstOtherUser, canSendMessage, callToAction } =
       useCanSendMessage(chatId)
     const chat = useSelector((state) => getChat(state, chatId ?? ''))
-    const userId = useSelector(accountSelectors.getUserId)
+    const { data: userId } = useCurrentUserId()
     const currentUserId = OptionalId.parse(userId) ?? null
     const [unreadIndicatorEl, setUnreadIndicatorEl] =
       useState<HTMLDivElement | null>(null)

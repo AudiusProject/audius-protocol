@@ -1,12 +1,4 @@
-import { useEffect } from 'react'
-
-import {
-  Id,
-  OptionalId,
-  EntityType,
-  full,
-  EventEventTypeEnum
-} from '@audius/sdk'
+import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -15,18 +7,10 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
-import { eventMetadataListFromSDK } from '~/adapters/event'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
-import { PlaybackSource } from '~/models/Analytics'
-import {
-  remixesPageLineupActions,
-  remixesPageSelectors,
-  remixesPageActions
-} from '~/store/pages'
+import { remixesPageActions } from '~/store/pages'
 
-import { RemixContestData } from '../events'
-import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryKey } from '../tracks/useTrack'
 import { QueryKey, QueryOptions } from '../types'
@@ -38,17 +22,16 @@ const DEFAULT_PAGE_SIZE = 10
 
 export type UseRemixesArgs = {
   trackId: number | null | undefined
-  includeOriginal?: Boolean
-  includeWinners?: Boolean
+  includeOriginal?: boolean
+  includeWinners?: boolean
   pageSize?: number
   sortMethod?: full.GetTrackRemixesSortMethodEnum
   isCosign?: boolean
   isContestEntry?: boolean
 }
 
-type RemixesQueryData = {
+export type RemixesQueryData = {
   count: number
-  winnerCount: number | null
   tracks: { id: ID; type: EntityType }[]
 }
 
@@ -91,12 +74,6 @@ export const useRemixes = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  useEffect(() => {
-    if (trackId) {
-      dispatch(remixesPageActions.fetchTrackSucceeded({ trackId }))
-    }
-  }, [dispatch, trackId])
-
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({
       trackId,
@@ -134,38 +111,6 @@ export const useRemixes = (
         userTrackMetadataFromSDK
       )
 
-      let winnerCount: number | null = null
-
-      if (trackId) {
-        const { data: eventsData } = await sdk.events.getEntityEvents({
-          entityId: [Id.parse(trackId)],
-          userId: OptionalId.parse(currentUserId)
-        })
-
-        const events = eventMetadataListFromSDK(eventsData)
-        const remixContest = events.find(
-          (event) => event.eventType === EventEventTypeEnum.RemixContest
-        )
-        const winnerIds = (remixContest?.eventData as RemixContestData)?.winners
-        winnerCount = winnerIds.length
-
-        if (includeWinners && remixContest && winnerIds) {
-          const { data: winnersData } = await sdk.full.tracks.getBulkTracks({
-            id: winnerIds.map((id) => Id.parse(id)),
-            userId: OptionalId.parse(currentUserId)
-          })
-
-          const winners = transformAndCleanList(
-            winnersData,
-            userTrackMetadataFromSDK
-          )
-
-          processedTracks.splice(0, 0, ...winners)
-        }
-      }
-
-      primeTrackData({ tracks: processedTracks, queryClient, dispatch })
-
       if (includeOriginal && pageParam === 0) {
         const track = queryClient.getQueryData(getTrackQueryKey(trackId))
         if (track && data.tracks) {
@@ -176,15 +121,9 @@ export const useRemixes = (
         }
       }
 
-      // Update lineup when new data arrives
-      dispatch(
-        remixesPageLineupActions.fetchLineupMetadatas(
-          pageParam,
-          pageSize,
-          false,
-          { items: processedTracks }
-        )
-      )
+      primeTrackData({ tracks: processedTracks, queryClient })
+
+      // Update count in store
       dispatch(remixesPageActions.setCount({ count: data.count }))
 
       return {
@@ -192,50 +131,12 @@ export const useRemixes = (
           id: t.track_id,
           type: EntityType.TRACK
         })),
-        count: data.count,
-        winnerCount
+        count: data.count
       }
     },
-    placeholderData: (prev) => {
-      if (!prev || !(includeOriginal || includeWinners)) return undefined
-      return {
-        pages: [
-          {
-            tracks: prev?.pages[0]?.tracks.slice(
-              0,
-              (includeWinners ? (prev.pages[0].winnerCount ?? 0) : 0) +
-                (includeOriginal ? 1 : 0)
-            ),
-            count: prev?.pages[0]?.count,
-            winnerCount: prev?.pages[0]?.winnerCount
-          }
-        ]
-      }
-    },
-    ...options,
-    enabled: options?.enabled !== false && !!trackId
+    enabled: options?.enabled !== false && !!trackId,
+    ...options
   })
 
-  const lineupData = useLineupQuery({
-    lineupData: queryData.data?.pages.flatMap((page) => page.tracks) ?? [],
-    queryData,
-    queryKey: getRemixesQueryKey({
-      trackId,
-      includeOriginal,
-      includeWinners,
-      pageSize,
-      sortMethod,
-      isCosign,
-      isContestEntry
-    }),
-    lineupActions: remixesPageLineupActions,
-    lineupSelector: remixesPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE,
-    pageSize
-  })
-
-  return {
-    ...lineupData,
-    count: queryData.data?.pages[0]?.count
-  }
+  return queryData
 }

@@ -2,11 +2,14 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { queryUser, queryUserByHandle } from '@audius/common/api'
+import {
+  getUserQueryKey,
+  queryCurrentUserId,
+  queryUser,
+  queryUserByHandle
+} from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheActions,
   profilePageActions as profileActions,
   chatActions,
   reachabilitySelectors,
@@ -46,8 +49,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
 
-const { getUserId } = accountSelectors
-
 const {
   updateUserEthCollectibles,
   updateUserSolCollectibles,
@@ -75,6 +76,7 @@ function* fetchEthereumCollectiblesWithCollections(collectibles) {
 }
 
 export function* fetchEthereumCollectibles(user) {
+  const queryClient = yield getContext('queryClient')
   const sdk = yield* getSDK()
   const { data } = yield call([sdk.users, sdk.users.getConnectedWallets], {
     id: Id.parse(user.user_id)
@@ -97,15 +99,13 @@ export function* fetchEthereumCollectibles(user) {
     console.info('profile has no assets in OpenSea')
   }
 
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
           collectibleList
         }
-      }
-    ])
   )
   yield put(
     updateUserEthCollectibles({
@@ -119,15 +119,13 @@ export function* fetchEthereumCollectibles(user) {
     fetchEthereumCollectiblesWithCollections,
     collectibleList
   )
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
           collectibleList: collectiblesWithCollections
         }
-      }
-    ])
   )
   yield put(
     updateUserEthCollectibles({
@@ -146,6 +144,7 @@ export function* fetchSolanaCollectiblesForWallets(wallets) {
 
 export function* fetchSolanaCollectibles(user) {
   const sdk = yield* getSDK()
+  const queryClient = yield getContext('queryClient')
   const nftClient = yield getContext('nftClient')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
   yield call(waitForRemoteConfig)
@@ -169,13 +168,13 @@ export function* fetchSolanaCollectibles(user) {
     console.info('profile has no Solana NFTs')
   }
 
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: { solanaCollectibleList }
-      }
-    ])
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          solanaCollectibleList
+        }
   )
   yield put(
     updateUserSolCollectibles({
@@ -260,11 +259,10 @@ export function* fetchSolanaCollectibles(user) {
 function* fetchProfileAsync(action) {
   try {
     let user
-    if (action.handle) {
-      user = yield call(queryUserByHandle, action.handle)
-    } else if (action.userId) {
-      const users = yield call(queryUser, action.userId)
-      user = users.entries[action.userId].metadata
+    if (action.userId) {
+      user = yield call(queryUser, action.userId)
+    } else if (action.handle) {
+      user = yield call(queryUserByHandle, action.handle?.replace('/', ''))
     }
     if (!user) {
       const isReachable = yield select(getIsReachable)
@@ -317,14 +315,19 @@ function* watchUpdateProfile() {
 
 export function* updateProfileAsync(action) {
   yield waitForWrite()
+  const queryClient = yield getContext('queryClient')
   const metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
-  const accountUserId = yield select(getUserId)
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      { id: accountUserId, metadata: { name: metadata.name } }
-    ])
+  const accountUserId = yield call(queryCurrentUserId)
+
+  queryClient.setQueryData(getUserQueryKey(accountUserId), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          name: metadata.name
+        }
   )
 
   // For base64 images (coming from native), convert to a blob
@@ -342,13 +345,13 @@ export function* updateProfileAsync(action) {
 
   yield call(confirmUpdateProfile, metadata.user_id, metadata)
 
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: metadata.user_id,
-        metadata
-      }
-    ])
+  queryClient.setQueryData(getUserQueryKey(metadata.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          ...metadata
+        }
   )
 }
 
@@ -356,6 +359,7 @@ function* confirmUpdateProfile(userId, metadata) {
   yield waitForWrite()
   const sdk = yield* getSDK()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const queryClient = yield getContext('queryClient')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
@@ -373,7 +377,7 @@ function* confirmUpdateProfile(userId, metadata) {
           )
         }
         yield waitForAccount()
-        const currentUserId = yield select(getUserId)
+        const currentUserId = yield call(queryCurrentUserId)
         const { data = [] } = yield call(
           [sdk.full.users, sdk.full.users.getUser],
           {
@@ -398,13 +402,15 @@ function* confirmUpdateProfile(userId, metadata) {
           newMetadata.profile_picture_cids = confirmedUser.profile_picture_cids
           newMetadata.profile_picture = confirmedUser.profile_picture
         }
-        yield put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: confirmedUser.user_id,
-              metadata: newMetadata
-            }
-          ])
+        queryClient.setQueryData(
+          getUserQueryKey(confirmedUser.user_id),
+          (prevUser) =>
+            !prevUser
+              ? undefined
+              : {
+                  ...prevUser,
+                  ...newMetadata
+                }
         )
         yield put(profileActions.updateProfileSucceeded(metadata.user_id))
       },

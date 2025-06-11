@@ -4,7 +4,6 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -64,7 +63,6 @@ export const useLibraryCollections = (
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   return useInfiniteQuery({
     queryKey: getLibraryCollectionsQueryKey({
@@ -105,8 +103,7 @@ export const useLibraryCollections = (
 
       primeCollectionData({
         collections,
-        queryClient,
-        dispatch
+        queryClient
       })
 
       return collections.map((collection) => collection.playlist_id)

@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { SupporterRankUpNotification } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { Platform } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { env } from 'app/services/env'
@@ -12,7 +11,6 @@ import { EventNames } from 'app/types/analytics'
 import { NotificationTile, NotificationTwitterButton } from '../Notification'
 
 import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Top Supporter',
@@ -36,7 +34,7 @@ export const TopSupporterNotification = (
   const { rank } = notification
   const navigation = useNotificationNavigation()
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)

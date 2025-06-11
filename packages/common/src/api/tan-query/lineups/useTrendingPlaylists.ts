@@ -74,8 +74,7 @@ export const useTrendingPlaylists = (
       )
       primeCollectionData({
         collections: processedPlaylists,
-        queryClient,
-        dispatch
+        queryClient
       })
 
       // Update lineup when new data arrives

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import {
   uploadActions,
   UploadFormState,
@@ -14,6 +15,7 @@ import { useLocation } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
 import styles from './UploadPage.module.css'
@@ -70,6 +72,13 @@ export const UploadPage = (props: UploadPageProps) => {
   const [formState, setFormState] = useState<UploadFormState>(
     formStateFromStore ?? initialFormState
   )
+
+  // For navigating back to a remix contest page
+  const { data: originalTrack } = useTrack(
+    initialMetadata?.remix_of?.tracks[0].parent_track_id
+  )
+  const navigate = useNavigateToPage()
+
   // Start the user on the finish page if they have a form state
   const [phase, setPhase] = useState(
     formStateFromStore ? Phase.FINISH : Phase.SELECT
@@ -126,6 +135,7 @@ export const UploadPage = (props: UploadPageProps) => {
       page = (
         <SelectPage
           formState={formState}
+          initialMetadata={initialMetadata}
           onContinue={(formState: UploadFormState) => {
             setFormState(formState)
             setPhase(Phase.EDIT)
@@ -187,6 +197,14 @@ export const UploadPage = (props: UploadPageProps) => {
     }
   }, [handleUpload, phase, isUploading, uploadSuccess, uploadError])
 
+  const handleBack = useCallback(() => {
+    if (phase === Phase.EDIT && originalTrack) {
+      navigate(originalTrack.permalink)
+    } else {
+      setPhase(Phase.SELECT)
+    }
+  }, [phase, originalTrack, navigate])
+
   return (
     <Page
       title='Upload'
@@ -197,9 +215,7 @@ export const UploadPage = (props: UploadPageProps) => {
           icon={IconCloudUpload}
           primary={pageTitle}
           showBackButton={phase === Phase.EDIT}
-          onClickBack={() => {
-            setPhase(Phase.SELECT)
-          }}
+          onClickBack={handleBack}
         />
       }
     >

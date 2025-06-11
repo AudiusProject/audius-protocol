@@ -13,10 +13,11 @@ import { PartialDeep } from 'type-fest'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
+import { queryClient } from 'services/query-client'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
-import rootSaga from 'store/sagas'
+import rootSaga, { testRootSaga } from 'store/sagas'
 
 import { buildStoreContext } from './storeContext'
 import { AppState } from './types'
@@ -137,22 +138,17 @@ export const configureStore = ({
     amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
   }
 
-  // Only create saga middleware and context if not in test mode
-  const context = isTest
-    ? { dispatch: undefined }
-    : buildStoreContext({ isMobile })
-  const sagaMiddleware = isTest
-    ? null
-    : createSagaMiddleware({
-        onError: onSagaError,
-        context
-      })
+  const context = buildStoreContext({ isMobile, isTest })
+  const sagaMiddleware = createSagaMiddleware({
+    onError: onSagaError,
+    context
+  })
 
   // For tests, only use basic middleware without sagas
   const middlewares = isTest
-    ? applyMiddleware(routerMiddleware, thunk)
+    ? applyMiddleware(routerMiddleware, thunk, sagaMiddleware!)
     : applyMiddleware(
-        chatMiddleware(audiusSdk),
+        chatMiddleware(audiusSdk, queryClient),
         routerMiddleware,
         // Don't run sagas serverside
         ...(typeof window !== 'undefined' ? [sagaMiddleware!] : []),
@@ -174,8 +170,8 @@ export const configureStore = ({
   )
   context.dispatch = store.dispatch
 
-  if (typeof window !== 'undefined' && !isTest && sagaMiddleware) {
-    sagaMiddleware.run(rootSaga)
+  if (typeof window !== 'undefined' && sagaMiddleware) {
+    sagaMiddleware.run(isTest ? testRootSaga : rootSaga)
   }
 
   const reduxHistory = createReduxHistory(store)

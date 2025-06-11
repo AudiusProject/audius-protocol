@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useCurrentUserId, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   RepostSource,
@@ -9,7 +9,6 @@ import {
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
-  accountSelectors,
   castSelectors,
   castActions,
   reachabilitySelectors,
@@ -49,7 +48,6 @@ import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
 const { getUid } = playerSelectors
-const { getUserId } = accountSelectors
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { updateMethod } = castActions
@@ -109,7 +107,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { toast } = useToast()
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)

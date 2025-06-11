@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
-import { challengesSelectors, ClaimStatus } from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { ClaimStatus, useUserCompletionStages } from '@audius/common/store'
 import { getChallengeStatusLabel } from '@audius/common/utils'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import {
   Button,
@@ -21,8 +20,6 @@ import { getChallengeConfig } from 'app/utils/challenges'
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimError } from './ClaimError'
 import type { ChallengeContentProps } from './types'
-
-const { getCompletionStages } = challengesSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -77,10 +74,10 @@ export const ProfileCompletionChallengeContent = ({
   onClose
 }: ChallengeContentProps) => {
   const styles = useStyles()
-  const { data: currentUserHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: currentUserHandle } = useCurrentAccountUser({
+    select: (account) => account?.handle
   })
-  const completionStages = useSelector(getCompletionStages)
+  const completionStages = useUserCompletionStages()
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
   const config = getChallengeConfig(challengeName)

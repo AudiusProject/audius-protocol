@@ -1,5 +1,6 @@
 import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { themeSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
@@ -48,7 +49,9 @@ const StatTile = (props: { title: string; value: any }) => {
 export const DashboardPage = () => {
   const dispatch = useDispatch()
   const [selectedTrack, setSelectedTrack] = useState(-1)
-  const { account, tracks, stats } = useSelector(makeGetDashboard())
+
+  const { data: accountUser } = useCurrentAccountUser()
+  const { account, tracks, stats } = useSelector(makeGetDashboard(accountUser))
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)

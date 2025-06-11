@@ -1,13 +1,14 @@
 import { useCallback, useRef } from 'react'
 
+import type { ReactionTypes } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import type { ChatMessageWithExtras } from '@audius/common/models'
-import type { ReactionTypes } from '@audius/common/store'
-import { accountSelectors, chatActions } from '@audius/common/store'
+import { chatActions } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { OptionalId } from '@audius/sdk'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Dimensions, Pressable, Animated } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { usePopupAnimation } from 'app/hooks/usePopupAnimation'
 import { useToast } from 'app/hooks/useToast'
@@ -24,7 +25,6 @@ import {
   REACTION_CONTAINER_TOP_OFFSET
 } from './constants'
 
-const { getUserId } = accountSelectors
 const { setMessageReaction } = chatActions
 
 const messages = {
@@ -105,7 +105,7 @@ export const ReactionPopup = ({
 }: ReactionPopupProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const { toast } = useToast()
 
   const newReaction = useRef<string>()

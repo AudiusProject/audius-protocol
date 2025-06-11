@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { useCurrentAccount, useCollection } from '@audius/common/api'
+import { useCurrentAccountUser, useCollection } from '@audius/common/api'
 import {
   cacheCollectionsActions,
   duplicateAddConfirmationModalUISelectors
@@ -48,8 +48,8 @@ export const DuplicateAddConfirmationModal = () => {
       pick(collection, 'is_album', 'playlist_name', 'permalink')
   })
   const { is_album, playlist_name, permalink } = partialPlaylist ?? {}
-  const { data: accountHandle } = useCurrentAccount({
-    select: (data) => data?.user.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (data) => data?.handle
   })
   const [isOpen, setIsOpen] = useModalState('DuplicateAddConfirmation')
   const collectionType = is_album ? 'album' : 'playlist'

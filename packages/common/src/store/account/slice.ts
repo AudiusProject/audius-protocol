@@ -86,7 +86,6 @@ const slice = createSlice({
       const { collectionId, name } = action.payload
       state.collections[collectionId].name = name
     },
-    fetchSavedPlaylists: () => {},
     fetchSavedPlaylistsSucceeded: (
       state,
       action: PayloadAction<{ collections: AccountCollection[] }>
@@ -161,7 +160,6 @@ export const {
   fetchBrowserPushNotifications,
   fetchHasTracks,
   fetchLocalAccount,
-  fetchSavedPlaylists,
   fetchSavedPlaylistsSucceeded,
   instagramLogin,
   removeAccountPlaylist,

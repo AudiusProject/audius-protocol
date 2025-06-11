@@ -1,10 +1,14 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import { useApproveManagedAccount, useRemoveManager } from '@audius/common/api'
+import {
+  useApproveManagedAccount,
+  useCurrentUserId,
+  useRemoveManager
+} from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher, useIsManagedAccount } from '@audius/common/hooks'
 import { ManagedUserMetadata, Name } from '@audius/common/models'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
@@ -24,7 +28,6 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 
 import { sharedMessages } from '../sharedMessages'
@@ -32,8 +35,7 @@ import { sharedMessages } from '../sharedMessages'
 import { ArtistInfo } from './ArtistInfo'
 
 const { profilePage } = route
-const { getUserId } = accountSelectors
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   moreOptions: 'more options',
@@ -55,7 +57,7 @@ export const ManagedUserListItem = ({
   userData: { user, grant },
   onRemoveManager
 }: ManagedUserListItemProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const isManagerMode = useIsManagedAccount()
 
   const navigate = useNavigateToPage()
@@ -65,9 +67,7 @@ export const ManagedUserListItem = ({
 
   const { switchAccount } = useAccountSwitcher()
 
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id })
-  )
+  const { canCreateChat } = useCanCreateChat(user?.user_id)
 
   const composeChat = useComposeChat({
     user

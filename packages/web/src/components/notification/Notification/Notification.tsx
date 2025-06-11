@@ -20,6 +20,7 @@ import { CommentThreadNotification } from './CommentThreadNotification'
 import { FanRemixContestEndedNotification } from './FanRemixContestEndedNotification'
 import { FanRemixContestEndingSoonNotification } from './FanRemixContestEndingSoonNotification'
 import { FanRemixContestStartedNotification } from './FanRemixContestStartedNotification'
+import { FanRemixContestWinnersSelectedNotification } from './FanRemixContestWinnersSelectedNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -187,6 +188,13 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ArtistRemixContestSubmissions: {
         return (
           <ArtistRemixContestSubmissionsNotification
+            notification={notification}
+          />
+        )
+      }
+      case NotificationType.FanRemixContestWinnersSelected: {
+        return (
+          <FanRemixContestWinnersSelectedNotification
             notification={notification}
           />
         )

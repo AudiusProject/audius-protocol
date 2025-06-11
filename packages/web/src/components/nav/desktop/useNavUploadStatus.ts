@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { useUploadCompletionRoute } from '@audius/common/hooks'
 import { CommonState, uploadSelectors, UploadType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -25,8 +25,8 @@ export const useNavUploadStatus = () => {
   const uploadSuccess = useSelector(getUploadSuccess)
   const dispatch = useDispatch()
   const isOnUploadPage = useRouteMatch(UPLOAD_PAGE)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
   })
   const upload = useSelector((state: CommonState) => state.upload)
   const uploadType = upload.formState?.uploadType ?? UploadType.INDIVIDUAL_TRACK

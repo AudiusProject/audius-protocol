@@ -31,3 +31,4 @@ class ChallengeEvent(str, enum.Enum):
     tastemaker = "tastemaker"
     pinned_comment = "pinned_comment"
     cosign = "cosign"
+    remix_contest_winner = "remix_contest_winner"

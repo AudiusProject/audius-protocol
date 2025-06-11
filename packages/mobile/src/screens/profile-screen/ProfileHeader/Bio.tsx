@@ -1,9 +1,8 @@
+import { useProfileUser } from '@audius/common/api'
 import { View } from 'react-native'
 
 import { Text } from '@audius/harmony-native'
 import { UserGeneratedText } from 'app/components/core'
-
-import { useSelectProfile } from '../selectors'
 
 const MAX_BIO_LINES = 2
 
@@ -15,8 +14,10 @@ export type BioProps = {
 
 export const Bio = (props: BioProps) => {
   const { isExpandable, setIsExpandable, numberOfLines } = props
-  const profile = useSelectProfile(['bio'])
-  const { bio } = profile
+  const { bio } =
+    useProfileUser({
+      select: (user) => ({ bio: user.bio })
+    }).user ?? {}
 
   if (!bio) return null
 

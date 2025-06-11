@@ -2,26 +2,20 @@ import { useMemo } from 'react'
 
 import {
   makeLoadNextPage,
+  useCollections,
   useLibraryCollections as useLibraryCollectionsQuery
 } from '@audius/common/api'
-import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
-  cacheCollectionsSelectors,
   savedPageSelectors,
   SavedPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
 import type { CommonState, CollectionType } from '@audius/common/store'
-import {
-  filterCollections,
-  shallowCompare,
-  removeNullable
-} from '@audius/common/utils'
-import uniq from 'lodash/uniq'
+import { filterCollections } from '@audius/common/utils'
+import { difference } from 'lodash'
 import { useSelector } from 'react-redux'
 
-import { useOfflineTracksStatus } from 'app/hooks/useOfflineTrackStatus'
 import type { AppState } from 'app/store'
 import {
   getIsDoneLoadingFromDisk,
@@ -30,7 +24,6 @@ import {
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 const { getIsReachable } = reachabilitySelectors
-const { getCollection, getCollectionWithUser } = cacheCollectionsSelectors
 const {
   getCategory,
   getSelectedCategoryLocalAlbumAdds,
@@ -58,7 +51,6 @@ export const useLibraryCollections = ({
           : SavedPageTabs.PLAYLISTS
     })
   )
-  const offlineTracksStatus = useOfflineTracksStatus({ skipIfOnline: true })
 
   const locallyAddedCollectionIds = useSelector((state: CommonState) => {
     const ids =
@@ -73,13 +65,25 @@ export const useLibraryCollections = ({
       collectionType === 'albums'
         ? getSelectedCategoryLocalAlbumRemovals(state)
         : getSelectedCategoryLocalPlaylistRemovals(state)
-    return new Set(ids)
+    return ids
   })
+
+  const localCollectionIds = difference(
+    locallyAddedCollectionIds,
+    locallyRemovedCollectionIds
+  )
+
+  const { data: localCollections = [] } = useCollections(localCollectionIds)
+
+  const filteredLocalCollectionIds = filterCollections(localCollections, {
+    filterText: filterValue
+  }).map((collection) => collection.playlist_id)
 
   const {
     data: fetchedCollectionIds,
     isFetching,
     isSuccess,
+    isLoading,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -88,79 +92,26 @@ export const useLibraryCollections = ({
     collectionType,
     category: selectedCategory,
     query: filterValue,
-    pageSize: 20,
+    pageSize: 15,
     sortMethod: 'added_date',
     sortDirection: 'desc'
   })
 
-  // TODO: Filter collections using `filterCollections` from Common if all loaded, or by changing fetch args if not all loaded
-
-  const collectionIds = useProxySelector(
-    (state: AppState) => {
-      if (isReachable) {
-        const filteredLocallyAddedCollectionIds = filterCollections(
-          locallyAddedCollectionIds
-            .map((c) => getCollectionWithUser(state, { id: c }))
-            .filter(removeNullable),
-          { filterText: filterValue }
-        ).map((p) => p.playlist_id)
-        return uniq(
-          [
-            ...filteredLocallyAddedCollectionIds,
-            ...(fetchedCollectionIds || [])
-          ].filter((id) => !locallyRemovedCollectionIds.has(id))
-        )
-      }
-
-      if (!isDoneLoadingFromDisk) {
-        return []
-      }
-
-      const offlineCollectionsStatus = getOfflineCollectionsStatus(state)
-      const offlineCollectionIds = Object.keys(offlineCollectionsStatus).filter(
-        (k) => offlineCollectionsStatus[k] === OfflineDownloadStatus.SUCCESS
-      )
-      return offlineCollectionIds
-        .map((stringId) => Number(stringId))
-        .filter((collectionId) => {
-          const collection = getCollection(state, { id: collectionId })
-          if (collection == null) {
-            console.error(
-              `Unexpected missing fetched collection: ${collectionId}`
-            )
-            return false
-          }
-          const trackIds =
-            collection.playlist_contents.track_ids.map(
-              (trackData) => trackData.track
-            ) ?? []
-          if (
-            (collectionType === 'albums' && !collection.is_album) ||
-            (collectionType === 'playlists' && collection.is_album)
-          ) {
-            return false
-          }
-          // Don't show a playlist in Offline Mode if it has at least one track but none of the tracks have been downloaded yet OR if it is not marked for download
-          return (
-            trackIds.length === 0 ||
-            trackIds.some((t) => {
-              return (
-                offlineTracksStatus &&
-                offlineTracksStatus[t.toString()] ===
-                  OfflineDownloadStatus.SUCCESS
-              )
-            })
-          )
-        })
-    },
-    [
-      fetchedCollectionIds,
-      isReachable,
-      isDoneLoadingFromDisk,
-      offlineTracksStatus
-    ],
-    shallowCompare
+  const filteredFetchedCollectionIds = difference(
+    fetchedCollectionIds,
+    localCollectionIds
   )
+
+  const offlineCollectionIds = useSelector((state: AppState) => {
+    const offlineCollectionsStatus = getOfflineCollectionsStatus(state)
+    return Object.keys(offlineCollectionsStatus).filter(
+      (k) => offlineCollectionsStatus[k] === OfflineDownloadStatus.SUCCESS
+    )
+  })
+
+  const collectionIds = isReachable
+    ? [...filteredLocalCollectionIds, ...filteredFetchedCollectionIds]
+    : offlineCollectionIds
 
   const loadNextPage = useMemo(
     () =>
@@ -189,6 +140,7 @@ export const useLibraryCollections = ({
     loadNextPage,
     status,
     isPending,
+    isLoading,
     isFetchingNextPage
   }
 }

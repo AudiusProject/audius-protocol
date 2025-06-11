@@ -1,3 +1,5 @@
+import { User } from '~/models/User'
+import { AccountState } from '~/store/account/types'
 import {
   getUndisbursedUserChallenges,
   getUserChallenges,
@@ -16,7 +18,7 @@ import {
 } from '../../../models/AudioRewards'
 import { CommonState } from '../../commonStore'
 
-import { getCompletionStages } from './profile-progress'
+import { getUserCompletionStages } from './profile-progress'
 
 /**
  * Gets the state of a user challenge, with the most progress dominating
@@ -46,8 +48,14 @@ const getUserChallengeState = (
   return 'inactive'
 }
 
-export const getOptimisticUserChallengeStepCounts = (state: CommonState) => {
-  const profileCompletionStages = getCompletionStages(state)
+export const getOptimisticUserChallengeStepCounts = (
+  currentAccount: AccountState | undefined | null,
+  currentUser: User | undefined
+) => {
+  const profileCompletionStages = getUserCompletionStages(
+    currentAccount,
+    currentUser
+  )
   const profileCompletion = Object.values(profileCompletionStages).filter(
     Boolean
   ).length
@@ -144,9 +152,14 @@ const toOptimisticChallenge = (
  */
 export const getOptimisticUserChallenges = (
   state: CommonState,
+  currentAccount: AccountState | undefined | null,
+  currentUser: User | undefined,
   isNativeMobile?: boolean
 ) => {
-  const stepCountOverrides = getOptimisticUserChallengeStepCounts(state)
+  const stepCountOverrides = getOptimisticUserChallengeStepCounts(
+    currentAccount,
+    currentUser
+  )
   const userChallengesOverrides = getUserChallengesOverrides(state)
   const userChallenges = getUserChallenges(state)
   const undisbursedUserChallenges = getUndisbursedUserChallenges(state).reduce<

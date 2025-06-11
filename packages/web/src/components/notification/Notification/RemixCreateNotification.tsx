@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { useNotificationEntities } from '@audius/common/api'
+import { useNotificationEntities, useUser } from '@audius/common/api'
 import { Name, TrackMetadata } from '@audius/common/models'
 import {
-  notificationsSelectors,
   RemixCreateNotification as RemixCreateNotificationType,
   TrackEntity
 } from '@audius/common/store'
@@ -11,7 +10,6 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -23,7 +21,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New remix of your track',
@@ -43,7 +40,7 @@ export const RemixCreateNotification = (
   const { entityType, timeLabel, isViewed, childTrackId, parentTrackId } =
     notification
   const dispatch = useDispatch()
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.userId)
 
   const entities = useNotificationEntities(notification) as TrackEntity[] | null
   const childTrackEntity = entities?.find(

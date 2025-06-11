@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import type { ChallengeName } from '@audius/common/models'
 import {
   challengesSelectors,
@@ -43,8 +44,10 @@ export const ChallengeRewardsDrawer = () => {
   const dispatch = useDispatch()
   const modalType = useSelector(getChallengeRewardsModalType)
   const challengeName = modalType as unknown as ChallengeName
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
   const userChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, true)
+    getOptimisticUserChallenges(state, currentAccount, currentUser, true)
   )
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
   const claimStatus = useSelector(getClaimStatus)

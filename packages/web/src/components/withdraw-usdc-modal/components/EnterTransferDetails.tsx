@@ -5,7 +5,9 @@ import {
   useState
 } from 'react'
 
-import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { Name, BNUSDC } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -32,24 +34,13 @@ import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 
 const messages = {
   currentBalance: 'Current Balance',
-  amountToWithdraw: 'Amount to Withdraw',
-  amountToWithdrawLabel: 'Amount (USDC)',
-  destinationAddress: 'Destination Address',
-  howMuch: 'How much do you want to withdraw?',
-  destinationDetails: 'Solana USDC wallet address to receive funds.',
   solanaWallet: 'USDC Wallet (Solana)',
-  continue: 'Continue',
-  dollars: '$',
-  transferMethod: 'Transfer Method',
-  bankAccount: 'Bank Account',
-  crypto: 'Crypto',
-  cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
+  dollars: '$'
 }
 
 const WithdrawMethodOptions = [
-  { key: WithdrawMethod.COINFLOW, text: messages.bankAccount },
-  { key: WithdrawMethod.MANUAL_TRANSFER, text: messages.crypto }
+  { key: WithdrawMethod.COINFLOW, text: walletMessages.bankAccount },
+  { key: WithdrawMethod.MANUAL_TRANSFER, text: walletMessages.crypto }
 ]
 
 export const EnterTransferDetails = () => {
@@ -118,15 +109,13 @@ export const EnterTransferDetails = () => {
   )
 
   const handleContinue = useCallback(async () => {
-    try {
-      setAmountTouched(true)
-      if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
-        setAddressTouched(true)
-      }
-      const errors = await validateForm()
-      if (errors[AMOUNT] || errors[ADDRESS]) return
-      setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
-    } catch {}
+    setAmountTouched(true)
+    if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
+      setAddressTouched(true)
+    }
+    const errors = await validateForm()
+    if (errors[AMOUNT] || errors[ADDRESS]) return
+    setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
   }, [setData, methodValue, validateForm, setAmountTouched, setAddressTouched])
 
   return (
@@ -136,14 +125,14 @@ export const EnterTransferDetails = () => {
       <Flex column gap='l'>
         <Flex column gap='s'>
           <Text variant='heading' size='s' color='subdued'>
-            {messages.amountToWithdraw}
+            {walletMessages.amountToWithdraw}
           </Text>
-          <Text variant='body'>{messages.howMuch}</Text>
+          <Text variant='body'>{walletMessages.destinationDescription}</Text>
         </Flex>
         <TextField
-          title={messages.amountToWithdrawLabel}
-          label={messages.amountToWithdrawLabel}
-          aria-label={messages.amountToWithdrawLabel}
+          title={walletMessages.amountToWithdrawLabel}
+          label={walletMessages.amountToWithdrawLabel}
+          aria-label={walletMessages.amountToWithdrawLabel}
           name={AMOUNT}
           value={humanizedValue}
           onChange={handleAmountChange}
@@ -155,7 +144,7 @@ export const EnterTransferDetails = () => {
       {isCoinflowEnabled ? (
         <SegmentedControl
           fullWidth
-          label={messages.transferMethod}
+          label={walletMessages.transferMethod}
           options={WithdrawMethodOptions}
           onSelectOption={setMethod}
           selected={methodValue}
@@ -163,21 +152,21 @@ export const EnterTransferDetails = () => {
       ) : null}
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
-          {messages.cashTransferDescription}
+          {walletMessages.cashTransferDescription}
         </Text>
       ) : (
         <Flex column gap='l'>
           <Flex column gap='s'>
             <Text variant='heading' size='s' color='subdued'>
-              {messages.destinationAddress}
+              {walletMessages.destination}
             </Text>
-            <Text variant='body'>{messages.destinationDetails}</Text>
+            <Text variant='body'>{walletMessages.destinationDescription}</Text>
           </Flex>
           <TextField
-            title={messages.destinationAddress}
+            title={walletMessages.destination}
             onPaste={handlePasteAddress}
             label={messages.solanaWallet}
-            aria-label={messages.destinationAddress}
+            aria-label={walletMessages.destination}
             name={ADDRESS}
             placeholder=''
           />
@@ -189,7 +178,7 @@ export const EnterTransferDetails = () => {
         disabled={disableContinue}
         onClick={handleContinue}
       >
-        {messages.continue}
+        {walletMessages.continue}
       </Button>
     </Flex>
   )

@@ -1,19 +1,20 @@
-import { Kind } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheActions,
+  getUserQueryKey,
+  queryAccountUser,
+  queryCurrentUserId
+} from '@audius/common/api'
+import {
   settingsPageActions as actions,
   getContext,
   getSDK
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
-import { call, put, takeEvery, select } from 'typed-redux-saga'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
+import { queryClient } from 'services/query-client'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
-
-const { getAccountUser, getUserId } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -21,7 +22,7 @@ function* watchGetSettings() {
     try {
       yield* call(waitForWrite)
       const sdk = yield* getSDK()
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) return
 
       const emailSettings = yield* call(
@@ -47,7 +48,7 @@ function* watchUpdateEmailFrequency() {
     function* (action: actions.UpdateEmailFrequency) {
       const { frequency: emailFrequency, updateServer } = action
 
-      const userId = yield* select(getUserId)
+      const userId = yield* call(queryCurrentUserId)
 
       if (userId && updateServer) {
         const sdk = yield* getSDK()
@@ -68,7 +69,7 @@ function* watchSetAiAttribution() {
     actions.SET_AI_ATTRIBUTION,
     function* (action: actions.SetAiAttribution) {
       const { allowAiAttribution } = action
-      const accountUser = yield* select(getAccountUser)
+      const accountUser = yield* call(queryAccountUser)
       if (!accountUser) return
       if (accountUser.allow_ai_attribution === allowAiAttribution) return
 
@@ -79,14 +80,10 @@ function* watchSetAiAttribution() {
         sdk
       })
 
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: accountUser.user_id,
-            metadata: { allow_ai_attribution: allowAiAttribution }
-          }
-        ])
-      )
+      queryClient.setQueryData(getUserQueryKey(accountUser.user_id), {
+        ...accountUser,
+        allow_ai_attribution: allowAiAttribution
+      })
     }
   )
 }

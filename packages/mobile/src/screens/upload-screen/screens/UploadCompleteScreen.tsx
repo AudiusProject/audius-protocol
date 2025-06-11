@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import { useTrackByPermalink } from '@audius/common/api'
+import { useCurrentAccountUser, useTrackByPermalink } from '@audius/common/api'
 import { Name, ShareSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
   shareModalUIActions,
   uploadActions,
   uploadSelectors
@@ -33,7 +32,6 @@ import { getTrackRoute } from 'app/utils/routes'
 
 const { getTracks } = uploadSelectors
 const { reset } = uploadActions
-const { getAccountUser } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 const messages = {
@@ -87,7 +85,7 @@ export const UploadCompleteScreen = () => {
   const { permalink } = track!
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const accountUser = useSelector(getAccountUser)
+  const { data: accountUser } = useCurrentAccountUser()
   const { data: uploadedTrack } = useTrackByPermalink(permalink)
   const trackRoute = getTrackRoute(track!, true)
 

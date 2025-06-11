@@ -61,7 +61,7 @@ export const useTrendingUnderground = (
 
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
       // Update lineup when new data arrives
       dispatch(

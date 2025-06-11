@@ -4,10 +4,8 @@ import { User } from '@audius/common/models'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
-
 const { createChat } = chatActions
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 
 export const useComposeChat = ({
   user,
@@ -22,9 +20,7 @@ export const useComposeChat = ({
 }) => {
   const dispatch = useDispatch()
 
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id })
-  )
+  const { canCreateChat } = useCanCreateChat(user?.user_id)
 
   const composeChat = useCallback(() => {
     if (!user) {

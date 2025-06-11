@@ -1,4 +1,8 @@
-import { queryTracks } from '@audius/common/api'
+import {
+  queryCollection,
+  queryCollectionByPermalink,
+  queryTracks
+} from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   smartCollectionPageSelectors,
@@ -6,7 +10,7 @@ import {
   collectionPageSelectors,
   queueSelectors
 } from '@audius/common/store'
-import { removeNullable, Uid, waitForValue } from '@audius/common/utils'
+import { removeNullable, Uid } from '@audius/common/utils'
 import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
@@ -14,22 +18,26 @@ import { select, call } from 'redux-saga/effects'
 import { LineupSagas } from 'common/store/lineup/sagas'
 const { getPositions } = queueSelectors
 const {
-  getCollection,
   getSmartCollectionVariant,
   getCollectionId,
-  getCollectionTracksLineup
+  getCollectionTracksLineup,
+  getCollectionPermalink
 } = collectionPageSelectors
 const { getCollection: getSmartCollection } = smartCollectionPageSelectors
 
 function* getCollectionTracks() {
   const smartCollectionVariant = yield select(getSmartCollectionVariant)
+  const permalink = yield select(getCollectionPermalink)
+  const collectionId = yield select(getCollectionId)
   let collection
   if (smartCollectionVariant) {
     collection = yield select(getSmartCollection, {
       variant: smartCollectionVariant
     })
-  } else {
-    collection = yield call(waitForValue, getCollection)
+  } else if (permalink) {
+    collection = yield call(queryCollectionByPermalink, permalink)
+  } else if (collectionId) {
+    collection = yield call(queryCollection, collectionId)
   }
 
   const tracks = collection.playlist_contents.track_ids

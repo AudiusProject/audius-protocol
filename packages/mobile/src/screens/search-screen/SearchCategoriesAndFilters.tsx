@@ -103,13 +103,14 @@ export const SearchCategoriesAndFilters = () => {
   const sortedFilterKeys = [...activeFilterKeys, ...inactiveFilterKeys]
 
   return (
-    <Flex backgroundColor='white'>
+    <Flex>
       <ScrollView
         horizontal
         keyboardShouldPersistTaps='handled'
         ref={scrollViewRef}
+        showsHorizontalScrollIndicator={false}
       >
-        <Flex direction='row' alignItems='center' gap='s' p='l' pt='s'>
+        <Flex direction='row' alignItems='center' gap='s' p='l'>
           <SearchCategory category='users' />
           <SearchCategory category='tracks' />
           <SearchCategory category='albums' />

@@ -1,26 +1,21 @@
-import { AccountCollection } from '~/models/Collection'
-import { EnhancedCollection } from '~/store/cache/collections/selectors'
+import { AccountCollection, Collection } from '~/models/Collection'
 
 type FilterCollectionsOptions = {
   filterText?: string
 }
 
 export const isAccountCollection = (
-  collection: AccountCollection | EnhancedCollection
+  collection: AccountCollection | Collection
 ): collection is AccountCollection => {
   return (collection as AccountCollection).name !== undefined
 }
 
-export function filterCollections<
-  T extends AccountCollection | EnhancedCollection
->(collections: T[], { filterText = '' }: FilterCollectionsOptions): T[] {
-  return collections.filter((item: AccountCollection | EnhancedCollection) => {
+export function filterCollections<T extends AccountCollection | Collection>(
+  collections: T[],
+  { filterText = '' }: FilterCollectionsOptions
+): T[] {
+  return collections.filter((item: AccountCollection | Collection) => {
     const name = isAccountCollection(item) ? item.name : item.playlist_name
-    const matchesPlaylistName =
-      name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-    const matchesOwnerName =
-      item.user.handle.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-
-    return matchesPlaylistName || matchesOwnerName
+    return name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
   })
 }

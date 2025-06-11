@@ -13,15 +13,15 @@ import {
 
 const messages = {
   title: 'Confirm Winners?',
-  description:
-    'Contestants will be notified and winners will receive an Audio reward.',
+  description: 'Are you sure you want to finalize your winners?',
+  description2: 'All participants will be notified.',
   cancel: 'Go Back',
   confirm: 'Confirm'
 }
 
 export const FinalizeWinnersConfirmationModal = () => {
   const { data, isOpen, onClose } = useFinalizeWinnersConfirmationModal()
-  const { confirmCallback, cancelCallback } = data
+  const { confirmCallback, cancelCallback, isInitialSave } = data
 
   const handleConfirm = useCallback(() => {
     confirmCallback()
@@ -46,6 +46,7 @@ export const FinalizeWinnersConfirmationModal = () => {
         <Flex column justifyContent='center' gap='xl'>
           <Text variant='body' size='l'>
             {messages.description}
+            {isInitialSave ? ` ${messages.description2}` : ''}
           </Text>
         </Flex>
       </ModalContent>

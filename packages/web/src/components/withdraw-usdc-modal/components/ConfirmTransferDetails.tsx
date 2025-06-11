@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
@@ -25,10 +26,8 @@ const messages = {
     'By proceeding, you accept full responsibility for any errors, including the risk of irreversible loss of funds. Transfers are final and cannot be reversed.',
   haveCarefully:
     'I have reviewed the information and understand that transfers are final.',
-  goBack: 'Go Back',
-  confirm: 'Confirm',
-  cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
+  back: 'Back',
+  withdraw: 'Withdraw'
 }
 
 export const ConfirmTransferDetails = () => {
@@ -67,17 +66,16 @@ export const ConfirmTransferDetails = () => {
       <CashBalanceSection balance={balance} />
       <Divider style={{ margin: 0 }} />
       <Flex justifyContent='space-between'>
-        <Text variant='heading' size='s' color='subdued'>
+        <Text variant='heading' size='s'>
           {messages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
           -${decimalIntegerToHumanReadable(amountValue)}
         </Text>
       </Flex>
-      <Divider style={{ margin: 0 }} />
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
-          {messages.cashTransferDescription}
+          {walletMessages.cashTransferDescription}
         </Text>
       ) : (
         <>
@@ -115,10 +113,10 @@ export const ConfirmTransferDetails = () => {
       )}
       <Flex gap='s' w='100%'>
         <Button variant='secondary' onClick={handleGoBack} fullWidth>
-          {messages.goBack}
+          {messages.back}
         </Button>
         <Button variant='primary' onClick={handleContinue} fullWidth>
-          {messages.confirm}
+          {messages.withdraw}
         </Button>
       </Flex>
     </Flex>

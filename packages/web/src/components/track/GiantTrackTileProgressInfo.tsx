@@ -1,16 +1,12 @@
+import { useCurrentUserId } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import {
-  accountSelectors,
-  playbackPositionSelectors,
-  CommonState
-} from '@audius/common/store'
+import { playbackPositionSelectors, CommonState } from '@audius/common/store'
 import { formatLineupTileDuration } from '@audius/common/utils'
 import { IconCheck, ProgressBar } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import styles from './GiantTrackTile.module.css'
 
-const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
@@ -28,7 +24,7 @@ export const GiantTrackTileProgressInfo = ({
   duration,
   trackId
 }: GiantTrackTileProgressInfoProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const trackPositionInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )

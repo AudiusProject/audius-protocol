@@ -1,6 +1,5 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -42,7 +41,6 @@ export const useUserTracksByHandle = (
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
 
   const { handle, filterTracks = 'public', sort = 'date', limit, offset } = args
@@ -61,7 +59,7 @@ export const useUserTracksByHandle = (
       })
 
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
       return tracks.map((track) => track.track_id)
     },

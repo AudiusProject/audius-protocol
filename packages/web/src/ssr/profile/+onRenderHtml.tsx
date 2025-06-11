@@ -44,10 +44,11 @@ export default function render(pageContext: TrackPageContext) {
     <ServerWebPlayer
       isMobile={isMobile}
       initialState={{
-        users: {
-          handles: { [handle]: user_id },
-          entries: { [user_id]: { metadata: user } }
-        },
+        // todo: prefill this in the query client
+        // users: {
+        //   handles: { [handle]: user_id },
+        //   entries: { [user_id]: { metadata: user } }
+        // },
         pages: {
           profile: {
             currentUser: handle,

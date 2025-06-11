@@ -1,20 +1,18 @@
-import { queryTrack } from '@audius/common/api'
+import { queryCurrentUserId, queryTrack } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  accountSelectors,
   audioRewardsPageActions,
   tracksSocialActions,
   getContext,
   getSDK
 } from '@audius/common/store'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { updateOptimisticListenStreak, updateOptimisticPlayCount } =
   audioRewardsPageActions
-const { getUserId } = accountSelectors
 
 function* recordListen(action: { trackId: number }) {
   const { trackId } = action
@@ -22,7 +20,7 @@ function* recordListen(action: { trackId: number }) {
 
   yield* call(waitForWrite)
   const sdk = yield* getSDK()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const track = yield* queryTrack(trackId)
   if (!userId || !track) return
 

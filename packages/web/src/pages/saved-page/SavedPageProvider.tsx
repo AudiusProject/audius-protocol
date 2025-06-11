@@ -1,5 +1,9 @@
 import { ComponentType, PureComponent } from 'react'
 
+import {
+  useCurrentAccount,
+  selectNameSortedPlaylistsAndAlbums
+} from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
@@ -10,12 +14,11 @@ import {
   UID,
   LineupTrack,
   Track,
-  Lineup
+  Lineup,
+  AccountCollection
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
-  accountActions,
-  accountSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -28,11 +31,12 @@ import {
   LibraryCategoryType,
   SavedPageTrack,
   TrackRecord,
-  useLineupTable
+  useLineupTable,
+  AccountState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { debounce, isEqual } from 'lodash'
+import { debounce } from 'lodash'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -56,7 +60,6 @@ const {
 const { updatedPlaylistViewed } = playlistUpdatesActions
 
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const messages = {
   title: 'Library',
@@ -85,7 +88,14 @@ type OwnProps = {
 type SavedPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    account?:
+      | (AccountState & {
+          playlists: AccountCollection[]
+          albums: AccountCollection[]
+        })
+      | undefined
+  }
 
 type SavedPageState = {
   currentTab: ProfileTabs
@@ -159,9 +169,6 @@ class SavedPageClassComponent extends PureComponent<
       this.state.sortMethod,
       this.state.sortDirection
     )
-    if (this.context.isMobile) {
-      this.props.fetchSavedPlaylists()
-    }
   }
 
   componentWillUnmount() {
@@ -447,7 +454,6 @@ class SavedPageClassComponent extends PureComponent<
       allowReordering: this.state.allowReordering,
 
       // Props from AppState
-      account: this.props.account,
       tracks: this.props.tracks,
       currentQueueItem: this.props.currentQueueItem,
       playing: this.props.playing,
@@ -506,20 +512,10 @@ class SavedPageClassComponent extends PureComponent<
   }
 }
 
-type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
-let accountRef: AccountData
-
 function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
-    const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
-
-    if (!isEqual(accountRef, account)) {
-      accountRef = account
-    }
-
     return {
-      account: accountRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
@@ -573,7 +569,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     resetSavedTracks: () => dispatch(tracksActions.reset()),
     updateLineupOrder: (updatedOrderIndices: UID[]) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
-    fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
     goToRoute: (route: string) => dispatch(push(route)),
@@ -592,7 +587,25 @@ function mapDispatchToProps(dispatch: Dispatch) {
     record: (event: TrackEvent) => dispatch(event)
   }
 }
+const withHook = (Component: typeof SavedPage) => {
+  return function WrappedComponent(props: SavedPageProps) {
+    const { data: account } = useCurrentAccount({
+      select: (account) => {
+        if (!account) return undefined
+        const sortedCollections = selectNameSortedPlaylistsAndAlbums(account)
+        if (!sortedCollections) return undefined
+        return {
+          ...account,
+          playlists: sortedCollections.playlists ?? [],
+          albums: sortedCollections.albums ?? []
+        }
+      }
+    })
+
+    return <Component {...props} account={account} />
+  }
+}
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(SavedPage)
+  connect(makeMapStateToProps, mapDispatchToProps)(withHook(SavedPage))
 )

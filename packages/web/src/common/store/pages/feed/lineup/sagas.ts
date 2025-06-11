@@ -2,7 +2,11 @@ import {
   transformAndCleanList,
   userFeedItemFromSDK
 } from '@audius/common/adapters'
-import { primeTrackDataSaga } from '@audius/common/api'
+import {
+  primeTrackDataSaga,
+  primeCollectionDataSaga,
+  queryCurrentUserId
+} from '@audius/common/api'
 import {
   FeedFilter,
   Kind,
@@ -13,7 +17,6 @@ import {
   LineupTrack
 } from '@audius/common/models'
 import {
-  accountSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
   CommonState,
@@ -22,13 +25,11 @@ import {
 import { Id, full } from '@audius/sdk'
 import { all, call, select } from 'typed-redux-saga'
 
-import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { getFollowIds } from '../../signon/selectors'
 const { getFeedFilter } = feedPageSelectors
-const { getUserId } = accountSelectors
 
 type FeedItem = LineupTrack | Collection
 
@@ -46,7 +47,7 @@ function* getTracks({
   limit: number
 }): Generator<any, FeedItem[] | null, any> {
   yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return []
   const filterEnum: FeedFilter = yield* select(getFeedFilter)
   const sdk = yield* getSDK()
@@ -80,7 +81,7 @@ function* getTracks({
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
     primeTrackDataSaga(tracks),
-    processAndCacheCollections(collections, false)
+    primeCollectionDataSaga(collections)
   ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),

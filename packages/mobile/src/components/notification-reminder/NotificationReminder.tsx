@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { MobileOS } from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import { getStartedAndFinishedSignup } from 'common/store/pages/signon/selectors'
 import { Platform } from 'react-native'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,7 +19,11 @@ const FIRST_REMINDER_SESSION = 10
 const REMINDER_FREQUENCY = 10
 
 export const NotificationReminder = () => {
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const { data: hasCompleteAccount } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
+  const hasFinishedSignUp = useSelector(getStartedAndFinishedSignup)
+  const hasCompletedAccount = hasCompleteAccount && hasFinishedSignUp
 
   if (hasCompletedAccount) {
     return <NotificationReminderInternal />

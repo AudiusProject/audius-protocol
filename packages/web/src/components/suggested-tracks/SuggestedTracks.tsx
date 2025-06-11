@@ -3,10 +3,10 @@ import { useCallback, useMemo } from 'react'
 import {
   SUGGESTED_TRACK_COUNT,
   useCollection,
-  useSuggestedPlaylistTracks
+  useSuggestedPlaylistTracks,
+  useUser
 } from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -22,11 +22,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Skeleton from 'components/skeleton/Skeleton'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { useSelector } from 'utils/reducer'
 
 import styles from './SuggestedTracks.module.css'
-
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   title: 'Add some tracks',
@@ -47,7 +44,7 @@ type SuggestedTrackProps = {
 const SuggestedTrackRow = (props: SuggestedTrackProps) => {
   const { collectionId, track, onAddTrack } = props
   const { track_id, title, owner_id } = track
-  const user = useSelector((state) => getUser(state, { id: owner_id }))
+  const { data: user } = useUser(owner_id)
   const { data: collection } = useCollection(collectionId)
   const image = useTrackCoverArt({
     trackId: track_id,

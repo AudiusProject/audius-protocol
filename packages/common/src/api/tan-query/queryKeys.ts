@@ -1,8 +1,10 @@
 export const QUERY_KEYS = {
   aiTracks: 'aiTracks',
   accountUser: 'accountUser',
+  accountStatus: 'accountStatus',
   walletUser: 'walletUser',
   walletAccount: 'walletAccount',
+  walletAddresses: 'walletAddresses',
   trackCommentList: 'trackCommentList',
   userCommentList: 'userCommentList',
   comment: 'comment',
@@ -14,7 +16,6 @@ export const QUERY_KEYS = {
   trackCommentNotificationSetting: 'trackCommentNotificationSetting',
   trackCommentCount: 'trackCommentCount',
   track: 'track',
-  tracks: 'tracks',
   tracksByUser: 'tracksByUser',
   tracksByHandle: 'tracksByHandle',
   trackByPermalink: 'trackByPermalink',
@@ -23,7 +24,6 @@ export const QUERY_KEYS = {
   trackFileInfo: 'trackFileInfo',
   stems: 'stems',
   user: 'user',
-  users: 'users',
   userByHandle: 'userByHandle',
   userTracksByHandle: 'userTracksByHandle',
   userPlaylists: 'userPlaylists',
@@ -93,5 +93,7 @@ export const QUERY_KEYS = {
   usdcBalance: 'usdcBalance',
   fileSizes: 'fileSizes',
   managedAccounts: 'managedAccounts',
-  userManagers: 'userManagers'
+  userManagers: 'userManagers',
+  reactions: 'reactions',
+  entityReaction: 'entityReaction'
 } as const
