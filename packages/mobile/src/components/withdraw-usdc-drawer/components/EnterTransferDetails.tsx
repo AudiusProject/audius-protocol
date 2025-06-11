@@ -66,7 +66,8 @@ export const EnterTransferDetails = ({
   )
 
   const handleMaxPress = useCallback(() => {
-    setFieldValue(AMOUNT, balanceNumberCents)
+    const maxAmount = balanceNumberCents / 100
+    setFieldValue(AMOUNT, maxAmount)
   }, [balanceNumberCents, setFieldValue])
 
   // Scroll to show the continue button when crypto option is selected
