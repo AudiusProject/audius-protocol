@@ -87,10 +87,12 @@ const WithdrawUSDCFormSchema = (userBalanceCents: number) => {
 
 const WithdrawUSDCForm = ({
   onClose,
-  scrollViewRef
+  scrollViewRef,
+  balanceNumberCents
 }: {
   onClose: () => void
   scrollViewRef: React.RefObject<BottomSheetScrollViewMethods>
+  balanceNumberCents: number
 }) => {
   const { data } = useWithdrawUSDCModal()
   const { page } = data
@@ -100,7 +102,12 @@ const WithdrawUSDCForm = ({
   let formPage
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
-      formPage = <EnterTransferDetails scrollViewRef={scrollViewRef} />
+      formPage = (
+        <EnterTransferDetails
+          scrollViewRef={scrollViewRef}
+          balanceNumberCents={balanceNumberCents}
+        />
+      )
       break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
       formPage =
@@ -120,7 +127,12 @@ const WithdrawUSDCForm = ({
       formPage = <TransferSuccessful onDone={onClose} />
       break
     default:
-      formPage = <EnterTransferDetails scrollViewRef={scrollViewRef} />
+      formPage = (
+        <EnterTransferDetails
+          scrollViewRef={scrollViewRef}
+          balanceNumberCents={balanceNumberCents}
+        />
+      )
       break
   }
 
@@ -193,7 +205,7 @@ export const WithdrawUSDCDrawer = () => {
           amount: Math.round(amount * 100), // Convert to cents
           method,
           currentBalance: balanceNumberCents,
-          destinationAddress: address || ''
+          destinationAddress: address ?? ''
         })
       )
     },
@@ -235,7 +247,11 @@ export const WithdrawUSDCDrawer = () => {
         validateOnChange
         onSubmit={handleSubmit}
       >
-        <WithdrawUSDCForm onClose={handleClose} scrollViewRef={scrollViewRef} />
+        <WithdrawUSDCForm
+          onClose={handleClose}
+          scrollViewRef={scrollViewRef}
+          balanceNumberCents={balanceNumberCents}
+        />
       </Formik>
     </BottomSheetModal>
   )
