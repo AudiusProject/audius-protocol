@@ -12,9 +12,20 @@ import {
   searchSelectors
 } from '@audius/common/store'
 import type { Mood } from '@audius/sdk'
+import { filter } from 'lodash'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
 import { ImageBackground, ScrollView, Image } from 'react-native'
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+  interpolate,
+  useAnimatedStyle,
+  interpolateColor,
+  Extrapolate,
+  Extrapolation,
+  withTiming
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -71,9 +82,10 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
 }
 
 const { getSearchHistory } = searchSelectors
+const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 export const SearchExploreScreen = () => {
-  const { spacing } = useTheme()
+  const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
@@ -96,6 +108,10 @@ export const SearchExploreScreen = () => {
     400, // debounce delay in ms
     [searchInput]
   )
+  const scrollY = useSharedValue(0)
+  const [showFullHeader, setShowFullHeader] = useState(true)
+  const headerHeight = useSharedValue(1) // 1 for full height, 0 for collapsed
+  const filterTranslateY = useSharedValue(0)
 
   // Data fetching
   const { data: exploreContent, isLoading: isExploreContentLoading } =
@@ -148,6 +164,82 @@ export const SearchExploreScreen = () => {
     () => Object.entries(MOODS) as [string, MoodInfo][],
     []
   )
+
+  // Define the scroll threshold for when to hide/show filters
+  const SCROLL_THRESHOLD = 300
+  const FILTER_HEIGHT = spacing['4xl'] // Adjust this value based on your filter height
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+      // headerHeight.value = scrollY.value <= 0 ? 1 : 0
+      console.log('asdf scrollY.value', scrollY.value, headerHeight.value)
+      if (event.contentOffset.y > SCROLL_THRESHOLD) {
+        filterTranslateY.value = withTiming(-FILTER_HEIGHT - 50)
+      }
+    }
+  })
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [0, 20], [1, 0], Extrapolation.CLAMP),
+    display: scrollY.value > 20 ? 'none' : 'flex'
+  }))
+
+  const filtersAnimatedStyle = useAnimatedStyle(() => ({
+    // display: scrollY.value > 300 ? 'none' : 'flex',
+    transform: [{ translateY: filterTranslateY.value }],
+    backgroundColor: interpolateColor(
+      scrollY.value,
+      [0, 20], // scroll range
+      [color.background.default, color.neutral.n25]
+    )
+  }))
+
+  const inputAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: interpolate(
+          scrollY.value,
+          [0, 20], // scroll range
+          [1, 0.8], // scale range
+          Extrapolation.CLAMP
+        )
+      }
+    ]
+  }))
+  const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, 20], // adjust as needed
+          [0, -50], // slide up by 80px
+          Extrapolation.CLAMP
+        )
+      }
+    ]
+  }))
+  const avatarSlideAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, 20], // adjust as needed
+          [0, 50], // slide up by 30px
+          Extrapolation.CLAMP
+        )
+      },
+      {
+        scale: interpolate(
+          scrollY.value,
+          [0, 20], // scroll range
+          [1, 0.8], // scale range
+          Extrapolation.CLAMP
+        )
+      }
+    ]
+  }))
+
   return (
     <SearchContext.Provider
       value={{
@@ -166,7 +258,7 @@ export const SearchExploreScreen = () => {
     >
       <Screen url='Explore' header={() => <></>}>
         <ScreenContent>
-          <Flex>
+          <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
             <ImageBackground source={imageSearchHeaderBackground}>
               <Flex pt='unit14' ph='l' pb='l' gap='l'>
                 <Flex
@@ -175,17 +267,31 @@ export const SearchExploreScreen = () => {
                   h={spacing.unit11}
                   alignItems='center'
                 >
-                  <Flex w={spacing.unit10}>
-                    <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-                  </Flex>
-                  <Text variant='heading' color='staticWhite'>
-                    {messages.explore}
-                  </Text>
+                  <Animated.View
+                    style={[inputAnimatedStyle, avatarSlideAnimatedStyle]}
+                  >
+                    <Flex w={spacing.unit10}>
+                      <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                    </Flex>
+                  </Animated.View>
+                  <Animated.View
+                    style={[animatedStyle, { justifyContent: 'center' }]}
+                  >
+                    <Text variant='heading' color='staticWhite'>
+                      {messages.explore}
+                    </Text>
+                  </Animated.View>
                 </Flex>
-                <Text variant='title' color='staticWhite'>
-                  {messages.description}
-                </Text>
-                <Flex>
+                <Animated.View style={animatedStyle}>
+                  <Text
+                    variant='title'
+                    color='staticWhite'
+                    style={animatedStyle}
+                  >
+                    {messages.description}
+                  </Text>
+                </Animated.View>
+                <Animated.View style={inputAnimatedStyle}>
                   <TextInput
                     label='Search'
                     autoFocus={autoFocus}
@@ -204,13 +310,17 @@ export const SearchExploreScreen = () => {
                       />
                     )}
                   />
-                </Flex>
+                </Animated.View>
               </Flex>
             </ImageBackground>
-          </Flex>
-          <SearchCategoriesAndFilters />
+          </AnimatedFlex>
+          <Animated.View
+            style={[filtersAnimatedStyle, headerSlideAnimatedStyle]}
+          >
+            <SearchCategoriesAndFilters />
+          </Animated.View>
 
-          <ScrollView>
+          <Animated.ScrollView onScroll={scrollHandler}>
             {category !== 'all' || searchInput ? (
               <>
                 {searchInput || hasAnyFilter ? (
@@ -330,7 +440,7 @@ export const SearchExploreScreen = () => {
                 </Flex>
               </Flex>
             )}
-          </ScrollView>
+          </Animated.ScrollView>
         </ScreenContent>
       </Screen>
     </SearchContext.Provider>
