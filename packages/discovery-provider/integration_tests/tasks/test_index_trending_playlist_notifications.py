@@ -20,10 +20,10 @@ def test_cache_trending_playlist_notifications(app):
         db = get_db()
 
         # Add some playlists and users to the db so we have blocks
-        # Note: Playlists must have > 3 tracks with > 3 unique owners to
+        # Note: Playlists must have > 5 tracks with > 5 unique owners to
         # not be excluded, so the fixtures below are set up with that in mind.
         entities = {
-            "tracks": [{"track_id": i, "owner_id": i % 4 + 1} for i in range(1, 21)],
+            "tracks": [{"track_id": i, "owner_id": i % 5 + 1} for i in range(1, 21)],
             "playlists": [
                 {
                     "playlist_id": i,
@@ -34,10 +34,20 @@ def test_cache_trending_playlist_notifications(app):
                             {"time": 2, "track": 2},
                             {"time": 3, "track": 3},
                             {"time": 4, "track": 4},
+                            {"time": 5, "track": 5},
                         ]
                     },
                 }
                 for i in range(1, 21)
+            ],
+            "playlist_tracks": [
+                {
+                    "playlist_id": i,
+                    "track_id": j,
+                    "is_removed": False,
+                }
+                for i in range(1, 21)
+                for j in range(1, 6)
             ],
             "playlist_trending_scores": [
                 {
@@ -49,7 +59,7 @@ def test_cache_trending_playlist_notifications(app):
                 }
                 for i in range(1, 21)
             ],
-            "users": [{"user_id": i} for i in range(1, 5)],
+            "users": [{"user_id": i} for i in range(1, 11)],
         }
         populate_mock_db(db, entities)
 

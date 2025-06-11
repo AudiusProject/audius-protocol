@@ -135,6 +135,8 @@ def test_trending_challenge_job(app):
                         {"track": 1, "time": 1},
                         {"track": 2, "time": 2},
                         {"track": 3, "time": 3},
+                        {"track": 4, "time": 4},
+                        {"track": 5, "time": 5},
                     ]
                 },
             },
@@ -148,9 +150,12 @@ def test_trending_challenge_job(app):
                         {"track": 1, "time": 1},
                         {"track": 2, "time": 2},
                         {"track": 3, "time": 3},
+                        {"track": 4, "time": 4},
+                        {"track": 5, "time": 5},
                     ]
                 },
             },
+            # ineligible playlist
             {
                 "playlist_id": 3,
                 "is_album": True,
@@ -162,9 +167,12 @@ def test_trending_challenge_job(app):
                         {"track": 1, "time": 1},
                         {"track": 2, "time": 2},
                         {"track": 3, "time": 3},
+                        {"track": 4, "time": 4},
+                        {"track": 5, "time": 5},
                     ]
                 },
             },
+            # ineligible playlist
             {
                 "playlist_id": 4,
                 "playlist_owner_id": 4,
@@ -175,6 +183,7 @@ def test_trending_challenge_job(app):
                         {"track": 1, "time": 1},
                         {"track": 2, "time": 2},
                         {"track": 3, "time": 3},
+                        {"track": 4, "time": 4},
                     ]
                 },
             },
@@ -188,9 +197,37 @@ def test_trending_challenge_job(app):
                         {"track": 1, "time": 1},
                         {"track": 2, "time": 2},
                         {"track": 3, "time": 3},
+                        {"track": 4, "time": 4},
+                        {"track": 5, "time": 5},
                     ]
                 },
             },
+        ],
+        "playlist_tracks": [
+            {"playlist_id": 1, "track_id": 1, "is_removed": False},
+            {"playlist_id": 1, "track_id": 2, "is_removed": False},
+            {"playlist_id": 1, "track_id": 3, "is_removed": False},
+            {"playlist_id": 1, "track_id": 4, "is_removed": False},
+            {"playlist_id": 1, "track_id": 5, "is_removed": False},
+            {"playlist_id": 2, "track_id": 1, "is_removed": False},
+            {"playlist_id": 2, "track_id": 2, "is_removed": False},
+            {"playlist_id": 2, "track_id": 3, "is_removed": False},
+            {"playlist_id": 2, "track_id": 4, "is_removed": False},
+            {"playlist_id": 2, "track_id": 5, "is_removed": False},
+            {"playlist_id": 3, "track_id": 1, "is_removed": False},
+            {"playlist_id": 3, "track_id": 2, "is_removed": False},
+            {"playlist_id": 3, "track_id": 3, "is_removed": False},
+            {"playlist_id": 3, "track_id": 4, "is_removed": False},
+            {"playlist_id": 3, "track_id": 5, "is_removed": False},
+            {"playlist_id": 4, "track_id": 1, "is_removed": False},
+            {"playlist_id": 4, "track_id": 2, "is_removed": False},
+            {"playlist_id": 4, "track_id": 3, "is_removed": False},
+            {"playlist_id": 4, "track_id": 4, "is_removed": False},
+            {"playlist_id": 5, "track_id": 1, "is_removed": False},
+            {"playlist_id": 5, "track_id": 2, "is_removed": False},
+            {"playlist_id": 5, "track_id": 3, "is_removed": False},
+            {"playlist_id": 5, "track_id": 4, "is_removed": False},
+            {"playlist_id": 5, "track_id": 5, "is_removed": False},
         ],
         "users": [
             {"user_id": 1, "handle": "user1"},
@@ -358,4 +395,4 @@ def test_trending_challenge_job(app):
             .filter(TrendingResult.type == str(TrendingType.PLAYLISTS))
             .all()
         )
-        assert len(trending_playlists) == 2
+        assert len(trending_playlists) == 3
