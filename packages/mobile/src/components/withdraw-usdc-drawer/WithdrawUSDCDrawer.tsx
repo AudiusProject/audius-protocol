@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { useUSDCBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -16,15 +16,17 @@ import {
   isValidSolAddress
 } from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import BN from 'bn.js'
 import type { FormikProps } from 'formik'
 import { Formik, useFormikContext } from 'formik'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Divider, Flex, Text } from '@audius/harmony-native'
-import Drawer from 'app/components/drawer'
 
 import { CoinflowConfirmTransfer } from './components/CoinflowConfirmTransfer'
 import { CryptoConfirmTransfer } from './components/CryptoConfirmTransfer'
@@ -47,14 +49,11 @@ const { beginWithdrawUSDC } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
 const { getRecoveryStatus } = buyUSDCSelectors
 
-// Pages where the drawer should not be closable
 const DISABLE_DRAWER_CLOSE_PAGES = new Set([
   WithdrawUSDCModalPages.PREPARE_TRANSFER,
   WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS,
   WithdrawUSDCModalPages.COINFLOW_TRANSFER
 ])
-
-// Note: TRANSFER_SUCCESSFUL is intentionally not included as users should be able to close after success
 
 const WithdrawUSDCFormSchema = (userBalanceCents: number) => {
   const amount = z
@@ -86,15 +85,22 @@ const WithdrawUSDCFormSchema = (userBalanceCents: number) => {
   ])
 }
 
-const WithdrawUSDCForm = ({ onClose }: { onClose: () => void }) => {
+const WithdrawUSDCForm = ({
+  onClose,
+  scrollViewRef
+}: {
+  onClose: () => void
+  scrollViewRef: React.RefObject<BottomSheetScrollViewMethods>
+}) => {
   const { data } = useWithdrawUSDCModal()
   const { page } = data
   const { values } = useFormikContext<WithdrawFormValues>()
+  const insets = useSafeAreaInsets()
 
   let formPage
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
-      formPage = <EnterTransferDetails />
+      formPage = <EnterTransferDetails scrollViewRef={scrollViewRef} />
       break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
       formPage =
@@ -114,22 +120,33 @@ const WithdrawUSDCForm = ({ onClose }: { onClose: () => void }) => {
       formPage = <TransferSuccessful onDone={onClose} />
       break
     default:
-      formPage = <EnterTransferDetails />
+      formPage = <EnterTransferDetails scrollViewRef={scrollViewRef} />
       break
   }
 
   return (
-    <Flex gap='xl' pb='xl' ph='l'>
-      <Flex gap='l'>
-        <Flex row justifyContent='center' pt='xl'>
-          <Text variant='label' strength='strong' size='xl' color='default'>
-            {walletMessages.withdrawCash}
-          </Text>
+    <BottomSheetScrollView
+      ref={scrollViewRef}
+      style={{ flex: 1 }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: insets.bottom + 20
+      }}
+      keyboardShouldPersistTaps='handled'
+      showsVerticalScrollIndicator={false}
+    >
+      <Flex gap='xl' pb='xl' ph='l'>
+        <Flex gap='l'>
+          <Flex row justifyContent='center' pt='xl'>
+            <Text variant='label' strength='strong' size='xl' color='default'>
+              {walletMessages.withdrawCash}
+            </Text>
+          </Flex>
+          <Divider orientation='horizontal' />
         </Flex>
-        <Divider orientation='horizontal' />
+        {formPage}
       </Flex>
-      {formPage}
-    </Flex>
+    </BottomSheetScrollView>
   )
 }
 
@@ -143,14 +160,14 @@ export const WithdrawUSDCDrawer = () => {
   const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
+  const bottomSheetRef = useRef<BottomSheetModal>(null)
+  const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null)
 
-  // Track withdrawal and recovery status to prevent closing during critical operations
   const withdrawalStatus = useSelector(getWithdrawStatus)
   const recoveryStatus = useSelector(getRecoveryStatus)
 
   const formRef = useRef<FormikProps<WithdrawFormValues>>(null)
 
-  // Determine if drawer should be closable based on current page and status
   const isClosable =
     !DISABLE_DRAWER_CLOSE_PAGES.has(data.page) &&
     withdrawalStatus !== Status.LOADING &&
@@ -161,6 +178,7 @@ export const WithdrawUSDCDrawer = () => {
       onClose()
       formRef.current?.resetForm()
       setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
+      bottomSheetRef.current?.dismiss()
     }
   }, [onClose, setData, isClosable])
 
@@ -182,19 +200,28 @@ export const WithdrawUSDCDrawer = () => {
     [dispatch, balanceNumberCents]
   )
 
+  // Open/close the bottom sheet based on modal state
+  useEffect(() => {
+    if (isOpen && bottomSheetRef.current) {
+      bottomSheetRef.current.present()
+    } else if (!isOpen && bottomSheetRef.current) {
+      bottomSheetRef.current.dismiss()
+    }
+  }, [isOpen])
+
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={handleClose}
-      onClosed={handleClosed}
-      // Prevent all dismissal methods during critical operations
-      blockClose={!isClosable}
+    <BottomSheetModal
+      ref={bottomSheetRef}
+      snapPoints={['85%', '95%']}
+      onDismiss={handleClosed}
+      android_keyboardInputMode='adjustResize'
+      enablePanDownToClose={isClosable}
+      enableContentPanningGesture={isClosable}
     >
       <Formik
         innerRef={formRef}
         initialValues={{
-          [AMOUNT]:
-            balanceNumberCents > 0 ? Math.min(balanceNumberCents / 100, 10) : 0,
+          [AMOUNT]: 0,
           [METHOD]: isCoinflowEnabled
             ? WithdrawMethod.COINFLOW
             : WithdrawMethod.MANUAL_TRANSFER,
@@ -208,8 +235,8 @@ export const WithdrawUSDCDrawer = () => {
         validateOnChange
         onSubmit={handleSubmit}
       >
-        <WithdrawUSDCForm onClose={handleClose} />
+        <WithdrawUSDCForm onClose={handleClose} scrollViewRef={scrollViewRef} />
       </Formik>
-    </Drawer>
+    </BottomSheetModal>
   )
 }
