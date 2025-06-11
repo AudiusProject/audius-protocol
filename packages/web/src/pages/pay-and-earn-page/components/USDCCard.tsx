@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { useIsManagedAccount, useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { Name, Status, BNUSDC } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,

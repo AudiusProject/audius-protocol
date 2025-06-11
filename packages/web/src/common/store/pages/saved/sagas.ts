@@ -2,26 +2,24 @@ import {
   trackActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { FavoriteType, Favorite, User } from '@audius/common/models'
+import { primeTrackDataSaga, queryCurrentAccount } from '@audius/common/api'
+import { FavoriteType, Favorite } from '@audius/common/models'
 import {
-  accountSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as actions,
   savedPageSelectors,
   getContext,
   LibraryCategoryType
 } from '@audius/common/store'
-import { waitForValue, Nullable } from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
 import { full, HashId, Id } from '@audius/sdk'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
 
 const { getTrackSaves } = savedPageSelectors
-const { getAccountUser, getTrackSaveCount } = accountSelectors
 
 function* fetchLineupMetadatas(offset: number, limit: number) {
   const isNativeMobile = yield* getContext('isNativeMobile')
@@ -125,14 +123,12 @@ function* watchFetchSaves() {
     actions.FETCH_SAVES,
     function* (rawParams: ReturnType<typeof actions.fetchSaves>) {
       yield* waitForRead()
-      const { user_id: userId }: User = yield* call(
-        waitForValue,
-        getAccountUser
-      )
-      const trackSaveCount = yield* select(getTrackSaveCount)
+      const accountData = yield* call(queryCurrentAccount)
+      if (!accountData) return
+      const { userId, trackSaveCount } = accountData
       const saves = yield* select(getTrackSaves)
       const params = prepareParams({
-        account: { userId, trackSaveCount },
+        account: { userId: userId!, trackSaveCount: trackSaveCount! },
         params: rawParams
       })
       const { query, sortDirection, sortMethod, offset, limit, category } =
@@ -155,7 +151,7 @@ function* watchFetchSaves() {
           yield* put(actions.fetchSavesRequested())
           const { saves, tracks } = yield* call(sendLibraryRequest, params)
 
-          yield* processAndCacheTracks(tracks)
+          yield* call(primeTrackDataSaga, tracks)
 
           const fullSaves = Array(trackSaveCount)
             .fill(0)
@@ -180,14 +176,12 @@ function* watchFetchMoreSaves() {
     actions.FETCH_MORE_SAVES,
     function* (rawParams: ReturnType<typeof actions.fetchMoreSaves>) {
       yield* waitForRead()
-      const { user_id, trackSaveCount } = yield* call(
-        waitForValue,
-        getAccountUser
-      )
+      const account = yield* queryCurrentAccount()
+      const { userId, trackSaveCount } = account ?? {}
       const params = prepareParams({
         account: {
-          userId: user_id,
-          trackSaveCount
+          userId: userId!,
+          trackSaveCount: trackSaveCount!
         },
         params: rawParams
       })
@@ -196,7 +190,7 @@ function* watchFetchMoreSaves() {
 
       try {
         const { saves, tracks } = yield* call(sendLibraryRequest, params)
-        yield* processAndCacheTracks(tracks)
+        yield* call(primeTrackDataSaga, tracks)
         yield* put(actions.fetchMoreSavesSucceeded(saves, offset))
 
         if (limit > 0 && saves.length < limit) {

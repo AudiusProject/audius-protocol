@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  settingsPageSelectors,
-  settingsPageActions
-} from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { settingsPageActions } from '@audius/common/store'
 import {
   Modal,
   ModalContent,
@@ -16,11 +14,9 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { MarkdownViewer } from 'components/markdown-viewer'
-import { useSelector } from 'utils/reducer'
 
 import styles from './AiAttributionSettingsModal.module.css'
 const { setAiAttribution } = settingsPageActions
-const { getAllowAiAttribution } = settingsPageSelectors
 
 const messages = {
   title: 'AI Generated Music Settings',
@@ -48,7 +44,9 @@ This Artist AI Agreement (the “**Agreement”**) constitutes a legally binding
 
 export const AiAttributionSettingsModal = () => {
   const [isOpen, setIsOpen] = useModalState('AiAttributionSettings')
-  const allowAiAttribution = useSelector(getAllowAiAttribution)
+  const { data: allowAiAttribution } = useCurrentAccountUser({
+    select: (user) => user?.allow_ai_attribution
+  })
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => {

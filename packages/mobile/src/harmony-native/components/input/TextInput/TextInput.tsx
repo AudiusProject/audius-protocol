@@ -244,7 +244,7 @@ export const TextInput = forwardRef(
             <InsetShadow
               containerStyle={css({
                 width: '100%',
-                height: isSmall ? 34 : 64,
+                height: isSmall ? 48 : 64,
                 borderRadius: cornerRadius.s
               })}
               shadowOpacity={0.05}
@@ -266,7 +266,7 @@ export const TextInput = forwardRef(
               >
                 {StartIcon ? (
                   <StartIcon
-                    size={isSmall ? 's' : 'm'}
+                    size={isSmall ? 'l' : 'm'} // TODO adjust large variant accordingly
                     color='subdued'
                     {...IconProps}
                   />
@@ -340,7 +340,7 @@ export const TextInput = forwardRef(
                         height: !isSmall ? 23 : undefined,
                         // Android has a default padding that needs to be removed
                         padding: 0,
-                        fontSize: typography.size[isSmall ? 's' : 'l'],
+                        fontSize: typography.size[isSmall ? 'm' : 'l'],
                         fontFamily: typography.fontByWeight.medium,
                         color: color.text[disabled ? 'subdued' : 'default']
                       })}

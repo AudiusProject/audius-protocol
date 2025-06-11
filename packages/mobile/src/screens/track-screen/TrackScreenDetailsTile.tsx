@@ -5,9 +5,10 @@ import {
   useRemixContest,
   useToggleFavoriteTrack,
   useTrackRank,
-  useStems
+  useStems,
+  useCurrentUserId
 } from '@audius/common/api'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -28,7 +29,6 @@ import type {
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
   trackPageLineupActions,
   queueSelectors,
   reachabilitySelectors,
@@ -98,7 +98,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { tracksActions } = trackPageLineupActions
-const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getTrackPosition } = playbackPositionSelectors
 const { makeGetCurrent } = queueSelectors
@@ -171,7 +170,7 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
 
   const isReachable = useSelector(getIsReachable)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
   const isPlaybackActive = useSelector(getPlaying)
@@ -324,6 +323,7 @@ export const TrackScreenDetailsTile = ({
   )
 
   const currentQueueItem = useSelector(getCurrentQueueItem)
+  const currentTrack = useCurrentTrack()
   const play = useCallback(
     ({ isPreview = false } = {}) => {
       if (isLineupLoading) return
@@ -333,8 +333,8 @@ export const TrackScreenDetailsTile = ({
         recordPlay(trackId, false, true)
       } else if (
         currentQueueItem.uid !== uid &&
-        currentQueueItem.track &&
-        currentQueueItem.track.track_id === trackId
+        currentTrack &&
+        currentTrack.track_id === trackId
       ) {
         dispatch(tracksActions.play())
         recordPlay(trackId)
@@ -344,14 +344,15 @@ export const TrackScreenDetailsTile = ({
       }
     },
     [
-      trackId,
-      currentQueueItem,
-      uid,
-      dispatch,
+      isLineupLoading,
       isPlaying,
       isPlayingId,
       isPreviewing,
-      isLineupLoading
+      currentQueueItem.uid,
+      uid,
+      currentTrack,
+      trackId,
+      dispatch
     ]
   )
 

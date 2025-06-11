@@ -1,10 +1,8 @@
+import { useNotificationEntity, useUsers } from '@audius/common/api'
 import {
-  notificationsSelectors,
   Entity,
   RepostOfRepostNotification as RepostOfRepostNotificationType
 } from '@audius/common/store'
-
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -16,7 +14,6 @@ import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconRepost } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   reposted: 'reposted your repost of'
@@ -31,15 +28,11 @@ export const RepostOfRepostNotification = (
 ) => {
   const { notification } = props
   const { userIds, entityType, timeLabel, isViewed } = notification
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
-  )
+  const { data: users } = useUsers(userIds.slice(0, USER_LENGTH_LIMIT))
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  )
+  const entity = useNotificationEntity(notification)
 
   const entityTypeText =
     entity && 'is_album' in entity && entity.is_album

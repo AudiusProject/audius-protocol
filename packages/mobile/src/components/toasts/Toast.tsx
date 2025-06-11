@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react'
+import React, { useRef, useCallback, useEffect } from 'react'
 
 import type { Toast as ToastType } from '@audius/common/store'
 import { toastActions } from '@audius/common/store'

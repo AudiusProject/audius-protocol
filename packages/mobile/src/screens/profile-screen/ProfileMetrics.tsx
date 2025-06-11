@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useProfileUser } from '@audius/common/api'
 import {
   followingUserListActions,
   followersUserListActions
@@ -11,7 +12,6 @@ import { useDispatch } from 'react-redux'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
-import { useSelectProfile } from './selectors'
 const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 
@@ -52,29 +52,35 @@ export const ProfileMetrics = () => {
   const styles = useStyles()
   const {
     user_id,
-    track_count,
-    playlist_count,
-    follower_count,
-    followee_count
-  } = useSelectProfile([
-    'user_id',
-    'track_count',
-    'playlist_count',
-    'follower_count',
-    'followee_count'
-  ])
+    track_count = 0,
+    playlist_count = 0,
+    follower_count = 0,
+    followee_count = 0
+  } = useProfileUser({
+    select: (user) => ({
+      user_id: user.user_id,
+      track_count: user.track_count,
+      playlist_count: user.playlist_count,
+      follower_count: user.follower_count,
+      followee_count: user.followee_count
+    })
+  }).user ?? {}
 
   const navigation = useNavigation()
   const dispatch = useDispatch()
 
   const handlePressFollowers = useCallback(() => {
-    dispatch(setFollowers(user_id))
-    navigation.push('Followers', { userId: user_id })
+    if (user_id) {
+      dispatch(setFollowers(user_id))
+      navigation.push('Followers', { userId: user_id })
+    }
   }, [dispatch, user_id, navigation])
 
   const handlePressFollowing = useCallback(() => {
-    dispatch(setFollowing(user_id))
-    navigation.push('Following', { userId: user_id })
+    if (user_id) {
+      dispatch(setFollowing(user_id))
+      navigation.push('Following', { userId: user_id })
+    }
   }, [dispatch, user_id, navigation])
 
   return (

@@ -1,10 +1,12 @@
 import {
-  useSelectTierInfo,
   useUSDCBalance,
-  useTotalBalanceWithFallback
-} from '@audius/common/hooks'
+  selectIsAccountComplete,
+  useCurrentAccountUser,
+  useCurrentUserId
+} from '@audius/common/api'
+import { useTotalBalanceWithFallback } from '@audius/common/hooks'
 import { BNUSDC } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import {
   formatCount,
   formatUSDCWeiToFloorCentsNumber,
@@ -23,14 +25,12 @@ import {
   IconTokenNoTier
 } from '@audius/harmony'
 import BN from 'bn.js'
-import { useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { LeftNavLink } from './LeftNavLink'
 
 const { AUDIO_PAGE, PAYMENTS_PAGE } = route
-const { getIsAccountComplete, getUserId } = accountSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -38,12 +38,14 @@ const messages = {
 }
 
 export const WalletsNestedContent = () => {
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const isUSDCEnabled = useIsUSDCEnabled()
   const { data: usdcBalance } = useUSDCBalance()
   const audioBalance = useTotalBalanceWithFallback()
-  const userId = useSelector(getUserId)
-  const { tier } = useSelectTierInfo(userId ?? 0)
+  const { data: userId } = useCurrentUserId()
+  const { tier } = useTierAndVerifiedForUser(userId ?? 0)
   const usdcCentBalance =
     formatUSDCWeiToFloorCentsNumber((usdcBalance ?? new BN(0)) as BNUSDC) / 100
 

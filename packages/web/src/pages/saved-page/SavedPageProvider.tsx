@@ -1,19 +1,24 @@
 import { ComponentType, PureComponent } from 'react'
 
 import {
+  useCurrentAccount,
+  selectNameSortedPlaylistsAndAlbums
+} from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
+import {
   Name,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
   ID,
   UID,
-  LineupTrack
+  LineupTrack,
+  Track,
+  Lineup,
+  AccountCollection
 } from '@audius/common/models'
 import {
   SavedPageTabs as ProfileTabs,
-  accountActions,
-  accountSelectors,
-  lineupSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -25,11 +30,13 @@ import {
   playlistUpdatesSelectors,
   LibraryCategoryType,
   SavedPageTrack,
-  TrackRecord
+  TrackRecord,
+  useLineupTable,
+  AccountState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { debounce, isEqual } from 'lodash'
+import { debounce } from 'lodash'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -51,10 +58,8 @@ const {
   getCollectionsCategory
 } = savedPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { makeGetTableMetadatas } = lineupSelectors
 
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const messages = {
   title: 'Library',
@@ -83,7 +88,14 @@ type OwnProps = {
 type SavedPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    account?:
+      | (AccountState & {
+          playlists: AccountCollection[]
+          albums: AccountCollection[]
+        })
+      | undefined
+  }
 
 type SavedPageState = {
   currentTab: ProfileTabs
@@ -97,7 +109,25 @@ type SavedPageState = {
   shouldReturnToTrackPurchases: boolean
 }
 
-class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
+const SavedPage = (props: SavedPageProps) => {
+  const currentTrack = useCurrentTrack()
+  const tracks = useLineupTable(getSavedTracksLineup)
+  return (
+    <SavedPageClassComponent
+      {...props}
+      currentTrack={currentTrack}
+      tracks={tracks}
+    />
+  )
+}
+
+class SavedPageClassComponent extends PureComponent<
+  SavedPageProps & {
+    currentTrack: Track | null
+    tracks: Lineup<SavedPageTrack>
+  },
+  SavedPageState
+> {
   static contextType = SsrContext
   declare context: React.ContextType<typeof SsrContext>
   state: SavedPageState = {
@@ -139,9 +169,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       this.state.sortMethod,
       this.state.sortDirection
     )
-    if (this.context.isMobile) {
-      this.props.fetchSavedPlaylists()
-    }
   }
 
   componentWillUnmount() {
@@ -216,8 +243,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   getPlayingId = () => {
-    const { currentQueueItem } = this.props
-    return currentQueueItem.track ? currentQueueItem.track.track_id : null
+    const { currentTrack } = this.props
+    return currentTrack?.track_id ?? null
   }
 
   getFormattedData = (
@@ -385,7 +412,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
         this.props.tracks.entries.reduce(
           (acc, track) => ({
             ...acc,
-            [track.id]: track
+            [track.track_id]: track
           }),
           {}
         )
@@ -427,7 +454,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       allowReordering: this.state.allowReordering,
 
       // Props from AppState
-      account: this.props.account,
       tracks: this.props.tracks,
       currentQueueItem: this.props.currentQueueItem,
       playing: this.props.playing,
@@ -486,28 +512,10 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 }
 
-type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
-type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
-let accountRef: AccountData
-let tracksRef: LineupData
-
 function makeMapStateToProps() {
-  const getLineupMetadatas = makeGetTableMetadatas(getSavedTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
   const mapStateToProps = (state: AppState) => {
-    const tracks = getLineupMetadatas(state)
-    const account = getAccountWithNameSortedPlaylistsAndAlbums(state)
-
-    if (!isEqual(tracksRef, tracks)) {
-      tracksRef = tracks
-    }
-    if (!isEqual(accountRef, account)) {
-      accountRef = account
-    }
-
     return {
-      account: accountRef,
-      tracks: tracksRef,
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
@@ -561,7 +569,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     resetSavedTracks: () => dispatch(tracksActions.reset()),
     updateLineupOrder: (updatedOrderIndices: UID[]) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
-    fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
     goToRoute: (route: string) => dispatch(push(route)),
@@ -580,7 +587,25 @@ function mapDispatchToProps(dispatch: Dispatch) {
     record: (event: TrackEvent) => dispatch(event)
   }
 }
+const withHook = (Component: typeof SavedPage) => {
+  return function WrappedComponent(props: SavedPageProps) {
+    const { data: account } = useCurrentAccount({
+      select: (account) => {
+        if (!account) return undefined
+        const sortedCollections = selectNameSortedPlaylistsAndAlbums(account)
+        if (!sortedCollections) return undefined
+        return {
+          ...account,
+          playlists: sortedCollections.playlists ?? [],
+          albums: sortedCollections.albums ?? []
+        }
+      }
+    })
+
+    return <Component {...props} account={account} />
+  }
+}
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(SavedPage)
+  connect(makeMapStateToProps, mapDispatchToProps)(withHook(SavedPage))
 )

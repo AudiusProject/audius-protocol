@@ -1,11 +1,16 @@
+import { walletMessages } from '@audius/common/messages'
 import { BNUSDC } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
-import { Box, Flex, IconLogoCircleUSDC, Text } from '@audius/harmony'
-import { BN } from 'bn.js'
+import {
+  Flex,
+  IconLogoCircleUSDC,
+  Text,
+  IconButton,
+  IconInfo
+} from '@audius/harmony'
+import BN from 'bn.js'
 
-const messages = {
-  cashBalance: 'Cash Balance'
-}
+import Tooltip from 'components/tooltip/Tooltip'
 
 type CashBalanceSectionProps = {
   balance: BNUSDC | null
@@ -17,13 +22,28 @@ export const CashBalanceSection = ({ balance }: CashBalanceSectionProps) => {
   return (
     <Flex column gap='s'>
       <Flex alignItems='center' justifyContent='space-between'>
-        <Flex alignItems='center'>
+        <Flex alignItems='center' gap='s'>
           <IconLogoCircleUSDC />
-          <Box pl='s'>
-            <Text variant='heading' size='s' color='subdued'>
-              {messages.cashBalance}
-            </Text>
-          </Box>
+          <Text variant='heading' size='s' color='subdued'>
+            {walletMessages.cashBalance}
+          </Text>
+          <Tooltip
+            text={walletMessages.cashBalanceTooltip}
+            placement='top'
+            getPopupContainer={() =>
+              document.getElementById('page') ?? document.body
+            }
+            shouldWrapContent={false}
+            shouldDismissOnClick={false}
+          >
+            <IconButton
+              icon={IconInfo}
+              size='s'
+              color='subdued'
+              activeColor='default'
+              aria-label='Cash balance information'
+            />
+          </Tooltip>
         </Flex>
       </Flex>
       <Text variant='display'>{USDC(formattedBalance).toLocaleString()}</Text>

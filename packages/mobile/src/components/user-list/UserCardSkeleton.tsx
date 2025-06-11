@@ -12,7 +12,7 @@ export const UserCardSkeleton = () => {
       </Box>
       <Flex ph='l' pt='xs' pb='m' gap='xs' alignItems='center'>
         {/* marginBottom is simulating line-height */}
-        <Skeleton height={18} width={150} style={{ marginBottom: 6 }} />
+        <Skeleton height={18} width='90%' style={{ marginBottom: 6 }} />
         <Skeleton height={16} width={100} />
       </Flex>
       <Divider />

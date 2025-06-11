@@ -1,6 +1,10 @@
 import {
+  getAccountStatusQueryKey,
   getWalletAccountQueryFn,
   getWalletAccountQueryKey,
+  queryAccountUser,
+  queryHasAccount,
+  queryIsAccountComplete,
   queryUserByHandle,
   queryUsers
 } from '@audius/common/api'
@@ -14,7 +18,8 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata
+  AccountUserMetadata,
+  Status
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -26,7 +31,6 @@ import {
 } from '@audius/common/services'
 import {
   accountActions,
-  accountSelectors,
   settingsPageActions,
   collectionsSocialActions,
   usersSocialActions as socialActions,
@@ -68,7 +72,6 @@ import {
 } from 'typed-redux-saga'
 
 import { identify, make } from 'common/store/analytics/actions'
-import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -90,7 +93,6 @@ import { Pages } from './types'
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountUser, getHasAccount, getUserId } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -454,6 +456,7 @@ function* createGuestAccount(
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const queryClient = yield* getContext('queryClient')
 
   const sdk = yield* getSDK()
 
@@ -477,9 +480,10 @@ function* createGuestAccount(
         yield* call([localStorage, 'clearAudiusAccountUser'])
         yield* call([authService, authService.signOut])
         yield put(accountActions.resetAccount())
+        queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
         yield put(accountActions.setGuestEmail({ guestEmail }))
 
-        const currentUser = yield* select(getAccountUser)
+        const currentUser = yield* call(queryAccountUser)
 
         if (currentUser) {
           throw new Error('User already exists')
@@ -588,7 +592,9 @@ function* signUp() {
                 [queryClient, queryClient.fetchQuery],
                 {
                   queryKey: getWalletAccountQueryKey(wallet),
-                  queryFn: async () => getWalletAccountQueryFn(wallet!, sdk)
+                  queryFn: async () => getWalletAccountQueryFn(wallet!, sdk),
+                  staleTime: Infinity,
+                  gcTime: Infinity
                 }
               )) as AccountUserMetadata | undefined
               // TODO: Do I need to prime the accountUser slice here?
@@ -811,7 +817,6 @@ function* signUp() {
             null,
             (value: ID[]) => value.length > 0
           )
-          yield* call(waitForValue, accountSelectors.getIsAccountComplete)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
@@ -899,7 +904,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     const account = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(signInResponse.walletAddress),
       queryFn: async () =>
-        getWalletAccountQueryFn(signInResponse.walletAddress, sdk)
+        getWalletAccountQueryFn(signInResponse.walletAddress, sdk),
+      staleTime: Infinity,
+      gcTime: Infinity
     })) as AccountUserMetadata | undefined
 
     // Login succeeded but we found no account for the user (incomplete signup)
@@ -1040,15 +1047,9 @@ function* followCollections(
   favoriteSource: FavoriteSource
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
   try {
-    const result = yield* call(retrieveCollections, collectionIds, { userId })
-
-    for (let i = 0; i < collectionIds.length; i++) {
-      const id = collectionIds[i]
-      if (result?.collections?.[id]) {
-        yield* put(saveCollection(id, favoriteSource))
-      }
+    for (const collectionId of collectionIds) {
+      yield* put(saveCollection(collectionId, favoriteSource))
     }
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')
@@ -1065,7 +1066,7 @@ function* followCollections(
 function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
-  const isAccountComplete = yield* select(accountSelectors.getIsAccountComplete)
+  const isAccountComplete = yield* call(queryIsAccountComplete)
   if (isAccountComplete) {
     // If account creation has finished we need to make sure followArtists gets called
     // Also we specifically request to not follow the defaults (Audius user, Hot & New Playlist) since that should have already occurred
@@ -1216,7 +1217,7 @@ function* watchSendWelcomeEmail() {
   yield* takeLatest(
     signOnActions.SEND_WELCOME_EMAIL,
     function* (action: ReturnType<typeof signOnActions.sendWelcomeEmail>) {
-      const hasAccount = yield* select(getHasAccount)
+      const hasAccount = yield* call(queryHasAccount)
       if (!hasAccount) return
       yield* call(audiusBackendInstance.sendWelcomeEmail, {
         sdk,

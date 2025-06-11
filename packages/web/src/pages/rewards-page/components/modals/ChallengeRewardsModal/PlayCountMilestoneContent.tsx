@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react'
 
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import { ChallengeName } from '@audius/common/models'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
-  ClaimStatus
+  ClaimStatus,
+  CommonState
 } from '@audius/common/store'
 import { getChallengeStatusLabel } from '@audius/common/utils'
 import { Box, Flex, Text, IconCheck } from '@audius/harmony'
@@ -41,7 +43,11 @@ export const PlayCountMilestoneContent = ({
   errorContent
 }: ChallengeContentProps) => {
   const isMobile = useIsMobile()
-  const userChallenges = useSelector(getOptimisticUserChallenges)
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const userChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )
   const challenge = userChallenges[challengeName]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
   const claimStatus = useSelector(getClaimStatus)

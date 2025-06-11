@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   AccessConditions,
@@ -12,12 +13,10 @@ import {
   StemUpload,
   USDCPurchaseConditions
 } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCart, IconReceive } from '@audius/harmony'
 import { FormikErrors } from 'formik'
 import { get, set, groupBy } from 'lodash'
-import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -46,8 +45,6 @@ import {
   StemsAndDownloadsFormValues,
   STREAM_CONDITIONS
 } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Stems & Downloads',
@@ -98,7 +95,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
    * Upon submit, these values along with the selected access option will
    * determine the final download conditions that get saved to the track.
    */
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const tempDownloadConditions = useMemo(
     () => ({
       ...getCombinedDefaultGatedConditionValues(accountUserId),

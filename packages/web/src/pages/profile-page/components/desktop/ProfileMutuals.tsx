@@ -1,10 +1,13 @@
 import { useCallback } from 'react'
 
-import { useMutualFollowers, useUsers } from '@audius/common/api'
-import { User } from '@audius/common/models'
-import { accountSelectors, profilePageSelectors } from '@audius/common/store'
+import {
+  useCurrentUserId,
+  useMutualFollowers,
+  useProfileUser,
+  useUsers
+} from '@audius/common/api'
 import { Flex, IconUserFollowing } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   setUsers,
@@ -18,9 +21,6 @@ import {
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from './ProfilePictureListTile'
 
-const { getProfileUser, getProfileUserId } = profilePageSelectors
-const { getUserId } = accountSelectors
-
 const messages = {
   mutuals: 'Mutuals'
 }
@@ -28,9 +28,9 @@ const messages = {
 const MAX_MUTUALS = 5
 
 export const ProfileMutuals = () => {
-  const userId = useSelector(getProfileUserId)
-  const accountId = useSelector(getUserId)
-  const profile = useSelector(getProfileUser) as User | null
+  const { user: profile } = useProfileUser()
+  const { user_id: userId } = profile ?? {}
+  const { data: accountId } = useCurrentUserId()
   const { data: mutuals } = useMutualFollowers({
     userId,
     pageSize: MAX_MUTUALS

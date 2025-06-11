@@ -1,6 +1,7 @@
+import { useCurrentUserId } from '@audius/common/api'
 import { useAccountHasClaimableRewards } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -14,7 +15,6 @@ import { ProfilePicture } from 'app/components/core'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
-const { getUserId } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -48,7 +48,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   const { onPress } = props
   const drawerProgress = useDrawerProgress() as Animated.SharedValue<number>
   const styles = useStyles()
-  const accountId = useSelector(getUserId)!
+  const { data: accountId } = useCurrentUserId()
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const hasUnreadMessages = useSelector(getHasUnreadMessages)

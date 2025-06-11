@@ -113,6 +113,7 @@ export const SegmentedControl = <Value,>(
   const styles = useStyles()
   const [optionWidths, setOptionWidths] = useState(options.map(() => 0))
   const [maxOptionWidth, setMaxOptionWidth] = useState(0)
+  const [containerWidth, setContainerWidth] = useState(0)
   const [initLeft, setInitLeft] = useState(false)
   const leftAnim = useRef(new Animated.Value(0)).current
   const widthAnim = useRef(new Animated.Value(0)).current
@@ -149,10 +150,35 @@ export const SegmentedControl = <Value,>(
   useEffect(() => {
     if (!initLeft && optionWidths.every((val) => val !== 0)) {
       leftAnim.setValue(getLeftValue())
-      setMaxOptionWidth(optionWidths.reduce((a, b) => Math.max(a, b), 0))
+
+      // Calculate maxOptionWidth considering container constraints
+      const naturalMaxWidth = optionWidths.reduce((a, b) => Math.max(a, b), 0)
+
+      if (fullWidth && equalWidth && containerWidth > 0) {
+        // Calculate available width for options (subtract padding and separators)
+        const separatorsWidth = (options.length - 1) * 1 // 1px per separator
+        const availableWidth = containerWidth - offset * 2 - separatorsWidth
+        const equalOptionWidth = Math.floor(availableWidth / options.length)
+
+        // Use the smaller of natural max width or calculated equal width
+        setMaxOptionWidth(Math.min(naturalMaxWidth, equalOptionWidth))
+      } else {
+        setMaxOptionWidth(naturalMaxWidth)
+      }
+
       setInitLeft(true)
     }
-  }, [optionWidths, initLeft, options, leftAnim, selectedOption, getLeftValue])
+  }, [
+    optionWidths,
+    initLeft,
+    options,
+    leftAnim,
+    selectedOption,
+    getLeftValue,
+    fullWidth,
+    equalWidth,
+    containerWidth
+  ])
 
   const setOptionWidth = (i: number) => (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout
@@ -179,6 +205,11 @@ export const SegmentedControl = <Value,>(
     />
   )
 
+  const handleContainerLayout = (event: LayoutChangeEvent) => {
+    const { width } = event.nativeEvent.layout
+    setContainerWidth(width)
+  }
+
   return (
     <View
       style={[
@@ -187,6 +218,7 @@ export const SegmentedControl = <Value,>(
         style,
         stylesProp?.root
       ]}
+      onLayout={handleContainerLayout}
     >
       {sliderElement}
       {options.map((option, index) => {

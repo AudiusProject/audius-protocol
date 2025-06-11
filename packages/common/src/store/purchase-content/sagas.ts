@@ -17,9 +17,17 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { queryCollection, queryTrack, queryUser } from '~/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryCurrentUserId,
+  queryTrack,
+  queryUser,
+  updateTrackData,
+  queryWalletAddresses
+} from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
-import { Collection, Kind } from '~/models'
+import { Collection } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel, Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -32,7 +40,6 @@ import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
-import { accountSelectors } from '~/store/account'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -61,7 +68,6 @@ import {
 import { waitForValue } from '~/utils'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { getSDK } from '../sdkUtils'
@@ -84,8 +90,6 @@ import {
   PurchaseErrorCode
 } from './types'
 import { getBalanceNeeded } from './utils'
-
-const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -241,7 +245,7 @@ function* getCoinflowPurchaseMetadata({
     contentId,
     contentType
   })
-  const currentUser = yield* select(getAccountUser)
+  const currentUser = yield* call(queryAccountUser)
 
   const data: CoinflowPurchaseMetadata = {
     productName: `${artistInfo.name}:${title}`,
@@ -264,7 +268,7 @@ function* pollForPurchaseConfirmation({
   contentId: ID
   contentType: PurchaseableContentType
 }) {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) {
     throw new Error(
       'Failed to fetch current user id while polling for purchase confirmation'
@@ -300,16 +304,9 @@ function* pollForPurchaseConfirmation({
         const track = data ? userTrackMetadataFromSDK(data) : null
 
         if (track) {
-          yield* put(
-            cacheActions.update(Kind.TRACKS, [
-              {
-                id: track.track_id,
-                metadata: {
-                  access: track.access
-                }
-              }
-            ])
-          )
+          yield* call(updateTrackData, [
+            { track_id: track.track_id, access: track.access }
+          ])
         }
       }
     }
@@ -592,7 +589,7 @@ function* collectEmailAfterPurchase({
     const identityService = yield* getContext('identityService')
     const isAlbum = 'playlist_id' in metadata
 
-    const purchaserUserId = yield* select(getUserId)
+    const purchaserUserId = yield* call(queryCurrentUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
 
     const email = yield* call([identityService, identityService.getUserEmail])
@@ -651,7 +648,7 @@ function* doStartPurchaseContentFlow({
   // wait for guest account creation
   yield* call(
     waitForValue,
-    getWalletAddresses,
+    queryWalletAddresses,
     null,
     (value) => !!value?.currentUser
   )
@@ -668,7 +665,7 @@ function* doStartPurchaseContentFlow({
   })
 
   const totalAmount = (price + (extraAmount ?? 0)) / 100
-  const purchaserUserId = yield* select(getUserId)
+  const purchaserUserId = yield* call(queryCurrentUserId)
 
   const analyticsInfo = {
     price: price / 100,

@@ -1,6 +1,5 @@
-import { accountSelectors } from '@audius/common/store'
+import { useHasAccount } from '@audius/common/api'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
-import { useSelector } from 'react-redux'
 
 import {
   Flex,
@@ -15,8 +14,6 @@ import { LeftNavLink } from './LeftNavLink'
 import { VanityMetrics } from './VanityMetrics'
 import { useNavConfig } from './useNavConfig'
 
-const { getHasAccount } = accountSelectors
-
 type AccountDrawerProps = DrawerContentComponentProps & {
   gesturesDisabled: boolean
   setGesturesDisabled: (disabled: boolean) => void
@@ -24,7 +21,7 @@ type AccountDrawerProps = DrawerContentComponentProps & {
 
 export const LeftNavDrawer = (props: AccountDrawerProps) => {
   const { navigation: drawerHelpers, ...other } = props
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
   if (!hasAccount) return null
 
   return (

@@ -61,7 +61,7 @@ const toEntityType = (
  */
 export const notificationFromSDK = (
   notification: full.Notification
-): Notification => {
+): Notification | undefined => {
   switch (notification.type) {
     case 'follow': {
       const userIds = notification.actions.map((action) => {
@@ -648,6 +648,7 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.FanRemixContestEnded,
         entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
@@ -657,6 +658,7 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.ArtistRemixContestEnded,
         entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
         ...formatBaseNotification(notification)
       }
     }
@@ -665,6 +667,7 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.ArtistRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
@@ -675,6 +678,17 @@ export const notificationFromSDK = (
         type: NotificationType.FanRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
         entityUserId: HashId.parse(data.entityUserId),
+        entityType: Entity.Track,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'fan_remix_contest_winners_selected': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestWinnersSelected,
+        entityId: HashId.parse(data.entityId),
+        entityUserId: HashId.parse(data.entityUserId),
+        entityType: Entity.Track,
         ...formatBaseNotification(notification)
       }
     }
@@ -683,6 +697,7 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.FanRemixContestStarted,
         entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
@@ -698,8 +713,10 @@ export const notificationFromSDK = (
         eventId: HashId.parse(data.eventId),
         milestone: data.milestone,
         entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
         ...formatBaseNotification(notification)
       }
     }
   }
+  return undefined
 }

@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import type { UserMetadata } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { accountSelectors, profilePageActions } from '@audius/common/store'
+import { profilePageActions } from '@audius/common/store'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { pick } from 'lodash'
+import { useDispatch } from 'react-redux'
 
 import {
   IconDonate,
@@ -27,7 +29,6 @@ import { FormScreen } from './FormScreen'
 import { ProfileTextField } from './ProfileTextField'
 import type { ProfileValues, UpdatedProfile } from './types'
 
-const { getAccountUser } = accountSelectors
 const { updateProfile } = profilePageActions
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -133,24 +134,33 @@ const EditProfileForm = (props: EditProfileFormProps) => {
 }
 
 export const EditProfileScreen = () => {
-  const profile = useSelector(getAccountUser)!
-  const {
-    user_id,
-    verified_with_twitter: verifiedWithTwitter,
-    verified_with_instagram: verifiedWithInstagram,
-    verified_with_tiktok: verifiedWithTiktok
-  } = profile
+  const { data: profile } = useCurrentAccountUser({
+    select: (user) =>
+      pick(user, [
+        'user_id',
+        'verified_with_twitter',
+        'verified_with_instagram',
+        'verified_with_tiktok',
+        'name',
+        'bio',
+        'location',
+        'twitter_handle',
+        'instagram_handle',
+        'tiktok_handle',
+        'website',
+        'donation'
+      ])
+  })
 
   const dispatch = useDispatch()
-
   const navigation = useNavigation()
 
   const { source: coverPhotoSource } = useCoverPhoto({
-    userId: user_id,
+    userId: profile?.user_id,
     size: WidthSizes.SIZE_640
   })
   const { source: imageSource } = useProfilePicture({
-    userId: user_id,
+    userId: profile?.user_id,
     size: SquareSizes.SIZE_480_BY_480
   })
 
@@ -179,9 +189,10 @@ export const EditProfileScreen = () => {
 
   if (!profile) return null
 
-  // these values are actually Nullable<string>, but types think they are
-  // string | undefined. For now, explicitly casting to null
   const {
+    verified_with_twitter: verifiedWithTwitter,
+    verified_with_instagram: verifiedWithInstagram,
+    verified_with_tiktok: verifiedWithTiktok,
     name,
     bio,
     location,

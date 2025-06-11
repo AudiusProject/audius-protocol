@@ -1,7 +1,7 @@
 import { userTrackMetadataFromSDK } from '@audius/common/adapters'
-import { queryTrack } from '@audius/common/api'
+import { queryCurrentUserId, queryTrack } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { accountSelectors, getSDK } from '@audius/common/store'
+import { getSDK } from '@audius/common/store'
 import { Id, OptionalId } from '@audius/sdk'
 import moment from 'moment'
 import { put, select, call, take, race } from 'typed-redux-saga'
@@ -19,8 +19,6 @@ import {
 
 import { shouldAbortJob } from '../../utils/shouldAbortJob'
 import { shouldCancelJob } from '../../utils/shouldCancelJob'
-
-const { getUserId } = accountSelectors
 
 export function* staleTrackWorker(trackId: ID) {
   yield* put(startJob({ type: 'stale-track', id: trackId }))
@@ -53,7 +51,7 @@ export function* staleTrackWorker(trackId: ID) {
 export function* handleStaleTrack(trackId: ID) {
   const sdk = yield* getSDK()
   const currentTrack = yield* queryTrack(trackId)
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
 
   if (!currentTrack || !currentUserId) return OfflineDownloadStatus.ERROR
 

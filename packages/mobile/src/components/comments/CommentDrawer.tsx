@@ -2,7 +2,11 @@ import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
-import { useFollowers, useSearchUserResults } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useFollowers,
+  useSearchUserResults
+} from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
@@ -10,7 +14,6 @@ import {
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
 import type { LineupBaseActions, playerActions } from '@audius/common/store'
-import { accountSelectors } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
   BottomSheetFooterProps
@@ -27,7 +30,6 @@ import type { TouchableOpacityProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 
 import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
@@ -42,8 +44,6 @@ import { NoComments } from './NoComments'
 import { COMMENT_DRAWER_BORDER_RADIUS } from './constants'
 import { useGestureEventsHandlers } from './useGestureEventHandlers'
 import { useScrollEventsHandlers } from './useScrollEventHandlers'
-
-const { getUserId } = accountSelectors
 
 type UserListItemProps = {
   user: UserMetadata
@@ -79,7 +79,7 @@ const CommentDrawerAutocompleteContent = ({
   query,
   onSelect
 }: CommentDrawerAutocompleteContentProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const params = {
     query,

@@ -5,7 +5,8 @@ import {
   Text,
   IconButton,
   IconCaretLeft,
-  IconCaretRight
+  IconCaretRight,
+  useMedia
 } from '@audius/harmony'
 
 type ExploreSectionProps = {
@@ -19,15 +20,16 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   Card
 }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const { isLarge } = useMedia()
 
   const updateScrollButtons = useCallback(() => {
     const container = scrollContainerRef.current
     if (container) {
       setCanScrollLeft(container.scrollLeft > 0)
       setCanScrollRight(
-        container.scrollLeft + container.clientWidth < container.scrollWidth
+        container.scrollLeft + container.clientWidth < container.scrollWidth - 1
       )
     }
   }, [])
@@ -44,8 +46,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
       container.removeEventListener('scroll', updateScrollButtons)
       window.removeEventListener('resize', updateScrollButtons)
     }
-  }, [updateScrollButtons])
-  if (!data) return null
+  })
 
   return (
     <Flex direction='column' gap='l'>
@@ -59,6 +60,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
         {canScrollLeft || canScrollRight ? (
           <Flex gap='l'>
             <IconButton
+              ripple
               icon={IconCaretLeft}
               color={canScrollLeft ? 'default' : 'disabled'}
               aria-label={`${title} scroll left`}
@@ -70,6 +72,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
               }}
             />
             <IconButton
+              ripple
               icon={IconCaretRight}
               color={canScrollRight ? 'default' : 'disabled'}
               aria-label={`${title} scroll right`}
@@ -84,19 +87,52 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
         ) : null}
       </Flex>
       <Flex
-        ref={scrollContainerRef}
-        css={{
-          overflowX: 'auto',
-
-          scrollbarWidth: 'none', // Firefox
-          msOverflowStyle: 'none', // IE/Edge
-          '&::-webkit-scrollbar': {
-            display: 'none' // Chrome/Safari
-          }
-        }}
+        css={
+          isLarge
+            ? {
+                marginRight: '-50vw',
+                marginLeft: '-50vw',
+                overflow: 'visible'
+              }
+            : null
+        }
       >
-        <Flex gap='l' css={{ minWidth: 'max-content' }} pv='2xs'>
-          {data?.map((id) => <Card key={id} id={id} size='s' />)}
+        <Flex
+          ref={scrollContainerRef}
+          css={{
+            overflowX: 'auto',
+
+            scrollbarWidth: 'none', // Firefox
+            msOverflowStyle: 'none', // IE/Edge
+            '&::-webkit-scrollbar': {
+              display: 'none' // Chrome/Safari
+            },
+            overscrollBehaviorX: 'contain', // prevents back gesture on chrome
+
+            // Some logic to make sure card shadows are not cut off
+            marginLeft: !canScrollLeft && !isLarge ? -18 : undefined,
+            paddingRight: isLarge ? '50vw' : undefined,
+            paddingLeft: isLarge
+              ? 'calc(50vw + 2px)'
+              : !canScrollLeft
+                ? 18
+                : undefined,
+            paddingTop: 2
+          }}
+          pb='3xl'
+        >
+          <Flex
+            gap='m'
+            css={{ minWidth: 'max-content', overflow: 'visible' }}
+            pv='2xs'
+          >
+            {data
+              ? data?.map((id) => <Card key={id} id={id} size='s' />)
+              : Array.from({ length: 6 }).map((_, i) => (
+                  // loading skeletons
+                  <Card key={i} id={0} size='s' />
+                ))}
+          </Flex>
         </Flex>
       </Flex>
     </Flex>

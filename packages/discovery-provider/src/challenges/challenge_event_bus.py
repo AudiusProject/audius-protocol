@@ -39,6 +39,9 @@ from src.challenges.referral_challenge import (
     referred_challenge_manager,
     verified_referral_challenge_manager,
 )
+from src.challenges.remix_contest_winner_challenge import (
+    remix_contest_winner_challenge_manager,
+)
 from src.challenges.send_first_tip_challenge import send_first_tip_challenge_manager
 from src.challenges.tastemaker_challenge import tastemaker_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
@@ -314,5 +317,8 @@ def setup_challenge_bus():
         ChallengeEvent.pinned_comment, pinned_comment_challenge_manager
     )
     bus.register_listener(ChallengeEvent.cosign, cosign_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.remix_contest_winner, remix_contest_winner_challenge_manager
+    )
 
     return bus

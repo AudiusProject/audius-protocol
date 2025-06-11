@@ -22,6 +22,7 @@ import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
 
+import { queryClient } from 'app/services/query-client'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
@@ -123,7 +124,11 @@ const sagaMiddleware = createSagaMiddleware({
   onError: onSagaError
 })
 
-const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk), thunk]
+const middlewares = [
+  sagaMiddleware,
+  chatMiddleware(audiusSdk, queryClient),
+  thunk
+]
 
 const getProdEnhancer = () => {
   return applyMiddleware(...middlewares)

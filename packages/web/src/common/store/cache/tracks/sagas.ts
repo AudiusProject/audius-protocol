@@ -5,40 +5,35 @@ import {
 } from '@audius/common/adapters'
 import {
   getStemsQueryKey,
+  getUserQueryKey,
   queryAccountUser,
+  queryCurrentUserId,
   queryTrack,
   queryUser,
-  queryUsers
+  updateTrackData
 } from '@audius/common/api'
 import {
   Name,
   Kind,
   Track,
-  Collection,
   ID,
   Remix,
   StemUploadWithFile
 } from '@audius/common/models'
 import {
-  Entry,
   getContext,
-  accountSelectors,
   cacheTracksActions as trackActions,
-  cacheActions,
   confirmerActions,
   TrackMetadataForUpload,
   stemsUploadActions,
   stemsUploadSelectors,
-  getSDK,
-  cacheTracksSelectors,
-  cacheUsersSelectors
+  getSDK
 } from '@audius/common/store'
 import {
   formatMusicalKey,
   makeKindId,
   squashNewLines,
   uuid,
-  waitForValue,
   waitForAccount
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
@@ -54,40 +49,6 @@ import { recordEditTrackAnalytics } from './sagaHelpers'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getUserId, getAccountUser } = accountSelectors
-const { getTrack } = cacheTracksSelectors
-const { getUser } = cacheUsersSelectors
-
-function* fetchRepostInfo(entries: Entry<Collection>[]) {
-  const userIds: ID[] = []
-  entries.forEach((entry) => {
-    if (entry.metadata.followee_reposts) {
-      entry.metadata.followee_reposts.forEach((repost) =>
-        userIds.push(repost.user_id)
-      )
-    }
-  })
-
-  if (userIds.length) {
-    yield* call(queryUsers, userIds)
-  }
-}
-
-function* watchAdd() {
-  yield* takeEvery(
-    cacheActions.ADD_SUCCEEDED,
-    function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
-      // This code only applies to tracks
-      if (action.kind !== Kind.TRACKS) return
-
-      // Fetch repost data
-      const isNativeMobile = yield* getContext('isNativeMobile')
-      if (!isNativeMobile) {
-        yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
-      }
-    }
-  )
-}
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
@@ -117,7 +78,8 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
 
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
-  action.formFields.description = squashNewLines(action.formFields.description)
+  action.formFields.description =
+    squashNewLines(action.formFields.description) ?? null
 
   const currentTrack = yield* queryTrack(action.trackId)
   if (!currentTrack) return
@@ -126,15 +88,10 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   const isNowListed = !action.formFields.is_unlisted
 
   if (!isPublishing && wasUnlisted && isNowListed) {
-    yield* put(
-      cacheActions.update(Kind.TRACKS, [
-        {
-          id: action.trackId,
-          metadata: { _is_publishing: true }
-        }
-      ])
-    )
+    currentTrack._is_publishing = true
   }
+
+  yield* call(updateTrackData, [currentTrack])
 
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
 
@@ -214,9 +171,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
     }
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [{ id: track.track_id, metadata: track }])
-  )
+  yield* call(updateTrackData, [track])
   yield* put(trackActions.editTrackSucceeded())
 
   // This is a new remix
@@ -252,7 +207,7 @@ function* confirmEditTrack(
       function* () {
         yield* waitForAccount()
         // Need to poll with the new track name in case it changed
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot edit track')
         }
@@ -284,14 +239,7 @@ function* confirmEditTrack(
           confirmedTrack._is_publishing = false
         }
 
-        yield* put(
-          cacheActions.update(Kind.TRACKS, [
-            {
-              id: confirmedTrack.track_id,
-              metadata: confirmedTrack
-            }
-          ])
-        )
+        yield* call(updateTrackData, [confirmedTrack])
         yield* call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
       },
       function* ({ error, message, timeout }) {
@@ -315,38 +263,31 @@ function* deleteTrackAsync(
   action: ReturnType<typeof trackActions.deleteTrack>
 ) {
   yield* waitForWrite()
-  const user = yield* select(getAccountUser)
+  const user = yield* call(queryAccountUser)
+  const queryClient = yield* getContext('queryClient')
   if (!user) {
     yield* put(signOnActions.openSignOn(false))
     return
   }
   const userId = user.user_id
 
-  const track = yield* select(getTrack, { id: action.trackId })
+  const track = yield* queryTrack(action.trackId)
   if (!track) return
 
   // Before deleting, check if the track is set as the artist pick & delete if so
   if (user.artist_pick_track_id === action.trackId) {
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
-            artist_pick_track_id: null
-          }
-        }
-      ])
-    )
-    const user = yield* call(waitForValue, getUser, { id: userId })
+    queryClient.setQueryData(getUserQueryKey(userId), (prevUser) => {
+      if (!prevUser) return prevUser
+      return {
+        ...prevUser,
+        artist_pick_track_id: null
+      }
+    })
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      { id: track.track_id, metadata: { _marked_deleted: true } }
-    ])
-  )
-
+  yield* call(updateTrackData, [{ ...track, _marked_deleted: true }])
   yield* call(confirmDeleteTrack, track)
 }
 
@@ -359,7 +300,7 @@ function* confirmDeleteTrack(track: Track) {
       makeKindId(Kind.TRACKS, trackId),
       function* () {
         yield* waitForAccount()
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete track')
         }
@@ -369,7 +310,7 @@ function* confirmDeleteTrack(track: Track) {
           trackId: Id.parse(trackId)
         })
 
-        const track = yield* select(getTrack, { id: trackId })
+        const track = yield* queryTrack(trackId)
 
         if (!track) return
         const { data } = yield* call(
@@ -406,11 +347,7 @@ function* confirmDeleteTrack(track: Track) {
       },
       function* () {
         // On failure, do not mark the track as deleted
-        yield* put(
-          cacheActions.update(Kind.TRACKS, [
-            { id: trackId, metadata: { _marked_deleted: false } }
-          ])
-        )
+        yield* call(updateTrackData, [{ ...track, _marked_deleted: false }])
       }
     )
   )
@@ -421,7 +358,7 @@ function* watchDeleteTrack() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack]
+  return [watchEditTrack, watchDeleteTrack]
 }
 
 export default sagas

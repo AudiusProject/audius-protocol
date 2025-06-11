@@ -2,7 +2,14 @@ import {
   albumMetadataForSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryTrack,
+  queryUser,
+  queryCurrentUserId,
+  updateCollectionData
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -13,10 +20,7 @@ import {
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
-  accountSelectors,
   cacheCollectionsActions,
-  cacheActions,
-  reformatCollection,
   confirmerActions,
   EditCollectionValues,
   RequestConfirmationError,
@@ -25,14 +29,13 @@ import {
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { requestConfirmation } = confirmerActions
-const { getUserId, getAccountUser } = accountSelectors
 const { collectionPage } = route
 
 export function* createAlbumSaga() {
@@ -90,10 +93,10 @@ function* optimisticallySaveAlbum(
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
-  const accountUser = yield* select(getAccountUser)
+  const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
-  const { user_id, handle, _collectionIds = [] } = accountUser
-  const album: Partial<Collection> = {
+  const { user_id, handle } = accountUser
+  const album: Partial<Collection> & { playlist_id: ID } = {
     playlist_id: albumId,
     ...formFields
   }
@@ -129,23 +132,7 @@ function* optimisticallySaveAlbum(
     true
   )
 
-  yield* put(
-    cacheActions.add(
-      Kind.COLLECTIONS,
-      [{ id: albumId, metadata: album }],
-      true,
-      false
-    )
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user_id,
-        metadata: { _collectionIds: _collectionIds.concat(albumId) }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [album])
 
   yield* put(
     accountActions.addAccountPlaylist({
@@ -176,7 +163,7 @@ function* createAndConfirmAlbum(
   yield* put(event)
 
   function* confirmAlbum() {
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     if (!userId) {
       throw new Error('No userId set, cannot create album')
     }
@@ -208,22 +195,13 @@ function* createAndConfirmAlbum(
     const optimisticAlbum = yield* queryCollection(albumId)
 
     const reformattedAlbum = {
-      ...reformatCollection({
-        collection: confirmedAlbum
-      }),
+      ...confirmedAlbum,
       ...optimisticAlbum,
       cover_art_cids: confirmedAlbum.cover_art_cids,
       playlist_id: confirmedAlbum.playlist_id
     }
 
-    yield* put(
-      cacheActions.update(Kind.COLLECTIONS, [
-        {
-          id: confirmedAlbum.playlist_id,
-          metadata: reformattedAlbum
-        }
-      ])
-    )
+    yield* call(updateCollectionData, [reformattedAlbum])
 
     yield* put(
       make(Name.PLAYLIST_COMPLETE_CREATE, {

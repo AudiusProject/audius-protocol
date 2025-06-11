@@ -1,20 +1,19 @@
 import { ComponentType, useCallback } from 'react'
 
+import {
+  useWriteReaction,
+  useCurrentUserId,
+  useReaction,
+  reactionOrder,
+  ReactionTypes,
+  getReactionFromRawValue,
+  useUser
+} from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import {
-  notificationsSelectors,
-  reactionsUIActions,
-  reactionsUISelectors,
-  reactionOrder,
-  TipReceiveNotification,
-  ReactionTypes
-} from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
+import { TipReceiveNotification } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
-import { useSelector } from 'utils/reducer'
 
 import styles from './TipReceivedNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -29,9 +28,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
-const { writeReactionValue } = reactionsUIActions
-const { makeGetReactionForSignature } = reactionsUISelectors
-const { getNotificationUser } = notificationsSelectors
 
 const reactionList: [ReactionTypes, ComponentType<ReactionProps>][] =
   reactionOrder.map((r) => [r, reactionMap[r]])
@@ -50,28 +46,47 @@ type TipReceivedNotificationProps = {
   notification: TipReceiveNotification
 }
 
-const useSetReaction = (tipTxSignature: string) => {
-  const dispatch = useDispatch()
-
-  const setReactionValue = useCallback(
-    (reaction: Nullable<ReactionTypes>) => {
-      dispatch(writeReactionValue({ reaction, entityId: tipTxSignature }))
-    },
-    [tipTxSignature, dispatch]
-  )
-  return setReactionValue
-}
-
 export const TipReceivedNotification = (
   props: TipReceivedNotificationProps
 ) => {
   const { notification } = props
-  const { amount, timeLabel, isViewed, tipTxSignature } = notification
+  const {
+    amount,
+    timeLabel,
+    isViewed,
+    tipTxSignature,
+    reactionValue: notificationReactionValue
+  } = notification
 
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const { data: user } = useUser(notification.entityId)
 
-  const reactionValue = useSelector(makeGetReactionForSignature(tipTxSignature))
-  const setReaction = useSetReaction(tipTxSignature)
+  const { data: reaction } = useReaction(tipTxSignature, {
+    // Only fetch if we don't have a reaction in the notification
+    enabled: notificationReactionValue !== null
+  })
+
+  // Use the reaction from the query, falling back to notification data
+  const reactionValue =
+    reaction?.reactionValue ??
+    (notificationReactionValue
+      ? getReactionFromRawValue(notificationReactionValue)
+      : null)
+
+  const { mutate: writeReaction } = useWriteReaction()
+  const { data: currentUserId } = useCurrentUserId()
+
+  const handleReaction = useCallback(
+    (e: React.MouseEvent, reactionType: ReactionTypes) => {
+      e.stopPropagation()
+      if (!currentUserId) return
+      writeReaction({
+        entityId: tipTxSignature,
+        reaction: reactionType,
+        userId: currentUserId
+      })
+    },
+    [tipTxSignature, writeReaction, currentUserId]
+  )
 
   const uiAmount = useUIAudio(amount)
 
@@ -123,10 +138,7 @@ export const TipReceivedNotification = (
           {reactionList.map(([reactionType, Reaction]) => (
             <Reaction
               key={reactionType}
-              onClick={(e) => {
-                e.stopPropagation()
-                setReaction(reactionType)
-              }}
+              onClick={(e) => handleReaction(e, reactionType)}
               isActive={
                 reactionValue // treat 0 and null equivalently here
                   ? reactionType === reactionValue

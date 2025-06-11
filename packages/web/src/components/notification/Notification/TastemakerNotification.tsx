@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntity, useUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  notificationsSelectors,
   TrackEntity,
   TastemakerNotification as TastemakerNotificationType
 } from '@audius/common/store'
@@ -11,7 +11,6 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -22,10 +21,9 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTastemaker } from './components/icons'
 import { getEntityLink } from './utils'
-const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
-  title: 'You’re a Tastemaker!',
+  title: "You're a Tastemaker!",
   is: 'is',
   tastemaker: 'now trending thanks to you! Great work 🙌',
   twitterShare: (trackOwnerHandle: string, trackTitle: string) => {
@@ -41,12 +39,8 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
   const { notification } = props
   const { entityType, timeLabel, isViewed } = notification
   const dispatch = useDispatch()
-  const track = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
-  const trackOwnerUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const track = useNotificationEntity(notification) as Nullable<TrackEntity>
+  const { data: trackOwnerUser } = useUser(notification.userId)
 
   const handleClick = useCallback(() => {
     if (track) {

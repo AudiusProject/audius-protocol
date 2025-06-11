@@ -219,9 +219,20 @@
     "id": "cs",
     "type": "aggregate",
     "amount": 1000,
-    "active": true,
+    "active": false,
     "step_count": 2147483647,
     "starting_block": 98445731,
     "weekly_pool": 50000
+  },
+  {
+    "id": "w",
+    "name": "REMIX_CONTEST_WINNER",
+    "type": "aggregate",
+    "amount": 1000,
+    "active": true,
+    "step_count": 2147483647,
+    "starting_block": 104186138,
+    "weekly_pool": 50000,
+    "cooldown_days": 0
   }
 ]

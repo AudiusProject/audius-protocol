@@ -16,7 +16,6 @@ export type CollectionTrack = LineupTrack & { dateAdded: Dayjs } & {
 export type CollectionsPageState = {
   collectionPermalink: string
   collectionId: ID | null
-  collectionUid: UID | null
   status: Status | null
   tracks: LineupState<CollectionTrack>
   userUid: UID | null

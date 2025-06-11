@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useImageSize } from '@audius/common/hooks'
+import { useUser } from '@audius/common/api'
+import { useCurrentTrack, useImageSize } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   castActions,
   playerSelectors,
   playerActions
@@ -20,9 +20,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 const { setIsCasting } = castActions
-const { getCurrentTrack, getPlaying, getSeek, getCounter } = playerSelectors
-
-const { getUser } = cacheUsersSelectors
+const { getPlaying, getSeek, getCounter } = playerSelectors
 
 export { CastState, MediaPlayerState } from 'react-native-google-cast'
 
@@ -31,16 +29,12 @@ export const useChromecast = () => {
 
   // Data hooks
   const counter = useSelector(getCounter)
-  const track = useSelector(getCurrentTrack)
+  const track = useCurrentTrack()
   const prevTrack = usePrevious(track)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
 
-  const owner = useSelector((state) =>
-    getUser(state, {
-      id: track?.owner_id
-    })
-  )
+  const { data: owner } = useUser(track?.owner_id)
 
   // Cast hooks
   const client = useRemoteMediaClient()

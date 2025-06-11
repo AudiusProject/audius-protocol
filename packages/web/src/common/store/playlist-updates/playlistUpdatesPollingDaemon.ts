@@ -1,4 +1,3 @@
-import { IntKeys, remoteConfigIntDefaults } from '@audius/common/services'
 import {
   accountActions,
   getContext,
@@ -10,6 +9,9 @@ import {
   foregroundPollingDaemon,
   visibilityPollingDaemon
 } from 'utils/sagaPollingDaemons'
+
+const PLAYLIST_UPDATES_POLLING_FREQ_MS = 1 * 60 * 1000 // once per 1 minute
+
 const { fetchAccountSucceeded } = accountActions
 const { fetchPlaylistUpdates } = playlistUpdatesActions
 
@@ -17,9 +19,7 @@ export function* playlistUpdatesPollingDaemon() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
 
-  const pollingInterval =
-    remoteConfigInstance.getRemoteVar(IntKeys.NOTIFICATION_POLLING_FREQ_MS) ??
-    (remoteConfigIntDefaults[IntKeys.NOTIFICATION_POLLING_FREQ_MS] as number)
+  const pollingInterval = PLAYLIST_UPDATES_POLLING_FREQ_MS
 
   yield* take(fetchAccountSucceeded.type)
 

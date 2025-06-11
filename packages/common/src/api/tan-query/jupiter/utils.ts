@@ -1,3 +1,4 @@
+import { USDC } from '@audius/fixed-decimal'
 import { AudiusSdk } from '@audius/sdk'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
@@ -7,6 +8,7 @@ import {
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import BN from 'bn.js'
 
 import { SwapErrorType, SwapStatus, UserBankManagedTokenInfo } from './types'
 
@@ -166,4 +168,96 @@ export function getSwapErrorResponse(params: {
       }
     }
   }
+}
+
+/**
+ * Formats a numeric value as USDC.
+ * Uses floor(2) rounding to ensure consistent display across the application.
+ *
+ * @param value - The numeric value to format (can be number or string)
+ * @param options - Formatting options
+ * @returns Formatted USDC string
+ */
+export function formatUSDCValue(
+  value?: number | string,
+  options: {
+    /** Whether to include the $ prefix (default: false) */
+    includeDollarSign?: boolean
+    /** Whether to use toFixed format instead of toLocaleString (default: true) */
+    useFixed?: boolean
+  } = {}
+) {
+  const { includeDollarSign = false, useFixed = true } = options
+
+  // Handle null, undefined, or empty string cases
+  if (!value && value !== 0) {
+    return null
+  }
+
+  const numericValue =
+    typeof value === 'string' ? parseFloat(value.replace(/,/g, '')) : value
+
+  if (isNaN(numericValue) || !isFinite(numericValue)) {
+    return null
+  }
+
+  // Add early validation for extremely large numbers to prevent overflow
+  // This corresponds to ~1 trillion USDC, which is well above any realistic amount
+  const MAX_SAFE_USDC_VALUE = 1000000000000
+  if (Math.abs(numericValue) > MAX_SAFE_USDC_VALUE) {
+    console.warn('USDC value too large for safe formatting:', numericValue)
+    return null
+  }
+
+  // Use the same rounding logic as CashWallet.tsx
+  // Convert to wei (multiply by 1,000,000) and ensure it's an integer
+  const weiValue = Math.floor(Math.abs(numericValue) * 1000000)
+
+  // Ensure weiValue is valid for BN constructor
+  if (weiValue < 0 || !Number.isInteger(weiValue)) {
+    return null
+  }
+
+  // Additional safety check for BN constructor limits
+  if (weiValue > Number.MAX_SAFE_INTEGER) {
+    console.warn('Wei value exceeds MAX_SAFE_INTEGER:', weiValue)
+    return null
+  }
+
+  try {
+    const usdcValue = USDC(new BN(weiValue)).floor(2)
+
+    if (useFixed) {
+      const formatted = usdcValue.toFixed(2).replace('$', '')
+      return includeDollarSign ? `$${formatted}` : formatted
+    } else {
+      return usdcValue.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    }
+  } catch (error) {
+    console.warn('Error formatting USDC value:', {
+      value,
+      numericValue,
+      weiValue,
+      error
+    })
+    return null
+  }
+}
+
+/**
+ * Formats a token price string using USDC formatting with custom decimal places.
+ * This function preserves the original behavior for token price display.
+ *
+ * @param price - The price string to format
+ * @param decimalPlaces - Number of decimal places to show
+ * @returns Formatted price string
+ */
+export function formatTokenPrice(price: string, decimalPlaces: number): string {
+  return USDC(price.replace(/,/g, '')).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: decimalPlaces
+  })
 }

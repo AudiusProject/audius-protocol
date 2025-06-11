@@ -1,25 +1,30 @@
 import { useCallback } from 'react'
 
-import { useUserPlaylists } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useUserPlaylists,
+  useProfileUser
+} from '@audius/common/api'
 import { CreatePlaylistSource } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
-import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
 import { spacing } from 'app/styles/spacing'
 
 import { EmptyProfileTile } from '../EmptyProfileTile'
-import { getIsOwner, useSelectProfile } from '../selectors'
 
 const emptyPlaylists = []
 
 export const PlaylistsTab = () => {
-  const { handle, playlist_count, user_id } = useSelectProfile([
-    'handle',
-    'playlist_count',
-    'user_id'
-  ])
-  const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
+  const { playlist_count = 0, user_id } =
+    useProfileUser({
+      select: (user) => ({
+        playlist_count: user.playlist_count,
+        user_id: user.user_id
+      })
+    }).user ?? {}
+  const { data: accountUserId } = useCurrentUserId()
+  const isOwner = accountUserId === user_id
   const isFocused = useIsFocused()
 
   const {

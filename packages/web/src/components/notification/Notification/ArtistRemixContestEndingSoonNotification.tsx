@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
-import { useTrack } from '@audius/common/api'
-import { ArtistRemixContestEndingSoonNotification as ArtistRemixContestEndingSoonNotificationType } from '@audius/common/store'
+import { useNotificationEntity } from '@audius/common/api'
+import {
+  ArtistRemixContestEndingSoonNotification as ArtistRemixContestEndingSoonNotificationType,
+  TrackEntity
+} from '@audius/common/store'
 import { Flex, IconTrophy, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -13,6 +16,7 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
+import { getEntityLink } from './utils'
 
 const messages = {
   title: 'Remix Contest',
@@ -28,18 +32,18 @@ export const ArtistRemixContestEndingSoonNotification = (
   props: ArtistRemixContestEndingSoonNotificationProps
 ) => {
   const { notification } = props
-  const { entityId, timeLabel, isViewed } = notification
+  const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
 
-  const { data: track } = useTrack(entityId)
+  const entity = useNotificationEntity(notification) as TrackEntity | null
 
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(push(track.permalink))
+    if (entity) {
+      dispatch(push(getEntityLink(entity)))
     }
-  }, [track, dispatch])
+  }, [entity, dispatch])
 
-  if (!track) return null
+  if (!entity) return null
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -54,7 +58,7 @@ export const ArtistRemixContestEndingSoonNotification = (
               css={{ display: 'inline' }}
               variant='secondary'
               size='l'
-              trackId={track.track_id}
+              trackId={entity.track_id}
             />
             {messages.description2}
           </Text>

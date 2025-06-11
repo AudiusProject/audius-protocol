@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccount, useCurrentUserId } from '@audius/common/api'
 import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
@@ -13,7 +13,6 @@ import { CollectionNavItem } from './CollectionNavItem'
 
 const { selectPlaylistUpdateById } = playlistUpdatesSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { collectionPage } = route
 
 type PlaylistNavItemProps = {
   playlistId: number
@@ -24,22 +23,14 @@ type PlaylistNavItemProps = {
 export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const { playlistId, level, isChild } = props
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
-  const playlistName = useSelector(
-    (state) => state.account.collections[playlistId]?.name
-  )
-  const isOwnedByCurrentUser = useSelector(
-    (state) =>
-      state.account.collections[playlistId]?.user.id === state.account.userId
-  )
-
-  const playlistUrl = useSelector((state) => {
-    const playlist = state.account.collections[playlistId]
-    if (!playlist) return null
-    const { name, user, permalink } = playlist
-    const { handle } = user
-    return collectionPage(handle, name, playlistId, permalink)
+  const { data: accountCollection } = useCurrentAccount({
+    select: (account) => account?.collections?.[playlistId]
   })
+  const { name, permalink, user } = accountCollection ?? {}
+
+  const isOwnedByCurrentUser = user?.id === currentUserId
 
   const hasPlaylistUpdate = useSelector(
     (state) => !!selectPlaylistUpdateById(state, playlistId)
@@ -51,13 +42,12 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
     }
   }, [hasPlaylistUpdate, dispatch, playlistId])
 
-  if (!playlistName || !playlistUrl) return null
-
+  if (!name || !permalink || !user) return null
   return (
     <CollectionNavItem
       id={playlistId}
-      name={playlistName}
-      url={playlistUrl}
+      name={name}
+      url={permalink}
       isOwned={isOwnedByCurrentUser}
       level={level}
       isChild={isChild}

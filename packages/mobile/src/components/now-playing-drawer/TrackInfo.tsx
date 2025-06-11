@@ -39,7 +39,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 type TrackInfoProps = {
   track: Nullable<Track>
-  user: Nullable<User>
+  user: Nullable<User> | undefined
   onPressTitle: GestureResponderHandler
 }
 

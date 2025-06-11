@@ -1,12 +1,14 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { useGetCurrentWeb3User, useRemoveManager } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useGetCurrentWeb3User,
+  useRemoveManager
+} from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Button, Flex, Text } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
@@ -40,7 +42,7 @@ export const RemoveManagerConfirmationContent = ({
     isError
   } = useRemoveManager()
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const managerIsCurrentWeb3User = currentWeb3User?.user_id === managerUserId
   const { switchToWeb3User } = useAccountSwitcher()
   const { toast } = useContext(ToastContext)

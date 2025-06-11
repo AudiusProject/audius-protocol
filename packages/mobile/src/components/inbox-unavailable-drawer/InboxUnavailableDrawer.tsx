@@ -1,22 +1,21 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheUsersSelectors,
+  useInboxUnavailableModal,
   chatActions,
   chatSelectors,
   makeChatId,
   ChatPermissionAction,
   tippingActions,
-  useInboxUnavailableModal,
   usersSocialActions
 } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import type { Action } from '@reduxjs/toolkit'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconMessageLocked, IconTipping, Button } from '@audius/harmony-native'
 import { Text, useLink } from 'app/components/core'
@@ -29,7 +28,7 @@ import { UserBadges } from '../user-badges'
 const { followUser } = usersSocialActions
 
 const { unblockUser, createChat } = chatActions
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 const { beginTip } = tippingActions
 
 const messages = {
@@ -112,14 +111,10 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
+  const { data: currentUserId } = useCurrentUserId()
   const { userId, presetMessage } = data
-  const user = useSelector((state) =>
-    cacheUsersSelectors.getUser(state, { id: userId })
-  )
-  const { callToAction } = useSelector((state) =>
-    getCanCreateChat(state, { userId })
-  )
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: user } = useUser(userId)
+  const { callToAction } = useCanCreateChat(userId)
 
   const handleUnblockPress = useCallback(() => {
     if (!userId) {
@@ -287,7 +282,6 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
       return null
   }
 }
-
 export const InboxUnavailableDrawer = () => {
   const styles = useStyles()
   const neutralLight2 = useColor('neutralLight2')

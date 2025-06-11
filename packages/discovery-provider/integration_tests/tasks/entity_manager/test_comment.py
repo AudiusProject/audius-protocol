@@ -1671,3 +1671,67 @@ def test_reported_comment_notifications(app, mocker):
         notifications = session.query(Notification).all()
 
         assert len(notifications) == 0
+
+
+def test_comment_reaction_validation(app, mocker):
+    """
+    Tests validation for comment reactions:
+    1. Cannot react to a comment that doesn't exist
+    2. Cannot react to a deleted comment
+    """
+    # Setup test with a deleted comment
+    reaction_entities = {
+        **entities,
+        "comments": [
+            {"comment_id": 1, "user_id": 2, "is_delete": True},  # Deleted comment
+        ],
+    }
+
+    tx_receipts = {
+        "ReactToNonExistentComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 999,  # Non-existent comment ID
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "React",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "ReactToDeletedComment": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,  # Deleted comment
+                        "_entityType": "Comment",
+                        "_userId": 1,
+                        "_action": "React",
+                        "_metadata": f'{{"cid": "", "data": {json.dumps({"entity_id": 1})}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    db, index_transaction = setup_test(app, mocker, reaction_entities, tx_receipts)
+
+    with db.scoped_session() as session:
+        # Index transactions - should not raise an error but should skip invalid reactions
+        index_transaction(session)
+
+        # Verify no reactions were created
+        all_reactions = session.query(CommentReaction).all()
+        assert len(all_reactions) == 0
+
+        # Verify no notifications were created
+        reaction_notifications = (
+            session.query(Notification)
+            .filter(Notification.type == "comment_reaction")
+            .all()
+        )
+        assert len(reaction_notifications) == 0

@@ -387,6 +387,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     allowAiAttribution: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    profileType?: string;
 }
 
 /**
@@ -501,6 +507,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'hasCollectibles': json['has_collectibles'],
         'playlistLibrary': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
         'allowAiAttribution': json['allow_ai_attribution'],
+        'profileType': !exists(json, 'profile_type') ? undefined : json['profile_type'],
     };
 }
 
@@ -569,6 +576,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'has_collectibles': value.hasCollectibles,
         'playlist_library': PlaylistLibraryToJSON(value.playlistLibrary),
         'allow_ai_attribution': value.allowAiAttribution,
+        'profile_type': value.profileType,
     };
 }
 

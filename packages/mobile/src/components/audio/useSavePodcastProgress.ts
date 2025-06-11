@@ -1,35 +1,25 @@
 import { useEffect } from 'react'
 
-import {
-  accountSelectors,
-  cacheTracksSelectors,
-  playerSelectors,
-  playbackPositionActions
-} from '@audius/common/store'
+import { useCurrentUserId, useTrack } from '@audius/common/api'
+import { playerSelectors, playbackPositionActions } from '@audius/common/store'
 import { isLongFormContent } from '@audius/common/utils'
 import { useProgress } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
 
 const { getPlaying, getTrackId } = playerSelectors
-const { getTrack } = cacheTracksSelectors
-const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 
 export const useSavePodcastProgress = () => {
   const { position } = useProgress()
   const dispatch = useDispatch()
 
-  const isPlayingLongFormContent = useSelector((state) => {
-    const trackId = getTrackId(state)
-    const track = getTrack(state, { id: trackId })
-    if (!track) return false
-    const isPlaying = getPlaying(state)
-
-    return isLongFormContent(track) && isPlaying
-  })
-
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const trackId = useSelector(getTrackId)
+  const isPlaying = useSelector(getPlaying)
+  const { data: isTrackLongFormContent } = useTrack(trackId, {
+    select: (data) => isLongFormContent(data)
+  })
+  const isPlayingLongFormContent = isTrackLongFormContent && isPlaying
 
   useEffect(() => {
     if (isPlayingLongFormContent && userId && trackId) {

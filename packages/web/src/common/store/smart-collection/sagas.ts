@@ -2,6 +2,7 @@ import {
   trackActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
+import { primeTrackDataSaga, queryCurrentUserId } from '@audius/common/api'
 import {
   SmartCollectionVariant,
   Track,
@@ -9,7 +10,6 @@ import {
   UserTrack
 } from '@audius/common/models'
 import {
-  accountSelectors,
   smartCollectionPageActions,
   collectionPageLineupActions,
   collectionPageActions,
@@ -18,9 +18,8 @@ import {
 import { route } from '@audius/common/utils'
 import { full, Id } from '@audius/sdk'
 import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
-import { takeEvery, put, call, select } from 'typed-redux-saga'
+import { takeEvery, put, call } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -38,14 +37,12 @@ const { setSmartCollection } = collectionPageActions
 const { fetchSmartCollection, fetchSmartCollectionSucceeded } =
   smartCollectionPageActions
 
-const { getUserId } = accountSelectors
-
 const COLLECTIONS_LIMIT = 25
 
 function* fetchHeavyRotation() {
   yield* waitForRead()
 
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
@@ -81,7 +78,7 @@ function* fetchHeavyRotation() {
 function* fetchBestNewReleases() {
   yield* waitForRead()
   const explore = yield* getContext('explore')
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (currentUserId == null) {
     return
   }
@@ -90,14 +87,14 @@ function* fetchBestNewReleases() {
     window: GetBestNewReleasesWindowEnum.Month
   })
 
+  yield* call(primeTrackDataSaga, tracks)
+
   const trackIds = tracks
     .filter((track) => !track.user.is_deactivated)
     .map((track: UserTrackMetadata) => ({
       time: track.created_at,
       track: track.track_id
     }))
-
-  yield* call(processAndCacheTracks, tracks)
 
   return {
     ...BEST_NEW_RELEASES,
@@ -110,7 +107,7 @@ function* fetchBestNewReleases() {
 function* fetchUnderTheRadar() {
   yield* waitForRead()
   const explore = yield* getContext('explore')
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (currentUserId == null) {
     return
   }
@@ -123,7 +120,7 @@ function* fetchUnderTheRadar() {
       track: track.track_id
     }))
 
-  yield* call(processAndCacheTracks, tracks)
+  yield* call(primeTrackDataSaga, tracks)
 
   // feed minus listened
   return {
@@ -136,7 +133,7 @@ function* fetchUnderTheRadar() {
 
 function* fetchMostLoved() {
   yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (currentUserId == null) {
     return
   }
@@ -150,7 +147,7 @@ function* fetchMostLoved() {
       track: track.track_id
     }))
 
-  yield* call(processAndCacheTracks, tracks)
+  yield* call(primeTrackDataSaga, tracks)
 
   return {
     ...MOST_LOVED,
@@ -162,7 +159,7 @@ function* fetchMostLoved() {
 
 function* fetchFeelingLucky() {
   yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   const explore = yield* getContext('explore')
 
   const tracks = yield* call([explore, 'getFeelingLuckyTracks'], currentUserId)
@@ -184,7 +181,7 @@ function* fetchFeelingLucky() {
 function* fetchRemixables() {
   yield* waitForRead()
   const explore = yield* getContext('explore')
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (currentUserId == null) {
     return
   }
@@ -211,7 +208,7 @@ function* fetchRemixables() {
   })
 
   const processedTracks = yield* call(
-    processAndCacheTracks,
+    primeTrackDataSaga,
     filteredTracks.slice(0, COLLECTIONS_LIMIT)
   )
 

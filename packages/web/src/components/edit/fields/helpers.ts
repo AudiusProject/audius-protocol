@@ -8,7 +8,7 @@ import { Nullable } from '@audius/common/utils'
  * stream conditions based on the availability type they have currently selected.
  */
 export const getCombinedDefaultGatedConditionValues = (
-  userId: Nullable<ID>
+  userId: Nullable<ID> | undefined
 ) => ({
   usdc_purchase: { price: null, albumTrackPrice: null },
   follow_user_id: userId,

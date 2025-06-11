@@ -1,10 +1,8 @@
 import { MouseEventHandler, useCallback } from 'react'
 
+import { useNotificationEntity, useUsers } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import {
-  notificationsSelectors,
-  CommentNotification as CommentNotificationType
-} from '@audius/common/store'
+import { CommentNotification as CommentNotificationType } from '@audius/common/store'
 import { IconMessage } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -16,7 +14,6 @@ import {
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -27,7 +24,6 @@ import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
 import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   commented: ' commented on your '
@@ -39,16 +35,14 @@ type CommentNotificationProps = {
 export const CommentNotification = (props: CommentNotificationProps) => {
   const { notification } = props
   const { id, userIds, entityType, timeLabel, isViewed } = notification
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
   const isMultiUser = userIds.length > 1
 
-  const entity = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  )
+  const entity = useNotificationEntity(notification)
 
   const dispatch = useDispatch()
   const isMobile = useIsMobile()

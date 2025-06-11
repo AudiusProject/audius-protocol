@@ -84,7 +84,7 @@ export const useProfileTracks = (
         tracks,
         userTrackMetadataFromSDK
       )
-      primeTrackData({ tracks: processedTracks, queryClient, dispatch })
+      primeTrackData({ tracks: processedTracks, queryClient })
 
       // Update lineup when new data arrives
       dispatch(

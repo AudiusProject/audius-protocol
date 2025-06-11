@@ -1,11 +1,7 @@
-import { useSelector } from 'react-redux'
-
+import { useCollection, useCurrentUserId } from '~/api'
 import { AccessType } from '~/models/AccessType'
 import { ID } from '~/models/Identifiers'
 import { isContentUSDCPurchaseGated } from '~/models/Track'
-import { CommonState } from '~/store'
-import { getUserId } from '~/store/account/selectors'
-import { getCollection } from '~/store/cache/collections/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedCollectionAccess } from './useGatedContent'
@@ -21,30 +17,27 @@ export const useCollectionAccessTypeLabel = (
 ): CollectionAccessType => {
   const { hasStreamAccess } = useGatedCollectionAccess(collectionId)
 
-  const isPurchaseable = useSelector((state: CommonState) => {
-    return isContentUSDCPurchaseGated(
-      getCollection(state, { id: collectionId })?.stream_conditions
-    )
+  const { data: collection } = useCollection(collectionId, {
+    select: (collection) => ({
+      streamConditions: collection?.stream_conditions,
+      releaseDate: collection?.release_date,
+      isPrivate: collection?.is_private,
+      playlistOwnerId: collection?.playlist_owner_id
+    })
   })
 
-  const releaseDate = useSelector((state: CommonState) => {
-    return getCollection(state, { id: collectionId })?.release_date
-  })
-
+  const isPurchaseable = isContentUSDCPurchaseGated(
+    collection?.streamConditions
+  )
+  const releaseDate = collection?.releaseDate
   const isScheduledRelease = releaseDate && new Date(releaseDate) > new Date()
+  const isPrivate = collection?.isPrivate
 
-  const isPrivate = useSelector((state: CommonState) => {
-    return getCollection(state, { id: collectionId })?.is_private
-  })
+  const { data: accountUserId } = useCurrentUserId()
 
-  const isOwner = useSelector((state: CommonState) => {
-    return (
-      getCollection(state, { id: collectionId })?.playlist_owner_id ===
-      getUserId(state)
-    )
-  })
+  const isOwner = collection?.playlistOwnerId === accountUserId
 
-  const isUnlockedStream = !isOwner && hasStreamAccess
+  const isUnlockedStream = Boolean(!isOwner && hasStreamAccess)
 
   let type: Nullable<AccessType> = null
   let isUnlocked = false

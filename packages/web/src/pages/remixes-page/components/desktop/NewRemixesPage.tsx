@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
 import {
-  useRemixes,
+  useRemixesLineup,
   useRemixContest,
-  useCurrentUserId
+  useCurrentUserId,
+  useRemixes
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
@@ -21,6 +22,7 @@ import {
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
+import { MIN_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import Page from 'components/page/Page'
@@ -60,15 +62,24 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
   const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
     FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
   )
-  const { data: contest } = useRemixContest(originalTrack?.track_id)
   const { data: currentUserId } = useCurrentUserId()
+  const { data: contest } = useRemixContest(originalTrack?.track_id)
+  const winnerCount = contest?.eventData?.winners?.length ?? 0
+  const { data: remixes } = useRemixes({
+    trackId: originalTrack?.track_id,
+    isContestEntry: true
+  })
+  const remixCount = remixes?.pages[0]?.count ?? 0
 
   const isRemixContest = isRemixContestEnabled && contest
   const isTrackOwner = currentUserId === originalTrack.owner_id
   const isRemixContestEnded =
     isRemixContest && dayjs(contest.endDate).isBefore(dayjs())
   const showPickWinnersButton =
-    isRemixContestWinnersMilestoneEnabled && isTrackOwner && isRemixContestEnded
+    isRemixContestWinnersMilestoneEnabled &&
+    isTrackOwner &&
+    isRemixContestEnded &&
+    remixCount > 0
 
   const { sortMethod, isCosign, isContestEntry } = useRemixPageParams()
   const {
@@ -83,9 +94,10 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
     loadNextPage,
     isPlaying,
     lineup
-  } = useRemixes({
+  } = useRemixesLineup({
     trackId: originalTrack?.track_id,
     includeOriginal: true,
+    includeWinners: isRemixContestWinnersMilestoneEnabled,
     sortMethod,
     isCosign,
     isContestEntry
@@ -113,12 +125,73 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       rightDecorator={
         showPickWinnersButton ? (
           <Button size='small' asChild onClick={handlePickWinnersClick}>
-            <Link to={pickWinnersRoute}>{messages.pickWinners}</Link>
+            <Link to={pickWinnersRoute}>
+              {winnerCount > 0 ? messages.editWinners : messages.pickWinners}
+            </Link>
           </Button>
         ) : null
       }
     />
   )
+
+  const winnersDelineator = (
+    <Flex justifyContent='space-between' mb='xl'>
+      <Text variant='heading'>{messages.winners}</Text>
+    </Flex>
+  )
+
+  const remixesDelineator = (
+    <Flex justifyContent='space-between' mb='xl'>
+      <Text variant='heading'>
+        {messages.remixesTitle}
+        {count !== undefined ? ` (${count})` : ''}
+      </Text>
+      <Flex gap='s'>
+        <FilterButton
+          label={messages.coSigned}
+          value={isCosign ? 'true' : null}
+          onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
+        />
+        {isRemixContest ? (
+          <FilterButton
+            label={messages.contestEntries}
+            value={isContestEntry ? 'true' : null}
+            onClick={() =>
+              updateIsContestEntryParam(isContestEntry ? '' : 'true')
+            }
+          />
+        ) : null}
+        <FilterButton
+          value={sortMethod ?? 'recent'}
+          variant='replaceLabel'
+          onChange={updateSortParam}
+          options={[
+            { label: 'Most Recent', value: 'recent' },
+            { label: 'Most Plays', value: 'plays' },
+            { label: 'Most Likes', value: 'likes' }
+          ]}
+        />
+      </Flex>
+    </Flex>
+  )
+
+  const delineatorMap =
+    isRemixContestWinnersMilestoneEnabled && winnerCount > 0
+      ? {
+          0: winnersDelineator,
+          [winnerCount]: remixesDelineator
+        }
+      : {
+          0: remixesDelineator
+        }
+
+  const winnersMaxEntries =
+    count && winnerCount ? count + winnerCount + 1 : undefined
+  const defaultMaxEntries = count ? count + 1 : undefined
+
+  const maxEntries = isRemixContestWinnersMilestoneEnabled
+    ? winnersMaxEntries
+    : defaultMaxEntries
 
   return (
     <Page
@@ -126,7 +199,7 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
       canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
       header={renderHeader()}
     >
-      <Flex direction='column' gap='xl'>
+      <Flex direction='column' gap='xl' css={{ minWidth: MIN_PAGE_WIDTH_PX }}>
         <Text variant='heading'>{messages.originalTrack}</Text>
         <TanQueryLineup
           data={data}
@@ -141,41 +214,8 @@ const RemixesPage = nullGuard(({ title, originalTrack }) => {
           lineup={lineup}
           pageSize={REMIXES_PAGE_SIZE}
           actions={remixesPageLineupActions}
-          leadingElementId={0}
-          leadingElementDelineator={
-            <Flex justifyContent='space-between'>
-              <Text variant='heading'>
-                {messages.remixesTitle}
-                {count !== undefined ? ` (${count})` : ''}
-              </Text>
-              <Flex gap='s' mb='xl'>
-                <FilterButton
-                  label={messages.coSigned}
-                  value={isCosign ? 'true' : null}
-                  onClick={() => updateIsCosignParam(isCosign ? '' : 'true')}
-                />
-                {isRemixContest ? (
-                  <FilterButton
-                    label={messages.contestEntries}
-                    value={isContestEntry ? 'true' : null}
-                    onClick={() =>
-                      updateIsContestEntryParam(isContestEntry ? '' : 'true')
-                    }
-                  />
-                ) : null}
-                <FilterButton
-                  value={sortMethod ?? 'recent'}
-                  variant='replaceLabel'
-                  onChange={updateSortParam}
-                  options={[
-                    { label: 'Most Recent', value: 'recent' },
-                    { label: 'Most Plays', value: 'plays' },
-                    { label: 'Most Likes', value: 'likes' }
-                  ]}
-                />
-              </Flex>
-            </Flex>
-          }
+          delineatorMap={delineatorMap}
+          maxEntries={maxEntries}
         />
       </Flex>
     </Page>

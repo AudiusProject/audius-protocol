@@ -1,12 +1,7 @@
-import { uniq } from 'lodash'
-
-import { getCollections } from '~/store/cache/collections/selectors'
-import { getUser, getUsers } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
 import { createDeepEqualSelector } from '~/utils/selectorHelpers'
 
 import { Status } from '../../../models'
-import type { ID, User, UserCollection } from '../../../models'
 
 import { initialState as initialFeedState } from './lineups/feed/reducer'
 import { PREFIX as TRACKS_PREFIX } from './lineups/tracks/actions'
@@ -43,86 +38,26 @@ export const getProfileCollectionSortMode = (
 ) => getProfile(state, handle)?.collectionSortMode
 export const getIsSubscribed = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.isNotificationSubscribed
-export const getProfileUser = (
-  state: CommonState,
-  params?: { handle?: string | null; id?: ID }
-) => {
-  const profileHandle = getProfileUserHandle(state)
-  if (!params) return getUser(state, { handle: profileHandle })
-
-  const { id, handle } = params
-  if (id) return getUser(state, params)
-  return getUser(state, { handle: handle ?? profileHandle })
-}
 
 export const getProfileFeedLineup = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.feed ?? initialFeedState
 export const getProfileTracksLineup = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.tracks ?? initialTracksState
 
-export const getProfileCollections = createDeepEqualSelector(
-  [
-    (state: CommonState, handle: string) => getProfileUserId(state, handle),
-    getUsers,
-    getCollections
-  ],
-  (userId, users, collections) => {
-    if (!userId) return undefined
-    const user: User = users[userId].metadata
-    if (!user) return undefined
-    const { handle, _collectionIds } = user
-    const userCollections = _collectionIds
-      ?.map((collectionId) => collections[collectionId])
-      .filter((collection) => {
-        if (collection) {
-          const { is_delete, _marked_deleted, _moved } = collection.metadata
-          return !(is_delete || _marked_deleted || _moved)
-        }
-        return false
-      })
-      .map(
-        (collection) =>
-          ({ ...collection.metadata, user: { handle } }) as UserCollection
-      )
-    return userCollections
-  }
-)
-
-export const getProfileAlbums = createDeepEqualSelector(
-  [getProfileCollections],
-  (collections) => uniq(collections?.filter(({ is_album }) => is_album))
-)
-
-export const getProfilePlaylists = createDeepEqualSelector(
-  [getProfileCollections],
-  (collections) => uniq(collections?.filter(({ is_album }) => !is_album))
-)
-
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
-    [
-      getProfileStatus,
-      getProfileError,
-      getProfileUserId,
-      getIsSubscribed,
-      // External
-      getUsers
-    ],
-    (status, error, userId, isSubscribed, users) => {
+    [getProfileStatus, getProfileError, getProfileUserId, getIsSubscribed],
+    (status, error, userId, isSubscribed) => {
       const emptyState = {
-        profile: null,
-        playlists: null,
-        albums: null,
-        isSubscribed: false,
-        status
+        userId: null,
+        status,
+        isSubscribed: false
       }
       if (error) return { ...emptyState, error: true }
       if (!userId) return emptyState
-      if (!(userId in users)) return emptyState
 
-      const user = users[userId].metadata
       return {
-        profile: user,
+        userId,
         status,
         isSubscribed
       }

@@ -2,8 +2,10 @@ import { useCallback, useContext } from 'react'
 
 import {
   useCollection,
+  useCurrentUserId,
   useToggleFavoriteTrack,
-  useTrack
+  useTrack,
+  useUser
 } from '@audius/common/api'
 import {
   ShareSource,
@@ -14,9 +16,7 @@ import {
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
-  cacheUsersSelectors,
   collectionPageLineupActions as tracksActions,
   tracksSocialActions,
   usersSocialActions,
@@ -34,7 +34,7 @@ import {
   playerSelectors,
   useHostRemixContestModal
 } from '@audius/common/store'
-import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
+import type { OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -45,15 +45,13 @@ import { setVisibility } from 'app/store/drawers/slice'
 
 import { useCommentDrawer } from '../comments/CommentDrawerContext'
 
-const { makeGetCurrent } = playerSelectors
-const { getUserId } = accountSelectors
+const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToCollectionModal } = addToCollectionUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const { getUser } = cacheUsersSelectors
 const { removeTrackFromPlaylist } = cacheCollectionsActions
 
 type Props = {
@@ -68,7 +66,7 @@ const messages = {
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const dispatch = useDispatch()
   const { toast } = useToast()
@@ -76,7 +74,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const currentQueueItem = useSelector(makeGetCurrent())
+  const uid = useSelector(getUid)
 
   const { open } = useCommentDrawer()
 
@@ -88,9 +86,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
 
   const albumInfo = track?.album_backlink
 
-  const user = useSelector((state: CommonState) =>
-    getUser(state, { id: track?.owner_id })
-  )
+  const { data: user } = useUser(track?.owner_id)
 
   const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id,
@@ -128,10 +124,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         entityId: track.track_id,
         navigation,
         actions: playerActions,
-        uid: currentQueueItem.uid as string
+        uid: uid as string
       })
     }
-  }, [currentQueueItem.uid, navigation, open, track?.track_id])
+  }, [uid, navigation, open, track?.track_id])
 
   const handleOpenRemixContestDrawer = useCallback(() => {
     if (track?.track_id) {

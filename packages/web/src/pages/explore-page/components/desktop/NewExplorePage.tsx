@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useExploreContent } from '@audius/common/api'
+import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
   Paper,
@@ -15,7 +16,8 @@ import {
   IconUser,
   Divider,
   FilterButton,
-  useTheme
+  useTheme,
+  useMedia
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
@@ -69,20 +71,6 @@ export enum SearchTabs {
   PLAYLISTS = 'Playlists'
 }
 
-const messages = {
-  explore: 'Explore',
-  description: 'Discover the hottest and trendiest tracks on Audius right now',
-  searchPlaceholder: 'What do you want to listen to?',
-  featuredPlaylists: 'Community Playlists',
-  featuredRemixContests: 'Featured Remix Contests',
-  artistSpotlight: 'Artist Spotlight',
-  labelSpotlight: 'Label Spotlight',
-  exploreByMood: 'Explore by Mood',
-  bestOfAudius: 'Best of Audius',
-  viewAll: 'View All',
-  layoutOptionsLabel: 'View As'
-}
-
 const tabHeaders = [
   {
     icon: <IconSearch />,
@@ -118,6 +106,8 @@ const justForYou = [
   DOWNLOADS_AVAILABLE
 ]
 const DEBOUNCE_MS = 400
+const MIN_WIDTH = 840
+const NORMAL_WIDTH = 1200
 
 const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const [categoryKey, setCategory] = useSearchCategory()
@@ -130,7 +120,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color } = useTheme()
+  const { color, motion } = useTheme()
+  const { isLarge } = useMedia()
 
   const { data: exploreContent } = useExploreContent()
 
@@ -185,8 +176,19 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
       const newParams = new URLSearchParams(searchParams)
       newParams.set('query', debouncedValue)
       setSearchParams(newParams)
+    } else if (categoryKey === SearchTabs.ALL.toLowerCase()) {
+      // clear filters when searching all
+      const newParams = new URLSearchParams()
+      newParams.set('query', debouncedValue)
+      setSearchParams(newParams)
     }
-  }, [debouncedValue, setSearchParams, searchParams, previousDebouncedValue])
+  }, [
+    debouncedValue,
+    setSearchParams,
+    searchParams,
+    previousDebouncedValue,
+    categoryKey
+  ])
 
   const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
@@ -203,16 +205,31 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     onTabClick: handleSearchTab,
     selectedTabLabel: capitalize(categoryKey)
   })
+  const [bannerIsVisible, setBannerIsVisible] = useState(false)
+
+  useEffect(() => {
+    const img = new window.Image()
+    img.src = BackgroundWaves
+    img.onload = () => setBannerIsVisible(true)
+  }, [])
 
   return (
-    <Flex justifyContent='center'>
+    <Flex
+      justifyContent='center'
+      css={{
+        minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH
+      }}
+    >
       <Flex
         direction='column'
         pv='3xl'
         ph='unit15'
         gap='3xl'
         alignItems='stretch'
-        w={1200}
+        css={{
+          minWidth: isLarge ? MIN_WIDTH : NORMAL_WIDTH,
+          maxWidth: isLarge ? '100%' : NORMAL_WIDTH
+        }}
       >
         {/* Header Section */}
         <Paper
@@ -226,7 +243,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             backgroundPosition: 'center',
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
-            backgroundColor: 'lightgray'
+            opacity: bannerIsVisible ? 1 : 0,
+            transition: `opacity ${motion.quick}`
           }}
           borderRadius='l'
           alignSelf='stretch'
@@ -234,17 +252,21 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           <Text variant='display' size='s' color='staticWhite'>
             {messages.explore}
           </Text>
-          <Text variant='heading' size='s' color='staticWhite'>
+          <Text
+            variant='heading'
+            size='s'
+            color='staticWhite'
+            textAlign='center'
+          >
             {messages.description}
           </Text>
-          <Flex w={400}>
+          <Flex w='100%' css={{ maxWidth: 400 }}>
             <TextInput
               ref={searchBarRef}
-              width={400}
               label={messages.searchPlaceholder}
               value={inputValue}
-              size={TextInputSize.SMALL}
               startIcon={IconSearch}
+              size={TextInputSize.SMALL}
               onChange={handleSearch}
               onClear={handleClearSearch}
             />
@@ -262,8 +284,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               direction='row'
               justifyContent='space-between'
               alignItems='center'
+              css={{ flexWrap: 'wrap' }}
             >
-              <Flex direction='row' gap='s' mv='m'>
+              <Flex direction='row' gap='s' mv='m' css={{ flexWrap: 'wrap' }}>
                 {filterKeys.map((filterKey) => {
                   const FilterComponent =
                     filters[filterKey as keyof typeof filters]
@@ -299,29 +322,30 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           />
         ) : (
           <>
-            <ExploreSection
-              title={messages.featuredPlaylists}
-              data={exploreContent?.featuredPlaylists}
-              Card={CollectionCard}
-            />
-            <ExploreSection
-              title={messages.featuredRemixContests}
-              data={exploreContent?.featuredRemixContests}
-              Card={RemixContestCard}
-            />
+            <Flex direction='column'>
+              <ExploreSection
+                title={messages.featuredPlaylists}
+                data={exploreContent?.featuredPlaylists}
+                Card={CollectionCard}
+              />
+              <ExploreSection
+                title={messages.featuredRemixContests}
+                data={exploreContent?.featuredRemixContests}
+                Card={RemixContestCard}
+              />
 
-            <ExploreSection
-              title={messages.artistSpotlight}
-              data={exploreContent?.featuredProfiles}
-              Card={UserCard}
-            />
+              <ExploreSection
+                title={messages.artistSpotlight}
+                data={exploreContent?.featuredProfiles}
+                Card={UserCard}
+              />
 
-            <ExploreSection
-              title={messages.labelSpotlight}
-              data={exploreContent?.featuredLabels}
-              Card={UserCard}
-            />
-
+              <ExploreSection
+                title={messages.labelSpotlight}
+                data={exploreContent?.featuredLabels}
+                Card={UserCard}
+              />
+            </Flex>
             {/* Explore by mood */}
             <Flex direction='column' gap='l' alignItems='center'>
               <Text variant='heading'>{messages.exploreByMood}</Text>
@@ -347,7 +371,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       }}
                       css={{
                         ':hover': {
-                          background: color.neutral.n100,
+                          background: color.neutral.n25,
                           border: `1px solid ${color.neutral.n150}`
                         }
                       }}
@@ -367,8 +391,19 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               <Flex
                 wrap='wrap'
                 gap='l'
-                direction='row'
+                direction={isLarge ? 'column' : 'row'}
                 justifyContent='space-between'
+                css={
+                  !isLarge
+                    ? {
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateRows: '1fr 1fr',
+                        gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
+                        width: '100%'
+                      }
+                    : undefined
+                }
               >
                 {justForYouTiles.map((tile) => {
                   const Icon = tile.icon
@@ -389,7 +424,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       isIncentivized={!!tile.incentivized}
                       sensitivity={tile.cardSensitivity}
                     >
-                      <Flex w={532} h={200}>
+                      <Flex w={'100%'} h={200}>
                         <TextInterior
                           title={tile.title}
                           subtitle={tile.subtitle}

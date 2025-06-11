@@ -1,6 +1,5 @@
 import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
@@ -41,7 +40,6 @@ export const useSupporter = (
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: getSupporterQueryKey(userId, supporterUserId),
@@ -57,7 +55,7 @@ export const useSupporter = (
 
       const supporter = supporterMetadataFromSDK(data)
       if (supporter?.sender) {
-        primeUserData({ users: [supporter.sender], queryClient, dispatch })
+        primeUserData({ users: [supporter.sender], queryClient })
       }
       return supporter
     },
@@ -77,7 +75,6 @@ export const useTopSupporter = (userId: ID | null | undefined) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: getTopSupporterQueryKey(userId),
@@ -95,7 +92,7 @@ export const useTopSupporter = (userId: ID | null | undefined) => {
 
       // Prime the cache for each supporter
       if (supporter?.sender) {
-        primeUserData({ users: [supporter.sender], queryClient, dispatch })
+        primeUserData({ users: [supporter.sender], queryClient })
       }
 
       return supporter

@@ -9,24 +9,13 @@ import {
   BuyUSDCStage,
   useAddCashModal
 } from '@audius/common/store'
-import {
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  Flex,
-  Text,
-  IconLogoLinkByStripe
-} from '@audius/harmony'
-import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { AddCash } from 'components/add-cash/AddCash'
-import ModalDrawer from 'components/modal-drawer/ModalDrawer'
+import { ResponsiveModal } from 'components/modal'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import zIndex from 'utils/zIndex'
-
-import styles from './AddCashModal.module.css'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
 
@@ -80,51 +69,26 @@ export const AddCashModal = () => {
   )
 
   return (
-    <ModalDrawer
+    <ResponsiveModal
       zIndex={zIndex.ADD_FUNDS_MODAL}
-      size={'small'}
+      size='m'
       onClose={onClose}
       isOpen={isOpen}
       onClosed={handleClosed}
-      bodyClassName={styles.modal}
       dismissOnClickOutside={!inProgress}
       isFullscreen={false}
+      title={
+        page === 'add-cash'
+          ? walletMessages.addCash
+          : walletMessages.usdcTransfer
+      }
+      showDismissButton={!isMobile}
     >
-      <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: isMobile })}
-        onClose={onClose}
-        showDismissButton={!isMobile}
-      >
-        <ModalTitle
-          title={
-            page === 'add-cash'
-              ? walletMessages.addCash
-              : walletMessages.cryptoTransfer
-          }
-        />
-      </ModalHeader>
-      <ModalContent className={styles.noPadding}>
-        {page === 'add-cash' ? (
-          <AddCash onContinue={handleContinue} />
-        ) : (
-          <USDCManualTransfer onClose={onClose} />
-        )}
-      </ModalContent>
-      {page === 'add-cash' && (
-        <Flex
-          justifyContent='center'
-          alignItems='center'
-          gap='m'
-          borderTop='default'
-          backgroundColor='surface1'
-          pv='2xs'
-        >
-          <Text variant='label' size='s' color='subdued'>
-            {walletMessages.poweredBy}
-          </Text>
-          <IconLogoLinkByStripe width={100} color='subdued' />
-        </Flex>
+      {page === 'add-cash' ? (
+        <AddCash onContinue={handleContinue} />
+      ) : (
+        <USDCManualTransfer onClose={onClose} />
       )}
-    </ModalDrawer>
+    </ResponsiveModal>
   )
 }

@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
 import { useAddCashModal } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'

@@ -1,7 +1,6 @@
 import {
   buyUSDCSagas,
   castSagas,
-  cacheSagas,
   chatSagas,
   reachabilitySagas,
   remoteConfigSagas,
@@ -18,15 +17,14 @@ import {
   playbackPositionSagas,
   gatedContentSagas,
   purchaseContentSagas,
+  withdrawUSDCSagas,
   confirmerSagas
 } from '@audius/common/store'
 import { sagaWithErrorHandler } from '@audius/common/utils'
 import addToCollectionSagas from 'common/store/add-to-collection/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
-import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
-import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
 import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
@@ -38,6 +36,7 @@ import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
+import searchTracksLineupSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import tokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
 import trackPageSagas from 'common/store/pages/track/sagas'
@@ -53,7 +52,6 @@ import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
-import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, spawn } from 'typed-redux-saga'
@@ -85,11 +83,8 @@ export default function* rootSaga() {
     ...playlistLibrarySagas(),
 
     // Cache
-    ...cacheSagas(),
-    ...coreCacheSagas(),
     ...collectionsSagas(),
     ...tracksSagas(),
-    ...usersSagas(),
     ...savedCollectionsSagas(),
 
     // Playback
@@ -112,6 +107,7 @@ export default function* rootSaga() {
     ...gatedContentSagas(),
     ...purchaseContentSagas(),
     ...buyUSDCSagas(),
+    ...withdrawUSDCSagas(),
     ...stripeModalUISagas(),
 
     // Search Users
@@ -133,13 +129,13 @@ export default function* rootSaga() {
     ...trendingUndergroundSagas(),
     ...savedSagas(),
     ...profileSagas(),
-    ...reactionSagas(),
     ...socialSagas(),
     ...historySagas(),
     ...rewardsPageSagas(),
     ...settingsSagas(),
     ...aiSagas(),
     ...premiumTracksSagas(),
+    ...searchTracksLineupSagas(),
 
     // Cast
     ...castSagas(),

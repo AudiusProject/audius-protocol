@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { Id, OptionalId, EntityType, full } from '@audius/sdk'
 import {
   InfiniteData,
@@ -11,14 +9,8 @@ import { useDispatch } from 'react-redux'
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
-import { PlaybackSource } from '~/models/Analytics'
-import {
-  remixesPageLineupActions,
-  remixesPageSelectors,
-  remixesPageActions
-} from '~/store/pages'
+import { remixesPageActions } from '~/store/pages'
 
-import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import { getTrackQueryKey } from '../tracks/useTrack'
 import { QueryKey, QueryOptions } from '../types'
@@ -30,14 +22,15 @@ const DEFAULT_PAGE_SIZE = 10
 
 export type UseRemixesArgs = {
   trackId: number | null | undefined
-  includeOriginal?: Boolean
+  includeOriginal?: boolean
+  includeWinners?: boolean
   pageSize?: number
   sortMethod?: full.GetTrackRemixesSortMethodEnum
   isCosign?: boolean
   isContestEntry?: boolean
 }
 
-type RemixesQueryData = {
+export type RemixesQueryData = {
   count: number
   tracks: { id: ID; type: EntityType }[]
 }
@@ -45,6 +38,7 @@ type RemixesQueryData = {
 export const getRemixesQueryKey = ({
   trackId,
   includeOriginal = false,
+  includeWinners = false,
   pageSize = DEFAULT_PAGE_SIZE,
   sortMethod = 'recent',
   isCosign = false,
@@ -53,13 +47,21 @@ export const getRemixesQueryKey = ({
   [
     QUERY_KEYS.remixes,
     trackId,
-    { pageSize, includeOriginal, sortMethod, isCosign, isContestEntry }
+    {
+      pageSize,
+      includeOriginal,
+      includeWinners,
+      sortMethod,
+      isCosign,
+      isContestEntry
+    }
   ] as unknown as QueryKey<InfiniteData<RemixesQueryData[]>>
 
 export const useRemixes = (
   {
     trackId,
     includeOriginal = false,
+    includeWinners = false,
     pageSize = DEFAULT_PAGE_SIZE,
     sortMethod = 'recent',
     isCosign = false,
@@ -72,17 +74,12 @@ export const useRemixes = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  useEffect(() => {
-    if (trackId) {
-      dispatch(remixesPageActions.fetchTrackSucceeded({ trackId }))
-    }
-  }, [dispatch, trackId])
-
   const queryData = useInfiniteQuery({
     queryKey: getRemixesQueryKey({
       trackId,
       pageSize,
       includeOriginal,
+      includeWinners,
       sortMethod,
       isCosign,
       isContestEntry
@@ -114,8 +111,6 @@ export const useRemixes = (
         userTrackMetadataFromSDK
       )
 
-      primeTrackData({ tracks: processedTracks, queryClient, dispatch })
-
       if (includeOriginal && pageParam === 0) {
         const track = queryClient.getQueryData(getTrackQueryKey(trackId))
         if (track && data.tracks) {
@@ -126,15 +121,9 @@ export const useRemixes = (
         }
       }
 
-      // Update lineup when new data arrives
-      dispatch(
-        remixesPageLineupActions.fetchLineupMetadatas(
-          pageParam,
-          pageSize,
-          false,
-          { items: processedTracks }
-        )
-      )
+      primeTrackData({ tracks: processedTracks, queryClient })
+
+      // Update count in store
       dispatch(remixesPageActions.setCount({ count: data.count }))
 
       return {
@@ -145,29 +134,9 @@ export const useRemixes = (
         count: data.count
       }
     },
-    ...options,
-    enabled: options?.enabled !== false && !!trackId
+    enabled: options?.enabled !== false && !!trackId,
+    ...options
   })
 
-  const lineupData = useLineupQuery({
-    lineupData: queryData.data?.pages.flatMap((page) => page.tracks) ?? [],
-    queryData,
-    queryKey: getRemixesQueryKey({
-      trackId,
-      includeOriginal,
-      pageSize,
-      sortMethod,
-      isCosign,
-      isContestEntry
-    }),
-    lineupActions: remixesPageLineupActions,
-    lineupSelector: remixesPageSelectors.getLineup,
-    playbackSource: PlaybackSource.TRACK_TILE,
-    pageSize
-  })
-
-  return {
-    ...lineupData,
-    count: queryData.data?.pages[0]?.count
-  }
+  return queryData
 }

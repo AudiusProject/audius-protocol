@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { useToggleFavoriteTrack, useTrack, useUser } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useToggleFavoriteTrack,
+  useTrack,
+  useUser
+} from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -11,7 +16,6 @@ import {
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
 import {
-  accountSelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
@@ -41,7 +45,6 @@ const { getUid } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
-const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 export const TrackTile = (props: LineupItemProps) => {
@@ -89,7 +92,7 @@ export const TrackTileComponent = ({
     (state: CommonState) => getUid(state) === lineupTileProps.uid
   )
 
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const { onOpen: openPublishModal } = usePublishConfirmationModal()
 
   const isOwner = currentUserId === track.owner_id

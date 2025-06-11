@@ -1,4 +1,4 @@
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
@@ -13,7 +13,6 @@ import { env } from 'services/env'
 import { useFastReferral } from '../hooks/useFastReferral'
 
 const { FEED_PAGE, SignUpPath } = route
-const { getIsAccountComplete, getAccountFolloweeCount } = accountSelectors
 
 const isDevEnvironment =
   env.ENVIRONMENT === 'development' ||
@@ -27,8 +26,14 @@ const isDevEnvironment =
 export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
-  const followeeCount = useSelector(getAccountFolloweeCount)
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: accountUser } = useCurrentAccountUser({
+    select: (user) => ({
+      userId: user?.user_id,
+      followeeCount: user?.followee_count
+    })
+  })
+  const { userId, followeeCount } = accountUser ?? {}
+  const isAccountComplete = !!userId
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
   const isFastReferral = useFastReferral()
 

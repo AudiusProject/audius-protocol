@@ -1,8 +1,8 @@
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useCurrentUserId, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { FavoriteSource, SquareSizes } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { accountSelectors, playerSelectors } from '@audius/common/store'
+import { playerSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { TouchableOpacity, Animated, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -20,7 +20,6 @@ import { TrackImage } from '../image/TrackImage'
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
-const { getUserId } = accountSelectors
 const { getPreviewing } = playerSelectors
 
 const messages = {
@@ -127,7 +126,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 type PlayBarProps = {
   track: Nullable<Track>
   duration: number
-  user: Nullable<User>
+  user: Nullable<User> | undefined
   onPress: () => void
   translationAnim: Animated.Value
   mediaKey: string
@@ -136,7 +135,7 @@ type PlayBarProps = {
 export const PlayBar = (props: PlayBarProps) => {
   const { track, user, onPress, translationAnim, mediaKey, duration } = props
   const styles = useStyles()
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const neutral = useColor('neutral')
 
   const { hasStreamAccess } = useGatedContentAccess(track)

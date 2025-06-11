@@ -1,6 +1,6 @@
+import { useCurrentUserId } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
-  accountSelectors,
   playerSelectors,
   playbackPositionSelectors,
   CommonState
@@ -13,7 +13,6 @@ import {
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -40,7 +39,7 @@ export const PlayPauseButton = ({
   trackId,
   onPlay
 }: PlayPauseButtonProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const trackPlaybackInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
   )

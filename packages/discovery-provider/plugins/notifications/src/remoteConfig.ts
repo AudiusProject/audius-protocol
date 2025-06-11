@@ -46,6 +46,7 @@ export enum MappingVariable {
   PushFanRemixContestEnded = 'push_fan_remix_contest_ended',
   PushFanRemixContestEndingSoon = 'push_fan_remix_contest_ending_soon',
   PushFanRemixContestStarted = 'push_fan_remix_contest_started',
+  PushFanRemixContestWinnersSelected = 'push_fan_remix_contest_winners_selected',
   PushArtistRemixContestEndingSoon = 'push_artist_remix_contest_ending_soon',
   PushArtistRemixContestSubmissions = 'push_artist_remix_contest_submissions'
 }
@@ -100,6 +101,7 @@ const defaultMappingVariable = {
   [MappingVariable.PushFanRemixContestEndingSoon]: false,
   [MappingVariable.PushArtistRemixContestEnded]: false,
   [MappingVariable.PushFanRemixContestStarted]: false,
+  [MappingVariable.PushFanRemixContestWinnersSelected]: false,
   [MappingVariable.PushArtistRemixContestEndingSoon]: false,
   [MappingVariable.PushArtistRemixContestSubmissions]: false
 }

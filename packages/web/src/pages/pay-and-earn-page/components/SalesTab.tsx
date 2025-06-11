@@ -3,15 +3,13 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   useGetCurrentWeb3User,
   useSales as useSalesQuery,
-  useSalesCount
+  useSalesCount,
+  useCurrentUserId
 } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  accountSelectors,
-  useUSDCPurchaseDetailsModal
-} from '@audius/common/store'
+import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
 import { Id, full } from '@audius/sdk'
@@ -25,7 +23,6 @@ import { env } from 'services/env'
 import { handleError } from 'store/errors/actions'
 import { formatToday } from 'utils/dateUtils'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -38,7 +35,6 @@ import {
 } from './SalesTable'
 
 const { UPLOAD_PAGE } = route
-const { getUserId } = accountSelectors
 
 const messages = {
   pageTitle: 'Sales History',
@@ -89,7 +85,7 @@ const NoSales = () => {
 }
 
 export const useSales = () => {
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const dispatch = useDispatch()
   const isManagerMode = useIsManagedAccount()
   const { data: currentWeb3User } = useGetCurrentWeb3User({})

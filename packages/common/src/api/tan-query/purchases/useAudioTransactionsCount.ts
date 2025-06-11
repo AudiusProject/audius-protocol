@@ -9,7 +9,9 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => {
+export const getAudioTransactionsCountQueryKey = (
+  userId: Nullable<ID> | undefined
+) => {
   return [
     QUERY_KEYS.audioTransactionsCount,
     userId

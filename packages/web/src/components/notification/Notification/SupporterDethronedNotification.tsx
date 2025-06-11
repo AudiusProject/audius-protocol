@@ -1,15 +1,11 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import {
-  cacheUsersSelectors,
-  notificationsSelectors,
-  SupporterDethronedNotification as SupporterDethroned
-} from '@audius/common/store'
+import { SupporterDethronedNotification as SupporterDethroned } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 
 import crown from 'assets/img/crown2x.png'
-import { useSelector } from 'common/hooks/useSelector'
 import { make } from 'common/store/analytics/actions'
 
 import styles from './SupporterDethronedNotification.module.css'
@@ -22,9 +18,6 @@ import { ProfilePicture } from './components/ProfilePicture'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { useGoToProfile } from './useGoToProfile'
-
-const { getUser } = cacheUsersSelectors
-const { getNotificationUser } = notificationsSelectors
 
 type SupporterDethronedNotificationProps = {
   notification: SupporterDethroned
@@ -46,13 +39,9 @@ export const SupporterDethronedNotification = ({
   notification
 }: SupporterDethronedNotificationProps) => {
   const { supportedUserId, timeLabel, isViewed } = notification
-  const usurpingUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const { data: usurpingUser } = useUser(notification.entityId)
 
-  const supportedUser = useSelector((state) =>
-    getUser(state, { id: supportedUserId })
-  )
+  const { data: supportedUser } = useUser(supportedUserId)
 
   const handleClick = useGoToProfile(supportedUser)
 

@@ -1,15 +1,12 @@
 import { useCallback } from 'react'
 
-import {
-  ApproveManagerRequestNotification as ApproveManagerNotificationType,
-  notificationsSelectors
-} from '@audius/common/store'
+import { useUser } from '@audius/common/api'
+import { ApproveManagerRequestNotification as ApproveManagerNotificationType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconUserArrowRotate } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -19,7 +16,6 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { UserNameLink } from './components/UserNameLink'
 
 const { profilePage } = route
-const { getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Account Manager Added',
@@ -36,9 +32,7 @@ export const ApproveManagerNotification = (
   const { notification } = props
   const { timeLabel, isViewed } = notification
   const dispatch = useDispatch()
-  const managerUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const { data: managerUser } = useUser(notification.userId)
 
   const handleClick = useCallback(() => {
     if (managerUser?.handle) {

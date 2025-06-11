@@ -4,7 +4,15 @@ import {
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryCollectionTracks,
+  queryCurrentUserId,
+  queryTrack,
+  queryUser,
+  updateCollectionData
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -15,12 +23,8 @@ import {
 } from '@audius/common/models'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions as collectionActions,
-  cacheCollectionsSelectors,
-  cacheActions,
   PlaylistOperations,
-  reformatCollection,
   savedPageActions,
   LibraryCategory,
   toastActions,
@@ -36,7 +40,7 @@ import {
   updatePlaylistArtwork
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { all, call, put, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
@@ -54,11 +58,8 @@ import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { createAlbumSaga } from './createAlbumSaga'
 import { createPlaylistSaga } from './createPlaylistSaga'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
-import { retrieveCollection } from './utils/retrieveCollections'
 
 const { manualClearToast, toast } = toastActions
-const { getCollectionTracks } = cacheCollectionsSelectors
-const { getAccountUser, getUserId } = accountSelectors
 
 const messages = {
   editToast: 'Changes saved!',
@@ -97,7 +98,7 @@ function* editPlaylistAsync(
   const isNative = yield* getContext('isNativeMobile')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
-  formFields.description = squashNewLines(formFields.description)
+  formFields.description = squashNewLines(formFields.description) ?? null
 
   // Updated the stored account playlist shortcut
   yield* put(
@@ -108,7 +109,7 @@ function* editPlaylistAsync(
   )
 
   let playlist: Collection = { ...formFields }
-  const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
+  const playlistTracks = yield* call(queryCollectionTracks, playlistId)
   const updatedTracks = (yield* all(
     formFields.playlist_contents.track_ids.map(({ track }) =>
       call(queryTrack, track)
@@ -148,9 +149,7 @@ function* editPlaylistAsync(
   yield* put(toast({ content: messages.editToast }))
 
   if (playlistBeforeEdit?.is_private && !playlist.is_private) {
-    const playlistTracks = yield* select(getCollectionTracks, {
-      id: playlistId
-    })
+    const playlistTracks = yield* call(queryCollectionTracks, playlistId)
 
     // Publish all hidden tracks
     // If the playlist is a scheduled release
@@ -215,18 +214,7 @@ function* confirmEditPlaylist(
         return playlist?.[0] ? userCollectionMetadataFromSDK(playlist[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: {
-                ...reformatCollection({
-                  collection: confirmedPlaylist
-                })
-              }
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
       },
       function* ({ error, timeout, message }) {
         yield* put(
@@ -261,7 +249,7 @@ function* removeTrackFromPlaylistAsync(
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* queryCollection(playlistId)
-  const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
+  const playlistTracks = yield* call(queryCollectionTracks, playlistId)
   const removedTrack = yield* queryTrack(trackId)
 
   const updatedPlaylist = yield* call(
@@ -337,17 +325,12 @@ function* confirmRemoveTrackFromPlaylist(
         return confirmedPlaylistId
       },
       function* (confirmedPlaylistId: ID) {
-        const [confirmedPlaylist] = yield* call(retrieveCollection, {
-          playlistId: confirmedPlaylistId
-        })
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: confirmedPlaylist
-            }
-          ])
+        const confirmedPlaylist = yield* call(
+          queryCollection,
+          confirmedPlaylistId
         )
+        if (!confirmedPlaylist) return
+        yield* call(updateCollectionData, [confirmedPlaylist])
         yield* put(manualClearToast({ key: `remove-track-${trackId}` }))
         yield* put(
           toast({
@@ -393,7 +376,7 @@ function* orderPlaylistAsync(
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* queryCollection(playlistId)
-  const tracks = yield* select(getCollectionTracks, { id: playlistId })
+  const tracks = yield* call(queryCollectionTracks, playlistId)
 
   const trackIds = trackIdsAndTimes.map(({ id }) => id)
 
@@ -434,7 +417,7 @@ function* publishPlaylistAsync(
   action: ReturnType<typeof collectionActions.publishPlaylist>
 ) {
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -446,14 +429,9 @@ function* publishPlaylistAsync(
   const playlist = yield* queryCollection(action.playlistId)
   if (!playlist) return
   playlist._is_publishing = true
-  yield* put(
-    cacheActions.update(Kind.COLLECTIONS, [
-      {
-        id: playlist.playlist_id,
-        metadata: { _is_publishing: true }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [
+    { playlist_id: playlist.playlist_id, _is_publishing: true }
+  ])
 
   yield* call(
     confirmPublishPlaylist,
@@ -498,18 +476,9 @@ function* confirmPublishPlaylist(
       function* (confirmedPlaylist: Collection) {
         confirmedPlaylist.is_private = false
         confirmedPlaylist._is_publishing = false
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              metadata: confirmedPlaylist
-            }
-          ])
-        )
+        yield* call(updateCollectionData, [confirmedPlaylist])
 
-        const playlistTracks = yield* select(getCollectionTracks, {
-          id: playlistId
-        })
+        const playlistTracks = yield* call(queryCollectionTracks, playlistId)
         // Publish all hidden tracks
         // If the playlist is a scheduled release
         //    AND all tracks are scheduled releases, publish them all
@@ -563,7 +532,7 @@ function* deletePlaylistAsync(
   action: ReturnType<typeof collectionActions.deletePlaylist>
 ) {
   yield* waitForWrite()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
     return
@@ -589,31 +558,11 @@ function* deletePlaylistAsync(
     // for this playlist, which prevent the delete confirmation
     // from running immediately, which would leave
     // the playlist visible before it runs.
-    yield* put(
-      cacheActions.update(Kind.COLLECTIONS, [
-        {
-          id: action.playlistId,
-          metadata: { _marked_deleted: true }
-        }
-      ])
-    )
+    yield* call(updateCollectionData, [
+      { playlist_id: action.playlistId, _marked_deleted: true }
+    ])
     yield* call(confirmDeletePlaylist, userId, action.playlistId)
   }
-
-  const user = yield* queryUser(userId)
-  if (!user) return
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: {
-          _collectionIds: (user._collectionIds || []).filter(
-            (cId) => cId !== action.playlistId
-          )
-        }
-      }
-    ])
-  )
 }
 
 function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
@@ -621,27 +570,17 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
-
-      // we don't have to worry about passing in a confirmed ID
-      // here because unlike deleting a playlist, when
-      // deleting an album we know it's persisted to chain already
-      // thus we have it's permanent ID.
       function* () {
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete collection')
         }
 
         // Optimistically mark everything as deleted
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: true }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: true }
+          ]),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
@@ -671,14 +610,9 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
         if (!playlist || !user) return
 
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: false }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: false }
+          ]),
           put(
             accountActions.addAccountPlaylist({
               id: playlist.playlist_id,
@@ -714,21 +648,16 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        const userId = yield* select(getUserId)
+        const userId = yield* call(queryCurrentUserId)
         if (!userId) {
           throw new Error('No userId set, cannot delete collection')
         }
 
         // Optimistically mark playlist as removed
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: true }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: true }
+          ]),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
@@ -755,18 +684,13 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete playlist ${playlistId}`)
         const playlist = yield* queryCollection(playlistId)
-        const user = yield* select(getAccountUser)
+        const user = yield* call(queryAccountUser)
         if (!playlist || !user) return
 
         yield* all([
-          put(
-            cacheActions.update(Kind.COLLECTIONS, [
-              {
-                id: playlistId,
-                metadata: { _marked_deleted: false }
-              }
-            ])
-          ),
+          call(updateCollectionData, [
+            { playlist_id: playlistId, _marked_deleted: false }
+          ]),
           put(
             accountActions.addAccountPlaylist({
               id: playlist.playlist_id,

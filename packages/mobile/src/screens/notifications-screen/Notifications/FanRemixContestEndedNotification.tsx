@@ -50,7 +50,7 @@ export const FanRemixContestEndedNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        <UserNameLink user={user} /> {messages.description}{' '}
+        <UserNameLink user={user} /> {messages.description}
       </NotificationText>
     </NotificationTile>
   )

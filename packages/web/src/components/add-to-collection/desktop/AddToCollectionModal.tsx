@@ -1,21 +1,33 @@
 import { useMemo, useState } from 'react'
 
 import {
+  useCurrentUserId,
+  useGetCurrentUser,
+  useUserAlbums,
+  useUserPlaylists
+} from '@audius/common/api'
+import { useDebounce } from '@audius/common/hooks'
+import {
   CreatePlaylistSource,
   SquareSizes,
   Collection
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { Modal, Scrollbar, IconMultiselectAdd } from '@audius/harmony'
+import {
+  Modal,
+  Scrollbar,
+  IconMultiselectAdd,
+  LoadingSpinner
+} from '@audius/harmony'
 import cn from 'classnames'
 import { capitalize } from 'lodash'
+import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -29,7 +41,6 @@ const { getCollectionType, getTrackId, getTrackTitle } =
   addToCollectionUISelectors
 const { addTrackToPlaylist, createAlbum, createPlaylist } =
   cacheCollectionsActions
-const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 const { toast } = toastActions
@@ -53,36 +64,46 @@ const AddToCollectionModal = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isAlbumType = collectionType === 'album'
-  const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
+  const { data: currentUserHandle } = useGetCurrentUser({
+    select: (data) => data?.user.handle
+  })
   const [searchValue, setSearchValue] = useState('')
+  const debouncedSearchValue = useDebounce(searchValue, 300)
 
   const messages = getMessages(collectionType)
 
-  const filteredCollections = useMemo(() => {
-    return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
-      (collection: Collection) =>
-        collection.playlist_owner_id === account?.user_id &&
-        (searchValue
-          ? collection.playlist_name
-              .toLowerCase()
-              .includes(searchValue.toLowerCase())
-          : true)
-    )
-  }, [
-    isAlbumType,
-    account?.albums,
-    account?.playlists,
-    account?.user_id,
-    searchValue
-  ])
+  const { data: currentUserId } = useCurrentUserId()
 
-  const collectionTrackIdMap = filteredCollections.reduce<
-    Record<number, number[]>
-  >((acc, collection) => {
-    const trackIds = collection.playlist_contents.track_ids.map((t) => t.track)
-    acc[collection.playlist_id] = trackIds
-    return acc
-  }, {})
+  const useUserCollections = isAlbumType ? useUserAlbums : useUserPlaylists
+
+  const {
+    data: collections = [],
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isPending
+  } = useUserCollections({
+    userId: currentUserId,
+    query: debouncedSearchValue
+  })
+
+  const collectionTrackIdMap = useMemo(
+    () =>
+      collections.reduce<Record<number, number[]>>((acc, collection) => {
+        const trackIds = collection.playlist_contents.track_ids.map(
+          (t) => t.track
+        )
+        acc[collection.playlist_id] = trackIds
+        return acc
+      }, {}),
+    [collections]
+  )
+
+  const handleLoadMore = () => {
+    if (!isFetchingNextPage && hasNextPage) {
+      fetchNextPage()
+    }
+  }
 
   const handleCollectionClick = (playlist: Collection) => {
     if (!trackId) return
@@ -99,11 +120,11 @@ const AddToCollectionModal = () => {
       )
     } else {
       dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
-      if (account && trackTitle) {
+      if (trackTitle) {
         toast({
           content: messages.addedToast,
           link: collectionPage(
-            account.handle,
+            currentUserHandle,
             trackTitle,
             playlist.playlist_id,
             playlist.permalink,
@@ -159,17 +180,26 @@ const AddToCollectionModal = () => {
             <IconMultiselectAdd className={styles.add} size='xl' />
             <span>{messages.newCollection}</span>
           </div>
-          <div className={styles.list}>
-            {filteredCollections.map((collection) => (
-              <div key={`${collection.playlist_id}`}>
-                <CollectionItem
-                  collectionType={collectionType}
-                  collection={collection}
-                  handleClick={handleCollectionClick}
-                />
-              </div>
-            ))}
-          </div>
+          {isPending ? <LoadingSpinner m='auto' /> : null}
+          <InfiniteScroll
+            pageStart={1}
+            loadMore={handleLoadMore}
+            hasMore={hasNextPage}
+            useWindow={false}
+            loader={<LoadingSpinner m='auto' />}
+          >
+            <div className={styles.list}>
+              {collections.map((collection) => (
+                <div key={`${collection.playlist_id}`}>
+                  <CollectionItem
+                    collectionType={collectionType}
+                    collection={collection}
+                    handleClick={handleCollectionClick}
+                  />
+                </div>
+              ))}
+            </div>
+          </InfiniteScroll>
         </div>
       </Scrollbar>
     </Modal>

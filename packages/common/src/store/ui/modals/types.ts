@@ -83,6 +83,7 @@ export type Modals =
   | 'PlaybackRate'
   | 'ProfileActions'
   | 'PublishContentModal'
+  | 'LabelAccount'
   | 'AiAttributionSettings'
   | 'DuplicateAddConfirmation'
   | 'PremiumContentPurchaseModal'

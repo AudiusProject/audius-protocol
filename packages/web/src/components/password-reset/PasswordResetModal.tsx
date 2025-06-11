@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Modal, Flex, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -10,8 +10,6 @@ import EnterPassword from 'components/sign-on/EnterPassword'
 import styles from './PasswordResetModal.module.css'
 import { changePassword } from './store/actions'
 import { getStatus } from './store/selectors'
-
-const { getNeedsAccountRecovery } = accountSelectors
 
 const RESET_REQUIRED_KEY = 'password-reset-required'
 
@@ -24,8 +22,11 @@ const messages = {
 
 export const PasswordResetModal = () => {
   const dispatch = useDispatch()
-  const needsAccountRecovery = useSelector(getNeedsAccountRecovery)
-  const [showModal, setShowModal] = useState(needsAccountRecovery)
+  const { data: needsAccountRecovery } = useCurrentAccount({
+    select: (account) => account?.needsAccountRecovery
+  })
+
+  const [showModal, setShowModal] = useState(!!needsAccountRecovery)
   const [isLoading, setIsLoading] = useState(false)
   const status = useSelector(getStatus)
 

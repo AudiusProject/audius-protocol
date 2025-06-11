@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { FavoriteSource } from '@audius/common/models'
 import {
-  accountSelectors,
   smartCollectionPageSelectors,
   smartCollectionPageActions,
   collectionPageActions,
@@ -23,7 +23,6 @@ const { findInPlaylistLibrary } = playlistLibraryHelpers
 
 const { saveSmartCollection, unsaveSmartCollection } = collectionsSocialActions
 const { getCollection } = smartCollectionPageSelectors
-const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
 const { fetchSmartCollection } = smartCollectionPageActions
 const { resetCollection } = collectionPageActions
 
@@ -72,8 +71,9 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
   const playlistName = collection?.playlist_name ?? title
   const playlistDescription = collection?.description ?? description
 
-  const playlistLibrary = useSelector(getPlaylistLibrary)
-
+  const { data: playlistLibrary } = useCurrentAccount({
+    select: (account) => account?.playlistLibrary
+  })
   const isSaved = playlistLibrary
     ? !!findInPlaylistLibrary(playlistLibrary, smartCollection.variant)
     : false

@@ -1,5 +1,7 @@
 import { USDC } from '@audius/fixed-decimal'
 
+import { formatTokenPrice } from '../api/tan-query/jupiter/utils'
+
 export const buySellMessages = {
   title: 'BUY / SELL',
   buy: 'Buy',
@@ -36,8 +38,19 @@ export const buySellMessages = {
   modalSuccessTitle: 'SUCCESS!',
   transactionComplete: 'Your transaction is complete!',
   done: 'Done',
+  yourCoins: 'Your Coins',
+  buySell: 'Buy/Sell',
+  emptyAmount: 'Please enter an amount',
   priceEach: (price: number) => {
     const formatted = USDC(price).toLocaleString('en-US')
     return `(${formatted} ea.)`
-  }
+  },
+  amountInputLabel: (symbol: string) => `Amount (${symbol})`,
+  tokenPrice: (price: string, decimalPlaces: number) => {
+    return formatTokenPrice(price, decimalPlaces)
+  },
+  stackedBalance: (formattedAvailableBalance: string) =>
+    `${formattedAvailableBalance}  Available`,
+  tokenTicker: (symbol: string, isStablecoin: boolean) =>
+    isStablecoin ? symbol : `$${symbol}`
 }

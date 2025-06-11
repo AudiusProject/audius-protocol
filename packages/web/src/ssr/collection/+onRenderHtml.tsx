@@ -29,9 +29,9 @@ type TrackPageContext = PageContextServer & {
 
 export default function render(pageContext: TrackPageContext) {
   const { pageProps, userAgent } = pageContext
-  const { collection, user, tracks } = pageProps
+  const { collection, user } = pageProps
   const { playlist_id, playlist_name, permalink, is_album } = collection
-  const { user_id, name: userName, handle: userHandle } = user
+  const { name: userName, handle: userHandle } = user
 
   const isMobile = isMobileUserAgent(userAgent)
 
@@ -48,17 +48,8 @@ export default function render(pageContext: TrackPageContext) {
     <ServerWebPlayer
       isMobile={isMobile}
       initialState={{
-        collections: {
-          entries: { [playlist_id]: { metadata: collection } },
-          permalinks: { [permalink.toLowerCase()]: playlist_id }
-        },
-        users: { entries: { [user_id]: { metadata: user } } },
-        tracks: {
-          entries: tracks.reduce((acc, track) => {
-            const { track_id } = track
-            return { ...acc, [track_id]: { metadata: track } }
-          }, {})
-        },
+        // todo: prefill this in the query client
+        // users: { entries: { [user_id]: { metadata: user } } },
         pages: {
           collection: {
             collectionId: playlist_id,
@@ -70,9 +61,9 @@ export default function render(pageContext: TrackPageContext) {
       <>
         <MetaTags {...seoMetadata} />
         {isMobile ? (
-          <MobileServerCollectionPage />
+          <MobileServerCollectionPage collection={collection} />
         ) : (
-          <DesktopServerCollectionPage />
+          <DesktopServerCollectionPage collection={collection} />
         )}
       </>
     </ServerWebPlayer>

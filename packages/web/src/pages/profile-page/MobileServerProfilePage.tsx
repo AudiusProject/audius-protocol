@@ -1,4 +1,4 @@
-import { getProfileUser } from '@audius/common/src/store/pages/profile/selectors'
+import { useProfileUser } from '@audius/common/api'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
 import IconDonate from '@audius/harmony/src/assets/icons/Donate.svg'
@@ -8,7 +8,6 @@ import { Flex } from '@audius/harmony/src/components/layout/Flex'
 import { Text } from '@audius/harmony/src/components/text'
 
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
-import { useSelector } from 'utils/reducer'
 
 const messages = {
   tracks: 'Tracks',
@@ -22,7 +21,7 @@ const messages = {
 }
 
 export const MobileServerProfilePage = () => {
-  const user = useSelector(getProfileUser)
+  const { user } = useProfileUser()
   if (!user) return null
 
   const {

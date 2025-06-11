@@ -1,3 +1,4 @@
+import { SyncLocalStorageUserProvider } from '@audius/common/api'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
@@ -23,6 +24,7 @@ import { useAndroidAppLifecycleManager } from 'app/hooks/useAndroidAppLifecycleM
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
+import { localStorage } from 'app/services/local-storage'
 import { queryClient } from 'app/services/query-client'
 import { persistor, store } from 'app/store'
 import {
@@ -72,33 +74,35 @@ const App = () => {
         <Provider store={store}>
           <AudiusQueryProvider>
             <QueryClientProvider client={queryClient}>
-              <PersistGate loading={null} persistor={persistor}>
-                <ThemeProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <PortalProvider>
-                      <ErrorBoundary>
-                        <NavigationContainer
-                          navigationIntegration={navigationIntegration}
-                        >
-                          <BottomSheetModalProvider>
-                            <CommentDrawerProvider>
-                              <Toasts />
-                              <Airplay />
-                              <RootScreen />
-                              <Drawers />
-                              <OAuthWebView />
-                              <NotificationReminder />
-                              <RateCtaReminder />
-                              <PortalHost name='ChatReactionsPortal' />
-                            </CommentDrawerProvider>
-                          </BottomSheetModalProvider>
-                          <PortalHost name='DrawerPortal' />
-                        </NavigationContainer>
-                      </ErrorBoundary>
-                    </PortalProvider>
-                  </GestureHandlerRootView>
-                </ThemeProvider>
-              </PersistGate>
+              <SyncLocalStorageUserProvider localStorage={localStorage}>
+                <PersistGate loading={null} persistor={persistor}>
+                  <ThemeProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <PortalProvider>
+                        <ErrorBoundary>
+                          <NavigationContainer
+                            navigationIntegration={navigationIntegration}
+                          >
+                            <BottomSheetModalProvider>
+                              <CommentDrawerProvider>
+                                <Toasts />
+                                <Airplay />
+                                <RootScreen />
+                                <Drawers />
+                                <OAuthWebView />
+                                <NotificationReminder />
+                                <RateCtaReminder />
+                                <PortalHost name='ChatReactionsPortal' />
+                              </CommentDrawerProvider>
+                            </BottomSheetModalProvider>
+                            <PortalHost name='DrawerPortal' />
+                          </NavigationContainer>
+                        </ErrorBoundary>
+                      </PortalProvider>
+                    </GestureHandlerRootView>
+                  </ThemeProvider>
+                </PersistGate>
+              </SyncLocalStorageUserProvider>
             </QueryClientProvider>
           </AudiusQueryProvider>
         </Provider>

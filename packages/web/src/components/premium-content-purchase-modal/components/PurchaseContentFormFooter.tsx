@@ -8,11 +8,11 @@ import {
 } from '@audius/common/hooks'
 import { Name, RepostSource } from '@audius/common/models'
 import {
-  PurchaseContentStage,
   PurchaseContentError,
   tracksSocialActions,
   collectionsSocialActions,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  PurchaseContentStage
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import {

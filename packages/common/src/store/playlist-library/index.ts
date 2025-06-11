@@ -8,4 +8,3 @@ export type {
   AddToFolderAction
 } from './slice'
 export * as playlistLibraryHelpers from './helpers'
-export * as playlistLibrarySelectors from './selectors'

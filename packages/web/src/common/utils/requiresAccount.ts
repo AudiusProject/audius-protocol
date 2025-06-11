@@ -1,6 +1,7 @@
-import { accountSelectors, getContext } from '@audius/common/store'
+import { selectIsGuestAccount, queryAccountUser } from '@audius/common/api'
+import { getContext } from '@audius/common/store'
 import { route, waitForAccount } from '@audius/common/utils'
-import { call, put, select } from 'typed-redux-saga'
+import { call, put } from 'typed-redux-saga'
 
 import {
   updateRouteOnExit,
@@ -9,8 +10,6 @@ import {
 import { push as pushRoute } from 'utils/navigation'
 
 const { SIGN_UP_PAGE } = route
-
-const { getHasAccount, getIsGuestAccount } = accountSelectors
 
 /**
  * Checks if the user is signed in with an account.
@@ -25,8 +24,9 @@ export function requiresAccount<TArgs extends any[], TReturn>(
   return function* (...args: TArgs) {
     const isNativeMobile = yield* getContext('isNativeMobile')
     yield* waitForAccount()
-    const hasAccount = yield* select(getHasAccount)
-    const isGuest = yield* select(getIsGuestAccount)
+    const accountUser = yield* queryAccountUser()
+    const isGuest = yield* call(selectIsGuestAccount, accountUser)
+    const hasAccount = Boolean(accountUser?.handle && accountUser?.name)
     if (!hasAccount || isGuest) {
       if (!isNativeMobile) {
         if (route) {

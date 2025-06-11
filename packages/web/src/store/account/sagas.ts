@@ -1,12 +1,12 @@
+import { queryAccountUser, selectIsGuestAccount } from '@audius/common/api'
 import {
   accountActions,
-  accountSelectors,
   accountSagas as commonAccountSagas,
   settingsPageActions,
   modalsActions,
   getSDK
 } from '@audius/common/store'
-import { call, getContext, put, select, takeEvery } from 'typed-redux-saga'
+import { call, getContext, put, takeEvery } from 'typed-redux-saga'
 
 import webCommonAccountSagas from 'common/store/account/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -31,8 +31,6 @@ const {
   setBrowserNotificationSettingsOn
 } = settingsPageActions
 
-const { getHasAccount, getIsGuestAccount } = accountSelectors
-
 const setBrowerPushPermissionConfirmationModal = setVisibility({
   modal: 'BrowserPushPermissionConfirmation',
   visible: true
@@ -43,12 +41,13 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
  */
 function* showPushNotificationConfirmation() {
   const isMobile = yield* getContext('isMobile')
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const hasAccount = Boolean(accountUser?.handle && accountUser?.name)
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
 
   if (isMobile || isElectron() || !shouldRequestBrowserPermission() || isGuest)
     return
   setHasRequestedBrowserPermission()
-  const hasAccount = yield* select(getHasAccount)
   if (!hasAccount) return
   const sdk = yield* getSDK()
   const browserPermission = yield* call(fetchBrowserPushNotificationStatus)

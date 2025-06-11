@@ -4,9 +4,10 @@ import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Feature, ID } from '~/models'
-import { setPinnedCommentId } from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
 import { Nullable } from '~/utils'
+
+import { getTrackQueryKey } from '../tracks/useTrack'
 
 import { messages } from './types'
 import { getTrackCommentListQueryKey } from './utils'
@@ -62,7 +63,14 @@ export const usePinComment = () => {
         )
       }
 
-      dispatch(setPinnedCommentId(trackId, isPinned ? commentId : null))
+      queryClient.setQueryData(
+        getTrackQueryKey(trackId),
+        (prevTrack) =>
+          prevTrack && {
+            ...prevTrack,
+            pinned_comment_id: isPinned ? commentId : null
+          }
+      )
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort, previousPinnedCommentId } = args
@@ -74,7 +82,14 @@ export const usePinComment = () => {
       })
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('pinning') }))
-      dispatch(setPinnedCommentId(trackId, previousPinnedCommentId ?? null))
+      queryClient.setQueryData(
+        getTrackQueryKey(trackId),
+        (prevTrack) =>
+          prevTrack && {
+            ...prevTrack,
+            pinned_comment_id: previousPinnedCommentId ?? null
+          }
+      )
       // Since this mutationx handles sort data, its difficult to undo the optimistic update so we just re-load everything
       queryClient.resetQueries({
         queryKey: getTrackCommentListQueryKey({

@@ -1,8 +1,9 @@
 import { PureComponent } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Name, TimeRange } from '@audius/common/models'
 import {
-  accountSelectors,
   lineupSelectors,
   trendingPageLineupActions,
   trendingPageActions,
@@ -22,9 +23,9 @@ import { push as pushRoute, replace as replaceRoute } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 const { TRENDING_GENRES } = route
-const { makeGetCurrent } = queueSelectors
+const { getSource } = queueSelectors
 
-const { getBuffering, getPlaying } = playerSelectors
+const { getBuffering, getPlaying, getUid } = playerSelectors
 const {
   getDiscoverTrendingAllTimeLineup,
   getDiscoverTrendingMonthLineup,
@@ -40,7 +41,6 @@ const {
   trendingWeekActions
 } = trendingPageLineupActions
 const { makeGetLineupMetadatas } = lineupSelectors
-const getHasAccount = accountSelectors.getHasAccount
 
 const messages = {
   trendingTitle: 'Trending',
@@ -124,13 +124,18 @@ class TrendingPageProvider extends PureComponent {
   }
 
   getLineupProps = (lineup) => {
-    const { currentQueueItem, playing, buffering } = this.props
-    const { uid: playingUid, track, source } = currentQueueItem
+    const {
+      playing,
+      buffering,
+      uid: playingUid,
+      source,
+      currentTrack
+    } = this.props
     return {
       lineup,
       playingUid,
       playingSource: source,
-      playingTrackId: track ? track.track_id : null,
+      playingTrackId: currentTrack ? currentTrack.track_id : null,
       playing,
       buffering,
       scrollParent: this.props.containerRef,
@@ -217,7 +222,6 @@ class TrendingPageProvider extends PureComponent {
 }
 
 const makeMapStateToProps = () => {
-  const getCurrentQueueItem = makeGetCurrent()
   const getTrendingWeekLineup = makeGetLineupMetadatas(
     getDiscoverTrendingWeekLineup
   )
@@ -229,11 +233,11 @@ const makeMapStateToProps = () => {
   )
 
   const mapStateToProps = (state) => ({
-    hasAccount: getHasAccount(state),
     trendingWeek: getTrendingWeekLineup(state),
     trendingMonth: getTrendingMonthLineup(state),
     trendingAllTime: getTrendingAllTimeLineup(state),
-    currentQueueItem: getCurrentQueueItem(state),
+    uid: getUid(state),
+    source: getSource(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
     trendingTimeRange: getTrendingTimeRange(state),
@@ -305,7 +309,16 @@ const mapDispatchToProps = (dispatch) => ({
 
 const TrendingPageProviderWrapper = (props) => {
   const isMobile = useIsMobile()
-  return <TrendingPageProvider isMobile={isMobile} {...props} />
+  const currentTrack = useCurrentTrack()
+  const hasAccount = useHasAccount()
+  return (
+    <TrendingPageProvider
+      isMobile={isMobile}
+      currentTrack={currentTrack}
+      hasAccount={hasAccount}
+      {...props}
+    />
+  )
 }
 
 export default withRouter(

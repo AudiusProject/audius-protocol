@@ -39,5 +39,3 @@ export * as searchSelectors from './search/selectors'
 export type { SearchItem } from './search/types'
 
 export * from './sdkUtils'
-
-export { syncWithReactQuery } from './cache/syncWithReactQuery'

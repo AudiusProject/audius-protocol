@@ -288,7 +288,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_trending",
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
-            "src.tasks.cache_trending_playlists",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_payment_router",
@@ -342,10 +341,6 @@ def configure_celery(celery, test_config=None):
             "monitoring_queue": {
                 "task": "monitoring_queue",
                 "schedule": timedelta(seconds=60),
-            },
-            "cache_trending_playlists": {
-                "task": "cache_trending_playlists",
-                "schedule": timedelta(minutes=30),
             },
             "index_eth": {
                 "task": "index_eth",

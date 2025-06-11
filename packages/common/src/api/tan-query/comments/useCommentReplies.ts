@@ -51,7 +51,7 @@ export const useCommentReplies = (
 
       const replies = transformAndCleanList(response.data, replyCommentFromSDK)
 
-      primeRelatedData({ related: response.related, queryClient, dispatch })
+      primeRelatedData({ related: response.related, queryClient })
 
       // Update the parent comment with the new replies and prime the reply data
       // Add the replies to our parent comment replies list

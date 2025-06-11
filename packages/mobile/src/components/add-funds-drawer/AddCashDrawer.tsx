@@ -94,7 +94,7 @@ export const AddCashDrawer = () => {
               mh='l'
             >
               <Text variant='label' strength='strong' size='xl' color='default'>
-                {walletMessages.cryptoTransfer}
+                {walletMessages.usdcTransfer}
               </Text>
             </Flex>
             <USDCManualTransfer />
