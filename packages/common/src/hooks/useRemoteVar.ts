@@ -30,10 +30,7 @@ export const createUseRemoteVarHook = ({
     key: AllRemoteConfigKeys
   ): boolean | string | number | null {
     const configLoaded = useHasConfigLoaded()
-    const shouldRecompute = useRecomputeToggle(
-      configLoaded,
-      remoteConfigInstance
-    )
+    const shouldRecompute = useRecomputeToggle(configLoaded)
 
     const remoteVar = useMemo(
       () => remoteConfigInstance.getRemoteVar(key),
@@ -58,7 +55,7 @@ export function useRemoteVar(
 ): boolean | string | number | null {
   const { remoteConfig } = useAppContext()
   const configLoaded = useHasConfigLoaded()
-  const shouldRecompute = useRecomputeToggle(configLoaded, remoteConfig)
+  const shouldRecompute = useRecomputeToggle(configLoaded)
 
   const remoteVar = useMemo(
     () => remoteConfig.getRemoteVar(key),
