@@ -1,10 +1,10 @@
 import React from 'react'
 
+import { useRemoteVar } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import { Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

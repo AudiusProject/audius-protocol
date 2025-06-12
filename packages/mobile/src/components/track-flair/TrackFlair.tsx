@@ -70,16 +70,18 @@ const layoutBySize = {
 }
 
 export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
-  const { data: track } = useTrack(trackId)
+  const { data: isCosign } = useTrack(trackId, {
+    select: (track) => {
+      const remixTrack = track.remix_of?.tracks[0]
+      return (
+        remixTrack?.has_remix_author_reposted ||
+        remixTrack?.has_remix_author_saved
+      )
+    }
+  })
   const { data: remixContest } = useRemixContest(trackId)
 
   const { size: iconSize, position } = layoutBySize[size]
-
-  const remixTrack = track?.remix_of?.tracks[0]
-  const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
-  const hasRemixAuthorSaved = remixTrack?.has_remix_author_saved ?? false
-
-  const isCosign = hasRemixAuthorReposted || hasRemixAuthorSaved
 
   const FlairIcon = isCosign
     ? IconCosign

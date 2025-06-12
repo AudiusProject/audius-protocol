@@ -18,7 +18,8 @@ import {
   isStreamPurchaseable,
   isTrackDownloadPurchaseable,
   isContentDownloadGated,
-  PURCHASE_METHOD_MINT_ADDRESS
+  PURCHASE_METHOD_MINT_ADDRESS,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import { Name, PurchaseMethod, PurchaseVendor } from '@audius/common/models'
@@ -53,7 +54,6 @@ import { Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
