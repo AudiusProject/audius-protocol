@@ -10,11 +10,10 @@ import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
 import { useCollection } from './useCollection'
-
-const STALE_TIME = Infinity
 
 export const getCollectionByPermalinkQueryKey = (
   permalink: string | undefined | null
@@ -88,7 +87,8 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
         sdk
       )
     },
-    staleTime: simpleOptions?.staleTime ?? STALE_TIME,
+    ...entityCacheOptions,
+    ...simpleOptions,
     enabled: simpleOptions?.enabled !== false && !!permalink
   })
 
