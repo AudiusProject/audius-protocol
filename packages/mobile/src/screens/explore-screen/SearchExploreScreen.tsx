@@ -12,20 +12,17 @@ import {
   searchSelectors
 } from '@audius/common/store'
 import type { Mood } from '@audius/sdk'
-import { filter } from 'lodash'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
-import { ImageBackground, ScrollView, Image } from 'react-native'
+import { ImageBackground, Image } from 'react-native'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
   interpolate,
   useAnimatedStyle,
   interpolateColor,
-  Extrapolate,
   Extrapolation,
-  withTiming,
-  useAnimatedReaction
+  withTiming
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
@@ -86,8 +83,6 @@ const { getSearchHistory } = searchSelectors
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
-const HEADER_SLIDE_HEIGHT = 46
-
 export const SearchExploreScreen = () => {
   const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
@@ -113,8 +108,6 @@ export const SearchExploreScreen = () => {
     [searchInput]
   )
   const scrollY = useSharedValue(0)
-  const [showFullHeader, setShowFullHeader] = useState(true)
-  const headerHeight = useSharedValue(1) // 1 for full height, 0 for collapsed
   const filterTranslateY = useSharedValue(0)
   const prevScrollY = useSharedValue(0)
   const scrollDirection = useSharedValue<'up' | 'down'>('down')
@@ -178,7 +171,8 @@ export const SearchExploreScreen = () => {
     []
   )
 
-  // Define the scroll threshold for when to hide/show filters
+  // Animation parameters
+  const HEADER_SLIDE_HEIGHT = 46
   const FILTER_SCROLL_THRESHOLD = 300
   const HEADER_COLLAPSE_THRESHOLD = 20
 
@@ -190,6 +184,7 @@ export const SearchExploreScreen = () => {
       const isAtBottom = y + layoutHeight >= contentHeight
 
       // Only update scroll direction if we're not at the bottom
+      // to prevent bounce from interfering
       if (!isAtBottom) {
         if (y > prevScrollY.value) {
           scrollDirection.value = 'down'
@@ -241,8 +236,8 @@ export const SearchExploreScreen = () => {
             ? withTiming(1)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-                [1, 0.83], // scale range
+                [0, HEADER_COLLAPSE_THRESHOLD],
+                [1, 0.83],
                 Extrapolation.CLAMP
               )
       },
@@ -252,7 +247,7 @@ export const SearchExploreScreen = () => {
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+                [0, HEADER_COLLAPSE_THRESHOLD],
                 [0, 30],
                 Extrapolation.CLAMP
               )
@@ -268,8 +263,8 @@ export const SearchExploreScreen = () => {
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-                [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+                [0, HEADER_COLLAPSE_THRESHOLD],
+                [0, -HEADER_SLIDE_HEIGHT],
                 Extrapolation.CLAMP
               )
       }
@@ -283,8 +278,8 @@ export const SearchExploreScreen = () => {
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-                [0, HEADER_SLIDE_HEIGHT], // slide up by 30px
+                [0, HEADER_COLLAPSE_THRESHOLD],
+                [0, HEADER_SLIDE_HEIGHT],
                 Extrapolation.CLAMP
               )
       }
@@ -297,8 +292,8 @@ export const SearchExploreScreen = () => {
         ? withTiming(spacing.l)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-            [spacing.l, spacing.s], // padding range
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [spacing.l, spacing.s],
             Extrapolation.CLAMP
           ),
     gap:
@@ -306,8 +301,8 @@ export const SearchExploreScreen = () => {
         ? withTiming(spacing.l)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-            [spacing.l, 0], // padding range
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [spacing.l, 0],
             Extrapolation.CLAMP
           )
   }))
@@ -320,8 +315,8 @@ export const SearchExploreScreen = () => {
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-                [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+                [0, HEADER_COLLAPSE_THRESHOLD],
+                [0, -HEADER_SLIDE_HEIGHT],
                 Extrapolation.CLAMP
               ) + filterTranslateY.value
       }
@@ -350,14 +345,14 @@ export const SearchExploreScreen = () => {
         ? withTiming(0)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-            [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, -HEADER_SLIDE_HEIGHT],
             Extrapolation.CLAMP
           ) +
           interpolate(
             scrollY.value,
-            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD], // adjust as needed
-            [0, -spacing['4xl']], // slide up by HEADER_SLIDE_HEIGHT
+            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD],
+            [0, -spacing['4xl']],
             Extrapolation.CLAMP
           )
   }))
