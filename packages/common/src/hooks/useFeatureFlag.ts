@@ -46,7 +46,6 @@ export const useRecomputeToggle = (configLoaded: boolean) => {
       prevHasAccount.current !== hasAccount ||
       prevConfigLoaded.current !== configLoaded
     ) {
-      console.log('should not recompute')
       setRecomputeToggle((recompute) => recompute + 1)
       prevHasAccount.current = hasAccount
       prevConfigLoaded.current = configLoaded
