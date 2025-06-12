@@ -327,11 +327,17 @@ export const Lineup = ({
           dispatch(actions.setPage(page + 1))
         }
 
-        const limit =
+        const limit = Math.max(
+          0,
           Math.min(
             itemLoadCount,
             Math.max(countOrDefault, itemCounts.minimum)
           ) - _offset
+        )
+
+        // Don't fetch more if the limit isn't a positive number.
+        // This is a sign that we've loaded all the content for the lineup.
+        if (limit <= 0) return
 
         if (loadMore) {
           loadMore(_offset, limit, _page === 0)

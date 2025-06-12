@@ -43,7 +43,11 @@ const WithdrawMethodOptions = [
   { key: WithdrawMethod.MANUAL_TRANSFER, text: walletMessages.crypto }
 ]
 
-export const EnterTransferDetails = () => {
+export const EnterTransferDetails = ({
+  balanceNumberCents
+}: {
+  balanceNumberCents: number
+}) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
@@ -65,7 +69,7 @@ export const EnterTransferDetails = () => {
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
-    decimalIntegerToHumanReadable(value || balanceNumber)
+    value ? decimalIntegerToHumanReadable(value) : '0'
   )
   const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -81,6 +85,11 @@ export const EnterTransferDetails = () => {
     },
     [setHumanizedValue]
   )
+
+  const handleMaxPress = useCallback(() => {
+    setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
+    setAmount(balanceNumberCents)
+  }, [balanceNumberCents, setAmount, setHumanizedValue])
 
   const [
     { value: address },
@@ -129,16 +138,21 @@ export const EnterTransferDetails = () => {
           </Text>
           <Text variant='body'>{walletMessages.destinationDescription}</Text>
         </Flex>
-        <TextField
-          title={walletMessages.amountToWithdrawLabel}
-          label={walletMessages.amountToWithdrawLabel}
-          aria-label={walletMessages.amountToWithdrawLabel}
-          name={AMOUNT}
-          value={humanizedValue}
-          onChange={handleAmountChange}
-          onBlur={handleAmountBlur}
-          startAdornmentText={messages.dollars}
-        />
+        <Flex gap='s' alignItems='center'>
+          <TextField
+            title={walletMessages.amountToWithdrawLabel}
+            label={walletMessages.amountToWithdrawLabel}
+            aria-label={walletMessages.amountToWithdrawLabel}
+            name={AMOUNT}
+            value={humanizedValue}
+            onChange={handleAmountChange}
+            onBlur={handleAmountBlur}
+            startAdornmentText={messages.dollars}
+          />
+          <Button variant='secondary' onClick={handleMaxPress} size='large'>
+            {walletMessages.max}
+          </Button>
+        </Flex>
       </Flex>
       <Divider style={{ margin: 0 }} />
       {isCoinflowEnabled ? (

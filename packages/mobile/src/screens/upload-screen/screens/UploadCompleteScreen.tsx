@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser, useTrackByPermalink } from '@audius/common/api'
+import { useCurrentAccountUser, useTrack } from '@audius/common/api'
 import { Name, ShareSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -21,10 +21,7 @@ import {
 } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import { Text, Tile } from 'app/components/core'
-import {
-  LineupTileSkeleton,
-  TrackTileComponent
-} from 'app/components/lineup-tile'
+import { LineupTileSkeleton, TrackTile } from 'app/components/lineup-tile'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
@@ -79,14 +76,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const UploadCompleteScreen = () => {
   const styles = useStyles()
-  const track = useSelector(
-    (state: CommonState) => getTracks(state)?.[0]?.metadata
+  const trackId = useSelector(
+    (state: CommonState) => getTracks(state)?.[0]?.metadata.track_id
   )
-  const { permalink } = track!
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const { data: accountUser } = useCurrentAccountUser()
-  const { data: uploadedTrack } = useTrackByPermalink(permalink)
+  const { data: track } = useTrack(trackId)
   const trackRoute = getTrackRoute(track!, true)
 
   const handleClose = useCallback(() => {
@@ -96,8 +92,8 @@ export const UploadCompleteScreen = () => {
 
   const handlePressTrack = useCallback(() => {
     handleClose()
-    navigation.push('Track', { trackId: uploadedTrack?.track_id })
-  }, [handleClose, navigation, uploadedTrack])
+    navigation.push('Track', { trackId })
+  }, [handleClose, navigation, trackId])
 
   const handleDone = useCallback(() => {
     handleClose()
@@ -105,16 +101,16 @@ export const UploadCompleteScreen = () => {
   }, [handleClose, navigation])
 
   const handleShare = useCallback(() => {
-    if (!track?.track_id) return
+    if (!trackId) return
     dispatch(
       requestOpenShareModal({
         type: 'track',
-        trackId: track.track_id,
+        trackId,
         source: ShareSource.UPLOAD
       })
     )
     handleClose()
-  }, [dispatch, handleClose, track?.track_id])
+  }, [dispatch, handleClose, trackId])
 
   const handleShareToDirectMessage = useCallback(async () => {
     dispatch(
@@ -179,18 +175,13 @@ export const UploadCompleteScreen = () => {
             </>
           ) : null}
         </Tile>
-        {accountUser && uploadedTrack ? (
-          <TrackTileComponent
-            id={uploadedTrack.track_id}
+        {accountUser && track ? (
+          <TrackTile
+            id={track.track_id}
             uid={''}
             index={0}
             togglePlay={() => {}}
-            track={uploadedTrack}
-            user={accountUser}
-            TileProps={{
-              pointerEvents: 'box-only',
-              onPress: handlePressTrack
-            }}
+            onPress={handlePressTrack}
           />
         ) : (
           <LineupTileSkeleton />

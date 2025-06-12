@@ -178,7 +178,9 @@ export const WithdrawUSDCModal = () => {
   let formPage
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
-      formPage = <EnterTransferDetails />
+      formPage = (
+        <EnterTransferDetails balanceNumberCents={balanceNumberCents} />
+      )
       break
     case WithdrawUSDCModalPages.COINFLOW_TRANSFER:
       formPage = <CoinflowWithdrawPage />
@@ -232,7 +234,7 @@ export const WithdrawUSDCModal = () => {
         <Formik
           innerRef={formRef}
           initialValues={{
-            [AMOUNT]: balanceNumberCents,
+            [AMOUNT]: 0,
             [ADDRESS]: '',
             [CONFIRM]: false,
             [METHOD]: isCoinflowEnabled

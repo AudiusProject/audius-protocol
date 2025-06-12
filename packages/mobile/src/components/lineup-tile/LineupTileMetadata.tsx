@@ -1,4 +1,4 @@
-import type { ID, User } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { playerSelectors } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -12,7 +12,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileArt } from './LineupTileArt'
 import { useStyles as useTileStyles } from './styles'
-import type { LineupTileProps } from './types'
+import type { RenderImage } from './types'
 
 const { getPlaying } = playerSelectors
 
@@ -37,9 +37,9 @@ const useStyles = makeStyles(({ palette }) => ({
 
 type Props = {
   onPressTitle?: GestureResponderHandler
-  renderImage: LineupTileProps['renderImage']
+  renderImage: RenderImage
   title: string
-  user: User
+  userId: ID
   isPlayingUid: boolean
   type: 'track' | 'playlist' | 'album'
   trackId: ID
@@ -49,7 +49,7 @@ export const LineupTileMetadata = ({
   onPressTitle,
   renderImage,
   title,
-  user,
+  userId,
   isPlayingUid,
   type,
   trackId
@@ -114,15 +114,9 @@ export const LineupTileMetadata = ({
         <UserLink
           variant={isActive ? 'active' : 'default'}
           textVariant='body'
-          userId={user.user_id}
+          userId={userId}
         />
       </FadeInView>
-      {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
-      {/* {coSign && (
-        <Text style={styles.coSignLabel} weight='heavy'>
-          {messages.coSign}
-        </Text>
-      )} */}
     </View>
   )
 }
