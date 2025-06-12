@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react'
+import type { RefObject } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -6,16 +7,31 @@ import {
   useWithdrawUSDCModal,
   WithdrawMethod
 } from '@audius/common/store'
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
+import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useFormikContext } from 'formik'
 
-import { Button, Flex, Text, Divider, TextInput } from '@audius/harmony-native'
+import {
+  Button,
+  Flex,
+  Text,
+  Divider,
+  TextInput,
+  spacing
+} from '@audius/harmony-native'
+import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { SegmentedControl } from 'app/components/core'
 
-import { CashBalanceSection } from '../../add-funds-drawer/CashBalanceSection'
 import type { WithdrawFormValues } from '../types'
 import { AMOUNT, METHOD, ADDRESS } from '../types'
 
-export const EnterTransferDetails = () => {
+export const EnterTransferDetails = ({
+  scrollViewRef,
+  balanceNumberCents
+}: {
+  scrollViewRef: RefObject<BottomSheetScrollViewMethods>
+  balanceNumberCents: number
+}) => {
   const { values, setFieldValue, errors, touched, validateForm, setTouched } =
     useFormikContext<WithdrawFormValues>()
   const { setData } = useWithdrawUSDCModal()
@@ -49,6 +65,21 @@ export const EnterTransferDetails = () => {
     [setFieldValue]
   )
 
+  const handleMaxPress = useCallback(() => {
+    const maxAmount = balanceNumberCents / 100
+    setFieldValue(AMOUNT, maxAmount)
+  }, [balanceNumberCents, setFieldValue])
+
+  // Scroll to show the continue button when crypto option is selected
+  useEffect(() => {
+    if (values.method === WithdrawMethod.MANUAL_TRANSFER) {
+      // Delay to ensure the destination field has rendered
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+      }, 100)
+    }
+  }, [values.method, scrollViewRef])
+
   return (
     <Flex gap='xl'>
       <CashBalanceSection />
@@ -60,19 +91,37 @@ export const EnterTransferDetails = () => {
           </Text>
           <Text variant='body'>{walletMessages.howMuch}</Text>
         </Flex>
-        <TextInput
-          label={walletMessages.amountToWithdrawLabel}
-          placeholder={walletMessages.amountToWithdrawLabel}
-          value={values.amount.toString()}
-          onChangeText={handleAmountChange}
-          keyboardType='numeric'
-          error={!!(touched.amount && errors.amount)}
-        />
-        {touched.amount && errors.amount && (
-          <Text variant='body' size='s' color='danger'>
-            {errors.amount}
-          </Text>
-        )}
+        <Flex gap='s'>
+          <Flex row gap='s' alignItems='center'>
+            <Flex style={{ flex: 1 }}>
+              <TextInput
+                label={walletMessages.amountToWithdrawLabel}
+                placeholder={walletMessages.amountToWithdrawLabel}
+                value={values.amount.toString()}
+                onChangeText={handleAmountChange}
+                keyboardType='numeric'
+                error={!!(touched.amount && errors.amount)}
+                TextInputComponent={BottomSheetTextInput as any}
+              />
+            </Flex>
+            <Button
+              variant='secondary'
+              onPress={handleMaxPress}
+              style={{
+                height: '100%',
+                paddingVertical: spacing.l,
+                paddingHorizontal: spacing.xl
+              }}
+            >
+              {walletMessages.max}
+            </Button>
+          </Flex>
+          {touched.amount && errors.amount && (
+            <Text variant='body' size='s' color='danger'>
+              {errors.amount}
+            </Text>
+          )}
+        </Flex>
       </Flex>
       <Divider orientation='horizontal' />
       <SegmentedControl
@@ -109,6 +158,7 @@ export const EnterTransferDetails = () => {
               value={values.address}
               onChangeText={handleDestinationChange}
               error={!!(touched.address && errors.address)}
+              TextInputComponent={BottomSheetTextInput as any}
             />
             {touched.address && errors.address && (
               <Text variant='body' size='s' color='danger'>
