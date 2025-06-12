@@ -12,6 +12,7 @@ import { useWalletAddresses } from './useWalletAddresses'
 
 export const getWalletAccountQueryKey = (wallet: string | null | undefined) =>
   [
+    QUERY_KEYS.account,
     QUERY_KEYS.walletAccount,
     wallet
   ] as unknown as QueryKey<AccountUserMetadata | null>

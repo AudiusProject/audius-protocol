@@ -1,5 +1,5 @@
-import { getAccountStatusQueryKey } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { QUERY_KEYS } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import {
   accountActions,
   tokenDashboardPageActions,
@@ -42,7 +42,7 @@ function* signOut() {
   yield* call(waitForValue, getIsSettingUp, {}, (isSettingUp) => !isSettingUp)
 
   yield* put(resetAccount())
-  queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+  queryClient.clear()
   yield* put(feedPageLineupActions.reset())
 
   yield* put(clearHistory())

@@ -1,5 +1,5 @@
-import { getAccountStatusQueryKey } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { QUERY_KEYS } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import { TRENDING_PAGE } from '@audius/common/src/utils/route'
 import {
   accountActions,
@@ -29,7 +29,7 @@ function* watchSignOut() {
         yield call(disconnect, wagmiConfig)
       }
       yield put(resetAccount())
-      queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+      queryClient.resetQueries({ queryKey: [QUERY_KEYS.account] })
       yield put(unsubscribeBrowserPushNotifications())
       yield put(
         make(Name.SETTINGS_LOG_OUT, {
