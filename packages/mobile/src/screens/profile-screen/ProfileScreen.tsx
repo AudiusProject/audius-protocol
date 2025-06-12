@@ -4,7 +4,7 @@ import {
   getProfileRepostsQueryKey,
   getProfileTracksQueryKey,
   useCurrentUserId,
-  useProfileUser
+  useUserByParams
 } from '@audius/common/api'
 import { ShareSource, Status } from '@audius/common/models'
 import {
@@ -59,7 +59,7 @@ export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
   const { handle: userHandle, id } = params
-  const { user: profile } = useProfileUser({
+  const { data: profile } = useUserByParams(params, {
     select: (user) => ({
       user_id: user.user_id,
       handle: user.handle,
