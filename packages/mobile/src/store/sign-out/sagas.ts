@@ -1,4 +1,3 @@
-import { QUERY_KEYS } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   accountActions,
