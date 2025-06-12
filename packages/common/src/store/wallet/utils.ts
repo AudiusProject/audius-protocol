@@ -1,14 +1,11 @@
 import { PublicKey } from '@solana/web3.js'
-import { useSelector } from 'react-redux'
 
-import { useCurrentAccountUser } from '~/api'
 import { useUser } from '~/api/tan-query/users/useUser'
-import { CommonState } from '~/store/commonStore'
+import { Nullable } from '~/utils'
 import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
 
 import { BadgeTier } from '../../models/BadgeTier'
 import { ID } from '../../models/Identifiers'
-import { User, UserMetadata } from '../../models/User'
 import {
   BNAudio,
   SolanaWalletAddress,
@@ -55,20 +52,20 @@ export const badgeTiers: BadgeTierInfo[] = [
  * @param userId Optional user ID to check. If not provided, uses the current user
  * @returns Object containing tier, isVerified, and tierNumber
  */
-export const useTierAndVerifiedForUser = (userId?: ID | null) => {
-  const { data: currentUser } = useCurrentAccountUser()
-  const { data: user } = useUser(userId)
-  const currentUserBalance =
-    useSelector((state: CommonState) => state.wallet.totalBalance) ??
-    ('0' as StringWei)
+export const useTierAndVerifiedForUser = (userId: ID) => {
+  const { data: user } = useUser(userId, {
+    select: (user) => ({
+      total_balance: user.total_balance,
+      is_verified: user.is_verified
+    })
+  })
 
-  const targetUser = userId ? user : currentUser
-  if (!targetUser)
+  if (!user)
     return { tier: 'none' as BadgeTier, isVerified: false, tierNumber: 0 }
 
-  const balance = userId ? currentUserBalance : getUserBalance(targetUser)
+  const balance = user.total_balance ?? ('0' as StringWei)
   const { tier, tierNumber } = getTierAndNumberForBalance(balance)
-  const isVerified = !!targetUser.is_verified
+  const isVerified = !!user.is_verified
 
   return { tier, isVerified, tierNumber }
 }
@@ -92,11 +89,8 @@ export const getTierAndNumberForBalance = (balance: StringWei) => {
 export const getTierNumber = (tier: BadgeTier) =>
   badgeTiers.length - badgeTiers.findIndex((t) => t.tier === tier)
 
-export const getUserBalance = (user: User | UserMetadata) =>
-  user?.total_balance ?? ('0' as StringWei)
-
-export const getTierForUser = (user: User) => {
-  const balance = getUserBalance(user)
+export const getTierForUser = (totalBalance: Nullable<StringWei>) => {
+  const balance = totalBalance ?? ('0' as StringWei)
   return getTierAndNumberForBalance(balance).tier
 }
 

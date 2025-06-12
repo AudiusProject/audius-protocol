@@ -1,7 +1,7 @@
 import { StringKeys } from '@audius/common/services'
 import semver from 'semver'
 
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from '@audius/common/hooks'
 
 import packageInfo from '../../package.json'
 

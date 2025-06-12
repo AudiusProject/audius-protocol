@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconCrown, Flex, Text } from '@audius/harmony-native'
 import { ScrollView, Screen, Tile, ScreenContent } from 'app/components/core'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from '@audius/common/hooks'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

@@ -12,7 +12,7 @@ import Animated, {
 import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/core'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from '@audius/common/hooks'
 import { makeStyles } from 'app/styles'
 
 const { getHasUnreadMessages } = chatSelectors

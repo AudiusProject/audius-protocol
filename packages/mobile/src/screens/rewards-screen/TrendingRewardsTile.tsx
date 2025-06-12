@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 
 import { Flex, Paper, Text } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from '@audius/common/hooks'
 import { makeStyles } from 'app/styles'
 import { getChallengeConfig } from 'app/utils/challenges'
 

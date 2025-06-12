@@ -23,7 +23,7 @@ import { StatusMessage } from 'app/components/status-message'
 import { TikTokAuthButton } from 'app/components/tiktok-auth'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from '@audius/common/hooks'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import {
