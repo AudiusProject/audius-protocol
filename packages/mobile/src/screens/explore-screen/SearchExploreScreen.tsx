@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -14,22 +14,20 @@ import {
 import type { Mood } from '@audius/sdk'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
-import { ImageBackground, ScrollView, Image } from 'react-native'
+import { Image } from 'react-native'
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+  interpolate,
+  useAnimatedStyle,
+  Extrapolation,
+  withTiming,
+  useDerivedValue
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import {
-  Flex,
-  IconButton,
-  IconCloseAlt,
-  IconSearch,
-  Paper,
-  Text,
-  TextInput,
-  TextInputSize,
-  useTheme
-} from '@audius/harmony-native'
-import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
+import { Flex, Paper, Text, useTheme } from '@audius/harmony-native'
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent } from 'app/components/core'
 import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
@@ -38,11 +36,8 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
 import { moodMap } from 'app/utils/moods'
 
-import { AppDrawerContext } from '../app-drawer-screen'
-import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
 import { RecentSearches } from '../search-screen/RecentSearches'
 import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
-import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
 import { SearchContext } from '../search-screen/searchState'
 
@@ -52,6 +47,7 @@ import {
   TRENDING_UNDERGROUND
 } from './collections'
 import { ColorTile } from './components/ColorTile'
+import { SearchExploreHeader } from './components/SearchExploreHeader'
 import { REMIXABLES } from './smartCollections'
 
 const tiles = [
@@ -72,10 +68,14 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
 
 const { getSearchHistory } = searchSelectors
 
+// Animation parameters
+const HEADER_SLIDE_HEIGHT = 46
+const FILTER_SCROLL_THRESHOLD = 300
+const HEADER_COLLAPSE_THRESHOLD = 50
+
 export const SearchExploreScreen = () => {
   const { spacing } = useTheme()
   const { params } = useRoute<'Search'>()
-  const { drawerHelpers } = useContext(AppDrawerContext)
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
 
   // State
@@ -96,7 +96,11 @@ export const SearchExploreScreen = () => {
     400, // debounce delay in ms
     [searchInput]
   )
-
+  const scrollY = useSharedValue(0)
+  const filterTranslateY = useSharedValue(0)
+  const prevScrollY = useSharedValue(0)
+  const scrollDirection = useSharedValue<'up' | 'down'>('down')
+  const scrollRef = useRef<Animated.ScrollView>(null)
   // Data fetching
   const { data: exploreContent, isLoading: isExploreContentLoading } =
     useExploreContent()
@@ -105,6 +109,8 @@ export const SearchExploreScreen = () => {
   const { data: featuredLabels, isLoading: isFeaturedLabelsLoading } = useUsers(
     exploreContent?.featuredLabels
   )
+  const animatedFilterPaddingVertical = useSharedValue(spacing.l)
+
   // Derived data
   const filteredTiles = useMemo(
     () =>
@@ -132,10 +138,6 @@ export const SearchExploreScreen = () => {
   )
 
   // Handlers
-  const handleOpenLeftNavDrawer = useCallback(() => {
-    drawerHelpers?.openDrawer()
-  }, [drawerHelpers])
-
   const handleMoodPress = useCallback((moodLabel: Mood) => {
     setCategory('tracks')
     setFilters({ mood: moodLabel })
@@ -144,10 +146,81 @@ export const SearchExploreScreen = () => {
     setSearchInput('')
   }, [])
 
+  const handleSearchInputChange = useCallback((text: string) => {
+    setSearchInput(text)
+    if (text === '') {
+      scrollRef.current?.scrollTo?.({ y: 0, animated: false })
+    }
+  }, [])
+
   const moodEntries = useMemo(
     () => Object.entries(MOODS) as [string, MoodInfo][],
     []
   )
+
+  // Animations
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      const y = event.contentOffset.y
+      const contentHeight = event.contentSize.height
+      const layoutHeight = event.layoutMeasurement.height
+      const isAtBottom = y + layoutHeight >= contentHeight
+
+      // Only update scroll direction if we're not at the bottom
+      // to prevent bounce from interfering
+      if (!isAtBottom) {
+        if (y > prevScrollY.value) {
+          scrollDirection.value = 'down'
+        } else if (y < prevScrollY.value) {
+          scrollDirection.value = 'up'
+        }
+      }
+      prevScrollY.value = y
+      scrollY.value = y
+
+      // Handle filter animation
+      if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
+        filterTranslateY.value = withTiming(-spacing['4xl'])
+      } else if (
+        y < FILTER_SCROLL_THRESHOLD ||
+        scrollDirection.value === 'up'
+      ) {
+        filterTranslateY.value = withTiming(0)
+      }
+    }
+  })
+
+  useDerivedValue(() => {
+    animatedFilterPaddingVertical.value =
+      scrollY.value === 0
+        ? spacing.l
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [spacing.l, spacing.m],
+            Extrapolation.CLAMP
+          )
+  })
+
+  // content margin expands when header / filter collapses
+  const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
+    marginTop:
+      scrollY.value === 0
+        ? withTiming(0)
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, -HEADER_SLIDE_HEIGHT],
+            Extrapolation.CLAMP
+          ) +
+          interpolate(
+            scrollY.value,
+            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD],
+            [0, -spacing['4xl']],
+            Extrapolation.CLAMP
+          )
+  }))
+
   return (
     <SearchContext.Provider
       value={{
@@ -166,51 +239,19 @@ export const SearchExploreScreen = () => {
     >
       <Screen url='Explore' header={() => <></>}>
         <ScreenContent>
-          <Flex>
-            <ImageBackground source={imageSearchHeaderBackground}>
-              <Flex pt='unit14' ph='l' pb='l' gap='l'>
-                <Flex
-                  direction='row'
-                  gap='m'
-                  h={spacing.unit11}
-                  alignItems='center'
-                >
-                  <Flex w={spacing.unit10}>
-                    <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-                  </Flex>
-                  <Text variant='heading' color='staticWhite'>
-                    {messages.explore}
-                  </Text>
-                </Flex>
-                <Text variant='title' color='staticWhite'>
-                  {messages.description}
-                </Text>
-                <Flex>
-                  <TextInput
-                    label='Search'
-                    autoFocus={autoFocus}
-                    placeholder={messages.searchPlaceholder}
-                    size={TextInputSize.SMALL}
-                    startIcon={IconSearch}
-                    onChangeText={setSearchInput}
-                    value={searchInput}
-                    endIcon={(props) => (
-                      <IconButton
-                        icon={IconCloseAlt}
-                        color='subdued'
-                        onPress={handleClearSearch}
-                        hitSlop={10}
-                        {...props}
-                      />
-                    )}
-                  />
-                </Flex>
-              </Flex>
-            </ImageBackground>
-          </Flex>
-          <SearchCategoriesAndFilters />
+          <SearchExploreHeader
+            scrollY={scrollY}
+            filterTranslateY={filterTranslateY}
+            searchInput={searchInput}
+            handleClearSearch={handleClearSearch}
+            handleSearchInputChange={handleSearchInputChange}
+          />
 
-          <ScrollView>
+          <Animated.ScrollView
+            ref={scrollRef}
+            onScroll={scrollHandler}
+            style={[contentSlideAnimatedStyle]}
+          >
             {category !== 'all' || searchInput ? (
               <>
                 {searchInput || hasAnyFilter ? (
@@ -330,7 +371,7 @@ export const SearchExploreScreen = () => {
                 </Flex>
               </Flex>
             )}
-          </ScrollView>
+          </Animated.ScrollView>
         </ScreenContent>
       </Screen>
     </SearchContext.Provider>
