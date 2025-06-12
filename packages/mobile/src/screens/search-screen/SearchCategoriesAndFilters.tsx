@@ -9,7 +9,6 @@ import { ScrollView } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 
-import type { Spacing } from '@audius/harmony-native'
 import {
   Flex,
   IconCloseAlt,

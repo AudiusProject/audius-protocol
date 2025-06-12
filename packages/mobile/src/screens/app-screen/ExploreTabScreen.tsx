@@ -31,7 +31,6 @@ import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
-import { featureMessages } from '@audius/common/models'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
   Explore: undefined

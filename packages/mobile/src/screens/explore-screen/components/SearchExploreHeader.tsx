@@ -1,5 +1,4 @@
-import type { RefObject } from 'react'
-import { useCallback, useContext, useRef, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ImageBackground } from 'react-native'
