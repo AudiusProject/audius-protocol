@@ -4,7 +4,6 @@ import { User } from '~/models/User'
 import { AccountState } from '~/store/account/types'
 import { getProfileUserHandle } from '~/store/pages/profile/selectors'
 
-import { Status } from '../../../models/Status'
 import { CommonState } from '../../commonStore'
 
 export const getUserCompletionStages = (
@@ -132,6 +131,3 @@ export const getProfilePageMeterDismissed = (state: CommonState) => {
   if (!profileHandle) return false
   return state.pages.profile.entries[profileHandle]?.profileMeterDismissed
 }
-
-export const getIsAccountLoaded = (state: CommonState) =>
-  state.account.status === Status.SUCCESS

@@ -55,6 +55,8 @@ export const useWalletAccount = <
       return await getWalletAccountQueryFn(wallet!, sdk)
     },
     ...options,
+    staleTime: Infinity,
+    gcTime: Infinity,
     enabled: options?.enabled !== false && !!wallet
   })
 }

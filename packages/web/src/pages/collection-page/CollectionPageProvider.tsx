@@ -163,14 +163,14 @@ const CollectionPage = (props: CollectionPageProps) => {
   const { data: collection } = useCollectionByParams(params, { enabled: false })
   const { data: accountData } = useCurrentAccount({
     select: (account) => ({
-      userId: account?.userId,
+      accountUserId: account?.userId,
       userPlaylists: Object.values(account?.collections ?? {})?.filter(
         (c) => !c.is_album
       )
     })
   })
-  const { userId, userPlaylists } = accountData ?? {}
-  const { data: user } = useUser(userId)
+  const { accountUserId, userPlaylists } = accountData ?? {}
+  const { data: user } = useUser(collection?.playlist_owner_id)
   const trackCount = collection?.playlist_contents.track_ids.length ?? 0
   const playlistId = collection?.playlist_id
   const currentTrack = useCurrentTrack()
@@ -186,7 +186,7 @@ const CollectionPage = (props: CollectionPageProps) => {
       tracks={tracks}
       trackCount={trackCount}
       currentTrack={currentTrack}
-      userId={userId}
+      userId={accountUserId}
       user={user}
       userPlaylists={userPlaylists}
     />

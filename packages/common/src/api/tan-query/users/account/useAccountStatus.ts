@@ -17,3 +17,8 @@ export const useAccountStatus = () => {
     gcTime: Infinity
   })
 }
+
+export const useIsAccountLoaded = () => {
+  const { data: accountStatus } = useAccountStatus()
+  return accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
+}
