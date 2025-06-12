@@ -144,9 +144,9 @@ export const ColorTile = ({
   const handlePress = useCallback(() => {
     onPress?.()
     if (screen) {
-      navigation.push(screen)
+      navigation.push(screen as keyof ExploreTabScreenParamList)
     }
-  }, [navigation, screen])
+  }, [navigation, onPress, screen])
 
   return (
     <Animated.View
