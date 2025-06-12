@@ -6,8 +6,16 @@ import type {
 } from '@audius/common/api'
 import { useFocusEffect } from '@react-navigation/native'
 import { ScrollView } from 'react-native'
+import type { SharedValue } from 'react-native-reanimated'
+import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 
-import { Flex, IconCloseAlt, SelectablePill } from '@audius/harmony-native'
+import type { Spacing } from '@audius/harmony-native'
+import {
+  Flex,
+  IconCloseAlt,
+  SelectablePill,
+  useTheme
+} from '@audius/harmony-native'
 
 import { BpmFilter } from './BpmFilter'
 import {
@@ -22,6 +30,8 @@ import { useSearchCategory, useSearchFilters } from './searchState'
 type SearchCategoryProps = {
   category: SearchCategoryType
 }
+
+const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
 const SearchCategory = (props: SearchCategoryProps) => {
   const { category } = props
@@ -83,9 +93,17 @@ const searchFilterButtons = {
   isVerified: IsVerifiedFilter
 }
 
-export const SearchCategoriesAndFilters = () => {
+type SearchCategoriesAndFiltersProps = {
+  animatedPaddingVertical?: SharedValue<number>
+}
+
+export const SearchCategoriesAndFilters = (
+  props: SearchCategoriesAndFiltersProps
+) => {
+  const { animatedPaddingVertical } = props
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
+  const { spacing } = useTheme()
 
   const scrollViewRef = useRef<ScrollView>(null)
 
@@ -102,6 +120,13 @@ export const SearchCategoriesAndFilters = () => {
   const inactiveFilterKeys = categoryFilters.filter((key) => !filters[key])
   const sortedFilterKeys = [...activeFilterKeys, ...inactiveFilterKeys]
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    paddingHorizontal: spacing.l,
+    paddingVertical: animatedPaddingVertical
+      ? animatedPaddingVertical.value
+      : spacing.l
+  }))
+
   return (
     <Flex>
       <ScrollView
@@ -110,7 +135,12 @@ export const SearchCategoriesAndFilters = () => {
         ref={scrollViewRef}
         showsHorizontalScrollIndicator={false}
       >
-        <Flex direction='row' alignItems='center' gap='s' p='l'>
+        <AnimatedFlex
+          direction='row'
+          alignItems='center'
+          gap='s'
+          style={animatedStyle}
+        >
           <SearchCategory category='users' />
           <SearchCategory category='tracks' />
           <SearchCategory category='albums' />
@@ -122,7 +152,7 @@ export const SearchCategoriesAndFilters = () => {
             }
             return null
           })}
-        </Flex>
+        </AnimatedFlex>
       </ScrollView>
     </Flex>
   )

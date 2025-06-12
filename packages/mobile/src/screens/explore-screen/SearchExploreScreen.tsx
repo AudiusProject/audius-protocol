@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -14,31 +14,20 @@ import {
 import type { Mood } from '@audius/sdk'
 import { MOODS } from 'pages/search-page/moods'
 import type { MoodInfo } from 'pages/search-page/types'
-import { ImageBackground, Image } from 'react-native'
+import { Image } from 'react-native'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
   interpolate,
   useAnimatedStyle,
-  interpolateColor,
   Extrapolation,
-  withTiming
+  withTiming,
+  useDerivedValue
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import {
-  Flex,
-  IconButton,
-  IconCloseAlt,
-  IconSearch,
-  Paper,
-  Text,
-  TextInput,
-  TextInputSize,
-  useTheme
-} from '@audius/harmony-native'
-import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
+import { Flex, Paper, Text, useTheme } from '@audius/harmony-native'
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent } from 'app/components/core'
 import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
@@ -47,11 +36,8 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
 import { moodMap } from 'app/utils/moods'
 
-import { AppDrawerContext } from '../app-drawer-screen'
-import { AccountPictureHeader } from '../app-screen/AccountPictureHeader'
 import { RecentSearches } from '../search-screen/RecentSearches'
 import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
-import { SearchCategoriesAndFilters } from '../search-screen/SearchCategoriesAndFilters'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
 import { SearchContext } from '../search-screen/searchState'
 
@@ -61,6 +47,7 @@ import {
   TRENDING_UNDERGROUND
 } from './collections'
 import { ColorTile } from './components/ColorTile'
+import { SearchExploreHeader } from './components/SearchExploreHeader'
 import { REMIXABLES } from './smartCollections'
 
 const tiles = [
@@ -80,8 +67,6 @@ const itemKindByCategory: Record<SearchCategory, Kind | null> = {
 }
 
 const { getSearchHistory } = searchSelectors
-const AnimatedFlex = Animated.createAnimatedComponent(Flex)
-const AnimatedText = Animated.createAnimatedComponent(Text)
 
 // Animation parameters
 const HEADER_SLIDE_HEIGHT = 46
@@ -89,9 +74,8 @@ const FILTER_SCROLL_THRESHOLD = 300
 const HEADER_COLLAPSE_THRESHOLD = 50
 
 export const SearchExploreScreen = () => {
-  const { spacing, color } = useTheme()
+  const { spacing } = useTheme()
   const { params } = useRoute<'Search'>()
-  const { drawerHelpers } = useContext(AppDrawerContext)
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
 
   // State
@@ -125,6 +109,8 @@ export const SearchExploreScreen = () => {
   const { data: featuredLabels, isLoading: isFeaturedLabelsLoading } = useUsers(
     exploreContent?.featuredLabels
   )
+  const animatedFilterPaddingVertical = useSharedValue(spacing.l)
+
   // Derived data
   const filteredTiles = useMemo(
     () =>
@@ -152,10 +138,6 @@ export const SearchExploreScreen = () => {
   )
 
   // Handlers
-  const handleOpenLeftNavDrawer = useCallback(() => {
-    drawerHelpers?.openDrawer()
-  }, [drawerHelpers])
-
   const handleMoodPress = useCallback((moodLabel: Mood) => {
     setCategory('tracks')
     setFilters({ mood: moodLabel })
@@ -208,146 +190,17 @@ export const SearchExploreScreen = () => {
     }
   })
 
-  // Header text fades out when collapsing
-  // Height shrinks to collapse rows for avatar + input
-  const headerTextAnimatedStyle = useAnimatedStyle(() => ({
-    opacity:
+  useDerivedValue(() => {
+    animatedFilterPaddingVertical.value =
       scrollY.value === 0
-        ? withTiming(1)
+        ? spacing.l
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
-            [1, 0],
-            Extrapolation.CLAMP
-          ),
-    height:
-      scrollY.value === 0
-        ? withTiming(48)
-        : interpolate(
-            scrollY.value,
-            [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
-            [48, 0],
+            [spacing.l, spacing.m],
             Extrapolation.CLAMP
           )
-  }))
-
-  const inputAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale:
-          scrollY.value === 0
-            ? withTiming(1)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [1, 0.83],
-                Extrapolation.CLAMP
-              )
-      },
-      {
-        translateX:
-          scrollY.value === 0
-            ? withTiming(0)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [0, 30],
-                Extrapolation.CLAMP
-              )
-      }
-    ]
-  }))
-
-  // Header slides up to collapse
-  const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY:
-          scrollY.value === 0
-            ? withTiming(0)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [0, -HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              )
-      }
-    ]
-  }))
-
-  // Avatar slides down in relation to colllapsing header
-  // to stay in place visually
-  const avatarSlideAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY:
-          scrollY.value === 0
-            ? withTiming(0)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [0, HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              )
-      }
-    ]
-  }))
-
-  // Header padding and gap shrink when collapsing
-  const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
-    paddingVertical:
-      scrollY.value === 0
-        ? withTiming(spacing.l)
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
-            [spacing.l, spacing.s],
-            Extrapolation.CLAMP
-          ),
-    gap:
-      scrollY.value === 0
-        ? withTiming(spacing.l)
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
-            [spacing.l, 0],
-            Extrapolation.CLAMP
-          )
-  }))
-
-  // Filters slide up when header collapses
-  // and hides when scrolling further down
-  const filtersAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY:
-          scrollY.value === 0
-            ? withTiming(0)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [0, -HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              ) + filterTranslateY.value
-      }
-    ],
-    backgroundColor:
-      scrollY.value === 0
-        ? withTiming(color.background.default)
-        : interpolateColor(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
-            [color.background.default, color.neutral.n25]
-          ),
-    borderColor:
-      scrollY.value === 0
-        ? withTiming(color.background.default)
-        : interpolateColor(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
-            [color.background.default, color.border.strong]
-          )
-  }))
+  })
 
   // content margin expands when header / filter collapses
   const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
@@ -386,67 +239,13 @@ export const SearchExploreScreen = () => {
     >
       <Screen url='Explore' header={() => <></>}>
         <ScreenContent>
-          <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
-            <ImageBackground source={imageSearchHeaderBackground}>
-              <AnimatedFlex pt='unit14' ph='l' style={headerPaddingShrinkStyle}>
-                <Flex
-                  direction='row'
-                  gap='m'
-                  h={spacing.unit11}
-                  alignItems='center'
-                >
-                  <AnimatedFlex
-                    style={[inputAnimatedStyle, avatarSlideAnimatedStyle]}
-                    w={spacing.unit10}
-                  >
-                    <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-                  </AnimatedFlex>
-                  <AnimatedFlex
-                    style={[
-                      headerTextAnimatedStyle,
-                      { justifyContent: 'center' }
-                    ]}
-                  >
-                    <Text variant='heading' color='staticWhite'>
-                      {messages.explore}
-                    </Text>
-                  </AnimatedFlex>
-                </Flex>
-                <AnimatedText
-                  variant='title'
-                  color='staticWhite'
-                  style={[headerTextAnimatedStyle]}
-                >
-                  {messages.description}
-                </AnimatedText>
-                <Animated.View style={inputAnimatedStyle}>
-                  <TextInput
-                    label='Search'
-                    autoFocus={autoFocus}
-                    placeholder={messages.searchPlaceholder}
-                    size={TextInputSize.SMALL}
-                    startIcon={IconSearch}
-                    onChangeText={handleSearchInputChange}
-                    value={searchInput}
-                    endIcon={(props) => (
-                      <IconButton
-                        icon={IconCloseAlt}
-                        color='subdued'
-                        onPress={handleClearSearch}
-                        hitSlop={10}
-                        {...props}
-                      />
-                    )}
-                  />
-                </Animated.View>
-              </AnimatedFlex>
-            </ImageBackground>
-          </AnimatedFlex>
-          <AnimatedFlex
-            style={[filtersAnimatedStyle, { zIndex: 1, borderBottomWidth: 1 }]}
-          >
-            <SearchCategoriesAndFilters />
-          </AnimatedFlex>
+          <SearchExploreHeader
+            scrollY={scrollY}
+            filterTranslateY={filterTranslateY}
+            searchInput={searchInput}
+            handleClearSearch={handleClearSearch}
+            handleSearchInputChange={handleSearchInputChange}
+          />
 
           <Animated.ScrollView
             ref={scrollRef}
