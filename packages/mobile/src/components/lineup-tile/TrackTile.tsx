@@ -31,7 +31,7 @@ import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
-import type { LineupItemProps } from 'app/components/lineup-tile/types'
+import type { TrackTileProps } from 'app/components/lineup-tile/types'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { TrackImage } from '../image/TrackImage'
@@ -49,7 +49,7 @@ const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getTrackPosition } = playbackPositionSelectors
 
-export const TrackTile = (props: LineupItemProps) => {
+export const TrackTile = (props: TrackTileProps) => {
   const { id, onPress, togglePlay, variant, ...lineupTileProps } = props
 
   const dispatch = useDispatch()

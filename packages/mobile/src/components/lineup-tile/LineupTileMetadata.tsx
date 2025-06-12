@@ -12,7 +12,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileArt } from './LineupTileArt'
 import { useStyles as useTileStyles } from './styles'
-import type { LineupTileProps } from './types'
+import type { RenderImage } from './types'
 
 const { getPlaying } = playerSelectors
 
@@ -37,7 +37,7 @@ const useStyles = makeStyles(({ palette }) => ({
 
 type Props = {
   onPressTitle?: GestureResponderHandler
-  renderImage: LineupTileProps['renderImage']
+  renderImage: RenderImage
   title: string
   userId: ID
   isPlayingUid: boolean

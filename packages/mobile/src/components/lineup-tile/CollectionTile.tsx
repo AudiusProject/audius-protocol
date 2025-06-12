@@ -36,7 +36,7 @@ import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileTopRight } from './LineupTileTopRight'
-import { LineupTileSource, type LineupItemProps } from './types'
+import { LineupTileSource, type CollectionTileProps } from './types'
 import { useEnhancedCollectionTracks } from './useEnhancedCollectionTracks'
 
 const { getUid } = playerSelectors
@@ -49,7 +49,7 @@ const {
   unsaveCollection
 } = collectionsSocialActions
 
-export const CollectionTile = (props: LineupItemProps) => {
+export const CollectionTile = (props: CollectionTileProps) => {
   const {
     uid,
     id,

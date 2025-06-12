@@ -21,10 +21,7 @@ import {
 } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import { Text, Tile } from 'app/components/core'
-import {
-  LineupTileSkeleton,
-  TrackTileComponent
-} from 'app/components/lineup-tile'
+import { LineupTileSkeleton, TrackTile } from 'app/components/lineup-tile'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
@@ -179,17 +176,12 @@ export const UploadCompleteScreen = () => {
           ) : null}
         </Tile>
         {accountUser && track ? (
-          <TrackTileComponent
+          <TrackTile
             id={track.track_id}
             uid={''}
             index={0}
             togglePlay={() => {}}
-            track={track}
-            user={accountUser}
-            TileProps={{
-              pointerEvents: 'box-only',
-              onPress: handlePressTrack
-            }}
+            onPress={handlePressTrack}
           />
         ) : (
           <LineupTileSkeleton />
