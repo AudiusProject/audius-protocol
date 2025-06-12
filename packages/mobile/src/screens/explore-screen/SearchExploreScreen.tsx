@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useRef, useState } from 'react'
 
 import type {
   SearchCategory,
@@ -118,7 +118,7 @@ export const SearchExploreScreen = () => {
   const filterTranslateY = useSharedValue(0)
   const prevScrollY = useSharedValue(0)
   const scrollDirection = useSharedValue<'up' | 'down'>('down')
-
+  const scrollRef = useRef<Animated.ScrollView>(null)
   // Data fetching
   const { data: exploreContent, isLoading: isExploreContentLoading } =
     useExploreContent()
@@ -166,6 +166,13 @@ export const SearchExploreScreen = () => {
     setSearchInput('')
   }, [])
 
+  const handleSearchInputChange = useCallback((text: string) => {
+    setSearchInput(text)
+    if (text === '') {
+      scrollRef.current?.scrollTo?.({ y: 0, animated: false })
+    }
+  }, [])
+
   const moodEntries = useMemo(
     () => Object.entries(MOODS) as [string, MoodInfo][],
     []
@@ -178,10 +185,17 @@ export const SearchExploreScreen = () => {
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y
-      if (y > prevScrollY.value) {
-        scrollDirection.value = 'down'
-      } else if (y < prevScrollY.value) {
-        scrollDirection.value = 'up'
+      const contentHeight = event.contentSize.height
+      const layoutHeight = event.layoutMeasurement.height
+      const isAtBottom = y + layoutHeight >= contentHeight
+
+      // Only update scroll direction if we're not at the bottom
+      if (!isAtBottom) {
+        if (y > prevScrollY.value) {
+          scrollDirection.value = 'down'
+        } else if (y < prevScrollY.value) {
+          scrollDirection.value = 'up'
+        }
       }
       prevScrollY.value = y
       scrollY.value = y
@@ -199,37 +213,49 @@ export const SearchExploreScreen = () => {
   })
 
   const headerTextAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD],
-      [1, 0],
-      Extrapolation.CLAMP
-    ),
-    height: interpolate(
-      scrollY.value,
-      [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
-      [48, 0],
-      Extrapolation.CLAMP
-    )
+    opacity:
+      scrollY.value === 0
+        ? withTiming(1)
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [1, 0],
+            Extrapolation.CLAMP
+          ),
+    height:
+      scrollY.value === 0
+        ? withTiming(48)
+        : interpolate(
+            scrollY.value,
+            [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
+            [48, 0],
+            Extrapolation.CLAMP
+          )
   }))
 
   const inputAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        scale: interpolate(
-          scrollY.value,
-          [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-          [1, 0.83], // scale range
-          Extrapolation.CLAMP
-        )
+        scale:
+          scrollY.value === 0
+            ? withTiming(1)
+            : interpolate(
+                scrollY.value,
+                [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+                [1, 0.83], // scale range
+                Extrapolation.CLAMP
+              )
       },
       {
-        translateX: interpolate(
-          scrollY.value,
-          [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-          [0, 30],
-          Extrapolation.CLAMP
-        )
+        translateX:
+          scrollY.value === 0
+            ? withTiming(0)
+            : interpolate(
+                scrollY.value,
+                [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+                [0, 30],
+                Extrapolation.CLAMP
+              )
       }
     ]
   }))
@@ -237,81 +263,103 @@ export const SearchExploreScreen = () => {
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY: interpolate(
-          scrollY.value,
-          [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-          [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
-          Extrapolation.CLAMP
-        )
+        translateY:
+          scrollY.value === 0
+            ? withTiming(0)
+            : interpolate(
+                scrollY.value,
+                [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
+                [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+                Extrapolation.CLAMP
+              )
       }
     ]
   }))
   const avatarSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY: interpolate(
-          scrollY.value,
-          [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-          [0, HEADER_SLIDE_HEIGHT], // slide up by 30px
-          Extrapolation.CLAMP
-        )
+        translateY:
+          scrollY.value === 0
+            ? withTiming(0)
+            : interpolate(
+                scrollY.value,
+                [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
+                [0, HEADER_SLIDE_HEIGHT], // slide up by 30px
+                Extrapolation.CLAMP
+              )
       }
     ]
   }))
 
   const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
-    paddingVertical: interpolate(
-      scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-      [spacing.l, spacing.s], // padding range
-      Extrapolation.CLAMP
-    ),
-    gap: interpolate(
-      scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
-      [spacing.l, 0], // padding range
-      Extrapolation.CLAMP
-    )
+    paddingVertical:
+      scrollY.value === 0
+        ? withTiming(spacing.l)
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+            [spacing.l, spacing.s], // padding range
+            Extrapolation.CLAMP
+          ),
+    gap:
+      scrollY.value === 0
+        ? withTiming(spacing.l)
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+            [spacing.l, 0], // padding range
+            Extrapolation.CLAMP
+          )
   }))
 
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
         translateY:
-          interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-            [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
-            Extrapolation.CLAMP
-          ) + filterTranslateY.value
+          scrollY.value === 0
+            ? withTiming(0)
+            : interpolate(
+                scrollY.value,
+                [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
+                [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+                Extrapolation.CLAMP
+              ) + filterTranslateY.value
       }
     ],
-    backgroundColor: interpolateColor(
-      scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD],
-      [color.background.default, color.neutral.n25]
-    ),
-    borderColor: interpolateColor(
-      scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD],
-      [color.border.strong, color.neutral.n25]
-    )
+    backgroundColor:
+      scrollY.value === 0
+        ? withTiming(color.background.default)
+        : interpolateColor(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [color.background.default, color.neutral.n25]
+          ),
+    borderColor:
+      scrollY.value === 0
+        ? withTiming(color.background.default)
+        : interpolateColor(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [color.background.default, color.border.strong]
+          )
   }))
 
   const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
     marginTop:
-      interpolate(
-        scrollY.value,
-        [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
-        [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
-        Extrapolation.CLAMP
-      ) +
-      interpolate(
-        scrollY.value,
-        [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD], // adjust as needed
-        [0, -spacing['4xl']], // slide up by HEADER_SLIDE_HEIGHT
-        Extrapolation.CLAMP
-      )
+      scrollY.value === 0
+        ? withTiming(0)
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
+            [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
+            Extrapolation.CLAMP
+          ) +
+          interpolate(
+            scrollY.value,
+            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD], // adjust as needed
+            [0, -spacing['4xl']], // slide up by HEADER_SLIDE_HEIGHT
+            Extrapolation.CLAMP
+          )
   }))
 
   return (
@@ -373,7 +421,7 @@ export const SearchExploreScreen = () => {
                     placeholder={messages.searchPlaceholder}
                     size={TextInputSize.SMALL}
                     startIcon={IconSearch}
-                    onChangeText={setSearchInput}
+                    onChangeText={handleSearchInputChange}
                     value={searchInput}
                     endIcon={(props) => (
                       <IconButton
@@ -389,11 +437,14 @@ export const SearchExploreScreen = () => {
               </AnimatedFlex>
             </ImageBackground>
           </AnimatedFlex>
-          <AnimatedFlex style={[filtersAnimatedStyle, { zIndex: 1 }]}>
+          <AnimatedFlex
+            style={[filtersAnimatedStyle, { zIndex: 1, borderBottomWidth: 1 }]}
+          >
             <SearchCategoriesAndFilters />
           </AnimatedFlex>
 
           <Animated.ScrollView
+            ref={scrollRef}
             onScroll={scrollHandler}
             style={[contentSlideAnimatedStyle]}
           >
