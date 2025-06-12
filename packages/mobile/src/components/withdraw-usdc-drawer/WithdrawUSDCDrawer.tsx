@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import { useUSDCBalance } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag, useRemoteVar } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import type { BNUSDC } from '@audius/common/models'
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   useWithdrawUSDCModal,
   WithdrawMethod,
@@ -13,9 +12,9 @@ import {
   WithdrawUSDCModalPages,
   withdrawUSDCSelectors,
   buyUSDCSelectors,
-  isValidSolAddress
+  createWithdrawUSDCFormSchema
 } from '@audius/common/store'
-import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import BN from 'bn.js'
@@ -23,7 +22,6 @@ import type { FormikProps } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Divider, Flex, Text } from '@audius/harmony-native'
@@ -38,12 +36,9 @@ import {
   AMOUNT,
   METHOD,
   ADDRESS,
-  DESTINATION,
   CONFIRM,
   type WithdrawFormValues
 } from './types'
-
-const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
 
 const { beginWithdrawUSDC } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
@@ -54,36 +49,6 @@ const DISABLE_DRAWER_CLOSE_PAGES = new Set([
   WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS,
   WithdrawUSDCModalPages.COINFLOW_TRANSFER
 ])
-
-const WithdrawUSDCFormSchema = (userBalanceCents: number) => {
-  const amount = z
-    .number()
-    .min(
-      MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS,
-      walletMessages.errors.amountTooLow
-    )
-    .max(userBalanceCents, walletMessages.errors.insufficientBalance)
-
-  return z.discriminatedUnion(METHOD, [
-    z.object({
-      [METHOD]: z.literal(WithdrawMethod.COINFLOW),
-      [AMOUNT]: userBalanceCents !== 0 ? amount : z.number(),
-      [ADDRESS]: z.string().optional(),
-      [DESTINATION]: z.string().optional(),
-      confirm: z.boolean().optional()
-    }),
-    z.object({
-      [METHOD]: z.literal(WithdrawMethod.MANUAL_TRANSFER),
-      [AMOUNT]: userBalanceCents !== 0 ? amount : z.number(),
-      [ADDRESS]: z
-        .string()
-        .min(1, walletMessages.destinationRequired)
-        .refine(isValidSolAddress, walletMessages.errors.invalidAddress),
-      [DESTINATION]: z.string().optional(),
-      [CONFIRM]: z.boolean().optional()
-    })
-  ])
-}
 
 const WithdrawUSDCForm = ({
   onClose,
@@ -168,9 +133,16 @@ export const WithdrawUSDCDrawer = () => {
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.COINFLOW_OFFRAMP_ENABLED
   )
+  const minCashTransferBalanceCents = useRemoteVar(
+    IntKeys.MIN_USDC_WITHDRAW_BALANCE_CENTS
+  )
   const { data: balance } = useUSDCBalance()
-  const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
+  const balanceNumberCents = Math.floor(
+    Number(
+      USDC(balance ?? new BN(0))
+        .floor(2)
+        .toString()
+    ) * 100
   )
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null)
@@ -238,11 +210,13 @@ export const WithdrawUSDCDrawer = () => {
             ? WithdrawMethod.COINFLOW
             : WithdrawMethod.MANUAL_TRANSFER,
           [ADDRESS]: '',
-          [DESTINATION]: '',
-          confirm: false
+          [CONFIRM]: false
         }}
         validationSchema={toFormikValidationSchema(
-          WithdrawUSDCFormSchema(balanceNumberCents)
+          createWithdrawUSDCFormSchema(
+            balanceNumberCents,
+            minCashTransferBalanceCents
+          )
         )}
         validateOnChange
         onSubmit={handleSubmit}

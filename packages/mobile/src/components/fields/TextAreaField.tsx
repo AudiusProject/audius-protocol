@@ -1,10 +1,10 @@
 import { useField } from 'formik'
 
-import { Text } from 'app/components/core'
+import type { TextInputProps } from 'app/components/core'
+import { Text, TextInput } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import type { TextFieldProps } from './TextField'
-import { TextField } from './TextField'
+import { TextField, type TextFieldProps } from './TextField'
 
 const useStyles = makeStyles(() => ({
   input: { height: 128, textAlignVertical: 'top' }
@@ -12,10 +12,14 @@ const useStyles = makeStyles(() => ({
 
 type TextAreaFieldProps = TextFieldProps
 
-export const TextAreaField = (props: TextAreaFieldProps) => {
-  const { styles: stylesProp, ...other } = props
-  const { name, maxLength } = other
+const TextAreaInput = (props: TextInputProps) => {
   const styles = useStyles()
+  return <TextInput styles={styles} {...props} />
+}
+
+export const TextAreaField = (props: TextAreaFieldProps) => {
+  const { ...other } = props
+  const { name, maxLength } = other
   const [{ value }] = useField(name)
 
   const charCount = value?.length ?? 0
@@ -29,7 +33,6 @@ export const TextAreaField = (props: TextAreaFieldProps) => {
 
   return (
     <TextField
-      styles={{ ...styles, ...stylesProp }}
       multiline
       numberOfLines={5}
       endAdornment={
@@ -40,6 +43,7 @@ export const TextAreaField = (props: TextAreaFieldProps) => {
         ) : undefined
       }
       returnKeyType='default'
+      TextFieldInputComponent={TextAreaInput as any}
       {...other}
     />
   )

@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -7,20 +7,19 @@ import {
   useWithdrawUSDCModal,
   WithdrawMethod
 } from '@audius/common/store'
+import {
+  filterDecimalString,
+  decimalIntegerToHumanReadable,
+  padDecimalValue
+} from '@audius/common/utils'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
-import { useFormikContext } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
-import {
-  Button,
-  Flex,
-  Text,
-  Divider,
-  TextInput,
-  spacing
-} from '@audius/harmony-native'
+import { Button, Flex, Text, Divider, spacing } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { SegmentedControl } from 'app/components/core'
+import { TextField } from 'app/components/fields'
 
 import type { WithdrawFormValues } from '../types'
 import { AMOUNT, METHOD, ADDRESS } from '../types'
@@ -32,53 +31,64 @@ export const EnterTransferDetails = ({
   scrollViewRef: RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
 }) => {
-  const { values, setFieldValue, errors, touched, validateForm, setTouched } =
-    useFormikContext<WithdrawFormValues>()
+  const { validateForm } = useFormikContext<WithdrawFormValues>()
+  const [
+    { value },
+    { error: amountError, touched: amountTouched },
+    { setValue: setAmount, setTouched: setAmountTouched }
+  ] = useField(AMOUNT)
+  const [, { error: addressError }, { setTouched: setAddressTouched }] =
+    useField(ADDRESS)
   const { setData } = useWithdrawUSDCModal()
+  const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
+    useField<WithdrawMethod>(METHOD)
+  const [humanizedValue, setHumanizedValue] = useState(
+    value ? decimalIntegerToHumanReadable(value) : '0'
+  )
 
   const onContinuePress = useCallback(async () => {
-    const validationErrors = await validateForm()
-    setTouched({
-      [AMOUNT]: true,
-      [METHOD]: true,
-      [ADDRESS]: true
-    })
-
-    if (Object.keys(validationErrors).length === 0) {
-      // Both methods should go to confirmation step first
-      setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
+    setAmountTouched(true)
+    if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
+      setAddressTouched(true)
     }
-  }, [validateForm, setTouched, setData])
+    const errors = await validateForm()
+    if (errors[AMOUNT] || errors[ADDRESS]) return
+    setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
+  }, [validateForm, setData, setAmountTouched, setAddressTouched, methodValue])
 
   const handleAmountChange = useCallback(
     (text: string) => {
-      const numericValue = parseFloat(text) || 0
-      setFieldValue(AMOUNT, numericValue)
+      const { human, value } = filterDecimalString(text)
+      setHumanizedValue(human)
+      setAmount(value)
+      setAmountTouched(true)
     },
-    [setFieldValue]
+    [setAmount, setAmountTouched]
   )
 
-  const handleDestinationChange = useCallback(
+  const handleAmountBlur = useCallback(
     (text: string) => {
-      setFieldValue(ADDRESS, text)
+      setHumanizedValue(padDecimalValue(text))
+      setAmountTouched(true)
     },
-    [setFieldValue]
+    [setHumanizedValue, setAmountTouched]
   )
 
   const handleMaxPress = useCallback(() => {
-    const maxAmount = balanceNumberCents / 100
-    setFieldValue(AMOUNT, maxAmount)
-  }, [balanceNumberCents, setFieldValue])
+    setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
+    setAmount(balanceNumberCents)
+    setAmountTouched(true)
+  }, [balanceNumberCents, setAmount, setAmountTouched])
 
   // Scroll to show the continue button when crypto option is selected
   useEffect(() => {
-    if (values.method === WithdrawMethod.MANUAL_TRANSFER) {
+    if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
       // Delay to ensure the destination field has rendered
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true })
       }, 100)
     }
-  }, [values.method, scrollViewRef])
+  }, [methodValue, scrollViewRef])
 
   return (
     <Flex gap='xl'>
@@ -94,14 +104,18 @@ export const EnterTransferDetails = ({
         <Flex gap='s'>
           <Flex row gap='s' alignItems='center'>
             <Flex style={{ flex: 1 }}>
-              <TextInput
+              <TextField
                 label={walletMessages.amountToWithdrawLabel}
                 placeholder={walletMessages.amountToWithdrawLabel}
-                value={values.amount.toString()}
-                onChangeText={handleAmountChange}
                 keyboardType='numeric'
-                error={!!(touched.amount && errors.amount)}
+                name={AMOUNT}
+                onChangeText={handleAmountChange}
+                onBlur={() => handleAmountBlur(humanizedValue)}
                 TextInputComponent={BottomSheetTextInput as any}
+                noGutter
+                errorBeforeSubmit
+                required
+                shouldShowError={false}
               />
             </Flex>
             <Button
@@ -116,9 +130,9 @@ export const EnterTransferDetails = ({
               {walletMessages.max}
             </Button>
           </Flex>
-          {touched.amount && errors.amount && (
+          {amountTouched && amountError && (
             <Text variant='body' size='s' color='danger'>
-              {errors.amount}
+              {amountError}
             </Text>
           )}
         </Flex>
@@ -135,15 +149,15 @@ export const EnterTransferDetails = ({
             text: walletMessages.crypto
           }
         ]}
-        selected={values.method}
-        onSelectOption={(method) => setFieldValue(METHOD, method)}
+        selected={methodValue}
+        onSelectOption={(method) => setMethod(method)}
         fullWidth
         equalWidth
       />
-      {values.method === WithdrawMethod.COINFLOW && (
+      {methodValue === WithdrawMethod.COINFLOW && (
         <Text variant='body'>{walletMessages.transferDescription}</Text>
       )}
-      {values.method === WithdrawMethod.MANUAL_TRANSFER && (
+      {methodValue === WithdrawMethod.MANUAL_TRANSFER && (
         <Flex gap='m'>
           <Flex gap='s'>
             <Text variant='heading' size='s' color='subdued'>
@@ -151,25 +165,23 @@ export const EnterTransferDetails = ({
             </Text>
             <Text variant='body'>{walletMessages.destinationDescription}</Text>
           </Flex>
-          <Flex gap='s'>
-            <TextInput
-              label={walletMessages.destination}
-              placeholder={walletMessages.destination}
-              value={values.address}
-              onChangeText={handleDestinationChange}
-              error={!!(touched.address && errors.address)}
-              TextInputComponent={BottomSheetTextInput as any}
-            />
-            {touched.address && errors.address && (
-              <Text variant='body' size='s' color='danger'>
-                {errors.address}
-              </Text>
-            )}
-          </Flex>
+          <TextField
+            label={walletMessages.destination}
+            placeholder={walletMessages.destination}
+            name={ADDRESS}
+            TextFieldInputComponent={BottomSheetTextInput as any}
+            noGutter
+            errorBeforeSubmit
+            required
+          />
         </Flex>
       )}
 
-      <Button onPress={onContinuePress} fullWidth>
+      <Button
+        onPress={onContinuePress}
+        fullWidth
+        disabled={!!addressError || !!amountError}
+      >
         {walletMessages.continue}
       </Button>
     </Flex>

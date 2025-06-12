@@ -103,7 +103,7 @@ export const getTierForUser = (user: User) => {
 /**
  * Checks whether the input address is a valid solana address.
  */
-export const isValidSolAddress = async (address: SolanaWalletAddress) => {
+export const isValidSolAddress = (address: SolanaWalletAddress) => {
   try {
     // @ts-ignore - need an unused variable to check if the destinationWallet is valid
     const ignored = new PublicKey(address)
