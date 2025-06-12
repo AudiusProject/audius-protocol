@@ -39,7 +39,7 @@ type Props = {
   onPressTitle?: GestureResponderHandler
   renderImage: LineupTileProps['renderImage']
   title: string
-  user: User
+  userId: ID
   isPlayingUid: boolean
   type: 'track' | 'playlist' | 'album'
   trackId: ID
@@ -49,7 +49,7 @@ export const LineupTileMetadata = ({
   onPressTitle,
   renderImage,
   title,
-  user,
+  userId,
   isPlayingUid,
   type,
   trackId
@@ -114,7 +114,7 @@ export const LineupTileMetadata = ({
         <UserLink
           variant={isActive ? 'active' : 'default'}
           textVariant='body'
-          userId={user.user_id}
+          userId={userId}
         />
       </FadeInView>
       {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
