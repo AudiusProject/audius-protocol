@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import type {
   FavoriteType,
   TipSource,
@@ -7,6 +8,7 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type {
   NotificationType,
   RepostType,
@@ -33,7 +35,7 @@ import { SearchExploreScreen } from 'app/screens/explore-screen/SearchExploreScr
 import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { RewardsScreen } from 'app/screens/rewards-screen'
-import type { SearchParams } from 'app/screens/search-screen'
+import { SearchScreenStack, type SearchParams } from 'app/screens/search-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -159,7 +161,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-
+  const { isEnabled: isSearchExploreMobileEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_MOBILE
+  )
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
       const stackRoutes = event?.data?.state?.routes
@@ -205,7 +209,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='Profile' component={ProfileScreen} />
       <Stack.Screen
         name='Search'
-        component={SearchExploreScreen}
+        component={
+          isSearchExploreMobileEnabled ? SearchExploreScreen : SearchScreenStack
+        }
         options={{ ...screenOptions, headerShown: false }}
       />
       <Stack.Group>
