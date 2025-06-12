@@ -161,9 +161,12 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-  const { isEnabled: isSearchExploreMobileEnabled } = useFeatureFlag(
+  const searchExploreFeatureFlag = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_MOBILE
   )
+  const isSearchExploreMobileEnabled =
+    searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
+
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
       const stackRoutes = event?.data?.state?.routes

@@ -1,3 +1,6 @@
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
+
 import { ExploreScreen } from 'app/screens/explore-screen'
 import {
   CHILL_PLAYLISTS,
@@ -24,8 +27,11 @@ import {
 import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
 import { SmartCollectionScreen } from 'app/screens/smart-collection-screen/SmartCollectionScreen'
 
+import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
+
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
+import { featureMessages } from '@audius/common/models'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
   Explore: undefined
@@ -69,6 +75,20 @@ const smartCollections = [
 
 export const ExploreTabScreen =
   createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => {
+    const searchExploreFeatureFlag = useFeatureFlag(
+      FeatureFlags.SEARCH_EXPLORE_MOBILE
+    )
+    const isSearchExploreEnabled =
+      searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
+
+    if (isSearchExploreEnabled) {
+      return (
+        <>
+          <Stack.Screen name='SearchExplore' component={SearchExploreScreen} />
+        </>
+      )
+    }
+
     return (
       <>
         <Stack.Screen name='Explore' component={ExploreScreen} />
