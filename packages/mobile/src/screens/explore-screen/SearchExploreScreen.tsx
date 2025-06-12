@@ -83,6 +83,11 @@ const { getSearchHistory } = searchSelectors
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
+// Animation parameters
+const HEADER_SLIDE_HEIGHT = 46
+const FILTER_SCROLL_THRESHOLD = 300
+const HEADER_COLLAPSE_THRESHOLD = 50
+
 export const SearchExploreScreen = () => {
   const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
@@ -171,11 +176,7 @@ export const SearchExploreScreen = () => {
     []
   )
 
-  // Animation parameters
-  const HEADER_SLIDE_HEIGHT = 46
-  const FILTER_SCROLL_THRESHOLD = 300
-  const HEADER_COLLAPSE_THRESHOLD = 20
-
+  // Animations
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y
@@ -207,6 +208,8 @@ export const SearchExploreScreen = () => {
     }
   })
 
+  // Header text fades out when collapsing
+  // Height shrinks to collapse rows for avatar + input
   const headerTextAnimatedStyle = useAnimatedStyle(() => ({
     opacity:
       scrollY.value === 0
@@ -255,6 +258,7 @@ export const SearchExploreScreen = () => {
     ]
   }))
 
+  // Header slides up to collapse
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -270,6 +274,9 @@ export const SearchExploreScreen = () => {
       }
     ]
   }))
+
+  // Avatar slides down in relation to colllapsing header
+  // to stay in place visually
   const avatarSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -286,6 +293,7 @@ export const SearchExploreScreen = () => {
     ]
   }))
 
+  // Header padding and gap shrink when collapsing
   const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
     paddingVertical:
       scrollY.value === 0
@@ -307,6 +315,8 @@ export const SearchExploreScreen = () => {
           )
   }))
 
+  // Filters slide up when header collapses
+  // and hides when scrolling further down
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -339,6 +349,7 @@ export const SearchExploreScreen = () => {
           )
   }))
 
+  // content margin expands when header / filter collapses
   const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
     marginTop:
       scrollY.value === 0
@@ -384,14 +395,13 @@ export const SearchExploreScreen = () => {
                   h={spacing.unit11}
                   alignItems='center'
                 >
-                  <Animated.View
+                  <AnimatedFlex
                     style={[inputAnimatedStyle, avatarSlideAnimatedStyle]}
+                    w={spacing.unit10}
                   >
-                    <Flex w={spacing.unit10}>
-                      <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-                    </Flex>
-                  </Animated.View>
-                  <Animated.View
+                    <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+                  </AnimatedFlex>
+                  <AnimatedFlex
                     style={[
                       headerTextAnimatedStyle,
                       { justifyContent: 'center' }
@@ -400,7 +410,7 @@ export const SearchExploreScreen = () => {
                     <Text variant='heading' color='staticWhite'>
                       {messages.explore}
                     </Text>
-                  </Animated.View>
+                  </AnimatedFlex>
                 </Flex>
                 <AnimatedText
                   variant='title'
