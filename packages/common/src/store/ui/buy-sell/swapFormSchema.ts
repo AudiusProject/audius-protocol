@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const messages = {
+export const messages = {
   inputAmountRequired: 'Amount is required',
   invalidAmount: 'Please enter a valid amount',
   minAmount: (min: number, symbol: string) =>

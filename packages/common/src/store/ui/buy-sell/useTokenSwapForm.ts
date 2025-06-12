@@ -6,7 +6,11 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useTokenExchangeRate } from '../../../api'
 import type { JupiterTokenSymbol } from '../../../services/Jupiter'
 
-import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
+import {
+  createSwapFormSchema,
+  type SwapFormValues,
+  messages as swapFormMessages
+} from './swapFormSchema'
 import type { TokenInfo } from './types'
 
 export type BalanceConfig = {
@@ -53,6 +57,7 @@ export type TokenSwapFormProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    isInsufficientBalance: boolean
   }) => void
   /**
    * Initial value for the input field
@@ -166,6 +171,14 @@ export const useTokenSwapForm = ({
     return isNaN(parsed) ? 0 : parsed
   }, [values.outputAmount])
 
+  // Derive if current error is specifically an insufficient balance error
+  const isInsufficientBalance = useMemo(() => {
+    return (
+      formik.errors.inputAmount ===
+      swapFormMessages.insufficientBalance(inputToken.symbol)
+    )
+  }, [formik.errors.inputAmount, inputToken.symbol])
+
   useEffect(() => {
     if (onTransactionDataChange) {
       const isValid = numericInputAmount > 0 && !errors.inputAmount
@@ -173,7 +186,8 @@ export const useTokenSwapForm = ({
       onTransactionDataChange({
         inputAmount: numericInputAmount,
         outputAmount: numericOutputAmount,
-        isValid
+        isValid,
+        isInsufficientBalance
       })
     }
   }, [
@@ -181,7 +195,8 @@ export const useTokenSwapForm = ({
     numericOutputAmount,
     errors.inputAmount,
     isExchangeRateLoading,
-    onTransactionDataChange
+    onTransactionDataChange,
+    isInsufficientBalance
   ])
 
   // Handle input changes
