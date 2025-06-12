@@ -123,7 +123,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   } = props
 
   const { spacing } = useTheme()
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
       pick(collection, [

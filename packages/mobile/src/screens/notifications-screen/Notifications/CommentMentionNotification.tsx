@@ -46,7 +46,7 @@ export const CommentMentionNotification = (
   const otherUsersCount = userIds.length - 1
 
   const entity = useNotificationEntity(notification)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
 
   const handlePress = useCallback(() => {

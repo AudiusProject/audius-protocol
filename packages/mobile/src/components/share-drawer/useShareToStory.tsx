@@ -127,7 +127,7 @@ export const useShareToStory = ({
   const { toast } = useToast()
   const dispatch = useDispatch()
   const cancelRef = useRef(false)
-  const { data: userId } = useGetCurrentUserId({})
+  const { data: userId } = useGetCurrentUserId()
   const [selectedPlatform, setSelectedPlatform] =
     useState<ShareToStoryPlatform | null>(null)
   const trackTitle =

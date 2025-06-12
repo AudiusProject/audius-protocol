@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useRemoteVar } from '@audius/common/hooks'
 import { Theme } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
@@ -19,7 +20,6 @@ import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import { SegmentedControl, Text, GradientText, Link } from 'app/components/core'
 import TweetEmbed from 'app/components/tweet-embed'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRemoteVar } from '@audius/common/hooks'
 import type { AppScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'

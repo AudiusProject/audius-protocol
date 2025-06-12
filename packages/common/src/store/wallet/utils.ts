@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 
 import { useUser } from '~/api/tan-query/users/useUser'
-import { Nullable } from '~/utils'
+import { Maybe, Nullable } from '~/utils'
 import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
 
 import { BadgeTier } from '../../models/BadgeTier'
@@ -52,7 +52,7 @@ export const badgeTiers: BadgeTierInfo[] = [
  * @param userId Optional user ID to check. If not provided, uses the current user
  * @returns Object containing tier, isVerified, and tierNumber
  */
-export const useTierAndVerifiedForUser = (userId: ID) => {
+export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
   const { data: user } = useUser(userId, {
     select: (user) => ({
       total_balance: user.total_balance,

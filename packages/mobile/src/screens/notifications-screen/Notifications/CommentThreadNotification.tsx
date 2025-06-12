@@ -50,7 +50,7 @@ export const CommentThreadNotification = (
   const otherUsersCount = userIds.length - 1
 
   const entity = useNotificationEntity(notification)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReply =
     entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
