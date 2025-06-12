@@ -20,11 +20,17 @@ const { getIsReachable } = reachabilitySelectors
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
     const { id: collectionId, permalink, fetchLineup, forceFetch } = action
+    const queryOptions = forceFetch ? { force: true, staleTime: 0 } : undefined
+
     let collection
     if (permalink) {
-      collection = yield call(queryCollectionByPermalink, permalink, forceFetch)
+      collection = yield call(
+        queryCollectionByPermalink,
+        permalink,
+        queryOptions
+      )
     } else {
-      collection = yield call(queryCollection, collectionId, forceFetch)
+      collection = yield call(queryCollection, collectionId, queryOptions)
     }
 
     const isReachable = yield select(getIsReachable)

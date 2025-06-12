@@ -109,10 +109,15 @@ export const ProfileScreen = () => {
     }
   }) as ProfilePageTabs
 
-  const fetchProfile = useCallback(() => {
-    if (!isScreenReady) return
-    dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
-  }, [dispatch, handleLower, id, isScreenReady])
+  const fetchProfile = useCallback(
+    (forceFetch = false) => {
+      if (!isScreenReady) return
+      dispatch(
+        fetchProfileAction(handleLower, id ?? null, forceFetch, true, false)
+      )
+    },
+    [dispatch, handleLower, id, isScreenReady]
+  )
 
   useFocusEffect(setCurrentUser)
 
@@ -124,7 +129,7 @@ export const ProfileScreen = () => {
     // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
-      fetchProfile()
+      fetchProfile(true)
       switch (currentTab) {
         case ProfilePageTabs.TRACKS:
           queryClient.resetQueries({
