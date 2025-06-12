@@ -24,7 +24,8 @@ import Animated, {
   interpolateColor,
   Extrapolate,
   Extrapolation,
-  withTiming
+  withTiming,
+  useAnimatedReaction
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
@@ -115,6 +116,8 @@ export const SearchExploreScreen = () => {
   const [showFullHeader, setShowFullHeader] = useState(true)
   const headerHeight = useSharedValue(1) // 1 for full height, 0 for collapsed
   const filterTranslateY = useSharedValue(0)
+  const prevScrollY = useSharedValue(0)
+  const scrollDirection = useSharedValue<'up' | 'down'>('down')
 
   // Data fetching
   const { data: exploreContent, isLoading: isExploreContentLoading } =
@@ -174,9 +177,24 @@ export const SearchExploreScreen = () => {
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
-      scrollY.value = event.contentOffset.y
-      // headerHeight.value = scrollY.value <= 0 ? 1 : 0
-      console.log('asdf scrollY.value', scrollY.value, headerHeight.value)
+      const y = event.contentOffset.y
+      if (y > prevScrollY.value) {
+        scrollDirection.value = 'down'
+      } else if (y < prevScrollY.value) {
+        scrollDirection.value = 'up'
+      }
+      prevScrollY.value = y
+      scrollY.value = y
+
+      // Handle filter animation
+      if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
+        filterTranslateY.value = withTiming(-spacing['4xl'])
+      } else if (
+        y < FILTER_SCROLL_THRESHOLD ||
+        scrollDirection.value === 'up'
+      ) {
+        filterTranslateY.value = withTiming(0)
+      }
     }
   })
 
@@ -257,7 +275,6 @@ export const SearchExploreScreen = () => {
   }))
 
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
-    // display: scrollY.value > 300 ? 'none' : 'flex',
     transform: [
       {
         translateY:
@@ -266,23 +283,17 @@ export const SearchExploreScreen = () => {
             [0, HEADER_COLLAPSE_THRESHOLD], // adjust as needed
             [0, -HEADER_SLIDE_HEIGHT], // slide up by HEADER_SLIDE_HEIGHT
             Extrapolation.CLAMP
-          ) +
-          interpolate(
-            scrollY.value,
-            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD], // adjust as needed
-            [0, -spacing['4xl']], // slide up by HEADER_SLIDE_HEIGHT
-            Extrapolation.CLAMP
-          )
+          ) + filterTranslateY.value
       }
     ],
     backgroundColor: interpolateColor(
       scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+      [0, HEADER_COLLAPSE_THRESHOLD],
       [color.background.default, color.neutral.n25]
     ),
     borderColor: interpolateColor(
       scrollY.value,
-      [0, HEADER_COLLAPSE_THRESHOLD], // scroll range
+      [0, HEADER_COLLAPSE_THRESHOLD],
       [color.border.strong, color.neutral.n25]
     )
   }))
