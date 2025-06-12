@@ -41,7 +41,7 @@ export const UserCard = (props: UserCardProps) => {
       onPress?.(e)
       if (noNavigation) return
 
-      navigation.navigate('Profile', { id: userId })
+      navigation.push('Profile', { id: userId })
     },
     [onPress, noNavigation, navigation, userId]
   )
