@@ -7,7 +7,8 @@ import {
   IconCart,
   IconListens,
   IconTurntable,
-  IconPlaylists
+  IconPlaylists,
+  IconRemix
 } from '@audius/harmony-native'
 import EmojiDoveOfPeace from 'app/assets/images/emojis/dove-of-peace.png'
 import EmojiFire from 'app/assets/images/emojis/fire.png'
@@ -24,6 +25,7 @@ export type CollectionScreen =
   | 'TopAlbums'
   | 'TrendingPlaylists'
   | 'TrendingUnderground'
+  | 'Downloads Available'
 
 export type MoodScreen =
   | 'IntensePlaylists'
@@ -61,6 +63,18 @@ export const PREMIUM_TRACKS: ExploreCollection = {
   shadowColor: 'rgba(196,81,193)',
   shadowOpacity: 0.25,
   icon: IconCart
+}
+
+export const DOWNLOADS_AVAILABLE: ExploreCollection = {
+  variant: 'Direct Link',
+  title: 'Downloads Available',
+  screen: 'PremiumTracks',
+  description: 'Popular tracks with downloads you can use in your own tracks.',
+  gradientColors: ['#FF00F5', '#00D1FF'],
+  gradientAngle: 135,
+  shadowColor: 'rgba(196,81,193)',
+  shadowOpacity: 0.25,
+  icon: IconRemix
 }
 
 export const LET_THEM_DJ: ExploreCollection = {

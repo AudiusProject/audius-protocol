@@ -84,6 +84,14 @@ export const ExploreTabScreen =
       return (
         <>
           <Stack.Screen name='SearchExplore' component={SearchExploreScreen} />
+          <Stack.Screen
+            name='TrendingPlaylists'
+            component={TrendingPlaylistsScreen}
+          />
+          <Stack.Screen
+            name='TrendingUnderground'
+            component={TrendingUndergroundScreen}
+          />
         </>
       )
     }

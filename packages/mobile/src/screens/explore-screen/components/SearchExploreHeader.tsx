@@ -263,15 +263,17 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
                 startIcon={IconSearch}
                 onChangeText={handleSearchInputChange}
                 value={searchInput}
-                endIcon={(props) => (
-                  <IconButton
-                    icon={IconCloseAlt}
-                    color='subdued'
-                    onPress={handleClearSearch}
-                    hitSlop={10}
-                    {...props}
-                  />
-                )}
+                endIcon={(props) =>
+                  searchInput ? (
+                    <IconButton
+                      icon={IconCloseAlt}
+                      color='subdued'
+                      onPress={handleClearSearch}
+                      hitSlop={10}
+                      {...props}
+                    />
+                  ) : null
+                }
               />
             </Animated.View>
           </AnimatedFlex>

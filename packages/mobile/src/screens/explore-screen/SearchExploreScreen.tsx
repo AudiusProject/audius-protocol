@@ -34,6 +34,7 @@ import { RemixCarousel } from 'app/components/remix-carousel/RemixCarousel'
 import { UserList } from 'app/components/user-list'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useRoute } from 'app/hooks/useRoute'
+import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { moodMap } from 'app/utils/moods'
 
 import { RecentSearches } from '../search-screen/RecentSearches'
@@ -44,18 +45,18 @@ import { SearchContext } from '../search-screen/searchState'
 import {
   PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND
+  TRENDING_UNDERGROUND,
+  DOWNLOADS_AVAILABLE
 } from './collections'
 import { ColorTile } from './components/ColorTile'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
-import { REMIXABLES } from './smartCollections'
 
 const tiles = [
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
 
   PREMIUM_TRACKS,
-  REMIXABLES
+  DOWNLOADS_AVAILABLE
 ]
 
 const itemKindByCategory: Record<SearchCategory, Kind | null> = {
@@ -93,7 +94,7 @@ export const SearchExploreScreen = () => {
     () => {
       setDebouncedQuery(searchInput)
     },
-    400, // debounce delay in ms
+    200, // debounce delay in ms
     [searchInput]
   )
   const scrollY = useSharedValue(0)
@@ -141,9 +142,17 @@ export const SearchExploreScreen = () => {
   const handleMoodPress = useCallback((moodLabel: Mood) => {
     setCategory('tracks')
     setFilters({ mood: moodLabel })
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: false
+    })
   }, [])
   const handleClearSearch = useCallback(() => {
     setSearchInput('')
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: false
+    })
   }, [])
 
   const handleSearchInputChange = useCallback((text: string) => {
@@ -157,6 +166,15 @@ export const SearchExploreScreen = () => {
     () => Object.entries(MOODS) as [string, MoodInfo][],
     []
   )
+  useScrollToTop(() => {
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: false
+    })
+    setCategory('all')
+    setFilters({})
+    setSearchInput('')
+  })
 
   // Animations
   const scrollHandler = useAnimatedScrollHandler({
@@ -220,6 +238,25 @@ export const SearchExploreScreen = () => {
             Extrapolation.CLAMP
           )
   }))
+
+  // Temporary, all these tiles will be replaced in milestone 2
+  const handleBestOfAudiusPress = useCallback((title) => {
+    if (title === PREMIUM_TRACKS.title) {
+      setCategory('tracks')
+      setFilters({ isPremium: true })
+      scrollRef.current?.scrollTo({
+        y: 0,
+        animated: false
+      })
+    } else if (title === DOWNLOADS_AVAILABLE.title) {
+      setCategory('tracks')
+      setFilters({ hasDownloads: true })
+      scrollRef.current?.scrollTo({
+        y: 0,
+        animated: false
+      })
+    }
+  }, [])
 
   return (
     <SearchContext.Provider
@@ -315,8 +352,8 @@ export const SearchExploreScreen = () => {
                   />
                 </Flex>
 
-                <Flex justifyContent='center' gap='l'>
-                  <Text variant='title' size='l' textAlign='center'>
+                <Flex gap='l' mb='l'>
+                  <Text variant='title' size='l'>
                     {messages.exploreByMood}
                   </Text>
                   <Flex
@@ -355,7 +392,7 @@ export const SearchExploreScreen = () => {
                   </Flex>
                 </Flex>
 
-                <Flex gap='l'>
+                <Flex gap='l' mt='l'>
                   <Text variant='title' size='l'>
                     {messages.bestOfAudius}
                   </Text>
@@ -364,6 +401,7 @@ export const SearchExploreScreen = () => {
                       <ColorTile
                         style={{ flex: 1, flexBasis: '100%' }}
                         key={tile.title}
+                        onPress={() => handleBestOfAudiusPress(tile.title)}
                         {...tile}
                       />
                     ))}
