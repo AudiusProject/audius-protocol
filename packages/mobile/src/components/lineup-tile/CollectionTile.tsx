@@ -267,9 +267,7 @@ export const CollectionTile = (props: LineupItemProps) => {
           readonly={isReadonly}
           contentId={collection.playlist_id}
           contentType={
-            collection.is_album
-              ? PurchaseableContentType.ALBUM
-              : PurchaseableContentType.ALBUM
+            collection.is_album ? PurchaseableContentType.ALBUM : undefined
           }
           streamConditions={collection.stream_conditions}
           hasStreamAccess={true} // This should be determined by the hook
