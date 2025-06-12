@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollection, useUser } from '@audius/common/api'
+import { useCollectionByParams, useUser } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -75,9 +75,9 @@ export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { id = null, searchCollection, collectionType } = params ?? {}
+  const { searchCollection, collectionType } = params ?? {}
 
-  const { data: cachedCollection } = useCollection(id)
+  const { data: cachedCollection } = useCollectionByParams(params)
   const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
 
   const collection = cachedCollection ?? searchCollection

@@ -345,9 +345,6 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         const queryParams =
           queryParamsStart > -1 ? `&${path.slice(queryParamsStart + 1)}` : ''
         path = `/settings${subpathParam}${queryParams}`
-      } else if (path.match(`^/${accountHandle}(/|$)`)) {
-        // If the path is the current user and set path as `/profile`
-        path = path.replace(`/${accountHandle}`, '/profile')
       } else {
         // If the path has two parts
         if (path.match(/^\/[^/]+\/[^/]+$/)) {
