@@ -6,7 +6,7 @@ import { SelectableQueryOptions } from '../types'
 import { useUser } from './useUser'
 import { useUserByHandle } from './useUserByHandle'
 
-type UserParams = { id?: ID } | { handle?: string }
+type UserParams = { id?: ID } | { handle?: string | null }
 
 /**
  * Hook that returns user data given either a user ID or handle.
