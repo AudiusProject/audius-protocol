@@ -63,6 +63,14 @@ export const TrackResults = () => {
     [dispatch, query]
   )
 
+  console.log(
+    'asdf isEmptySearch',
+    isEmptySearch,
+    !lineup,
+    lineup.entries,
+    lineup.status
+  )
+
   if (isEmptySearch) return <SearchCatalogTile />
   if (
     (!lineup || lineup.entries.length === 0) &&

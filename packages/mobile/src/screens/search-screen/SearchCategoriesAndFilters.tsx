@@ -19,6 +19,7 @@ import {
 import { BpmFilter } from './BpmFilter'
 import {
   GenreFilter,
+  HasDownloadsFilter,
   IsPremiumFilter,
   IsVerifiedFilter,
   KeyFilter,
@@ -89,6 +90,7 @@ const searchFilterButtons = {
   key: KeyFilter,
   bpm: BpmFilter,
   isPremium: IsPremiumFilter,
+  hasDownloads: HasDownloadsFilter,
   isVerified: IsVerifiedFilter
 }
 

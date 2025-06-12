@@ -34,6 +34,7 @@ type ColorTileProps = {
   icon?: ComponentType<SvgProps>
   emoji?: ImageSourcePropType
   isIncentivized?: boolean
+  onPress?: () => void
 }
 
 const useStyles = makeStyles(({ palette }) => ({
@@ -129,7 +130,8 @@ export const ColorTile = ({
   shadowOpacity = 0.25,
   icon: Icon,
   emoji,
-  isIncentivized
+  isIncentivized,
+  onPress
 }: ColorTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation<ExploreTabScreenParamList>()
@@ -140,6 +142,7 @@ export const ColorTile = ({
   } = usePressScaleAnimation()
 
   const handlePress = useCallback(() => {
+    onPress?.()
     if (screen) {
       navigation.push(screen)
     }

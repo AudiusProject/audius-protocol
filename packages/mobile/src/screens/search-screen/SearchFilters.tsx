@@ -163,3 +163,18 @@ export const IsVerifiedFilter = () => {
     />
   )
 }
+
+export const HasDownloadsFilter = () => {
+  const [hasDownloads, setHasDownloads] = useSearchFilter('hasDownloads')
+
+  return (
+    <FilterButton
+      label={messages.hasDownloads}
+      value={hasDownloads?.toString()}
+      onPress={() => {
+        setHasDownloads(hasDownloads ? undefined : true)
+      }}
+      size='small'
+    />
+  )
+}
