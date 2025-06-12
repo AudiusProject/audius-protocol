@@ -85,12 +85,7 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
 
       // Native navigation
       if (!isFocused && !event.defaultPrevented) {
-        if (routeName === 'explore') {
-          // Reset navigation params when going to explore
-          navigation.navigate(routeName, {})
-        } else {
-          navigation.navigate(routeName)
-        }
+        navigation.navigate(routeName)
       } else if (isFocused) {
         navigation.emit({
           type: 'scrollToTop'
