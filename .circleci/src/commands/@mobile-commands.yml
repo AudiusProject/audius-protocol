@@ -134,9 +134,7 @@ mobile-prepare-android:
           cd packages/mobile && npm run jetifier
     - run:
         name: update bundler
-        command: |
-          sudo gem uninstall bundler -a -x || true
-          sudo gem install bundler:2.5.5
+        command: sudo gem install bundler:1.17.3
     - run:
         name: install pip
         command: |
