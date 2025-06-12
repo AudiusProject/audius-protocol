@@ -1,7 +1,6 @@
 import { useRef, type ReactNode } from 'react'
 import { useEffect } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { OptionalHashId } from '@audius/sdk'
@@ -85,9 +84,6 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
 const NavigationContainer = (props: NavigationContainerProps) => {
   const { children, navigationIntegration } = props
   const theme = useThemeVariant()
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
-  })
   const hasAccount = useSelector(getHasAccount)
   const accountStatus = useSelector(getAccountStatus)
   const hasCompletedInitialLoad = useRef(false)
