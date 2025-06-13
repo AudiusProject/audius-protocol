@@ -43,7 +43,7 @@ export const EnterTransferDetails = ({
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
-    amountValue ? decimalIntegerToHumanReadable(amountValue) : '0'
+    decimalIntegerToHumanReadable(amountValue)
   )
 
   const onContinuePress = useCallback(async () => {

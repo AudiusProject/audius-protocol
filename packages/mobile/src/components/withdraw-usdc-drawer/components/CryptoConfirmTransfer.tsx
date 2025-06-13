@@ -42,7 +42,7 @@ export const CryptoConfirmTransfer = () => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
-          -${decimalIntegerToHumanReadable(amountValue)}
+          {walletMessages.minus}${decimalIntegerToHumanReadable(amountValue)}
         </Text>
       </Flex>
 

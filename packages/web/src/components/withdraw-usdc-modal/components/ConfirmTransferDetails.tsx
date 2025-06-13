@@ -70,7 +70,7 @@ export const ConfirmTransferDetails = () => {
           {messages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
-          -${decimalIntegerToHumanReadable(amountValue)}
+          {walletMessages.minus}${decimalIntegerToHumanReadable(amountValue)}
         </Text>
       </Flex>
       {methodValue === WithdrawMethod.COINFLOW ? (
