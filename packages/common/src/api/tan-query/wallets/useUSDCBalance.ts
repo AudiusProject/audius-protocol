@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useGetCurrentUser } from '~/api'
+import { useCurrentAccountUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
@@ -45,7 +45,7 @@ export const useUSDCBalance = ({
   commitment?: Commitment
 } & QueryOptions = {}) => {
   const { audiusSdk } = useQueryContext()
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentAccountUser()
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
   const recoveryStatus = useSelector(getRecoveryStatus)

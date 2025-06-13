@@ -41,6 +41,7 @@ export const buySellMessages = {
   yourCoins: 'Your Coins',
   buySell: 'Buy/Sell',
   emptyAmount: 'Please enter an amount',
+  insufficientBalance: (symbol: string) => `Insufficient ${symbol} balance`,
   minAmount: (min: number, symbol: string) => {
     const formattedMin = min < 1 ? min.toFixed(2) : min.toString()
     return `Minimum amount is ${formattedMin} ${symbol}`
