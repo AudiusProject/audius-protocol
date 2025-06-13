@@ -41,6 +41,14 @@ export const buySellMessages = {
   yourCoins: 'Your Coins',
   buySell: 'Buy/Sell',
   emptyAmount: 'Please enter an amount',
+  minAmount: (min: number, symbol: string) => {
+    const formattedMin = min < 1 ? min.toFixed(2) : min.toString()
+    return `Minimum amount is ${formattedMin} ${symbol}`
+  },
+  maxAmount: (max: number, symbol: string) => {
+    const formattedMax = max >= 1000 ? max.toLocaleString() : max.toString()
+    return `Maximum amount is ${formattedMax} ${symbol}`
+  },
   priceEach: (price: number) => {
     const formatted = USDC(price).toLocaleString('en-US')
     return `(${formatted} ea.)`

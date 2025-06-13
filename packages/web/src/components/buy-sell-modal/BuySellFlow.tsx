@@ -136,6 +136,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     if (activeTab === 'sell' && !hasSufficientBalance) {
       return messages.insufficientAUDIOForSale
     }
+    // Prioritize the specific validation error from the form
+    if (hasAttemptedSubmit && transactionData?.error) {
+      return transactionData.error
+    }
+    // Fallback for empty input, though zod should handle it via transactionData.error
     if (
       hasAttemptedSubmit &&
       isTransactionInvalid &&
@@ -148,7 +153,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     activeTab,
     hasSufficientBalance,
     hasAttemptedSubmit,
-    isTransactionInvalid
+    isTransactionInvalid,
+    transactionData
   ])
 
   const shouldShowError =

@@ -13,6 +13,7 @@ type SellScreenProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    error: string | null
   }) => void
   error?: boolean
   errorMessage?: string

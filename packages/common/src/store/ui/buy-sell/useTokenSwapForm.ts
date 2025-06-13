@@ -3,9 +3,10 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useTokenExchangeRate } from '../../../api'
+import { useTokenExchangeRate, useTokenPrice } from '../../../api'
 import type { JupiterTokenSymbol } from '../../../services/Jupiter'
 
+import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
 import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
 import type { TokenInfo } from './types'
 
@@ -25,6 +26,35 @@ const getSafeAmountForExchangeRate = (amount: number): number => {
   return Math.min(amount, MAX_SAFE_EXCHANGE_RATE_AMOUNT)
 }
 
+/**
+ * Calculates min/max token amounts based on USD limits and current token price
+ */
+const calculateTokenLimits = (
+  tokenPrice: number | null,
+  isStablecoin: boolean
+): { min: number; max: number } => {
+  if (isStablecoin) {
+    // For stablecoins like USDC, 1 token ≈ $1 USD
+    return {
+      min: MIN_SWAP_AMOUNT_USD,
+      max: MAX_SWAP_AMOUNT_USD
+    }
+  }
+
+  if (!tokenPrice || tokenPrice <= 0) {
+    // Fallback to reasonable defaults if price is unavailable
+    return {
+      min: 1,
+      max: 1000000
+    }
+  }
+
+  return {
+    min: MIN_SWAP_AMOUNT_USD / tokenPrice,
+    max: MAX_SWAP_AMOUNT_USD / tokenPrice
+  }
+}
+
 export type TokenSwapFormProps = {
   /**
    * The token the user is paying with (input)
@@ -35,11 +65,11 @@ export type TokenSwapFormProps = {
    */
   outputToken: TokenInfo
   /**
-   * Minimum amount allowed for input (optional)
+   * Minimum amount allowed for input (optional - will be calculated from USD limits if not provided)
    */
   min?: number
   /**
-   * Maximum amount allowed for input (optional)
+   * Maximum amount allowed for input (optional - will be calculated from USD limits if not provided)
    */
   max?: number
   /**
@@ -53,6 +83,7 @@ export type TokenSwapFormProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    error: string | null
   }) => void
   /**
    * Initial value for the input field
@@ -70,8 +101,8 @@ export type TokenSwapFormProps = {
 export const useTokenSwapForm = ({
   inputToken,
   outputToken,
-  min = 0,
-  max = Number.MAX_SAFE_INTEGER,
+  min: providedMin,
+  max: providedMax,
   balance,
   onTransactionDataChange,
   initialInputValue = '',
@@ -82,6 +113,20 @@ export const useTokenSwapForm = ({
   const outputTokenSymbol = outputToken.symbol as JupiterTokenSymbol
 
   const { get: getInputBalance, loading: isBalanceLoading } = balance
+
+  // Get token price for USD-based limit calculations
+  const { data: tokenPriceData } = useTokenPrice(inputToken.address)
+  const tokenPrice = tokenPriceData?.price
+    ? parseFloat(tokenPriceData.price)
+    : null
+
+  // Calculate min/max based on USD limits and current price
+  const { min, max } = useMemo(() => {
+    if (providedMin !== undefined && providedMax !== undefined) {
+      return { min: providedMin, max: providedMax }
+    }
+    return calculateTokenLimits(tokenPrice, inputToken.isStablecoin || false)
+  }, [providedMin, providedMax, tokenPrice, inputToken.isStablecoin])
 
   const availableBalance = useMemo(() => {
     const balance = getInputBalance()
@@ -166,20 +211,34 @@ export const useTokenSwapForm = ({
     return isNaN(parsed) ? 0 : parsed
   }, [values.outputAmount])
 
+  const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
+
+  // Only show error if field has been touched, has a value, and has an error
+  // This prevents showing "Required" error when field is empty during typing
+  const error = useMemo(() => {
+    if (!touched.inputAmount || !errors.inputAmount) return null
+    if (values.inputAmount === '') return null // Don't show error for empty field
+    return errors.inputAmount
+  }, [touched.inputAmount, errors.inputAmount, values.inputAmount])
+
   useEffect(() => {
     if (onTransactionDataChange) {
       const isValid = numericInputAmount > 0 && !errors.inputAmount
+      // Only report errors that should be shown to the user (not empty field errors)
+      const errorToReport = error // This already filters out empty field errors
 
       onTransactionDataChange({
         inputAmount: numericInputAmount,
         outputAmount: numericOutputAmount,
-        isValid
+        isValid,
+        error: errorToReport
       })
     }
   }, [
     numericInputAmount,
     numericOutputAmount,
     errors.inputAmount,
+    error, // Use the filtered error
     isExchangeRateLoading,
     onTransactionDataChange
   ])
@@ -211,11 +270,6 @@ export const useTokenSwapForm = ({
     }
   }, [getInputBalance, max, setFieldValue, setFieldTouched, onInputValueChange])
 
-  const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
-
-  const error =
-    touched.inputAmount && errors.inputAmount ? errors.inputAmount : null
-
   return {
     inputAmount: values.inputAmount, // Raw string input for display
     numericInputAmount,
@@ -231,6 +285,7 @@ export const useTokenSwapForm = ({
     handleMaxClick,
     formik,
     inputToken,
-    outputToken
+    outputToken,
+    calculatedLimits: { min, max } // Expose the calculated limits
   }
 }

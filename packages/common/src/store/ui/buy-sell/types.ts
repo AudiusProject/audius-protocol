@@ -64,4 +64,5 @@ export type TransactionData = {
   inputAmount: number
   outputAmount: number
   isValid: boolean
+  error?: string | null
 } | null

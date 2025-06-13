@@ -42,6 +42,7 @@ export type SwapTabProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    error: string | null
   }) => void
   isDefault?: boolean
   error?: boolean

@@ -1,14 +1,6 @@
 import { z } from 'zod'
 
-const messages = {
-  inputAmountRequired: 'Amount is required',
-  invalidAmount: 'Please enter a valid amount',
-  minAmount: (min: number, symbol: string) =>
-    `Minimum amount is ${min} ${symbol}`,
-  maxAmount: (max: number, symbol: string) =>
-    `Maximum amount is ${max} ${symbol}`,
-  insufficientBalance: (symbol: string) => `Insufficient ${symbol} balance`
-}
+import { buySellMessages as messages } from '../../../messages'
 
 /**
  * Schema for validating token swap input
@@ -22,19 +14,43 @@ export const createSwapFormSchema = (
   z.object({
     inputAmount: z
       .string()
-      .min(1, { message: messages.inputAmountRequired })
-      .refine((val) => !isNaN(parseFloat(val)), {
-        message: messages.invalidAmount
-      })
-      .refine((val) => parseFloat(val) >= min, {
-        message: messages.minAmount(min, tokenSymbol)
-      })
-      .refine((val) => parseFloat(val) <= max, {
-        message: messages.maxAmount(max, tokenSymbol)
-      })
-      .refine((val) => !balance || parseFloat(val) <= balance, {
-        message: messages.insufficientBalance(tokenSymbol)
-      }),
+      .refine(
+        (val) => {
+          // Allow empty string during typing, but require it for final validation
+          if (val === '') return false
+          return !isNaN(parseFloat(val))
+        },
+        {
+          message: 'Please enter a valid amount'
+        }
+      )
+      .refine(
+        (val) => {
+          if (val === '') return false
+          return parseFloat(val) >= min
+        },
+        {
+          message: messages.minAmount(min, tokenSymbol)
+        }
+      )
+      .refine(
+        (val) => {
+          if (val === '') return false
+          return parseFloat(val) <= max
+        },
+        {
+          message: messages.maxAmount(max, tokenSymbol)
+        }
+      )
+      .refine(
+        (val) => {
+          if (val === '') return false
+          return !balance || parseFloat(val) <= balance
+        },
+        {
+          message: `Insufficient ${tokenSymbol} balance`
+        }
+      ),
     outputAmount: z.string().optional()
   })
 

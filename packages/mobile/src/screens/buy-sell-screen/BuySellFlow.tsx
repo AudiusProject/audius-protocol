@@ -147,6 +147,11 @@ export const BuySellFlow = ({
     ) {
       return messages.insufficientAUDIOForSale
     }
+    // Prioritize the specific validation error from the form
+    if (hasAttemptedSubmit && transactionData?.error) {
+      return transactionData.error
+    }
+    // Fallback for empty input
     if (
       hasAttemptedSubmit &&
       isTransactionInvalid &&
@@ -160,7 +165,8 @@ export const BuySellFlow = ({
     hasSufficientBalance,
     hasAttemptedSubmit,
     isTransactionInvalid,
-    tabInputValues
+    tabInputValues,
+    transactionData
   ])
 
   const handleAddCash = useCallback(() => {
