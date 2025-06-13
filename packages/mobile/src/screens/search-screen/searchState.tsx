@@ -72,7 +72,7 @@ export const SearchProvider = ({
     () => {
       setDebouncedQuery(searchInput)
     },
-    400, // debounce delay in ms
+    200, // debounce delay in ms
     [searchInput]
   )
 
