@@ -17,7 +17,7 @@ type FixedFooterProps = {
  * The default height calculation for the fixed footer
  * Formula: button height (48) + footer padding (2*spacing.l) + extra padding (spacing.xl)
  */
-const FIXED_FOOTER_HEIGHT = 48 + spacing.l * 2 + spacing.xl
+export const FIXED_FOOTER_HEIGHT = 48 + spacing.l * 2 + spacing.xl
 
 /**
  * A fixed footer component that sticks to the bottom of the screen.
