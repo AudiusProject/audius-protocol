@@ -107,7 +107,7 @@ export const TrackStats = (props: TrackStatsProps) => {
   }
 
   return (
-    <Flex gap='l' mh={-6}>
+    <Flex gap='l'>
       {repost_count === 0 ? null : (
         <PlainButton
           iconLeft={IconRepost}
