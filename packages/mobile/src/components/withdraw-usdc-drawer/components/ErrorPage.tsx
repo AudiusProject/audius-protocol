@@ -36,7 +36,9 @@ export const ErrorPage = ({ onClose }: ErrorPageProps) => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
-          -${decimalIntegerToHumanReadable(amountValue)}
+          {walletMessages.minus}
+          {walletMessages.dollarSign}
+          {decimalIntegerToHumanReadable(amountValue)}
         </Text>
       </Flex>
 
