@@ -149,7 +149,7 @@ export const WithdrawUSDCModal = () => {
       formPage = <TransferSuccessful onClickDone={onClose} />
       break
     case WithdrawUSDCModalPages.ERROR:
-      formPage = <ErrorPage />
+      formPage = <ErrorPage onClose={onClose} />
       break
   }
 

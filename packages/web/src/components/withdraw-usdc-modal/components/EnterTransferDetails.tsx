@@ -119,7 +119,7 @@ export const EnterTransferDetails = () => {
 
   return (
     <Flex column gap='xl'>
-      <CashBalanceSection balance={balance} />
+      <CashBalanceSection />
       <Divider style={{ margin: 0 }} />
       <Flex column gap='l'>
         <Flex column gap='s'>

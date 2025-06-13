@@ -5,6 +5,7 @@ import {
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages
 } from '@audius/common/store'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { useFormikContext } from 'formik'
 
 import { Button, Divider, Flex, Text } from '@audius/harmony-native'
@@ -34,7 +35,7 @@ export const CoinflowConfirmTransfer = () => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='display' size='s'>
-          -${values.amount.toFixed(2)}
+          -${decimalIntegerToHumanReadable(values.amount)}
         </Text>
       </Flex>
       <Text variant='body'>{walletMessages.transferDescription}</Text>

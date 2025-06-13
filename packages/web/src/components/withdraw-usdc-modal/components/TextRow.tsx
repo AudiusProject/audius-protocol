@@ -1,28 +1,21 @@
-import { Text } from '@audius/harmony'
-
-import styles from './TextRow.module.css'
+import { Flex, Text } from '@audius/harmony'
 
 type TextRowProps = {
   left: string
-  right?: string
+  right?: string | null
 }
 
 export const TextRow = ({ left, right }: TextRowProps) => {
   return (
-    <div className={styles.root}>
-      <Text className={styles.left} variant='title' size='l' strength='default'>
+    <Flex justifyContent='space-between'>
+      <Text variant='title' size='l' strength='default'>
         {left}
       </Text>
       {right ? (
-        <Text
-          className={styles.right}
-          variant='title'
-          size='l'
-          strength='default'
-        >
+        <Text variant='title' size='l' strength='default'>
           {right}
         </Text>
       ) : null}
-    </div>
+    </Flex>
   )
 }

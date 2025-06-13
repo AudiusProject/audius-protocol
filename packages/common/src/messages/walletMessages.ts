@@ -16,6 +16,9 @@ export const walletMessages = {
   cashTransferDescription:
     'Transfer your cash balance to your bank account or debit card. $5 minimum.',
   back: 'Back',
+  tryAgain: 'Try Again',
+  error: 'An error occured.',
+  close: 'Close',
 
   // Withdraw USDC messages
   withdrawCash: 'Withdraw Cash',

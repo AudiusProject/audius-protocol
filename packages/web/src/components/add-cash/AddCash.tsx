@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { useUSDCBalance } from '@audius/common/api'
 import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
@@ -57,10 +56,6 @@ export const AddCash = ({
   >(undefined)
 
   const isMobile = useIsMobile()
-  const { data: balanceBN } = useUSDCBalance({
-    isPolling: true,
-    commitment: 'confirmed'
-  })
 
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const inProgress = [
@@ -72,7 +67,7 @@ export const AddCash = ({
     <Flex column>
       {isMobile && <PoweredBySection />}
       <ResponsiveModalContent gap='xl'>
-        <CashBalanceSection balance={balanceBN} />
+        <CashBalanceSection />
         <PaymentMethod
           showVendorChoice
           showExtraItemsToggle={false}

@@ -1,18 +1,7 @@
-import { useCallback } from 'react'
-
-import { useUSDCBalance } from '@audius/common/api'
-import { BNUSDC } from '@audius/common/models'
-import {
-  WithdrawUSDCModalPages,
-  useWithdrawUSDCModal
-} from '@audius/common/store'
-import {
-  decimalIntegerToHumanReadable,
-  formatCurrencyBalance,
-  formatUSDCWeiToFloorDollarNumber
-} from '@audius/common/utils'
-import { Text } from '@audius/harmony'
-import BN from 'bn.js'
+import { useFormattedUSDCBalance } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
+import { Text, Button, IconValidationX, Flex } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { Divider } from 'components/divider'
@@ -22,62 +11,46 @@ import { ADDRESS, AMOUNT } from '../types'
 import styles from './ErrorPage.module.css'
 import { TextRow } from './TextRow'
 
-const messages = {
-  currentBalance: 'Current Balance',
-  amountToWithdraw: 'Amount to Withdraw',
-  destinationAddress: 'Destination Address',
-  error: 'An error occurred during your transfer.',
-  tryAgain: 'Try Again?'
+type ErrorPageProps = {
+  onClose: () => void
 }
 
-export const ErrorPage = () => {
-  const { setData } = useWithdrawUSDCModal()
-  const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+export const ErrorPage = ({ onClose }: ErrorPageProps) => {
+  const { balanceFormatted } = useFormattedUSDCBalance()
 
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
 
-  const handleTryAgain = useCallback(() => {
-    setData({
-      page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS
-    })
-  }, [setData])
-
   return (
-    <div className={styles.root}>
-      <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
+    <Flex column gap='xl'>
+      <TextRow left={walletMessages.cashBalance} right={balanceFormatted} />
       <Divider style={{ margin: 0 }} />
       <TextRow
-        left={messages.amountToWithdraw}
-        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
+        left={walletMessages.amountToWithdraw}
+        right={`${walletMessages.minus}$${decimalIntegerToHumanReadable(amountValue)}`}
       />
-      <Divider style={{ margin: 0 }} />
-      <div className={styles.destination}>
-        <TextRow left={messages.destinationAddress} />
-        <Text variant='body' size='m' strength='default'>
-          {addressValue}
+      {addressValue ? (
+        <>
+          <Divider style={{ margin: 0 }} />
+          <Flex column gap='s'>
+            <TextRow left={walletMessages.destination} />
+            <Text variant='body' size='m' strength='default'>
+              {addressValue}
+            </Text>
+          </Flex>
+        </>
+      ) : null}
+      <Flex alignItems='center' gap='s'>
+        <IconValidationX size='s' color='danger' />
+        <Text variant='body' size='l'>
+          {walletMessages.error}
         </Text>
-      </div>
-      <div className={styles.error}>
-        <Text variant='body' size='xs' strength='default' color='danger'>
-          {messages.error}
-        </Text>
-        <Text
-          tag='a'
-          variant='body'
-          className={styles.tryAgain}
-          size='xs'
-          strength='default'
-          color='accent'
-          onClick={handleTryAgain}
-        >
-          {messages.tryAgain}
-        </Text>
-      </div>
-    </div>
+      </Flex>
+      <Flex column gap='m'>
+        <Button variant='secondary' onClick={onClose} fullWidth>
+          {walletMessages.close}
+        </Button>
+      </Flex>
+    </Flex>
   )
 }
