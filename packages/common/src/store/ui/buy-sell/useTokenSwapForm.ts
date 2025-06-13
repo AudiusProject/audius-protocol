@@ -235,14 +235,12 @@ export const useTokenSwapForm = ({
   useEffect(() => {
     if (onTransactionDataChange) {
       const isValid = numericInputAmount > 0 && !errors.inputAmount
-      // Only report errors that should be shown to the user (not empty field errors)
-      const errorToReport = error // This already filters out empty field errors
 
       onTransactionDataChange({
         inputAmount: numericInputAmount,
         outputAmount: numericOutputAmount,
         isValid,
-        error: errorToReport,
+        error,
         isInsufficientBalance
       })
     }
