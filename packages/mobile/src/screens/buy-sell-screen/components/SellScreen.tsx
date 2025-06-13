@@ -13,6 +13,7 @@ type SellScreenProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    isInsufficientBalance: boolean
   }) => void
   error?: boolean
   errorMessage?: string
