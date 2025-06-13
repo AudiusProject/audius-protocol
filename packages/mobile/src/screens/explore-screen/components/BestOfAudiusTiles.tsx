@@ -3,7 +3,7 @@ import React, { useMemo } from 'react'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex } from '@audius/harmony-native'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 
 import {
@@ -14,6 +14,7 @@ import {
 import { REMIXABLES } from '../smartCollections'
 
 import { ColorTile } from './ColorTile'
+import { ExploreSection } from './ExploreSection'
 
 const tiles = [
   TRENDING_PLAYLISTS,
@@ -22,7 +23,13 @@ const tiles = [
   REMIXABLES
 ]
 
-export const BestOfAudiusTiles = () => {
+interface BestOfAudiusTilesProps {
+  isLoading?: boolean
+}
+
+export const BestOfAudiusTiles = ({
+  isLoading: externalLoading
+}: BestOfAudiusTilesProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
 
   const filteredTiles = useMemo(
@@ -37,10 +44,7 @@ export const BestOfAudiusTiles = () => {
   )
 
   return (
-    <Flex gap='l'>
-      <Text variant='title' size='l'>
-        {messages.bestOfAudius}
-      </Text>
+    <ExploreSection title={messages.bestOfAudius} isLoading={externalLoading}>
       <Flex gap='s'>
         {filteredTiles.map((tile) => (
           <ColorTile
@@ -50,6 +54,6 @@ export const BestOfAudiusTiles = () => {
           />
         ))}
       </Flex>
-    </Flex>
+    </ExploreSection>
   )
 }

@@ -49,7 +49,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   cardListHorizontal: {
     paddingHorizontal: spacing(4),
-    paddingVertical: spacing(4),
     paddingRight: 0,
     flexGrow: 0
   },

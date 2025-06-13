@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import type { Mood } from '@audius/sdk'
@@ -7,22 +7,29 @@ import type { MoodInfo } from 'pages/search-page/types'
 import { Image } from 'react-native'
 
 import { Flex, Paper, Text, useTheme } from '@audius/harmony-native'
+import { moodMap } from 'app/utils/moods'
+
 import {
   useSearchCategory,
   useSearchFilters
-} from 'app/screens/search-screen/searchState'
-import { moodMap } from 'app/utils/moods'
+} from '../../search-screen/searchState.tsx'
 
-export const MoodsGrid = () => {
+import { ExploreSection } from './ExploreSection.tsx'
+
+interface MoodsGridProps {
+  isLoading?: boolean
+}
+
+export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
   const { spacing } = useTheme()
+
+  const [, setCategory] = useSearchCategory()
+  const [, setFilters] = useSearchFilters()
 
   const moodEntries = useMemo(
     () => Object.entries(MOODS) as [string, MoodInfo][],
     []
   )
-
-  const [, setCategory] = useSearchCategory()
-  const [, setFilters] = useSearchFilters()
 
   const handleMoodPress = useCallback(
     (moodLabel: Mood) => {
@@ -32,11 +39,15 @@ export const MoodsGrid = () => {
     [setCategory, setFilters]
   )
 
+  if (externalLoading) {
+    return null
+  }
   return (
-    <Flex justifyContent='center' gap='l'>
-      <Text variant='title' size='l' textAlign='center'>
-        {messages.exploreByMood}
-      </Text>
+    <ExploreSection
+      title={messages.exploreByMood}
+      centered
+      isLoading={externalLoading}
+    >
       <Flex wrap='wrap' direction='row' justifyContent='center' gap='s'>
         {moodEntries.sort().map(([_, moodInfo]) => (
           <Paper
@@ -66,6 +77,6 @@ export const MoodsGrid = () => {
           </Paper>
         ))}
       </Flex>
-    </Flex>
+    </ExploreSection>
   )
 }

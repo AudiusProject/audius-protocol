@@ -6,24 +6,22 @@ import { Flex, Text, Skeleton } from '@audius/harmony-native'
 interface ExploreSectionProps {
   title: string
   isLoading?: boolean
+  centered?: boolean
   children: ReactNode
 }
 
 export const ExploreSection = ({
   title,
   isLoading,
+  centered,
   children
 }: ExploreSectionProps) => {
   return (
-    <Flex mb='l'>
-      <Text variant='title' size='l'>
+    <Flex mb='l' justifyContent={centered ? 'center' : 'flex-start'} gap='m'>
+      <Text variant='title' size='l' textAlign={centered ? 'center' : 'left'}>
         {title}
       </Text>
-      {isLoading ? (
-        <Skeleton style={{ height: 180, width: '100%' }} />
-      ) : (
-        children
-      )}
+      {isLoading ? <Skeleton noShimmer h={180} w='100%' /> : children}
     </Flex>
   )
 }
