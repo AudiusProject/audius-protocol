@@ -33,7 +33,7 @@ export const EnterTransferDetails = ({
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
   const [
-    { value },
+    { value: amountValue },
     { error: amountError, touched: amountTouched },
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
@@ -43,7 +43,7 @@ export const EnterTransferDetails = ({
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
-    value ? decimalIntegerToHumanReadable(value) : '0'
+    amountValue ? decimalIntegerToHumanReadable(amountValue) : '0'
   )
 
   const onContinuePress = useCallback(async () => {
@@ -77,8 +77,7 @@ export const EnterTransferDetails = ({
   const handleMaxPress = useCallback(() => {
     setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
     setAmount(balanceNumberCents)
-    setAmountTouched(true)
-  }, [balanceNumberCents, setAmount, setAmountTouched])
+  }, [balanceNumberCents, setAmount])
 
   // Scroll to show the continue button when crypto option is selected
   useEffect(() => {
@@ -110,7 +109,9 @@ export const EnterTransferDetails = ({
                 keyboardType='numeric'
                 name={AMOUNT}
                 onChangeText={handleAmountChange}
+                value={humanizedValue}
                 onBlur={() => handleAmountBlur(humanizedValue)}
+                startAdornmentText={walletMessages.dollarSign}
                 TextInputComponent={BottomSheetTextInput as any}
                 noGutter
                 errorBeforeSubmit
@@ -169,7 +170,6 @@ export const EnterTransferDetails = ({
             label={walletMessages.destination}
             placeholder={walletMessages.destination}
             name={ADDRESS}
-            TextFieldInputComponent={BottomSheetTextInput as any}
             noGutter
             errorBeforeSubmit
             required

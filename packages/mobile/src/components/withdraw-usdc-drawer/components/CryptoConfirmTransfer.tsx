@@ -5,6 +5,7 @@ import {
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages
 } from '@audius/common/store'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useFormikContext, useField } from 'formik'
 
@@ -13,11 +14,12 @@ import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceS
 import { Switch } from 'app/components/core'
 
 import type { WithdrawFormValues } from '../types'
-import { CONFIRM } from '../types'
+import { AMOUNT, CONFIRM } from '../types'
 
 export const CryptoConfirmTransfer = () => {
   const { submitForm, values } = useFormikContext<WithdrawFormValues>()
   const { setData } = useWithdrawUSDCModal()
+  const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: confirmValue }, , { setValue: setConfirmValue }] =
     useField(CONFIRM)
 
@@ -40,7 +42,7 @@ export const CryptoConfirmTransfer = () => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
-          -${values.amount.toFixed(2)}
+          -${decimalIntegerToHumanReadable(amountValue)}
         </Text>
       </Flex>
 

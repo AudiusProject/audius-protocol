@@ -8,7 +8,7 @@ import {
 import { useUSDCBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { Name, BNUSDC } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   WithdrawUSDCModalPages,
@@ -18,9 +18,9 @@ import {
 import {
   filterDecimalString,
   padDecimalValue,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber
+  decimalIntegerToHumanReadable
 } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, SegmentedControl, Text } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
@@ -43,11 +43,7 @@ const WithdrawMethodOptions = [
   { key: WithdrawMethod.MANUAL_TRANSFER, text: walletMessages.crypto }
 ]
 
-export const EnterTransferDetails = ({
-  balanceNumberCents
-}: {
-  balanceNumberCents: number
-}) => {
+export const EnterTransferDetails = () => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
@@ -56,10 +52,14 @@ export const EnterTransferDetails = ({
     FeatureFlags.COINFLOW_OFFRAMP_ENABLED
   )
 
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
+  const balanceNumberCents = Math.floor(
+    Number(
+      USDC(balance ?? new BN(0))
+        .floor(2)
+        .toString()
+    ) * 100
   )
-  const analyticsBalance = balanceNumber / 100
+  const analyticsBalance = balanceNumberCents / 100
 
   const [
     { value },

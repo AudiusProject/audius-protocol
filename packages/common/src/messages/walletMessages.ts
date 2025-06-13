@@ -8,6 +8,7 @@ export const walletMessages = {
   cashBalanceTooltip:
     'Your cash balance is stored as USDC in your built-in wallet',
   max: 'MAX',
+  dollarSign: '$',
 
   payoutWallet: 'Payout Wallet',
   transactionHistory: 'Transaction History',

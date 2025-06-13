@@ -131,9 +131,7 @@ export const WithdrawUSDCModal = () => {
   let formPage
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
-      formPage = (
-        <EnterTransferDetails balanceNumberCents={balanceNumberCents} />
-      )
+      formPage = <EnterTransferDetails />
       break
     case WithdrawUSDCModalPages.COINFLOW_TRANSFER:
       formPage = <CoinflowWithdrawPage />
