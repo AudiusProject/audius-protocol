@@ -144,6 +144,7 @@ export const WithdrawUSDCDrawer = () => {
         .toString()
     ) * 100
   )
+
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null)
 
@@ -174,7 +175,7 @@ export const WithdrawUSDCDrawer = () => {
     ({ amount, method, address }: WithdrawFormValues) => {
       dispatch(
         beginWithdrawUSDC({
-          amount: Math.round(amount * 100), // Convert to cents
+          amount,
           method,
           currentBalance: balanceNumberCents,
           destinationAddress: address ?? ''
