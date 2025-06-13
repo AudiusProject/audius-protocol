@@ -98,7 +98,7 @@ export const useTrackHistory = (
           pageParam,
           pageSize,
           false,
-          { tracks }
+          { items: tracks }
         )
       )
 
