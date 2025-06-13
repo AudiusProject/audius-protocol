@@ -1,11 +1,6 @@
 import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import {
-  getHash,
-  SIGN_UP_PAGE,
-  profilePage,
-  collectionPage
-} from '@audius/common/src/utils/route'
+import { route } from '@audius/common/utils'
 import { Location } from 'history'
 import { matchPath, useLocation } from 'react-router'
 import { push } from 'redux-first-history'
@@ -13,6 +8,8 @@ import { push } from 'redux-first-history'
 import { env } from 'services/env'
 
 import { encodeUrlName } from './urlUtils'
+
+const { getHash, SIGN_UP_PAGE, profilePage, collectionPage } = route
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
