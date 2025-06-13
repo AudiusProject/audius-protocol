@@ -16,7 +16,8 @@ import {
 } from 'typed-redux-saga'
 import { Action } from 'typesafe-actions'
 
-import { getAccountStatusQueryKey } from '~/api'
+// this import needs to be very specific for SSR bundlesize
+import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { ErrorLevel, ReportToSentryArgs } from '~/models'
 import { waitForReachability } from '~/store/reachability/sagas'
 import { toast } from '~/store/ui/toast/slice'

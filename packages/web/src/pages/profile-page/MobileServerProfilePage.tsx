@@ -1,4 +1,4 @@
-import { useProfileUser } from '@audius/common/api'
+import { useProfileUser } from '@audius/common/src/api/tan-query/users/useProfileUser'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
 import IconDonate from '@audius/harmony/src/assets/icons/Donate.svg'

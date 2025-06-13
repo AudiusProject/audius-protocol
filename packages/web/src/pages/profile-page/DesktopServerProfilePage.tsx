@@ -1,4 +1,4 @@
-import { useProfileUser } from '@audius/common/api'
+import { useProfileUser } from '@audius/common/src/api/tan-query/users/useProfileUser'
 import BadgeArtist from '@audius/harmony/src/assets/icons/ArtistBadge.svg'
 import { Box } from '@audius/harmony/src/components/layout/Box'
 import { Flex } from '@audius/harmony/src/components/layout/Flex'
