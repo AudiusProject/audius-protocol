@@ -13,6 +13,7 @@ type BuyTabProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    error: string | null
     isInsufficientBalance: boolean
   }) => void
   error?: boolean
