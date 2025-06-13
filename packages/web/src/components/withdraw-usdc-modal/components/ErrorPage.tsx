@@ -27,7 +27,7 @@ export const ErrorPage = ({ onClose }: ErrorPageProps) => {
       <Divider style={{ margin: 0 }} />
       <TextRow
         left={walletMessages.amountToWithdraw}
-        right={`${walletMessages.minus}$${decimalIntegerToHumanReadable(amountValue)}`}
+        right={`${walletMessages.minus}${walletMessages.dollarSign}${decimalIntegerToHumanReadable(amountValue)}`}
       />
       {addressValue ? (
         <>
