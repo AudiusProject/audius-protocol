@@ -8,7 +8,6 @@ import { Divider } from 'components/divider'
 
 import { ADDRESS, AMOUNT } from '../types'
 
-import styles from './ErrorPage.module.css'
 import { TextRow } from './TextRow'
 
 type ErrorPageProps = {
