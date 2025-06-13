@@ -21,7 +21,7 @@ export const createSwapFormSchema = (
           return !isNaN(parseFloat(val))
         },
         {
-          message: 'Please enter a valid amount'
+          message: messages.emptyAmount
         }
       )
       .refine(
@@ -48,7 +48,7 @@ export const createSwapFormSchema = (
           return !balance || parseFloat(val) <= balance
         },
         {
-          message: `Insufficient ${tokenSymbol} balance`
+          message: messages.insufficientBalance(tokenSymbol)
         }
       ),
     outputAmount: z.string().optional()

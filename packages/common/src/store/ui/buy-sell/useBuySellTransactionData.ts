@@ -7,15 +7,12 @@ export const useBuySellTransactionData = () => {
   const [hasSufficientBalance, setHasSufficientBalance] = useState(true)
 
   const handleTransactionDataChange = useCallback(
-    (data: NonNullable<TransactionData>) => {
+    (
+      data: NonNullable<TransactionData> & { isInsufficientBalance: boolean }
+    ) => {
       setTransactionData(data)
-      // Check specifically for insufficient balance error, not just any invalid state.
-      const isInsufficient = data.error?.toLowerCase().includes('insufficient')
-      if (data.inputAmount > 0 && isInsufficient) {
-        setHasSufficientBalance(false)
-      } else {
-        setHasSufficientBalance(true)
-      }
+      // Use the explicit boolean instead of inferring
+      setHasSufficientBalance(!data.isInsufficientBalance)
     },
     []
   )

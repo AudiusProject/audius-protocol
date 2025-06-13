@@ -16,9 +16,14 @@ import { isValidId } from '../utils/isValidId'
 
 import { queryCurrentUserId } from './queryAccount'
 
+type QueryOptions = {
+  force?: boolean
+  staleTime?: number
+}
+
 export function* queryCollection(
   id: ID | null | undefined,
-  forceFetch = false
+  queryOptions?: QueryOptions
 ) {
   if (!isValidId(id)) return undefined
   const queryClient = yield* getContext('queryClient')
@@ -30,17 +35,18 @@ export function* queryCollection(
     queryKey: getCollectionQueryKey(id),
     queryFn: async () =>
       getCollectionQueryFn(id!, currentUserId, queryClient, sdk, dispatch),
-    staleTime: forceFetch ? 0 : undefined
+    ...entityCacheOptions,
+    ...queryOptions
   })
 
   return queryData as TQCollection | undefined
 }
 
-export function* queryCollections(ids: ID[], forceFetch = false) {
+export function* queryCollections(ids: ID[], queryOptions?: QueryOptions) {
   const collections = {} as Record<ID, TQCollection>
   for (const id of ids) {
     // Call each queryCollection individually. They will be batched together in the queryFn (if necessary)
-    const collection = yield* call(queryCollection, id, forceFetch)
+    const collection = yield* call(queryCollection, id, queryOptions)
     if (collection) {
       collections[id] = collection
     }
@@ -50,7 +56,7 @@ export function* queryCollections(ids: ID[], forceFetch = false) {
 
 export function* queryCollectionByPermalink(
   permalink: string | null | undefined,
-  forceFetch = false
+  queryOptions?: QueryOptions
 ) {
   if (!permalink) return undefined
   const queryClient = yield* getContext('queryClient')
@@ -65,16 +71,17 @@ export function* queryCollectionByPermalink(
         queryClient,
         sdk
       ),
-    staleTime: forceFetch ? 0 : entityCacheOptions.staleTime
+    ...entityCacheOptions,
+    ...queryOptions
   })) as ID | undefined
   if (!collectionId) return undefined
-  const collection = yield* call(queryCollection, collectionId, forceFetch)
+  const collection = yield* call(queryCollection, collectionId, queryOptions)
   return collection
 }
 
 export function* queryCollectionsByPermalink(
   permalinks: string[],
-  forceFetch = false
+  queryOptions?: QueryOptions
 ) {
   const collections = {} as Record<string, TQCollection>
   for (const permalink of permalinks) {
@@ -82,7 +89,7 @@ export function* queryCollectionsByPermalink(
     const collection = yield* call(
       queryCollectionByPermalink,
       permalink,
-      forceFetch
+      queryOptions
     )
     if (collection) {
       collections[permalink] = collection

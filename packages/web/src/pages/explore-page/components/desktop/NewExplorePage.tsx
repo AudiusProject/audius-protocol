@@ -105,7 +105,7 @@ const justForYou = [
   PREMIUM_TRACKS,
   DOWNLOADS_AVAILABLE
 ]
-const DEBOUNCE_MS = 400
+const DEBOUNCE_MS = 200
 const MIN_WIDTH = 840
 const NORMAL_WIDTH = 1200
 

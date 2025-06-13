@@ -16,9 +16,11 @@ const searchExploreColorKeypaths = ['Magnifying Glass.Group 1.Fill 1']
 type ExploreButtonProps = BottomTabBarButtonProps
 
 export const ExploreButton = (props: ExploreButtonProps) => {
-  const { isEnabled: isSearchExploreMobileEnabled } = useFeatureFlag(
+  const searchExploreFeatureFlag = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_MOBILE
   )
+  const isSearchExploreMobileEnabled =
+    searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
   return (
     <BottomTabBarButton
       {...props}

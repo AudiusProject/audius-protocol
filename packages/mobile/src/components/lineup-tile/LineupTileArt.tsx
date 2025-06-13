@@ -7,7 +7,7 @@ import { makeStyles } from 'app/styles'
 import { FadeInView } from '../core'
 
 import { useStyles as useTrackTileStyles } from './styles'
-import type { LineupTileProps } from './types'
+import type { RenderImage } from './types'
 
 const useStyles = makeStyles(({ palette }) => ({
   imageRoot: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles(({ palette }) => ({
 }))
 
 type LineupTileArtProps = {
-  renderImage: LineupTileProps['renderImage']
+  renderImage: RenderImage
   style?: StyleProp<ViewStyle>
   trackId: number
 }

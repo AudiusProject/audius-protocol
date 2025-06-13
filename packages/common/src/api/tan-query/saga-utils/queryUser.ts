@@ -16,7 +16,15 @@ import { isValidId } from '../utils/isValidId'
 
 import { queryCurrentUserId } from './queryAccount'
 
-export function* queryUser(id: ID | null | undefined) {
+type QueryOptions = {
+  force?: boolean
+  staleTime?: number
+}
+
+export function* queryUser(
+  id: ID | null | undefined,
+  queryOptions?: QueryOptions
+) {
   if (!isValidId(id)) return undefined
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
@@ -26,13 +34,18 @@ export function* queryUser(id: ID | null | undefined) {
   const queryData = yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getUserQueryKey(id),
     queryFn: async () =>
-      getUserQueryFn(id!, currentUserId, queryClient, sdk, dispatch)
+      getUserQueryFn(id!, currentUserId, queryClient, sdk, dispatch),
+    ...entityCacheOptions,
+    ...queryOptions
   })
 
   return queryData as User | undefined
 }
 
-export function* queryUserByHandle(handle: string | null | undefined) {
+export function* queryUserByHandle(
+  handle: string | null | undefined,
+  queryOptions?: QueryOptions
+) {
   if (!handle) return undefined
   const queryClient = yield* getContext('queryClient')
   const currentUserId = yield* call(queryCurrentUserId)
@@ -41,16 +54,19 @@ export function* queryUserByHandle(handle: string | null | undefined) {
     queryKey: getUserByHandleQueryKey(handle),
     queryFn: async () =>
       getUserByHandleQueryFn(handle, sdk, queryClient, currentUserId),
-    ...entityCacheOptions
+    ...entityCacheOptions,
+    ...queryOptions
   })) as ID | undefined
   if (!userId) return undefined
-  const userMetadata = yield* call(queryUser, userId)
+  const userMetadata = yield* call(queryUser, userId, queryOptions)
   return userMetadata
 }
 
-export function* queryUsers(ids: ID[]) {
+export function* queryUsers(ids: ID[], queryOptions?: QueryOptions) {
   const users = {} as Record<ID, User>
-  const userResults = yield* all(ids.map((id) => call(queryUser, id)))
+  const userResults = yield* all(
+    ids.map((id) => call(queryUser, id, queryOptions))
+  )
 
   userResults.forEach((user, index) => {
     if (user) {

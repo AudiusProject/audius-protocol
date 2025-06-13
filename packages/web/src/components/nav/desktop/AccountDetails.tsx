@@ -1,11 +1,13 @@
 import {
   selectIsAccountComplete,
   useCurrentAccount,
-  useCurrentAccountUser
+  useCurrentAccountUser,
+  useAccountStatus
 } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { Box, Flex, Text, useTheme } from '@audius/harmony'
+import { Box, Flex, Skeleton, Text, useTheme } from '@audius/harmony'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
@@ -180,6 +182,18 @@ const GuestView = () => {
   )
 }
 
+const LoadingView = () => {
+  return (
+    <AccountContentWrapper>
+      <Skeleton w={48} h={48} css={{ borderRadius: '50%' }} />
+      <AccountInfo>
+        <Skeleton w='100%' h={20} />
+        <Skeleton w='100%' h={20} />
+      </AccountInfo>
+    </AccountContentWrapper>
+  )
+}
+
 export const AccountDetails = () => {
   const { data: user } = useCurrentAccountUser({
     select: (user) => ({
@@ -191,6 +205,7 @@ export const AccountDetails = () => {
   const { data: guestEmail } = useCurrentAccount({
     select: (account) => account?.guestEmail
   })
+  const { data: accountStatus } = useAccountStatus()
   const { data: hasCompletedAccount } = useCurrentAccountUser({
     select: selectIsAccountComplete
   })
@@ -213,6 +228,15 @@ export const AccountDetails = () => {
     return (
       <AccountDetailsContainer>
         <GuestView />
+      </AccountDetailsContainer>
+    )
+  }
+
+  // Only shows briefly when the account is currently being loaded in during sign in
+  if (accountStatus === Status.LOADING || accountStatus === Status.SUCCESS) {
+    return (
+      <AccountDetailsContainer>
+        <LoadingView />
       </AccountDetailsContainer>
     )
   }

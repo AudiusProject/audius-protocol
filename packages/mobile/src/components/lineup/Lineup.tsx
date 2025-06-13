@@ -188,9 +188,7 @@ const LineupItemTile = memo(function LineupItemTile({
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
-    if (item._loading) {
-      return <SkeletonTrackTileView itemStyles={itemStyles} />
-    }
+    return <SkeletonTrackTileView itemStyles={itemStyles} />
   } else {
     return (
       <LineupTileView
@@ -206,7 +204,6 @@ const LineupItemTile = memo(function LineupItemTile({
       />
     )
   }
-  return null
 })
 
 /** `Lineup` encapsulates the logic for displaying a list of items such as Tracks (e.g. prefetching items

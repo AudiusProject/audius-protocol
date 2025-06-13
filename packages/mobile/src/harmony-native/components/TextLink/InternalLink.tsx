@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 
 import { getPathFromAudiusUrl } from '@audius/common/utils'
 import type { NavigationAction } from '@react-navigation/native'
-import { useLinkProps, useLinkTo } from '@react-navigation/native'
+import { useLinkProps, useLinkTo, StackActions } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import type { GestureResponderEvent } from 'react-native'
 
@@ -25,7 +25,18 @@ export const InternalLinkTo = <ParamList extends ReactNavigation.RootParamList>(
   props: InternalLinkToProps<ParamList>
 ) => {
   const { to, action, onPress, children, ...other } = props
-  const { onPress: onPressLink, ...linkProps } = useLinkProps({ to, action })
+
+  // Always use push action for internal navigation since we always have screen and params
+  const finalAction =
+    action ||
+    (typeof to === 'object' && to && 'screen' in to
+      ? StackActions.push((to as any).screen, (to as any).params)
+      : undefined)
+
+  const { onPress: onPressLink, ...linkProps } = useLinkProps({
+    to,
+    action: finalAction
+  })
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from 'react'
 
+import { useRemoteVar } from '@audius/common/hooks'
 import type { StringWei } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
@@ -14,7 +15,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconCrown, Flex, Text } from '@audius/harmony-native'
 import { ScrollView, Screen, Tile, ScreenContent } from 'app/components/core'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
