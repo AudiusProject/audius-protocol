@@ -7,15 +7,11 @@ import {
   useWithdrawUSDCModal,
   CoinflowWithdrawState
 } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Flex, Text, LoadingSpinner } from '@audius/harmony'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-
 import { WithdrawFormValues, AMOUNT } from '../types'
-
-import styles from './PrepareTransfer.module.css'
 
 const { getCoinflowState } = withdrawUSDCSelectors
 
@@ -49,7 +45,7 @@ export const PrepareTransfer = () => {
       ph='2xl'
     >
       <Flex alignItems='center' justifyContent='center'>
-        <LoadingSpinner className={styles.spinner} />
+        <LoadingSpinner size='xl' />
       </Flex>
       <Flex alignItems='center' justifyContent='center' gap='m'>
         <i className='emoji xl raised-hand' />

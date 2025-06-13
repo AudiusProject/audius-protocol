@@ -76,7 +76,7 @@ export const TransferSuccessful = ({
 
   return (
     <Flex column gap='xl'>
-      <CashBalanceSection balance={balance} />
+      <CashBalanceSection />
       <Divider style={{ margin: 0 }} />
       <Flex alignItems='center' justifyContent='space-between'>
         <Text variant='heading' size='s' color='subdued'>

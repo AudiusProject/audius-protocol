@@ -52,12 +52,12 @@ export const TransferSuccessful = ({ onDone }: TransferSuccessfulProps) => {
       </Flex>
 
       <Divider orientation='horizontal' />
-      <Flex alignItems='flex-start' gap='s'>
-        <Text variant='heading' size='s' color='subdued'>
-          {walletMessages.destination}
-        </Text>
-        <Text variant='body'>{addressValue}</Text>
-        {signature && (
+      {signature && (
+        <Flex alignItems='flex-start' gap='s'>
+          <Text variant='heading' size='s' color='subdued'>
+            {walletMessages.destination}
+          </Text>
+          <Text variant='body'>{addressValue}</Text>
           <ExternalLink url={makeSolanaTransactionLink(signature)}>
             <Flex row gap='xs' alignItems='center'>
               <Text variant='title' size='s' color='subdued'>
@@ -66,8 +66,8 @@ export const TransferSuccessful = ({ onDone }: TransferSuccessfulProps) => {
               <IconExternalLink color='subdued' size='s' />
             </Flex>
           </ExternalLink>
-        )}
-      </Flex>
+        </Flex>
+      )}
 
       <Flex row gap='s' alignItems='center'>
         <IconValidationCheck size='s' />

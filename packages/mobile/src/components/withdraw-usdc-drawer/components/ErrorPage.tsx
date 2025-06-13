@@ -1,13 +1,69 @@
 import React from 'react'
 
-import { View } from 'react-native'
+import { walletMessages } from '@audius/common/messages'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
+import { useField } from 'formik'
 
-import { Text } from '@audius/harmony-native'
+import {
+  Button,
+  CompletionCheck,
+  Divider,
+  Flex,
+  Text
+} from '@audius/harmony-native'
+import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 
-export const ErrorPage = () => {
+import type { WithdrawFormValues } from '../types'
+import { ADDRESS, AMOUNT } from '../types'
+
+type ErrorPageProps = {
+  onClose: () => void
+}
+
+export const ErrorPage = ({ onClose }: ErrorPageProps) => {
+  const [{ value: amountValue }] =
+    useField<WithdrawFormValues[typeof AMOUNT]>(AMOUNT)
+  const [{ value: addressValue }] =
+    useField<WithdrawFormValues[typeof ADDRESS]>(ADDRESS)
+
   return (
-    <View>
-      <Text>Error Page - Coming Soon</Text>
-    </View>
+    <Flex gap='xl'>
+      <CashBalanceSection />
+      <Divider orientation='horizontal' />
+
+      <Flex gap='s'>
+        <Text variant='heading' size='s' color='subdued'>
+          {walletMessages.amountToWithdraw}
+        </Text>
+        <Text variant='heading' size='s'>
+          {walletMessages.minus}
+          {walletMessages.dollarSign}
+          {decimalIntegerToHumanReadable(amountValue)}
+        </Text>
+      </Flex>
+
+      {addressValue ? (
+        <>
+          <Divider orientation='horizontal' />
+          <Flex alignItems='flex-start' gap='s'>
+            <Text variant='heading' size='s' color='subdued'>
+              {walletMessages.destination}
+            </Text>
+            <Text variant='body'>{addressValue}</Text>
+          </Flex>
+        </>
+      ) : null}
+
+      <Flex row gap='s' alignItems='center'>
+        <CompletionCheck value='error' />
+        <Text variant='body' size='s'>
+          {walletMessages.error}
+        </Text>
+      </Flex>
+
+      <Button onPress={onClose} fullWidth variant='secondary'>
+        {walletMessages.close}
+      </Button>
+    </Flex>
   )
 }

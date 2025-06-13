@@ -1,6 +1,5 @@
+import { useFormattedUSDCBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { BNUSDC } from '@audius/common/models'
-import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,
   IconLogoCircleUSDC,
@@ -8,16 +7,11 @@ import {
   IconButton,
   IconInfo
 } from '@audius/harmony'
-import BN from 'bn.js'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
-type CashBalanceSectionProps = {
-  balance: BNUSDC | null
-}
-
-export const CashBalanceSection = ({ balance }: CashBalanceSectionProps) => {
-  const formattedBalance = USDC(balance ?? new BN(0)).value
+export const CashBalanceSection = () => {
+  const { balanceFormatted } = useFormattedUSDCBalance()
 
   return (
     <Flex column gap='s'>
@@ -46,7 +40,7 @@ export const CashBalanceSection = ({ balance }: CashBalanceSectionProps) => {
           </Tooltip>
         </Flex>
       </Flex>
-      <Text variant='display'>{USDC(formattedBalance).toLocaleString()}</Text>
+      <Text variant='display'>{balanceFormatted}</Text>
     </Flex>
   )
 }

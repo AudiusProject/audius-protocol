@@ -23,9 +23,7 @@ export const useFormattedUSDCBalance = (): UseFormattedUSDCBalanceReturn => {
   const balanceCents = Number(usdcValue.floor(2).toString()) * 100
   const balanceFormatted = useMemo(() => {
     const balance =
-      balanceStatus === Status.LOADING
-        ? null
-        : usdcValue.toFixed(2).replace('$', '')
+      balanceStatus === Status.LOADING ? null : usdcValue.toShorthand()
     return balance ? `$${balance}` : null
   }, [usdcValue, balanceStatus])
 

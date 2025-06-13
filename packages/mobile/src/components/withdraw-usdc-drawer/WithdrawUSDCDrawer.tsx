@@ -29,6 +29,7 @@ import { Divider, Flex, Text } from '@audius/harmony-native'
 import { CoinflowConfirmTransfer } from './components/CoinflowConfirmTransfer'
 import { CryptoConfirmTransfer } from './components/CryptoConfirmTransfer'
 import { EnterTransferDetails } from './components/EnterTransferDetails'
+import { ErrorPage } from './components/ErrorPage'
 import { PrepareTransfer } from './components/PrepareTransfer'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
@@ -40,7 +41,7 @@ import {
   type WithdrawFormValues
 } from './types'
 
-const { beginWithdrawUSDC } = withdrawUSDCActions
+const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
 const { getRecoveryStatus } = buyUSDCSelectors
 
@@ -90,6 +91,9 @@ const WithdrawUSDCForm = ({
       break
     case WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL:
       formPage = <TransferSuccessful onDone={onClose} />
+      break
+    case WithdrawUSDCModalPages.ERROR:
+      formPage = <ErrorPage onClose={onClose} />
       break
     default:
       formPage = (
@@ -153,6 +157,14 @@ export const WithdrawUSDCDrawer = () => {
 
   const formRef = useRef<FormikProps<WithdrawFormValues>>(null)
 
+  useEffect(() => {
+    if (withdrawalStatus === Status.ERROR) {
+      setData({
+        page: WithdrawUSDCModalPages.ERROR
+      })
+    }
+  }, [withdrawalStatus, setData])
+
   const isClosable =
     !DISABLE_DRAWER_CLOSE_PAGES.has(data.page) &&
     withdrawalStatus !== Status.LOADING &&
@@ -163,9 +175,10 @@ export const WithdrawUSDCDrawer = () => {
       onClose()
       formRef.current?.resetForm()
       setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
+      dispatch(cleanup())
       bottomSheetRef.current?.dismiss()
     }
-  }, [onClose, setData, isClosable])
+  }, [onClose, setData, isClosable, dispatch])
 
   const handleClosed = useCallback(() => {
     onClosed()

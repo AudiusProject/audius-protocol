@@ -1,33 +1,19 @@
-import { useUSDCBalance } from '@audius/common/api'
-import type { BNUSDC } from '@audius/common/models'
-import { USDC } from '@audius/fixed-decimal'
+import { useFormattedUSDCBalance } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 
 import { Flex, Text, spacing } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import Skeleton from 'app/components/skeleton'
 
-const messages = {
-  cashBalance: 'Cash Balance',
-  balance: (balance: BNUSDC) =>
-    `$${USDC(balance).toLocaleString('en-US', {
-      maximumFractionDigits: 2,
-      minimumFractionDigits: 2
-    })}`
-}
-
 export const CashBalanceSection = () => {
-  const { data: usdcBalance } = useUSDCBalance({
-    isPolling: true,
-    commitment: 'confirmed'
-  })
-  const isLoading = usdcBalance === null
+  const { balanceFormatted, isLoading } = useFormattedUSDCBalance()
 
   return (
     <Flex direction='column' gap='xs'>
       <Flex direction='row' alignItems='center' gap='s'>
         <LogoUSDC height={spacing.unit6} width={spacing.unit6} />
         <Text variant='heading' color='subdued' size='s'>
-          {messages.cashBalance}
+          {walletMessages.cashBalance}
         </Text>
       </Flex>
       {isLoading ? (
@@ -37,7 +23,7 @@ export const CashBalanceSection = () => {
           style={{ marginTop: spacing.unit4 }}
         />
       ) : (
-        <Text variant='display'>{messages.balance(usdcBalance)}</Text>
+        <Text variant='display'>{balanceFormatted}</Text>
       )}
     </Flex>
   )

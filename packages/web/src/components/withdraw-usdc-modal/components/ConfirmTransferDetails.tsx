@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { useUSDCBalance } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import {
   WithdrawUSDCModalPages,
@@ -41,8 +40,6 @@ export const ConfirmTransferDetails = () => {
     type: 'checkbox'
   })
 
-  const { data: balance } = useUSDCBalance()
-
   const handleGoBack = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
   }, [setData])
@@ -63,7 +60,7 @@ export const ConfirmTransferDetails = () => {
 
   return (
     <Flex column gap='xl'>
-      <CashBalanceSection balance={balance} />
+      <CashBalanceSection />
       <Divider style={{ margin: 0 }} />
       <Flex justifyContent='space-between'>
         <Text variant='heading' size='s'>
