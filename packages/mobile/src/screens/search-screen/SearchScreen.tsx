@@ -1,9 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
-import type {
-  SearchCategory,
-  SearchFilters as SearchFiltersType
-} from '@audius/common/api'
+import type { SearchCategory } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { searchSelectors } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
@@ -24,7 +21,7 @@ import { SearchCatalogTile } from './SearchCatalogTile'
 import { SearchCategoriesAndFilters } from './SearchCategoriesAndFilters'
 import { SearchResults } from './search-results/SearchResults'
 import {
-  SearchContext,
+  SearchProvider,
   useSearchAutoFocus,
   useSearchCategory,
   useSearchFilters,
@@ -90,10 +87,7 @@ const SearchScreen = () => {
         {!showSearchResults ? (
           <Flex direction='column' alignItems='center' gap='xl'>
             {showRecentSearches ? (
-              <RecentSearches
-                ListHeaderComponent={<SearchCatalogTile />}
-                searchItems={filteredSearchItems}
-              />
+              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
             ) : (
               <SearchCatalogTile />
             )}
@@ -111,44 +105,18 @@ const Stack = createNativeStackNavigator()
 export const SearchScreenStack = () => {
   const { params } = useRoute<'Search'>()
 
-  const [autoFocus, setAutoFocus] = useState(params?.autoFocus ?? false)
-  const [query, setQuery] = useState(params?.query ?? '')
-  const [category, setCategory] = useState<SearchCategory>(
-    params?.category ?? 'all'
-  )
-  const [filters, setFilters] = useState<SearchFiltersType>(
-    params?.filters ?? {}
-  )
-  const [bpmType, setBpmType] = useState<'range' | 'target'>('range')
-
-  useEffect(() => {
-    setQuery(params?.query ?? '')
-    setCategory(params?.category ?? 'all')
-    setFilters(params?.filters ?? {})
-    setAutoFocus(params?.autoFocus ?? false)
-  }, [params])
-
   const screenOptions = useAppScreenOptions()
 
   return (
-    <SearchContext.Provider
-      value={{
-        autoFocus,
-        setAutoFocus,
-        query,
-        setQuery,
-        category,
-        setCategory,
-        filters,
-        setFilters,
-        bpmType,
-        setBpmType,
-        active: true
-      }}
+    <SearchProvider
+      initialCategory={params?.category ?? 'all'}
+      initialFilters={params?.filters ?? {}}
+      initialAutoFocus={params?.autoFocus ?? false}
+      initialQuery={params?.query ?? ''}
     >
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen name='SearchResults' component={SearchScreen} />
       </Stack.Navigator>
-    </SearchContext.Provider>
+    </SearchProvider>
   )
 }

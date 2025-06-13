@@ -1,6 +1,7 @@
-import { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
+import type { ScrollView } from 'react-native'
 import { ImageBackground } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 import Animated, {
@@ -29,6 +30,8 @@ import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AccountPictureHeader } from 'app/screens/app-screen/AccountPictureHeader'
 import { SearchCategoriesAndFilters } from 'app/screens/search-screen/SearchCategoriesAndFilters'
 
+import { useSearchQuery } from '../../search-screen/searchState'
+
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 const AnimatedText = Animated.createAnimatedComponent(Text)
 
@@ -39,21 +42,17 @@ const HEADER_COLLAPSE_THRESHOLD = 50
 type SearchExploreHeaderProps = {
   filterTranslateY: SharedValue<number>
   scrollY: SharedValue<number>
-  searchInput: string
-  handleClearSearch: () => void
-  handleSearchInputChange: (text: string) => void
+  scrollRef: React.RefObject<ScrollView>
 }
+
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
-  const {
-    filterTranslateY,
-    scrollY,
-    searchInput,
-    handleClearSearch,
-    handleSearchInputChange
-  } = props
+  const { filterTranslateY, scrollY, scrollRef } = props
   const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
+
+  // Get state from context
+  const [query, setQuery] = useSearchQuery()
 
   // State
   const [autoFocus] = useState(params?.autoFocus ?? false)
@@ -66,6 +65,24 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
   }, [drawerHelpers])
+
+  const handleClearSearch = useCallback(() => {
+    setQuery('')
+    scrollRef.current?.scrollTo({
+      y: 0,
+      animated: false
+    })
+  }, [setQuery, scrollRef])
+
+  const handleSearchInputChange = useCallback(
+    (text: string) => {
+      setQuery(text)
+      if (text === '') {
+        scrollRef.current?.scrollTo?.({ y: 0, animated: false })
+      }
+    },
+    [setQuery, scrollRef]
+  )
 
   // Animated styles
 
@@ -239,7 +256,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
                 <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
               </AnimatedFlex>
               <AnimatedFlex
-                style={[headerTextAnimatedStyle]}
+                style={headerTextAnimatedStyle}
                 justifyContent='center'
               >
                 <Text variant='heading' color='staticWhite'>
@@ -250,7 +267,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             <AnimatedText
               variant='title'
               color='staticWhite'
-              style={[headerTextAnimatedStyle]}
+              style={headerTextAnimatedStyle}
             >
               {messages.description}
             </AnimatedText>
@@ -262,9 +279,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
                 size={TextInputSize.SMALL}
                 startIcon={IconSearch}
                 onChangeText={handleSearchInputChange}
-                value={searchInput}
+                value={query}
                 endIcon={(props) =>
-                  searchInput ? (
+                  query ? (
                     <IconButton
                       icon={IconCloseAlt}
                       color='subdued'
