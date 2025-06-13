@@ -8,7 +8,10 @@ type WalletAddresses = {
 }
 
 export const getWalletAddressesQueryKey = () =>
-  [QUERY_KEYS.walletAddresses] as unknown as QueryKey<WalletAddresses>
+  [
+    QUERY_KEYS.account,
+    QUERY_KEYS.walletAddresses
+  ] as unknown as QueryKey<WalletAddresses>
 
 export const useWalletAddresses = () => {
   return useQuery<WalletAddresses>({

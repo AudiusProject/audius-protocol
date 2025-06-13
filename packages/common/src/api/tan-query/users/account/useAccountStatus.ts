@@ -6,7 +6,7 @@ import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey } from '../../types'
 
 export const getAccountStatusQueryKey = () =>
-  [QUERY_KEYS.accountStatus] as unknown as QueryKey<Status>
+  [QUERY_KEYS.account, QUERY_KEYS.accountStatus] as unknown as QueryKey<Status>
 
 export const useAccountStatus = () => {
   return useQuery({
