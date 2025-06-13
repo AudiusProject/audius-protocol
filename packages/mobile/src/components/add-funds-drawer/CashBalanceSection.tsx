@@ -23,7 +23,7 @@ export const CashBalanceSection = () => {
           style={{ marginTop: spacing.unit4 }}
         />
       ) : (
-        <Text variant='display'>{balanceFormatted ?? ''}</Text>
+        <Text variant='display'>{balanceFormatted}</Text>
       )}
     </Flex>
   )
