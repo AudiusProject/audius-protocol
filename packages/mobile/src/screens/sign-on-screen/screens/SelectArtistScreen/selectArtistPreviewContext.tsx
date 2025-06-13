@@ -37,7 +37,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [isPlaying, setIsPlaying] = useState(false)
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState(-1)
   const [trackUrl, setTrackUrl] = useState<string | null>(null)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
 
   useEffectOnce(() => {
     TrackPlayer.setRepeatMode(RepeatMode.Track)

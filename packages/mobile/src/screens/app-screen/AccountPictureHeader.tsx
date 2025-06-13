@@ -1,5 +1,8 @@
 import { useCurrentUserId } from '@audius/common/api'
-import { useAccountHasClaimableRewards } from '@audius/common/hooks'
+import {
+  useAccountHasClaimableRewards,
+  useRemoteVar
+} from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import { useDrawerProgress } from '@react-navigation/drawer'
@@ -12,7 +15,6 @@ import Animated, {
 import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/core'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 const { getHasUnreadMessages } = chatSelectors

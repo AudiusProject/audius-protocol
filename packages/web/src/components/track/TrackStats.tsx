@@ -49,7 +49,7 @@ export const TrackStats = (props: TrackStatsProps) => {
         'genre'
       ])
   })
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const dispatch = useDispatch()
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED

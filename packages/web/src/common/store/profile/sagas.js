@@ -259,10 +259,18 @@ export function* fetchSolanaCollectibles(user) {
 function* fetchProfileAsync(action) {
   try {
     let user
+    const queryOptions = action.forceUpdate
+      ? { force: true, staleTime: 0 }
+      : undefined
+
     if (action.userId) {
-      user = yield call(queryUser, action.userId)
+      user = yield call(queryUser, action.userId, queryOptions)
     } else if (action.handle) {
-      user = yield call(queryUserByHandle, action.handle?.replace('/', ''))
+      user = yield call(
+        queryUserByHandle,
+        action.handle?.replace('/', ''),
+        queryOptions
+      )
     }
     if (!user) {
       const isReachable = yield select(getIsReachable)

@@ -262,7 +262,7 @@ export const OAuthLoginPage = () => {
   }
 
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const { switchAccount } = useAccountSwitcher()
 
   const onAccountSelected = useCallback(

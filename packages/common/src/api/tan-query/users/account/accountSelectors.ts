@@ -54,5 +54,6 @@ export const useHasAccount = () => {
   const { data: hasUserId } = useCurrentAccount({
     select: (account) => !!account?.userId
   })
+
   return !!hasUserId
 }

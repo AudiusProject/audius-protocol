@@ -53,7 +53,7 @@ export const CommentMentionNotification = (
 
   const entity = useNotificationEntity(notification)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerMention =
     entity?.user?.user_id === firstUser?.user_id && !isMultiUser

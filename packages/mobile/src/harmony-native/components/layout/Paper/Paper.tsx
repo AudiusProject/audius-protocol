@@ -56,7 +56,7 @@ export const Paper = forwardRef<View, PaperProps>((props, ref) => {
       ),
       transform: [
         {
-          scale: interpolate(pressed.value, [0, 1], [1, 0.995])
+          scale: interpolate(pressed.value, [0, 1], [1, 0.97])
         }
       ],
       ...(Platform.OS === MobileOS.IOS && {

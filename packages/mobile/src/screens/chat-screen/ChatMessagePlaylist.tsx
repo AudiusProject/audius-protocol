@@ -138,7 +138,6 @@ export const ChatMessagePlaylist = ({
       collection={collection}
       tracks={tracksWithUids}
       isTrending={false}
-      showRankIcon={false}
       styles={styles}
       variant='readonly'
       source={LineupTileSource.DM_COLLECTION}

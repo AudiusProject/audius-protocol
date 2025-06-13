@@ -10,9 +10,16 @@ import {
 import { AppDrawerContextProvider } from '../AppDrawerContext'
 
 import { AccountDetails } from './AccountDetails'
-import { LeftNavLink } from './LeftNavLink'
 import { VanityMetrics } from './VanityMetrics'
-import { useNavConfig } from './useNavConfig'
+import {
+  ProfileNavItem,
+  MessagesNavItem,
+  WalletNavItem,
+  RewardsNavItem,
+  UploadNavItem,
+  SettingsNavItem,
+  FeatureFlagsNavItem
+} from './nav-items'
 
 type AccountDrawerProps = DrawerContentComponentProps & {
   gesturesDisabled: boolean
@@ -33,26 +40,19 @@ export const LeftNavDrawer = (props: AccountDrawerProps) => {
 
 const WrappedLeftNavDrawer = () => {
   const { spacing } = useTheme()
-  const { navItems } = useNavConfig()
 
   return (
     <Flex h='100%' pv='unit16' justifyContent='space-between'>
       <Flex>
         <AccountDetails />
         <VanityMetrics />
-        {navItems.map((item) => (
-          <LeftNavLink
-            key={item.label}
-            icon={item.icon}
-            label={item.label}
-            to={item.to}
-            params={item.params}
-            onPress={item.onPress}
-            showNotificationBubble={item.showNotificationBubble}
-          >
-            {item.rightIcon}
-          </LeftNavLink>
-        ))}
+        <ProfileNavItem />
+        <MessagesNavItem />
+        <WalletNavItem />
+        <RewardsNavItem />
+        <UploadNavItem />
+        <SettingsNavItem />
+        <FeatureFlagsNavItem />
       </Flex>
       <Flex ph='xl'>
         <IconAudiusLogoHorizontalNew

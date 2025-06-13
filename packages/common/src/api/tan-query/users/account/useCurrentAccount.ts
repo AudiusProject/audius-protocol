@@ -18,7 +18,10 @@ import { getAccountStatusQueryKey } from './useAccountStatus'
 import { useWalletAddresses } from './useWalletAddresses'
 
 export const getCurrentAccountQueryKey = () =>
-  [QUERY_KEYS.accountUser] as unknown as QueryKey<AccountState>
+  [
+    QUERY_KEYS.account,
+    QUERY_KEYS.accountUser
+  ] as unknown as QueryKey<AccountState>
 
 const getLocalAccount = (localStorage: LocalStorage) => {
   const localAccount = localStorage.getAudiusAccountSync?.()

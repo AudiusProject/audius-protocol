@@ -76,12 +76,13 @@ export function* queryTrackByUid(uid: string | null | undefined) {
 }
 
 export function* queryCollectionTracks(
-  collectionId: ID | null | undefined
+  collectionId: ID | null | undefined,
+  queryOptions?: QueryOptions
 ): Generator<any, Track[], any> {
   if (!collectionId) return [] as Track[]
 
   // Get collection data
-  const collection = yield* call(queryCollection, collectionId)
+  const collection = yield* call(queryCollection, collectionId, queryOptions)
   if (!collection) return [] as Track[]
 
   // Extract track IDs from collection
@@ -90,5 +91,5 @@ export function* queryCollectionTracks(
   )
 
   // Query all tracks in parallel
-  return yield* call(queryTracks, trackIds)
+  return yield* call(queryTracks, trackIds, queryOptions)
 }

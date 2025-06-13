@@ -13,7 +13,7 @@ export const CollectionsTableOverflowMenuButton = (
   props: OverflowMenuButtonProps
 ) => {
   const { collectionId } = props
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
       pick(

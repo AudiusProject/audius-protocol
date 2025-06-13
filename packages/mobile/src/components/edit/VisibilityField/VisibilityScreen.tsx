@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { visibilityMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import dayjs from 'dayjs'
@@ -10,7 +11,6 @@ import {
   IconVisibilityPublic
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 
 import type { FormValues } from '../../../screens/edit-track-screen/types'

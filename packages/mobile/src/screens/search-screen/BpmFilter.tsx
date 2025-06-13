@@ -20,7 +20,7 @@ const MIN_BPM = 1
 const MAX_BPM = 999
 
 const messages = {
-  title: 'Bpm',
+  title: 'BPM',
   bpm: 'BPM',
   range: 'Range',
   target: 'Target',

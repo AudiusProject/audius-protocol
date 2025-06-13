@@ -189,7 +189,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useGetCurrentUserId()
 
   const shareButton = (
     <Button

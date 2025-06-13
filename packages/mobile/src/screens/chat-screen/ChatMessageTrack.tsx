@@ -87,7 +87,6 @@ export const ChatMessageTrack = ({
       togglePlay={togglePlay}
       uid={uid}
       isTrending={false}
-      showRankIcon={false}
       styles={styles}
       variant='readonly'
       source={LineupTileSource.DM_TRACK}
