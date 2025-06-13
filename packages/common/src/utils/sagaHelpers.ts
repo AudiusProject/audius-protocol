@@ -1,5 +1,6 @@
 /** Helper Sagas */
 
+import { QueryClient } from '@tanstack/react-query'
 import { eventChannel, END, EventChannel } from 'redux-saga'
 import { ActionPattern, GetContextEffect } from 'redux-saga/effects'
 import {
@@ -15,6 +16,8 @@ import {
 } from 'typed-redux-saga'
 import { Action } from 'typesafe-actions'
 
+// this import needs to be very specific for SSR bundlesize
+import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { ErrorLevel, ReportToSentryArgs } from '~/models'
 import { waitForReachability } from '~/store/reachability/sagas'
 import { toast } from '~/store/ui/toast/slice'
@@ -153,9 +156,12 @@ export function* doEvery(
  * Waits for account to finish loading, whether it fails or succeeds.
  */
 export function* waitForAccount() {
+  const queryClient = (yield* getContext('queryClient')) as QueryClient
   yield* call(
-    waitForValue,
-    (state) => state.account.status,
+    waitForQueryValue,
+    function* () {
+      return queryClient.getQueryData(getAccountStatusQueryKey())
+    },
     null,
     (status) => status !== Status.LOADING && status !== Status.IDLE
   )

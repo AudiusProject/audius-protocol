@@ -63,10 +63,15 @@ export const useProfileCompletionDismissal = ({
   // On account load, check if this profile was *ever* incomplete
   const [wasIncomplete, setWasIncomplete] = useState(false)
   useEffect(() => {
-    if (isAccountLoaded) {
-      setWasIncomplete(!isComplete)
+    if (
+      isAccountLoaded &&
+      // Check for partially complete stages. Accounts with all incomplete won't have passed through sign up
+      completionStages.some((stage) => stage.isCompleted) &&
+      completionStages.some((stage) => !stage.isCompleted)
+    ) {
+      setWasIncomplete(true)
     }
-  }, [isAccountLoaded, isComplete])
+  }, [completionStages, isAccountLoaded])
 
   const wasAlwaysComplete = isComplete && !wasIncomplete
 
