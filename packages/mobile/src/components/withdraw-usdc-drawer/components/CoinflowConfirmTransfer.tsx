@@ -35,7 +35,9 @@ export const CoinflowConfirmTransfer = () => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='display' size='s'>
-          -${decimalIntegerToHumanReadable(values.amount)}
+          {walletMessages.minus}
+          {walletMessages.dollarSign}
+          {decimalIntegerToHumanReadable(values.amount)}
         </Text>
       </Flex>
       <Text variant='body'>{walletMessages.transferDescription}</Text>
