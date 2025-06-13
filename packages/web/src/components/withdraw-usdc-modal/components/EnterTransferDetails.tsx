@@ -8,7 +8,7 @@ import {
 import { useUSDCBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { Name, BNUSDC } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   WithdrawUSDCModalPages,
@@ -18,9 +18,9 @@ import {
 import {
   filterDecimalString,
   padDecimalValue,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber
+  decimalIntegerToHumanReadable
 } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, SegmentedControl, Text } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
@@ -43,11 +43,7 @@ const WithdrawMethodOptions = [
   { key: WithdrawMethod.MANUAL_TRANSFER, text: walletMessages.crypto }
 ]
 
-export const EnterTransferDetails = ({
-  balanceNumberCents
-}: {
-  balanceNumberCents: number
-}) => {
+export const EnterTransferDetails = () => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
@@ -56,10 +52,14 @@ export const EnterTransferDetails = ({
     FeatureFlags.COINFLOW_OFFRAMP_ENABLED
   )
 
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
+  const balanceNumberCents = Math.floor(
+    Number(
+      USDC(balance ?? new BN(0))
+        .floor(2)
+        .toString()
+    ) * 100
   )
-  const analyticsBalance = balanceNumber / 100
+  const analyticsBalance = balanceNumberCents / 100
 
   const [
     { value },
@@ -68,6 +68,8 @@ export const EnterTransferDetails = ({
   ] = useField(AMOUNT)
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
+  const [, { error: addressError }, { setTouched: setAddressTouched }] =
+    useField(ADDRESS)
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : '0'
   )
@@ -90,18 +92,6 @@ export const EnterTransferDetails = ({
     setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
     setAmount(balanceNumberCents)
   }, [balanceNumberCents, setAmount, setHumanizedValue])
-
-  const [
-    { value: address },
-    { error: addressError },
-    { setTouched: setAddressTouched }
-  ] = useField(ADDRESS)
-
-  const isBalanceLessThanMinimum = balance ? balance.lt(new BN(5)) : false
-  const disableContinue =
-    methodValue === WithdrawMethod.COINFLOW
-      ? !!balance?.isZero()
-      : !address || !!addressError || !!amountError || isBalanceLessThanMinimum
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
@@ -138,20 +128,27 @@ export const EnterTransferDetails = ({
           </Text>
           <Text variant='body'>{walletMessages.destinationDescription}</Text>
         </Flex>
-        <Flex gap='s' alignItems='center'>
-          <TextField
-            title={walletMessages.amountToWithdrawLabel}
-            label={walletMessages.amountToWithdrawLabel}
-            aria-label={walletMessages.amountToWithdrawLabel}
-            name={AMOUNT}
-            value={humanizedValue}
-            onChange={handleAmountChange}
-            onBlur={handleAmountBlur}
-            startAdornmentText={messages.dollars}
-          />
-          <Button variant='secondary' onClick={handleMaxPress} size='large'>
-            {walletMessages.max}
-          </Button>
+        <Flex column gap='s'>
+          <Flex gap='s' alignItems='center'>
+            <TextField
+              title={walletMessages.amountToWithdrawLabel}
+              label={walletMessages.amountToWithdrawLabel}
+              aria-label={walletMessages.amountToWithdrawLabel}
+              name={AMOUNT}
+              value={humanizedValue}
+              onChange={handleAmountChange}
+              onBlur={handleAmountBlur}
+              startAdornmentText={messages.dollars}
+            />
+            <Button variant='secondary' onClick={handleMaxPress} size='large'>
+              {walletMessages.max}
+            </Button>
+          </Flex>
+          {amountError && (
+            <Text variant='body' size='s' color='danger'>
+              {amountError}
+            </Text>
+          )}
         </Flex>
       </Flex>
       <Divider style={{ margin: 0 }} />
@@ -189,7 +186,7 @@ export const EnterTransferDetails = ({
       <Button
         variant='primary'
         fullWidth
-        disabled={disableContinue}
+        disabled={!!addressError || !!amountError}
         onClick={handleContinue}
       >
         {walletMessages.continue}

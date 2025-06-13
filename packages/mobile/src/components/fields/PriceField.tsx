@@ -13,8 +13,6 @@ import type {
   TextInputFocusEventData
 } from 'react-native'
 
-import { Text } from '../core/Text'
-
 import type { TextFieldProps } from './TextField'
 import { TextField } from './TextField'
 
@@ -65,11 +63,7 @@ export const PriceField = (props: TextFieldProps) => {
   return (
     <TextField
       keyboardType='numeric'
-      startAdornment={
-        <Text color='neutralLight2' weight='bold'>
-          {messages.dollars}
-        </Text>
-      }
+      startAdornmentText={messages.dollars}
       maxLength={MAX_LENGTH}
       {...props}
       value={humanizedValue ?? undefined}

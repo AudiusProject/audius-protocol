@@ -93,6 +93,7 @@ export {
 export * as withdrawUSDCSelectors from './withdraw-usdc/selectors'
 export * from './withdraw-usdc/types'
 export { default as withdrawUSDCSagas } from './withdraw-usdc/sagas'
+export * from './withdraw-usdc/schema'
 
 export {
   default as transactionDetailsReducer,

@@ -206,11 +206,10 @@ export const TransactionDetailsContent = ({
       transactionDetails.metadata &&
       typeof transactionDetails.metadata === 'string'
     ) {
-      isValidSolAddress(
+      const isValid = isValidSolAddress(
         transactionDetails.metadata as SolanaWalletAddress
-      ).then((isValid) => {
-        setIsValidSolanaAddress(isValid)
-      })
+      )
+      setIsValidSolanaAddress(isValid)
     }
   }, [transactionDetails.metadata])
   const isLoading =
