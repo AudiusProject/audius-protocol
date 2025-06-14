@@ -1,14 +1,12 @@
 import React, { useCallback, useState } from 'react'
 
-import { CreatePlaylistSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
-  savedPageSelectors,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
+  LibraryPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
-import Animated, { Layout } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -22,28 +20,29 @@ import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { useLibraryCollections } from './useLibraryCollections'
 
+const { getCategory } = libraryPageSelectors
 const { getIsReachable } = reachabilitySelectors
-const { getCategory } = savedPageSelectors
 
 const messages = {
-  emptyPlaylistFavoritesText: "You haven't favorited any playlists yet.",
-  emptyPlaylistRepostsText: "You haven't reposted any playlists yet.",
-  emptyPlaylistAllText:
-    "You haven't favorited, reposted, or purchased any playlists yet.",
-  inputPlaceholder: 'Filter Playlists'
+  emptyAlbumFavoritesText: "You haven't favorited any albums yet.",
+  emptyAlbumRepostsText: "You haven't reposted any albums yet.",
+  emptyAlbumPurchasedText: "You haven't purchased any albums yet.",
+  emptyAlbumAllText:
+    "You haven't favorited, reposted, or purchased any albums yet.",
+  inputPlaceholder: 'Filter Albums'
 }
 
-export const PlaylistsTab = () => {
+export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
   const {
     collectionIds,
+    hasNextPage,
     loadNextPage,
     isPending,
-    isFetchingNextPage,
-    hasNextPage
+    isFetchingNextPage
   } = useLibraryCollections({
     filterValue,
-    collectionType: 'playlists'
+    collectionType: 'albums'
   })
   const isReachable = useSelector(getIsReachable)
 
@@ -53,21 +52,23 @@ export const PlaylistsTab = () => {
     }
   }, [isReachable, loadNextPage])
 
-  const loadingSpinner = <LoadingMoreSpinner />
-  const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
-
   const emptyTabText = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.PLAYLISTS
+      currentTab: LibraryPageTabs.ALBUMS
     })
     if (selectedCategory === LibraryCategory.All) {
-      return messages.emptyPlaylistAllText
+      return messages.emptyAlbumAllText
     } else if (selectedCategory === LibraryCategory.Favorite) {
-      return messages.emptyPlaylistFavoritesText
+      return messages.emptyAlbumFavoritesText
+    } else if (selectedCategory === LibraryCategory.Purchase) {
+      return messages.emptyAlbumPurchasedText
     } else {
-      return messages.emptyPlaylistRepostsText
+      return messages.emptyAlbumRepostsText
     }
   })
+
+  const loadingSpinner = <LoadingMoreSpinner />
+  const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
 
   return (
     <VirtualizedScrollView>
@@ -86,22 +87,19 @@ export const PlaylistsTab = () => {
               placeholder={messages.inputPlaceholder}
               onChangeText={setFilterValue}
             />
-            <Animated.View layout={Layout}>
-              <CollectionList
-                collectionType='playlist'
-                onEndReached={handleEndReached}
-                onEndReachedThreshold={0.5}
-                scrollEnabled={false}
-                collectionIds={collectionIds}
-                ListFooterComponent={
-                  isFetchingNextPage && hasNextPage && collectionIds?.length > 0
-                    ? loadingSpinner
-                    : null
-                }
-                showCreateCollectionTile={!!isReachable}
-                createPlaylistSource={CreatePlaylistSource.LIBRARY_PAGE}
-              />
-            </Animated.View>
+            <CollectionList
+              collectionType='album'
+              onEndReached={handleEndReached}
+              onEndReachedThreshold={0.5}
+              scrollEnabled={false}
+              collectionIds={collectionIds}
+              showCreateCollectionTile={!!isReachable}
+              ListFooterComponent={
+                isFetchingNextPage && hasNextPage && collectionIds?.length > 0
+                  ? loadingSpinner
+                  : null
+              }
+            />
           </>
         </WithLoader>
       )}

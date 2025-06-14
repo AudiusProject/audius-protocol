@@ -5,9 +5,9 @@ import {
 import { primeTrackDataSaga, queryCurrentAccount } from '@audius/common/api'
 import { FavoriteType, Favorite } from '@audius/common/models'
 import {
-  savedPageTracksLineupActions as tracksActions,
-  savedPageActions as actions,
-  savedPageSelectors,
+  libraryPageTracksLineupActions as tracksActions,
+  libraryPageActions as actions,
+  libraryPageSelectors,
   getContext,
   LibraryCategoryType
 } from '@audius/common/store'
@@ -19,7 +19,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
 
-const { getTrackSaves } = savedPageSelectors
+const { getTrackSaves } = libraryPageSelectors
 
 function* fetchLineupMetadatas(offset: number, limit: number) {
   const isNativeMobile = yield* getContext('isNativeMobile')

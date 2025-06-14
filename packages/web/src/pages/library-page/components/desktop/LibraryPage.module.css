@@ -1,21 +1,21 @@
-.savedPageWrapper {
+.libraryPageWrapper {
   position: relative;
   text-align: left;
 }
 
-.savedPageHeader {
+.libraryPageHeader {
   justify-content: left;
 }
 
 /* Filter Input in Header */
-.savedPageWrapper :global(.ant-input-affix-wrapper) {
+.libraryPageWrapper :global(.ant-input-affix-wrapper) {
   position: absolute;
   right: 0px;
   top: 60px;
   width: 120px;
   z-index: 1;
 }
-.savedPageWrapper :global(.ant-input-affix-wrapper .ant-input) {
+.libraryPageWrapper :global(.ant-input-affix-wrapper .ant-input) {
   border-radius: 4px;
   border: 1px solid var(--harmony-n-100) !important;
   box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
@@ -32,11 +32,11 @@
   padding-bottom: 1px;
   height: 24px;
 }
-.savedPageWrapper :global(.ant-input-prefix) > svg {
+.libraryPageWrapper :global(.ant-input-prefix) > svg {
   width: 12px;
   height: 12px;
 }
-.savedPageWrapper :global(.ant-input-prefix) > svg g path {
+.libraryPageWrapper :global(.ant-input-prefix) > svg g path {
   fill: var(--harmony-n-400);
 }
 

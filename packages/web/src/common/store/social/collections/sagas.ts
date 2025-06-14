@@ -19,7 +19,7 @@ import {
 import {
   accountActions,
   cacheActions,
-  savedPageActions,
+  libraryPageActions,
   LibraryCategory,
   playlistLibraryActions,
   playlistLibraryHelpers,
@@ -51,7 +51,7 @@ import watchCollectionErrors from './errorSagas'
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { removeFromPlaylistLibrary } = playlistLibraryHelpers
-const { addLocalCollection, removeLocalCollection } = savedPageActions
+const { addLocalCollection, removeLocalCollection } = libraryPageActions
 const { collectionPage } = route
 
 /* REPOST COLLECTION */

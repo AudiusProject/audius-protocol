@@ -18,18 +18,18 @@ import {
   AccountCollection
 } from '@audius/common/models'
 import {
-  SavedPageTabs as ProfileTabs,
-  savedPageTracksLineupActions as tracksActions,
-  savedPageActions as saveActions,
-  savedPageSelectors,
-  SavedPageTabs,
+  LibraryPageTabs as ProfileTabs,
+  libraryPageTracksLineupActions as tracksActions,
+  libraryPageActions as saveActions,
+  libraryPageSelectors,
+  LibraryPageTabs,
   queueSelectors,
   tracksSocialActions as socialActions,
   playerSelectors,
   playlistUpdatesActions,
   playlistUpdatesSelectors,
   LibraryCategoryType,
-  SavedPageTrack,
+  LibraryPageTrack,
   TrackRecord,
   useLineupTable,
   AccountState
@@ -46,17 +46,17 @@ import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
-import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
-import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
+import { LibraryPageProps as DesktopLibraryPageProps } from './components/desktop/LibraryPage'
+import { LibraryPageProps as MobileLibraryPageProps } from './components/mobile/LibraryPage'
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const {
-  getSavedTracksLineup,
+  getLibraryTracksLineup,
   hasReachedEnd,
   getTracksCategory,
   getCollectionsCategory
-} = savedPageSelectors
+} = libraryPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
 
 const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
@@ -81,11 +81,11 @@ const sortMethodMap: Record<string, string> = {
 
 type OwnProps = {
   children:
-    | ComponentType<MobileSavedPageProps>
-    | ComponentType<DesktopSavedPageProps>
+    | ComponentType<MobileLibraryPageProps>
+    | ComponentType<DesktopLibraryPageProps>
 }
 
-type SavedPageProps = OwnProps &
+type LibraryPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps & {
@@ -97,7 +97,7 @@ type SavedPageProps = OwnProps &
       | undefined
   }
 
-type SavedPageState = {
+type LibraryPageState = {
   currentTab: ProfileTabs
   filterText: string
   sortMethod: string
@@ -109,11 +109,11 @@ type SavedPageState = {
   shouldReturnToTrackPurchases: boolean
 }
 
-const SavedPage = (props: SavedPageProps) => {
+const LibraryPage = (props: LibraryPageProps) => {
   const currentTrack = useCurrentTrack()
-  const tracks = useLineupTable(getSavedTracksLineup)
+  const tracks = useLineupTable(getLibraryTracksLineup)
   return (
-    <SavedPageClassComponent
+    <LibraryPageClassComponent
       {...props}
       currentTrack={currentTrack}
       tracks={tracks}
@@ -121,16 +121,16 @@ const SavedPage = (props: SavedPageProps) => {
   )
 }
 
-class SavedPageClassComponent extends PureComponent<
-  SavedPageProps & {
+class LibraryPageClassComponent extends PureComponent<
+  LibraryPageProps & {
     currentTrack: Track | null
-    tracks: Lineup<SavedPageTrack>
+    tracks: Lineup<LibraryPageTrack>
   },
-  SavedPageState
+  LibraryPageState
 > {
   static contextType = SsrContext
   declare context: React.ContextType<typeof SsrContext>
-  state: SavedPageState = {
+  state: LibraryPageState = {
     filterText: '',
     sortMethod: '',
     sortDirection: '',
@@ -141,7 +141,7 @@ class SavedPageClassComponent extends PureComponent<
   }
 
   handleFetchSavedTracks = debounce(() => {
-    this.props.fetchSavedTracks(
+    this.props.fetchLibraryTracks(
       this.state.filterText,
       this.props.tracksCategory,
       this.state.sortMethod,
@@ -163,7 +163,7 @@ class SavedPageClassComponent extends PureComponent<
   }
 
   componentDidMount() {
-    this.props.fetchSavedTracks(
+    this.props.fetchLibraryTracks(
       this.state.filterText,
       this.props.tracksCategory,
       this.state.sortMethod,
@@ -175,7 +175,7 @@ class SavedPageClassComponent extends PureComponent<
     this.props.resetSavedTracks()
   }
 
-  componentDidUpdate(prevProps: SavedPageProps) {
+  componentDidUpdate(prevProps: LibraryPageProps) {
     const { tracksCategory: prevTracksCategory } = prevProps
     const { tracks, tracksCategory } = this.props
     const hasReachedEnd = this.props.hasReachedEnd
@@ -217,7 +217,7 @@ class SavedPageClassComponent extends PureComponent<
     )
   }
 
-  formatMetadata = (trackMetadatas: SavedPageTrack[]) => {
+  formatMetadata = (trackMetadatas: LibraryPageTrack[]) => {
     return trackMetadatas.map((entry, i) => ({
       ...entry,
       key: `${entry.title}_${entry.uid}_${i}`,
@@ -248,8 +248,8 @@ class SavedPageClassComponent extends PureComponent<
   }
 
   getFormattedData = (
-    trackMetadatas: SavedPageTrack[]
-  ): [SavedPageTrack[], number] => {
+    trackMetadatas: LibraryPageTrack[]
+  ): [LibraryPageTrack[], number] => {
     const { tracks } = this.props
     const playingUid = this.getPlayingUid()
     const activeIndex = tracks.entries.findIndex(
@@ -264,8 +264,8 @@ class SavedPageClassComponent extends PureComponent<
   }
 
   getFilteredData = (
-    trackMetadatas: SavedPageTrack[]
-  ): [SavedPageTrack[], number] => {
+    trackMetadatas: LibraryPageTrack[]
+  ): [LibraryPageTrack[], number] => {
     const { tracks } = this.props
     const filterText = this.state.filterText ?? ''
     const playingUid = this.getPlayingUid()
@@ -431,7 +431,7 @@ class SavedPageClassComponent extends PureComponent<
     if (updatedOrder) this.props.updateLineupOrder(updatedOrder)
   }
 
-  onChangeTab = (tab: SavedPageTabs) => {
+  onChangeTab = (tab: LibraryPageTabs) => {
     this.setState({
       currentTab: tab
     })
@@ -460,7 +460,7 @@ class SavedPageClassComponent extends PureComponent<
       buffering: this.props.buffering,
 
       // Props from dispatch
-      fetchSavedTracks: this.props.fetchSavedTracks,
+      fetchLibraryTracks: this.props.fetchLibraryTracks,
       resetSavedTracks: this.props.resetSavedTracks,
       updateLineupOrder: this.props.updateLineupOrder,
       goToRoute: this.props.goToRoute,
@@ -530,7 +530,7 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchSavedTracks: (
+    fetchLibraryTracks: (
       query?: string,
       category?: LibraryCategoryType,
       sortMethod?: string,
@@ -587,8 +587,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     record: (event: TrackEvent) => dispatch(event)
   }
 }
-const withHook = (Component: typeof SavedPage) => {
-  return function WrappedComponent(props: SavedPageProps) {
+const withHook = (Component: typeof LibraryPage) => {
+  return function WrappedComponent(props: LibraryPageProps) {
     const { data: account } = useCurrentAccount({
       select: (account) => {
         if (!account) return undefined
@@ -607,5 +607,5 @@ const withHook = (Component: typeof SavedPage) => {
 }
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(withHook(SavedPage))
+  connect(makeMapStateToProps, mapDispatchToProps)(withHook(LibraryPage))
 )

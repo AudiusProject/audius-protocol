@@ -4,7 +4,7 @@ import {
   queryCurrentAccount,
   queryCurrentUserId
 } from '@audius/common/api'
-import { savedPageSelectors, getSDK } from '@audius/common/store'
+import { libraryPageSelectors, getSDK } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import moment from 'moment'
@@ -17,7 +17,7 @@ import { EventNames } from 'app/types/analytics'
 import type { OfflineEntry } from '../slice'
 import { addOfflineEntries, requestDownloadAllFavorites } from '../slice'
 
-const { getLocalTrackFavorites } = savedPageSelectors
+const { getLocalTrackFavorites } = libraryPageSelectors
 
 export function* requestDownloadAllFavoritesSaga() {
   yield* takeEvery(requestDownloadAllFavorites.type, downloadAllFavorites)

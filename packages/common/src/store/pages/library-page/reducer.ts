@@ -16,15 +16,15 @@ import {
   REMOVE_LOCAL_COLLECTION,
   REMOVE_LOCAL_TRACK,
   SET_SELECTED_CATEGORY
-} from '~/store/pages/saved-page/actions'
+} from '~/store/pages/library-page/actions'
 import tracksReducer, {
   initialState as initialLineupState
-} from '~/store/pages/saved-page/lineups/tracks/reducer'
+} from '~/store/pages/library-page/lineups/tracks/reducer'
 import { signOut } from '~/store/sign-out/slice'
 import { ActionsMap } from '~/utils/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
-import { LibraryCategory, LibraryCategoryType, SavedPageState } from './types'
+import { LibraryCategory, LibraryCategoryType, LibraryPageState } from './types'
 import { calculateNewLibraryCategories } from './utils'
 
 const initialState = {
@@ -73,7 +73,7 @@ const initialState = {
       }
     }
   }
-} as SavedPageState
+} as LibraryPageState
 
 const getCategoryLocalStateKey = (
   category: Omit<LibraryCategoryType, 'all'>
@@ -90,7 +90,7 @@ const getCategoryLocalStateKey = (
   }
 }
 
-const actionsMap: ActionsMap<SavedPageState> = {
+const actionsMap: ActionsMap<LibraryPageState> = {
   [FETCH_SAVES](state) {
     return {
       ...state
@@ -208,7 +208,7 @@ const actionsMap: ActionsMap<SavedPageState> = {
 
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-export const savePageReducer = (state = initialState, action: any) => {
+export const libraryPageReducer = (state = initialState, action: any) => {
   const tracks = tracksLineupReducer(state.tracks as any, action)
   if (tracks !== state.tracks) return { ...state, tracks }
 
@@ -217,12 +217,12 @@ export const savePageReducer = (state = initialState, action: any) => {
   return matchingReduceFunction(state, action)
 }
 
-export const savedPagePersistConfig = (storage: Storage) => ({
-  key: 'saved-page',
+export const libraryPagePersistConfig = (storage: Storage) => ({
+  key: 'library-page',
   storage,
   whitelist: ['tracksCategory', 'collectionsCategory']
 })
 
-export const persistedSavePageReducer = (storage: Storage) => {
-  return persistReducer(savedPagePersistConfig(storage), savePageReducer)
+export const persistedLibraryPageReducer = (storage: Storage) => {
+  return persistReducer(libraryPagePersistConfig(storage), libraryPageReducer)
 }

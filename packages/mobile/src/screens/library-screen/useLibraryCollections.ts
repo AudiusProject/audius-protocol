@@ -7,8 +7,8 @@ import {
 } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import {
-  savedPageSelectors,
-  SavedPageTabs,
+  libraryPageSelectors,
+  LibraryPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
 import type { CommonState, CollectionType } from '@audius/common/store'
@@ -30,7 +30,7 @@ const {
   getSelectedCategoryLocalAlbumRemovals,
   getSelectedCategoryLocalPlaylistAdds,
   getSelectedCategoryLocalPlaylistRemovals
-} = savedPageSelectors
+} = libraryPageSelectors
 
 type UseLibraryCollectionsConfig = {
   filterValue?: string
@@ -47,8 +47,8 @@ export const useLibraryCollections = ({
     getCategory(state, {
       currentTab:
         collectionType === 'albums'
-          ? SavedPageTabs.ALBUMS
-          : SavedPageTabs.PLAYLISTS
+          ? LibraryPageTabs.ALBUMS
+          : LibraryPageTabs.PLAYLISTS
     })
   )
 

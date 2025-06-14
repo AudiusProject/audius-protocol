@@ -790,8 +790,8 @@ export class DiscoveryProvider {
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
    */
-  async getSavedPlaylists(limit = 100, offset = 0, withUsers = false) {
-    const req = Requests.getSavedPlaylists(limit, offset, withUsers)
+  async getLibraryPlaylists(limit = 100, offset = 0, withUsers = false) {
+    const req = Requests.getLibraryPlaylists(limit, offset, withUsers)
     return await this._makeRequest(req)
   }
 
@@ -801,8 +801,8 @@ export class DiscoveryProvider {
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
    */
-  async getSavedAlbums(limit = 100, offset = 0, withUsers = false) {
-    const req = Requests.getSavedAlbums(limit, offset, withUsers)
+  async getLibraryAlbums(limit = 100, offset = 0, withUsers = false) {
+    const req = Requests.getLibraryAlbums(limit, offset, withUsers)
     return await this._makeRequest(req)
   }
 
@@ -812,8 +812,8 @@ export class DiscoveryProvider {
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
    */
-  async getSavedTracks(limit = 100, offset = 0, withUsers = false) {
-    const req = Requests.getSavedTracks(limit, offset, withUsers)
+  async getLibraryTracks(limit = 100, offset = 0, withUsers = false) {
+    const req = Requests.getLibraryTracks(limit, offset, withUsers)
     return await this._makeRequest(req)
   }
 

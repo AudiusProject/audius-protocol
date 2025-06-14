@@ -18,7 +18,7 @@ export type LibraryCategoryType = ValueOf<typeof LibraryCategory>
 export function isLibraryCategory(value: string): value is LibraryCategoryType {
   return Object.values(LibraryCategory).includes(value as LibraryCategoryType)
 }
-export interface SavedPageState {
+export interface LibraryPageState {
   local: {
     track: {
       favorites: {
@@ -67,15 +67,15 @@ export interface SavedPageState {
   collectionsCategory: LibraryCategoryType
 }
 
-export enum SavedPageTabs {
+export enum LibraryPageTabs {
   TRACKS = 'Tracks',
   ALBUMS = 'Albums',
   PLAYLISTS = 'Playlists'
 }
 
-export type SavedPageTrack = LineupTrack & { dateSaved: string }
+export type LibraryPageTrack = LineupTrack & { dateSaved: string }
 
-export type TrackRecord = SavedPageTrack & {
+export type TrackRecord = LibraryPageTrack & {
   key: string
   name: string
   artist: string
@@ -85,6 +85,6 @@ export type TrackRecord = SavedPageTrack & {
   plays: number | undefined
 }
 
-export type SavedPageCollection = Collection & {
+export type LibraryPageCollection = Collection & {
   ownerHandle: string
 }

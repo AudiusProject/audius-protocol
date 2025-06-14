@@ -38,7 +38,7 @@ import {
   accountActions,
   confirmerActions,
   getContext,
-  savedPageActions,
+  libraryPageActions,
   uploadActions,
   getSDK,
   cacheTracksActions,
@@ -972,7 +972,7 @@ export function* uploadCollection(
           })
         )
         yield* put(
-          savedPageActions.addLocalCollection({
+          libraryPageActions.addLocalCollection({
             collectionId: confirmedPlaylist.playlist_id,
             isAlbum: confirmedPlaylist.is_album,
             category: LibraryCategory.Favorite

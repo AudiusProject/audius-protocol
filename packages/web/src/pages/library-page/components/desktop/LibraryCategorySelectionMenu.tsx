@@ -1,10 +1,10 @@
 import { ChangeEvent, useCallback } from 'react'
 
 import {
-  savedPageActions,
-  savedPageSelectors,
+  libraryPageActions,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
+  LibraryPageTabs,
   LibraryCategoryType,
   CommonState
 } from '@audius/common/store'
@@ -18,8 +18,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import styles from './LibraryCategorySelectionMenu.module.css'
 
-const { getCategory } = savedPageSelectors
-const { setSelectedCategory } = savedPageActions
+const { getCategory } = libraryPageSelectors
+const { setSelectedCategory } = libraryPageActions
 
 const ALL_CATEGORIES = [
   {
@@ -46,7 +46,7 @@ const ALL_CATEGORIES = [
 const CATEGORIES_WITHOUT_PURCHASED = ALL_CATEGORIES.slice(0, -1)
 
 type LibraryCategorySelectionMenuProps = {
-  currentTab: SavedPageTabs
+  currentTab: LibraryPageTabs
   variant?: 'desktop' | 'mobile'
 }
 
@@ -72,7 +72,7 @@ export const LibraryCategorySelectionMenu = (
   )
 
   const categories =
-    currentTab !== SavedPageTabs.PLAYLISTS
+    currentTab !== LibraryPageTabs.PLAYLISTS
       ? ALL_CATEGORIES
       : CATEGORIES_WITHOUT_PURCHASED
 

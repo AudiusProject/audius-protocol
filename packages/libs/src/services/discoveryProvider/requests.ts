@@ -447,7 +447,7 @@ export const searchTags = (
   }
 }
 
-export const getSavedPlaylists = (
+export const getLibraryPlaylists = (
   limit = 100,
   offset = 0,
   withUsers = false
@@ -458,14 +458,22 @@ export const getSavedPlaylists = (
   }
 }
 
-export const getSavedAlbums = (limit = 100, offset = 0, withUsers = false) => {
+export const getLibraryAlbums = (
+  limit = 100,
+  offset = 0,
+  withUsers = false
+) => {
   return {
     endpoint: 'saves/albums',
     queryParams: { limit, offset, with_users: withUsers }
   }
 }
 
-export const getSavedTracks = (limit = 100, offset = 0, withUsers = false) => {
+export const getLibraryTracks = (
+  limit = 100,
+  offset = 0,
+  withUsers = false
+) => {
   return {
     endpoint: 'saves/tracks',
     queryParams: { limit, offset, with_users: withUsers }

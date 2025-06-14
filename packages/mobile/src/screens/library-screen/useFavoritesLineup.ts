@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import { Kind } from '@audius/common/models'
 import {
-  savedPageTracksLineupActions,
-  savedPageSelectors
+  libraryPageTracksLineupActions,
+  libraryPageSelectors
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { orderBy } from 'lodash'
@@ -13,7 +13,7 @@ import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { useOfflineTracks } from 'app/store/offline-downloads/hooks'
 
-const { getSavedTracksLineup } = savedPageSelectors
+const { getLibraryTracksLineup } = libraryPageSelectors
 
 /**
  * Returns a favorites lineup, supports boths online and offline
@@ -22,12 +22,12 @@ const { getSavedTracksLineup } = savedPageSelectors
 export const useFavoritesLineup = (fetchLineup: () => void) => {
   const dispatch = useDispatch()
   const offlineTracks = useOfflineTracks()
-  const savedTracks = useSelector(getSavedTracksLineup)
+  const savedTracks = useSelector(getLibraryTracksLineup)
   const savedTracksUidMap = savedTracks.entries.reduce((acc, track) => {
     acc[track.id] = track.uid
     return acc
   }, {})
-  const lineup = useSelector(getSavedTracksLineup)
+  const lineup = useSelector(getLibraryTracksLineup)
 
   const fetchLineupOffline = useCallback(() => {
     const lineupTracks = offlineTracks
@@ -50,7 +50,7 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
       'desc'
     ])
     dispatch(
-      savedPageTracksLineupActions.fetchLineupMetadatasSucceeded(
+      libraryPageTracksLineupActions.fetchLineupMetadatasSucceeded(
         sortedTracks,
         0,
         sortedTracks.length,
@@ -64,7 +64,7 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
     // Because we do `fetchLineupMetadatasSucceeded` in fetchLineupOffline
     // we need to manually set the lineup as loading here. This is so if the app is started
     // offline and then reconnects, we show a spinner while loading instead of the empty message
-    dispatch(savedPageTracksLineupActions.setLoading())
+    dispatch(libraryPageTracksLineupActions.setLoading())
     fetchLineup()
   }, [dispatch, fetchLineup])
 

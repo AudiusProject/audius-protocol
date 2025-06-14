@@ -2,7 +2,7 @@ import {
   trendingPageSelectors,
   trackPageSelectors,
   searchResultsPageSelectors,
-  savedPageSelectors,
+  libraryPageSelectors,
   profilePageSelectors,
   historyPageSelectors,
   feedPageSelectors,
@@ -33,7 +33,7 @@ const { getCollectionTracksLineup } = collectionPageSelectors
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { getHistoryTracksLineup } = historyPageSelectors
 const { getProfileTracksLineup } = profilePageSelectors
-const { getSavedTracksLineup } = savedPageSelectors
+const { getLibraryTracksLineup } = libraryPageSelectors
 const { getSearchTracksLineup } = searchResultsPageSelectors
 const { getLineup } = trackPageSelectors
 const { getCurrentDiscoverTrendingLineup } = trendingPageSelectors
@@ -67,7 +67,7 @@ export const getLineupSelectorForRoute = (location) => {
     return getSearchTracksLineup
   }
   if (matchPage(SAVED_PAGE) || matchPage(LIBRARY_PAGE)) {
-    return getSavedTracksLineup
+    return getLibraryTracksLineup
   }
   if (matchPage(HISTORY_PAGE)) {
     return getHistoryTracksLineup

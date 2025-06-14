@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 
 import {
-  savedPageSelectors,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
+  LibraryPageTabs,
   CommonState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -14,14 +14,14 @@ import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useLibraryCollections } from 'pages/saved-page/hooks/useLibraryCollections'
+import { useLibraryCollections } from 'pages/library-page/hooks/useLibraryCollections'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
-import styles from './SavedPage.module.css'
+import styles from './LibraryPage.module.css'
 
 const { TRENDING_PAGE } = route
-const { getCategory } = savedPageSelectors
+const { getCategory } = libraryPageSelectors
 
 const messages = {
   emptyAlbumsBody: 'Once you have, this is where you’ll find them!',
@@ -40,7 +40,7 @@ export const AlbumsTabPage = () => {
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.ALBUMS
+      currentTab: LibraryPageTabs.ALBUMS
     })
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyAlbumAllHeader

@@ -1,4 +1,4 @@
-import { SavedPageTabs } from '@audius/common/store'
+import { LibraryPageTabs } from '@audius/common/store'
 
 import {
   IconAlbum,
@@ -25,17 +25,17 @@ const messages = {
 
 const favoritesScreens = [
   {
-    name: SavedPageTabs.TRACKS,
+    name: LibraryPageTabs.TRACKS,
     Icon: IconNote,
     component: TracksTab
   },
   {
-    name: SavedPageTabs.ALBUMS,
+    name: LibraryPageTabs.ALBUMS,
     Icon: IconAlbum,
     component: AlbumsTab
   },
   {
-    name: SavedPageTabs.PLAYLISTS,
+    name: LibraryPageTabs.PLAYLISTS,
     Icon: IconPlaylists,
     component: PlaylistsTab
   }

@@ -16,7 +16,7 @@ import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
-import { HistoryPageState, SavedPageState } from './pages'
+import { HistoryPageState, LibraryPageState } from './pages'
 import ai from './pages/ai/slice'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import { chatReducer } from './pages/chat'
@@ -30,12 +30,12 @@ import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
+import { persistedLibraryPageReducer } from './pages/library-page/reducer'
 import pickWinners from './pages/pick-winners/slice'
 import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
-import { persistedSavePageReducer } from './pages/saved-page/reducer'
 import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
@@ -197,7 +197,7 @@ export const reducers = (storage: Storage, history?: History) => ({
     pickWinners,
     profile: profileReducer,
     smartCollection,
-    savedPage: persistedSavePageReducer(storage),
+    libraryPage: persistedLibraryPageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
@@ -311,7 +311,7 @@ export type CommonState = {
     track: TrackPageState
     pickWinners: ReturnType<typeof pickWinners>
     profile: ProfilePageState
-    savedPage: SavedPageState
+    libraryPage: LibraryPageState
     searchResults: SearchPageState
     settings: SettingsPageState
     trending: TrendingPageState

@@ -13,10 +13,10 @@ import {
 } from '@audius/common/hooks'
 import { statusIsNotFinalized, ID, UID, Lineup } from '@audius/common/models'
 import {
-  savedPageSelectors,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
-  SavedPageTrack,
+  LibraryPageTabs,
+  LibraryPageTrack,
   QueueItem,
   CommonState
 } from '@audius/common/store'
@@ -42,16 +42,16 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import useTabs from 'hooks/useTabs/useTabs'
-import { useLibraryCollections } from 'pages/saved-page/hooks/useLibraryCollections'
+import { useLibraryCollections } from 'pages/library-page/hooks/useLibraryCollections'
 
 import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
 
+import styles from './LibraryPage.module.css'
 import NewCollectionButton from './NewCollectionButton'
-import styles from './SavedPage.module.css'
 
 const { TRENDING_PAGE } = route
-const { getCategory } = savedPageSelectors
+const { getCategory } = libraryPageSelectors
 
 const emptyTabMessages = {
   afterSaved: "Once you have, this is where you'll find them!",
@@ -117,7 +117,7 @@ const useTabContainerRef = ({
 }: {
   resultsLength: number | undefined
   hasNoResults: boolean
-  currentTab: SavedPageTabs
+  currentTab: LibraryPageTabs
   isFilterActive: boolean
 }) => {
   const [hasCompletedInitialLoad, setHasCompletedInitialLoad] = useState(false)
@@ -175,11 +175,11 @@ const TracksLineup = ({
   queuedAndPlaying,
   onTogglePlay
 }: {
-  tracks: Lineup<SavedPageTrack>
+  tracks: Lineup<LibraryPageTrack>
   goToTrending: () => void
   onFilterChange: (e: any) => void
   filterText: string
-  getFilteredData: (trackMetadatas: any) => [SavedPageTrack[], number]
+  getFilteredData: (trackMetadatas: any) => [LibraryPageTrack[], number]
   playingUid: UID | null
   queuedAndPlaying: boolean
   onTogglePlay: (uid: UID, trackId: ID) => void
@@ -214,7 +214,7 @@ const TracksLineup = ({
 
   const emptyTracksHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.TRACKS
+      currentTab: LibraryPageTabs.TRACKS
     })
 
     if (selectedCategory === LibraryCategory.All) {
@@ -231,7 +231,7 @@ const TracksLineup = ({
   const contentRef = useTabContainerRef({
     resultsLength: trackList.length,
     hasNoResults: trackList.length === 0,
-    currentTab: SavedPageTabs.TRACKS,
+    currentTab: LibraryPageTabs.TRACKS,
     isFilterActive: Boolean(filterText)
   })
 
@@ -305,7 +305,7 @@ const AlbumCardLineup = () => {
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.ALBUMS
+      currentTab: LibraryPageTabs.ALBUMS
     })
 
     if (selectedCategory === LibraryCategory.All) {
@@ -346,7 +346,7 @@ const AlbumCardLineup = () => {
   const containerRef = useTabContainerRef({
     resultsLength: albumIds?.length,
     hasNoResults: noSavedAlbums,
-    currentTab: SavedPageTabs.ALBUMS,
+    currentTab: LibraryPageTabs.ALBUMS,
     isFilterActive: Boolean(filterText)
   })
 
@@ -432,7 +432,7 @@ const PlaylistCardLineup = ({
 
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.PLAYLISTS
+      currentTab: LibraryPageTabs.PLAYLISTS
     })
 
     if (selectedCategory === LibraryCategory.All) {
@@ -462,7 +462,7 @@ const PlaylistCardLineup = ({
   const containerRef = useTabContainerRef({
     resultsLength: playlistIds?.length,
     hasNoResults: noSavedPlaylists,
-    currentTab: SavedPageTabs.PLAYLISTS,
+    currentTab: LibraryPageTabs.PLAYLISTS,
     isFilterActive: Boolean(filterText)
   })
 
@@ -522,28 +522,28 @@ const messages = {
 const tabHeaders = [
   {
     icon: <IconNote />,
-    text: SavedPageTabs.TRACKS,
-    label: SavedPageTabs.TRACKS
+    text: LibraryPageTabs.TRACKS,
+    label: LibraryPageTabs.TRACKS
   },
   {
     icon: <IconAlbum />,
-    text: SavedPageTabs.ALBUMS,
-    label: SavedPageTabs.ALBUMS
+    text: LibraryPageTabs.ALBUMS,
+    label: LibraryPageTabs.ALBUMS
   },
   {
     icon: <IconPlaylists />,
-    text: SavedPageTabs.PLAYLISTS,
-    label: SavedPageTabs.PLAYLISTS
+    text: LibraryPageTabs.PLAYLISTS,
+    label: LibraryPageTabs.PLAYLISTS
   }
 ]
 
-export type SavedPageProps = {
+export type LibraryPageProps = {
   title: string
   description: string
   onFilterChange: (e: any) => void
   isQueued: boolean
   playingUid: UID | null
-  getFilteredData: (trackMetadatas: any) => [SavedPageTrack[], number]
+  getFilteredData: (trackMetadatas: any) => [LibraryPageTrack[], number]
   onTogglePlay: (uid: UID, trackId: ID) => void
 
   onPlay: () => void
@@ -551,11 +551,11 @@ export type SavedPageProps = {
   formatCardSecondaryText: (saves: number, tracks: number) => string
   filterText: string
   initialOrder: UID[] | null
-  tracks: Lineup<SavedPageTrack>
+  tracks: Lineup<LibraryPageTrack>
   currentQueueItem: QueueItem
   playing: boolean
   buffering: boolean
-  fetchSavedTracks: () => void
+  fetchLibraryTracks: () => void
   resetSavedTracks: () => void
   updateLineupOrder: (updatedOrderIndices: UID[]) => void
 
@@ -568,11 +568,11 @@ export type SavedPageProps = {
   onReorderTracks: any
   playlistUpdates: number[]
   updatePlaylistLastViewedAt: (playlistId: number) => void
-  currentTab: SavedPageTabs
-  onChangeTab: (tab: SavedPageTabs) => void
+  currentTab: LibraryPageTabs
+  onChangeTab: (tab: LibraryPageTabs) => void
 }
 
-const SavedPage = ({
+const LibraryPage = ({
   title,
   description,
   playingUid,
@@ -588,7 +588,7 @@ const SavedPage = ({
   updatePlaylistLastViewedAt,
   currentTab,
   onChangeTab
-}: SavedPageProps) => {
+}: LibraryPageProps) => {
   useMainPageHeader()
   const queuedAndPlaying = playing && isQueued
 
@@ -617,7 +617,7 @@ const SavedPage = ({
 
   const handleTabClick = useCallback(
     (newTab: string) => {
-      onChangeTab(newTab as SavedPageTabs)
+      onChangeTab(newTab as LibraryPageTabs)
     },
     [onChangeTab]
   )
@@ -659,4 +659,4 @@ const SavedPage = ({
   )
 }
 
-export default SavedPage
+export default LibraryPage

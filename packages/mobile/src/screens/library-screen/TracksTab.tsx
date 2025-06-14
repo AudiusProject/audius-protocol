@@ -4,11 +4,11 @@ import { useTracks, useUsers } from '@audius/common/api'
 import { PlaybackSource, Status } from '@audius/common/models'
 import type { ID, UID, Track, User } from '@audius/common/models'
 import {
-  savedPageTracksLineupActions as tracksActions,
-  savedPageActions,
-  savedPageSelectors,
+  libraryPageTracksLineupActions as tracksActions,
+  libraryPageActions,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
+  LibraryPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
 import { Uid, type Nullable } from '@audius/common/utils'
@@ -29,15 +29,15 @@ import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { useFavoritesLineup } from './useFavoritesLineup'
 
-const { fetchSaves: fetchSavesAction, fetchMoreSaves } = savedPageActions
+const { fetchSaves: fetchSavesAction, fetchMoreSaves } = libraryPageActions
 const {
   getTrackSaves,
-  getSavedTracksStatus,
+  getLibraryTracksStatus,
   getInitialFetchStatus,
   getSelectedCategoryLocalTrackAdds,
   getIsFetchingMore,
   getCategory
-} = savedPageSelectors
+} = libraryPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
@@ -87,10 +87,10 @@ export const TracksTab = () => {
   const [filterValue, setFilterValue] = useState('')
   const [fetchPage, setFetchPage] = useState(0)
   const selectedCategory = useSelector((state) =>
-    getCategory(state, { currentTab: SavedPageTabs.TRACKS })
+    getCategory(state, { currentTab: LibraryPageTabs.TRACKS })
   )
   const savedTracksStatus = useSelector((state) => {
-    const onlineSavedTracksStatus = getSavedTracksStatus(state)
+    const onlineSavedTracksStatus = getLibraryTracksStatus(state)
     const isDoneLoadingFromDisk = getIsDoneLoadingFromDisk(state)
     const offlineSavedTracksStatus = isDoneLoadingFromDisk
       ? Status.SUCCESS

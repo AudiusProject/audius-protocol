@@ -4,7 +4,7 @@ import {
   makeLoadNextPage,
   useLibraryCollections as useLibraryCollectionsQuery
 } from '@audius/common/api'
-import { savedPageSelectors, CommonState } from '@audius/common/store'
+import { libraryPageSelectors, CommonState } from '@audius/common/store'
 import { uniq } from 'lodash'
 import { useSelector } from 'react-redux'
 
@@ -14,7 +14,7 @@ const {
   getSelectedCategoryLocalAlbumRemovals,
   getSelectedCategoryLocalPlaylistAdds,
   getSelectedCategoryLocalPlaylistRemovals
-} = savedPageSelectors
+} = libraryPageSelectors
 
 type LibraryCollectionsParams = {
   collectionType: 'album' | 'playlist'

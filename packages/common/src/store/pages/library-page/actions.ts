@@ -1,26 +1,26 @@
 import { Favorite } from '~/models/Favorite'
 
-import { LibraryCategory, LibraryCategoryType, SavedPageTabs } from './types'
+import { LibraryCategory, LibraryCategoryType, LibraryPageTabs } from './types'
 
-export const FETCH_SAVES = 'SAVED/FETCH_SAVES'
-export const FETCH_SAVES_REQUESTED = 'SAVED/FETCH_SAVES_REQUESTED'
-export const FETCH_SAVES_SUCCEEDED = 'SAVED/FETCH_SAVES_SUCCEEDED'
-export const FETCH_SAVES_FAILED = 'SAVED/FETCH_SAVES_FAILED'
+export const FETCH_SAVES = 'LIBRARY/FETCH_SAVES'
+export const FETCH_SAVES_REQUESTED = 'LIBRARY/FETCH_SAVES_REQUESTED'
+export const FETCH_SAVES_SUCCEEDED = 'LIBRARY/FETCH_SAVES_SUCCEEDED'
+export const FETCH_SAVES_FAILED = 'LIBRARY/FETCH_SAVES_FAILED'
 
-export const FETCH_MORE_SAVES = 'SAVED/FETCH_MORE_SAVES'
-export const FETCH_MORE_SAVES_SUCCEEDED = 'SAVED/FETCH_MORE_SAVES_SUCCEEDED'
-export const FETCH_MORE_SAVES_FAILED = 'SAVED/FETCH_MORE_SAVES_FAILED'
+export const FETCH_MORE_SAVES = 'LIBRARY/FETCH_MORE_SAVES'
+export const FETCH_MORE_SAVES_SUCCEEDED = 'LIBRARY/FETCH_MORE_SAVES_SUCCEEDED'
+export const FETCH_MORE_SAVES_FAILED = 'LIBRARY/FETCH_MORE_SAVES_FAILED'
 
 // Reached the end of the list before hitting the total number of saves
 // Usually when filtering
-export const END_FETCHING = 'SAVED/END_FETCHING'
+export const END_FETCHING = 'LIBRARY/END_FETCHING'
 
-export const ADD_LOCAL_TRACK = 'SAVED/ADD_LOCAL_TRACK'
-export const REMOVE_LOCAL_TRACK = 'SAVED/REMOVE_LOCAL_TRACK'
-export const ADD_LOCAL_COLLECTION = 'SAVED/ADD_LOCAL_COLLECTION'
-export const REMOVE_LOCAL_COLLECTION = 'SAVED/REMOVE_LOCAL_COLLECTION'
+export const ADD_LOCAL_TRACK = 'LIBRARY/ADD_LOCAL_TRACK'
+export const REMOVE_LOCAL_TRACK = 'LIBRARY/REMOVE_LOCAL_TRACK'
+export const ADD_LOCAL_COLLECTION = 'LIBRARY/ADD_LOCAL_COLLECTION'
+export const REMOVE_LOCAL_COLLECTION = 'LIBRARY/REMOVE_LOCAL_COLLECTION'
 
-export const SET_SELECTED_CATEGORY = 'SAVED/SET_SELECTED_CATEGORY'
+export const SET_SELECTED_CATEGORY = 'LIBRARY/SET_SELECTED_CATEGORY'
 
 export const fetchSaves = (
   // the filter query for the "get tracks" query
@@ -156,7 +156,7 @@ export const setSelectedCategory = ({
   currentTab
 }: {
   category: LibraryCategoryType
-  currentTab: SavedPageTabs
+  currentTab: LibraryPageTabs
 }) => ({
   type: SET_SELECTED_CATEGORY,
   category,

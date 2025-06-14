@@ -15,10 +15,10 @@ import {
   Track
 } from '@audius/common/models'
 import {
-  savedPageSelectors,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
-  SavedPageTrack,
+  LibraryPageTabs,
+  LibraryPageTrack,
   TrackRecord,
   QueueItem,
   CommonState
@@ -47,10 +47,10 @@ import { emptyStateMessages } from '../emptyStateMessages'
 
 import { AlbumsTabPage } from './AlbumsTabPage'
 import { LibraryCategorySelectionMenu } from './LibraryCategorySelectionMenu'
+import styles from './LibraryPage.module.css'
 import { PlaylistsTabPage } from './PlaylistsTabPage'
-import styles from './SavedPage.module.css'
 
-const { getInitialFetchStatus, getCategory } = savedPageSelectors
+const { getInitialFetchStatus, getCategory } = libraryPageSelectors
 
 const messages = {
   libraryHeader: 'Library',
@@ -71,7 +71,7 @@ const tableColumns: TracksTableColumn[] = [
   'overflowActions'
 ]
 
-export type SavedPageProps = {
+export type LibraryPageProps = {
   title: string
   description: string
   onFilterChange: (e: any) => void
@@ -80,23 +80,23 @@ export type SavedPageProps = {
   isQueued: boolean
   playingUid: UID | null
   getFilteredData: (
-    trackMetadatas: SavedPageTrack[]
-  ) => [SavedPageTrack[], number]
+    trackMetadatas: LibraryPageTrack[]
+  ) => [LibraryPageTrack[], number]
   fetchMoreTracks: (offset?: number, limit?: number) => void
   onClickRow: (record: TrackRecord) => void
   onClickRepost: (record: TrackRecord) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
-  onChangeTab: (tab: SavedPageTabs) => void
+  onChangeTab: (tab: LibraryPageTabs) => void
   allTracksFetched: boolean
   filterText: string
   initialOrder: UID[] | null
-  currentTab: SavedPageTabs
-  tracks: Lineup<SavedPageTrack>
+  currentTab: LibraryPageTabs
+  tracks: Lineup<LibraryPageTrack>
   currentQueueItem: QueueItem
   playing: boolean
   buffering: boolean
-  fetchSavedTracks: () => void
+  fetchLibraryTracks: () => void
   resetSavedTracks: () => void
   updateLineupOrder: (updatedOrderIndices: UID[]) => void
   goToRoute: (route: string) => void
@@ -108,7 +108,7 @@ export type SavedPageProps = {
   unsaveTrack: (trackId: ID) => void
 }
 
-const SavedPage = ({
+const LibraryPage = ({
   title,
   description,
   tracks: { status, entries },
@@ -128,7 +128,7 @@ const SavedPage = ({
   onClickRow,
   onClickRepost,
   onSortTracks
-}: SavedPageProps) => {
+}: LibraryPageProps) => {
   const mainContentRef = useMainContentRef()
   const initFetch = useSelector(getInitialFetchStatus)
   const { data: currentUserId } = useCurrentUserId()
@@ -154,7 +154,7 @@ const SavedPage = ({
 
   const emptyTracksHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.TRACKS
+      currentTab: LibraryPageTabs.TRACKS
     })
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyTrackAllHeader
@@ -167,7 +167,7 @@ const SavedPage = ({
     }
   })
 
-  const getTracksTableData = (): [SavedPageTrack[], number] => {
+  const getTracksTableData = (): [LibraryPageTrack[], number] => {
     let [data, activeIndex] = getFilteredData(entries)
     if (!hasReachedEnd) {
       // Add in some empty rows to show user that more are loading in
@@ -183,13 +183,14 @@ const SavedPage = ({
 
   const isEmpty =
     entries.length === 0 ||
-    !entries.some((entry: SavedPageTrack) => Boolean(entry.track_id))
+    !entries.some((entry: LibraryPageTrack) => Boolean(entry.track_id))
   const tracksLoading =
     (status === Status.IDLE || status === Status.LOADING) && isEmpty
   const queuedAndPlaying = playing && isQueued
 
   // Setup play button
-  const playButtonActive = currentTab === SavedPageTabs.TRACKS && !tracksLoading
+  const playButtonActive =
+    currentTab === LibraryPageTabs.TRACKS && !tracksLoading
   const playAllButton = (
     <div
       className={styles.playButtonContainer}
@@ -211,7 +212,7 @@ const SavedPage = ({
   )
 
   // Setup filter
-  const filterActive = currentTab === SavedPageTabs.TRACKS
+  const filterActive = currentTab === LibraryPageTabs.TRACKS
   const filter = (
     <div
       className={styles.filterContainer}
@@ -231,25 +232,25 @@ const SavedPage = ({
   const { tabs, body } = useTabs({
     isMobile: false,
     didChangeTabsFrom: (_, to) => {
-      onChangeTab(to as SavedPageTabs)
+      onChangeTab(to as LibraryPageTabs)
     },
     bodyClassName: styles.tabBody,
     elementClassName: styles.tabElement,
     tabs: [
       {
         icon: <IconNote />,
-        text: SavedPageTabs.TRACKS,
-        label: SavedPageTabs.TRACKS
+        text: LibraryPageTabs.TRACKS,
+        label: LibraryPageTabs.TRACKS
       },
       {
         icon: <IconAlbum />,
-        text: SavedPageTabs.ALBUMS,
-        label: SavedPageTabs.ALBUMS
+        text: LibraryPageTabs.ALBUMS,
+        label: LibraryPageTabs.ALBUMS
       },
       {
         icon: <IconPlaylists />,
-        text: SavedPageTabs.PLAYLISTS,
-        label: SavedPageTabs.PLAYLISTS
+        text: LibraryPageTabs.PLAYLISTS,
+        label: LibraryPageTabs.PLAYLISTS
       }
     ],
     elements: [
@@ -299,7 +300,7 @@ const SavedPage = ({
       primary={messages.libraryHeader}
       secondary={isEmpty ? null : playAllButton}
       rightDecorator={<LibraryCategorySelectionMenu currentTab={currentTab} />}
-      containerStyles={styles.savedPageHeader}
+      containerStyles={styles.libraryPageHeader}
       bottomBar={headerBottomBar}
     />
   )
@@ -308,7 +309,7 @@ const SavedPage = ({
     <Page
       title={title}
       description={description}
-      contentClassName={styles.savedPageWrapper}
+      contentClassName={styles.libraryPageWrapper}
       header={header}
     >
       <div className={styles.bodyWrapper}>{body}</div>
@@ -316,4 +317,4 @@ const SavedPage = ({
   )
 }
 
-export default SavedPage
+export default LibraryPage

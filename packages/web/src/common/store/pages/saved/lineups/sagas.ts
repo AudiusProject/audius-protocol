@@ -5,11 +5,11 @@ import {
 } from '@audius/common/api'
 import { Collection, ID, Kind, LineupEntry, UID } from '@audius/common/models'
 import {
-  savedPageTracksLineupActions as savedTracksActions,
-  savedPageActions as saveActions,
-  savedPageSelectors,
+  libraryPageTracksLineupActions as savedTracksActions,
+  libraryPageActions as saveActions,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
+  LibraryPageTabs,
   queueActions,
   queueSelectors,
   QueueSource,
@@ -18,7 +18,7 @@ import {
   playerSelectors,
   purchaseContentActions,
   PurchaseableContentType,
-  SavedPageTrack,
+  LibraryPageTrack,
   AccountState
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
@@ -37,14 +37,14 @@ const { SAVE_TRACK, UNSAVE_TRACK, REPOST_TRACK, UNDO_REPOST_TRACK } =
 const {
   getLocalTrackFavorite,
   getLocalTrackRepost,
-  getSavedTracksLineupUid,
+  getLibraryTracksLineupUid,
   getTrackSaves,
   getSelectedCategoryLocalTrackAdds,
   getCategory
-} = savedPageSelectors
+} = libraryPageSelectors
 const { purchaseConfirmed } = purchaseContentActions
 
-const getSavedTracks = (state: AppState) => state.pages.savedPage.tracks
+const getLibraryTracks = (state: AppState) => state.pages.libraryPage.tracks
 
 const PREFIX = savedTracksActions.prefix
 
@@ -117,7 +117,7 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
   return []
 }
 
-const keepDateSaved = (entry: LineupEntry<SavedPageTrack | Collection>) => ({
+const keepDateSaved = (entry: LineupEntry<LibraryPageTrack | Collection>) => ({
   uid: entry.uid,
   kind: entry.kind ?? ('track_id' in entry ? Kind.TRACKS : Kind.COLLECTIONS),
   id: 'track_id' in entry ? entry.track_id : entry.playlist_id,
@@ -126,12 +126,12 @@ const keepDateSaved = (entry: LineupEntry<SavedPageTrack | Collection>) => ({
 
 const sourceSelector = () => PREFIX
 
-class SavedTracksSagas extends LineupSagas<SavedPageTrack> {
+class SavedTracksSagas extends LineupSagas<LibraryPageTrack> {
   constructor() {
     super(
       PREFIX,
       savedTracksActions,
-      getSavedTracks,
+      getLibraryTracks,
       getTracks,
       keepDateSaved,
       /* removeDeleted */ false,
@@ -188,7 +188,7 @@ function* watchAddToLibrary() {
         savedTracksActions.prefix
       )
 
-      const newEntry: LineupEntry<Partial<SavedPageTrack>> = {
+      const newEntry: LineupEntry<Partial<LibraryPageTrack>> = {
         uid: localSaveUid,
         kind: Kind.TRACKS,
         id: trackId,
@@ -213,13 +213,13 @@ function* watchAddToLibrary() {
 
       const isTrackAlreadyInLineup = yield* select(
         (state, props) => {
-          const lineupUid = getSavedTracksLineupUid(state, props)
+          const lineupUid = getLibraryTracksLineupUid(state, props)
           return lineupUid != null
         },
         { id: trackId }
       )
       const currentCategory = yield* select(getCategory, {
-        currentTab: SavedPageTabs.TRACKS
+        currentTab: LibraryPageTabs.TRACKS
       })
       const actionMatchesCurrentCategory = currentCategory === relevantCategory
       if (actionMatchesCurrentCategory && !isTrackAlreadyInLineup) {
@@ -260,7 +260,7 @@ function* watchRemoveFromLibrary() {
         id: trackId
       })
       const currentCategory = yield* select(getCategory, {
-        currentTab: SavedPageTabs.TRACKS
+        currentTab: LibraryPageTabs.TRACKS
       })
 
       yield* put(
@@ -290,7 +290,7 @@ function* watchRemoveFromLibrary() {
             yield* put(queueActions.remove({ uid: localSaveUid }))
           }
         }
-        const lineupSaveUid = yield* select(getSavedTracksLineupUid, {
+        const lineupSaveUid = yield* select(getLibraryTracksLineupUid, {
           id: trackId
         })
         if (lineupSaveUid) {

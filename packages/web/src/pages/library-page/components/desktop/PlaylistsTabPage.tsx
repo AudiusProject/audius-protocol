@@ -3,9 +3,9 @@ import { useCallback, useMemo } from 'react'
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
   cacheCollectionsActions,
-  savedPageSelectors,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs,
+  LibraryPageTabs,
   CommonState
 } from '@audius/common/store'
 import { IconPlus } from '@audius/harmony'
@@ -16,14 +16,14 @@ import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import UploadChip from 'components/upload/UploadChip'
-import { useLibraryCollections } from 'pages/saved-page/hooks/useLibraryCollections'
+import { useLibraryCollections } from 'pages/library-page/hooks/useLibraryCollections'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
-import styles from './SavedPage.module.css'
+import styles from './LibraryPage.module.css'
 
 const { createPlaylist } = cacheCollectionsActions
-const { getCategory } = savedPageSelectors
+const { getCategory } = libraryPageSelectors
 
 const messages = {
   emptyPlaylistsBody: 'Once you have, this is where you’ll find them!',
@@ -44,7 +44,7 @@ export const PlaylistsTabPage = () => {
   })
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.PLAYLISTS
+      currentTab: LibraryPageTabs.PLAYLISTS
     })
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyPlaylistAllHeader

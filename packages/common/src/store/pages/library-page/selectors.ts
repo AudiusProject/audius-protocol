@@ -4,25 +4,25 @@ import { CommonState } from '~/store/commonStore'
 
 import { ID } from '../../../models/Identifiers'
 
-import { LibraryCategory, SavedPageTabs } from './types'
+import { LibraryCategory, LibraryPageTabs } from './types'
 
-export const getSaved = (state: CommonState) => state.pages.savedPage
+export const getLibrary = (state: CommonState) => state.pages.libraryPage
 export const getTrackSaves = (state: CommonState) =>
-  state.pages.savedPage.trackSaves
+  state.pages.libraryPage.trackSaves
 
 export const getCollectionsCategory = (state: CommonState) => {
-  return state.pages.savedPage.collectionsCategory
+  return state.pages.libraryPage.collectionsCategory
 }
 
 export const getTracksCategory = (state: CommonState) => {
-  return state.pages.savedPage.tracksCategory
+  return state.pages.libraryPage.tracksCategory
 }
 
 export const getCategory = (
   state: CommonState,
-  props: { currentTab: SavedPageTabs }
+  props: { currentTab: LibraryPageTabs }
 ) => {
-  if (props.currentTab === SavedPageTabs.TRACKS) {
+  if (props.currentTab === LibraryPageTabs.TRACKS) {
     return getTracksCategory(state)
   } else {
     return getCollectionsCategory(state)
@@ -30,42 +30,42 @@ export const getCategory = (
 }
 
 export const getLocalTrackFavorites = (state: CommonState) =>
-  state.pages.savedPage.local.track.favorites.added
+  state.pages.libraryPage.local.track.favorites.added
 export const getLocalTrackFavorite = (state: CommonState, props: { id: ID }) =>
-  state.pages.savedPage.local.track.favorites.added[props.id]
+  state.pages.libraryPage.local.track.favorites.added[props.id]
 export const getLocalTrackReposts = (state: CommonState) =>
-  state.pages.savedPage.local.track.reposts.added
+  state.pages.libraryPage.local.track.reposts.added
 export const getLocalTrackRepost = (state: CommonState, props: { id: ID }) =>
-  state.pages.savedPage.local.track.reposts.added[props.id]
+  state.pages.libraryPage.local.track.reposts.added[props.id]
 export const getLocalTrackPurchases = (state: CommonState) =>
-  state.pages.savedPage.local.track.purchased.added
+  state.pages.libraryPage.local.track.purchased.added
 export const getLocalTrackPurchase = (state: CommonState, props: { id: ID }) =>
-  state.pages.savedPage.local.track.purchased.added[props.id]
+  state.pages.libraryPage.local.track.purchased.added[props.id]
 
 export const getLocalAlbumFavorites = (state: CommonState) =>
-  state.pages.savedPage.local.album.favorites.added
+  state.pages.libraryPage.local.album.favorites.added
 export const getLocalAlbumReposts = (state: CommonState) =>
-  state.pages.savedPage.local.album.reposts.added
+  state.pages.libraryPage.local.album.reposts.added
 export const getLocalAlbumPurchases = (state: CommonState) =>
-  state.pages.savedPage.local.album.purchased.added
+  state.pages.libraryPage.local.album.purchased.added
 export const getLocalRemovedAlbumFavorites = (state: CommonState) =>
-  state.pages.savedPage.local.album.favorites.removed
+  state.pages.libraryPage.local.album.favorites.removed
 export const getLocalRemovedAlbumReposts = (state: CommonState) =>
-  state.pages.savedPage.local.album.reposts.removed
+  state.pages.libraryPage.local.album.reposts.removed
 
 export const getLocalPlaylistFavorites = (state: CommonState) =>
-  state.pages.savedPage.local.playlist.favorites.added
+  state.pages.libraryPage.local.playlist.favorites.added
 export const getLocalPlaylistReposts = (state: CommonState) =>
-  state.pages.savedPage.local.playlist.reposts.added
+  state.pages.libraryPage.local.playlist.reposts.added
 export const getLocalRemovedPlaylistFavorites = (state: CommonState) =>
-  state.pages.savedPage.local.playlist.favorites.removed
+  state.pages.libraryPage.local.playlist.favorites.removed
 export const getLocalRemovedPlaylistReposts = (state: CommonState) =>
-  state.pages.savedPage.local.playlist.favorites.removed
+  state.pages.libraryPage.local.playlist.favorites.removed
 
 /** Get the tracks in currently selected category that have been added to the library in current session */
 export const getSelectedCategoryLocalTrackAdds = (state: CommonState) => {
   const selectedCategory = getCategory(state, {
-    currentTab: SavedPageTabs.TRACKS
+    currentTab: LibraryPageTabs.TRACKS
   })
   const localFavorites = getLocalTrackFavorites(state)
   const localPurchases = getLocalTrackPurchases(state)
@@ -95,7 +95,9 @@ const getSelectedCategoryLocalCollectionUpdates = (
 ) => {
   const { collectionType, updateType } = props
   const currentTab =
-    collectionType === 'album' ? SavedPageTabs.ALBUMS : SavedPageTabs.PLAYLISTS
+    collectionType === 'album'
+      ? LibraryPageTabs.ALBUMS
+      : LibraryPageTabs.PLAYLISTS
   const selectedCategory = getCategory(state, { currentTab })
   let localFavorites: ID[], localPurchases: ID[], localReposts: ID[]
   if (updateType === 'add') {
@@ -162,21 +164,21 @@ export const getSelectedCategoryLocalPlaylistAdds = (state: CommonState) => {
 }
 
 export const getInitialFetchStatus = (state: CommonState) =>
-  state.pages.savedPage.initialFetch
+  state.pages.libraryPage.initialFetch
 export const getIsFetchingMore = (state: CommonState) =>
-  state.pages.savedPage.fetchingMore
+  state.pages.libraryPage.fetchingMore
 export const hasReachedEnd = (state: CommonState) =>
-  state.pages.savedPage.hasReachedEnd
+  state.pages.libraryPage.hasReachedEnd
 
-export const getSavedTracksStatus = (state: CommonState) =>
-  state.pages.savedPage.tracks.status
-export const getSavedTracksLineup = (state: CommonState) =>
-  state.pages.savedPage.tracks
-export const getSavedTracksLineupUid = (
+export const getLibraryTracksStatus = (state: CommonState) =>
+  state.pages.libraryPage.tracks.status
+export const getLibraryTracksLineup = (state: CommonState) =>
+  state.pages.libraryPage.tracks
+export const getLibraryTracksLineupUid = (
   state: CommonState,
   props: { id: ID }
 ) => {
-  const track = state.pages.savedPage.tracks.entries.find(
+  const track = state.pages.libraryPage.tracks.entries.find(
     // @ts-ignore
     (t) => t.id === props.id
   )

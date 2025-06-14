@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import type { LibraryCategoryType } from '@audius/common/store'
 import {
-  savedPageActions,
-  savedPageSelectors,
+  libraryPageActions,
+  libraryPageSelectors,
   LibraryCategory,
-  SavedPageTabs
+  LibraryPageTabs
 } from '@audius/common/store'
 import { useNavigationState } from '@react-navigation/native'
 import { ScrollView, View } from 'react-native'
@@ -15,8 +15,8 @@ import { SelectablePill } from '@audius/harmony-native'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles } from 'app/styles'
 
-const { getCategory } = savedPageSelectors
-const { setSelectedCategory } = savedPageActions
+const { getCategory } = libraryPageSelectors
+const { setSelectedCategory } = libraryPageActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
@@ -52,10 +52,10 @@ const CATEGORIES_WITHOUT_PURCHASED = ALL_CATEGORIES.slice(0, -1)
 
 type LibraryTabRouteName = 'albums' | 'tracks' | 'playlists'
 const ROUTE_NAME_TO_TAB = {
-  albums: SavedPageTabs.ALBUMS,
-  tracks: SavedPageTabs.TRACKS,
-  playlists: SavedPageTabs.PLAYLISTS
-} as Record<LibraryTabRouteName, SavedPageTabs>
+  albums: LibraryPageTabs.ALBUMS,
+  tracks: LibraryPageTabs.TRACKS,
+  playlists: LibraryPageTabs.PLAYLISTS
+} as Record<LibraryTabRouteName, LibraryPageTabs>
 
 export const LibraryCategorySelectionMenu = () => {
   const styles = useStyles()
@@ -63,25 +63,25 @@ export const LibraryCategorySelectionMenu = () => {
 
   const currentTab = useNavigationState((state) => {
     if (state.routes?.[0].name !== 'Library') {
-      return SavedPageTabs.TRACKS
+      return LibraryPageTabs.TRACKS
     }
     const tabRouteNames = state.routes[0].state?.routeNames
     if (!tabRouteNames) {
-      return SavedPageTabs.TRACKS
+      return LibraryPageTabs.TRACKS
     }
 
     const index = state.routes[0].state?.index
     if (index === undefined) {
-      return SavedPageTabs.TRACKS
+      return LibraryPageTabs.TRACKS
     }
 
     const routeName = tabRouteNames[index]
     if (!routeName) {
-      return SavedPageTabs.TRACKS
+      return LibraryPageTabs.TRACKS
     }
 
-    return ROUTE_NAME_TO_TAB[routeName] || SavedPageTabs.TRACKS
-  }) as SavedPageTabs
+    return ROUTE_NAME_TO_TAB[routeName] || LibraryPageTabs.TRACKS
+  }) as LibraryPageTabs
 
   const selectedCategory = useSelector((state) =>
     getCategory(state, {
@@ -104,7 +104,8 @@ export const LibraryCategorySelectionMenu = () => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const categories =
     isUSDCPurchasesEnabled &&
-    (currentTab === SavedPageTabs.TRACKS || currentTab === SavedPageTabs.ALBUMS)
+    (currentTab === LibraryPageTabs.TRACKS ||
+      currentTab === LibraryPageTabs.ALBUMS)
       ? ALL_CATEGORIES
       : CATEGORIES_WITHOUT_PURCHASED
 
