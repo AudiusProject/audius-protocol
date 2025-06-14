@@ -55,7 +55,7 @@ function* sendLibraryRequest({
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
-  const savedTracksResponse = yield* call(
+  const libraryTracksResponse = yield* call(
     [sdk.full.users, sdk.full.users.getUserLibraryTracks],
     {
       id: Id.parse(userId),
@@ -70,9 +70,9 @@ function* sendLibraryRequest({
     }
   )
 
-  const savedTracksResponseData = savedTracksResponse.data ?? []
+  const libraryTracksResponseData = libraryTracksResponse.data ?? []
   const tracks = transformAndCleanList(
-    savedTracksResponse.data,
+    libraryTracksResponse.data,
     (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
   )
 
@@ -80,7 +80,7 @@ function* sendLibraryRequest({
     throw new Error('Something went wrong with library tracks request.')
   }
 
-  const saves = savedTracksResponseData
+  const saves = libraryTracksResponseData
     .filter((save) => Boolean(save.timestamp && save.item))
     .map((save) => ({
       created_at: save.timestamp!,
