@@ -40,7 +40,7 @@ export class Track extends Base {
     this.getStemsForTrack = this.getStemsForTrack.bind(this)
     this.getRemixesOfTrack = this.getRemixesOfTrack.bind(this)
     this.getRemixTrackParents = this.getRemixTrackParents.bind(this)
-    this.getSavedTracks = this.getSavedTracks.bind(this)
+    this.getLibraryTracks = this.getLibraryTracks.bind(this)
     this.getTrendingTracks = this.getTrendingTracks.bind(this)
     this.getTrackListens = this.getTrackListens.bind(this)
     this.getSaversForTrack = this.getSaversForTrack.bind(this)
@@ -225,9 +225,13 @@ export class Track extends Base {
    * Return saved tracks for current user
    * NOTE in returned JSON, SaveType string one of track, playlist, album
    */
-  async getSavedTracks(limit = 100, offset = 0, withUsers = false) {
+  async getLibraryTracks(limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return await this.discoveryProvider.getSavedTracks(limit, offset, withUsers)
+    return await this.discoveryProvider.getLibraryTracks(
+      limit,
+      offset,
+      withUsers
+    )
   }
 
   /**

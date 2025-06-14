@@ -1,0 +1,120 @@
+.libraryPageWrapper {
+  position: relative;
+  text-align: left;
+}
+
+.libraryPageHeader {
+  justify-content: left;
+}
+
+/* Filter Input in Header */
+.libraryPageWrapper :global(.ant-input-affix-wrapper) {
+  position: absolute;
+  right: 0px;
+  top: 60px;
+  width: 120px;
+  z-index: 1;
+}
+.libraryPageWrapper :global(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 4px;
+  border: 1px solid var(--harmony-n-100) !important;
+  box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
+  background-color: var(--harmony-n-25);
+  transition:
+    width 0.2s ease-in-out,
+    background 0.04s ease-in-out;
+  color: var(--harmony-neutral);
+  font-size: var(--harmony-font-xs);
+  font-weight: var(--harmony-font-medium);
+  border: none;
+
+  padding-top: 1px;
+  padding-bottom: 1px;
+  height: 24px;
+}
+.libraryPageWrapper :global(.ant-input-prefix) > svg {
+  width: 12px;
+  height: 12px;
+}
+.libraryPageWrapper :global(.ant-input-prefix) > svg g path {
+  fill: var(--harmony-n-400);
+}
+
+.filterContainer {
+  transition: all 0.5s;
+  padding-bottom: var(--harmony-unit-5);
+}
+
+/* Body Content Wrapper */
+.bodyWrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Track Table */
+.bodyWrapper .tableWrapper {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
+  background-color: var(--harmony-white);
+  padding-bottom: 5px;
+  overflow: hidden;
+}
+
+/* Albums */
+.cardsContainer {
+  gap: var(--harmony-unit-6) var(--harmony-unit-4);
+  margin-bottom: var(--harmony-unit-4);
+}
+
+.playButtonContainer {
+  transition: all 0.25s;
+}
+
+.tabElement {
+  justify-content: flex-start;
+}
+
+.albumsWrapper {
+  flex: 1 1 0;
+}
+
+.createPlaylistCard {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--harmony-unit-2);
+  align-items: center;
+  justify-content: center;
+}
+
+.createPlaylistText {
+  font-size: var(--harmony-font-xl);
+  font-weight: var(--harmony-font-bold);
+  color: var(--harmony-n-600);
+}
+
+.createPlaylistIcon {
+  height: var(--harmony-unit-5);
+  width: var(--harmony-unit-5);
+}
+
+.createPlaylistIcon circle {
+  fill: var(--harmony-n-600);
+}
+
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--harmony-secondary);
+}
+
+.headerBottomBarContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+}

@@ -22,7 +22,7 @@ import { newCollectionMetadata } from '@audius/common/schemas'
 import {
   accountActions,
   cacheCollectionsActions,
-  savedPageActions,
+  libraryPageActions,
   LibraryCategory,
   confirmerActions,
   EditCollectionValues,
@@ -38,7 +38,7 @@ import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { addLocalCollection } = savedPageActions
+const { addLocalCollection } = libraryPageActions
 
 const { requestConfirmation } = confirmerActions
 const { collectionPage } = route

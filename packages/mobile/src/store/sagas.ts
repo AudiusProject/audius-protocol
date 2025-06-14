@@ -33,9 +33,9 @@ import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
+import librarySagas from 'common/store/pages/library/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
-import savedSagas from 'common/store/pages/saved/sagas'
 import searchTracksLineupSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import signOnSagas from 'common/store/pages/signon/sagas'
 import tokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
@@ -127,7 +127,7 @@ export default function* rootSaga() {
     ...trendingPageSagas(),
     ...trendingPlaylistSagas(),
     ...trendingUndergroundSagas(),
-    ...savedSagas(),
+    ...librarySagas(),
     ...profileSagas(),
     ...socialSagas(),
     ...historySagas(),

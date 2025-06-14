@@ -2,7 +2,7 @@ import { View } from 'react-native'
 
 import { makeStyles } from 'app/styles'
 
-import { DownloadFavoritesSwitch } from '../favorites-screen/DownloadFavoritesSwitch'
+import { DownloadFavoritesSwitch } from '../library-screen/DownloadFavoritesSwitch'
 
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'

@@ -3,8 +3,8 @@ export class Playlists extends Base {
   constructor(...args: BaseConstructorArgs) {
     super(...args)
     this.getPlaylists = this.getPlaylists.bind(this)
-    this.getSavedPlaylists = this.getSavedPlaylists.bind(this)
-    this.getSavedAlbums = this.getSavedAlbums.bind(this)
+    this.getLibraryPlaylists = this.getLibraryPlaylists.bind(this)
+    this.getLibraryAlbums = this.getLibraryAlbums.bind(this)
   }
   /* ------- GETTERS ------- */
 
@@ -47,9 +47,9 @@ export class Playlists extends Base {
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
    */
-  async getSavedPlaylists(limit = 100, offset = 0, withUsers = false) {
+  async getLibraryPlaylists(limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return await this.discoveryProvider.getSavedPlaylists(
+    return await this.discoveryProvider.getLibraryPlaylists(
       limit,
       offset,
       withUsers
@@ -62,8 +62,12 @@ export class Playlists extends Base {
    * @param limit - max # of items to return
    * @param offset - offset into list to return from (for pagination)
    */
-  async getSavedAlbums(limit = 100, offset = 0, withUsers = false) {
+  async getLibraryAlbums(limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return await this.discoveryProvider.getSavedAlbums(limit, offset, withUsers)
+    return await this.discoveryProvider.getLibraryAlbums(
+      limit,
+      offset,
+      withUsers
+    )
   }
 }

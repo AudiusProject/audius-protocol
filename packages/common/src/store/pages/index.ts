@@ -55,13 +55,13 @@ export * as searchResultsPageSelectors from './search-results/selectors'
 export * from './search-results/types'
 export { default as searchResultsPageReducer } from './search-results/reducer'
 
-export { default as savedPageTracksLineupReducer } from './saved-page/lineups/tracks/reducer'
-export { tracksActions as savedPageTracksLineupActions } from './saved-page/lineups/tracks/actions'
-export * as savedPageActions from './saved-page/actions'
-export * as savedPageSelectors from './saved-page/selectors'
-export * from './saved-page/types'
-export * from './saved-page/utils'
-export { persistedSavePageReducer } from './saved-page/reducer'
+export { default as libraryPageTracksLineupReducer } from './library-page/lineups/tracks/reducer'
+export { tracksActions as libraryPageTracksLineupActions } from './library-page/lineups/tracks/actions'
+export * as libraryPageActions from './library-page/actions'
+export * as libraryPageSelectors from './library-page/selectors'
+export * from './library-page/types'
+export * from './library-page/utils'
+export { persistedLibraryPageReducer } from './library-page/reducer'
 
 export {
   default as pickWinnersPageLineupReducer,

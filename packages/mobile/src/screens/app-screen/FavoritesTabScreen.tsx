@@ -1,4 +1,4 @@
-import { FavoritesScreen } from 'app/screens/favorites-screen'
+import { FavoritesScreen } from 'app/screens/library-screen'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
