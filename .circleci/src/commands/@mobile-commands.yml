@@ -118,6 +118,26 @@ mobile-release-ios:
             fi
           fi
 
+mobile-release-ios-test:
+  parameters:
+    build-directory:
+      default: 'build-mobile-production'
+      type: string
+    bundle-id:
+      default: 'co.audius.audiusmusic'
+      type: string
+    env:
+      default: '.env.prod'
+      type: string
+    slack-notify:
+      default: false
+      type: boolean
+  steps:
+    - run:
+        name: fastlane build and upload (force)
+        no_output_timeout: 60m
+        command: cd packages/mobile/ios && TERM=dumb bundle exec fastlane build_and_upload bundle_id:<<parameters.bundle-id>> force_upload:true
+
 # Prepare to build/upload/release Android
 mobile-prepare-android:
   parameters:

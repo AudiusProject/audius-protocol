@@ -80,6 +80,26 @@ mobile-build-upload-staging-ios:
         bundle-id: 'co.audius.audiusmusic.staging'
         env: '.env.stage'
 
+mobile-build-upload-staging-ios-test:
+  working_directory: ~/audius-protocol
+  # run on macos so app can be created and signed.
+  resource_class: macos.m1.medium.gen1
+  macos:
+    xcode: '16.2.0'
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+  steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-staging'
+        bundle-id: 'co.audius.audiusmusic.staging'
+        env: '.env.stage'
+    - mobile-release-ios-test:
+        build-directory: 'build-mobile-staging'
+        bundle-id: 'co.audius.audiusmusic.staging'
+        env: '.env.stage'
+        slack-notify: false
+
 mobile-build-production-ios:
   working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.

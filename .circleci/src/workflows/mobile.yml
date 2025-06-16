@@ -11,6 +11,16 @@ jobs:
         branches:
           only: /^mobile-build.*$/
 
+  - mobile-build-upload-staging-ios-test:
+      context:
+        - Audius Mobile Client
+        - slack-secrets
+      requires:
+        - mobile-init
+      filters:
+        branches:
+          only: /^mobile-build.*$/
+
   - mobile-build-upload-staging-ios:
       context:
         - Audius Mobile Client

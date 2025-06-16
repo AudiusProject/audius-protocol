@@ -210,9 +210,16 @@ platform :ios do
     packageJson = File.open "../../package.json"
     packageJsonData = JSON.load packageJson
     
-    if isVersionIncremented
+    # Allow force upload for testing (when force_upload is true)
+    force_upload = options[:force_upload] || false
+    should_upload = isVersionIncremented || force_upload
+    
+    if should_upload
         # Build and upload to TestFlight
         UI.message "Doing a full build and release"
+        if force_upload
+          UI.message "Force upload enabled - bypassing version check"
+        end
         build(bundle_id: options[:bundle_id], current_released_version: currentReleasedVersionNumber, plist_version: plistVersionNumber)
         upload(bundle_id: options[:bundle_id])
     else
