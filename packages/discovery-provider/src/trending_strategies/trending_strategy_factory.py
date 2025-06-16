@@ -1,3 +1,6 @@
+from src.trending_strategies.AnlGe_trending_tracks_strategy import (
+    TrendingTracksStrategyAnlGe,
+)
 from src.trending_strategies.pnagD_trending_playlists_strategy import (
     TrendingPlaylistsStrategypnagD,
 )
@@ -21,6 +24,7 @@ class TrendingStrategyFactory:
         self.strategies = {
             TrendingType.TRACKS: {
                 TrendingVersion.pnagD: TrendingTracksStrategypnagD(),
+                TrendingVersion.AnlGe: TrendingTracksStrategyAnlGe(),
             },
             TrendingType.UNDERGROUND_TRACKS: {
                 TrendingVersion.pnagD: TrendingTracksStrategypnagD(),

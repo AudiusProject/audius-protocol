@@ -9,3 +9,4 @@ class TrendingType(Enum):
 
 class TrendingVersion(Enum):
     pnagD = "pnagD"
+    AnlGe = "AnlGe"
