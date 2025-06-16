@@ -59,7 +59,7 @@ export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
     return { tier: 'none' as BadgeTier, isVerified: false, tierNumber: 0 }
 
   const balance = user.total_balance ?? ('0' as StringWei)
-  const { tier, tierNumber } = getTierAndNumberForBalance(AUDIO(balance))
+  const { tier, tierNumber } = getTierAndNumberForBalance(AUDIO(balance).value)
   const isVerified = !!user.is_verified
 
   return { tier, isVerified, tierNumber }
@@ -67,12 +67,12 @@ export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
 
 /**
  * Get the tier and number for a given balance
- * @param balance - The balance to get the tier and number for
+ * @param balance - The balance in AudioWei (branded BigInt)
  * @returns The tier and number for the given balance
  */
-export const getTierAndNumberForBalance = (balance: FixedDecimal<AudioWei>) => {
+export const getTierAndNumberForBalance = (balance: AudioWei) => {
   const index = badgeTiers.findIndex((t) => {
-    return t.minAudio.value <= balance.value
+    return t.minAudio.value <= balance
   })
 
   const tier = index === -1 ? 'none' : badgeTiers[index].tier
@@ -101,4 +101,9 @@ export const isValidSolAddress = (address: SolanaWalletAddress) => {
     console.debug(err)
     return false
   }
+}
+
+export const getTierForUser = (totalBalance: Nullable<StringWei>) => {
+  const balance = totalBalance ?? ('0' as StringWei)
+  return getTierAndNumberForBalance(AUDIO(balance).value).tier
 }

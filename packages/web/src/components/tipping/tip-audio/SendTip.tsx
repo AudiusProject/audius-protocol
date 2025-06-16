@@ -66,7 +66,7 @@ export const SendTip = () => {
 
   const [tipAmount, setTipAmount] = useState('')
 
-  const { tier } = getTierAndNumberForBalance(accountBalance)
+  const { tier } = getTierAndNumberForBalance(accountBalance.value)
   const audioBadge = audioTierMap[tier as BadgeTier]
 
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(

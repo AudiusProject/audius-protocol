@@ -62,7 +62,7 @@ export const TiersTile = () => {
   const dispatch = useDispatch()
 
   const { totalBalance } = useAudioBalance()
-  const { tier } = getTierAndNumberForBalance(AUDIO(totalBalance))
+  const { tier } = getTierAndNumberForBalance(AUDIO(totalBalance).value)
 
   const onPressLaunchDiscord = () => {
     dispatch(pressDiscord())
