@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, Kind } from '@audius/common/models'
-import { getTierForUser } from '@audius/common/store'
 import { SelectProps } from 'antd'
 import { useDispatch } from 'react-redux'
 import { createSelector } from 'reselect'
@@ -31,8 +30,6 @@ const selectSearchResults = createSelector(getSearchResults, (results) => {
           primary={user.name || user.handle}
           defaultImage={imageProfilePicEmpty}
           isVerifiedUser={user.is_verified}
-          // @ts-ignore
-          tier={getTierForUser(user)}
           allowAiAttribution={user.allow_ai_attribution}
           name={user.name}
           handle={user.handle}

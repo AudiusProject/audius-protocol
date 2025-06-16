@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useNotificationEntity,
   useUsers
 } from '@audius/common/api'
@@ -47,7 +47,7 @@ export const CommentReactionNotification = (
   const otherUsersCount = userIds.length - 1
 
   const entity = useNotificationEntity(notification)
-  const { data: currentUserId } = useGetCurrentUserId()
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReaction =
     firstUser?.user_id === currentUserId && otherUsersCount === 0

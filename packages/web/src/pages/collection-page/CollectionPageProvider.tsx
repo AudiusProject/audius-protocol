@@ -583,6 +583,7 @@ class CollectionPageClassComponent extends Component<
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
     const isOwner = collection?.playlist_owner_id === userId
+
     const shouldPreview = isPreview && isOwner
     if (playing && isQueued && previewing === shouldPreview) {
       pause()

@@ -280,19 +280,28 @@ export const TrackScreenDetailsTile = ({
 
   const badges = [
     aiAttributionUserId ? (
-      <DetailsTileAiAttribution userId={aiAttributionUserId} />
+      <DetailsTileAiAttribution
+        userId={aiAttributionUserId}
+        key='ai-attribution-badge'
+      />
     ) : null,
     trendingRank ? (
-      <MusicBadge color='blue' icon={IconTrending}>
+      <MusicBadge color='blue' icon={IconTrending} key='trending-badge'>
         {trendingRank}
       </MusicBadge>
     ) : null,
     shouldShowScheduledRelease ? (
-      <MusicBadge variant='accent' icon={IconCalendarMonth}>
+      <MusicBadge
+        variant='accent'
+        icon={IconCalendarMonth}
+        key='scheduled-release-badge'
+      >
         {messages.releases(releaseDate)}
       </MusicBadge>
     ) : isUnlisted ? (
-      <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
+      <MusicBadge icon={IconVisibilityHidden} key='hidden-badge'>
+        {messages.hidden}
+      </MusicBadge>
     ) : null
   ].filter((badge) => badge !== null)
 
