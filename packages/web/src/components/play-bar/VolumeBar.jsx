@@ -20,7 +20,7 @@ const getVolumeIcon = (volumeLevel) => {
   return IconVolume3
 }
 
-const getSavedVolume = (defaultVolume) => {
+const getLibraryVolume = (defaultVolume) => {
   if (typeof window === 'undefined') return defaultVolume
   const localStorageVolume = window.localStorage.getItem('volume')
   if (localStorageVolume === null) {
@@ -36,7 +36,7 @@ const VolumeBar = ({
   onChange = () => {},
   granularity
 }) => {
-  const [volumeLevel, setVolumeLevel] = useState(getSavedVolume(defaultValue))
+  const [volumeLevel, setVolumeLevel] = useState(getLibraryVolume(defaultValue))
   const volumeBarRef = useRef()
 
   const volumeChange = useCallback(
@@ -73,7 +73,7 @@ const VolumeBar = ({
   }
 
   const unmute = () => {
-    const unmuteVolume = Math.max(10, getSavedVolume(defaultValue))
+    const unmuteVolume = Math.max(10, getLibraryVolume(defaultValue))
     volumeChange(unmuteVolume)
   }
 

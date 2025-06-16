@@ -24,7 +24,7 @@ import { useTemporaryNavContext } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import { ToastContext } from 'components/toast/ToastContext'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
-import NewCollectionButton from 'pages/saved-page/components/mobile/NewCollectionButton'
+import NewCollectionButton from 'pages/library-page/components/mobile/NewCollectionButton'
 
 import styles from './AddToCollection.module.css'
 

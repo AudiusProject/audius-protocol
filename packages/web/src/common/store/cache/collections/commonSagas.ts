@@ -25,7 +25,7 @@ import {
   accountActions,
   cacheCollectionsActions as collectionActions,
   PlaylistOperations,
-  savedPageActions,
+  libraryPageActions,
   LibraryCategory,
   toastActions,
   getContext,
@@ -585,7 +585,7 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
           put(
-            savedPageActions.removeLocalCollection({
+            libraryPageActions.removeLocalCollection({
               collectionId: playlistId,
               isAlbum: true,
               category: LibraryCategory.Favorite
@@ -623,7 +623,7 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
             })
           ),
           put(
-            savedPageActions.addLocalCollection({
+            libraryPageActions.addLocalCollection({
               collectionId: playlist.playlist_id,
               isAlbum: playlist.is_album,
               category: LibraryCategory.Favorite
@@ -662,7 +662,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
           put(
-            savedPageActions.removeLocalCollection({
+            libraryPageActions.removeLocalCollection({
               collectionId: playlistId,
               isAlbum: false,
               category: LibraryCategory.Favorite
@@ -701,7 +701,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
             })
           ),
           put(
-            savedPageActions.addLocalCollection({
+            libraryPageActions.addLocalCollection({
               collectionId: playlist.playlist_id,
               isAlbum: playlist.is_album,
               category: LibraryCategory.Favorite
