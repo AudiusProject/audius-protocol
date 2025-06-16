@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useNotificationEntity,
   useUsers
 } from '@audius/common/api'
@@ -53,7 +53,7 @@ export const CommentMentionNotification = (
 
   const entity = useNotificationEntity(notification)
 
-  const { data: currentUserId } = useGetCurrentUserId()
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerMention =
     entity?.user?.user_id === firstUser?.user_id && !isMultiUser

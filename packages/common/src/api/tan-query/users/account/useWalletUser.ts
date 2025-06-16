@@ -95,17 +95,3 @@ export const useGetCurrentWeb3User = <TResult = UserMetadata | undefined>(
     ...options
   })
 }
-
-// NOTE: currentUser means the user that we are currently auth-ed into - i.e. the managed user
-export const useGetCurrentUserId = <TResult = number | undefined>(
-  options?: SelectableQueryOptions<
-    AccountUserMetadata | null | undefined,
-    TResult
-  >
-) => {
-  return useGetCurrentUser<TResult>({
-    select: (accountData: AccountUserMetadata | null | undefined): TResult =>
-      accountData?.user.user_id as TResult,
-    ...options
-  })
-}
