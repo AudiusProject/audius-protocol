@@ -1,6 +1,6 @@
 import { Id, OptionalId } from '@audius/sdk'
 import { create, keyResolver, windowScheduler } from '@yornaath/batshit'
-import { memoize, omit } from 'lodash'
+import { memoize } from 'lodash'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -29,17 +29,11 @@ export const getCollectionsBatcher = memoize(
           userCollectionMetadataFromSDK
         )
 
-        primeCollectionData({
+        return primeCollectionData({
           collections,
           queryClient,
           skipQueryData: true
         })
-
-        const tqCollections: TQCollection[] = collections.map((c) => ({
-          ...omit(c, ['tracks', 'user']),
-          trackIds: c.playlist_contents?.track_ids.map((t) => t.track) ?? []
-        }))
-        return tqCollections
       },
       resolver: keyResolver('playlist_id'),
       scheduler: windowScheduler(10)
