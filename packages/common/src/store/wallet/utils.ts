@@ -1,48 +1,43 @@
+import { AUDIO, FixedDecimal, AudioWei } from '@audius/fixed-decimal'
 import { PublicKey } from '@solana/web3.js'
 
 import { useUser } from '~/api/tan-query/users/useUser'
 import { Maybe, Nullable } from '~/utils'
-import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
 
 import { BadgeTier } from '../../models/BadgeTier'
 import { ID } from '../../models/Identifiers'
-import {
-  BNAudio,
-  SolanaWalletAddress,
-  StringAudio,
-  StringWei
-} from '../../models/Wallet'
+import { SolanaWalletAddress, StringWei } from '../../models/Wallet'
 
 export type BadgeTierInfo = {
   tier: BadgeTier
-  minAudio: BNAudio
+  minAudio: FixedDecimal<AudioWei>
   humanReadableAmount: number
 }
 
 export const badgeTiers: BadgeTierInfo[] = [
   {
     tier: 'platinum',
-    minAudio: stringAudioToBN('10000' as StringAudio),
+    minAudio: AUDIO('10000'),
     humanReadableAmount: 10000
   },
   {
     tier: 'gold',
-    minAudio: stringAudioToBN('1000' as StringAudio),
+    minAudio: AUDIO('1000'),
     humanReadableAmount: 1000
   },
   {
     tier: 'silver',
-    minAudio: stringAudioToBN('100' as StringAudio),
+    minAudio: AUDIO('100'),
     humanReadableAmount: 100
   },
   {
     tier: 'bronze',
-    minAudio: stringAudioToBN('10' as StringAudio),
+    minAudio: AUDIO('10'),
     humanReadableAmount: 10
   },
   {
     tier: 'none',
-    minAudio: stringAudioToBN('0' as StringAudio),
+    minAudio: AUDIO('0'),
     humanReadableAmount: 0
   }
 ]
@@ -64,19 +59,20 @@ export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
     return { tier: 'none' as BadgeTier, isVerified: false, tierNumber: 0 }
 
   const balance = user.total_balance ?? ('0' as StringWei)
-  const { tier, tierNumber } = getTierAndNumberForBalance(balance)
+  const { tier, tierNumber } = getTierAndNumberForBalance(AUDIO(balance))
   const isVerified = !!user.is_verified
 
   return { tier, isVerified, tierNumber }
 }
 
-// Helpers
-
-export const getTierAndNumberForBalance = (balance: StringWei) => {
-  const audio = stringWeiToAudioBN(balance)
-
+/**
+ * Get the tier and number for a given balance
+ * @param balance - The balance to get the tier and number for
+ * @returns The tier and number for the given balance
+ */
+export const getTierAndNumberForBalance = (balance: FixedDecimal<AudioWei>) => {
   const index = badgeTiers.findIndex((t) => {
-    return t.minAudio.lte(audio)
+    return t.minAudio.value <= balance.value
   })
 
   const tier = index === -1 ? 'none' : badgeTiers[index].tier
@@ -85,14 +81,13 @@ export const getTierAndNumberForBalance = (balance: StringWei) => {
   return { tier, tierNumber }
 }
 
-/** Gets tier number, highest tier being badgeTiers.length, lowest being 1  */
+/**
+ * Get the tier number for a given tier
+ * @param tier - The tier to get the number for
+ * @returns The tier number for the given tier
+ */
 export const getTierNumber = (tier: BadgeTier) =>
   badgeTiers.length - badgeTiers.findIndex((t) => t.tier === tier)
-
-export const getTierForUser = (totalBalance: Nullable<StringWei>) => {
-  const balance = totalBalance ?? ('0' as StringWei)
-  return getTierAndNumberForBalance(balance).tier
-}
 
 /**
  * Checks whether the input address is a valid solana address.

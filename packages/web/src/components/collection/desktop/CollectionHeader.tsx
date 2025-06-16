@@ -315,6 +315,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     </Flex>
   )
 
+  console.log('REED in collection header', ownerId, currentUserId)
   const descriptionSection = (
     <Flex
       gap='xl'

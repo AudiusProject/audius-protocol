@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect } from 'react'
 
 import { useRemoteVar } from '@audius/common/hooks'
-import type { StringWei } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   tokenDashboardPageActions,
   walletSelectors,
   walletActions
 } from '@audius/common/store'
-import type { CommonState } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
@@ -82,9 +80,6 @@ export const RewardsScreen = () => {
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
 
-  const totalBalanceWei =
-    useSelector((state: CommonState) => state.wallet.totalBalance) ??
-    ('0' as StringWei)
   const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
 
   useFocusEffect(
@@ -134,7 +129,7 @@ export const RewardsScreen = () => {
             <ClaimAllRewardsTile />
             <ChallengeRewardsTile />
             <TrendingRewardsTile />
-            <TiersTile totalBalanceWei={totalBalanceWei} />
+            <TiersTile />
           </Flex>
         </ScrollView>
       </ScreenContent>
