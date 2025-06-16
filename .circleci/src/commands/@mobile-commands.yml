@@ -69,7 +69,7 @@ mobile-build-ios:
   steps:
     - run:
         name: fastlane build
-        command: cp packages/mobile/<<parameters.env>> packages/mobile/ios/ && cd packages/mobile/ios && bundle exec fastlane build bundle_id:<<parameters.bundle-id>>
+        command: cp packages/mobile/<<parameters.env>> packages/mobile/ios/ && cd packages/mobile/ios && TERM=dumb bundle exec fastlane build bundle_id:<<parameters.bundle-id>>
     - store_artifacts:
         path: packages/mobile/output
     - store_test_results:
@@ -93,7 +93,7 @@ mobile-release-ios:
     - run:
         name: fastlane build and upload
         no_output_timeout: 60m
-        command: cd packages/mobile/ios && bundle exec fastlane build_and_upload bundle_id:<<parameters.bundle-id>>
+        command: cd packages/mobile/ios && TERM=dumb bundle exec fastlane build_and_upload bundle_id:<<parameters.bundle-id>>
     - run:
         name: slack announce
         command: |

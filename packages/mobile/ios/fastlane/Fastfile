@@ -36,11 +36,31 @@ platform :ios do
 
   desc "Get latest Audius version in the app store"
   private_lane :get_latest_app_store_version_number do
-    uri = URI("https://itunes.apple.com/lookup?bundleId=co.audius.audiusmusic&country=us&rand=" + SecureRandom.uuid)
-    response = Net::HTTP.get_response(uri)
-    response_body = JSON.parse(response.body)
-    version = response_body["results"][0]["version"]
-    version
+    # Set TERM environment variable to avoid tput errors
+    ENV['TERM'] = 'dumb' if ENV['TERM'].nil?
+    
+    begin
+      uri = URI("https://itunes.apple.com/lookup?bundleId=co.audius.audiusmusic&country=us&rand=" + SecureRandom.uuid)
+      response = Net::HTTP.get_response(uri)
+      
+      if response.code == '200'
+        response_body = JSON.parse(response.body)
+        if response_body["results"] && response_body["results"].length > 0
+          version = response_body["results"][0]["version"]
+          UI.message "Found App Store version: #{version}"
+          return version
+        else
+          UI.message "No results found in App Store response, using fallback version"
+          return "1.0.0" # Fallback version
+        end
+      else
+        UI.message "HTTP request failed with code #{response.code}, using fallback version"
+        return "1.0.0" # Fallback version
+      end
+    rescue => e
+      UI.message "Error fetching App Store version: #{e.message}, using fallback version"
+      return "1.0.0" # Fallback version
+    end
   end
 
   desc "Get current release version and version in plist file"
@@ -52,7 +72,11 @@ platform :ios do
     plistVersionNumber = Gem::Version.new get_version_number_from_plist(
       scheme: options[:scheme] ? options[:scheme] : 'AudiusReactNative'
     )
-    puts currentReleasedVersionNumber
+    
+    UI.message "App Store version: #{currentReleasedVersionString} (#{currentReleasedVersionNumber})"
+    UI.message "Plist version: #{plistVersionNumber}"
+    UI.message "Version comparison: #{plistVersionNumber} > #{currentReleasedVersionNumber} = #{plistVersionNumber > currentReleasedVersionNumber}"
+    
     [currentReleasedVersionNumber, plistVersionNumber]
   end
 
@@ -175,15 +199,26 @@ platform :ios do
     elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
       scheme = 'Staging'
     end
+    
+    UI.message "Checking versions for bundle_id: #{options[:bundle_id]}, scheme: #{scheme}"
+    
     currentReleasedVersionNumber, plistVersionNumber = get_version(scheme: scheme)
     isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
+    
+    UI.message "Version increment check: #{isVersionIncremented}"
+    
     packageJson = File.open "../../package.json"
     packageJsonData = JSON.load packageJson
+    
     if isVersionIncremented
         # Build and upload to TestFlight
         UI.message "Doing a full build and release"
         build(bundle_id: options[:bundle_id], current_released_version: currentReleasedVersionNumber, plist_version: plistVersionNumber)
         upload(bundle_id: options[:bundle_id])
+    else
+        UI.message "Version not incremented, skipping build and upload"
+        UI.message "Current App Store version: #{currentReleasedVersionNumber}"
+        UI.message "Current plist version: #{plistVersionNumber}"
     end
   end
 
