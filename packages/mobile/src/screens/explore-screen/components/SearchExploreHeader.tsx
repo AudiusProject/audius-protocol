@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useState, useEffect } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import type { ScrollView } from 'react-native'
@@ -13,6 +13,7 @@ import Animated, {
   withTiming,
   useDerivedValue
 } from 'react-native-reanimated'
+import { useDebounce } from 'react-use'
 
 import {
   Flex,
@@ -53,6 +54,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
 
   // Get state from context
   const [query, setQuery] = useSearchQuery()
+  const [inputValue, setInputValue] = useState(query)
 
   // State
   const [autoFocus] = useState(params?.autoFocus ?? false)
@@ -67,21 +69,29 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   }, [drawerHelpers])
 
   const handleClearSearch = useCallback(() => {
-    setQuery('')
+    setInputValue('')
     scrollRef.current?.scrollTo({
       y: 0,
       animated: false
     })
-  }, [setQuery, scrollRef])
+  }, [setInputValue, scrollRef])
 
   const handleSearchInputChange = useCallback(
     (text: string) => {
-      setQuery(text)
+      setInputValue(text)
       if (text === '') {
         scrollRef.current?.scrollTo?.({ y: 0, animated: false })
       }
     },
-    [setQuery, scrollRef]
+    [scrollRef]
+  )
+
+  useDebounce(
+    () => {
+      setQuery(inputValue)
+    },
+    400,
+    [inputValue]
   )
 
   // Animated styles
@@ -275,13 +285,14 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
               <TextInput
                 label='Search'
                 autoFocus={autoFocus}
+                autoCorrect={false}
                 placeholder={messages.searchPlaceholder}
                 size={TextInputSize.SMALL}
                 startIcon={IconSearch}
                 onChangeText={handleSearchInputChange}
-                value={query}
+                value={inputValue}
                 endIcon={(props) =>
-                  query ? (
+                  inputValue ? (
                     <IconButton
                       icon={IconCloseAlt}
                       color='subdued'

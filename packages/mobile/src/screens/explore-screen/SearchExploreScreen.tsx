@@ -23,7 +23,7 @@ import {
   SearchProvider,
   useSearchCategory,
   useSearchFilters,
-  useSearchDebouncedQuery
+  useSearchQuery
 } from '../search-screen/searchState'
 
 import { ExploreContent } from './components/ExploreContent'
@@ -42,8 +42,7 @@ const SearchExploreContent = () => {
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
-  const debouncedQuery = useSearchDebouncedQuery()
-
+  const [query] = useSearchQuery()
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -119,35 +118,33 @@ const SearchExploreContent = () => {
   }))
 
   return (
-    <Screen url='Explore' header={() => <></>}>
-      <ScreenContent>
-        <SearchExploreHeader
-          scrollY={scrollY}
-          filterTranslateY={filterTranslateY}
-          scrollRef={scrollRef}
-        />
+    <ScreenContent>
+      <SearchExploreHeader
+        scrollY={scrollY}
+        filterTranslateY={filterTranslateY}
+        scrollRef={scrollRef}
+      />
 
-        <Animated.ScrollView
-          ref={scrollRef}
-          onScroll={scrollHandler}
-          style={[contentSlideAnimatedStyle]}
-        >
-          {category !== 'all' || debouncedQuery ? (
-            <>
-              {debouncedQuery || hasAnyFilter ? (
-                <SearchResults />
-              ) : showRecentSearches ? (
-                <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-              ) : (
-                <SearchCatalogTile />
-              )}
-            </>
-          ) : (
-            <ExploreContent />
-          )}
-        </Animated.ScrollView>
-      </ScreenContent>
-    </Screen>
+      <Animated.ScrollView
+        ref={scrollRef}
+        onScroll={scrollHandler}
+        style={[contentSlideAnimatedStyle]}
+      >
+        {category !== 'all' || query ? (
+          <>
+            {query || hasAnyFilter ? (
+              <SearchResults />
+            ) : showRecentSearches ? (
+              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+            ) : (
+              <SearchCatalogTile />
+            )}
+          </>
+        ) : (
+          <ExploreContent />
+        )}
+      </Animated.ScrollView>
+    </ScreenContent>
   )
 }
 
@@ -161,7 +158,9 @@ export const SearchExploreScreen = () => {
       initialAutoFocus={params?.autoFocus ?? false}
       initialQuery={params?.query ?? ''}
     >
-      <SearchExploreContent />
+      <Screen url='Explore' header={() => <></>}>
+        <SearchExploreContent />
+      </Screen>
     </SearchProvider>
   )
 }
