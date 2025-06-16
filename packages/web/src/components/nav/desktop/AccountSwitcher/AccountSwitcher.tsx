@@ -23,9 +23,7 @@ export const AccountSwitcher = () => {
   const { data: currentWeb3User } = useGetCurrentWeb3User({
     enabled: isAccountComplete
   })
-  const { data: currentUserId } = useCurrentUserId({
-    enabled: isAccountComplete && !!currentWeb3User
-  })
+  const { data: currentUserId } = useCurrentUserId()
 
   const { switchAccount, switchToWeb3User } = useAccountSwitcher()
 
