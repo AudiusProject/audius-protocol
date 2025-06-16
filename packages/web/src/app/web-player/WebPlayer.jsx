@@ -1046,8 +1046,7 @@ const WebPlayer = (props) => {
                   pathname:
                     getPathname(history.location) === HOME_PAGE
                       ? isGuestAccount
-                        ? // ? LIBRARY_PAGE
-                          SETTINGS_PAGE
+                        ? LIBRARY_PAGE
                         : FEED_PAGE
                       : getPathname(history.location),
                   search: includeSearch(history.location.search)
