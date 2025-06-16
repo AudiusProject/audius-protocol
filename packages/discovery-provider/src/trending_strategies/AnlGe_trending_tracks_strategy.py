@@ -77,14 +77,14 @@ class TrendingTracksStrategyAnlGe(BaseTrendingStrategy):
                                 :O * tp.save_week_count + 
                                 :R * tp.repost_count + 
                                 :i * tp.save_count
-                            ) * (1 + LOG(tp.karma))
+                            ) * (1 + LOG(1 + tp.karma))
                         ELSE (
                             :N * aip.week_listen_counts + 
                             :F * tp.repost_week_count + 
                             :O * tp.save_week_count + 
                             :R * tp.repost_count + 
                             :i * tp.save_count
-                        ) * (1 + LOG(tp.karma))
+                        ) * (1 + LOG(1 + tp.karma))
                         END as week_score,
                         now()
                     from trending_params tp
@@ -127,14 +127,14 @@ class TrendingTracksStrategyAnlGe(BaseTrendingStrategy):
                                 :O * tp.save_month_count + 
                                 :R * tp.repost_count + 
                                 :i * tp.save_count
-                            ) * (1 + LOG(tp.karma))
+                            ) * (1 + LOG(1 + tp.karma))
                         ELSE (
                             :N * aip.month_listen_counts + 
                             :F * tp.repost_month_count + 
                             :O * tp.save_month_count + 
                             :R * tp.repost_count + 
                             :i * tp.save_count
-                        ) * (1 + LOG(tp.karma))
+                        ) * (1 + LOG(1 + tp.karma))
                         END as month_score,
                         now()
                     from trending_params tp
@@ -151,7 +151,7 @@ class TrendingTracksStrategyAnlGe(BaseTrendingStrategy):
                         CASE
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        ELSE (:N * ap.count + :R * tp.repost_count + :i * tp.save_count) * (1 + LOG(tp.karma))
+                        ELSE (:N * ap.count + :R * tp.repost_count + :i * tp.save_count) * (1 + LOG(1 + tp.karma))
                         END as all_time_score,
                         now()
                     from trending_params tp
