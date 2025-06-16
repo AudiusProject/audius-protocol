@@ -11,7 +11,7 @@ import {
 import {
   selectIsGuestAccount,
   useAccountStatus,
-  useCurrentAccount,
+  useCurrentAccountUser,
   useHasAccount
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -238,14 +238,14 @@ const WebPlayer = (props) => {
 
   const dispatch = useDispatch()
 
-  const { data: accountData } = useCurrentAccount({
-    select: (account) => ({
-      userHandle: account?.user?.handle,
-      isGuestAccount: selectIsGuestAccount(account)
+  const { data: accountUserData } = useCurrentAccountUser({
+    select: (user) => ({
+      userHandle: user.handle,
+      isGuestAccount: selectIsGuestAccount(user)
     })
   })
   const hasAccount = useHasAccount()
-  const { userHandle, isGuestAccount = false } = accountData || {}
+  const { userHandle, isGuestAccount = false } = accountUserData || {}
   const { data: accountStatus } = useAccountStatus()
   const showCookieBanner = useSelector(getShowCookieBanner)
 
@@ -1046,7 +1046,8 @@ const WebPlayer = (props) => {
                   pathname:
                     getPathname(history.location) === HOME_PAGE
                       ? isGuestAccount
-                        ? LIBRARY_PAGE
+                        ? // ? LIBRARY_PAGE
+                          SETTINGS_PAGE
                         : FEED_PAGE
                       : getPathname(history.location),
                   search: includeSearch(history.location.search)
