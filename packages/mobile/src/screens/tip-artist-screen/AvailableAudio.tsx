@@ -1,10 +1,7 @@
 import { useAudioBalance } from '@audius/common/api'
-import type { BNWei, StringWei } from '@audius/common/models'
-import {
-  isNullOrUndefined,
-  formatWei,
-  stringWeiToBN
-} from '@audius/common/utils'
+import type { StringWei } from '@audius/common/models'
+import { isNullOrUndefined } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { Image, Platform, View } from 'react-native'
 
 import TokenBadgeNoTier from 'app/assets/images/tokenBadgeNoTier.png'
@@ -48,9 +45,9 @@ export const AvailableAudio = () => {
       includeConnectedWallets: false
     })
 
-  // Convert BigInt to BN for compatibility with existing code
+  // Convert BigInt to audio amount string for display
   const accountBalance = audioBalanceBigInt
-    ? stringWeiToBN(audioBalanceBigInt.toString() as StringWei)
+    ? (audioBalanceBigInt.toString() as StringWei)
     : null
 
   const styles = useStyles()
@@ -66,7 +63,9 @@ export const AvailableAudio = () => {
           <Skeleton width={24} height={13} />
         ) : (
           <Text variant='body' style={styles.text}>
-            {formatWei(accountBalance as BNWei, true, 0)}
+            {AUDIO(BigInt(accountBalance)).toLocaleString(undefined, {
+              maximumFractionDigits: 0
+            })}
           </Text>
         )}
       </View>
