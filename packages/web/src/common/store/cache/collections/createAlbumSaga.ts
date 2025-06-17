@@ -1,5 +1,5 @@
 import {
-  albumMetadataForSDK,
+  albumMetadataForCreateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
@@ -172,7 +172,7 @@ function* createAndConfirmAlbum(
       userId: Id.parse(userId),
       albumId: Id.parse(albumId),
       trackIds: initTrack ? [Id.parse(initTrack.track_id)] : undefined,
-      metadata: albumMetadataForSDK(formFields)
+      metadata: albumMetadataForCreateWithSDK(formFields)
     })
 
     const { data: album } = yield* call(
