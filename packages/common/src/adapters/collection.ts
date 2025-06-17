@@ -4,6 +4,7 @@ import {
   full,
   Id,
   OptionalHashId,
+  UpdateAlbumRequest,
   UpdatePlaylistRequest
 } from '@audius/sdk'
 import dayjs from 'dayjs'
@@ -194,7 +195,9 @@ export const playlistMetadataForUpdateWithSDK = (
   }
 }
 
-export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
+export const albumMetadataForCreateWithSDK = (
+  input: Collection
+): CreateAlbumMetadata => {
   return {
     streamConditions:
       input.stream_conditions && 'usdc_purchase' in input.stream_conditions
@@ -217,4 +220,19 @@ export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
     parentalWarningType: input.parental_warning_type ?? null,
     isPrivate: input.is_private ?? false
   }
+}
+
+export const albumMetadataForUpdateWithSDK = (
+  input: Collection
+): UpdateAlbumRequest['metadata'] => {
+  return {
+    ...albumMetadataForCreateWithSDK(input),
+    playlistContents: input.playlist_contents
+      ? input.playlist_contents.track_ids.map((t) => ({
+          timestamp: t.time,
+          trackId: Id.parse(t.track),
+          metadataTimestamp: t.metadata_time
+        }))
+      : undefined
+  } as UpdateAlbumRequest['metadata']
 }

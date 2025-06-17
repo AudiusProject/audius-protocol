@@ -1,5 +1,5 @@
 import {
-  albumMetadataForSDK,
+  albumMetadataForCreateWithSDK,
   fileToSdk,
   playlistMetadataForCreateWithSDK,
   stemTrackMetadataFromSDK,
@@ -894,7 +894,7 @@ export function* uploadCollection(
             }
 
             yield* call([sdk.albums, sdk.albums.createAlbum], {
-              metadata: albumMetadataForSDK(
+              metadata: albumMetadataForCreateWithSDK(
                 collectionMetadata as unknown as Collection
               ),
               userId: Id.parse(userId),
