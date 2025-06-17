@@ -23,11 +23,17 @@ export const getCurrentAccountQueryKey = () =>
     QUERY_KEYS.accountUser
   ] as unknown as QueryKey<AccountState>
 
-const getLocalAccount = (localStorage: LocalStorage) => {
+const getLocalAccount = (
+  localStorage: LocalStorage,
+  queryClient: QueryClient
+) => {
   const localAccount = localStorage.getAudiusAccountSync?.()
   const localAccountUser =
     localStorage.getAudiusAccountUserSync?.() as UserMetadata
   if (localAccount && localAccountUser) {
+    if (localAccountUser) {
+      primeUserData({ users: [localAccountUser], queryClient })
+    }
     // feature-tan-query TODO: when removing account sagas,
     //    need to add wallets and local account user from local storage
     return {
@@ -53,7 +59,7 @@ export const getCurrentAccountQueryFn = async (
   currentUserWallet: string | null,
   queryClient: QueryClient
 ): Promise<AccountState | null | undefined> => {
-  const localAccount = getLocalAccount(localStorage)
+  const localAccount = getLocalAccount(localStorage, queryClient)
   if (localAccount) {
     return localAccount
   }
@@ -109,8 +115,8 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
   // We intentionally cache account data in local storage to quickly render the account details
   // This initialData primes our query slice up front and will cause the hook to return synchronously (if the data exists)
   const initialData = useMemo(
-    () => getLocalAccount(localStorage),
-    [localStorage]
+    () => getLocalAccount(localStorage, queryClient),
+    [localStorage, queryClient]
   )
 
   return useQuery({
