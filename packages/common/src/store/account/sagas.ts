@@ -1,4 +1,5 @@
 import { HedgehogWalletNotFoundError, Id } from '@audius/sdk'
+import { omit } from 'lodash'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -191,10 +192,10 @@ export function* fetchAccountAsync({
   let wallet: string | undefined
   let web3WalletAddress: string | undefined
   try {
-    const connectedWallets = yield* call([
+    const connectedWallets = (yield* call([
       sdk.services.audiusWalletClient,
       sdk.services.audiusWalletClient.getAddresses
-    ])
+    ])) as string[]
     const accountWalletAddressOverride = yield* call([
       localStorage,
       localStorage.getAudiusUserWalletOverride
@@ -220,14 +221,22 @@ export function* fetchAccountAsync({
     return
   }
 
-  let accountData: AccountUserMetadata | undefined
+  let accountData
   try {
-    accountData = (yield* call([queryClient, queryClient.fetchQuery], {
-      queryKey: getWalletAccountQueryKey(wallet),
-      queryFn: async () => getWalletAccountQueryFn(wallet!, sdk, queryClient),
-      staleTime: Infinity,
-      gcTime: Infinity
-    })) as AccountUserMetadata | undefined
+    accountData = yield* call(
+      getWalletAccountQueryFn,
+      wallet!,
+      sdk,
+      queryClient
+    )
+    const normalizedAccountData = {
+      ...omit(accountData, ['user']),
+      userId: accountData?.user?.user_id
+    }
+    queryClient.setQueryData(
+      getWalletAccountQueryKey(wallet!),
+      normalizedAccountData
+    )
   } catch (e) {}
 
   if (!accountData) {
@@ -339,10 +348,10 @@ function* fetchLocalAccountAsync() {
 
   let wallet, web3WalletAddress
   try {
-    const connectedWallets = yield* call([
+    const connectedWallets = (yield* call([
       sdk.services.audiusWalletClient,
       sdk.services.audiusWalletClient.getAddresses
-    ])
+    ])) as string[]
     const accountWalletAddressOverride = yield* call([
       localStorage,
       localStorage.getAudiusUserWalletOverride

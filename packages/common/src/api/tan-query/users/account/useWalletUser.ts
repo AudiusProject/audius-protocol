@@ -4,10 +4,11 @@ import { omit } from 'lodash'
 
 import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
-import { AccountUserMetadata, UserMetadata } from '~/models'
+import { AccountUserMetadata, User, UserMetadata } from '~/models'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
+import { useUser } from '../useUser'
 
 import { useWalletAddresses } from './useWalletAddresses'
 
@@ -39,12 +40,9 @@ export const getWalletAccountQueryFn = async (
 
   const accountData = accountFromSDK(data)
   if (accountData?.user) {
-    primeUserData({ users: [accountData.user], queryClient })
+    primeUserData({ users: [omit(accountData.user, 'playlists')], queryClient })
   }
-  return {
-    ...omit(accountData, ['user']),
-    userId: accountData?.user?.user_id
-  }
+  return accountData
 }
 
 /**
@@ -66,7 +64,15 @@ export const useWalletAccount = <
     queryKey: getWalletAccountQueryKey(wallet),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      return await getWalletAccountQueryFn(wallet!, sdk, queryClient)
+      const accountData = await getWalletAccountQueryFn(
+        wallet!,
+        sdk,
+        queryClient
+      )
+      return {
+        ...omit(accountData, ['user']),
+        userId: accountData?.user?.user_id
+      }
     },
     ...options,
     staleTime: Infinity,
@@ -77,18 +83,14 @@ export const useWalletAccount = <
 
 // Some helper selectors - these pull the current wallet addresses out of redux for you
 // NOTE: web3User means the user that signed in originally (i.e. could be a manager)
-export const useCurrentWeb3Account = <TResult = UserMetadata | undefined>(
-  options?: SelectableQueryOptions<
-    NormalizedAccountUserMetadata | null | undefined,
-    TResult
-  >
+export const useCurrentWeb3Account = <TResult = User>(
+  options?: SelectableQueryOptions<User, TResult>
 ) => {
   const { data: walletAddresses } = useWalletAddresses()
   const { web3User } = walletAddresses ?? {}
 
-  return useWalletAccount<TResult>(web3User, {
-    select: (data: NormalizedAccountUserMetadata | null | undefined): TResult =>
-      data?.userId as TResult,
-    ...options
+  const { data: userId } = useWalletAccount(web3User, {
+    select: (data) => data?.userId
   })
+  return useUser<TResult>(userId, options)
 }

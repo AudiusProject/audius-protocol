@@ -28,7 +28,6 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     : undefined
 
   const { data: user } = useCurrentAccountUser()
-  console.log({ user })
   const { data: trackTitle } = useTrack(decodedContentId, {
     enabled: !!decodedContentId && audienceContentType === 'track',
     select: (track) => track.title
