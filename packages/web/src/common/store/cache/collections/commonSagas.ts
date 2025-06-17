@@ -1,5 +1,5 @@
 import {
-  albumMetadataForSDK,
+  albumMetadataForUpdateWithSDK,
   fileToSdk,
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
@@ -190,7 +190,7 @@ function* confirmEditPlaylist(
             coverArtFile: coverArtFile
               ? fileToSdk(coverArtFile, 'cover_art')
               : undefined,
-            metadata: albumMetadataForSDK(formFields),
+            metadata: albumMetadataForUpdateWithSDK(formFields),
             userId: Id.parse(userId),
             albumId: Id.parse(playlistId)
           })

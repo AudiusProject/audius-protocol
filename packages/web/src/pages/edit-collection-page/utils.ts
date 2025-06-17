@@ -1,4 +1,4 @@
-import { Collection } from '@audius/common/models'
+import { Collection, Track } from '@audius/common/models'
 import { TrackForEdit, TrackForUpload } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import { keyBy } from 'lodash'
@@ -46,7 +46,10 @@ export const updatePlaylistContents = (
 export const getEditablePlaylistContents = ({
   playlist_contents,
   tracks
-}: Pick<Collection, 'playlist_contents' | 'tracks'>): TrackForEdit[] => {
+}: {
+  playlist_contents: Collection['playlist_contents']
+  tracks: Track[]
+}): TrackForEdit[] => {
   const tracksById = keyBy(tracks, 'track_id')
   return playlist_contents.track_ids.map((playlistTrack) => ({
     metadata: tracksById[playlistTrack.track],
