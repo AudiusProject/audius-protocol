@@ -86,7 +86,7 @@ export const ProgressiveScrollView = ({
       onScroll={handleScroll}
       scrollEventThrottle={16}
     >
-      <Flex direction='column' ph='l' pt='xl' pb='3xl'>
+      <Flex direction='column' ph='l' pt='s' pb='3xl'>
         {childrenArray.map((child, index) => {
           if (isValidElement(child)) {
             return renderChild(child, index)
