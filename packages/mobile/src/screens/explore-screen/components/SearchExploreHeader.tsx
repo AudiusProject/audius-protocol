@@ -60,7 +60,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   }, [query])
 
   // State
-  const [autoFocus] = useState(params?.autoFocus ?? false)
+
   // Data fetching
   const animatedFilterPaddingVertical = useSharedValue(spacing.l)
 
@@ -285,7 +285,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             <Animated.View style={inputAnimatedStyle}>
               <TextInput
                 label='Search'
-                autoFocus={autoFocus}
+                autoFocus={params.autoFocus}
                 autoCorrect={false}
                 placeholder={messages.searchPlaceholder}
                 size={TextInputSize.SMALL}

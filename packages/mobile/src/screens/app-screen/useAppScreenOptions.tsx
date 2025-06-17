@@ -1,5 +1,7 @@
 import { useCallback, useContext } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
   NativeStackNavigationOptions,
@@ -56,14 +58,24 @@ export const useAppScreenOptions = (
   const styles = useStyles()
   const navigation = useNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
+  const { isEnabled: isSearchExploreMobileEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_MOBILE
+  )
 
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
   }, [drawerHelpers])
 
   const handlePressSearch = useCallback(() => {
-    navigation.navigate('Search', { autoFocus: true })
-  }, [navigation])
+    if (isSearchExploreMobileEnabled) {
+      navigation.navigate('explore', {
+        screen: 'SearchExplore',
+        params: { autoFocus: true }
+      })
+    } else {
+      navigation.navigate('Search', { autoFocus: true })
+    }
+  }, [isSearchExploreMobileEnabled, navigation])
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(
