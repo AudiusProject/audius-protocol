@@ -1,8 +1,15 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import type { ScrollView } from 'react-native'
-import { ImageBackground } from 'react-native'
+import { ImageBackground, Keyboard } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 import Animated, {
   useSharedValue,
@@ -51,6 +58,8 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
+  const navigation = useNavigation()
+  const textInputRef = useRef<any>(null)
 
   // Get state from context
   const [query, setQuery] = useSearchQuery()
@@ -58,6 +67,34 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   useEffect(() => {
     setInputValue(query)
   }, [query])
+
+  // Handle keyboard dismiss
+  useEffect(() => {
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        if (params?.autoFocus === true) {
+          // @ts-expect-error: setParams is not typed on the generic NavigationProp, but is available on StackNavigationProp
+          navigation.setParams?.({ autoFocus: false })
+        }
+      }
+    )
+
+    return () => keyboardDidHideListener?.remove()
+  }, [navigation, params?.autoFocus])
+
+  // Focus the input when autoFocus is true and screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (params?.autoFocus === true && textInputRef.current) {
+        const timer = setTimeout(() => {
+          textInputRef.current?.focus()
+        }, 100)
+
+        return () => clearTimeout(timer)
+      }
+    }, [params?.autoFocus])
+  )
 
   // State
 
@@ -284,8 +321,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             </AnimatedText>
             <Animated.View style={inputAnimatedStyle}>
               <TextInput
+                ref={textInputRef}
                 label='Search'
-                autoFocus={params.autoFocus}
+                autoFocus={params?.autoFocus}
                 autoCorrect={false}
                 placeholder={messages.searchPlaceholder}
                 size={TextInputSize.SMALL}
