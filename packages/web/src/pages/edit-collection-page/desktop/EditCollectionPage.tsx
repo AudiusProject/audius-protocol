@@ -1,14 +1,9 @@
 import {
   useCollectionByPermalink,
-  useTracks,
-  useUsers
+  useCollectionTracks,
+  useTracks
 } from '@audius/common/api'
-import {
-  Name,
-  SquareSizes,
-  Status,
-  UserTrackMetadata
-} from '@audius/common/models'
+import { Name, SquareSizes } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
   EditCollectionValues,
@@ -53,18 +48,13 @@ export const EditCollectionPage = () => {
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
 
-  const { data: collection } = useCollectionByPermalink(permalink)
+  const { data: collection, isLoading: isCollectionLoading } =
+    useCollectionByPermalink(permalink)
 
-  const { playlist_id, trackIds, description, playlist_contents } =
-    collection ?? {}
+  const { playlist_id, description, playlist_contents } = collection ?? {}
 
-  const { data: tracks } = useTracks(trackIds)
-  const { data: users } = useUsers(tracks?.map((t) => t.owner_id))
-
-  const tracksWithUsers: UserTrackMetadata[] = tracks?.map((t) => ({
-    ...t,
-    user: users?.find((u) => u.user_id === t.owner_id)
-  })) as UserTrackMetadata[]
+  const { data: tracks, isLoading: isTracksLoading } =
+    useCollectionTracks(playlist_id)
 
   const artworkUrl = useCollectionCoverArt({
     collectionId: playlist_id,
@@ -76,10 +66,10 @@ export const EditCollectionPage = () => {
     description: description ?? undefined,
     artwork: { url: artworkUrl! },
     tracks:
-      tracksWithUsers && playlist_contents
+      playlist_contents && tracks
         ? getEditablePlaylistContents({
             playlist_contents,
-            tracks: tracksWithUsers
+            tracks
           })
         : [],
     isUpload: false
@@ -124,7 +114,7 @@ export const EditCollectionPage = () => {
 
   return (
     <Page header={<Header primary={messages.title(isAlbum)} showBackButton />}>
-      {status === Status.IDLE || status === Status.LOADING || !artworkUrl ? (
+      {isCollectionLoading || isTracksLoading || !artworkUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditCollectionForm
