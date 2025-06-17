@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 
-import BN from 'bn.js'
+import { AUDIO } from '@audius/fixed-decimal'
 
-import { BNWei, StringWei } from '~/models/Wallet'
-import { formatWei } from '~/utils/wallet'
+import { StringWei } from '~/models/Wallet'
 
 export const useUIAudio = (weiAudio: StringWei): number =>
-  useMemo(() => parseInt(formatWei(new BN(weiAudio) as BNWei), 10), [weiAudio])
+  useMemo(
+    () => parseInt(AUDIO(BigInt(weiAudio)).trunc().toString()),
+    [weiAudio]
+  )
