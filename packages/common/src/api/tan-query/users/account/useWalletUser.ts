@@ -4,7 +4,7 @@ import { omit } from 'lodash'
 
 import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
-import { AccountUserMetadata, User, UserMetadata } from '~/models'
+import { AccountUserMetadata, User } from '~/models'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
@@ -12,7 +12,10 @@ import { useUser } from '../useUser'
 
 import { useWalletAddresses } from './useWalletAddresses'
 
-type NormalizedAccountUserMetadata = Omit<AccountUserMetadata, 'user'> & {
+export type NormalizedAccountUserMetadata = Omit<
+  AccountUserMetadata,
+  'user'
+> & {
   userId: number | undefined
 }
 

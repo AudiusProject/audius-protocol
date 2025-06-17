@@ -19,7 +19,8 @@ import {
   queryCurrentAccount,
   queryCurrentUserId,
   primeUserData,
-  getUserQueryKey
+  getUserQueryKey,
+  NormalizedAccountUserMetadata
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { AccountUserMetadata, ErrorLevel, Status, UserMetadata } from '~/models'
@@ -232,7 +233,7 @@ export function* fetchAccountAsync({
     const normalizedAccountData = {
       ...omit(accountData, ['user']),
       userId: accountData?.user?.user_id
-    }
+    } as NormalizedAccountUserMetadata
     queryClient.setQueryData(
       getWalletAccountQueryKey(wallet!),
       normalizedAccountData
