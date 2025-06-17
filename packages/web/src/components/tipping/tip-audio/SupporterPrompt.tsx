@@ -26,8 +26,6 @@ export const SupporterPrompt = ({ receiverId }: SupporterPromptProps) => {
 
   if (isPending) return null
 
-  console.log('amountToDethrone', amountToDethrone)
-
   if (!audioFeaturesDegradedText && !isFirstSupporter && !amountToDethrone)
     return null
 
