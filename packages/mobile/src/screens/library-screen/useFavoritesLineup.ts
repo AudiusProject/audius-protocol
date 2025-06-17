@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { Kind } from '@audius/common/models'
 import {
@@ -70,6 +70,12 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
 
   // Fetch the lineup based on reachability
   useReachabilityEffect(fetchLineupOnline, fetchLineupOffline)
+
+  useEffect(() => {
+    if (fetchLineupOnline) {
+      fetchLineupOnline()
+    }
+  }, [fetchLineupOnline])
 
   return lineup
 }
