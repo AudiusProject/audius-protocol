@@ -11,7 +11,8 @@ import {
   NotificationBody,
   NotificationTile,
   NotificationTitle,
-  EntityLink
+  EntityLink,
+  NotificationText
 } from '../Notification'
 
 const messages = {
@@ -51,10 +52,13 @@ export const ArtistRemixContestSubmissionsNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.description} <EntityLink entity={track} />
-        {milestone === 1
-          ? messages.firstSubmission
-          : messages.description2(milestone)}
+        <NotificationText>
+          {messages.description}
+          <EntityLink entity={track} />
+          {milestone === 1
+            ? messages.firstSubmission
+            : messages.description2(milestone)}
+        </NotificationText>
       </NotificationBody>
     </NotificationTile>
   )
