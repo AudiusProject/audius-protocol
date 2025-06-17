@@ -65,7 +65,7 @@ const AddToCollectionModal = () => {
   const trackTitle = useSelector(getTrackTitle)
   const isAlbumType = collectionType === 'album'
   const { data: currentUserHandle } = useCurrentAccountUser({
-    select: (data) => data?.user.handle
+    select: (user) => user?.handle
   })
   const [searchValue, setSearchValue] = useState('')
   const debouncedSearchValue = useDebounce(searchValue, 300)
