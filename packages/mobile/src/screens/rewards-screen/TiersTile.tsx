@@ -15,7 +15,6 @@ import {
 } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { formatNumberCommas } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 import { Linking } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch } from 'react-redux'
@@ -62,7 +61,7 @@ export const TiersTile = () => {
   const dispatch = useDispatch()
 
   const { totalBalance } = useAudioBalance()
-  const { tier } = getTierAndNumberForBalance(AUDIO(totalBalance).value)
+  const { tier } = getTierAndNumberForBalance(totalBalance)
 
   const onPressLaunchDiscord = () => {
     dispatch(pressDiscord())
