@@ -592,7 +592,8 @@ function* signUp() {
                 [queryClient, queryClient.fetchQuery],
                 {
                   queryKey: getWalletAccountQueryKey(wallet),
-                  queryFn: async () => getWalletAccountQueryFn(wallet!, sdk),
+                  queryFn: async () =>
+                    getWalletAccountQueryFn(wallet!, sdk, queryClient),
                   staleTime: Infinity,
                   gcTime: Infinity
                 }
@@ -904,7 +905,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     const account = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(signInResponse.walletAddress),
       queryFn: async () =>
-        getWalletAccountQueryFn(signInResponse.walletAddress, sdk),
+        getWalletAccountQueryFn(signInResponse.walletAddress, sdk, queryClient),
       staleTime: Infinity,
       gcTime: Infinity
     })) as AccountUserMetadata | undefined

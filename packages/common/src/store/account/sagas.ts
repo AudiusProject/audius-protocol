@@ -122,7 +122,8 @@ function* initializeMetricsForUser({
   if (accountUser && accountUser.handle && web3WalletAddress) {
     const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(web3WalletAddress),
-      queryFn: async () => getWalletAccountQueryFn(web3WalletAddress, sdk),
+      queryFn: async () =>
+        getWalletAccountQueryFn(web3WalletAddress, sdk, queryClient),
       staleTime: Infinity,
       gcTime: Infinity
     })) as AccountUserMetadata | undefined
@@ -223,7 +224,7 @@ export function* fetchAccountAsync({
   try {
     accountData = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAccountQueryKey(wallet),
-      queryFn: async () => getWalletAccountQueryFn(wallet!, sdk),
+      queryFn: async () => getWalletAccountQueryFn(wallet!, sdk, queryClient),
       staleTime: Infinity,
       gcTime: Infinity
     })) as AccountUserMetadata | undefined

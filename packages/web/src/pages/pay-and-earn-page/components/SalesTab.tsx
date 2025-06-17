@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  useGetCurrentWeb3User,
+  useCurrentWeb3Account,
   useSales as useSalesQuery,
   useSalesCount,
   useCurrentUserId
@@ -88,7 +88,7 @@ export const useSales = () => {
   const { data: userId } = useCurrentUserId()
   const dispatch = useDispatch()
   const isManagerMode = useIsManagedAccount()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useCurrentWeb3Account()
 
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =

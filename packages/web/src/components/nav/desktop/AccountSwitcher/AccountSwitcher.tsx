@@ -4,7 +4,7 @@ import {
   selectIsAccountComplete,
   useCurrentAccountUser,
   useCurrentUserId,
-  useGetCurrentWeb3User,
+  useCurrentWeb3Account,
   useManagedAccounts
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
@@ -20,7 +20,7 @@ export const AccountSwitcher = () => {
   })
   const [checkedAccess, setCheckedAccess] = useState(false)
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User({
+  const { data: currentWeb3User } = useCurrentWeb3Account({
     enabled: isAccountComplete
   })
   const { data: currentUserId } = useCurrentUserId()

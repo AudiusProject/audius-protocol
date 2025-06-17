@@ -5,7 +5,6 @@ import {
   useCollection,
   useCurrentAccount,
   useCurrentAccountUser,
-  useGetCurrentUser,
   useTrack,
   useUser
 } from '@audius/common/api'
@@ -216,7 +215,7 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
-  const { data: currentUser } = useGetCurrentUser({})
+  const { data: currentUser } = useCurrentAccountUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )

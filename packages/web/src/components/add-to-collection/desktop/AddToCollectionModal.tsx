@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import {
   useCurrentUserId,
-  useGetCurrentUser,
+  useCurrentAccountUser,
   useUserAlbums,
   useUserPlaylists
 } from '@audius/common/api'
@@ -64,7 +64,7 @@ const AddToCollectionModal = () => {
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isAlbumType = collectionType === 'album'
-  const { data: currentUserHandle } = useGetCurrentUser({
+  const { data: currentUserHandle } = useCurrentAccountUser({
     select: (data) => data?.user.handle
   })
   const [searchValue, setSearchValue] = useState('')

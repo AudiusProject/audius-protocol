@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUser } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import {
   usePurchasersAudience,
   useRemixersAudience
@@ -73,7 +73,7 @@ const LabelWithCount = (props: {
 }
 
 const FollowersMessageField = () => {
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentAccountUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.FOLLOWERS
 
@@ -96,7 +96,7 @@ const FollowersMessageField = () => {
 }
 
 const TipSupportersMessageField = () => {
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentAccountUser()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.TIPPERS
   const isDisabled = user?.supporter_count === 0
