@@ -2,9 +2,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { getContext } from 'typed-redux-saga'
 
-import { Kind } from '~/models'
 import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
-import { EntriesByKind } from '~/store/cache/types'
 
 import { getCollectionQueryKey } from '../collection/useCollection'
 import { getCollectionByPermalinkQueryKey } from '../collection/useCollectionByPermalink'
@@ -23,33 +21,13 @@ export const primeCollectionData = ({
   queryClient: QueryClient
   forceReplace?: boolean
   skipQueryData?: boolean
-}) => {
-  primeCollectionDataInternal({
-    collections,
-    queryClient,
-    forceReplace,
-    skipQueryData
-  })
-  return collections
-}
-
-export const primeCollectionDataInternal = ({
-  collections,
-  queryClient,
-  forceReplace = false,
-  skipQueryData = false
-}: {
-  collections: (UserCollectionMetadata | CollectionMetadata)[]
-  queryClient: QueryClient
-  forceReplace?: boolean
-  skipQueryData?: boolean
-}): EntriesByKind => {
-  // Set up entries for Redux
-  const entries: EntriesByKind = {
-    [Kind.USERS]: {}
-  }
-
-  collections.forEach((collection) => {
+}): TQCollection[] => {
+  return collections.map((collection) => {
+    const tqCollection = {
+      ...omit(collection, ['tracks', 'user']),
+      trackIds:
+        collection.playlist_contents?.track_ids?.map((t) => t.track) ?? []
+    } as TQCollection
     // Prime collection data only if it doesn't exist and skipQueryData is false
     if (
       forceReplace ||
@@ -58,10 +36,6 @@ export const primeCollectionDataInternal = ({
           getCollectionQueryKey(collection.playlist_id)
         ))
     ) {
-      const tqCollection = {
-        ...omit(collection, ['tracks', 'user']),
-        trackIds: collection.tracks?.map((t) => t.track_id) ?? []
-      } as TQCollection
       queryClient.setQueryData(
         getCollectionQueryKey(collection.playlist_id),
         tqCollection
@@ -91,22 +65,14 @@ export const primeCollectionDataInternal = ({
 
     // Prime track and user data from tracks in collection
     if (collection.tracks?.length) {
-      const trackEntries = primeTrackDataInternal({
+      primeTrackDataInternal({
         tracks: collection.tracks,
         queryClient,
         forceReplace
       })
-
-      if (trackEntries[Kind.USERS]) {
-        entries[Kind.USERS] = {
-          ...entries[Kind.USERS],
-          ...trackEntries[Kind.USERS]
-        }
-      }
     }
+    return tqCollection
   })
-
-  return entries
 }
 
 export function* primeCollectionDataSaga(
