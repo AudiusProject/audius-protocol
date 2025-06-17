@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import type { ScrollView } from 'react-native'
@@ -55,13 +55,14 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Get state from context
   const [query, setQuery] = useSearchQuery()
   const [inputValue, setInputValue] = useState(query)
+  useEffect(() => {
+    setInputValue(query)
+  }, [query])
 
   // State
   const [autoFocus] = useState(params?.autoFocus ?? false)
   // Data fetching
   const animatedFilterPaddingVertical = useSharedValue(spacing.l)
-
-  // Derived data
 
   // Handlers
   const handleOpenLeftNavDrawer = useCallback(() => {

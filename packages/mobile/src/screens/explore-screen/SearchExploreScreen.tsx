@@ -42,7 +42,7 @@ const SearchExploreContent = () => {
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
-  const [query] = useSearchQuery()
+  const [query, setQuery] = useSearchQuery()
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -62,6 +62,7 @@ const SearchExploreContent = () => {
       y: 0,
       animated: false
     })
+    setQuery('')
     setCategory('all')
     setFilters({})
   })
