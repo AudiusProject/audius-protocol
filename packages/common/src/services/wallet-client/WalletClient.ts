@@ -272,7 +272,7 @@ export class WalletClient {
     ethAddress: string
   }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
-      throw new Error('Insufficient Audsio to transfer')
+      throw new Error('Insufficient Audio to transfer')
     }
     try {
       const sdk = await this.audiusSdk()
