@@ -55,33 +55,21 @@ export const SelectablePill = (props: SelectablePillProps) => {
 
   const pressed = useSharedValue(0)
   const selected = useSharedValue(isSelected ? 1 : 0)
+
   const handlePressIn = useCallback(() => {
     pressed.value = withTiming(1, motion.press)
-    if (!isSelected) {
-      selected.value = withTiming(1, motion.press)
-    }
     setIsPressing(true)
-  }, [pressed, motion.press, selected, setIsPressing, isSelected])
-
-  const handleTouchCancel = useCallback(() => {
-    pressed.value = withTiming(0, motion.press)
-    if (!isSelected) {
-      selected.value = withTiming(0, motion.press)
-    }
-    setIsPressing(false)
-  }, [pressed, motion.press, selected, setIsPressing, isSelected])
+  }, [pressed, motion.press, setIsPressing])
 
   const handlePressOut = useCallback(() => {
     pressed.value = withTiming(0, motion.press)
-    if (!isSelected) {
-      selected.value = withTiming(0, motion.press)
-    }
     setIsPressing(false)
-  }, [pressed, motion.press, selected, setIsPressing, isSelected])
+  }, [pressed, motion.press, setIsPressing])
 
-  const handleLongPress = useCallback(() => {
-    // necessary because it seems to modify how events bubble
-  }, [])
+  const handleTouchCancel = useCallback(() => {
+    pressed.value = withTiming(0, motion.press)
+    setIsPressing(false)
+  }, [pressed, motion.press, setIsPressing])
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
@@ -89,7 +77,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
       if (value) {
         onChange?.(value, !isSelected)
       }
-      setIsPressing(false)
       setIsSelected(!isSelected)
     },
     [onChange, onPress, value, isSelected, setIsSelected]
@@ -144,9 +131,8 @@ export const SelectablePill = (props: SelectablePillProps) => {
   return (
     <Pressable
       onPressIn={handlePressIn}
-      onTouchCancel={handleTouchCancel}
       onPressOut={handlePressOut}
-      onLongPress={handleLongPress}
+      onTouchCancel={handleTouchCancel}
       onPress={handlePress}
       hitSlop={DEFAULT_HIT_SLOP}
       style={[
