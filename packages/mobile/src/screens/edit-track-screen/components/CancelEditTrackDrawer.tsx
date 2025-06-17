@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { ConfirmationDrawer } from 'app/components/drawers'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -11,11 +13,17 @@ const messages = {
 export const CancelEditTrackDrawer = () => {
   const navigation = useNavigation()
 
+  const handleConfirm = useCallback(() => {
+    // Go back twice to skip the SelectTrackScreen
+    navigation.goBack()
+    navigation.goBack()
+  }, [navigation])
+
   return (
     <ConfirmationDrawer
       drawerName='CancelEditTrack'
       messages={messages}
-      onConfirm={navigation.goBack}
+      onConfirm={handleConfirm}
       addBottomInset
     />
   )

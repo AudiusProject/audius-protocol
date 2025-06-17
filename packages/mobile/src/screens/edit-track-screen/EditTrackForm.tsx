@@ -19,7 +19,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useDispatch } from 'react-redux'
 
 import {
-  IconCaretLeft,
+  IconClose,
   IconCloudUpload,
   Button,
   Flex
@@ -169,6 +169,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
+      // Go back twice to skip the SelectTrackScreen
+      navigation.goBack()
       navigation.goBack()
     } else {
       Keyboard.dismiss()
@@ -260,7 +262,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
           icon={IconCloudUpload}
           topbarLeft={
             <TopBarIconButton
-              icon={IconCaretLeft}
+              icon={IconClose}
               style={styles.backButton}
               onPress={handlePressBack}
             />
