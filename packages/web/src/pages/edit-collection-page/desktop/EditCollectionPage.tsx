@@ -1,7 +1,6 @@
 import {
   useCollectionByPermalink,
-  useCollectionTracks,
-  useTracks
+  useCollectionTracks
 } from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
