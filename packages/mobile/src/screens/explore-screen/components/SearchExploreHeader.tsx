@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState, useEffect } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import type { ScrollView } from 'react-native'
