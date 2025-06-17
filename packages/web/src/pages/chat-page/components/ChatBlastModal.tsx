@@ -1,4 +1,4 @@
-import { useGetCurrentUser } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import {
   useFirstAvailableBlastAudience,
   usePurchasersAudience,
@@ -191,7 +191,7 @@ const LabelWithCount = (props: {
 }
 
 const FollowersMessageField = () => {
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentAccountUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.FOLLOWERS
   const isDisabled = user?.follower_count === 0
@@ -219,7 +219,7 @@ const FollowersMessageField = () => {
 }
 
 const TipSupportersMessageField = () => {
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentAccountUser()
   const [{ value }] = useField(TARGET_AUDIENCE_FIELD)
   const selected = value === ChatBlastAudience.TIPPERS
   const isDisabled = user?.supporter_count === 0

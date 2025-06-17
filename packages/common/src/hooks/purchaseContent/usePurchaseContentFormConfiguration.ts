@@ -6,7 +6,7 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 
-import { useCurrentAccount, useGetCurrentUser, useUSDCBalance } from '~/api'
+import { useCurrentAccount, useCurrentAccountUser, useUSDCBalance } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
@@ -72,7 +72,7 @@ export const usePurchaseContentFormConfiguration = ({
   const { data: guestEmail } = useCurrentAccount({
     select: (account) => account?.guestEmail
   })
-  const { data: currentUser } = useGetCurrentUser({})
+  const { data: currentUser } = useCurrentAccountUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )

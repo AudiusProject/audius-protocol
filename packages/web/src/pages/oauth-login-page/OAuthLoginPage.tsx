@@ -3,7 +3,7 @@ import { FormEvent, useCallback, useMemo, useState } from 'react'
 import { accountFromSDK } from '@audius/common/adapters'
 import {
   useCurrentUserId,
-  useGetCurrentWeb3User,
+  useCurrentWeb3Account,
   useManagedAccounts,
   useCurrentAccountUser
 } from '@audius/common/api'
@@ -261,7 +261,7 @@ export const OAuthLoginPage = () => {
     dispatch(signOut({ fromOAuth: true }))
   }
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useCurrentWeb3Account()
   const { data: currentUserId } = useCurrentUserId()
   const { switchAccount } = useAccountSwitcher()
 

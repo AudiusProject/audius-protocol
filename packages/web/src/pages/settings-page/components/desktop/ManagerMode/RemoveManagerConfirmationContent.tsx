@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect } from 'react'
 
 import {
   useCurrentUserId,
-  useGetCurrentWeb3User,
+  useCurrentWeb3Account,
   useRemoveManager
 } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
@@ -41,7 +41,7 @@ export const RemoveManagerConfirmationContent = ({
     isSuccess,
     isError
   } = useRemoveManager()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useCurrentWeb3Account()
   const { data: currentUserId } = useCurrentUserId()
   const managerIsCurrentWeb3User = currentWeb3User?.user_id === managerUserId
   const { switchToWeb3User } = useAccountSwitcher()
