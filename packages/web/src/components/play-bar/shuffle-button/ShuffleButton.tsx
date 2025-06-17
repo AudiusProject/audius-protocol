@@ -12,6 +12,8 @@ enum ShuffleStates {
   ANIMATE_ON_OFF = 3
 }
 
+const STATES_LENGTH = 4
+
 const SHUFFLE_STATE_LS_KEY = 'shuffleState'
 const getShuffleState = (defaultState: ShuffleStates) => {
   const localStorageShuffleState =
@@ -93,8 +95,7 @@ const ShuffleButton = ({
   }, [animations, handleChange, state.shuffleState])
 
   const nextState = () => {
-    const shuffleState =
-      (state.shuffleState + 1) % Object.keys(ShuffleStates).length
+    const shuffleState = (state.shuffleState + 1) % STATES_LENGTH
     handleChange(shuffleState)
   }
 
