@@ -40,9 +40,11 @@ export const AccountDetails = () => {
   const navigation = useAppDrawerNavigation()
 
   const handlePressAccount = useCallback(() => {
-    navigation.push('Profile', { handle: 'accountUser' })
-    drawerHelpers.closeDrawer()
-  }, [navigation, drawerHelpers])
+    if (handle) {
+      navigation.push('Profile', { handle })
+      drawerHelpers.closeDrawer()
+    }
+  }, [handle, navigation, drawerHelpers])
 
   return (
     <TouchableOpacity onPress={handlePressAccount}>
