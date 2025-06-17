@@ -1,7 +1,7 @@
 import { cloneElement, useCallback, useState } from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
-import { BadgeTier, StringAudio } from '@audius/common/models'
+import { BadgeTier, StringAudio, StringWei } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   tippingSelectors,
@@ -66,7 +66,9 @@ export const SendTip = () => {
 
   const [tipAmount, setTipAmount] = useState('')
 
-  const { tier } = getTierAndNumberForBalance(accountBalance.value)
+  const { tier } = getTierAndNumberForBalance(
+    accountBalance.value.toString() as StringWei
+  )
   const audioBadge = audioTierMap[tier as BadgeTier]
 
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(
