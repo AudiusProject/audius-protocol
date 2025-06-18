@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { pickHandlePageMessages } from '@audius/common/messages'
 import type { SocialPlatform } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { getIsSocialConnected } from '@audius/web/src/common/store/pages/signon/selectors'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   setValueField,
   unsetSocialProfile
@@ -107,13 +108,14 @@ export const PickHandleScreen = () => {
   })
   useTrackScreen('PickHandle')
 
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
+  const queryClient = useQueryClient()
   const validationSchema = useMemo(
     () =>
       toFormikValidationSchema(
-        pickHandleSchema({ audiusQueryContext, restrictedHandles })
+        pickHandleSchema({ queryContext, queryClient, restrictedHandles })
       ),
-    [audiusQueryContext]
+    [queryContext, queryClient]
   )
 
   const handleSubmit = useCallback(

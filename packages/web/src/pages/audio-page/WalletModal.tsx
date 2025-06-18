@@ -1,6 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useCurrentAccountUser, useQueryContext } from '@audius/common/api'
 import {
   Chain,
   StringWei,
@@ -9,7 +9,6 @@ import {
   SolanaWalletAddress
 } from '@audius/common/models'
 import {
-  accountSelectors,
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
   walletSelectors,
@@ -39,7 +38,6 @@ const { getModalState, getModalVisible, getSendData } =
   tokenDashboardPageSelectors
 const { confirmSend, inputSendData, setModalVisibility } =
   tokenDashboardPageActions
-const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   receiveSPL: 'Receive SPL $AUDIO',
@@ -151,25 +149,25 @@ const ModalContent = ({
 }: ModalContentProps) => {
   const balance: BNWei =
     useSelector(getAccountBalance) ?? stringWeiToBN('0' as StringWei)
-  const account = useSelector(getAccountUser)
+  const { data: erc_wallet } = useCurrentAccountUser({
+    select: (user) => user?.erc_wallet
+  })
   const amountPendingTransfer = useSelector(getSendData)
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   const { value: solWallet } = useAsync(async () => {
-    if (!account?.erc_wallet) return null
+    if (!erc_wallet) return null
     const sdk = await audiusSdk()
     const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
-      ethWallet: account.erc_wallet,
+      ethWallet: erc_wallet,
       mint: 'wAUDIO'
     })
     return userBank.toString() as SolanaWalletAddress
-  }, [account?.erc_wallet])
+  }, [erc_wallet])
 
-  if (!modalState || !account || !solWallet) {
+  if (!modalState || !erc_wallet || !solWallet) {
     return null
   }
-
-  const wallet = account.erc_wallet as WalletAddress
 
   // This silly `ret` dance is to satisfy
   // TS's no-fallthrough rule...
@@ -177,7 +175,7 @@ const ModalContent = ({
 
   switch (modalState.stage) {
     case 'RECEIVE': {
-      ret = <ReceiveBody wallet={wallet} solWallet={solWallet} />
+      ret = <ReceiveBody wallet={erc_wallet} solWallet={solWallet} />
       break
     }
     case 'SEND': {
@@ -188,7 +186,7 @@ const ModalContent = ({
             <SendInputBody
               currentBalance={balance}
               onSend={onInputSendData}
-              wallet={wallet}
+              wallet={erc_wallet}
               solWallet={solWallet}
             />
           )

@@ -30,6 +30,13 @@ export const fullTrackRemixesPage = (permalink: string) => {
   return `${fullTrackPage(permalink)}/remixes`
 }
 
+export const pickWinnersPage = (permalink: string) => {
+  return `${permalink}/pick-winners`
+}
+export const fullPickWinnersPage = (permalink: string) => {
+  return `${fullTrackPage(permalink)}/pick-winners`
+}
+
 export const fullAiPage = (handle: string) => {
   return `${fullProfilePage(handle)}/ai`
 }

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { imageCollectiblePlaceholder } from '@audius/common/assets'
 import {
   AccessConditions,
@@ -7,7 +8,7 @@ import {
   StreamTrackAvailabilityType,
   isContentCollectibleGated
 } from '@audius/common/models'
-import { collectiblesSelectors } from '@audius/common/store'
+import { CommonState, collectiblesSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Box, Hint, IconInfo } from '@audius/harmony'
 import { useField } from 'formik'
@@ -59,8 +60,9 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   const showPremiumDownloadsMessage =
     downloadConditions && lastGateKeeper.access === 'stemsAndDownloads'
 
+  const { data: userId } = useCurrentUserId()
   const { ethCollectionMap, solCollectionMap, isLoading } = useSelector(
-    getSupportedUserCollections
+    (state: CommonState) => getSupportedUserCollections(state, { userId })
   )
 
   const ethCollectibleItems = useMemo(() => {

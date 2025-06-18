@@ -10,7 +10,6 @@
   display: flex;
   overflow: hidden;
   border-radius: 8px;
-  max-width: 400px;
   cursor: pointer;
   transition: all 0.2 ease-in-out;
   user-select: none;

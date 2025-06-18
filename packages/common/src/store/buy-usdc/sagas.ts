@@ -2,14 +2,16 @@ import { USDC } from '@audius/fixed-decimal'
 import {
   createTransferCheckedInstruction,
   getAccount,
-  getAssociatedTokenAddressSync
+  getAssociatedTokenAddressSync,
+  TokenAccountNotFoundError
 } from '@solana/spl-token'
 import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import retry from 'async-retry'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
+import { call, put, race, take, takeLeading } from 'typed-redux-saga'
 
+import { queryHasAccount, queryAccountUser, queryWalletAddresses } from '~/api'
 import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { PurchaseVendor } from '~/models/PurchaseContent'
@@ -22,11 +24,6 @@ import {
   pollForTokenBalanceChange,
   recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
-import {
-  getAccountUser,
-  getHasAccount,
-  getWalletAddresses
-} from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
@@ -313,7 +310,7 @@ function* doBuyUSDC({
     yield* put(buyUSDCFlowSucceeded())
 
     // Update USDC balance in store
-    const { currentUser: ethAddress } = yield* select(getWalletAddresses)
+    const { currentUser: ethAddress } = yield* call(queryWalletAddresses)
     if (!ethAddress) {
       throw new Error('User is not signed in')
     }
@@ -358,7 +355,7 @@ function* doBuyUSDC({
 
 function* recoverPurchaseIfNecessary() {
   yield* waitForRead()
-  const hasAccount = yield* select(getHasAccount)
+  const hasAccount = yield* call(queryHasAccount)
   if (!hasAccount) return
 
   const reportToSentry = yield* getContext('reportToSentry')
@@ -384,12 +381,22 @@ function* recoverPurchaseIfNecessary() {
         mint: 'USDC'
       }
     )
-    const accountInfo = yield* call(
-      getAccount,
-      sdk.services.solanaClient.connection,
-      usdcTokenAccount
-    )
-    const amount = accountInfo?.amount ?? BigInt(0)
+
+    let amount: bigint
+    try {
+      const accountInfo = yield* call(
+        getAccount,
+        sdk.services.solanaClient.connection,
+        usdcTokenAccount
+      )
+      amount = accountInfo.amount
+    } catch (e) {
+      if (e instanceof TokenAccountNotFoundError) {
+        amount = BigInt(0)
+      }
+      throw e
+    }
+
     if (amount === BigInt(0)) {
       return
     }
@@ -413,7 +420,7 @@ function* recoverPurchaseIfNecessary() {
       })
     )
 
-    const user = yield* select(getAccountUser)
+    const user = yield* call(queryAccountUser)
     const ethWallet = user?.wallet
     if (!ethWallet) {
       throw new Error('User is not signed in')

@@ -56,6 +56,7 @@ import IconHeartSVG from '../assets/icons/Heart.svg'
 import IconImageSVG from '../assets/icons/Image.svg'
 import IconIndentSVG from '../assets/icons/Indent.svg'
 import IconInfoSVG from '../assets/icons/Info.svg'
+import IconJupiterLogoSVG from '../assets/icons/JupiterLogo.svg'
 import IconKebabHorizontalSVG from '../assets/icons/KebabHorizontal.svg'
 import IconKeySVG from '../assets/icons/Key.svg'
 import IconLibrarySVG from '../assets/icons/Library.svg'
@@ -313,3 +314,4 @@ export const IconSupport = IconSupportSVG as IconComponent
 export const IconPlaybackPause = IconPlaybackPauseSVG as IconComponent
 export const IconPlaybackPlay = IconPlaybackPlaySVG as IconComponent
 export const IconQrCode = IconQrCodeSVG as IconComponent
+export const IconJupiterLogo = IconJupiterLogoSVG as IconComponent

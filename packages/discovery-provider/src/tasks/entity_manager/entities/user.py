@@ -111,6 +111,14 @@ def validate_user_tx(params: ManageEntityParameters):
         )
 
 
+def validate_user_wallet(session: Session, wallet: str):
+    user_wallet_exists = session.query(
+        session.query(User).filter(User.wallet == wallet.lower()).exists()
+    ).scalar()
+    if user_wallet_exists:
+        raise IndexingValidationError(f"User wallet {wallet} already exists")
+
+
 def validate_user_metadata(
     session: Session,
     user_record: User,
@@ -182,6 +190,7 @@ def create_user(params: ManageEntityParameters):
 
     user_id = params.user_id
 
+    validate_user_wallet(params.session, params.signer.lower())
     user_record = User(
         user_id=user_id,
         wallet=params.signer.lower(),

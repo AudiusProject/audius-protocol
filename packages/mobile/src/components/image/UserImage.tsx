@@ -11,7 +11,7 @@ import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
 import { primitiveToImageSource } from './primitiveToImageSource'
 
 type UseUserImageOptions = {
-  userId?: ID
+  userId: ID | null | undefined
   size: SquareSizes
 }
 
@@ -19,7 +19,7 @@ export const useProfilePicture = ({
   userId,
   size
 }: {
-  userId?: ID
+  userId?: ID | null
   size: SquareSizes
   defaultImage?: string
 }) => {

@@ -1,12 +1,11 @@
-import { useRef, useEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 
+import { useCurrentUserId, useTracks, useUsers } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import type { Track } from '@audius/common/models'
+import type { ID, Track } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheUsersSelectors,
-  cacheTracksSelectors,
-  savedPageTracksLineupActions,
+  libraryPageTracksLineupActions,
   queueActions,
   queueSelectors,
   RepeatMode,
@@ -24,14 +23,13 @@ import {
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
   Genre,
-  shallowCompare,
   removeNullable,
   getTrackPreviewDuration
 } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { getMirrorStreamUrl } from '@audius/web/src/common/store/player/sagas'
-import { isEqual } from 'lodash'
+import { isEqual, uniq } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
@@ -68,17 +66,8 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
-const { getUserId } = accountSelectors
-const { getUsers } = cacheUsersSelectors
-const { getTracks } = cacheTracksSelectors
-const {
-  getPlaying,
-  getSeek,
-  getCurrentTrack,
-  getCounter,
-  getPlaybackRate,
-  getUid
-} = playerSelectors
+const { getPlaying, getSeek, getCounter, getPlaybackRate, getUid } =
+  playerSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
@@ -163,13 +152,13 @@ type QueueableTrack = {
 } & Pick<Queueable, 'playerBehavior'>
 
 export const AudioPlayer = () => {
-  const track = useSelector(getCurrentTrack)
+  const track = useCurrentTrack()
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
   const playbackRate = useSelector(getPlaybackRate)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const uid = useSelector(getUid)
   const playerBehavior = useSelector(getPlayerBehavior)
   const previousUid = usePrevious(uid)
@@ -192,30 +181,34 @@ export const AudioPlayer = () => {
   const queueOrder = useSelector(getOrder)
   const queueSource = useSelector(getSource)
   const queueCollectionId = useSelector(getCollectionId)
-  const queueTrackUids = queueOrder.map((trackData) => trackData.uid)
-  const queueTrackIds = queueOrder.map((trackData) => trackData.id)
-  const queueTrackMap = useSelector(
-    (state) => getTracks(state, { uids: queueTrackUids }),
-    shallowCompare
+  const queueTrackUids = useMemo(
+    () => queueOrder.map((trackData) => trackData.uid),
+    [queueOrder]
   )
-  const queueTracks: QueueableTrack[] = queueOrder.map(
-    ({ id, playerBehavior }) => ({
-      track: queueTrackMap[id]?.metadata,
-      playerBehavior
-    })
+  const queueTrackIds = useMemo(
+    () => queueOrder.map((trackData) => trackData.id as ID),
+    [queueOrder]
   )
-  const queueTrackOwnerIds = queueTracks
-    .map(({ track }) => track?.owner_id)
-    .filter(removeNullable)
+  const { byId: tracksById } = useTracks(uniq(queueTrackIds))
+  const queueTracks = useMemo(
+    () =>
+      queueOrder.map(({ id, playerBehavior }) => ({
+        track: tracksById[id],
+        playerBehavior
+      })),
+    [queueOrder, tracksById]
+  )
+  const queueTrackOwnerIds = useMemo(
+    () =>
+      queueTracks.map(({ track }) => track?.owner_id).filter(removeNullable),
+    [queueTracks]
+  )
 
-  const queueTrackOwnersMap = useSelector(
-    (state) => getUsers(state, { ids: queueTrackOwnerIds }),
-    shallowCompare
-  )
+  const queueTrackOwnersMap = useUsers(queueTrackOwnerIds)
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
-      queueSource === savedPageTracksLineupActions.prefix
+      queueSource === libraryPageTracksLineupActions.prefix
         ? DOWNLOAD_REASON_FAVORITES
         : queueCollectionId?.toString()
     )

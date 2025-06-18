@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext, primeUserData } from '~/api/tan-query/utils'
 import { UserTrackMetadata, UserCollectionMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
@@ -18,7 +18,6 @@ import {
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, LineupData, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
-import { primeUserData } from '../utils'
 import { primeCollectionData } from '../utils/primeCollectionData'
 import { primeTrackData } from '../utils/primeTrackData'
 
@@ -43,7 +42,7 @@ export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -80,22 +79,19 @@ export const useProfileReposts = (
         users: reposts
           .filter((item): item is UserTrackMetadata => 'track_id' in item)
           .map((item) => item.user),
-        queryClient,
-        dispatch
+        queryClient
       })
       primeTrackData({
         tracks: reposts.filter(
           (item): item is UserTrackMetadata => 'track_id' in item
         ),
-        queryClient,
-        dispatch
+        queryClient
       })
       primeCollectionData({
         collections: reposts.filter(
           (item): item is UserCollectionMetadata => 'playlist_id' in item
         ),
-        queryClient,
-        dispatch
+        queryClient
       })
 
       // Update lineup when new data arrives

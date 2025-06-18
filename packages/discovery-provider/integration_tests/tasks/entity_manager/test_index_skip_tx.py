@@ -6,6 +6,7 @@ from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db_blocks
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
@@ -55,7 +56,8 @@ def test_skip_tx(app, mocker):
         web3 = Web3()
         redis = get_redis()
 
-        update_task = UpdateTask(web3, None, redis)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus, redis)
 
     tx_receipts = {
         # invalid create

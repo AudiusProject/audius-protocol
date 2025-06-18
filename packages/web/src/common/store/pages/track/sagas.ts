@@ -1,27 +1,23 @@
-import { Track } from '@audius/common/models'
+import { queryTrack, queryUser } from '@audius/common/api'
 import {
   cacheTracksActions as trackCacheActions,
-  cacheTracksSelectors,
   trackPageLineupActions,
   trackPageActions,
-  trackPageSelectors,
-  cacheUsersSelectors
+  trackPageSelectors
 } from '@audius/common/store'
 import moment from 'moment'
-import { put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import trackLineupSagas from './lineups/sagas'
 
 const { tracksActions } = trackPageLineupActions
 const { getTrackId } = trackPageSelectors
-const { getTrack } = cacheTracksSelectors
-const { getUser } = cacheUsersSelectors
 
 function* watchRefetchLineup() {
   yield* takeEvery(trackPageActions.REFETCH_LINEUP, function* (action) {
     const trackId = yield* select(getTrackId)
-    const track = yield* select(getTrack, { id: trackId })
-    const user = yield* select(getUser, { id: track?.owner_id })
+    const track = yield* queryTrack(trackId)
+    const user = yield* call(queryUser, track?.owner_id)
 
     yield* put(tracksActions.reset())
     yield* put(
@@ -38,7 +34,7 @@ function* watchTrackPageMakePublic() {
     trackPageActions.MAKE_TRACK_PUBLIC,
     function* (action: ReturnType<typeof trackPageActions.makeTrackPublic>) {
       const { trackId } = action
-      let track: Track | null = yield* select(getTrack, { id: trackId })
+      let track = yield* queryTrack(trackId)
 
       if (!track) return
       track = {

@@ -1,12 +1,15 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
-import { useUserComments } from '@audius/common/api'
-import { useFeatureFlag, useSelectTierInfo } from '@audius/common/hooks'
+import {
+  useCurrentUserId,
+  useUserComments,
+  useProfileUser
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { LayoutAnimation } from 'react-native'
-import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import { Box, Divider, Flex, useTheme } from '@audius/harmony-native'
@@ -20,7 +23,6 @@ import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
 import { TipAudioButton } from '../TipAudioButton'
 import { UploadTrackButton } from '../UploadTrackButton'
-import { useSelectProfile } from '../selectors'
 
 import { Bio } from './Bio'
 import { CollapsedSection } from './CollapsedSection'
@@ -28,11 +30,9 @@ import { ExpandHeaderToggleButton } from './ExpandHeaderToggleButton'
 import { ProfileInfoTiles } from './ProfileInfoTiles'
 import { SocialsAndSites } from './SocialsAndSites'
 
-const getUserId = accountSelectors.getUserId
-
 // Memoized since material-top-tabs triggers unecessary rerenders
 export const ProfileHeader = memo(() => {
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpandable, setIsExpandable] = useState(false)
@@ -48,29 +48,35 @@ export const ProfileHeader = memo(() => {
     tiktok_handle: tikTokHandle,
     supporting_count: supportingCount,
     allow_ai_attribution
-  } = useSelectProfile([
-    'user_id',
-    'does_current_user_follow',
-    'current_user_followee_follow_count',
-    'website',
-    'donation',
-    'twitter_handle',
-    'instagram_handle',
-    'tiktok_handle',
-    'supporting_count',
-    'allow_ai_attribution'
-  ])
+  } = useProfileUser({
+    select: (user) => ({
+      user_id: user.user_id,
+      does_current_user_follow: user.does_current_user_follow,
+      current_user_followee_follow_count:
+        user.current_user_followee_follow_count,
+      website: user.website,
+      donation: user.donation,
+      twitter_handle: user.twitter_handle,
+      instagram_handle: user.instagram_handle,
+      tiktok_handle: user.tiktok_handle,
+      supporting_count: user.supporting_count,
+      allow_ai_attribution: user.allow_ai_attribution
+    })
+  }).user ?? {}
 
-  const { data: comments } = useUserComments({ userId, pageSize: 1 })
-  const { tier = 'none' } = useSelectTierInfo(userId)
+  const { data: comments } = useUserComments({
+    userId: userId || 0,
+    pageSize: 1
+  })
+  const { tier } = useTierAndVerifiedForUser(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
-  const hasMutuals = !isOwner && currentUserFolloweeFollowCount > 0
+  const hasMutuals = !isOwner && (currentUserFolloweeFollowCount ?? 0) > 0
   const hasMultipleSocials =
     [website, donation, twitterHandle, instagramHandle, tikTokHandle].filter(
       Boolean
     ).length > 1
-  const isSupporting = supportingCount > 0
+  const isSupporting = supportingCount && supportingCount > 0
 
   const { isEnabled: isRecentCommentsEnabled } = useFeatureFlag(
     FeatureFlags.RECENT_COMMENTS

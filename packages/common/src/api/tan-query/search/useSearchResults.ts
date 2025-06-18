@@ -8,7 +8,8 @@ import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useCurrentUserId } from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import {
   Name,
   PlaybackSource,
@@ -23,7 +24,6 @@ import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/p
 import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
-import { useCurrentUserId } from '../..'
 import { useLineupQuery } from '../lineups/useLineupQuery'
 import { QUERY_KEYS } from '../queryKeys'
 import {
@@ -32,7 +32,7 @@ import {
   QueryOptions,
   LineupData
 } from '../types'
-import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
+import { makeLoadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from '../utils/primeCollectionData'
 import { primeTrackData } from '../utils/primeTrackData'
 import { primeUserData } from '../utils/primeUserData'
@@ -124,7 +124,7 @@ const useSearchQueryProps = <T>(
     pageSize,
     ...filters
   }
-  const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
+  const { audiusSdk, getFeatureEnabled, analytics } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -235,7 +235,7 @@ const useSearchQueryProps = <T>(
 
       // Prime entity cache data & the individual search slice data
       if (tracks?.length) {
-        primeTrackData({ tracks, queryClient, dispatch })
+        primeTrackData({ tracks, queryClient })
         if (shouldPrimeCache) {
           primeSearchSlice(
             tracks.map((t) => ({ id: t.track_id, type: EntityType.TRACK })),
@@ -245,7 +245,7 @@ const useSearchQueryProps = <T>(
       }
 
       if (users?.length) {
-        primeUserData({ users, queryClient, dispatch })
+        primeUserData({ users, queryClient })
         if (shouldPrimeCache) {
           primeSearchSlice(users, 'users')
         }
@@ -254,8 +254,7 @@ const useSearchQueryProps = <T>(
       if (albums?.length || playlists?.length) {
         primeCollectionData({
           collections: [...albums, ...playlists],
-          queryClient,
-          dispatch
+          queryClient
         })
         if (albums?.length && shouldPrimeCache) {
           primeSearchSlice(albums, 'albums')
@@ -417,7 +416,7 @@ export const useSearchUserResults = (
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
   }
-  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+  queryDataWithLoadNextPage.loadNextPage = makeLoadNextPage(queryData)
 
   return queryDataWithLoadNextPage
 }
@@ -450,7 +449,7 @@ export const useSearchAlbumResults = (
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
   }
-  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+  queryDataWithLoadNextPage.loadNextPage = makeLoadNextPage(queryData)
 
   return queryDataWithLoadNextPage
 }
@@ -483,7 +482,7 @@ export const useSearchPlaylistResults = (
   const queryDataWithLoadNextPage = queryData as typeof queryData & {
     loadNextPage: () => void
   }
-  queryDataWithLoadNextPage.loadNextPage = loadNextPage(queryData)
+  queryDataWithLoadNextPage.loadNextPage = makeLoadNextPage(queryData)
 
   return queryDataWithLoadNextPage
 }

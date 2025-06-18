@@ -1,7 +1,8 @@
+import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
-import { AudiusQueryContextType } from '~/audius-query'
+import { QUERY_KEYS, QueryContextType } from '~/api'
+import { fetchEmailInUse } from '~/api/tan-query/users/useEmailInUse'
 import { EMAIL_REGEX } from '~/utils/email'
 
 export const emailSchemaMessages = {
@@ -12,14 +13,19 @@ export const emailSchemaMessages = {
   guestAccountExists: 'Guest account exists.'
 }
 
-export const emailSchema = (queryContext: AudiusQueryContextType) =>
+export const emailSchema = (
+  queryContext: QueryContextType,
+  queryClient: QueryClient
+) =>
   z.object({
     email: z
       .string({ required_error: emailSchemaMessages.emailRequired })
       .regex(EMAIL_REGEX, { message: emailSchemaMessages.invalidEmail })
       .superRefine(async (email, ctx) => {
-        const { exists: isEmailInUse, isGuest } =
-          await signUpFetch.isEmailInUse({ email }, queryContext)
+        const { exists: isEmailInUse, isGuest } = await queryClient.fetchQuery({
+          queryKey: [QUERY_KEYS.emailInUse, email],
+          queryFn: async () => await fetchEmailInUse(email, queryContext)
+        })
         if (isEmailInUse === undefined) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

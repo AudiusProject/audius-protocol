@@ -1,13 +1,9 @@
 import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { SupporterDethronedNotification as SupporterDethroned } from '@audius/common/store'
-import {
-  cacheUsersSelectors,
-  notificationsSelectors
-} from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { Platform } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconCrown } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -23,9 +19,6 @@ import {
   NotificationProfilePicture,
   UserNameLink
 } from '../Notification'
-
-const { getUser } = cacheUsersSelectors
-const { getNotificationUser } = notificationsSelectors
 
 type SupporterDethronedNotificationProps = {
   notification: SupporterDethroned
@@ -45,15 +38,10 @@ export const SupporterDethronedNotification = (
   props: SupporterDethronedNotificationProps
 ) => {
   const { notification } = props
-  const { supportedUserId } = notification
   const navigation = useNotificationNavigation()
-  const usurpingUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const { data: usurpingUser } = useUser(notification.entityId)
 
-  const supportedUser = useSelector((state) =>
-    getUser(state, { id: supportedUserId })
-  )
+  const { data: supportedUser } = useUser(notification.supportedUserId)
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)

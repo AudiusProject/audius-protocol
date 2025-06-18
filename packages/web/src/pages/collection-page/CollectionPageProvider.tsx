@@ -1,6 +1,12 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
 import {
+  useCollectionByParams,
+  useUser,
+  useCurrentUserId
+} from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
+import {
   Name,
   ShareSource,
   RepostSource,
@@ -16,10 +22,12 @@ import {
   ID,
   UID,
   isContentUSDCPurchaseGated,
-  ModalSource
+  ModalSource,
+  Track,
+  AccountCollection,
+  User
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   lineupSelectors,
   collectionPageLineupActions as tracksActions,
@@ -49,7 +57,8 @@ import {
   albumTrackRemoveConfirmationModalActions,
   AlbumTrackRemoveConfirmationModalState,
   PlayerBehavior,
-  playerActions
+  playerActions,
+  useLineupTable
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
@@ -92,16 +101,10 @@ const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const {
-  getCollection,
-  getCollectionTracksLineup,
-  getCollectionUid,
-  getUser,
-  getUserUid,
-  getCollectionPermalink
-} = collectionPageSelectors
+const { getCollectionTracksLineup, getUserUid, getCollectionPermalink } =
+  collectionPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
+const { makeGetLineupOrder } = lineupSelectors
 const {
   editPlaylist,
   removeTrackFromPlaylist,
@@ -109,8 +112,6 @@ const {
   publishPlaylist,
   deletePlaylist
 } = cacheCollectionsActions
-
-const { getUserId, getAccountCollections } = accountSelectors
 
 type OwnProps = {
   type: CollectionsPageType
@@ -126,7 +127,22 @@ type OwnProps = {
 type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps & {
+    userId?: number | null | undefined
+    userPlaylists?: AccountCollection[] | undefined
+    user?: User | undefined
+  }
+
+type CollectionClassProps = CollectionPageProps & {
+  collection: Collection
+  currentTrack: Track | null
+  tracks: {
+    status: Status
+    entries: CollectionTrack[]
+  }
+  trackCount: number
+  playlistId: number
+}
 
 type CollectionPageState = {
   filterText: string
@@ -139,8 +155,37 @@ type CollectionPageState = {
 
 type PlaylistTrack = { time: number; track: ID; uid?: UID }
 
-class CollectionPage extends Component<
-  CollectionPageProps,
+const CollectionPage = (props: CollectionPageProps) => {
+  const { location } = props
+  const pathname = getPathname(location)
+  const params = parseCollectionRoute(pathname)
+  // For now read-only
+  const { data: collection } = useCollectionByParams(params)
+  const { data: user } = useUser(collection?.playlist_owner_id)
+  const { data: currentUserId } = useCurrentUserId()
+  const trackCount = collection?.playlist_contents.track_ids.length ?? 0
+  const playlistId = collection?.playlist_id
+  const currentTrack = useCurrentTrack()
+  const tracks = useLineupTable(getCollectionTracksLineup)
+
+  if (!collection) return null
+
+  return (
+    <CollectionPageClassComponent
+      {...props}
+      collection={collection!}
+      playlistId={playlistId!}
+      tracks={tracks}
+      trackCount={trackCount}
+      currentTrack={currentTrack}
+      userId={currentUserId}
+      user={user}
+    />
+  )
+}
+
+class CollectionPageClassComponent extends Component<
+  CollectionClassProps,
   CollectionPageState
 > {
   state: CollectionPageState = {
@@ -179,7 +224,7 @@ class CollectionPage extends Component<
     })
   }
 
-  componentDidUpdate(prevProps: CollectionPageProps) {
+  componentDidUpdate(prevProps: CollectionClassProps) {
     const {
       collection: metadata,
       userUid,
@@ -255,12 +300,7 @@ class CollectionPage extends Component<
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
       const collectionId = Uid.fromString(metadata._moved).id as number
-      fetchCollectionSucceeded(
-        collectionId,
-        metadata._moved,
-        metadata.permalink || '',
-        userUid
-      )
+      fetchCollectionSucceeded(collectionId, metadata.permalink || '', userUid)
       const newPath = pathname.replace(
         `${metadata.playlist_id}`,
         collectionId.toString()
@@ -392,8 +432,7 @@ class CollectionPage extends Component<
   }
 
   resetCollection = () => {
-    const { collectionUid, userUid } = this.props
-    this.props.resetCollection(collectionUid, userUid)
+    this.props.resetCollection()
   }
 
   refreshCollection = () => {
@@ -415,8 +454,8 @@ class CollectionPage extends Component<
   }
 
   getPlayingId = () => {
-    const { currentQueueItem } = this.props
-    return currentQueueItem.track ? currentQueueItem.track.track_id : null
+    const { currentTrack } = this.props
+    return currentTrack?.track_id ?? null
   }
 
   formatMetadata = (
@@ -544,6 +583,7 @@ class CollectionPage extends Component<
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
     const isOwner = collection?.playlist_owner_id === userId
+
     const shouldPreview = isPreview && isOwner
     if (playing && isQueued && previewing === shouldPreview) {
       pause()
@@ -655,12 +695,10 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackSave = () => {
-    const { userPlaylists, collection: metadata, smartCollection } = this.props
+    const { collection: metadata, smartCollection } = this.props
     const { playlistId } = this.props
     const isSaved =
-      (metadata && playlistId
-        ? metadata.has_current_user_saved || playlistId in userPlaylists
-        : false) ||
+      (metadata && playlistId ? metadata.has_current_user_saved : false) ||
       (smartCollection && smartCollection.has_current_user_saved)
 
     if (smartCollection && metadata) {
@@ -735,7 +773,6 @@ class CollectionPage extends Component<
       user,
       tracks,
       userId,
-      userPlaylists,
       smartCollection,
       trackCount
     } = this.props
@@ -771,7 +808,6 @@ class CollectionPage extends Component<
         : { status, metadata, user },
       tracks,
       userId,
-      userPlaylists,
       getPlayingUid: this.getPlayingUid,
       getFilteredData: this.getFilteredData,
       isQueued: this.isQueued,
@@ -827,25 +863,15 @@ class CollectionPage extends Component<
 }
 
 function makeMapStateToProps() {
-  const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
   const getLineupOrder = makeGetLineupOrder(getCollectionTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState) => {
     return {
-      tracks: getTracksLineup(state),
-      trackCount: (getCollection(state) as Collection)?.playlist_contents
-        .track_ids.length,
-      collectionUid: getCollectionUid(state) || '',
-      collection: getCollection(state) as Collection,
       collectionPermalink: getCollectionPermalink(state),
-      user: getUser(state),
       userUid: getUserUid(state) || '',
       status: getCollectionTracksLineup(state)?.status || Status.LOADING,
       order: getLineupOrder(state),
-      userId: getUserId(state),
-      playlistId: (getCollection(state) as Collection)?.playlist_id,
-      userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPlayerBehavior(state) === PlayerBehavior.PREVIEW_OR_FULL,
@@ -880,8 +906,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
-    resetCollection: (collectionUid: string, userUid: string) =>
-      dispatch(collectionActions.resetCollection(collectionUid, userUid)),
+    resetCollection: () => dispatch(collectionActions.resetCollection()),
     goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
@@ -983,14 +1008,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     fetchCollectionSucceeded: (
       collectionId: ID,
-      collectionUid: string,
       collectionPermalink: string,
       userId: string
     ) =>
       dispatch(
         collectionActions.fetchCollectionSucceeded(
           collectionId,
-          collectionUid,
           collectionPermalink,
           userId
         )

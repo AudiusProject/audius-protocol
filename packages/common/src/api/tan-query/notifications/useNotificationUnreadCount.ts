@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useRemoteVar } from '~/hooks/useRemoteVar'
 import { ID } from '~/models/Identifiers'
 import { getBalance } from '~/store/wallet/slice'
@@ -32,7 +32,7 @@ export const getNotificationUnreadCountQueryKey = (
  */
 export const useNotificationUnreadCount = () => {
   const dispatch = useDispatch()
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const pollingFreqMs = useRemoteVar(IntKeys.NOTIFICATION_POLLING_FREQ_MS)
   const validTypes = useNotificationValidTypes()

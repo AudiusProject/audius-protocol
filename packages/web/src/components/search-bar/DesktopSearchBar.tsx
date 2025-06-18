@@ -1,6 +1,9 @@
 import { useCallback, useState, useRef, useEffect, useMemo } from 'react'
 
 import { useSearchAutocomplete } from '@audius/common/api'
+import { Kind } from '@audius/common/models'
+import { SearchItemBackwardsCompatible } from '@audius/common/src/store/search/types'
+import { searchActions, searchSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   IconSearch,
@@ -9,14 +12,16 @@ import {
   IconArrowRight,
   Flex,
   LoadingSpinner,
-  Text
+  Text,
+  PlainButton
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
 import type { InputRef } from 'antd/lib/input'
 import cn from 'classnames'
-import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory, useLocation, matchPath } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, usePrevious } from 'react-use'
 
 import { searchResultsPage } from 'utils/route'
@@ -24,6 +29,8 @@ import { searchResultsPage } from 'utils/route'
 import styles from './DesktopSearchBar.module.css'
 import { UserResult, TrackResult, CollectionResult } from './SearchBarResult'
 const { SEARCH_PAGE } = route
+const { getSearchHistory } = searchSelectors
+const { removeItem, clearHistory } = searchActions
 
 const DEFAULT_LIMIT = 3
 const DEBOUNCE_MS = 400
@@ -33,6 +40,7 @@ const messages = {
   noResults: 'No Results',
   searchPlaceholder: 'Search',
   clearSearch: 'Clear search',
+  clearRecentSearches: 'Clear Recent Searches',
   categories: {
     profiles: 'Profiles',
     tracks: 'Tracks',
@@ -41,25 +49,36 @@ const messages = {
   }
 }
 
-const ViewMoreButton = ({ query }: { query: string }) => (
-  <Flex
-    as={Link}
-    // @ts-expect-error
-    to={searchResultsPage('all', query)}
-    alignItems='center'
-    ph='l'
-    pv='m'
-    gap='2xs'
-    css={{
-      cursor: 'pointer'
-    }}
-  >
-    <Text variant='label' size='s' color='subdued' className={styles.primary}>
-      {messages.viewMoreResults}
-    </Text>
-    <IconArrowRight size='s' color='subdued' className={styles.iconArrow} />
-  </Flex>
-)
+const ViewMoreButton = ({ query }: { query: string }) => {
+  const navigate = useNavigate()
+
+  return (
+    <Flex alignItems='center' pt='l' gap='2xs' justifyContent='center'>
+      <PlainButton
+        iconRight={IconArrowRight}
+        onClick={() => navigate(searchResultsPage('all', query))}
+        className='dropdown-action'
+      >
+        {messages.viewMoreResults}
+      </PlainButton>
+    </Flex>
+  )
+}
+
+const ClearRecentSearchesButton = () => {
+  const dispatch = useDispatch()
+  const handleClickClear = useCallback(() => {
+    dispatch(clearHistory())
+  }, [dispatch])
+
+  return (
+    <Flex alignItems='center' pt='l' gap='2xs' justifyContent='center'>
+      <PlainButton onClick={handleClickClear} className='dropdown-action'>
+        {messages.clearRecentSearches}
+      </PlainButton>
+    </Flex>
+  )
+}
 
 const NoResults = () => (
   <Flex alignItems='center' ph='l' pv='m'>
@@ -73,6 +92,8 @@ export const DesktopSearchBar = () => {
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const initialQuery = searchParams.get('query') || ''
+  const searchHistory = useSelector(getSearchHistory)
+  const dispatch = useDispatch()
 
   const [inputValue, setInputValue] = useState(initialQuery)
   const [debouncedValue, setDebouncedValue] = useState(inputValue)
@@ -151,6 +172,7 @@ export const DesktopSearchBar = () => {
           color='subdued'
           onClick={handleClear}
           aria-label={messages.clearSearch}
+          onMouseDown={(e) => e.preventDefault()}
         />
       )
     }
@@ -160,35 +182,35 @@ export const DesktopSearchBar = () => {
     }
   }
 
-  const options = useMemo(() => {
+  const autocompleteOptions = useMemo(() => {
     if (!data) return []
 
     const baseOptions = [
       {
         label: messages.categories.profiles,
         options: data.users.map((user) => ({
-          label: <UserResult user={user} />,
+          label: <UserResult userId={user.user_id} />,
           value: user.user_id
         }))
       },
       {
         label: messages.categories.tracks,
         options: data.tracks.map((track) => ({
-          label: <TrackResult track={track} />,
+          label: <TrackResult trackId={track.track_id} />,
           value: track.track_id
         }))
       },
       {
         label: messages.categories.playlists,
         options: data.playlists.map((playlist) => ({
-          label: <CollectionResult collection={playlist} />,
+          label: <CollectionResult collectionId={playlist.playlist_id} />,
           value: playlist.playlist_id
         }))
       },
       {
         label: messages.categories.albums,
         options: data.albums.map((album) => ({
-          label: <CollectionResult collection={album} />,
+          label: <CollectionResult collectionId={album.playlist_id} />,
           value: album.playlist_id
         }))
       }
@@ -198,14 +220,11 @@ export const DesktopSearchBar = () => {
     const hasResults = baseOptions.length > 0
 
     if (hasResults && inputValue) {
-      baseOptions.push({
-        options: [
-          {
-            label: <ViewMoreButton query={inputValue} />,
-            // @ts-expect-error
-            value: 'viewMore'
-          }
-        ]
+      // append to last group to avoid extra spacing between groups
+      baseOptions[baseOptions.length - 1].options.push({
+        label: <ViewMoreButton query={inputValue} />,
+        // @ts-expect-error
+        value: 'viewMore'
       })
     } else if (hasNoResults) {
       baseOptions.push({
@@ -222,15 +241,75 @@ export const DesktopSearchBar = () => {
     return baseOptions
   }, [data, inputValue])
 
-  const showResults = !isSearchPage && !!(data || isLoading)
+  const handleClickClear = useCallback(
+    (searchItem: SearchItemBackwardsCompatible) => {
+      dispatch(removeItem({ searchItem }))
+    },
+    [dispatch]
+  )
+
+  const recentSearchOptions = useMemo(() => {
+    if (!searchHistory.length || inputValue) return []
+    const searchHistoryOptions = searchHistory.map((searchItem) => {
+      if (searchItem.kind === Kind.USERS) {
+        return {
+          label: (
+            <UserResult
+              userId={searchItem.id}
+              onRemove={() => handleClickClear(searchItem)}
+            />
+          ),
+          value: searchItem.id
+        }
+      } else if (searchItem.kind === Kind.TRACKS) {
+        return {
+          label: (
+            <TrackResult
+              trackId={searchItem.id}
+              onRemove={() => handleClickClear(searchItem)}
+            />
+          ),
+          value: searchItem.id
+        }
+      } else {
+        return {
+          label: (
+            <CollectionResult
+              collectionId={searchItem.id}
+              onRemove={() => handleClickClear(searchItem)}
+            />
+          ),
+          value: searchItem.id
+        }
+      }
+    })
+    const baseOptions = [
+      {
+        label: 'Recent Searches',
+        options: [
+          ...searchHistoryOptions,
+          ...(searchHistoryOptions
+            ? [
+                {
+                  label: <ClearRecentSearchesButton />,
+                  value: 'Clear search'
+                }
+              ]
+            : [])
+        ]
+      }
+    ]
+
+    return baseOptions
+  }, [handleClickClear, inputValue, searchHistory])
+
+  const showResults = !isSearchPage && !!(data || searchHistory || isLoading)
   // Calculate hasNoResults for the dropdown class name
   const hasNoResults =
     data &&
     inputValue &&
-    options.length === 1 &&
-    String(options[0].options?.[0]?.value) === 'no-results'
-
-  const [isFocused, setIsFocused] = useState(false)
+    autocompleteOptions.length === 1 &&
+    String(autocompleteOptions[0].options?.[0]?.value) === 'no-results'
 
   const handleFocus = useCallback(() => {
     const searchElement = inputRef.current?.input?.closest(
@@ -239,7 +318,6 @@ export const DesktopSearchBar = () => {
     if (searchElement) {
       searchElement.classList.add('expanded')
     }
-    setIsFocused(true)
   }, [])
 
   const handleBlur = useCallback(() => {
@@ -255,7 +333,6 @@ export const DesktopSearchBar = () => {
         showResults ? 100 : 0
       )
     }
-    setIsFocused(false)
   }, [showResults])
 
   return (
@@ -265,12 +342,11 @@ export const DesktopSearchBar = () => {
           [styles.searchBoxEmpty]: hasNoResults
         })}
         dropdownMatchSelectWidth={false}
-        options={options}
+        options={data ? autocompleteOptions : recentSearchOptions}
         value={inputValue}
         onSearch={handleSearch}
         onSelect={handleSelect}
         getPopupContainer={(trigger) => trigger.parentNode as HTMLElement}
-        open={showResults && isFocused}
       >
         <Input
           inputMode='search'

@@ -6,18 +6,9 @@ import { UserTip } from '../../models/Tipping'
 import { User } from '../../models/User'
 import type { Nullable } from '../../utils/typeUtils'
 
-import {
-  RefreshSupportPayloadAction,
-  SupportersMapForUser,
-  SupportingMapForUser,
-  TippingState
-} from './types'
+import { TippingState } from './types'
 
 const initialState: TippingState = {
-  supporters: {},
-  supportersOverrides: {},
-  supporting: {},
-  supportingOverrides: {},
   send: {
     status: null,
     user: null,
@@ -34,74 +25,10 @@ const slice = createSlice({
   name: 'tipping',
   initialState,
   reducers: {
-    setSupportersForUser: (
-      state,
-      action: PayloadAction<{
-        id: ID
-        supportersForUser: SupportersMapForUser
-      }>
-    ) => {
-      const { id, supportersForUser } = action.payload
-      state.supporters[id] = {
-        ...state.supporters[id],
-        ...supportersForUser
-      }
-    },
-    setSupportersOverridesForUser: (
-      state,
-      action: PayloadAction<{
-        id: ID
-        supportersOverridesForUser: SupportersMapForUser
-      }>
-    ) => {
-      const { id, supportersOverridesForUser } = action.payload
-      state.supportersOverrides[id] = {
-        ...state.supportersOverrides[id],
-        ...supportersOverridesForUser
-      }
-    },
-    setSupportingForUser: (
-      state,
-      action: PayloadAction<{
-        id: ID
-        supportingForUser: SupportingMapForUser
-      }>
-    ) => {
-      const { id, supportingForUser } = action.payload
-      state.supporting[id] = {
-        ...state.supporting[id],
-        ...supportingForUser
-      }
-    },
-    setSupportingOverridesForUser: (
-      state,
-      action: PayloadAction<{
-        id: ID
-        supportingOverridesForUser: SupportingMapForUser
-      }>
-    ) => {
-      const { id, supportingOverridesForUser } = action.payload
-      state.supportingOverrides[id] = {
-        ...state.supportingOverrides[id],
-        ...supportingOverridesForUser
-      }
-    },
-    refreshSupport: (
-      _state,
-      _action: PayloadAction<RefreshSupportPayloadAction>
-    ) => {},
-    fetchSupportingForUser: (
-      _state,
-      _action: PayloadAction<{ userId: ID }>
-    ) => {},
-    fetchSupportersForUser: (
-      _state,
-      _action: PayloadAction<{ userId: ID }>
-    ) => {},
     beginTip: (
       state,
       action: PayloadAction<{
-        user: User | null
+        user: User | null | undefined
         source: TipSource
         trackId?: ID
         onSuccessActions?: Action[]
@@ -153,14 +80,6 @@ const slice = createSlice({
       state.send.trackId = null
     },
     fetchRecentTips: (_state) => {},
-    fetchUserSupporter: (
-      _state,
-      _action: PayloadAction<{
-        currentUserId: ID
-        userId: ID
-        supporterUserId: ID
-      }>
-    ) => {},
     setTipToDisplay: (
       state,
       action: PayloadAction<{ tipToDisplay: UserTip }>
@@ -175,18 +94,17 @@ const slice = createSlice({
       _action: PayloadAction<{ userId: ID; trackId?: Nullable<ID> }>
     ) => {
       // triggers saga
+    },
+    revokeFollowGatedAccess: (
+      _state,
+      _action: PayloadAction<{ userId: ID; trackId?: Nullable<ID> }>
+    ) => {
+      // triggers saga
     }
   }
 })
 
 export const {
-  setSupportingForUser,
-  setSupportingOverridesForUser,
-  setSupportersForUser,
-  setSupportersOverridesForUser,
-  refreshSupport,
-  fetchSupportingForUser,
-  fetchSupportersForUser,
   beginTip,
   sendTip,
   confirmSendTip,
@@ -195,10 +113,10 @@ export const {
   sendTipFailed,
   resetSend,
   fetchRecentTips,
-  fetchUserSupporter,
   setTipToDisplay,
   setShowTip,
-  refreshTipGatedTracks
+  refreshTipGatedTracks,
+  revokeFollowGatedAccess
 } = slice.actions
 
 export const actions = slice.actions

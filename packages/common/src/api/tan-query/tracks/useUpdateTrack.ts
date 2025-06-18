@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { UserTrackMetadata } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
@@ -33,7 +33,7 @@ export type UpdateTrackParams = {
 }
 
 export const useUpdateTrack = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const store = useStore()
@@ -97,7 +97,6 @@ export const useUpdateTrack = () => {
         primeTrackData({
           tracks: [{ ...previousTrack, ...metadata }] as UserTrackMetadata[],
           queryClient,
-          dispatch,
           forceReplace: true
         })
       }

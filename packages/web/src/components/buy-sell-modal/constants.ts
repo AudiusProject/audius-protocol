@@ -1,32 +1,27 @@
-import { IconLogoCircle, IconLogoCircleUSDC } from '@audius/harmony'
+import { TOKENS as BASE_TOKENS } from '@audius/common/src/store/ui/buy-sell'
+import {
+  TokenInfo,
+  TokenPair
+} from '@audius/common/src/store/ui/buy-sell/types'
+import { IconLogoCircleUSDC, IconTokenAUDIO } from '@audius/harmony'
 
-import { TokenInfo, TokenPair } from './types'
-
-// Token metadata
+// Token metadata with icons for web
 export const TOKENS: Record<string, TokenInfo> = {
   AUDIO: {
-    symbol: 'AUDIO',
-    name: 'Audius',
-    icon: IconLogoCircle,
-    decimals: 18,
-    balance: 0, // This will be updated with actual balance
-    isStablecoin: false
+    ...BASE_TOKENS.AUDIO,
+    icon: IconTokenAUDIO
   },
   USDC: {
-    symbol: 'USDC',
-    name: 'USD Coin',
-    icon: IconLogoCircleUSDC,
-    decimals: 6,
-    balance: 0, // This will be updated with actual balance
-    isStablecoin: true
+    ...BASE_TOKENS.USDC,
+    icon: IconLogoCircleUSDC
   }
 }
 
-// Define supported token pairs
+// Define supported token pairs with icons for web
 export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   {
     baseToken: TOKENS.AUDIO,
     quoteToken: TOKENS.USDC,
-    exchangeRate: 0.082 // Default rate - will be updated with actual rate
+    exchangeRate: null
   }
 ]

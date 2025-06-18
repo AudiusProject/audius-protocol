@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import { ErrorLevel, SquareSizes } from '@audius/common/models'
 import type { Color } from '@audius/common/models'
 import { modalsActions } from '@audius/common/store'
@@ -23,12 +23,9 @@ import RNFS from 'react-native-fs'
 import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 import type { ShareSingleOptions } from 'react-native-share'
 import Share, { Social } from 'react-native-share'
-import {
-  init as initTikTokShare,
-  share as shareToTikTok
-} from 'react-native-tiktok'
 import type ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
+import TikTokShare from 'tiktok-opensdk-react-native'
 
 import { IconWaveform, Button } from '@audius/harmony-native'
 import { LinearProgress, Text } from 'app/components/core'
@@ -130,7 +127,7 @@ export const useShareToStory = ({
   const { toast } = useToast()
   const dispatch = useDispatch()
   const cancelRef = useRef(false)
-  const { data: userId } = useGetCurrentUserId({})
+  const { data: userId } = useCurrentUserId()
   const [selectedPlatform, setSelectedPlatform] =
     useState<ShareToStoryPlatform | null>(null)
   const trackTitle =
@@ -276,10 +273,14 @@ export const useShareToStory = ({
   )
 
   const pasteToTikTokApp = useCallback((videoUri: string) => {
-    initTikTokShare(env.TIKTOK_APP_ID as string)
-    shareToTikTok(videoUri, (_code) => {
-      // TODO: Handle errors handed back from TikTok
-    })
+    TikTokShare.share([videoUri], false)
+      .then(() => {
+        // Video shared successfully
+      })
+      .catch((error) => {
+        // Handle error
+        console.error('TikTok share error:', error)
+      })
   }, [])
 
   const generateStory = useCallback(

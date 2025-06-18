@@ -14,6 +14,8 @@ enum RepeatStates {
   ANIMATE_SINGLE_OFF = 5
 }
 
+const STATES_LENGTH = 6
+
 const REPEAT_STATE_LS_KEY = 'repeatState'
 const getRepeatState = (defaultState: RepeatStates) => {
   const localStorageRepeatState =
@@ -108,8 +110,7 @@ const RepeatButton = ({
   }, [animations, handleChange, state.repeatState])
 
   const nextState = () => {
-    const repeatState =
-      (state.repeatState + 1) % Object.keys(RepeatStates).length
+    const repeatState = (state.repeatState + 1) % STATES_LENGTH
     handleChange(repeatState)
   }
 

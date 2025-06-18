@@ -1,8 +1,7 @@
 import { useState, useContext, useCallback } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext, useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
@@ -17,7 +16,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { debounce } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -29,9 +28,6 @@ import { push } from 'utils/navigation'
 
 import styles from './AccountSettingsPage.module.css'
 import settingsPageStyles from './SettingsPage.module.css'
-
-const { getUserId, getAccountVerified, getUserHandle, getUserName } =
-  accountSelectors
 
 const {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
@@ -134,11 +130,16 @@ const AccountSettingsItem = ({
 
 const AccountSettingsPage = () => {
   const dispatch = useDispatch()
-  const { authService, identityService } = useAudiusQueryContext()
-  const userId = useSelector(getUserId) ?? 0
-  const handle = useSelector(getUserHandle) ?? ''
-  const name = useSelector(getUserName) ?? ''
-  const isVerified = useSelector(getAccountVerified)
+  const { authService, identityService } = useQueryContext()
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name,
+      isVerified: user?.is_verified
+    })
+  })
+  const { userId, handle, name, isVerified } = accountData ?? {}
   const [showModalSignOut, setShowModalSignOut] = useState(false)
   const { toast } = useContext(ToastContext)
 

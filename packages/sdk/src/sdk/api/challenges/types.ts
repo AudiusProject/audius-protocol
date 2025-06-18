@@ -28,7 +28,9 @@ export enum ChallengeId {
   PLAY_COUNT_1000_MILESTONE_2025 = 'p2',
   PLAY_COUNT_10000_MILESTONE_2025 = 'p3',
   TASTEMAKER = 't',
-  COSIGN = 'cs'
+  COSIGN = 'cs',
+  PINNED_COMMENT = 'cp',
+  REMIX_CONTEST_WINNER = 'w'
 }
 
 const DefaultSpecifier = z.object({
@@ -45,7 +47,8 @@ const DefaultSpecifier = z.object({
     ChallengeId.PLAY_COUNT_250_MILESTONE_2025,
     ChallengeId.PLAY_COUNT_1000_MILESTONE_2025,
     ChallengeId.PLAY_COUNT_10000_MILESTONE_2025,
-    ChallengeId.TASTEMAKER
+    ChallengeId.TASTEMAKER,
+    ChallengeId.PINNED_COMMENT
   ]),
   /** The user ID of the user completing the challenge. */
   userId: HashId
@@ -106,4 +109,30 @@ export type AttestationTransactionSignature = {
 
 export type AAOErrorResponse = {
   aaoErrorCode: number
+}
+
+export const ClaimAllRewardsSchema = z
+  .object({
+    userId: HashId,
+    challengeId: z.nativeEnum(ChallengeId).optional()
+  })
+  .or(
+    z.object({
+      challengeId: z.nativeEnum(ChallengeId),
+      specifier: z.string()
+    })
+  )
+
+export type ClaimAllRewardsRequest = z.input<typeof ClaimAllRewardsSchema>
+
+type ClaimResult = {
+  challengeId: string
+  specifier: string
+  amount: string
+  signatures: string[]
+  error?: string
+}
+
+export type ClaimAllResponseBody = {
+  data: ClaimResult[]
 }

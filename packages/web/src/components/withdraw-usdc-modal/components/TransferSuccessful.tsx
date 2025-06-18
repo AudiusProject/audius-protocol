@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
-import { Name, Status, BNUSDC } from '@audius/common/models'
+import { useUSDCBalance } from '@audius/common/api'
+import { Name, BNUSDC } from '@audius/common/models'
 import { withdrawUSDCSelectors, WithdrawMethod } from '@audius/common/store'
 import {
   decimalIntegerToHumanReadable,
@@ -20,23 +20,20 @@ import BN from 'bn.js'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
+import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { Divider } from 'components/divider'
 import { make, track } from 'services/analytics'
 
 import { ADDRESS, AMOUNT, METHOD } from '../types'
 
-import { TextRow } from './TextRow'
-import styles from './TransferSuccessful.module.css'
-
 const { getWithdrawTransaction } = withdrawUSDCSelectors
 
 const messages = {
-  priorBalance: 'Prior Balance',
   newBalance: 'New Balance',
   amountWithdrawn: 'Amount Withdrawn',
   destinationAddress: 'Destination Address',
   viewOn: 'View On Solana Block Explorer',
-  success: 'Your Withdrawal Was Successful!',
+  success: 'Your transaction is complete!',
   done: 'Done'
 }
 
@@ -49,18 +46,15 @@ const openExplorer = (signature: string) => {
 }
 
 export const TransferSuccessful = ({
-  priorBalanceCents,
   onClickDone
 }: {
-  priorBalanceCents: number
   onClickDone: () => void
 }) => {
-  const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const { data: balance } = useUSDCBalance()
   const signature = useSelector(getWithdrawTransaction)
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [{ value: methodValue }] = useField<string>(METHOD)
   const [{ value: amountValue }] = useField<number>(AMOUNT)
@@ -72,39 +66,34 @@ export const TransferSuccessful = ({
     track(
       make({
         eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED,
-        priorBalance: priorBalanceCents / 100,
         currentBalance: balanceNumber / 100,
         amount: amountValue / 100,
         destinationAddress: addressValue,
         signature
       })
     )
-  }, [signature, balanceNumber, priorBalanceCents, amountValue, addressValue])
+  }, [signature, balanceNumber, amountValue, addressValue])
 
   return (
-    <div className={styles.root}>
-      <TextRow
-        left={messages.priorBalance}
-        right={`$${decimalIntegerToHumanReadable(priorBalanceCents)}`}
-      />
+    <Flex column gap='xl'>
+      <CashBalanceSection />
       <Divider style={{ margin: 0 }} />
-      <TextRow
-        left={messages.amountWithdrawn}
-        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
-      />
-      <Divider style={{ margin: 0 }} />
-      <TextRow
-        left={messages.newBalance}
-        right={
-          balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
-        }
-      />
+      <Flex alignItems='center' justifyContent='space-between'>
+        <Text variant='heading' size='s' color='subdued'>
+          {messages.amountWithdrawn}
+        </Text>
+        <Text variant='heading' size='s'>
+          {`-$${decimalIntegerToHumanReadable(amountValue)}`}
+        </Text>
+      </Flex>
       {methodValue === WithdrawMethod.MANUAL_TRANSFER && signature ? (
         <>
           <Divider style={{ margin: 0 }} />
-          <div className={styles.destination}>
-            <TextRow left={messages.destinationAddress} />
-            <Text variant='body' size='m' strength='default'>
+          <Flex column gap='s' alignItems='flex-start'>
+            <Text variant='heading' size='s' color='subdued'>
+              {messages.destinationAddress}
+            </Text>
+            <Text variant='body' size='m'>
               {addressValue}
             </Text>
             <PlainButton
@@ -116,20 +105,18 @@ export const TransferSuccessful = ({
             >
               {messages.viewOn}
             </PlainButton>
-          </div>
+          </Flex>
         </>
       ) : null}
-      <div className={styles.success}>
+      <Flex alignItems='center' gap='s' pv='m'>
         <IconValidationCheck size='m' />
-        <Text variant='heading' size='s' strength='default'>
+        <Text variant='heading' size='s'>
           {messages.success}
         </Text>
-      </div>
-      <Flex alignItems='center' justifyContent='center' gap='m'>
-        <Button fullWidth variant='primary' onClick={onClickDone}>
-          {messages.done}
-        </Button>
       </Flex>
-    </div>
+      <Button fullWidth variant='primary' onClick={onClickDone}>
+        {messages.done}
+      </Button>
+    </Flex>
   )
 }

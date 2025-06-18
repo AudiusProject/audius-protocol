@@ -157,8 +157,10 @@ app.post('/attestation/:handle', async (c) => {
   if (!user) return c.json({ error: `handle not found: ${handle}` }, 404)
 
   // pass / fail
-  const userScore = await getUserNormalizedScore(user.user_id)
-  if (userScore.overallScore < 0) {
+  const userScore = await getUserNormalizedScore(user.user_id, user.wallet)
+
+  // Reward attestation proportional to user score confidence
+  if (userScore.overallScore < (amount as number) / 10) {
     return c.json({ error: 'denied' }, 400)
   }
 
@@ -207,7 +209,7 @@ app.get('/attestation/ui', async (c) => {
     await Promise.all(
       (recentClaims || []).map(async (claim) => [
         claim.handle,
-        await getUserNormalizedScore(claim.user_id)
+        await getUserNormalizedScore(claim.user_id, claim.wallet)
       ])
     )
   )
@@ -252,7 +254,8 @@ app.get('/attestation/ui', async (c) => {
               {dateHeader(new Date(recentClaim.disbursement_date))}
               <tr
                 className={
-                  userScores[recentClaim.handle].overallScore < 0
+                  userScores[recentClaim.handle].overallScore <
+                  recentClaim.amount / 10
                     ? 'bg-red-100'
                     : ''
                 }
@@ -303,7 +306,7 @@ app.get('/attestation/ui/user', async (c) => {
   const user = await getUser(idOrHandle)
   if (!user) return c.text(`user id not found: ${idOrHandle}`, 404)
   const signals = await getUserScore(user.id)
-  const userScore = (await getUserNormalizedScore(user.id))!
+  const userScore = (await getUserNormalizedScore(user.id, user.wallet))!
 
   if (!signals) return c.text(`user id not found: ${idOrHandle}`, 404)
 

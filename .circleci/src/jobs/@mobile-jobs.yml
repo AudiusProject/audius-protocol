@@ -20,7 +20,7 @@ mobile-init:
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
     - run:
         name: lint & typecheck
@@ -40,6 +40,7 @@ mobile-init:
           - packages/sdk/dist
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
+          - packages/mobile/android/libs
 
 mobile-build-staging-ios:
   working_directory: ~/audius-protocol
@@ -51,7 +52,6 @@ mobile-build-staging-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
-    - mobile-halt-if-no-native-changes # Don't need to test building if there's no native changes
     - mobile-prepare-ios:
         build-directory: 'build-mobile-staging'
         bundle-id: 'co.audius.audiusmusic.staging'
@@ -113,31 +113,11 @@ mobile-build-upload-production-ios-if-full-release:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
         env: '.env.prod'
-    - mobile-halt-if-codepush-release-ios
     - mobile-release-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
         env: '.env.prod'
         slack-notify: false
-
-mobile-deploy-codepush-production-ios-if-ota-release:
-  working_directory: ~/audius-protocol
-  # run on macos so app can be created and signed.
-  resource_class: macos.m1.medium.gen1
-  macos:
-    xcode: '16.2.0'
-  environment:
-    FL_OUTPUT_DIR: output
-  shell: /bin/bash --login -o pipefail
-  steps:
-    - mobile-prepare-ios:
-        build-directory: 'build-mobile-production'
-        bundle-id: 'co.audius.audiusmusic'
-        env: '.env.prod'
-    - mobile-release-ios:
-        build-directory: 'build-mobile-production'
-        bundle-id: 'co.audius.audiusmusic'
-        env: '.env.prod'
 
 mobile-build-upload-releasecandidate-ios:
   working_directory: ~/audius-protocol
@@ -254,25 +234,11 @@ mobile-build-upload-production-android-if-full-release:
   steps:
     - mobile-prepare-android:
         build-directory: 'build-mobile-production'
-    - mobile-halt-if-codepush-release-android
     - mobile-release-android:
         build-directory: 'build-mobile-production'
         upload-type: 'prod'
         track: 'alpha'
         slack-notify: false
-
-mobile-deploy-codepush-production-android-if-ota-release:
-  working_directory: ~/audius-protocol
-  resource_class: large
-  docker:
-    - image: cimg/android:2023.08-node
-  steps:
-    - mobile-prepare-android:
-        build-directory: 'build-mobile-production'
-    - mobile-release-android:
-        build-directory: 'build-mobile-production'
-        upload-type: 'prod'
-        track: 'alpha'
 
 mobile-deploy-saga-dapp-store:
   working_directory: ~/audius-protocol

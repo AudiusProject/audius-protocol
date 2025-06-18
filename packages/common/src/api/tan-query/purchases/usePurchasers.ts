@@ -4,10 +4,9 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { PurchaseableContentType } from '~/store'
 
@@ -43,10 +42,9 @@ export const usePurchasers = (
   options?: QueryOptions
 ) => {
   const { contentId, contentType, pageSize = PAGE_SIZE } = args
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   return useInfiniteQuery({
     queryKey: getPurchasersQueryKey(args),
@@ -67,7 +65,7 @@ export const usePurchasers = (
         contentType
       })
       const users = userMetadataListFromSDK(data)
-      primeUserData({ users, queryClient, dispatch })
+      primeUserData({ users, queryClient })
       return users.map((user) => user.user_id)
     },
     select: (data) => data.pages.flat(),

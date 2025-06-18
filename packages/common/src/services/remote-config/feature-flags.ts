@@ -29,7 +29,12 @@ export enum FeatureFlags {
   RECENT_COMMENTS = 'recent_comments',
   DOWNLOAD_ALL_TRACK_FILES = 'download_all_track_files',
   REMIX_CONTEST = 'remix_contest',
-  WALLET_UI_UPDATE = 'wallet_ui_update'
+  WALLET_UI_UPDATE = 'wallet_ui_update',
+  SEARCH_EXPLORE = 'search_explore',
+  SEARCH_EXPLORE_MOBILE = 'search_explore_mobile',
+  EXPLORE_REMIX_SECTION = 'explore_remix_section',
+  WALLET_UI_BUY_SELL = 'wallet_ui_buy_sell',
+  REMIX_CONTEST_WINNERS_MILESTONE = 'remix_contest_winners_milestone'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -74,5 +79,10 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.RECENT_COMMENTS]: false,
   [FeatureFlags.DOWNLOAD_ALL_TRACK_FILES]: false,
   [FeatureFlags.REMIX_CONTEST]: false,
-  [FeatureFlags.WALLET_UI_UPDATE]: false
+  [FeatureFlags.WALLET_UI_UPDATE]: false,
+  [FeatureFlags.SEARCH_EXPLORE]: false,
+  [FeatureFlags.SEARCH_EXPLORE_MOBILE]: false,
+  [FeatureFlags.EXPLORE_REMIX_SECTION]: false,
+  [FeatureFlags.WALLET_UI_BUY_SELL]: false,
+  [FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE]: false
 }

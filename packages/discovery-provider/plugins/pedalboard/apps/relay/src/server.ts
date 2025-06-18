@@ -1,6 +1,5 @@
 import { healthCheck } from './routes/health'
 import express from 'express'
-import { relayTransaction } from './txRelay'
 import { errorHandler } from './middleware/errorHandler'
 import {
   incomingRequestLogger,
@@ -9,8 +8,7 @@ import {
 import { validator } from './middleware/validator'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import { antiAbuseMiddleware } from './middleware/antiAbuse'
-import { rateLimiterMiddleware } from './middleware/rateLimiter'
+import { relayTransaction } from './txRelay'
 
 export const app = express()
 

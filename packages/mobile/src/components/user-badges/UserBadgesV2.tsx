@@ -1,8 +1,8 @@
 import React from 'react'
 
 import { useUser } from '@audius/common/api'
-import { useSelectTierInfo } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 
 import type { IconSize } from '@audius/harmony-native'
 import { IconVerified } from '@audius/harmony-native'
@@ -20,7 +20,7 @@ export const UserBadgesV2 = (props: UserBadgesProps) => {
     select: (user) => user?.is_verified
   })
 
-  const { tier } = useSelectTierInfo(userId)
+  const { tier } = useTierAndVerifiedForUser(userId)
 
   return (
     <>

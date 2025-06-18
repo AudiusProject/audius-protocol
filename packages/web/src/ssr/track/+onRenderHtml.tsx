@@ -30,7 +30,7 @@ export default function render(pageContext: TrackPageContext) {
   const { pageProps, userAgent } = pageContext
   const { track, user } = pageProps
   const { track_id, title, permalink, release_date, created_at } = track
-  const { user_id, name: userName } = user
+  const { name: userName } = user
 
   const isMobile = isMobileUserAgent(userAgent)
 
@@ -45,8 +45,8 @@ export default function render(pageContext: TrackPageContext) {
     <ServerWebPlayer
       isMobile={isMobile}
       initialState={{
-        tracks: { entries: { [track_id]: { metadata: track } } },
-        users: { entries: { [user_id]: { metadata: user } } },
+        // todo: prefill this in the query client
+        // users: { entries: { [user_id]: { metadata: user } } },
         pages: {
           track: { trackId: track_id, trackPermalink: permalink }
         }

@@ -1,12 +1,11 @@
 import { useEffect, useContext } from 'react'
 
-import { useRemixContest, useRemixes } from '@audius/common/api'
+import { useRemixContest, useRemixesLineup } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { remixMessages as messages } from '@audius/common/messages'
 import { Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { remixesPageLineupActions } from '@audius/common/store'
-import { pluralize } from '@audius/common/utils'
 import {
   Flex,
   Text,
@@ -27,7 +26,9 @@ import styles from './RemixesPage.module.css'
 export type RemixesPageProps = {
   title: string
   count: number | null
-  originalTrack: Pick<Track, 'track_id' | 'permalink' | 'title'> | undefined
+  originalTrack:
+    | Pick<Track, 'track_id' | 'permalink' | 'title' | 'owner_id'>
+    | undefined
   user: User | undefined
   goToTrackPage: () => void
   goToArtistPage: () => void
@@ -39,10 +40,18 @@ const nullGuard = withNullGuard(
 )
 
 const RemixesPage = nullGuard(
-  ({ title, count, originalTrack, user, goToTrackPage, goToArtistPage }) => {
+  ({ title, originalTrack, user, goToTrackPage, goToArtistPage }) => {
     useSubPageHeader()
+    const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
+      FeatureFlags.REMIX_CONTEST
+    )
+    const { isEnabled: isRemixContestWinnersMilestoneEnabled } = useFeatureFlag(
+      FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE
+    )
+
     const {
       data,
+      count,
       isFetching,
       isPending,
       isError,
@@ -53,16 +62,15 @@ const RemixesPage = nullGuard(
       isPlaying,
       lineup,
       pageSize
-    } = useRemixes({
+    } = useRemixesLineup({
       trackId: originalTrack?.track_id,
-      includeOriginal: true
+      includeOriginal: true,
+      includeWinners: isRemixContestWinnersMilestoneEnabled
     })
 
-    const { isEnabled: isRemixContestEnabled } = useFeatureFlag(
-      FeatureFlags.REMIX_CONTEST
-    )
     const { data: contest } = useRemixContest(originalTrack?.track_id)
     const isRemixContest = isRemixContestEnabled && contest
+    const winnerCount = contest?.eventData?.winners?.length ?? 0
 
     const { setHeader } = useContext(HeaderContext)
     useEffect(() => {
@@ -95,6 +103,39 @@ const RemixesPage = nullGuard(
       isRemixContest
     ])
 
+    const winnersDelineator = (
+      <Flex justifyContent='space-between' gap='l' mb='xl'>
+        <Text variant='title'>{messages.winners}</Text>
+      </Flex>
+    )
+
+    const remixesDelineator = (
+      <Flex justifyContent='space-between' gap='l' mb='xl'>
+        <Text variant='title'>
+          {messages.remixesTitle}
+          {count ? ` (${count})` : ''}
+        </Text>
+      </Flex>
+    )
+
+    const delineatorMap =
+      isRemixContestWinnersMilestoneEnabled && winnerCount > 0
+        ? {
+            0: winnersDelineator,
+            [winnerCount]: remixesDelineator
+          }
+        : {
+            0: remixesDelineator
+          }
+
+    const winnersMaxEntries =
+      count && winnerCount ? count + winnerCount + 1 : undefined
+    const defaultMaxEntries = count ? count + 1 : undefined
+
+    const maxEntries = isRemixContestWinnersMilestoneEnabled
+      ? winnersMaxEntries
+      : defaultMaxEntries
+
     return (
       <MobilePageContainer
         title={title}
@@ -116,17 +157,8 @@ const RemixesPage = nullGuard(
             lineup={lineup}
             actions={remixesPageLineupActions}
             pageSize={pageSize}
-            leadingElementId={0}
-            leadingElementDelineator={
-              <Flex justifyContent='space-between' gap='l' mb='xl'>
-                <Text variant='title'>
-                  {count}{' '}
-                  {isRemixContest
-                    ? pluralize(messages.submissions, count)
-                    : pluralize(messages.remixes, count, 'es')}
-                </Text>
-              </Flex>
-            }
+            delineatorMap={delineatorMap}
+            maxEntries={maxEntries}
           />
         </Flex>
       </MobilePageContainer>

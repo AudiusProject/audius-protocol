@@ -7,20 +7,14 @@ from redis import Redis
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
-from src.queries.generate_unpopulated_trending_tracks import (
-    generate_unpopulated_trending_from_mat_views,
-    make_trending_tracks_cache_key,
-)
+from src.queries.get_trending_playlists import _get_trending_playlists_with_session
 from src.queries.get_trending_tracks import _get_trending_tracks_with_session
-from src.queries.get_underground_trending import (
-    _get_underground_trending_with_session,
-    make_get_unpopulated_tracks,
-    make_underground_trending_cache_key,
-)
+from src.queries.get_underground_trending import _get_underground_trending_with_session
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.index_tastemaker import index_tastemaker
@@ -33,7 +27,6 @@ from src.utils.prometheus_metric import (
     PrometheusMetricNames,
     save_duration_metric,
 )
-from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
 
@@ -79,7 +72,13 @@ def update_view(session: Session, mat_view_name: str):
     )
 
 
-def index_trending(self, db: SessionManager, redis: Redis, timestamp):
+def index_trending(
+    self,
+    db: SessionManager,
+    redis: Redis,
+    timestamp,
+    challenge_event_bus: ChallengeEventBus,
+):
     logger.debug("index_trending.py | starting indexing")
     update_start = time.time()
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_TRENDING_DURATION_SECONDS)
@@ -93,72 +92,26 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
             TrendingType.TRACKS
         ).keys()
 
+        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.PLAYLISTS
+        ).keys()
+
         update_view(session, AGGREGATE_INTERVAL_PLAYS)
         update_view(session, TRENDING_PARAMS)
+
+        # Update trending tracks (used for underground as well)
         for version in trending_track_versions:
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
             strategy.update_track_score_query(session)
 
-        for version in trending_track_versions:
+        # Update trending playlists
+        for version in trending_playlist_versions:
             strategy = trending_strategy_factory.get_strategy(
-                TrendingType.TRACKS, version
+                TrendingType.PLAYLISTS, version
             )
-            for genre in genres:
-                for time_range in time_ranges:
-                    cache_start_time = time.time()
-                    res = generate_unpopulated_trending_from_mat_views(
-                        session=session,
-                        genre=genre,
-                        time_range=time_range,
-                        strategy=strategy,
-                    )
-                    key = make_trending_tracks_cache_key(time_range, genre, version)
-                    set_json_cached_key(redis, key, res)
-                    cache_end_time = time.time()
-                    total_time = cache_end_time - cache_start_time
-                    logger.debug(
-                        f"index_trending.py | Cached trending ({version.name} version) \
-                        for {genre}-{time_range} in {total_time} seconds"
-                    )
-            # Cache premium tracks
-            cache_start_time = time.time()
-            res = generate_unpopulated_trending_from_mat_views(
-                session=session,
-                genre=genre,
-                time_range="week",
-                strategy=strategy,
-                usdc_purchase_only=True,
-            )
-            key = make_trending_tracks_cache_key("week", None, strategy.version)
-            key += ":usdc_purchase_only"
-            set_json_cached_key(redis, key, res)
-            cache_end_time = time.time()
-            total_time = cache_end_time - cache_start_time
-            logger.debug(
-                f"index_trending.py | Cached premium tracks ({version.name} version) \
-                -in {total_time} seconds"
-            )
-
-        # Cache underground trending
-        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
-            TrendingType.UNDERGROUND_TRACKS
-        ).keys()
-        for version in underground_trending_versions:
-            strategy = trending_strategy_factory.get_strategy(
-                TrendingType.UNDERGROUND_TRACKS, version
-            )
-            cache_start_time = time.time()
-            res = make_get_unpopulated_tracks(session, redis, strategy)()
-            key = make_underground_trending_cache_key(version)
-            set_json_cached_key(redis, key, res)
-            cache_end_time = time.time()
-            total_time = cache_end_time - cache_start_time
-            logger.debug(
-                f"index_trending.py | Cached underground trending ({version.name} version) \
-                in {total_time} seconds"
-            )
+            strategy.update_playlist_score_query(session)
 
     update_end = time.time()
     update_total = update_end - update_start
@@ -174,8 +127,9 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     top_trending_tracks = get_top_trending_to_notify(db)
 
     index_trending_notifications(db, timestamp, top_trending_tracks)
-    index_tastemaker(db, top_trending_tracks, index_trending_task.challenge_event_bus)
+    index_tastemaker(db, top_trending_tracks, challenge_event_bus)
     index_trending_underground_notifications(db, timestamp)
+    index_trending_playlist_notifications(db, timestamp)
 
 
 def get_top_trending_to_notify(db):
@@ -215,12 +169,12 @@ def index_trending_notifications(
 
         latest_notification_query = text(
             """
-                SELECT 
+                SELECT
                     DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
-                WHERE 
+                WHERE
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
@@ -328,12 +282,12 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
 
         latest_notification_query = text(
             """
-                SELECT 
+                SELECT
                     DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
-                WHERE 
+                WHERE
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
@@ -404,6 +358,122 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
         logger.debug(
             "index_trending.py | Created underground-trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
+        )
+
+
+def index_trending_playlist_notifications(db: SessionManager, timestamp: int):
+    trending_strategy_factory = TrendingStrategyFactory()
+    # The number of playlists to notify for in the top
+    NOTIFICATIONS_PLAYLIST_LIMIT = 5
+    current_datetime = datetime.fromtimestamp(timestamp)
+    with db.scoped_session() as session:
+        top_trending_playlists = _get_trending_playlists_with_session(
+            session,
+            {
+                "time": "week",
+                "offset": 0,
+                "limit": NOTIFICATIONS_PLAYLIST_LIMIT,
+                "with_tracks": True,
+            },
+            trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS),
+            False,
+        )
+        top_trending_playlist_ids = [
+            str(t["playlist_id"]) for t in top_trending_playlists
+        ]
+
+        previous_trending_notifications = (
+            session.query(Notification)
+            .filter(
+                Notification.type == "trending_playlist",
+                Notification.specifier.in_(top_trending_playlist_ids),
+            )
+            .all()
+        )
+
+        latest_notification_query = text(
+            """
+                SELECT
+                    DISTINCT ON (specifier) specifier,
+                    timestamp,
+                    data
+                FROM notification
+                WHERE
+                    type=:type AND
+                    specifier in :playlist_ids
+                ORDER BY
+                    specifier desc,
+                    timestamp desc
+            """
+        )
+        latest_notification_query = latest_notification_query.bindparams(
+            bindparam("playlist_ids", expanding=True)
+        )
+
+        previous_trending_notifications = session.execute(
+            latest_notification_query,
+            {"playlist_ids": top_trending_playlist_ids, "type": "trending_playlist"},
+        )
+        previous_trending = {
+            n[0]: {"timestamp": n[1], **n[2]} for n in previous_trending_notifications
+        }
+
+        notifications = []
+
+        # Do not send notifications for the same track trending within 24 hours
+        NOTIFICATION_INTERVAL_SEC = 60 * 60 * 24
+
+        for index, playlist in enumerate(top_trending_playlists):
+            playlist_id = playlist["playlist_id"]
+            rank = index + 1
+            previous_playlist_notification = previous_trending.get(str(playlist_id))
+
+            if previous_playlist_notification is not None:
+                prev_notification_datetime = datetime.fromtimestamp(
+                    previous_playlist_notification["timestamp"].timestamp()
+                )
+                if (
+                    current_datetime - prev_notification_datetime
+                ).total_seconds() < NOTIFICATION_INTERVAL_SEC:
+                    continue
+                prev_rank = previous_playlist_notification["rank"]
+                if prev_rank <= rank:
+                    continue
+
+            notifications.append(
+                {
+                    "playlist_owner_id": playlist["playlist_owner_id"],
+                    "group_id": f"trending_playlist:time_range:week:genre:all:rank:{rank}:playlist_id:{playlist_id}:timestamp:{timestamp}",
+                    "playlist_id": playlist_id,
+                    "rank": rank,
+                }
+            )
+
+        session.bulk_save_objects(
+            [
+                Notification(
+                    user_ids=[n["playlist_owner_id"]],
+                    timestamp=current_datetime,
+                    type="trending_playlist",
+                    group_id=n["group_id"],
+                    specifier=n["playlist_id"],
+                    data={
+                        "time_range": "week",
+                        "genre": "all",
+                        "rank": n["rank"],
+                        "playlist_id": n["playlist_id"],
+                    },
+                )
+                for n in notifications
+            ]
+        )
+
+        logger.debug(
+            "index_trending.py | Created trending playlist notifications",
+            extra={
+                "job": "cache_trending_playlists",
+                "subtask": "trending playlist notification",
+            },
         )
 
 
@@ -522,6 +592,7 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
+    challenge_event_bus = index_trending_task.challenge_event_bus
     have_lock = False
     timeout = 60 * 60 * 2
     update_lock = redis.lock("index_trending_lock", timeout=timeout)
@@ -533,7 +604,7 @@ def index_trending_task(self):
                 db, core, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
             )
             if min_block is not None and min_timestamp is not None:
-                index_trending(self, db, redis, min_timestamp)
+                index_trending(self, db, redis, min_timestamp, challenge_event_bus)
             else:
                 logger.debug("index_trending.py | skip indexing: not min block")
         else:

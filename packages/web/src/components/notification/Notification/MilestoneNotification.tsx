@@ -1,8 +1,11 @@
 import { useCallback } from 'react'
 
+import {
+  useCurrentAccountUser,
+  useNotificationEntity
+} from '@audius/common/api'
 import { Name, User } from '@audius/common/models'
 import {
-  notificationsSelectors,
   Achievement,
   EntityType,
   MilestoneNotification as MilestoneNotificationType
@@ -17,7 +20,6 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
 
 import { EntityLink } from './components/EntityLink'
@@ -31,7 +33,6 @@ import { IconMilestone } from './components/icons'
 import { getEntityLink } from './utils'
 
 const { profilePage } = route
-const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'Milestone Reached!',
@@ -97,10 +98,8 @@ type MilestoneNotificationProps = {
 export const MilestoneNotification = (props: MilestoneNotificationProps) => {
   const { notification } = props
   const { timeLabel, isViewed, achievement } = notification
-  const entity = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  )
-  const user = useSelector((state) => getNotificationUser(state, notification))
+  const entity = useNotificationEntity(notification)
+  const { data: user } = useCurrentAccountUser()
   const dispatch = useDispatch()
 
   const renderBody = () => {

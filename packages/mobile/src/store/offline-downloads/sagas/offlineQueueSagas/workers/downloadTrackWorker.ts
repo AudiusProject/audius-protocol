@@ -1,16 +1,12 @@
 import { userTrackMetadataFromSDK } from '@audius/common/adapters'
+import { queryCurrentUserId } from '@audius/common/api'
 import type {
   ID,
   TrackMetadata,
   UserTrackMetadata
 } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
-import {
-  accountSelectors,
-  getContext,
-  gatedContentSelectors,
-  getSDK
-} from '@audius/common/store'
+import { getContext, gatedContentSelectors, getSDK } from '@audius/common/store'
 import { Id, OptionalId } from '@audius/sdk'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
@@ -43,7 +39,6 @@ import { shouldCancelJob } from '../../utils/shouldCancelJob'
 
 import { downloadFile } from './downloadFile'
 
-const { getUserId } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 
 const MAX_RETRY_COUNT = 3
@@ -121,7 +116,7 @@ export function* downloadTrackWorker(trackId: ID, requeueCount?: number) {
 function* downloadTrackAsync(
   trackId: ID
 ): Generator<any, OfflineDownloadStatus> {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) return OfflineDownloadStatus.ERROR
   const sdk = yield* getSDK()
 

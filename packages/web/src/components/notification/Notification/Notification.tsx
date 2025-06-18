@@ -8,12 +8,19 @@ import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification'
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ApproveManagerNotification } from './ApproveManagerRequestNotification'
+import { ArtistRemixContestEndedNotification } from './ArtistRemixContestEndedNotification'
+import { ArtistRemixContestEndingSoonNotification } from './ArtistRemixContestEndingSoonNotification'
+import { ArtistRemixContestSubmissionsNotification } from './ArtistRemixContestSubmissionsNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { ClaimableRewardNotification } from './ClaimableRewardNotification'
 import { CommentMentionNotification } from './CommentMentionNotification'
 import { CommentNotification } from './CommentNotification'
 import { CommentReactionNotification } from './CommentReactionNotification'
 import { CommentThreadNotification } from './CommentThreadNotification'
+import { FanRemixContestEndedNotification } from './FanRemixContestEndedNotification'
+import { FanRemixContestEndingSoonNotification } from './FanRemixContestEndingSoonNotification'
+import { FanRemixContestStartedNotification } from './FanRemixContestStartedNotification'
+import { FanRemixContestWinnersSelectedNotification } from './FanRemixContestWinnersSelectedNotification'
 import { FavoriteNotification } from './FavoriteNotification'
 import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
@@ -153,16 +160,56 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.ListenStreakReminder: {
         return <ListenStreakReminderNotification notification={notification} />
       }
+      case NotificationType.FanRemixContestEndingSoon: {
+        return (
+          <FanRemixContestEndingSoonNotification notification={notification} />
+        )
+      }
+      case NotificationType.ArtistRemixContestEndingSoon: {
+        return (
+          <ArtistRemixContestEndingSoonNotification
+            notification={notification}
+          />
+        )
+      }
+      case NotificationType.ArtistRemixContestEnded: {
+        return (
+          <ArtistRemixContestEndedNotification notification={notification} />
+        )
+      }
+      case NotificationType.FanRemixContestStarted: {
+        return (
+          <FanRemixContestStartedNotification notification={notification} />
+        )
+      }
+      case NotificationType.FanRemixContestEnded: {
+        return <FanRemixContestEndedNotification notification={notification} />
+      }
+      case NotificationType.ArtistRemixContestSubmissions: {
+        return (
+          <ArtistRemixContestSubmissionsNotification
+            notification={notification}
+          />
+        )
+      }
+      case NotificationType.FanRemixContestWinnersSelected: {
+        return (
+          <FanRemixContestWinnersSelectedNotification
+            notification={notification}
+          />
+        )
+      }
       default: {
         return null
       }
     }
   }
+
   return (
     <ErrorWrapper
       errorMessage={`Could not render notification ${notification.id}`}
     >
-      <li>{getNotificationElement()}</li>
+      {getNotificationElement()}
     </ErrorWrapper>
   )
 }

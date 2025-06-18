@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useRequestAddManager } from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId, useRequestAddManager } from '@audius/common/api'
 import {
   Box,
   Button,
@@ -14,15 +12,12 @@ import {
 } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
-import { useSelector } from 'utils/reducer'
 
 import { sharedMessages } from './sharedMessages'
 import {
   AccountsManagingYouPages,
   ConfirmAccountManagerPageProps
 } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   description:
@@ -37,28 +32,31 @@ export const ConfirmAccountManagerPage = (
   props: ConfirmAccountManagerPageProps
 ) => {
   const { setPageState, params } = props
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const [submitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [requestAddManager, result] = useRequestAddManager()
-  const { status } = result
+  const {
+    mutate: requestAddManager,
+    isSuccess,
+    isError
+  } = useRequestAddManager()
 
   const manager = params?.user
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPageState({
         page: AccountsManagingYouPages.HOME,
         transitionDirection: 'forward'
       })
     }
-  }, [setPageState, status])
+  }, [isSuccess, setPageState])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (isError) {
       setError(messages.errorGeneral)
       setIsSubmitting(false)
     }
-  }, [status])
+  }, [isError])
 
   const handleConfirm = useCallback(() => {
     setIsSubmitting(true)

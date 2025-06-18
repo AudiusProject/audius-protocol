@@ -249,7 +249,7 @@ const TrackTile = ({
               {isLoading ? (
                 <Skeleton width='80%' height='20px' />
               ) : (
-                <Flex css={{ marginRight: 132 }}>
+                <Flex mr='3xl'>
                   <TextLink
                     css={{ alignItems: 'center' }}
                     to={permalink}

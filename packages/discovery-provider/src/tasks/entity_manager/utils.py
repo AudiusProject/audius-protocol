@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, List, Literal, Set, Tuple, TypedDict, Union
+from typing import Dict, List, Literal, Optional, Set, Tuple, TypedDict, Union
 
 from eth_account.messages import defunct_hash_message
 from multiformats import CID, multihash
@@ -17,7 +17,7 @@ from src.models.comments.comment_reaction import CommentReaction
 from src.models.comments.comment_report import CommentReport
 from src.models.comments.comment_thread import CommentThread
 from src.models.dashboard_wallet_user.dashboard_wallet_user import DashboardWalletUser
-from src.models.events.event import Event
+from src.models.events.event import Event, EventType
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
@@ -645,16 +645,116 @@ def convert_legacy_purchase_access_gate(owner_id: int, access_gate: dict):
     return access_gate
 
 
-def safe_add_notification(params: ManageEntityParameters, notification: Notification):
+def safe_add_notification(session: Session, notification: Notification):
+    """Add a notification to the session if an identical one doesn't already exist.
+
+    Args:
+        session: The database session
+        notification: The notification to add
+    """
     group_id = notification.group_id
     specifier = notification.specifier
     notification_type = notification.type
 
     existing_notification = (
-        params.session.query(Notification)
+        session.query(Notification)
         .filter_by(type=notification_type, group_id=group_id, specifier=specifier)
         .first()
     )
 
     if existing_notification is None:
-        params.session.add(notification)
+        session.add(notification)
+
+
+def create_remix_contest_notification(
+    session: Session,
+    track: Track,
+    block_number: Optional[int] = None,
+    block_datetime: Optional[datetime] = None,
+):
+    """Create notifications for followers and favoriters when a track with a remix contest becomes public.
+    This is the base function used by both the entity manager and scheduled release flows.
+
+    Args:
+        session: The database session
+        track: The track that became public
+        block_number: Optional block number for the notification (used by entity manager)
+        block_datetime: Optional block datetime for the notification (used by entity manager)
+    """
+    # Check for an active remix contest event for this track
+    remix_contest_event = (
+        session.query(Event)
+        .filter(
+            Event.event_type == EventType.remix_contest,
+            Event.entity_id == track.track_id,
+            Event.is_deleted == False,
+        )
+        .first()
+    )
+
+    if not remix_contest_event:
+        return
+
+    # Get all followers of the event creator
+    follower_user_ids = (
+        session.query(Follow.follower_user_id)
+        .filter(
+            Follow.followee_user_id == remix_contest_event.user_id,
+            Follow.is_current == True,
+            Follow.is_delete == False,
+        )
+        .all()
+    )
+
+    # Get all users who favorited the track
+    save_user_ids = (
+        session.query(Save.user_id)
+        .filter(
+            Save.save_item_id == track.track_id,
+            Save.save_type == "track",
+            Save.is_current == True,
+            Save.is_delete == False,
+        )
+        .all()
+    )
+
+    # Combine and deduplicate user IDs
+    user_ids = list(
+        set(
+            [user_id for (user_id,) in follower_user_ids]
+            + [user_id for (user_id,) in save_user_ids]
+        )
+    )
+
+    if not user_ids:
+        return
+
+    # Use provided block info or fall back to track info
+    notification_block_number = (
+        block_number if block_number is not None else track.blocknumber
+    )
+    notification_timestamp = (
+        block_datetime if block_datetime is not None else track.updated_at
+    )
+    utils_logger.info(
+        f"Creating fan remix contest started notification for track {track.track_id} by user {remix_contest_event.user_id}"
+    )
+    utils_logger.info(
+        f"group_id: fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}"
+    )
+
+    # Create individual notification for each user
+    for user_id in user_ids:
+        notification = Notification(
+            blocknumber=notification_block_number,
+            user_ids=[user_id],
+            timestamp=notification_timestamp,
+            type="fan_remix_contest_started",
+            specifier=str(user_id),
+            group_id=f"fan_remix_contest_started:{track.track_id}:user:{remix_contest_event.user_id}",
+            data={
+                "entity_user_id": track.owner_id,
+                "entity_id": track.track_id,
+            },
+        )
+        safe_add_notification(session, notification)

@@ -100,49 +100,6 @@ const getComputedOrigins = (
 }
 
 /**
- * Figures out whether the specified position would still overflow the window
- * after being computed and adds extra offsets
- */
-const getAdjustedPosition = (
-  top: number,
-  left: number,
-  wrapperRect: DOMRect,
-  portal: HTMLElement
-): { adjustedTop: number; adjustedLeft: number } => {
-  if (!wrapperRect) return { adjustedTop: 0, adjustedLeft: 0 }
-
-  const containerWidth =
-    portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
-  const containerHeight =
-    portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
-  // Account for the portal being a scrollable container.
-  // This will happen if the document body itself is what scrolls.
-  const containerTop = -1 * portal.getBoundingClientRect().top
-
-  const overflowRight = left + wrapperRect.width > containerWidth
-  const overflowLeft = left < 0
-  const overflowBottom = top + wrapperRect.height > containerHeight
-  const overflowTop = top < 0
-
-  const adjusted = { adjustedTop: containerTop, adjustedLeft: 0 }
-  if (overflowRight) {
-    adjusted.adjustedLeft =
-      adjusted.adjustedLeft - (left + wrapperRect.width - containerWidth)
-  }
-  if (overflowLeft) {
-    adjusted.adjustedLeft = adjusted.adjustedLeft + wrapperRect.width
-  }
-  if (overflowTop) {
-    adjusted.adjustedTop =
-      adjusted.adjustedTop - (top + wrapperRect.height - containerHeight)
-  }
-  if (overflowBottom) {
-    adjusted.adjustedTop = adjusted.adjustedTop + wrapperRect.height
-  }
-  return adjusted
-}
-
-/**
  * Gets the x, y offsets for the given origin using the dimensions
  * @param origin the relative origin
  * @param dimensions the dimensions to use with the relative origin
@@ -271,7 +228,8 @@ export const PopupInternal = forwardRef<
     handleClose,
     isVisible,
     checkIfClickInside,
-    typeof ref === 'function' ? undefined : ref
+    typeof ref === 'function' ? undefined : ref,
+    anchorRef
   )
 
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -294,44 +252,52 @@ export const PopupInternal = forwardRef<
       )
       if (!anchorRect || !wrapperRect) return
 
-      const {
-        anchorOrigin: anchorOriginComputed,
-        transformOrigin: transformOriginComputed
-      } = getComputedOrigins(
-        anchorOrigin,
-        transformOrigin,
-        anchorRect,
-        wrapperRect,
-        portalLocation,
-        containerRef
-      )
-      setComputedTransformOrigin(transformOriginComputed)
+      // Add a small delay to ensure content is rendered
+      requestAnimationFrame(() => {
+        const {
+          anchorOrigin: anchorOriginComputed,
+          transformOrigin: transformOriginComputed
+        } = getComputedOrigins(
+          anchorOrigin,
+          transformOrigin,
+          anchorRect,
+          wrapperRect,
+          portalLocation,
+          containerRef
+        )
+        setComputedTransformOrigin(transformOriginComputed)
 
-      const anchorTranslation = getOriginTranslation(
-        anchorOriginComputed,
-        anchorRect
-      )
-      const wrapperTranslation = getOriginTranslation(
-        transformOriginComputed,
-        wrapperRect
-      )
+        const anchorTranslation = getOriginTranslation(
+          anchorOriginComputed,
+          anchorRect
+        )
+        const wrapperTranslation = getOriginTranslation(
+          transformOriginComputed,
+          wrapperRect
+        )
 
-      const top = anchorRect.y + anchorTranslation.y - wrapperTranslation.y
-      const left = anchorRect.x + anchorTranslation.x - wrapperTranslation.x
+        const top = anchorRect.y + anchorTranslation.y - wrapperTranslation.y
+        const left = anchorRect.x + anchorTranslation.x - wrapperTranslation.x
 
-      const { adjustedTop, adjustedLeft } = getAdjustedPosition(
-        top,
-        left,
-        wrapperRect,
-        portalLocation
-      )
+        // Ensure popup stays within viewport bounds
+        const viewportHeight = window.innerHeight
+        const viewportWidth = window.innerWidth
+        const adjustedTop = Math.min(
+          Math.max(0, top),
+          viewportHeight - wrapperRect.height
+        )
+        const adjustedLeft = Math.min(
+          Math.max(0, left),
+          viewportWidth - wrapperRect.width
+        )
 
-      if (wrapperRef.current) {
-        wrapperRef.current.style.top = `${top + adjustedTop}px`
-        wrapperRef.current.style.left = `${left + adjustedLeft}px`
-      }
+        if (wrapperRef.current) {
+          wrapperRef.current.style.top = `${adjustedTop}px`
+          wrapperRef.current.style.left = `${adjustedLeft}px`
+        }
 
-      originalTopPosition.current = top
+        originalTopPosition.current = adjustedTop
+      })
     }
   }, [
     isVisible,

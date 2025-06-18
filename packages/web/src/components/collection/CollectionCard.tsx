@@ -55,7 +55,7 @@ export const CollectionCard = forwardRef(
     } = props
 
     const { data: currentUserId } = useCurrentUserId()
-    const { data: partialCollection, isPending } = useCollection(id, {
+    const { data: collection, isPending } = useCollection(id, {
       select: (collection) =>
         pick(
           collection,
@@ -83,7 +83,7 @@ export const CollectionCard = forwardRef(
       stream_conditions,
       is_scheduled_release: isScheduledRelease,
       release_date: releaseDate
-    } = partialCollection ?? {}
+    } = collection ?? {}
 
     const handleNavigate = useLinkClickHandler<HTMLDivElement>(permalink ?? '')
 
@@ -135,7 +135,7 @@ export const CollectionCard = forwardRef(
               <Text ellipses>{playlist_name}</Text>
             </TextLink>
             <Flex justifyContent='center'>
-              <UserLink userId={playlist_owner_id!} popover />
+              <UserLink userId={playlist_owner_id!} popover center />
             </Flex>
           </CardContent>
         </Flex>

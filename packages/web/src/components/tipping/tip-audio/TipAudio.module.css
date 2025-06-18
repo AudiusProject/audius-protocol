@@ -275,14 +275,6 @@
   margin: 0 2px 0 0px !important;
 }
 
-.iconSuccess path:nth-child(1) {
-  fill: var(--harmony-green);
-}
-
-.iconSuccess path:nth-child(2) {
-  fill: var(--harmony-white);
-}
-
 .iconToken path {
   fill: revert-layer;
 }

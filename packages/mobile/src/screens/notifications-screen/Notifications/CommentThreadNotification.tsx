@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
-import { useProxySelector } from '@audius/common/hooks'
+import {
+  useCurrentUserId,
+  useNotificationEntity,
+  useUsers
+} from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import type { CommentThreadNotification as CommentThreadNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 
 import { IconMessage } from '@audius/harmony-native'
@@ -20,8 +22,6 @@ import {
   NotificationText,
   EntityLink
 } from '../Notification'
-
-const { getNotificationEntity, getNotificationUsers } = notificationsSelectors
 
 const messages = {
   others: (userCount: number) =>
@@ -42,20 +42,15 @@ export const CommentThreadNotification = (
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useProxySelector(
-    (state) => getNotificationUsers(state, notification, USER_LENGTH_LIMIT),
-    [notification]
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
 
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
-  const entity = useProxySelector(
-    (state) => getNotificationEntity(state, notification),
-    [notification]
-  )
-
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const entity = useNotificationEntity(notification)
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReply =
     entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
@@ -80,7 +75,7 @@ export const CommentThreadNotification = (
       </NotificationHeader>
       <NotificationText>
         <UserNameLink user={firstUser} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
+        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
         {messages.replied}{' '}
         {isOwner ? (
           messages.your

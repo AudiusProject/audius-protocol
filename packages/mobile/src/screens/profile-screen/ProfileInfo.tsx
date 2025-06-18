@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
+import { useCurrentAccountUser, useProfileUser } from '@audius/common/api'
 import { FollowSource, statusIsNotFinalized } from '@audius/common/models'
 import {
-  accountSelectors,
   profilePageSelectors,
   chatActions,
   chatSelectors,
@@ -20,10 +20,8 @@ import { EditProfileButton } from './EditProfileButton'
 import { MessageButton } from './MessageButton'
 import { MessageLockedButton } from './MessageLockedButton'
 import { SubscribeButton } from './SubscribeButton'
-import { useSelectProfile } from './selectors'
 
-const { getUserHandle } = accountSelectors
-const { getCanCreateChat, getChatPermissionsStatus } = chatSelectors
+const { useCanCreateChat, getChatPermissionsStatus } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getProfileUserId } = profilePageSelectors
 
@@ -36,15 +34,15 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const { params } = useRoute<'Profile'>()
   const { getIsReachable } = reachabilitySelectors
   const isReachable = useSelector(getIsReachable)
-  const accountHandle = useSelector(getUserHandle)
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
+  })
   const dispatch = useDispatch()
 
   const profileUserId = useSelector((state) =>
     getProfileUserId(state, params.handle)
   )
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: profileUserId })
-  )
+  const { canCreateChat } = useCanCreateChat(profileUserId)
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 
   useEffect(() => {
@@ -58,13 +56,20 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     }
   }, [dispatch, profileUserId])
 
-  const profile = useSelectProfile([
-    'user_id',
-    'handle',
-    'does_current_user_follow'
-  ])
+  const { user_id, handle, does_current_user_follow } =
+    useProfileUser({
+      select: (user) => ({
+        user_id: user.user_id,
+        handle: user.handle,
+        does_current_user_follow: user.does_current_user_follow
+      })
+    }).user ?? {}
 
-  const { user_id, handle, does_current_user_follow } = profile
+  if (!user_id) {
+    return null
+  }
+
+  const profile = { user_id, handle, does_current_user_follow }
 
   const isOwner =
     params.handle === 'accountUser' ||

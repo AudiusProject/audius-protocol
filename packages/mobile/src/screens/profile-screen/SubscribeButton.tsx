@@ -15,7 +15,7 @@ const messages = {
 }
 
 type SubscribeButtonProps = {
-  profile: Pick<User, 'handle' | 'user_id'>
+  profile: Partial<Pick<User, 'handle' | 'user_id'>>
 }
 
 export const SubscribeButton = (props: SubscribeButtonProps) => {
@@ -25,7 +25,11 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatch(setNotificationSubscription(user_id, !isSubscribed, true, handle))
+    if (user_id) {
+      dispatch(
+        setNotificationSubscription(user_id, !isSubscribed, true, handle)
+      )
+    }
   }, [dispatch, user_id, isSubscribed, handle])
 
   return (

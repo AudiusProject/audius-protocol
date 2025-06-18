@@ -1,8 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import {
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useQueryContext
+} from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Nullable, shortenSPLAddress } from '@audius/common/utils'
 import { Flex, Box, Divider, IconCopy, Text, useTheme } from '@audius/harmony'
 import pkg from 'bs58'
@@ -11,9 +14,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
-import { useSelector } from 'utils/reducer'
-
-const { getUserHandle, getUserId } = accountSelectors
 
 const messages = {
   advancedWalletDetails: 'Advanced Wallet Details',
@@ -33,8 +33,10 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
   const { toast } = useContext(ToastContext)
   const record = useRecord()
   const isMobile = useIsMobile()
-  const accountHandle = useSelector(getUserHandle)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
+  })
+  const { data: accountUserId } = useCurrentUserId()
   const handleClick = useCallback(() => {
     copyToClipboard(value)
     if (accountHandle && accountUserId) {
@@ -91,7 +93,7 @@ export const AdvancedWalletDetails = () => {
   const [publicKey, setPublicKey] = useState<Nullable<string>>(null)
   const [encodedPrivateKey, setEncodedPrivateKey] =
     useState<Nullable<string>>(null)
-  const { solanaWalletService } = useAudiusQueryContext()
+  const { solanaWalletService } = useQueryContext()
 
   useEffect(() => {
     const fetchKeypair = async () => {

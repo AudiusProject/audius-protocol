@@ -1,17 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
-import { useRemoveAuthorizedApp } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId, useRemoveAuthorizedApp } from '@audius/common/api'
+import { Name } from '@audius/common/models'
 import { Button, ModalFooter } from '@audius/harmony'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 
 import styles from './RemoveAppConfirmationPage.module.css'
 import { AuthorizedAppPageProps, AuthorizedAppsPages } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   confirmation: 'Are you sure you want to remove this app?',
@@ -26,51 +22,55 @@ export const RemoveAppConfirmationPage = (
   props: AuthorizedAppConfirmationPageProps
 ) => {
   const { params, setPage } = props
-  const [removeAuthorizedApp, result] = useRemoveAuthorizedApp()
-  const { status, errorMessage } = result
-  const userId = useSelector(getUserId)
+  const {
+    mutate: removeAuthorizedApp,
+    error,
+    isPending,
+    isSuccess,
+    isError
+  } = useRemoveAuthorizedApp()
+  const errorMessage = error?.message
+  const { data: userId } = useCurrentUserId()
   const record = useRecord()
-  const apiKey = params?.apiKey
+  const address = params?.address
+  const apiKey = address?.slice(2)
+  const name = params?.name
 
   const handleCancel = useCallback(() => {
     setPage(AuthorizedAppsPages.YOUR_APPS)
   }, [setPage])
 
   const handleRemove = useCallback(() => {
-    if (!userId || !apiKey) return
-    removeAuthorizedApp({ userId, apiKey })
-  }, [userId, apiKey, removeAuthorizedApp])
+    if (!userId || !address) return
+    removeAuthorizedApp(address)
+  }, [userId, address, removeAuthorizedApp])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPage(AuthorizedAppsPages.YOUR_APPS)
       record(
         make(Name.AUTHORIZED_APP_REMOVE_SUCCESS, {
-          name: params?.name,
-          apiKey: params?.apiKey
+          name,
+          apiKey
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey])
+  }, [isSuccess, setPage, record, name, address, apiKey])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (isError) {
       setPage(AuthorizedAppsPages.YOUR_APPS)
       record(
         make(Name.AUTHORIZED_APP_REMOVE_ERROR, {
-          name: params?.name,
-          apiKey: params?.apiKey,
+          name,
+          apiKey,
           error: errorMessage
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey, errorMessage])
+  }, [isError, setPage, record, name, address, apiKey, errorMessage])
 
   if (!params) return null
-
-  const { name } = params
-
-  const isRemoving = status !== Status.IDLE
 
   return (
     <div>
@@ -80,7 +80,7 @@ export const RemoveAppConfirmationPage = (
         <Button
           variant='secondary'
           onClick={handleCancel}
-          disabled={isRemoving}
+          disabled={isPending}
           fullWidth
         >
           {messages.cancel}
@@ -89,9 +89,9 @@ export const RemoveAppConfirmationPage = (
           variant='destructive'
           fullWidth
           onClick={handleRemove}
-          isLoading={isRemoving}
+          isLoading={isPending}
         >
-          {isRemoving ? messages.removingApp : messages.removeApp}
+          {isPending ? messages.removingApp : messages.removeApp}
         </Button>
       </ModalFooter>
     </div>

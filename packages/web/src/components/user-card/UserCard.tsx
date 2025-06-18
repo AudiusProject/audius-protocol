@@ -3,10 +3,11 @@ import { useCallback, MouseEvent } from 'react'
 import { useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
-import { Box, Skeleton, Text } from '@audius/harmony'
+import { Box, Skeleton, Text, TextLink } from '@audius/harmony'
 import { pick } from 'lodash'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { UserLink } from 'components/link'
@@ -14,13 +15,6 @@ const { profilePage } = route
 
 const messages = {
   followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
-}
-
-const avatarSizeMap = {
-  xs: SquareSizes.SIZE_150_BY_150,
-  s: SquareSizes.SIZE_150_BY_150,
-  m: SquareSizes.SIZE_480_BY_480,
-  l: SquareSizes.SIZE_480_BY_480
 }
 
 export type UserCardProps = Omit<CardProps, 'id'> & {
@@ -77,20 +71,27 @@ export const UserCard = (props: UserCardProps) => {
         aria-hidden
         p='l'
         pb='s'
-        imageSize={avatarSizeMap[size]}
+        imageSize={SquareSizes.SIZE_480_BY_480}
       />
-      <CardContent p='s' pt={0} gap='xs'>
+      <CardContent p='s' pt={0} gap='xs' alignItems='center'>
         <UserLink
           ellipses
           userId={id}
           textVariant='title'
           size='l'
-          css={{ justifyContent: 'center' }}
+          center
           onClick={onUserLinkClick}
+          popover={true}
         />
-        <Text variant='body' ellipses css={{ textAlign: 'center' }}>
-          @{handle}
-        </Text>
+        <ArtistPopover handle={handle} css={{ width: '100%' }}>
+          <TextLink
+            onClick={onUserLinkClick}
+            ellipses
+            css={{ textAlign: 'center', display: 'block' }}
+          >
+            @{handle}
+          </TextLink>
+        </ArtistPopover>
       </CardContent>
       <CardFooter>
         <Text variant='body' size='s' strength='strong'>

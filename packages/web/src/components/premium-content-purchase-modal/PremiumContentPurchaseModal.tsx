@@ -1,11 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetUserById,
-  useTrack
+  selectIsAccountComplete,
+  useCollection,
+  useCurrentAccount,
+  useCurrentAccountUser,
+  useTrack,
+  useUser
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -33,7 +34,6 @@ import {
   PurchaseContentPage as PurchaseContentPageType,
   isContentPurchaseInProgress,
   PurchaseableContentType,
-  accountSelectors,
   accountActions
 } from '@audius/common/store'
 import {
@@ -74,7 +74,6 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getIsAccountComplete, getGuestEmail } = accountSelectors
 const { createGuestAccount } = signOnActions
 
 const messages = {
@@ -115,7 +114,9 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
 
   // Reset form on track change
   useEffect(() => {
@@ -214,30 +215,25 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: currentUser } = useGetCurrentUser({})
+  const { data: currentUser } = useCurrentAccountUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
   const [, setGuestEmailInLocalStorage] = useLocalStorage(GUEST_EMAIL, '')
 
-  const guestEmail = useSelector(getGuestEmail)
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
 
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useTrack(contentId, { enabled: !isAlbum })
 
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
 
-  const { data: user } = useGetUserById(
-    {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
-      currentUserId
-    },
-    { disabled: !(track?.owner_id && album?.playlist_owner_id) }
-  )
+  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
+
   const metadata = {
     ...(isAlbum ? album : track),
     user

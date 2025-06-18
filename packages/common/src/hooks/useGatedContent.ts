@@ -2,8 +2,14 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useGetCurrentUserId } from '~/api'
-import { statusIsNotFinalized } from '~/models'
+import {
+  useCollection,
+  useCurrentAccount,
+  useHasAccount,
+  useTrack,
+  useUser,
+  useUsers
+} from '~/api'
 import { Chain } from '~/models/Chain'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
@@ -16,76 +22,64 @@ import {
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
-import { getHasAccount } from '~/store/account/selectors'
-import {
-  cacheCollectionsSelectors,
-  cacheTracksSelectors,
-  cacheUsersSelectors
-} from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
-import { CommonState } from '~/store/reducers'
-import { isContentCollection, isContentTrack } from '~/utils/contentTypeUtils'
+import {
+  isContentPartialCollection,
+  isContentPartialTrack
+} from '~/utils/contentTypeUtils'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { useFeatureFlag } from './useFeatureFlag'
 
-const { getTrack } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
-const { getUser, getUsers } = cacheUsersSelectors
 const { getLockedContentId, getNftAccessSignatureMap } = gatedContentSelectors
 
-// TODO nft stuff
 export const useGatedTrackAccess = (trackId: ID) => {
-  const hasStreamAccess = useSelector((state: CommonState) => {
-    const track = getTrack(state, { id: trackId })
-    if (!track) return false
-    const { is_stream_gated, access } = track
-    return !is_stream_gated || !!access?.stream
+  const { data: track } = useTrack(trackId, {
+    select: (track) => ({
+      is_stream_gated: track?.is_stream_gated,
+      is_download_gated: track?.is_download_gated,
+      access: track?.access
+    })
   })
 
-  const hasDownloadAccess = useSelector((state: CommonState) => {
-    const track = getTrack(state, { id: trackId })
-    if (!track) return false
-    const { is_download_gated, access } = track
-    return !is_download_gated || !!access?.download
-  })
+  const hasStreamAccess = !track?.is_stream_gated || !!track?.access?.stream
+  const hasDownloadAccess =
+    !track?.is_download_gated || !!track?.access?.download
 
   return { hasStreamAccess, hasDownloadAccess }
 }
 
 export const useGatedCollectionAccess = (collectionId: ID) => {
-  const hasStreamAccess = useSelector((state: CommonState) => {
-    const collection = getCollection(state, { id: collectionId })
-    if (!collection) return false
-    const { is_stream_gated, access } = collection
-    return !is_stream_gated || !!access?.stream
+  const { data: hasStreamAccess } = useCollection(collectionId, {
+    select: (collection) => {
+      const { is_stream_gated, access } = collection ?? {}
+      return !is_stream_gated || !!access?.stream
+    }
   })
 
   return { hasStreamAccess }
 }
 
-// Returns whether user has access to given track.
+type PartialTrack = Pick<
+  Track,
+  | 'track_id'
+  | 'is_stream_gated'
+  | 'is_download_gated'
+  | 'access'
+  | 'stream_conditions'
+  | 'download_conditions'
+>
+
+type PartialCollection = Pick<
+  Collection,
+  'playlist_id' | 'is_stream_gated' | 'access' | 'stream_conditions'
+>
+
 export const useGatedContentAccess = (
-  content:
-    | Nullable<
-        | Pick<
-            Track,
-            | 'track_id'
-            | 'is_stream_gated'
-            | 'is_download_gated'
-            | 'access'
-            | 'stream_conditions'
-            | 'download_conditions'
-          >
-        | Pick<
-            Collection,
-            'playlist_id' | 'is_stream_gated' | 'access' | 'stream_conditions'
-          >
-      >
-    | undefined
+  content: Nullable<PartialTrack> | Nullable<PartialCollection> | undefined
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
 
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useMemo(() => {
@@ -97,8 +91,9 @@ export const useGatedContentAccess = (
         }
       }
 
-      const isTrack = isContentTrack(content)
-      const isCollection = isContentCollection(content)
+      const isTrack = isContentPartialTrack<PartialTrack>(content)
+      const isCollection =
+        isContentPartialCollection<PartialCollection>(content)
       const trackId = isTrack
         ? content.track_id
         : isCollection
@@ -132,12 +127,9 @@ export const useGatedContentAccess = (
   return { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess }
 }
 
-// Similar to `useGatedContentAccess` above, but for multiple tracks.
-// Returns a map of track id -> track access i.e.
-// {[id: ID]: { isFetchingNFTAccess: boolean, hasStreamAccess: boolean }}
 export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const hasAccount = useHasAccount()
 
   const result = useMemo(() => {
     const map: {
@@ -186,11 +178,7 @@ export const useStreamConditionsEntity = (
     ? streamConditions?.nft_collection
     : null
 
-  const users = useSelector((state: CommonState) =>
-    getUsers(state, {
-      ids: [followUserId, tipUserId].filter(removeNullable)
-    })
-  )
+  const users = useUsers([followUserId, tipUserId].filter(removeNullable))
   const followee = followUserId ? users[followUserId]?.metadata : null
   const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
 
@@ -221,10 +209,8 @@ export const useStreamConditionsEntity = (
 
 export const useLockedContent = () => {
   const id = useSelector(getLockedContentId)
-  const track = useSelector((state: CommonState) => getTrack(state, { id }))
-  const owner = useSelector((state: CommonState) => {
-    return track?.owner_id ? getUser(state, { id: track.owner_id }) : null
-  })
+  const { data: track } = useTrack(id)
+  const { data: owner } = useUser(track?.owner_id)
 
   return { id, track, owner }
 }
@@ -233,18 +219,23 @@ export const useDownloadableContentAccess = ({ trackId }: { trackId: ID }) => {
   const { isEnabled: isUsdcPurchasesEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
-  const { data: currentUserId, status: currentUserStatus } =
-    useGetCurrentUserId({})
-  const isOwner = track?.owner_id === currentUserId
+  const { data: track } = useTrack(trackId, {
+    select: (track) => ({
+      owner_id: track?.owner_id,
+      is_stream_gated: track?.is_stream_gated,
+      is_download_gated: track?.is_download_gated,
+      access: track?.access,
+      download_conditions: track?.download_conditions
+    })
+  })
+  const { data: currentAccount, isPending } = useCurrentAccount()
+  const isOwner = track?.owner_id === currentAccount?.userId
 
   const price = isContentUSDCPurchaseGated(track?.download_conditions)
     ? track?.download_conditions.usdc_purchase.price
     : undefined
 
-  if (statusIsNotFinalized(currentUserStatus)) {
+  if (isPending) {
     return {
       price,
       shouldDisplayPremiumDownloadLocked: false,

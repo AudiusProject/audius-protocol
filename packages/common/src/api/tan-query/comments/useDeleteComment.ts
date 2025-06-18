@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -22,7 +22,7 @@ export type DeleteCommentArgs = {
 }
 
 export const useDeleteComment = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
@@ -33,7 +33,7 @@ export const useDeleteComment = () => {
     },
     onMutate: ({ commentId, trackId, currentSort, parentCommentId }) => {
       // Subtract from the comment count
-      subtractCommentCount(dispatch, queryClient, trackId)
+      subtractCommentCount(queryClient, trackId)
       // If reply, filter it from the parent's list of replies
       if (parentCommentId) {
         queryClient.setQueryData(

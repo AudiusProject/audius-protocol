@@ -1,7 +1,7 @@
 import { cloneElement, MouseEvent, ReactElement, useCallback } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable, route } from '@audius/common/utils'
 import {
   Box,
@@ -65,7 +65,7 @@ const UserBadges = ({
   isVerifiedOverride,
   overrideTier
 }: UserBadgesProps) => {
-  const { tier: currentTier, isVerified } = useSelectTierInfo(userId)
+  const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
   const hasContent = isUserVerified || tier !== 'none'
@@ -99,7 +99,7 @@ const UserBadges = ({
       <Box
         css={{
           cursor: 'pointer',
-          transition: `opacity ${motion.calm}`,
+          transition: `opacity ${motion.quick}`,
           '&:hover': {
             opacity: 0.6
           }
@@ -123,7 +123,7 @@ const UserBadges = ({
         <Box
           css={{
             cursor: 'pointer',
-            transition: `opacity ${motion.calm}`,
+            transition: `opacity ${motion.quick}`,
             '&:hover': {
               opacity: 0.6
             }

@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCurrentAccount } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { cacheCollectionsActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { useLastLocation } from 'react-router-last-location'
@@ -42,10 +41,10 @@ export const DeleteCollectionConfirmationModal = (
   const history = useHistory()
   const lastLocation = useLastLocation()
   const { collectionId, visible, onCancel, onDelete } = props
-  const { data: partialCollection } = useCollection(collectionId, {
-    select: (collection) => pick(collection, 'is_album', 'permalink')
+  const { data: accountCollection } = useCurrentAccount({
+    select: (account) => account?.collections?.[collectionId]
   })
-  const { is_album, permalink } = partialCollection ?? {}
+  const { is_album, permalink } = accountCollection ?? {}
   const dispatch = useDispatch()
 
   const handleDelete = useCallback(() => {

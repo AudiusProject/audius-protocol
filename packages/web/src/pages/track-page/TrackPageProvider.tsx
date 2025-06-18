@@ -1,6 +1,12 @@
 import { Component, ComponentType } from 'react'
 
-import { useTrackByParams } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useTrack,
+  useTrackByParams,
+  useUser
+} from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -9,18 +15,16 @@ import {
   PlaybackSource,
   FavoriteType,
   PlayableType,
-  Status,
   ID,
-  Track
+  Track,
+  User
 } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheTracksActions as cacheTrackActions,
   lineupSelectors,
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  queueSelectors,
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
   mobileOverflowMenuUIActions,
@@ -34,6 +38,7 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatDate, route } from '@audius/common/utils'
+import { QueryStatus } from '@tanstack/react-query'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -58,23 +63,14 @@ const {
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE
 } = route
-const { makeGetCurrent } = queueSelectors
 const { getPlaying, getPreviewing } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { tracksActions } = trackPageLineupActions
-const {
-  getUser,
-  getLineup,
-  getRemixParentTrack,
-  getStatus,
-  getSourceSelector,
-  getTrackPermalink
-} = trackPageSelectors
+const { getLineup, getSourceSelector, getTrackPermalink } = trackPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
-const getUserId = accountSelectors.getUserId
 
 const getRemixParentTrackId = (track: Track | null) =>
   track?.remix_of?.tracks?.[0]?.parent_track_id
@@ -100,13 +96,53 @@ type TrackPageProviderState = {
 
 const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
   const params = parseTrackRoute(props.pathname)
-  const { data: track } = useTrackByParams(params)
+  const { data: track, status } = useTrackByParams(params)
+  const { data: user } = useUser(track?.owner_id)
+  const { data: accountUserId } = useCurrentUserId()
+  const { data: remixParentTrack } = useTrack(
+    track?.remix_of?.tracks?.[0]?.parent_track_id,
+    {
+      select: (track) => ({
+        owner_id: track.owner_id,
+        is_delete: track.is_delete
+      })
+    }
+  )
 
-  return <TrackPageProviderClass {...props} track={track as Track | null} />
+  const { data: hasValidRemixParentOwner } = useUser(
+    remixParentTrack?.owner_id,
+    { select: (user) => user && !user.is_deactivated }
+  )
+
+  // If the track has a remix parent and it's not deleted and the original's owner is not deactivated.
+  const hasValidRemixParent = Boolean(
+    remixParentTrack && !remixParentTrack.is_delete && hasValidRemixParentOwner
+  )
+
+  const currentTrack = useCurrentTrack()
+
+  return (
+    <TrackPageProviderClass
+      {...props}
+      track={track as Track | null}
+      user={user}
+      userId={accountUserId}
+      status={status}
+      hasValidRemixParent={hasValidRemixParent}
+      currentTrack={currentTrack}
+    />
+  )
 }
 
 class TrackPageProviderClass extends Component<
-  TrackPageProviderProps & { track: Track | null },
+  TrackPageProviderProps & {
+    track: Track | null
+    user?: User
+    status: QueryStatus
+    hasValidRemixParent: boolean
+    currentTrack: Track | null
+    userId: ID | null | undefined
+  },
   TrackPageProviderState
 > {
   static contextType = SsrContext
@@ -151,7 +187,7 @@ class TrackPageProviderClass extends Component<
       user,
       trackPermalink
     } = this.props
-    if (status === Status.ERROR) {
+    if (status === 'error') {
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
     if (user && user.is_deactivated) {
@@ -268,7 +304,7 @@ class TrackPageProviderClass extends Component<
       pause,
       stop,
       previewing,
-      currentQueueItem,
+      currentTrack,
       moreByArtist: { entries },
       record,
       userId
@@ -279,8 +315,7 @@ class TrackPageProviderClass extends Component<
     const isOwner = track?.owner_id === userId
     const shouldPreview = isPreview && isOwner
 
-    const isSameTrack =
-      currentQueueItem.track && currentQueueItem.track.track_id === track.id
+    const isSameTrack = currentTrack?.track_id === track.id
 
     if (previewing !== isPreview || !isSameTrack) {
       stop()
@@ -366,18 +401,18 @@ class TrackPageProviderClass extends Component<
   render() {
     const {
       track,
-      remixParentTrack,
       user,
-      currentQueueItem,
+      currentTrack,
       playing,
       previewing,
-      userId
+      userId,
+      hasValidRemixParent
     } = this.props
     const heroPlaying =
       playing &&
       !!track &&
-      !!currentQueueItem.track &&
-      currentQueueItem.track.track_id === track.track_id
+      !!currentTrack &&
+      currentTrack.track_id === track.track_id
 
     const desktopProps = {
       // Follow Props
@@ -399,12 +434,6 @@ class TrackPageProviderClass extends Component<
     })
 
     // If the track has a remix parent and it's not deleted and the original's owner is not deactivated.
-    const hasValidRemixParent =
-      !!getRemixParentTrackId(track) &&
-      !!remixParentTrack &&
-      remixParentTrack.is_delete === false &&
-      !remixParentTrack.user?.is_deactivated
-
     if ((track?.is_delete || track?._marked_deleted) && user) {
       // Track has not been blocked and is content-available, meaning the owner
       // deleted themselves via transaction.
@@ -462,19 +491,13 @@ const shouldRedirectTrack = (trackId: ID) =>
 
 function makeMapStateToProps() {
   const getMoreByArtistLineup = makeGetLineupMetadatas(getLineup)
-  const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState) => {
     return {
       source: getSourceSelector(state),
       trackPermalink: getTrackPermalink(state),
-      remixParentTrack: getRemixParentTrack(state),
-      user: getUser(state),
-      status: getStatus(state),
       moreByArtist: getMoreByArtistLineup(state),
-      userId: getUserId(state),
 
-      currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       previewing: getPreviewing(state),
       pathname: getLocationPathname(state)

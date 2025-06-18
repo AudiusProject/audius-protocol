@@ -1,8 +1,12 @@
 import { useCallback, useState } from 'react'
 
+import {
+  selectAccountHasTracks,
+  selectIsGuestAccount,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { accountSelectors } from '@audius/common/store'
 import {
   Button,
   Flex,
@@ -10,7 +14,6 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
@@ -25,8 +28,6 @@ import {
   useWithdrawals
 } from '../../pay-and-earn-page/components/WithdrawalsTab'
 import { TableType, TransactionHistoryPageProps } from '../types'
-
-const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
   title: 'Transaction History',
@@ -45,15 +46,22 @@ type TableMetadata = {
 export const TransactionHistoryPage = ({
   tableView
 }: TransactionHistoryPageProps) => {
-  const accountHasTracks = useSelector(getAccountHasTracks)
-  const isGuest = useSelector(getIsGuestAccount)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      hasTracks: selectAccountHasTracks(user),
+      isGuest: selectIsGuestAccount(user)
+    })
+  })
+  const { hasTracks, isGuest } = accountData ?? {}
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
 
   // Initialize table options based on account type
   useState(() => {
-    if (accountHasTracks !== null || isGuest) {
-      const tableOptions = accountHasTracks
+    if (hasTracks !== null || isGuest) {
+      const tableOptions = hasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)

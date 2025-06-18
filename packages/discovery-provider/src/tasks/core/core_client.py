@@ -128,29 +128,7 @@ core_instance: Optional[CoreClient] = None
 def get_core_instance() -> CoreClient:
     # pylint: disable=W0603
     global core_instance
-    try:
-        print("CORE_CLIENT Attempting to connect to AudiusdClient...")
-        logger.info("CORE_CLIENT Attempting to connect to AudiusdClient...")
-        client = AudiusdClient()
-        res = client.ping()
-        print(
-            f"CORE_CLIENT AudiusdClient ping response: {getattr(res, 'message', None)}"
-        )
-        logger.info(
-            f"CORE_CLIENT AudiusdClient ping response: {getattr(res, 'message', None)}"
-        )
-        # If no exception, use AudiusdClient
-        if not isinstance(core_instance, AudiusdClient):
-            print("CORE_CLIENT Switching to AudiusdClient.")
-            logger.info("CORE_CLIENT Switching to AudiusdClient.")
-        core_instance = client
-    except Exception as e:
-        print(f"CORE_CLIENT Failed to ping audiusd: {e}")
-        logger.error(f"CORE_CLIENT Failed to ping audiusd: {e}")
-        print("CORE_CLIENT Falling back to legacy CoreClient implementation.")
-        logger.info("CORE_CLIENT Falling back to legacy CoreClient implementation.")
-        if not isinstance(core_instance, CoreClient):
-            print("CORE_CLIENT Switching to CoreClient.")
-            logger.info("CORE_CLIENT Switching to CoreClient.")
-        core_instance = CoreClient()
+    if not core_instance:
+        core_instance = AudiusdClient()
+        return core_instance
     return core_instance

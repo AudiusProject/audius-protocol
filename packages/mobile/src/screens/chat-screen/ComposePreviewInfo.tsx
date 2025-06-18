@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { useGetPlaylistById, useTrack, useUser } from '@audius/common/api'
+import { useCollection, useTrack, useUser } from '@audius/common/api'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import { pick } from 'lodash'
@@ -11,7 +11,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'
 
 type ComposePreviewInfoProps = {
-  title: string
+  title?: string
   name?: string
   user?: UserMetadata
   image?: ReactNode
@@ -84,18 +84,21 @@ type ComposerCollectionInfoProps = {
 export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
   const { collectionId } = props
 
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { force: true }
-  )
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, ['playlist_name', 'playlist_owner_id'])
+  })
+  const { playlist_name: albumTitle, playlist_owner_id: albumOwnerId } =
+    partialCollection ?? {}
+  const { data: user } = useUser(albumOwnerId)
 
-  if (!collection) return null
+  if (!partialCollection) return null
 
   return (
     <ComposePreviewInfo
-      title={collection.playlist_name}
-      name={collection.user.name}
-      user={collection.user}
+      title={albumTitle}
+      name={user?.name ?? ''}
+      user={user}
       image={
         <CollectionImage
           collectionId={collectionId}

@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 
 import {
-  useGetCurrentUserId,
-  useGetPlaylistByPermalink
+  useCollectionByPermalink,
+  useHasAccount,
+  useTracks,
+  useUsers
 } from '@audius/common/api'
 import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
@@ -11,7 +13,6 @@ import { newCollectionMetadata } from '@audius/common/schemas'
 import { RandomImage } from '@audius/common/services'
 import {
   EditCollectionValues,
-  accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions
 } from '@audius/common/store'
@@ -44,7 +45,6 @@ import RemovePlaylistTrackDrawer from './RemoveCollectionTrackDrawer'
 
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
-const { getHasAccount } = accountSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   editPlaylist: `Edit ${capitalize(collectionType)}`,
@@ -67,7 +67,7 @@ type EditCollectionPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: EditCollectionPageProps) => {
-  const { hasAccount } = props
+  const hasAccount = useHasAccount()
   if (hasAccount) return { ...props }
 })
 
@@ -81,18 +81,13 @@ const EditCollectionPage = g(
     useRequiresAccount()
     useIsUnauthorizedForHandleRedirect(handle)
 
-    const { data: currentUserId } = useGetCurrentUserId({})
-    const { data: collection } = useGetPlaylistByPermalink(
-      {
-        permalink,
-        currentUserId
-      },
-      { disabled: !currentUserId }
-    )
+    const { data: collection } = useCollectionByPermalink(permalink)
+    const { data: tracks } = useTracks(collection?.trackIds ?? [])
+    const { byId: trackUsers } = useUsers(tracks?.map((t) => t.owner_id) ?? [])
 
-    const { playlist_id, tracks } = collection ?? {}
+    const { playlist_id, is_album } = collection ?? {}
 
-    const messages = getMessages(collection?.is_album ? 'album' : 'playlist')
+    const messages = getMessages(is_album ? 'album' : 'playlist')
 
     const initialMetadata = {
       ...(collection as unknown as Collection),
@@ -368,17 +363,18 @@ const EditCollectionPage = g(
           t.track_id
         ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
         const isLocked = !isFetchingNFTAccess && !hasStreamAccess
+        const trackOwner = trackUsers[t.owner_id]
 
         return {
           isLoading: false,
-          artistName: t.user.name,
-          artistHandle: t.user.handle,
+          artistName: trackOwner?.name,
+          artistHandle: trackOwner?.handle,
           trackTitle: t.title,
           permalink: t.permalink,
           trackId: t.track_id,
           time: playlistTrack?.time,
           isStreamGated: t.is_stream_gated,
-          isDeleted: t.is_delete || !!t.user.is_deactivated,
+          isDeleted: t.is_delete || !!trackOwner?.is_deactivated,
           isUnlisted: t.is_unlisted,
           isLocked,
           isRemoveActive
@@ -458,9 +454,7 @@ const EditCollectionPage = g(
 )
 
 function mapStateToProps(state: AppState) {
-  return {
-    hasAccount: getHasAccount(state)
-  }
+  return {}
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {

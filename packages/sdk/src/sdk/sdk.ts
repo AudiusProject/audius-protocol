@@ -433,13 +433,6 @@ const initializeApis = ({
     middleware,
     basePath: `${basePath}/v1`
   })
-  const apiClientConfigWithDiscoveryNodeSelector = new Configuration({
-    fetchApi: fetch,
-    middleware: [
-      ...middleware,
-      services.discoveryNodeSelector.createMiddleware()
-    ]
-  })
 
   const tracks = new TracksApi(
     apiClientConfig,
@@ -508,7 +501,7 @@ const initializeApis = ({
   )
 
   const challenges = new ChallengesApi(
-    apiClientConfigWithDiscoveryNodeSelector,
+    apiClientConfig,
     users,
     services.discoveryNodeSelector,
     services.rewardManagerClient,

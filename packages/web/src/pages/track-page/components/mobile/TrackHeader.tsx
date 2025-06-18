@@ -34,17 +34,16 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search-bar/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
+import { TrackArtwork } from 'components/track/TrackArtwork'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import HoverInfo from 'components/track-flair/HoverInfo'
-import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
-import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
 
@@ -226,14 +225,22 @@ const TrackHeader = ({
   const { data: remixContest } = useRemixContest(trackId)
   const isRemixContest = isRemixContestEnabled && !!remixContest
 
-  const image = useTrackCoverArt({
-    trackId,
-    size: SquareSizes.SIZE_480_BY_480
-  })
+  const imageElement = (
+    <TrackArtwork
+      trackId={trackId}
+      size={SquareSizes.SIZE_480_BY_480}
+      flairSize={Size.LARGE}
+      isLoading={isLoading}
+      borderRadius='s'
+      h={195}
+      w={195}
+    />
+  )
 
-  const onSaveHeroTrack = () => {
+  const onSaveHeroTrack = useRequiresAccountCallback(() => {
     if (!isOwner) onSave()
-  }
+  }, [isOwner, onSave])
+
   const filteredTags = (tags || '').split(',').filter(Boolean)
 
   const onClickOverflow = () => {
@@ -287,16 +294,6 @@ const TrackHeader = ({
   const onClickComments = useCallback(() => {
     dispatch(pushRoute(`${permalink}/comments`))
   }, [dispatch, permalink])
-
-  const imageElement = (
-    <TrackFlair size={Size.LARGE} id={trackId} className={styles.coverArt}>
-      <DynamicImage
-        image={image ?? undefined}
-        alt={messages.artworkAltText}
-        wrapperClassName={cn(styles.imageWrapper, styles.cosignImageWrapper)}
-      />
-    </TrackFlair>
-  )
 
   const renderHeaderText = () => {
     if (isRemixContest) {
@@ -374,7 +371,7 @@ const TrackHeader = ({
         {imageElement}
         <div className={styles.titleArtistSection}>
           <h1 className={styles.title}>{title}</h1>
-          <UserLink userId={userId} variant='visible' size='l' />
+          <UserLink center userId={userId} variant='visible' size='l' />
         </div>
         {showPlay ? (
           <PlayButton

@@ -175,14 +175,13 @@ def create_comment(params: ManageEntityParameters):
 
     params.add_record(comment_id, comment_record, EntityType.COMMENT)
 
-    with challenge_bus.use_scoped_dispatch_queue():
-        challenge_bus.dispatch(
-            ChallengeEvent.first_weekly_comment,
-            params.block_number,
-            params.block_datetime,
-            user_id,
-            {"created_at": params.block_datetime.timestamp()},
-        )
+    challenge_bus.dispatch(
+        ChallengeEvent.first_weekly_comment,
+        params.block_number,
+        params.block_datetime,
+        user_id,
+        {"created_at": params.block_datetime.timestamp()},
+    )
 
     if (
         not is_reply
@@ -205,7 +204,7 @@ def create_comment(params: ManageEntityParameters):
             },
         )
 
-        safe_add_notification(params, comment_notification)
+        safe_add_notification(params.session, comment_notification)
     if mentions:
         mention_mutes = (
             params.session.query(MutedUser)
@@ -255,7 +254,7 @@ def create_comment(params: ManageEntityParameters):
                         "comment_user_id": user_id,
                     },
                 )
-                safe_add_notification(params, mention_notification)
+                safe_add_notification(params.session, mention_notification)
 
     if parent_comment_id:
         # Avoid re-adding stem if it already exists
@@ -318,7 +317,7 @@ def create_comment(params: ManageEntityParameters):
                     "comment_user_id": user_id,
                 },
             )
-            safe_add_notification(params, thread_notification)
+            safe_add_notification(params.session, thread_notification)
 
 
 def get_existing_mentions_for_comment(params: ManageEntityParameters, comment_id: int):
@@ -488,7 +487,7 @@ def update_comment(params: ManageEntityParameters):
                             "comment_user_id": user_id,
                         },
                     )
-                    safe_add_notification(params, mention_notification)
+                    safe_add_notification(params.session, mention_notification)
 
 
 def delete_comment(params: ManageEntityParameters):
@@ -515,6 +514,17 @@ def validate_comment_reaction_tx(params: ManageEntityParameters):
     validate_signer(params)
     comment_id = params.entity_id
     user_id = params.user_id
+
+    # Check if comment exists and is not deleted
+    if comment_id not in params.existing_records[EntityType.COMMENT.value]:
+        raise IndexingValidationError(
+            f"Cannot react to comment {comment_id} that does not exist"
+        )
+
+    comment = params.existing_records[EntityType.COMMENT.value][comment_id]
+    if comment.is_delete:
+        raise IndexingValidationError(f"Cannot react to deleted comment {comment_id}")
+
     if (
         params.action == Action.REACT
         and (user_id, comment_id)
@@ -634,7 +644,7 @@ def react_comment(params: ManageEntityParameters):
                 },
             )
 
-            safe_add_notification(params, comment_reaction_notification)
+            safe_add_notification(params.session, comment_reaction_notification)
 
 
 def unreact_comment(params: ManageEntityParameters):
@@ -746,18 +756,17 @@ def pin_comment(params: ManageEntityParameters):
         )
 
         if artist_is_verified:
-            with params.challenge_bus.use_scoped_dispatch_queue():
-                params.challenge_bus.dispatch(
-                    ChallengeEvent.pinned_comment,
-                    params.block_number,
-                    params.block_datetime,
-                    comment_user_id,
-                    {
-                        "track_id": track_id,
-                        "comment_id": comment_id,
-                        "track_owner_id": track_owner_id,
-                    },
-                )
+            params.challenge_bus.dispatch(
+                ChallengeEvent.pinned_comment,
+                params.block_number,
+                params.block_datetime,
+                comment_user_id,
+                {
+                    "track_id": track_id,
+                    "comment_id": comment_id,
+                    "track_owner_id": track_owner_id,
+                },
+            )
 
     params.add_record(track_id, track, EntityType.TRACK)
 

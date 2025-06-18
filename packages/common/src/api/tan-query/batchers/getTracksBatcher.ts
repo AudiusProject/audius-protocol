@@ -16,7 +16,7 @@ export const getTracksBatcher = memoize(
   (context: BatchContext) =>
     create({
       fetcher: async (ids: ID[]): Promise<TQTrack[]> => {
-        const { sdk, currentUserId, queryClient, dispatch } = context
+        const { sdk, currentUserId, queryClient } = context
         if (!ids.length) return []
 
         const { data } = await sdk.full.tracks.getBulkTracks({
@@ -29,7 +29,6 @@ export const getTracksBatcher = memoize(
         primeTrackData({
           tracks,
           queryClient,
-          dispatch,
           skipQueryData: true
         })
 

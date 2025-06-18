@@ -4,6 +4,7 @@ import cn from 'classnames'
 
 import { Text, TextSize } from '~harmony/components/text'
 import type { TextColors } from '~harmony/foundations/color/semantic'
+import { IconCloseAlt } from '~harmony/icons'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -45,6 +46,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       IconProps,
       endAdornment: endAdornmentProp,
       elevateLabel,
+      onClear,
       _incorrectError,
       _isHovered,
       _isFocused,
@@ -54,7 +56,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
-      endAdornment = <EndIcon size='m' color='subdued' {...IconProps} />
+      endAdornment = <EndIcon size='l' color='subdued' {...IconProps} />
     } else if (endAdornmentProp != null) {
       endAdornment = endAdornmentProp
     } else {
@@ -182,7 +184,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         >
           {StartIcon ? (
             <StartIcon
-              size={size === TextInputSize.SMALL ? 's' : 'm'}
+              size={size === TextInputSize.SMALL ? 'l' : undefined}
               color='subdued'
               {...IconProps}
             />
@@ -228,6 +230,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputElement}
           </Flex>
+          {onClear && value ? (
+            <IconCloseAlt onClick={onClear} color='subdued' />
+          ) : null}
           {endAdornment}
         </label>
         {helperText ? (

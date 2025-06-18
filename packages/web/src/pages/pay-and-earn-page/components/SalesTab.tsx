@@ -1,37 +1,28 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
-  useGetCurrentWeb3User,
-  useGetSales,
-  useGetSalesCount
+  useCurrentWeb3Account,
+  useSales as useSalesQuery,
+  useSalesCount,
+  useCurrentUserId
 } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
-import {
-  combineStatuses,
-  Status,
-  statusIsNotFinalized,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  accountSelectors,
-  useUSDCPurchaseDetailsModal
-} from '@audius/common/store'
+import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
 import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalTextLink } from 'components/link'
-import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
+import { handleError } from 'store/errors/actions'
 import { formatToday } from 'utils/dateUtils'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -44,7 +35,6 @@ import {
 } from './SalesTable'
 
 const { UPLOAD_PAGE } = route
-const { getUserId } = accountSelectors
 
 const messages = {
   pageTitle: 'Sales History',
@@ -95,9 +85,10 @@ const NoSales = () => {
 }
 
 export const useSales = () => {
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
+  const dispatch = useDispatch()
   const isManagerMode = useIsManagedAccount()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useCurrentWeb3Account()
 
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
@@ -108,24 +99,35 @@ export const useSales = () => {
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
   const {
-    status: dataStatus,
     data: sales,
-    hasMore,
-    loadMore
-  } = useAllPaginatedQuery(
-    useGetSales,
-    { userId, sortMethod, sortDirection },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
-  )
+    isError: salesIsError,
+    isPending: salesIsPending,
+    isSuccess: salesIsSuccess,
+    loadNextPage
+  } = useSalesQuery({ userId, sortMethod, sortDirection })
 
-  const { status: countStatus, data: count } = useGetSalesCount(
-    { userId },
-    { disabled: !userId, force: true }
-  )
+  const {
+    isError: countIsError,
+    isPending: countIsPending,
+    isSuccess: countIsSuccess,
+    data: count
+  } = useSalesCount(userId)
 
-  const status = combineStatuses([dataStatus, countStatus])
+  const hasQueryError = salesIsError || countIsError
+  const isQuerySuccess = salesIsSuccess && countIsSuccess
+  const isQueryPending = salesIsPending || countIsPending
 
-  useErrorPageOnFailedStatus({ status })
+  useEffect(() => {
+    if (hasQueryError) {
+      dispatch(
+        handleError({
+          message: 'Status: Failed',
+          shouldReport: false,
+          shouldRedirect: true
+        })
+      )
+    }
+  }, [hasQueryError, dispatch])
 
   // TODO: Should fetch users before rendering the table
 
@@ -136,13 +138,6 @@ export const useSales = () => {
     },
     []
   )
-
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
       openDetailsModal({ variant: 'sale', purchaseDetails })
@@ -150,8 +145,8 @@ export const useSales = () => {
     [openDetailsModal]
   )
 
-  const isEmpty = status === Status.SUCCESS && sales.length === 0
-  const isLoading = statusIsNotFinalized(status)
+  const isEmpty =
+    hasQueryError || (isQuerySuccess && (!sales || sales.length === 0))
 
   const downloadSalesAsCSVFromJSON = async () => {
     let link = null
@@ -310,11 +305,11 @@ export const useSales = () => {
   return {
     count,
     data: sales,
-    fetchMore,
+    fetchMore: loadNextPage,
     onSort,
     onClickRow,
     isEmpty,
-    isLoading,
+    isLoading: isQueryPending,
     downloadCSV,
     downloadSalesAsCSVFromJSON
   }
@@ -324,7 +319,7 @@ export const useSales = () => {
  * */
 export const SalesTab = ({
   count,
-  data: sales,
+  data: sales = [],
   fetchMore,
   onSort,
   onClickRow,

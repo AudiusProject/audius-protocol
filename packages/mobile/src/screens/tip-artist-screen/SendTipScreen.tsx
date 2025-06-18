@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react'
 
+import { useAudioBalance } from '@audius/common/api'
 import type { StringWei } from '@audius/common/models'
 import {
   tippingSelectors,
   tippingActions,
-  walletSelectors,
   walletActions
 } from '@audius/common/store'
 import { parseAudioInputToWei, stringWeiToBN } from '@audius/common/utils'
@@ -28,7 +28,6 @@ import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
 
 const { getBalance } = walletActions
-const { getAccountBalance } = walletSelectors
 const { sendTip } = tippingActions
 const { getSendUser } = tippingSelectors
 
@@ -50,7 +49,16 @@ const zeroWei = stringWeiToBN('0' as StringWei)
 export const SendTipScreen = () => {
   const styles = useStyles()
   const [tipAmount, setTipAmount] = useState('')
-  const accountBalance = useSelector(getAccountBalance) ?? zeroWei
+
+  const { accountBalance: audioBalanceBigInt } = useAudioBalance({
+    includeConnectedWallets: false
+  })
+
+  // Convert BigInt to BN for compatibility with existing code
+  const accountBalance = audioBalanceBigInt
+    ? stringWeiToBN(audioBalanceBigInt.toString() as StringWei)
+    : zeroWei
+
   const navigation = useNavigation<TipArtistNavigationParamList>()
   const dispatch = useDispatch()
 

@@ -1,16 +1,13 @@
 import { ReactNode, useState } from 'react'
 
-import { useUserByHandle } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentUserId, useUserByHandle } from '@audius/common/api'
 import Popover from 'antd/lib/popover'
 import cn from 'classnames'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { MountPlacement } from 'components/types'
 
 import { ArtistCard } from './ArtistCard'
 import styles from './ArtistPopover.module.css'
-const getUserId = accountSelectors.getUserId
 
 enum Placement {
   Top = 'top',
@@ -52,7 +49,7 @@ export const ArtistPopover = ({
 }: ArtistPopoverProps) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const { data: creator } = useUserByHandle(handle)
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
 
   const content =
     creator && userId !== creator.user_id ? (

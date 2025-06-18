@@ -51,18 +51,27 @@ export * from './settings/types'
 
 export { default as searchResultsPageTracksLineupReducer } from './search-results/lineup/tracks/reducer'
 export { tracksActions as searchResultsPageTracksLineupActions } from './search-results/lineup/tracks/actions'
-export * as searchResultsPageActions from './search-results/actions'
 export * as searchResultsPageSelectors from './search-results/selectors'
 export * from './search-results/types'
 export { default as searchResultsPageReducer } from './search-results/reducer'
 
-export { default as savedPageTracksLineupReducer } from './saved-page/lineups/tracks/reducer'
-export { tracksActions as savedPageTracksLineupActions } from './saved-page/lineups/tracks/actions'
-export * as savedPageActions from './saved-page/actions'
-export * as savedPageSelectors from './saved-page/selectors'
-export * from './saved-page/types'
-export * from './saved-page/utils'
-export { persistedSavePageReducer } from './saved-page/reducer'
+export { default as libraryPageTracksLineupReducer } from './library-page/lineups/tracks/reducer'
+export { tracksActions as libraryPageTracksLineupActions } from './library-page/lineups/tracks/actions'
+export * as libraryPageActions from './library-page/actions'
+export * as libraryPageSelectors from './library-page/selectors'
+export * from './library-page/types'
+export * from './library-page/utils'
+export { persistedLibraryPageReducer } from './library-page/reducer'
+
+export {
+  default as pickWinnersPageLineupReducer,
+  initialState as pickWinnersPageLineupInitialState
+} from './pick-winners/lineup/reducer'
+export { tracksActions as pickWinnersPageLineupActions } from './pick-winners/lineup/actions'
+export {
+  default as pickWinnersPageReducer,
+  actions as pickWinnersPageActions
+} from './pick-winners/slice'
 
 export {
   default as remixesPageLineupReducer,

@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
-import { useGatedContentAccess } from '@audius/common/hooks'
+import {
+  useCurrentUserId,
+  useToggleFavoriteTrack,
+  useUser
+} from '@audius/common/api'
+import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -13,7 +17,6 @@ import {
   ID
 } from '@audius/common/models'
 import {
-  accountSelectors,
   queueActions,
   queueSelectors,
   RepeatMode,
@@ -76,7 +79,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { next, pause, play, previous, repeat, shuffle } = queueActions
-const getUserId = accountSelectors.getUserId
 const { getGatedContentStatusMap } = gatedContentSelectors
 
 type OwnProps = {
@@ -97,13 +99,21 @@ const messages = {
 }
 
 const g = withNullGuard((wide: NowPlayingProps) => {
-  const { uid, source, user, track, collectible } = wide.currentQueueItem
+  const { uid, source, collectible } = wide.currentQueueItem
+  const currentTrack = useCurrentTrack()
+  const { data: user } = useUser(currentTrack?.owner_id)
   if (
-    ((uid !== null && track !== null) || collectible !== null) &&
+    ((uid !== null && currentTrack !== null) || collectible !== null) &&
     source !== null &&
-    user !== null
+    !!user
   ) {
-    const currentQueueItem = { uid, source, user, track, collectible }
+    const currentQueueItem = {
+      uid,
+      source,
+      user,
+      track: currentTrack,
+      collectible
+    }
     return {
       ...wide,
       currentQueueItem
@@ -115,7 +125,6 @@ const NowPlaying = g(
   ({
     onClose,
     currentQueueItem,
-    currentUserId,
     playCounter,
     isPlaying,
     isBuffering,
@@ -135,6 +144,8 @@ const NowPlaying = g(
   }) => {
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
+
+    const { data: currentUserId } = useCurrentUserId()
 
     const albumInfo = track?.album_backlink
 
@@ -569,7 +580,6 @@ function makeMapStateToProps() {
     return {
       currentQueueItem,
       seek: getSeek(state),
-      currentUserId: getUserId(state),
       playCounter: getCounter(state),
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state)

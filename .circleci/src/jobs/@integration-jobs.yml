@@ -12,7 +12,7 @@ integration-init:
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          - npm-cache-v1-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
     - persist_to_workspace:
         root: ./
@@ -65,13 +65,7 @@ integration-test:
         name: run playwright tests
         command: |
           cd packages/web
-          trap 'npx playwright stop' EXIT
           RUN_AGAINST_LOCAL_STACK=true npx playwright test
-        when: always
-    - run:
-        name: shutdown playwright
-        command: |
-          pkill -f playwright || true
         when: always
     - store_test_results:
         path: packages/web/report.xml

@@ -3,11 +3,10 @@ import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
 import {
-  useGetCurrentUserId,
-  useGetPlaylistsByIds,
-  useGetPurchasersCount,
-  useGetSalesAggegrate,
-  useGetTracksByIds
+  useCollections,
+  usePurchasersCount,
+  useSalesAggregate,
+  useTracks
 } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
@@ -19,10 +18,7 @@ export const usePurchasersAudience = ({
   contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: salesAggregate } = useGetSalesAggegrate({
-    userId: currentUserId!
-  })
+  const { data: salesAggregate } = useSalesAggregate()
   const isDisabled = !salesAggregate?.length
 
   const trackAggregates = salesAggregate?.filter(
@@ -32,14 +28,12 @@ export const usePurchasersAudience = ({
     (sale) => sale.contentType === 'album'
   )
 
-  const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => sale.contentId) ?? [],
-    currentUserId
-  })
-  const { data: albums } = useGetPlaylistsByIds({
-    ids: albumAggregates?.map((sale) => sale.contentId) ?? [],
-    currentUserId
-  })
+  const { data: tracks } = useTracks(
+    trackAggregates?.map((sale) => sale.contentId) ?? []
+  )
+  const { data: albums } = useCollections(
+    albumAggregates?.map((sale) => sale.contentId) ?? []
+  )
   const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
   const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])
 
@@ -61,8 +55,7 @@ export const usePurchasersAudience = ({
     [salesAggregate, tracksById, albumsById]
   )
 
-  const { data: purchasersCount } = useGetPurchasersCount({
-    userId: currentUserId!,
+  const { data: purchasersCount } = usePurchasersCount({
     contentId,
     contentType
   })

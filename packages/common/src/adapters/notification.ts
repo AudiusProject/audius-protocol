@@ -61,7 +61,7 @@ const toEntityType = (
  */
 export const notificationFromSDK = (
   notification: full.Notification
-): Notification => {
+): Notification | undefined => {
   switch (notification.type) {
     case 'follow': {
       const userIds = notification.actions.map((action) => {
@@ -643,5 +643,80 @@ export const notificationFromSDK = (
         ...formatBaseNotification(notification)
       }
     }
+    case 'fan_remix_contest_ended': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestEnded,
+        entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
+        entityUserId: HashId.parse(data.entityUserId),
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'artist_remix_contest_ended': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ArtistRemixContestEnded,
+        entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'artist_remix_contest_ending_soon': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.ArtistRemixContestEndingSoon,
+        entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
+        entityUserId: HashId.parse(data.entityUserId),
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'fan_remix_contest_ending_soon': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestEndingSoon,
+        entityId: HashId.parse(data.entityId),
+        entityUserId: HashId.parse(data.entityUserId),
+        entityType: Entity.Track,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'fan_remix_contest_winners_selected': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestWinnersSelected,
+        entityId: HashId.parse(data.entityId),
+        entityUserId: HashId.parse(data.entityUserId),
+        entityType: Entity.Track,
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'fan_remix_contest_started': {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.FanRemixContestStarted,
+        entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
+        entityUserId: HashId.parse(data.entityUserId),
+        ...formatBaseNotification(notification)
+      }
+    }
+    case 'artist_remix_contest_submissions': {
+      const data = notification.actions[0].data as {
+        eventId: string
+        milestone: number
+        entityId: string
+      }
+      return {
+        type: NotificationType.ArtistRemixContestSubmissions,
+        eventId: HashId.parse(data.eventId),
+        milestone: data.milestone,
+        entityId: HashId.parse(data.entityId),
+        entityType: Entity.Track,
+        ...formatBaseNotification(notification)
+      }
+    }
   }
+  return undefined
 }

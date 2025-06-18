@@ -2,16 +2,15 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
+import { primeTrackDataSaga } from '@audius/common/api'
 import { ID, Track } from '@audius/common/models'
 import { getSDK } from '@audius/common/store'
 import { OptionalId } from '@audius/sdk'
 import { call } from 'typed-redux-saga'
 
-import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-
 type RetrieveUserTracksArgs = {
   handle: string
-  currentUserId: ID | null
+  currentUserId: ID | null | undefined
   sort?: 'date' | 'plays'
   offset?: number
   limit?: number
@@ -43,6 +42,5 @@ export function* retrieveUserTracks({
     }
   )
   const apiTracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-  const processed: Track[] = yield processAndCacheTracks(apiTracks)
-  return processed
+  return yield* call(primeTrackDataSaga, apiTracks)
 }

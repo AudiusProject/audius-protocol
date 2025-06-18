@@ -10,12 +10,12 @@ import {
 } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { PlaybackSource } from '~/models/Analytics'
 import { ID } from '~/models/Identifiers'
 import {
-  savedPageTracksLineupActions,
-  savedPageSelectors,
+  libraryPageTracksLineupActions,
+  libraryPageSelectors,
   LibraryCategoryType
 } from '~/store/pages'
 import { removeNullable } from '~/utils'
@@ -24,7 +24,7 @@ import { userTrackMetadataFromSDK } from '../../../adapters/track'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, LineupData } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
-import { loadNextPage } from '../utils/infiniteQueryLoadNextPage'
+import { makeLoadNextPage } from '../utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from '../utils/primeTrackData'
 
 import { useLineupQuery } from './useLineupQuery'
@@ -70,7 +70,7 @@ export const useLibraryTracks = (
   config?: QueryOptions
 ) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -100,11 +100,11 @@ export const useLibraryTracks = (
         .map((activity) => userTrackMetadataFromSDK(activity.item))
         .filter(removeNullable)
 
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
       // Update lineup when new data arrives
       dispatch(
-        savedPageTracksLineupActions.fetchLineupMetadatas(
+        libraryPageTracksLineupActions.fetchLineupMetadatas(
           pageParam,
           pageSize,
           false,
@@ -139,15 +139,15 @@ export const useLibraryTracks = (
       query,
       pageSize
     }),
-    lineupActions: savedPageTracksLineupActions,
-    lineupSelector: savedPageSelectors.getSavedTracksLineup,
+    lineupActions: libraryPageTracksLineupActions,
+    lineupSelector: libraryPageSelectors.getLibraryTracksLineup,
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })
 
   return {
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
+    loadNextPage: makeLoadNextPage(queryData),
     pageSize
   }
 }

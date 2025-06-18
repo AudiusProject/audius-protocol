@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 
+import { useCollection, useTrack } from '@audius/common/api'
 import { Name, PlayableType, ID, Track } from '@audius/common/models'
 import { Button, Modal, SegmentedControl } from '@audius/harmony'
 import { Id } from '@audius/sdk'
@@ -9,13 +10,14 @@ import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'
+import { useSelector } from 'utils/reducer'
 import { BASE_GA_URL } from 'utils/route'
 
 import styles from './EmbedModal.module.css'
 import EmbedCopy from './components/EmbedCopy'
 import EmbedFrame from './components/EmbedFrame'
 import { close } from './store/actions'
-import { getIsOpen, getId, getKind, getMetadata } from './store/selectors'
+import { getIsOpen, getId, getKind } from './store/selectors'
 import { Size } from './types'
 
 const BASE_EMBED_URL = `${BASE_GA_URL}/embed`
@@ -54,6 +56,21 @@ const formatIFrame = (url: string, size: Size) => {
   return `<iframe src=${url} ${extras} allow="encrypted-media" style="border: none;"></iframe>`
 }
 
+const useMetadata = () => {
+  const id = useSelector(getId)
+  const kind = useSelector(getKind)
+
+  const track = useTrack(id, {
+    enabled: kind === PlayableType.TRACK
+  })
+
+  const collection = useCollection(id, {
+    enabled: kind === PlayableType.PLAYLIST || kind === PlayableType.ALBUM
+  })
+
+  return kind === PlayableType.TRACK ? track : collection
+}
+
 const messages = {
   title: {
     [PlayableType.TRACK]: 'Embed Track',
@@ -70,7 +87,8 @@ type EmbedModalProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
+const EmbedModal = ({ isOpen, kind, id, close }: EmbedModalProps) => {
+  const { data: metadata } = useMetadata()
   const [size, setSize] = useState(Size.STANDARD)
   // Delay the rendering of the embed frame since it's expensive.
   // This shores up the modal open animation a bit.
@@ -211,7 +229,6 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
 
 function mapStateToProps(state: AppState) {
   return {
-    metadata: getMetadata(state),
     isOpen: getIsOpen(state),
     id: getId(state),
     kind: getKind(state)

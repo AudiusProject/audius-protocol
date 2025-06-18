@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { useUser } from '@audius/common/api'
 import {
   lineupSelectors,
   aiPageLineupActions as tracksActions,
@@ -21,7 +22,7 @@ import { spacing } from 'app/styles/spacing'
 import { ShareAiTracksTile } from './ShareAiTracksTile'
 
 const { makeGetLineupMetadatas } = lineupSelectors
-const { getAiUser, getLineup } = aiPageSelectors
+const { getAiUserId, getLineup } = aiPageSelectors
 const { fetchAiUser, reset } = aiPageActions
 
 const getAiTracksLineup = makeGetLineupMetadatas(getLineup)
@@ -60,7 +61,8 @@ export const AiGeneratedTracksScreen = () => {
   const { userId } = params
   const dispatch = useDispatch()
   const lineup = useSelector(getAiTracksLineup)
-  const user = useSelector(getAiUser)
+  const aiUserId = useSelector(getAiUserId)
+  const { data: user } = useUser(aiUserId)
 
   useEffect(() => {
     dispatch(fetchAiUser({ userId }))

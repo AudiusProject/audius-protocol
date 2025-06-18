@@ -288,7 +288,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_trending",
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
-            "src.tasks.cache_trending_playlists",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_payment_router",
@@ -307,6 +306,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.publish_scheduled_releases",
             "src.tasks.create_engagement_notifications",
             "src.tasks.create_listen_streak_reminder_notifications",
+            "src.tasks.create_remix_contest_notifications",
             "src.tasks.index_core",
         ],
         beat_schedule={
@@ -341,10 +341,6 @@ def configure_celery(celery, test_config=None):
             "monitoring_queue": {
                 "task": "monitoring_queue",
                 "schedule": timedelta(seconds=60),
-            },
-            "cache_trending_playlists": {
-                "task": "cache_trending_playlists",
-                "schedule": timedelta(minutes=30),
             },
             "index_eth": {
                 "task": "index_eth",
@@ -397,6 +393,10 @@ def configure_celery(celery, test_config=None):
             "create_listen_streak_reminder_notifications": {
                 "task": "create_listen_streak_reminder_notifications",
                 "schedule": timedelta(seconds=10),
+            },
+            "create_remix_contest_notifications": {
+                "task": "create_remix_contest_notifications",
+                "schedule": timedelta(seconds=30),
             },
             "repair_audio_analyses": {
                 "task": "repair_audio_analyses",

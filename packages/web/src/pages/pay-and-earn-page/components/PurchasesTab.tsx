@@ -1,28 +1,22 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { useGetPurchases, useGetPurchasesCount } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import {
-  Status,
-  statusIsNotFinalized,
-  combineStatuses,
-  USDCPurchaseDetails
-} from '@audius/common/models'
-import {
-  accountSelectors,
-  useUSDCPurchaseDetailsModal
-} from '@audius/common/store'
+  usePurchases as usePurchasesQuery,
+  usePurchasesCount,
+  useCurrentUserId
+} from '@audius/common/api'
+import { USDCPurchaseDetails } from '@audius/common/models'
+import { useUSDCPurchaseDetailsModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
-import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
+import { handleError } from 'store/errors/actions'
 import { formatToday } from 'utils/dateUtils'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -34,7 +28,6 @@ import {
   PurchasesTableSortMethod
 } from './PurchasesTable'
 
-const { getUserId } = accountSelectors
 const { FEED_PAGE } = route
 
 const messages = {
@@ -84,7 +77,8 @@ const NoPurchases = () => {
 }
 
 export const usePurchases = () => {
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
+  const dispatch = useDispatch()
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetPurchasesSortMethodEnum>(DEFAULT_SORT_METHOD)
@@ -94,23 +88,21 @@ export const usePurchases = () => {
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
   const {
-    status: dataStatus,
     data: purchases,
-    hasMore,
-    loadMore
-  } = useAllPaginatedQuery(
-    useGetPurchases,
-    { userId, sortMethod, sortDirection },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
-  )
-  const { status: countStatus, data: count } = useGetPurchasesCount(
-    {
-      userId
-    },
-    { disabled: !userId, force: true }
-  )
+    isError: purchasesIsError,
+    isSuccess: purchasesIsSuccess,
+    isPending: purchasesIsPending,
+    loadNextPage
+  } = usePurchasesQuery({ userId, sortMethod, sortDirection })
 
-  const status = combineStatuses([dataStatus, countStatus])
+  const {
+    data: count,
+    isError: countIsError,
+    isSuccess: countIsSuccess
+  } = usePurchasesCount({ userId })
+
+  const hasQueryError = purchasesIsError || countIsError
+  const isQuerySuccess = purchasesIsSuccess && countIsSuccess
 
   // TODO: Should fetch users before rendering the table
 
@@ -125,13 +117,17 @@ export const usePurchases = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
+  useEffect(() => {
+    if (hasQueryError) {
+      dispatch(
+        handleError({
+          message: 'Status: Failed',
+          shouldReport: false,
+          shouldRedirect: true
+        })
+      )
     }
-  }, [hasMore, loadMore])
-
-  useErrorPageOnFailedStatus({ status })
+  }, [hasQueryError, dispatch, countIsError])
 
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
@@ -141,9 +137,7 @@ export const usePurchases = () => {
   )
 
   const isEmpty =
-    status === Status.ERROR ||
-    (status === Status.SUCCESS && purchases.length === 0)
-  const isLoading = statusIsNotFinalized(status)
+    hasQueryError || (isQuerySuccess && (!purchases || purchases.length === 0))
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
@@ -161,11 +155,11 @@ export const usePurchases = () => {
   return {
     count,
     data: purchases,
-    fetchMore,
+    fetchMore: loadNextPage,
     onSort,
     onClickRow,
     isEmpty,
-    isLoading,
+    isLoading: purchasesIsPending,
     downloadCSV
   }
 }
@@ -174,7 +168,7 @@ export const usePurchases = () => {
  * Fetches and renders a table of purchases for the currently logged in user
  * */
 export const PurchasesTab = ({
-  data,
+  data = [],
   count,
   isEmpty,
   isLoading,

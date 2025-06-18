@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import {
-  accountSelectors,
   tippingActions,
   tippingSelectors,
   TippingSendStatus,
@@ -9,7 +9,7 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
-  IconVerified as IconSuccess,
+  CompletionCheck,
   Modal,
   ModalHeader,
   ModalTitle
@@ -64,7 +64,12 @@ const titleIconsMap: { [key in TippingSendStatus]?: Nullable<JSX.Element> } = {
   SENDING: <GoldBadgeIconImage />,
   CONVERTING: null,
   ERROR: <GoldBadgeIconImage />,
-  SUCCESS: <IconSuccess width={24} height={24} className={styles.iconSuccess} />
+  SUCCESS: (
+    <CompletionCheck
+      value='complete'
+      css={{ svg: { path: { fill: 'var(--harmony-white)' } } }}
+    />
+  )
 }
 
 const renderModalContent = (pageNumber: number) => {
@@ -115,7 +120,7 @@ export const TipAudioModal = () => {
   const sendStatus = useSelector(getSendStatus)
   const previousSendStatus = usePrevious(sendStatus)
   const { user: recipient, onSuccessActions } = useSelector(getSendTipData)
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const onClose = useCallback(() => {
     // After success + close, take the user to the chat they were

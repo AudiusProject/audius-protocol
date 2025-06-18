@@ -24,6 +24,8 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   noBadges?: boolean
   // Hack to fix avatars wrapped in user link
   noOverflow?: boolean
+  center?: boolean
+  fullWidth?: boolean
 }
 
 export const UserLink = (props: UserLinkProps) => {
@@ -36,6 +38,8 @@ export const UserLink = (props: UserLinkProps) => {
     noText,
     noBadges,
     noOverflow,
+    center,
+    fullWidth = true,
     ...other
   } = props
   const { spacing } = useTheme()
@@ -77,6 +81,8 @@ export const UserLink = (props: UserLinkProps) => {
   // In new UI, badges should be outside the TextLink to prevent hover effects on badges
   const textLink = isWalletUIUpdate ? (
     <Flex
+      w={fullWidth ? '100%' : undefined}
+      justifyContent={center ? 'center' : undefined}
       css={{
         columnGap: spacing.xs,
         alignItems: 'center',
@@ -138,6 +144,8 @@ export const UserLink = (props: UserLinkProps) => {
   if (isWalletUIUpdate && popover && handle && !noText) {
     return (
       <Flex
+        w={fullWidth ? '100%' : undefined}
+        justifyContent={center ? 'center' : undefined}
         css={{
           columnGap: spacing.xs,
           alignItems: 'center',

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
 import { useExternalWalletSignUpModal } from '@audius/common/store'
@@ -16,6 +16,7 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -69,10 +70,12 @@ export const CreateEmailPage = () => {
     useExternalWalletSignUpModal()
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
+  const queryClient = useQueryClient()
+
   const EmailSchema = useMemo(
-    () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
-    [audiusQueryContext]
+    () => toFormikValidationSchema(emailSchema(queryContext, queryClient)),
+    [queryContext, queryClient]
   )
 
   const initialValues = {

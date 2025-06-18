@@ -162,6 +162,13 @@ export const GetNotificationsValidTypesEnum = {
     CommentThread: 'comment_thread',
     CommentMention: 'comment_mention',
     CommentReaction: 'comment_reaction',
-    ListenStreakReminder: 'listen_streak_reminder'
+    ListenStreakReminder: 'listen_streak_reminder',
+    FanRemixContestStarted: 'fan_remix_contest_started',
+    FanRemixContestEnded: 'fan_remix_contest_ended',
+    FanRemixContestEndingSoon: 'fan_remix_contest_ending_soon',
+    FanRemixContestWinnersSelected: 'fan_remix_contest_winners_selected',
+    ArtistRemixContestEnded: 'artist_remix_contest_ended',
+    ArtistRemixContestEndingSoon: 'artist_remix_contest_ending_soon',
+    ArtistRemixContestSubmissions: 'artist_remix_contest_submissions'
 } as const;
 export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];

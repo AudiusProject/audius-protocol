@@ -1,22 +1,19 @@
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection, useCollectionTracks } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useGatedContentAccessMap
 } from '@audius/common/hooks'
 import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
-import { CommonState, cacheCollectionsSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 
 import styles from './CollectionHeader.module.css'
 import { OwnerActionButtons } from './OwnerActionButtons'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
-
-const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   actionGroupLabel: 'collection actions',
@@ -53,20 +50,20 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isPremium
   } = props
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : null,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
-  const { hasStreamAccess } = useGatedContentAccess(collection)
+  const { data: partialCollection } = useCollection(collectionId as number, {
+    enabled: typeof collectionId === 'number',
+    select: (collection) =>
+      pick(collection, [
+        'playlist_id',
+        'is_stream_gated',
+        'access',
+        'stream_conditions'
+      ])
+  })
+  const { hasStreamAccess } = useGatedContentAccess(partialCollection)
   // Dirty hack to get around the possibility that collectionId is a SmartCollectionVariant
-  const tracks = useSelector((state: CommonState) =>
-    getCollectionTracks(state, {
-      id: typeof collectionId === 'number' ? collectionId : -1
-    })
+  const { data: tracks } = useCollectionTracks(
+    typeof collectionId === 'number' ? collectionId : null
   )
   const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(

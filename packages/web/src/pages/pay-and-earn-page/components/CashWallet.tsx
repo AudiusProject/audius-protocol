@@ -10,7 +10,7 @@ import { TRANSACTION_HISTORY_PAGE } from '@audius/common/src/utils/route'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  useAddFundsModal
+  useAddCashModal
 } from '@audius/common/store'
 import {
   Button,
@@ -21,7 +21,7 @@ import {
   Text,
   IconButton,
   useMedia,
-  motion
+  Skeleton
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -36,7 +36,7 @@ import { useCashWalletStyles } from './CashWallet.styles'
 export const CashWallet = () => {
   const isManagedAccount = useIsManagedAccount()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
-  const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { onOpen: openAddCashModal } = useAddCashModal()
   const { balanceFormatted, usdcValue, isLoading } = useFormattedUSDCBalance()
   const [, setPayoutWalletModalOpen] = useModalState('PayoutWallet')
 
@@ -57,8 +57,8 @@ export const CashWallet = () => {
     )
   }
 
-  const handleAddFunds = () => {
-    openAddFundsModal()
+  const handleAddCash = () => {
+    openAddCashModal()
     track(
       make({
         eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
@@ -95,7 +95,9 @@ export const CashWallet = () => {
               <Tooltip
                 text={walletMessages.cashBalanceTooltip}
                 placement='top'
-                mount='page'
+                getPopupContainer={() =>
+                  document.getElementById('page') ?? document.body
+                }
                 shouldWrapContent={false}
                 shouldDismissOnClick={false}
                 css={{ zIndex: zIndex.CASH_WALLET_TOOLTIP }}
@@ -112,17 +114,13 @@ export const CashWallet = () => {
           </Flex>
 
           {/* Balance Value */}
-          <Text
-            variant='display'
-            size='m'
-            color='default'
-            css={{
-              opacity: isLoading ? 0 : 1,
-              transition: `opacity ${motion.calm}`
-            }}
-          >
-            {balanceFormatted}
-          </Text>
+          {isLoading ? (
+            <Skeleton w='unit24' h='unit10' />
+          ) : (
+            <Text variant='display' size='m' color='default'>
+              {balanceFormatted}
+            </Text>
+          )}
 
           {/* Payout Wallet Info */}
           <Flex
@@ -165,23 +163,19 @@ export const CashWallet = () => {
           <>
             <Button
               variant='primary'
-              css={{
-                flex: 1
-              }}
               onClick={handleWithdraw}
               disabled={isLoading}
+              fullWidth
             >
               {walletMessages.withdraw}
             </Button>
             <Button
               variant='secondary'
-              css={{
-                flex: 1
-              }}
-              onClick={handleAddFunds}
+              onClick={handleAddCash}
               disabled={isLoading}
+              fullWidth
             >
-              {walletMessages.addFunds}
+              {walletMessages.addCash}
             </Button>
           </>
         ) : null}

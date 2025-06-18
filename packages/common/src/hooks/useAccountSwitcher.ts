@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
-import { useGetCurrentUserId, useGetCurrentWeb3User } from '~/api/account'
+import { useCurrentUserId, useCurrentWeb3Account } from '~/api'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
 import { UserMetadata } from '~/models/User'
 
 export const useAccountSwitcher = () => {
   const { localStorage } = useAppContext()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useCurrentWeb3Account()
   const {
     analytics: { make, track }
   } = useAppContext()
@@ -54,8 +54,8 @@ export const useAccountSwitcher = () => {
 
 /** Determines if we are in Manager Mode, i.e. the current user is not the logged-in user */
 export const useIsManagedAccount = () => {
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentWeb3User } = useCurrentWeb3Account()
+  const { data: currentUserId } = useCurrentUserId()
   return (
     !!currentWeb3User &&
     !!currentUserId &&

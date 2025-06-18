@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import {
   buyAudioActions,
@@ -29,7 +29,7 @@ const messages = {
 
 export const CoinbaseBuyAudioButton = () => {
   const dispatch = useDispatch()
-  const { solanaWalletService } = useAudiusQueryContext()
+  const { solanaWalletService } = useQueryContext()
   const coinbasePay = useCoinbasePay()
   const purchaseInfoStatus = useSelector(getAudioPurchaseInfoStatus)
   const purchaseInfo = useSelector(getAudioPurchaseInfo)

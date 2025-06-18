@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useAccountStatus, useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { usePlaidLink } from 'react-plaid-link'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import Page from 'components/page/Page'
 import { identityService } from 'services/audius-sdk/identity'
@@ -13,12 +13,13 @@ import { push as pushRoute } from 'utils/navigation'
 import './CheckPage.module.css'
 
 const { SIGN_IN_PAGE, TRENDING_PAGE } = route
-const { getUserHandle, getAccountStatus } = accountSelectors
 
 const CheckPage = () => {
   const dispatch = useDispatch()
-  const accountHandle = useSelector(getUserHandle)
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
+  })
+  const { data: accountStatus } = useAccountStatus()
 
   useEffect(() => {
     if (accountStatus !== Status.LOADING && !accountHandle) {

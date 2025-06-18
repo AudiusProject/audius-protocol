@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import type {
   FavoriteType,
   TipSource,
@@ -7,6 +8,7 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type {
   NotificationType,
   RepostType,
@@ -23,16 +25,17 @@ import { setLastNavAction } from 'app/hooks/useNavigation'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AudioScreen } from 'app/screens/audio-screen'
+import { ChangeEmailModalScreen } from 'app/screens/change-email-screen/ChangeEmailScreen'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
 import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
+import { SearchExploreScreen } from 'app/screens/explore-screen/SearchExploreScreen'
 import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { RewardsScreen } from 'app/screens/rewards-screen'
-import type { SearchParams } from 'app/screens/search-screen'
-import { SearchScreenStack } from 'app/screens/search-screen'
+import { SearchScreenStack, type SearchParams } from 'app/screens/search-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -158,6 +161,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
+  const searchExploreFeatureFlag = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_MOBILE
+  )
+  const isSearchExploreMobileEnabled =
+    searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -204,7 +212,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='Profile' component={ProfileScreen} />
       <Stack.Screen
         name='Search'
-        component={SearchScreenStack}
+        component={
+          isSearchExploreMobileEnabled ? SearchExploreScreen : SearchScreenStack
+        }
         options={{ ...screenOptions, headerShown: false }}
       />
       <Stack.Group>
@@ -262,7 +272,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           name='AccountVerificationScreen'
           component={AccountVerificationScreen}
         />
+        <Stack.Screen name='ChangeEmail' component={ChangeEmailModalScreen} />
       </Stack.Group>
+
       <Stack.Screen
         name='FilterButton'
         component={FilterButtonScreen}

@@ -18,10 +18,10 @@ const STALE_TIME = 1000 * 60 * 5 // 5 minutes
  */
 export const usePlaylistLibrary = (config?: QueryOptions) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { data: _ignoredCurrentAccount } = useCurrentAccount()
+  useCurrentAccount()
 
   return useQuery<AccountUserMetadata, Error, PlaylistLibrary>({
-    queryKey: getCurrentAccountQueryKey(currentUserId),
+    queryKey: getCurrentAccountQueryKey(),
     select: (data) =>
       data?.playlist_library ?? ({ contents: [] } as PlaylistLibrary),
     staleTime: config?.staleTime ?? STALE_TIME,

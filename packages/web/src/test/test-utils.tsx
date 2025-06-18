@@ -1,14 +1,12 @@
 import { ReactElement, ReactNode } from 'react'
 
-import {
-  AudiusQueryContext,
-  AudiusQueryContextType
-} from '@audius/common/audius-query'
+import { QueryContext, QueryContextType } from '@audius/common/api'
 import { AppContext } from '@audius/common/context'
 import { FeatureFlags } from '@audius/common/services'
 import { ThemeProvider } from '@audius/harmony'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { render, RenderOptions } from '@testing-library/react'
+import { setupServer } from 'msw/node'
 import { Provider } from 'react-redux'
 import { Router } from 'react-router-dom'
 import { CompatRouter } from 'react-router-dom-v5-compat'
@@ -27,6 +25,7 @@ import { configureStore } from 'store/configureStore'
 import { AppState } from 'store/types'
 
 import { createMockAppContext } from './mocks/app-context'
+import { audiusSdk } from './mocks/audiusSdk'
 
 type TestOptions = {
   reduxState?: PartialDeep<AppState>
@@ -44,7 +43,12 @@ export const ReduxProvider = ({
 }: ReduxProviderProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
-  const { store } = configureStore(history, isMobile, initialStoreState)
+  const { store } = configureStore({
+    history,
+    isMobile,
+    initialStoreState,
+    isTest: true
+  })
 
   return <Provider store={store}>{children}</Provider>
 }
@@ -58,12 +62,14 @@ const TestProviders =
     const { children } = props
     const { reduxState, featureFlags } = options ?? {}
     const mockAppContext = createMockAppContext(featureFlags)
-    const audiusQueryContext = {} as unknown as AudiusQueryContextType
+    const queryContext = {
+      audiusSdk
+    } as unknown as QueryContextType
 
     return (
       <HistoryContextProvider>
         <QueryClientProvider client={queryClient}>
-          <AudiusQueryContext.Provider value={audiusQueryContext}>
+          <QueryContext.Provider value={queryContext}>
             <ThemeProvider theme='day'>
               <ReduxProvider initialStoreState={reduxState}>
                 <RouterContextProvider>
@@ -81,7 +87,7 @@ const TestProviders =
                 </RouterContextProvider>
               </ReduxProvider>
             </ThemeProvider>
-          </AudiusQueryContext.Provider>
+          </QueryContext.Provider>
         </QueryClientProvider>
       </HistoryContextProvider>
     )
@@ -95,3 +101,5 @@ const customRender = (ui: ReactElement, options?: CustomRenderOptions) =>
 export * from '@testing-library/react'
 export type { CustomRenderOptions as RenderOptions }
 export { customRender as render }
+
+export const mswServer = setupServer()

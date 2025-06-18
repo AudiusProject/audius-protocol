@@ -14,14 +14,22 @@ export const filterDecimalString = (
 ) => {
   const input = value.replace(/[^0-9.]+/g, '')
   // Regex to grab the whole and decimal parts of the number, stripping duplicate '.' characters
-  const match = input.match(/^(?<whole>\d*)(?<dot>.)?(?<decimal>\d*)/)
-  const { whole, decimal, dot } = match?.groups || {}
+  const match = input.match(/^(\d*)(\.)?(\d*)/)
+  const [, whole = '', dot = '', decimal = ''] = match || []
 
   // Conditionally render the decimal part, and only for the number of decimals specified
   const stringAmount = dot
     ? `${whole}.${(decimal ?? '').substring(0, precision)}`
     : whole
-  return { human: stringAmount, value: Number(stringAmount) * 10 ** precision }
+
+  // Strip leading zeros unless it's just "0" or "0."
+  const cleanedAmount =
+    stringAmount.replace(/^0+(?=\d)/, '') ||
+    (stringAmount.includes('.')
+      ? '0' + stringAmount.substring(stringAmount.indexOf('.'))
+      : stringAmount)
+
+  return { human: cleanedAmount, value: Number(stringAmount) * 10 ** precision }
 }
 
 /**
@@ -53,4 +61,11 @@ export const decimalIntegerFromHumanReadable = (
   { precision = PRECISION }: DecimalUtilOptions = {}
 ) => {
   return parseFloat(value) * 10 ** precision
+}
+
+export const getCurrencyDecimalPlaces = (priceUSD: number) => {
+  if (priceUSD >= 1) return 2
+  if (priceUSD >= 0.01) return 4
+  if (priceUSD >= 0.0001) return 6
+  return 8
 }

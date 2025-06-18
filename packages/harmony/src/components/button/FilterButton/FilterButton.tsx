@@ -153,8 +153,11 @@ export const FilterButton = forwardRef(function FilterButton<
       onClick()
     } else {
       setIsOpen((isOpen: boolean) => !isOpen)
+      if (!isOpen) {
+        setFilterInputValue('')
+      }
     }
-  }, [onClick])
+  }, [isOpen, onClick])
 
   const hasOptions = options && options.length > 0
 

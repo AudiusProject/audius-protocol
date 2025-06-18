@@ -1,10 +1,6 @@
 import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
-import {
-  useCurrentUserId,
-  useGetMutedUsers,
-  useUserCollectibles
-} from '@audius/common/api'
+import { useMutedUsers, useUserCollectibles } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
@@ -30,6 +26,7 @@ import {
   IconAlbum,
   IconCollectible as IconCollectibles,
   IconArtistBadge as BadgeArtist,
+  IconLabelBadge as BadgeLabel,
   IconNote,
   IconPlaylists,
   IconRepost as IconReposts,
@@ -567,11 +564,8 @@ const ProfilePage = ({
   ) as ReactNode
 
   const [muteUser] = useMuteUser()
-  const { data: currentUserId } = useCurrentUserId()
 
-  const { data: mutedUsers } = useGetMutedUsers({
-    userId: currentUserId
-  })
+  const { data: mutedUsers } = useMutedUsers()
 
   const isMutedFromRequest =
     mutedUsers?.some((user) => user.user_id === userId) ?? false
@@ -652,12 +646,16 @@ const ProfilePage = ({
                 }}
                 className={styles.nameWrapper}
               >
-                <BadgeArtist
-                  className={cn(styles.badgeArtist, {
-                    [styles.hide]:
-                      !isArtist || status === Status.LOADING || isDeactivated
-                  })}
-                />
+                {profile?.profile_type === 'label' ? (
+                  <BadgeLabel className={styles.badge} />
+                ) : (
+                  <BadgeArtist
+                    className={cn(styles.badge, {
+                      [styles.hide]:
+                        !isArtist || status === Status.LOADING || isDeactivated
+                    })}
+                  />
+                )}
                 {!isDeactivated && userId && (
                   <>
                     <EditableName

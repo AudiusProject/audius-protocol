@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
+import { useUSDCBalance } from '@audius/common/api'
 import {
   useFeatureFlag,
   useRemoteVar,
-  useUSDCBalance,
   usePayExtraPresets,
   PURCHASE_METHOD,
   PURCHASE_VENDOR,
@@ -15,6 +15,7 @@ import {
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
+import { AUDIO_MATCHING_REWARDS_MULTIPLIER } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex, Box } from '@audius/harmony'
 import { useField } from 'formik'
@@ -36,8 +37,6 @@ type PurchaseContentPageProps = Pick<
   price: number
   metadata: PurchaseableContentMetadata
 }
-
-const AUDIO_MATCHING_REWARDS_MULTIPLIER = 5
 
 export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
   const { price, purchaseSummaryValues, stage, isUnlocking, metadata } = props

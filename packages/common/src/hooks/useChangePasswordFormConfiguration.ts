@@ -4,7 +4,7 @@ import { FormikHelpers } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 
 import { confirmEmailSchema, passwordSchema } from '../schemas'
 
@@ -34,15 +34,13 @@ export const isOtpMissingError = (e: unknown) => {
   )
 }
 
-const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
-const confirmPasswordFormikSchema = toFormikValidationSchema(
-  z.object({
-    password: z.string({
-      required_error: messages.passwordRequired
-    })
-  })
-)
-const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
+const initialValues: ChangePasswordFormValues = {
+  oldEmail: '',
+  oldPassword: '',
+  password: '',
+  confirmPassword: '',
+  otp: ''
+}
 
 export type ChangePasswordFormValues = {
   oldEmail: string
@@ -52,17 +50,20 @@ export type ChangePasswordFormValues = {
   otp: string
 }
 
-const initialValues: ChangePasswordFormValues = {
-  oldEmail: '',
-  oldPassword: '',
-  password: '',
-  confirmPassword: '',
-  otp: ''
-}
-
 export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
-  const { authService } = useAudiusQueryContext()
+  const { authService } = useQueryContext()
   const [page, setPage] = useState(ChangePasswordPage.ConfirmPassword)
+
+  // Move schema initialization inside the hook to prevent initialization timing issues
+  const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
+  const confirmPasswordFormikSchema = toFormikValidationSchema(
+    z.object({
+      password: z.string({
+        required_error: messages.passwordRequired
+      })
+    })
+  )
+  const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
   const validationSchema =
     page === ChangePasswordPage.NewPassword

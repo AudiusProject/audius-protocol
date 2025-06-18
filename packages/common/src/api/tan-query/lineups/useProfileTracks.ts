@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
@@ -52,7 +52,7 @@ export const useProfileTracks = (
   }: UseProfileTracksArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -84,7 +84,7 @@ export const useProfileTracks = (
         tracks,
         userTrackMetadataFromSDK
       )
-      primeTrackData({ tracks: processedTracks, queryClient, dispatch })
+      primeTrackData({ tracks: processedTracks, queryClient })
 
       // Update lineup when new data arrives
       dispatch(

@@ -3,10 +3,9 @@ import { useQueryClient, useMutation, QueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
-import { AccountUserMetadata } from '~/models/User'
 import { accountActions } from '~/store/account'
 import { removePlaylistLibraryDuplicates } from '~/store/playlist-library/helpers'
 
@@ -19,7 +18,7 @@ export const useUpdatePlaylistLibrary = () => {
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   return useMutation({
     mutationFn: async (playlistLibrary: PlaylistLibrary) => {
       updatePlaylistLibrary(
@@ -44,13 +43,10 @@ export const updatePlaylistLibrary = async (
   if (!userId) return
   const dedupedPlaylistLibrary =
     removePlaylistLibraryDuplicates(playlistLibrary)
-  queryClient.setQueryData(
-    getCurrentAccountQueryKey(userId),
-    (old: AccountUserMetadata | undefined) => {
-      if (!old) return old
-      return { ...old, playlist_library: dedupedPlaylistLibrary }
-    }
-  )
+  queryClient.setQueryData(getCurrentAccountQueryKey(), (old) => {
+    if (!old) return old
+    return { ...old, playlist_library: dedupedPlaylistLibrary }
+  })
 
   await updateUser(audiusSdk, userId, {
     playlist_library: dedupedPlaylistLibrary

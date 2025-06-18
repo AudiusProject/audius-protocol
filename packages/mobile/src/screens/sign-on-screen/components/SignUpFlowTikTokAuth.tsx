@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTikTokProfile } from '@audius/common/services'
 import type { TikTokProfileData } from '@audius/common/services'
+import { useQueryClient } from '@tanstack/react-query'
 import type { GestureResponderEvent } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -41,7 +42,8 @@ export const SignUpFlowTikTokAuth = ({
   const isOpen = useSelector(getIsOpen)
 
   const [tikTokOpen, setTikTokOpen] = useState(false)
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     if (!isOpen && abandoned && tikTokOpen) {
@@ -63,7 +65,8 @@ export const SignUpFlowTikTokAuth = ({
     try {
       const { profile, handleTooLong } = profileData
       const handleSchema = pickHandleSchema({
-        audiusQueryContext: audiusQueryContext!,
+        queryContext,
+        queryClient,
         skipReservedHandleCheck: profile.is_verified,
         restrictedHandles
       })

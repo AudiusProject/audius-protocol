@@ -1,18 +1,21 @@
+import {
+  selectIsAccountComplete,
+  useCurrentAccount,
+  useCurrentAccountUser,
+  useAccountStatus
+} from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { accountSelectors } from '@audius/common/store'
+import { Status } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { Box, Flex, Text, useTheme } from '@audius/harmony'
+import { Box, Flex, Skeleton, Text, useTheme } from '@audius/harmony'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
-import { useSelector } from 'utils/reducer'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
-const { getUserHandle, getUserId, getIsAccountComplete, getGuestEmail } =
-  accountSelectors
 const messages = {
   haveAccount: 'Have an account?',
   managedAccount: 'Managed Account',
@@ -110,22 +113,25 @@ const SignedInView = ({
       <Avatar userId={userId} h={48} w={48} />
       <AccountInfo>
         <Flex alignItems='center' justifyContent='space-between' gap='s' h={20}>
-          <UserLink
-            textVariant='title'
-            size='s'
-            userId={userId}
-            badgeSize='xs'
-            css={{
-              flex: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              wordBreak: 'break-word',
-              ...(isManagedAccount && {
-                color: color.secondary.s500,
-                '&:hover': { color: color.secondary.s500 }
-              })
-            }}
-          />
+          <Flex css={{ maxWidth: '85%' }}>
+            <UserLink
+              popover
+              textVariant='title'
+              size='s'
+              userId={userId}
+              badgeSize='xs'
+              css={{
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                wordBreak: 'break-word',
+                ...(isManagedAccount && {
+                  color: color.secondary.s500,
+                  '&:hover': { color: color.secondary.s500 }
+                })
+              }}
+            />
+          </Flex>
           <AccountSwitcher />
         </Flex>
         <TextLink
@@ -145,7 +151,7 @@ const SignedInView = ({
 
 const SignedOutView = () => (
   <AccountContentWrapper>
-    <Avatar userId={null} h={48} w={48} />
+    <Avatar userId={null} h={48} w={48} borderWidth='thin' />
     <AccountInfo>
       <Text variant='title' size='s'>
         {messages.haveAccount}
@@ -158,7 +164,9 @@ const SignedOutView = () => (
 )
 
 const GuestView = () => {
-  const guestEmail = useSelector(getGuestEmail)
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
   return (
     <AccountContentWrapper>
       <Avatar userId={null} h={48} w={48} />
@@ -174,19 +182,41 @@ const GuestView = () => {
   )
 }
 
+const LoadingView = () => {
+  return (
+    <AccountContentWrapper>
+      <Skeleton w={48} h={48} css={{ borderRadius: '50%' }} />
+      <AccountInfo>
+        <Skeleton w='100%' h={20} />
+        <Skeleton w='100%' h={20} />
+      </AccountInfo>
+    </AccountContentWrapper>
+  )
+}
+
 export const AccountDetails = () => {
-  const accountHandle = useSelector(getUserHandle)
-  const accountUserId = useSelector(getUserId)
+  const { data: user } = useCurrentAccountUser({
+    select: (user) => ({
+      userId: user?.user_id,
+      handle: user?.handle
+    })
+  })
+  const { userId, handle: accountHandle } = user ?? {}
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
+  const { data: accountStatus } = useAccountStatus()
+  const { data: hasCompletedAccount } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const isManagedAccount = useIsManagedAccount()
-  const hasCompletedAccount = useSelector(getIsAccountComplete)
-  const guestEmail = useSelector(getGuestEmail)
 
   // Determine which state to show
-  if (accountUserId && accountHandle) {
+  if (userId && accountHandle) {
     return (
       <AccountDetailsContainer isManagedAccount={isManagedAccount}>
         <SignedInView
-          userId={accountUserId}
+          userId={userId}
           handle={accountHandle}
           isManagedAccount={isManagedAccount}
         />
@@ -198,6 +228,15 @@ export const AccountDetails = () => {
     return (
       <AccountDetailsContainer>
         <GuestView />
+      </AccountDetailsContainer>
+    )
+  }
+
+  // Only shows briefly when the account is currently being loaded in during sign in
+  if (accountStatus === Status.LOADING || accountStatus === Status.SUCCESS) {
+    return (
+      <AccountDetailsContainer>
+        <LoadingView />
       </AccountDetailsContainer>
     )
   }

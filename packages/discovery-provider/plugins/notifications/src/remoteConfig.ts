@@ -41,7 +41,14 @@ export enum MappingVariable {
   PushCommentThread = 'push_comment_thread',
   PushCommentMention = 'push_comment_mention',
   PushCommentReaction = 'push_comment_reaction',
-  PushListenStreakReminder = 'push_listen_streak_reminder'
+  PushListenStreakReminder = 'push_listen_streak_reminder',
+  PushArtistRemixContestEnded = 'push_artist_remix_contest_ended',
+  PushFanRemixContestEnded = 'push_fan_remix_contest_ended',
+  PushFanRemixContestEndingSoon = 'push_fan_remix_contest_ending_soon',
+  PushFanRemixContestStarted = 'push_fan_remix_contest_started',
+  PushFanRemixContestWinnersSelected = 'push_fan_remix_contest_winners_selected',
+  PushArtistRemixContestEndingSoon = 'push_artist_remix_contest_ending_soon',
+  PushArtistRemixContestSubmissions = 'push_artist_remix_contest_submissions'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'
@@ -89,7 +96,14 @@ const defaultMappingVariable = {
   [MappingVariable.PushComment]: false,
   [MappingVariable.PushCommentThread]: false,
   [MappingVariable.PushCommentMention]: false,
-  [MappingVariable.PushCommentReaction]: false
+  [MappingVariable.PushCommentReaction]: false,
+  [MappingVariable.PushFanRemixContestEnded]: false,
+  [MappingVariable.PushFanRemixContestEndingSoon]: false,
+  [MappingVariable.PushArtistRemixContestEnded]: false,
+  [MappingVariable.PushFanRemixContestStarted]: false,
+  [MappingVariable.PushFanRemixContestWinnersSelected]: false,
+  [MappingVariable.PushArtistRemixContestEndingSoon]: false,
+  [MappingVariable.PushArtistRemixContestSubmissions]: false
 }
 
 export const BrowserPushPlugin = 'browser_push_plugin'

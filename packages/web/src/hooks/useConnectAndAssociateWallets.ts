@@ -3,9 +3,9 @@ import { useRef, useCallback, useEffect } from 'react'
 import {
   type ConnectedWallet,
   useConnectedWallets,
-  useAddConnectedWallet
+  useAddConnectedWallet,
+  useCurrentAccountUser
 } from '@audius/common/api'
-import { useCurrentUser } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { Name, Chain } from '@audius/common/models'
 import { useTheme } from '@emotion/react'
@@ -89,7 +89,7 @@ export const useConnectAndAssociateWallets = (
   const theme = useTheme()
   const { open } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
-  const currentUser = useCurrentUser()
+  const { data: currentUser } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { switchAccountAsync } = useSwitchAccount()
   const { disconnect } = useDisconnect()
@@ -141,7 +141,7 @@ export const useConnectAndAssociateWallets = (
       const chainId = await connector!.getChainId()
       const connectedAccountIsUserWallet =
         accounts &&
-        accounts[0]?.toLowerCase() === currentUser.data?.wallet?.toLowerCase()
+        accounts[0]?.toLowerCase() === currentUser?.wallet?.toLowerCase()
       if (!connectedAccountIsUserWallet || chainId !== audiusChain.id) {
         console.debug(
           '[associate-wallet]',
@@ -153,7 +153,7 @@ export const useConnectAndAssociateWallets = (
         await switchAccountAsync({ connector })
       }
     }
-  }, [currentUser.data?.wallet, switchAccountAsync])
+  }, [currentUser?.wallet, switchAccountAsync])
 
   /**
    * Associates any Reown connected wallets to the user's account.
@@ -164,7 +164,7 @@ export const useConnectAndAssociateWallets = (
       isAssociatingRef.current = true
       track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
       const activeAccount = appkitModal.getAccount()
-      const originalAddress = currentUser?.data?.wallet
+      const originalAddress = currentUser?.wallet
 
       // Map the wallets to add our chain format
       const wallets =
@@ -218,7 +218,7 @@ export const useConnectAndAssociateWallets = (
           })
         )
         const signature = await signMessageAgnostic(
-          `AudiusUserID:${currentUser.data?.user_id}`,
+          `AudiusUserID:${currentUser?.user_id}`,
           address,
           namespace
         )
@@ -259,8 +259,8 @@ export const useConnectAndAssociateWallets = (
   }, [
     addConnectedWalletAsync,
     connectedWallets,
-    currentUser.data?.user_id,
-    currentUser.data?.wallet,
+    currentUser?.user_id,
+    currentUser?.wallet,
     make,
     onError,
     onSuccess,

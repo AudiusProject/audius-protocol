@@ -21,7 +21,8 @@ import type {
 } from './types'
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
-const MAX_IMAGE_RESIZE_TIMEOUT_MS = 5 * 60_000 // 5 minutes
+const MAX_TRACK_TRANSCODE_NO_PROGRESS_TIMEOUT = 600000 // 10 minutes
+const MAX_IMAGE_RESIZE_TIMEOUT_MS = 300000 // 5 minutes
 const POLL_STATUS_INTERVAL = 3000 // 3s
 
 export class Storage implements StorageService {
@@ -180,6 +181,8 @@ export class Storage implements StorageService {
     onProgress?: ProgressHandler
   ) {
     const start = Date.now()
+    let lastProgressUpdate = Date.now()
+    let lastTranscodeProgress = 0
 
     const maxPollingMs =
       template === 'audio'
@@ -190,6 +193,19 @@ export class Storage implements StorageService {
       try {
         const resp = await this.getProcessingStatus(id)
         if (template === 'audio' && resp.transcode_progress) {
+          // Only update lastProgressUpdate if the progress has increased
+          if (resp.transcode_progress > lastTranscodeProgress) {
+            lastProgressUpdate = Date.now()
+            lastTranscodeProgress = resp.transcode_progress
+          } else if (
+            Date.now() - lastProgressUpdate >
+            MAX_TRACK_TRANSCODE_NO_PROGRESS_TIMEOUT
+          ) {
+            throw new Error(
+              `No transcoding progress increase for ${MAX_TRACK_TRANSCODE_NO_PROGRESS_TIMEOUT}ms. Progress stuck at ${lastTranscodeProgress}. id=${id}`
+            )
+          }
+
           onProgress?.({
             audio: {
               transcode: { decimal: resp.transcode_progress }
@@ -208,9 +224,10 @@ export class Storage implements StorageService {
           )
         }
       } catch (e: any) {
-        // Rethrow if error is "Upload failed" or if status code is 422 (Unprocessable Entity)
+        // Rethrow if error is "Upload failed", stalled, or if status code is 422 (Unprocessable Entity)
         if (
           e.message?.startsWith('Upload failed') ||
+          e.message?.startsWith('No transcoding progress increase') ||
           (e.response && e.response?.status === 422)
         ) {
           throw e

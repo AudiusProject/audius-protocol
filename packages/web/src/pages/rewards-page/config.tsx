@@ -275,10 +275,13 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     icon: <i className='emoji large smiling-face-licking-lips' />
   },
   [ChallengeName.CommentPin]: {
-    icon: <i className='emoji large speech-balloon' />
+    icon: <i className='emoji large pin' />
   },
   [ChallengeName.Cosign]: {
     icon: <i className='emoji large recycle' />
+  },
+  [ChallengeName.RemixContestWinner]: {
+    icon: <i className='emoji large trophy' />
   }
 }
 

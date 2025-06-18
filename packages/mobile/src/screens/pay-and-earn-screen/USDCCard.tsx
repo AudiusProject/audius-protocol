@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
-import { useAddFundsModal } from '@audius/common/store'
+import { useUSDCBalance } from '@audius/common/api'
+import { useAddCashModal } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -51,11 +51,11 @@ export const USDCCard = () => {
 
   const { onPress: onLearnMorePress } = useLink(LEARN_MORE_LINK)
 
-  const { onOpen: openAddFundsModal } = useAddFundsModal()
+  const { onOpen: openAddCashModal } = useAddCashModal()
 
   const onAddFundsPress = useCallback(() => {
-    openAddFundsModal()
-  }, [openAddFundsModal])
+    openAddCashModal()
+  }, [openAddCashModal])
 
   if (balance === null) {
     return <LoadingSpinner style={[styles.spinner]} />

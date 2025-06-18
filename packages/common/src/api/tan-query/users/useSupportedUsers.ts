@@ -4,9 +4,8 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import {
   SupportedUserMetadata,
@@ -38,10 +37,9 @@ export const useSupportedUsers = (
   { userId, pageSize = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
-  const dispatch = useDispatch()
 
   return useInfiniteQuery({
     queryKey: getSupportedUsersQueryKey(userId, pageSize),
@@ -76,8 +74,7 @@ export const useSupportedUsers = (
 
       primeUserData({
         users: supporting.map((supportedUser) => supportedUser.receiver),
-        queryClient,
-        dispatch
+        queryClient
       })
       return supporting
     },

@@ -9,3 +9,10 @@ export const getCurrentUploads = (state: CommonState, parentTrackId: ID) => {
   if (!uploads) return []
   return Object.values(uploads).flat()
 }
+
+export const getIsUploadingStems = (state: CommonState) => {
+  const uploads = getBase(state).uploadsInProgress
+  return Object.values(uploads).some((parentTrackUploads) =>
+    Object.values(parentTrackUploads).some((uploads) => uploads.length > 0)
+  )
+}

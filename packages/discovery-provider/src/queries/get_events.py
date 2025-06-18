@@ -64,8 +64,8 @@ def get_events_by_ids(args) -> List[Event]:
             query = query.filter(Event.event_id.in_(ids))
         if args.get("event_type") is not None:
             query = query.filter(Event.event_type == args.get("event_type"))
-        events = query.all()
 
+        events = helpers.query_result_to_list(query.all())
         return format_events(events)
 
 
@@ -74,9 +74,9 @@ def _get_events(session, args):
     # Create initial query
     base_query = session.query(Event)
 
-    # Filter by entity_id if provided
-    if args.get("entity_id") is not None:
-        base_query = base_query.filter(Event.entity_id == args.get("entity_id"))
+    # Filter by entity_ids if provided
+    if args.get("entity_ids") is not None:
+        base_query = base_query.filter(Event.entity_id.in_(args.get("entity_ids")))
 
     # Filter by entity_type if provided
     if args.get("entity_type") is not None:

@@ -8,6 +8,7 @@ import { managerCommand } from './manager/account-managers.js'
 import { authHeadersCommand } from './misc/auth-headers.js'
 import {
   claimRewardCommand,
+  claimRewardsCommand,
   rewardSpecifierCommand
 } from './misc/claim-reward.js'
 import { createUserBankCommand } from './misc/create-user-bank.js'
@@ -19,6 +20,7 @@ import { trackCommand } from './track/index.js'
 import { userCommand } from './user/index.js'
 import { albumCommand } from './album/index.js'
 import { entropyCommand } from './misc/entropy.js'
+import { aaoCommand } from './misc/aao.js'
 
 async function main() {
   program.name('audius-cmd')
@@ -32,12 +34,14 @@ async function main() {
   program.addCommand(managerCommand)
   program.addCommand(authHeadersCommand)
   program.addCommand(claimRewardCommand)
+  program.addCommand(claimRewardsCommand)
   program.addCommand(rewardSpecifierCommand)
   program.addCommand(createUserBankCommand)
   program.addCommand(mintCommand)
   program.addCommand(tipReactionCommand)
   program.addCommand(withdrawTokensCommand)
   program.addCommand(entropyCommand)
+  program.addCommand(aaoCommand)
 
   try {
     await program.parseAsync(process.argv)

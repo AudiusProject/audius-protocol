@@ -23,10 +23,13 @@ import type { UsersApi } from '../users/UsersApi'
 
 import {
   ChallengeId,
+  ClaimAllRewardsSchema,
   ClaimRewardsRequest,
   ClaimRewardsSchema,
   GenerateSpecifierRequest,
-  GenerateSpecifierSchema
+  GenerateSpecifierSchema,
+  type ClaimAllResponseBody,
+  type ClaimAllRewardsRequest
 } from './types'
 
 export class ChallengesApi extends GeneratedChallengesApi {
@@ -327,5 +330,27 @@ export class ChallengesApi extends GeneratedChallengesApi {
       instructions.push(submitInstruction)
     }
     return instructions
+  }
+
+  /**
+   * @hidden
+   * Claims all the undisbursed rewards by user ID, user ID + challenge ID,
+   * or challenge ID + specifier.
+   */
+  public async claimAllRewards(request: ClaimAllRewardsRequest) {
+    await parseParams('claimAllRewards', ClaimAllRewardsSchema)(request)
+    const res = await this.request({
+      path: '/rewards/claim',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: {
+        ...('userId' in request ? { userId: request.userId } : {}),
+        ...('challengeId' in request
+          ? { challengeId: request.challengeId }
+          : {}),
+        ...('specifier' in request ? { specifier: request.specifier } : {})
+      }
+    })
+    return (await res.json()) as ClaimAllResponseBody
   }
 }

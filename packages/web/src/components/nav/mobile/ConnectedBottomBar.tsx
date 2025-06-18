@@ -1,35 +1,32 @@
 import { useCallback, useState } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import { selectIsGuestAccount, useCurrentAccountUser } from '@audius/common/api'
 import { route } from '@audius/common/utils'
-import { connect } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { Dispatch } from 'redux'
 
 import {
   openSignOn,
   showRequiresAccountToast
 } from 'common/store/pages/signon/actions'
 import BottomBar from 'components/bottom-bar/BottomBar'
-import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
   route
-const { getUserHandle, getIsGuestAccount } = accountSelectors
 
-type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps<any>
+type ConnectedBottomBarProps = RouteComponentProps<any>
 
-const ConnectedBottomBar = ({
-  goToRoute,
-  handle,
-  isGuestAccount,
-  history,
-  openSignOn
-}: ConnectedBottomBarProps) => {
+const ConnectedBottomBar = ({ history }: ConnectedBottomBarProps) => {
+  const dispatch = useDispatch()
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      isGuestAccount: selectIsGuestAccount(user)
+    })
+  })
+  const { handle, isGuestAccount } = accountData ?? {}
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
     FEED_PAGE,
@@ -50,13 +47,25 @@ const ConnectedBottomBar = ({
     }
   }
 
+  const goToRoute = useCallback(
+    (route: string) => {
+      dispatch(push(route))
+    },
+    [dispatch]
+  )
+
+  const handleOpenSignOn = useCallback(() => {
+    dispatch(openSignOn(false))
+    dispatch(showRequiresAccountToast())
+  }, [dispatch])
+
   const goToFeed = useCallback(() => {
     if (!handle) {
-      openSignOn()
+      handleOpenSignOn()
     } else {
       goToRoute(FEED_PAGE)
     }
-  }, [goToRoute, handle, openSignOn])
+  }, [goToRoute, handle, handleOpenSignOn])
 
   const goToTrending = useCallback(() => {
     goToRoute(TRENDING_PAGE)
@@ -68,19 +77,19 @@ const ConnectedBottomBar = ({
 
   const goToLibrary = useCallback(() => {
     if (!handle && !isGuestAccount) {
-      openSignOn()
+      handleOpenSignOn()
     } else {
       goToRoute(LIBRARY_PAGE)
     }
-  }, [goToRoute, handle, isGuestAccount, openSignOn])
+  }, [goToRoute, handle, isGuestAccount, handleOpenSignOn])
 
   const goToProfile = useCallback(() => {
     if (!handle) {
-      openSignOn()
+      handleOpenSignOn()
     } else {
       goToRoute(profilePage(handle))
     }
-  }, [goToRoute, handle, openSignOn])
+  }, [goToRoute, handle, handleOpenSignOn])
 
   return (
     <BottomBar
@@ -97,23 +106,4 @@ const ConnectedBottomBar = ({
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    handle: getUserHandle(state),
-    isGuestAccount: getIsGuestAccount(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    goToRoute: (route: string) => dispatch(push(route)),
-    openSignOn: () => {
-      dispatch(openSignOn(false))
-      dispatch(showRequiresAccountToast())
-    }
-  }
-}
-
-export default withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(ConnectedBottomBar)
-)
+export default withRouter(ConnectedBottomBar)

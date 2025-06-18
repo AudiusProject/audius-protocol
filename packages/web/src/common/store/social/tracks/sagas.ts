@@ -1,9 +1,14 @@
-import { queryTrack, queryUser } from '@audius/common/api'
+import {
+  getUserQueryKey,
+  queryAccountUser,
+  queryTrack,
+  queryUser,
+  selectIsGuestAccount,
+  updateTrackData
+} from '@audius/common/api'
 import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
-  accountSelectors,
   accountActions,
-  cacheActions,
   tracksSocialActions as socialActions,
   getContext,
   gatedContentSelectors,
@@ -14,10 +19,8 @@ import {
 import {
   formatShareText,
   makeKindId,
-  waitForValue,
   removeNullable,
-  getFilename,
-  waitForQueryValue
+  getFilename
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import {
@@ -31,14 +34,12 @@ import {
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
-const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
 const { setVisibility } = modalsActions
@@ -52,8 +53,10 @@ export function* repostTrackAsync(
   action: ReturnType<typeof socialActions.repostTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const queryClient = yield* getContext('queryClient')
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -72,7 +75,14 @@ export function* repostTrackAsync(
     return
   }
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          repost_count: prevUser.repost_count + 1
+        }
+  )
 
   const event = make(Name.REPOST, {
     kind: 'track',
@@ -111,14 +121,9 @@ export function* repostTrackAsync(
     eagerlyUpdatedMetadata._co_sign = remixOf.tracks[0]
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: action.trackId,
-        metadata: eagerlyUpdatedMetadata
-      }
-    ])
-  )
+  yield* call(updateTrackData, [
+    { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+  ])
 
   if (remixTrack && isCoSign) {
     const {
@@ -163,6 +168,7 @@ export function* confirmRepostTrack(
   metadata?: { is_repost_of_repost: boolean }
 ) {
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
 
   yield* put(
     confirmerActions.requestConfirmation(
@@ -179,11 +185,14 @@ export function* confirmRepostTrack(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the incremented repost count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'repost_count',
-          delta: -1
-        })
+        queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                repost_count: prevUser.repost_count - 1
+              }
+        )
         yield* put(
           socialActions.trackRepostFailed(
             trackId,
@@ -203,8 +212,10 @@ export function* undoRepostTrackAsync(
   action: ReturnType<typeof socialActions.undoRepostTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const queryClient = yield* getContext('queryClient')
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -216,7 +227,14 @@ export function* undoRepostTrackAsync(
   const user = yield* queryUser(userId)
   if (!user) return
 
-  yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: -1 })
+  queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          repost_count: prevUser.repost_count - 1
+        }
+  )
 
   const event = make(Name.UNDO_REPOST, {
     kind: 'track',
@@ -256,18 +274,14 @@ export function* undoRepostTrackAsync(
     }
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: action.trackId,
-        metadata: eagerlyUpdatedMetadata
-      }
-    ])
-  )
+  yield* call(updateTrackData, [
+    { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+  ])
 }
 
 export function* confirmUndoRepostTrack(trackId: ID, user: User) {
   const sdk = yield* getSDK()
+  const queryClient = yield* getContext('queryClient')
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -283,11 +297,14 @@ export function* confirmUndoRepostTrack(trackId: ID, user: User) {
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // revert the decremented repost count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'repost_count',
-          delta: 1
-        })
+        queryClient.setQueryData(getUserQueryKey(user.user_id), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                repost_count: prevUser.repost_count + 1
+              }
+        )
         yield* put(
           socialActions.trackRepostFailed(
             trackId,
@@ -308,8 +325,9 @@ export function* saveTrackAsync(
   action: ReturnType<typeof socialActions.saveTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -366,14 +384,9 @@ export function* saveTrackAsync(
     eagerlyUpdatedMetadata._co_sign = remixOf.tracks[0]
   }
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: action.trackId,
-        metadata: eagerlyUpdatedMetadata
-      }
-    ])
-  )
+  yield* call(updateTrackData, [
+    { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+  ])
   yield* put(socialActions.saveTrackSucceeded(action.trackId))
   if (isCoSign) {
     // Track Cosign Event
@@ -382,7 +395,8 @@ export function* saveTrackAsync(
       remixTrack.has_remix_author_reposted || remixTrack.has_remix_author_saved
 
     const parentTrack = yield* queryTrack(parentTrackId)
-    const handle = yield* select(getUserHandle)
+    const accountUser = yield* call(queryAccountUser)
+    const handle = accountUser?.handle
     const coSignIndicatorEvent = make(Name.REMIX_COSIGN_INDICATOR, {
       id: action.trackId,
       handle,
@@ -444,8 +458,9 @@ export function* unsaveTrackAsync(
   action: ReturnType<typeof socialActions.unsaveTrack>
 ) {
   yield* call(waitForWrite)
-  const userId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
+  const accountUser = yield* queryAccountUser()
+  const { user_id: userId } = accountUser ?? {}
+  const isGuest = yield* call(selectIsGuestAccount, accountUser)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -498,14 +513,9 @@ export function* unsaveTrackAsync(
       }
     }
 
-    yield* put(
-      cacheActions.update(Kind.TRACKS, [
-        {
-          id: action.trackId,
-          metadata: eagerlyUpdatedMetadata
-        }
-      ])
-    )
+    yield* call(updateTrackData, [
+      { track_id: action.trackId, ...eagerlyUpdatedMetadata }
+    ])
   }
 
   yield* put(socialActions.unsaveTrackSucceeded(action.trackId))
@@ -544,20 +554,21 @@ export function* watchSetArtistPick() {
     socialActions.SET_ARTIST_PICK,
     function* (action: ReturnType<typeof socialActions.setArtistPick>) {
       yield* call(waitForWrite)
-      const userId: ID | null = yield* select(getUserId)
+      const queryClient = yield* getContext('queryClient')
+      const accountUser = yield* queryAccountUser()
+      const { user_id: userId } = accountUser ?? {}
 
       if (!userId) return
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: userId,
-            metadata: {
+
+      queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+        !prevUser
+          ? undefined
+          : {
+              ...prevUser,
               artist_pick_track_id: action.trackId
             }
-          }
-        ])
       )
-      const user = yield* waitForQueryValue(queryUser, userId)
+      const user = yield* call(queryUser, userId)
       yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
@@ -569,20 +580,20 @@ export function* watchSetArtistPick() {
 export function* watchUnsetArtistPick() {
   yield* takeEvery(socialActions.UNSET_ARTIST_PICK, function* (action) {
     yield* call(waitForWrite)
-    const userId = yield* select(getUserId)
+    const queryClient = yield* getContext('queryClient')
+    const accountUser = yield* queryAccountUser()
+    const { user_id: userId } = accountUser ?? {}
 
     if (!userId) return
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: {
+    queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
+      !prevUser
+        ? undefined
+        : {
+            ...prevUser,
             artist_pick_track_id: null
           }
-        }
-      ])
     )
-    const user = yield* call(waitForQueryValue, queryUser, userId)
+    const user = yield* call(queryUser, userId)
     yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
@@ -616,7 +627,8 @@ function* downloadTracks({
     const trackDownload = yield* getContext('trackDownload')
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
-    const userId = yield* select(getUserId)
+    const accountUser = yield* queryAccountUser()
+    const { user_id: userId } = accountUser ?? {}
     const { data, signature } = yield* call(
       audiusBackend.signGatedContentRequest,
       { sdk }
@@ -686,13 +698,8 @@ function* watchDownloadTrack() {
         const { trackIds, parentTrackId, original } = action
         yield* call(waitForRead)
 
-        // Check if there is a logged in account and if not,
-        // wait for one so we can trigger the download immediately after
-        // logging in.
-        const accountUserId = yield* select(getUserId)
-        if (!accountUserId) {
-          yield* call(waitForValue, getUserId)
-        }
+        // Make sure we have an account before proceeding
+        yield* queryAccountUser()
 
         const mainTrackId = parentTrackId ?? trackIds[0]
         const mainTrack = yield* queryTrack(mainTrackId)

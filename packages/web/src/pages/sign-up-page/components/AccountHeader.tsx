@@ -1,6 +1,6 @@
+import { useCurrentAccountUser } from '@audius/common/api'
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import {
   Avatar,
   Box,
@@ -29,8 +29,6 @@ import { useSelector } from 'utils/reducer'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
 import { ImageField, ImageFieldValue } from './ImageField'
-
-const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 type AccountHeaderProps = {
   backButtonText?: string
@@ -96,13 +94,18 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const { value: displayNameField } = useSelector(getNameField)
   const { value: handleField } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
-  const userId = useSelector(getUserId)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      accountHandle: user?.handle,
+      userId: user?.user_id,
+      accountDisplayName: user?.name
+    })
+  })
+  const { accountHandle, userId, accountDisplayName } = accountData ?? {}
   const accountProfilePic = useProfilePicture({
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const accountHandle = useSelector(getUserHandle)
-  const accountDisplayName = useSelector(getUserName)
 
   const isEditing = mode === 'editing'
   const { spacing } = useTheme()

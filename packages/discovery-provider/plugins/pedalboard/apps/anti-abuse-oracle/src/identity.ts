@@ -48,9 +48,9 @@ export async function useFingerprintDeviceCount(userId: number) {
   return rows[0].maxUserCount ?? 0
 }
 
-export async function useEmailDeliverable(userId: number) {
+export async function useEmailDeliverable(wallet: string) {
   const rows = await sql`
-    select "isEmailDeliverable" from "Users" where "blockchainUserId" = ${userId}
+    select "isEmailDeliverable" from "Users" where "walletAddress" = ${wallet}
   `
   return rows[0].isEmailDeliverable
 }

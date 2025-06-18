@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { MobileOS, Status } from '@audius/common/models'
 import {
-  accountSelectors,
-  chatActions,
-  playerActions
-} from '@audius/common/store'
+  useCurrentAccountUser,
+  selectIsAccountComplete,
+  useAccountStatus
+} from '@audius/common/api'
+import { MobileOS, Status } from '@audius/common/models'
+import { chatActions, playerActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
-  getHasCompletedAccount,
   getRouteOnCompletion,
+  getStartedAndFinishedSignup,
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
@@ -23,12 +24,8 @@ import useAppState from 'app/hooks/useAppState'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
-import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
 import { SplashScreen } from 'app/screens/splash-screen'
-import {
-  UpdateRequiredScreen,
-  RestartRequiredScreen
-} from 'app/screens/update-required-screen'
+import { UpdateRequiredScreen } from 'app/screens/update-required-screen'
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
@@ -38,7 +35,6 @@ import { SignOnStack } from '../sign-on-screen'
 import { StatusBar } from './StatusBar'
 import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount'
 
-const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playerActions
@@ -60,11 +56,15 @@ export type RootScreenParamList = {
  * based on if the user is authed
  */
 export const RootScreen = () => {
-  const { isPendingMandatoryCodePushUpdate } = useSyncCodePush()
   const { updateRequired } = useUpdateRequired()
   const dispatch = useDispatch()
-  const accountStatus = useSelector(getAccountStatus)
-  const showHomeStack = useSelector(getHasCompletedAccount)
+  const { data: accountStatus } = useAccountStatus()
+  const { data: hasCompleteAccount } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
+
+  const hasFinishedSignUp = useSelector(getStartedAndFinishedSignup)
+  const showHomeStack = hasCompleteAccount && hasFinishedSignUp
   const startedSignUp = useSelector(getStartedSignUpProcess)
   const welcomeModalShown = useSelector(getWelcomeModalShown)
   const isAndroid = Platform.OS === MobileOS.ANDROID
@@ -148,15 +148,8 @@ export const RootScreen = () => {
         <Stack.Navigator
           screenOptions={{ gestureEnabled: false, headerShown: false }}
         >
-          {isPendingMandatoryCodePushUpdate || updateRequired ? (
-            <Stack.Screen
-              name='UpdateStack'
-              component={
-                isPendingMandatoryCodePushUpdate
-                  ? RestartRequiredScreen
-                  : UpdateRequiredScreen
-              }
-            />
+          {updateRequired ? (
+            <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
           ) : null}
 
           {showHomeStack ? (

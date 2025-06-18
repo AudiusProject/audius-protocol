@@ -1,39 +1,37 @@
-import { Component, lazy, Suspense } from 'react'
-
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
-  Client,
-  Name,
-  SmartCollectionVariant,
-  Status
-} from '@audius/common/models'
+  lazy,
+  Suspense,
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback
+} from 'react'
+
+import {
+  selectIsGuestAccount,
+  useAccountStatus,
+  useCurrentAccountUser,
+  useHasAccount
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
-import {
-  accountSelectors,
-  ExploreCollectionsVariant,
-  UploadType
-} from '@audius/common/store'
+import { ExploreCollectionsVariant, UploadType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
-import { connect } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { generatePath, matchPath } from 'react-router'
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
-import { make } from 'common/store/analytics/actions'
-import {
-  openSignOn,
-  updateRouteOnCompletion as updateRouteOnSignUpCompletion
-} from 'common/store/pages/signon/actions'
-import { getStatus as getSignOnStatus } from 'common/store/pages/signon/selectors'
 import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
-// import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
@@ -50,6 +48,7 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
+import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioPage } from 'pages/audio-page/AudioPage'
@@ -59,6 +58,8 @@ import CollectionPage from 'pages/collection-page/CollectionPage'
 import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
+import DevTools from 'pages/dev-tools/DevTools'
+import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
@@ -69,17 +70,18 @@ import FeedPage from 'pages/feed-page/FeedPage'
 import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
+import LibraryPage from 'pages/library-page/LibraryPage'
 import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
 import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
+import { PickWinnersPage } from 'pages/pick-winners-page/PickWinnersPage'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import { RewardsPage } from 'pages/rewards-page/RewardsPage'
-import SavedPage from 'pages/saved-page/SavedPage'
 import { SearchPage } from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
@@ -97,7 +99,6 @@ import { WalletPage } from 'pages/wallet-page'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { SsrContext } from 'ssr/SsrContext'
-import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
 import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
 import {
   decrementScrollCount as decrementScrollCountAction,
@@ -142,6 +143,7 @@ const {
   TRACK_PAGE,
   TRACK_COMMENTS_PAGE,
   TRACK_REMIXES_PAGE,
+  PICK_WINNERS_PAGE,
   PROFILE_PAGE,
   authenticatedRoutes,
   EMPTY_PAGE,
@@ -151,6 +153,7 @@ const {
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHANGE_EMAIL_SETTINGS_PAGE,
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  LABEL_ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
@@ -194,17 +197,10 @@ const {
   EDIT_PLAYLIST_PAGE,
   EDIT_ALBUM_PAGE,
   AIRDROP_PAGE,
-  WALLET_PAGE
+  WALLET_PAGE,
+  DEV_TOOLS_PAGE,
+  SOLANA_TOOLS_PAGE
 } = route
-
-const {
-  getHasAccount,
-  getAccountStatus,
-  getUserId,
-  getUserHandle,
-  getIsGuestAccount,
-  getIsAccountComplete
-} = accountSelectors
 
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
@@ -229,64 +225,100 @@ const validSearchCategories = [
 
 initializeSentry()
 
-class WebPlayer extends Component {
-  static contextType = SsrContext
+const WebPlayer = (props) => {
+  const {
+    isWalletUIUpdateEnabled,
+    isSearchExploreEnabled,
+    isProduction,
+    history,
+    location,
+    mainContentRef,
+    setMainContentRef
+  } = props
 
-  state = {
+  const dispatch = useDispatch()
+
+  const { data: accountUserData } = useCurrentAccountUser({
+    select: (user) => ({
+      userHandle: user.handle,
+      isGuestAccount: selectIsGuestAccount(user)
+    })
+  })
+  const hasAccount = useHasAccount()
+  const { userHandle, isGuestAccount = false } = accountUserData || {}
+  const { data: accountStatus } = useAccountStatus()
+  const showCookieBanner = useSelector(getShowCookieBanner)
+
+  // Convert mapDispatchToProps to useCallback with useDispatch
+  const updateRouteOnSignUpCompletion = useCallback(
+    (route) => dispatch(updateRouteOnSignUpCompletion(route)),
+    [dispatch]
+  )
+
+  const openSignOn = useCallback(
+    (signIn = true, page = null, fields = {}) =>
+      dispatch(openSignOn(signIn, page, fields)),
+    [dispatch]
+  )
+
+  const handleIncrementScroll = useCallback(
+    () => dispatch(incrementScrollCountAction()),
+    [dispatch]
+  )
+
+  const handleDecrementScroll = useCallback(
+    () => dispatch(decrementScrollCountAction()),
+    [dispatch]
+  )
+
+  const context = useContext(SsrContext)
+  const ipcRef = useRef(null)
+
+  const [state, setState] = useState({
     mainContent: null,
-
-    // A patch version update of the web app is available
     showWebUpdateBanner: false,
-    // A version update of the web app is required
     showRequiresWebUpdate: false,
-    // A minor version update of the entire electron app is required
     showRequiresUpdate: false,
-
     isUpdating: false,
-
     initialPage: true,
-    entryRoute: getPathname(this.props.history.location),
-    currentRoute: getPathname(this.props.history.location)
-  }
+    entryRoute: getPathname(history.location),
+    currentRoute: getPathname(history.location)
+  })
 
-  ipc = null
+  const scrollToTop = useCallback(() => {
+    mainContentRef.current &&
+      mainContentRef.current.scrollTo &&
+      mainContentRef.current.scrollTo({ top: 0 })
+  }, [mainContentRef])
 
-  scrollToTop = () => {
-    this.props.mainContentRef.current &&
-      this.props.mainContentRef.current.scrollTo &&
-      this.props.mainContentRef.current.scrollTo({ top: 0 })
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     const client = getClient()
 
-    this.removeHistoryEventListener = this.props.history.listen(
-      (location, action) => {
-        this.scrollToTop()
-        this.setState({
-          initialPage: false,
-          currentRoute: getPathname(this.props.history.location)
-        })
-      }
-    )
+    const removeHistoryEventListener = history.listen((location, action) => {
+      scrollToTop()
+      setState((prev) => ({
+        ...prev,
+        initialPage: false,
+        currentRoute: getPathname(history.location)
+      }))
+    })
 
     if (client === Client.ELECTRON) {
-      this.ipc = window.require('electron').ipcRenderer
-      // We downloaded an update, the user can safely restart
-      this.ipc.on('updateDownloaded', (event, arg) => {
+      ipcRef.current = window.require('electron').ipcRenderer
+
+      ipcRef.current.on('updateDownloaded', (event, arg) => {
         console.info('updateDownload', event, arg)
       })
 
-      this.ipc.on('updateDownloadProgress', (event, arg) => {
+      ipcRef.current.on('updateDownloadProgress', (event, arg) => {
         console.info('updateDownloadProgress', event, arg)
       })
 
-      this.ipc.on('updateError', (event, arg) => {
+      ipcRef.current.on('updateError', (event, arg) => {
         console.error('updateError', event, arg)
       })
 
-      // This is for patch updates so that only the web assets are updated
-      this.ipc.on('webUpdateAvailable', async (event, arg) => {
+      ipcRef.current.on('webUpdateAvailable', async (event, arg) => {
         console.info('webUpdateAvailable', event, arg)
         const { currentVersion } = arg
         await remoteConfigInstance.waitForRemoteConfig()
@@ -295,22 +327,20 @@ class WebPlayer extends Component {
         )
 
         if (semver.lt(currentVersion, minAppVersion)) {
-          this.setState({ showRequiresWebUpdate: true })
+          setState((prev) => ({ ...prev, showRequiresWebUpdate: true }))
         } else {
-          this.setState({ showWebUpdateBanner: true })
+          setState((prev) => ({ ...prev, showWebUpdateBanner: true }))
         }
       })
 
-      // There is an update available, the user should update if it's
-      // more than a minor version.
-      this.ipc.on('updateAvailable', (event, arg) => {
+      ipcRef.current.on('updateAvailable', (event, arg) => {
         console.info('updateAvailable', event, arg)
         const { version, currentVersion } = arg
         if (
           semver.major(currentVersion) < semver.major(version) ||
           semver.minor(currentVersion) < semver.minor(version)
         ) {
-          this.setState({ showRequiresUpdate: true })
+          setState((prev) => ({ ...prev, showRequiresUpdate: true }))
         }
       })
 
@@ -356,777 +386,716 @@ class WebPlayer extends Component {
         }
       }
     }
-  }
 
-  componentDidUpdate(prevProps) {
-    const allowedRoutes = this.props.isGuestAccount
-      ? guestRoutes
-      : authenticatedRoutes
+    return () => {
+      removeHistoryEventListener()
+      if (client === Client.ELECTRON && ipcRef.current) {
+        ipcRef.current.removeAllListeners('updateDownloaded')
+        ipcRef.current.removeAllListeners('updateAvailable')
+      }
+    }
+  }, [history, scrollToTop])
+
+  const pushWithToken = useCallback(
+    (route) => {
+      const search = location.search
+      if (includeSearch(search)) {
+        history.push(`${route}${search}`)
+      } else {
+        history.push(route)
+      }
+    },
+    [history, location.search]
+  )
+
+  useEffect(() => {
+    const allowedRoutes = isGuestAccount ? guestRoutes : authenticatedRoutes
     if (
-      !this.props.hasAccount &&
-      this.props.accountStatus !== Status.LOADING &&
+      !hasAccount &&
+      accountStatus !== Status.IDLE &&
+      accountStatus !== Status.LOADING &&
       allowedRoutes.some((route) => {
-        const match = matchPath(getPathname(this.props.location), {
+        const match = matchPath(getPathname(location), {
           path: route,
           exact: true
         })
         return !!match
       })
     ) {
-      if (prevProps.accountStatus === Status.LOADING) {
-        this.pushWithToken(TRENDING_PAGE)
-        // If native mobile, a saga watches for fetch account failure to push route
-        this.props.openSignOn(true, SignOnPages.SIGNIN)
-        this.props.updateRouteOnSignUpCompletion(this.state.entryRoute)
+      if (accountStatus === Status.LOADING) {
+        pushWithToken(TRENDING_PAGE)
+        dispatch(openSignOn(true, SignOnPages.SIGNIN))
+        dispatch(updateRouteOnSignUpCompletion(state.entryRoute))
       } else {
-        this.pushWithToken(TRENDING_PAGE)
+        pushWithToken(TRENDING_PAGE)
       }
     }
+  }, [
+    hasAccount,
+    accountStatus,
+    location,
+    isGuestAccount,
+    pushWithToken,
+    dispatch,
+    state.entryRoute,
+    openSignOn,
+    updateRouteOnSignUpCompletion
+  ])
+
+  const acceptUpdateApp = () => {
+    setState((prev) => ({ ...prev, isUpdating: true }))
+    ipcRef.current.send('update')
   }
 
-  componentWillUnmount() {
-    const client = getClient()
+  const dismissUpdateWebAppBanner = () => {
+    setState((prev) => ({ ...prev, showWebUpdateBanner: false }))
+  }
 
-    this.removeHistoryEventListener()
+  const dismissRequiresWebUpdate = () => {
+    setState((prev) => ({ ...prev, showRequiresWebUpdate: false }))
+  }
 
-    if (client === Client.ELECTRON) {
-      this.ipc.removeAllListeners('updateDownloaded')
-      this.ipc.removeAllListeners('updateAvailable')
+  const acceptWebUpdate = () => {
+    if (state.showWebUpdateBanner) {
+      dismissUpdateWebAppBanner()
+    } else if (state.showRequiresWebUpdate) {
+      dismissRequiresWebUpdate()
     }
+    setState((prev) => ({ ...prev, isUpdating: true }))
+    ipcRef.current.send('web-update')
   }
 
-  pushWithToken = (route) => {
-    const search = this.props.location.search
-    // Twitter and instagram search params
-    if (includeSearch(search)) {
-      this.props.history.push(`${route}${search}`)
-    } else {
-      this.props.history.push(route)
-    }
-  }
+  const {
+    showWebUpdateBanner,
+    isUpdating,
+    showRequiresUpdate,
+    showRequiresWebUpdate,
+    initialPage,
+    currentRoute
+  } = state
 
-  acceptUpdateApp = () => {
-    this.setState({ isUpdating: true })
-    this.ipc.send('update')
-  }
+  const isMobile = context.isMobile
 
-  acceptWebUpdate = () => {
-    if (this.state.showWebUpdateBanner) {
-      this.dismissUpdateWebAppBanner()
-    } else if (this.state.showRequiresWebUpdate) {
-      this.dismissRequiresWebUpdate()
-    }
-    this.setState({ isUpdating: true })
-    this.ipc.send('web-update')
-  }
+  if (showRequiresUpdate)
+    return <RequiresUpdate isUpdating={isUpdating} onUpdate={acceptUpdateApp} />
 
-  dismissUpdateWebAppBanner = () => {
-    this.setState({ showWebUpdateBanner: false })
-  }
+  if (showRequiresWebUpdate)
+    return <RequiresUpdate isUpdating={isUpdating} onUpdate={acceptWebUpdate} />
 
-  dismissRequiresWebUpdate = () => {
-    this.setState({ showRequiresWebUpdate: false })
-  }
+  const SwitchComponent = context.isMobile ? AnimatedSwitch : Switch
+  const noScroll = matchPath(currentRoute, CHAT_PAGE)
 
-  showDownloadAppModal = () => {
-    this.props.recordClickCTABanner()
-    this.props.showAppCTAModal()
-  }
+  return (
+    <div className={styles.root}>
+      <AppBannerWrapper>
+        <DownloadAppBanner />
+        <Web3ErrorBanner />
+        {showWebUpdateBanner ? (
+          <UpdateAppBanner
+            onAccept={acceptWebUpdate}
+            onClose={dismissUpdateWebAppBanner}
+          />
+        ) : null}
+      </AppBannerWrapper>
+      <ChatListener />
+      <USDCBalanceFetcher />
+      <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
+        {showCookieBanner ? <CookieBanner /> : null}
+        <Notice />
+        <Navigator />
+        <div
+          ref={setMainContentRef}
+          id={MAIN_CONTENT_ID}
+          role='main'
+          className={cn(styles.mainContentWrapper, {
+            [styles.mainContentWrapperMobile]: isMobile,
+            [styles.noScroll]: noScroll
+          })}
+        >
+          {isMobile && <TopLevelPage />}
+          {isMobile && <HeaderContextConsumer />}
 
-  render() {
-    const {
-      incrementScroll,
-      decrementScroll,
-      userHandle,
-      isWalletUIUpdateEnabled
-    } = this.props
-
-    const {
-      showWebUpdateBanner,
-      isUpdating,
-      showRequiresUpdate,
-      showRequiresWebUpdate,
-      initialPage
-    } = this.state
-
-    const isMobile = this.context.isMobile
-
-    if (showRequiresUpdate)
-      return (
-        <RequiresUpdate
-          isUpdating={isUpdating}
-          onUpdate={this.acceptUpdateApp}
-        />
-      )
-
-    if (showRequiresWebUpdate)
-      return (
-        <RequiresUpdate
-          isUpdating={isUpdating}
-          onUpdate={this.acceptWebUpdate}
-        />
-      )
-
-    const SwitchComponent = this.context.isMobile ? AnimatedSwitch : Switch
-    const noScroll = matchPath(this.state.currentRoute, CHAT_PAGE)
-
-    return (
-      <div className={styles.root}>
-        <AppBannerWrapper>
-          <DownloadAppBanner />
-
-          {/* Product Announcement Banners */}
-          {/* <TermsOfServiceUpdateBanner /> */}
-
-          <Web3ErrorBanner />
-          {/* Other banners' logic is self-contained, but since this one uses the IPC
-            and can result in either required or optional updates, keeping the visibility
-            controlled from this parent for now */}
-          {showWebUpdateBanner ? (
-            <UpdateAppBanner
-              onAccept={this.acceptWebUpdate}
-              onClose={this.dismissUpdateWebAppBanner}
-            />
-          ) : null}
-        </AppBannerWrapper>
-        <ChatListener />
-        <USDCBalanceFetcher />
-        <div className={cn(styles.app, { [styles.mobileApp]: isMobile })}>
-          {this.props.showCookieBanner ? <CookieBanner /> : null}
-          <Notice />
-          <Navigator />
-          <div
-            ref={this.props.setMainContentRef}
-            id={MAIN_CONTENT_ID}
-            role='main'
-            className={cn(styles.mainContentWrapper, {
-              [styles.mainContentWrapperMobile]: isMobile,
-              [styles.noScroll]: noScroll
-            })}
-          >
-            {isMobile && <TopLevelPage />}
-            {isMobile && <HeaderContextConsumer />}
-
-            <Suspense fallback={null}>
-              <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
-                {publicSiteRoutes.map((route) => (
-                  // Redirect all public site routes to the corresponding pathname.
-                  // This is necessary first because otherwise pathnames like
-                  // legal/privacy-policy will match the track route.
-                  <Redirect
-                    key={route}
-                    from={route}
-                    to={{ pathname: getPathname({ pathname: '' }) }}
-                  />
-                ))}
-                <Route
-                  exact
-                  path={'/fb/share'}
-                  render={(props) => <FbSharePage />}
-                />
-                <Route
-                  exact
-                  path={FEED_PAGE}
-                  isMobile={isMobile}
-                  render={() => (
-                    <FeedPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={NOTIFICATION_USERS_PAGE}
-                  isMobile={isMobile}
-                  component={NotificationUsersPage}
-                />
-                <Route
-                  exact
-                  path={NOTIFICATION_PAGE}
-                  isMobile={isMobile}
-                  component={NotificationPage}
-                />
-                <MobileRoute
-                  exact
-                  path={TRENDING_GENRES}
-                  isMobile={isMobile}
-                  component={TrendingGenreSelectionPage}
-                />
-                <Route
-                  exact
-                  path={TRENDING_PAGE}
-                  render={() => (
-                    <TrendingPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
+          <Suspense fallback={null}>
+            <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
+              {publicSiteRoutes.map((route) => (
                 <Redirect
-                  from={TRENDING_PLAYLISTS_PAGE_LEGACY}
-                  to={TRENDING_PLAYLISTS_PAGE}
+                  key={route}
+                  from={route}
+                  to={{ pathname: getPathname({ pathname: '' }) }}
                 />
-                <Route
-                  exact
-                  path={TRENDING_PLAYLISTS_PAGE}
-                  render={() => (
-                    <TrendingPlaylistsPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={TRENDING_UNDERGROUND_PAGE}
-                  render={() => (
-                    <TrendingUndergroundPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_REMIXABLES_PAGE}
-                  render={() => (
-                    <SmartCollectionPage
-                      variant={SmartCollectionVariant.REMIXABLES}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_PAGE}
-                  render={() => <ExplorePage />}
-                />
-                <Route
-                  exact
-                  path={AUDIO_NFT_PLAYLIST_PAGE}
-                  render={() => <CollectiblesPlaylistPage />}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_PREMIUM_TRACKS_PAGE}
-                  render={() => (
-                    <PremiumTracksPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_HEAVY_ROTATION_PAGE}
-                  render={() => (
-                    <SmartCollectionPage
-                      variant={SmartCollectionVariant.HEAVY_ROTATION}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_LET_THEM_DJ_PAGE}
-                  render={() => (
-                    <ExploreCollectionsPage
-                      variant={ExploreCollectionsVariant.LET_THEM_DJ}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_BEST_NEW_RELEASES_PAGE}
-                  render={() => (
-                    <SmartCollectionPage
-                      variant={SmartCollectionVariant.BEST_NEW_RELEASES}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_UNDER_THE_RADAR_PAGE}
-                  render={() => (
-                    <SmartCollectionPage
-                      variant={SmartCollectionVariant.UNDER_THE_RADAR}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_TOP_ALBUMS_PAGE}
-                  render={() => (
-                    <ExploreCollectionsPage
-                      variant={ExploreCollectionsVariant.TOP_ALBUMS}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_MOST_LOVED_PAGE}
-                  render={() => (
-                    <SmartCollectionPage
-                      variant={SmartCollectionVariant.MOST_LOVED}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_FEELING_LUCKY_PAGE}
-                  render={() => (
-                    <SmartCollectionPage
-                      variant={SmartCollectionVariant.FEELING_LUCKY}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={EXPLORE_MOOD_PLAYLISTS_PAGE}
-                  render={() => (
-                    <ExploreCollectionsPage
-                      variant={ExploreCollectionsVariant.MOOD}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={SEARCH_CATEGORY_PAGE_LEGACY}
-                  render={(props) => (
+              ))}
+              <Route
+                exact
+                path={'/fb/share'}
+                render={(props) => <FbSharePage />}
+              />
+              <Route
+                exact
+                path={FEED_PAGE}
+                isMobile={isMobile}
+                render={() => (
+                  <FeedPage containerRef={mainContentRef.current} />
+                )}
+              />
+              <Route
+                exact
+                path={NOTIFICATION_USERS_PAGE}
+                isMobile={isMobile}
+                component={NotificationUsersPage}
+              />
+              <Route
+                exact
+                path={NOTIFICATION_PAGE}
+                isMobile={isMobile}
+                component={NotificationPage}
+              />
+              <MobileRoute
+                exact
+                path={TRENDING_GENRES}
+                isMobile={isMobile}
+                component={TrendingGenreSelectionPage}
+              />
+              <Route
+                exact
+                path={TRENDING_PAGE}
+                render={() => (
+                  <TrendingPage containerRef={mainContentRef.current} />
+                )}
+              />
+              <Redirect
+                from={TRENDING_PLAYLISTS_PAGE_LEGACY}
+                to={TRENDING_PLAYLISTS_PAGE}
+              />
+              <Route
+                exact
+                path={TRENDING_PLAYLISTS_PAGE}
+                render={() => (
+                  <TrendingPlaylistsPage
+                    containerRef={mainContentRef.current}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={TRENDING_UNDERGROUND_PAGE}
+                render={() => (
+                  <TrendingUndergroundPage
+                    containerRef={mainContentRef.current}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_REMIXABLES_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.REMIXABLES}
+                  />
+                )}
+              />
+              <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
+              <Route
+                exact
+                path={AUDIO_NFT_PLAYLIST_PAGE}
+                render={() => <CollectiblesPlaylistPage />}
+              />
+              <Route
+                exact
+                path={EXPLORE_PREMIUM_TRACKS_PAGE}
+                render={() => (
+                  <PremiumTracksPage containerRef={mainContentRef.current} />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_HEAVY_ROTATION_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.HEAVY_ROTATION}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_LET_THEM_DJ_PAGE}
+                render={() => (
+                  <ExploreCollectionsPage
+                    variant={ExploreCollectionsVariant.LET_THEM_DJ}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_BEST_NEW_RELEASES_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.BEST_NEW_RELEASES}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_UNDER_THE_RADAR_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.UNDER_THE_RADAR}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_TOP_ALBUMS_PAGE}
+                render={() => (
+                  <ExploreCollectionsPage
+                    variant={ExploreCollectionsVariant.TOP_ALBUMS}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_MOST_LOVED_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.MOST_LOVED}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_FEELING_LUCKY_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.FEELING_LUCKY}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_MOOD_PLAYLISTS_PAGE}
+                render={() => (
+                  <ExploreCollectionsPage
+                    variant={ExploreCollectionsVariant.MOOD}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={SEARCH_CATEGORY_PAGE_LEGACY}
+                render={(props) => (
+                  <Redirect
+                    to={{
+                      pathname: generatePath(SEARCH_PAGE, {
+                        category: props.match.params.category
+                      }),
+                      search: new URLSearchParams({
+                        query: props.match.params.query
+                      }).toString()
+                    }}
+                  />
+                )}
+              />
+              <Route
+                path={SEARCH_PAGE}
+                render={(props) => {
+                  const { category } = props.match.params
+
+                  return category &&
+                    !validSearchCategories.includes(category) ? (
                     <Redirect
                       to={{
-                        pathname: generatePath(SEARCH_PAGE, {
-                          category: props.match.params.category
-                        }),
+                        pathname: SEARCH_BASE_ROUTE,
                         search: new URLSearchParams({
-                          query: props.match.params.query
+                          query: category
                         }).toString()
                       }}
                     />
-                  )}
-                />
+                  ) : isSearchExploreEnabled && !isMobile ? (
+                    <ExplorePage />
+                  ) : (
+                    <SearchPage />
+                  )
+                }}
+              />
+              <DesktopRoute
+                path={UPLOAD_ALBUM_PAGE}
+                isMobile={isMobile}
+                render={() => <UploadPage uploadType={UploadType.ALBUM} />}
+              />
+              <DesktopRoute
+                path={UPLOAD_PLAYLIST_PAGE}
+                isMobile={isMobile}
+                render={() => <UploadPage uploadType={UploadType.PLAYLIST} />}
+              />
+              <DesktopRoute
+                path={UPLOAD_PAGE}
+                isMobile={isMobile}
+                render={(props) => (
+                  <UploadPage {...props} scrollToTop={scrollToTop} />
+                )}
+              />
+              <Route
+                exact
+                path={[SAVED_PAGE, LIBRARY_PAGE]}
+                component={LibraryPage}
+              />
+              <Route exact path={HISTORY_PAGE} component={HistoryPage} />
+              {!isProduction ? (
+                <Route exact path={DEV_TOOLS_PAGE} component={DevTools} />
+              ) : null}
+              {!isProduction ? (
                 <Route
-                  path={SEARCH_PAGE}
-                  render={(props) => {
-                    const { category } = props.match.params
+                  exact
+                  path={SOLANA_TOOLS_PAGE}
+                  component={SolanaToolsPage}
+                />
+              ) : null}
 
-                    return category &&
-                      !validSearchCategories.includes(category) ? (
-                      <Redirect
-                        to={{
-                          pathname: SEARCH_BASE_ROUTE,
-                          search: new URLSearchParams({
-                            query: category
-                          }).toString()
-                        }}
-                      />
-                    ) : (
-                      <SearchPage />
-                    )
-                  }}
-                />
-                <DesktopRoute
-                  path={UPLOAD_ALBUM_PAGE}
-                  isMobile={isMobile}
-                  render={() => <UploadPage uploadType={UploadType.ALBUM} />}
-                />
-                <DesktopRoute
-                  path={UPLOAD_PLAYLIST_PAGE}
-                  isMobile={isMobile}
-                  render={() => <UploadPage uploadType={UploadType.PLAYLIST} />}
-                />
-                <DesktopRoute
-                  path={UPLOAD_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <UploadPage {...props} scrollToTop={this.scrollToTop} />
-                  )}
-                />
-                <Route
-                  exact
-                  path={[SAVED_PAGE, LIBRARY_PAGE]}
-                  component={SavedPage}
-                />
-                <Route exact path={HISTORY_PAGE} component={HistoryPage} />
-                <DesktopRoute
-                  exact
-                  path={DASHBOARD_PAGE}
-                  isMobile={isMobile}
-                  component={DashboardPage}
-                />
-                <Route
-                  exact
-                  path={WITHDRAWALS_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <PayAndEarnPage
-                      {...props}
-                      tableView={TableType.WITHDRAWALS}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={PURCHASES_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <PayAndEarnPage
-                      {...props}
-                      tableView={TableType.PURCHASES}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={SALES_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <PayAndEarnPage {...props} tableView={TableType.SALES} />
-                  )}
-                />
-                <Route
-                  exact
-                  path={TRANSACTION_HISTORY_PAGE}
-                  isMobile={isMobile}
-                  component={TransactionHistoryPage}
-                />
-                <Route
-                  exact
-                  path={PAYMENTS_PAGE}
-                  isMobile={isMobile}
-                  render={(props) =>
-                    isWalletUIUpdateEnabled ? (
-                      <Redirect to={WALLET_PAGE} />
-                    ) : (
-                      <PayAndEarnPage {...props} />
-                    )
-                  }
-                />
-                <Route
-                  exact
-                  path={AUDIO_PAGE}
-                  isMobile={isMobile}
-                  render={(props) =>
-                    isWalletUIUpdateEnabled ? (
-                      <Redirect to={WALLET_AUDIO_PAGE} />
-                    ) : (
-                      <AudioPage {...props} />
-                    )
-                  }
-                />
-                <Route
-                  exact
-                  path={WALLET_AUDIO_PAGE}
-                  isMobile={isMobile}
-                  component={AudioPage}
-                />
-                <Route
-                  exact
-                  path={WALLET_PAGE}
-                  isMobile={isMobile}
-                  component={WalletPage}
-                />
-                <Route
-                  exact
-                  path={[REWARDS_PAGE, AIRDROP_PAGE]}
-                  isMobile={isMobile}
-                  component={RewardsPage}
-                />
+              <DesktopRoute
+                exact
+                path={DASHBOARD_PAGE}
+                isMobile={isMobile}
+                component={DashboardPage}
+              />
+              <Route
+                exact
+                path={WITHDRAWALS_PAGE}
+                isMobile={isMobile}
+                render={(props) => (
+                  <PayAndEarnPage
+                    {...props}
+                    tableView={TableType.WITHDRAWALS}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={PURCHASES_PAGE}
+                isMobile={isMobile}
+                render={(props) => (
+                  <PayAndEarnPage {...props} tableView={TableType.PURCHASES} />
+                )}
+              />
+              <Route
+                exact
+                path={SALES_PAGE}
+                isMobile={isMobile}
+                render={(props) => (
+                  <PayAndEarnPage {...props} tableView={TableType.SALES} />
+                )}
+              />
+              <Route
+                exact
+                path={TRANSACTION_HISTORY_PAGE}
+                isMobile={isMobile}
+                component={TransactionHistoryPage}
+              />
+              <Route
+                exact
+                path={PAYMENTS_PAGE}
+                isMobile={isMobile}
+                render={(props) =>
+                  isWalletUIUpdateEnabled ? (
+                    <Redirect to={WALLET_PAGE} />
+                  ) : (
+                    <PayAndEarnPage {...props} />
+                  )
+                }
+              />
+              <Route
+                exact
+                path={AUDIO_PAGE}
+                isMobile={isMobile}
+                render={(props) =>
+                  isWalletUIUpdateEnabled ? (
+                    <Redirect to={WALLET_AUDIO_PAGE} />
+                  ) : (
+                    <AudioPage {...props} />
+                  )
+                }
+              />
+              <Route
+                exact
+                path={WALLET_AUDIO_PAGE}
+                isMobile={isMobile}
+                component={AudioPage}
+              />
+              <Route
+                exact
+                path={WALLET_PAGE}
+                isMobile={isMobile}
+                component={WalletPage}
+              />
+              <Route
+                exact
+                path={[REWARDS_PAGE, AIRDROP_PAGE]}
+                isMobile={isMobile}
+                component={RewardsPage}
+              />
 
-                <Route
-                  exact
-                  path={CHAT_PAGE}
-                  isMobile={isMobile}
-                  component={ChatPageProvider}
-                />
-                <Route
-                  exact
-                  path={DEACTIVATE_PAGE}
-                  isMobile={isMobile}
-                  component={DeactivateAccountPage}
-                />
-                <Route
-                  exact
-                  path={[
-                    SETTINGS_PAGE,
-                    AUTHORIZED_APPS_SETTINGS_PAGE,
-                    ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-                    ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE
-                  ]}
-                  isMobile={isMobile}
-                  component={SettingsPage}
-                />
-                <Route exact path={CHECK_PAGE} component={CheckPage} />
-                <MobileRoute
-                  exact
-                  path={ACCOUNT_SETTINGS_PAGE}
-                  isMobile={isMobile}
-                  render={() => <SettingsPage subPage={SubPage.ACCOUNT} />}
-                />
-                <MobileRoute
-                  exact
-                  path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
-                  isMobile={isMobile}
-                  render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
-                />
-                <MobileRoute
-                  exact
-                  path={CHANGE_PASSWORD_SETTINGS_PAGE}
-                  isMobile={isMobile}
-                  render={() => (
-                    <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
-                  )}
-                />
-                <MobileRoute
-                  exact
-                  path={CHANGE_EMAIL_SETTINGS_PAGE}
-                  isMobile={isMobile}
-                  render={() => <SettingsPage subPage={SubPage.CHANGE_EMAIL} />}
-                />
-                <MobileRoute
-                  exact
-                  path={NOTIFICATION_SETTINGS_PAGE}
-                  isMobile={isMobile}
-                  render={() => (
-                    <SettingsPage subPage={SubPage.NOTIFICATIONS} />
-                  )}
-                />
-                <MobileRoute
-                  exact
-                  path={ABOUT_SETTINGS_PAGE}
-                  isMobile={isMobile}
-                  render={() => <SettingsPage subPage={SubPage.ABOUT} />}
-                />
-                <Route path={APP_REDIRECT} component={AppRedirectListener} />
-                <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
-                <Route
-                  exact
-                  path={PLAYLIST_PAGE}
-                  render={({ location }) => {
-                    return (
-                      <CollectionPage key={location.pathname} type='playlist' />
-                    )
-                  }}
-                />
-                <Route
-                  exact
-                  path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
-                  component={EditCollectionPage}
-                />
-                <Route
-                  exact
-                  path={ALBUM_PAGE}
-                  render={({ location }) => (
-                    <CollectionPage key={location.pathname} type='album' />
-                  )}
-                />
-                {/* Hash id routes */}
-                <Route
-                  exact
-                  path={USER_ID_PAGE}
-                  render={(props) => (
-                    <ProfilePage
-                      {...props}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Route exact path={TRACK_ID_PAGE} component={TrackPage} />
-                <Route
-                  exact
-                  path={PLAYLIST_ID_PAGE}
-                  component={CollectionPage}
-                />
-                {/*
-                Define profile page sub-routes before profile page itself.
-                The rules for sub-routes would lose in a precedence fight with
-                the rule for track page if defined below.
-                */}
-                <Route
-                  exact
-                  path={[
-                    PROFILE_PAGE_TRACKS,
-                    PROFILE_PAGE_ALBUMS,
-                    PROFILE_PAGE_PLAYLISTS,
-                    PROFILE_PAGE_REPOSTS,
-                    PROFILE_PAGE_COLLECTIBLE_DETAILS,
-                    PROFILE_PAGE_COLLECTIBLES
-                  ]}
-                  render={(props) => (
-                    <ProfilePage
-                      {...props}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Route
-                  exact
-                  path={PROFILE_PAGE_COMMENTS}
-                  component={CommentHistoryPage}
-                />
-                <Route
-                  exact
-                  path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
-                  component={AiAttributedTracksPage}
-                />
-                <Route exact path={TRACK_PAGE} component={TrackPage} />
-                <MobileRoute
-                  exact
-                  path={TRACK_COMMENTS_PAGE}
-                  isMobile={isMobile}
-                  component={TrackCommentsPage}
-                />
-                <Route exact path={TRACK_PAGE} component={TrackPage} />
-                <DesktopRoute
-                  path={TRACK_EDIT_PAGE}
-                  isMobile={isMobile}
-                  render={(props) => (
-                    <EditTrackPage {...props} scrollToTop={this.scrollToTop} />
-                  )}
-                />
+              <Route
+                exact
+                path={CHAT_PAGE}
+                isMobile={isMobile}
+                component={ChatPageProvider}
+              />
+              <Route
+                exact
+                path={DEACTIVATE_PAGE}
+                isMobile={isMobile}
+                component={DeactivateAccountPage}
+              />
+              <Route
+                exact
+                path={[
+                  SETTINGS_PAGE,
+                  AUTHORIZED_APPS_SETTINGS_PAGE,
+                  ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
+                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+                  LABEL_ACCOUNT_SETTINGS_PAGE
+                ]}
+                isMobile={isMobile}
+                component={SettingsPage}
+              />
+              <Route exact path={CHECK_PAGE} component={CheckPage} />
+              <MobileRoute
+                exact
+                path={ACCOUNT_SETTINGS_PAGE}
+                isMobile={isMobile}
+                render={() => <SettingsPage subPage={SubPage.ACCOUNT} />}
+              />
+              <MobileRoute
+                exact
+                path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
+                isMobile={isMobile}
+                render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
+              />
+              <MobileRoute
+                exact
+                path={CHANGE_PASSWORD_SETTINGS_PAGE}
+                isMobile={isMobile}
+                render={() => (
+                  <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
+                )}
+              />
+              <MobileRoute
+                exact
+                path={CHANGE_EMAIL_SETTINGS_PAGE}
+                isMobile={isMobile}
+                render={() => <SettingsPage subPage={SubPage.CHANGE_EMAIL} />}
+              />
+              <MobileRoute
+                exact
+                path={NOTIFICATION_SETTINGS_PAGE}
+                isMobile={isMobile}
+                render={() => <SettingsPage subPage={SubPage.NOTIFICATIONS} />}
+              />
+              <MobileRoute
+                exact
+                path={ABOUT_SETTINGS_PAGE}
+                isMobile={isMobile}
+                render={() => <SettingsPage subPage={SubPage.ABOUT} />}
+              />
+              <Route path={APP_REDIRECT} component={AppRedirectListener} />
+              <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
+              <Route
+                exact
+                path={PLAYLIST_PAGE}
+                render={({ location }) => {
+                  return (
+                    <CollectionPage key={location.pathname} type='playlist' />
+                  )
+                }}
+              />
+              <Route
+                exact
+                path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
+                component={EditCollectionPage}
+              />
+              <Route
+                exact
+                path={ALBUM_PAGE}
+                render={({ location }) => (
+                  <CollectionPage key={location.pathname} type='album' />
+                )}
+              />
+              <Route
+                exact
+                path={USER_ID_PAGE}
+                render={(props) => (
+                  <ProfilePage
+                    {...props}
+                    containerRef={mainContentRef.current}
+                  />
+                )}
+              />
+              <Route exact path={TRACK_ID_PAGE} component={TrackPage} />
+              <Route exact path={PLAYLIST_ID_PAGE} component={CollectionPage} />
+              <Route
+                exact
+                path={[
+                  PROFILE_PAGE_TRACKS,
+                  PROFILE_PAGE_ALBUMS,
+                  PROFILE_PAGE_PLAYLISTS,
+                  PROFILE_PAGE_REPOSTS,
+                  PROFILE_PAGE_COLLECTIBLE_DETAILS,
+                  PROFILE_PAGE_COLLECTIBLES
+                ]}
+                render={(props) => (
+                  <ProfilePage
+                    {...props}
+                    containerRef={mainContentRef.current}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={PROFILE_PAGE_COMMENTS}
+                component={CommentHistoryPage}
+              />
+              <Route
+                exact
+                path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
+                component={AiAttributedTracksPage}
+              />
+              <Route exact path={TRACK_PAGE} component={TrackPage} />
+              <MobileRoute
+                exact
+                path={TRACK_COMMENTS_PAGE}
+                isMobile={isMobile}
+                component={TrackCommentsPage}
+              />
+              <Route exact path={TRACK_PAGE} component={TrackPage} />
+              <DesktopRoute
+                path={TRACK_EDIT_PAGE}
+                isMobile={isMobile}
+                render={(props) => (
+                  <EditTrackPage {...props} scrollToTop={scrollToTop} />
+                )}
+              />
 
-                <Route
-                  exact
-                  path={TRACK_REMIXES_PAGE}
-                  render={(props) => (
-                    <RemixesPage
-                      {...props}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <MobileRoute
-                  exact
-                  path={REPOSTING_USERS_ROUTE}
-                  isMobile={isMobile}
-                  component={RepostsPage}
-                />
-                <MobileRoute
-                  exact
-                  path={FAVORITING_USERS_ROUTE}
-                  isMobile={isMobile}
-                  component={FavoritesPage}
-                />
-                <MobileRoute
-                  exact
-                  path={FOLLOWING_USERS_ROUTE}
-                  isMobile={isMobile}
-                  component={FollowingPage}
-                />
-                <MobileRoute
-                  exact
-                  path={FOLLOWERS_USERS_ROUTE}
-                  isMobile={isMobile}
-                  component={FollowersPage}
-                />
-                <MobileRoute
-                  exact
-                  path={SUPPORTING_USERS_ROUTE}
-                  isMobile={isMobile}
-                  component={SupportingPage}
-                />
-                <MobileRoute
-                  exact
-                  path={TOP_SUPPORTERS_USERS_ROUTE}
-                  isMobile={isMobile}
-                  component={TopSupportersPage}
-                />
-                <MobileRoute
-                  exact
-                  path={EMPTY_PAGE}
-                  isMobile={isMobile}
-                  component={EmptyPage}
-                />
-                <Route
-                  exact
-                  path={PROFILE_PAGE}
-                  render={(props) => (
-                    <ProfilePage
-                      {...props}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
-                />
-                <Redirect
-                  from={HOME_PAGE}
-                  to={{
-                    // If we navigated into the dapp from the public site, which has
-                    // no access to the ConnectedReactRouter history,
-                    // the redirect will actually fire even though the current
-                    // pathname is not HOME_PAGE. Double check that it is and if not,
-                    // just trigger a react router push to the current pathname
-                    pathname:
-                      getPathname(this.props.history.location) === HOME_PAGE
-                        ? this.props.isGuestAccount
-                          ? LIBRARY_PAGE
-                          : FEED_PAGE
-                        : getPathname(this.props.history.location),
-                    search: includeSearch(this.props.location.search)
-                      ? this.props.location.search
-                      : ''
-                  }}
-                />
-              </SwitchComponent>
-            </Suspense>
-          </div>
-          <PlayBarProvider />
-
-          <Suspense fallback={null}>
-            <Modals />
+              <Route
+                exact
+                path={TRACK_REMIXES_PAGE}
+                render={(props) => (
+                  <RemixesPage
+                    {...props}
+                    containerRef={mainContentRef.current}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={PICK_WINNERS_PAGE}
+                component={PickWinnersPage}
+              />
+              <MobileRoute
+                exact
+                path={REPOSTING_USERS_ROUTE}
+                isMobile={isMobile}
+                component={RepostsPage}
+              />
+              <MobileRoute
+                exact
+                path={FAVORITING_USERS_ROUTE}
+                isMobile={isMobile}
+                component={FavoritesPage}
+              />
+              <MobileRoute
+                exact
+                path={FOLLOWING_USERS_ROUTE}
+                isMobile={isMobile}
+                component={FollowingPage}
+              />
+              <MobileRoute
+                exact
+                path={FOLLOWERS_USERS_ROUTE}
+                isMobile={isMobile}
+                component={FollowersPage}
+              />
+              <MobileRoute
+                exact
+                path={SUPPORTING_USERS_ROUTE}
+                isMobile={isMobile}
+                component={SupportingPage}
+              />
+              <MobileRoute
+                exact
+                path={TOP_SUPPORTERS_USERS_ROUTE}
+                isMobile={isMobile}
+                component={TopSupportersPage}
+              />
+              <MobileRoute
+                exact
+                path={EMPTY_PAGE}
+                isMobile={isMobile}
+                component={EmptyPage}
+              />
+              <Route
+                exact
+                path={PROFILE_PAGE}
+                render={(props) => (
+                  <ProfilePage
+                    {...props}
+                    containerRef={mainContentRef.current}
+                  />
+                )}
+              />
+              <Redirect
+                from={HOME_PAGE}
+                to={{
+                  pathname:
+                    getPathname(history.location) === HOME_PAGE
+                      ? isGuestAccount
+                        ? LIBRARY_PAGE
+                        : FEED_PAGE
+                      : getPathname(history.location),
+                  search: includeSearch(history.location.search)
+                    ? history.location.search
+                    : ''
+                }}
+              />
+            </SwitchComponent>
           </Suspense>
-          <ConnectedMusicConfetti />
-
-          <RewardClaimedToast />
-          {/* Non-mobile */}
-          {!isMobile ? <Visualizer /> : null}
-          {!isMobile ? <DevModeMananger /> : null}
-          {/* Mobile-only */}
-          {isMobile ? (
-            <AppRedirectPopover
-              incrementScroll={incrementScroll}
-              decrementScroll={decrementScroll}
-            />
-          ) : null}
         </div>
+        <PlayBarProvider />
+
+        <Suspense fallback={null}>
+          <Modals />
+        </Suspense>
+        <ConnectedMusicConfetti />
+
+        <RewardClaimedToast />
+        {!isMobile ? <Visualizer /> : null}
+        {!isMobile ? <DevModeMananger /> : null}
+        {isMobile ? (
+          <AppRedirectPopover
+            incrementScroll={handleIncrementScroll}
+            decrementScroll={handleDecrementScroll}
+          />
+        ) : null}
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-const mapStateToProps = (state) => ({
-  hasAccount: getHasAccount(state),
-  userId: getUserId(state),
-  userHandle: getUserHandle(state),
-  accountStatus: getAccountStatus(state),
-  signOnStatus: getSignOnStatus(state),
-  showCookieBanner: getShowCookieBanner(state),
-  isGuestAccount: getIsGuestAccount(state),
-  isAccountComplete: getIsAccountComplete(state)
-})
-
-const mapDispatchToProps = (dispatch) => ({
-  updateRouteOnSignUpCompletion: (route) =>
-    dispatch(updateRouteOnSignUpCompletion(route)),
-  openSignOn: (signIn = true, page = null, fields = {}) =>
-    dispatch(openSignOn(signIn, page, fields)),
-  incrementScroll: () => dispatch(incrementScrollCountAction()),
-  decrementScroll: () => dispatch(decrementScrollCountAction()),
-  recordClickCTABanner: () => {
-    dispatch(make(Name.ACCOUNT_HEALTH_CLICK_APP_CTA_BANNER, {}))
-  },
-  showAppCTAModal: () => {
-    dispatch(setAppModalCTAVisibility({ isOpen: true }))
-  }
-})
-
-const RouterWebPlayer = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(WebPlayer)
-)
+const RouterWebPlayer = withRouter(WebPlayer)
 
 // Taking this approach because the class component cannot use hooks
 const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_UPDATE
   )
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
+  const { isProduction } = useEnvironment()
 
   return (
     <RouterWebPlayer
       {...props}
       isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
+      isSearchExploreEnabled={isSearchExploreEnabled}
+      isProduction={isProduction}
     />
   )
 }

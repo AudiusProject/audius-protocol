@@ -2,25 +2,25 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { isEqual } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
 import { fileToSdk } from '~/adapters/track'
-import { useAudiusQueryContext } from '~/audius-query'
+import {
+  getCollectionQueryKey,
+  getTrackQueryKey,
+  useCurrentAccountUser,
+  useCurrentUserId
+} from '~/api'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { isContentUSDCPurchaseGated } from '~/models'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
-import { getAccountUser } from '~/store/account/selectors'
 import { renameAccountPlaylist } from '~/store/account/slice'
 import { EditCollectionValues } from '~/store/cache/collections/types'
 import { removeNullable } from '~/utils'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-import {
-  getCollectionQueryKey,
-  getTrackQueryKey,
-  useCurrentUserId
-} from '../..'
 import { TQCollection } from '../models'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
@@ -41,9 +41,15 @@ export const useUpdateCollection = () => {
   const {
     audiusSdk,
     imageUtils: { generatePlaylistArtwork }
-  } = useAudiusQueryContext()
+  } = useQueryContext()
   const queryClient = useQueryClient()
-  const account = useSelector(getAccountUser)
+  const { data: account } = useCurrentAccountUser({
+    select: (user) => ({
+      erc_wallet: user?.erc_wallet,
+      wallet: user?.wallet
+    })
+  })
+  const { erc_wallet, wallet } = account ?? {}
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
 
@@ -85,15 +91,15 @@ export const useUpdateCollection = () => {
         )
         const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
 
-        const wallet = account?.erc_wallet ?? account?.wallet
-        if (!wallet) {
+        const walletToUse = erc_wallet ?? wallet
+        if (!walletToUse) {
           throw new Error('No wallet found for user')
         }
 
         // Get the user's USDC bank address from the wallet
         const { userBank } =
           await sdk.services.claimableTokensClient.getOrCreateUserBank({
-            ethWallet: wallet,
+            ethWallet: walletToUse,
             mint: 'USDC'
           })
         const userBankStr = userBank.toString()
@@ -158,7 +164,6 @@ export const useUpdateCollection = () => {
         primeCollectionData({
           collections: [{ ...previousCollection, ...metadata }],
           queryClient,
-          dispatch,
           forceReplace: true
         })
 

@@ -1,15 +1,14 @@
-import { useCallback, type ReactNode, useEffect } from 'react'
+import React, { useCallback, type ReactNode, useEffect } from 'react'
 
 import {
-  useCurrentUserId,
-  useGetPlaylistById,
-  useGetUserById,
-  useTrack
+  useCollection,
+  useTrack,
+  useUser,
+  useUSDCBalance
 } from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
   useRemoteVar,
-  useUSDCBalance,
   usePurchaseContentFormConfiguration,
   usePurchaseContentErrorMessage,
   usePayExtraPresets,
@@ -19,7 +18,8 @@ import {
   isStreamPurchaseable,
   isTrackDownloadPurchaseable,
   isContentDownloadGated,
-  PURCHASE_METHOD_MINT_ADDRESS
+  PURCHASE_METHOD_MINT_ADDRESS,
+  useFeatureFlag
 } from '@audius/common/hooks'
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import { Name, PurchaseMethod, PurchaseVendor } from '@audius/common/models'
@@ -34,7 +34,11 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { PurchaseContentError } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import {
+  formatPrice,
+  AUDIO_MATCHING_REWARDS_MULTIPLIER
+} from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Formik, useField, useFormikContext } from 'formik'
 import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -50,7 +54,6 @@ import { Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -306,10 +309,6 @@ const RenderForm = ({
     trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
-  const handleUSDCManualTransferClose = useCallback(() => {
-    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
-  }, [dispatch])
-
   const handleGoBackPress = useCallback(() => {
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
@@ -339,7 +338,11 @@ const RenderForm = ({
               <TrackDetailsTile
                 trackId={contentId}
                 showLabel={false}
-                earnAmount={Math.round(price / 100).toString()}
+                earnAmount={USDC(
+                  (price * AUDIO_MATCHING_REWARDS_MULTIPLIER) / 100
+                )
+                  .round()
+                  .toShorthand()}
               />
               {isPurchaseSuccessful ? null : (
                 <PayExtraFormSection
@@ -404,10 +407,7 @@ const RenderForm = ({
         </>
       ) : (
         <View style={styles.paddingTop}>
-          <USDCManualTransfer
-            onClose={handleUSDCManualTransferClose}
-            amountInCents={totalPriceInCents}
-          />
+          <USDCManualTransfer amountInCents={totalPriceInCents} />
         </View>
       )}
       {isPurchaseSuccessful || !isUsdcPurchaseEnabled ? null : (
@@ -451,19 +451,11 @@ export const PremiumContentPurchaseDrawer = () => {
     onClosed
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: currentUserId } = useCurrentUserId()
   const { data: track, isPending: isTrackPending } = useTrack(contentId)
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
-  const { data: user } = useGetUserById(
-    {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
-      currentUserId
-    },
-    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
-  )
+  const { data: album } = useCollection(contentId, {
+    enabled: isAlbum
+  })
+  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
   const metadata = {
     ...(isAlbum ? album : track),
     user

@@ -222,6 +222,11 @@ export type LineupProps = {
    */
   leadingElementDelineator?: ReactElement
 
+  /**
+   * Map of indices to JSX Elements that can be used to delineate the elements from the rest
+   */
+  delineatorMap?: Record<number, JSX.Element>
+
   /** The number of tracks to fetch in each request */
   limit?: number
 
@@ -297,6 +302,11 @@ export type LineupProps = {
    */
   itemStyles?: ViewStyle
 
+  /**
+   * Whether to show the play bar chin
+   */
+  hidePlayBarChin?: boolean
+
   // Tan query props
   pageSize: number
   initialPageSize?: number
@@ -327,6 +337,7 @@ export const TanQueryLineup = ({
   lazy,
   leadingElementId,
   leadingElementDelineator,
+  delineatorMap,
   lineup,
   LineupEmptyComponent,
   loadNextPage,
@@ -350,6 +361,7 @@ export const TanQueryLineup = ({
   isPending,
   queryData = [],
   maxEntries = Infinity,
+  hidePlayBarChin = false,
   ...listProps
 }: LineupProps) => {
   const debouncedLoadNextPage = useDebouncedCallback(
@@ -388,23 +400,30 @@ export const TanQueryLineup = ({
   const renderItem = useCallback(
     ({
       index,
-      item
+      item,
+      indexOffset = 0
     }: {
       index: number
       item: LineupItem | LoadingLineupItem
+      indexOffset?: number
     }) => {
       return (
-        <LineupItemTile
-          index={index}
-          item={item}
-          isTrending={isTrending}
-          leadingElementId={leadingElementId}
-          rankIconCount={rankIconCount}
-          togglePlay={togglePlay}
-          onPress={onPressItem}
-          itemStyles={itemStyles}
-          actions={actions}
-        />
+        <>
+          <LineupItemTile
+            index={index}
+            item={item}
+            isTrending={isTrending}
+            leadingElementId={leadingElementId}
+            rankIconCount={rankIconCount}
+            togglePlay={togglePlay}
+            onPress={onPressItem}
+            itemStyles={itemStyles}
+            actions={actions}
+          />
+          {delineatorMap?.[index + indexOffset]
+            ? delineatorMap[index + indexOffset]
+            : null}
+        </>
       )
     },
     [
@@ -414,7 +433,8 @@ export const TanQueryLineup = ({
       togglePlay,
       onPressItem,
       itemStyles,
-      actions
+      actions,
+      delineatorMap
     ]
   )
 
@@ -520,6 +540,7 @@ export const TanQueryLineup = ({
         onScroll={handleScroll}
         ListHeaderComponent={hideHeaderOnEmpty && isEmpty ? undefined : header}
         ListFooterComponent={lineup.hasMore ? null : ListFooterComponent}
+        hidePlayBarChin={true}
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleEndReached}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}

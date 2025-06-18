@@ -1,15 +1,6 @@
-import {
-  useCurrentUserId,
-  useGetPlaylistById,
-  useTrack
-} from '@audius/common/api'
-import {
-  SquareSizes,
-  Status,
-  USDCContentPurchaseType
-} from '@audius/common/models'
-import { Text } from '@audius/harmony'
-import { pick } from 'lodash'
+import { useCollection, useTrack } from '@audius/common/api'
+import { SquareSizes, USDCContentPurchaseType } from '@audius/common/models'
+import { Skeleton, Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
@@ -25,15 +16,14 @@ export const TrackNameWithArtwork = ({
   contentType: USDCContentPurchaseType
 }) => {
   const isTrack = contentType === USDCContentPurchaseType.TRACK
-  const { data: partialTrack, isPending: isTrackPending } = useTrack(id, {
+  const { data: trackTitle, isPending: isTrackPending } = useTrack(id, {
     enabled: isTrack,
-    select: (track) => pick(track, ['title', 'owner_id'])
+    select: (track) => track.title
   })
-  const { data: currentUserId } = useCurrentUserId()
-  const { status: albumStatus, data: album } = useGetPlaylistById(
-    { playlistId: id, currentUserId },
-    { disabled: isTrack }
-  )
+  const { data: albumTitle, isPending: isAlbumPending } = useCollection(id, {
+    enabled: !isTrack,
+    select: (collection) => collection.playlist_name
+  })
   const trackArtwork = useTrackCoverArt({
     trackId: id,
     size: SquareSizes.SIZE_150_BY_150
@@ -42,14 +32,20 @@ export const TrackNameWithArtwork = ({
     collectionId: id,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const title = isTrack ? partialTrack?.title : album?.playlist_name
+  const title = isTrack ? trackTitle : albumTitle
   const image = isTrack ? trackArtwork : albumArtwork
-  const loading = albumStatus !== Status.SUCCESS || isTrackPending
+  const loading = isTrack ? isTrackPending : isAlbumPending
 
-  return loading ? null : (
+  return (
     <div className={styles.container}>
-      <DynamicImage wrapperClassName={styles.artwork} image={image} />
-      <Text ellipses>{title}</Text>
+      {loading ? (
+        <Skeleton />
+      ) : (
+        <>
+          <DynamicImage wrapperClassName={styles.artwork} image={image} />
+          <Text ellipses>{title}</Text>
+        </>
+      )}
     </div>
   )
 }

@@ -4,8 +4,9 @@ import { useDebouncedCallback } from '@audius/common/hooks'
 import { useField, useFormikContext } from 'formik'
 import { Platform, View } from 'react-native'
 
-import type { TextInputProps } from 'app/components/core'
-import { TextInput, InputErrorMessage } from 'app/components/core'
+import type { TextInputProps } from '@audius/harmony-native'
+import { TextInput } from '@audius/harmony-native'
+import { InputErrorMessage } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import type { FieldProps } from '../../screens/edit-track-screen/fields/types'
@@ -15,6 +16,8 @@ export type TextFieldProps = FieldProps &
     noGutter?: boolean
     debouncedValidationMs?: number
     errorBeforeSubmit?: boolean
+    TextFieldInputComponent?: typeof TextInput
+    shouldShowError?: boolean
   }
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
@@ -43,12 +46,13 @@ export const TextField = (props: TextFieldProps) => {
     label: labelProp,
     required,
     style,
-    styles: stylesProp,
     id,
     onChangeText,
     error: errorProp,
+    shouldShowError = true,
     errorBeforeSubmit,
     debouncedValidationMs = 0,
+    TextFieldInputComponent = TextInput,
     ...other
   } = props
 
@@ -97,13 +101,8 @@ export const TextField = (props: TextFieldProps) => {
 
   return (
     <View style={[noGutter ? undefined : styles.root, style]}>
-      <TextInput
+      <TextFieldInputComponent
         label={label}
-        styles={{
-          ...stylesProp,
-          input: [styles.input, stylesProp?.input],
-          labelText: [styles.labelText, stylesProp?.labelText]
-        }}
         value={value}
         onChangeText={handleChangeText}
         onBlur={onBlur(name)}
@@ -112,7 +111,9 @@ export const TextField = (props: TextFieldProps) => {
         error={!!hasError}
         {...other}
       />
-      {hasError ? <InputErrorMessage message={errorMessage!} /> : null}
+      {hasError && shouldShowError ? (
+        <InputErrorMessage message={errorMessage!} />
+      ) : null}
     </View>
   )
 }

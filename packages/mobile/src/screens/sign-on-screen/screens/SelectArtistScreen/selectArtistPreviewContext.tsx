@@ -1,9 +1,9 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
-  useGetUserTracksByHandle,
-  useGetUserById,
-  useGetCurrentUserId
+  useCurrentUserId,
+  useUser,
+  useUserTracksByHandle
 } from '@audius/common/api'
 import { type ID } from '@audius/common/models'
 import { Id, OptionalId } from '@audius/sdk'
@@ -37,27 +37,21 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [isPlaying, setIsPlaying] = useState(false)
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState(-1)
   const [trackUrl, setTrackUrl] = useState<string | null>(null)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   useEffectOnce(() => {
     TrackPlayer.setRepeatMode(RepeatMode.Track)
   })
 
-  const { data: artist } = useGetUserById(
-    {
-      id: nowPlayingArtistId,
-      currentUserId: null
-    },
-    { disabled: nowPlayingArtistId === -1 }
-  )
+  const { data: artistHandle } = useUser(nowPlayingArtistId, {
+    select: (user) => user.handle
+  })
 
-  const { data: artistTracks } = useGetUserTracksByHandle(
-    {
-      handle: artist?.handle ?? '',
-      currentUserId: null
-    },
-    { disabled: !artist?.handle }
-  )
+  const { data: artistTracks } = useUserTracksByHandle({
+    handle: artistHandle,
+    // We just need one playable track. It's unlikely all 3 of an artist's top tracks are unavailable.
+    limit: 3
+  })
   useEffect(() => {
     if (!nowPlayingArtistId || !currentUserId || !artistTracks) return
 

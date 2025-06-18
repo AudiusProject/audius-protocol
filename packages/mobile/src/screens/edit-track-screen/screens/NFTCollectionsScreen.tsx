@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { Chain, isContentCollectibleGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { collectiblesSelectors } from '@audius/common/store'
@@ -53,8 +54,9 @@ export const NFTCollectionsScreen = () => {
   const navigation = useNavigation()
   const [{ value: streamConditions }, , { setValue: setStreamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
+  const { data: userId } = useCurrentUserId()
   const { isLoading, ethCollectionMap, solCollectionMap, collectionImageMap } =
-    useSelector(getSupportedUserCollections)
+    useSelector((state) => getSupportedUserCollections(state, { userId }))
 
   const ethCollectibleItems = useMemo(() => {
     return Object.keys(ethCollectionMap)

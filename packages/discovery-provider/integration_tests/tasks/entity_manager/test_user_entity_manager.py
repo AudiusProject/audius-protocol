@@ -12,6 +12,7 @@ from web3.datastructures import AttributeDict
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.collectibles import Collectibles
 from src.models.users.user import User
@@ -228,6 +229,7 @@ def test_index_valid_user(app, mocker):
             "bio": "this is forrest",
             "location": "Los Angeles, CA",
             "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "wallet": "user2wallet",
             "associated_wallets": None,
             "associated_sol_wallets": None,
             "playlist_library": {"contents": []},
@@ -246,6 +248,7 @@ def test_index_valid_user(app, mocker):
             "bio": "this is isaac",
             "location": "Los Angeles, CA",
             "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "wallet": "user3wallet",
             "associated_wallets": None,
             "associated_sol_wallets": None,
             "playlist_library": {"contents": []},
@@ -363,16 +366,8 @@ def test_index_valid_user(app, mocker):
 
     entities = {
         "users": [
-            {
-                "user_id": 1,
-                "handle": "user-1",
-                "wallet": "user1wallet",
-            },
-            {
-                "user_id": 2,
-                "handle": "user-1",
-                "wallet": "User2Wallet",
-            },
+            {"user_id": 1, "handle": "user-1"},
+            {"user_id": 2, "handle": "user-1"},
         ],
         "tracks": [
             {
@@ -470,7 +465,8 @@ def test_index_invalid_users(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     test_metadata = {
         "QmCreateUser1": {
@@ -485,6 +481,7 @@ def test_index_invalid_users(app, mocker):
             "bio": "ðŸŒžðŸ‘„ðŸŒž",
             "location": "chik fil yay!!",
             "creator_node_endpoint": "https://creatornode.audius.co,https://content-node.audius.co,https://blockdaemon-audius-content-06.bdnodes.net",
+            "wallet": "user1wallet",
             "associated_wallets": None,
             "associated_sol_wallets": None,
             "playlist_library": {
@@ -822,7 +819,7 @@ def test_index_invalid_users(app, mocker):
     )
     entities = {
         "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 1, "handle": "user-1"},
         ],
         "tracks": [
             {
@@ -2223,3 +2220,164 @@ def test_update_user_collectibles(app, mocker):
         # Verify collectibles flag was set to False
         user = session.query(User).filter(User.user_id == 2).first()
         assert not user.has_collectibles
+
+
+def test_index_duplicate_wallet_users(app, mocker):
+    """Tests that a second user cannot be created with the same wallet"""
+    bus_mock = set_patches(mocker)
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        redis_mock = mocker.Mock()
+        update_task = UpdateTask(web3, bus_mock, redis_mock)
+
+    test_metadata = {
+        "QmCreateUser1": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "First User",
+            "handle": "firstuser",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmFirstUserProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmFirstUserCoverPhoto",
+            "bio": "First user with the wallet",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {"contents": []},
+            "events": None,
+            "user_id": USER_ID_OFFSET + 1,
+        },
+        "QmCreateUser2": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Second User",
+            "handle": "seconduser",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmSecondUserProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmSecondUserCoverPhoto",
+            "bio": "Second user trying to use same wallet",
+            "location": "New York, NY",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {"contents": []},
+            "events": None,
+            "user_id": USER_ID_OFFSET + 2,
+        },
+    }
+
+    create_user1_json = json.dumps(test_metadata["QmCreateUser1"])
+    create_user2_json = json.dumps(test_metadata["QmCreateUser2"])
+
+    tx_receipts = {
+        "CreateUser1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateUser1", "data": {create_user1_json}}}',
+                        "_signer": "samewallet",
+                    }
+                )
+            },
+        ],
+        "CreateUser2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 2,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {create_user2_json}}}',
+                        "_signer": "samewallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+    populate_mock_db_blocks(db, 0, 1)
+
+    with db.scoped_session() as session:
+        # First, create the first user
+        entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[0]],  # CreateUser1Tx
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+
+        # Verify first user was created successfully
+        first_user = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.user_id == USER_ID_OFFSET + 1,
+            )
+            .first()
+        )
+        assert first_user is not None
+        assert first_user.name == "First User"
+        assert first_user.handle == "firstuser"
+        assert first_user.wallet == "samewallet"
+
+        # Try to create the second user with the same wallet
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            [entity_manager_txs[1]],  # CreateUser2Tx
+            block_number=2,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(2),
+        )
+
+        # Verify no changes were made when trying to create second user
+        assert total_changes == 0
+
+        # Verify second user was not created
+        second_user = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.user_id == USER_ID_OFFSET + 2,
+            )
+            .first()
+        )
+        assert second_user is None
+
+        # Verify only one user exists with the wallet
+        users_with_wallet = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.wallet == "samewallet",
+            )
+            .all()
+        )
+        assert len(users_with_wallet) == 1
+        assert users_with_wallet[0].user_id == USER_ID_OFFSET + 1

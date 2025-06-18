@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 
-import { DeveloperApp } from '@audius/common/api'
 import {
   IconButton,
   IconEmbed,
@@ -10,6 +9,7 @@ import {
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
+import { AuthorizedApp } from '@audius/sdk'
 
 import PreloadImage from 'components/preload-image/PreloadImage'
 
@@ -24,7 +24,7 @@ const messages = {
 
 type AuthorizedAppListItemProps = Pick<AuthorizedAppPageProps, 'setPage'> & {
   index: number
-  app: DeveloperApp
+  app: AuthorizedApp
 }
 
 export const AuthorizedAppListItem = (props: AuthorizedAppListItemProps) => {

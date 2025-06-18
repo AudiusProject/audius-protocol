@@ -14,7 +14,6 @@ import {
 import { AppDetailsPage } from './AppDetailsPage'
 import { CreateNewAppPage } from './CreateNewAppPage'
 import { DeleteAppConfirmationPage } from './DeleteAppConfirmationPage'
-import styles from './DeveloperAppsSettingsModal.module.css'
 import { EditAppPage } from './EditAppPage'
 import { YourAppsPage } from './YourAppsPage'
 import { CreateAppsPages } from './types'
@@ -53,9 +52,9 @@ const getTitle = (currentPage: CreateAppsPages) => {
 const getTitleIcon = (currentPage: CreateAppsPages) => {
   switch (currentPage) {
     case CreateAppsPages.DELETE_APP:
-      return <IconTrash className={styles.titleIcon} />
+      return IconTrash
     default:
-      return <IconEmbed className={styles.titleIcon} />
+      return IconEmbed
   }
 }
 
@@ -89,7 +88,7 @@ export const DeveloperAppsSettingsModal = (
         <ModalHeader>
           <ModalTitle
             title={getTitle(currentPage)}
-            icon={getTitleIcon(currentPage)}
+            Icon={getTitleIcon(currentPage)}
           />
         </ModalHeader>
         <ModalContentPages currentPage={getCurrentPage(currentPage)}>

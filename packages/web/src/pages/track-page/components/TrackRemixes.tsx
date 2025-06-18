@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
 import { useTrack } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useCurrentTrack } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   playerSelectors,
@@ -55,12 +54,10 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const dispatch = useDispatch()
   const remixesLineup = useSelector(getRemixesTracksLineup)
   const currentQueueItem = useSelector(getCurrentQueueItem)
+  const currentTrack = useCurrentTrack()
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
   const { data: track } = useTrack(trackId)
-  const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
-    FeatureFlags.COMMENTS_ENABLED
-  )
   const handlePlay = useCallback(
     (uid?: string) => {
       dispatch(tracksActions.play(uid))
@@ -94,7 +91,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
     permalink,
     comments_disabled
   } = track as unknown as Track
-  const isCommentingEnabled = commentsFlagEnabled && !comments_disabled
+  const isCommentingEnabled = !comments_disabled
   const remixTrackIds = remixes?.map(({ track_id }) => track_id) ?? null
 
   const lineupVariant =
@@ -131,9 +128,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         selfLoad
         playingUid={currentQueueItem.uid}
         playingSource={currentQueueItem.source}
-        playingTrackId={
-          currentQueueItem.track && currentQueueItem.track.track_id
-        }
+        playingTrackId={currentTrack?.track_id ?? null}
         playing={isPlaying}
         buffering={isBuffering}
         playTrack={handlePlay}

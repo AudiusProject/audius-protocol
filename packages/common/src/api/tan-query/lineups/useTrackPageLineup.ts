@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID, PlaybackSource } from '~/models'
 import { UserTrackMetadata } from '~/models/Track'
 import { trackPageSelectors } from '~/store/pages'
@@ -69,7 +69,7 @@ export const useTrackPageLineup = (
   }: UseTrackPageLineupArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -192,11 +192,12 @@ export const useTrackPageLineup = (
         }
       }
 
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
+      // offset is 1 because the hero track is already in the lineup
       dispatch(
-        tracksActions.fetchLineupMetadatas(0, pageSize, false, {
-          items: tracks,
+        tracksActions.fetchLineupMetadatas(1, pageSize, false, {
+          items: tracks.slice(1),
           indices
         })
       )

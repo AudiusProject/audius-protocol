@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common/audius-query'
+import { useQueryContext } from '@audius/common/api'
 import { reviewHandlePageMessages } from '@audius/common/messages'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { setValueField } from '@audius/web/src/common/store/pages/signon/actions'
@@ -10,6 +10,7 @@ import {
   getLinkedSocialOnFirstPage,
   getProfileImageField
 } from '@audius/web/src/common/store/pages/signon/selectors'
+import { useQueryClient } from '@tanstack/react-query'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -38,15 +39,16 @@ export const ReviewHandleScreen = () => {
   const initialValues = {
     handle
   }
-  const audiusQueryContext = useAudiusQueryContext()
+  const queryContext = useQueryContext()
+  const queryClient = useQueryClient()
   const navigation = useNavigation<SignOnScreenParamList>()
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      pickHandleSchema({ audiusQueryContext, restrictedHandles })
+      pickHandleSchema({ queryContext, queryClient, restrictedHandles })
     )
-  }, [audiusQueryContext])
+  }, [queryContext, queryClient])
 
   useTrackScreen('ReviewHandle')
 

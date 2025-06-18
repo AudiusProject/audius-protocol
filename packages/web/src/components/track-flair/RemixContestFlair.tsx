@@ -10,7 +10,7 @@ import {
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import FlairIcon from './FlairIcon'
+import { FlairIcon } from './FlairIcon'
 import { Size } from './types'
 
 const anchorOrigin: Origin = {

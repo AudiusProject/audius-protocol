@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useNotificationEntity, useUsers } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  notificationsSelectors,
   Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
@@ -14,7 +14,6 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
@@ -26,8 +25,6 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
-
-const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: 'Purchase Successful',
@@ -54,13 +51,11 @@ export const USDCPurchaseBuyerNotification = (
   const { notification } = props
   const { timeLabel, isViewed, entityType } = notification
   const dispatch = useDispatch()
-  const content = useSelector((state) =>
-    getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity | CollectionEntity>
-  const notificationUsers = useSelector((state) =>
-    getNotificationUsers(state, notification, 1)
-  )
-  const sellerUser = notificationUsers ? notificationUsers[0] : null
+  const content = useNotificationEntity(notification) as Nullable<
+    TrackEntity | CollectionEntity
+  >
+  const { data: users } = useUsers(notification.userIds.slice(0, 1))
+  const sellerUser = users?.[0]
 
   const handleClick = useCallback(() => {
     if (content) {

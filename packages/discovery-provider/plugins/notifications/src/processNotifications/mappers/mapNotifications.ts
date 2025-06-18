@@ -42,7 +42,14 @@ import {
   CommentThreadNotification,
   CommentMentionNotification,
   CommentReactionNotification,
-  ListenStreakReminderNotification
+  ListenStreakReminderNotification,
+  ArtistRemixContestEndedNotification,
+  FanRemixContestEndedNotification,
+  FanRemixContestEndingSoonNotification,
+  FanRemixContestStartedNotification,
+  ArtistRemixContestEndingSoonNotification,
+  ArtistRemixContestSubmissionsNotification,
+  FanRemixContestWinnersSelectedNotification
 } from '../../types/notifications'
 import { ApproveManagerRequest } from './approveManagerRequest'
 import { Follow } from './follow'
@@ -81,6 +88,13 @@ import { CommentThread } from './commentThread'
 import { CommentMention } from './commentMention'
 import { CommentReaction } from './commentReaction'
 import { ListenStreakReminder } from './listenStreakReminder'
+import { ArtistRemixContestEnded } from './artistRemixContestEnded'
+import { FanRemixContestEnded } from './fanRemixContestEnded'
+import { FanRemixContestEndingSoon } from './fanRemixContestEndingSoon'
+import { FanRemixContestStarted } from './fanRemixContestStarted'
+import { ArtistRemixContestEndingSoon } from './artistRemixContestEndingSoon'
+import { ArtistRemixContestSubmissions } from './artistRemixContestSubmissions'
+import { FanRemixContestWinnersSelected } from './fanRemixContestWinnersSelected'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -320,7 +334,75 @@ const mapNotification = (
       identityDb,
       ListenStreakReminderNotification
     )
+  } else if (notification.type == 'artist_remix_contest_ended') {
+    const artistRemixContestEndedNotification =
+      notification as NotificationRow & {
+        data: ArtistRemixContestEndedNotification
+      }
+    return new ArtistRemixContestEnded(
+      dnDb,
+      identityDb,
+      artistRemixContestEndedNotification
+    )
+  } else if (notification.type == 'fan_remix_contest_ended') {
+    const fanRemixContestEndedNotification = notification as NotificationRow & {
+      data: FanRemixContestEndedNotification
+    }
+    return new FanRemixContestEnded(
+      dnDb,
+      identityDb,
+      fanRemixContestEndedNotification
+    )
+  } else if (notification.type == 'fan_remix_contest_ending_soon') {
+    const fanRemixContestEndingSoonNotification =
+      notification as NotificationRow & {
+        data: FanRemixContestEndingSoonNotification
+      }
+    return new FanRemixContestEndingSoon(
+      dnDb,
+      identityDb,
+      fanRemixContestEndingSoonNotification
+    )
+  } else if (notification.type == 'fan_remix_contest_started') {
+    const fanRemixContestStartedNotification =
+      notification as NotificationRow & {
+        data: FanRemixContestStartedNotification
+      }
+    return new FanRemixContestStarted(
+      dnDb,
+      identityDb,
+      fanRemixContestStartedNotification
+    )
+  } else if (notification.type == 'artist_remix_contest_ending_soon') {
+    const artistRemixContestEndingSoonNotification =
+      notification as NotificationRow & {
+        data: ArtistRemixContestEndingSoonNotification
+      }
+    return new ArtistRemixContestEndingSoon(
+      dnDb,
+      identityDb,
+      artistRemixContestEndingSoonNotification
+    )
+  } else if (notification.type == 'artist_remix_contest_submissions') {
+    const artistRemixContestSubmissionsNotification =
+      notification as NotificationRow & {
+        data: ArtistRemixContestSubmissionsNotification
+      }
+    return new ArtistRemixContestSubmissions(
+      dnDb,
+      identityDb,
+      artistRemixContestSubmissionsNotification
+    )
+  } else if (notification.type == 'fan_remix_contest_winners_selected') {
+    const fanRemixContestWinnersSelectedNotification =
+      notification as NotificationRow & {
+        data: FanRemixContestWinnersSelectedNotification
+      }
+    return new FanRemixContestWinnersSelected(
+      dnDb,
+      identityDb,
+      fanRemixContestWinnersSelectedNotification
+    )
   }
-
   logger.info(`Notification type: ${notification.type} has no handler`)
 }

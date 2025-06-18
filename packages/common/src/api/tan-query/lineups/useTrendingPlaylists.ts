@@ -10,7 +10,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   trendingPlaylistsPageLineupActions,
@@ -46,7 +46,7 @@ export const useTrendingPlaylists = (
   }: UseTrendingPlaylistsArgs = {},
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -74,8 +74,7 @@ export const useTrendingPlaylists = (
       )
       primeCollectionData({
         collections: processedPlaylists,
-        queryClient,
-        dispatch
+        queryClient
       })
 
       // Update lineup when new data arrives

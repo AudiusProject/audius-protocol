@@ -1,41 +1,83 @@
+import { all, call } from 'typed-redux-saga'
+
 import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 import { getContext } from '~/store/effects'
+import { getSDK } from '~/store/sdkUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { getUserQueryKey } from '../users/useUser'
-import { getUserByHandleQueryKey } from '../users/useUserByHandle'
+import { getUserQueryFn, getUserQueryKey } from '../users/useUser'
+import {
+  getUserByHandleQueryFn,
+  getUserByHandleQueryKey
+} from '../users/useUserByHandle'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
+import { isValidId } from '../utils/isValidId'
 
-export function* queryUser(id: ID | null | undefined) {
-  if (!id) return null
-  const queryClient = yield* getContext('queryClient')
-  return queryClient.getQueryData(getUserQueryKey(id))
+import { queryCurrentUserId } from './queryAccount'
+
+type QueryOptions = {
+  force?: boolean
+  staleTime?: number
 }
 
-export function* queryUserByHandle(handle: string | null | undefined) {
-  if (!handle) return null
+export function* queryUser(
+  id: ID | null | undefined,
+  queryOptions?: QueryOptions
+) {
+  if (!isValidId(id)) return undefined
   const queryClient = yield* getContext('queryClient')
-  const id = queryClient.getQueryData(getUserByHandleQueryKey(handle))
-  if (!id) return null
-  return yield* queryUser(id)
+  const dispatch = yield* getContext('dispatch')
+  const sdk = yield* getSDK()
+  const currentUserId = yield* call(queryCurrentUserId)
+
+  const queryData = yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getUserQueryKey(id),
+    queryFn: async () =>
+      getUserQueryFn(id!, currentUserId, queryClient, sdk, dispatch),
+    ...entityCacheOptions,
+    ...queryOptions
+  })
+
+  return queryData as User | undefined
 }
 
-export function* queryUsers(ids: ID[]) {
+export function* queryUserByHandle(
+  handle: string | null | undefined,
+  queryOptions?: QueryOptions
+) {
+  if (!handle) return undefined
   const queryClient = yield* getContext('queryClient')
+  const currentUserId = yield* call(queryCurrentUserId)
+  const sdk = yield* getSDK()
+  const userId = (yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getUserByHandleQueryKey(handle),
+    queryFn: async () =>
+      getUserByHandleQueryFn(handle, sdk, queryClient, currentUserId),
+    ...entityCacheOptions,
+    ...queryOptions
+  })) as ID | undefined
+  if (!userId) return undefined
+  const userMetadata = yield* call(queryUser, userId, queryOptions)
+  return userMetadata
+}
 
-  return ids.reduce(
-    (acc, id) => {
-      const user = queryClient.getQueryData(getUserQueryKey(id))
-      if (user) {
-        acc[id] = user
-      }
-      return acc
-    },
-    {} as Record<ID, User>
+export function* queryUsers(ids: ID[], queryOptions?: QueryOptions) {
+  const users = {} as Record<ID, User>
+  const userResults = yield* all(
+    ids.map((id) => call(queryUser, id, queryOptions))
   )
+
+  userResults.forEach((user, index) => {
+    if (user) {
+      users[ids[index]] = user
+    }
+  })
+
+  return users
 }
 
-export function* queryAllUsers() {
+export function* queryAllCachedUsers() {
   const queryClient = yield* getContext('queryClient')
   const queries = queryClient.getQueriesData<User>({
     queryKey: [QUERY_KEYS.user]

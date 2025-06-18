@@ -9,7 +9,6 @@ buildscript {
         castFrameworkVersion = "21.0.0"
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.25"
-        ffmpegKitPackage = "https-gpl-lts"
     }
     repositories {
         google()
@@ -38,5 +37,8 @@ allprojects {
         maven { url "https://maven.fpregistry.io/releases" }
         maven { url "https://storage.googleapis.com/snap-kit-build/maven" }
         maven { url "https://artifact.bytedance.com/repository/AwemeOpenSDK" }
+        flatDir {
+            dirs "$rootDir/libs"
+        }
     }
 }

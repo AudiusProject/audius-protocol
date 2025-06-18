@@ -7,8 +7,9 @@ import {
   useState
 } from 'react'
 
+import { useUser } from '@audius/common/api'
+import { useCurrentTrack } from '@audius/common/hooks'
 import {
-  cacheUsersSelectors,
   queueActions,
   playerActions,
   playerSelectors
@@ -49,10 +50,8 @@ import { PLAY_BAR_HEIGHT } from './constants'
 import { useCurrentTrackDuration } from './useCurrentTrackDuration'
 const { seek, reset } = playerActions
 
-const { getPlaying, getCurrentTrack, getCounter, getUid, getBuffering } =
-  playerSelectors
+const { getPlaying, getUid, getCounter, getBuffering } = playerSelectors
 const { next, previous } = queueActions
-const { getUser } = cacheUsersSelectors
 
 const STATUS_BAR_FADE_CUTOFF = 0.6
 const SKIP_DURATION_SEC = 15
@@ -217,13 +216,11 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
 
   const [isGestureEnabled, setIsGestureEnabled] = useState(true)
 
-  const track = useSelector(getCurrentTrack)
+  const track = useCurrentTrack()
   const trackDuration = useCurrentTrackDuration()
   const trackId = track?.track_id
 
-  const user = useSelector((state) =>
-    getUser(state, track ? { id: track.owner_id } : {})
-  )
+  const { data: user } = useUser(track?.owner_id)
   const [mediaKey, setMediaKey] = useState(0)
 
   useEffect(() => {

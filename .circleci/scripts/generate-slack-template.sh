@@ -37,18 +37,31 @@ do
   WORKFLOW_STATUSES=$(printf '%s\n%s\n%s' "$WORKFLOW_STATUSES" "$workflow_line" "$jobs_lines")
 done
 
+FAILED_WORKFLOW=$(jq -r '.items | map(.status == "failed") | any' < /tmp/workflows.json)
+
 # Add help text in the case of failure
 echo "Generating Summary..."
-if [[ $CIRCLE_BRANCH == "main" ]]
-then
-  SUMMARY_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "*Action Items*:\n1. If you broke `'$CIRCLE_BRANCH'`, then fix it or revert your change.\n2. If you think a test is flaky, confirm it, make a change to skip the test with a ticket comment, and assign the ticket to the test owner.\n3. Once CI is green again, give this a :white_check_mark:." else "Changes should be live on <https://staging.audius.co|staging web> and all staging mobile apps." end' < /tmp/workflows.json)
+if [[ $CIRCLE_BRANCH == "main" ]]; then
+  if [[ $FAILED_WORKFLOW == "true" ]]; then
+    SUMMARY_MESSAGE="*Action Items*:\n1. If you broke `$CIRCLE_BRANCH`, then fix it or revert your change.\n2. If you think a test is flaky, confirm it, make a change to skip the test with a ticket comment, and assign the ticket to the test owner.\n3. Once CI is green again, give this a :white_check_mark:."
+    AUTHOR="$author_name <@$SLACK_USER_ID>"
+  else
+    SUMMARY_MESSAGE="Changes should be live on <https://staging.audius.co|staging web> and all staging mobile apps."
+    AUTHOR="$author_name"
+  fi
 else
-  SUMMARY_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "If automerge was enabled, the change likely did not merge. Fix your branch and try again." else "If automerge is enabled, the changes will be merged!" end' < /tmp/workflows.json)
+  if [[ $FAILED_WORKFLOW == "true" ]]; then
+    SUMMARY_MESSAGE="If automerge was enabled, the change likely did not merge. Fix your branch and try again."
+    AUTHOR="$author_name <@$SLACK_USER_ID>"
+  else 
+    SUMMARY_MESSAGE="If automerge is enabled, the changes will be merged!"
+    AUTHOR="$author_name"
+  fi
 fi
 
 echo "Writing template..."
 jq -n --arg header "$PIPELINE_STATUS_HEADER"\
-    --arg author "*Author*: <@$SLACK_USER_ID>"\
+    --arg author "*Author*: $AUTHOR"\
     --arg branch "*Branch*: <$PIPELINE_URL|$CIRCLE_BRANCH>"\
     --arg commit "$(printf "*Commit*: %s\n\`\`\`%s\`\`\`" "$COMMIT_SHA_LINK" "$COMMIT_MESSAGE")"\
     --arg workflows "$WORKFLOW_STATUSES"\

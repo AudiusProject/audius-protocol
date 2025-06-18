@@ -32,8 +32,9 @@ project 'AudiusReactNative',
 
 target 'AudiusReactNative' do
   pod 'SRSRadialGradient', :path => '../../../node_modules/react-native-radial-gradient/ios'
-  pod 'ffmpeg-kit-ios-https-gpl', :path => './vendor/ffmpeg-kit-ios-https-gpl'
-  pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
+  pod 'ffmpeg-kit-ios-full-gpl', :podspec => './ffmpeg-kit-ios-full-gpl.podspec'
+  pod 'ffmpeg-kit-react-native', :subspecs => ['full-gpl'], :podspec => '../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
+
   pod 'nSure'
 
   config = use_native_modules!
@@ -45,17 +46,38 @@ target 'AudiusReactNative' do
   )
 
   post_install do |installer|
+    bitcode_strip_path = `xcrun --find bitcode_strip`.chop!
+
+    def strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+      framework_path = File.join(Dir.pwd, framework_relative_path)
+      command = "#{bitcode_strip_path} #{framework_path} -r -o #{framework_path}"
+      puts "Stripping bitcode: #{command}"
+      system(command)
+    end
+
+    framework_paths = [
+      "Pods/google-cast-sdk-dynamic-xcframework-no-bluetooth/GoogleCast.xcframework/ios-arm64/GoogleCast.framework/GoogleCast",
+      "Pods/SnapSDK/SCSDKCoreKit.xcframework/ios-arm64_armv7_armv7s/SCSDKCoreKit.framework/SCSDKCoreKit",
+      "Pods/SnapSDK/SCSDKCreativeKit.xcframework/ios-arm64_armv7_armv7s/SCSDKCreativeKit.framework/SCSDKCreativeKit",
+      "Pods/SnapSDK/SCSDKLoginKit.xcframework/ios-arm64_armv7_armv7s/SCSDKLoginKit.framework/SCSDKLoginKit",
+    ]
+
+    framework_paths.each do |framework_relative_path|
+      strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+    end
+
+    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
    react_native_post_install(
       installer,
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
+      # :ccache_enabled => true 
     )
 
 
-    installer.pods_project.build_configurations.each do |config|
-      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
-    end
+    # installer.pods_project.build_configurations.each do |config|
+    #   config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    # end
 
     # https://github.com/CocoaPods/CocoaPods/issues/11402#issuecomment-1201464693
     installer.pods_project.targets.each do |target|

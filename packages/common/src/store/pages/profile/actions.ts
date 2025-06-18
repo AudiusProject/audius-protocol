@@ -25,7 +25,7 @@ export const SET_NOTIFICATION_SUBSCRIPTION =
 export type FetchProfileAction = {
   type: typeof FETCH_PROFILE
   handle: string | null
-  userId: ID | null
+  userId: ID | null | undefined
   forceUpdate: boolean
   shouldSetLoading: boolean
   deleteExistingEntry: boolean
@@ -46,7 +46,7 @@ export type FetchProfileFailedAction = {
 
 export type SetCurrentUserAction = {
   type: typeof SET_CURRENT_USER
-  handle: string
+  handle: string | null
 }
 
 export type UpdateProfileAction = {
@@ -105,7 +105,7 @@ export type ProfilePageAction =
 // TODO: Move this to redux toolkit
 export function fetchProfile(
   handle: Nullable<string>,
-  userId: Nullable<ID>,
+  userId: Nullable<ID> | undefined,
   forceUpdate: boolean,
   shouldSetLoading: boolean,
   deleteExistingEntry: boolean,
@@ -134,7 +134,7 @@ export function fetchProfileFailed(handle: string): FetchProfileFailedAction {
   return { type: FETCH_PROFILE_FAILED, handle }
 }
 
-export function setCurrentUser(handle: string): SetCurrentUserAction {
+export function setCurrentUser(handle: string | null): SetCurrentUserAction {
   return { type: SET_CURRENT_USER, handle }
 }
 

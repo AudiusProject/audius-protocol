@@ -1,13 +1,10 @@
 import { useCallback, MouseEvent } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 
 import { TextLink, TextLinkProps } from 'components/link'
-import { useSelector } from 'utils/reducer'
-
-const { getUser } = cacheUsersSelectors
 
 type VanityMetricProps = TextLinkProps
 
@@ -42,7 +39,7 @@ export const VanityMetric = (props: VanityMetricProps) => {
 
 export const UserName = (props: { userId: ID }) => {
   const { userId } = props
-  const userName = useSelector((state) => getUser(state, { id: userId })?.name)
+  const { data: userName } = useUser(userId, { select: (user) => user?.name })
 
   return <Text>{userName}</Text>
 }

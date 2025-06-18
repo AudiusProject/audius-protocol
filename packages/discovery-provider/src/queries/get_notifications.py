@@ -174,6 +174,13 @@ class NotificationType(str, Enum):
     COMMENT_MENTION = "comment_mention"
     COMMENT_REACTION = "comment_reaction"
     LISTEN_STREAK_REMINDER = "listen_streak_reminder"
+    FAN_REMIX_CONTEST_STARTED = "fan_remix_contest_started"
+    FAN_REMIX_CONTEST_ENDED = "fan_remix_contest_ended"
+    FAN_REMIX_CONTEST_ENDING_SOON = "fan_remix_contest_ending_soon"
+    FAN_REMIX_CONTEST_WINNERS_SELECTED = "fan_remix_contest_winners_selected"
+    ARTIST_REMIX_CONTEST_ENDED = "artist_remix_contest_ended"
+    ARTIST_REMIX_CONTEST_ENDING_SOON = "artist_remix_contest_ending_soon"
+    ARTIST_REMIX_CONTEST_SUBMISSIONS = "artist_remix_contest_submissions"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -482,6 +489,41 @@ class ListenStreakReminderNotification(TypedDict):
     streak: int
 
 
+class FanRemixContestStartedNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
+class FanRemixContestEndedNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
+class FanRemixContestEndingSoonNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
+class FanRemixContestWinnersSelectedNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
+class ArtistRemixContestEndedNotification(TypedDict):
+    entity_id: int
+
+
+class ArtistRemixContestEndingSoonNotification(TypedDict):
+    entity_user_id: int
+    entity_id: int
+
+
+class ArtistRemixContestSubmissionsNotification(TypedDict):
+    event_id: int
+    milestone: int
+    entity_id: int
+
+
 NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
@@ -514,6 +556,13 @@ NotificationData = Union[
     CommentMentionNotification,
     CommentReactionNotification,
     ListenStreakReminderNotification,
+    FanRemixContestStartedNotification,
+    FanRemixContestEndedNotification,
+    FanRemixContestEndingSoonNotification,
+    FanRemixContestWinnersSelectedNotification,
+    ArtistRemixContestEndedNotification,
+    ArtistRemixContestEndingSoonNotification,
+    ArtistRemixContestSubmissionsNotification,
 ]
 
 

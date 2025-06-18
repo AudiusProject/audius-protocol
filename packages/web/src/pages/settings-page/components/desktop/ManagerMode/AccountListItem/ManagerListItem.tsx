@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { useRemoveManager } from '@audius/common/api'
+import { useCurrentUserId, useRemoveManager } from '@audius/common/api'
 import { useAppContext } from '@audius/common/context'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { Name, UserManagerMetadata } from '@audius/common/models'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -19,14 +19,12 @@ import {
 
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useComposeChat } from 'pages/chat-page/components/useComposeChat'
-import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 
 import { ArtistInfo } from './ArtistInfo'
 
 const { profilePage } = route
-const { getUserId } = accountSelectors
-const { getCanCreateChat } = chatSelectors
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   moreOptions: 'more options',
@@ -46,7 +44,7 @@ export const ManagerListItem = ({
   managerData: { manager, grant },
   onRemoveManager
 }: ManagerListItemProps) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const isManagerMode = useIsManagedAccount()
   const isPending = grant?.is_approved == null
 
@@ -59,11 +57,9 @@ export const ManagerListItem = ({
     analytics: { track, make }
   } = useAppContext()
 
-  const [cancelPendingInvite] = useRemoveManager()
+  const { mutate: cancelPendingInvite } = useRemoveManager()
 
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: manager.user_id })
-  )
+  const { canCreateChat } = useCanCreateChat(manager.user_id)
 
   const composeChat = useComposeChat({
     user: manager

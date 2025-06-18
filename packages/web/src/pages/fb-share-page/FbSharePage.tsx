@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Text } from '@audius/harmony'
 import cn from 'classnames'
 
 import { env } from 'services/env'
-import { useSelector } from 'utils/reducer'
 
 import styles from './FbSharePage.module.css'
 
@@ -31,7 +30,9 @@ export const FbSharePage = () => {
   useEffect(() => {
     injectScript()
   }, [])
-  const handle = useSelector(accountSelectors.getUserHandle)
+  const { data: handle } = useCurrentAccountUser({
+    select: (user) => user?.handle
+  })
   return (
     <div className={styles.root}>
       <div id='fb-root'></div>

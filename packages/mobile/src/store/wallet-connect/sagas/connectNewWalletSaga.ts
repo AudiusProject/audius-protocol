@@ -1,9 +1,6 @@
+import { queryCurrentUserId } from '@audius/common/api'
 import { Name, Chain } from '@audius/common/models'
-import {
-  accountSelectors,
-  tokenDashboardPageActions,
-  getContext
-} from '@audius/common/store'
+import { tokenDashboardPageActions, getContext } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import bs58 from 'bs58'
@@ -29,11 +26,10 @@ import type { ConnectAction, ConnectNewWalletAction } from '../types'
 import { buildUrl, decryptPayload, encryptPayload } from '../utils'
 const { setIsConnectingWallet, connectNewWallet: baseConnectNewWallet } =
   tokenDashboardPageActions
-const { getUserId } = accountSelectors
 
 // Connection a new wallet to an Audius account
 function* connectNewWalletAsync(action: ConnectNewWalletAction) {
-  const accountUserId = yield* select(getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
   if (!accountUserId) return
 
   yield* put(baseConnectNewWallet())
@@ -180,7 +176,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
 // Connect a wallet to establish a session, but don't connect
 // to an Audius account
 function* connectAsync(action: ConnectAction) {
-  const accountUserId = yield* select(getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
   if (!accountUserId) return
   switch (action.payload.connectionType) {
     case null:

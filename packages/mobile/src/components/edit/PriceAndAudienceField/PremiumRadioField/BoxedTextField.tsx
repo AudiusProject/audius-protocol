@@ -21,9 +21,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   textField: {
     marginVertical: 0,
-    paddingHorizontal: 0
-  },
-  textInput: {
+    paddingHorizontal: 0,
     backgroundColor: palette.white
   }
 }))
@@ -51,12 +49,7 @@ export const BoxedTextField = (props: BoxedTextFieldProps) => {
     <View style={[styles.root, style]}>
       <Text weight='bold'>{title}</Text>
       <Text>{description}</Text>
-      <TextField
-        style={styles.textField}
-        styles={{ root: styles.textInput }}
-        errorBeforeSubmit
-        {...other}
-      />
+      <TextField style={styles.textField} errorBeforeSubmit {...other} />
       {children}
     </View>
   )

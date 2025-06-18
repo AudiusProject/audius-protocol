@@ -1,16 +1,15 @@
+import { queryAccountUser } from '@audius/common/api'
 import { Collection, Kind, Track } from '@audius/common/models'
 import {
-  accountSelectors,
   profilePageTracksLineupActions,
   profilePageSelectors,
   uploadActions,
   UploadType
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
-import { put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 const { UPLOAD_TRACKS_SUCCEEDED, uploadTracksSucceeded } = uploadActions
-const { getUserHandle } = accountSelectors
 const { getTrackSource } = profilePageSelectors
 
 type UploadTracksSucceededAction = ReturnType<typeof uploadTracksSucceeded>
@@ -23,7 +22,8 @@ const isTrackEntity = (entity: Track | Collection): entity is Track =>
   (entity as Track).track_id !== undefined
 
 function* addUploadedTrackToLineup(action: UploadTracksSucceededAction) {
-  const accountHandle = yield* select(getUserHandle)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   const { uploadType, completedEntity } = action
 
   // We will only be adding single track uploads since multi-adds for lineups

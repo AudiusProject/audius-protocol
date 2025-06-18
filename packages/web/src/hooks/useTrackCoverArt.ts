@@ -1,19 +1,18 @@
 import { useEffect } from 'react'
 
+import { useTrack } from '@audius/common/api'
 import { imageBlank as imageEmpty } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
 import { getDominantColorsByTrack } from '@audius/common/src/store/average-color/selectors'
 import { setDominantColors } from '@audius/common/src/store/average-color/slice'
-import { cacheTracksSelectors, CommonState } from '@audius/common/store'
+import { CommonState } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { preload } from 'utils/image'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { useSelector } from 'utils/reducer'
-
-const { getTrack } = cacheTracksSelectors
 
 export const useTrackCoverArt = ({
   trackId,
@@ -24,9 +23,9 @@ export const useTrackCoverArt = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const artwork = useSelector(
-    (state) => getTrack(state, { id: trackId })?.artwork
-  )
+  const { data: artwork } = useTrack(trackId, {
+    select: (track) => track?.artwork
+  })
   const image = useImageSize({
     artwork,
     targetSize: size,
@@ -55,15 +54,16 @@ export const useTrackCoverArtDominantColors = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: trackId })
-  )
+  const { data: track } = useTrack(trackId, {
+    select: (track) => ({
+      cover_art_sizes: track?.cover_art_sizes,
+      cover_art: track?.cover_art
+    })
+  })
 
   // Pull existing dominant colors from redux
   const coverArtDominantColors = useSelector((state: CommonState) => {
-    return getDominantColorsByTrack(state, {
-      track
-    })
+    return getDominantColorsByTrack(state, { track })
   })
 
   // Fetch dominant colors if we don't have them yet and set in redux

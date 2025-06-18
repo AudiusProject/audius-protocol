@@ -1,13 +1,14 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import {
-  accountSelectors,
   recoveryEmailActions,
   recoveryEmailSelectors,
   modalsActions
 } from '@audius/common/store'
 import { css } from '@emotion/native'
+import { pick } from 'lodash'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -35,7 +36,6 @@ import { AccountSettingsItem } from './AccountSettingsItem'
 const { resendRecoveryEmail } = recoveryEmailActions
 const { getRecoveryEmailStatus } = recoveryEmailSelectors
 const { setVisibility } = modalsActions
-const { getUserId, getUserHandle, getUserName } = accountSelectors
 
 const messages = {
   title: 'Account',
@@ -80,9 +80,15 @@ export const AccountSettingsScreen = () => {
   const styles = useStyles()
   const { toast } = useToast()
   const dispatch = useDispatch()
-  const accountUserId = useSelector(getUserId)
-  const accountHandle = useSelector(getUserHandle)
-  const accountName = useSelector(getUserName)
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => pick(user, ['user_id', 'handle', 'name'])
+  })
+  const {
+    user_id: accountUserId,
+    handle: accountHandle,
+    name: accountName
+  } = accountData ?? {}
+
   const recoveryEmailStatus = useSelector(getRecoveryEmailStatus)
   const navigation = useNavigation<ProfileTabScreenParamList>()
 

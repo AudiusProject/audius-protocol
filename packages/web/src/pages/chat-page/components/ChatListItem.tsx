@@ -1,14 +1,11 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
-import { chatSelectors } from '@audius/common/store'
+import { useOtherChatUsersFromChat } from '@audius/common/api'
 import type { UserChat } from '@audius/sdk'
 import cn from 'classnames'
 
 import styles from './ChatListItem.module.css'
 import { ChatUser } from './ChatUser'
-
-const { getOtherChatUsersFromChat } = chatSelectors
 
 const messages = {
   new: 'New'
@@ -24,10 +21,7 @@ export const ChatListItem = (props: ChatListItemProps) => {
   const { chat, currentChatId, onChatClicked } = props
   const isCurrentChat = currentChatId && currentChatId === chat.chat_id
 
-  const users = useProxySelector(
-    (state) => getOtherChatUsersFromChat(state, chat),
-    [chat]
-  )
+  const users = useOtherChatUsersFromChat(chat)
 
   const handleClick = useCallback(() => {
     onChatClicked(chat.chat_id)

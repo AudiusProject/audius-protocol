@@ -1,19 +1,29 @@
 import {
-  albumMetadataForSDK,
+  albumMetadataForCreateWithSDK,
   fileToSdk,
   playlistMetadataForCreateWithSDK,
+  stemTrackMetadataFromSDK,
   trackMetadataForUploadToSdk,
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryUser } from '@audius/common/api'
+import {
+  getStemsQueryKey,
+  queryAccountUser,
+  queryCurrentUserId,
+  queryTracks,
+  queryUser,
+  primeCollectionDataSaga,
+  getUserQueryKey,
+  QUERY_KEYS
+} from '@audius/common/api'
 import {
   Collection,
   Feature,
   FieldVisibility,
   ID,
-  Kind,
   Name,
+  StemTrack,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -26,12 +36,9 @@ import {
   TrackForUpload,
   UploadType,
   accountActions,
-  accountSelectors,
-  cacheActions,
   confirmerActions,
   getContext,
-  reformatCollection,
-  savedPageActions,
+  libraryPageActions,
   uploadActions,
   getSDK,
   cacheTracksActions,
@@ -40,11 +47,7 @@ import {
   queueActions,
   playerActions
 } from '@audius/common/store'
-import {
-  actionChannelDispatcher,
-  makeUid,
-  waitForAccount
-} from '@audius/common/utils'
+import { actionChannelDispatcher, waitForAccount } from '@audius/common/utils'
 import {
   Id,
   OptionalId,
@@ -60,10 +63,11 @@ import {
   cancel,
   fork,
   put,
-  select,
   takeLatest,
   take,
-  delay
+  delay,
+  select,
+  retry
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -74,8 +78,6 @@ import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
-import { retrieveTracks } from '../cache/tracks/utils'
-import { adjustUserField } from '../cache/users/sagas'
 import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
 import {
@@ -85,7 +87,6 @@ import {
 } from './sagaHelpers'
 
 const { updateProgress } = uploadActions
-const { getUserId, getAccountUser } = accountSelectors
 
 type ProgressAction = ReturnType<typeof updateProgress>
 
@@ -206,7 +207,7 @@ const makeOnProgress = (
  */
 export function* deleteTracks(trackIds: ID[]) {
   const sdk = yield* getSDK()
-  const userId = Id.parse(yield* select(accountSelectors.getUserId))
+  const userId = Id.parse(yield* call(queryCurrentUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
@@ -237,7 +238,7 @@ function* uploadWorker(
     const { trackIndex, stemIndex, track } = task
     try {
       const sdk = yield* getSDK()
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
@@ -299,7 +300,7 @@ function* publishWorker(
     const { trackIndex, stemIndex, metadata } = task
     try {
       const sdk = yield* getSDK()
-      const userId = yield* select(accountSelectors.getUserId)
+      const userId = yield* call(queryCurrentUserId)
       if (!userId) {
         throw new Error('No user id found during upload. Not signed in?')
       }
@@ -413,6 +414,8 @@ export function* handleUploads({
   kind: 'album' | 'playlist' | 'tracks' | 'stems'
 }) {
   const isCollection = kind === 'album' || kind === 'playlist'
+  const queryClient = yield* getContext('queryClient')
+  const userId = (yield* call(queryCurrentUserId))!
 
   // Queue for the upload tasks (uploading files to storage)
   const uploadQueue = yield* call(
@@ -429,7 +432,7 @@ export function* handleUploads({
   // Channel to listen for responses
   const responseChannel = yield* call(
     channel<UploadTrackResponse>,
-    buffers.expanding(10)
+    buffers.expanding(200)
   )
 
   // Channel to relay progress actions
@@ -453,10 +456,11 @@ export function* handleUploads({
           track.metadata.artwork && 'source' in track.metadata.artwork
             ? track.metadata.artwork?.source
             : undefined,
+        trackId: track.metadata.track_id,
         genre: track.metadata.genre,
         moode: track.metadata.mood,
         size: track.file.size,
-        type: track.file.type,
+        fileType: track.file.type,
         name: track.file.name,
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
@@ -527,6 +531,27 @@ export function* handleUploads({
       } uploaded`,
       { trackIndex, stemIndex }
     )
+
+    if (payload.metadata.stemOf?.parentTrackId) {
+      const parentTrackId = payload.metadata.stemOf.parentTrackId
+
+      queryClient.setQueryData(
+        getStemsQueryKey(parentTrackId),
+        (currentStems: StemTrack[] | undefined) => {
+          const newStem = stemTrackMetadataFromSDK({
+            ...payload.metadata,
+            id: Id.parse(parentTrackId + (payload.trackIndex + 1 + Date.now())),
+            parentId: Id.parse(parentTrackId),
+            userId: Id.parse(userId),
+            blocknumber: 0,
+            cid: '',
+            category: payload.metadata.stemOf!.category!,
+            origFilename: payload.metadata.origFilename!
+          })
+          return [...(currentStems ?? []), newStem!]
+        }
+      )
+    }
 
     // We know trackId exists because we generate it in uploadMultipleTracks
     const trackId = metadata.trackId!
@@ -803,7 +828,8 @@ export function* uploadCollection(
   const sdk = yield* getSDK()
 
   yield waitForAccount()
-  const userId = (yield* select(getUserId))!
+  const queryClient = yield* getContext('queryClient')
+  const userId = (yield* call(queryCurrentUserId))!
   // This field will get replaced
   let albumTrackPrice: number | undefined
 
@@ -868,7 +894,7 @@ export function* uploadCollection(
             }
 
             yield* call([sdk.albums, sdk.albums.createAlbum], {
-              metadata: albumMetadataForSDK(
+              metadata: albumMetadataForCreateWithSDK(
                 collectionMetadata as unknown as Collection
               ),
               userId: Id.parse(userId),
@@ -931,43 +957,8 @@ export function* uploadCollection(
           })
         )
         const user = yield* queryUser(userId)
-        yield* put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
-                _collectionIds: (user?._collectionIds ?? []).concat(
-                  confirmedPlaylist.playlist_id
-                )
-              }
-            }
-          ])
-        )
 
-        // Add images to the collection since we're not loading it the traditional way with
-        // the `fetchCollections` saga
-        confirmedPlaylist = yield* call(reformatCollection, {
-          collection: confirmedPlaylist
-        })
-        const uid = yield* makeUid(
-          Kind.COLLECTIONS,
-          confirmedPlaylist.playlist_id,
-          'account'
-        )
-        // Create a cache entry and add it to the account so the playlist shows in the left nav
-        yield* put(
-          cacheActions.add(
-            Kind.COLLECTIONS,
-            [
-              {
-                id: confirmedPlaylist.playlist_id,
-                uid,
-                metadata: confirmedPlaylist
-              }
-            ],
-            /* replace= */ true // forces cache update
-          )
-        )
+        yield* call(primeCollectionDataSaga, [confirmedPlaylist])
         yield* put(
           accountActions.addAccountPlaylist({
             id: confirmedPlaylist.playlist_id,
@@ -981,13 +972,15 @@ export function* uploadCollection(
           })
         )
         yield* put(
-          savedPageActions.addLocalCollection({
+          libraryPageActions.addLocalCollection({
             collectionId: confirmedPlaylist.playlist_id,
             isAlbum: confirmedPlaylist.is_album,
             category: LibraryCategory.Favorite
           })
         )
-        yield* put(cacheActions.setExpired(Kind.USERS, userId))
+        queryClient.invalidateQueries({
+          queryKey: getUserQueryKey(userId)
+        })
 
         // Finally, add to the library
         yield* call(addPlaylistsNotInLibrary)
@@ -1046,6 +1039,8 @@ export function* uploadMultipleTracks(
 ) {
   const sdk = yield* getSDK()
 
+  const queryClient = yield* getContext('queryClient')
+
   // Ensure the user is logged in
   yield* call(waitForAccount)
 
@@ -1071,29 +1066,40 @@ export function* uploadMultipleTracks(
     kind: 'tracks'
   })
 
-  // Get true track metadatas back
-  const newTracks = yield* call(retrieveTracks, {
-    trackIds,
-    forceRetrieveFromSource: true
-  })
-  if (newTracks.length === 0) {
-    throw new Error('No tracks found after uploading.')
-  }
+  // Get true track metadatas back with retry logic
+  const newTracks = yield* retry(
+    20, // max attempts
+    2000, // delay between attempts in ms
+    function* () {
+      const tracks = yield* call(queryTracks, trackIds, {
+        force: true,
+        staleTime: 0
+      })
+      if (tracks.length === 0) {
+        throw new Error('No tracks found after uploading.')
+      }
+      return tracks
+    }
+  )
 
   // Make sure track count changes for this user
-  const account = yield* select(getAccountUser)
-  yield* call(adjustUserField, {
-    user: account!,
-    fieldName: 'track_count',
-    delta: newTracks.length
-  })
+  const account = yield* call(queryAccountUser)
+
+  queryClient.setQueryData(getUserQueryKey(account!.user_id), (prevUser) =>
+    !prevUser
+      ? undefined
+      : {
+          ...prevUser,
+          track_count: newTracks.length
+        }
+  )
 
   // At this point, the upload was success! The rest is metrics.
   yield* put(
     uploadActions.uploadTracksSucceeded({
-      id: newTracks[0].metadata.track_id,
-      trackMetadatas: newTracks.map((t) => t.metadata),
-      completedEntity: newTracks[0].metadata,
+      id: newTracks[0].track_id,
+      trackMetadatas: newTracks,
+      completedEntity: newTracks[0],
       uploadType
     })
   )
@@ -1106,7 +1112,7 @@ export function* uploadMultipleTracks(
 
   // If the hide remixes is turned on, send analytics event
   for (let i = 0; i < newTracks.length; i += 1) {
-    const track = newTracks[i].metadata
+    const track = newTracks[i]
     if (track.field_visibility?.remixes === false) {
       yield* put(
         make(Name.REMIX_HIDE, {
@@ -1119,7 +1125,7 @@ export function* uploadMultipleTracks(
 
   // Send analytics for any remixes
   for (const remixTrackData of newTracks) {
-    const remixTrack = remixTrackData.metadata
+    const remixTrack = remixTrackData
     if (
       remixTrack.remix_of !== null &&
       Array.isArray(remixTrack.remix_of?.tracks) &&
@@ -1129,27 +1135,27 @@ export function* uploadMultipleTracks(
     }
   }
 
-  // Bust the cache so we refetch the user
-  yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
-
-  const queryClient = yield* getContext('queryClient')
+  // Refetch the user
+  queryClient.invalidateQueries({
+    queryKey: getUserQueryKey(account!.user_id)
+  })
 
   // Invalidate the uploader's profile tracks cache
   queryClient.invalidateQueries({
-    queryKey: ['profileTracks', account!.handle]
+    queryKey: [QUERY_KEYS.profileTracks, account!.handle]
   })
 
   for (const track of newTracks) {
-    const parentTrackId = track.metadata.remix_of?.tracks[0]?.parent_track_id
+    const parentTrackId = track.remix_of?.tracks[0]?.parent_track_id
 
     // If it's a remix, invalidate the parent track's lineup and remixes page
     if (parentTrackId) {
       queryClient.invalidateQueries({
-        queryKey: ['trackPageLineup', parentTrackId]
+        queryKey: [QUERY_KEYS.trackPageLineup, parentTrackId]
       })
       // Invalidate all possible combinations of remixes queries for the parent track
       queryClient.invalidateQueries({
-        queryKey: ['remixes', parentTrackId],
+        queryKey: [QUERY_KEYS.remixes, parentTrackId],
         exact: false
       })
     }
@@ -1243,16 +1249,14 @@ function* updateTrackAudioAsync(
   const payload = action.payload
 
   try {
-    const tracks = yield* call(retrieveTracks, {
-      trackIds: [payload.trackId]
-    })
+    const tracks = yield* call(queryTracks, [payload.trackId])
 
     if (!tracks[0]) {
       throw new Error('Missing track for track audio replace.')
     }
-    const track = tracks[0].metadata
+    const track = tracks[0]
     const sdk = yield* getSDK()
-    const userId = yield* select(accountSelectors.getUserId)
+    const userId = yield* call(queryCurrentUserId)
 
     if (!userId) {
       throw new Error('No user id found during upload. Not signed in?')

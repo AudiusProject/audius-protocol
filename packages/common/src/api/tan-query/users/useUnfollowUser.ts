@@ -2,18 +2,17 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { useAppContext } from '~/context/appContext'
 import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { AccountUserMetadata, UserMetadata } from '~/models/User'
+import { UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
 import { removeFolloweeId } from '~/store/gated-content/slice'
 import { revokeFollowGatedAccess } from '~/store/tipping/slice'
 
-import { getCurrentAccountQueryKey } from './account/useCurrentAccount'
 import { useCurrentUserId } from './account/useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 
@@ -24,11 +23,10 @@ type UnfollowUserParams = {
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
-  previousAccountUser: AccountUserMetadata | undefined
 }
 
 export const useUnfollowUser = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const {
@@ -66,7 +64,7 @@ export const useUnfollowUser = () => {
     },
     onMutate: async ({ followeeUserId }) => {
       if (!followeeUserId || !currentUserId) {
-        return { previousUser: undefined, previousAccountUser: undefined }
+        return { previousUser: undefined }
       }
 
       await queryClient.cancelQueries({
@@ -100,38 +98,7 @@ export const useUnfollowUser = () => {
         })
       }
 
-      const previousAccountUser = queryClient.getQueryData(
-        getCurrentAccountQueryKey(currentUserId)
-      )
-
-      if (previousAccountUser) {
-        queryClient.setQueryData(getCurrentAccountQueryKey(currentUserId), {
-          ...previousAccountUser,
-          user: {
-            ...previousAccountUser.user,
-            followee_count: Math.max(
-              (previousAccountUser?.user?.followee_count ?? 0) - 1,
-              0
-            )
-          }
-        })
-      }
-
-      dispatch(
-        update(Kind.USERS, [
-          {
-            id: currentUserId,
-            metadata: {
-              followee_count: Math.max(
-                (previousAccountUser?.user?.followee_count ?? 0) - 1,
-                0
-              )
-            }
-          }
-        ])
-      )
-
-      return { previousUser, previousAccountUser }
+      return { previousUser }
     },
     onError: (
       error,

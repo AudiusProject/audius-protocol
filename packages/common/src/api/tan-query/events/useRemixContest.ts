@@ -9,9 +9,10 @@ import { SelectableQueryOptions } from '../types'
 import { useEvent } from './useEvent'
 import { useEventIdsByEntityId } from './useEventsByEntityId'
 
-type RemixContestData = {
+export type RemixContestData = {
   description: string
   prizeInfo: string
+  winners: ID[]
 }
 
 type RemixContestEvent = OverrideProperties<

@@ -1,18 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useGetManagers } from '@audius/common/api'
+import { useCurrentUserId, useManagers } from '@audius/common/api'
 import { User } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Box, Flex, IconShieldUser, Text } from '@audius/harmony'
 
 import ArtistChip from 'components/artist/ArtistChip'
 import { UsersSearch } from 'components/search-users-modal/SearchUsersModal'
-import { useSelector } from 'utils/reducer'
 
 import { sharedMessages } from './sharedMessages'
 import { AccountsManagingYouPages, FindAccountManagerPageProps } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   description: 'Invite a manager to join your account.',
@@ -24,11 +20,8 @@ const messages = {
 export const FindAccountManagerPage = (props: FindAccountManagerPageProps) => {
   const { setPageState, params } = props
   const [query, setQuery] = useState(params?.query ?? '')
-  const userId = useSelector(getUserId)
-  const { data: managers } = useGetManagers(
-    { userId: userId! },
-    { disabled: userId == null }
-  )
+  const { data: userId } = useCurrentUserId()
+  const { data: managers } = useManagers(userId)
   const excludedUserIds = useMemo(() => {
     const res: number[] = managers?.map((m) => m.manager.user_id) ?? []
     if (userId) {

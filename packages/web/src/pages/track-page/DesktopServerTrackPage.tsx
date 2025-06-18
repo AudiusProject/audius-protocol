@@ -1,11 +1,11 @@
 import { Track } from '@audius/common/src/models/Track'
 import { User } from '@audius/common/src/models/User'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
+import { profilePage } from '@audius/common/src/utils/route'
 import {
   formatDate,
   formatSecondsAsText
 } from '@audius/common/src/utils/timeUtil'
-import { route } from '@audius/common/utils'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import IconPlay from '@audius/harmony/src/assets/icons/Play.svg'
@@ -28,7 +28,6 @@ import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUs
 import { searchResultsPage } from 'utils/route'
 
 import { Metadata } from './components/Metadata'
-const { profilePage } = route
 
 type DesktopServerTrackPageProps = {
   track: Track

@@ -18,7 +18,7 @@ module.exports = (api) => {
           '@audius/common/utils': '../common/src/utils',
           '@audius/common/schemas': '../common/src/schemas',
           '@audius/common/services': '../common/src/services',
-          '@audius/common/audius-query': '../common/src/audius-query',
+          '@audius/common/api': '../common/src/api',
           '@audius/common/store': '../common/src/store'
         }
       }

@@ -1,9 +1,7 @@
 import {
   userCollectionMetadataFromSDK,
-  userMetadataFromSDK,
-  userTrackMetadataFromSDK
+  userMetadataFromSDK
 } from '@audius/common/adapters'
-import type { full } from '@audius/sdk'
 import { FullPlaylistResponseFromJSON } from '@audius/sdk/src/sdk/api/generated/full/models/FullPlaylistResponse'
 import type { PageContextServer } from 'vike/types'
 
@@ -43,20 +41,12 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     profile_picture: apiUser.profilePicture?._1000x1000
   }
 
-  const tracks = (apiCollection.tracks ?? []).map(
-    (apiTrack: full.TrackFull) => ({
-      ...userTrackMetadataFromSDK(apiTrack),
-      cover_art: apiTrack.artwork?._150x150
-    })
-  )
-
   try {
     return {
       pageContext: {
         pageProps: {
           collection,
-          user,
-          tracks
+          user
         }
       }
     }

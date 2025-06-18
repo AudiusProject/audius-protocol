@@ -4,11 +4,10 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
 
@@ -16,8 +15,6 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeCollectionData } from '../utils/primeCollectionData'
-
-import { useCollections } from './useCollections'
 
 const PAGE_SIZE = 20
 
@@ -63,12 +60,11 @@ export const useLibraryCollections = (
   }: UseLibraryCollectionsArgs,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
-  const { data: collectionIds } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: getLibraryCollectionsQueryKey({
       currentUserId,
       collectionType,
@@ -107,8 +103,7 @@ export const useLibraryCollections = (
 
       primeCollectionData({
         collections,
-        queryClient,
-        dispatch
+        queryClient
       })
 
       return collections.map((collection) => collection.playlist_id)
@@ -118,6 +113,4 @@ export const useLibraryCollections = (
     gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserId
   })
-
-  return useCollections(collectionIds)
 }

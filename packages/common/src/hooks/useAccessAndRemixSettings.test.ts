@@ -14,6 +14,10 @@ vi.mock('react-redux', () => {
   }
 })
 
+vi.mock('~/api/', () => ({
+  useCurrentUserId: () => ({ data: 123 })
+}))
+
 const mockUseSelector = (mockedState: any) => (selectorFn: any) =>
   selectorFn(mockedState)
 

@@ -290,7 +290,7 @@ export const uploadTrackCommand = new Command('upload')
         tags: tags?.join(','),
         previewStartSeconds,
         isDownloadable,
-        remixOf: remixOf ? JSON.parse(remixOf) : undefined,
+        remixOf: remixOf ? { tracks: [{ parentTrackId: remixOf }] } : undefined,
         isUnlisted
       }
     })

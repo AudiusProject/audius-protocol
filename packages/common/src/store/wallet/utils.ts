@@ -1,91 +1,78 @@
-import { createSelector } from 'reselect'
+import { AUDIO, FixedDecimal, AudioWei } from '@audius/fixed-decimal'
+import { PublicKey } from '@solana/web3.js'
 
-import { getAccountUser } from '~/store/account/selectors'
-import { getUser } from '~/store/cache/users/selectors'
-import { CommonState } from '~/store/commonStore'
-import { stringAudioToBN, stringWeiToAudioBN } from '~/utils/wallet'
+import { useUser } from '~/api/tan-query/users/useUser'
+import { Maybe, Nullable } from '~/utils'
 
 import { BadgeTier } from '../../models/BadgeTier'
 import { ID } from '../../models/Identifiers'
-import { User } from '../../models/User'
-import { BNAudio, StringAudio, StringWei } from '../../models/Wallet'
+import { SolanaWalletAddress, StringWei } from '../../models/Wallet'
 
 export type BadgeTierInfo = {
   tier: BadgeTier
-  minAudio: BNAudio
+  minAudio: FixedDecimal<AudioWei>
   humanReadableAmount: number
 }
 
 export const badgeTiers: BadgeTierInfo[] = [
   {
     tier: 'platinum',
-    minAudio: stringAudioToBN('10000' as StringAudio),
+    minAudio: AUDIO('10000'),
     humanReadableAmount: 10000
   },
   {
     tier: 'gold',
-    minAudio: stringAudioToBN('1000' as StringAudio),
+    minAudio: AUDIO('1000'),
     humanReadableAmount: 1000
   },
   {
     tier: 'silver',
-    minAudio: stringAudioToBN('100' as StringAudio),
+    minAudio: AUDIO('100'),
     humanReadableAmount: 100
   },
   {
     tier: 'bronze',
-    minAudio: stringAudioToBN('10' as StringAudio),
+    minAudio: AUDIO('10'),
     humanReadableAmount: 10
   },
   {
     tier: 'none',
-    minAudio: stringAudioToBN('0' as StringAudio),
+    minAudio: AUDIO('0'),
     humanReadableAmount: 0
   }
 ]
 
-// Selectors
+/**
+ * Hook to get the tier and verification status for a user
+ * @param userId Optional user ID to check. If not provided, uses the current user
+ * @returns Object containing tier, isVerified, and tierNumber
+ */
+export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
+  const { data: user } = useUser(userId, {
+    select: (user) => ({
+      total_balance: user.total_balance,
+      is_verified: user.is_verified
+    })
+  })
 
-export const getVerifiedForUser = (
-  state: CommonState,
-  { userId }: { userId: ID }
-) => {
-  const user = getUser(state, { id: userId })
-  return !!user?.is_verified
+  if (!user)
+    return { tier: 'none' as BadgeTier, isVerified: false, tierNumber: 0 }
+
+  const balance = user.total_balance ?? ('0' as StringWei)
+  const { tier, tierNumber } = getTierAndNumberForBalance(AUDIO(balance).value)
+  const isVerified = !!user.is_verified
+
+  return { tier, isVerified, tierNumber }
 }
 
-export const getWeiBalanceForUser = (
-  state: CommonState,
-  { userId }: { userId: ID }
-) => {
-  const accountUser = getAccountUser(state)
-  const user = getUser(state, { id: userId })
-
-  if (accountUser?.user_id === userId && state.wallet.totalBalance) {
-    return state.wallet.totalBalance
-  }
-  if (!user) return '0' as StringWei
-  return getUserBalance(user)
-}
-
-export const getTierAndVerifiedForUser = createSelector(
-  [getWeiBalanceForUser, getVerifiedForUser],
-  (
-    wei,
-    isVerified
-  ): { tier: BadgeTier; isVerified: boolean; tierNumber: number } => {
-    const { tier, tierNumber } = getTierAndNumberForBalance(wei)
-    return { tier, isVerified, tierNumber }
-  }
-)
-
-// Helpers
-
-export const getTierAndNumberForBalance = (balance: StringWei) => {
-  const audio = stringWeiToAudioBN(balance)
-
+/**
+ * Get the tier and number for a given balance
+ * @param balance - The balance in AudioWei (branded BigInt)
+ * @returns The tier and number for the given balance
+ */
+export const getTierAndNumberForBalance = (balance: AudioWei) => {
   const index = badgeTiers.findIndex((t) => {
-    return t.minAudio.lte(audio)
+    return t.minAudio.value <= balance
   })
 
   const tier = index === -1 ? 'none' : badgeTiers[index].tier
@@ -94,13 +81,29 @@ export const getTierAndNumberForBalance = (balance: StringWei) => {
   return { tier, tierNumber }
 }
 
-/** Gets tier number, highest tier being badgeTiers.length, lowest being 1  */
+/**
+ * Get the tier number for a given tier
+ * @param tier - The tier to get the number for
+ * @returns The tier number for the given tier
+ */
 export const getTierNumber = (tier: BadgeTier) =>
   badgeTiers.length - badgeTiers.findIndex((t) => t.tier === tier)
 
-export const getUserBalance = (user: User) =>
-  user?.total_balance ?? ('0' as StringWei)
-export const getTierForUser = (user: User) => {
-  const balance = getUserBalance(user)
-  return getTierAndNumberForBalance(balance).tier
+/**
+ * Checks whether the input address is a valid solana address.
+ */
+export const isValidSolAddress = (address: SolanaWalletAddress) => {
+  try {
+    // @ts-ignore - need an unused variable to check if the destinationWallet is valid
+    const ignored = new PublicKey(address)
+    return true
+  } catch (err) {
+    console.debug(err)
+    return false
+  }
+}
+
+export const getTierForUser = (totalBalance: Nullable<StringWei>) => {
+  const balance = totalBalance ?? ('0' as StringWei)
+  return getTierAndNumberForBalance(AUDIO(balance).value).tier
 }

@@ -1,4 +1,10 @@
-import { queryAllTracks, queryAllUsers } from '@audius/common/api'
+import {
+  queryAllTracks,
+  queryAllCachedUsers,
+  queryTrackByUid,
+  updateCollectionData,
+  queryCurrentUserId
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -12,8 +18,6 @@ import {
 } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
-  accountSelectors,
-  cacheTracksSelectors,
   cacheActions,
   lineupActions as baseLineupActions,
   premiumTracksPageLineupActions,
@@ -45,8 +49,6 @@ import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
 const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
-const { getTrack } = cacheTracksSelectors
-const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
 
@@ -59,7 +61,7 @@ function* filterDeletes<T extends Track | Collection>(
   lineupPrefix: string
 ) {
   const tracks = yield* queryAllTracks()
-  const users = yield* queryAllUsers()
+  const users = yield* queryAllCachedUsers()
   const remoteConfig = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* call(remoteConfig.waitForRemoteConfig)
@@ -303,12 +305,15 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       // We rewrote the playlist tracks with new UIDs, so we need to update them
       // in the cache.
       if (collectionsToCache.length > 0) {
-        yield* put(cacheActions.update(Kind.COLLECTIONS, collectionsToCache))
+        yield* call(
+          updateCollectionData,
+          collectionsToCache.map((collection) => collection.metadata)
+        )
       }
       if (trackSubscribers.length > 0) {
         yield* put(cacheActions.subscribe(Kind.TRACKS, trackSubscribers))
       }
-      const currentUserId = yield* select(getUserId)
+      const currentUserId = yield* call(queryCurrentUserId)
       // Retain specified info in the lineup itself and resolve with success.
       let duplicateCount = 0
       const lineupEntries = allMetadatas
@@ -412,7 +417,7 @@ function* play<T extends Track | Collection>(
   action: ReturnType<LineupBaseActions['play']>
 ) {
   const lineup = yield* select(lineupSelector)
-  const requestedPlayTrack = yield* select(getTrack, { uid: action.uid })
+  const requestedPlayTrack = yield* queryTrackByUid(action.uid)
   const isPreview = !!action.isPreview
 
   if (action.uid) {

@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 from google.protobuf.timestamp_pb2 import Timestamp
 
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.notifications.notification import Notification
+from src.models.playlists.playlist_trending_score import PlaylistTrendingScore
 from src.tasks.core.gen.protocol_pb2 import BlockResponse, NodeInfoResponse
 from src.tasks.index_trending import (
     find_min_block_above_timestamp,
@@ -179,6 +181,8 @@ def test_find_min_block_above_timestamp(app):
 
 
 def test_index_trending(app, mocker):
+    # Patching this because it's not worth the difficulting in mocking
+    # the data here.
     mocker.patch(
         "src.tasks.index_trending._get_underground_trending_with_session",
         return_value=[{"track_id": 3, "owner_id": 2}],
@@ -186,7 +190,53 @@ def test_index_trending(app, mocker):
     # Add some users to the db - wihch generates that number of blocks
     entities = {
         "users": [{"user_id": i} for i in range(10)],
-        "tracks": [{"track_id": i, "owner_id": 3} for i in range(10)],
+        "tracks": [{"track_id": i, "owner_id": i} for i in range(10)],
+        "playlists": [
+            {
+                "playlist_id": 1,
+                "owner_id": 3,
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 1},
+                        {"track": 2},
+                        {"track": 3},
+                        {"track": 4},
+                        {"track": 5},
+                    ]
+                },
+            },
+            {
+                "playlist_id": 2,
+                "owner_id": 3,
+                "playlist_contents": {
+                    "track_ids": [
+                        {"track": 6},
+                        {"track": 7},
+                        {"track": 8},
+                        {"track": 9},
+                        {"track": 10},
+                    ]
+                },
+            },
+            # Should be excluded from scoring
+            {
+                "playlist_id": 3,
+                "owner_id": 3,
+                "playlist_contents": {"track_ids": [{"track": 11}]},
+            },
+        ],
+        "playlist_tracks": [
+            {"playlist_id": 1, "track_id": 1, "is_removed": False},
+            {"playlist_id": 1, "track_id": 2, "is_removed": False},
+            {"playlist_id": 1, "track_id": 3, "is_removed": False},
+            {"playlist_id": 1, "track_id": 4, "is_removed": False},
+            {"playlist_id": 1, "track_id": 5, "is_removed": False},
+            {"playlist_id": 2, "track_id": 6, "is_removed": False},
+            {"playlist_id": 2, "track_id": 7, "is_removed": False},
+            {"playlist_id": 2, "track_id": 8, "is_removed": False},
+            {"playlist_id": 2, "track_id": 9, "is_removed": False},
+            {"playlist_id": 2, "track_id": 10, "is_removed": False},
+        ],
         "saves": [
             {"save_item_id": 6, "user_id": i, "repost_type": "track"} for i in range(20)
         ],
@@ -198,8 +248,9 @@ def test_index_trending(app, mocker):
     with app.app_context():
         db = get_db()
 
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         populate_mock_db(db, entities)
-        index_trending({}, db, redis_conn, last_trending_date)
+        index_trending({}, db, redis_conn, last_trending_date, challenge_event_bus)
         with db.scoped_session() as session:
             trending_notifications = (
                 session.query(Notification)
@@ -209,6 +260,11 @@ def test_index_trending(app, mocker):
             tastemaker_notifications = (
                 session.query(Notification)
                 .filter(Notification.type == "tastemaker")
+                .all()
+            )
+            playlist_scores = (
+                session.query(PlaylistTrendingScore)
+                .filter(PlaylistTrendingScore.time_range == "week")
                 .all()
             )
 
@@ -224,3 +280,5 @@ def test_index_trending(app, mocker):
                     notification.group_id
                     == f"tastemaker_user_id:{i}:tastemaker_item_id:6"
                 )
+
+            assert len(playlist_scores) == 2

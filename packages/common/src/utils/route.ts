@@ -1,8 +1,7 @@
 import qs from 'query-string'
 import { matchPath, generatePath } from 'react-router'
 
-import { SearchCategory, SearchFilters } from '~/api/search'
-import { ID } from '~/models'
+import { ID, SearchCategory, SearchFilters } from '~/models'
 
 import { encodeUrlName } from './formatUtil'
 import { convertGenreLabelToValue, Genre } from './genres'
@@ -83,6 +82,8 @@ export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
 export const WALLET_PAGE = '/wallet'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
+export const DEV_TOOLS_PAGE = '/dev-tools'
+export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -123,6 +124,8 @@ export const SEARCH_PAGE_PROFILES = '/search/profiles'
 export const SEARCH_PAGE_TRACKS = '/search/tracks'
 export const SEARCH_PAGE_ALBUMS = '/search/albums'
 export const SEARCH_PAGE_PLAYLISTS = '/search/playlists'
+export const SEARCH_DOWNLOADS_AVAILABLE = '/search/tracks?hasDownloads=true'
+export const SEARCH_PREMIUM_TRACKS = '/search/tracks?isPremium=true'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
 export const EDIT_PLAYLIST_PAGE = '/:handle/playlist/:slug/edit'
@@ -133,6 +136,7 @@ export const TRACK_PAGE = '/:handle/:slug'
 export const TRACK_EDIT_PAGE = '/:handle/:slug/edit'
 export const TRACK_REMIXES_PAGE = '/:handle/:slug/remixes'
 export const TRACK_COMMENTS_PAGE = '/:handle/:slug/comments'
+export const PICK_WINNERS_PAGE = '/:handle/:slug/pick-winners'
 export const PROFILE_PAGE = '/:handle'
 export const PROFILE_PAGE_TRACKS = '/:handle/tracks'
 export const PROFILE_PAGE_ALBUMS = '/:handle/albums'
@@ -164,6 +168,7 @@ export const ABOUT_SETTINGS_PAGE = '/settings/about'
 export const CHANGE_EMAIL_SETTINGS_PAGE = '/settings/change-email'
 export const CHANGE_PASSWORD_SETTINGS_PAGE = '/settings/change-password'
 export const AUTHORIZED_APPS_SETTINGS_PAGE = '/settings/authorized-apps'
+export const LABEL_ACCOUNT_SETTINGS_PAGE = '/settings/label-account'
 export const ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE = '/settings/managing-you'
 export const ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE = '/settings/accounts-you-manage'
 export const TRENDING_GENRES = '/trending/genres'
@@ -321,6 +326,7 @@ export const staticRoutes = new Set([
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  WALLET_PAGE,
   WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,

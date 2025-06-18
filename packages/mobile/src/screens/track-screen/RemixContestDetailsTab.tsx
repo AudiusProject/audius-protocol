@@ -10,6 +10,7 @@ import { ExpandableContent, UserGeneratedText } from 'app/components/core'
 
 const messages = {
   due: 'Submission Due:',
+  ended: 'Contest Ended:',
   deadline: (deadline?: string) => {
     if (!deadline) return ''
     const date = dayjs(deadline)
@@ -32,11 +33,13 @@ export const RemixContestDetailsTab = ({ trackId, scrollRef }: Props) => {
 
   if (!remixContest) return null
 
+  const isContestEnded = dayjs(remixContest.endDate).isBefore(dayjs())
+
   return (
     <Flex column gap='s' p='xl' pb='2xl' borderTop='default'>
-      <Flex row gap='s'>
+      <Flex row gap='s' wrap='wrap'>
         <Text variant='title' color='accent'>
-          {messages.due}
+          {isContestEnded ? messages.ended : messages.due}
         </Text>
         <Text variant='body' strength='strong'>
           {messages.deadline(remixContest.endDate)}

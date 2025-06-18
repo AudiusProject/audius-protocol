@@ -1,22 +1,14 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
 import {
-  useGetTracksByIds,
-  useGetPlaylistByPermalink,
-  useCollection
+  useCollection,
+  useCollectionByPermalink,
+  useTracks,
+  useUsers
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
+import { Name, Kind, Status, ID, ModalSource } from '@audius/common/models'
 import {
-  Name,
-  SquareSizes,
-  Kind,
-  Status,
-  ID,
-  ModalSource
-} from '@audius/common/models'
-import {
-  accountSelectors,
-  cacheCollectionsActions,
   QueueSource,
   playerSelectors,
   ChatMessageTileProps
@@ -27,9 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
-const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
-const { fetchCoverArt } = cacheCollectionsActions
 
 export const ChatMessagePlaylist = ({
   link,
@@ -38,26 +28,13 @@ export const ChatMessagePlaylist = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: playlist, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const { data: playlist } = useCollectionByPermalink(permalink)
 
   const collectionId = playlist?.playlist_id
   const { data: collection } = useCollection(collectionId)
-
-  useEffect(() => {
-    if (collectionId) {
-      dispatch(fetchCoverArt(collectionId, SquareSizes.SIZE_150_BY_150))
-    }
-  }, [collectionId, dispatch])
 
   const uid = useMemo(() => {
     return collectionId ? makeUid(Kind.COLLECTIONS, collectionId) : null
@@ -65,13 +42,8 @@ export const ChatMessagePlaylist = ({
 
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
-  const { data: tracks } = useGetTracksByIds(
-    {
-      ids: trackIds,
-      currentUserId: currentUserId!
-    },
-    { disabled: !trackIds.length || !currentUserId }
-  )
+  const { data: tracks } = useTracks(trackIds)
+  const { byId: usersById } = useUsers(tracks?.map((t) => t.owner_id))
 
   const uidMap = useMemo(() => {
     return trackIds.reduce((result: { [id: ID]: string }, id) => {
@@ -89,11 +61,11 @@ export const ChatMessagePlaylist = ({
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      user: track.user,
+      user: usersById[track.owner_id],
       id: track.track_id,
       uid: uidMap[track.track_id]
     }))
-  }, [tracks, uidMap])
+  }, [tracks, uidMap, usersById])
 
   const entries = useMemo(() => {
     return (tracks || []).map((track) => ({
@@ -113,16 +85,17 @@ export const ChatMessagePlaylist = ({
 
   const pauseTrack = usePauseTrack()
 
+  const collectionExists = !!collection && !collection.is_delete
   useEffect(() => {
-    if (collection && uid && !collection.is_delete) {
+    if (collectionExists && uid) {
       dispatch(make(Name.MESSAGE_UNFURL_PLAYLIST, {}))
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [collection, uid, onSuccess, onEmpty, dispatch])
+  }, [collectionExists, uid, onSuccess, onEmpty, dispatch])
 
-  return collection && uid ? (
+  return collectionId && uid ? (
     // You may wonder why we use the mobile web playlist tile here.
     // It's simply because the chat playlist tile uses the same design as mobile web.
     <MobilePlaylistTile

@@ -73,6 +73,7 @@ export const TextInput = forwardRef(
       _disablePointerEvents,
       style,
       innerContainerStyle,
+      inputStyle,
       TextInputComponent = RNTextInput,
       ...other
     } = props
@@ -234,7 +235,7 @@ export const TextInput = forwardRef(
         gap='xs'
         alignItems='flex-start'
         w='100%'
-        style={style}
+        style={[style, inputStyle]}
       >
         <Pressable
           onPress={handlePressRoot}
@@ -242,11 +243,14 @@ export const TextInput = forwardRef(
         >
           <GestureDetector gesture={tap}>
             <InsetShadow
-              containerStyle={css({
-                width: '100%',
-                height: isSmall ? 34 : 64,
-                borderRadius: cornerRadius.s
-              })}
+              containerStyle={[
+                css({
+                  width: '100%',
+                  height: isSmall ? 48 : 64,
+                  borderRadius: cornerRadius.s
+                }),
+                inputStyle
+              ]}
               shadowOpacity={0.05}
               shadowColor='#000000'
               shadowRadius={4}
@@ -262,11 +266,11 @@ export const TextInput = forwardRef(
                 backgroundColor='surface1'
                 ph={isSmall ? 'm' : 'l'}
                 gap={isSmall ? 's' : 'm'}
-                style={[animatedRootStyles, innerContainerStyle]}
+                style={[animatedRootStyles, innerContainerStyle, inputStyle]}
               >
                 {StartIcon ? (
                   <StartIcon
-                    size={isSmall ? 's' : 'm'}
+                    size={isSmall ? 'l' : 'm'} // TODO adjust large variant accordingly
                     color='subdued'
                     {...IconProps}
                   />
@@ -312,6 +316,7 @@ export const TextInput = forwardRef(
                     direction='row'
                     alignItems='center'
                     justifyContent='space-between'
+                    style={inputStyle}
                   >
                     {startAdornmentText && shouldShowAdornments ? (
                       <Text variant='title' size='l' color='subdued'>
@@ -334,16 +339,19 @@ export const TextInput = forwardRef(
                       placeholderTextColor={color.text.subdued}
                       underlineColorAndroid='transparent'
                       aria-label={ariaLabel ?? labelText}
-                      style={css({
-                        flex: 1,
-                        // Need absolute height to ensure consistency across platforms
-                        height: !isSmall ? 23 : undefined,
-                        // Android has a default padding that needs to be removed
-                        padding: 0,
-                        fontSize: typography.size[isSmall ? 's' : 'l'],
-                        fontFamily: typography.fontByWeight.medium,
-                        color: color.text[disabled ? 'subdued' : 'default']
-                      })}
+                      style={[
+                        css({
+                          flex: 1,
+                          // Need absolute height to ensure consistency across platforms
+                          height: !isSmall ? 23 : undefined,
+                          // Android has a default padding that needs to be removed
+                          padding: 0,
+                          fontSize: typography.size[isSmall ? 'm' : 'l'],
+                          fontFamily: typography.fontByWeight.medium,
+                          color: color.text[disabled ? 'subdued' : 'default']
+                        })
+                        // inputStyle
+                      ]}
                       onChange={handleChange}
                       onFocus={onFocus}
                       onBlur={onBlur}

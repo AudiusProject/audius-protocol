@@ -89,16 +89,16 @@ export const Button = (props: ButtonProps) => {
   const primaryDynamicStyles = {
     default: {
       background: primaryOverrideColor ?? themeColors.primary.primary,
-      text: themeColors.text.staticWhite,
-      icon: themeColors.icon.staticWhite,
+      text: themeColors.text.white,
+      icon: themeColors.icon.white,
       border: primaryOverrideColor ?? themeColors.primary.primary
     },
     press: {
       background: new Color(primaryOverrideColor ?? themeColors.primary.primary)
         .darken(0.2)
         .hex(),
-      text: themeColors.text.staticWhite,
-      icon: themeColors.icon.staticWhite,
+      text: themeColors.text.white,
+      icon: themeColors.icon.white,
       border: new Color(primaryOverrideColor ?? themeColors.primary.primary)
         .darken(0.2)
         .hex()

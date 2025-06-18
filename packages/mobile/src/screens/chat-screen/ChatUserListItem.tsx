@@ -1,15 +1,13 @@
 import React, { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import {
-  accountSelectors,
   chatActions,
   chatSelectors,
   ChatPermissionAction,
   useInboxUnavailableModal
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useSelector } from '@audius/web/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -24,8 +22,7 @@ import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 const { createChat } = chatActions
-const { getCanCreateChat } = chatSelectors
-const { getUserId } = accountSelectors
+const { useCanCreateChat } = chatSelectors
 
 const messages = {
   followsYou: 'Follows You',
@@ -153,10 +150,8 @@ export const ChatUserListItem = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const { data: user } = useUser(userId)
-  const currentUserId = useSelector(getUserId)
-  const { callToAction, canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId: user?.user_id })
-  )
+  const { data: currentUserId } = useCurrentUserId()
+  const { callToAction, canCreateChat } = useCanCreateChat(user?.user_id)
   const { onOpen: openInboxUnavailableDrawer } = useInboxUnavailableModal()
 
   const handlePress = useCallback(() => {

@@ -32,14 +32,6 @@ export const stagingConfig: SdkServicesConfig = {
     ],
     "storageNodes": [
       {
-        "endpoint": "https://creatornode10.staging.audius.co",
-        "delegateOwnerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056"
-      },
-      {
-        "endpoint": "https://creatornode8.staging.audius.co",
-        "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
-      },
-      {
         "endpoint": "https://creatornode12.staging.audius.co",
         "delegateOwnerWallet": "0x6b52969934076318863243fb92E9C4b3A08267b5"
       },

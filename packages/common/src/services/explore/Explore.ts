@@ -141,7 +141,7 @@ export class Explore {
     }
   }
 
-  async getFeelingLuckyTracks(userId: ID | null, limit = 25) {
+  async getFeelingLuckyTracks(userId: ID | null | undefined, limit = 25) {
     try {
       const sdk = await this.audiusSdk()
       const { data = [] } = await sdk.full.tracks.getFeelingLuckyTracks({

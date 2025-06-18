@@ -1,6 +1,10 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser,
+  useHasAccount
+} from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -11,13 +15,11 @@ import {
 import { Link } from 'react-router-dom'
 
 import { RestrictionType, useRequiresAccountFn } from 'hooks/useRequiresAccount'
-import { useSelector } from 'utils/reducer'
 
 import { NavHeaderButton } from './NavHeaderButton'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE, SETTINGS_PAGE, DASHBOARD_PAGE } = route
-const { getHasAccount, getIsAccountComplete, getAccountUser } = accountSelectors
 
 const messages = {
   homeLink: 'Go to Home',
@@ -47,8 +49,10 @@ const RestrictedLink = ({
   children
 }: RestrictedLinkProps) => {
   const { requiresAccount } = useRequiresAccountFn(undefined, restriction)
-  const hasAccount = useSelector(getHasAccount)
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const hasAccount = useHasAccount()
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
 
   const handleClick = (e: MouseEvent) => {
     if (restriction === 'none') return
@@ -68,7 +72,9 @@ const RestrictedLink = ({
 }
 
 export const NavHeader = () => {
-  const accountUser = useSelector(getAccountUser)
+  const { data: trackCount } = useCurrentAccountUser({
+    select: (user) => user?.track_count
+  })
 
   return (
     <Flex
@@ -84,7 +90,7 @@ export const NavHeader = () => {
         <IconAudiusLogoHorizontalNew color='subdued' size='m' width='auto' />
       </Link>
       <Flex justifyContent='center' alignItems='center'>
-        {accountUser?.track_count ? (
+        {trackCount ? (
           <RestrictedLink to={DASHBOARD_PAGE} restriction='account'>
             <NavHeaderButton
               icon={IconDashboard}

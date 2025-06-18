@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import { getUserHandle } from '@audius/common/src/store/account/selectors'
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import {
   audioRewardsPageSelectors,
   challengesSelectors,
-  ClaimStatus
+  ClaimStatus,
+  CommonState
 } from '@audius/common/store'
 import {
   formatNumberCommas,
@@ -46,7 +47,9 @@ const messages = {
 }
 
 export const InviteLink = () => {
-  const userHandle = useSelector(getUserHandle)
+  const { data: userHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
+  })
   const inviteLink = useMemo(
     () => (userHandle ? fillString(messages.inviteLink, userHandle) : ''),
     [userHandle]
@@ -83,7 +86,11 @@ export const ReferralsChallengeModalContent = ({
 }: ReferralsChallengeProps) => {
   const isMobile = useIsMobile()
   const { fullDescription } = challengeRewardsConfig[challengeName]
-  const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const userChallenge = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )[challengeName]
   const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =

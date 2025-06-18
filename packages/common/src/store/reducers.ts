@@ -2,19 +2,9 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
-import apiReducer from '../api/reducer'
-import { Kind } from '../models'
-
 import account from './account/slice'
 import averageColorReducer from './average-color/slice'
 import { buyUSDCReducer } from './buy-usdc'
-import collectionsReducer from './cache/collections/reducer'
-import { CollectionsCacheState } from './cache/collections/types'
-import { asCache } from './cache/reducer'
-import tracksReducer from './cache/tracks/reducer'
-import { TracksCacheState } from './cache/tracks/types'
-import usersReducer from './cache/users/reducer'
-import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
@@ -26,7 +16,7 @@ import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
-import { HistoryPageState, SavedPageState } from './pages'
+import { HistoryPageState, LibraryPageState } from './pages'
 import ai from './pages/ai/slice'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import { chatReducer } from './pages/chat'
@@ -40,11 +30,12 @@ import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
+import { persistedLibraryPageReducer } from './pages/library-page/reducer'
+import pickWinners from './pages/pick-winners/slice'
 import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
-import { persistedSavePageReducer } from './pages/saved-page/reducer'
 import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
@@ -98,7 +89,6 @@ import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
-import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import stripeModalReducer from './ui/stripe-modal/slice'
@@ -131,8 +121,6 @@ import wallet from './wallet/slice'
 export const reducers = (storage: Storage, history?: History) => ({
   account,
 
-  api: apiReducer,
-
   // TODO: Move to common
   // signOn: signOnReducer,
   // backend,
@@ -140,16 +128,6 @@ export const reducers = (storage: Storage, history?: History) => ({
 
   // Config
   reachability,
-
-  // Cache
-  // @ts-ignore
-  collections: asCache(collectionsReducer, Kind.COLLECTIONS),
-  // TODO: Fix type error
-  // @ts-ignore
-  tracks: asCache(tracksReducer, Kind.TRACKS),
-  // TODO: Fix type error
-  // @ts-ignore
-  users: asCache(usersReducer, Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
 
@@ -182,7 +160,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     modals: modalsReducer,
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
-    reactions: reactionsReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
     coinflowModal: coinflowModalReducer,
@@ -217,9 +194,10 @@ export const reducers = (storage: Storage, history?: History) => ({
     feed,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
+    pickWinners,
     profile: profileReducer,
     smartCollection,
-    savedPage: persistedSavePageReducer(storage),
+    libraryPage: persistedLibraryPageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
@@ -264,11 +242,6 @@ export type CommonState = {
   // TODO: Migrate to common
   // confirmer: ConfirmerState
 
-  // Cache
-  collections: CollectionsCacheState
-  tracks: TracksCacheState
-  users: UsersCacheState
-
   // TODO: missing types for internally managed api slice state
   api: any
   savedCollections: ReturnType<typeof savedCollectionsReducer>
@@ -300,7 +273,6 @@ export type CommonState = {
     modals: ModalsState
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
-    reactions: ReactionsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     stripeModal: StripeModalState
@@ -337,8 +309,9 @@ export type CommonState = {
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     historyPage: HistoryPageState
     track: TrackPageState
+    pickWinners: ReturnType<typeof pickWinners>
     profile: ProfilePageState
-    savedPage: SavedPageState
+    libraryPage: LibraryPageState
     searchResults: SearchPageState
     settings: SettingsPageState
     trending: TrendingPageState

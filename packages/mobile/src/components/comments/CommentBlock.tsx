@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { useComment, useGetUserById } from '@audius/common/api'
+import { useComment, useUser } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import {
   Name,
   type Comment,
   type ID,
-  type ReplyComment,
-  Status
+  type ReplyComment
 } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
@@ -57,8 +56,7 @@ export const CommentBlockInternal = (
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = track.pinned_comment_id === commentId
 
-  const { status } = useGetUserById({ id: userId })
-  const isLoadingUser = status === Status.LOADING
+  const { isPending: isUserPending } = useUser(userId)
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
       screen: 'Profile',
@@ -135,8 +133,8 @@ export const CommentBlockInternal = (
                 w='100%'
               >
                 <Flex direction='row' gap='s' alignItems='center'>
-                  {isLoadingUser ? <Skeleton width={80} height={18} /> : null}
-                  {userId && !isLoadingUser ? (
+                  {isUserPending ? <Skeleton width={80} height={18} /> : null}
+                  {!isUserPending && userId ? (
                     <UserLink
                       userId={userId}
                       strength='strong'

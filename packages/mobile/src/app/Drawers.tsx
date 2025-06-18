@@ -1,8 +1,9 @@
+import React from 'react'
 import type { ComponentType } from 'react'
 
 import type { Modals } from '@audius/common/store'
 
-import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
+import { AddCashDrawer } from 'app/components/add-funds-drawer/AddCashDrawer'
 import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
@@ -12,6 +13,7 @@ import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ClaimAllRewardsDrawer } from 'app/components/challenge-rewards-drawer/ClaimAllRewardsDrawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CoinflowOnrampDrawer } from 'app/components/coinflow-onramp-drawer/CoinflowOnrampDrawer'
+import { CoinflowWithdrawDrawer } from 'app/components/coinflow-withdraw-drawer/CoinflowWithdrawDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
@@ -42,13 +44,14 @@ import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
-import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
 import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
+import { WithdrawUSDCDrawer } from 'app/components/withdraw-usdc-drawer/WithdrawUSDCDrawer'
 import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
 import { ConnectNewWalletDrawer } from 'app/screens/external-wallets/components/ConnectNewWalletDrawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
+import { PickWinnersDrawer } from 'app/screens/track-screen/PickWinnersDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
@@ -120,14 +123,14 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
-  // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
+  // PremiumContent, AddCash, PurchaseVendor, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumContentPurchaseDrawer,
-  AddFundsModal: AddFundsDrawer,
+  AddCashModal: AddCashDrawer,
   PurchaseVendor: PurchaseVendorDrawer,
-  USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,
   CoinflowOnramp: CoinflowOnrampDrawer,
+  CoinflowWithdraw: CoinflowWithdrawDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer,
   WaitForDownloadModal: WaitForDownloadDrawer,
@@ -136,7 +139,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
   ArtistPick: ArtistPickConfirmationDrawer,
   DownloadTrackArchive: DownloadTrackArchiveDrawer,
-  HostRemixContest: HostRemixContestDrawer
+  HostRemixContest: HostRemixContestDrawer,
+  WithdrawUSDCModal: WithdrawUSDCDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -159,7 +163,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
   Welcome: WelcomeDrawer,
-  ConnectNewWallet: ConnectNewWalletDrawer
+  ConnectNewWallet: ConnectNewWalletDrawer,
+  PickWinners: PickWinnersDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

@@ -1,3 +1,6 @@
+import { Mood } from '@audius/sdk'
+
+import { Genre } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { CollectionImage } from './Collection'
@@ -123,4 +126,16 @@ export type SearchPlaylist = CollectionImage & {
   }
   stream_conditions: null
   ddex_app: null
+}
+
+export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
+
+export type SearchFilters = {
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
 }

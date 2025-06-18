@@ -1,7 +1,7 @@
 import type { CollectibleState } from '@audius/fetch-nft'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -30,7 +30,7 @@ export const useWalletCollectibles = (
   { address, chain }: UseWalletCollectibles,
   options?: QueryOptions
 ) => {
-  const { nftClient } = useAudiusQueryContext()
+  const { nftClient } = useQueryContext()
 
   return useQuery({
     queryKey: getWalletCollectiblesQueryKey({ address, chain }),

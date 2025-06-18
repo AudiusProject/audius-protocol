@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { Name, PlaylistLibraryFolder } from '@audius/common/models'
 import {
-  accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
@@ -27,7 +27,6 @@ import { zIndex } from 'utils/zIndex'
 import styles from './EditFolderModal.module.css'
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { renamePlaylistFolderInLibrary } = playlistLibraryHelpers
-const { getPlaylistLibrary } = accountSelectors
 
 const messages = {
   editFolderModalTitle: 'Edit Folder',
@@ -37,7 +36,9 @@ const messages = {
 const EditFolderModal = () => {
   const record = useRecord()
   const folderId = useSelector(getFolderId)
-  const playlistLibrary = useSelector(getPlaylistLibrary)
+  const { data: playlistLibrary } = useCurrentAccount({
+    select: (account) => account?.playlistLibrary
+  })
   const [isOpen, setIsOpen] = useModalState('EditFolder')
   const folder =
     playlistLibrary == null || folderId == null

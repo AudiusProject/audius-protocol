@@ -2,18 +2,16 @@ import { useMemo } from 'react'
 
 import { AUDIO } from '@audius/fixed-decimal'
 
-import { useTokenPrice } from '../api'
+import { useAudioBalance, useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
-import { formatWei, isNullOrUndefined } from '../utils'
-
-import { useTotalBalanceWithFallback } from './useAudioBalance'
+import { getCurrencyDecimalPlaces, isNullOrUndefined } from '../utils'
 
 // AUDIO token address from Jupiter
 const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 
 type UseFormattedAudioBalanceReturn = {
-  audioBalance: ReturnType<typeof useTotalBalanceWithFallback>
-  audioBalanceFormatted: string
+  audioBalance: bigint | null
+  audioBalanceFormatted: string | null
   isAudioBalanceLoading: boolean
   audioPrice: string | null
   audioDollarValue: string
@@ -21,13 +19,23 @@ type UseFormattedAudioBalanceReturn = {
 }
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
-  const audioBalance = useTotalBalanceWithFallback()
-  const audioBalanceFormatted = formatWei(audioBalance, true, 0)
-  const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
-
+  const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
+  const hasFetchedAudioBalance = !isNullOrUndefined(totalBalance)
+  const audioBalance = hasFetchedAudioBalance ? totalBalance : null
+
+  const decimalPlaces = useMemo(() => {
+    if (!audioPrice) return 2
+    return getCurrencyDecimalPlaces(parseFloat(audioPrice))
+  }, [audioPrice])
+
+  const audioBalanceFormatted = hasFetchedAudioBalance
+    ? AUDIO(totalBalance).toLocaleString('en-US', {
+        maximumFractionDigits: decimalPlaces
+      })
+    : null
 
   // Calculate dollar value of user's AUDIO balance
   const audioDollarValue = useMemo(() => {

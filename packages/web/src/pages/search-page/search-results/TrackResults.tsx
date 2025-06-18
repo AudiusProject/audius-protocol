@@ -1,13 +1,15 @@
 import { useCallback, useState } from 'react'
 
 import { SEARCH_PAGE_SIZE, useSearchTrackResults } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Kind, Name } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   searchResultsPageTracksLineupActions,
   searchActions,
   SearchKind
 } from '@audius/common/store'
-import { FilterButton, Flex, Text, useTheme } from '@audius/harmony'
+import { FilterButton, Flex, Text } from '@audius/harmony'
 import { css } from '@emotion/css'
 import { useDispatch } from 'react-redux'
 
@@ -23,9 +25,6 @@ import { useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
 
 const { addItem: addRecentSearch } = searchActions
-
-const PAGE_WIDTH = 1080
-const HALF_TILE_WIDTH = (PAGE_WIDTH - 16) / 2
 
 const messages = {
   tracks: 'Tracks',
@@ -114,12 +113,11 @@ export const TrackResults = (props: TrackResultsProps) => {
             lineupContainerStyles: css({ width: '100%' }),
             tileContainerStyles: css({
               display: 'grid',
-              gridTemplateColumns: isTrackGridLayout ? '1fr 1fr' : '1fr',
+              gridTemplateColumns: isTrackGridLayout
+                ? 'repeat(auto-fit, minmax(450px, 1fr))' // wrap columns to fit
+                : '1fr',
               gap: '4px 16px',
               justifyContent: 'space-between'
-            }),
-            tileStyles: css({
-              maxWidth: isTrackGridLayout ? HALF_TILE_WIDTH : PAGE_WIDTH
             })
           }
         : {})}
@@ -127,15 +125,21 @@ export const TrackResults = (props: TrackResultsProps) => {
   )
 }
 
-export const TrackResultsPage = () => {
+type TrackResultsPageProps = {
+  layout?: ViewLayout
+}
+
+export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
   const isMobile = useIsMobile()
-  const { color } = useTheme()
   const searchParams = useSearchParams()
   const { isPending, isFetching, isError } = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE
+  )
 
-  return !isMobile ? (
+  return !isMobile && isSearchExploreEnabled === false ? (
     <Flex direction='column' gap='xl' wrap='wrap'>
       <Flex justifyContent='space-between' alignItems='center'>
         <Text variant='heading' textAlign='left'>
@@ -160,8 +164,12 @@ export const TrackResultsPage = () => {
       />
     </Flex>
   ) : (
-    <Flex p='m' css={{ backgroundColor: color.background.default }}>
+    <Flex
+      p={isSearchExploreEnabled ? '' : 'm'}
+      css={{ backgroundColor: 'default' }}
+    >
       <TrackResults
+        viewLayout={isSearchExploreEnabled ? layout : undefined}
         isPending={isPending}
         isFetching={isFetching}
         isError={isError}

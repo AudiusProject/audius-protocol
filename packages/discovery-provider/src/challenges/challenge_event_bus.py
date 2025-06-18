@@ -1,5 +1,4 @@
 import json
-import logging
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
@@ -40,6 +39,9 @@ from src.challenges.referral_challenge import (
     referred_challenge_manager,
     verified_referral_challenge_manager,
 )
+from src.challenges.remix_contest_winner_challenge import (
+    remix_contest_winner_challenge_manager,
+)
 from src.challenges.send_first_tip_challenge import send_first_tip_challenge_manager
 from src.challenges.tastemaker_challenge import tastemaker_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
@@ -49,8 +51,9 @@ from src.challenges.trending_challenge import (
     trending_underground_track_challenge_manager,
 )
 from src.utils.redis_connection import get_redis
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
 
 
@@ -314,5 +317,8 @@ def setup_challenge_bus():
         ChallengeEvent.pinned_comment, pinned_comment_challenge_manager
     )
     bus.register_listener(ChallengeEvent.cosign, cosign_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.remix_contest_winner, remix_contest_winner_challenge_manager
+    )
 
     return bus

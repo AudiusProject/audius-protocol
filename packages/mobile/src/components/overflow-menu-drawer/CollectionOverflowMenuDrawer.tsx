@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCollection, useUser } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -8,7 +8,6 @@ import {
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   collectionsSocialActions,
   deletePlaylistConfirmationModalUIActions,
   mobileOverflowMenuUISelectors,
@@ -36,7 +35,6 @@ const {
   shareCollection
 } = collectionsSocialActions
 const { publishPlaylist } = cacheCollectionsActions
-const { getUser } = cacheUsersSelectors
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -59,7 +57,7 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   )
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
 
-  const user = useSelector((state) => getUser(state, { id: playlist_owner_id }))
+  const { data: user } = useUser(playlist_owner_id)
 
   if (!partialPlaylist || !user) {
     return null

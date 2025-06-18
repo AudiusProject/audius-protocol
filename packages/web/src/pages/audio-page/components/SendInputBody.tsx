@@ -10,6 +10,7 @@ import {
   SolanaWalletAddress
 } from '@audius/common/models'
 import { IntKeys, MIN_TRANSFERRABLE_WEI } from '@audius/common/services'
+import { isValidSolAddress } from '@audius/common/store'
 import {
   weiToAudio,
   stringWeiToBN,
@@ -27,7 +28,6 @@ import {
 } from '@audius/harmony'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
-import { isValidSolAddress } from 'services/solana/solana'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 

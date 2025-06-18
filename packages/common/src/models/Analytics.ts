@@ -575,6 +575,13 @@ export enum Name {
   TRACK_REPLACE_PREVIEW = 'Track Replace: Preview',
   TRACK_REPLACE_REPLACE = 'Track Replace: Replace',
 
+  // Remix Contests
+  REMIX_CONTEST_CREATE = 'Remix Contest: Create',
+  REMIX_CONTEST_UPDATE = 'Remix Contest: Update',
+  REMIX_CONTEST_DELETE = 'Remix Contest: Delete',
+  REMIX_CONTEST_PICK_WINNERS_OPEN = 'Remix Contest: Pick Winners Open',
+  REMIX_CONTEST_PICK_WINNERS_FINALIZE = 'Remix Contest: Finalize Winners',
+
   // Android App Lifecycle
   ANDROID_APP_RESTART_HEARTBEAT = 'Android App: Restart Due to Heartbeat',
   ANDROID_APP_RESTART_STALE = 'Android App: Restart Due to Stale Time',
@@ -782,31 +789,31 @@ type SettingsChangeTheme = {
 }
 type SettingsStartTwitterOauth = {
   eventName: Name.SETTINGS_START_TWITTER_OAUTH
-  handle: string
+  handle?: string
 }
 type SettingsCompleteTwitterOauth = {
   eventName: Name.SETTINGS_COMPLETE_TWITTER_OAUTH
-  handle: string
+  handle?: string
   screen_name: string
   is_verified: boolean
 }
 type SettingsStartInstagramOauth = {
   eventName: Name.SETTINGS_START_INSTAGRAM_OAUTH
-  handle: string
+  handle?: string
 }
 type SettingsCompleteInstagramOauth = {
   eventName: Name.SETTINGS_COMPLETE_INSTAGRAM_OAUTH
-  handle: string
+  handle?: string
   username: string
   is_verified: boolean
 }
 type SettingsStartTikTokOauth = {
   eventName: Name.SETTINGS_START_TIKTOK_OAUTH
-  handle: string
+  handle?: string
 }
 type SettingsCompleteTikTokOauth = {
   eventName: Name.SETTINGS_COMPLETE_TIKTOK_OAUTH
-  handle: string
+  handle?: string
   username: string
   is_verified: boolean
 }
@@ -1089,12 +1096,13 @@ type TrackUploadStartUploading = {
 type TrackUploadTrackUploading = {
   eventName: Name.TRACK_UPLOAD_TRACK_UPLOADING
   artworkSource: 'unsplash' | 'original'
-  genre: string
-  mood: string
   downloadable: 'yes' | 'no' | 'follow'
+  trackId: number
   size: number
-  type: string
+  fileType: string
   name: string
+  genre: string
+  mood?: string
 }
 type TrackUploadCompleteUpload = {
   eventName: Name.TRACK_UPLOAD_COMPLETE_UPLOAD
@@ -1883,20 +1891,20 @@ type TipFeedTileDismiss = {
 type SocialProofOpen = {
   eventName: Name.SOCIAL_PROOF_OPEN
   kind: 'instagram' | 'twitter' | 'tiktok'
-  handle: string
+  handle?: string
 }
 
 type SocialProofSuccess = {
   eventName: Name.SOCIAL_PROOF_SUCCESS
   kind: 'instagram' | 'twitter' | 'tiktok'
-  handle: string
+  handle?: string
   screenName: string
 }
 
 type SocialProofError = {
   eventName: Name.SOCIAL_PROOF_ERROR
   kind: 'instagram' | 'twitter' | 'tiktok'
-  handle: string
+  handle?: string
   error: string
 }
 
@@ -2180,7 +2188,6 @@ export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
 
 export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
   eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED
-  priorBalance: number
   signature: string
 }
 
@@ -2194,7 +2201,7 @@ type StripeSessionCreationError = StripeEventFields & {
   eventName: Name.STRIPE_SESSION_CREATION_ERROR
   code: string
   stripeErrorMessage: string
-  type: string
+  kind: string
 }
 
 type StripeSessionCreated = StripeEventFields & {
@@ -2456,8 +2463,8 @@ type JupiterQuoteResponse = {
 // Export Private Key
 type ExportPrivateKeyLinkClicked = {
   eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
-  handle: string
-  userId: ID
+  handle?: string
+  userId?: ID
 }
 
 type ExportPrivateKeyPageOpened = {
@@ -2726,7 +2733,7 @@ export type CommentsHistoryClick = {
 
 export type CommentsHistoryDrawerOpen = {
   eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN
-  userId: ID
+  userId: ID | undefined
 }
 
 export type RecentCommentsClick = {
@@ -2750,6 +2757,35 @@ export type TrackReplacePreview = {
   eventName: Name.TRACK_REPLACE_PREVIEW
   trackId?: ID
   source: 'upload' | 'edit'
+}
+
+export type RemixContestCreate = {
+  eventName: Name.REMIX_CONTEST_CREATE
+  trackId: ID
+}
+
+export type RemixContestUpdate = {
+  eventName: Name.REMIX_CONTEST_UPDATE
+  remixContestId: ID
+  trackId: ID
+}
+
+export type RemixContestDelete = {
+  eventName: Name.REMIX_CONTEST_DELETE
+  remixContestId: ID
+  trackId: ID
+}
+
+export type RemixContestPickWinnersOpen = {
+  eventName: Name.REMIX_CONTEST_PICK_WINNERS_OPEN
+  remixContestId: ID
+  trackId: ID
+}
+
+export type RemixContestPickWinnersFinalize = {
+  eventName: Name.REMIX_CONTEST_PICK_WINNERS_FINALIZE
+  remixContestId: ID
+  trackId: ID
 }
 
 export type AndroidAppRestartHeartbeat = {
@@ -3135,6 +3171,11 @@ export type AllTrackingEvents =
   | TrackReplaceDownload
   | TrackReplacePreview
   | TrackReplaceReplace
+  | RemixContestCreate
+  | RemixContestUpdate
+  | RemixContestDelete
+  | RemixContestPickWinnersOpen
+  | RemixContestPickWinnersFinalize
   | AndroidAppRestartHeartbeat
   | AndroidAppRestartStale
   | AndroidAppRestartForceQuit

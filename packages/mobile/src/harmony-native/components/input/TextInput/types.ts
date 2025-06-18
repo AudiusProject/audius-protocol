@@ -119,5 +119,10 @@ export type TextInputProps = RNTextInputProps & {
    */
   textStyle?: ViewStyle
 
+  /**
+   * Styles to apply to the text input component
+   */
+  inputStyle?: TextStyle
+
   TextInputComponent?: typeof RNTextInput
 } & InternalProps

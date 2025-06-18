@@ -1,5 +1,6 @@
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
+import { pick } from 'lodash'
 
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
@@ -17,24 +18,24 @@ export const AlbumPurchaseModalContent = ({
   onClose: () => void
 }) => {
   const { contentId } = purchaseDetails
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: album } = useGetPlaylistById({
-    playlistId: contentId,
-    currentUserId
+  const { data: partialAlbum } = useCollection(contentId, {
+    enabled: !!contentId,
+    select: (collection) => pick(collection, ['playlist_name', 'permalink'])
   })
+  const { playlist_name, permalink } = partialAlbum ?? {}
   const albumArtwork = useCollectionCoverArt({
     collectionId: contentId,
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (!album) return null
+  if (!partialAlbum) return null
 
   return (
     <PurchaseModalContent
       purchaseDetails={purchaseDetails}
       contentLabel={messages.album}
-      contentTitle={album.playlist_name}
-      link={album.permalink ?? ''}
+      contentTitle={playlist_name}
+      link={permalink ?? ''}
       artwork={albumArtwork}
       onClose={onClose}
     />

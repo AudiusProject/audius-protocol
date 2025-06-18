@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cloneDeep } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { Comment, Feature, ID, ReplyComment } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -22,7 +22,7 @@ export type ReportCommentArgs = {
 }
 
 export const useReportComment = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   return useMutation({
@@ -68,7 +68,7 @@ export const useReportComment = () => {
         queryKey: getCommentQueryKey(commentId)
       })
       // Decrease the track comment count
-      subtractCommentCount(dispatch, queryClient, trackId)
+      subtractCommentCount(queryClient, trackId)
     },
     onError: (error: Error, args) => {
       const { trackId, currentSort } = args

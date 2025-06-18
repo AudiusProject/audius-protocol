@@ -8,7 +8,6 @@ import {
   PlaylistLibraryID,
   PlaylistLibraryFolder
 } from '~/models/PlaylistLibrary'
-import { AccountUserMetadata } from '~/models/User'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 import { toast } from '~/store/ui/toast/slice'
@@ -69,13 +68,10 @@ export const useAddToPlaylistFolder = () => {
     },
     onSuccess: ({ updatedLibrary, entityId, folder }) => {
       // Invalidate the playlist library query
-      queryClient.setQueryData(
-        getCurrentAccountQueryKey(currentUserId),
-        (old: AccountUserMetadata | undefined) => {
-          if (!old) return old
-          return { ...old, playlist_library: updatedLibrary }
-        }
-      )
+      queryClient.setQueryData(getCurrentAccountQueryKey(), (old) => {
+        if (!old) return old
+        return { ...old, playlist_library: updatedLibrary }
+      })
 
       // If dragging in a new playlist, save to user collections
       if (typeof entityId === 'number') {

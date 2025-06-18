@@ -1,3 +1,8 @@
+import {
+  queryCollection,
+  queryCollectionByPermalink,
+  queryTracks
+} from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
   smartCollectionPageSelectors,
@@ -5,31 +10,34 @@ import {
   collectionPageSelectors,
   queueSelectors
 } from '@audius/common/store'
-import { removeNullable, Uid, waitForValue } from '@audius/common/utils'
+import { removeNullable, Uid } from '@audius/common/utils'
 import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
 
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 const { getPositions } = queueSelectors
 const {
-  getCollection,
   getSmartCollectionVariant,
   getCollectionId,
-  getCollectionTracksLineup
+  getCollectionTracksLineup,
+  getCollectionPermalink
 } = collectionPageSelectors
 const { getCollection: getSmartCollection } = smartCollectionPageSelectors
 
 function* getCollectionTracks() {
   const smartCollectionVariant = yield select(getSmartCollectionVariant)
+  const permalink = yield select(getCollectionPermalink)
+  const collectionId = yield select(getCollectionId)
   let collection
   if (smartCollectionVariant) {
     collection = yield select(getSmartCollection, {
       variant: smartCollectionVariant
     })
-  } else {
-    collection = yield call(waitForValue, getCollection)
+  } else if (permalink) {
+    collection = yield call(queryCollectionByPermalink, permalink)
+  } else if (collectionId) {
+    collection = yield call(queryCollection, collectionId)
   }
 
   const tracks = collection.playlist_contents.track_ids
@@ -67,12 +75,12 @@ function* getCollectionTracks() {
     }, {})
 
   if (trackIds.length > 0) {
-    const trackMetadatas = yield call(retrieveTracks, { trackIds })
-    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.metadata.track_id)
+    const trackMetadatas = yield call(queryTracks, trackIds)
+    const keyedMetadatas = keyBy(trackMetadatas, (m) => m.track_id)
 
     return trackIds
       .map((id, i) => {
-        const metadata = { ...keyedMetadatas[id].metadata }
+        const metadata = { ...keyedMetadatas[id] }
 
         // For whatever reason, the track id was retrieved and doesn't exist or is malformatted.
         // This can happen if the collection references an unlisted track or one that

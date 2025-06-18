@@ -1,17 +1,16 @@
 import { useContext, useEffect } from 'react'
 
-import { useGetManagedAccounts } from '@audius/common/api'
+import {
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useManagedAccounts
+} from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { useNavigateToPage } from './useNavigateToPage'
-
-const { getUserHandle, getUserId } = accountSelectors
 
 const { FEED_PAGE } = route
 const messages = {
@@ -71,22 +70,17 @@ export const useIsUnauthorizedForHandleRedirect = (
   handle: string,
   route: string = FEED_PAGE
 ) => {
-  const accountHandle = useSelector(getUserHandle)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user: { handle?: string }) => user?.handle
+  })
+  const { data: accountUserId } = useCurrentUserId()
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
 
-  const { data: managedAccounts = [], status: accountsStatus } =
-    useGetManagedAccounts(
-      { userId: accountUserId! },
-      { disabled: !accountUserId }
-    )
+  const { data: managedAccounts = [], isPending: isManagedAccountsPending } =
+    useManagedAccounts(accountUserId)
 
-  const isLoading =
-    !accountHandle ||
-    !accountUserId ||
-    accountsStatus === Status.LOADING ||
-    accountsStatus === Status.IDLE
+  const isLoading = !accountHandle || !accountUserId || isManagedAccountsPending
   const isOwner = accountHandle?.toLowerCase() === handle.toLowerCase()
   const isManaged =
     !!accountHandle &&

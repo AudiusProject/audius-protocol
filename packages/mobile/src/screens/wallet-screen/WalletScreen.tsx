@@ -1,8 +1,7 @@
 import React from 'react'
 
-import { IconWallet } from '@audius/harmony-native'
-import { ScrollView, Screen, ScreenContent } from 'app/components/core'
-import { makeStyles } from 'app/styles'
+import { Flex, IconWallet } from '@audius/harmony-native'
+import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 
 import { CashWallet } from './components/CashWallet'
 import { YourCoins } from './components/YourCoins'
@@ -11,30 +10,20 @@ const messages = {
   title: 'WALLET'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    paddingVertical: spacing(8),
-    paddingHorizontal: spacing(3)
-  },
-  container: {
-    gap: spacing(4)
-  }
-}))
-
 export const WalletScreen = () => {
-  const styles = useStyles()
   return (
     <Screen
       url='/wallet'
       variant='secondary'
       title={messages.title}
-      style={styles.root}
       icon={IconWallet}
     >
       <ScreenContent>
-        <ScrollView contentContainerStyle={styles.container}>
-          <CashWallet />
-          <YourCoins />
+        <ScrollView>
+          <Flex direction='column' gap='xl' p='s' mt='2xl'>
+            <CashWallet />
+            <YourCoins />
+          </Flex>
         </ScrollView>
       </ScreenContent>
     </Screen>

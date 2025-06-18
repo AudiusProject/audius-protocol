@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   playlistLibraryActions,
   playlistLibraryHelpers
@@ -17,13 +17,11 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { createPlaylist } = cacheCollectionsActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
 const { update: updatePlaylistLibrary } = playlistLibraryActions
-const { getPlaylistLibrary } = accountSelectors
 
 const messages = {
   new: 'New',
@@ -37,7 +35,9 @@ const messages = {
 // Allows user to create a playlist or playlist-folder
 export const CreatePlaylistLibraryItemButton = () => {
   const dispatch = useDispatch()
-  const library = useSelector(getPlaylistLibrary)
+  const { data: library } = useCurrentAccount({
+    select: (account) => account?.playlistLibrary
+  })
   const [isActive, setIsActive] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 

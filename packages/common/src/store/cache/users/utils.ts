@@ -1,32 +1,20 @@
-import { put } from 'typed-redux-saga'
+import { call } from 'typed-redux-saga'
 
-import { Kind } from '~/models/Kind'
+import { primeUserDataSaga } from '~/api/tan-query/utils/primeUserData'
 import { UserMetadata } from '~/models/User'
-import * as cacheActions from '~/store/cache/actions'
 import { waitForRead } from '~/utils/sagaHelpers'
-import { makeUid } from '~/utils/uid'
 
+// TODO: this is rather unnecessary as its own fn
 export function* processAndCacheUsers(users: UserMetadata[]) {
   yield* waitForRead()
-  const reformattedUser = users.map((user) => {
+  const reformattedUsers = users.map((user) => {
     return reformatUser(user)
   })
 
   // insert users into cache
-  yield* put(
-    cacheActions.add(
-      Kind.USERS,
-      reformattedUser.map((u) => ({
-        id: u.user_id,
-        uid: makeUid(Kind.USERS, u.user_id),
-        metadata: u
-      })),
-      false,
-      true
-    )
-  )
+  yield* call(primeUserDataSaga, reformattedUsers)
 
-  return reformattedUser
+  return reformattedUsers
 }
 
 /**

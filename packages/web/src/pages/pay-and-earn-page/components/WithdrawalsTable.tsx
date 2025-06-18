@@ -40,7 +40,7 @@ type WithdrawalsTableProps = {
     sortMethod: WithdrawalsTableSortMethod,
     sortDirection: WithdrawalsTableSortDirection
   ) => void
-  fetchMore: (offset: number, limit: number) => void
+  fetchMore: () => void
   totalRowCount?: number
   scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   fetchBatchSize: number

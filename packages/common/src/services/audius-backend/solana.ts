@@ -464,7 +464,11 @@ export const transferFromUserBank = async ({
   try {
     const instructions: TransactionInstruction[] = []
 
-    const destination = getAssociatedTokenAddressSync(mint, destinationWallet)
+    const destination = getAssociatedTokenAddressSync(
+      mint,
+      destinationWallet,
+      true
+    )
 
     try {
       await getAccount(connection, destination)

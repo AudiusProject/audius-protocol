@@ -5,6 +5,7 @@ import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { History } from 'history'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import { createReduxHistoryContext } from 'redux-first-history'
+import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
@@ -12,10 +13,11 @@ import { PartialDeep } from 'type-fest'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
+import { queryClient } from 'services/query-client'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
-import rootSaga from 'store/sagas'
+import rootSaga, { testRootSaga } from 'store/sagas'
 
 import { buildStoreContext } from './storeContext'
 import { AppState } from './types'
@@ -93,11 +95,17 @@ const sentryMiddleware = createSentryMiddleware(
   }
 )
 
-export const configureStore = (
-  history: History,
-  isMobile: boolean,
+export const configureStore = ({
+  history,
+  isMobile,
+  initialStoreState,
+  isTest
+}: {
+  history: History
+  isMobile: boolean
   initialStoreState?: PartialDeep<AppState>
-) => {
+  isTest?: boolean
+}) => {
   const { createReduxHistory, routerMiddleware, routerReducer } =
     createReduxHistoryContext({ history })
 
@@ -130,20 +138,23 @@ export const configureStore = (
     amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
   }
 
-  const context = buildStoreContext({ isMobile })
+  const context = buildStoreContext({ isMobile, isTest })
   const sagaMiddleware = createSagaMiddleware({
     onError: onSagaError,
     context
   })
 
-  const middlewares = applyMiddleware(
-    chatMiddleware(audiusSdk),
-    routerMiddleware,
-    // Don't run sagas serverside
-    ...(typeof window !== 'undefined' ? [sagaMiddleware] : []),
-    sentryMiddleware,
-    thunk
-  )
+  // For tests, only use basic middleware without sagas
+  const middlewares = isTest
+    ? applyMiddleware(routerMiddleware, thunk, sagaMiddleware!)
+    : applyMiddleware(
+        chatMiddleware(audiusSdk, queryClient),
+        routerMiddleware,
+        // Don't run sagas serverside
+        ...(typeof window !== 'undefined' ? [sagaMiddleware!] : []),
+        sentryMiddleware,
+        thunk
+      )
 
   const composeEnhancers = composeWithDevToolsLogOnlyInProduction({
     trace: true,
@@ -159,11 +170,12 @@ export const configureStore = (
   )
   context.dispatch = store.dispatch
 
-  if (typeof window !== 'undefined') {
-    sagaMiddleware.run(rootSaga)
+  if (typeof window !== 'undefined' && sagaMiddleware) {
+    sagaMiddleware.run(isTest ? testRootSaga : rootSaga)
   }
 
   const reduxHistory = createReduxHistory(store)
+  const persistor = persistStore(store)
 
-  return { store, history: reduxHistory }
+  return { store, history: reduxHistory, persistor }
 }

@@ -1,37 +1,41 @@
-import { SquareSizes, User } from '@audius/common/models'
-import { primeUserDataInternal } from '@audius/common/src/api/tan-query/utils/primeUserData'
+import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
+import { developmentConfig } from '@audius/sdk'
+import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom-v5-compat'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, beforeAll, afterEach, afterAll } from 'vitest'
 
-import { queryClient } from 'services/query-client'
-import { RenderOptions, render, screen } from 'test/test-utils'
+import { RenderOptions, mswServer, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
-vi.mock('../../utils/image', () => ({
-  preload: vi.fn((url: string) => Promise.resolve())
-}))
 
-function renderUserCard(users?: User[], options?: RenderOptions) {
-  primeUserDataInternal({
-    users: users ?? [
-      {
-        user_id: 1,
-        handle: 'test-user',
-        name: 'Test User',
-        profile_picture: {
-          [SquareSizes.SIZE_150_BY_150]:
-            'https://node.com/image-profile-small.jpg',
-          [SquareSizes.SIZE_480_BY_480]:
-            'https://node.com/image-profile-medium.jpg',
-          mirrors: ['https://node.com']
-        },
-        follower_count: 1
-      } as User
-    ],
-    queryClient,
-    forceReplace: true
-  })
+const { apiEndpoint } = developmentConfig.network
+
+const testUser = {
+  id: '7eP5n',
+  handle: 'test-user',
+  name: 'Test User',
+  profile_picture: {
+    [SquareSizes.SIZE_150_BY_150]: `${apiEndpoint}/image-profile-small.jpg`,
+    [SquareSizes.SIZE_480_BY_480]: `${apiEndpoint}/image-profile-medium.jpg`,
+    mirrors: [apiEndpoint]
+  },
+  follower_count: 1
+}
+
+function renderUserCard(overrides = {}, options?: RenderOptions) {
+  const user = { ...testUser, ...overrides }
+
+  mswServer.use(
+    http.get(`${apiEndpoint}/v1/full/users`, ({ request }) => {
+      const url = new URL(request.url)
+      const id = url.searchParams.get('id')
+      if (id === '7eP5n') {
+        return HttpResponse.json({ data: [user] })
+      }
+      return new HttpResponse(null, { status: 404 })
+    })
+  )
 
   return render(
     <Routes>
@@ -46,19 +50,31 @@ function renderUserCard(users?: User[], options?: RenderOptions) {
 }
 
 describe('UserCard', () => {
-  it('renders with a label comprising the display name, handle, and follower count', () => {
+  beforeAll(() => {
+    mswServer.listen()
+  })
+
+  afterEach(() => {
+    mswServer.resetHandlers()
+  })
+
+  afterAll(() => {
+    mswServer.close()
+  })
+
+  it('renders with a label comprising the display name, handle, and follower count', async () => {
     renderUserCard()
     expect(
-      screen.getByRole('button', {
+      await screen.findByRole('button', {
         name: /test user @test-user 1 follower/i
       })
     ).toBeInTheDocument()
   })
 
-  // Jailed: does not seem to pass, timeout maybe?
-  it.skip('navigates to the user page when clicked', async () => {
+  it('navigates to the user page when clicked', async () => {
     renderUserCard()
-    screen.getByRole('button').click()
+    const userCard = await screen.findByRole('button', { name: /test user/i })
+    userCard.click()
     expect(
       await screen.findByRole('heading', { name: /test user page/i })
     ).toBeInTheDocument()
@@ -66,30 +82,14 @@ describe('UserCard', () => {
 
   it('renders the profile picture', async () => {
     renderUserCard()
-
-    expect(await screen.getByRole('img', { hidden: true })).toHaveAttribute(
+    expect(await screen.findByRole('img')).toHaveAttribute(
       'src',
-      'https://node.com/image-profile-small.jpg'
+      `${apiEndpoint}/image-profile-medium.jpg`
     )
   })
 
-  it('handles users with large follow counts correctly', () => {
-    renderUserCard([
-      {
-        user_id: 1,
-        handle: 'test-user',
-        name: 'Test User',
-        profile_picture: {
-          [SquareSizes.SIZE_150_BY_150]:
-            'https://node.com/image-profile-small.jpg',
-          [SquareSizes.SIZE_480_BY_480]:
-            'https://node.com/image-profile-medium.jpg',
-          mirrors: ['https://node.com']
-        },
-        follower_count: 1000
-      } as User
-    ])
-
-    expect(screen.getByText('1K Followers')).toBeInTheDocument()
+  it('handles users with large follow counts correctly', async () => {
+    renderUserCard({ follower_count: 1000 })
+    expect(await screen.findByText('1K Followers')).toBeInTheDocument()
   })
 })

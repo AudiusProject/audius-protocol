@@ -1,8 +1,8 @@
 import { cloneElement, useCallback } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/src/hooks/useSelectTierInfo'
 import { BadgeTier } from '@audius/common/src/models/BadgeTier'
 import { ID } from '@audius/common/src/models/Identifiers'
+import { useTierAndVerifiedForUser } from '@audius/common/src/store'
 import { setVisibility } from '@audius/common/src/store/ui/modals/parentSlice'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -74,7 +74,7 @@ const ProfilePageBadge = ({
   className,
   isCompact
 }: ProfilePageBadgeProps) => {
-  const { tier, tierNumber } = useSelectTierInfo(userId)
+  const { tier, tierNumber } = useTierAndVerifiedForUser(userId)
 
   const dispatch = useDispatch()
   const onClick = useCallback(() => {
@@ -111,5 +111,4 @@ const ProfilePageBadge = ({
     </div>
   )
 }
-
 export default ProfilePageBadge

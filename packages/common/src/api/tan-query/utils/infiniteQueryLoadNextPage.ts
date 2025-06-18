@@ -8,7 +8,7 @@ import { UseInfiniteQueryResult } from '@tanstack/react-query'
  * @param queryData
  * @returns
  */
-export const loadNextPage =
+export const makeLoadNextPage =
   (
     queryData: Pick<
       UseInfiniteQueryResult,

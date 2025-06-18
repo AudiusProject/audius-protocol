@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
+import { useCurrentUserId, useToggleFavoriteTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   RepostSource,
@@ -9,7 +9,6 @@ import {
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
-  accountSelectors,
   castSelectors,
   castActions,
   reachabilitySelectors,
@@ -48,8 +47,7 @@ import { useCommentDrawer } from '../comments/CommentDrawerContext'
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
-const { makeGetCurrent } = playerSelectors
-const { getUserId } = accountSelectors
+const { getUid } = playerSelectors
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { updateMethod } = castActions
@@ -109,7 +107,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { toast } = useToast()
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
@@ -121,7 +119,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const currentQueueItem = useSelector(makeGetCurrent())
+  const uid = useSelector(getUid)
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
@@ -170,10 +168,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         entityId: track.track_id,
         navigation,
         actions: playerActions,
-        uid: currentQueueItem.uid as string
+        uid: uid as string
       })
     }
-  }, [currentQueueItem.uid, navigation, open, track])
+  }, [uid, navigation, open, track])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, {

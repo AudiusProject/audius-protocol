@@ -1,9 +1,11 @@
 import { useMemo } from 'react'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { AudiusSdk } from '@audius/sdk'
+import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
+import { AnyAction, Dispatch } from 'redux'
 
-import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
 
 import { getCollectionsBatcher } from '../batchers/getCollectionsBatcher'
@@ -11,6 +13,7 @@ import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
   return [
@@ -19,15 +22,30 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
   ] as unknown as QueryKey<TQCollection>
 }
 
+export const getCollectionQueryFn = async (
+  collectionId: ID,
+  currentUserId: number | null | undefined,
+  queryClient: QueryClient,
+  sdk: AudiusSdk,
+  dispatch: Dispatch<AnyAction>
+) => {
+  const batchGetCollections = getCollectionsBatcher({
+    sdk,
+    currentUserId,
+    queryClient,
+    dispatch
+  })
+  return await batchGetCollections.fetch(collectionId)
+}
+
 export const useCollection = <TResult = TQCollection>(
   collectionId: ID | null | undefined,
   options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const validCollectionId = !!collectionId && collectionId > 0
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(() => options?.select, [])
@@ -36,16 +54,17 @@ export const useCollection = <TResult = TQCollection>(
     queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const batchGetCollections = getCollectionsBatcher({
-        sdk,
+      return getCollectionQueryFn(
+        collectionId!,
         currentUserId,
         queryClient,
+        sdk,
         dispatch
-      })
-      return await batchGetCollections.fetch(collectionId!)
+      )
     },
     ...options,
     select,
-    enabled: options?.enabled !== false && validCollectionId
+    ...entityCacheOptions,
+    enabled: options?.enabled !== false && !!collectionId
   })
 }

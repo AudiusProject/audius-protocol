@@ -9,7 +9,6 @@ import {
   PlaylistLibraryKind,
   PlaylistLibraryItem
 } from '~/models/PlaylistLibrary'
-import { AccountUserMetadata } from '~/models/User'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 
@@ -77,13 +76,10 @@ export const useReorderLibrary = () => {
       collectionType
     }) => {
       // Invalidate the playlist library query
-      queryClient.setQueryData(
-        getCurrentAccountQueryKey(currentUserId),
-        (old: AccountUserMetadata | undefined) => {
-          if (!old) return old
-          return { ...old, playlist_library: updatedLibrary }
-        }
-      )
+      queryClient.setQueryData(getCurrentAccountQueryKey(), (old) => {
+        if (!old) return old
+        return { ...old, playlist_library: updatedLibrary }
+      })
 
       // Analytics
       track(

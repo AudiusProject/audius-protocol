@@ -154,12 +154,28 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     ]
   )
 
-  const handleDownloadAll = useRequiresAccountCallback(() => {
-    openDownloadTrackArchiveModal({
+  const handleDownloadAll = useRequiresAccountCallback(
+    (e) => {
+      e.stopPropagation()
+      if (isMobile && shouldDisplayDownloadFollowGated) {
+        // On mobile, show a toast instead of a tooltip
+        dispatch(toast({ content: messages.followToDownload }))
+        return
+      }
+      openDownloadTrackArchiveModal({
+        trackId,
+        fileCount: stemTracks.length + 1
+      })
+    },
+    [
+      isMobile,
+      shouldDisplayDownloadFollowGated,
+      openDownloadTrackArchiveModal,
       trackId,
-      fileCount: stemTracks.length + 1
-    })
-  }, [trackId, stemTracks])
+      stemTracks.length,
+      dispatch
+    ]
+  )
 
   return (
     <Box css={{ overflow: 'hidden' }}>

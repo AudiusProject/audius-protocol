@@ -9,7 +9,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { commentFromSDK, transformAndCleanList } from '~/adapters'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
@@ -26,12 +26,12 @@ export const useUserComments = (
     userId,
     pageSize = COMMENT_ROOT_PAGE_SIZE
   }: {
-    userId: ID | null
+    userId: ID | null | undefined
     pageSize?: number
   },
   options?: QueryOptions
 ) => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const isMutating = useIsMutating()
   const queryClient = useQueryClient()
@@ -58,7 +58,7 @@ export const useUserComments = (
         commentFromSDK
       )
 
-      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
+      primeRelatedData({ related: commentsRes.related, queryClient })
 
       // Prime comment data in the cache
       primeCommentData({ comments: commentList, queryClient })

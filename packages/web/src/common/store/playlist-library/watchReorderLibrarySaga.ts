@@ -1,6 +1,6 @@
+import { queryCurrentAccount } from '@audius/common/api'
 import { Name, FavoriteSource } from '@audius/common/models'
 import {
-  accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers,
   collectionsSocialActions,
@@ -11,7 +11,6 @@ import { takeEvery, select, put } from 'typed-redux-saga'
 
 import { make } from '../analytics/actions'
 
-const { getPlaylistLibrary } = accountSelectors
 const { reorderPlaylistLibrary, isInsideFolder } = playlistLibraryHelpers
 const { update, reorder } = playlistLibraryActions
 const { saveCollection } = collectionsSocialActions
@@ -23,7 +22,8 @@ export function* watchReorderLibrarySaga() {
 function* reorderLibrarySagaWorker(action: ReorderAction) {
   const { draggingId, droppingId, draggingKind } = action.payload
 
-  const playlistLibrary = yield* select(getPlaylistLibrary)
+  const account = yield* queryCurrentAccount()
+  const playlistLibrary = account?.playlistLibrary
   if (!playlistLibrary) return
 
   const updatedLibrary = reorderPlaylistLibrary(

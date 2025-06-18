@@ -9,6 +9,7 @@ import { OneShotChallengeModalContent } from './OneShotChallengeModalContent'
 import { PinnedCommentChallengeModalContent } from './PinnedCommentChallengeModalContent'
 import { PlayCountMilestoneContent } from './PlayCountMilestoneContent'
 import { ReferralsChallengeModalContent } from './ReferralsChallengeModalContent'
+import { RemixContestWinnerChallengeModalContent } from './RemixContestWinnerChallengeModalContent'
 import { TastemakerChallengeModalContent } from './TastemakerChallengeModalContent'
 import {
   type ChallengeContentMap,
@@ -42,6 +43,8 @@ export const challengeContentRegistry: ChallengeContentMap = {
     CosignChallengeModalContent as ChallengeContentComponent,
   [ChallengeName.CommentPin]:
     PinnedCommentChallengeModalContent as ChallengeContentComponent,
+  [ChallengeName.RemixContestWinner]:
+    RemixContestWinnerChallengeModalContent as ChallengeContentComponent,
   default: DefaultChallengeContent as ChallengeContentComponent
 }
 

@@ -2,7 +2,7 @@ import { ComponentType, lazy } from 'react'
 
 import { Modals as ModalTypes } from '@audius/common/store'
 
-import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
+import { AddCashModal } from 'components/add-cash-modal/AddCashModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import { AlbumTrackRemoveConfirmationModal } from 'components/album-track-remove-confirmation-modal/AlbumTrackRemoveConfirmationModal'
@@ -25,10 +25,12 @@ import { EditAccessConfirmationModal } from 'components/edit-access-confirmation
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
+import { FinalizeWinnersConfirmationModal } from 'components/finalize-winners-confirmation-modal/FinalizeWinnersConfirmationModal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { HideContentConfirmationModal } from 'components/hide-confirmation-modal'
 import { HostRemixContestModal } from 'components/host-remix-contest-modal/HostRemixContestModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
+import { LabelAccountModal } from 'components/label-account-modal/LabelAccountModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
@@ -44,7 +46,7 @@ import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
-import { UnloadDialog } from 'components/unload-dialog/UnloadDialog'
+import { UnsavedChangesDialog } from 'components/unsaved-changes-dialog/UnsavedChangesDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
@@ -94,6 +96,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   ReplaceTrackProgress: ReplaceTrackProgressModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
+  FinalizeWinnersConfirmation: FinalizeWinnersConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   EditAccessConfirmation: EditAccessConfirmationModal,
@@ -106,6 +109,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
   CommentSettings: CommentSettingsModal,
+  LabelAccount: LabelAccountModal,
   LockedContent: LockedContentModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
@@ -125,7 +129,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  AddFundsModal,
+  AddCashModal,
   CoinflowWithdraw: CoinflowWithdrawModal,
   WaitForDownloadModal,
   ArtistPick: ArtistPickModal,
@@ -147,7 +151,7 @@ const Modals = () => {
     <>
       <PasswordResetModal />
       <FirstUploadModal />
-      <UnloadDialog />
+      <UnsavedChangesDialog />
       <CollectibleDetailsModal />
       {commonModals.map(([modalName, Modal]) => {
         return <AppModal key={modalName} name={modalName} modal={Modal} />

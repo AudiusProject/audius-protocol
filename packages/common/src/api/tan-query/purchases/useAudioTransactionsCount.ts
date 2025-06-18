@@ -1,7 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
@@ -9,7 +9,9 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => {
+export const getAudioTransactionsCountQueryKey = (
+  userId: Nullable<ID> | undefined
+) => {
   return [
     QUERY_KEYS.audioTransactionsCount,
     userId
@@ -19,7 +21,7 @@ export const getAudioTransactionsCountQueryKey = (userId: Nullable<ID>) => {
 export const useAudioTransactionsCount = <TResult = number>(
   options?: SelectableQueryOptions<number, TResult>
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: userId } = useCurrentUserId()
 
   return useQuery({

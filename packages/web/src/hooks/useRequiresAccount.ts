@@ -1,7 +1,11 @@
 import { MouseEvent as ReactMouseEvent, useCallback, useEffect } from 'react'
 
+import {
+  selectIsAccountComplete,
+  useAccountStatus,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom-v5-compat'
 
@@ -11,9 +15,6 @@ import {
   updateRouteOnCompletion,
   updateRouteOnExit
 } from 'common/store/pages/signon/actions'
-import { useSelector } from 'utils/reducer'
-
-const { getAccountStatus, getIsAccountComplete } = accountSelectors
 
 export type RestrictionType = 'none' | 'guest' | 'account'
 
@@ -38,8 +39,10 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
   returnRouteOverride?: string,
   restriction: RestrictionType = 'account'
 ) => {
-  const isAccountComplete = useSelector(getIsAccountComplete)
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
+  const { data: accountStatus } = useAccountStatus()
   const dispatch = useDispatch()
   const location = useLocation()
   const returnRoute = returnRouteOverride ?? location.pathname
@@ -59,7 +62,6 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
         accountStatus === Status.SUCCESS,
         isAccountComplete
       )
-
       if (!canAccessRoute) {
         // Prevent the default event from occurring
         if (args[0]?.preventDefault) {

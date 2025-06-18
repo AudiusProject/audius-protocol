@@ -3,12 +3,10 @@ import logging  # pylint: disable=C0302
 from src.api.v1.helpers import extend_track, format_limit, format_offset
 from src.queries.generate_unpopulated_trending_tracks import (
     make_generate_unpopulated_trending,
-    make_trending_tracks_cache_key,
 )
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
-from src.utils.redis_cache import use_redis_cache
 
 logger = logging.getLogger(__name__)
 
@@ -29,22 +27,13 @@ def get_usdc_purchase_tracks(args, strategy):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        key = make_trending_tracks_cache_key(time_range, genre, strategy.version)
-        key += ":usdc_purchase_only"
-
-        # Will try to hit cached trending from task, falling back
-        # to generating it here if necessary and storing it with no TTL
-        (tracks, track_ids) = use_redis_cache(
-            key,
-            None,
-            make_generate_unpopulated_trending(
-                session=session,
-                genre=genre,
-                time_range=time_range,
-                strategy=strategy,
-                exclude_gated=False,
-                usdc_purchase_only=True,
-            ),
+        (tracks, track_ids) = make_generate_unpopulated_trending(
+            session=session,
+            genre=genre,
+            time_range=time_range,
+            strategy=strategy,
+            exclude_gated=False,
+            usdc_purchase_only=True,
         )
 
         # apply limit and offset

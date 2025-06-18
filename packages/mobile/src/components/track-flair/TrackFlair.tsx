@@ -5,8 +5,7 @@ import type { ID } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
-import { IconCosign, IconContestSign, useTheme } from '@audius/harmony-native'
-import { makeStyles } from 'app/styles'
+import { IconCosign, IconContestSign } from '@audius/harmony-native'
 
 import { Size } from './types'
 
@@ -16,13 +15,6 @@ type CoSignProps = {
   style?: StyleProp<ViewStyle>
   trackId: ID
 }
-
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  check: {
-    position: 'absolute',
-    backgroundColor: palette.white
-  }
-}))
 
 const layoutBySize = {
   [Size.TINY]: {
@@ -78,29 +70,36 @@ const layoutBySize = {
 }
 
 export const TrackFlair = ({ size, children, style, trackId }: CoSignProps) => {
-  const styles = useStyles()
-  const { color } = useTheme()
-  const { data: track } = useTrack(trackId)
+  const { data: isCosign } = useTrack(trackId, {
+    select: (track) => {
+      const remixTrack = track.remix_of?.tracks[0]
+      return (
+        remixTrack?.has_remix_author_reposted ||
+        remixTrack?.has_remix_author_saved
+      )
+    }
+  })
   const { data: remixContest } = useRemixContest(trackId)
 
   const { size: iconSize, position } = layoutBySize[size]
 
-  const remixTrack = track?.remix_of?.tracks[0]
-  const hasRemixAuthorReposted = remixTrack?.has_remix_author_reposted ?? false
-  const hasRemixAuthorSaved = remixTrack?.has_remix_author_saved ?? false
-
-  const isCosign = hasRemixAuthorReposted || hasRemixAuthorSaved
-
-  const flair = isCosign ? (
-    <IconCosign {...iconSize} fill={color.primary.p300} />
-  ) : remixContest?.endDate ? (
-    <IconContestSign {...iconSize} fill={color.primary.p300} />
-  ) : null
+  const FlairIcon = isCosign
+    ? IconCosign
+    : remixContest?.endDate
+      ? IconContestSign
+      : null
 
   return (
     <View style={style}>
       <View>{children}</View>
-      {flair ? <View style={[styles.check, position]}>{flair}</View> : null}
+      {FlairIcon ? (
+        <FlairIcon
+          {...iconSize}
+          style={[{ position: 'absolute' }, position]}
+          color='active'
+          colorSecondary='white'
+        />
+      ) : null}
     </View>
   )
 }

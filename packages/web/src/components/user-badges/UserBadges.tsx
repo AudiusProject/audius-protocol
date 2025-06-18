@@ -1,7 +1,7 @@
 import { cloneElement, ReactElement } from 'react'
 
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   IconSize,
@@ -27,7 +27,7 @@ export const audioTierMap: {
 }
 
 type UserBadgesProps = {
-  userId: ID
+  userId?: ID
   size?: IconSize
   className?: string
   inline?: boolean
@@ -47,7 +47,7 @@ const UserBadges = ({
   isVerifiedOverride,
   overrideTier
 }: UserBadgesProps) => {
-  const { tier: currentTier, isVerified } = useSelectTierInfo(userId)
+  const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
   const tier = overrideTier || currentTier
   const tierMap = audioTierMap
   const audioBadge = tierMap[tier as BadgeTier]

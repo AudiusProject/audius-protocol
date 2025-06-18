@@ -1,13 +1,12 @@
 import { useMemo } from 'react'
 
-import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
-import { eventMetadataFromSDK } from '~/adapters/event'
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
-import { removeNullable } from '~/utils'
 
+import { getEventsByEntityIdBatcher } from '../batchers/getEventsByEntityIdBatcher'
 import { SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
@@ -21,8 +20,9 @@ export const useEventIdsByEntityId = (
   args: EventIdsByEntityIdOptions,
   options?: SelectableQueryOptions<ID[]>
 ) => {
-  const { entityId, ...restArgs } = args ?? {}
-  const { audiusSdk } = useAudiusQueryContext()
+  const { entityId } = args ?? {}
+  const { audiusSdk } = useQueryContext()
+  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
 
@@ -33,21 +33,22 @@ export const useEventIdsByEntityId = (
     queryKey: getEventIdsByEntityIdQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const response = await sdk.events.getEntityEvents({
-        entityId: Id.parse(entityId),
-        userId: OptionalId.parse(currentUserId),
-        ...restArgs
-      })
-      const events = response.data ?? []
-      const eventsMetadata = events
-        .map(eventMetadataFromSDK)
-        .filter(removeNullable)
 
-      eventsMetadata.forEach((event) => {
+      const batchGetEvents = getEventsByEntityIdBatcher({
+        sdk,
+        currentUserId,
+        queryClient,
+        dispatch
+      })
+
+      const events = await batchGetEvents.fetch(entityId!)
+
+      // Prime the events in the cache
+      events.forEach((event) => {
         queryClient.setQueryData(getEventQueryKey(event.eventId), event)
       })
 
-      return eventsMetadata.map((event) => event.eventId)
+      return events.map((event) => event.eventId)
     },
     ...options,
     enabled: options?.enabled !== false && !!entityId,

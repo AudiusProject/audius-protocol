@@ -1,18 +1,16 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Track } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
-import { getWalletAddresses } from '~/store/account/selectors'
 import { deleteTrackRequested } from '~/store/cache/tracks/actions'
 
-import { getCurrentUserQueryKey } from '../users/account/useCurrentUser'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
 import { primeTrackData } from '../utils/primeTrackData'
@@ -31,11 +29,10 @@ type MutationContext = {
 }
 
 export const useDeleteTrack = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
-  const { currentUser: currentUserWallet } = useSelector(getWalletAddresses)
   const { data: currentUser } = useUser(currentUserId)
   const {
     analytics: { track: trackEvent }
@@ -75,14 +72,8 @@ export const useDeleteTrack = () => {
         primeUserData({
           users: [updatedCurrentUser],
           queryClient,
-          dispatch,
           forceReplace: true
         })
-
-        queryClient.setQueryData(
-          getCurrentUserQueryKey(currentUserWallet),
-          updatedCurrentUser
-        )
       }
 
       // Optimistic update in cache
@@ -94,7 +85,6 @@ export const useDeleteTrack = () => {
           }
         ],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 
@@ -134,7 +124,6 @@ export const useDeleteTrack = () => {
           }
         ],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 
@@ -147,7 +136,6 @@ export const useDeleteTrack = () => {
             }
           ],
           queryClient,
-          dispatch,
           forceReplace: true
         })
       }

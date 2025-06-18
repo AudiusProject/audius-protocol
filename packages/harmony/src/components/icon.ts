@@ -8,6 +8,7 @@ type SVGBaseProps = SVGProps<SVGSVGElement>
 
 export type IconProps = {
   color?: IconColors
+  colorSecondary?: IconColors
   size?: IconSize
   sizeW?: IconSize
   sizeH?: IconSize
@@ -18,6 +19,6 @@ export type IconProps = {
   onClick?: MouseEventHandler<SVGSVGElement>
 }
 
-type SVGIconProps = SVGBaseProps & IconProps
+export type SVGIconProps = SVGBaseProps & IconProps
 
 export type IconComponent = ComponentType<SVGBaseProps | SVGIconProps>

@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
-import { useAudiusQueryContext } from '~/audius-query'
+import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
 import { Feature } from '~/models/ErrorReporting'
 import { UserMetadata, WriteableUserMetadata } from '~/models/User'
 import { dataURLtoFile } from '~/utils'
@@ -16,14 +16,14 @@ export type MutationContext = {
 }
 
 export const useUpdateProfile = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
   return useMutation({
     mutationFn: async (metadata: WriteableUserMetadata) => {
       const sdk = await audiusSdk()
-      metadata.bio = squashNewLines(metadata.bio ?? null)
+      metadata.bio = squashNewLines(metadata.bio) ?? null
 
       // For base64 images (coming from native), convert to a blob
       if (metadata.updatedCoverPhoto?.type === 'base64') {
@@ -84,9 +84,10 @@ export const useUpdateProfile = () => {
 
       // Optimistically update user data
       if (previousMetadata) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
-          ...previousMetadata,
-          ...metadata
+        primeUserData({
+          queryClient,
+          users: [{ ...previousMetadata, ...metadata }],
+          forceReplace: true
         })
       }
 
@@ -95,9 +96,10 @@ export const useUpdateProfile = () => {
     onError: (error, metadata, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousMetadata) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
-          ...context.previousMetadata,
-          ...metadata
+        primeUserData({
+          queryClient,
+          users: [{ ...context.previousMetadata, ...metadata }],
+          forceReplace: true
         })
       }
 

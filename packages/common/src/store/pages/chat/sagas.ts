@@ -19,16 +19,20 @@ import {
 } from 'typed-redux-saga'
 import { ulid } from 'ulid'
 
+import {
+  getChatMemberUserIds,
+  queryCurrentUserId,
+  queryHasAccount,
+  queryUsers
+} from '~/api'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import { getHasAccount, getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
 import { makeBlastChatId, removeNullable } from '../../../utils'
-import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
 
 import * as chatSelectors from './selectors'
@@ -82,13 +86,8 @@ const {
   deleteChat,
   deleteChatSucceeded
 } = chatActions
-const {
-  getChatsSummary,
-  getChat,
-  getUnfurlMetadata,
-  getNonOptimisticChat,
-  getOtherChatUsers
-} = chatSelectors
+const { getChatsSummary, getChat, getUnfurlMetadata, getNonOptimisticChat } =
+  chatSelectors
 const { toast } = toastActions
 
 const CHAT_PAGE_SIZE = 30
@@ -98,17 +97,14 @@ const MESSAGES_PAGE_SIZE = 50
  * Helper to dispatch actions for fetching chat users
  */
 function* fetchUsersForChats(chats: UserChat[]) {
-  const userIds = new Set<number>([])
-  for (const chat of chats) {
-    for (const member of chat.chat_members) {
-      userIds.add(HashId.parse(member.user_id))
-    }
-  }
-  yield* put(
-    cacheUsersActions.fetchUsers({
-      userIds: Array.from(userIds.values())
+  const userIds = chats.reduce((acc, chat) => {
+    chat.chat_members.forEach((member) => {
+      acc.add(HashId.parse(member.user_id))
     })
-  )
+    return acc
+  }, new Set<number>())
+
+  yield* call(queryUsers, Array.from(userIds.values()))
 }
 
 function* doFetchUnreadMessagesCount() {
@@ -142,7 +138,7 @@ function* doFetchLatestChats() {
     let hasMoreChats = true
     let data: UserChat[] = []
     let firstResponse: TypedCommsResponse<UserChat[]> | undefined
-    const currentUserId = yield* select(getUserId)
+    const currentUserId = yield* call(queryCurrentUserId)
     if (!currentUserId) {
       throw new Error('User not found')
     }
@@ -184,7 +180,7 @@ function* doFetchMoreChats() {
     const sdk = yield* call(audiusSdk)
     const summary = yield* select(getChatsSummary)
     const before = summary?.prev_cursor
-    const currentUserId = yield* select(getUserId)
+    const currentUserId = yield* call(queryCurrentUserId)
     if (!currentUserId) {
       throw new Error('User not found')
     }
@@ -342,7 +338,7 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const hasAccount = yield* select(getHasAccount)
+    const hasAccount = yield* call(queryHasAccount)
     if (!hasAccount) {
       throw new Error('User not found')
     }
@@ -401,7 +397,7 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const currentUserId = yield* select(getUserId)
+    const currentUserId = yield* call(queryCurrentUserId)
     if (!currentUserId) {
       throw new Error('User not found')
     }
@@ -463,7 +459,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
   } = action.payload
 
   const { track, make } = yield* getContext('analytics')
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   try {
     if (!currentUserId) {
       throw new Error('User not found')
@@ -569,7 +565,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   const { chatId, message, resendMessageId } = action.payload
   const { track, make } = yield* getContext('analytics')
   const messageIdToUse = resendMessageId ?? ulid()
-  const userId = yield* select(getUserId)
+  const userId = yield* call(queryCurrentUserId)
   const chat = yield* select((state) => getChat(state, chatId))
   try {
     const audiusSdk = yield* getContext('audiusSdk')
@@ -631,15 +627,20 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
     yield* put(fetchBlockees())
     yield* put(fetchBlockers())
     if (userId) {
-      const otherUsers = yield* select((state) =>
-        getOtherChatUsers(state, chatId)
-      )
-      // Get permissions of ourselves and other users in the chat
-      yield* put(
-        fetchPermissions({
-          userIds: [userId, ...otherUsers.map((u) => u.user_id)]
-        })
-      )
+      const chat = yield* select((state) => getChat(state, chatId))
+      if (chat) {
+        const otherUserIds = getChatMemberUserIds(chat, userId)
+        const otherUsersMap = yield* call(queryUsers, otherUserIds)
+        const otherUsers = Object.values(otherUsersMap)
+        if (otherUsers) {
+          // Get permissions of ourselves and other users in the chat
+          yield* put(
+            fetchPermissions({
+              userIds: [userId, ...otherUsers.map((u) => u.user_id)]
+            })
+          )
+        }
+      }
     }
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
@@ -765,7 +766,7 @@ function* doUnblockUser(action: ReturnType<typeof unblockUser>) {
 
 function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
   try {
-    const currentUserId = yield* select(getUserId)
+    const currentUserId = yield* call(queryCurrentUserId)
     if (!currentUserId) {
       return
     }

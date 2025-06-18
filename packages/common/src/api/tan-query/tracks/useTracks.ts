@@ -2,47 +2,71 @@ import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
-import { CommonState } from '~/store'
 
 import { getTracksBatcher } from '../batchers/getTracksBatcher'
 import { TQTrack } from '../models'
-import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, QueryOptions } from '../types'
+import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { combineQueryResults } from '../utils/combineQueryResults'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { useQueries } from '../utils/useQueries'
 
-import { getTrackQueryKey } from './useTrack'
+import { getTrackQueryFn, getTrackQueryKey } from './useTrack'
 
-export const getTracksQueryKey = (trackIds: ID[] | null | undefined) =>
-  [QUERY_KEYS.tracks, trackIds] as unknown as QueryKey<TQTrack[]>
+// This function is only used for batch operations in saga utilities
+export const getTracksQueryFn = async (
+  trackIds: ID[],
+  currentUserId: ID | null,
+  queryClient: any,
+  sdk: any,
+  dispatch: any
+) => {
+  const batchGetTracks = getTracksBatcher({
+    sdk,
+    currentUserId,
+    queryClient,
+    dispatch
+  })
+  const tracks = await Promise.all(
+    trackIds.map((trackId) => batchGetTracks.fetch(trackId))
+  )
+  return tracks.filter((track): track is TQTrack => !!track)
+}
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
+  // Filter out duplicate IDs
+  const uniqueTrackIds = useMemo(
+    () =>
+      trackIds?.filter((id, index, self) => self.indexOf(id) === index && !!id),
+    [trackIds]
+  )
+
   const queryResults = useQueries({
-    queries: trackIds?.map((trackId) => ({
+    queries: uniqueTrackIds?.map((trackId) => ({
       queryKey: getTrackQueryKey(trackId),
       queryFn: async () => {
         const sdk = await audiusSdk()
-        const batchGetTracks = getTracksBatcher({
-          sdk,
+        return getTrackQueryFn(
+          trackId,
           currentUserId,
           queryClient,
+          sdk,
           dispatch
-        })
-        return await batchGetTracks.fetch(trackId)
+        )
       },
+      ...entityCacheOptions,
       ...options,
       enabled: options?.enabled !== false && !!trackId && trackId > 0
     })),
@@ -53,17 +77,14 @@ export const useTracks = (
 
   const byId = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
 
-  const isSavedToRedux = useSelector((state: CommonState) =>
-    trackIds?.every((trackId) => !!state.tracks.entries[trackId])
-  )
-
   return {
-    data: isSavedToRedux ? tracks : undefined,
+    data: tracks,
     byId,
-    status: isSavedToRedux ? queryResults.status : 'pending',
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux,
+    status: queryResults.status,
+    isPending: queryResults.isPending,
+    isLoading: queryResults.isLoading,
     isFetching: queryResults.isFetching,
-    isSuccess: queryResults.isSuccess
+    isSuccess: queryResults.isSuccess,
+    isError: queryResults.isError
   }
 }

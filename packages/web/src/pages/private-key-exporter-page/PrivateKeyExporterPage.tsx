@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useCurrentAccountUser, useCurrentUserId } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Box,
@@ -29,13 +29,11 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { push } from 'utils/navigation'
-import { useSelector } from 'utils/reducer'
 import { isDarkMode } from 'utils/theme/theme'
 
 import styles from './PrivateKeyExporterPage.module.css'
 
 const { SETTINGS_PAGE, TRENDING_PAGE } = route
-const { getUserId, getUserHandle } = accountSelectors
 
 const messages = {
   backToSettings: 'Back To Settings',
@@ -81,7 +79,7 @@ const AUDIUS_SUPPORT_EMAIL = 'support@audius.co'
 
 const Header = () => {
   const { color } = useTheme()
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const darkMode = isDarkMode()
   return (
     <Flex
@@ -343,8 +341,10 @@ const AgreeAndContinue = () => {
 const PrivateKeyExporterPage = () => {
   useRequiresAccount()
   const record = useRecord()
-  const accountUserId = useSelector(getUserId)
-  const accountHandle = useSelector(getUserHandle)
+  const { data: accountUserId } = useCurrentUserId()
+  const { data: accountHandle } = useCurrentAccountUser({
+    select: (user) => user?.handle
+  })
   const [hasViewed, setHasViewed] = useState(false)
   useEffect(() => {
     if (accountHandle && accountUserId && !hasViewed) {

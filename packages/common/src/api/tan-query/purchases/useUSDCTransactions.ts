@@ -1,7 +1,14 @@
-import { full, Id } from '@audius/sdk'
-import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
+import { useCallback } from 'react'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { full, Id } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQueryClient
+} from '@tanstack/react-query'
+
+import { useQueryContext, makeLoadNextPage } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { USDCTransactionDetails } from '~/models/USDCTransactions'
 
@@ -71,17 +78,19 @@ export const useUSDCTransactions = (
   }: UseUSDCTransactionsArgs = {},
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
+  const queryKey = getUSDCTransactionsQueryKey(currentUserId, {
+    pageSize,
+    sortMethod,
+    sortDirection,
+    type,
+    method
+  })
 
-  return useInfiniteQuery({
-    queryKey: getUSDCTransactionsQueryKey(currentUserId, {
-      pageSize,
-      sortMethod,
-      sortDirection,
-      type,
-      method
-    }),
+  const queryData = useInfiniteQuery({
+    queryKey,
     initialPageParam: 0,
     getNextPageParam: (lastPage: USDCTransactionDetails[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -106,4 +115,22 @@ export const useUSDCTransactions = (
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
+  const reset = useCallback(() => {
+    queryClient.resetQueries({
+      queryKey
+    })
+  }, [queryClient, queryKey])
+
+  // @ts-ignore
+  queryData.reset = reset
+  const loadNextPageCallback = useCallback(
+    () => makeLoadNextPage(queryData),
+    [queryData]
+  )
+  // @ts-ignore
+  queryData.loadNextPage = loadNextPageCallback
+  return queryData as UseInfiniteQueryResult<USDCTransactionDetails[]> & {
+    reset: typeof reset
+    loadNextPage: typeof loadNextPageCallback
+  }
 }

@@ -1,51 +1,74 @@
-import { useCallback, useState } from 'react'
+import { useMemo } from 'react'
 
-import { Flex } from '@audius/harmony'
+import { useTokenPrice, useUSDCBalance } from '@audius/common/api'
+import { Status } from '@audius/common/models'
+import { TokenPair } from '@audius/common/store'
+import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
-import { TokenAmountSection } from './TokenAmountSection'
-import { TokenPair } from './types'
+import { SwapTab } from './SwapTab'
 
 type BuyTabProps = {
   tokenPair: TokenPair
+  onTransactionDataChange?: (data: {
+    inputAmount: number
+    outputAmount: number
+    isValid: boolean
+    error: string | null
+    isInsufficientBalance: boolean
+  }) => void
+  error?: boolean
+  errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
-export const BuyTab = ({ tokenPair }: BuyTabProps) => {
-  const { baseToken, quoteToken, exchangeRate } = tokenPair
-  const [quoteAmount, setQuoteAmount] = useState<string>('')
-  const receivedBaseAmount = parseFloat(quoteAmount || '0') / exchangeRate || 0
+export const BuyTab = ({
+  tokenPair,
+  onTransactionDataChange,
+  error,
+  errorMessage,
+  initialInputValue,
+  onInputValueChange
+}: BuyTabProps) => {
+  const { baseToken, quoteToken } = tokenPair
+  const { status: balanceStatus, data: usdcBalance } = useUSDCBalance()
 
-  const handleQuoteAmountChange = useCallback((value: string) => {
-    // Allow only valid number input
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setQuoteAmount(value)
+  const { data: tokenPriceData, isPending: isTokenPriceLoading } =
+    useTokenPrice(baseToken.address)
+
+  const tokenPrice = tokenPriceData?.price || null
+
+  const decimalPlaces = useMemo(() => {
+    if (!tokenPrice) return 2
+    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
+  }, [tokenPrice])
+
+  const getUsdcBalance = useMemo(() => {
+    return () => {
+      if (balanceStatus === Status.SUCCESS && usdcBalance) {
+        return parseFloat(usdcBalance.toString()) / 10 ** quoteToken.decimals
+      }
+      return undefined
     }
-  }, [])
-
-  const handleMaxClick = useCallback(() => {
-    setQuoteAmount(quoteToken.balance.toString())
-  }, [quoteToken.balance])
+  }, [balanceStatus, usdcBalance, quoteToken.decimals])
 
   return (
-    <Flex direction='column' gap='l'>
-      <TokenAmountSection
-        title='You Pay'
-        tokenInfo={quoteToken}
-        isInput={true}
-        amount={parseFloat(quoteAmount)}
-        onAmountChange={handleQuoteAmountChange}
-        onMaxClick={handleMaxClick}
-        availableBalance={quoteToken.balance}
-        placeholder='0.00'
-      />
-
-      <TokenAmountSection
-        title='You Receive'
-        tokenInfo={baseToken}
-        isInput={false}
-        amount={receivedBaseAmount}
-        availableBalance={0}
-        exchangeRate={exchangeRate}
-      />
-    </Flex>
+    <SwapTab
+      inputToken={quoteToken}
+      outputToken={baseToken}
+      balance={{
+        get: getUsdcBalance,
+        loading: balanceStatus === Status.LOADING,
+        formatError: () => 'Insufficient balance'
+      }}
+      onTransactionDataChange={onTransactionDataChange}
+      error={error}
+      errorMessage={errorMessage}
+      tokenPrice={tokenPrice}
+      isTokenPriceLoading={isTokenPriceLoading}
+      tokenPriceDecimalPlaces={decimalPlaces}
+      initialInputValue={initialInputValue}
+      onInputValueChange={onInputValueChange}
+    />
   )
 }

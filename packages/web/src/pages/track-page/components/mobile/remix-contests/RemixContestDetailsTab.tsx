@@ -13,9 +13,9 @@ const messages = {
   deadline: (deadline?: string) => {
     if (!deadline) return ''
     const date = dayjs(deadline)
-    return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')}`
+    return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')}`
   },
-  ended: 'Contest Ended',
+  ended: 'Contest Ended:',
   fallbackDescription:
     'Enter my remix contest before the deadline for your chance to win!',
   uploadRemixButtonText: 'Upload Your Remix'
@@ -54,21 +54,19 @@ export const RemixContestDetailsTab = ({
   return (
     <Flex column w='100%'>
       <Flex column gap='s' p='l'>
-        <Flex row gap='xs'>
+        <Flex row gap='xs' wrap='wrap'>
           <Text variant='title' color='accent'>
-            {messages.due}
+            {isContestEnded ? messages.ended : messages.due}
           </Text>
           <Text variant='body' strength='strong'>
-            {isContestEnded
-              ? messages.ended
-              : messages.deadline(remixContest?.endDate)}
+            {messages.deadline(remixContest?.endDate)}
           </Text>
         </Flex>
         <UserGeneratedText variant='body'>
           {remixContest?.eventData?.description ?? messages.fallbackDescription}
         </UserGeneratedText>
       </Flex>
-      {!isOwner ? (
+      {!isOwner && !isContestEnded ? (
         <>
           <Divider />
           <Flex p='l' pb='s'>

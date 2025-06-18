@@ -9,7 +9,6 @@ import {
   ID,
   SolCollectionMap
 } from '../../models'
-import { getUserId } from '../account/selectors'
 import { CommonState } from '../commonStore'
 
 export const getAllUserCollectibles = (state: CommonState) =>
@@ -27,10 +26,11 @@ export const getHasUnsupportedCollection = (state: CommonState) =>
 const defaultCollectibles = { [Chain.Eth]: [], [Chain.Sol]: [] }
 
 export const getSupportedUserCollections = createSelector(
-  getUserId,
   getAllUserCollectibles,
   getSolCollections,
-  (accountUserId, allUserCollectibles, solCollections) => {
+  (_state: CommonState, { userId }: { userId: ID | null | undefined }) =>
+    userId,
+  (allUserCollectibles, solCollections, accountUserId) => {
     const getCollectionMintAddress = (collectible: Collectible) => {
       if (collectible.heliusCollection) {
         return collectible.heliusCollection.address

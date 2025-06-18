@@ -2,22 +2,21 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import {
+  primeCollectionDataSaga,
+  queryAccountUser,
+  queryCurrentUserId
+} from '@audius/common/api'
 import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
-import {
-  accountSelectors,
-  walletActions,
-  getContext,
-  getSDK
-} from '@audius/common/store'
-import { waitForValue, doEvery, route } from '@audius/common/utils'
+import { walletActions, getContext, getSDK } from '@audius/common/store'
+import { doEvery, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'
 import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
 
-import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -27,7 +26,6 @@ import ArtistDashboardState from './types'
 
 const { DASHBOARD_PAGE } = route
 const { getBalance } = walletActions
-const { getUserHandle, getUserId } = accountSelectors
 
 const formatMonth = (date: moment.Moment | string) =>
   moment.utc(date).format('MMM').toUpperCase()
@@ -35,11 +33,16 @@ const formatMonth = (date: moment.Moment | string) =>
 function* fetchDashboardTracksAsync(
   action: ReturnType<typeof dashboardActions.fetchTracks>
 ) {
-  const accountHandle = yield* call(waitForValue, getUserHandle)
-  const accountUserId = yield* call(waitForValue, getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
   const { offset, limit } = action.payload
 
   try {
+    if (!accountHandle || !accountUserId) {
+      yield* put(dashboardActions.fetchTracksFailed({}))
+      return
+    }
     const tracks = yield* call(retrieveUserTracks, {
       handle: accountHandle,
       currentUserId: accountUserId,
@@ -59,8 +62,9 @@ function* fetchDashboardAsync(
 ) {
   yield* call(waitForRead)
 
-  const accountHandle = yield* call(waitForValue, getUserHandle)
-  const accountUserId: number | null = yield* call(waitForValue, getUserId)
+  const accountUser = yield* call(queryAccountUser)
+  const accountHandle = accountUser?.handle
+  const accountUserId = yield* call(queryCurrentUserId)
   if (!accountUserId) {
     yield* put(dashboardActions.fetchFailed({}))
     return
@@ -70,6 +74,10 @@ function* fetchDashboardAsync(
   const sdk = yield* getSDK()
   const { offset, limit } = action.payload
   try {
+    if (!accountHandle) {
+      yield* put(dashboardActions.fetchFailed({}))
+      return
+    }
     const data = yield* all([
       call(retrieveUserTracks, {
         handle: accountHandle,
@@ -98,10 +106,8 @@ function* fetchDashboardAsync(
         .data,
       userCollectionMetadataFromSDK
     )
-    const processedCollections = yield* processAndCacheCollections([
-      ...playlists,
-      ...albums
-    ])
+    const collections = [...playlists, ...albums]
+    yield* call(primeCollectionDataSaga, [...playlists, ...albums])
 
     const trackIds = tracks.map((t) => t.track_id)
     const now = moment()
@@ -119,7 +125,7 @@ function* fetchDashboardAsync(
       yield* put(
         dashboardActions.fetchSucceeded({
           tracks,
-          collections: processedCollections
+          collections
         })
       )
     } else {
@@ -137,7 +143,7 @@ function* fetchDashboardListenDataAsync(
   const { start, end } = action.payload
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
-  const accountUserId = yield* call(waitForValue, getUserId)
+  const accountUserId = yield* call(queryCurrentUserId)
   const { data: listenData } = yield* call(
     [sdk.users, sdk.users.getUserMonthlyTrackListens],
     {

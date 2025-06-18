@@ -1,51 +1,66 @@
-import { useCallback, useState } from 'react'
+import { useMemo } from 'react'
 
-import { Flex } from '@audius/harmony'
+import { useAudioBalance } from '@audius/common/api'
+import { TokenPair } from '@audius/common/store'
+import { isNullOrUndefined } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 
-import { TokenAmountSection } from './TokenAmountSection'
-import { TokenPair } from './types'
+import { SwapTab } from './SwapTab'
 
 type SellTabProps = {
   tokenPair: TokenPair
+  onTransactionDataChange?: (data: {
+    inputAmount: number
+    outputAmount: number
+    isValid: boolean
+    error: string | null
+    isInsufficientBalance: boolean
+  }) => void
+  error?: boolean
+  errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
-export const SellTab = ({ tokenPair }: SellTabProps) => {
-  const { baseToken, quoteToken, exchangeRate } = tokenPair
-  const [baseAmount, setBaseAmount] = useState<string>('')
-  const receivedQuoteAmount = parseFloat(baseAmount || '0') * exchangeRate || 0
+export const SellTab = ({
+  tokenPair,
+  onTransactionDataChange,
+  error,
+  errorMessage,
+  initialInputValue,
+  onInputValueChange
+}: SellTabProps) => {
+  // Extract the tokens from the pair
+  const { baseToken, quoteToken } = tokenPair
+  const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
+  const isBalanceLoading = isNullOrUndefined(accountBalance)
 
-  const handleBaseAmountChange = useCallback((value: string) => {
-    // Allow only valid number input
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setBaseAmount(value)
+  // Get AUDIO balance in UI format
+  const getAudioBalance = useMemo(() => {
+    return () => {
+      if (!isBalanceLoading && accountBalance) {
+        return parseFloat(AUDIO(accountBalance).toString())
+      }
+      return undefined
     }
-  }, [])
-
-  const handleMaxClick = useCallback(() => {
-    setBaseAmount(baseToken.balance.toString())
-  }, [baseToken.balance])
+  }, [accountBalance, isBalanceLoading])
 
   return (
-    <Flex direction='column' gap='l'>
-      <TokenAmountSection
-        title='You Pay'
-        tokenInfo={baseToken}
-        isInput={true}
-        amount={parseFloat(baseAmount)}
-        onAmountChange={handleBaseAmountChange}
-        onMaxClick={handleMaxClick}
-        availableBalance={baseToken.balance}
-        placeholder='0.00'
-      />
-
-      <TokenAmountSection
-        title='You Receive'
-        tokenInfo={quoteToken}
-        isInput={false}
-        amount={receivedQuoteAmount}
-        availableBalance={0}
-        exchangeRate={exchangeRate}
-      />
-    </Flex>
+    <SwapTab
+      inputToken={baseToken}
+      outputToken={quoteToken}
+      balance={{
+        get: getAudioBalance,
+        loading: isBalanceLoading,
+        formatError: () => 'Insufficient balance'
+      }}
+      onTransactionDataChange={onTransactionDataChange}
+      isDefault={false}
+      error={error}
+      errorMessage={errorMessage}
+      tooltipPlacement='right'
+      initialInputValue={initialInputValue}
+      onInputValueChange={onInputValueChange}
+    />
   )
 }

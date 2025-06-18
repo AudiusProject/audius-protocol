@@ -1,19 +1,12 @@
+import { queryCollections, queryCurrentAccount } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import {
-  savedCollectionsActions,
-  savedCollectionsSelectors,
-  CollectionType,
-  accountSelectors
-} from '@audius/common/store'
+import { savedCollectionsActions, CollectionType } from '@audius/common/store'
 import { waitForRead } from '@audius/common/utils'
-import { all, call, select, put, takeEvery } from 'typed-redux-saga'
-
-import { retrieveCollections } from '../cache/collections/utils'
+import { all, call, put, takeEvery } from 'typed-redux-saga'
 
 import { FETCH_ACCOUNT_COLLECTIONS } from './actions'
 
 const { fetchCollections, fetchCollectionsSucceeded } = savedCollectionsActions
-const { getAccountAlbums, getAccountPlaylists } = savedCollectionsSelectors
 
 type FetchCollectionsConfig = {
   type: CollectionType
@@ -22,8 +15,7 @@ type FetchCollectionsConfig = {
 
 function* fetchCollectionsAsync({ ids, type }: FetchCollectionsConfig) {
   yield waitForRead()
-  const userId = yield* select(accountSelectors.getUserId)
-  yield* call(retrieveCollections, ids, { userId })
+  yield* call(queryCollections, ids)
 
   yield* put(
     fetchCollectionsSucceeded({
@@ -39,8 +31,11 @@ function* fetchCollectionsAsync({ ids, type }: FetchCollectionsConfig) {
 export function* fetchAllAccountCollections() {
   yield waitForRead()
 
-  const { data: playlists } = yield* select(getAccountPlaylists)
-  const { data: albums } = yield* select(getAccountAlbums)
+  const account = yield* queryCurrentAccount()
+  if (!account) return
+  const collections = account.collections ?? {}
+  const playlists = Object.values(collections).filter((c) => !c.is_album)
+  const albums = Object.values(collections).filter((c) => c.is_album)
 
   yield* all([
     call(fetchCollectionsAsync, {

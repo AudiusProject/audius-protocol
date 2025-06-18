@@ -2,7 +2,7 @@ import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useQueryContext } from '~/api/tan-query/utils'
 import { useAppContext } from '~/context/appContext'
 import { Name } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
@@ -23,7 +23,7 @@ type FavoriteTrackArgs = {
 }
 
 export const useFavoriteTrack = () => {
-  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -100,7 +100,6 @@ export const useFavoriteTrack = () => {
       primeTrackData({
         tracks: [{ ...previousTrack, ...update }],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 
@@ -114,10 +113,10 @@ export const useFavoriteTrack = () => {
       const remixTrack = track.remix_of?.tracks?.[0]
       const isCoSign = remixTrack?.user?.user_id === currentUserId
       if (isCoSign) {
-        const parentTrackId = remixTrack.parent_track_id
+        const parentTrackId = remixTrack?.parent_track_id
         const hasAlreadyCoSigned =
-          remixTrack.has_remix_author_reposted ||
-          remixTrack.has_remix_author_saved
+          remixTrack?.has_remix_author_reposted ||
+          remixTrack?.has_remix_author_saved
 
         const parentTrack = queryClient.getQueryData(
           getTrackQueryKey(parentTrackId)

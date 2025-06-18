@@ -1,17 +1,12 @@
 import { memo, useCallback } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection, useCollectionTracks } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
   useGatedContentAccess
 } from '@audius/common/hooks'
 import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
-import {
-  CommonState,
-  cacheCollectionsSelectors,
-  OverflowAction,
-  PurchaseableContentType
-} from '@audius/common/store'
+import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
 import { dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Box,
@@ -25,7 +20,7 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useSelector } from 'react-redux'
+import { pick } from 'lodash'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -44,8 +39,6 @@ import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
 import { CollectionHeaderProps } from '../types'
 
 import styles from './CollectionHeader.module.css'
-
-const { getCollectionTracks } = cacheCollectionsSelectors
 
 const messages = {
   hiddenPlaylist: 'Hidden Playlist',
@@ -110,23 +103,29 @@ const CollectionHeader = ({
 }: MobileCollectionHeaderProps) => {
   const navigate = useNavigate()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
+  const { data: partialCollection } = useCollection(collectionId, {
+    select: (collection) =>
+      pick(collection, [
+        'is_private',
+        'is_stream_gated',
+        'is_scheduled_release',
+        'release_date',
+        'permalink',
+        'access',
+        'stream_conditions',
+        'playlist_id'
+      ])
   })
-  const { hasStreamAccess } = useGatedContentAccess(collection)
+  const { hasStreamAccess } = useGatedContentAccess(partialCollection)
   const {
     is_private: isPrivate,
     is_stream_gated: isPremium,
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
     permalink
-  } = collection ?? {}
+  } = partialCollection ?? {}
 
-  const tracks = useSelector((state: CommonState) =>
-    getCollectionTracks(state, { id: collectionId })
-  )
+  const { data: tracks } = useCollectionTracks(collectionId)
   const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
     ({ hasStreamAccess }) => hasStreamAccess

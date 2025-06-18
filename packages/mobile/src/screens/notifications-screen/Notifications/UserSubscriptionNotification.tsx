@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
+import { useNotificationEntities, useUser } from '@audius/common/api'
 import type { UserSubscriptionNotification as UserSubscriptionNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconStars } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -18,7 +16,6 @@ import {
   UserNameLink,
   NotificationProfilePicture
 } from '../Notification'
-const { getNotificationEntities, getNotificationUser } = notificationsSelectors
 
 const messages = {
   title: 'New Release',
@@ -36,11 +33,8 @@ export const UserSubscriptionNotification = (
   const { notification } = props
   const { entityType, entityIds } = notification
   const navigation = useNotificationNavigation()
-  const user = useSelector((state) => getNotificationUser(state, notification))
-  const entities = useProxySelector(
-    (state) => getNotificationEntities(state, notification),
-    [notification]
-  )
+  const { data: user } = useUser(notification.userId)
+  const entities = useNotificationEntities(notification)
 
   const uploadCount = entityIds.length
   const isSingleUpload = uploadCount === 1

@@ -1,15 +1,16 @@
-import type { BNWei } from '@audius/common/models'
-import { walletSelectors } from '@audius/common/store'
-import { isNullOrUndefined, formatWei } from '@audius/common/utils'
+import { useAudioBalance } from '@audius/common/api'
+import type { BNWei, StringWei } from '@audius/common/models'
+import {
+  isNullOrUndefined,
+  formatWei,
+  stringWeiToBN
+} from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import TokenBadgeNoTier from 'app/assets/images/tokenBadgeNoTier.png'
 import { Text } from 'app/components/core'
 import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
-
-const { getAccountBalance } = walletSelectors
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
@@ -42,7 +43,16 @@ const messages = {
 }
 
 export const AvailableAudio = () => {
-  const accountBalance = useSelector(getAccountBalance)
+  const { accountBalance: audioBalanceBigInt, isLoading: isBalanceLoading } =
+    useAudioBalance({
+      includeConnectedWallets: false
+    })
+
+  // Convert BigInt to BN for compatibility with existing code
+  const accountBalance = audioBalanceBigInt
+    ? stringWeiToBN(audioBalanceBigInt.toString() as StringWei)
+    : null
+
   const styles = useStyles()
 
   return (
@@ -52,7 +62,7 @@ export const AvailableAudio = () => {
           {messages.available}
         </Text>
         <Image style={styles.audioToken} source={TokenBadgeNoTier} />
-        {isNullOrUndefined(accountBalance) ? (
+        {isBalanceLoading || isNullOrUndefined(accountBalance) ? (
           <Skeleton width={24} height={13} />
         ) : (
           <Text variant='body' style={styles.text}>

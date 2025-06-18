@@ -2,10 +2,10 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
+import { primeCollectionDataSaga, queryCurrentUserId } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
-  accountSelectors,
   trendingPlaylistsPageLineupSelectors,
   trendingPlaylistsPageLineupActions,
   getContext,
@@ -13,13 +13,11 @@ import {
 } from '@audius/common/store'
 import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
-import { call, select } from 'typed-redux-saga'
+import { call } from 'typed-redux-saga'
 
-import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getLineup } = trendingPlaylistsPageLineupSelectors
-const getUserId = accountSelectors.getUserId
 
 let numberOfFilteredPlaylists = 0
 
@@ -36,7 +34,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
 
   const time = 'week' as const
 
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
 
   // Temporary fix:
   // For some reason, limit is 3 and we are not getting enough playlists back,
@@ -90,9 +88,9 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   )
   numberOfFilteredPlaylists += playlists.length - trendingPlaylists.length
 
-  const processed = yield* processAndCacheCollections(trendingPlaylists, false)
+  yield* call(primeCollectionDataSaga, trendingPlaylists)
 
-  return processed
+  return trendingPlaylists
 }
 
 class TrendingPlaylistSagas extends LineupSagas<Collection> {

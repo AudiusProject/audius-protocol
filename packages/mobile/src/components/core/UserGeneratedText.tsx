@@ -46,7 +46,7 @@ type PositionedLink = {
 
 export type UserGeneratedTextProps = Omit<TextProps, 'children'> &
   Pick<AutolinkProps, 'matchers'> & {
-    children: string
+    children: string | null | undefined
     source?: 'profile page' | 'track page' | 'collection page'
     // Pass touches through text elements
     allowPointerEventsToPassThrough?: boolean
@@ -84,7 +84,10 @@ const Link = ({
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
           setUnfurledContent(formatTrackName({ track: res.data }))
-          setTo({ screen: 'Track', params: { id: HashId.parse(res.data.id) } })
+          setTo({
+            screen: 'Track',
+            params: { trackId: HashId.parse(res.data.id) }
+          })
         } else if (instanceOfPlaylistResponse(res)) {
           setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
           setTo({

@@ -1,12 +1,14 @@
-import { AudiusQueryContextType } from '@audius/common/audius-query'
+import { QueryContextType } from '@audius/common/api'
 import { emailSchema } from '@audius/common/schemas'
 import { isNotCommonPassword } from '@audius/common/utils'
+import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
 // Due to issue with zod merge, manually rewriting
 // https://github.com/colinhacks/zod/issues/454
 export const loginDetailsSchema = (
-  audiusQueryContext: AudiusQueryContextType
+  queryContext: QueryContextType,
+  queryClient: QueryClient
 ) =>
   z
     .object({
@@ -17,7 +19,7 @@ export const loginDetailsSchema = (
         .refine(isNotCommonPassword, { message: 'notCommon' }),
       confirmPassword: z.string()
     })
-    .merge(emailSchema(audiusQueryContext))
+    .merge(emailSchema(queryContext, queryClient))
     .refine((data) => data.password === data.confirmPassword, {
       message: 'matches',
       path: ['confirmPassword']
