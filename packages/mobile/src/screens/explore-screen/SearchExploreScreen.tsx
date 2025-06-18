@@ -1,6 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useRef } from 'react'
 
-import type { LayoutChangeEvent, View } from 'react-native'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,

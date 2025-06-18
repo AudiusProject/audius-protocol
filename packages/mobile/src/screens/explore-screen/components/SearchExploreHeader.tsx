@@ -7,7 +7,6 @@ import React, {
 } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
-import { motion } from '@audius/harmony'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import type { ScrollView } from 'react-native'
 import { ImageBackground, Keyboard } from 'react-native'
