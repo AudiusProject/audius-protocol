@@ -8,6 +8,7 @@
     "android:release": "ENVFILE=.env.prod turbo run android -- --mode=prodRelease",
     "android:stage": "ENVFILE=.env.stage turbo run android -- --mode=stagingDebug --appIdSuffix staging",
     "android": "react-native run-android",
+    "build": "echo 'No build step for mobile'",
     "build:e2e": "detox build --configuration ios.sim.debug",
     "build:ios:stage": "xcodebuild -workspace ios/AudiusReactNative.xcworkspace -scheme Staging -sdk iphoneos -configuration AppStoreDistribution archive -archivePath $PWD/build/AudiusReactNative.xcarchive",
     "build:ios": "xcodebuild -workspace ios/AudiusReactNative.xcworkspace -scheme AudiusReactNative -sdk iphoneos -configuration AppStoreDistribution archive -archivePath $PWD/build/AudiusReactNative.xcarchive",
