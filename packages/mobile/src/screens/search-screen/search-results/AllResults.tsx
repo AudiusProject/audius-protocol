@@ -157,20 +157,21 @@ export const AllResults = () => {
       ) : (
         <Flex mh='l' gap='l' mb='xl'>
           {(isLoading ? skeletonSections : sections).map((section, index) => (
-            <SectionList<SearchItemType>
-              key={`${section.title}-${index}`}
-              keyboardShouldPersistTaps='always'
-              stickySectionHeadersEnabled={false}
-              sections={[section]}
-              keyExtractor={({ id, kind }) => `${kind}-${id}`}
-              renderItem={({ item }) => <AllResultsItem item={item} />}
-              renderSectionHeader={({ section: { title } }) => (
-                <Flex ph='l' mt='l'>
-                  <SearchSectionHeader title={title} />
-                </Flex>
-              )}
-              Container={Paper}
-            />
+            <Paper key={`${section.title}`} border='default' shadow='mid'>
+              <SectionList<SearchItemType>
+                key={`${section.title}-${index}`}
+                keyboardShouldPersistTaps='always'
+                stickySectionHeadersEnabled={false}
+                sections={[section]}
+                keyExtractor={({ id, kind }) => `${kind}-${id}`}
+                renderItem={({ item }) => <AllResultsItem item={item} />}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Flex ph='l' mt='l'>
+                    <SearchSectionHeader title={title} />
+                  </Flex>
+                )}
+              />
+            </Paper>
           ))}
         </Flex>
       )}

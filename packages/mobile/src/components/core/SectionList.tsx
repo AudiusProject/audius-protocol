@@ -69,7 +69,7 @@ const AnimatedSectionList = forwardRef(function AnimatedSectionList<
   props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>>,
   ref: RefObject<RNSectionList<ItemT, SectionT>>
 ) {
-  const { refreshing, onRefresh, onScroll, Container = View, ...other } = props
+  const { refreshing, onRefresh, onScroll, ...other } = props
   const { neutral } = useThemeColors()
   const scrollResponder = ref?.current?.getScrollResponder()
   const {
@@ -88,7 +88,7 @@ const AnimatedSectionList = forwardRef(function AnimatedSectionList<
   })
 
   return (
-    <Container>
+    <View>
       {Platform.OS === 'ios' && handleRefresh ? (
         <PullToRefresh
           isRefreshing={isRefreshing}
@@ -117,7 +117,7 @@ const AnimatedSectionList = forwardRef(function AnimatedSectionList<
         onScrollBeginDrag={onScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
       />
-    </Container>
+    </View>
   )
 })
 
