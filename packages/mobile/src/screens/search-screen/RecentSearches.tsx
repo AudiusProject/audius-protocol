@@ -53,7 +53,7 @@ export const RecentSearches = (props: RecentSearchesProps) => {
     dispatch(clearHistory())
   }, [dispatch])
 
-  if (filteredSearchItems.length === 0) return ListHeaderComponent
+  if (filteredSearchItems.length === 0) return ListHeaderComponent || null
 
   return (
     <>

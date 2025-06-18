@@ -1,6 +1,5 @@
 import React, { useRef } from 'react'
 
-import { searchSelectors } from '@audius/common/store'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -9,7 +8,6 @@ import Animated, {
   Extrapolation,
   withTiming
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
 
 import { useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
@@ -28,8 +26,6 @@ import {
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
-
-const { getSearchHistory } = searchSelectors
 
 // Animation parameters
 const HEADER_SLIDE_HEIGHT = 46
