@@ -517,7 +517,7 @@ function* populateAndSaveTransactionDetails() {
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
     balance: !isNullOrUndefined(postAUDIOBalanceWei)
-      ? convertWeiToWAudio(postAUDIOBalanceWei).toString()
+      ? convertWeiToWAudio(new BN(postAUDIOBalanceWei.toString())).toString()
       : null,
     change: purchasedAudioWei
       ? convertWeiToWAudio(new BN(purchasedAudioWei)).toString()

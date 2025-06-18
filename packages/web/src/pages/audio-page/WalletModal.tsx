@@ -205,7 +205,7 @@ const ModalContent = ({
           ret = (
             <SendInputConfirmation
               amountToTransfer={
-                AUDIO(BigInt(amountPendingTransfer.amount)).value
+                AUDIO(BigInt(amountPendingTransfer.amount.toString())).value
               }
               recipientAddress={amountPendingTransfer.recipientWallet}
               onSend={onConfirmSend}
@@ -221,7 +221,7 @@ const ModalContent = ({
           ret = (
             <SendingModalBody
               amountToTransfer={
-                AUDIO(BigInt(amountPendingTransfer.amount)).value
+                AUDIO(BigInt(amountPendingTransfer.amount.toString())).value
               }
               recipientAddress={amountPendingTransfer.recipientWallet}
             />
@@ -231,7 +231,9 @@ const ModalContent = ({
           if (!amountPendingTransfer) return null
           ret = (
             <SendInputSuccess
-              sentAmount={AUDIO(BigInt(amountPendingTransfer.amount)).value}
+              sentAmount={
+                AUDIO(BigInt(amountPendingTransfer.amount.toString())).value
+              }
               recipientAddress={amountPendingTransfer.recipientWallet}
               balance={balance}
             />
