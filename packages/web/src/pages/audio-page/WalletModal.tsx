@@ -48,11 +48,7 @@ const messages = {
   sendError: 'Uh oh! Something went wrong sending your $AUDIO.',
   connectedWallets: 'Connected Wallets',
   removeWallets: 'Remove Wallet',
-  awaitConvertingEthToSolAudio: 'Hold On a Moment',
-  modalTitle: '$AUDIO',
-  sendTitle: 'Send $AUDIO',
-  receiveTitle: 'Receive $AUDIO',
-  convertingTitle: 'Converting $AUDIO'
+  awaitConvertingEthToSolAudio: 'Hold On a Moment'
 }
 
 export const TitleWrapper = ({
@@ -64,8 +60,8 @@ export const TitleWrapper = ({
 }) => {
   return (
     <div className={styles.titleWrapper}>
-      <div className={styles.titleLabel}>{label}</div>
-      <div className={styles.titleContent}>{children}</div>
+      {label}
+      {children}
     </div>
   )
 }
@@ -108,7 +104,7 @@ const titlesMap = {
 }
 
 const getTitle = (state: TokenDashboardPageModalState) => {
-  if (!state?.stage) return messages.modalTitle
+  if (!state?.stage) return ''
   switch (state.stage) {
     case 'RECEIVE':
       return titlesMap.RECEIVE[state.flowState.stage]()
@@ -121,7 +117,7 @@ const getTitle = (state: TokenDashboardPageModalState) => {
  * Common title across modals
  */
 export const ModalBodyTitle = ({ text }: { text: string }) => {
-  return <div className={styles.modalBodyTitle}>{text}</div>
+  return <div className={styles.title}>{text}</div>
 }
 
 export const ModalBodyWrapper = ({
