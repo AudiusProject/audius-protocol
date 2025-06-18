@@ -76,7 +76,7 @@ const OptionButton = (props: ButtonProps) => {
 
 const WalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
+  const hasBalance = !isNullOrUndefined(balance) && balance !== BigInt(0)
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 

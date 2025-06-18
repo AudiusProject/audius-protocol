@@ -2,22 +2,14 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 
 import {
   Chain,
-  StringWei,
   StringAudio,
-  BNWei,
-  BNAudio,
   WalletAddress,
   SolanaWalletAddress
 } from '@audius/common/models'
 import { IntKeys, MIN_TRANSFERRABLE_WEI } from '@audius/common/services'
 import { isValidSolAddress } from '@audius/common/store'
-import {
-  weiToAudio,
-  stringWeiToBN,
-  stringAudioToBN,
-  parseAudioInputToWei,
-  Nullable
-} from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import {
   Button,
   Flex,
@@ -87,9 +79,9 @@ const addressErrorMap: { [A in AddressError]: string } = {
 }
 
 type SendInputBodyProps = {
-  currentBalance: BNWei
+  currentBalance: AudioWei
   onSend: (
-    balance: BNWei,
+    balance: AudioWei,
     destinationAddress: WalletAddress,
     chain: Chain
   ) => void
@@ -111,18 +103,23 @@ const validateSolWallet = (
 
 const validateSendAmount = (
   stringAudioAmount: StringAudio,
-  balanceWei: BNWei,
+  balanceWei: AudioWei,
   minAudioSendAmount: number
 ): Nullable<BalanceError> => {
   if (!stringAudioAmount.length) return 'EMPTY'
-  const sendWeiBN = parseAudioInputToWei(stringAudioAmount)
-  const minWeiBN = parseAudioInputToWei(
-    (minAudioSendAmount?.toString() as StringAudio) ?? ('0' as StringAudio)
-  )
-  if (!sendWeiBN) return 'MALFORMED'
-  if (minWeiBN && sendWeiBN.lt(minWeiBN)) return 'LESS_THAN_MIN'
-  if (sendWeiBN.gt(balanceWei)) return 'INSUFFICIENT_BALANCE'
-  if (sendWeiBN.lt(MIN_TRANSFERRABLE_WEI)) return 'INSUFFICIENT_TRANSFER_AMOUNT'
+
+  let sendWeiAmount: AudioWei
+  try {
+    sendWeiAmount = AUDIO(stringAudioAmount).value
+  } catch {
+    return 'MALFORMED'
+  }
+
+  const minWeiAmount = AUDIO(minAudioSendAmount.toString()).value
+  if (sendWeiAmount < minWeiAmount) return 'LESS_THAN_MIN'
+  if (sendWeiAmount > balanceWei) return 'INSUFFICIENT_BALANCE'
+  if (sendWeiAmount < MIN_TRANSFERRABLE_WEI)
+    return 'INSUFFICIENT_TRANSFER_AMOUNT'
 
   return null
 }
@@ -144,15 +141,19 @@ const SendInputBody = ({
   const [amountToSend, setAmountToSend] = useState<StringAudio>(
     '' as StringAudio
   )
-  const amountToSendBNWei: BNWei = useMemo(() => {
-    const zeroWei = stringWeiToBN('0' as StringWei)
-    return parseAudioInputToWei(amountToSend) ?? zeroWei
+  const amountToSendWei: AudioWei = useMemo(() => {
+    if (!amountToSend.length) return BigInt(0) as AudioWei
+    try {
+      return AUDIO(amountToSend).value
+    } catch {
+      return BigInt(0) as AudioWei
+    }
   }, [amountToSend])
   const [destinationAddress, setDestinationAddress] = useState('')
 
-  const [min, max]: [BNAudio, BNAudio] = useMemo(() => {
-    const min = stringAudioToBN('0' as StringAudio)
-    const max = weiToAudio(currentBalance)
+  const [min, max] = useMemo(() => {
+    const min = AUDIO('0')
+    const max = AUDIO(currentBalance)
     return [min, max]
   }, [currentBalance])
 
@@ -194,7 +195,7 @@ const SendInputBody = ({
     setBalanceError(balanceError)
     setAddressError(walletError)
     if (balanceError || walletError) return
-    onSend(amountToSendBNWei, destinationAddress, Chain.Sol)
+    onSend(amountToSendWei, destinationAddress, Chain.Sol)
   }
 
   const renderBalanceError = () => {
@@ -224,7 +225,7 @@ const SendInputBody = ({
         <DashboardTokenValueSlider
           min={min}
           max={max}
-          value={weiToAudio(amountToSendBNWei)}
+          value={AUDIO(amountToSendWei)}
         />
         <TokenAmountInput
           label={messages.sendAmountLabel}

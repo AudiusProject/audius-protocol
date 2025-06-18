@@ -1,17 +1,9 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  BNAudio,
-  ChallengeName,
-  ChallengeRewardID,
-  Name
-} from '@audius/common/models'
+import { ChallengeName, ChallengeRewardID, Name } from '@audius/common/models'
 import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
-import {
-  formatNumberCommas,
-  route,
-  stringWeiToAudioBN
-} from '@audius/common/utils'
+import { formatNumberCommas, route } from '@audius/common/utils'
+import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -29,12 +21,12 @@ import { IconRewards } from './components/icons'
 
 const { REWARDS_PAGE } = route
 
-const formatNumber = (amount: BNAudio) => {
-  return formatNumberCommas(Number(amount.toString()))
+const formatNumber = (amount: FixedDecimal) => {
+  return formatNumberCommas(Number(amount.trunc().toString()))
 }
 
 const messages = {
-  amountEarned: (amount: BNAudio) =>
+  amountEarned: (amount: FixedDecimal) =>
     `You've earned ${formatNumber(amount)} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
@@ -70,7 +62,7 @@ export const ChallengeRewardNotification = (
     trendingChallengeIdMapping[challengeId] ?? challengeId
 
   const { title, icon } = getChallengeConfig(mappedChallengeRewardsConfigKey)
-  const amount = stringWeiToAudioBN(notification.amount)
+  const amount = AUDIO(BigInt(notification.amount))
   const handleClick = useCallback(() => {
     dispatch(push(REWARDS_PAGE))
     record(

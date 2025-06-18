@@ -28,6 +28,8 @@ const SPL_DECIMALS = 8 // 8 decimals on SPL AUDIO
 /** @deprecated Don't use BN in new code if possible. Use BigInt. */
 export const zeroBNWei = new BN(0) as BNWei
 
+// NEW FIXED-DECIMAL UTILITY FUNCTIONS
+
 /**
  * @deprecated Use `AUDIO().trunc().toFixed()` from {@link FixedDecimal} instead.
  */

@@ -2,8 +2,8 @@ import { queryAccountUser, queryWalletAddresses } from '@audius/common/api'
 import {
   Name,
   ErrorLevel,
-  BNWei,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  StringWei
 } from '@audius/common/models'
 import {
   accountActions,
@@ -17,10 +17,9 @@ import {
 import {
   getErrorMessage,
   isNullOrUndefined,
-  stringWeiToBN,
-  weiToString
+  stringWeiToBN
 } from '@audius/common/utils'
-import BN from 'bn.js'
+import { AudioWei } from '@audius/fixed-decimal'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -75,13 +74,15 @@ function* sendAsync({
   const account = yield* call(queryAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
-  const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
+  const weiBNBalance = accountBalance
+    ? BigInt(accountBalance.toString())
+    : BigInt(0)
   const { currentUser } = yield* call(queryWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to retrieve current user wallet address')
   }
 
-  const waudioWeiAmount: BNWei | null = yield* call(
+  const waudioWeiAmount: AudioWei | null = yield* call(
     [walletClient, walletClient.getCurrentWAudioBalance],
     { ethAddress: currentUser }
   )
@@ -91,7 +92,7 @@ function* sendAsync({
     return
   }
 
-  if (weiBNAmount.gt(weiBNBalance)) {
+  if (BigInt(weiBNAmount.toString()) > weiBNBalance) {
     yield* put(sendFailed({ error: 'Not enough $AUDIO' }))
     return
   }
@@ -111,7 +112,7 @@ function* sendAsync({
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
-    if (weiBNAmount.gt(waudioWeiAmount)) {
+    if (BigInt(weiBNAmount.toString()) > waudioWeiAmount!) {
       yield* put(transferEthAudioToSolWAudio())
       yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
         ethAddress: currentUser
@@ -120,7 +121,7 @@ function* sendAsync({
     try {
       yield* call([walletClient, walletClient.sendWAudioTokens], {
         address: recipientWallet as SolanaWalletAddress,
-        amount: weiBNAmount,
+        amount: BigInt(weiBNAmount.toString()) as AudioWei,
         ethAddress: currentUser
       })
     } catch (e) {
@@ -145,7 +146,7 @@ function* sendAsync({
     // Only decrease store balance if we haven't already changed
     const newBalance: ReturnType<typeof getAccountBalance> =
       yield* select(getAccountBalance)
-    if (newBalance?.eq(weiBNBalance)) {
+    if (newBalance && weiBNBalance === newBalance) {
       yield* put(decreaseBalance({ amount: weiAudioAmount }))
     }
 
@@ -162,7 +163,7 @@ function* sendAsync({
     let errorText = errorMessage
     if (isRateLimit) {
       errorText =
-        'If you’ve already sent $AUDIO today, please wait a day before trying again'
+        "If you've already sent $AUDIO today, please wait a day before trying again"
     }
     yield* put(sendFailed({ error: errorText }))
     yield* put(
@@ -214,7 +215,7 @@ function* fetchBalanceAsync() {
       return
     }
 
-    const associatedWalletBalance: BNWei | null = yield* call(
+    const associatedWalletBalance: AudioWei | null = yield* call(
       [walletClient, walletClient.getAssociatedWalletBalance],
       account.user_id
     )
@@ -242,17 +243,16 @@ function* fetchBalanceAsync() {
       return
     }
 
-    const audioWeiBalance = currentEthAudioWeiBalance.add(
-      currentSolAudioWeiBalance!
-    ) as BNWei
+    const audioWeiBalance =
+      currentEthAudioWeiBalance + currentSolAudioWeiBalance!
 
     const totalBalance = isNullOrUndefined(associatedWalletBalance)
       ? undefined
-      : weiToString(audioWeiBalance.add(associatedWalletBalance) as BNWei)
+      : (audioWeiBalance + associatedWalletBalance).toString()
     yield* put(
       setBalance({
-        balance: weiToString(audioWeiBalance),
-        totalBalance
+        balance: audioWeiBalance.toString() as StringWei,
+        totalBalance: totalBalance as StringWei | undefined
       })
     )
   } catch (err) {
@@ -280,7 +280,7 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
     { address }
   )
   if (!associatedTokenAccount) {
-    const balance: BNWei = yield* call(() =>
+    const balance: AudioWei = yield* call(() =>
       walletClient.getWalletSolBalance({ address })
     )
 
@@ -291,8 +291,8 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
       ATA_SIZE,
       'processed'
     )
-    const minRentBN = new BN(minRentForATA)
-    if (balance.lt(minRentBN)) {
+    const minRentBigInt = BigInt(minRentForATA)
+    if (balance < minRentBigInt) {
       yield* put(
         setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'false' })
       )
