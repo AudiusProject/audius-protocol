@@ -45,7 +45,11 @@ mobile-prepare-ios:
           echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
     - run:
         name: Build dependencies
-        command: npx turbo run build --filter=@audius/mobile
+        command: |
+          (while true; do echo "Still building (or waiting for turbo cache) at $(date)"; sleep 10; done) &
+          KEEP_ALIVE_PID=$!
+          npx turbo run build --filter=@audius/mobile
+          kill $KEEP_ALIVE_PID
     - run:
         name: create bundle
         command: cd packages/mobile && npx turbo run bundle:ios
@@ -162,12 +166,11 @@ mobile-prepare-android:
         command: cd packages/mobile/android && sudo bundle update fastlane
     - run:
         name: Build dependencies
-        command: npx turbo run build --filter=@audius/mobile
-    - run:
-        name: fetch app fastlane json config to upload to play store
         command: |
-          echo "$FASTLANE_PLAYSTORE_JSON" > packages/mobile/android/app/api.txt
-          base64 --decode packages/mobile/android/app/api.txt > packages/mobile/android/app/api.json
+          (while true; do echo "Still building (or waiting for turbo cache) at $(date)"; sleep 10; done) &
+          KEEP_ALIVE_PID=$!
+          npx turbo run build --filter=@audius/mobile
+          kill $KEEP_ALIVE_PID
 
 # Build the android app
 mobile-build-android:
@@ -269,7 +272,11 @@ mobile-release-saga-dapp-store:
           pnpm install
     - run:
         name: Build dependencies
-        command: npx turbo run build --filter=@audius/mobile
+        command: |
+          (while true; do echo "Still building (or waiting for turbo cache) at $(date)"; sleep 10; done) &
+          KEEP_ALIVE_PID=$!
+          npx turbo run build --filter=@audius/mobile
+          kill $KEEP_ALIVE_PID
     - run:
         name: Install solana
         command: |
