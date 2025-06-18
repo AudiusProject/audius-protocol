@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import type { LayoutChangeEvent, View } from 'react-native'
 import Animated, {
@@ -34,7 +34,7 @@ const FILTER_SCROLL_THRESHOLD = 300
 const HEADER_COLLAPSE_THRESHOLD = 50
 
 const SearchExploreContent = () => {
-  const { spacing } = useTheme()
+  const { spacing, motion } = useTheme()
 
   // Get state from context
   const [category, setCategory] = useSearchCategory()
@@ -46,8 +46,6 @@ const SearchExploreContent = () => {
   const prevScrollY = useSharedValue(0)
   const scrollDirection = useSharedValue<'up' | 'down'>('down')
   const scrollRef = useRef<Animated.ScrollView>(null)
-  const headerRef = useRef<View>(null)
-  const headerHeight = useSharedValue(0)
 
   // Derived data
   const hasAnyFilter = Object.values(filters).some(
@@ -86,23 +84,22 @@ const SearchExploreContent = () => {
 
       // Handle filter animation
       if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
-        filterTranslateY.value = withTiming(-spacing['4xl'])
+        filterTranslateY.value = withTiming(-spacing['4xl'], motion.calm)
       } else if (
         y < FILTER_SCROLL_THRESHOLD ||
         scrollDirection.value === 'up'
       ) {
-        filterTranslateY.value = withTiming(0)
+        filterTranslateY.value = withTiming(0, motion.calm)
       }
     }
   })
 
   // content margin expands when header / filter collapses
-  console.log('asdf query: ', query)
   const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
     marginTop: query
-      ? withTiming(-HEADER_COLLAPSE_THRESHOLD * 2.5)
+      ? withTiming(-HEADER_COLLAPSE_THRESHOLD * 2.5, motion.calm)
       : scrollY.value === 0
-        ? withTiming(0)
+        ? withTiming(0, motion.calm)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -122,9 +119,9 @@ const SearchExploreContent = () => {
 
   const contentPaddingStyle = useAnimatedStyle(() => ({
     paddingTop: query
-      ? withTiming(80)
+      ? withTiming(80, motion.calm)
       : scrollY.value === 0
-        ? withTiming(0)
+        ? withTiming(0, motion.calm)
         : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP) +
           filterTranslateY.value
   }))
