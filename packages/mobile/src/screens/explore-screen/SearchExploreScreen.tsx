@@ -55,7 +55,6 @@ const SearchExploreContent = () => {
     (value) => value !== undefined
   )
   const history = useSelector(getSearchHistory)
-  const showRecentSearches = history.length > 0
 
   useScrollToTop(() => {
     scrollRef.current?.scrollTo({
@@ -135,10 +134,8 @@ const SearchExploreContent = () => {
           <>
             {query || hasAnyFilter ? (
               <SearchResults />
-            ) : showRecentSearches ? (
-              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
             ) : (
-              <SearchCatalogTile />
+              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
             )}
           </>
         ) : (
