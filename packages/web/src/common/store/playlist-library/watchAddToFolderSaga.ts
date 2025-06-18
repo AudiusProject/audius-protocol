@@ -1,6 +1,6 @@
+import { queryCurrentAccount } from '@audius/common/api'
 import { Name, FavoriteSource } from '@audius/common/models'
 import {
-  accountSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers,
   collectionsSocialActions,
@@ -13,7 +13,6 @@ import { takeEvery, select, put } from 'typed-redux-saga'
 import { make } from '../analytics/actions'
 const { toast } = toastActions
 
-const { getPlaylistLibrary } = accountSelectors
 const { addPlaylistToFolder, findInPlaylistLibrary } = playlistLibraryHelpers
 const { update, addToFolder } = playlistLibraryActions
 const { saveCollection } = collectionsSocialActions
@@ -30,7 +29,8 @@ export function* watchAddToFolderSaga() {
 function* addToFolderWorker(action: AddToFolderAction) {
   const { draggingId, draggingKind, folder } = action.payload
 
-  const playlistLibrary = yield* select(getPlaylistLibrary)
+  const account = yield* queryCurrentAccount()
+  const playlistLibrary = account?.playlistLibrary
   if (!playlistLibrary) return
 
   const updatedLibrary = addPlaylistToFolder(

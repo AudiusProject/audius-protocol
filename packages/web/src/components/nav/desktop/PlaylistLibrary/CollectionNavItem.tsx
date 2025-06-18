@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useCollection, useTrack } from '@audius/common/api'
+import { useCollection, useCurrentAccount, useTrack } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -104,11 +104,10 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     }
   )
 
-  const accountCollection = useSelector((state) =>
-    typeof id === 'number' && state.account.collections[id]
-      ? state.account.collections[id]
-      : null
-  )
+  const { data: accountCollection } = useCurrentAccount({
+    select: (account) => account?.collections?.[id as ID],
+    enabled: typeof id === 'number'
+  })
 
   const { permalink } = partialCollection ?? accountCollection ?? {}
 

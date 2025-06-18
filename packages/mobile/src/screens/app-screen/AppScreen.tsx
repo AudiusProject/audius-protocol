@@ -6,7 +6,7 @@ import { Platform } from 'react-native'
 
 import { setLastNavAction } from 'app/hooks/useNavigation'
 
-import { ChangeEmailModalScreen } from '../change-email-screen/ChangeEmailScreen'
+import { BuySellModalScreen } from '../buy-sell-screen'
 import { ChangePasswordModalScreen } from '../change-password-screen'
 import { CreateChatBlastNavigator } from '../create-chat-blast-screen/CreateChatBlastNavigator'
 import { EditCollectionScreen } from '../edit-collection-screen'
@@ -47,6 +47,7 @@ export const AppScreen = () => {
           }
         />
         <Stack.Screen name='Upload' component={UploadModalScreen} />
+        <Stack.Screen name='BuySell' component={BuySellModalScreen} />
         <Stack.Screen
           name='EditTrack'
           component={EditTrackModalScreen}
@@ -71,7 +72,6 @@ export const AppScreen = () => {
           name='ChangePassword'
           component={ChangePasswordModalScreen}
         />
-        <Stack.Screen name='ChangeEmail' component={ChangeEmailModalScreen} />
       </Stack.Group>
     </Stack.Navigator>
   )

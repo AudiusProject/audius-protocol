@@ -1,19 +1,17 @@
 import { useCallback } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCollection, useCurrentAccount } from '@audius/common/api'
 import { FavoriteSource, ID } from '@audius/common/models'
 import {
-  accountSelectors,
   collectionsSocialActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
 import { IconHeart, IconButtonProps, IconButton } from '@audius/harmony'
 import { pick } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-const { getPlaylistLibrary } = accountSelectors
 const {
   saveCollection,
   unsaveCollection,
@@ -36,7 +34,9 @@ type FavoriteButtonProps = Partial<IconButtonProps> & {
 export const FavoriteButton = (props: FavoriteButtonProps) => {
   const { collectionId, isOwner, color, ...other } = props
 
-  const userPlaylistLibrary = useSelector(getPlaylistLibrary)
+  const { data: userPlaylistLibrary } = useCurrentAccount({
+    select: (account) => account?.playlistLibrary
+  })
 
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
@@ -50,6 +50,7 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
 
   const isInLibrary =
     !!playlist_name &&
+    !!userPlaylistLibrary &&
     !!findInPlaylistLibrary(userPlaylistLibrary, playlist_name)
 
   const isSaved = has_current_user_saved || isInLibrary

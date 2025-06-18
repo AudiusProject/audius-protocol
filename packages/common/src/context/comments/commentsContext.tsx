@@ -11,7 +11,7 @@ import {
   GetTrackCommentsSortMethodEnum as CommentSortMethod
 } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   useTrackComments,
@@ -19,12 +19,12 @@ import {
   useTrackCommentCount,
   resetPreviousCommentCount,
   useSupporters,
-  useTrack
+  useTrack,
+  useCurrentUserId
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import { ModalSource, ID, Comment, ReplyComment, Name, Track } from '~/models'
 import { LineupBaseActions, playerActions } from '~/store'
-import { getUserId } from '~/store/account/selectors'
 import { seek } from '~/store/player/slice'
 import { PurchaseableContentType } from '~/store/purchase-content/types'
 import { usePremiumContentPurchaseModal } from '~/store/ui/modals/premium-content-purchase-modal'
@@ -63,7 +63,7 @@ export type ReplyingAndEditingState = {
 }
 
 type CommentSectionContextType<NavigationProp> = {
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
   artistId: ID
   isEntityOwner: boolean
   commentCount: number | undefined
@@ -124,7 +124,7 @@ export function CommentSectionProvider<NavigationProp>(
     )
   }
 
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const {
     data: comments = [],

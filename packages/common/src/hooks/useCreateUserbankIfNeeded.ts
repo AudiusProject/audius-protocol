@@ -1,11 +1,9 @@
 import { useEffect } from 'react'
 
-import { useSelector } from 'react-redux'
-
+import { useWalletAddresses } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { AnalyticsEvent } from '~/models/Analytics'
 import { createUserBankIfNeeded } from '~/services/audius-backend'
-import { getWalletAddresses } from '~/store/account/selectors'
 
 export const useCreateUserbankIfNeeded = ({
   recordAnalytics,
@@ -14,7 +12,8 @@ export const useCreateUserbankIfNeeded = ({
   recordAnalytics: (event: AnalyticsEvent) => void
   mint: 'USDC' | 'wAUDIO'
 }) => {
-  const { currentUser } = useSelector(getWalletAddresses)
+  const { data: walletAddresses } = useWalletAddresses()
+  const { currentUser } = walletAddresses ?? {}
   const { audiusSdk } = useQueryContext()
 
   useEffect(() => {

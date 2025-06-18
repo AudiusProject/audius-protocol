@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import { useHasAccount } from '@audius/common/api'
 import Tooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
-import { connect } from 'react-redux'
 
 import { ComponentPlacement, MountPlacement } from 'components/types'
-import { AppState } from 'store/types'
 
 import styles from './Toast.module.css'
-const getHasAccount = accountSelectors.getHasAccount
 
-type OwnProps = {
+type ToastProps = {
   open?: boolean
   // Time in milliseconds before the toast disappears
   delay?: number
@@ -37,8 +34,6 @@ type OwnProps = {
   children?: JSX.Element
 }
 
-type ToastProps = OwnProps & ReturnType<typeof mapStateToProps>
-
 const Toast = ({
   open,
   delay = 3000,
@@ -55,13 +50,14 @@ const Toast = ({
   overlayClassName,
   containerClassName,
   containerStyles = {},
-  children,
-  hasAccount
+  children
 }: ToastProps) => {
   const [showToast, setShowToast] = useState(false)
   const [hideTimeout, setHideTimeout] = useState<ReturnType<
     typeof setTimeout
   > | null>(null)
+
+  const hasAccount = useHasAccount()
 
   const handleClick = useCallback(() => {
     if (disabled || !firesOnClick || (!hasAccount && requireAccount)) return
@@ -145,10 +141,4 @@ const Toast = ({
   )
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    hasAccount: getHasAccount(state)
-  }
-}
-
-export default connect(mapStateToProps)(Toast)
+export default Toast

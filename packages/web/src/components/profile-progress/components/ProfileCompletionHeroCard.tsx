@@ -1,3 +1,5 @@
+import { useIsAccountLoaded } from '@audius/common/api'
+import { useOrderedCompletionStages } from '@audius/common/src/store/challenges'
 import { challengesSelectors, profilePageActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
@@ -11,11 +13,7 @@ import { useProfileCompletionDismissal, useVerticalCollapse } from '../hooks'
 import { TaskCompletionList } from './TaskCompletionList'
 
 const { profileMeterDismissed } = profilePageActions
-const {
-  getOrderedCompletionStages,
-  getProfilePageMeterDismissed,
-  getIsAccountLoaded
-} = challengesSelectors
+const { getProfilePageMeterDismissed } = challengesSelectors
 
 const messages = {
   complete: 'Profile Complete'
@@ -47,8 +45,8 @@ export const getPercentageComplete = (
 export const ProfileCompletionHeroCard = () => {
   const dispatch = useDispatch()
 
-  const isAccountLoaded = useSelector(getIsAccountLoaded)
-  const completionStages = useSelector(getOrderedCompletionStages)
+  const isAccountLoaded = useIsAccountLoaded()
+  const completionStages = useOrderedCompletionStages()
   const isDismissed = useSelector(getProfilePageMeterDismissed)
   const { color } = useTheme()
 

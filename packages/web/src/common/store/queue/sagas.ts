@@ -1,4 +1,10 @@
-import { queryTrack, queryTrackByUid, queryUser } from '@audius/common/api'
+import {
+  queryCollection,
+  queryCurrentUserId,
+  queryTrack,
+  queryTrackByUid,
+  queryUser
+} from '@audius/common/api'
 import {
   Kind,
   ID,
@@ -12,8 +18,6 @@ import {
   LineupEntry
 } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheCollectionsSelectors,
   cacheActions,
   lineupRegistry,
   queueActions,
@@ -59,8 +63,6 @@ const {
 } = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous } = queueActions
-const { getCollection } = cacheCollectionsSelectors
-const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
@@ -75,7 +77,7 @@ export function* getToQueue(
   entry: LineupEntry<Track | Collection>
 ) {
   if (entry.kind === Kind.COLLECTIONS) {
-    const collection = yield* select(getCollection, { uid: entry.uid })
+    const collection = yield* call(queryCollection, entry.id)
     if (!collection) return
 
     const {
@@ -148,7 +150,7 @@ function* handleQueueAutoplay({
     !trackPageException
   ) {
     yield* waitForAccount()
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     yield* put(
       queueAutoplay({
         genre: track?.genre,

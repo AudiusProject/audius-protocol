@@ -69,7 +69,7 @@ const config = {
     splPath
   ],
   resolver: {
-    unstable_enablePackageExports: true,
+    unstable_enablePackageExports: false,
     unstable_conditionNames: ['default', 'require', 'react-native'],
     assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
     sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],

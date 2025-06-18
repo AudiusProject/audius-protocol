@@ -1,7 +1,9 @@
 import {
   queryAllTracks,
   queryAllCachedUsers,
-  queryTrackByUid
+  queryTrackByUid,
+  updateCollectionData,
+  queryCurrentUserId
 } from '@audius/common/api'
 import {
   Name,
@@ -16,7 +18,6 @@ import {
 } from '@audius/common/models'
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
-  accountSelectors,
   cacheActions,
   lineupActions as baseLineupActions,
   premiumTracksPageLineupActions,
@@ -48,7 +49,6 @@ import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
 const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
-const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
 
@@ -305,12 +305,15 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       // We rewrote the playlist tracks with new UIDs, so we need to update them
       // in the cache.
       if (collectionsToCache.length > 0) {
-        yield* put(cacheActions.update(Kind.COLLECTIONS, collectionsToCache))
+        yield* call(
+          updateCollectionData,
+          collectionsToCache.map((collection) => collection.metadata)
+        )
       }
       if (trackSubscribers.length > 0) {
         yield* put(cacheActions.subscribe(Kind.TRACKS, trackSubscribers))
       }
-      const currentUserId = yield* select(getUserId)
+      const currentUserId = yield* call(queryCurrentUserId)
       // Retain specified info in the lineup itself and resolve with success.
       let duplicateCount = 0
       const lineupEntries = allMetadatas

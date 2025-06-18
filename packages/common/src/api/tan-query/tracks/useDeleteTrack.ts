@@ -72,7 +72,6 @@ export const useDeleteTrack = () => {
         primeUserData({
           users: [updatedCurrentUser],
           queryClient,
-          dispatch,
           forceReplace: true
         })
       }
@@ -86,7 +85,6 @@ export const useDeleteTrack = () => {
           }
         ],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 
@@ -126,7 +124,6 @@ export const useDeleteTrack = () => {
           }
         ],
         queryClient,
-        dispatch,
         forceReplace: true
       })
 
@@ -139,7 +136,6 @@ export const useDeleteTrack = () => {
             }
           ],
           queryClient,
-          dispatch,
           forceReplace: true
         })
       }

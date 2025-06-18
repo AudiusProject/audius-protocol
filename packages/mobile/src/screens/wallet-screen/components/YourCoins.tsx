@@ -1,8 +1,11 @@
 import React, { useCallback } from 'react'
 
-import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
+import { buySellMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 
 import {
+  Button,
   Flex,
   IconCaretRight,
   IconTokenAUDIO,
@@ -13,8 +16,36 @@ import {
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+const TokensHeader = () => {
+  const navigation = useNavigation()
+
+  const handleBuySellClick = useCallback(() => {
+    navigation.navigate('BuySell', { initialTab: 'buy' })
+  }, [navigation])
+
+  return (
+    <Flex
+      direction='row'
+      alignItems='center'
+      justifyContent='space-between'
+      p='l'
+      borderBottom='default'
+    >
+      <Text variant='heading' size='s' color='heading'>
+        {messages.yourCoins}
+      </Text>
+      <Button variant='secondary' size='small' onPress={handleBuySellClick}>
+        {messages.buySell}
+      </Button>
+    </Flex>
+  )
+}
+
 export const YourCoins = () => {
   const navigation = useNavigation()
+  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_BUY_SELL
+  )
 
   const {
     audioBalanceFormatted,
@@ -29,25 +60,27 @@ export const YourCoins = () => {
 
   return (
     <Paper onPress={handleTokenClick}>
+      {isWalletUIBuySellEnabled ? <TokensHeader /> : null}
       <Flex
         p='l'
+        pv='2xl'
         direction='row'
         justifyContent='space-between'
         alignItems='center'
       >
         <Flex direction='row' alignItems='center' gap='m'>
           <IconTokenAUDIO size='4xl' borderRadius={cornerRadius.circle} />
-          <Flex direction='column' gap='xs'>
-            <Flex direction='row' alignItems='center' gap='xs'>
+          <Flex direction='column' gap='xs' h='3xl' justifyContent='center'>
+            <Flex direction='row' alignItems='center' h='2xl' gap='xs'>
               {isAudioBalanceLoading ? (
-                <Skeleton h='4xl' w='5xl' />
+                <Skeleton h='2xl' w='5xl' />
               ) : (
                 <>
                   <Text variant='heading' size='l' color='default'>
                     {audioBalanceFormatted}
                   </Text>
                   <Text variant='heading' size='l' color='subdued'>
-                    $AUDIO
+                    {messages.audioTicker}
                   </Text>
                 </>
               )}
@@ -61,7 +94,7 @@ export const YourCoins = () => {
             )}
           </Flex>
         </Flex>
-        <IconCaretRight size='s' color='subdued' />
+        <IconCaretRight size='l' color='subdued' />
       </Flex>
     </Paper>
   )

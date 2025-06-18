@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   getProfileRepostsQueryKey,
-  getProfileTracksQueryKey
+  getProfileTracksQueryKey,
+  useCurrentUserId,
+  useUserByParams
 } from '@audius/common/api'
 import { ShareSource, Status } from '@audius/common/models'
 import {
@@ -38,7 +40,6 @@ import { makeStyles } from 'app/styles'
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
-import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
   fetchProfile: fetchProfileAction,
@@ -58,16 +59,19 @@ export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
   const { handle: userHandle, id } = params
-  const profile = useSelectProfileRoot([
-    'user_id',
-    'handle',
-    'track_count',
-    'does_current_user_follow'
-  ])
+  const { data: profile } = useUserByParams(params, {
+    select: (user) => ({
+      user_id: user.user_id,
+      handle: user.handle,
+      track_count: user.track_count,
+      does_current_user_follow: user.does_current_user_follow
+    })
+  })
   const handle =
     userHandle && userHandle !== 'accountUser' ? userHandle : profile?.handle
   const handleLower = handle?.toLowerCase() ?? ''
-  const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
+  const { data: accountUserId } = useCurrentUserId()
+  const isOwner = accountUserId === profile?.user_id
   const dispatch = useDispatch()
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -105,10 +109,15 @@ export const ProfileScreen = () => {
     }
   }) as ProfilePageTabs
 
-  const fetchProfile = useCallback(() => {
-    if (!isScreenReady) return
-    dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
-  }, [dispatch, handleLower, id, isScreenReady])
+  const fetchProfile = useCallback(
+    (forceFetch = false) => {
+      if (!isScreenReady) return
+      dispatch(
+        fetchProfileAction(handleLower, id ?? null, forceFetch, true, false)
+      )
+    },
+    [dispatch, handleLower, id, isScreenReady]
+  )
 
   useFocusEffect(setCurrentUser)
 
@@ -120,7 +129,7 @@ export const ProfileScreen = () => {
     // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
-      fetchProfile()
+      fetchProfile(true)
       switch (currentTab) {
         case ProfilePageTabs.TRACKS:
           queryClient.resetQueries({

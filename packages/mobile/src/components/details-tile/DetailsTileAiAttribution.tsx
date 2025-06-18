@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { aiPageActions, aiPageSelectors } from '@audius/common/store'
 import { TouchableOpacity } from 'react-native'
@@ -10,7 +11,7 @@ import { MusicBadge } from 'app/harmony-native/components/MusicBadge/MusicBadge'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const { fetchAiUser, reset } = aiPageActions
-const { getAiUser } = aiPageSelectors
+const { getAiUserId } = aiPageSelectors
 
 const messages = {
   aiGenerated: 'AI Generated'
@@ -19,7 +20,8 @@ const messages = {
 export const DetailsTileAiAttribution = ({ userId }: { userId: ID }) => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const user = useSelector(getAiUser)
+  const aiUserId = useSelector(getAiUserId)
+  const { data: user } = useUser(aiUserId)
 
   useEffect(() => {
     dispatch(fetchAiUser({ userId }))

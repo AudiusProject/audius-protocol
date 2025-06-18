@@ -1,21 +1,17 @@
 import { cloneElement, useCallback, useState } from 'react'
 
-import { BadgeTier, StringWei, StringAudio } from '@audius/common/models'
+import { useAudioBalance } from '@audius/common/api'
+import { BadgeTier, StringAudio } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   tippingSelectors,
   tippingActions,
-  walletSelectors,
   getTierAndNumberForBalance,
   buyAudioActions,
   OnRampProvider
 } from '@audius/common/store'
-import {
-  isNullOrUndefined,
-  stringWeiToBN,
-  weiToString,
-  formatWei
-} from '@audius/common/utils'
+import { isNullOrUndefined } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import {
   IconQuestionCircle,
   IconArrowRight as IconArrow,
@@ -39,7 +35,6 @@ import { ProfileInfo } from '../../profile-info/ProfileInfo'
 import { SupporterPrompt } from './SupporterPrompt'
 import styles from './TipAudio.module.css'
 
-const { getAccountBalance } = walletSelectors
 const { getSendUser } = tippingSelectors
 const { beginTip, resetSend, sendTip } = tippingActions
 const { startBuyAudioFlow } = buyAudioActions
@@ -56,15 +51,22 @@ const messages = {
   buyAudioPrefix: 'Buy $AUDIO using '
 }
 
-const zeroWei = stringWeiToBN('0' as StringWei)
-
 export const SendTip = () => {
   const dispatch = useDispatch()
   const receiver = useSelector(getSendUser)
-  const accountBalance = useSelector(getAccountBalance) ?? zeroWei
+
+  const { accountBalance: audioBalanceBigInt, isLoading: isBalanceLoading } =
+    useAudioBalance({
+      includeConnectedWallets: false
+    })
+
+  const accountBalance = audioBalanceBigInt
+    ? AUDIO(audioBalanceBigInt)
+    : AUDIO('0')
+
   const [tipAmount, setTipAmount] = useState('')
 
-  const { tier } = getTierAndNumberForBalance(weiToString(accountBalance))
+  const { tier } = getTierAndNumberForBalance(accountBalance.value)
   const audioBadge = audioTierMap[tier as BadgeTier]
 
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(
@@ -94,9 +96,11 @@ export const SendTip = () => {
     dispatch(resetSend())
   }, [dispatch, receiver])
 
-  const tipAmountWei = stringWeiToBN(tipAmount as StringWei)
+  const tipAmountWei = tipAmount ? AUDIO(tipAmount) : AUDIO('0')
   const isDisabled =
-    !tipAmount || tipAmountWei.lte(zeroWei) || tipAmountWei.gt(accountBalance)
+    !tipAmount ||
+    tipAmountWei.value <= BigInt(0) ||
+    tipAmountWei.value > accountBalance.value
   const showBuyAudioButton = isStripeBuyAudioEnabled && isDisabled
 
   const renderAvailableAmount = () => (
@@ -123,10 +127,10 @@ export const SendTip = () => {
           <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
         <span className={styles.amountAvailable}>
-          {isNullOrUndefined(accountBalance) ? (
+          {isBalanceLoading || isNullOrUndefined(accountBalance) ? (
             <Skeleton width='20px' height='14px' />
           ) : (
-            formatWei(accountBalance, true, 0)
+            accountBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })
           )}
         </span>
       </div>

@@ -2,24 +2,19 @@ import { useMemo } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { keyBy } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
-import { CommonState } from '~/store'
 
-import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, QueryOptions } from '../types'
+import { QueryOptions } from '../types'
 import { combineQueryResults } from '../utils/combineQueryResults'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { useQueries } from '../utils/useQueries'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
 import { getUserQueryFn, getUserQueryKey } from './useUser'
-
-export const getUsersQueryKey = (userIds: ID[] | null | undefined) => {
-  return [QUERY_KEYS.users, userIds] as unknown as QueryKey<UserMetadata[]>
-}
 
 export const useUsers = (
   userIds: ID[] | null | undefined,
@@ -30,8 +25,15 @@ export const useUsers = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
 
+  // Filter out duplicate IDs
+  const uniqueUserIds = useMemo(
+    () =>
+      userIds?.filter((id, index, self) => self.indexOf(id) === index && !!id),
+    [userIds]
+  )
+
   const queryResults = useQueries({
-    queries: userIds?.map((userId) => ({
+    queries: uniqueUserIds?.map((userId) => ({
       queryKey: getUserQueryKey(userId),
       queryFn: async () =>
         getUserQueryFn(
@@ -42,6 +44,7 @@ export const useUsers = (
           dispatch
         ),
       ...options,
+      ...entityCacheOptions,
       enabled: options?.enabled !== false && !!userId && userId > 0
     })),
     combine: combineQueryResults<UserMetadata[]>
@@ -50,16 +53,12 @@ export const useUsers = (
 
   const byId = useMemo(() => keyBy(users, 'user_id'), [users])
 
-  const isSavedToRedux = useSelector((state: CommonState) =>
-    userIds?.every((userId) => !!state.users.entries[userId])
-  )
-
   return {
-    data: isSavedToRedux ? users : undefined,
+    data: users,
     byId,
-    status: isSavedToRedux ? queryResults.status : 'pending',
-    isPending: queryResults.isPending || !isSavedToRedux,
-    isLoading: queryResults.isLoading || !isSavedToRedux,
+    status: queryResults.status,
+    isPending: queryResults.isPending,
+    isLoading: queryResults.isLoading,
     isFetching: queryResults.isFetching,
     isSuccess: queryResults.isSuccess,
     isError: queryResults.isError

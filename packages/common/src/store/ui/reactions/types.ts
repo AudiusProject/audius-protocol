@@ -1,4 +1,4 @@
-export type ReactionTypes = '😍' | '🔥' | '🥳' | '🤯'
+import { ReactionTypes } from '@audius/sdk'
 
 // The order these reactions appear in the web + mobile UI
 export const reactionOrder: ReactionTypes[] = ['😍', '🔥', '🥳', '🤯']
@@ -9,3 +9,5 @@ export const reactionsMap: { [k in ReactionTypes]: number } = {
   '🥳': 3,
   '🤯': 4
 }
+
+export { ReactionTypes } from '@audius/sdk'

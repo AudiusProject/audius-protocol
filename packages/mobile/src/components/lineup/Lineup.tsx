@@ -188,9 +188,7 @@ const LineupItemTile = memo(function LineupItemTile({
 }: LineupItemTileProps) {
   if (!item) return null
   if ('_loading' in item) {
-    if (item._loading) {
-      return <SkeletonTrackTileView itemStyles={itemStyles} />
-    }
+    return <SkeletonTrackTileView itemStyles={itemStyles} />
   } else {
     return (
       <LineupTileView
@@ -206,7 +204,6 @@ const LineupItemTile = memo(function LineupItemTile({
       />
     )
   }
-  return null
 })
 
 /** `Lineup` encapsulates the logic for displaying a list of items such as Tracks (e.g. prefetching items
@@ -327,11 +324,17 @@ export const Lineup = ({
           dispatch(actions.setPage(page + 1))
         }
 
-        const limit =
+        const limit = Math.max(
+          0,
           Math.min(
             itemLoadCount,
             Math.max(countOrDefault, itemCounts.minimum)
           ) - _offset
+        )
+
+        // Don't fetch more if the limit isn't a positive number.
+        // This is a sign that we've loaded all the content for the lineup.
+        if (limit <= 0) return
 
         if (loadMore) {
           loadMore(_offset, limit, _page === 0)

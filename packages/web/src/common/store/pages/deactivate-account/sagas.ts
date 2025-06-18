@@ -1,6 +1,6 @@
+import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  accountSelectors,
   deactivateAccountActions,
   signOutActions,
   getContext,
@@ -10,7 +10,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
-import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
+import { call, delay, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -18,7 +18,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const { afterDeactivationSignOut, deactivateAccount, deactivateAccountFailed } =
   deactivateAccountActions
 const { signOut } = signOutActions
-const { getAccountUser, getUserId } = accountSelectors
 const { requestConfirmation } = confirmerActions
 const { getConfirmCalls } = confirmerSelectors
 
@@ -30,8 +29,8 @@ function* handleDeactivateAccount() {
   try {
     yield* waitForWrite()
 
-    const accountUserId = yield* select(getUserId)
-    const userMetadata = yield* select(getAccountUser)
+    const accountUserId = yield* call(queryCurrentUserId)
+    const userMetadata = yield* call(queryAccountUser)
     if (!accountUserId || !userMetadata) return
     yield* put(
       requestConfirmation(

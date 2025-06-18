@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
@@ -42,7 +43,9 @@ export const ArtistDashboardTracksTab = ({
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const tracksStatus = useSelector(getDashboardTracksStatus)
-  const { account } = useSelector(makeGetDashboard())
+
+  const { data: accountUser } = useCurrentAccountUser()
+  const { account } = useSelector(makeGetDashboard(accountUser))
   const filteredData = useFilteredTrackData({
     selectedFilter,
     filterText

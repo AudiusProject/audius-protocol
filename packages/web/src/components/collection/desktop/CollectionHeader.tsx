@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useCollection, useGetCurrentUserId } from '@audius/common/api'
+import { useCollection, useCurrentUserId } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
@@ -123,7 +123,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   } = props
 
   const { spacing } = useTheme()
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
       pick(collection, [

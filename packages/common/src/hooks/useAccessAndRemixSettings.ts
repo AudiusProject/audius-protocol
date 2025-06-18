@@ -1,6 +1,8 @@
 import { useSelector } from 'react-redux'
 
+import { useCurrentUserId } from '~/api/'
 import { getSupportedUserCollections } from '~/store/collectibles/selectors'
+import { CommonState } from '~/store/reducers'
 
 type UseAccessAndRemixSettingsProps = {
   isUpload: boolean
@@ -12,8 +14,9 @@ type UseAccessAndRemixSettingsProps = {
 }
 
 export const useHasNoCollectibles = () => {
+  const { data: userId } = useCurrentUserId()
   const { isLoading, ethCollectionMap, solCollectionMap } = useSelector(
-    getSupportedUserCollections
+    (state: CommonState) => getSupportedUserCollections(state, { userId })
   )
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length

@@ -1,7 +1,8 @@
 import type { ReactElement } from 'react'
 import React from 'react'
 
-import type { StringWei, AudioTiers } from '@audius/common/models'
+import { useAudioBalance } from '@audius/common/api'
+import type { AudioTiers } from '@audius/common/models'
 import {
   featureMessages,
   features,
@@ -54,16 +55,13 @@ const messages = {
   learnMore: 'LEARN MORE'
 }
 
-type TiersTileProps = {
-  totalBalanceWei: StringWei
-}
-
-export const TiersTile = ({ totalBalanceWei }: TiersTileProps) => {
+export const TiersTile = () => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
   const dispatch = useDispatch()
 
-  const { tier } = getTierAndNumberForBalance(totalBalanceWei)
+  const { totalBalance } = useAudioBalance()
+  const { tier } = getTierAndNumberForBalance(totalBalance)
 
   const onPressLaunchDiscord = () => {
     dispatch(pressDiscord())
@@ -141,16 +139,15 @@ export const TiersTile = ({ totalBalanceWei }: TiersTileProps) => {
             if (tier === 'none') {
               return null
             }
-            const minAudio = badgeTiers
-              .find((b) => b.tier === tier)
-              ?.minAudio.toString()
+            const tierInfo = badgeTiers.find((b) => b.tier === tier)
+            const minAudio = tierInfo?.humanReadableAmount
             if (!minAudio) {
               return null
             }
 
             content = (
               <Text variant='label' size='m'>
-                {`${formatNumberCommas(minAudio)}+`}
+                {`${formatNumberCommas(minAudio.toString())}+`}
               </Text>
             )
           } else if (isAvailable) {

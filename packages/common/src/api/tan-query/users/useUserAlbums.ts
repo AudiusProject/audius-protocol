@@ -4,7 +4,6 @@ import {
   useInfiniteQuery,
   useQueryClient
 } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -19,9 +18,10 @@ import { primeCollectionData } from '../utils/primeCollectionData'
 import { useCurrentUserId } from './account/useCurrentUserId'
 
 type GetAlbumsOptions = {
-  userId: number | null
+  userId: number | null | undefined
   pageSize?: number
   sortMethod?: full.GetAlbumsByUserSortMethodEnum
+  query?: string
 }
 
 export const getUserAlbumsQueryKey = (params: GetAlbumsOptions) => {
@@ -42,9 +42,8 @@ export const useUserAlbums = (
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const { userId, pageSize = 10, sortMethod = 'recent' } = params
+  const { userId, pageSize = 5, sortMethod = 'recent', query } = params
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   const queryRes = useInfiniteQuery({
     queryKey: getUserAlbumsQueryKey(params),
@@ -63,7 +62,8 @@ export const useUserAlbums = (
         userId: OptionalId.parse(currentUserId),
         limit: pageSize,
         offset: pageParam as number,
-        sortMethod
+        sortMethod,
+        query
       })
 
       const collections = transformAndCleanList(
@@ -71,7 +71,7 @@ export const useUserAlbums = (
         userCollectionMetadataFromSDK
       )
 
-      primeCollectionData({ collections, queryClient, dispatch })
+      primeCollectionData({ collections, queryClient })
 
       return collections.map((collection) => collection.playlist_id)
     },

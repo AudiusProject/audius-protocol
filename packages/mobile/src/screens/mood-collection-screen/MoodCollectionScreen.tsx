@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
   explorePageCollectionsSelectors,
@@ -14,7 +13,7 @@ import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import type { ExploreMoodCollection } from 'app/screens/explore-screen/collections'
 import { spacing } from 'app/styles/spacing'
-const { getCollections, getStatus } = explorePageCollectionsSelectors
+const { getCollectionIds, getStatus } = explorePageCollectionsSelectors
 const { fetch } = explorePageCollectionsActions
 
 type MoodCollectionScreenProps = {
@@ -35,10 +34,8 @@ export const MoodCollectionScreen = ({
     getStatus(state, { variant: ExploreCollectionsVariant.MOOD })
   )
 
-  const exploreData = useProxySelector(
-    (state) =>
-      getCollections(state, { variant: ExploreCollectionsVariant.MOOD }),
-    []
+  const collectionIds = useSelector((state) =>
+    getCollectionIds(state, { variant: ExploreCollectionsVariant.MOOD })
   )
 
   return (
@@ -47,7 +44,7 @@ export const MoodCollectionScreen = ({
       <ScreenContent>
         <WithLoader loading={status === Status.LOADING}>
           <CollectionList
-            collection={exploreData}
+            collectionIds={collectionIds}
             style={{ paddingTop: spacing(3), marginBottom: spacing(10) }}
           />
         </WithLoader>

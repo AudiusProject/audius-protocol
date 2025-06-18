@@ -7,7 +7,7 @@ import {
   ComponentType
 } from 'react'
 
-import { useUserCollectibles } from '@audius/common/api'
+import { useUserByHandle, useUserCollectibles } from '@audius/common/api'
 import {
   ShareSource,
   Chain,
@@ -15,11 +15,9 @@ import {
   Status,
   Collectible,
   Collection,
-  SmartCollection,
-  User
+  SmartCollection
 } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
   profilePageActions,
   queueActions,
   QueueSource,
@@ -38,7 +36,6 @@ import { useModalState } from 'common/hooks/useModalState'
 import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollections'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { getLocationPathname } from 'store/routing/selectors'
-import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from '../collection-page/components/desktop/CollectionPage'
@@ -52,7 +49,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { setCollectible } = collectibleDetailsUIActions
 const { add, clear, pause, play } = queueActions
 const { fetchProfile } = profilePageActions
-const { getUser } = cacheUsersSelectors
 
 declare global {
   interface HTMLMediaElement {
@@ -108,9 +104,7 @@ export const CollectiblesPlaylistPageProvider = ({
     [pathname]
   )
 
-  const user = useSelector<AppState, User | null>((state) =>
-    getUser(state, { handle: routeMatch?.params.handle ?? null })
-  )
+  const { data: user } = useUserByHandle(routeMatch?.params.handle ?? null)
 
   const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
     useUserCollectibles({

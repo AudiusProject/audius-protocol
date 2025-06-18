@@ -15,6 +15,7 @@ export * from './tan-query/collection/useCollectionTracks'
 export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
+export * from './tan-query/collection/useCollectionByParams'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -58,10 +59,17 @@ export * from './tan-query/purchases/usePurchasers'
 export * from './tan-query/purchases/usePurchasersCount'
 export * from './tan-query/purchases/useSalesAggregate'
 
+// Reactions
+export * from './tan-query/reactions/useReaction'
+export * from './tan-query/reactions/useWriteReaction'
+export * from './tan-query/reactions/types'
+export * from './tan-query/reactions/utils'
+
 // Remixes
-export * from './tan-query/remixes/useRemixes'
+export * from './tan-query/remixes/useRemixesLineup'
 export * from './tan-query/remixes/useRemixers'
 export * from './tan-query/remixes/useRemixersCount'
+export * from './tan-query/remixes/useRemixes'
 
 // Search
 export * from './tan-query/search/useSearchAutocomplete'
@@ -90,13 +98,8 @@ export * from './tan-query/tracks/useRemixedTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 
 // Users
-export * from './tan-query/users/account/useCurrentUserId'
-export * from './tan-query/users/account/useWalletUser'
-export * from './tan-query/users/account/useAddToPlaylistFolder'
-export * from './tan-query/users/account/useCurrentAccount'
-export * from './tan-query/users/account/usePlaylistLibrary'
-export * from './tan-query/users/account/useReorderLibrary'
-export * from './tan-query/users/account/useUpdatePlaylistLibrary'
+export * from './tan-query/users/useUpdateProfile'
+export * from './tan-query/users/useUpdateUser'
 export * from './tan-query/users/useFeaturedProfiles'
 export * from './tan-query/users/useFollowers'
 export * from './tan-query/users/useFollowing'
@@ -119,12 +122,27 @@ export * from './tan-query/users/useUserPlaylists'
 export * from './tan-query/users/useUsers'
 export * from './tan-query/users/useUser'
 export * from './tan-query/users/useUserTracksByHandle'
+export * from './tan-query/users/useProfileUser'
+export * from './tan-query/users/useOtherChatUsers'
+
+// Account
 export * from './tan-query/users/account/useResetPassword'
 export * from './tan-query/users/account/useManagedAccounts'
 export * from './tan-query/users/account/useManagers'
 export * from './tan-query/users/account/useRequestAddManager'
 export * from './tan-query/users/account/useApproveManagedAccount'
 export * from './tan-query/users/account/useRemoveManager'
+export * from './tan-query/users/account/accountSelectors'
+export * from './tan-query/users/account/useCurrentUserId'
+export * from './tan-query/users/account/useWalletUser'
+export * from './tan-query/users/account/useAddToPlaylistFolder'
+export * from './tan-query/users/account/useCurrentAccount'
+export * from './tan-query/users/account/usePlaylistLibrary'
+export * from './tan-query/users/account/useReorderLibrary'
+export * from './tan-query/users/account/useUpdatePlaylistLibrary'
+export * from './tan-query/users/account/useWalletAddresses'
+export * from './tan-query/users/account/useAccountStatus'
+export * from './tan-query/users/account/useSyncLocalStorageUser'
 
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'
@@ -135,6 +153,7 @@ export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
+export * from './tan-query/jupiter/utils'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

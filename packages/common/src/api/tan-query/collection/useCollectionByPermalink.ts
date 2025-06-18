@@ -1,8 +1,6 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch } from 'react-redux'
-import { Dispatch, AnyAction } from 'redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -12,11 +10,10 @@ import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
 import { useCollection } from './useCollection'
-
-const STALE_TIME = Infinity
 
 export const getCollectionByPermalinkQueryKey = (
   permalink: string | undefined | null
@@ -41,10 +38,9 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
 
 export const getCollectionByPermalinkQueryFn = async (
   permalink: string,
-  currentUserId: number | null,
+  currentUserId: number | null | undefined,
   queryClient: QueryClient,
-  sdk: any,
-  dispatch: Dispatch<AnyAction>
+  sdk: any
 ) => {
   const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
   const { data = [] } = await sdk.full.playlists.getPlaylistByHandleAndSlug({
@@ -59,8 +55,7 @@ export const getCollectionByPermalinkQueryFn = async (
     // Prime related entities
     primeCollectionData({
       collections: [collection],
-      queryClient,
-      dispatch
+      queryClient
     })
   }
 
@@ -73,7 +68,6 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
 
   const simpleOptions = pick(options, [
@@ -90,11 +84,11 @@ export const useCollectionByPermalink = <TResult = TQCollection>(
         permalink!,
         currentUserId,
         queryClient,
-        sdk,
-        dispatch
+        sdk
       )
     },
-    staleTime: simpleOptions?.staleTime ?? STALE_TIME,
+    ...entityCacheOptions,
+    ...simpleOptions,
     enabled: simpleOptions?.enabled !== false && !!permalink
   })
 

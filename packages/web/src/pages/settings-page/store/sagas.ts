@@ -1,10 +1,10 @@
+import { queryHasAccount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   settingsPageSelectors,
   settingsPageActions as actions,
   BrowserNotificationSetting,
   getContext,
-  accountSelectors,
   getSDK
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
@@ -29,7 +29,7 @@ function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
-      const hasAccount = yield* select(accountSelectors.getHasAccount)
+      const hasAccount = yield* call(queryHasAccount)
 
       if (!isBrowserPushAvailable || !hasAccount) return
 
@@ -83,7 +83,7 @@ function* watchToogleBrowserPushNotification() {
     actions.SET_BROWSER_NOTIFICATION_ENABLED,
     function* (action: actions.SetBrowserNotificationEnabled) {
       try {
-        const hasAccount = yield* select(accountSelectors.getHasAccount)
+        const hasAccount = yield* call(queryHasAccount)
         if (!hasAccount) return
 
         if (isPushManagerAvailable) {
@@ -219,7 +219,7 @@ function* watchUpdateNotificationSettings() {
     actions.TOGGLE_NOTIFICATION_SETTING,
     function* (action: actions.ToggleNotificationSetting) {
       try {
-        const hasAccount = yield* select(accountSelectors.getHasAccount)
+        const hasAccount = yield* call(queryHasAccount)
         if (!hasAccount) return
 
         let isOn: boolean | null | undefined | Permission = action.isOn

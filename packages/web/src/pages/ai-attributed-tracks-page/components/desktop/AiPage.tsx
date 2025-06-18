@@ -21,7 +21,7 @@ const messages = {
 
 export type AiPageProps = {
   title: string
-  user: User | null
+  user: User | undefined
   getLineupProps: () => LineupProps
   goToArtistPage: () => void
 }

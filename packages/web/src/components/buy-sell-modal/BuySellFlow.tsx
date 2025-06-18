@@ -1,23 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext, useMemo } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
+import {
+  useBuySellScreen,
+  useBuySellSwap,
+  useBuySellTabs,
+  useBuySellTransactionData,
+  useSwapDisplayData,
+  BuySellTab,
+  Screen
+} from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
+import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
+import { ToastContext } from 'components/toast/ToastContext'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 import { SUPPORTED_TOKEN_PAIRS } from './constants'
-import {
-  useBuySellScreen,
-  useBuySellSwap,
-  useBuySellTabs,
-  useBuySellTransactionData,
-  useSwapDisplayData
-} from './hooks'
-import { BuySellTab, Screen } from './types'
+
+const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
 type BuySellFlowProps = {
   onClose: () => void
@@ -29,6 +34,7 @@ type BuySellFlowProps = {
 export const BuySellFlow = (props: BuySellFlowProps) => {
   const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
+  const { toast } = useContext(ToastContext)
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
@@ -46,13 +52,30 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     resetTransactionData
   })
 
+  // Persistent state for each tab's input values
+  const [tabInputValues, setTabInputValues] = useState<
+    Record<BuySellTab, string>
+  >({
+    buy: '',
+    sell: ''
+  })
+
+  // Update input value for current tab
+  const handleTabInputValueChange = (value: string) => {
+    setTabInputValues((prev) => ({
+      ...prev,
+      [activeTab]: value
+    }))
+  }
+
   const {
     handleShowConfirmation,
     handleConfirmSwap,
     isContinueButtonLoading,
     isConfirmButtonLoading,
     swapStatus,
-    swapResult
+    swapResult,
+    swapError
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -61,9 +84,18 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     onClose
   })
 
+  // Track if user has attempted to submit the form
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+
   useEffect(() => {
     onLoadingStateChange?.(isConfirmButtonLoading)
   }, [isConfirmButtonLoading, onLoadingStateChange])
+
+  useEffect(() => {
+    if (swapStatus === 'error' && swapError) {
+      toast(swapError.message ?? messages.transactionFailed, 5000)
+    }
+  }, [swapStatus, swapError, toast])
 
   const [selectedPairIndex] = useState(0)
 
@@ -87,13 +119,46 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     selectedPair
   })
 
-  const isContinueButtonDisabled =
-    !transactionData?.isValid || isContinueButtonLoading
+  const handleContinueClick = () => {
+    setHasAttemptedSubmit(true)
+    if (transactionData?.isValid && !isContinueButtonLoading) {
+      handleShowConfirmation()
+    }
+  }
 
-  const errorMessage =
-    activeTab === 'sell' && !hasSufficientBalance
-      ? messages.insufficientAUDIOForSale
-      : undefined
+  useEffect(() => {
+    setHasAttemptedSubmit(false)
+  }, [activeTab])
+
+  const isTransactionInvalid = !transactionData?.isValid
+
+  const displayErrorMessage = useMemo(() => {
+    if (activeTab === 'sell' && !hasSufficientBalance) {
+      return messages.insufficientAUDIOForSale
+    }
+    // Prioritize the specific validation error from the form
+    if (hasAttemptedSubmit && transactionData?.error) {
+      return transactionData.error
+    }
+    // Fallback for empty input, though zod should handle it via transactionData.error
+    if (
+      hasAttemptedSubmit &&
+      isTransactionInvalid &&
+      !(activeTab === 'buy' && !hasSufficientBalance)
+    ) {
+      return messages.emptyAmount
+    }
+    return undefined
+  }, [
+    activeTab,
+    hasSufficientBalance,
+    hasAttemptedSubmit,
+    isTransactionInvalid,
+    transactionData
+  ])
+
+  const shouldShowError =
+    !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
 
   if (isConfirmButtonLoading && currentScreen !== 'success') {
     return <ModalLoading />
@@ -119,14 +184,19 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             <BuyTab
               tokenPair={selectedPair}
               onTransactionDataChange={handleTransactionDataChange}
-              error={!hasSufficientBalance}
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.buy}
+              onInputValueChange={handleTabInputValueChange}
             />
           ) : (
             <SellTab
               tokenPair={selectedPair}
               onTransactionDataChange={handleTransactionDataChange}
-              error={!hasSufficientBalance}
-              errorMessage={errorMessage}
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.sell}
+              onInputValueChange={handleTabInputValueChange}
             />
           )}
 
@@ -150,21 +220,17 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
           {hasSufficientBalance ? (
             <Hint>
               {messages.helpCenter}{' '}
-              <TextLink
-                variant='visible'
-                href='#' // Replace with actual URL when available
-              >
+              <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
                 {messages.walletGuide}
-              </TextLink>
+              </ExternalTextLink>
             </Hint>
           ) : null}
 
           <Button
             variant='primary'
             fullWidth
-            disabled={isContinueButtonDisabled}
             isLoading={isContinueButtonLoading}
-            onClick={handleShowConfirmation}
+            onClick={handleContinueClick}
           >
             {messages.continue}
           </Button>
@@ -197,6 +263,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               resetTransactionData()
               resetSuccessDisplayData()
               setCurrentScreen('input')
+              // Clear all tab input values on completion
+              setTabInputValues({ buy: '', sell: '' })
             }}
           />
         ) : null}

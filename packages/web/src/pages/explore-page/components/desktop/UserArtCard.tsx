@@ -1,8 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -27,7 +27,6 @@ import { withNullGuard } from 'utils/withNullGuard'
 import styles from './UserArtCard.module.css'
 
 const { profilePage } = route
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   followers: (count: number) => `${formatCount(count)} Followers`
@@ -46,7 +45,7 @@ type UserArtCardProps = OwnProps &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: UserArtCardProps) => {
-  const { user } = props
+  const { data: user } = useUser(props.id)
   if (user) return { ...props, user }
 })
 
@@ -111,9 +110,7 @@ const UserArtCard = g(
 )
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
-  return {
-    user: getUser(state, { id: ownProps.id })
-  }
+  return {}
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {

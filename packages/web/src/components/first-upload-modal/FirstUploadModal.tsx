@@ -1,7 +1,8 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
-import { accountSelectors, musicConfettiActions } from '@audius/common/store'
+import { musicConfettiActions } from '@audius/common/store'
 import { Modal, SocialButton } from '@audius/harmony'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -14,13 +15,11 @@ import { useProfilePicture } from 'hooks/useProfilePicture'
 import { AppState } from 'store/types'
 import { fullProfilePage } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
-import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './FirstUploadModal.module.css'
 import { getIsOpen } from './store/selectors'
 import { setVisibility } from './store/slice'
 const { show } = musicConfettiActions
-const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   first: 'You just uploaded your first track to Audius!',
@@ -46,23 +45,28 @@ type FirstUploadModalProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const g = withNullGuard(
-  ({ account, ...p }: FirstUploadModalProps) => account && { ...p, account }
-)
-
-const FirstUploadModal = g(({ account, isOpen, close }) => {
+const FirstUploadModal = ({ isOpen, close }: FirstUploadModalProps) => {
+  const { data: accountUser } = useCurrentAccountUser({
+    select: (user) => ({
+      userId: user?.user_id,
+      handle: user?.handle,
+      name: user?.name
+    })
+  })
+  const { userId, handle, name } = accountUser ?? {}
   const image = useProfilePicture({
-    userId: account.user_id,
+    userId,
     size: SquareSizes.SIZE_480_BY_480
   })
 
   const record = useRecord()
   const onShare = useCallback(() => {
-    const url = fullProfilePage(account.handle)
+    if (!handle) return
+    const url = fullProfilePage(handle)
     const text = messages.tweet
     openTwitterLink(url, text)
-    record(make(Name.TWEET_FIRST_UPLOAD, { handle: account.handle }))
-  }, [account, record])
+    record(make(Name.TWEET_FIRST_UPLOAD, { handle }))
+  }, [handle, record])
 
   const dispatch = useDispatch()
   useEffect(() => {
@@ -91,14 +95,14 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
               className={styles.image}
             />
             <div className={styles.name}>
-              <span>{account.name}</span>
+              <span>{name}</span>
               <UserBadges
-                userId={account.user_id}
+                userId={userId}
                 className={styles.iconVerified}
                 size='2xs'
               />
             </div>
-            <div className={styles.handle}>{`@${account.handle}`}</div>
+            <div className={styles.handle}>{`@${handle}`}</div>
           </div>
           <div className={styles.callToAction}>
             <div className={styles.text}>{messages.first}</div>
@@ -117,11 +121,10 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
       {isOpen && <ConnectedMusicConfetti />}
     </>
   )
-})
+}
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountUser(state),
     isOpen: getIsOpen(state)
   }
 }

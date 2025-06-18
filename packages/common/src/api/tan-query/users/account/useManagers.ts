@@ -11,7 +11,7 @@ import { QueryKey, SelectableQueryOptions } from '../../types'
 import { isValidId } from '../../utils/isValidId'
 
 export const getManagersQueryKey = (userId: ID | null | undefined) =>
-  [QUERY_KEYS.userManagers, userId] as unknown as QueryKey<
+  [QUERY_KEYS.account, QUERY_KEYS.userManagers, userId] as unknown as QueryKey<
     UserManagerMetadata[]
   >
 

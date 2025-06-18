@@ -1,5 +1,5 @@
 import * as _lib from '../utils/lib.js'
-const { time, expectEvent } = require('@openzeppelin/test-helpers')
+const { expectEvent } = require('@openzeppelin/test-helpers')
 
 const MockDelegateManager = artifacts.require('MockDelegateManager')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
@@ -20,7 +20,6 @@ const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
 const ethRewardsManagerProxyKey = web3.utils.utf8ToHex('EthRewardsManagerProxy')
 
 const RECURRING_COMMUNITY_FUNDING_AMOUNT = 120
-const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
@@ -36,7 +35,6 @@ contract('EthRewardsManager', async (accounts) => {
     ,
     proxyAdminAddress,
     proxyDeployerAddress,
-    staker,
     antiAbuseOracleAddress1,
     antiAbuseOracleAddress2,
     antiAbuseOracleAddress3
@@ -52,15 +50,6 @@ contract('EthRewardsManager', async (accounts) => {
     '0000000000000000000000000000000000000000000000000000000000000000',
     'hex'
   )
-
-  const approveTransferAndStake = async (amount, staker) => {
-    // Transfer default tokens to
-    await token.transfer(staker, amount, { from: proxyDeployerAddress })
-    // Allow Staking app to move owner tokens
-    await token.approve(staking.address, amount, { from: staker })
-    // Stake tokens
-    await mockStakingCaller.stakeFor(staker, amount)
-  }
 
   beforeEach(async () => {
     // Deploy registry
@@ -435,52 +424,6 @@ contract('EthRewardsManager', async (accounts) => {
       0
     )
     assert.equal((await token.balanceOf(mockWormhole.address)).toNumber(), 100)
-  })
-
-  it('transferToSolana from claimsManager', async () => {
-    await approveTransferAndStake(DEFAULT_AMOUNT, staker)
-    let initiateTx = await claimsManager.initiateRound({ from: staker })
-
-    assert.equal(
-      await token.balanceOf(ethRewardsManager.address),
-      RECURRING_COMMUNITY_FUNDING_AMOUNT
-    )
-
-    // Confirm events
-    await expectEvent.inTransaction(
-      initiateTx.tx,
-      ClaimsManager,
-      'CommunityRewardsTransferred',
-      {
-        _transferAddress: ethRewardsManager.address,
-        _amount: _lib.toBN(RECURRING_COMMUNITY_FUNDING_AMOUNT)
-      }
-    )
-
-    const transferToSolanaTx = await governance.guardianExecuteTransaction(
-      ethRewardsManagerProxyKey,
-      callValue0,
-      'transferToSolana(uint256,uint32)',
-      _lib.abiEncode(['uint256', 'uint32'], [0, 1]),
-      { from: guardianAddress }
-    )
-
-    await expectEvent.inTransaction(
-      transferToSolanaTx.tx,
-      MockWormhole,
-      'LogTokensTransferred',
-      {
-        recipientChain: '1',
-        tokenChain: '2',
-        tokenDecimals: await token.decimals(),
-        token: web3.utils.padLeft(token.address, 64).toLowerCase(),
-        sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
-        recipient: `0x${recipient.toString('hex')}`,
-        amount: RECURRING_COMMUNITY_FUNDING_AMOUNT.toString(),
-        arbiterFee: '0',
-        nonce: '1'
-      }
-    )
   })
 
   it('token', async () => {

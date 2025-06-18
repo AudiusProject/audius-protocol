@@ -1,13 +1,9 @@
-import { Flex } from '@audius/harmony'
-
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-
-import styles from './CoinflowWithdrawPage.module.css'
+import { Flex, LoadingSpinner } from '@audius/harmony'
 
 export const CoinflowWithdrawPage = () => {
   return (
     <Flex direction={'column'}>
-      <LoadingSpinner className={styles.spinner} />
+      <LoadingSpinner size='xl' />
     </Flex>
   )
 }

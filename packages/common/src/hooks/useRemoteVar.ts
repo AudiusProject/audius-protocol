@@ -11,17 +11,15 @@ import {
   RemoteConfigInstance
 } from '../services'
 
-import { useHasAccount, useHasConfigLoaded } from './helpers'
+import { useHasConfigLoaded } from './helpers'
 import { useRecomputeToggle } from './useFeatureFlag'
 
 /** @deprecated Use `useRemoteVar` directly instead */
 export const createUseRemoteVarHook = ({
   remoteConfigInstance,
-  useHasAccount,
   useHasConfigLoaded
 }: {
   remoteConfigInstance: RemoteConfigInstance
-  useHasAccount: () => boolean
   useHasConfigLoaded: () => boolean
 }) => {
   function useRemoteVar(key: IntKeys): number
@@ -32,11 +30,7 @@ export const createUseRemoteVarHook = ({
     key: AllRemoteConfigKeys
   ): boolean | string | number | null {
     const configLoaded = useHasConfigLoaded()
-    const shouldRecompute = useRecomputeToggle(
-      useHasAccount,
-      configLoaded,
-      remoteConfigInstance
-    )
+    const shouldRecompute = useRecomputeToggle(configLoaded)
 
     const remoteVar = useMemo(
       () => remoteConfigInstance.getRemoteVar(key),
@@ -61,11 +55,7 @@ export function useRemoteVar(
 ): boolean | string | number | null {
   const { remoteConfig } = useAppContext()
   const configLoaded = useHasConfigLoaded()
-  const shouldRecompute = useRecomputeToggle(
-    useHasAccount,
-    configLoaded,
-    remoteConfig
-  )
+  const shouldRecompute = useRecomputeToggle(configLoaded)
 
   const remoteVar = useMemo(
     () => remoteConfig.getRemoteVar(key),

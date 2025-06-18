@@ -1,13 +1,5 @@
-import { useEffect } from 'react'
-
-import { useDispatch } from 'react-redux'
-
 import { ID } from '~/models/Identifiers'
-import {
-  collectionPageActions,
-  collectionPageLineupActions,
-  CollectionsPageType
-} from '~/store/pages'
+import { CollectionsPageType } from '~/store/pages'
 
 import { TQCollection } from '../models'
 import { SelectableQueryOptions } from '../types'
@@ -17,10 +9,13 @@ import { useCollectionByPermalink } from './useCollectionByPermalink'
 
 type CollectionParams =
   | { collectionId?: ID }
-  | { handle?: string; slug?: string; collectionType?: CollectionsPageType }
+  | {
+      handle?: string
+      slug?: string
+      collectionType?: CollectionsPageType
+    }
   | { permalink?: string }
 
-// feature-tan-query TODO: smart collections
 /**
  * Hook that returns collection data given either a collection ID, handle+slug+type, or permalink.
  * Internally uses useCollection and useCollectionByPermalink for consistent behavior.
@@ -30,12 +25,11 @@ type CollectionParams =
 export const useCollectionByParams = <
   TResult extends { playlist_id: ID } = TQCollection
 >(
-  params: CollectionParams,
+  collectionParams: CollectionParams | null = {},
   options?: SelectableQueryOptions<TQCollection, TResult>
 ) => {
-  const dispatch = useDispatch()
-
   let permalink: string | null | undefined = null
+  const params = collectionParams ?? {}
   if ('permalink' in params) {
     permalink = params.permalink
   } else if ('handle' in params) {
@@ -48,33 +42,6 @@ export const useCollectionByParams = <
   const permalinkQuery = useCollectionByPermalink(permalink, options)
 
   const query = collectionId ? idQuery : permalinkQuery
-
-  const { isSuccess } = query
-  const collectionIdResult = query.data?.playlist_id
-
-  useEffect(() => {
-    if (isSuccess && collectionIdResult) {
-      dispatch(
-        collectionPageActions.fetchCollectionSucceeded(
-          collectionIdResult,
-          // @ts-ignore no uid
-          undefined,
-          undefined,
-          undefined
-        )
-      )
-
-      dispatch(
-        collectionPageLineupActions.fetchLineupMetadatas(
-          0,
-          // TODO: lineups should be paginated
-          100,
-          false,
-          undefined
-        )
-      )
-    }
-  }, [isSuccess, collectionIdResult, dispatch])
 
   return query
 }

@@ -95,15 +95,20 @@ const UserComment = ({ comment }: { comment: CommentOrReply }) => {
         <Flex column gap='xs' w='100%'>
           <Text variant='body' size='s' textAlign='left' color='subdued'>
             {track ? (
-              <>
+              <Flex gap='xs' alignItems='center'>
                 <TrackLink
                   variant='visible'
                   trackId={track?.track_id}
                   onClick={trackUserCommentClick}
                 />
                 {messages.by}
-                <UserLink variant='visible' userId={track?.owner_id} popover />
-              </>
+                <UserLink
+                  variant='visible'
+                  userId={track?.owner_id}
+                  popover
+                  fullWidth={false}
+                />
+              </Flex>
             ) : (
               <Skeleton w={180} h={20} />
             )}

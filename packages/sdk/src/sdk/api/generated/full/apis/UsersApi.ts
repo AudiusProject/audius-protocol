@@ -147,6 +147,7 @@ export interface GetAlbumsByUserRequest {
     limit?: number;
     userId?: string;
     sortMethod?: GetAlbumsByUserSortMethodEnum;
+    query?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -231,6 +232,7 @@ export interface GetPlaylistsByUserRequest {
     limit?: number;
     userId?: string;
     sortMethod?: GetPlaylistsByUserSortMethodEnum;
+    query?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -681,6 +683,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.sortMethod !== undefined) {
             queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1182,6 +1188,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.sortMethod !== undefined) {
             queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

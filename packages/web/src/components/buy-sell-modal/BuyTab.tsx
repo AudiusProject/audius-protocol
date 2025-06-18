@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 
 import { useTokenPrice, useUSDCBalance } from '@audius/common/api'
-import { Status } from '@audius/common/src/models/Status'
+import { Status } from '@audius/common/models'
+import { TokenPair } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
 import { SwapTab } from './SwapTab'
-import { TokenPair } from './types'
 
 type BuyTabProps = {
   tokenPair: TokenPair
@@ -13,14 +13,22 @@ type BuyTabProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    error: string | null
+    isInsufficientBalance: boolean
   }) => void
   error?: boolean
+  errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
 export const BuyTab = ({
   tokenPair,
   onTransactionDataChange,
-  error
+  error,
+  errorMessage,
+  initialInputValue,
+  onInputValueChange
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
   const { status: balanceStatus, data: usdcBalance } = useUSDCBalance()
@@ -55,9 +63,12 @@ export const BuyTab = ({
       }}
       onTransactionDataChange={onTransactionDataChange}
       error={error}
+      errorMessage={errorMessage}
       tokenPrice={tokenPrice}
       isTokenPriceLoading={isTokenPriceLoading}
       tokenPriceDecimalPlaces={decimalPlaces}
+      initialInputValue={initialInputValue}
+      onInputValueChange={onInputValueChange}
     />
   )
 }

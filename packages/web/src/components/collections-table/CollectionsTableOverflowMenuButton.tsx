@@ -1,4 +1,4 @@
-import { useCollection, useGetCurrentUserId } from '@audius/common/api'
+import { useCollection, useCurrentUserId } from '@audius/common/api'
 import { Flex, IconKebabHorizontal } from '@audius/harmony'
 import { pick } from 'lodash'
 
@@ -13,7 +13,7 @@ export const CollectionsTableOverflowMenuButton = (
   props: OverflowMenuButtonProps
 ) => {
   const { collectionId } = props
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
       pick(

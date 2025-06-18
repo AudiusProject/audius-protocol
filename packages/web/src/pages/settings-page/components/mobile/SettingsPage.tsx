@@ -1,14 +1,13 @@
 import { useContext, useEffect, FC } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
   settingsPageActions,
   themeSelectors,
-  accountSelectors,
-  getTierAndVerifiedForUser,
   themeActions,
-  musicConfettiActions
+  musicConfettiActions,
+  useTierAndVerifiedForUser
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -34,7 +33,6 @@ import Page from 'components/page/Page'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import useScrollToTop from 'hooks/useScrollToTop'
 import { env } from 'services/env'
-import { AppState } from 'store/types'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -49,7 +47,6 @@ const {
   getNotificationSettings: getNotificationSettingsAction,
   getPushNotificationSettings: getPushNotificationSettingsAction
 } = settingsPageActions
-const { getUserId, getUserName } = accountSelectors
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 const { show } = musicConfettiActions
@@ -106,15 +103,16 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const dispatch = useDispatch()
   useScrollToTop()
 
-  const userId = useSelector(getUserId) ?? 0
-  const { data: handle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => ({
+      handle: user?.handle,
+      userId: user?.user_id,
+      name: user?.name
+    })
   })
-  const name = useSelector(getUserName)
+  const { userId, handle, name } = accountData ?? {}
   const theme = useSelector(getTheme)
-  const tier = useSelector(
-    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
-  )
+  const { tier } = useTierAndVerifiedForUser(userId)
   const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
 
   useEffect(() => {

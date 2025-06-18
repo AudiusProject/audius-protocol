@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import {
-  accountSelectors,
   tippingActions,
   tippingSelectors,
   TippingSendStatus,
@@ -120,7 +120,7 @@ export const TipAudioModal = () => {
   const sendStatus = useSelector(getSendStatus)
   const previousSendStatus = usePrevious(sendStatus)
   const { user: recipient, onSuccessActions } = useSelector(getSendTipData)
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   const onClose = useCallback(() => {
     // After success + close, take the user to the chat they were

@@ -1,7 +1,11 @@
 import { useCallback } from 'react'
 
+import {
+  selectIsAccountComplete,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import { getStartedAndFinishedSignup } from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -13,13 +17,17 @@ const FIRST_REMINDER_SESSION = 3
 const REMINDER_FREQUENCY = 5
 
 export const RateCtaReminder = () => {
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const { data: hasCompleteAccount } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
+  const hasFinishedSignUp = useSelector(getStartedAndFinishedSignup)
+  const hasAccount = hasCompleteAccount && hasFinishedSignUp
 
   const { value: userRateResponse, loading } = useAsync(() =>
     AsyncStorage.getItem(RATE_CTA_STORAGE_KEY)
   )
 
-  return !loading && !userRateResponse && hasCompletedAccount ? (
+  return !loading && !userRateResponse && hasAccount ? (
     <RateCtaReminderInternal />
   ) : null
 }

@@ -13,7 +13,7 @@ import { call } from 'typed-redux-saga'
 export function* getRecommendedTracks(
   genre: string,
   exclusionList: number[],
-  currentUserId: Nullable<ID>
+  currentUserId: Nullable<ID> | undefined
 ) {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
 

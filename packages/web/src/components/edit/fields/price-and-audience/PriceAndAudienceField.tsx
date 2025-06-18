@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
@@ -15,7 +16,6 @@ import {
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
-  accountSelectors,
   EditCollectionValues,
   useEditAccessConfirmationModal
 } from '@audius/common/store'
@@ -30,7 +30,6 @@ import {
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
-import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -72,8 +71,6 @@ import {
 import styles from './PriceAndAudienceField.module.css'
 import { PriceAndAudienceMenuFields } from './PriceAndAudienceMenuFields'
 import { priceAndAudienceSchema } from './priceAndAudienceSchema'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Price & Audience',
@@ -206,7 +203,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
    * Upon submit, these values along with the selected access option will
    * determine the final stream conditions that get saved to the track.
    */
-  const accountUserId = useSelector(getUserId)
+  const { data: accountUserId } = useCurrentUserId()
   const tempStreamConditions = useMemo(
     () => ({
       ...getCombinedDefaultGatedConditionValues(accountUserId),

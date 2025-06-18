@@ -118,7 +118,10 @@ export const formatShareText = (title: string, creator: string) => {
  * Reduces multiple sequential newlines (> newlineCount) into max `\n\n` and
  * trims both leading and trailing newlines
  */
-export const squashNewLines = (str: string | null, newlineMax: number = 2) => {
+export const squashNewLines = (
+  str: string | null | undefined,
+  newlineMax: number = 2
+) => {
   return str
     ? str
         .replace(

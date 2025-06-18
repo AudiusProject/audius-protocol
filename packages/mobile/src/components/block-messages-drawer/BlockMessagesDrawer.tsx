@@ -11,7 +11,7 @@ import { EventNames } from 'app/types/analytics'
 
 import { ConfirmationDrawer } from '../drawers'
 
-const { getDoesBlockUser, getCanCreateChat } = chatSelectors
+const { getDoesBlockUser, useCanCreateChat } = chatSelectors
 const { blockUser, unblockUser, createChat } = chatActions
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
@@ -42,9 +42,7 @@ export const BlockMessagesDrawer = () => {
   const { data: user } = useUser(userId)
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
-  const { canCreateChat } = useSelector((state) =>
-    getCanCreateChat(state, { userId })
-  )
+  const { canCreateChat } = useCanCreateChat(userId)
 
   const handleConfirmPress = useCallback(() => {
     if (doesBlockUser) {

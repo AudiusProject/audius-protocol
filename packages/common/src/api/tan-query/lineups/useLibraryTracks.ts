@@ -14,8 +14,8 @@ import { useQueryContext } from '~/api/tan-query/utils'
 import { PlaybackSource } from '~/models/Analytics'
 import { ID } from '~/models/Identifiers'
 import {
-  savedPageTracksLineupActions,
-  savedPageSelectors,
+  libraryPageTracksLineupActions,
+  libraryPageSelectors,
   LibraryCategoryType
 } from '~/store/pages'
 import { removeNullable } from '~/utils'
@@ -100,11 +100,11 @@ export const useLibraryTracks = (
         .map((activity) => userTrackMetadataFromSDK(activity.item))
         .filter(removeNullable)
 
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
       // Update lineup when new data arrives
       dispatch(
-        savedPageTracksLineupActions.fetchLineupMetadatas(
+        libraryPageTracksLineupActions.fetchLineupMetadatas(
           pageParam,
           pageSize,
           false,
@@ -139,8 +139,8 @@ export const useLibraryTracks = (
       query,
       pageSize
     }),
-    lineupActions: savedPageTracksLineupActions,
-    lineupSelector: savedPageSelectors.getSavedTracksLineup,
+    lineupActions: libraryPageTracksLineupActions,
+    lineupSelector: libraryPageSelectors.getLibraryTracksLineup,
     playbackSource: PlaybackSource.TRACK_TILE,
     pageSize
   })

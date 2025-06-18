@@ -68,7 +68,7 @@ const useMetadata = () => {
     enabled: kind === PlayableType.PLAYLIST || kind === PlayableType.ALBUM
   })
 
-  return track || collection
+  return kind === PlayableType.TRACK ? track : collection
 }
 
 const messages = {

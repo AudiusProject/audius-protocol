@@ -1,17 +1,17 @@
 import { useState } from 'react'
 
-import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { BuyUSDCStage, buyUSDCSelectors } from '@audius/common/store'
-import { Button, Flex } from '@audius/harmony'
-import cn from 'classnames'
+import { Button, Flex, Text, IconLogoLinkByStripe } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
+import { ResponsiveModalContent } from 'components/modal'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track } from 'services/analytics'
 
-import styles from './AddCash.module.css'
 import { CashBalanceSection } from './CashBalanceSection'
 
 const { getBuyUSDCFlowStage } = buyUSDCSelectors
@@ -20,6 +20,22 @@ const messages = {
   purchasing: 'Purchasing',
   continue: 'Continue'
 }
+
+const PoweredBySection = () => (
+  <Flex
+    justifyContent='center'
+    alignItems='center'
+    gap='m'
+    borderTop='default'
+    backgroundColor='surface1'
+    pv='2xs'
+  >
+    <Text variant='label' size='s' color='subdued'>
+      {walletMessages.poweredBy}
+    </Text>
+    <IconLogoLinkByStripe width={100} color='subdued' />
+  </Flex>
+)
 
 export const AddCash = ({
   onContinue
@@ -40,10 +56,6 @@ export const AddCash = ({
   >(undefined)
 
   const isMobile = useIsMobile()
-  const { data: balanceBN } = useUSDCBalance({
-    isPolling: true,
-    commitment: 'confirmed'
-  })
 
   const buyUSDCStage = useSelector(getBuyUSDCFlowStage)
   const inProgress = [
@@ -52,35 +64,31 @@ export const AddCash = ({
   ].includes(buyUSDCStage)
 
   return (
-    <Flex className={styles.root}>
-      <Flex
-        className={cn(styles.buttonContainer, {
-          [styles.mobile]: isMobile
-        })}
-      >
-        <Flex column w='100%' gap='xl' p='xl'>
-          <CashBalanceSection balance={balanceBN} />
-          <PaymentMethod
-            showVendorChoice
-            showExtraItemsToggle={false}
-            selectedVendor={selectedPurchaseVendor ?? null}
-            selectedMethod={selectedPurchaseMethod}
-            setSelectedMethod={setSelectedPurchaseMethod}
-            setSelectedVendor={setSelectedPurchaseVendor}
-          />
-          <Button
-            variant='primary'
-            fullWidth
-            onClick={() =>
-              onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
-            }
-            isLoading={inProgress}
-            disabled={inProgress}
-          >
-            {inProgress ? messages.purchasing : messages.continue}
-          </Button>
-        </Flex>
-      </Flex>
+    <Flex column>
+      {isMobile && <PoweredBySection />}
+      <ResponsiveModalContent gap='xl'>
+        <CashBalanceSection />
+        <PaymentMethod
+          showVendorChoice
+          showExtraItemsToggle={false}
+          selectedVendor={selectedPurchaseVendor ?? null}
+          selectedMethod={selectedPurchaseMethod}
+          setSelectedMethod={setSelectedPurchaseMethod}
+          setSelectedVendor={setSelectedPurchaseVendor}
+        />
+        <Button
+          variant='primary'
+          fullWidth
+          onClick={() =>
+            onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
+          }
+          isLoading={inProgress}
+          disabled={inProgress}
+        >
+          {inProgress ? messages.purchasing : messages.continue}
+        </Button>
+      </ResponsiveModalContent>
+      {!isMobile && <PoweredBySection />}
     </Flex>
   )
 }

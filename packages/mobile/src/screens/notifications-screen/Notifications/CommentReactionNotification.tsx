@@ -1,9 +1,11 @@
 import React, { useCallback } from 'react'
 
-import { useGetCurrentUserId, useNotificationEntity } from '@audius/common/api'
-import { notificationsSelectors } from '@audius/common/store'
+import {
+  useCurrentUserId,
+  useNotificationEntity,
+  useUsers
+} from '@audius/common/api'
 import type { CommentReactionNotification as CommentReactionNotificationType } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -16,8 +18,6 @@ import {
   ProfilePictureList,
   UserNameLink
 } from '../Notification'
-
-const { getNotificationUsers } = notificationsSelectors
 
 const USER_LENGTH_LIMIT = 3
 
@@ -39,15 +39,15 @@ export const CommentReactionNotification = (
   const { userIds, entityType } = notification
   const navigation = useNotificationNavigation()
 
-  const users = useSelector((state) =>
-    getNotificationUsers(state, notification, USER_LENGTH_LIMIT)
+  const { data: users } = useUsers(
+    notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
 
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
 
   const entity = useNotificationEntity(notification)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReaction =
     firstUser?.user_id === currentUserId && otherUsersCount === 0

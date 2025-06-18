@@ -3,8 +3,8 @@ import { useMemo } from 'react'
 import BN from 'bn.js'
 import { useSelector } from 'react-redux'
 
+import { useCurrentAccountUser } from '~/api'
 import { BNWei } from '~/models/Wallet'
-import { getAccountUser } from '~/store/account/selectors'
 import { getAccountTotalBalance } from '~/store/wallet/selectors'
 import { isNullOrUndefined } from '~/utils/typeUtils'
 
@@ -14,19 +14,18 @@ import { isNullOrUndefined } from '~/utils/typeUtils'
  * available. Falls back to null if neither wallet or account balance are available.
  */
 export const useTotalBalanceWithFallback = () => {
-  const account = useSelector(getAccountUser)
+  const { data: totalBalance } = useCurrentAccountUser({
+    select: (user) => user?.total_balance
+  })
   const walletTotalBalance = useSelector(getAccountTotalBalance)
 
   return useMemo(() => {
     if (!isNullOrUndefined(walletTotalBalance)) {
       return walletTotalBalance
-    } else if (
-      !isNullOrUndefined(account) &&
-      !isNullOrUndefined(account.total_balance)
-    ) {
-      return new BN(account.total_balance) as BNWei
+    } else if (!isNullOrUndefined(totalBalance)) {
+      return new BN(totalBalance) as BNWei
     }
 
     return null
-  }, [account, walletTotalBalance])
+  }, [totalBalance, walletTotalBalance])
 }

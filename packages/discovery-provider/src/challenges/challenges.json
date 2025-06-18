@@ -217,11 +217,23 @@
   },
   {
     "id": "cs",
+    "name": "COSIGN_CHALLENGE",
+    "type": "aggregate",
+    "amount": 1000,
+    "active": false,
+    "step_count": 2147483647,
+    "starting_block": 95017582,
+    "weekly_pool": 50000,
+    "cooldown_days": 7
+  },
+  {
+    "id": "w",
+    "name": "REMIX_CONTEST_WINNER",
     "type": "aggregate",
     "amount": 1000,
     "active": true,
     "step_count": 2147483647,
-    "starting_block": 95017582,
+    "starting_block": 98950182,
     "weekly_pool": 50000,
     "cooldown_days": 7
   }

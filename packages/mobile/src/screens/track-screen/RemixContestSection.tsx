@@ -5,6 +5,7 @@ import { useRemixContest, useTrack, useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import type { FlatList } from 'react-native'
 import Animated, {
@@ -90,11 +91,12 @@ export const RemixContestSection = ({
 
   const isOwner = track?.owner_id === currentUserId
   const hasPrizeInfo = !!remixContest?.eventData?.prizeInfo
+  const isContestEnded = dayjs(remixContest?.endDate).isBefore(dayjs())
   const hasWinners =
     isRemixContestWinnersMilestoneEnabled &&
     (remixContest?.eventData?.winners?.length ?? 0) > 0
 
-  const [index, setIndex] = useState(hasWinners ? 2 : 0)
+  const [index, setIndex] = useState(hasWinners ? (hasPrizeInfo ? 2 : 1) : 0)
   const [routes, setRoutes] = useState<Route[]>([])
   const [heights, setHeights] = useState({})
   const [firstRender, setFirstRender] = useState(true)
@@ -265,7 +267,9 @@ export const RemixContestSection = ({
         onIndexChange={setIndex}
         swipeEnabled
       />
-      {!isOwner && <UploadRemixFooter trackId={trackId} />}
+      {!isOwner && !isContestEnded ? (
+        <UploadRemixFooter trackId={trackId} />
+      ) : null}
     </AnimatedPaper>
   )
 }

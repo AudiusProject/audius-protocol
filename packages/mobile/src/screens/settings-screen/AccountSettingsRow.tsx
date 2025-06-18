@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
+import { pick } from 'lodash'
 import { Text, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -14,7 +13,6 @@ import { makeStyles } from 'app/styles'
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { SettingsRow } from './SettingsRow'
-const { getUserName, getUserId } = accountSelectors
 
 const useStyles = makeStyles(({ typography, spacing, palette }) => ({
   root: { paddingVertical: spacing(4) },
@@ -31,11 +29,10 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 
 export const AccountSettingsRow = () => {
   const styles = useStyles()
-  const accountUserId = useSelector(getUserId)
-  const { data: accountHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountData } = useCurrentAccountUser({
+    select: (user) => pick(user, ['user_id', 'handle', 'name'])
   })
-  const accountName = useSelector(getUserName)
+  const { user_id, handle, name } = accountData ?? {}
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const { spacing } = useTheme()
 
@@ -43,19 +40,19 @@ export const AccountSettingsRow = () => {
     navigation.push('AccountSettingsScreen')
   }, [navigation])
 
-  if (!accountUserId) return null
+  if (!user_id) return null
 
   return (
     <SettingsRow style={styles.root} onPress={handlePress}>
       <View style={styles.content}>
         <ProfilePicture
-          userId={accountUserId}
+          userId={user_id}
           style={css({ width: spacing.unit13, height: spacing.unit13 })}
           borderWidth='thin'
         />
         <View style={styles.info}>
-          <Text style={styles.name}>{accountName}</Text>
-          <Text style={styles.handle}>@{accountHandle}</Text>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.handle}>@{handle}</Text>
         </View>
       </View>
     </SettingsRow>

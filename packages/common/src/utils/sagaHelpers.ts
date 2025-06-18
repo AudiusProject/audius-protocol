@@ -1,7 +1,8 @@
 /** Helper Sagas */
 
+import { QueryClient } from '@tanstack/react-query'
 import { eventChannel, END, EventChannel } from 'redux-saga'
-import { ActionPattern } from 'redux-saga/effects'
+import { ActionPattern, GetContextEffect } from 'redux-saga/effects'
 import {
   all,
   call,
@@ -15,6 +16,8 @@ import {
 } from 'typed-redux-saga'
 import { Action } from 'typesafe-actions'
 
+// this import needs to be very specific for SSR bundlesize
+import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { ErrorLevel, ReportToSentryArgs } from '~/models'
 import { waitForReachability } from '~/store/reachability/sagas'
 import { toast } from '~/store/ui/toast/slice'
@@ -109,6 +112,29 @@ function doEveryImpl(millis: number, times: number | null) {
 }
 
 /**
+ * Waits for a query function to return a truthy value.
+ * Similar to waitForValue but for tanstack query data.
+ *
+ * @template TResult The type of the value returned by the query function
+ * @param {function} query A function that returns a Generator that resolves to a value of type TResult
+ * @param {any} args Arguments to pass to the query function
+ * @param {(v: TResult) => boolean} customCheck special check to run rather than checking truthy-ness
+ * @returns {TResult} The value from the query function once it's truthy
+ */
+export function* waitForQueryValue<TResult>(
+  query: (args: any) => Generator<GetContextEffect, TResult | null, any>,
+  args?: any,
+  customCheck?: (value: TResult) => boolean
+) {
+  let value: TResult | null = yield* call(query, args)
+  while (customCheck ? !customCheck(value as TResult) : !value) {
+    yield* take()
+    value = yield* call(query, args)
+  }
+  return value as TResult
+}
+
+/**
  * Repeatedly calls a saga/async function on an interval for up to a set number of times.
  * @param {number} millis
  * @param {function *} fn
@@ -130,9 +156,12 @@ export function* doEvery(
  * Waits for account to finish loading, whether it fails or succeeds.
  */
 export function* waitForAccount() {
+  const queryClient = (yield* getContext('queryClient')) as QueryClient
   yield* call(
-    waitForValue,
-    (state) => state.account.status,
+    waitForQueryValue,
+    function* () {
+      return queryClient.getQueryData(getAccountStatusQueryKey())
+    },
     null,
     (status) => status !== Status.LOADING && status !== Status.IDLE
   )

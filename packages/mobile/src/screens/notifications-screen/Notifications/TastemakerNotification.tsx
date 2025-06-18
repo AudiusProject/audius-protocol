@@ -1,9 +1,11 @@
 import React, { useCallback } from 'react'
 
-import { useNotificationEntity } from '@audius/common/api'
-import type { TastemakerNotification as TastemakerNotificationType } from '@audius/common/store'
-import { notificationsSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
+import { useNotificationEntity, useUser } from '@audius/common/api'
+import type {
+  TastemakerNotification as TastemakerNotificationType,
+  TrackEntity
+} from '@audius/common/store'
+import type { Nullable } from '@audius/common/utils'
 
 import { IconTastemaker } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -16,14 +18,11 @@ import {
   NotificationTwitterButton
 } from '../Notification'
 
-const { getNotificationUser } = notificationsSelectors
-
 const messages = {
-  title: 'Tastemaker',
-  is: 'is',
-  tastemaker: 'tastemaker!',
+  title: "You're a Tastemaker!",
+  tastemaker: 'is now trending thanks to you! Great work 🙌',
   twitterShare: (handle: string, trackTitle: string) =>
-    `I was the first to support ${trackTitle} by @${handle} on @audius! #AudiusTastemaker #Audius $AUDIO`
+    `I was one of the first to discover ${trackTitle} by ${handle} on @audius and it just made it onto trending! #Audius #AudiusTastemaker $AUDIO`
 }
 
 type TastemakerNotificationProps = {
@@ -33,10 +32,8 @@ type TastemakerNotificationProps = {
 export const TastemakerNotification = (props: TastemakerNotificationProps) => {
   const { notification } = props
   const navigation = useNotificationNavigation()
-  const entity = useNotificationEntity(notification)
-  const trackOwnerUser = useSelector((state) =>
-    getNotificationUser(state, notification)
-  )
+  const entity = useNotificationEntity(notification) as Nullable<TrackEntity>
+  const { data: trackOwnerUser } = useUser(notification.userId)
 
   const handlePress = useCallback(() => {
     if (entity) {
@@ -46,8 +43,8 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
 
   const handleShare = useCallback(
     (trackOwnerHandle: string) => {
-      if (!entity || !('title' in entity)) return null
-      const trackTitle = entity.title || ''
+      if (!entity) return null
+      const trackTitle = entity.title ?? ''
       const shareText = messages.twitterShare(trackOwnerHandle, trackTitle)
       // The analytics object is cast as any to satisfy the NotificationTwitterButton prop
       const analytics = {
@@ -59,13 +56,13 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
     [entity]
   )
 
-  if (!entity || !trackOwnerUser || !('title' in entity)) return null
+  if (!entity || !trackOwnerUser) return null
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconTastemaker}>
         <NotificationText>
-          <EntityLink entity={entity} /> {messages.is} {messages.tastemaker}
+          <EntityLink entity={entity} /> {messages.tastemaker}
         </NotificationText>
       </NotificationHeader>
       <NotificationTwitterButton

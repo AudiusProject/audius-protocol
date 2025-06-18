@@ -1,3 +1,4 @@
+import { useRemoteVar } from '@audius/common/hooks'
 import type { ChallengeRewardID } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import type { TrendingRewardsModalType, Modals } from '@audius/common/store'
@@ -6,7 +7,6 @@ import { useDispatch } from 'react-redux'
 
 import { Flex, Paper, Text } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { getChallengeConfig } from 'app/utils/challenges'
 

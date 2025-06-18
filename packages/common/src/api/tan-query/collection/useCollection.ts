@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 
+import { AudiusSdk } from '@audius/sdk'
 import { useQuery, useQueryClient, QueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
+import { AnyAction, Dispatch } from 'redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { ID } from '~/models'
@@ -11,6 +13,7 @@ import { TQCollection } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
   return [
@@ -21,10 +24,10 @@ export const getCollectionQueryKey = (collectionId: ID | null | undefined) => {
 
 export const getCollectionQueryFn = async (
   collectionId: ID,
-  currentUserId: number | null,
+  currentUserId: number | null | undefined,
   queryClient: QueryClient,
-  sdk: any,
-  dispatch: any
+  sdk: AudiusSdk,
+  dispatch: Dispatch<AnyAction>
 ) => {
   const batchGetCollections = getCollectionsBatcher({
     sdk,
@@ -61,6 +64,7 @@ export const useCollection = <TResult = TQCollection>(
     },
     ...options,
     select,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && !!collectionId
   })
 }

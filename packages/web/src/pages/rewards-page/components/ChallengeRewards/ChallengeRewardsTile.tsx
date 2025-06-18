@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { useCurrentAccountUser, useCurrentAccount } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { ChallengeName } from '@audius/common/src/models/AudioRewards'
@@ -7,7 +8,8 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors,
   ChallengeRewardsModalType,
-  challengesSelectors
+  challengesSelectors,
+  CommonState
 } from '@audius/common/store'
 import {
   makeOptimisticChallengeSortComparator,
@@ -46,7 +48,11 @@ export const ChallengeRewardsTile = ({
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
-  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const optimisticUserChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const { isEnabled: isClaimAllRewardsEnabled } = useFeatureFlag(
     FeatureFlags.CLAIM_ALL_REWARDS_TILE

@@ -3,7 +3,7 @@
 }
 
 .tooltip {
-  z-index: 10000;
+  z-index: var(--harmony-layer-tooltip);
   color: var(--harmony-white);
   font-family: var(--harmony-font-family);
   font-size: var(--harmony-font-xs);

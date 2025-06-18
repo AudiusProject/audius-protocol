@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import {
   CollectibleMediaType,
   type Collectible,
   type ID
 } from '@audius/common/models'
 import {
-  accountSelectors,
   collectibleDetailsUIActions,
   modalsActions
 } from '@audius/common/store'
@@ -15,7 +15,7 @@ import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
 import { ImageBackground, Text, View } from 'react-native'
 import { createThumbnail } from 'react-native-create-thumbnail'
 import { SvgUri, SvgXml } from 'react-native-svg'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { IconPlay } from '@audius/harmony-native'
@@ -26,7 +26,6 @@ import { makeStyles } from 'app/styles'
 import { CollectiblesCardErrorBoundary } from './CollectiblesCardErrorBoundary'
 const { setVisibility } = modalsActions
 const { setCollectible } = collectibleDetailsUIActions
-const getUserId = accountSelectors.getUserId
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   content: {
@@ -200,7 +199,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
   const styles = useStyles()
 
   const dispatch = useDispatch()
-  const accountId = useSelector(getUserId)
+  const { data: accountId } = useCurrentUserId()
 
   const handlePress = useCallback(() => {
     dispatch(

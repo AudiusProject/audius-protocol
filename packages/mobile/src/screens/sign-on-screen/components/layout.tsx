@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import React, { useMemo } from 'react'
 
 import { css } from '@emotion/native'
 import { useFormikContext } from 'formik'
@@ -89,7 +90,22 @@ export const PageFooter = (props: PageFooterProps) => {
   const insets = useSafeAreaInsets()
   const { spacing } = useTheme()
   const { handleSubmit, dirty, isValid } = useFormikContext() ?? {}
-  const KeyboardAvoidContainer = avoidKeyboard ? KeyboardAvoidingView : View
+
+  // Safe fallback to prevent undefined component errors
+  const KeyboardAvoidContainer = useMemo(() => {
+    if (avoidKeyboard) {
+      try {
+        return KeyboardAvoidingView
+      } catch (error) {
+        console.warn(
+          'KeyboardAvoidingView not available, falling back to View:',
+          error
+        )
+        return View
+      }
+    }
+    return View
+  }, [avoidKeyboard])
 
   return (
     <Flex

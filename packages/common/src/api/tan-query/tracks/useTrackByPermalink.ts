@@ -1,17 +1,16 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { pick } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
-import { getAccountStatus } from '~/store/account/selectors'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, SelectableQueryOptions } from '../types'
+import { useAccountStatus } from '../users/account/useAccountStatus'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeTrackData } from '../utils/primeTrackData'
 
@@ -29,9 +28,8 @@ export const useTrackByPermalink = <TResult = TQTrack>(
 ) => {
   const { audiusSdk } = useQueryContext()
   const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
-  const accountStatus = useSelector(getAccountStatus)
+  const { data: accountStatus } = useAccountStatus()
 
   const simpleOptions = pick(options, [
     'enabled',
@@ -56,13 +54,13 @@ export const useTrackByPermalink = <TResult = TQTrack>(
       const track = userTrackMetadataFromSDK(data[0])
 
       if (track) {
-        primeTrackData({ tracks: [track], queryClient, dispatch })
+        primeTrackData({ tracks: [track], queryClient })
       }
 
       return track?.track_id
     },
     staleTime: simpleOptions?.staleTime ?? Infinity,
-    throwOnError: simpleOptions?.throwOnError ?? true,
+    throwOnError: simpleOptions?.throwOnError ?? false,
     enabled:
       simpleOptions?.enabled !== false &&
       !!permalink &&

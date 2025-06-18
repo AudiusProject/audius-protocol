@@ -1,6 +1,6 @@
 import { Id, OptionalId } from '@audius/sdk'
 import { create, keyResolver, windowScheduler } from '@yornaath/batshit'
-import { memoize, omit } from 'lodash'
+import { memoize } from 'lodash'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
@@ -16,7 +16,7 @@ export const getCollectionsBatcher = memoize(
   (context: BatchContext) =>
     create({
       fetcher: async (ids: ID[]): Promise<TQCollection[]> => {
-        const { sdk, currentUserId, queryClient, dispatch } = context
+        const { sdk, currentUserId, queryClient } = context
         if (!ids.length) return []
 
         const { data } = await sdk.full.playlists.getBulkPlaylists({
@@ -29,18 +29,11 @@ export const getCollectionsBatcher = memoize(
           userCollectionMetadataFromSDK
         )
 
-        primeCollectionData({
+        return primeCollectionData({
           collections,
           queryClient,
-          dispatch,
           skipQueryData: true
         })
-
-        const tqCollections: TQCollection[] = collections.map((c) => ({
-          ...omit(c, ['tracks', 'user']),
-          trackIds: c.tracks?.map((t) => t.track_id) ?? []
-        }))
-        return tqCollections
       },
       resolver: keyResolver('playlist_id'),
       scheduler: windowScheduler(10)

@@ -1,13 +1,15 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { getAddress } from 'viem'
 
-import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
+import {
+  useQueryContext,
+  type QueryContextType
+} from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
-import type { Env } from '~/services'
+import { Feature } from '~/models/ErrorReporting'
+import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
@@ -37,9 +39,15 @@ export const getWalletAudioBalanceQueryKey = ({
   ] as unknown as QueryKey<AudioWei>
 
 const fetchWalletAudioBalance = async (
-  { sdk, env }: { sdk: AudiusSdk; env: Env },
+  {
+    sdk,
+    audiusBackend
+  }: {
+    sdk: AudiusSdk
+    audiusBackend: QueryContextType['audiusBackend']
+  },
   { address, includeStaked, chain }: UseWalletAudioBalanceParams
-) => {
+): Promise<AudioWei> => {
   if (chain === Chain.Eth) {
     const checksumWallet = getAddress(address)
     const balance = await sdk.services.audiusTokenClient.balanceOf({
@@ -58,16 +66,18 @@ const fetchWalletAudioBalance = async (
 
     return AUDIO(balance + delegatedBalance + stakedBalance).value
   } else {
-    const connection = sdk.services.solanaClient.connection
-    const associatedTokenAccountAddress = getAssociatedTokenAddressSync(
-      new PublicKey(env.WAUDIO_MINT_ADDRESS),
-      new PublicKey(address)
-    )
-    const associatedTokenAccount = await getAccount(
-      connection,
-      associatedTokenAccountAddress
-    )
-    return AUDIO(wAUDIO(associatedTokenAccount.amount)).value
+    try {
+      const wAudioSolBalance = await audiusBackend.getAddressWAudioBalance({
+        address,
+        sdk
+      })
+
+      return AUDIO(wAUDIO(BigInt(wAudioSolBalance.toString()))).value
+    } catch (error) {
+      throw new Error(
+        `Failed to fetch Solana AUDIO balance: ${toErrorWithMessage(error).message}`
+      )
+    }
   }
 }
 
@@ -78,16 +88,26 @@ export const useWalletAudioBalance = (
   { address, includeStaked, chain }: UseWalletAudioBalanceParams,
   options?: QueryOptions
 ) => {
-  const { audiusSdk, env } = useQueryContext()
+  const { audiusSdk, audiusBackend, reportToSentry } = useQueryContext()
 
   return useQuery({
     queryKey: getWalletAudioBalanceQueryKey({ address, includeStaked, chain }),
     queryFn: async () => {
-      const sdk = await audiusSdk()
-      return await fetchWalletAudioBalance(
-        { sdk, env },
-        { address, includeStaked, chain }
-      )
+      try {
+        const sdk = await audiusSdk()
+        return await fetchWalletAudioBalance(
+          { sdk, audiusBackend },
+          { address, includeStaked, chain }
+        )
+      } catch (error) {
+        reportToSentry({
+          error: toErrorWithMessage(error),
+          name: 'AudioBalanceFetchError',
+          feature: Feature.TanQuery,
+          additionalInfo: { address, chain, includeStaked }
+        })
+        throw error
+      }
     },
     ...options
   })
@@ -103,9 +123,9 @@ type UseAudioBalancesParams = {
  */
 export const useWalletAudioBalances = (
   params: UseAudioBalancesParams,
-  options?: QueryOptions<AudioWei>
+  options?: QueryOptions
 ) => {
-  const { audiusSdk, env } = useQueryContext()
+  const { audiusSdk, audiusBackend, reportToSentry } = useQueryContext()
   return useQueries({
     queries: params.wallets.map(({ address, chain }) => ({
       queryKey: getWalletAudioBalanceQueryKey({
@@ -114,27 +134,44 @@ export const useWalletAudioBalances = (
         includeStaked: true
       }),
       queryFn: async () => {
-        const sdk = await audiusSdk()
-        return await fetchWalletAudioBalance(
-          { sdk, env },
-          {
-            address,
-            chain,
-            includeStaked: true
-          }
-        )
+        try {
+          const sdk = await audiusSdk()
+          return await fetchWalletAudioBalance(
+            { sdk, audiusBackend },
+            {
+              address,
+              chain,
+              includeStaked: true
+            }
+          )
+        } catch (error) {
+          reportToSentry({
+            error: toErrorWithMessage(error),
+            name: 'AudioBalancesFetchError',
+            feature: Feature.TanQuery,
+            additionalInfo: { address, chain }
+          })
+          throw error
+        }
       },
       ...options
     }))
   })
 }
 
+type UseAudioBalanceOptions = {
+  /** Whether to include connected/linked wallets in the balance calculation. Defaults to true. */
+  includeConnectedWallets?: boolean
+}
+
 /**
- * Hook for getting the AUDIO balance of the current user, including connected wallets.
+ * Hook for getting the AUDIO balance of the current user, optionally including connected wallets.
  *
  * NOTE: Does not stay in sync with the store. Won't reflect optimism.
  */
-export const useAudioBalance = () => {
+export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
+  const { includeConnectedWallets = true } = options
+
   // Get account balances
   const { data: currentUserId } = useCurrentUserId()
   const { data, isSuccess: isUserFetched } = useUser(currentUserId)
@@ -153,9 +190,12 @@ export const useAudioBalance = () => {
     },
     { enabled: isUserFetched }
   )
-  let accountBalance = BigInt(0)
+  let accountBalance = AUDIO(0).value
+  const isAccountBalanceLoading = accountBalances.some(
+    (balanceRes) => balanceRes.isPending
+  )
   for (const balanceRes of accountBalances) {
-    accountBalance += balanceRes?.data ?? BigInt(0)
+    accountBalance += balanceRes?.data ?? AUDIO(0).value
   }
 
   // Get linked/connected wallets balances
@@ -163,16 +203,28 @@ export const useAudioBalance = () => {
     useConnectedWallets()
   const connectedWalletsBalances = useWalletAudioBalances(
     {
-      wallets: connectedWallets!
+      wallets: connectedWallets ?? []
     },
-    { enabled: isConnectedWalletsFetched }
+    { enabled: isConnectedWalletsFetched && includeConnectedWallets }
   )
-  let connectedWalletsBalance = BigInt(0)
-  for (const balanceRes of connectedWalletsBalances) {
-    connectedWalletsBalance += balanceRes?.data ?? BigInt(0)
+  let connectedWalletsBalance = AUDIO(0).value
+  const isConnectedWalletsBalanceLoading = includeConnectedWallets
+    ? connectedWalletsBalances.some((balanceRes) => balanceRes.isPending)
+    : false
+  if (includeConnectedWallets) {
+    for (const balanceRes of connectedWalletsBalances) {
+      connectedWalletsBalance += balanceRes?.data ?? AUDIO(0).value
+    }
   }
 
   // Together they are the total balance
-  const totalBalance = accountBalance + connectedWalletsBalance
-  return { accountBalance, connectedWalletsBalance, totalBalance }
+  const totalBalance = AUDIO(accountBalance + connectedWalletsBalance).value
+  const isLoading = isAccountBalanceLoading || isConnectedWalletsBalanceLoading
+
+  return {
+    accountBalance,
+    connectedWalletsBalance,
+    totalBalance,
+    isLoading
+  }
 }

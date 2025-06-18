@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
+  useCurrentUserId,
   useUSDCTransactions,
-  useUSDCTransactionsCount
+  useUSDCTransactionsCount,
+  useUSDCBalance
 } from '@audius/common/api'
-import { useUSDCBalance } from '@audius/common/hooks'
 import { BNUSDC, ID, Name, USDCTransactionDetails } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
-  accountSelectors,
   useUSDCTransactionDetailsModal,
   useWithdrawUSDCModal,
   withdrawUSDCSelectors
@@ -36,8 +36,6 @@ import {
   WithdrawalsTableSortDirection,
   WithdrawalsTableSortMethod
 } from './WithdrawalsTable'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   pageTitle: 'Withdrawal History',
@@ -98,7 +96,7 @@ const NoWithdrawals = () => {
 }
 
 const useWithdrawalTransactionPoller = (
-  userId: ID | null,
+  userId: ID | null | undefined,
   lastCompletedTransaction: string | undefined,
   sortMethod: full.GetUSDCTransactionsSortMethodEnum,
   sortDirection: full.GetUSDCTransactionsSortDirectionEnum
@@ -175,7 +173,7 @@ const useWithdrawalTransactionPoller = (
 }
 
 export const useWithdrawals = () => {
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   // Type override required because we're dispatching thunk actions below
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
   const lastCompletedTransaction = useSelector(

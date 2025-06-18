@@ -279,6 +279,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   [ChallengeName.Cosign]: {
     icon: <i className='emoji large recycle' />
+  },
+  [ChallengeName.RemixContestWinner]: {
+    icon: <i className='emoji large trophy' />
   }
 }
 

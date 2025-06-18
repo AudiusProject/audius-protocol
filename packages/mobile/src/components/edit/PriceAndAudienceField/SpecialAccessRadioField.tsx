@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { priceAndAudienceMessages } from '@audius/common/messages'
 import {
   isContentFollowGated,
@@ -7,9 +8,8 @@ import {
   StreamTrackAvailabilityType
 } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import {
   Flex,
@@ -30,8 +30,6 @@ const { specialAccessRadio: messages } = priceAndAudienceMessages
 
 type SpecialAccessValue = 'followers' | 'supporters'
 
-const { getUserId } = accountSelectors
-
 type SpecialAccessRadioFieldProps = {
   disabled?: boolean
   previousStreamConditions: Nullable<AccessConditions>
@@ -47,7 +45,7 @@ export const SpecialAccessRadioField = (
   const selected = value === StreamTrackAvailabilityType.SPECIAL_ACCESS
 
   const setFields = useSetEntityAvailabilityFields()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const defaultSpecialAccess = currentUserId
     ? { follow_user_id: currentUserId }
     : null

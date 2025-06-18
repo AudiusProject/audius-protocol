@@ -6,7 +6,7 @@ import {
 } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useGetCurrentUser, useQueryContext } from '~/api'
+import { useCurrentAccountUser, useQueryContext } from '~/api'
 import { Feature } from '~/models'
 import {
   convertJupiterInstructions,
@@ -17,6 +17,7 @@ import {
 import { QUERY_KEYS } from '../queryKeys'
 
 import { USER_BANK_MANAGED_TOKENS } from './constants'
+import { updateAudioBalanceOptimistically } from './optimisticUpdates'
 import {
   SwapErrorType,
   SwapStatus,
@@ -32,7 +33,7 @@ import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
   const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentAccountUser()
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
     mutationFn: async (params): Promise<SwapTokensResult> => {
@@ -171,9 +172,14 @@ export const useSwapTokens = () => {
           queryClient.invalidateQueries({
             queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
           })
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.audioBalance]
-          })
+        }
+        if (user?.spl_wallet) {
+          updateAudioBalanceOptimistically(
+            queryClient,
+            params,
+            quoteResult?.outputAmount?.uiAmount,
+            user.spl_wallet
+          )
         }
 
         return {

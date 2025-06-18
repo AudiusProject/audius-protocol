@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 
 import { useEffectOnce } from 'react-use'
 
+import { useHasAccount } from '~/api'
 import { useAppContext } from '~/context/appContext'
 import { Maybe } from '~/utils/typeUtils'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 
-import { useHasAccount, useHasConfigLoaded } from './helpers'
+import { useHasConfigLoaded } from './helpers'
 
 export const FEATURE_FLAG_OVERRIDE_KEY = 'FeatureFlagOverride'
 
@@ -21,30 +22,35 @@ export type OverrideSetting = 'enabled' | 'disabled' | null
  * - Config loads
  * - User ID is set on Optimizely (seen by event emission)
  **/
-export const useRecomputeToggle = (
-  useHasAccount: () => boolean,
-  configLoaded: boolean,
-  remoteConfigInstance: RemoteConfigInstance
-) => {
+
+export const useRecomputeToggle = (configLoaded: boolean) => {
   const [recomputeToggle, setRecomputeToggle] = useState(0)
+  const isInitialRender = useRef(true)
+  const prevHasAccount = useRef<boolean>()
+  const prevConfigLoaded = useRef<boolean>()
 
   const hasAccount = useHasAccount()
 
   // Flip recompute bool whenever account or config state changes
   useEffect(() => {
-    setRecomputeToggle((recompute) => recompute + 1)
+    // Skip the initial render to prevent unnecessary rerenders
+    if (isInitialRender.current) {
+      isInitialRender.current = false
+      prevHasAccount.current = hasAccount
+      prevConfigLoaded.current = configLoaded
+      return
+    }
+
+    // Only increment if there's an actual change
+    if (
+      prevHasAccount.current !== hasAccount ||
+      prevConfigLoaded.current !== configLoaded
+    ) {
+      setRecomputeToggle((recompute) => recompute + 1)
+      prevHasAccount.current = hasAccount
+      prevConfigLoaded.current = configLoaded
+    }
   }, [hasAccount, configLoaded])
-
-  // Register callback for remote config account set,
-  // which flips recompute bool
-  const onUserStateChange = useCallback(() => {
-    setRecomputeToggle((recompute) => recompute + 1)
-  }, [])
-
-  useEffect(() => {
-    remoteConfigInstance.listenForUserId(onUserStateChange)
-    return () => remoteConfigInstance.unlistenForUserId(onUserStateChange)
-  }, [onUserStateChange, remoteConfigInstance])
 
   return recomputeToggle
 }
@@ -60,24 +66,18 @@ export const createUseFeatureFlagHook =
     remoteConfigInstance,
     getLocalStorageItem,
     setLocalStorageItem,
-    useHasAccount,
     useHasConfigLoaded
   }: {
     remoteConfigInstance: RemoteConfigInstance
     getLocalStorageItem?: (key: string) => Promise<string | null>
     setLocalStorageItem?: (key: string, value: string | null) => Promise<void>
-    useHasAccount: () => boolean
     useHasConfigLoaded: () => boolean
   }) =>
   (flag: FeatureFlags, fallbackFlag?: FeatureFlags) => {
     const overrideKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
     const configLoaded = useHasConfigLoaded()
 
-    const shouldRecompute = useRecomputeToggle(
-      useHasAccount,
-      configLoaded,
-      remoteConfigInstance
-    )
+    const shouldRecompute = useRecomputeToggle(configLoaded)
 
     const isEnabled = useMemo(
       () => remoteConfigInstance.getFeatureEnabled(flag, fallbackFlag),
@@ -125,11 +125,7 @@ export const useFeatureFlag = (
   const configLoaded = useHasConfigLoaded()
   const { localStorage, remoteConfig } = useAppContext()
 
-  const shouldRecompute = useRecomputeToggle(
-    useHasAccount,
-    configLoaded,
-    remoteConfig
-  )
+  const shouldRecompute = useRecomputeToggle(configLoaded)
 
   const isEnabled = useMemo(
     () => remoteConfig.getFeatureEnabled(flag, fallbackFlag),
@@ -147,7 +143,6 @@ export const useFeatureFlag = (
   )
 
   const [isLocallyEnabled, setIsLocallyOverriden] = useState<Maybe<boolean>>()
-  const [hasFetchedLocalStorage, setHasFetchedLocalStorage] = useState(false)
 
   useEffectOnce(() => {
     const getOverride = async () => {
@@ -157,13 +152,12 @@ export const useFeatureFlag = (
       } else if (override === 'disabled') {
         setIsLocallyOverriden(false)
       }
-      setHasFetchedLocalStorage(true)
     }
     getOverride()
   })
 
   return {
-    isLoaded: configLoaded && hasFetchedLocalStorage,
+    isLoaded: configLoaded,
     isEnabled: isLocallyEnabled ?? isEnabled,
     setOverride
   }

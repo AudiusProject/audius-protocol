@@ -8,7 +8,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony-native'
-import { LoadingMoreSpinner } from 'app/screens/favorites-screen/LoadingMoreSpinner'
+import { LoadingMoreSpinner } from 'app/screens/library-screen/LoadingMoreSpinner'
 
 const messages = {
   hangTight: 'Hang tight!',

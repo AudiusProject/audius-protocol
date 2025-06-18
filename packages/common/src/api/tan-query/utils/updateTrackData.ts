@@ -34,7 +34,7 @@ export const updateTrackData = function* (partialTracks: PartialTrackUpdate[]) {
     queryClient.setQueryData(
       getTrackQueryKey(track_id),
       // TODO: drop the merge customizer once we're fully off of redux
-      (prev) => prev && mergeWith(prev, partialTrack, mergeCustomizer)
+      (prev) => prev && mergeWith({}, prev, partialTrack, mergeCustomizer)
     )
   })
 }

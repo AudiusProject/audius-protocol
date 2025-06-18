@@ -1,11 +1,11 @@
 import { useRef } from 'react'
 
+import { TokenInfo, useTokenSwapForm } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
+import { TooltipPlacement } from 'antd/lib/tooltip'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
-import { useTokenSwapForm } from './hooks/useTokenSwapForm'
-import { TokenInfo } from './types'
 
 const messages = {
   youPay: 'You Pay',
@@ -20,14 +20,8 @@ const TokenSectionSkeleton = ({ title }: { title: string }) => (
   </Flex>
 )
 
-const ExchangeRateSkeleton = () => (
-  <Flex justifyContent='center' p='s'>
-    <Skeleton w='unit30' h='xl' />
-  </Flex>
-)
-
 const SwapFormSkeleton = () => (
-  <Flex direction='column' gap='l'>
+  <Flex direction='column'>
     <TokenSectionSkeleton title='input' />
     <TokenSectionSkeleton title='output' />
   </Flex>
@@ -48,6 +42,8 @@ export type SwapTabProps = {
     inputAmount: number
     outputAmount: number
     isValid: boolean
+    error: string | null
+    isInsufficientBalance: boolean
   }) => void
   isDefault?: boolean
   error?: boolean
@@ -55,6 +51,9 @@ export type SwapTabProps = {
   tokenPrice?: string | null
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
+  tooltipPlacement?: TooltipPlacement
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
 }
 
 export const SwapTab = ({
@@ -69,12 +68,14 @@ export const SwapTab = ({
   errorMessage,
   tokenPrice,
   isTokenPriceLoading,
-  tokenPriceDecimalPlaces = 2
+  tokenPriceDecimalPlaces = 2,
+  tooltipPlacement,
+  initialInputValue,
+  onInputValueChange
 }: SwapTabProps) => {
   const {
     formik,
     inputAmount,
-    numericInputAmount,
     outputAmount,
     isExchangeRateLoading,
     isBalanceLoading,
@@ -88,7 +89,9 @@ export const SwapTab = ({
     min,
     max,
     balance,
-    onTransactionDataChange
+    onTransactionDataChange,
+    initialInputValue,
+    onInputValueChange
   })
 
   // Track if an exchange rate has ever been successfully fetched
@@ -106,7 +109,7 @@ export const SwapTab = ({
   return (
     <FormikProvider value={formik}>
       <Form>
-        <Flex direction='column' gap='l'>
+        <Flex direction='column'>
           {isInitialLoading ? (
             <SwapFormSkeleton />
           ) : (
@@ -123,6 +126,7 @@ export const SwapTab = ({
                 isDefault={isDefault}
                 error={error}
                 errorMessage={errorMessage}
+                tooltipPlacement={tooltipPlacement}
               />
 
               <TokenAmountSection
@@ -135,13 +139,10 @@ export const SwapTab = ({
                 tokenPrice={tokenPrice}
                 isTokenPriceLoading={isTokenPriceLoading}
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
+                tooltipPlacement={tooltipPlacement}
               />
             </>
           )}
-
-          {isExchangeRateLoading &&
-            numericInputAmount > 0 &&
-            !isInitialLoading && <ExchangeRateSkeleton />}
         </Flex>
       </Form>
     </FormikProvider>

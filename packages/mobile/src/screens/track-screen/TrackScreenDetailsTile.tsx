@@ -5,7 +5,8 @@ import {
   useRemixContest,
   useToggleFavoriteTrack,
   useTrackRank,
-  useStems
+  useStems,
+  useCurrentUserId
 } from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -28,7 +29,6 @@ import type {
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
-  accountSelectors,
   trackPageLineupActions,
   queueSelectors,
   reachabilitySelectors,
@@ -98,7 +98,6 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { tracksActions } = trackPageLineupActions
-const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getTrackPosition } = playbackPositionSelectors
 const { makeGetCurrent } = queueSelectors
@@ -171,7 +170,7 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
 
   const isReachable = useSelector(getIsReachable)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
   const isPlaybackActive = useSelector(getPlaying)
@@ -281,19 +280,28 @@ export const TrackScreenDetailsTile = ({
 
   const badges = [
     aiAttributionUserId ? (
-      <DetailsTileAiAttribution userId={aiAttributionUserId} />
+      <DetailsTileAiAttribution
+        userId={aiAttributionUserId}
+        key='ai-attribution-badge'
+      />
     ) : null,
     trendingRank ? (
-      <MusicBadge color='blue' icon={IconTrending}>
+      <MusicBadge color='blue' icon={IconTrending} key='trending-badge'>
         {trendingRank}
       </MusicBadge>
     ) : null,
     shouldShowScheduledRelease ? (
-      <MusicBadge variant='accent' icon={IconCalendarMonth}>
+      <MusicBadge
+        variant='accent'
+        icon={IconCalendarMonth}
+        key='scheduled-release-badge'
+      >
         {messages.releases(releaseDate)}
       </MusicBadge>
     ) : isUnlisted ? (
-      <MusicBadge icon={IconVisibilityHidden}>{messages.hidden}</MusicBadge>
+      <MusicBadge icon={IconVisibilityHidden} key='hidden-badge'>
+        {messages.hidden}
+      </MusicBadge>
     ) : null
   ].filter((badge) => badge !== null)
 

@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react'
 
 import { EntityType } from '@audius/sdk'
 import {
+  QueryClient,
   QueryKey,
   UseInfiniteQueryResult,
   useQueryClient
@@ -19,6 +20,7 @@ import {
   LineupState,
   LineupTrack,
   PlaybackSource,
+  ReportToSentryArgs,
   Status,
   Track,
   UID,
@@ -43,6 +45,49 @@ type PartialQueryData<T> = Pick<
   | 'isSuccess'
   | 'fetchNextPage'
 >
+
+export const mapLineupDataToFullLineupItems = (
+  lineupData: LineupData[],
+  queryClient: QueryClient,
+  reportToSentry: (args: ReportToSentryArgs) => void,
+  lineupPrefix: string
+) => {
+  return lineupData
+    ?.map((item) => {
+      if (item.type === EntityType.TRACK) {
+        const track = queryClient.getQueryData<TQTrack>(
+          getTrackQueryKey(item.id)
+        )
+        if (!track) {
+          reportToSentry({
+            feature: Feature.TanQuery,
+            error: new Error(
+              `Missing cache entry for track from ${lineupPrefix} lineup. Missing id: ${item.id}`
+            )
+          })
+          return undefined
+        } else {
+          return track
+        }
+      } else {
+        const collection = queryClient.getQueryData<TQCollection>(
+          getCollectionQueryKey(item.id)
+        )
+        if (!collection) {
+          reportToSentry({
+            feature: Feature.TanQuery,
+            error: new Error(
+              `Missing cache entry for collection from ${lineupPrefix} lineup. Missing id: ${item.id}`
+            )
+          })
+          return undefined
+        } else {
+          return collection
+        }
+      }
+    })
+    .filter(Boolean)
+}
 
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
@@ -100,6 +145,8 @@ export const useLineupQuery = <T>({
 
   // Function to handle loading cached data into the lineup
   const loadCachedDataIntoLineup = useCallback(() => {
+    // Any time this function is run we reset the lineup.
+    // If there's already data in our query cache it will get put back into the lineup below.
     dispatch(lineupActions.reset())
     // NOTE: This squashes all previously cached pages into the first page of the lineup.
     // This means the first page may have more entries than the pageSize.
@@ -108,41 +155,12 @@ export const useLineupQuery = <T>({
       // The TQ cache for lineups only stores data in ID form, but our legacy lineup logic requires full entries.
       // Here we take the ids and retrieve full entities from the tq cache
       // There should never be a cache miss here because if the lineup believes entity is cached, it was primed at some point.
-      const fullLineupItems = lineupData
-        ?.map((item) => {
-          if (item.type === EntityType.TRACK) {
-            const track = queryClient.getQueryData<TQTrack>(
-              getTrackQueryKey(item.id)
-            )
-            if (!track) {
-              reportToSentry({
-                feature: Feature.TanQuery,
-                error: new Error(
-                  `Missing cache entry for track from ${lineup.prefix} lineup. Missing id: ${item.id}`
-                )
-              })
-              return undefined
-            } else {
-              return track
-            }
-          } else {
-            const collection = queryClient.getQueryData<TQCollection>(
-              getCollectionQueryKey(item.id)
-            )
-            if (!collection) {
-              reportToSentry({
-                feature: Feature.TanQuery,
-                error: new Error(
-                  `Missing cache entry for collection from ${lineup.prefix} lineup. Missing id: ${item.id}`
-                )
-              })
-              return undefined
-            } else {
-              return collection
-            }
-          }
-        })
-        .filter(Boolean)
+      const fullLineupItems = mapLineupDataToFullLineupItems(
+        lineupData,
+        queryClient,
+        reportToSentry,
+        lineup.prefix
+      )
       // Put the full entities in the lineup
       dispatch(
         lineupActions.fetchLineupMetadatas(0, lineupData.length, false, {
@@ -150,18 +168,13 @@ export const useLineupQuery = <T>({
         })
       )
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    dispatch,
-    lineupActions,
-    lineupData,
-    queryClient,
-    lineup.prefix,
-    reportToSentry
-  ])
+  }, [dispatch, lineupActions, lineupData, queryClient, reportToSentry, lineup])
 
-  // On a cache hit, we need to manually load the cached data into the lineup since the queryFn won't run.
+  // Normally we prime the redux lineup store with the lineupData from the queryFn.
+  // However this doesnt work for cache hits, so here we check for cache hits.
+  // We know its a cache hit if the queryKey has changed & there is already data present in lineupData
   useEffect(() => {
+    // Had to add this disableAutomaticCacheHandling specifically for native mobile track screens since the hooks weren't unmounting
     if (!disableAutomaticCacheHandling && hasQueryKeyChanged) {
       loadCachedDataIntoLineup()
     }

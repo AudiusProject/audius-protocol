@@ -1,11 +1,11 @@
 import { useCallback, useContext } from 'react'
 
-import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { useWalletAddresses, useUSDCBalance } from '@audius/common/api'
+import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   purchaseContentSelectors,
-  isContentPurchaseInProgress,
-  accountSelectors
+  isContentPurchaseInProgress
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -14,7 +14,8 @@ import {
   IconError,
   Text,
   LoadingSpinner,
-  Divider
+  Divider,
+  Hint
 } from '@audius/harmony'
 import BN from 'bn.js'
 import QRCode from 'react-qr-code'
@@ -23,8 +24,8 @@ import { useAsync } from 'react-use'
 
 import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { AddressTile } from 'components/address-tile'
+import { ExternalLink } from 'components/link/ExternalLink'
 import { ToastContext } from 'components/toast/ToastContext'
-import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track as trackAnalytics, make } from 'services/analytics'
 import { getUSDCUserBank } from 'services/solana/solana'
@@ -32,7 +33,6 @@ import { copyToClipboard } from 'utils/clipboardUtil'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getWalletAddresses } = accountSelectors
 
 const USDCLearnMore = 'https://support.audius.co/product/usdc'
 const DIMENSIONS = 160
@@ -59,7 +59,8 @@ export const USDCManualTransfer = ({
 }) => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
-  const { currentUser: wallet } = useSelector(getWalletAddresses)
+  const { data: walletAddresses } = useWalletAddresses()
+  const { currentUser: wallet } = walletAddresses ?? {}
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance({
     isPolling: true
@@ -99,7 +100,7 @@ export const USDCManualTransfer = ({
     </Flex>
   ) : (
     <Flex direction='column' gap='xl' p='xl' h='100%'>
-      <CashBalanceSection balance={balanceBN} />
+      <CashBalanceSection />
       <Divider orientation='horizontal' color='default' />
       <Flex
         gap='xl'
@@ -121,12 +122,16 @@ export const USDCManualTransfer = ({
               {messages.explainer}
             </Text>
           ) : null}
-          <Hint
-            text={messages.disclaimer}
-            link={USDCLearnMore}
-            icon={() => <IconError color='default' />}
-            linkText={messages.learnMore}
-          />
+          <Hint icon={IconError}>
+            <Flex column>
+              <Text variant='body'>{messages.disclaimer}</Text>
+              <ExternalLink to={USDCLearnMore}>
+                <Text variant='body' color='link'>
+                  {messages.learnMore}
+                </Text>
+              </ExternalLink>
+            </Flex>
+          </Hint>
         </Flex>
       </Flex>
       <AddressTile address={USDCUserBank} />

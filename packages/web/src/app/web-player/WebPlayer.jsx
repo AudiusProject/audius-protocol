@@ -8,16 +8,17 @@ import {
   useCallback
 } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import {
+  selectIsGuestAccount,
+  useAccountStatus,
+  useCurrentAccountUser,
+  useHasAccount
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
-import {
-  accountSelectors,
-  ExploreCollectionsVariant,
-  UploadType
-} from '@audius/common/store'
+import { ExploreCollectionsVariant, UploadType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -69,6 +70,7 @@ import FeedPage from 'pages/feed-page/FeedPage'
 import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
+import LibraryPage from 'pages/library-page/LibraryPage'
 import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
 import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
@@ -80,7 +82,6 @@ import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import { RewardsPage } from 'pages/rewards-page/RewardsPage'
-import SavedPage from 'pages/saved-page/SavedPage'
 import { SearchPage } from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
@@ -152,6 +153,7 @@ const {
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHANGE_EMAIL_SETTINGS_PAGE,
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  LABEL_ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
@@ -200,8 +202,6 @@ const {
   SOLANA_TOOLS_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus, getIsGuestAccount } = accountSelectors
-
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
@@ -238,14 +238,16 @@ const WebPlayer = (props) => {
 
   const dispatch = useDispatch()
 
-  // Convert mapStateToProps to useSelector
-  const hasAccount = useSelector(getHasAccount)
-  const accountStatus = useSelector(getAccountStatus)
-  const { data: userHandle } = useCurrentAccount({
-    select: (account) => account?.user?.handle
+  const { data: accountUserData } = useCurrentAccountUser({
+    select: (user) => ({
+      userHandle: user.handle,
+      isGuestAccount: selectIsGuestAccount(user)
+    })
   })
+  const hasAccount = useHasAccount()
+  const { userHandle, isGuestAccount = false } = accountUserData || {}
+  const { data: accountStatus } = useAccountStatus()
   const showCookieBanner = useSelector(getShowCookieBanner)
-  const isGuestAccount = useSelector(getIsGuestAccount)
 
   // Convert mapDispatchToProps to useCallback with useDispatch
   const updateRouteOnSignUpCompletion = useCallback(
@@ -707,7 +709,7 @@ const WebPlayer = (props) => {
                         }).toString()
                       }}
                     />
-                  ) : isSearchExploreEnabled ? (
+                  ) : isSearchExploreEnabled && !isMobile ? (
                     <ExplorePage />
                   ) : (
                     <SearchPage />
@@ -734,7 +736,7 @@ const WebPlayer = (props) => {
               <Route
                 exact
                 path={[SAVED_PAGE, LIBRARY_PAGE]}
-                component={SavedPage}
+                component={LibraryPage}
               />
               <Route exact path={HISTORY_PAGE} component={HistoryPage} />
               {!isProduction ? (
@@ -848,7 +850,8 @@ const WebPlayer = (props) => {
                   SETTINGS_PAGE,
                   AUTHORIZED_APPS_SETTINGS_PAGE,
                   ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE
+                  ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE,
+                  LABEL_ACCOUNT_SETTINGS_PAGE
                 ]}
                 isMobile={isMobile}
                 component={SettingsPage}

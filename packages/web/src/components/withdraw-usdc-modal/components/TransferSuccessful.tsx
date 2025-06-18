@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useUSDCBalance } from '@audius/common/hooks'
+import { useUSDCBalance } from '@audius/common/api'
 import { Name, BNUSDC } from '@audius/common/models'
 import { withdrawUSDCSelectors, WithdrawMethod } from '@audius/common/store'
 import {
@@ -76,7 +76,7 @@ export const TransferSuccessful = ({
 
   return (
     <Flex column gap='xl'>
-      <CashBalanceSection balance={balance} />
+      <CashBalanceSection />
       <Divider style={{ margin: 0 }} />
       <Flex alignItems='center' justifyContent='space-between'>
         <Text variant='heading' size='s' color='subdued'>

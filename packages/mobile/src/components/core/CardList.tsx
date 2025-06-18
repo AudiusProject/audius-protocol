@@ -4,6 +4,7 @@ import { useMemo, useCallback, useRef } from 'react'
 import type { ListRenderItem, ListRenderItemInfo } from 'react-native'
 import { View } from 'react-native'
 
+import { Flex } from '@audius/harmony-native'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
@@ -20,6 +21,10 @@ export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
   // If total count is known, use this to aid in rendering the right number
   // of skeletons
   totalCount?: number
+
+  // Use carousel spacing to override the parent's margins
+  // e.g. make carousel start and end at edge of the screen
+  carouselSpacing?: number
 }
 
 export type LoadingCard = { _loading: true }
@@ -41,6 +46,16 @@ const useStyles = makeStyles(({ spacing }) => ({
     width: '50%',
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
+  },
+  cardListHorizontal: {
+    paddingHorizontal: spacing(4),
+    paddingRight: 0,
+    flexGrow: 0
+  },
+  cardHorizontal: {
+    width: spacing(40),
+    paddingRight: spacing(3),
+    paddingBottom: spacing(3)
   }
 }))
 
@@ -54,6 +69,8 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     LoadingCardComponent = DefaultLoadingCard,
     FlatListComponent = FlatList,
     totalCount,
+    horizontal: isHorizontal = false,
+    carouselSpacing = 0,
     ...other
   } = props
 
@@ -83,10 +100,40 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
           (renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null)
         )
 
-      return <View style={styles.card}>{itemElement}</View>
+      return (
+        <View style={isHorizontal ? styles.cardHorizontal : styles.card}>
+          {itemElement}
+        </View>
+      )
     },
-    [LoadingCardComponent, renderItem, styles.card]
+    [
+      LoadingCardComponent,
+      renderItem,
+      styles.card,
+      styles.cardHorizontal,
+      isHorizontal
+    ]
   )
+
+  if (isHorizontal) {
+    return (
+      <Flex mh={carouselSpacing * -1}>
+        <FlatListComponent
+          key='horizontal'
+          style={[
+            styles.cardListHorizontal,
+            { paddingHorizontal: carouselSpacing }
+          ]}
+          showsHorizontalScrollIndicator={false}
+          ref={ref}
+          data={data}
+          renderItem={handleRenderItem}
+          horizontal
+          {...(other as Partial<CardListProps<ItemT | LoadingCard>>)}
+        />
+      </Flex>
+    )
+  }
 
   return (
     <FlatListComponent

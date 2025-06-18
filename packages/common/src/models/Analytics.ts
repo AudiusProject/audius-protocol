@@ -2463,8 +2463,8 @@ type JupiterQuoteResponse = {
 // Export Private Key
 type ExportPrivateKeyLinkClicked = {
   eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
-  handle: string
-  userId: ID
+  handle?: string
+  userId?: ID
 }
 
 type ExportPrivateKeyPageOpened = {
@@ -2733,7 +2733,7 @@ export type CommentsHistoryClick = {
 
 export type CommentsHistoryDrawerOpen = {
   eventName: Name.COMMENTS_HISTORY_DRAWER_OPEN
-  userId: ID
+  userId: ID | undefined
 }
 
 export type RecentCommentsClick = {

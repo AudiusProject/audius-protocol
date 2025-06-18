@@ -26,7 +26,7 @@ export const useUserComments = (
     userId,
     pageSize = COMMENT_ROOT_PAGE_SIZE
   }: {
-    userId: ID | null
+    userId: ID | null | undefined
     pageSize?: number
   },
   options?: QueryOptions
@@ -58,7 +58,7 @@ export const useUserComments = (
         commentFromSDK
       )
 
-      primeRelatedData({ related: commentsRes.related, queryClient, dispatch })
+      primeRelatedData({ related: commentsRes.related, queryClient })
 
       // Prime comment data in the cache
       primeCommentData({ comments: commentList, queryClient })

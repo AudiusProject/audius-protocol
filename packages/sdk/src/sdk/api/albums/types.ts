@@ -87,6 +87,22 @@ const AlbumTrackMetadataSchema = UploadTrackMetadataSchema.partial({
   downloadConditions: true
 })
 
+export const UpdateAlbumMetadataSchema = UploadAlbumMetadataSchema.partial()
+  .merge(
+    z.object({
+      playlistContents: z.optional(
+        z.array(
+          z.object({
+            timestamp: z.number(),
+            metadataTimestamp: z.optional(z.number()),
+            trackId: HashId
+          })
+        )
+      )
+    })
+  )
+  .strict()
+
 export const UploadAlbumSchema = z
   .object({
     userId: HashId,
@@ -108,7 +124,7 @@ export const UpdateAlbumSchema = z
     userId: HashId,
     albumId: HashId,
     coverArtFile: z.optional(ImageFile),
-    metadata: UploadAlbumMetadataSchema.partial(),
+    metadata: UpdateAlbumMetadataSchema,
     onProgress: z.optional(z.function())
   })
   .strict()

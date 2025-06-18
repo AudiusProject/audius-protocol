@@ -1,21 +1,16 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { useUsers } from '@audius/common/api'
+import { useCurrentUserId, useUsers } from '@audius/common/api'
 import { useCanSendMessage } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
-import {
-  accountSelectors,
-  chatActions,
-  chatSelectors,
-  ReactionTypes
-} from '@audius/common/store'
+import { chatActions, chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
 import { Flex, IconError, IconPlus } from '@audius/harmony'
-import { HashId, Id, OptionalHashId } from '@audius/sdk'
+import { HashId, Id, OptionalHashId, ReactionTypes } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
@@ -34,7 +29,6 @@ import { ReactionPopupMenu } from './ReactionPopupMenu'
 
 const { setMessageReaction, sendMessage } = chatActions
 const { getChat } = chatSelectors
-const { getUserId } = accountSelectors
 
 type ChatMessageListItemProps = {
   chatId: string
@@ -58,7 +52,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const [emptyUnfurl, setEmptyUnfurl] = useState(false)
 
   // Selectors
-  const userId = useSelector(getUserId)
+  const { data: userId } = useCurrentUserId()
   const { byId: reactionUsers } = useUsers(
     message.reactions?.map((r) => HashId.parse(r.user_id))
   )

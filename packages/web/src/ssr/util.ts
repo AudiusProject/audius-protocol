@@ -1,8 +1,4 @@
-import { route } from '@audius/common/utils'
-import { resolveRoute } from 'vike/routing'
-import type { PageContextServer } from 'vike/types'
-
-const {
+import {
   staticRoutes,
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE,
@@ -12,7 +8,9 @@ const {
   CHATS_PAGE,
   CHAT_PAGE,
   DOWNLOAD_LINK
-} = route
+} from '@audius/common/src/utils/route'
+import { resolveRoute } from 'vike/routing'
+import type { PageContextServer } from 'vike/types'
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
 

@@ -1,13 +1,12 @@
+import { useProfileUser } from '@audius/common/api'
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { profilePageSelectors, tippingActions } from '@audius/common/store'
+import { tippingActions } from '@audius/common/store'
 import { Button, IconTokenGold } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { beginTip } = tippingActions
-const { getProfileUser } = profilePageSelectors
 
 const messages = {
   tipAudio: 'Tip $AUDIO'
@@ -16,7 +15,7 @@ const messages = {
 export const TipAudioButton = () => {
   const isManagedAccount = useIsManagedAccount()
   const dispatch = useDispatch()
-  const profile = useSelector(getProfileUser)
+  const { user: profile } = useProfileUser()
 
   const handleClick = useRequiresAccountCallback(() => {
     dispatch(beginTip({ user: profile, source: 'profile' }))

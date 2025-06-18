@@ -1,6 +1,11 @@
 import { useMemo } from 'react'
 
 import {
+  useCurrentUserId,
+  useUserAlbums,
+  useCurrentAccountUser
+} from '@audius/common/api'
+import {
   Collection,
   Track,
   isContentCollectibleGated,
@@ -8,7 +13,6 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import {
   IconCart,
   IconCollectible,
@@ -27,8 +31,6 @@ import {
   DataSourceTrack,
   TrackFilters
 } from './types'
-
-const { getAccountOwnAlbums } = accountSelectors
 
 const messages = {
   public: 'Public',
@@ -56,7 +58,8 @@ const formatTrackMetadata = (metadata: Track, i: number): DataSourceTrack => {
 
 /** Returns the logged-in user's tracks, formatted for Artist Dashboard tracks table */
 export const useFormattedTrackData = () => {
-  const { tracks } = useSelector(makeGetDashboard())
+  const { data: accountUser } = useCurrentAccountUser()
+  const { tracks } = useSelector(makeGetDashboard(accountUser))
   const tracksFormatted = useMemo(() => {
     return tracks
       .map((track: Track, i: number) => formatTrackMetadata(track, i))
@@ -269,7 +272,11 @@ const formatAlbumMetadata = (album: Collection): DataSourceAlbum => {
 
 /** Returns the logged-in user's albums, formatted for Artist Dashboard albums table */
 export const useFormattedAlbumData = () => {
-  const albums = useSelector(getAccountOwnAlbums)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: albums } = useUserAlbums({
+    userId: currentUserId,
+    pageSize: 50
+  })
   const albumsFormatted = useMemo(() => {
     return albums?.map((album) => formatAlbumMetadata(album))
   }, [albums])

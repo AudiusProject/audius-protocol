@@ -1,11 +1,10 @@
-import { useSupporterPrompt } from '@audius/common/hooks'
+import { useSupporterPrompt, useRemoteVar } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import { formatWei } from '@audius/common/utils'
 import { Platform, Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import { IconTrophy } from '@audius/harmony-native'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

@@ -12,9 +12,9 @@ const { prefix: PREFIX } = tracksActions
 function* getHistoryTracks({
   payload
 }: {
-  payload?: { tracks: UserTrackMetadata[] }
+  payload?: { items: UserTrackMetadata[] }
 }) {
-  return payload?.tracks ?? []
+  return payload?.items ?? []
 }
 
 const keepTrackIdAndDateListened = (entry: LineupEntry<Track>) => ({

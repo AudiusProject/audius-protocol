@@ -15,8 +15,8 @@ import {
   profilePageTracksLineupActions,
   remixesPageLineupActions,
   remixesPageSelectors,
-  savedPageSelectors,
-  savedPageTracksLineupActions,
+  libraryPageSelectors,
+  libraryPageTracksLineupActions,
   searchResultsPageSelectors,
   searchResultsPageTracksLineupActions,
   trendingPageLineupActions,
@@ -67,9 +67,9 @@ export const lineupRegistry: Record<string, LineupEntry> = {
     actions: remixesPageLineupActions,
     selector: remixesPageSelectors.getLineup
   },
-  [savedPageTracksLineupActions.prefix]: {
-    actions: savedPageTracksLineupActions,
-    selector: savedPageSelectors.getSavedTracksLineup
+  [libraryPageTracksLineupActions.prefix]: {
+    actions: libraryPageTracksLineupActions,
+    selector: libraryPageSelectors.getLibraryTracksLineup
   },
   [searchResultsPageTracksLineupActions.prefix]: {
     actions: searchResultsPageTracksLineupActions,

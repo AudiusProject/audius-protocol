@@ -1,11 +1,7 @@
+import { useUser } from '@audius/common/src/api/tan-query/users/useUser'
 import { Collection } from '@audius/common/src/models/Collection'
-import {
-  getCollection,
-  getUser
-} from '@audius/common/src/store/pages/collection/selectors'
 import { formatCount } from '@audius/common/src/utils/formatUtil'
-import { Nullable } from '@audius/common/src/utils/typeUtils'
-import { route } from '@audius/common/utils'
+import { profilePage } from '@audius/common/src/utils/route'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconKebabHorizontal from '@audius/harmony/src/assets/icons/KebabHorizontal.svg'
 import IconPlay from '@audius/harmony/src/assets/icons/Play.svg'
@@ -23,15 +19,16 @@ import { Text } from '@audius/harmony/src/components/text'
 import { TextLink } from '@audius/harmony/src/components/text-link'
 
 import { ServerUserGeneratedText } from 'components/user-generated-text/ServerUserGeneratedText'
-import { useSelector } from 'utils/reducer'
 
-const { profilePage } = route
+type DesktopServerCollectionPageProps = {
+  collection: Collection
+}
 
-export const DesktopServerCollectionPage = () => {
-  const collection = useSelector(getCollection) as Nullable<Collection>
-  const user = useSelector((state) =>
-    getUser(state, { id: collection?.playlist_owner_id })
-  )
+export const DesktopServerCollectionPage = (
+  props: DesktopServerCollectionPageProps
+) => {
+  const { collection } = props
+  const { data: user } = useUser(collection?.playlist_owner_id)
 
   if (!collection || !user) return null
 

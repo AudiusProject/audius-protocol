@@ -17,7 +17,15 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { queryCollection, queryTrack, queryUser, updateTrackData } from '~/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryCurrentUserId,
+  queryTrack,
+  queryUser,
+  updateTrackData,
+  queryWalletAddresses
+} from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
@@ -32,7 +40,6 @@ import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
-import { accountSelectors } from '~/store/account'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -83,8 +90,6 @@ import {
   PurchaseErrorCode
 } from './types'
 import { getBalanceNeeded } from './utils'
-
-const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -240,7 +245,7 @@ function* getCoinflowPurchaseMetadata({
     contentId,
     contentType
   })
-  const currentUser = yield* select(getAccountUser)
+  const currentUser = yield* call(queryAccountUser)
 
   const data: CoinflowPurchaseMetadata = {
     productName: `${artistInfo.name}:${title}`,
@@ -263,7 +268,7 @@ function* pollForPurchaseConfirmation({
   contentId: ID
   contentType: PurchaseableContentType
 }) {
-  const currentUserId = yield* select(getUserId)
+  const currentUserId = yield* call(queryCurrentUserId)
   if (!currentUserId) {
     throw new Error(
       'Failed to fetch current user id while polling for purchase confirmation'
@@ -584,7 +589,7 @@ function* collectEmailAfterPurchase({
     const identityService = yield* getContext('identityService')
     const isAlbum = 'playlist_id' in metadata
 
-    const purchaserUserId = yield* select(getUserId)
+    const purchaserUserId = yield* call(queryCurrentUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
 
     const email = yield* call([identityService, identityService.getUserEmail])
@@ -643,7 +648,7 @@ function* doStartPurchaseContentFlow({
   // wait for guest account creation
   yield* call(
     waitForValue,
-    getWalletAddresses,
+    queryWalletAddresses,
     null,
     (value) => !!value?.currentUser
   )
@@ -660,7 +665,7 @@ function* doStartPurchaseContentFlow({
   })
 
   const totalAmount = (price + (extraAmount ?? 0)) / 100
-  const purchaserUserId = yield* select(getUserId)
+  const purchaserUserId = yield* call(queryCurrentUserId)
 
   const analyticsInfo = {
     price: price / 100,

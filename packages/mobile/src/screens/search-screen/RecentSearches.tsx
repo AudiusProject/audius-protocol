@@ -2,38 +2,58 @@ import type { ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 
 import { recentSearchMessages as messages } from '@audius/common/messages'
-import type { SearchItem as SearchItemType } from '@audius/common/store'
-import { searchActions } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { Kind } from '@audius/common/models'
+import { searchActions, searchSelectors } from '@audius/common/store'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Flex, IconCloseAlt, PlainButton, Text } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
 
 import { SearchItem } from './SearchItem'
+import { useSearchCategory } from './searchState'
 
 const { removeItem, clearHistory } = searchActions
+const { getSearchHistory } = searchSelectors
 
 const MAX_RECENT_SEARCHES = 12
 
+const itemKindByCategory: Record<string, Kind | null> = {
+  all: null,
+  users: Kind.USERS,
+  tracks: Kind.TRACKS,
+  playlists: Kind.COLLECTIONS,
+  albums: Kind.COLLECTIONS
+}
+
 type RecentSearchesProps = {
   ListHeaderComponent?: ReactNode
-  searchItems?: SearchItemType[]
 }
 
 export const RecentSearches = (props: RecentSearchesProps) => {
-  const { ListHeaderComponent, searchItems = [] } = props
+  const { ListHeaderComponent } = props
   const dispatch = useDispatch()
+
+  // Get state from context
+  const [category] = useSearchCategory()
+
+  // Get and filter search history
+  const history = useSelector(getSearchHistory)
+  const categoryKind: Kind | null = category
+    ? itemKindByCategory[category]
+    : null
+
+  const filteredSearchItems = useMemo(() => {
+    const filtered = categoryKind
+      ? history.filter((item) => item.kind === categoryKind)
+      : history
+    return filtered.slice(0, MAX_RECENT_SEARCHES)
+  }, [categoryKind, history])
 
   const handleClearSearchHistory = useCallback(() => {
     dispatch(clearHistory())
   }, [dispatch])
 
-  const truncatedSearchItems = useMemo(
-    () => searchItems.slice(0, MAX_RECENT_SEARCHES),
-    [searchItems]
-  )
-
-  if (truncatedSearchItems.length === 0) return null
+  if (filteredSearchItems.length === 0) return null
 
   return (
     <FlatList
@@ -45,7 +65,7 @@ export const RecentSearches = (props: RecentSearchesProps) => {
           </Flex>
         </Flex>
       }
-      data={truncatedSearchItems}
+      data={filteredSearchItems}
       keyExtractor={({ id, kind }) => `${kind}-${id}`}
       renderItem={({ item }) => (
         <SearchItem

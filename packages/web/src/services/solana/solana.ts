@@ -13,20 +13,6 @@ export const getSolanaConnection = async () => {
 }
 
 /**
- * Checks whether the input address is a valid solana address.
- */
-export const isValidSolAddress = async (address: SolanaWalletAddress) => {
-  try {
-    // @ts-ignore - need an unused variable to check if the destinationWallet is valid
-    const ignored = new PublicKey(address)
-    return true
-  } catch (err) {
-    console.debug(err)
-    return false
-  }
-}
-
-/**
  * Calculates the minimum amount of rent needed for a solana account to be
  * rent-exempt.
  */

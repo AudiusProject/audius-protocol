@@ -1,13 +1,11 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 
-import { useTracks } from '@audius/common/api'
+import { useCurrentUserId, useTracks, useUsers } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import {
-  accountSelectors,
-  cacheUsersSelectors,
-  savedPageTracksLineupActions,
+  libraryPageTracksLineupActions,
   queueActions,
   queueSelectors,
   RepeatMode,
@@ -25,7 +23,6 @@ import {
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
   Genre,
-  shallowCompare,
   removeNullable,
   getTrackPreviewDuration
 } from '@audius/common/utils'
@@ -69,8 +66,6 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
-const { getUserId } = accountSelectors
-const { getUsers } = cacheUsersSelectors
 const { getPlaying, getSeek, getCounter, getPlaybackRate, getUid } =
   playerSelectors
 const { setTrackPosition } = playbackPositionActions
@@ -163,7 +158,7 @@ export const AudioPlayer = () => {
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
   const playbackRate = useSelector(getPlaybackRate)
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const uid = useSelector(getUid)
   const playerBehavior = useSelector(getPlayerBehavior)
   const previousUid = usePrevious(uid)
@@ -209,14 +204,11 @@ export const AudioPlayer = () => {
     [queueTracks]
   )
 
-  const queueTrackOwnersMap = useSelector(
-    (state) => getUsers(state, { ids: queueTrackOwnerIds }),
-    shallowCompare
-  )
+  const queueTrackOwnersMap = useUsers(queueTrackOwnerIds)
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
-      queueSource === savedPageTracksLineupActions.prefix
+      queueSource === libraryPageTracksLineupActions.prefix
         ? DOWNLOAD_REASON_FAVORITES
         : queueCollectionId?.toString()
     )

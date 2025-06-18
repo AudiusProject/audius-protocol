@@ -5,8 +5,10 @@ import {
   useState
 } from 'react'
 
-import { useFeatureFlag, useUSDCBalance } from '@audius/common/hooks'
-import { Name, BNUSDC } from '@audius/common/models'
+import { useUSDCBalance } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
+import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   WithdrawUSDCModalPages,
@@ -16,9 +18,9 @@ import {
 import {
   filterDecimalString,
   padDecimalValue,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber
+  decimalIntegerToHumanReadable
 } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, SegmentedControl, Text } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
@@ -32,24 +34,13 @@ import { ADDRESS, AMOUNT, METHOD, WithdrawFormValues } from '../types'
 
 const messages = {
   currentBalance: 'Current Balance',
-  amountToWithdraw: 'Amount to Withdraw',
-  amountToWithdrawLabel: 'Amount (USDC)',
-  destinationAddress: 'Destination Address',
-  howMuch: 'How much do you want to withdraw?',
-  destinationDetails: 'Solana USDC wallet address to receive funds.',
   solanaWallet: 'USDC Wallet (Solana)',
-  continue: 'Continue',
-  dollars: '$',
-  transferMethod: 'Transfer Method',
-  bankAccount: 'Bank Account',
-  crypto: 'Crypto',
-  cashTransferDescription:
-    'Transfer your USDC earnings to your bank account or debit card. $5 minimum for cash withdrawals.'
+  dollars: '$'
 }
 
 const WithdrawMethodOptions = [
-  { key: WithdrawMethod.COINFLOW, text: messages.bankAccount },
-  { key: WithdrawMethod.MANUAL_TRANSFER, text: messages.crypto }
+  { key: WithdrawMethod.COINFLOW, text: walletMessages.bankAccount },
+  { key: WithdrawMethod.MANUAL_TRANSFER, text: walletMessages.crypto }
 ]
 
 export const EnterTransferDetails = () => {
@@ -61,10 +52,14 @@ export const EnterTransferDetails = () => {
     FeatureFlags.COINFLOW_OFFRAMP_ENABLED
   )
 
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
+  const balanceNumberCents = Math.floor(
+    Number(
+      USDC(balance ?? new BN(0))
+        .floor(2)
+        .toString()
+    ) * 100
   )
-  const analyticsBalance = balanceNumber / 100
+  const analyticsBalance = balanceNumberCents / 100
 
   const [
     { value },
@@ -73,8 +68,10 @@ export const EnterTransferDetails = () => {
   ] = useField(AMOUNT)
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
+  const [, { error: addressError }, { setTouched: setAddressTouched }] =
+    useField(ADDRESS)
   const [humanizedValue, setHumanizedValue] = useState(
-    decimalIntegerToHumanReadable(value || balanceNumber)
+    value ? decimalIntegerToHumanReadable(value) : '0'
   )
   const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -91,17 +88,10 @@ export const EnterTransferDetails = () => {
     [setHumanizedValue]
   )
 
-  const [
-    { value: address },
-    { error: addressError },
-    { setTouched: setAddressTouched }
-  ] = useField(ADDRESS)
-
-  const isBalanceLessThanMinimum = balance ? balance.lt(new BN(5)) : false
-  const disableContinue =
-    methodValue === WithdrawMethod.COINFLOW
-      ? !!balance?.isZero()
-      : !address || !!addressError || !!amountError || isBalanceLessThanMinimum
+  const handleMaxPress = useCallback(() => {
+    setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
+    setAmount(balanceNumberCents)
+  }, [balanceNumberCents, setAmount, setHumanizedValue])
 
   const handlePasteAddress = useCallback(
     (event: React.ClipboardEvent) => {
@@ -118,44 +108,54 @@ export const EnterTransferDetails = () => {
   )
 
   const handleContinue = useCallback(async () => {
-    try {
-      setAmountTouched(true)
-      if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
-        setAddressTouched(true)
-      }
-      const errors = await validateForm()
-      if (errors[AMOUNT] || errors[ADDRESS]) return
-      setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
-    } catch {}
+    setAmountTouched(true)
+    if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
+      setAddressTouched(true)
+    }
+    const errors = await validateForm()
+    if (errors[AMOUNT] || errors[ADDRESS]) return
+    setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
   }, [setData, methodValue, validateForm, setAmountTouched, setAddressTouched])
 
   return (
     <Flex column gap='xl'>
-      <CashBalanceSection balance={balance} />
+      <CashBalanceSection />
       <Divider style={{ margin: 0 }} />
       <Flex column gap='l'>
         <Flex column gap='s'>
           <Text variant='heading' size='s' color='subdued'>
-            {messages.amountToWithdraw}
+            {walletMessages.amountToWithdraw}
           </Text>
-          <Text variant='body'>{messages.howMuch}</Text>
+          <Text variant='body'>{walletMessages.destinationDescription}</Text>
         </Flex>
-        <TextField
-          title={messages.amountToWithdrawLabel}
-          label={messages.amountToWithdrawLabel}
-          aria-label={messages.amountToWithdrawLabel}
-          name={AMOUNT}
-          value={humanizedValue}
-          onChange={handleAmountChange}
-          onBlur={handleAmountBlur}
-          startAdornmentText={messages.dollars}
-        />
+        <Flex column gap='s'>
+          <Flex gap='s' alignItems='center'>
+            <TextField
+              title={walletMessages.amountToWithdrawLabel}
+              label={walletMessages.amountToWithdrawLabel}
+              aria-label={walletMessages.amountToWithdrawLabel}
+              name={AMOUNT}
+              value={humanizedValue}
+              onChange={handleAmountChange}
+              onBlur={handleAmountBlur}
+              startAdornmentText={messages.dollars}
+            />
+            <Button variant='secondary' onClick={handleMaxPress} size='large'>
+              {walletMessages.max}
+            </Button>
+          </Flex>
+          {amountError && (
+            <Text variant='body' size='s' color='danger'>
+              {amountError}
+            </Text>
+          )}
+        </Flex>
       </Flex>
       <Divider style={{ margin: 0 }} />
       {isCoinflowEnabled ? (
         <SegmentedControl
           fullWidth
-          label={messages.transferMethod}
+          label={walletMessages.transferMethod}
           options={WithdrawMethodOptions}
           onSelectOption={setMethod}
           selected={methodValue}
@@ -163,21 +163,21 @@ export const EnterTransferDetails = () => {
       ) : null}
       {methodValue === WithdrawMethod.COINFLOW ? (
         <Text variant='body' size='m'>
-          {messages.cashTransferDescription}
+          {walletMessages.cashTransferDescription}
         </Text>
       ) : (
         <Flex column gap='l'>
           <Flex column gap='s'>
             <Text variant='heading' size='s' color='subdued'>
-              {messages.destinationAddress}
+              {walletMessages.destination}
             </Text>
-            <Text variant='body'>{messages.destinationDetails}</Text>
+            <Text variant='body'>{walletMessages.destinationDescription}</Text>
           </Flex>
           <TextField
-            title={messages.destinationAddress}
+            title={walletMessages.destination}
             onPaste={handlePasteAddress}
             label={messages.solanaWallet}
-            aria-label={messages.destinationAddress}
+            aria-label={walletMessages.destination}
             name={ADDRESS}
             placeholder=''
           />
@@ -186,10 +186,10 @@ export const EnterTransferDetails = () => {
       <Button
         variant='primary'
         fullWidth
-        disabled={disableContinue}
+        disabled={!!addressError || !!amountError}
         onClick={handleContinue}
       >
-        {messages.continue}
+        {walletMessages.continue}
       </Button>
     </Flex>
   )

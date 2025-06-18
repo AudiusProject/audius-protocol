@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react'
 
+import { SyncLocalStorageUserProvider } from '@audius/common/api'
 import { MediaProvider } from '@audius/harmony/src/contexts'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -17,6 +18,7 @@ import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { MainContentContextProvider } from 'pages/MainContentContext'
+import { localStorage } from 'services/local-storage'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { getSystemAppearance, getTheme } from 'utils/theme/theme'
@@ -75,7 +77,11 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
                                 <AppContextProvider>
                                   <AudiusQueryProvider>
                                     <MainContentContextProvider>
-                                      {children}
+                                      <SyncLocalStorageUserProvider
+                                        localStorage={localStorage}
+                                      >
+                                        {children}
+                                      </SyncLocalStorageUserProvider>
                                     </MainContentContextProvider>
                                   </AudiusQueryProvider>
                                 </AppContextProvider>

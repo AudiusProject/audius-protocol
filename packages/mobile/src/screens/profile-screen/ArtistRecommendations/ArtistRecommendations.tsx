@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useState } from 'react'
 
-import { useRelatedArtistsUsers } from '@audius/common/api'
+import { useRelatedArtistsUsers, useProfileUser } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import type { User } from '@audius/common/models'
 import { usersSocialActions } from '@audius/common/store'
@@ -21,8 +21,6 @@ import { ProfilePicture } from 'app/components/core'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { useSelectProfile } from '../selectors'
-
 const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
@@ -41,7 +39,10 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { onClose } = props
   const { spacing } = useTheme()
   const navigation = useNavigation()
-  const { user_id, name } = useSelectProfile(['user_id', 'name'])
+  const { user_id, name } =
+    useProfileUser({
+      select: (user) => ({ user_id: user.user_id, name: user.name })
+    }).user ?? {}
   const dispatch = useDispatch()
   const [hasFollowedAll, setHasFollowedAll] = useState(false)
 

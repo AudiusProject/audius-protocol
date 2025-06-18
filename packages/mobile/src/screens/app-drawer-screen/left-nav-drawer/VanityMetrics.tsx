@@ -1,14 +1,13 @@
 import { useCallback, useContext } from 'react'
 
-import type { User } from '@audius/common/models'
+import { useCurrentAccountUser } from '@audius/common/api'
 import {
-  accountSelectors,
   followingUserListActions,
   followersUserListActions
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Divider, Flex, Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
@@ -17,7 +16,6 @@ import { spacing } from 'app/styles/spacing'
 import { AppDrawerContext } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
 
-const { getAccountUser } = accountSelectors
 const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 
@@ -69,20 +67,28 @@ const VanityMetric = (props: VanityMetricProps) => {
 }
 
 export const VanityMetrics = () => {
-  const accountUser = useSelector(getAccountUser) as User
-  const { user_id, followee_count, follower_count } = accountUser
+  const { data: accountUser } = useCurrentAccountUser({
+    select: (user) => ({
+      user_id: user?.user_id,
+      followee_count: user?.followee_count ?? 0,
+      follower_count: user?.follower_count ?? 0
+    })
+  })
+  const { user_id, followee_count = 0, follower_count = 0 } = accountUser ?? {}
 
   const dispatch = useDispatch()
   const navigation = useAppDrawerNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
 
   const handlePressFollowing = useCallback(() => {
+    if (!user_id) return
     dispatch(setFollowing(user_id))
     navigation.push('Following', { userId: user_id })
     drawerHelpers.closeDrawer()
   }, [dispatch, user_id, navigation, drawerHelpers])
 
   const handlePressFollowers = useCallback(() => {
+    if (!user_id) return
     dispatch(setFollowers(user_id))
     navigation.push('Followers', { userId: user_id })
     drawerHelpers.closeDrawer()

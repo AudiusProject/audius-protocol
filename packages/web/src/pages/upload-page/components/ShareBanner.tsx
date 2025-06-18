@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
-import { Name, ShareSource, User } from '@audius/common/models'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { Name, ShareSource } from '@audius/common/models'
 import {
-  accountSelectors,
   UploadType,
   shareModalUIActions,
   createChatModalActions
@@ -19,8 +19,6 @@ import styles from './ShareBanner.module.css'
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openCreateChatModal } = createChatModalActions
-
-const { getAccountUser } = accountSelectors
 
 const uploadTypeMap = {
   [UploadType.INDIVIDUAL_TRACK]: 'new track',
@@ -48,11 +46,17 @@ type ShareBannerProps = {
 
 export const ShareBanner = (props: ShareBannerProps) => {
   const { uploadType, isUnlistedTrack } = props
-  const accountUser = useSelector(getAccountUser) as User
+  const { data: accountUser } = useCurrentAccountUser({
+    select: (user) => ({
+      user_id: user?.user_id,
+      handle: user?.handle
+    })
+  })
   const upload = useSelector((state) => state.upload)
   const dispatch = useDispatch()
 
   const handleShare = useCallback(() => {
+    if (!accountUser) return
     switch (uploadType) {
       case UploadType.INDIVIDUAL_TRACK: {
         const trackId = upload.tracks?.[0].metadata.track_id
@@ -90,15 +94,10 @@ export const ShareBanner = (props: ShareBannerProps) => {
         break
       }
     }
-  }, [
-    accountUser.user_id,
-    dispatch,
-    upload.completionId,
-    upload.tracks,
-    uploadType
-  ])
+  }, [accountUser, dispatch, upload.completionId, upload.tracks, uploadType])
 
   const handleShareToDirectMessage = useCallback(async () => {
+    if (!accountUser) return
     let permalink: string | undefined
     switch (uploadType) {
       case UploadType.INDIVIDUAL_TRACK:
@@ -122,7 +121,7 @@ export const ShareBanner = (props: ShareBannerProps) => {
     )
     dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'upload' }))
   }, [
-    accountUser.handle,
+    accountUser,
     dispatch,
     upload.completedEntity?.permalink,
     upload.tracks,

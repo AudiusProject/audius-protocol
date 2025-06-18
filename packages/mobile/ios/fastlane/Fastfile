@@ -34,28 +34,6 @@ platform :ios do
     setup_circle_ci
   end
 
-  desc "Get latest Audius version in the app store"
-  private_lane :get_latest_app_store_version_number do
-    uri = URI("https://itunes.apple.com/lookup?bundleId=co.audius.audiusmusic&country=us&rand=" + SecureRandom.uuid)
-    response = Net::HTTP.get_response(uri)
-    response_body = JSON.parse(response.body)
-    version = response_body["results"][0]["version"]
-    version
-  end
-
-  desc "Get current release version and version in plist file"
-  private_lane :get_version do |options|
-
-    currentReleasedVersionString = get_latest_app_store_version_number()
-
-    currentReleasedVersionNumber = Gem::Version.new currentReleasedVersionString
-    plistVersionNumber = Gem::Version.new get_version_number_from_plist(
-      scheme: options[:scheme] ? options[:scheme] : 'AudiusReactNative'
-    )
-    puts currentReleasedVersionNumber
-    [currentReleasedVersionNumber, plistVersionNumber]
-  end
-
   desc "Build the app"
   lane :build do |options|
 
@@ -175,16 +153,15 @@ platform :ios do
     elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
       scheme = 'Staging'
     end
-    currentReleasedVersionNumber, plistVersionNumber = get_version(scheme: scheme)
-    isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
-    packageJson = File.open "../../package.json"
-    packageJsonData = JSON.load packageJson
-    if isVersionIncremented
-        # Build and upload to TestFlight
-        UI.message "Doing a full build and release"
-        build(bundle_id: options[:bundle_id], current_released_version: currentReleasedVersionNumber, plist_version: plistVersionNumber)
-        upload(bundle_id: options[:bundle_id])
-    end
+    
+    plistVersionNumber = Gem::Version.new get_version_number_from_plist(
+      scheme: scheme
+    )
+    
+    # Build and upload to TestFlight
+    UI.message "Doing a full build and release"
+    build(bundle_id: options[:bundle_id], plist_version: plistVersionNumber)
+    upload(bundle_id: options[:bundle_id])
   end
 
 end

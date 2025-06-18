@@ -1,29 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
-  useGetCurrentUserId,
-  useGetCurrentWeb3User,
+  selectIsAccountComplete,
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useCurrentWeb3Account,
   useManagedAccounts
 } from '@audius/common/api'
 import { useAccountSwitcher } from '@audius/common/hooks'
 import { UserMetadata } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { Box, IconButton, IconCaretDown, Popup } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { AccountListContent } from './AccountListContent'
 
 export const AccountSwitcher = () => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const isAccountComplete = useSelector(accountSelectors.getIsAccountComplete)
+  const { data: isAccountComplete = false } = useCurrentAccountUser({
+    select: selectIsAccountComplete
+  })
   const [checkedAccess, setCheckedAccess] = useState(false)
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User({
+  const { data: currentWeb3User } = useCurrentWeb3Account({
     enabled: isAccountComplete
   })
-  const { data: currentUserId } = useGetCurrentUserId({
-    enabled: isAccountComplete && !!currentWeb3User
-  })
+  const { data: currentUserId } = useCurrentUserId()
 
   const { switchAccount, switchToWeb3User } = useAccountSwitcher()
 

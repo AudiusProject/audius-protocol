@@ -2,7 +2,14 @@ import {
   playlistMetadataForCreateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { queryCollection, queryTrack, queryUser } from '@audius/common/api'
+import {
+  queryAccountUser,
+  queryCollection,
+  queryCurrentUserId,
+  queryTrack,
+  queryUser,
+  updateCollectionData
+} from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -14,11 +21,8 @@ import {
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
   accountActions,
-  accountSelectors,
   cacheCollectionsActions,
-  cacheActions,
-  reformatCollection,
-  savedPageActions,
+  libraryPageActions,
   LibraryCategory,
   confirmerActions,
   EditCollectionValues,
@@ -27,17 +31,16 @@ import {
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { addLocalCollection } = savedPageActions
+const { addLocalCollection } = libraryPageActions
 
 const { requestConfirmation } = confirmerActions
-const { getUserId, getAccountUser } = accountSelectors
 const { collectionPage } = route
 
 export function* createPlaylistSaga() {
@@ -105,10 +108,10 @@ function* optimisticallySavePlaylist(
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
-  const accountUser = yield* select(getAccountUser)
+  const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
-  const { user_id, handle, _collectionIds = [] } = accountUser
-  const playlist: Partial<Collection> = {
+  const { user_id, handle } = accountUser
+  const playlist: Partial<Collection> & { playlist_id: ID } = {
     playlist_id: playlistId,
     ...formFields
   }
@@ -144,23 +147,7 @@ function* optimisticallySavePlaylist(
     playlist.is_album
   )
 
-  yield* put(
-    cacheActions.add(
-      Kind.COLLECTIONS,
-      [{ id: playlistId, metadata: playlist }],
-      /* replace= */ true, // forces cache update
-      /* persistent cache */ false // Do not persistent cache since it's missing data
-    )
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user_id,
-        metadata: { _collectionIds: _collectionIds.concat(playlistId) }
-      }
-    ])
-  )
+  yield* call(updateCollectionData, [playlist])
 
   yield* put(
     accountActions.addAccountPlaylist({
@@ -202,7 +189,7 @@ function* createAndConfirmPlaylist(
   yield* put(event)
 
   function* confirmPlaylist() {
-    const userId = yield* select(getUserId)
+    const userId = yield* call(queryCurrentUserId)
     if (!userId) {
       throw new Error('No userId set, cannot repost collection')
     }
@@ -236,22 +223,13 @@ function* createAndConfirmPlaylist(
     const optimisticPlaylist = yield* queryCollection(playlistId)
 
     const reformattedPlaylist = {
-      ...reformatCollection({
-        collection: confirmedPlaylist
-      }),
+      ...confirmedPlaylist,
       ...optimisticPlaylist,
       cover_art_cids: confirmedPlaylist.cover_art_cids,
       playlist_id: confirmedPlaylist.playlist_id
     }
 
-    yield* put(
-      cacheActions.update(Kind.COLLECTIONS, [
-        {
-          id: confirmedPlaylist.playlist_id,
-          metadata: reformattedPlaylist
-        }
-      ])
-    )
+    yield* call(updateCollectionData, [reformattedPlaylist])
 
     yield* call(addPlaylistsNotInLibrary)
 

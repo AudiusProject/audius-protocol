@@ -24,6 +24,7 @@ from src.models.playlists.album_price_history import AlbumPriceHistory
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.playlist_track import PlaylistTrack
+from src.models.playlists.playlist_trending_score import PlaylistTrendingScore
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.listen_streak_challenge import ChallengeListenStreak
@@ -44,6 +45,7 @@ from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
+from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.collectibles import Collectibles
@@ -62,6 +64,10 @@ from src.models.users.user_listening_history import UserListeningHistory
 from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
 from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import get_latest_blocknumber
+from src.trending_strategies.pnagD_trending_playlists_strategy import (
+    TrendingType,
+    TrendingVersion,
+)
 from src.utils import helpers
 from src.utils.db_session import get_db
 
@@ -189,6 +195,8 @@ def populate_mock_db(db, entities, block_offset=None):
         encrypted_emails = entities.get("encrypted_emails", [])
         email_access = entities.get("email_access", [])
         collectibles = entities.get("collectibles", [])
+        track_trending_scores = entities.get("track_trending_scores", [])
+        playlist_trending_scores = entities.get("playlist_trending_scores", [])
 
         num_blocks = max(
             len(tracks),
@@ -977,5 +985,30 @@ def populate_mock_db(db, entities, block_offset=None):
                 listen_streak=challenge_listen_streak.get("listen_streak", 1),
             )
             session.add(streak)
+
+        for i, track_trending_score in enumerate(track_trending_scores):
+            score = TrackTrendingScore(
+                track_id=track_trending_score.get("track_id", i),
+                type=track_trending_score.get("type", TrendingType.TRACKS.name),
+                score=track_trending_score.get("score", 0),
+                version=track_trending_score.get("version", TrendingVersion.pnagD.name),
+                genre=track_trending_score.get("genre", ""),
+                time_range=track_trending_score.get("time_range", "week"),
+                created_at=track_trending_score.get("created_at", datetime.now()),
+            )
+            session.add(score)
+
+        for i, playlist_trending_score in enumerate(playlist_trending_scores):
+            score = PlaylistTrendingScore(
+                playlist_id=playlist_trending_score.get("playlist_id", i),
+                type=playlist_trending_score.get("type", TrendingType.PLAYLISTS.name),
+                score=playlist_trending_score.get("score", 0),
+                version=playlist_trending_score.get(
+                    "version", TrendingVersion.pnagD.value
+                ),
+                time_range=playlist_trending_score.get("time_range", "week"),
+                created_at=playlist_trending_score.get("created_at", datetime.now()),
+            )
+            session.add(score)
 
         session.commit()

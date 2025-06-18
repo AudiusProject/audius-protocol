@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import {
   useCurrentUserId,
   useRemixContest,
-  useRemixes,
+  useRemixesLineup,
   useTrackByPermalink,
   useUpdateEvent
 } from '@audius/common/api'
@@ -18,7 +18,6 @@ import {
   QueueSource,
   useFinalizeWinnersConfirmationModal
 } from '@audius/common/store'
-import { pluralize } from '@audius/common/utils'
 import {
   Button,
   FilterButton,
@@ -101,7 +100,7 @@ export const PickWinnersPage = () => {
     loadNextPage,
     isPlaying,
     lineup
-  } = useRemixes({
+  } = useRemixesLineup({
     trackId: originalTrack?.track_id,
     sortMethod,
     isCosign,
@@ -110,9 +109,7 @@ export const PickWinnersPage = () => {
 
   const [winners, setWinners] = useState<ID[]>([])
   const [initialWinners, setInitialWinners] = useState<ID[]>([])
-  const canFinalize = useMemo(() => {
-    return winners.length > 0 || initialWinners.length === 0
-  }, [winners, initialWinners])
+  const canFinalize = useMemo(() => winners.length > 0, [winners])
 
   useEffect(() => {
     if (remixContest) {
@@ -131,7 +128,8 @@ export const PickWinnersPage = () => {
             ...remixContest.eventData,
             winners
           },
-          userId: currentUserId
+          userId: currentUserId,
+          entityId: originalTrack?.track_id
         })
 
         if (originalTrack?.track_id) {
@@ -163,14 +161,26 @@ export const PickWinnersPage = () => {
 
   const openConfirmationModal = useCallback(() => {
     openFinalizeWinnersConfirmationModal({
+      isInitialSave: initialWinners.length === 0,
       confirmCallback: handleFinalize,
       cancelCallback: () => {}
     })
-  }, [handleFinalize, openFinalizeWinnersConfirmationModal])
+  }, [
+    handleFinalize,
+    initialWinners.length,
+    openFinalizeWinnersConfirmationModal
+  ])
+
+  const handleBack = useCallback(() => {
+    const pathname = trackRemixesPage(originalTrack?.permalink ?? '')
+    const search = new URLSearchParams({ isContestEntry: 'true' }).toString()
+    history.push({ pathname, search })
+  }, [history, originalTrack?.permalink])
 
   const pageHeader = (
     <Header
       primary={messages.pickWinnersTitle}
+      onClickBack={handleBack}
       showBackButton
       rightDecorator={
         <Button
@@ -233,10 +243,7 @@ export const PickWinnersPage = () => {
   )
 
   const submissionHeading = useCallback((count: number | undefined) => {
-    return `${count !== undefined ? count : '...'} ${pluralize(
-      messages.submissions,
-      count ?? 0
-    )}`
+    return `${messages.remixesTitle}${count !== undefined ? ` (${count})` : ''}`
   }, [])
 
   const TileButton = useCallback(
@@ -462,7 +469,9 @@ export const PickWinnersPage = () => {
                 justifyContent='center'
                 alignItems='center'
               >
-                <Text variant='body'>{messages.winnerPlaceholder}</Text>
+                <Text variant='body' textAlign='center' css={{ maxWidth: 400 }}>
+                  {messages.winnerPlaceholder}
+                </Text>
               </Paper>
             )}
           </Flex>

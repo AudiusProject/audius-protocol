@@ -9,7 +9,7 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export const getAuthorizedAppsQueryKey = (userId: Nullable<ID>) => {
+export const getAuthorizedAppsQueryKey = (userId: Nullable<ID> | undefined) => {
   return [QUERY_KEYS.authorizedApps, userId] as unknown as QueryKey<
     AuthorizedApp[]
   >

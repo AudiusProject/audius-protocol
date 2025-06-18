@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react'
 
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import { ChallengeName } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import { challengesSelectors, ClaimStatus } from '@audius/common/store'
 import {
   getChallengeStatusLabel,
@@ -33,7 +35,11 @@ const messages = {
 
 export const PlayCountMilestoneContent = (props: ChallengeContentProps) => {
   const { challengeName, onClose, onClaim, claimStatus, aaoErrorCode } = props
-  const userChallenges = useSelector(getOptimisticUserChallenges)
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const userChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )
   const optimisticChallenge = userChallenges[challengeName]
 
   const { description, targetPlays, currentPlays } = useMemo(() => {

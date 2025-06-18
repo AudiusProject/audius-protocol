@@ -1,5 +1,4 @@
 import {
-  accountActions,
   addToCollectionUIActions as actions,
   modalsActions
 } from '@audius/common/store'
@@ -8,10 +7,8 @@ import { takeEvery, put } from 'redux-saga/effects'
 import { requiresAccount } from 'common/utils/requiresAccount'
 
 const { setVisibility } = modalsActions
-const fetchSavedPlaylists = accountActions.fetchSavedPlaylists
 
 function* handleRequestOpen(action: ReturnType<typeof actions.requestOpen>) {
-  yield put(fetchSavedPlaylists())
   yield put(
     actions.open(
       action.collectionType,

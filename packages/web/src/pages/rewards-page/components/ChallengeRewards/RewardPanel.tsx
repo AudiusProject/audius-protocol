@@ -1,3 +1,4 @@
+import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
 import { useFormattedProgressLabel } from '@audius/common/hooks'
 import {
   ChallengeName,
@@ -8,6 +9,7 @@ import {
 import { AIRDROP_PAGE } from '@audius/common/src/utils/route'
 import {
   ChallengeRewardsModalType,
+  CommonState,
   challengesSelectors
 } from '@audius/common/store'
 import { isNewChallenge } from '@audius/common/utils'
@@ -53,7 +55,11 @@ export const RewardPanel = ({
   remainingLabel
 }: RewardPanelProps) => {
   const { color, spacing } = useTheme()
-  const userChallenges = useSelector(getOptimisticUserChallenges)
+  const { data: currentAccount } = useCurrentAccount()
+  const { data: currentUser } = useCurrentAccountUser()
+  const userChallenges = useSelector((state: CommonState) =>
+    getOptimisticUserChallenges(state, currentAccount, currentUser)
+  )
   const { history } = useHistoryContext()
 
   const openRewardModal = () => {

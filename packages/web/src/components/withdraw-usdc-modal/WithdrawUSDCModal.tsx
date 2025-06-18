@@ -1,25 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  useFeatureFlag,
-  useRemoteVar,
-  useUSDCBalance
-} from '@audius/common/hooks'
-import {
-  Name,
-  Status,
-  BNUSDC,
-  SolanaWalletAddress
-} from '@audius/common/models'
+import { useUSDCBalance } from '@audius/common/api'
+import { useFeatureFlag, useRemoteVar } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
+import { Name, Status } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   withdrawUSDCActions,
   withdrawUSDCSelectors,
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  WithdrawMethod
+  WithdrawMethod,
+  createWithdrawUSDCFormSchema
 } from '@audius/common/store'
-import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Modal,
   ModalContent,
@@ -30,11 +24,9 @@ import {
 import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make, track } from 'services/analytics'
-import { isValidSolAddress } from 'services/solana/solana'
 
 import styles from './WithdrawUSDCModal.module.css'
 import { CoinflowWithdrawPage } from './components/CoinflowWithdrawPage'
@@ -49,67 +41,12 @@ import { ADDRESS, AMOUNT, CONFIRM, METHOD, WithdrawFormValues } from './types'
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
 
-const messages = {
-  title: 'Withdraw Cash',
-  errors: {
-    insufficientBalance:
-      'Your cash balance is insufficient to complete this transaction.',
-    amountTooLow: 'Please withdraw at least $0.01.',
-    invalidAddress: 'A valid Solana USDC wallet address is required.',
-    minCashTransfer: 'A minimum of $5 is required for cash withdrawals.',
-    pleaseConfirm:
-      'Please confirm you have reviewed this transaction and accept responsibility for errors.'
-  }
-}
-
-const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
-
 const DISABLE_MODAL_CLOSE_PAGES = new Set([
   WithdrawUSDCModalPages.PREPARE_TRANSFER,
   WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS,
   WithdrawUSDCModalPages.COINFLOW_TRANSFER,
   WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS
 ])
-
-const WithdrawUSDCFormSchema = (
-  userBalanceCents: number,
-  minWithdrawBalanceCents: number
-) => {
-  const amount = z
-    .number()
-    .lte(userBalanceCents, messages.errors.insufficientBalance)
-
-  return z.discriminatedUnion(METHOD, [
-    z.object({
-      [METHOD]: z.literal(WithdrawMethod.COINFLOW),
-      // If user has no balance, don't validate minimum, the form will just be disabled
-      [AMOUNT]:
-        userBalanceCents !== 0
-          ? amount.gte(minWithdrawBalanceCents, messages.errors.minCashTransfer)
-          : amount
-    }),
-    z.object({
-      [METHOD]: z.literal(WithdrawMethod.MANUAL_TRANSFER),
-      // If user has no balance, don't validate minimum, the form will just be disabled
-      [AMOUNT]:
-        userBalanceCents !== 0
-          ? amount.gte(
-              MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS,
-              messages.errors.amountTooLow
-            )
-          : amount,
-      [ADDRESS]: z
-        .string()
-        .refine(
-          (value) => isValidSolAddress(value as SolanaWalletAddress),
-          messages.errors.invalidAddress
-        ),
-      [CONFIRM]: z.literal(true, {
-        errorMap: () => ({ message: messages.errors.pleaseConfirm })
-      })
-    })
-  ])
-}
 
 /** Tracks form errors of interest, only sending events the first time
  * each error occurs on a changed value. For example:
@@ -125,7 +62,7 @@ const TrackFormErrors = ({ currentBalance }: { currentBalance: number }) => {
   } = useFormikContext<WithdrawFormValues>()
   const [prevAddressError, setPrevAddressError] = useState<string>()
   if (addressError !== prevAddressError) {
-    if (addressError === messages.errors.invalidAddress) {
+    if (addressError === walletMessages.errors.invalidAddress) {
       track(
         make({
           eventName: Name.WITHDRAW_USDC_FORM_ERROR,
@@ -152,8 +89,12 @@ export const WithdrawUSDCModal = () => {
   )
   const { page } = data
   const { data: balance } = useUSDCBalance()
-  const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
+  const balanceNumberCents = Math.floor(
+    Number(
+      USDC(balance ?? new BN(0))
+        .floor(2)
+        .toString()
+    ) * 100
   )
   const withdrawalStatus = useSelector(getWithdrawStatus)
 
@@ -208,7 +149,7 @@ export const WithdrawUSDCModal = () => {
       formPage = <TransferSuccessful onClickDone={onClose} />
       break
     case WithdrawUSDCModalPages.ERROR:
-      formPage = <ErrorPage />
+      formPage = <ErrorPage onClose={onClose} />
       break
   }
 
@@ -234,14 +175,17 @@ export const WithdrawUSDCModal = () => {
           onClose={onClose}
           showDismissButton={!DISABLE_MODAL_CLOSE_PAGES.has(page)}
         >
-          <ModalTitle icon={<IconTransaction />} title={messages.title} />
+          <ModalTitle
+            icon={<IconTransaction />}
+            title={walletMessages.withdrawCash}
+          />
         </ModalHeader>
       ) : null}
       <ModalContent>
         <Formik
           innerRef={formRef}
           initialValues={{
-            [AMOUNT]: balanceNumberCents,
+            [AMOUNT]: 0,
             [ADDRESS]: '',
             [CONFIRM]: false,
             [METHOD]: isCoinflowEnabled
@@ -249,7 +193,7 @@ export const WithdrawUSDCModal = () => {
               : WithdrawMethod.MANUAL_TRANSFER
           }}
           validationSchema={toFormikValidationSchema(
-            WithdrawUSDCFormSchema(
+            createWithdrawUSDCFormSchema(
               balanceNumberCents,
               minCashTransferBalanceCents
             )

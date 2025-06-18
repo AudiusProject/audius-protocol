@@ -8,12 +8,11 @@ import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
-import { AccountUserMetadata, UserMetadata } from '~/models/User'
+import { UserMetadata } from '~/models/User'
 import { update } from '~/store/cache/actions'
 import { removeFolloweeId } from '~/store/gated-content/slice'
 import { revokeFollowGatedAccess } from '~/store/tipping/slice'
 
-import { getCurrentAccountQueryKey } from './account/useCurrentAccount'
 import { useCurrentUserId } from './account/useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 
@@ -24,7 +23,6 @@ type UnfollowUserParams = {
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
-  previousAccountUser: AccountUserMetadata | undefined
 }
 
 export const useUnfollowUser = () => {
@@ -66,7 +64,7 @@ export const useUnfollowUser = () => {
     },
     onMutate: async ({ followeeUserId }) => {
       if (!followeeUserId || !currentUserId) {
-        return { previousUser: undefined, previousAccountUser: undefined }
+        return { previousUser: undefined }
       }
 
       await queryClient.cancelQueries({
@@ -100,38 +98,7 @@ export const useUnfollowUser = () => {
         })
       }
 
-      const previousAccountUser = queryClient.getQueryData(
-        getCurrentAccountQueryKey()
-      )
-
-      if (previousAccountUser) {
-        queryClient.setQueryData(getCurrentAccountQueryKey(currentUserId), {
-          ...previousAccountUser,
-          user: {
-            ...previousAccountUser.user,
-            followee_count: Math.max(
-              (previousAccountUser?.user?.followee_count ?? 0) - 1,
-              0
-            )
-          }
-        })
-      }
-
-      dispatch(
-        update(Kind.USERS, [
-          {
-            id: currentUserId,
-            metadata: {
-              followee_count: Math.max(
-                (previousAccountUser?.user?.followee_count ?? 0) - 1,
-                0
-              )
-            }
-          }
-        ])
-      )
-
-      return { previousUser, previousAccountUser }
+      return { previousUser }
     },
     onError: (
       error,

@@ -6,13 +6,12 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 
-import { useGetCurrentUser } from '~/api'
+import { useCurrentAccount, useCurrentAccountUser, useUSDCBalance } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
 import { FeatureFlags } from '~/services'
-import { accountSelectors } from '~/store'
 import {
   PurchaseableContentType,
   PurchaseContentPage,
@@ -23,7 +22,6 @@ import {
 import { isContentCollection, isContentTrack } from '~/utils'
 
 import { useFeatureFlag } from '../useFeatureFlag'
-import { useUSDCBalance } from '../useUSDCBalance'
 
 import {
   AMOUNT_PRESET,
@@ -45,7 +43,6 @@ const {
   getPurchaseContentError,
   getPurchaseContentPage
 } = purchaseContentSelectors
-const { getGuestEmail } = accountSelectors
 
 const USDC_TOKEN_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
@@ -72,8 +69,10 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
-  const guestEmail = useSelector(getGuestEmail)
-  const { data: currentUser } = useGetCurrentUser({})
+  const { data: guestEmail } = useCurrentAccount({
+    select: (account) => account?.guestEmail
+  })
+  const { data: currentUser } = useCurrentAccountUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )

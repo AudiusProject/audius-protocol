@@ -110,7 +110,7 @@ export const useTrending = (
         userTrackMetadataFromSDK
       )
 
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient })
 
       // Dispatch the data to the lineup sagas
       switch (timeRange) {
