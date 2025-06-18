@@ -55,7 +55,7 @@ type SearchExploreHeaderProps = {
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { filterTranslateY, scrollY, scrollRef } = props
-  const { spacing, color } = useTheme()
+  const { spacing, color, motion } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
@@ -137,8 +137,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Header text fades out when collapsing
   // Height shrinks to collapse rows for avatar + input
   const headerTextAnimatedStyle = useAnimatedStyle(() => ({
-    opacity:
-      scrollY.value === 0
+    opacity: inputValue
+      ? withTiming(0)
+      : scrollY.value === 0
         ? withTiming(1)
         : interpolate(
             scrollY.value,
@@ -146,8 +147,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             [1, 0],
             Extrapolation.CLAMP
           ),
-    height:
-      scrollY.value === 0
+    height: inputValue
+      ? withTiming(0)
+      : scrollY.value === 0
         ? withTiming(48)
         : interpolate(
             scrollY.value,
@@ -160,8 +162,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const inputAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        scale:
-          scrollY.value === 0
+        scale: inputValue
+          ? withTiming(0.83)
+          : scrollY.value === 0
             ? withTiming(1)
             : interpolate(
                 scrollY.value,
@@ -171,8 +174,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
               )
       },
       {
-        translateX:
-          scrollY.value === 0
+        translateX: inputValue
+          ? withTiming(30)
+          : scrollY.value === 0
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
@@ -188,8 +192,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY:
-          scrollY.value === 0
+        translateY: inputValue
+          ? withTiming(-HEADER_SLIDE_HEIGHT)
+          : scrollY.value === 0
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
@@ -206,8 +211,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const avatarSlideAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY:
-          scrollY.value === 0
+        translateY: inputValue
+          ? withTiming(HEADER_SLIDE_HEIGHT)
+          : scrollY.value === 0
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
@@ -221,8 +227,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
 
   // Header padding and gap shrink when collapsing
   const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
-    paddingVertical:
-      scrollY.value === 0
+    paddingVertical: inputValue
+      ? withTiming(spacing.s)
+      : scrollY.value === 0
         ? withTiming(spacing.l)
         : interpolate(
             scrollY.value,
@@ -230,8 +237,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             [spacing.l, spacing.s],
             Extrapolation.CLAMP
           ),
-    gap:
-      scrollY.value === 0
+    gap: inputValue
+      ? withTiming(0)
+      : scrollY.value === 0
         ? withTiming(spacing.l)
         : interpolate(
             scrollY.value,
@@ -246,8 +254,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY:
-          scrollY.value === 0
+        translateY: inputValue
+          ? withTiming(-HEADER_SLIDE_HEIGHT)
+          : scrollY.value === 0
             ? withTiming(0)
             : interpolate(
                 scrollY.value,

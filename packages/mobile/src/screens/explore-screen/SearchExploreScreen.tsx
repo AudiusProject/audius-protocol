@@ -1,5 +1,6 @@
-import React, { useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 
+import type { LayoutChangeEvent, View } from 'react-native'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -45,6 +46,8 @@ const SearchExploreContent = () => {
   const prevScrollY = useSharedValue(0)
   const scrollDirection = useSharedValue<'up' | 'down'>('down')
   const scrollRef = useRef<Animated.ScrollView>(null)
+  const headerRef = useRef<View>(null)
+  const headerHeight = useSharedValue(0)
 
   // Derived data
   const hasAnyFilter = Object.values(filters).some(
@@ -94,9 +97,11 @@ const SearchExploreContent = () => {
   })
 
   // content margin expands when header / filter collapses
+  console.log('asdf query: ', query)
   const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
-    marginTop:
-      scrollY.value === 0
+    marginTop: query
+      ? withTiming(-HEADER_COLLAPSE_THRESHOLD * 2.5)
+      : scrollY.value === 0
         ? withTiming(0)
         : interpolate(
             scrollY.value,
@@ -106,10 +111,22 @@ const SearchExploreContent = () => {
           ) +
           interpolate(
             scrollY.value,
-            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD],
+            [
+              FILTER_SCROLL_THRESHOLD - HEADER_COLLAPSE_THRESHOLD,
+              FILTER_SCROLL_THRESHOLD
+            ],
             [0, -spacing['4xl']],
             Extrapolation.CLAMP
           )
+  }))
+
+  const contentPaddingStyle = useAnimatedStyle(() => ({
+    paddingTop: query
+      ? withTiming(80)
+      : scrollY.value === 0
+        ? withTiming(0)
+        : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP) +
+          filterTranslateY.value
   }))
 
   return (
@@ -123,7 +140,8 @@ const SearchExploreContent = () => {
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
-        style={[contentSlideAnimatedStyle]}
+        style={[contentSlideAnimatedStyle, contentPaddingStyle]}
+        showsVerticalScrollIndicator={false}
       >
         {category !== 'all' || query ? (
           <>
