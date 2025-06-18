@@ -68,6 +68,14 @@ const SearchExploreContent = () => {
       const contentHeight = event.contentSize.height
       const layoutHeight = event.layoutMeasurement.height
       const isAtBottom = y + layoutHeight >= contentHeight
+      const canScroll = contentHeight > layoutHeight
+
+      // Only apply scroll animations if there's enough content to scroll
+      // fixes jitter when content is small
+      if (!canScroll) {
+        scrollY.value = 0
+        return
+      }
 
       // Only update scroll direction if we're not at the bottom
       // to prevent bounce from interfering
@@ -122,7 +130,9 @@ const SearchExploreContent = () => {
       : scrollY.value === 0
         ? withTiming(0, motion.calm)
         : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP) +
-          filterTranslateY.value
+          filterTranslateY.value,
+    // Add minimum height to prevent jitter with small content
+    minHeight: '100%'
   }))
 
   return (

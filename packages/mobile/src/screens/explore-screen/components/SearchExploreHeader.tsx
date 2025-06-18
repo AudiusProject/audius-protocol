@@ -119,9 +119,13 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
       setInputValue(text)
       if (text === '') {
         scrollRef.current?.scrollTo?.({ y: 0, animated: false })
+      } else if (inputValue === '' && text.length === 1) {
+        // If the input was empty and now has at least 2 characters,
+        // scroll to the top to show results
+        scrollRef.current?.scrollTo?.({ y: 0, animated: false })
       }
     },
-    [scrollRef]
+    [inputValue, scrollRef]
   )
 
   // Immediate update for first character
