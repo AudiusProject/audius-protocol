@@ -54,7 +54,6 @@ const SearchExploreContent = () => {
   const hasAnyFilter = Object.values(filters).some(
     (value) => value !== undefined
   )
-  const history = useSelector(getSearchHistory)
 
   useScrollToTop(() => {
     scrollRef.current?.scrollTo({

@@ -6,14 +6,7 @@ import { Kind } from '@audius/common/models'
 import { searchActions, searchSelectors } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import {
-  Button,
-  Flex,
-  IconCloseAlt,
-  Paper,
-  PlainButton,
-  Text
-} from '@audius/harmony-native'
+import { Button, Flex, IconCloseAlt, Paper, Text } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
 
 import { SearchItem } from './SearchItem'

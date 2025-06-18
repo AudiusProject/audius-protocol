@@ -112,7 +112,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
         [0, 1],
         [color.border.strong, color.secondary.s400]
       ),
-      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.95]) }]
     }),
     [disabled, themeType]
   )
