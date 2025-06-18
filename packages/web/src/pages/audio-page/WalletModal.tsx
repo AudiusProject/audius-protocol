@@ -60,8 +60,8 @@ export const TitleWrapper = ({
 }) => {
   return (
     <div className={styles.titleWrapper}>
-      {label}
       {children}
+      {label}
     </div>
   )
 }
