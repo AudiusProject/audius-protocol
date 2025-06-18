@@ -4,7 +4,7 @@ info:
   description: Audius V1 API
   version: '1.0'
 servers:
-  - url: https://api.audius.co/v1
+  - url: https://discoveryprovider.audius.co/v1
 tags:
   - name: users
     description: User related operations

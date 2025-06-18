@@ -196,7 +196,7 @@ const config = {
         config: {
           api: {
             specPath: 'docs/developers/openapi.yaml', // path or URL to the OpenAPI spec
-            // specPath: 'https://discoveryprovider.audius.co/v1/swagger.json', // path or URL to the OpenAPI spec
+            // specPath: 'https://api.audius.co/v1/swagger.json', // path or URL to the OpenAPI spec
             outputDir: 'docs/developers/api', // output directory for generated *.mdx and sidebar.js files
             sidebarOptions: {
               groupPathsBy: 'tag', // generate a sidebar.js slice that groups operations by tag

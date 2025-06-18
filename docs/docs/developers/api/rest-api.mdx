@@ -12,8 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl'
 
 :::info
 
-While this documentation is being completed, checkout the original API reference at
-[https://audiusproject.github.io/api-docs](https://audiusproject.github.io/api-docs)
+This documentation is actively being developed. For additional details, refer to the original API reference at [https://audiusproject.github.io/api-docs](https://audiusproject.github.io/api-docs)
 
 :::
 
@@ -22,6 +21,20 @@ documentation and always credit artists.
 
 The Audius REST API lets you query, stream, and search for tracks, users and playlists across the
 network.
+
+## Selecting a Host
+
+Audius is a decentralized music streaming platform. To ensure reliable API requests, use `api.audius.co` as the endpoint for all methods. This domain automatically routes traffic to healthy, available hosts for each request.
+
+---
+
+## Specifying App Name
+
+When integrating the Audius API into a production application, include the app_name query parameter with each request. Choose a unique app name that identifies your application.
+
+```bash
+&app_name=<YOUR-UNIQUE-APP-NAME>
+```
 
 :::info Explore and Build with Postman
 
@@ -33,46 +46,3 @@ App.
 [<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" />](https://god.gw.postman.com/run-collection/17755266-71da9172-77a7-427f-8ab5-1ce58f929ff5?action=collection%2Ffork&source=rip_markdown&collection-url=entityId%3D17755266-71da9172-77a7-427f-8ab5-1ce58f929ff5%26entityType%3Dcollection%26workspaceId%3D851ce83a-607b-474b-9a56-f09be4799aeb)
 
 :::
-
-## Selecting a Host
-
-Audius is a decentralized music streaming service. To use the API, you first select an API endpoint
-from the list of endpoints returned by:
-
-### Request
-
-```bash
-GET https://api.audius.co HTTP/1.1
-```
-
-### Response
-
-```json
-{
-  "data": [
-    "https://audius-discovery-1.cultur3stake.com",
-    "https://audius-discovery-1.theblueprint.xyz"
-    "https://audius-discovery-11.cultur3stake.com",
-    "https://audius-discovery-12.cultur3stake.com",
-    "https://audius-discovery-13.cultur3stake.com",
-    ...
-    "https://dn1.monophonic.digital",
-    "https://dn1.nodeoperator.io",
-    "https://dn1.stuffisup.com",
-  ]
-}
-```
-
-Once you've selected a host, all API requests can be sent directly to it. We recommend selecting a
-host each time your application starts up as availability may change over time.
-
----
-
-## Specifying App Name
-
-If you're integrating the Audius API into an app in production, we ask that you include the
-`app_name` param with each query. Your unique app name is entirely up to you!
-
-```bash
-&app_name=<YOUR-UNIQUE-APP-NAME>
-```

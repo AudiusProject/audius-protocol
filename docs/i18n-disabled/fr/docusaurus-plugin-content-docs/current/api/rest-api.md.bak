@@ -12,7 +12,7 @@ L'API REST Audius vous permet de lancer des requêtes, diffuser de la musique, e
 Veuillez l'essayer!
 
 ```bash
-curl https://api.audius.co/v1/tracks/trending?app_name=ExampleApp
+curl https://discoveryprovider.audius.co/v1/tracks/trending?app_name=ExampleApp
 ```
 
 ## [Référence API Complète](https://audiusproject.github.io/api-docs/#audius-api-docs)  👈  

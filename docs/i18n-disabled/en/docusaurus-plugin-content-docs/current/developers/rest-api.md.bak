@@ -13,7 +13,7 @@ The Audius REST API lets you query, stream, and search for tracks, users & playl
 Try it out!
 
 ```bash
-curl https://api.audius.co/v1/tracks/trending?app_name=ExampleApp
+curl https://discoveryprovider.audius.co/v1/tracks/trending?app_name=ExampleApp
 ```
 
 ## [Full API Reference](https://audiusproject.github.io/api-docs/#audius-api-docs) 👈

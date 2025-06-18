@@ -38,8 +38,8 @@ Edit the commented fields to suit your needs
 ```js
 config: {
  api: {
-   specPath: 'docs/developers/swagger.json', // path or URL to the OpenAPI spec, this one downloaded from 'https://api.audius.co/v1/swagger.json'
-   // specPath: 'https://api.audius.co/v1/swagger.json', // path or URL to the OpenAPI spec
+   specPath: 'docs/developers/swagger.json', // path or URL to the OpenAPI spec, this one downloaded from 'https://discoveryprovider.audius.co/v1/swagger.json'
+   // specPath: 'https://discoveryprovider.audius.co/v1/swagger.json', // path or URL to the OpenAPI spec
    outputDir: 'docs/developers/api', // output directory for generated *.mdx and sidebar.js files
    sidebarOptions: {
      groupPathsBy: 'tag', // generate a sidebar.js slice that groups operations by tag
@@ -51,7 +51,7 @@ config: {
 > [!NOTE]
 >
 > Currently, you will need to update the `basePath` value to
-> `https://api.audius.co/v1` instead of the default `"basePath": "/v1"`
+> `https://discoveryprovider.audius.co/v1` instead of the default `"basePath": "/v1"`
 
 ### First Time Run
 

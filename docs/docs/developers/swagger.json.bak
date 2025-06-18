@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://api.audius.co/v1"
+      "url": "https://discoveryprovider.audius.co/v1"
     }
   ],
   "tags": [
