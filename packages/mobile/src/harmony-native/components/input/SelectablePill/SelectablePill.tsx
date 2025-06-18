@@ -78,8 +78,23 @@ export const SelectablePill = (props: SelectablePillProps) => {
         onChange?.(value, !isSelected)
       }
       setIsSelected(!isSelected)
+      if (isSelected) {
+        // avoids flashing purple when deselecting
+        selected.value = disableUnselectAnimation
+          ? 0
+          : withTiming(0, motion.press)
+      }
     },
-    [onChange, onPress, value, isSelected, setIsSelected]
+    [
+      onPress,
+      value,
+      setIsSelected,
+      isSelected,
+      onChange,
+      selected,
+      disableUnselectAnimation,
+      motion.press
+    ]
   )
 
   useEffect(() => {
