@@ -4,9 +4,12 @@ import { SquareSizes, ID } from '@audius/common/models'
 import {
   IconLock,
   IconPlaybackPlay as IconPlay,
-  IconPlaybackPause as IconPause
+  IconPlaybackPause as IconPause,
+  Box,
+  Flex,
+  useTheme,
+  spacing
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -15,8 +18,6 @@ import { Size } from 'components/track-flair/types'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
-import styles from './Artwork.module.css'
-
 type TileArtworkProps = {
   id: ID
   size: any
@@ -24,46 +25,76 @@ type TileArtworkProps = {
   isPlaying: boolean
   showArtworkIcon: boolean
   showSkeleton: boolean
-  artworkIconClassName?: string
-  coSign?: {
-    has_remix_author_saved: boolean
-    has_remix_author_reposted: boolean
-    user: { name: string; is_verified: boolean; user_id: ID }
-  }
   hasStreamAccess?: boolean
 }
 
 export const ArtworkIcon = ({
   isBuffering,
   isPlaying,
-  artworkIconClassName,
   hasStreamAccess,
   isTrack
 }: {
   isBuffering: boolean
   isPlaying: boolean
-  artworkIconClassName?: string
   hasStreamAccess?: boolean
   isTrack?: boolean
 }) => {
+  const { color } = useTheme()
+
   let artworkIcon
   if (isTrack && !hasStreamAccess) {
-    artworkIcon = <IconLock width={36} height={36} />
+    artworkIcon = <IconLock width={spacing.unit9} height={spacing.unit9} />
   } else if (isBuffering) {
-    artworkIcon = <LoadingSpinner className={styles.spinner} />
+    artworkIcon = (
+      <Box
+        w={spacing.unit9}
+        h={spacing.unit9}
+        css={{
+          pointerEvents: 'none',
+          '& g path': {
+            stroke: color.static.white
+          }
+        }}
+      >
+        <LoadingSpinner />
+      </Box>
+    )
   } else if (isPlaying) {
     artworkIcon = <IconPause />
   } else {
     artworkIcon = <IconPlay />
   }
   return (
-    <div
-      className={cn(styles.artworkIcon, {
-        [artworkIconClassName!]: !!artworkIconClassName
-      })}
+    <Flex
+      alignItems='center'
+      justifyContent='center'
+      css={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        opacity: 0,
+        transition: 'all ease-in-out 0.18s',
+        '& > svg, & > div': {
+          width: '40%',
+          height: '40%',
+          transition: 'all ease-in-out 0.18s'
+        },
+        '& path': {
+          fill: color.static.white
+        },
+        '& circle': {
+          opacity: 0
+        },
+        '& g circle[fill="#FFFFFF"]': {
+          fill: 'rgba(0, 0, 0, 0)'
+        }
+      }}
     >
       {artworkIcon}
-    </div>
+    </Flex>
   )
 }
 
@@ -79,48 +110,53 @@ const Artwork = memo(
     size,
     showSkeleton,
     showArtworkIcon,
-    artworkIconClassName,
     isBuffering,
     isPlaying,
     image,
-    coSign,
     label,
     hasStreamAccess,
     isTrack
   }: ArtworkProps) => {
     const imageElement = (
       <DynamicImage
-        wrapperClassName={cn(styles.artworkWrapper, {
-          [styles.artworkInset]: !coSign,
-          [styles.small]: size === 'small',
-          [styles.large]: size === 'large'
-        })}
-        className={styles.artwork}
         image={showSkeleton ? '' : image}
         aria-label={label}
+        css={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: spacing.xs,
+          border: '1px solid var(--harmony-n-100)',
+          height: '100%',
+          '&:hover [data-artwork-icon]': showArtworkIcon && {
+            opacity: 1
+          },
+          ...(size === 'small' && {
+            marginBottom: spacing.unitHalf,
+            '& [data-artwork-icon] > svg, & [data-artwork-icon] > div': {
+              width: '65%',
+              height: '65%'
+            }
+          })
+        }}
       >
         {showArtworkIcon && (
-          <ArtworkIcon
-            isBuffering={isBuffering}
-            isPlaying={isPlaying}
-            artworkIconClassName={artworkIconClassName}
-            hasStreamAccess={hasStreamAccess}
-            isTrack={isTrack}
-          />
+          <Box data-artwork-icon>
+            <ArtworkIcon
+              isBuffering={isBuffering}
+              isPlaying={isPlaying}
+              hasStreamAccess={hasStreamAccess}
+              isTrack={isTrack}
+            />
+          </Box>
         )}
       </DynamicImage>
     )
     return isTrack ? (
-      <TrackFlair
-        size={Size.MEDIUM}
-        id={id}
-        className={cn(styles.artworkInset, {
-          [styles.small]: size === 'small',
-          [styles.large]: size === 'large'
-        })}
-      >
-        {imageElement}
-      </TrackFlair>
+      <Box h='100%'>
+        <TrackFlair size={Size.MEDIUM} id={id}>
+          {imageElement}
+        </TrackFlair>
+      </Box>
     ) : (
       imageElement
     )

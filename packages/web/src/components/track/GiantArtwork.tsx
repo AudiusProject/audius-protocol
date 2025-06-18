@@ -2,14 +2,12 @@ import { memo, useEffect } from 'react'
 
 import { SquareSizes, Remix } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import { IconArrowLeft } from '@audius/harmony'
+import { IconArrowLeft, Box, Flex, useTheme, spacing } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TrackFlair from 'components/track-flair/TrackFlair'
 import { Size } from 'components/track-flair/types'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-
-import styles from './GiantArtwork.module.css'
 
 type GiantArtworkProps = {
   trackId: number
@@ -32,24 +30,64 @@ const GiantArtwork = (props: GiantArtworkProps) => {
     if (image) callback()
   }, [image, callback])
 
+  const { color } = useTheme()
   const imageElement = (
-    <DynamicImage
-      wrapperClassName={styles.imageWrapper}
-      image={image}
-      alt={messages.artworkAltText}
+    <Box
+      borderRadius='m'
+      border='default'
+      w={338}
+      h={338}
+      css={{
+        overflow: 'hidden',
+        position: 'relative'
+      }}
     >
-      {onIconLeftClick && (
-        <div className={styles.iconLeftWrapper} onClick={onIconLeftClick}>
-          <IconArrowLeft width={24} height={24} />
-        </div>
-      )}
-    </DynamicImage>
+      <DynamicImage image={image} alt={messages.artworkAltText}>
+        {onIconLeftClick && (
+          <Flex
+            onClick={onIconLeftClick}
+            css={{
+              position: 'absolute',
+              top: spacing.l,
+              left: spacing.l,
+              width: spacing.unit10,
+              height: spacing.unit10,
+              borderRadius: spacing.unit5,
+              background: 'rgba(0, 0, 0, 0.5)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease-in-out',
+              '&:hover': {
+                transform: 'scale(1.1)',
+                background: 'rgba(0, 0, 0, 0.7)'
+              },
+              '& svg path': {
+                fill: color.static.white
+              }
+            }}
+          >
+            <IconArrowLeft width={spacing.xl} height={spacing.xl} />
+          </Flex>
+        )}
+      </DynamicImage>
+    </Box>
   )
 
   return (
-    <TrackFlair size={Size.XLARGE} className={styles.giantArtwork} id={trackId}>
-      {imageElement}
-    </TrackFlair>
+    <Box
+      w={338}
+      h={338}
+      css={{
+        minHeight: '338px',
+        minWidth: '338px',
+        userSelect: 'none'
+      }}
+    >
+      <TrackFlair size={Size.XLARGE} id={trackId}>
+        {imageElement}
+      </TrackFlair>
+    </Box>
   )
 }
 

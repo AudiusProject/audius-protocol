@@ -15,9 +15,10 @@ import {
   IconCollectible,
   IconComponent,
   IconSparkles,
-  useTheme
+  useTheme,
+  Box,
+  spacing
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import { CollectionDogEar } from 'components/collection'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -25,7 +26,6 @@ import { UserLink } from 'components/link'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
-import styles from './LockedContentDetailsTile.module.css'
 import { TrackDogEar } from './TrackDogEar'
 
 const messages = {
@@ -102,12 +102,21 @@ export const LockedContentDetailsTile = ({
         position: 'relative'
       }}
     >
-      <DynamicImage
-        wrapperClassName={styles.imageWrapper}
-        className={styles.image}
-        image={image}
-        aria-label={label}
-      />
+      <Box
+        w={spacing.unit20}
+        h={spacing.unit20}
+        css={{
+          minWidth: spacing.unit20
+        }}
+      >
+        <DynamicImage
+          image={image}
+          aria-label={label}
+          css={{
+            borderRadius: spacing.xs
+          }}
+        />
+      </Box>
       {isAlbum ? (
         <CollectionDogEar collectionId={contentId} />
       ) : (
@@ -116,9 +125,18 @@ export const LockedContentDetailsTile = ({
       <Flex css={{ overflow: 'hidden' }}>
         {showLabel && IconComponent && message ? (
           <Flex
-            className={cn(styles.gatedContentLabel, {
-              [styles.usdcContentLabel]: isUSDCPurchaseGated
-            })}
+            mb='l'
+            alignItems='center'
+            gap='s'
+            css={{
+              letterSpacing: spacing.unitHalf,
+              fontWeight: 600,
+              fontSize: spacing.m,
+              color: isUSDCPurchaseGated
+                ? color.special.lightGreen
+                : color.special.blue,
+              textTransform: 'uppercase'
+            }}
           >
             <IconComponent
               size='s'
