@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import Animated, {
   useAnimatedScrollHandler,
@@ -59,6 +59,13 @@ const SearchExploreContent = () => {
     setQuery('')
     setCategory('all')
     setFilters({})
+  })
+
+  useEffect(() => {
+    if (query.length <= 1) {
+      // Reset scroll on new or empty queries
+      scrollRef.current?.scrollTo?.({ y: 0, animated: false })
+    }
   })
 
   // Animations
