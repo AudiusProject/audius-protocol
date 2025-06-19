@@ -1,3 +1,4 @@
+import { StringWei } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
@@ -5,7 +6,6 @@ import {
   modalsActions,
   TokenDashboardPageModalState
 } from '@audius/common/store'
-import { weiToString } from '@audius/common/utils'
 import { all, put, race, select, take, takeLatest } from 'typed-redux-saga'
 
 const { setVisibility } = modalsActions
@@ -37,7 +37,9 @@ function* confirmSendAsync() {
   const sendData = yield* select(getSendData)
   if (!sendData) return
   const { recipientWallet, amount } = sendData
-  yield* put(walletSend({ recipientWallet, amount: weiToString(amount) }))
+  yield* put(
+    walletSend({ recipientWallet, amount: amount.toString() as StringWei })
+  )
 
   const { error } = yield* race({
     success: take(sendSucceeded),
@@ -68,7 +70,7 @@ function* confirmSendAsync() {
     stage: 'SEND',
     flowState: {
       stage: 'CONFIRMED_SEND',
-      amount: weiToString(amount),
+      amount: amount.toString() as StringWei,
       recipientWallet
     }
   }

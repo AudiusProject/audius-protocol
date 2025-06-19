@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
-import type { StringWei } from '@audius/common/models'
 import {
   tippingSelectors,
   tippingActions,
   walletActions
 } from '@audius/common/store'
-import { parseAudioInputToWei, stringWeiToBN } from '@audius/common/utils'
+import type { AudioWei } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 import { useFocusEffect } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -44,20 +44,15 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const zeroWei = stringWeiToBN('0' as StringWei)
+const zeroWei = BigInt(0) as AudioWei
 
 export const SendTipScreen = () => {
   const styles = useStyles()
   const [tipAmount, setTipAmount] = useState('')
 
-  const { accountBalance: audioBalanceBigInt } = useAudioBalance({
+  const { accountBalance } = useAudioBalance({
     includeConnectedWallets: false
   })
-
-  // Convert BigInt to BN for compatibility with existing code
-  const accountBalance = audioBalanceBigInt
-    ? stringWeiToBN(audioBalanceBigInt.toString() as StringWei)
-    : zeroWei
 
   const navigation = useNavigation<TipArtistNavigationParamList>()
   const dispatch = useDispatch()
@@ -79,8 +74,15 @@ export const SendTipScreen = () => {
     }, [dispatch])
   )
 
-  const tipAmountWei = parseAudioInputToWei(tipAmount)
-  const hasInsufficientBalance = tipAmountWei?.gt(accountBalance)
+  let tipAmountWei: AudioWei | null = null
+  try {
+    tipAmountWei = tipAmount.length > 0 ? AUDIO(tipAmount).value : null
+  } catch {
+    tipAmountWei = null
+  }
+
+  const hasInsufficientBalance =
+    tipAmountWei !== null && tipAmountWei > accountBalance
 
   return (
     <TipScreen
@@ -98,7 +100,10 @@ export const SendTipScreen = () => {
         iconRight={IconArrowRight}
         fullWidth
         disabled={
-          !tipAmount || tipAmountWei?.lte(zeroWei) || hasInsufficientBalance
+          !tipAmount ||
+          tipAmountWei === null ||
+          tipAmountWei <= zeroWei ||
+          hasInsufficientBalance
         }
         style={styles.sendButton}
       >

@@ -14,11 +14,7 @@ import {
   InputSendDataAction,
   getSDK
 } from '@audius/common/store'
-import {
-  getErrorMessage,
-  isNullOrUndefined,
-  stringWeiToBN
-} from '@audius/common/utils'
+import { getErrorMessage, isNullOrUndefined } from '@audius/common/utils'
 import { AudioWei } from '@audius/fixed-decimal'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
@@ -72,7 +68,7 @@ function* sendAsync({
   const walletClient = yield* getContext('walletClient')
 
   const account = yield* call(queryAccountUser)
-  const weiBNAmount = stringWeiToBN(weiAudioAmount)
+  const audioWeiAmount = BigInt(weiAudioAmount) as AudioWei
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance
     ? BigInt(accountBalance.toString())
@@ -92,7 +88,7 @@ function* sendAsync({
     return
   }
 
-  if (BigInt(weiBNAmount.toString()) > weiBNBalance) {
+  if (audioWeiAmount > weiBNBalance) {
     yield* put(sendFailed({ error: 'Not enough $AUDIO' }))
     return
   }
@@ -112,7 +108,7 @@ function* sendAsync({
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
-    if (BigInt(weiBNAmount.toString()) > waudioWeiAmount!) {
+    if (audioWeiAmount > waudioWeiAmount!) {
       yield* put(transferEthAudioToSolWAudio())
       yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
         ethAddress: currentUser
@@ -121,7 +117,7 @@ function* sendAsync({
     try {
       yield* call([walletClient, walletClient.sendWAudioTokens], {
         address: recipientWallet as SolanaWalletAddress,
-        amount: BigInt(weiBNAmount.toString()) as AudioWei,
+        amount: audioWeiAmount,
         ethAddress: currentUser
       })
     } catch (e) {
