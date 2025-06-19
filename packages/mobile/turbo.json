@@ -1,21 +1,30 @@
 {
   "extends": ["//"],
   "tasks": {
+    "build": {
+      "dependsOn": [
+        "@audius/common#build",
+        "@audius/sdk#build",
+        "@audius/fixed-decimal#build"
+      ],
+      "outputs": ["dist/**", "build/**"],
+      "outputLogs": "new-only"
+    },
     "android": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "cache": false,
       "persistent": true,
       "outputLogs": "new-only"
     },
     "ios": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "cache": false,
       "persistent": true,
       "outputLogs": "new-only"
     },
     "bundle:ios": {
       "outputs": ["./ios/main.jsbundle"],
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "outputLogs": "new-only"
     }
   }
