@@ -2,7 +2,10 @@
 
 import { useEffect } from 'react'
 
-import { getStatus } from '@audius/web/src/common/store/pages/signon/selectors'
+import {
+  getStatus,
+  getAccountReady
+} from '@audius/web/src/common/store/pages/signon/selectors'
 import { EditingStatus } from '@audius/web/src/common/store/pages/signon/types'
 import { useSelector } from 'react-redux'
 
@@ -11,6 +14,8 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { Heading, Page } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
+import type { SignOnScreenParamList } from '../types'
 
 const messages = {
   heading: 'Your Account is Almost Ready to Rock 🤘',
@@ -19,15 +24,21 @@ const messages = {
 
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const AccountLoadingScreen = () => {
-  const navigation = useNavigation()
-
+  const navigation = useNavigation<SignOnScreenParamList>()
+  const isFastReferral = useFastReferral()
+  const accountReady = useSelector(getAccountReady)
   const accountCreationStatus = useSelector(getStatus)
 
+  const isAccountReady = isFastReferral
+    ? accountReady
+    : accountCreationStatus === EditingStatus.SUCCESS
+
   useEffect(() => {
-    if (accountCreationStatus === EditingStatus.SUCCESS) {
+    if (isAccountReady) {
       navigation.navigate('HomeStack', { screen: 'Trending' })
     }
-  }, [accountCreationStatus, navigation])
+    // TODO: what to do in an error scenario? Any way to recover to a valid step?
+  }, [isAccountReady, navigation])
 
   return (
     <Page gap='3xl' justifyContent='center' alignItems='center' pb='3xl'>
