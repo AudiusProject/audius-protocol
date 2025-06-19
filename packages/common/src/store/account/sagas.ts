@@ -390,34 +390,21 @@ function* setLocalStorageAccountAndUser(
     user: accountUser,
     playlist_library: playlistLibrary,
     playlists: collections,
-    guestEmail
+    guestEmail,
+    track_save_count: trackSaveCount
   } = account
   const localStorage = yield* getContext('localStorage')
 
-  const formattedAccount = {
+  const formattedAccount: Partial<AccountState> = {
     userId: accountUser.user_id,
     collections,
     playlistLibrary,
-    guestEmail
+    guestEmail,
+    trackSaveCount
   }
 
   yield* call([localStorage, localStorage.setAudiusAccount], formattedAccount)
   yield* call([localStorage, localStorage.setAudiusAccountUser], accountUser)
-}
-
-/** Used to synchronize account to localStorage when values in the slice
- * change.
- */
-function* syncAccountToLocalStorage() {
-  const localStorage = yield* getContext('localStorage')
-  const { userId, collections, playlistLibrary, guestEmail } =
-    (yield* call(queryCurrentAccount)) ?? {}
-  yield* call([localStorage, localStorage.setAudiusAccount], {
-    userId,
-    collections,
-    playlistLibrary,
-    guestEmail
-  })
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
@@ -651,10 +638,6 @@ function* watchTikTokLogin() {
   yield* takeEvery(tikTokLogin.type, associateTikTokAccount)
 }
 
-function* watchUpdatePlaylistLibrary() {
-  yield* takeEvery(updatePlaylistLibrary.type, syncAccountToLocalStorage)
-}
-
 export function* watchFetchTrackCount() {
   yield* takeLatest(fetchHasTracks, handleFetchTrackCount)
 }
@@ -723,7 +706,6 @@ export default function sagas() {
     watchTikTokLogin,
     watchTwitterLogin,
     watchUploadTrack,
-    watchUpdatePlaylistLibrary,
     syncAccountToQueryClient
   ]
 }

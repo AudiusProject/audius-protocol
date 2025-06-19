@@ -13,6 +13,7 @@ import { AccountState } from '~/store'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
+import { getUserQueryKey } from '../useUser'
 
 import { getAccountStatusQueryKey } from './useAccountStatus'
 import { useWalletAddresses } from './useWalletAddresses'
@@ -31,7 +32,10 @@ const getLocalAccount = (
   const localAccountUser =
     localStorage.getAudiusAccountUserSync?.() as UserMetadata
   if (localAccount && localAccountUser) {
-    if (localAccountUser) {
+    if (
+      localAccountUser &&
+      !queryClient.getQueryData(getUserQueryKey(localAccountUser.user_id))
+    ) {
       primeUserData({ users: [localAccountUser], queryClient })
     }
     // feature-tan-query TODO: when removing account sagas,
@@ -47,7 +51,7 @@ const getLocalAccount = (
       walletAddresses: { currentUser: null, web3User: null },
       playlistLibrary: localAccount.playlistLibrary ?? null,
       trackSaveCount: localAccount.trackSaveCount,
-      guestEmail: null
+      guestEmail: localAccount.guestEmail
     } as AccountState
   }
   return null
