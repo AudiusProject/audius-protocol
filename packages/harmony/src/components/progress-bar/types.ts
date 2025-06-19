@@ -1,6 +1,4 @@
-import BN from 'bn.js'
-
-export type ProgressValue = number | BN
+export type ProgressValue = number | bigint
 
 export type ProgressBarProps = {
   className?: string

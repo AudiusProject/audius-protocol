@@ -22,7 +22,6 @@ import {
 } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, SegmentedControl, Text } from '@audius/harmony'
-import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
 import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
@@ -54,7 +53,7 @@ export const EnterTransferDetails = () => {
 
   const balanceNumberCents = Math.floor(
     Number(
-      USDC(balance ?? new BN(0))
+      USDC(balance ?? 0)
         .floor(2)
         .toString()
     ) * 100

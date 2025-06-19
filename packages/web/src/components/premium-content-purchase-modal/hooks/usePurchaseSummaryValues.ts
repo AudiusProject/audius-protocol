@@ -6,9 +6,9 @@ import {
   CUSTOM_AMOUNT,
   AMOUNT_PRESET
 } from '@audius/common/hooks'
-import { BNUSDC } from '@audius/common/models'
 import { getPurchaseSummaryValues } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { UsdcWei } from '@audius/fixed-decimal'
 import { useField } from 'formik'
 
 export const usePurchaseSummaryValues = ({
@@ -16,7 +16,7 @@ export const usePurchaseSummaryValues = ({
   currentBalance
 }: {
   price: number
-  currentBalance: Nullable<BNUSDC>
+  currentBalance: Nullable<UsdcWei>
 }) => {
   const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
   const [{ value: amountPreset }] = useField(AMOUNT_PRESET)

@@ -5,11 +5,7 @@ import {
   selectIsAccountComplete,
   useHasAccount
 } from '@audius/common/api'
-import {
-  useChallengeCooldownSchedule,
-  useFeatureFlag
-} from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
+import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
@@ -38,7 +34,6 @@ import { matchesRoute } from 'utils/route'
 import { NavSpeakerIcon } from './NavSpeakerIcon'
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { CreatePlaylistLibraryItemButton } from './PlaylistLibrary/CreatePlaylistLibraryItemButton'
-import { WalletsNestedContent } from './WalletsNestedContent'
 import { useNavSourcePlayingStatus } from './useNavSourcePlayingStatus'
 import { useNavUploadStatus } from './useNavUploadStatus'
 
@@ -101,9 +96,6 @@ export const useNavConfig = () => {
   })
   const playingFromRoute = useNavSourcePlayingStatus()
   const location = useLocation()
-  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
-    FeatureFlags.WALLET_UI_UPDATE
-  )
 
   const { isProduction } = useEnvironment()
 
@@ -157,27 +149,13 @@ export const useNavConfig = () => {
         hasNotification: unreadMessagesCount > 0,
         disabled: !hasAccount
       },
-      ...(isWalletUIUpdateEnabled
-        ? [
-            {
-              label: 'Wallet',
-              leftIcon: IconWallet,
-              to: WALLET_PAGE,
-              restriction: 'account' as RestrictionType,
-              disabled: !hasAccount
-            }
-          ]
-        : [
-            {
-              label: 'Wallets',
-              leftIcon: IconWallet,
-              isExpandable: true,
-              restriction: 'account' as RestrictionType,
-              nestedComponent: WalletsNestedContent,
-              canUnfurl: isAccountComplete,
-              disabled: !hasAccount
-            }
-          ]),
+      {
+        label: 'Wallet',
+        leftIcon: IconWallet,
+        to: WALLET_PAGE,
+        restriction: 'account' as RestrictionType,
+        disabled: !hasAccount
+      },
       {
         label: 'Rewards',
         leftIcon: IconGift,
@@ -247,7 +225,6 @@ export const useNavConfig = () => {
       playingFromRoute,
       color,
       spacing,
-      isWalletUIUpdateEnabled,
       isProduction
     ]
   )

@@ -32,7 +32,7 @@ export * from './useChangePasswordFormConfiguration'
 export * from './useChangeEmailFormConfiguration'
 export * from './useCanSendChatBlast'
 export * from './useAudioRewards'
-export * from './useAudioBalance'
+
 export * from './useAccountSwitcher'
 export * from './useAccountHasClaimableRewards'
 export * from './useAccessAndRemixSettings'

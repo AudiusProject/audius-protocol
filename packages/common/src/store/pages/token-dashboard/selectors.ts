@@ -1,6 +1,7 @@
+import { AUDIO } from '@audius/fixed-decimal'
+
 import { BNWei } from '../../../models/Wallet'
 import { Nullable } from '../../../utils/typeUtils'
-import { stringWeiToBN } from '../../../utils/wallet'
 import { CommonState } from '../../commonStore'
 
 export const getSendData = (
@@ -17,7 +18,7 @@ export const getSendData = (
   )
     return null
   const { recipientWallet, amount } = modalState.flowState
-  return { recipientWallet, amount: stringWeiToBN(amount) }
+  return { recipientWallet, amount: AUDIO(amount).value as BNWei }
 }
 
 export const getModalState = (state: CommonState) =>

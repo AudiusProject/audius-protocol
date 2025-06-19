@@ -22,8 +22,9 @@ import {
   playerActions,
   playerSelectors
 } from '@audius/common/store'
-import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
+import { Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { View, Platform } from 'react-native'
 import { CastButton, useDevices } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
@@ -62,7 +63,7 @@ const messages = {
   castLabel: 'Cast to Device',
   shareLabel: 'Share Content',
   optionsLabel: 'More Options',
-  price: (price: number) => `$${formatPrice(price)}`
+  price: (price: number) => `$${USDC(price / 100).toLocaleString()}`
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({

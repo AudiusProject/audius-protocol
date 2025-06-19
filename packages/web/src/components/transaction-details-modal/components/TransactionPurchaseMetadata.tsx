@@ -1,9 +1,5 @@
 import { InAppAudioPurchaseMetadata } from '@audius/common/store'
-import {
-  formatNumberString,
-  makeSolanaTransactionLink,
-  Nullable
-} from '@audius/common/utils'
+import { makeSolanaTransactionLink, Nullable } from '@audius/common/utils'
 import { IconExternalLink } from '@audius/harmony'
 
 import {
@@ -36,9 +32,9 @@ export const TransactionPurchaseMetadata = ({
         <IconUSD />
         <span className={styles.amount}>
           {metadata?.usd
-            ? formatNumberString(metadata.usd, {
-                minDecimals: 2,
-                maxDecimals: 2
+            ? Number(metadata.usd).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
               })
             : '?'}
         </span>
@@ -64,7 +60,9 @@ export const TransactionPurchaseMetadata = ({
         <IconSOL />
         <span className={styles.amount}>
           {metadata?.sol
-            ? formatNumberString(metadata.sol, { maxDecimals: 2 })
+            ? Number(metadata.sol).toLocaleString(undefined, {
+                maximumFractionDigits: 2
+              })
             : '?'}
         </span>
         <span className={styles.label}>{messages.sol}</span>
@@ -89,7 +87,9 @@ export const TransactionPurchaseMetadata = ({
         <IconAUDIO />
         <span className={styles.amount}>
           {metadata?.audio
-            ? formatNumberString(metadata.audio, { maxDecimals: 2 })
+            ? Number(metadata.audio).toLocaleString(undefined, {
+                maximumFractionDigits: 2
+              })
             : '?'}
         </span>
         <span className={styles.label}>{messages.audio}</span>

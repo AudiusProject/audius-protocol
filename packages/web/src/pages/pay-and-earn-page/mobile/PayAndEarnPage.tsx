@@ -1,28 +1,17 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useContext, useEffect } from 'react'
 
-import {
-  selectAccountHasTracks,
-  useCurrentAccountUser
-} from '@audius/common/api'
-import { route } from '@audius/common/utils'
-import { Flex, Paper, SelectablePill } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
+import { Flex, Paper, Text } from '@audius/harmony'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/mobile/NavContext'
-import { replace } from 'utils/navigation'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
 import { SalesTab, useSales } from '../components/SalesTab'
-import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
-
-const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 
 const messages = {
   title: 'Pay & Earn',
@@ -32,98 +21,81 @@ const messages = {
   withdrawals: 'Withdrawals'
 }
 
-type TableMetadata = {
-  label: string
-  downloadCSV: () => void
-  isDownloadCSVButtonDisabled: boolean
-}
-
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
-  const dispatch = useDispatch()
-  const { data: hasTracks } = useCurrentAccountUser({
-    select: (user) => selectAccountHasTracks(user)
-  })
+  // Get the appropriate hook data based on tableView
+  const salesData = useSales()
+  const purchasesData = usePurchases()
+  const withdrawalsData = useWithdrawals()
 
-  const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
-  const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
-  useEffect(() => {
-    if (hasTracks !== null) {
-      const tableOptions = hasTracks
-        ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
-        : [TableType.PURCHASES, TableType.WITHDRAWALS]
-      setTableOptions(tableOptions)
-      setSelectedTable(tableView ?? tableOptions[0])
-    }
-  }, [hasTracks, setSelectedTable, tableView, setTableOptions])
-
-  const {
-    count: salesCount,
-    data: sales,
-    fetchMore: fetchMoreSales,
-    onSort: onSalesSort,
-    onClickRow: onSalesClickRow,
-    isEmpty: isSalesEmpty,
-    isLoading: isSalesLoading,
-    downloadCSV: downloadSalesCSV
-  } = useSales()
-  const {
-    count: purchasesCount,
-    data: purchases,
-    fetchMore: fetchMorePurchases,
-    onSort: onPurchasesSort,
-    onClickRow: onPurchasesClickRow,
-    isEmpty: isPurchasesEmpty,
-    isLoading: isPurchasesLoading,
-    downloadCSV: downloadPurchasesCSV
-  } = usePurchases()
-  const {
-    count: withdrawalsCount,
-    data: withdrawals,
-    fetchMore: fetchMoreWithdrawals,
-    onSort: onWithdrawalsSort,
-    onClickRow: onWithdrawalsClickRow,
-    isEmpty: isWithdrawalsEmpty,
-    isLoading: isWithdrawalsLoading,
-    downloadCSV: downloadWithdrawalsCSV
-  } = useWithdrawals()
-
-  const tables: Record<TableType, TableMetadata> = {
-    [TableType.SALES]: {
-      label: messages.sales,
-      downloadCSV: downloadSalesCSV,
-      isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
-    },
-    [TableType.PURCHASES]: {
-      label: messages.purchases,
-      downloadCSV: downloadPurchasesCSV,
-      isDownloadCSVButtonDisabled: isPurchasesLoading || isPurchasesEmpty
-    },
-    [TableType.WITHDRAWALS]: {
-      label: messages.withdrawals,
-      downloadCSV: downloadWithdrawalsCSV,
-      isDownloadCSVButtonDisabled: isWithdrawalsLoading || isWithdrawalsEmpty
+  // Get the appropriate table data based on tableView
+  const getTableData = () => {
+    switch (tableView) {
+      case TableType.SALES:
+        return {
+          label: messages.sales,
+          downloadCSV: salesData.downloadCSV,
+          isDownloadCSVButtonDisabled: salesData.isLoading || salesData.isEmpty
+        }
+      case TableType.PURCHASES:
+        return {
+          label: messages.purchases,
+          downloadCSV: purchasesData.downloadCSV,
+          isDownloadCSVButtonDisabled:
+            purchasesData.isLoading || purchasesData.isEmpty
+        }
+      case TableType.WITHDRAWALS:
+        return {
+          label: messages.withdrawals,
+          downloadCSV: withdrawalsData.downloadCSV,
+          isDownloadCSVButtonDisabled:
+            withdrawalsData.isLoading || withdrawalsData.isEmpty
+        }
     }
   }
 
-  const handleSelectablePillClick = useCallback(
-    (t: TableType) => {
-      let route: string
-      switch (t) {
-        case TableType.SALES:
-          route = SALES_PAGE
-          break
-        case TableType.PURCHASES:
-          route = PURCHASES_PAGE
-          break
-        case TableType.WITHDRAWALS:
-          route = WITHDRAWALS_PAGE
-          break
-      }
-      setSelectedTable(t)
-      dispatch(replace(route))
-    },
-    [setSelectedTable, dispatch]
-  )
+  const tableData = getTableData()
+
+  // Render the appropriate table component based on tableView
+  const renderTable = () => {
+    switch (tableView) {
+      case TableType.WITHDRAWALS:
+        return (
+          <WithdrawalsTab
+            data={withdrawalsData.data}
+            count={withdrawalsData.count}
+            isEmpty={withdrawalsData.isEmpty}
+            isLoading={withdrawalsData.isLoading}
+            onSort={withdrawalsData.onSort}
+            onClickRow={withdrawalsData.onClickRow}
+            fetchMore={withdrawalsData.fetchMore}
+          />
+        )
+      case TableType.PURCHASES:
+        return (
+          <PurchasesTab
+            data={purchasesData.data}
+            count={purchasesData.count}
+            isEmpty={purchasesData.isEmpty}
+            isLoading={purchasesData.isLoading}
+            onSort={purchasesData.onSort}
+            onClickRow={purchasesData.onClickRow}
+            fetchMore={purchasesData.fetchMore}
+          />
+        )
+      case TableType.SALES:
+        return (
+          <SalesTab
+            data={salesData.data}
+            count={salesData.count}
+            isEmpty={salesData.isEmpty}
+            isLoading={salesData.isLoading}
+            onSort={salesData.onSort}
+            onClickRow={salesData.onClickRow}
+            fetchMore={salesData.fetchMore}
+          />
+        )
+    }
+  }
 
   useSubPageHeader()
 
@@ -138,66 +110,22 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       description={messages.description}
       containerClassName={styles.mobilePageContainer}
     >
-      {!tableOptions || !selectedTable ? (
-        <LoadingSpinner className={styles.spinner} />
-      ) : (
-        <>
-          <USDCCard />
-          <Paper w='100%'>
-            <Flex direction='column' w='100%'>
-              <Flex
-                ph='xl'
-                pt='xl'
-                direction='row'
-                justifyContent='space-between'
-                w='100%'
-              >
-                <Flex gap='s'>
-                  {tableOptions.map((t) => (
-                    <SelectablePill
-                      key={tables[t].label}
-                      label={tables[t].label}
-                      isSelected={selectedTable === t}
-                      onClick={() => handleSelectablePillClick(t)}
-                    />
-                  ))}
-                </Flex>
-              </Flex>
-              {selectedTable === 'withdrawals' ? (
-                <WithdrawalsTab
-                  data={withdrawals}
-                  count={withdrawalsCount}
-                  isEmpty={isWithdrawalsEmpty}
-                  isLoading={isWithdrawalsLoading}
-                  onSort={onWithdrawalsSort}
-                  onClickRow={onWithdrawalsClickRow}
-                  fetchMore={fetchMoreWithdrawals}
-                />
-              ) : selectedTable === 'purchases' ? (
-                <PurchasesTab
-                  data={purchases}
-                  count={purchasesCount}
-                  isEmpty={isPurchasesEmpty}
-                  isLoading={isPurchasesLoading}
-                  onSort={onPurchasesSort}
-                  onClickRow={onPurchasesClickRow}
-                  fetchMore={fetchMorePurchases}
-                />
-              ) : (
-                <SalesTab
-                  data={sales}
-                  count={salesCount}
-                  isEmpty={isSalesEmpty}
-                  isLoading={isSalesLoading}
-                  onSort={onSalesSort}
-                  onClickRow={onSalesClickRow}
-                  fetchMore={fetchMoreSales}
-                />
-              )}
-            </Flex>
-          </Paper>
-        </>
-      )}
+      <Paper w='100%'>
+        <Flex direction='column' w='100%'>
+          <Flex
+            ph='xl'
+            pt='xl'
+            direction='row'
+            justifyContent='space-between'
+            w='100%'
+          >
+            <Text variant='heading' size='l'>
+              {tableData.label}
+            </Text>
+          </Flex>
+          {renderTable()}
+        </Flex>
+      </Paper>
     </MobilePageContainer>
   )
 }

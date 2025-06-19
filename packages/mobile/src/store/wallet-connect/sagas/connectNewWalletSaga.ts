@@ -1,10 +1,8 @@
 import { queryCurrentUserId } from '@audius/common/api'
-import type { BNWei } from '@audius/common/models'
 import { Name, Chain } from '@audius/common/models'
 import { tokenDashboardPageActions, getContext } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
-import BN from 'bn.js'
 import bs58 from 'bs58'
 import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
 import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
@@ -74,7 +72,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet: public_key,
           chain: Chain.Sol,
-          balance: new BN(balance.toString()) as BNWei,
+          balance: BigInt(balance.toString()),
           collectibleCount
         })
       )
@@ -123,7 +121,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet: publicKeyEncoded,
           chain: Chain.Sol,
-          balance: new BN(balance.toString()) as BNWei,
+          balance: BigInt(balance.toString()),
           collectibleCount
         })
       )
@@ -151,7 +149,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet,
           chain: Chain.Eth,
-          balance: new BN(balance.toString()) as BNWei,
+          balance: BigInt(balance.toString()),
           collectibleCount
         })
       )
