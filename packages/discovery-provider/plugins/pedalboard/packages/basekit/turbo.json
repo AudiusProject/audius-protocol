@@ -1,6 +1,6 @@
 {
   "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "lint": {
       "outputLogs": "new-only",
       "dependsOn": ["^build"],

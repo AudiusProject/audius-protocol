@@ -1,6 +1,6 @@
 {
   "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "typecheck": {
       "dependsOn": ["build", "^build"],
       "outputLogs": "new-only"
