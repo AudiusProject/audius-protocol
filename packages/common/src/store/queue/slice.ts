@@ -17,6 +17,19 @@ export const initialState: QueueState = {
   undershot: false
 }
 
+// Helper function to generate shuffle order with current track first
+const generateShuffleOrder = (order: Queueable[], currentIndex: number) => {
+  const availableIndices = order
+    .map((_, index) => index)
+    .filter((index) => index !== currentIndex)
+
+  const shuffledIndices = availableIndices.sort(() => Math.random() - 0.5)
+
+  return currentIndex >= 0
+    ? [currentIndex, ...shuffledIndices]
+    : shuffledIndices
+}
+
 type PlayPayload = {
   uid?: Nullable<UID>
   trackId?: Nullable<ID>
@@ -84,9 +97,21 @@ const slice = createSlice({
         newIndex = state.positions[collectible.id]
       }
 
+      const previousIndex = state.index
       state.index = newIndex ?? state.index
       state.overshot = false
       state.undershot = false
+
+      // If shuffle is enabled and we're playing a different track, update shuffle order
+      if (
+        state.shuffle &&
+        state.order.length > 0 &&
+        newIndex !== undefined &&
+        newIndex !== previousIndex
+      ) {
+        state.shuffleOrder = generateShuffleOrder(state.order, newIndex)
+        state.shuffleIndex = 0
+      }
     },
     queueAutoplay: (_state, _action: PayloadAction<QueueAutoplayPayload>) => {},
     // Pauses the queue
@@ -102,10 +127,23 @@ const slice = createSlice({
       }
 
       if (state.shuffle) {
-        const newShuffleIndex =
-          (state.shuffleIndex + 1) % state.shuffleOrder.length
-        state.shuffleIndex = newShuffleIndex
-        state.index = state.shuffleOrder[newShuffleIndex]
+        const newShuffleIndex = state.shuffleIndex + 1
+
+        // Loop back to beginning if we've reached the end
+        if (newShuffleIndex >= state.shuffleOrder.length) {
+          if (state.repeat === RepeatMode.ALL) {
+            // Loop back to beginning of shuffle order
+            state.shuffleIndex = 0
+          } else {
+            // End of queue reached
+            state.overshot = true
+            return
+          }
+        } else {
+          state.shuffleIndex = newShuffleIndex
+        }
+
+        state.index = state.shuffleOrder[state.shuffleIndex]
         return
       }
 
@@ -126,12 +164,23 @@ const slice = createSlice({
     // Skips to the previous track in the queue
     previous: (state, _action: PayloadAction<PreviousPayload>) => {
       if (state.shuffle) {
-        const newShuffleIndex =
-          state.shuffleIndex - 1 < 0
-            ? state.shuffleIndex - 1 + state.shuffleOrder.length
-            : state.shuffleIndex - 1
-        state.shuffleIndex = newShuffleIndex
-        state.index = state.shuffleOrder[newShuffleIndex]
+        const newShuffleIndex = state.shuffleIndex - 1
+
+        // Loop to end if we've gone before the beginning
+        if (newShuffleIndex < 0) {
+          if (state.repeat === RepeatMode.ALL) {
+            // Loop to end of shuffle order
+            state.shuffleIndex = state.shuffleOrder.length - 1
+          } else {
+            // Beginning of queue reached
+            state.undershot = true
+            return
+          }
+        } else {
+          state.shuffleIndex = newShuffleIndex
+        }
+
+        state.index = state.shuffleOrder[state.shuffleIndex]
         return
       }
 
@@ -160,6 +209,15 @@ const slice = createSlice({
     shuffle: (state, action: PayloadAction<ShufflePayload>) => {
       const { enable } = action.payload
       state.shuffle = enable
+
+      if (enable && state.order.length > 0) {
+        state.shuffleOrder = generateShuffleOrder(state.order, state.index)
+        state.shuffleIndex = 0
+      } else if (!enable) {
+        // Reset shuffle state when disabling shuffle
+        state.shuffleOrder = []
+        state.shuffleIndex = -1
+      }
     },
     // Reorders the queue to the provided order
     reorder: (state, action: PayloadAction<ReorderPayload>) => {
@@ -180,6 +238,7 @@ const slice = createSlice({
       const newIndex =
         state.index >= 0 ? newPositions[state.order[state.index].uid] : -1
 
+      // No shuffle order regeneration here
       state.order = newOrder
       state.positions = newPositions
       state.index = newIndex
@@ -212,13 +271,9 @@ const slice = createSlice({
         addedPositions
       )
 
-      const newShuffleOrder = newOrder
-        .map(Number.call, Number)
-        .sort(() => Math.random() - 0.5) as number[]
-
+      // No shuffle order regeneration here
       state.order = newOrder
       state.positions = newPositions
-      state.shuffleOrder = newShuffleOrder
     },
     // Removes a specific uid from the queue
     remove: (state, action: PayloadAction<RemovePayload>) => {
@@ -241,13 +296,9 @@ const slice = createSlice({
         {} as { [uid: string]: number }
       )
 
-      const newShuffleOrder = newOrder
-        .map(Number.call, Number)
-        .sort(() => Math.random() - 0.5) as number[]
-
+      // No shuffle order regeneration here
       state.order = newOrder
       state.positions = newPositions
-      state.shuffleOrder = newShuffleOrder
     },
     // Clears the queue and performs clean up on queued items.
     clear: (state, _action: PayloadAction<ClearPayload>) => {
