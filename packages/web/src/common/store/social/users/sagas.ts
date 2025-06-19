@@ -3,7 +3,8 @@ import {
   queryUsers,
   selectIsGuestAccount,
   queryUser,
-  getUserQueryKey
+  getUserQueryKey,
+  queryCurrentUserId
 } from '@audius/common/api'
 import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
@@ -222,8 +223,7 @@ export function* unfollowUser(
     return
   }
 
-  const users = yield* call(queryUsers, [action.userId, accountId])
-  const currentUser = users[accountId].metadata
+  const currentUserId = yield* call(queryCurrentUserId)
 
   // Decrement the follower count on the unfollowed user
   queryClient.setQueryData(getUserQueryKey(action.userId), (prevUser) =>
@@ -237,7 +237,7 @@ export function* unfollowUser(
   )
 
   // Decrement the followee count on the current user
-  queryClient.setQueryData(getUserQueryKey(currentUser.user_id), (prevUser) =>
+  queryClient.setQueryData(getUserQueryKey(currentUserId), (prevUser) =>
     !prevUser
       ? undefined
       : {
@@ -299,8 +299,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
-        const users = yield* call(queryUsers, [userId, accountId])
-        const currentUser = users[accountId].metadata
+        const currentUserId = yield* call(queryCurrentUserId)
 
         // Revert decremented follower count on unfollowed user
         queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
@@ -314,15 +313,13 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
         )
 
         // Revert decremented followee count on current user
-        queryClient.setQueryData(
-          getUserQueryKey(currentUser.user_id),
-          (prevUser) =>
-            !prevUser
-              ? undefined
-              : {
-                  ...prevUser,
-                  followee_count: prevUser.followee_count + 1
-                }
+        queryClient.setQueryData(getUserQueryKey(currentUserId), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                followee_count: prevUser.followee_count + 1
+              }
         )
       }
     )
