@@ -83,7 +83,7 @@ export const UploadCompleteScreen = () => {
   const dispatch = useDispatch()
   const { data: accountUser } = useCurrentAccountUser()
   const { data: track } = useTrack(trackId)
-  const trackRoute = getTrackRoute(track!, true)
+  const trackRoute = track ? getTrackRoute(track, true) : ''
 
   const handleClose = useCallback(() => {
     navigation.getParent()?.goBack()
