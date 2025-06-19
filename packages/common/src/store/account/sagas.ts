@@ -16,7 +16,6 @@ import {
   getWalletAddressesQueryKey,
   queryAccountUser,
   getCurrentAccountQueryKey,
-  queryCurrentAccount,
   queryCurrentUserId,
   primeUserData,
   getUserQueryKey,
