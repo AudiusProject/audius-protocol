@@ -18,7 +18,6 @@ import {
   UPDATE_COLLECTION_SORT_MODE,
   SET_PROFILE_FIELD,
   DISMISS_PROFILE_METER,
-  SET_NOTIFICATION_SUBSCRIPTION,
   SET_CURRENT_USER,
   FetchProfileAction,
   FetchProfileSucceededAction,
@@ -30,7 +29,6 @@ import {
   UpdateProfileFailedAction,
   UpdateCollectionSortModeAction,
   DismissProfileMeterAction,
-  SetNotificationSubscriptionAction,
   ProfilePageAction
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
@@ -42,7 +40,6 @@ const initialProfileState = {
   userId: null,
   status: Status.IDLE,
 
-  isNotificationSubscribed: false,
   updating: false,
   updateSuccess: false,
   updateError: false,
@@ -178,16 +175,6 @@ const actionsMap = {
     action: DismissProfileMeterAction
   ) {
     return updateProfile(state, action, { profileMeterDismissed: true })
-  },
-  [SET_NOTIFICATION_SUBSCRIPTION](
-    state: ProfilePageState,
-    action: SetNotificationSubscriptionAction
-  ) {
-    const { isSubscribed } = action
-
-    return updateProfile(state, action, {
-      isNotificationSubscribed: isSubscribed
-    })
   }
 }
 

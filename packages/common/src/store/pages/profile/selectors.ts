@@ -36,8 +36,6 @@ export const getProfileCollectionSortMode = (
   state: CommonState,
   handle: string
 ) => getProfile(state, handle)?.collectionSortMode
-export const getIsSubscribed = (state: CommonState, handle?: string) =>
-  getProfile(state, handle)?.isNotificationSubscribed
 
 export const getProfileFeedLineup = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.feed ?? initialFeedState
@@ -46,8 +44,8 @@ export const getProfileTracksLineup = (state: CommonState, handle?: string) =>
 
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
-    [getProfileStatus, getProfileError, getProfileUserId, getIsSubscribed],
-    (status, error, userId, isSubscribed) => {
+    [getProfileStatus, getProfileError, getProfileUserId],
+    (status, error, userId) => {
       const emptyState = {
         userId: null,
         status,
@@ -59,7 +57,7 @@ export const makeGetProfile = () => {
       return {
         userId,
         status,
-        isSubscribed
+        isSubscribed: false
       }
     }
   )

@@ -69,8 +69,6 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     return null
   }
 
-  const profile = { user_id, handle, does_current_user_follow }
-
   const isOwner =
     params.handle === 'accountUser' ||
     params.handle?.toLowerCase() === accountHandle?.toLowerCase() ||
@@ -90,9 +88,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
             <MessageLockedButton userId={user_id} />
           )
         ) : null}
-        {does_current_user_follow ? (
-          <SubscribeButton profile={profile} />
-        ) : null}
+        {does_current_user_follow ? <SubscribeButton userId={user_id} /> : null}
         <FollowButton
           userId={user_id}
           onPress={onFollow}

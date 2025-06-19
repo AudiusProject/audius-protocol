@@ -18,7 +18,6 @@ import {
   User
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
-import { getIsSubscribed } from '@audius/common/src/store/pages/profile/selectors'
 import {
   accountActions,
   cacheCollectionsActions,
@@ -47,7 +46,7 @@ import {
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
-import { connect, useSelector } from 'react-redux'
+import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
@@ -103,7 +102,6 @@ type OwnProps = {
     | ComponentType<DesktopProfilePageProps>
   profile: {
     status: Status | null | undefined
-    isSubscribed: boolean | null | undefined
     profile: User | undefined | null
   }
 }
@@ -735,7 +733,7 @@ class ProfilePageClassComponent extends PureComponent<
 
   render() {
     const {
-      profile: { profile, status: profileLoadingStatus, isSubscribed },
+      profile: { profile, status: profileLoadingStatus },
       // Tracks
       artistTracks,
       playArtistTrack,
@@ -748,7 +746,6 @@ class ProfilePageClassComponent extends PureComponent<
       goToRoute,
       createPlaylist,
       currentQueueItem,
-      setNotificationSubscription,
       setFollowingUserId,
       setFollowersUserId
     } = this.props
@@ -926,8 +923,6 @@ class ProfilePageClassComponent extends PureComponent<
 
       areArtistRecommendationsVisible,
       onCloseArtistRecommendations: this.onCloseArtistRecommendations,
-      setNotificationSubscription,
-      isSubscribed: !!isSubscribed,
 
       userFeed,
       playUserFeedTrack,
@@ -1083,19 +1078,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           CreatePlaylistSource.PROFILE_PAGE
         )
       ),
-    setNotificationSubscription: (
-      userId: ID,
-      isSubscribed: boolean,
-      update = false
-    ) =>
-      dispatch(
-        profileActions.setNotificationSubscription(
-          userId,
-          isSubscribed,
-          update,
-          handleLower
-        )
-      ),
 
     setFollowingUserId: (userId: ID) => dispatch(setFollowing(userId)),
     setFollowersUserId: (userId: ID) => dispatch(setFollowers(userId)),
@@ -1191,12 +1173,11 @@ const ProfilePageProviderWrapper = (
   props: Omit<ComponentProps<typeof ProfilePageInner>, 'profile'>
 ) => {
   const profile = useProfileUser()
-  const isSubscribed = useSelector(getIsSubscribed)
 
   return (
     <ProfilePageInner
       {...props}
-      profile={{ profile: profile.user, isSubscribed, status: profile.status }}
+      profile={{ profile: profile.user, status: profile.status }}
     />
   )
 }
