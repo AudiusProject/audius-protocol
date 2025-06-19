@@ -5,8 +5,14 @@ import snakecaseKeys from 'snakecase-keys'
 import { Favorite, FavoriteType } from '~/models/Favorite'
 
 export const favoriteFromSDK = (input: full.Favorite): Favorite | undefined => {
-  const decodedSaveItemId = OptionalHashId.parse(input.favoriteItemId)
-  const decodedUserId = OptionalHashId.parse(input.userId)
+  const decodedSaveItemId =
+    typeof input.favoriteItemId === 'string'
+      ? OptionalHashId.parse(input.favoriteItemId)
+      : input.favoriteItemId
+  const decodedUserId =
+    typeof input.userId === 'string'
+      ? OptionalHashId.parse(input.userId)
+      : input.userId
   if (!decodedSaveItemId || !decodedUserId) {
     return undefined
   }
