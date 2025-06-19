@@ -1,4 +1,10 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { DownloadQuality, Name } from '@audius/common/models'
@@ -36,8 +42,8 @@ import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
-import { UploadFileContext } from '../upload-screen/screens/UploadFileContext'
 
+import { EditTrackFileContext } from './EditTrackFileContext'
 import { EditTrackFormOverflowMenuDrawer } from './EditTrackFormOverflowMenuDrawer'
 import { EditTrackFormPreviewContextProvider } from './EditTrackFormPreviewContext'
 import { CancelEditTrackDrawer } from './components'
@@ -99,7 +105,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const { track, selectFile } = useContext(UploadFileContext)
+  const editTrackContext = useContext(EditTrackFileContext)
+  const track = editTrackContext?.track
+  const selectFile = editTrackContext?.selectFile
   const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
@@ -135,6 +143,12 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
 
   const handleReplace = useCallback(() => {
+    if (!selectFile) {
+      // For upload flow, we can't replace the track since it's passed via navigation params
+      console.warn('Track replacement not supported in upload flow')
+      return
+    }
+
     selectFile()
 
     // Track Replace event
@@ -195,7 +209,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [isUpload, setTitle, track])
 
   const handleReplaceAudio = useCallback(() => {
-    if (!track || !values.track_id) return
+    if (!track || !values.track_id) {
+      console.warn('Track replacement not available in upload flow')
+      return
+    }
 
     const metadata = getUploadMetadataFromFormValues(values, initialValues)
 

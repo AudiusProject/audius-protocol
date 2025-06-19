@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import { useFocusEffect, useRoute } from '@react-navigation/native'
@@ -12,6 +12,7 @@ import {
   Tile
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useTrackFileSelector } from 'app/hooks/useTrackFileSelector'
 import { make, track as trackAnalytcs } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -19,8 +20,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { TopBarIconButton } from '../../app-screen'
 import type { UploadParamList, UploadRouteProp } from '../types'
-
-import { UploadFileContext } from './UploadFileContext'
 
 const messages = {
   screenTitle: 'Upload',
@@ -54,7 +53,7 @@ export const SelectTrackScreen = () => {
   const navigation = useNavigation<UploadParamList>()
   const { params } = useRoute<UploadRouteProp<'SelectTrack'>>()
   const [navigatedBack, setNavigatedBack] = useState(false)
-  const { track, loading, error, selectFile } = useContext(UploadFileContext)
+  const { track, loading, error, selectFile } = useTrackFileSelector()
 
   useEffect(() => {
     if (track) {
@@ -66,6 +65,7 @@ export const SelectTrackScreen = () => {
         }
       }
       navigation.push('CompleteTrack', {
+        track,
         initialMetadata: params?.initialMetadata
       })
     }
