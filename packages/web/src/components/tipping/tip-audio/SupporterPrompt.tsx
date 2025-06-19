@@ -1,6 +1,6 @@
 import { useSupporterPrompt } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
-import { formatWei } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { IconTrophy } from '@audius/harmony'
 
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -40,7 +40,9 @@ export const SupporterPrompt = ({ receiverId }: SupporterPromptProps) => {
             <>
               {messages.becomeTopSupporterPrefix}
               <span className={styles.amount}>
-                {formatWei(amountToDethrone!, true, 0)}
+                {AUDIO(amountToDethrone!).toLocaleString(undefined, {
+                  maximumFractionDigits: 0
+                })}
               </span>
               {messages.becomeTopSupporterSuffix}
             </>

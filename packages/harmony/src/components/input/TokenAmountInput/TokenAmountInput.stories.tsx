@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { Meta, StoryObj } from '@storybook/react'
-import BN from 'bn.js'
 
 import { TokenAmountInput } from './TokenAmountInput'
 import { TokenAmountInputProps } from './types'
@@ -24,14 +23,14 @@ type Story = StoryObj<typeof TokenAmountInput>
 
 const ControlledTokenAmountInput = (props: TokenAmountInputProps) => {
   const [value, setValue] = useState<string>('')
-  const [, setValueBN] = useState<BN | undefined>(new BN(0))
+  const [, setValueBigInt] = useState<bigint>(BigInt(0))
   return (
     <TokenAmountInput
       {...props}
       value={value}
-      onChange={(value, valueBN) => {
+      onChange={(value, valueBigInt) => {
         setValue(value)
-        setValueBN(valueBN)
+        setValueBigInt(valueBigInt)
       }}
     />
   )

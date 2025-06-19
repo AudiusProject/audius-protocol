@@ -1,6 +1,6 @@
 import { useSupporter } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { stringWeiToBN, formatWei } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { IconTipping as IconTip } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -32,7 +32,9 @@ export const ArtistChipSupportFrom = ({
         <div className={cn(styles.amount)}>
           <IconTip className={styles.icon} />
           <span className={styles.value}>
-            {formatWei(stringWeiToBN(amount), true)}
+            {AUDIO(BigInt(amount)).toLocaleString(undefined, {
+              maximumFractionDigits: 0
+            })}
           </span>
           <span className={styles.label}>{messages.audio}</span>
         </div>
