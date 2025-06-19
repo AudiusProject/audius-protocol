@@ -6,6 +6,8 @@ export type AvatarProps = ArtworkInnerProps & {
   variant?: 'default' | 'strong'
   size?: 'auto' | 'small' | 'medium' | 'large' | 'xl' | 'xxl'
   borderWidth?: 'thin' | 'default'
+  isLoading?: boolean
+  onError?: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void
 }
 
 const sizeMap = {
@@ -27,6 +29,9 @@ export const Avatar = (props: AvatarProps) => {
     variant,
     size = 'auto',
     borderWidth = size === 'small' ? 'thin' : 'default',
+    src,
+    isLoading,
+    onError,
     ...other
   } = props
 
@@ -38,6 +43,9 @@ export const Avatar = (props: AvatarProps) => {
       shadow={variant === 'strong' ? 'emphasis' : 'flat'}
       borderWidth={borderWidthMap[borderWidth]}
       css={variant === 'strong' ? { zIndex: 1 } : undefined}
+      src={src}
+      onError={onError}
+      isLoading={isLoading}
       {...other}
     />
   )

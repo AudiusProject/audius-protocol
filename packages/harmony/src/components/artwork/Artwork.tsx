@@ -11,7 +11,8 @@ export type ArtworkProps = {
   borderWidth?: number
   'data-testid'?: string
   noLoading?: boolean
-} & Pick<ComponentProps<'img'>, 'src'> &
+  onError?: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void
+} & Pick<ComponentProps<'img'>, 'src' | 'onError'> &
   BoxProps
 
 /**
@@ -30,6 +31,7 @@ export const Artwork = (props: ArtworkProps) => {
     shadow,
     children,
     'data-testid': testId,
+    onError,
     ...other
   } = props
   const imgRef = useRef<HTMLImageElement | null>(null)
@@ -86,6 +88,10 @@ export const Artwork = (props: ArtworkProps) => {
             w='100%'
             onLoad={() => {
               setIsLoadingState(false)
+            }}
+            onError={(event) => {
+              setIsLoadingState(false)
+              onError?.(event)
             }}
             // @ts-ignore
             src={src}

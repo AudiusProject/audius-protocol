@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 import { useCurrentUserId, useUser } from '@audius/common/api'
 import { imageProfilePicEmptyNew } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
@@ -7,6 +9,7 @@ import {
   type AvatarProps as HarmonyAvatarProps
 } from '@audius/harmony'
 
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
 import { useProfilePicture } from 'hooks/useProfilePicture'
@@ -25,7 +28,7 @@ export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   popover?: boolean
 }
 
-export const Avatar = (props: AvatarProps) => {
+export const AvatarContent = (props: AvatarProps) => {
   const {
     userId,
     onClick,
@@ -35,12 +38,24 @@ export const Avatar = (props: AvatarProps) => {
     ...other
   } = props
 
+  const [hasError, setHasError] = useState(false)
+
+  useEffect(() => {
+    setHasError(false)
+  }, [userId])
+
+  const handleError = () => {
+    setHasError(true)
+  }
+
   const profileImage = useProfilePicture({
     userId: userId ?? undefined,
     size: imageSize
   })
 
   const image = userId ? profileImage : imageProfilePicEmptyNew
+
+  const finalImageSrc = hasError ? imageProfilePicEmptyNew : image
 
   const { data: currentUserId } = useCurrentUserId()
   const { data: userName } = useUser(userId, {
@@ -51,18 +66,27 @@ export const Avatar = (props: AvatarProps) => {
   const label = `${messages.goTo} ${displayName} ${messages.profile}`
 
   if (ariaHidden) {
-    return <HarmonyAvatar src={image} {...other} />
+    return (
+      <HarmonyAvatar
+        key={hasError ? 'error' : 'no-error'}
+        src={finalImageSrc}
+        onError={handleError}
+        {...other}
+      />
+    )
   }
 
   if (onClick) {
     return (
       <HarmonyAvatar
+        key={hasError ? 'error' : 'no-error'}
         role='button'
         tabIndex={0}
         aria-label={label}
         onClick={onClick}
         css={{ cursor: 'pointer' }}
-        src={image}
+        src={finalImageSrc}
+        onError={handleError}
         {...other}
       />
     )
@@ -78,10 +102,28 @@ export const Avatar = (props: AvatarProps) => {
         popoverMount={MountPlacement.PARENT}
         noOverflow={popover}
       >
-        <HarmonyAvatar src={image} {...other} />
+        <HarmonyAvatar
+          key={hasError ? 'error' : 'no-error'}
+          data-testid='avatar-test'
+          src={finalImageSrc}
+          onError={handleError}
+          {...other}
+        />
       </UserLink>
     )
   }
 
-  return <HarmonyAvatar src={image} {...other} />
+  return (
+    <HarmonyAvatar
+      key={hasError ? 'error' : 'no-error'}
+      src={finalImageSrc}
+      onError={handleError}
+      {...other}
+    />
+  )
 }
+
+export const Avatar = componentWithErrorBoundary(AvatarContent, {
+  name: 'Avatar',
+  fallback: <HarmonyAvatar src={imageProfilePicEmptyNew} h='3xl' w='3xl' />
+})
