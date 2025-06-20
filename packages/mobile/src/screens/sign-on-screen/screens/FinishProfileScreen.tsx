@@ -37,6 +37,7 @@ import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionS
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
@@ -57,6 +58,7 @@ export const FinishProfileScreen = () => {
   const savedProfileImage = useSelector(getProfileImageField)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
   const { value: savedDisplayName } = useSelector(getNameField) ?? {}
+  const isFastReferral = useFastReferral()
 
   useTrackScreen('FinishProfile')
 
@@ -65,9 +67,13 @@ export const FinishProfileScreen = () => {
       const { displayName } = values
       dispatch(setValueField('name', displayName))
       dispatch(signUp())
-      navigation.navigate('SelectGenre')
+      if (isFastReferral) {
+        navigation.navigate('AccountLoading')
+      } else {
+        navigation.navigate('SelectGenre')
+      }
     },
-    [dispatch, navigation]
+    [dispatch, isFastReferral, navigation]
   )
 
   const initialValues = {
