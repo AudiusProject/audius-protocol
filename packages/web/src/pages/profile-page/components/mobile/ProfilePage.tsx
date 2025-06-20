@@ -130,7 +130,6 @@ export type ProfilePageProps = {
     selectedFiles: any,
     source: 'original' | 'unsplash' | 'url'
   ) => Promise<void>
-  setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   areArtistRecommendationsVisible: boolean
   onCloseArtistRecommendations: () => void
@@ -275,7 +274,6 @@ const ProfilePage = g(
     updateDonation,
     updateProfilePicture,
     updateCoverPhoto,
-    setNotificationSubscription,
     didChangeTabsFrom,
     activeTab,
     areArtistRecommendationsVisible,
@@ -552,7 +550,6 @@ const ProfilePage = g(
             donation={donation}
             followers={followers}
             following={following}
-            isSubscribed={isSubscribed}
             onFollow={onFollow}
             onUnfollow={onConfirmUnfollow}
             goToRoute={goToRoute}
@@ -564,7 +561,6 @@ const ProfilePage = g(
             updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : null}
             onUpdateProfilePicture={updateProfilePicture}
             onUpdateCoverPhoto={updateCoverPhoto}
-            setNotificationSubscription={setNotificationSubscription}
             areArtistRecommendationsVisible={areArtistRecommendationsVisible}
             onCloseArtistRecommendations={onCloseArtistRecommendations}
           />

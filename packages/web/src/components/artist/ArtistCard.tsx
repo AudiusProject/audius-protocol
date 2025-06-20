@@ -1,7 +1,7 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
 import { FollowSource, User } from '@audius/common/models'
-import { profilePageActions, usersSocialActions } from '@audius/common/store'
+import { usersSocialActions } from '@audius/common/store'
 import { FollowButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -11,7 +11,6 @@ import styles from './ArtistCard.module.css'
 import { ArtistCardCover } from './ArtistCardCover'
 import { ArtistSupporting } from './ArtistSupporting'
 const { followUser, unfollowUser } = usersSocialActions
-const { setNotificationSubscription } = profilePageActions
 
 type ArtistCardProps = {
   artist: User
@@ -74,7 +73,6 @@ export const ArtistCard = (props: ArtistCardProps) => {
 
   const handleUnfollow = useCallback(() => {
     dispatch(unfollowUser(user_id, FollowSource.HOVER_TILE))
-    dispatch(setNotificationSubscription(user_id, false, false))
   }, [dispatch, user_id])
 
   return (

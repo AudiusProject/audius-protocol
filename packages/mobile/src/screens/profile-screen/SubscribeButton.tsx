@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
-import type { User } from '@audius/common/models'
-import { profilePageActions, profilePageSelectors } from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+import { useUser } from '@audius/common/api'
+import type { ID } from '@audius/common/models'
+import { usersSocialActions as socialActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 import { IconNotificationOn, Button } from '@audius/harmony-native'
 
-const { setNotificationSubscription } = profilePageActions
-const { getIsSubscribed } = profilePageSelectors
+const { subscribeUser, unsubscribeUser } = socialActions
 
 const messages = {
   subscribe: 'subscribe',
@@ -15,25 +15,29 @@ const messages = {
 }
 
 type SubscribeButtonProps = {
-  profile: Partial<Pick<User, 'handle' | 'user_id'>>
+  userId: ID
 }
 
 export const SubscribeButton = (props: SubscribeButtonProps) => {
-  const { profile } = props
-  const { handle, user_id } = profile
-  const isSubscribed = useSelector((state) => getIsSubscribed(state, handle))
+  const { userId } = props
+  const { data: isSubscribed } = useUser(userId, {
+    select: (user) => user.does_current_user_subscribe
+  })
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    if (user_id) {
-      dispatch(
-        setNotificationSubscription(user_id, !isSubscribed, true, handle)
-      )
+    if (userId) {
+      if (isSubscribed) {
+        dispatch(unsubscribeUser(userId))
+      } else {
+        dispatch(subscribeUser(userId))
+      }
     }
-  }, [dispatch, user_id, isSubscribed, handle])
+  }, [dispatch, userId, isSubscribed])
 
   return (
     <Button
+      key={`subscribe-${isSubscribed ? 'primary' : 'secondary'}`}
       haptics={!isSubscribed}
       iconRight={IconNotificationOn}
       variant={isSubscribed ? 'primary' : 'secondary'}
