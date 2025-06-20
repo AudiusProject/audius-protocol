@@ -1,28 +1,31 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import type { TrackMetadataForUpload } from '@audius/common/store'
+import type { TrackForUpload } from '@audius/common/store'
+import { useRoute } from '@react-navigation/native'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { EditTrackScreen } from '../../edit-track-screen'
-import type { UploadParamList } from '../types'
-
-import { UploadFileContext } from './UploadFileContext'
+import type { UploadParamList, UploadRouteProp } from '../types'
 
 export const messages = {
   title: 'Complete Track',
   done: 'Upload Track'
 }
 
-export type CompleteTrackParams = {}
+export type CompleteTrackParams = {
+  track: TrackForUpload
+  initialMetadata?: any
+}
 
 export const CompleteTrackScreen = () => {
-  const { track } = useContext(UploadFileContext)
+  const { params } = useRoute<UploadRouteProp<'CompleteTrack'>>()
+  const { track } = params
   const [uploadAttempt, setUploadAttempt] = useState(1)
   const navigation = useNavigation<UploadParamList>()
 
   const handleSubmit = useCallback(
-    (metadata: TrackMetadataForUpload) => {
+    (metadata: any) => {
       if (track) {
         navigation.push('UploadingTracks', {
           tracks: [{ file: track.file, preview: null, metadata }],

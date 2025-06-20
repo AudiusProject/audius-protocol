@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { DownloadQuality, Name } from '@audius/common/models'
@@ -30,13 +30,13 @@ import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField
 import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useTrackFileSelector } from 'app/hooks/useTrackFileSelector'
 import { FormScreen } from 'app/screens/form-screen'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
-import { UploadFileContext } from '../upload-screen/screens/UploadFileContext'
 
 import { EditTrackFormOverflowMenuDrawer } from './EditTrackFormOverflowMenuDrawer'
 import { EditTrackFormPreviewContextProvider } from './EditTrackFormPreviewContext'
@@ -99,7 +99,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const { track, selectFile } = useContext(UploadFileContext)
+
+  // Use track file selector directly like web version
+  const { track: selectedTrack, selectFile } = useTrackFileSelector()
+
   const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
@@ -111,11 +114,26 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
   const isToBePublished = !isUpload && initiallyHidden && !values.is_unlisted
   const [isOverflowMenuOpen, setIsOverflowMenuOpen] = useState(false)
-  const [{ value: origFilename }] = useField('orig_filename')
+
+  // Formik fields for managing track file state
+  const [{ value: origFilename }, , { setValue: setOrigFilename }] =
+    useField('orig_filename')
   const [{ value: streamUrl }] = useField('stream.url')
   const [, { touched: isTitleTouched }, { setValue: setTitle }] =
     useField('title')
+
   const hasTitleEverBeenTouched = useRef(false)
+  const originalOrigFilename = useRef<string | null>(null)
+  const [selectedTrackFile, setSelectedTrackFile] = useState<string | null>(
+    null
+  )
+
+  // Initialize the original track file reference
+  useEffect(() => {
+    if (origFilename && !originalOrigFilename.current) {
+      originalOrigFilename.current = origFilename
+    }
+  }, [origFilename])
 
   const handleOverflowMenuOpen = useCallback(() => {
     setIsOverflowMenuOpen(true)
@@ -135,6 +153,13 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
 
   const handleReplace = useCallback(() => {
+    if (!selectFile) {
+      console.warn(
+        'Track replacement not available - selectFile function not found'
+      )
+      return
+    }
+
     selectFile()
 
     // Track Replace event
@@ -146,6 +171,33 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       })
     )
   }, [selectFile, isUpload, values.track_id])
+
+  // Handle when a new track file is selected
+  useEffect(() => {
+    if (selectedTrack) {
+      // Update form values with new track metadata
+      if (!hasTitleEverBeenTouched.current) {
+        setTitle(selectedTrack.metadata.title)
+      }
+      setOrigFilename(selectedTrack.metadata.orig_filename)
+
+      // Handle both File and React Native file object types
+      const fileUri =
+        'uri' in selectedTrack.file
+          ? selectedTrack.file.uri
+          : selectedTrack.file.name
+      setSelectedTrackFile(fileUri)
+
+      // Track replace event
+      trackEvent(
+        make({
+          eventName: Name.TRACK_REPLACE_REPLACE,
+          trackId: values.track_id,
+          source: isUpload ? 'upload' : 'edit'
+        })
+      )
+    }
+  }, [selectedTrack, setTitle, setOrigFilename, values.track_id, isUpload])
 
   const handleDownload = useCallback(() => {
     if (!initialValues.track_id) {
@@ -187,22 +239,20 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }
   }, [isTitleTouched])
 
-  // Update title when the file is replaced
-  useEffect(() => {
-    if (isUpload && track && !hasTitleEverBeenTouched.current) {
-      setTitle(track.metadata.title)
-    }
-  }, [isUpload, setTitle, track])
-
   const handleReplaceAudio = useCallback(() => {
-    if (!track || !values.track_id) return
+    if (!selectedTrack || !values.track_id) {
+      console.warn(
+        'Track replacement not available - missing track or track ID'
+      )
+      return
+    }
 
     const metadata = getUploadMetadataFromFormValues(values, initialValues)
 
     dispatch(
       updateTrackAudio({
         trackId: values.track_id,
-        file: track.file,
+        file: selectedTrack.file,
         metadata
       })
     )
@@ -213,13 +263,15 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     initialValues,
     navigation,
     openReplaceTrackProgress,
-    track,
+    selectedTrack,
     values
   ])
 
   const handleSubmit = useCallback(() => {
     Keyboard.dismiss()
-    const isFileReplaced = !isUpload && track?.file
+    // Check if a new file has been selected (either in upload or edit flow)
+    const isFileReplaced =
+      selectedTrackFile && selectedTrackFile !== originalOrigFilename.current
 
     if (isFileReplaced) {
       openReplaceTrackConfirmation({ confirmCallback: handleReplaceAudio })
@@ -239,8 +291,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       handleSubmitProp()
     }
   }, [
-    isUpload,
-    track?.file,
+    selectedTrackFile,
+    originalOrigFilename,
     usersMayLoseAccess,
     isToBePublished,
     isInitiallyScheduled,
@@ -296,10 +348,13 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                   <Flex pt='l' ph='l'>
                     <FileReplaceContainer
                       fileName={
-                        track?.file.name || origFilename || messages.untitled
+                        selectedTrack?.file.name ||
+                        origFilename ||
+                        values.title ||
+                        messages.untitled
                       }
                       // @ts-ignore
-                      filePath={track?.file.uri || streamUrl || ''}
+                      filePath={selectedTrackFile || streamUrl || ''}
                       trackId={values.track_id}
                       isUpload={isUpload}
                       onMenuButtonPress={handleOverflowMenuOpen}
