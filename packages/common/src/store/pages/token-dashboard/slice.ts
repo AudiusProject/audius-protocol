@@ -222,7 +222,7 @@ const slice = createSlice({
         case Chain.Sol: {
           state.associatedWallets.connectedSolWallets?.push({
             address: wallet!,
-            balance,
+            balance: balance ?? BigInt(0),
             collectibleCount: collectibleCount ?? 0
           })
           break
@@ -230,7 +230,7 @@ const slice = createSlice({
         case Chain.Eth: {
           state.associatedWallets.connectedEthWallets?.push({
             address: wallet!,
-            balance,
+            balance: balance ?? BigInt(0),
             collectibleCount: collectibleCount ?? 0
           })
         }

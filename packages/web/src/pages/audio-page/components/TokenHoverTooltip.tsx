@@ -1,13 +1,12 @@
 import { ReactNode } from 'react'
 
-import { BNWei } from '@audius/common/models'
 import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
 type TokenHoverTooltipProps = {
   children: ReactNode
-  balance: BNWei | AudioWei
+  balance: AudioWei
   parentMount?: boolean
 }
 

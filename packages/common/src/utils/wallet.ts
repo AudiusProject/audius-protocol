@@ -1,14 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { FixedDecimal } from '@audius/fixed-decimal'
-import BN from 'bn.js'
-
-import { BNWei } from '~/models/Wallet'
 import { AmountObject } from '~/store/ui'
-
-/** @deprecated Don't use BN in new code if possible. Use BigInt. */
-export const zeroBNWei = new BN(0) as BNWei
-
-// NEW FIXED-DECIMAL UTILITY FUNCTIONS
 
 export const convertBigIntToAmountObject = (
   amount: bigint,
