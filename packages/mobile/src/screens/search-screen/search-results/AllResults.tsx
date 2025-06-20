@@ -10,7 +10,7 @@ import { range } from 'lodash'
 import { Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Divider, Flex, Text } from '@audius/harmony-native'
+import { Flex, Paper, Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
 import { make, track as record } from 'app/services/analytics'
 
@@ -30,9 +30,6 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
       <Text variant='label' size='s' textTransform='uppercase'>
         {title}
       </Text>
-      <Flex flex={1}>
-        <Divider />
-      </Flex>
     </Flex>
   )
 }
@@ -158,18 +155,25 @@ export const AllResults = () => {
       {hasNoResults ? (
         <NoResultsTile />
       ) : (
-        <SectionList<SearchItemType>
-          keyboardShouldPersistTaps='always'
-          stickySectionHeadersEnabled={false}
-          sections={isLoading ? skeletonSections : sections}
-          keyExtractor={({ id, kind }) => `${kind}-${id}`}
-          renderItem={({ item }) => <AllResultsItem item={item} />}
-          renderSectionHeader={({ section: { title } }) => (
-            <Flex ph='l' mt='l'>
-              <SearchSectionHeader title={title} />
-            </Flex>
-          )}
-        />
+        <Flex mh='l' gap='l' mb='xl'>
+          {(isLoading ? skeletonSections : sections).map((section, index) => (
+            <Paper key={`${section.title}`} border='default' shadow='mid'>
+              <SectionList<SearchItemType>
+                key={`${section.title}-${index}`}
+                keyboardShouldPersistTaps='always'
+                stickySectionHeadersEnabled={false}
+                sections={[section]}
+                keyExtractor={({ id, kind }) => `${kind}-${id}`}
+                renderItem={({ item }) => <AllResultsItem item={item} />}
+                renderSectionHeader={({ section: { title } }) => (
+                  <Flex ph='l' mt='l'>
+                    <SearchSectionHeader title={title} />
+                  </Flex>
+                )}
+              />
+            </Paper>
+          ))}
+        </Flex>
       )}
     </Flex>
   )

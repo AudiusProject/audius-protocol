@@ -34,6 +34,7 @@ import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
   Explore: undefined
+  SearchExplore: { autoFocus?: boolean }
   // Smart Collection Screens
   UnderTheRadar: undefined
   MostLoved: undefined

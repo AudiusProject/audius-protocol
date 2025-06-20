@@ -1,4 +1,5 @@
 import { SystemAppearance, Theme } from '@audius/common/models'
+import { useSelector } from 'react-redux'
 
 export const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
@@ -34,6 +35,16 @@ export const getSystemAppearance = () =>
 
 export const isDarkMode = () => shouldShowDark(getTheme())
 export const isMatrix = () => getTheme() === Theme.MATRIX
+
+export const useIsDarkMode = () => {
+  const theme = useSelector(getTheme)
+  return shouldShowDark(theme)
+}
+
+export const useIsMatrix = () => {
+  const theme = useSelector(getTheme)
+  return theme === Theme.MATRIX
+}
 
 export const clearTheme = () => {
   window.localStorage.removeItem(THEME_KEY)

@@ -53,7 +53,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexGrow: 0
   },
   cardHorizontal: {
-    width: spacing(40),
+    width: spacing(43),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
   }

@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 
+import { useIsMobile } from 'hooks/useIsMobile'
+import { useIsDarkMode, useIsMatrix } from 'utils/theme/theme'
+
 import RepeatButton from './RepeatButton'
 
 type RepeatButtonProviderProps = {
-  darkMode: boolean
-  isMatrix: boolean
   onRepeatOff: () => void
   onRepeatSingle: () => void
   onRepeatAll: () => void
-  isMobile: boolean
 }
 
 type AnimationStates = {
@@ -18,13 +18,13 @@ type AnimationStates = {
 }
 
 const RepeatButtonProvider = ({
-  darkMode,
-  isMatrix,
   onRepeatOff,
   onRepeatSingle,
-  onRepeatAll,
-  isMobile
+  onRepeatAll
 }: RepeatButtonProviderProps) => {
+  const isMatrix = useIsMatrix()
+  const darkMode = useIsDarkMode()
+  const isMobile = useIsMobile()
   const [animations, setAnimations] = useState<AnimationStates | null>(null)
   const defaultAnimations = useRef<AnimationStates | null>(null)
   const darkAnimations = useRef<AnimationStates | null>(null)

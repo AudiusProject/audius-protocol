@@ -9,6 +9,7 @@ from flask_restx import fields, inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response, ns
+from src.api.v1.models.playlists import full_playlist_model
 from src.api.v1.models.tracks import track as track_model
 from src.api.v1.models.tracks import track_full as track_model_full
 from src.api.v1.models.users import user_model, user_model_full
@@ -682,6 +683,7 @@ related_model_full = ns.model(
     {
         "users": fields.List(fields.Nested(user_model_full)),
         "tracks": fields.List(fields.Nested(track_model_full)),
+        "playlists": fields.List(fields.Nested(full_playlist_model)),
     },
 )
 

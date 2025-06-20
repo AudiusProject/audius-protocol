@@ -1,3 +1,4 @@
+import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   createJupiterApiClient,
   Instruction,
@@ -112,8 +113,8 @@ export const getJupiterQuoteByMint = async ({
 
   const amount =
     swapMode === 'ExactIn'
-      ? Math.ceil(amountUi * 10 ** inputDecimals)
-      : Math.floor(amountUi * 10 ** outputDecimals)
+      ? Number(new FixedDecimal(amountUi, inputDecimals).value.toString())
+      : Number(new FixedDecimal(amountUi, outputDecimals).value.toString())
 
   const quote = await jupiterInstance.quoteGet({
     inputMint,

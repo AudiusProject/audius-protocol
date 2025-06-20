@@ -6,7 +6,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { getClient } from 'utils/clientUtil'
 
 import styles from './Navigator.module.css'
-import LeftNav from './desktop/LeftNav'
+import { LeftNav } from './desktop/LeftNav'
 import ConnectedNavBar from './mobile/ConnectedNavBar'
 
 interface OwnProps {

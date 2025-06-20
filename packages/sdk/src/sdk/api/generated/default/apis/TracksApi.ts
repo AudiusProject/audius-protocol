@@ -71,6 +71,12 @@ export interface GetBulkTracksRequest {
     id?: Array<string>;
 }
 
+export interface GetRecentPremiumTracksRequest {
+    offset?: number;
+    limit?: number;
+    userId?: string;
+}
+
 export interface GetTrackRequest {
     trackId: string;
 }
@@ -253,6 +259,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getBulkTracks(params: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getBulkTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the most recently listed premium tracks
+     */
+    async getRecentPremiumTracksRaw(params: GetRecentPremiumTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/recent_premium`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most recently listed premium tracks
+     */
+    async getRecentPremiumTracks(params: GetRecentPremiumTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getRecentPremiumTracksRaw(params, initOverrides);
         return await response.value();
     }
 
