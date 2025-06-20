@@ -25,6 +25,8 @@ export * from './ArtistRemixContestSubmissionsNotificationAction';
 export * from './ArtistRemixContestSubmissionsNotificationActionData';
 export * from './Attestation';
 export * from './AttestationReponse';
+export * from './BestSellingFullResponse';
+export * from './BestSellingItem';
 export * from './ChallengeRewardNotification';
 export * from './ChallengeRewardNotificationAction';
 export * from './ChallengeRewardNotificationActionData';
