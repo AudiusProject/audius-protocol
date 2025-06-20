@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { useDebouncedCallback } from '@audius/common/hooks'
 import type { CommonState } from '@audius/common/store'
 import {
   libraryPageSelectors,
@@ -34,6 +35,16 @@ const messages = {
 
 export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
+  const [debouncedFilterValue, setDebouncedFilterValue] = useState('')
+
+  const handleChangeFilterValue = useDebouncedCallback(
+    (value: string) => {
+      setDebouncedFilterValue(value)
+    },
+    [setDebouncedFilterValue],
+    300
+  )
+
   const {
     collectionIds,
     hasNextPage,
@@ -41,7 +52,7 @@ export const AlbumsTab = () => {
     isPending,
     isFetchingNextPage
   } = useLibraryCollections({
-    filterValue,
+    filterValue: debouncedFilterValue,
     collectionType: 'albums'
   })
   const isReachable = useSelector(getIsReachable)
@@ -68,7 +79,8 @@ export const AlbumsTab = () => {
   })
 
   const loadingSpinner = <LoadingMoreSpinner />
-  const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
+  const noItemsLoaded =
+    !isPending && !collectionIds?.length && !debouncedFilterValue
 
   return (
     <VirtualizedScrollView>
@@ -79,14 +91,17 @@ export const AlbumsTab = () => {
           <EmptyTileCTA message={emptyTabText} />
         )
       ) : (
-        <WithLoader loading={isPending}>
-          <>
-            <OfflineContentBanner />
-            <FilterInput
-              value={filterValue}
-              placeholder={messages.inputPlaceholder}
-              onChangeText={setFilterValue}
-            />
+        <>
+          <OfflineContentBanner />
+          <FilterInput
+            value={filterValue}
+            placeholder={messages.inputPlaceholder}
+            onChangeText={(text) => {
+              setFilterValue(text)
+              handleChangeFilterValue(text)
+            }}
+          />
+          <WithLoader loading={isPending}>
             <CollectionList
               collectionType='album'
               onEndReached={handleEndReached}
@@ -100,8 +115,8 @@ export const AlbumsTab = () => {
                   : null
               }
             />
-          </>
-        </WithLoader>
+          </WithLoader>
+        </>
       )}
     </VirtualizedScrollView>
   )
