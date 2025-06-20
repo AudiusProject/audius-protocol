@@ -15,9 +15,6 @@ const { getSource, getUid } = queueSelectors
 
 /**
  * Used to determine if a track from a specific playlist is currently playing.
- *
- * @param {PlaylistLibraryID} id - The ID of the playlist to check against.
- * @returns {boolean} - Returns true if the current track is from the specified playlist and is playing, otherwise false.
  */
 export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
   const currentTrackId = useSelector(getTrackId)
@@ -28,7 +25,7 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
   const { data: collectionTrackIds } = useCollection(
     typeof id === 'string' ? null : id,
     {
-      select: (collection) => collection?.playlist_contents.track_ids,
+      select: (collection) => new Set(collection?.trackIds),
       // ensure read only so we dont fetch all collections in left-nav
       enabled: false
     }
@@ -37,9 +34,7 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
   return useMemo(() => {
     if (!collectionTrackIds || !currentTrackId || !isPlaying) return false
 
-    const hasTrack = collectionTrackIds.some(
-      (trackItem) => trackItem.track === currentTrackId
-    )
+    const hasTrack = collectionTrackIds.has(currentTrackId)
 
     const isSource =
       currentUid &&
