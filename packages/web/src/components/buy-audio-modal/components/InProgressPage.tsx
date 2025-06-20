@@ -39,9 +39,9 @@ const messages = {
   stripeClosedErrorMessage: 'Link by Stripe was Closed Unexpectedly',
   coinbaseClosedErrorMessage: 'Coinbase Pay Was Closed Unexpectedly',
   swapErrorMessage:
-    'Refresh and we'll try again.\nDon't worry your funds are safe!',
+    "Refresh and we'll try again.\nDon't worry your funds are safe!",
   coinbaseErrorMessage:
-    'Something's gone wrong with Coinbase.\nPlease check your email for more information.',
+    "Something's gone wrong with Coinbase.\nPlease check your email for more information.",
   genericError: 'Something went wrong.'
 }
 
@@ -111,14 +111,18 @@ export const InProgressPage = () => {
     const solToken = {
       label: messages.sol,
       icon: <IconSOL />,
-      amount: Number(purchaseInfo.estimatedSOL.uiAmountString || 0).toLocaleString(undefined, {
+      amount: Number(
+        purchaseInfo.estimatedSOL.uiAmountString || 0
+      ).toLocaleString(undefined, {
         maximumFractionDigits: 2
       })
     }
     const audioToken = {
       label: messages.audio,
       icon: <IconAUDIO />,
-      amount: Number(purchaseInfo.desiredAudioAmount.uiAmountString || 0).toLocaleString(undefined, {
+      amount: Number(
+        purchaseInfo.desiredAudioAmount.uiAmountString || 0
+      ).toLocaleString(undefined, {
         maximumFractionDigits: 2
       })
     }
@@ -126,7 +130,9 @@ export const InProgressPage = () => {
       firstToken = {
         label: messages.usd,
         icon: <IconUSD />,
-        amount: Number(purchaseInfo.estimatedUSD.uiAmountString || 0).toLocaleString(undefined, {
+        amount: Number(
+          purchaseInfo.estimatedUSD.uiAmountString || 0
+        ).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2
         })

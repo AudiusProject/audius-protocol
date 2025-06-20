@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import { AUDIO } from '@audius/fixed-decimal'
 import cn from 'classnames'
 
 import IconBronzeBadge from '../../assets/img/IconBronzeBadge.svg'
@@ -16,28 +16,28 @@ const badgeTiers = [
   {
     tier: 'platinum',
     icon: <IconPlatinumBadge />,
-    amount: new BN('10000000000000000000000')
+    amount: AUDIO('10000').value
   },
   {
     tier: 'gold',
     icon: <IconGoldBadge />,
-    amount: new BN('1000000000000000000000')
+    amount: AUDIO('1000').value
   },
   {
     tier: 'silver',
     icon: <IconSilverBadge />,
-    amount: new BN('100000000000000000000')
+    amount: AUDIO('100').value
   },
   {
     tier: 'bronze',
     icon: <IconBronzeBadge />,
-    amount: new BN('10000000000000000000')
+    amount: AUDIO('10').value
   }
 ]
 
 const getTierIcon = (balance) => {
-  const bnBalance = new BN(balance)
-  const index = badgeTiers.findIndex((t) => t.amount.lte(bnBalance))
+  const balanceWei = AUDIO(balance).value
+  const index = badgeTiers.findIndex((t) => t.amount <= balanceWei)
   const tier = index === -1 ? null : badgeTiers[index]
   return tier ? tier.icon : null
 }
