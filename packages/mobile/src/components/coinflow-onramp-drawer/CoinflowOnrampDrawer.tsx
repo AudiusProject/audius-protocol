@@ -116,7 +116,7 @@ export const CoinflowOnrampDrawer = () => {
     >
       {showContent ? (
         <CoinflowPurchase
-          deviceId={deviceIds}
+          deviceId={deviceId}
           transaction={transaction}
           wallet={adapter.wallet}
           chargebackProtectionData={purchaseMetadata ? [purchaseMetadata] : []}
