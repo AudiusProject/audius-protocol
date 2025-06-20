@@ -5,7 +5,7 @@ import { useAppContext } from '~/context'
 import { ID } from '~/models/Identifiers'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-export const useGeneratePlaylistArtwork = (collectionId: ID) => {
+export const useGeneratePlaylistArtwork = (collectionId?: ID | null) => {
   const { data: collection } = useCollection(collectionId)
   const { data: collectionTracks } = useCollectionTracks(collectionId)
 
