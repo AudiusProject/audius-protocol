@@ -40,16 +40,6 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
         gap='m'
       >
         {children}
-        {/* {onPressIcon ? (
-          <IconButton
-            icon={Icon}
-            color='subdued'
-            size='s'
-            onPress={onPressIcon}
-          />
-        ) : (
-          <Icon size='s' color='subdued' />
-        )} */}
       </Flex>
     </TouchableOpacity>
   )
