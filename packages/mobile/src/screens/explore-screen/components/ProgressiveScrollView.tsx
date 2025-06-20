@@ -25,6 +25,7 @@ export const ProgressiveScrollView = ({
   loadDelay = 100,
   onUserInteraction
 }: ProgressiveScrollViewProps) => {
+  console.log('asdf ProgressiveScrollView render')
   const [loadedIndices, setLoadedIndices] = useState<Set<number>>(new Set([0]))
   const [isUserInteracting, setIsUserInteracting] = useState(false)
   const scrollViewRef = useRef<ScrollView>(null)
@@ -39,6 +40,7 @@ export const ProgressiveScrollView = ({
     hasStartedLoadingRef.current = true
 
     const loadSections = () => {
+      console.log('asdf loadSections: ', childrenArray.length)
       childrenArray.forEach((_, index) => {
         if (index < initialLoadCount) {
           // Load initial sections immediately

@@ -9,7 +9,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import { useTheme } from '@audius/harmony-native'
+import { Flex, useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -28,20 +28,15 @@ import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
 
 // Animation parameters
-const HEADER_SLIDE_HEIGHT = 46
-const FILTER_SCROLL_THRESHOLD = 300
-const HEADER_COLLAPSE_THRESHOLD = 50
 
 const SearchExploreContent = () => {
-  const { spacing, motion } = useTheme()
-
+  console.log('asdf screen explore content')
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
   // Animation state
   const scrollY = useSharedValue(0)
-  const filterTranslateY = useSharedValue(0)
   const prevScrollY = useSharedValue(0)
   const scrollDirection = useSharedValue<'up' | 'down'>('down')
   const scrollRef = useRef<Animated.ScrollView>(null)
@@ -95,78 +90,29 @@ const SearchExploreContent = () => {
       }
       prevScrollY.value = y
       scrollY.value = y
-
-      // Handle filter animation
-      if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
-        filterTranslateY.value = withTiming(-spacing['4xl'], motion.calm)
-      } else if (
-        y < FILTER_SCROLL_THRESHOLD ||
-        scrollDirection.value === 'up'
-      ) {
-        filterTranslateY.value = withTiming(0, motion.calm)
-      }
     }
   })
 
-  // content margin expands when header / filter collapses
-  const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
-    marginTop: query
-      ? withTiming(-HEADER_COLLAPSE_THRESHOLD * 2.5, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(0, motion.calm)
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
-            [0, -HEADER_SLIDE_HEIGHT],
-            Extrapolation.CLAMP
-          ) +
-          interpolate(
-            scrollY.value,
-            [
-              FILTER_SCROLL_THRESHOLD - HEADER_COLLAPSE_THRESHOLD,
-              FILTER_SCROLL_THRESHOLD
-            ],
-            [0, -spacing['4xl']],
-            Extrapolation.CLAMP
-          )
-  }))
-
-  const contentPaddingStyle = useAnimatedStyle(() => ({
-    paddingTop: query
-      ? withTiming(80, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(0, motion.calm)
-        : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP) +
-          filterTranslateY.value,
-    // Add minimum height to prevent jitter with small content
-    minHeight: '100%'
-  }))
-
+  const showSearch = Boolean(category !== 'all' || query)
+  console.log('asdf showSearch', showSearch)
   return (
     <ScreenContent>
-      <SearchExploreHeader
-        scrollY={scrollY}
-        filterTranslateY={filterTranslateY}
-        scrollRef={scrollRef}
-      />
+      <SearchExploreHeader scrollY={scrollY} scrollRef={scrollRef} />
 
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
-        style={[contentSlideAnimatedStyle, contentPaddingStyle]}
+        // style={[contentSlideAnimatedStyle, contentPaddingStyle]}
         showsVerticalScrollIndicator={false}
       >
-        {category !== 'all' || query ? (
-          <>
-            {query || hasAnyFilter ? (
-              <SearchResults />
-            ) : (
-              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-            )}
-          </>
-        ) : (
+        {showSearch && (query || hasAnyFilter) ? (
+          <SearchResults />
+        ) : showSearch ? (
+          <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+        ) : null}
+        <Flex style={{ display: showSearch ? 'none' : 'flex' }}>
           <ExploreContent />
-        )}
+        </Flex>
       </Animated.ScrollView>
     </ScreenContent>
   )
