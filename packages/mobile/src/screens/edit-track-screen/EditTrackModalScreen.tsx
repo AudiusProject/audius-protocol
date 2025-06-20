@@ -12,7 +12,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { isImageUriSource } from 'app/utils/image'
 
-import { EditTrackFileContextProvider } from './EditTrackFileContext'
 import { EditTrackScreen } from './EditTrackScreen'
 
 const { editTrack } = cacheTracksActions
@@ -60,14 +59,12 @@ export const EditTrackModalScreen = () => {
 
   return (
     <ModalScreen>
-      <EditTrackFileContextProvider>
-        <EditTrackScreen
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-          title={messages.title}
-          doneText={messages.save}
-        />
-      </EditTrackFileContextProvider>
+      <EditTrackScreen
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        title={messages.title}
+        doneText={messages.save}
+      />
     </ModalScreen>
   )
 }
