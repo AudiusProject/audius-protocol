@@ -4,7 +4,8 @@ import {
   StreamTrackAvailabilityType,
   AccessConditions
 } from '@audius/common/models'
-import { Nullable, formatPrice } from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { z } from 'zod'
 
 import {
@@ -19,9 +20,9 @@ import {
 const messages = {
   price: {
     tooLow: (minPrice: number) =>
-      `Price must be at least $${formatPrice(minPrice)}.`,
+      `Price must be at least $${USDC(minPrice / 100).toLocaleString()}.`,
     tooHigh: (maxPrice: number) =>
-      `Price must be less than $${formatPrice(maxPrice)}.`
+      `Price must be less than $${USDC(maxPrice / 100).toLocaleString()}.`
   },
   preview: {
     tooEarly: 'Preview must start during the track.',

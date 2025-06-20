@@ -1,6 +1,5 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import { QueryClient } from '@tanstack/react-query'
-import BN from 'bn.js'
 
 import { Chain } from '~/models'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
@@ -40,22 +39,22 @@ const updateSolanaWAudioBalance = ({
       includeStaked: true
     }),
     (oldBalance: AudioWei | undefined): AudioWei | undefined => {
-      const changeAmountBN = new BN(wAudioAmountToWei(uiAmount).toString())
-      const oldBalanceBN = new BN((oldBalance ?? AUDIO(0).value).toString())
+      const changeAmountWei = wAudioAmountToWei(uiAmount)
+      const oldBalanceWei = oldBalance ?? AUDIO(0).value
 
-      let newBalanceBN: BN
+      let newBalanceWei: AudioWei
       if (isInput) {
         // Decreasing balance
-        if (oldBalanceBN.gt(changeAmountBN)) {
-          newBalanceBN = oldBalanceBN.sub(changeAmountBN)
+        if (oldBalanceWei > changeAmountWei) {
+          newBalanceWei = (oldBalanceWei - changeAmountWei) as AudioWei
         } else {
-          newBalanceBN = new BN(0)
+          newBalanceWei = AUDIO(0).value
         }
       } else {
         // Increasing balance
-        newBalanceBN = oldBalanceBN.add(changeAmountBN)
+        newBalanceWei = (oldBalanceWei + changeAmountWei) as AudioWei
       }
-      return AUDIO(newBalanceBN).value
+      return newBalanceWei
     }
   )
 }

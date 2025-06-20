@@ -14,7 +14,7 @@ import {
   usePremiumContentPurchaseModal,
   PurchaseContentStage
 } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Button,
   IconCaretRight,
@@ -76,8 +76,8 @@ const getButtonText = (
     ? messages.purchasing
     : amountDue > 0
       ? isGuest
-        ? `Guest Purchase For $${formatPrice(amountDue)}`
-        : `${messages.buy} $${formatPrice(amountDue)}`
+        ? `Guest Purchase For $${USDC(amountDue / 100).toLocaleString()}`
+        : `${messages.buy} $${USDC(amountDue / 100).toLocaleString()}`
       : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<

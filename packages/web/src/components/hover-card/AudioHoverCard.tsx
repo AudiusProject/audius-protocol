@@ -17,7 +17,6 @@ import {
   useTheme
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
-import BN from 'bn.js'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -88,8 +87,7 @@ export const AudioHoverCard = ({
   const { data: formattedBalance = '0' } = useUser(userId, {
     select: (user) => {
       if (!user?.total_balance) return '0'
-      const balanceValue = new BN(user.total_balance)
-      const audioValue = AUDIO(balanceValue)
+      const audioValue = AUDIO(user.total_balance)
       return formatCount(Number(audioValue.toFixed(2)))
     }
   })

@@ -21,7 +21,8 @@ import {
   gatedContentSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import { removeNullable, Nullable } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,
   Text,
@@ -343,7 +344,9 @@ const LockedGatedContentSection = ({
           }}
           fullWidth
         >
-          {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+          {messages.buy(
+            USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
+          )}
         </Button>
       )
     }
@@ -519,7 +522,7 @@ const UnlockedGatedContentSection = ({
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return isOwner ? (
         messages.usersCanPurchase(
-          formatPrice(streamConditions.usdc_purchase.price)
+          USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
         )
       ) : (
         <>

@@ -1,15 +1,6 @@
-import BN from 'bn.js'
 import { describe, it, expect } from 'vitest'
 
-import {
-  AUDIO,
-  AudioWei,
-  BNAudio,
-  BNUSDC,
-  USDC,
-  UsdcWei,
-  wAUDIO
-} from './currencies'
+import { AUDIO, AudioWei, USDC, UsdcWei, wAUDIO } from './currencies'
 
 describe('Currency tests', function () {
   it('can convert AUDIO to wAUDIO', function () {
@@ -51,16 +42,6 @@ describe('Currency tests', function () {
     USDC(BigInt(2))
     // Don't throw for correct bigint brand
     USDC(BigInt(3) as UsdcWei)
-  })
-
-  it('typechecks constructor BN', function () {
-    // Throw for unexpected brand of BN
-    // @ts-expect-error
-    USDC(new BN(1) as BNAudio)
-    // Don't throw for raw BN
-    USDC(new BN(2))
-    // Don't throw for correct BN brand
-    USDC(new BN(3) as BNUSDC)
   })
 
   it('defaults to two decimals', function () {
