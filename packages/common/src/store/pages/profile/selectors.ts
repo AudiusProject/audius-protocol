@@ -48,16 +48,14 @@ export const makeGetProfile = () => {
     (status, error, userId) => {
       const emptyState = {
         userId: null,
-        status,
-        isSubscribed: false
+        status
       }
       if (error) return { ...emptyState, error: true }
       if (!userId) return emptyState
 
       return {
         userId,
-        status,
-        isSubscribed: false
+        status
       }
     }
   )
