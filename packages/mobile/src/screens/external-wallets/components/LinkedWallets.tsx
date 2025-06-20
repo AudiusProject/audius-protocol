@@ -71,7 +71,7 @@ export const LinkedWallets = () => {
     wallets.push({
       chain: confirmingWallet.chain,
       address: confirmingWallet.wallet,
-      balance: confirmingWallet.balance,
+      balance: confirmingWallet.balance ?? 0n,
       collectibleCount: confirmingWallet.collectibleCount || 0,
       isConfirming: true
     })
