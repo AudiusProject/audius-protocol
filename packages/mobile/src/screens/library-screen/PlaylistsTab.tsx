@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 
+import { useDebouncedCallback } from '@audius/common/hooks'
 import { CreatePlaylistSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -35,6 +36,16 @@ const messages = {
 
 export const PlaylistsTab = () => {
   const [filterValue, setFilterValue] = useState('')
+  const [debouncedFilterValue, setDebouncedFilterValue] = useState('')
+
+  const handleChangeFilterValue = useDebouncedCallback(
+    (value: string) => {
+      setDebouncedFilterValue(value)
+    },
+    [setDebouncedFilterValue],
+    300
+  )
+
   const {
     collectionIds,
     loadNextPage,
@@ -42,7 +53,7 @@ export const PlaylistsTab = () => {
     isFetchingNextPage,
     hasNextPage
   } = useLibraryCollections({
-    filterValue,
+    filterValue: debouncedFilterValue,
     collectionType: 'playlists'
   })
   const isReachable = useSelector(getIsReachable)
@@ -54,7 +65,8 @@ export const PlaylistsTab = () => {
   }, [isReachable, loadNextPage])
 
   const loadingSpinner = <LoadingMoreSpinner />
-  const noItemsLoaded = !isPending && !collectionIds?.length && !filterValue
+  const noItemsLoaded =
+    !isPending && !collectionIds?.length && !debouncedFilterValue
 
   const emptyTabText = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -78,14 +90,17 @@ export const PlaylistsTab = () => {
           <EmptyTileCTA message={emptyTabText} />
         )
       ) : (
-        <WithLoader loading={isPending}>
-          <>
-            <OfflineContentBanner />
-            <FilterInput
-              value={filterValue}
-              placeholder={messages.inputPlaceholder}
-              onChangeText={setFilterValue}
-            />
+        <>
+          <OfflineContentBanner />
+          <FilterInput
+            value={filterValue}
+            placeholder={messages.inputPlaceholder}
+            onChangeText={(text) => {
+              setFilterValue(text)
+              handleChangeFilterValue(text)
+            }}
+          />
+          <WithLoader loading={isPending}>
             <Animated.View layout={Layout}>
               <CollectionList
                 collectionType='playlist'
@@ -102,8 +117,8 @@ export const PlaylistsTab = () => {
                 createPlaylistSource={CreatePlaylistSource.LIBRARY_PAGE}
               />
             </Animated.View>
-          </>
-        </WithLoader>
+          </WithLoader>
+        </>
       )}
     </VirtualizedScrollView>
   )
