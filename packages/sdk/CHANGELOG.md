@@ -1,5 +1,17 @@
 # @audius/sdk
 
+## 9.2.0
+
+### Minor Changes
+
+- 7dcf0ae: add recently listed premium tracks API
+- 8bcfb33: Adds explore/best_selling endpoint
+
+### Patch Changes
+
+- 9dadb38: Remix contest winner challenge
+- 1f70f0b: Remix contest winners selected notification
+
 ## 9.1.0
 
 ### Minor Changes
