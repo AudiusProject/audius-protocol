@@ -397,7 +397,6 @@ const NowPlaying = g(
     }
 
     const matrix = isMatrix()
-    const darkMode = isDarkMode()
 
     const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
     const gatedTrackStatus =
@@ -512,9 +511,6 @@ const NowPlaying = g(
         <div className={styles.controls}>
           <div className={styles.repeatButton}>
             <RepeatButtonProvider
-              isMobile
-              isMatrix={matrix}
-              darkMode={darkMode}
               onRepeatOff={() => repeat(RepeatMode.OFF)}
               onRepeatAll={() => repeat(RepeatMode.ALL)}
               onRepeatSingle={() => repeat(RepeatMode.SINGLE)}
@@ -535,9 +531,6 @@ const NowPlaying = g(
           </div>
           <div className={styles.shuffleButton}>
             <ShuffleButtonProvider
-              isMobile
-              darkMode={darkMode}
-              isMatrix={matrix}
               onShuffleOn={() => shuffle(true)}
               onShuffleOff={() => shuffle(false)}
             />
