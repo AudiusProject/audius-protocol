@@ -71,10 +71,10 @@ const renderDateCell = (cellInfo: PurchaseCell) => {
 const renderValueCell = (cellInfo: PurchaseCell) => {
   const transaction = cellInfo.row.original
   const total = BigInt(transaction.amount) + BigInt(transaction.extraAmount)
-  return `$${USDC(total).toLocaleString('en-US', {
+  return USDC(total).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  })}`
+  })
 }
 
 // Columns

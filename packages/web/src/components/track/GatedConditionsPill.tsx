@@ -42,7 +42,7 @@ export const GatedConditionsPill = ({
     message = isPurchase ? undefined : messages.unlocking
   } else {
     message = isPurchase
-      ? `$${USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()}`
+      ? USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
       : messages.locked
   }
 

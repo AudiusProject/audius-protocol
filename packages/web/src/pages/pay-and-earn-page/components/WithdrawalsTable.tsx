@@ -82,10 +82,10 @@ const renderDateCell = (cellInfo: TransactionCell) => {
 
 const renderAmountCell = (cellInfo: TransactionCell) => {
   const transaction = cellInfo.row.original
-  return `-$${USDC(transaction.change).toLocaleString('en-US', {
+  return USDC(BigInt(transaction.change)).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  })}`
+  })
 }
 
 // Columns

@@ -93,7 +93,11 @@ const renderTransactionTypeCell = (cellInfo: TransactionCell) => {
 
 const renderBalanceCell = (cellInfo: TransactionCell) => {
   const transaction = cellInfo.row.original
-  return transaction.balance ? wAUDIO(transaction.balance).toLocaleString() : ''
+  return transaction.balance
+    ? wAUDIO(BigInt(transaction.balance)).toLocaleString('en-US', {
+        maximumFractionDigits: 0
+      })
+    : ''
 }
 
 const renderDateCell = (cellInfo: TransactionCell) => {
@@ -103,18 +107,21 @@ const renderDateCell = (cellInfo: TransactionCell) => {
 
 const renderChangeCell = (cellInfo: TransactionCell) => {
   const tx = cellInfo.row.original
-  const isPositive = isChangePositive(tx)
   const { change } = tx
   return (
-    <Tooltip text={`${wAUDIO(tx.change).toFixed(2)} $AUDIO`} mount={'body'}>
+    <Tooltip
+      text={`${wAUDIO(BigInt(tx.change)).toFixed(2)} $AUDIO`}
+      mount={'body'}
+    >
       <div
         className={cn(
           styles.changeCell,
           isChangePositive(tx) ? styles.increase : styles.decrease
         )}
       >
-        {isPositive ? '' : '-'}
-        {wAUDIO(change).toLocaleString()}
+        {wAUDIO(BigInt(change)).toLocaleString('en-US', {
+          maximumFractionDigits: 0
+        })}
       </div>
     </Tooltip>
   )

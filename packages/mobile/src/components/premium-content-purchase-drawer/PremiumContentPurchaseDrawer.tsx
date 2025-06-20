@@ -370,7 +370,7 @@ const RenderForm = ({
                     }
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
-                    showExistingBalance={!!(balance && !balance.isZero())}
+                    showExistingBalance={!!(balance && balance !== BigInt(0))}
                     isCoinflowEnabled={showCoinflow}
                     isPayWithAnythingEnabled
                     showVendorChoice={false}

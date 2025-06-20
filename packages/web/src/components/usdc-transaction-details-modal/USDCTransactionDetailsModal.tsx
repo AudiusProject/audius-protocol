@@ -73,7 +73,7 @@ export const USDCTransactionDetailsModal = () => {
         />
         <DetailSection
           label={messages.amountSent}
-          value={`$${USDC(transactionDetails.change).toLocaleString()}`}
+          value={USDC(BigInt(transactionDetails.change)).toLocaleString()}
         />
         {/* Skip the destination wallet entry for withdrawals to cash */}
         {transactionDetails.transactionType !==

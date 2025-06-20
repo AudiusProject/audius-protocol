@@ -67,7 +67,7 @@ export const SuccessPage = () => {
           <span>
             +
             {transactionDetails.status === Status.SUCCESS
-              ? wAUDIO(transactionDetails.transactionDetails.change)
+              ? wAUDIO(BigInt(transactionDetails.transactionDetails.change))
                   .trunc()
                   .toFixed()
               : '0'}
@@ -79,7 +79,7 @@ export const SuccessPage = () => {
           transactionDetails.transactionDetails.balance
         ) ? null : (
           <div className={styles.newBalance}>
-            {wAUDIO(transactionDetails.transactionDetails.balance)
+            {wAUDIO(BigInt(transactionDetails.transactionDetails.balance))
               .trunc()
               .toFixed()}
             <span className={styles.label}>{messages.audio}</span>

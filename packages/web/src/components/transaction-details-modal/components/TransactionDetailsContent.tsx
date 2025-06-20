@@ -266,13 +266,13 @@ export const TransactionDetailsContent = ({
               className={cn(styles.change, { [styles.negative]: isNegative })}
             >
               {isNegative ? '-' : '+'}
-              {wAUDIO(transactionDetails.change).toLocaleString()}
+              {wAUDIO(BigInt(transactionDetails.change)).toLocaleString()}
             </span>
           </Block>
           {/* If user's balance is still loading or failed to load, don't show it. */}
           {isNullOrUndefined(transactionDetails.balance) ? null : (
             <Block header={messages.balance}>
-              {wAUDIO(transactionDetails.balance).toFixed(2)}
+              {wAUDIO(BigInt(transactionDetails.balance)).toFixed(2)}
             </Block>
           )}
         </BlockContainer>
