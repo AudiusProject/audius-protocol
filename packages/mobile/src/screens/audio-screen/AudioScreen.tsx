@@ -8,14 +8,12 @@ import {
   walletActions,
   walletSelectors
 } from '@audius/common/store'
-import { formatNumberCommas, isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
+import { isNullOrUndefined } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAudioBalance } from '~/api'
 
 import {
   Button,

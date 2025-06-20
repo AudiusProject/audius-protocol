@@ -74,7 +74,7 @@
   },
   "dependencies": {
     "@audius/eth": "0.1.0",
-    "@audius/fixed-decimal": "0.1.1",
+    "@audius/fixed-decimal": "0.1.2",
     "@audius/hedgehog": "3.0.0-alpha.1",
     "@audius/spl": "2.0.2",
     "@babel/runtime": "7.18.3",

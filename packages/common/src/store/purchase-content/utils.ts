@@ -59,7 +59,7 @@ export const getPurchaseSummaryValues = ({
     currentBalance && currentBalance > USDC_CENT_WEI
       ? currentBalance
       : zeroBalance()
-  const amountDueWei = (BigInt(Math.round(amountDue * 100)) *
+  const amountDueWei = (BigInt(Math.round(amountDue)) *
     USDC_CENT_WEI) as UsdcWei
 
   if (balanceWei >= amountDueWei) {
