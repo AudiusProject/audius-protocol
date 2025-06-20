@@ -7,6 +7,8 @@ export * from './AlbumBacklink';
 export * from './AlbumsResponse';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';
+export * from './BestSellingItem';
+export * from './BestSellingResponse';
 export * from './BlobInfo';
 export * from './ChallengeResponse';
 export * from './Collectibles';

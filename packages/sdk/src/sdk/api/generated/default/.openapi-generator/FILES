@@ -4,6 +4,7 @@ apis/CommentsApi.ts
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
 apis/EventsApi.ts
+apis/ExploreApi.ts
 apis/PlaylistsApi.ts
 apis/ResolveApi.ts
 apis/TipsApi.ts
@@ -18,6 +19,8 @@ models/AlbumBacklink.ts
 models/AlbumsResponse.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
+models/BestSellingItem.ts
+models/BestSellingResponse.ts
 models/BlobInfo.ts
 models/ChallengeResponse.ts
 models/Collectibles.ts
