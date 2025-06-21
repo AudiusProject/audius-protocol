@@ -265,7 +265,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // and hides when scrolling further down
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     marginTop: inputValue
-      ? withTiming(-HEADER_SLIDE_HEIGHT)
+      ? withTiming(-HEADER_COLLAPSE_THRESHOLD)
       : scrollY.value === 0
         ? withTiming(0)
         : filterTranslateY.value,
