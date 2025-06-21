@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react'
 
 import Animated, {
   useAnimatedScrollHandler,
-  useSharedValue
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 
-import { Flex } from '@audius/harmony-native'
+import { Flex, useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -22,14 +23,18 @@ import {
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
+const FILTER_SCROLL_THRESHOLD = 300
 
 const SearchExploreContent = () => {
+  const { spacing } = useTheme()
+
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
   // Animation state
   const scrollY = useSharedValue(0)
+  const filterTranslateY = useSharedValue(0)
   const prevScrollY = useSharedValue(0)
   const scrollDirection = useSharedValue<'up' | 'down'>('down')
   const scrollRef = useRef<Animated.ScrollView>(null)
@@ -83,13 +88,27 @@ const SearchExploreContent = () => {
       }
       prevScrollY.value = y
       scrollY.value = y
+
+      // Handle filter animation
+      if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
+        filterTranslateY.value = withTiming(-spacing['4xl'])
+      } else if (
+        y < FILTER_SCROLL_THRESHOLD ||
+        scrollDirection.value === 'up'
+      ) {
+        filterTranslateY.value = withTiming(0)
+      }
     }
   })
 
   const showSearch = Boolean(category !== 'all' || query)
   return (
     <ScreenContent>
-      <SearchExploreHeader scrollY={scrollY} scrollRef={scrollRef} />
+      <SearchExploreHeader
+        scrollY={scrollY}
+        filterTranslateY={filterTranslateY}
+        scrollRef={scrollRef}
+      />
 
       <Animated.ScrollView
         ref={scrollRef}

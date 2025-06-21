@@ -48,13 +48,14 @@ const HEADER_SLIDE_HEIGHT = 46
 const HEADER_COLLAPSE_THRESHOLD = 50
 
 type SearchExploreHeaderProps = {
+  filterTranslateY: SharedValue<number>
   scrollY: SharedValue<number>
   scrollRef: React.RefObject<ScrollView>
 }
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
-  const { scrollY, scrollRef } = props
-  const { spacing, color } = useTheme()
+  const { filterTranslateY, scrollY, scrollRef } = props
+  const { spacing, color, motion } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
@@ -263,6 +264,11 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Filters slide up when header collapses
   // and hides when scrolling further down
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
+    marginTop: inputValue
+      ? withTiming(-HEADER_SLIDE_HEIGHT)
+      : scrollY.value === 0
+        ? withTiming(0)
+        : filterTranslateY.value,
     backgroundColor:
       scrollY.value === 0
         ? withTiming('transparent')
