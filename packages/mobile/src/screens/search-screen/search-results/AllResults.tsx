@@ -149,6 +149,7 @@ export const AllResults = () => {
   )
 
   const hasNoResults = (!data || sections.length === 0) && isSuccess
+
   return (
     <Flex onTouchStart={Keyboard.dismiss}>
       {hasNoResults ? (

@@ -16,7 +16,6 @@ export const ExploreSection = ({
   centered,
   children
 }: ExploreSectionProps) => {
-  console.log('asdf explore section', { title, isLoading })
   return (
     <Flex mb='l' justifyContent={centered ? 'center' : 'flex-start'} gap='m'>
       <Text variant='title' size='l' textAlign={centered ? 'center' : 'left'}>
