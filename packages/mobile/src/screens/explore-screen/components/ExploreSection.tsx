@@ -22,7 +22,7 @@ export const ExploreSection = ({
         {title}
       </Text>
       {isLoading ? (
-        <Flex h={180} w='100%'>
+        <Flex h={260} w='100%'>
           <Skeleton noShimmer />
         </Flex>
       ) : (
