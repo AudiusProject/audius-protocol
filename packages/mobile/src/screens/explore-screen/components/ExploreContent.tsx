@@ -1,3 +1,5 @@
+import React from 'react'
+
 import { ArtistSpotlight } from './ArtistSpotlight'
 import { BestOfAudiusTiles } from './BestOfAudiusTiles'
 import { FeaturedPlaylists } from './FeaturedPlaylists'
@@ -6,7 +8,7 @@ import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
 import { ProgressiveScrollView } from './ProgressiveScrollView'
 
-export const ExploreContent = () => {
+const MemoizedExploreContent = () => {
   return (
     <ProgressiveScrollView>
       <FeaturedPlaylists />
@@ -18,3 +20,6 @@ export const ExploreContent = () => {
     </ProgressiveScrollView>
   )
 }
+
+// Memoize the entire component since it has no props
+export const ExploreContent = React.memo(MemoizedExploreContent)
