@@ -26,7 +26,7 @@ export const ProgressiveScrollView = ({
   onUserInteraction
 }: ProgressiveScrollViewProps) => {
   console.log('asdf ProgressiveScrollView render')
-  const [loadedIndices, setLoadedIndices] = useState<Set<number>>(new Set([0]))
+  const [loadedIndices, setLoadedIndices] = useState<Set<number>>(new Set())
   const [isUserInteracting, setIsUserInteracting] = useState(false)
   const scrollViewRef = useRef<ScrollView>(null)
   const hasStartedLoadingRef = useRef(false)
@@ -74,7 +74,7 @@ export const ProgressiveScrollView = ({
 
   const renderChild = (child: React.ReactElement, index: number) => {
     const isLoaded = loadedIndices.has(index)
-
+    console.log('asdf isLoaded', isLoaded, index)
     // Clone the child and pass isLoading prop
     return cloneElement(child, {
       key: index,

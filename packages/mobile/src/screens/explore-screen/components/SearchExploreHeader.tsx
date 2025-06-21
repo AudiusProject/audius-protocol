@@ -48,14 +48,13 @@ const HEADER_SLIDE_HEIGHT = 46
 const HEADER_COLLAPSE_THRESHOLD = 50
 
 type SearchExploreHeaderProps = {
-  filterTranslateY: SharedValue<number>
   scrollY: SharedValue<number>
   scrollRef: React.RefObject<ScrollView>
 }
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { scrollY, scrollRef } = props
-  const { spacing, color, motion } = useTheme()
+  const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()

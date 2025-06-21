@@ -149,13 +149,6 @@ export const AllResults = () => {
   )
 
   const hasNoResults = (!data || sections.length === 0) && isSuccess
-  console.log(
-    'asdf results',
-    searchParams?.query,
-    hasNoResults,
-    isLoading,
-    sections.length
-  )
   return (
     <Flex onTouchStart={Keyboard.dismiss}>
       {hasNoResults ? (

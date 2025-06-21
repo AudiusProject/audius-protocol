@@ -8,9 +8,7 @@ import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
 import { ProgressiveScrollView } from './ProgressiveScrollView'
 
-const ExploreContentComponent = () => {
-  console.log('asdf ExploreContent render')
-
+const MemoizedExploreContent = () => {
   return (
     <ProgressiveScrollView>
       <FeaturedPlaylists />
@@ -24,4 +22,4 @@ const ExploreContentComponent = () => {
 }
 
 // Memoize the entire component since it has no props
-export const ExploreContent = React.memo(ExploreContentComponent)
+export const ExploreContent = React.memo(MemoizedExploreContent)

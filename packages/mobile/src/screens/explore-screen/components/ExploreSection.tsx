@@ -16,12 +16,19 @@ export const ExploreSection = ({
   centered,
   children
 }: ExploreSectionProps) => {
+  console.log('asdf explore section', { title, isLoading })
   return (
     <Flex mb='l' justifyContent={centered ? 'center' : 'flex-start'} gap='m'>
       <Text variant='title' size='l' textAlign={centered ? 'center' : 'left'}>
         {title}
       </Text>
-      {isLoading ? <Skeleton noShimmer h={180} w='100%' /> : children}
+      {isLoading ? (
+        <Flex h={180} w='100%'>
+          <Skeleton noShimmer />
+        </Flex>
+      ) : (
+        children
+      )}
     </Flex>
   )
 }

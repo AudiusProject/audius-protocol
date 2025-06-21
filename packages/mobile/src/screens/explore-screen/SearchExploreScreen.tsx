@@ -2,14 +2,10 @@ import React, { useEffect, useRef } from 'react'
 
 import Animated, {
   useAnimatedScrollHandler,
-  useSharedValue,
-  interpolate,
-  useAnimatedStyle,
-  Extrapolation,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
 
-import { Flex, useTheme } from '@audius/harmony-native'
+import { Flex } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -27,10 +23,7 @@ import {
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
 
-// Animation parameters
-
 const SearchExploreContent = () => {
-  console.log('asdf screen explore content')
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
@@ -94,7 +87,6 @@ const SearchExploreContent = () => {
   })
 
   const showSearch = Boolean(category !== 'all' || query)
-  console.log('asdf showSearch', showSearch)
   return (
     <ScreenContent>
       <SearchExploreHeader scrollY={scrollY} scrollRef={scrollRef} />
@@ -102,7 +94,6 @@ const SearchExploreContent = () => {
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
-        // style={[contentSlideAnimatedStyle, contentPaddingStyle]}
         showsVerticalScrollIndicator={false}
       >
         {showSearch && (query || hasAnyFilter) ? (
