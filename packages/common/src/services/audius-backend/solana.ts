@@ -475,42 +475,48 @@ export const transferFromUserBank = async ({
         console.debug(
           `Destination ${destinationWallet.toBase58()} is already a token account for the correct mint`
         )
+      } else {
+        throw new Error(
+          `Destination ${destinationWallet.toBase58()} is a token account but for mint ${account.mint.toBase58()}, expected ${mint.toBase58()}`
+        )
       }
-    } catch (e) {}
+    } catch (e) {
+      if (
+        e instanceof Error &&
+        e.message.includes('is a token account but for mint')
+      ) {
+        throw e
+      }
+    }
 
-    // If destinationWallet is not already an ATA, derive the ATA
+    // If destinationWallet is not already an ATA, derive the ATA and create it if needed
     if (!isDestinationAlreadyAta) {
       destination = getAssociatedTokenAddressSync(mint, destinationWallet, true)
 
-      // Check if the derived ATA exists
-      try {
-        await getAccount(connection, destination)
-      } catch (e) {
-        // Throws if token account doesn't exist or account isn't a token account
-        isCreatingTokenAccount = true
-        console.debug(
-          `Associated token account ${destination.toBase58()} does not exist. Creating w/ transfer...`
-        )
+      // Always create the ATA instruction - it's idempotent so it will succeed whether it exists or not
+      isCreatingTokenAccount = true
+      console.debug(
+        `Ensuring associated token account ${destination.toBase58()} exists...`
+      )
 
-        // Historically, the token account was created in a separate transaction
-        // after swapping USDC to SOL via Jupiter and funded via the root wallet.
-        // This is no longer the case. Reusing the same Amplitude events anyway.
-        await track(
-          make({
-            eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START,
-            ...analyticsFields
-          })
+      // Historically, the token account was created in a separate transaction
+      // after swapping USDC to SOL via Jupiter and funded via the root wallet.
+      // This is no longer the case. Reusing the same Amplitude events anyway.
+      await track(
+        make({
+          eventName: Name.WITHDRAW_USDC_CREATE_DEST_TOKEN_ACCOUNT_START,
+          ...analyticsFields
+        })
+      )
+      const payerKey = await sdk.services.solanaRelay.getFeePayer()
+      const createAtaInstruction =
+        createAssociatedTokenAccountIdempotentInstruction(
+          payerKey,
+          destination,
+          destinationWallet,
+          mint
         )
-        const payerKey = await sdk.services.solanaRelay.getFeePayer()
-        const createAtaInstruction =
-          createAssociatedTokenAccountIdempotentInstruction(
-            payerKey,
-            destination,
-            destinationWallet,
-            mint
-          )
-        instructions.push(createAtaInstruction)
-      }
+      instructions.push(createAtaInstruction)
     }
 
     const secpTransferInstruction =
