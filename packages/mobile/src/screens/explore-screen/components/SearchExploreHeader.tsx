@@ -264,9 +264,8 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Filters slide up when header collapses
   // and hides when scrolling further down
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
-    marginTop: inputValue
-      ? withTiming(-HEADER_COLLAPSE_THRESHOLD)
-      : scrollY.value === 0
+    marginTop:
+      scrollY.value === 0 || inputValue
         ? withTiming(0)
         : filterTranslateY.value,
     backgroundColor:
