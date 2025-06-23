@@ -68,21 +68,20 @@ const DEFAULT_SORT_DIRECTION = full.GetUSDCTransactionsSortDirectionEnum.Desc
 const NoWithdrawals = () => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { data: balance } = useUSDCBalance()
-  const balanceCents =
-    Number(
-      USDC(balance ?? 0)
-        .floor(2)
-        .toString()
-    ) * 100
 
   const handleWithdraw = () => {
     openWithdrawUSDCModal({
       page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
     })
+    const balanceCents = Number(
+      USDC(balance ?? 0)
+        .floor(2)
+        .toString()
+    )
     track(
       make({
         eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents / 100
+        currentBalance: balanceCents
       })
     )
   }

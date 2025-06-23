@@ -67,10 +67,13 @@ export const SuccessPage = () => {
           <span>
             +
             {transactionDetails.status === Status.SUCCESS
-              ? wAUDIO(BigInt(transactionDetails.transactionDetails.change))
-                  .trunc()
-                  .toFixed()
-              : '0'}
+              ? wAUDIO(
+                  transactionDetails.transactionDetails.change
+                ).toLocaleString('en-US', {
+                  maximumFractionDigits: 0,
+                  minimumFractionDigits: 0
+                })
+              : 0}
           </span>
         </div>
         {/* If user's balance is still loading or failed to load, don't show it. */}

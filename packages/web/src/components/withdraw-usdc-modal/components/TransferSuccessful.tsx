@@ -51,12 +51,6 @@ export const TransferSuccessful = ({
 }) => {
   const { data: balance } = useUSDCBalance()
   const signature = useSelector(getWithdrawTransaction)
-  const balanceNumber =
-    Number(
-      USDC(balance ?? 0)
-        .floor(2)
-        .toString()
-    ) * 100
 
   const [{ value: methodValue }] = useField<string>(METHOD)
   const [{ value: amountValue }] = useField<number>(AMOUNT)
@@ -65,16 +59,21 @@ export const TransferSuccessful = ({
   const handleClickTransactionLink = useCallback(() => {
     if (!signature) return
     openExplorer(signature)
+    const balanceNumber = Number(
+      USDC(balance ?? 0)
+        .floor(2)
+        .toString()
+    )
     track(
       make({
         eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED,
-        currentBalance: balanceNumber / 100,
+        currentBalance: balanceNumber,
         amount: amountValue / 100,
         destinationAddress: addressValue,
         signature
       })
     )
-  }, [signature, balanceNumber, amountValue, addressValue])
+  }, [signature, balance, amountValue, addressValue])
 
   return (
     <Flex column gap='xl'>

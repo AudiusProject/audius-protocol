@@ -110,7 +110,10 @@ const renderChangeCell = (cellInfo: TransactionCell) => {
   const { change } = tx
   return (
     <Tooltip
-      text={`${wAUDIO(BigInt(tx.change)).toFixed(2)} $AUDIO`}
+      text={`${wAUDIO(tx.change).toLocaleString('en-US', {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2
+      })} $AUDIO`}
       mount={'body'}
     >
       <div

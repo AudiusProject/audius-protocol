@@ -48,8 +48,7 @@ export const USDCPurchaseSellerNotification = (
 
   if (!content || !buyerUser) return null
 
-  // Calculate total amount using fixed-decimal
-  const totalAmount = (BigInt(amount) + BigInt(extraAmount)) as UsdcWei
+  const totalAmount = USDC(amount).value + USDC(extraAmount).value
   const formattedAmount = USDC(totalAmount).toLocaleString()
 
   return (
