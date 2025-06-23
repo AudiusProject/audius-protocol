@@ -1,5 +1,5 @@
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import BN from 'bn.js'
 
 import { isNullOrUndefined, Nullable } from '~/utils/typeUtils'
 
@@ -72,14 +72,14 @@ const slice = createSlice({
       { payload: { amount } }: PayloadAction<{ amount: StringWei }>
     ) => {
       if (isNullOrUndefined(state.balance)) return
-      const existingBalance = new BN(state.balance)
-      state.balance = existingBalance
-        .add(new BN(amount))
-        .toString() as StringWei
+      const existingBalance = AUDIO(state.balance).value
+      state.balance = (
+        existingBalance + AUDIO(amount).value
+      ).toString() as StringWei
       if (!isNullOrUndefined(state.totalBalance)) {
-        state.totalBalance = new BN(state.totalBalance)
-          .add(new BN(amount))
-          .toString() as StringWei
+        state.totalBalance = (
+          AUDIO(state.totalBalance).value + AUDIO(amount).value
+        ).toString() as StringWei
       }
       state.localBalanceDidChange = true
       state.freezeBalanceUntil = Date.now() + BALANCE_FREEZE_DURATION_SEC * 1000
@@ -89,14 +89,15 @@ const slice = createSlice({
       { payload: { amount } }: PayloadAction<{ amount: StringWei }>
     ) => {
       if (!state.balance) return
-      const existingBalance = new BN(state.balance)
-      state.balance = existingBalance
-        .sub(new BN(amount))
-        .toString() as StringWei
+      const existingBalance = BigInt(state.balance) as AudioWei
+      state.balance = (
+        existingBalance - (BigInt(amount) as AudioWei)
+      ).toString() as StringWei
       if (state.totalBalance) {
-        state.totalBalance = new BN(state.totalBalance)
-          .sub(new BN(amount))
-          .toString() as StringWei
+        state.totalBalance = (
+          (BigInt(state.totalBalance) as AudioWei) -
+          (BigInt(amount) as AudioWei)
+        ).toString() as StringWei
       }
       state.localBalanceDidChange = true
       state.freezeBalanceUntil = Date.now() + BALANCE_FREEZE_DURATION_SEC * 1000

@@ -1,10 +1,10 @@
 import { useUSDCBalance } from '@audius/common/api'
-import type { BNUSDC } from '@audius/common/models'
 import {
   purchaseContentSelectors,
   isContentPurchaseInProgress
 } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
+import { UsdcWei } from '@audius/fixed-decimal'
 import { useSelector } from 'react-redux'
 
 import { usePurchaseSummaryValues } from './usePurchaseSummaryValues'
@@ -25,7 +25,7 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
 
   const purchaseSummaryValues = usePurchaseSummaryValues({
     price,
-    currentBalance: currentBalance as Nullable<BNUSDC>
+    currentBalance: currentBalance as Nullable<UsdcWei>
   })
 
   return {

@@ -1,18 +1,14 @@
 import { useCallback } from 'react'
 
 import { useNotificationEntity, useUsers } from '@audius/common/api'
-import { StringUSDC } from '@audius/common/models'
 import {
   Entity,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType,
   CollectionEntity
 } from '@audius/common/store'
-import {
-  stringUSDCToBN,
-  formatUSDCWeiToUSDString,
-  Nullable
-} from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -62,6 +58,10 @@ export const USDCPurchaseSellerNotification = (
   }, [dispatch, content])
 
   if (!content || !buyerUser) return null
+
+  const totalAmount = USDC(amount).value + USDC(extraAmount).value
+  const formattedAmount = USDC(totalAmount).toLocaleString()
+
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconCart />}>
@@ -77,11 +77,7 @@ export const USDCPurchaseSellerNotification = (
         {messages.justBoughtYourTrack(entityType)}
         <EntityLink entity={content} entityType={entityType} />
         {messages.for + messages.dollar}
-        {formatUSDCWeiToUSDString(
-          stringUSDCToBN(amount)
-            .add(stringUSDCToBN(extraAmount))
-            .toString() as StringUSDC
-        )}
+        {formattedAmount}
         {messages.exclamation}
       </NotificationBody>
     </NotificationTile>

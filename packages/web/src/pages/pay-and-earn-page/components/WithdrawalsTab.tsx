@@ -6,16 +6,15 @@ import {
   useUSDCTransactionsCount,
   useUSDCBalance
 } from '@audius/common/api'
-import { BNUSDC, ID, Name, USDCTransactionDetails } from '@audius/common/models'
+import { ID, Name, USDCTransactionDetails } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
   useUSDCTransactionDetailsModal,
   useWithdrawUSDCModal,
   withdrawUSDCSelectors
 } from '@audius/common/store'
-import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Id, full } from '@audius/sdk'
-import BN from 'bn.js'
 import { useDispatch } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 
@@ -69,18 +68,20 @@ const DEFAULT_SORT_DIRECTION = full.GetUSDCTransactionsSortDirectionEnum.Desc
 const NoWithdrawals = () => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { data: balance } = useUSDCBalance()
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
 
   const handleWithdraw = () => {
     openWithdrawUSDCModal({
       page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
     })
+    const balanceCents = Number(
+      USDC(balance ?? 0)
+        .floor(2)
+        .toString()
+    )
     track(
       make({
         eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents / 100
+        currentBalance: balanceCents
       })
     )
   }

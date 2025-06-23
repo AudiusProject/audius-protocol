@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 
 import { USDC } from '@audius/fixed-decimal'
-import BN from 'bn.js'
 
 import { PurchaseMethod } from '~/models/PurchaseContent'
 
@@ -25,7 +24,7 @@ export const usePurchaseMethod = ({
   setMethod
 }: UsePurchaseMethodProps) => {
   const { data: balance } = useUSDCBalance()
-  const balanceUSDC = USDC(balance ?? new BN(0)).value
+  const balanceUSDC = USDC(balance ?? 0).value
   const totalPriceInCents = price + (extraAmount ?? 0)
   const isExistingBalanceDisabled =
     USDC(totalPriceInCents / 100).value > balanceUSDC

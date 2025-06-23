@@ -1,6 +1,5 @@
 import { Status } from '@audius/common/models'
 import { buyAudioSelectors, PurchaseInfoErrorType } from '@audius/common/store'
-import { formatNumberString } from '@audius/common/utils'
 import { IconCaretDown } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -48,19 +47,19 @@ export const PurchaseQuote = () => {
         ) : (
           <>
             <IconSOL />
-            {formatNumberString(purchaseInfo?.estimatedSOL.uiAmountString, {
-              // Show enough decimals so that it doesn't look like 0 SOL
-              maxDecimals: 3
+            {Number(
+              purchaseInfo?.estimatedSOL.uiAmountString || 0
+            ).toLocaleString(undefined, {
+              maximumFractionDigits: 3
             })}
             <span className={styles.tokenLabel}>{messages.sol}</span>
             <IconCaretDown className={styles.caret} />
             <IconAUDIO />
-            {formatNumberString(
-              purchaseInfo?.desiredAudioAmount.uiAmountString,
-              {
-                maxDecimals: 2
-              }
-            )}
+            {Number(
+              purchaseInfo?.desiredAudioAmount.uiAmountString || 0
+            ).toLocaleString(undefined, {
+              maximumFractionDigits: 2
+            })}
             <span className={styles.tokenLabel}>{messages.audio}</span>
           </>
         )}
@@ -76,15 +75,14 @@ export const PurchaseQuote = () => {
           ) : (
             <>
               <span className={styles.tokenLabel}>$</span>
-              {formatNumberString(
+              {Number(
                 !purchaseInfo?.isError
                   ? (purchaseInfo?.estimatedUSD.uiAmountString ?? '0')
-                  : '0',
-                {
-                  minDecimals: 2,
-                  maxDecimals: 2
-                }
-              )}
+                  : '0'
+              ).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}
             </>
           )}
         </div>

@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { USDC } from '@audius/fixed-decimal'
+import { USDC, UsdcWei } from '@audius/fixed-decimal'
 import { useQueryClient } from '@tanstack/react-query'
-import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -67,8 +66,8 @@ export const usePurchaseContentFormConfiguration = ({
   const error = useSelector(getPurchaseContentError)
   const page = useSelector(getPurchaseContentPage)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-  const { data: balanceBN } = useUSDCBalance()
-  const balance = USDC(balanceBN ?? new BN(0)).value
+  const { data: balanceWei } = useUSDCBalance()
+  const balance = USDC(balanceWei ?? (BigInt(0) as UsdcWei)).value
   const { data: guestEmail } = useCurrentAccount({
     select: (account) => account?.guestEmail
   })
