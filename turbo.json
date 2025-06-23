@@ -1,40 +1,40 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "pipeline": {
+  "tasks": {
     "build": {
       "outputs": ["dist/**", "build/**"],
       "dependsOn": ["^build"],
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     },
     "rebuild": {
       "cache": false,
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     },
     "start": {
       "cache": false,
       "persistent": true,
       "dependsOn": ["^build"],
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     },
     "lint": {
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "dependsOn": ["^build", "^rebuild"]
     },
     "lint:fix": {
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "dependsOn": ["^build", "^rebuild"]
     },
     "verify": {
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "dependsOn": ["^build", "^rebuild"]
     },
     "test": {
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "outputs": ["coverage/**"],
       "dependsOn": ["^build"]
     },
     "typecheck": {
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "dependsOn": ["^build"]
     }
   }

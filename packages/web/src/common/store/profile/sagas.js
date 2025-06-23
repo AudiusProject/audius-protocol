@@ -39,10 +39,6 @@ import {
 
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
-import {
-  subscribeToUserAsync,
-  unsubscribeFromUserAsync
-} from 'common/store/social/users/sagas'
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -293,18 +289,6 @@ function* fetchProfileAsync(action) {
 
     yield fork(fetchEthereumCollectibles, user)
     yield fork(fetchSolanaCollectibles, user)
-
-    // Get current user notification & subscription status
-    const isSubscribed = !!user.does_current_user_subscribe
-
-    yield put(
-      profileActions.setNotificationSubscription(
-        user.user_id,
-        isSubscribed,
-        false,
-        user.handle
-      )
-    )
   } catch (err) {
     console.error(`Fetch users error: ${err}`)
     const isReachable = yield select(getIsReachable)
@@ -432,35 +416,11 @@ function* confirmUpdateProfile(userId, metadata) {
   )
 }
 
-function* watchSetNotificationSubscription() {
-  yield takeEvery(
-    profileActions.SET_NOTIFICATION_SUBSCRIPTION,
-    function* (action) {
-      // Discovery automatically subscribes on follow so only update if not a subscribe
-      // on follow.
-      if (action.update) {
-        try {
-          if (action.isSubscribed) {
-            yield fork(subscribeToUserAsync, action.userId)
-          } else {
-            yield fork(unsubscribeFromUserAsync, action.userId)
-          }
-        } catch (err) {
-          const isReachable = yield select(getIsReachable)
-          if (!isReachable) return
-          throw err
-        }
-      }
-    }
-  )
-}
-
 export default function sagas() {
   return [
     ...feedSagas(),
     ...tracksSagas(),
     watchFetchProfile,
-    watchUpdateProfile,
-    watchSetNotificationSubscription
+    watchUpdateProfile
   ]
 }

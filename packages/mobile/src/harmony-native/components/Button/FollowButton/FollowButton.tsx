@@ -97,7 +97,7 @@ export const FollowButton = (props: FollowButtonProps) => {
         <Icon
           height={18}
           width={18}
-          fill={following ? color.icon.staticWhite : color.primary.primary}
+          fill={following ? color.icon.white : color.primary.primary}
         />
 
         <Text
@@ -105,7 +105,7 @@ export const FollowButton = (props: FollowButtonProps) => {
           size={size === 'small' ? 's' : 'l'}
           strength='default'
           style={{
-            color: following ? color.icon.staticWhite : color.primary.primary
+            color: following ? color.icon.white : color.primary.primary
           }}
         >
           {following ? messages.following : messages.follow}

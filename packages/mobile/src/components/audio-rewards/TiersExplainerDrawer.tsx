@@ -22,7 +22,9 @@ const messages = {
   explainer1: 'Unlock $AUDIO VIP Tiers by simply holding more $AUDIO.',
   explainer2:
     'Advancing to a new tier will earn you a profile badge, visible throughout the app, and unlock various new features, as they are released.',
-  learnMore: 'LEARN MORE'
+  learnMore: 'LEARN MORE',
+  audio: '$AUDIO',
+  plus: '+'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -70,11 +72,11 @@ export const TiersExplainerDrawer = () => {
   const profileId = useSelector(getProfileUserId)
   const { tier, tierNumber } = useTierAndVerifiedForUser(profileId)
 
-  const { minAudio } = badgeTiers.find(
+  const { humanReadableAmount } = badgeTiers.find(
     (tierReq) => tierReq.tier === tier
   ) as BadgeTierInfo
 
-  const minAudioText = minAudio.toString()
+  const minAudioText = humanReadableAmount?.toString() ?? '0'
 
   return (
     <AppDrawer modalName={MODAL_NAME}>
@@ -91,7 +93,8 @@ export const TiersExplainerDrawer = () => {
             accessibilityLabel={`${minAudioText} or more audio tokens`}
             style={styles.minAudio}
           >
-            {minAudio.toString()}+ $AUDIO
+            {humanReadableAmount?.toString() ?? '0'}
+            {messages.plus} {messages.audio}
           </Text>
         </View>
       </View>

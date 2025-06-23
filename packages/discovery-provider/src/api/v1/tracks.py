@@ -2042,3 +2042,31 @@ class GetTrackAccessInfo(Resource):
         track["stream_conditions"] = stream_conditions
         track["download_conditions"] = download_conditions
         return success_response(track)
+
+
+@ns.route("/recent_premium")
+class GetRecentPremiumTracks(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Recent Premium Tracks",
+        description="Gets the most recently listed premium tracks",
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self):
+        # This is stubbed, just generating docs
+        abort_not_found("recent_premium", ns)
+
+
+@full_ns.route("/recent_premium")
+class GetRecentPremiumTracksFull(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="Get Recent Premium Tracks",
+        description="Gets the most recently listed premium tracks",
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        # This is stubbed, just generating docs
+        abort_not_found("recent_premium", full_ns)

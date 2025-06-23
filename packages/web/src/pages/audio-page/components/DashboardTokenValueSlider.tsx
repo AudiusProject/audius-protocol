@@ -1,27 +1,30 @@
-import { BNAudio } from '@audius/common/models'
 import { formatNumberCommas } from '@audius/common/utils'
-import BN from 'bn.js'
+import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { TokenValueSlider } from 'components/token-value-slider'
 
 import styles from './DashboardTokenValueSlider.module.css'
 
 type DashboardTokenValueSliderProps = {
-  min: BNAudio
-  max: BNAudio
-  value: BNAudio
+  min: FixedDecimal
+  max: FixedDecimal
+  value: FixedDecimal
 }
 
-const MinMaxWrapper = ({ value }: { value: BN }) => {
+const MinMaxWrapper = ({ value }: { value: FixedDecimal }) => {
   return (
     <div className={styles.minMaxWrapper}>{`${formatNumberCommas(
-      value.toString()
+      value.trunc(0).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      })
     )} $AUDIO`}</div>
   )
 }
 
 const DashboardTokenValueSlider = (props: DashboardTokenValueSliderProps) => {
   const { min, max, value } = props
+
   return (
     <TokenValueSlider
       className={styles.sliderContainer}

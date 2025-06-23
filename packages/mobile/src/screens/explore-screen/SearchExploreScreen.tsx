@@ -1,6 +1,5 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
-import { searchSelectors } from '@audius/common/store'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -9,7 +8,6 @@ import Animated, {
   Extrapolation,
   withTiming
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
 
 import { useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
@@ -23,13 +21,11 @@ import {
   SearchProvider,
   useSearchCategory,
   useSearchFilters,
-  useSearchDebouncedQuery
+  useSearchQuery
 } from '../search-screen/searchState'
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
-
-const { getSearchHistory } = searchSelectors
 
 // Animation parameters
 const HEADER_SLIDE_HEIGHT = 46
@@ -37,13 +33,12 @@ const FILTER_SCROLL_THRESHOLD = 300
 const HEADER_COLLAPSE_THRESHOLD = 50
 
 const SearchExploreContent = () => {
-  const { spacing } = useTheme()
+  const { spacing, motion } = useTheme()
 
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
-  const debouncedQuery = useSearchDebouncedQuery()
-
+  const [query, setQuery] = useSearchQuery()
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -55,16 +50,22 @@ const SearchExploreContent = () => {
   const hasAnyFilter = Object.values(filters).some(
     (value) => value !== undefined
   )
-  const history = useSelector(getSearchHistory)
-  const showRecentSearches = history.length > 0
 
   useScrollToTop(() => {
     scrollRef.current?.scrollTo({
       y: 0,
       animated: false
     })
+    setQuery('')
     setCategory('all')
     setFilters({})
+  })
+
+  useEffect(() => {
+    if (query.length <= 1) {
+      // Reset scroll on new or empty queries
+      scrollRef.current?.scrollTo?.({ y: 0, animated: false })
+    }
   })
 
   // Animations
@@ -74,6 +75,14 @@ const SearchExploreContent = () => {
       const contentHeight = event.contentSize.height
       const layoutHeight = event.layoutMeasurement.height
       const isAtBottom = y + layoutHeight >= contentHeight
+      const canScroll = contentHeight > layoutHeight
+
+      // Only apply scroll animations if there's enough content to scroll
+      // fixes jitter when content is small
+      if (!canScroll) {
+        scrollY.value = 0
+        return
+      }
 
       // Only update scroll direction if we're not at the bottom
       // to prevent bounce from interfering
@@ -89,21 +98,22 @@ const SearchExploreContent = () => {
 
       // Handle filter animation
       if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
-        filterTranslateY.value = withTiming(-spacing['4xl'])
+        filterTranslateY.value = withTiming(-spacing['4xl'], motion.calm)
       } else if (
         y < FILTER_SCROLL_THRESHOLD ||
         scrollDirection.value === 'up'
       ) {
-        filterTranslateY.value = withTiming(0)
+        filterTranslateY.value = withTiming(0, motion.calm)
       }
     }
   })
 
   // content margin expands when header / filter collapses
   const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
-    marginTop:
-      scrollY.value === 0
-        ? withTiming(0)
+    marginTop: query
+      ? withTiming(-HEADER_COLLAPSE_THRESHOLD * 2.5, motion.calm)
+      : scrollY.value === 0
+        ? withTiming(0, motion.calm)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -112,42 +122,53 @@ const SearchExploreContent = () => {
           ) +
           interpolate(
             scrollY.value,
-            [FILTER_SCROLL_THRESHOLD - 50, FILTER_SCROLL_THRESHOLD],
+            [
+              FILTER_SCROLL_THRESHOLD - HEADER_COLLAPSE_THRESHOLD,
+              FILTER_SCROLL_THRESHOLD
+            ],
             [0, -spacing['4xl']],
             Extrapolation.CLAMP
           )
   }))
 
-  return (
-    <Screen url='Explore' header={() => <></>}>
-      <ScreenContent>
-        <SearchExploreHeader
-          scrollY={scrollY}
-          filterTranslateY={filterTranslateY}
-          scrollRef={scrollRef}
-        />
+  const contentPaddingStyle = useAnimatedStyle(() => ({
+    paddingTop: query
+      ? withTiming(80, motion.calm)
+      : scrollY.value === 0
+        ? withTiming(0, motion.calm)
+        : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP) +
+          filterTranslateY.value,
+    // Add minimum height to prevent jitter with small content
+    minHeight: '100%'
+  }))
 
-        <Animated.ScrollView
-          ref={scrollRef}
-          onScroll={scrollHandler}
-          style={[contentSlideAnimatedStyle]}
-        >
-          {category !== 'all' || debouncedQuery ? (
-            <>
-              {debouncedQuery || hasAnyFilter ? (
-                <SearchResults />
-              ) : showRecentSearches ? (
-                <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-              ) : (
-                <SearchCatalogTile />
-              )}
-            </>
-          ) : (
-            <ExploreContent />
-          )}
-        </Animated.ScrollView>
-      </ScreenContent>
-    </Screen>
+  return (
+    <ScreenContent>
+      <SearchExploreHeader
+        scrollY={scrollY}
+        filterTranslateY={filterTranslateY}
+        scrollRef={scrollRef}
+      />
+
+      <Animated.ScrollView
+        ref={scrollRef}
+        onScroll={scrollHandler}
+        style={[contentSlideAnimatedStyle, contentPaddingStyle]}
+        showsVerticalScrollIndicator={false}
+      >
+        {category !== 'all' || query ? (
+          <>
+            {query || hasAnyFilter ? (
+              <SearchResults />
+            ) : (
+              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+            )}
+          </>
+        ) : (
+          <ExploreContent />
+        )}
+      </Animated.ScrollView>
+    </ScreenContent>
   )
 }
 
@@ -161,7 +182,9 @@ export const SearchExploreScreen = () => {
       initialAutoFocus={params?.autoFocus ?? false}
       initialQuery={params?.query ?? ''}
     >
-      <SearchExploreContent />
+      <Screen url='Explore' header={() => <></>}>
+        <SearchExploreContent />
+      </Screen>
     </SearchProvider>
   )
 }

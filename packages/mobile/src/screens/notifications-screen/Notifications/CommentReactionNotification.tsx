@@ -22,8 +22,7 @@ import {
 const USER_LENGTH_LIMIT = 3
 
 const messages = {
-  others: (count: number) => ` and ${count} other${count > 1 ? 's' : ''}`,
-  liked: 'liked',
+  liked: ' liked your comment on ',
   your: 'your',
   their: 'their'
 }
@@ -50,7 +49,7 @@ export const CommentReactionNotification = (
   const { data: currentUserId } = useCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReaction =
-    firstUser?.user_id === currentUserId && otherUsersCount === 0
+    entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
@@ -65,7 +64,9 @@ export const CommentReactionNotification = (
       </NotificationHeader>
       <NotificationText>
         <UserNameLink user={firstUser} />
-        {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}{' '}
+        {otherUsersCount > 0
+          ? ` and ${otherUsersCount} other${otherUsersCount > 1 ? 's' : ''}`
+          : null}{' '}
         {messages.liked}{' '}
         {isOwner ? (
           messages.your

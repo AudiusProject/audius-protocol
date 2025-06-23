@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId, useUser } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { ID, statusIsNotFinalized } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -61,9 +61,6 @@ type StatsBannerProps = {
   onCancel?: () => void
   onFollow?: () => void
   onUnfollow?: () => void
-  following?: boolean
-  isSubscribed?: boolean
-  onToggleSubscribe?: () => void
   canCreateChat?: boolean
   onMessage?: () => void
   onBlock?: () => void
@@ -173,7 +170,6 @@ export const StatBanner = (props: StatsBannerProps) => {
     onCancel,
     onFollow,
     onUnfollow,
-    following,
     canCreateChat,
     onMessage,
     onBlock,
@@ -181,15 +177,16 @@ export const StatBanner = (props: StatsBannerProps) => {
     onMute,
     isBlocked,
     isMuted,
-    accountUserId,
-    isSubscribed,
-    onToggleSubscribe
+    accountUserId
   } = props
   let buttons = null
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
   const { data: currentUserId } = useCurrentUserId()
+  const { data: isFollowing } = useUser(profileId, {
+    select: (user) => user.does_current_user_follow
+  })
 
   const shareButton = (
     <Button
@@ -265,16 +262,12 @@ export const StatBanner = (props: StatsBannerProps) => {
           )}
 
           <>
-            {onToggleSubscribe ? (
-              <SubscribeButton
-                isSubscribed={isSubscribed!}
-                isFollowing={following!}
-                onToggleSubscribe={onToggleSubscribe}
-              />
+            {isFollowing && profileId ? (
+              <SubscribeButton userId={profileId} />
             ) : null}
             <FollowButton
               ref={followButtonRef}
-              isFollowing={following}
+              isFollowing={isFollowing}
               onFollow={onFollow}
               onUnfollow={onUnfollow}
             />

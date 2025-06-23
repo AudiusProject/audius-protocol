@@ -1,15 +1,15 @@
-import BN from 'bn.js'
+import { FixedDecimal } from '@audius/fixed-decimal'
 
 export type TokenValueSliderProps = {
   className?: string
   sliderClassName?: string
   sliderBarClassName?: string
-  min: BN
-  max: BN
-  value: BN
+  min: FixedDecimal
+  max: FixedDecimal
+  value: FixedDecimal
   minSliderWidth: number
-  initialValue?: BN
+  initialValue?: FixedDecimal
   isIncrease?: boolean
-  minWrapper?: React.ComponentType<{ value: BN }>
-  maxWrapper?: React.ComponentType<{ value: BN }>
+  minWrapper?: React.ComponentType<{ value: FixedDecimal }>
+  maxWrapper?: React.ComponentType<{ value: FixedDecimal }>
 }

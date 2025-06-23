@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useProfileUser } from '@audius/common/api'
 import { useTierAndVerifiedForUser, modalsActions } from '@audius/common/store'

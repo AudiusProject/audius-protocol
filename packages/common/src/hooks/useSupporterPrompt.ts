@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 
-import { useCurrentUserId, useSupporter, useSupporters } from '~/api'
-import { BNWei, StringWei } from '~/models'
-import { Nullable } from '~/utils/typeUtils'
-import { parseAudioInputToWei, stringWeiToBN } from '~/utils/wallet'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 
-const zeroWei = stringWeiToBN('0' as StringWei)
+import { useCurrentUserId, useSupporter, useSupporters } from '~/api'
+import { Nullable } from '~/utils/typeUtils'
+
+const zeroAudioWei = AUDIO('0').value
+const oneAudioWei = AUDIO('1').value
 
 export const useSupporterPrompt = (receiverId?: Nullable<number>) => {
   const { data: accountUserId } = useCurrentUserId()
@@ -41,16 +42,15 @@ export const useSupporterPrompt = (receiverId?: Nullable<number>) => {
       return null
     }
 
-    const topSupporterAmountWei = stringWeiToBN(topSupporter.amount)
+    const topSupporterAmountWei = BigInt(topSupporter.amount) as AudioWei
     const currentUserAmountWei = currentUserSupporter
-      ? stringWeiToBN(currentUserSupporter.amount)
-      : zeroWei
-    const oneAudioToWeiBN = parseAudioInputToWei('1') as BNWei
+      ? (BigInt(currentUserSupporter.amount) as AudioWei)
+      : zeroAudioWei
 
     // Amount needed is (top supporter amount - current user amount + 1 AUDIO)
-    return topSupporterAmountWei
-      .sub(currentUserAmountWei)
-      .add(oneAudioToWeiBN) as BNWei
+    return (topSupporterAmountWei -
+      currentUserAmountWei +
+      oneAudioWei) as AudioWei
   }, [accountUserId, receiverId, topSupporter, currentUserSupporter])
 
   return {

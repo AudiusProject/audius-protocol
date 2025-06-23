@@ -2,6 +2,7 @@
 apis/ChallengesApi.ts
 apis/CidDataApi.ts
 apis/CommentsApi.ts
+apis/ExploreApi.ts
 apis/NotificationsApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
@@ -37,6 +38,8 @@ models/ArtistRemixContestSubmissionsNotificationAction.ts
 models/ArtistRemixContestSubmissionsNotificationActionData.ts
 models/Attestation.ts
 models/AttestationReponse.ts
+models/BestSellingFullResponse.ts
+models/BestSellingItem.ts
 models/ChallengeRewardNotification.ts
 models/ChallengeRewardNotificationAction.ts
 models/ChallengeRewardNotificationActionData.ts

@@ -12,8 +12,10 @@ export const UNFOLLOW_USER = 'SOCIAL/UNFOLLOW_USER'
 export const UNFOLLOW_USER_SUCCEEDED = 'SOCIAL/UNFOLLOW_USER_SUCCEEDED'
 export const UNFOLLOW_USER_FAILED = 'SOCIAL/UNFOLLOW_USER_FAILED'
 
+export const SUBSCRIBE_USER = 'SOCIAL/SUBSCRIBE_USER'
 export const SUBSCRIBE_USER_FAILED = 'SOCIAL/SUBSCRIBE_USER_FAILED'
 
+export const UNSUBSCRIBE_USER = 'SOCIAL/UNSUBSCRIBE_USER'
 export const UNSUBSCRIBE_USER_FAILED = 'SOCIAL/UNSUBSCRIBE_USER_FAILED'
 
 export const SHARE_USER = 'SOCIAL/SHARE_USER'
@@ -53,9 +55,19 @@ export const unfollowUserFailed = createCustomAction(
   (userId: ID, error: any) => ({ userId, error })
 )
 
+export const subscribeUser = createCustomAction(
+  SUBSCRIBE_USER,
+  (userId: ID) => ({ userId })
+)
+
 export const subscribeUserFailed = createCustomAction(
   SUBSCRIBE_USER_FAILED,
   (userId: ID, error: any) => ({ userId, error })
+)
+
+export const unsubscribeUser = createCustomAction(
+  UNSUBSCRIBE_USER,
+  (userId: ID) => ({ userId })
 )
 
 export const unsubscribeUserFailed = createCustomAction(

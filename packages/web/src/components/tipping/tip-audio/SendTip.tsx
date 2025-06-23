@@ -1,7 +1,7 @@
 import { cloneElement, useCallback, useState } from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
-import { BadgeTier, StringAudio } from '@audius/common/models'
+import { BadgeTier, StringAudio, StringWei } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   tippingSelectors,
@@ -11,7 +11,7 @@ import {
   OnRampProvider
 } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import {
   IconQuestionCircle,
   IconArrowRight as IconArrow,
@@ -60,13 +60,16 @@ export const SendTip = () => {
       includeConnectedWallets: false
     })
 
-  const accountBalance = audioBalanceBigInt
-    ? AUDIO(audioBalanceBigInt)
-    : AUDIO('0')
+  const accountBalance = audioBalanceBigInt ?? (BigInt(0) as AudioWei)
 
   const [tipAmount, setTipAmount] = useState('')
+  const [tipAmountWei, setTipAmountWei] = useState<AudioWei>(
+    BigInt(0) as AudioWei
+  )
 
-  const { tier } = getTierAndNumberForBalance(accountBalance.value)
+  const { tier } = getTierAndNumberForBalance(
+    accountBalance.toString() as StringWei
+  )
   const audioBadge = audioTierMap[tier as BadgeTier]
 
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(
@@ -74,10 +77,11 @@ export const SendTip = () => {
   )
 
   const handleTipAmountChange = useCallback<TokenAmountInputChangeHandler>(
-    (value) => {
+    (value, valueBigInt) => {
       setTipAmount(value as StringAudio)
+      setTipAmountWei(valueBigInt as AudioWei)
     },
-    [setTipAmount]
+    [setTipAmount, setTipAmountWei]
   )
 
   const handleSendClick = useCallback(() => {
@@ -96,11 +100,8 @@ export const SendTip = () => {
     dispatch(resetSend())
   }, [dispatch, receiver])
 
-  const tipAmountWei = tipAmount ? AUDIO(tipAmount) : AUDIO('0')
   const isDisabled =
-    !tipAmount ||
-    tipAmountWei.value <= BigInt(0) ||
-    tipAmountWei.value > accountBalance.value
+    !tipAmount || tipAmountWei <= BigInt(0) || tipAmountWei > accountBalance
   const showBuyAudioButton = isStripeBuyAudioEnabled && isDisabled
 
   const renderAvailableAmount = () => (
@@ -130,7 +131,9 @@ export const SendTip = () => {
           {isBalanceLoading || isNullOrUndefined(accountBalance) ? (
             <Skeleton width='20px' height='14px' />
           ) : (
-            accountBalance.toLocaleString('en-US', { maximumFractionDigits: 0 })
+            AUDIO(accountBalance).toLocaleString('en-US', {
+              maximumFractionDigits: 0
+            })
           )}
         </span>
       </div>
@@ -172,7 +175,7 @@ export const SendTip = () => {
             placeholder={messages.inputPlaceholder}
             tokenLabel={messages.inputTokenLabel}
             value={tipAmount}
-            isWhole
+            decimals={18}
             onChange={handleTipAmountChange}
           />
         </div>

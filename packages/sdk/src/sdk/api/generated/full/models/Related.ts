@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { PlaylistFull } from './PlaylistFull';
+import {
+    PlaylistFullFromJSON,
+    PlaylistFullFromJSONTyped,
+    PlaylistFullToJSON,
+} from './PlaylistFull';
 import type { TrackFull } from './TrackFull';
 import {
     TrackFullFromJSON,
@@ -45,6 +51,12 @@ export interface Related {
      * @memberof Related
      */
     tracks?: Array<TrackFull>;
+    /**
+     * 
+     * @type {Array<PlaylistFull>}
+     * @memberof Related
+     */
+    playlists?: Array<PlaylistFull>;
 }
 
 /**
@@ -68,6 +80,7 @@ export function RelatedFromJSONTyped(json: any, ignoreDiscriminator: boolean): R
         
         'users': !exists(json, 'users') ? undefined : ((json['users'] as Array<any>).map(UserFullFromJSON)),
         'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
+        'playlists': !exists(json, 'playlists') ? undefined : ((json['playlists'] as Array<any>).map(PlaylistFullFromJSON)),
     };
 }
 
@@ -82,6 +95,7 @@ export function RelatedToJSON(value?: Related | null): any {
         
         'users': value.users === undefined ? undefined : ((value.users as Array<any>).map(UserFullToJSON)),
         'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(TrackFullToJSON)),
+        'playlists': value.playlists === undefined ? undefined : ((value.playlists as Array<any>).map(PlaylistFullToJSON)),
     };
 }
 

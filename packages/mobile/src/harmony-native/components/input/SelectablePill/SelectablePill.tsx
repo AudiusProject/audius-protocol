@@ -58,19 +58,18 @@ export const SelectablePill = (props: SelectablePillProps) => {
 
   const handlePressIn = useCallback(() => {
     pressed.value = withTiming(1, motion.press)
-    if (!isSelected) {
-      selected.value = withTiming(1, motion.press)
-    }
     setIsPressing(true)
-  }, [pressed, motion.press, selected, setIsPressing, isSelected])
+  }, [pressed, motion.press, setIsPressing])
+
+  const handlePressOut = useCallback(() => {
+    pressed.value = withTiming(0, motion.press)
+    setIsPressing(false)
+  }, [pressed, motion.press, setIsPressing])
 
   const handleTouchCancel = useCallback(() => {
     pressed.value = withTiming(0, motion.press)
-    if (!isSelected) {
-      selected.value = withTiming(0, motion.press)
-    }
     setIsPressing(false)
-  }, [pressed, motion.press, selected, setIsPressing, isSelected])
+  }, [pressed, motion.press, setIsPressing])
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
@@ -78,10 +77,24 @@ export const SelectablePill = (props: SelectablePillProps) => {
       if (value) {
         onChange?.(value, !isSelected)
       }
-      setIsPressing(false)
       setIsSelected(!isSelected)
+      if (isSelected) {
+        // avoids flashing purple when deselecting
+        selected.value = disableUnselectAnimation
+          ? 0
+          : withTiming(0, motion.press)
+      }
     },
-    [onChange, onPress, value, isSelected, setIsSelected]
+    [
+      onPress,
+      value,
+      setIsSelected,
+      isSelected,
+      onChange,
+      selected,
+      disableUnselectAnimation,
+      motion.press
+    ]
   )
 
   useEffect(() => {
@@ -114,7 +127,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
         [0, 1],
         [color.border.strong, color.secondary.s400]
       ),
-      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.95]) }]
     }),
     [disabled, themeType]
   )
@@ -133,6 +146,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
   return (
     <Pressable
       onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       onTouchCancel={handleTouchCancel}
       onPress={handlePress}
       hitSlop={DEFAULT_HIT_SLOP}

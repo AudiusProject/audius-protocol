@@ -1,5 +1,5 @@
-import { BNWei, WalletAddress } from '@audius/common/models'
-import { formatWei } from '@audius/common/utils'
+import { WalletAddress } from '@audius/common/models'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 
 import PurpleBox from 'components/rewards/PurpleBox'
 
@@ -11,9 +11,9 @@ import styles from './SendInputSuccess.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'
 
 type SendInputSuccessProps = {
-  sentAmount: BNWei
+  sentAmount: AudioWei
   recipientAddress: WalletAddress
-  balance: BNWei
+  balance: AudioWei
 }
 
 const messages = {
@@ -42,7 +42,12 @@ const SendInputSuccess = ({
         text={
           <>
             <TokenHoverTooltip balance={balance}>
-              <span className={styles.amount}>{formatWei(balance, true)}</span>
+              <span className={styles.amount}>
+                {AUDIO(balance).trunc().toLocaleString('en-US', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                })}
+              </span>
             </TokenHoverTooltip>
             <span className={styles.label}>{messages.currency}</span>
           </>

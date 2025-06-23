@@ -49,7 +49,7 @@ export const RemixContestCard = (props: RemixContestCardProps) => {
     return <CollectionCardSkeleton />
   }
   return (
-    <Paper onPress={handlePress}>
+    <Paper border='default' onPress={handlePress}>
       <Flex p='s' gap='s'>
         <TrackImage trackId={trackId} size={SquareSizes.SIZE_480_BY_480} />
         <Text variant='title' textAlign='center' numberOfLines={1}>

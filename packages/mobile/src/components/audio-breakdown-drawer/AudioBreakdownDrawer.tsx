@@ -1,12 +1,11 @@
-import type { BNWei } from '@audius/common/models'
 import { Chain } from '@audius/common/models'
 import type { AssociatedWallet } from '@audius/common/store'
 import {
   tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common/store'
-import { formatWei } from '@audius/common/utils'
-import BN from 'bn.js'
+import type { AudioWei } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -103,9 +102,9 @@ const messages = {
 export const AudioBreakdownDrawer = () => {
   const styles = useStyles()
 
-  const accountBalance = (useSelector(getAccountBalance, (a, b) =>
-    Boolean(a && b && a.eq(b))
-  ) ?? new BN('0')) as BNWei
+  const accountBalance =
+    useSelector(getAccountBalance, (a, b) => Boolean(a && b && a === b)) ??
+    (BigInt(0) as AudioWei)
 
   const associatedWallets = useSelector(getAssociatedWallets)
   const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
@@ -114,13 +113,13 @@ export const AudioBreakdownDrawer = () => {
       solWallets: null
     }
 
-  const linkedWalletsBalance = ((ethWallets ?? [])
+  const linkedWalletsBalance = (ethWallets ?? [])
     .concat(solWallets ?? [])
     .reduce((total, wallet) => {
-      return total.add(new BN(wallet.balance as unknown as string))
-    }, new BN('0')) ?? new BN('0')) as unknown as BNWei
+      return total + BigInt(wallet.balance as unknown as string)
+    }, BigInt(0)) as AudioWei
 
-  const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
+  const totalBalance = (accountBalance + linkedWalletsBalance) as AudioWei
 
   return (
     <AppDrawer
@@ -130,7 +129,10 @@ export const AudioBreakdownDrawer = () => {
     >
       <View style={styles.drawer}>
         <GradientText style={styles.amount}>
-          {formatWei(totalBalance, true)}
+          {AUDIO(totalBalance).trunc().toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          })}
         </GradientText>
 
         <Text style={styles.total} weight='bold'>
@@ -144,7 +146,10 @@ export const AudioBreakdownDrawer = () => {
             </Text>
 
             <GradientText style={styles.titleAmount}>
-              {formatWei(accountBalance, true)}
+              {AUDIO(accountBalance).trunc().toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              })}
             </GradientText>
           </View>
 
@@ -162,7 +167,10 @@ export const AudioBreakdownDrawer = () => {
             </Text>
 
             <GradientText style={styles.titleAmount}>
-              {formatWei(linkedWalletsBalance, true)}
+              {AUDIO(linkedWalletsBalance).trunc().toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              })}
             </GradientText>
           </View>
 

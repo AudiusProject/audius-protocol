@@ -17,7 +17,6 @@ import {
   TransactionInstruction,
   VersionedTransaction
 } from '@solana/web3.js'
-import BN from 'bn.js'
 import { getAddress } from 'viem'
 
 import { userMetadataToSdk } from '~/adapters/user'
@@ -25,7 +24,6 @@ import { Env } from '~/services/env'
 import dayjs from '~/utils/dayjs'
 
 import {
-  BNWei,
   ID,
   InstagramUser,
   TikTokUser,
@@ -718,7 +716,7 @@ export const audiusBackend = ({
   /**
    * Make a request to fetch the sol wrapped audio balance of the the user
    * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
-   * @returns {Promise<BN>} balance or null if failed to fetch balance
+   * @returns {Promise<AudioWei>} balance or null if failed to fetch balance
    */
   async function getWAudioBalance({
     ethAddress,
@@ -726,7 +724,7 @@ export const audiusBackend = ({
   }: {
     ethAddress: string
     sdk: AudiusSdk
-  }): Promise<BN | null> {
+  }): Promise<AudioWei | null> {
     try {
       const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
         ethWallet: ethAddress,
@@ -743,7 +741,7 @@ export const audiusBackend = ({
         console.error(e)
       }
       const ownerWAudioBalance = AUDIO(wAUDIO(balance)).value
-      return new BN(ownerWAudioBalance.toString())
+      return ownerWAudioBalance
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
@@ -754,7 +752,7 @@ export const audiusBackend = ({
   /**
    * Fetches the Sol balance for the given wallet address
    * @param {string} The solana wallet address
-   * @returns {Promise<BNWei>}
+   * @returns {Promise<AudioWei>}
    */
   async function getAddressSolBalance({
     address,
@@ -762,15 +760,15 @@ export const audiusBackend = ({
   }: {
     address: string
     sdk: AudiusSdk
-  }): Promise<BNWei> {
+  }): Promise<AudioWei> {
     try {
       const addressPubKey = new PublicKey(address)
       const connection = sdk.services.solanaClient.connection
       const solBalance = await connection.getBalance(addressPubKey)
-      return new BN(solBalance ?? 0) as BNWei
+      return BigInt(solBalance ?? 0) as AudioWei
     } catch (e) {
       reportError({ error: e as Error })
-      return new BN(0) as BNWei
+      return BigInt(0) as AudioWei
     }
   }
 
@@ -899,7 +897,7 @@ export const audiusBackend = ({
     sdk
   }: {
     address: string
-    amount: BNWei
+    amount: AudioWei
     ethAddress: string
     sdk: AudiusSdk
   }) {
@@ -926,7 +924,7 @@ export const audiusBackend = ({
   }: {
     ethAddress: string
     destination: PublicKey
-    amount: BN
+    amount: AudioWei
     sdk: AudiusSdk
   }) {
     console.info(

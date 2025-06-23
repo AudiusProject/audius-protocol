@@ -110,7 +110,6 @@ type ProfileHeaderProps = {
   followers: any
   goToRoute: (route: string) => void
   following: boolean
-  isSubscribed: boolean
   mode: string
   onFollow: (id: ID) => void
   onUnfollow: (id: ID) => void
@@ -125,7 +124,6 @@ type ProfileHeaderProps = {
     files: any,
     source: 'original' | 'unsplash' | 'url'
   ) => void
-  setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   areArtistRecommendationsVisible: boolean
   onCloseArtistRecommendations: () => void
 }
@@ -157,7 +155,6 @@ const ProfileHeader = ({
   setFollowingUserId,
   goToRoute,
   following,
-  isSubscribed,
   mode,
   onFollow,
   onUnfollow,
@@ -166,7 +163,6 @@ const ProfileHeader = ({
   updatedProfilePicture,
   onUpdateCoverPhoto,
   onUpdateProfilePicture,
-  setNotificationSubscription,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations
 }: ProfileHeaderProps) => {
@@ -286,10 +282,6 @@ const ProfileHeader = ({
     [record, handle]
   )
 
-  const toggleNotificationSubscription = () => {
-    setNotificationSubscription(userId, !isSubscribed)
-  }
-
   // If we're not loading, we know that
   // nullable fields such as userId are valid.
   if (loading) {
@@ -346,13 +338,7 @@ const ProfileHeader = ({
             </div>
 
             <Flex gap='s' justifyContent='flex-end' flex={1}>
-              {following ? (
-                <SubscribeButton
-                  isSubscribed={isSubscribed}
-                  isFollowing={following}
-                  onToggleSubscribe={toggleNotificationSubscription}
-                />
-              ) : null}
+              {following ? <SubscribeButton userId={userId} /> : null}
               {mode === 'owner' ? (
                 <Button
                   variant='secondary'

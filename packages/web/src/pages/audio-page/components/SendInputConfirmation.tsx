@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
-import { StringAudio, BNWei, WalletAddress } from '@audius/common/models'
+import { WalletAddress } from '@audius/common/models'
 import { tokenDashboardPageSelectors } from '@audius/common/store'
-import { weiToAudio, stringAudioToBN } from '@audius/common/utils'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { Button, IconArrowRight } from '@audius/harmony'
 
 import { useSelector } from 'utils/reducer'
@@ -24,8 +24,8 @@ const messages = {
 const LOADING_DURATION = 1000
 
 type SendInputConfirmationProps = {
-  balance: BNWei
-  amountToTransfer: BNWei
+  balance: AudioWei
+  amountToTransfer: AudioWei
   recipientAddress: WalletAddress
   onSend: () => void
 }
@@ -66,9 +66,9 @@ const SendInputConfirmation = ({
         <ModalBodyTitle text={messages.title} />
       </div>
       <DashboardTokenValueSlider
-        min={stringAudioToBN('0' as StringAudio)}
-        max={weiToAudio(balance)}
-        value={weiToAudio(amountToTransfer)}
+        min={AUDIO('0')}
+        max={AUDIO(balance)}
+        value={AUDIO(amountToTransfer)}
       />
       <DisplayAudio amount={amountToTransfer} />
       <AddressWithArrow address={recipientAddress} />

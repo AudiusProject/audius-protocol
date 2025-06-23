@@ -1,5 +1,3 @@
-import { useToggleFavoriteTrack } from '@audius/common/api'
-import { FavoriteSource } from '@audius/common/models'
 import { modalsSelectors, playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -11,11 +9,7 @@ import { AppState } from 'store/types'
 
 import styles from './PlayBarProvider.module.css'
 import DesktopPlayBar from './desktop/PlayBar'
-const {
-  getCollectible,
-  getUid: getPlayingUid,
-  getTrackId: getPlayingTrackId
-} = playerSelectors
+const { getCollectible, getUid: getPlayingUid } = playerSelectors
 const { getModalVisibility } = modalsSelectors
 
 type OwnProps = {
@@ -27,16 +21,11 @@ type PlayBarProviderProps = OwnProps &
   RouteComponentProps
 
 const PlayBarProvider = ({
-  playingTrackId,
   playingUid,
   collectible,
   addToCollectionOpen
 }: PlayBarProviderProps) => {
   const isMobile = useIsMobile()
-  const toggleSaveTrack = useToggleFavoriteTrack({
-    trackId: playingTrackId,
-    source: FavoriteSource.PLAYBAR
-  })
 
   return (
     <div
@@ -52,7 +41,7 @@ const PlayBarProvider = ({
       ) : (
         <>
           <div className={styles.customHr} />
-          <DesktopPlayBar toggleSaveTrack={toggleSaveTrack} />
+          <DesktopPlayBar />
         </>
       )}
     </div>
@@ -62,7 +51,6 @@ const PlayBarProvider = ({
 function mapStateToProps(state: AppState) {
   return {
     playingUid: getPlayingUid(state),
-    playingTrackId: getPlayingTrackId(state),
     collectible: getCollectible(state),
     addToCollectionOpen: getModalVisibility(state, 'AddToCollection')
   }

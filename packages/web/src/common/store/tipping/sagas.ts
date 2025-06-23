@@ -6,7 +6,7 @@ import {
   queryAccountUser,
   queryWalletAddresses
 } from '@audius/common/api'
-import { Name, BNWei, SolanaWalletAddress } from '@audius/common/models'
+import { Name, SolanaWalletAddress } from '@audius/common/models'
 import {
   chatActions,
   tippingSelectors,
@@ -18,7 +18,6 @@ import {
 import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { Id } from '@audius/sdk'
-import BN from 'bn.js'
 import {
   call,
   delay,
@@ -97,7 +96,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       ethAddress: currentUser
     }
   )
-  const audioWeiAmount = new BN(AUDIO(amount).value.toString()) as BNWei
+  const audioWeiAmount = AUDIO(amount).value
 
   if (isNullOrUndefined(waudioBalanceWei)) {
     throw new Error('Failed to retrieve current wAudio balance')
@@ -105,7 +104,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
 
   // If transferring spl wrapped audio and there are insufficent funds with only the
   // user bank balance, transfer all eth AUDIO to spl wrapped audio
-  if (audioWeiAmount.gt(waudioBalanceWei)) {
+  if (audioWeiAmount > waudioBalanceWei) {
     console.info('Converting Ethereum AUDIO to Solana wAUDIO...')
 
     // Wait for a second before showing the notice that this might take a while

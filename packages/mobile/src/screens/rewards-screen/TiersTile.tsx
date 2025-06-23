@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 import React from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
-import type { AudioTiers } from '@audius/common/models'
+import type { AudioTiers, StringWei } from '@audius/common/models'
 import {
   featureMessages,
   features,
@@ -61,7 +61,9 @@ export const TiersTile = () => {
   const dispatch = useDispatch()
 
   const { totalBalance } = useAudioBalance()
-  const { tier } = getTierAndNumberForBalance(totalBalance)
+  const { tier } = getTierAndNumberForBalance(
+    totalBalance?.toString() as StringWei
+  )
 
   const onPressLaunchDiscord = () => {
     dispatch(pressDiscord())

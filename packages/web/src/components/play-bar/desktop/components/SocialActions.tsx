@@ -1,14 +1,24 @@
-import { useTrack } from '@audius/common/api'
+import { useCallback } from 'react'
+
+import { useToggleFavoriteTrack, useTrack } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import { ModalSource, Theme, ID, UID } from '@audius/common/models'
+import {
+  ModalSource,
+  Theme,
+  ID,
+  UID,
+  RepostSource,
+  FavoriteSource
+} from '@audius/common/models'
 import {
   themeSelectors,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  tracksSocialActions
 } from '@audius/common/store'
 import { Flex } from '@audius/harmony'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -22,12 +32,12 @@ import styles from './SocialActions.module.css'
 const { getTheme } = themeSelectors
 const { getGatedContentStatusMap } = gatedContentSelectors
 
+const { repostTrack, undoRepostTrack } = tracksSocialActions
+
 type SocialActionsProps = {
   trackId: ID
   uid: UID
   isOwner: boolean
-  onToggleRepost: (reposted: boolean, trackId: ID) => void
-  onToggleFavorite: (favorited: boolean, trackId: ID) => void
 }
 
 const messages = {
@@ -40,11 +50,10 @@ const messages = {
 export const SocialActions = ({
   trackId,
   uid,
-  isOwner,
-  onToggleRepost,
-  onToggleFavorite
+  isOwner
 }: SocialActionsProps) => {
   const { data: track } = useTrack(trackId)
+  const dispatch = useDispatch()
   const isFavoriteAndRepostDisabled = !uid || isOwner
   const favorited = track?.has_current_user_saved ?? false
   const reposted = track?.has_current_user_reposted ?? false
@@ -68,6 +77,24 @@ export const SocialActions = ({
   const theme = useSelector(getTheme)
   const matrix = theme === Theme.MATRIX
 
+  const onToggleRepost = useCallback(
+    (reposted: boolean, trackId: number) => {
+      if (trackId) {
+        if (reposted) {
+          dispatch(undoRepostTrack(trackId, RepostSource.PLAYBAR))
+        } else {
+          dispatch(repostTrack(trackId, RepostSource.PLAYBAR))
+        }
+      }
+    },
+    [dispatch]
+  )
+
+  const onToggleFavorite = useToggleFavoriteTrack({
+    trackId,
+    source: FavoriteSource.PLAYBAR
+  })
+
   return (
     <Flex className={styles.root}>
       {track?.stream_conditions &&
@@ -78,7 +105,7 @@ export const SocialActions = ({
           streamConditions={track.stream_conditions}
           unlocking={gatedTrackStatus === 'UNLOCKING'}
           onClick={onClickPill}
-          contentId={track.track_id}
+          contentId={trackId}
           contentType={'track'}
         />
       ) : (
@@ -123,7 +150,7 @@ export const SocialActions = ({
                     isMatrixMode={matrix}
                     isActive={favorited}
                     isDarkMode={shouldShowDark(theme)}
-                    onClick={() => onToggleFavorite(favorited, trackId)}
+                    onClick={onToggleFavorite}
                   />
                 ) : null}
               </Flex>

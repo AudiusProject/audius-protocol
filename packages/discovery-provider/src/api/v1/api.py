@@ -10,6 +10,8 @@ from src.api.v1.comments import ns as comments_ns
 from src.api.v1.dashboard_wallet_users import ns as dashboard_wallet_users_ns
 from src.api.v1.developer_apps import ns as developer_apps_ns
 from src.api.v1.events import ns as events_ns
+from src.api.v1.explore import full_ns as full_explore_ns
+from src.api.v1.explore import ns as explore_ns
 from src.api.v1.metrics import ns as metrics_ns
 from src.api.v1.models.users import ns as models_ns
 from src.api.v1.notifications import full_ns as notifications_full_ns
@@ -52,6 +54,7 @@ api_v1.add_namespace(metrics_ns)
 api_v1.add_namespace(resolve_ns)
 api_v1.add_namespace(comments_ns)
 api_v1.add_namespace(events_ns)
+api_v1.add_namespace(explore_ns)
 
 
 bp_full = Blueprint("api_v1_full", __name__, url_prefix="/v1/full")
@@ -68,3 +71,4 @@ api_v1_full.add_namespace(cid_data_full_ns)
 api_v1_full.add_namespace(notifications_full_ns)
 api_v1_full.add_namespace(full_challenges_ns)
 api_v1_full.add_namespace(full_comments_ns)
+api_v1_full.add_namespace(full_explore_ns)

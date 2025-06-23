@@ -106,7 +106,10 @@ export const TierNumber = ({ tier }: { tier: AudioTiers }) => {
 /** Renders out level of audio required for a tier - e.g. '1000+ $AUDIO */
 export const TierLevel = ({ tier }: { tier: AudioTiers }) => {
   const minAudio = useMemo(
-    () => badgeTiers.find((b) => b.tier === tier)?.minAudio.toString() ?? '',
+    () =>
+      badgeTiers
+        .find((b) => b.tier === tier)
+        ?.humanReadableAmount?.toString() ?? '',
     [tier]
   )
   return <div className={styles.tierLevel}>{messages.tierLevel(minAudio)}</div>
@@ -202,7 +205,9 @@ const TierColumn = ({
         Object.keys(messages.features) as Array<keyof typeof messages.features>
       ).map((feature) => {
         const minAudio =
-          badgeTiers.find((b) => b.tier === tier)?.minAudio.toString() ?? '0'
+          badgeTiers
+            .find((b) => b.tier === tier)
+            ?.humanReadableAmount?.toString() ?? '0'
 
         return (
           <Flex

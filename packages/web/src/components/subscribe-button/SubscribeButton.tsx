@@ -1,31 +1,45 @@
 import { useState, useCallback, useEffect } from 'react'
 
+import { useUser } from '@audius/common/api'
+import { ID } from '@audius/common/models'
+import { usersSocialActions as socialActions } from '@audius/common/store'
 import {
   Button,
   IconNotificationOn as IconNotification,
   IconNotificationOff
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
+
+const { subscribeUser, unsubscribeUser } = socialActions
 
 type SubscribeButtonProps = {
-  isSubscribed: boolean
-  isFollowing: boolean
-  onToggleSubscribe: () => void
+  userId: ID
 }
 
 const SubscribeButton = (props: SubscribeButtonProps) => {
-  const { isFollowing, isSubscribed, onToggleSubscribe } = props
+  const { userId } = props
+  const { data: isSubscribed } = useUser(userId, {
+    select: (user) => user.does_current_user_subscribe
+  })
+  const dispatch = useDispatch()
+
   const [isHovering, setIsHovering] = useState(false)
   const [isHoveringClicked, setIsHoveringClicked] = useState(false)
+
   const onClick = useCallback(() => {
-    onToggleSubscribe()
+    if (userId) {
+      if (isSubscribed) {
+        dispatch(unsubscribeUser(userId))
+      } else {
+        dispatch(subscribeUser(userId))
+      }
+    }
     setIsHoveringClicked(true)
-  }, [onToggleSubscribe, setIsHoveringClicked])
+  }, [dispatch, userId, isSubscribed, setIsHoveringClicked])
 
   useEffect(() => {
     if (!isHovering && isHoveringClicked) setIsHoveringClicked(false)
   }, [isHovering, isHoveringClicked, setIsHoveringClicked])
-
-  if (!isFollowing) return null
 
   const showNotificationOff =
     (isHovering && isSubscribed && !isHoveringClicked) ||

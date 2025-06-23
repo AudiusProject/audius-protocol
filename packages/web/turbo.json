@@ -1,6 +1,6 @@
 {
   "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "outputs": [
         "build/**",
@@ -8,13 +8,13 @@
         "../../node_modules/@brillout/vite-plugin-import-build/dist/autoImporter.js"
       ],
       "dependsOn": ["^build"],
-      "outputMode": "new-only",
+      "outputLogs": "new-only",
       "env": ["VITE_ENVIRONMENT", "VITE_SSR"]
     },
     "dist": {
       "outputs": ["dist/**"],
       "dependsOn": ["^build"],
-      "outputMode": "new-only"
+      "outputLogs": "new-only"
     }
   }
 }

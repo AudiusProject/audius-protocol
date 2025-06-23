@@ -1,5 +1,5 @@
 import { queryAccountUser, queryWalletAddresses } from '@audius/common/api'
-import { Name, ErrorLevel, BNWei } from '@audius/common/models'
+import { Name, ErrorLevel, StringWei } from '@audius/common/models'
 import {
   IntKeys,
   FeatureFlags,
@@ -28,13 +28,10 @@ import {
 import {
   dayjs,
   isNullOrUndefined,
-  weiToString,
-  formatWei,
   convertBigIntToAmountObject,
-  convertWAudioToWei,
-  convertWeiToWAudio,
   waitForValue
 } from '@audius/common/utils'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { QuoteResponse } from '@jup-ag/api'
 import {
   createTransferCheckedInstruction,
@@ -47,7 +44,6 @@ import {
   PublicKey,
   TransactionInstruction
 } from '@solana/web3.js'
-import BN from 'bn.js'
 import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
@@ -489,18 +485,23 @@ function* populateAndSaveTransactionDetails() {
     walletSelectors.getAccountTotalBalance
   )
   const purchasedAUDIO = purchasedAudioWei
-    ? formatWei(new BN(purchasedAudioWei ?? '0') as BNWei).replaceAll(',', '')
+    ? AUDIO(BigInt(purchasedAudioWei))
+        .toLocaleString('en-US', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 18
+        })
+        .replaceAll(',', '')
     : ''
-  const divisor = new BN(LAMPORTS_PER_SOL)
-  const purchasedLamportsBN = purchasedLamports
-    ? new BN(purchasedLamports)
-    : new BN('0')
-  const purchasedSOL = purchasedLamports
-    ? `${purchasedLamportsBN.div(divisor)}.${purchasedLamportsBN
-        .mod(divisor)
-        .toString()
-        .padStart(divisor.toString().length - 1, '0')}`
-    : ''
+  const purchasedLamportsBigInt = BigInt(purchasedLamports || '0')
+  const divisor = BigInt(LAMPORTS_PER_SOL)
+  const purchasedSOL =
+    purchasedLamportsBigInt > 0
+      ? `${(purchasedLamportsBigInt / divisor).toString()}.${(
+          purchasedLamportsBigInt % divisor
+        )
+          .toString()
+          .padStart(divisor.toString().length - 1, '0')}`
+      : ''
 
   const transactionMetadata = {
     discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
@@ -517,10 +518,10 @@ function* populateAndSaveTransactionDetails() {
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
     balance: !isNullOrUndefined(postAUDIOBalanceWei)
-      ? convertWeiToWAudio(postAUDIOBalanceWei).toString()
+      ? (postAUDIOBalanceWei / BigInt(10 ** 9)).toString()
       : null,
     change: purchasedAudioWei
-      ? convertWeiToWAudio(new BN(purchasedAudioWei)).toString()
+      ? (BigInt(purchasedAudioWei) / BigInt(10 ** 9)).toString()
       : '',
     metadata: transactionMetadata
   }
@@ -872,9 +873,7 @@ function* transferStep({
     )
     throw new Error(`Transfer transaction failed: ${transferError}`)
   }
-  const audioTransferredWei = convertWAudioToWei(
-    new BN(transferAmount.toString())
-  )
+  const audioTransferredWei = (transferAmount * BigInt(10 ** 9)) as AudioWei
 
   // Write transaction details to local storage
   const [audiusLocalStorage, localStorageState] =
@@ -892,7 +891,7 @@ function* transferStep({
   // Update wallet balance optimistically
   yield* put(
     increaseBalance({
-      amount: weiToString(audioTransferredWei)
+      amount: audioTransferredWei.toString() as StringWei
     })
   )
   yield* put(transferCompleted())
@@ -1020,16 +1019,18 @@ function* doBuyAudio({
         provider,
         requestedAudio: desiredAudioAmount,
         actualAudio: parseFloat(
-          formatWei(audioTransferredWei).replaceAll(',', '')
+          AUDIO(audioTransferredWei)
+            .toLocaleString('en-US', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 18
+            })
+            .replaceAll(',', '')
         ),
         surplusAudio: parseFloat(
-          formatWei(
-            convertWAudioToWei(
-              new BN(
-                (audioSwappedSpl - BigInt(desiredAudioAmount.amount)).toString()
-              )
-            )
-          ).replaceAll(',', '')
+          (
+            (audioSwappedSpl - BigInt(desiredAudioAmount.amount)) /
+            BigInt(10 ** 9)
+          ).toString()
         )
       })
     )
@@ -1200,7 +1201,12 @@ function* recoverPurchaseIfNecessary() {
           provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
         })
         recoveredAudio = parseFloat(
-          formatWei(audioTransferredWei).replaceAll(',', '')
+          AUDIO(audioTransferredWei)
+            .toLocaleString('en-US', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 18
+            })
+            .replaceAll(',', '')
         )
         yield* call(populateAndSaveTransactionDetails)
       }
@@ -1259,7 +1265,12 @@ function* recoverPurchaseIfNecessary() {
             provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
           })
           recoveredAudio = parseFloat(
-            formatWei(audioTransferredWei).replaceAll(',', '')
+            AUDIO(audioTransferredWei)
+              .toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 18
+              })
+              .replaceAll(',', '')
           )
           yield* call(populateAndSaveTransactionDetails)
         } else {

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { Feature } from '@audius/common/models'
 import type { TrackForUpload } from '@audius/common/store'
 import {
   uploadActions,
@@ -18,7 +17,6 @@ import { Screen, ScreenContent, Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
-import { reportToSentry } from 'app/utils/reportToSentry'
 import { useThemeColors } from 'app/utils/theme'
 
 import { UploadingTrackTile } from '../components'
@@ -93,15 +91,9 @@ export const UploadingTracksScreen = () => {
     if (trackUploadProgress === 100) {
       const timeout = setTimeout(
         () => {
-          const err = new Error('Upload error: stalled at 100% for 10 seconds')
-          reportToSentry({
-            error: err,
-            feature: Feature.Upload,
-            additionalInfo: { params, trackUploadProgress }
-          })
-          setTimeoutSuccess(true)
-          // TODO: For now this is just logging the error so we can better understand the issue & frequency of it.
+          // TODO: For now just passing user through
           // We need to figure out how to resolve this
+          setTimeoutSuccess(true)
         },
         1000 * 10 // 10 seconds
       )

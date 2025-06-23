@@ -96,7 +96,7 @@ export const AudioAmountPicker = ({
   }, [debouncedOnAmountChange])
 
   const handleCustomAmountChange = useCallback<TokenAmountInputChangeHandler>(
-    (amount) => {
+    (amount, _valueBigInt) => {
       setCustomAmount(amount)
       debouncedOnAmountChange(amount)
     },

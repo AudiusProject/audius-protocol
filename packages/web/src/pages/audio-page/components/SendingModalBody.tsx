@@ -1,4 +1,5 @@
-import { BNWei, WalletAddress } from '@audius/common/models'
+import { WalletAddress } from '@audius/common/models'
+import { AudioWei } from '@audius/fixed-decimal'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -10,7 +11,7 @@ import { AddressWithArrow } from './SendInputConfirmation'
 import styles from './SendingModalBody.module.css'
 
 type SendingModalBodyProps = {
-  amountToTransfer: BNWei
+  amountToTransfer: AudioWei
   recipientAddress: WalletAddress
 }
 

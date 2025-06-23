@@ -76,14 +76,7 @@ export const ArtistPopover = ({
   }
 
   return (
-    <Component
-      className={cn(
-        className,
-        styles.popoverContainer,
-        'artistPopover',
-        containerClassName
-      )}
-    >
+    <Component className={cn(className, 'artistPopover', containerClassName)}>
       <Popover
         mouseEnterDelay={mouseEnterDelay}
         content={content}

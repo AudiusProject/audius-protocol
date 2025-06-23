@@ -3,11 +3,11 @@ import {
   queryUsers,
   selectIsGuestAccount,
   queryUser,
-  getUserQueryKey
+  getUserQueryKey,
+  queryCurrentUserId
 } from '@audius/common/api'
 import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
-  profilePageActions,
   usersSocialActions as socialActions,
   getContext,
   confirmerActions,
@@ -25,17 +25,14 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import errorSagas from './errorSagas'
 
 const { profilePage } = route
-const { setNotificationSubscription } = profilePageActions
 
 /* FOLLOW */
 
-export function* watchFollowUser() {
+function* watchFollowUser() {
   yield* takeEvery(socialActions.FOLLOW_USER, followUser)
 }
 
-export function* followUser(
-  action: ReturnType<typeof socialActions.followUser>
-) {
+function* followUser(action: ReturnType<typeof socialActions.followUser>) {
   yield* call(waitForWrite)
   const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
@@ -77,7 +74,8 @@ export function* followUser(
         : {
             ...prevUser,
             does_current_user_follow: true,
-            follower_count: prevUser.follower_count + 1
+            follower_count: prevUser.follower_count + 1,
+            does_current_user_subscribe: true
           }
     )
   }
@@ -100,16 +98,9 @@ export function* followUser(
     accountId,
     action.onSuccessActions
   )
-  yield* put(
-    setNotificationSubscription(
-      action.userId,
-      /* isSubscribed */ true,
-      /* update */ false
-    )
-  )
 }
 
-export function* confirmFollowUser(
+function* confirmFollowUser(
   userId: ID,
   accountId: ID,
   onSuccessActions?: Action[]
@@ -181,11 +172,11 @@ export function* confirmFollowUser(
   )
 }
 
-export function* watchFollowUserSucceeded() {
+function* watchFollowUserSucceeded() {
   yield* takeEvery(socialActions.FOLLOW_USER_SUCCEEDED, followUserSucceeded)
 }
 
-export function* followUserSucceeded(
+function* followUserSucceeded(
   action: ReturnType<typeof socialActions.followUserSucceeded>
 ) {
   const { onSuccessActions } = action
@@ -197,15 +188,19 @@ export function* followUserSucceeded(
       yield* put({ ...onSuccessAction })
     }
   }
+
+  // Auto-subscribe when following a user
+  const { userId } = action
+
+  // Call the subscribe saga (it handles the optimistic update)
+  yield* call(subscribeToUserAsync, userId)
 }
 
-export function* watchUnfollowUser() {
+function* watchUnfollowUser() {
   yield* takeEvery(socialActions.UNFOLLOW_USER, unfollowUser)
 }
 
-export function* unfollowUser(
-  action: ReturnType<typeof socialActions.unfollowUser>
-) {
+function* unfollowUser(action: ReturnType<typeof socialActions.unfollowUser>) {
   /* Make Async Backend Call */
   yield* call(waitForWrite)
   const queryClient = yield* getContext('queryClient')
@@ -222,8 +217,7 @@ export function* unfollowUser(
     return
   }
 
-  const users = yield* call(queryUsers, [action.userId, accountId])
-  const currentUser = users[accountId].metadata
+  const currentUserId = yield* call(queryCurrentUserId)
 
   // Decrement the follower count on the unfollowed user
   queryClient.setQueryData(getUserQueryKey(action.userId), (prevUser) =>
@@ -232,12 +226,13 @@ export function* unfollowUser(
       : {
           ...prevUser,
           does_current_user_follow: false,
-          follower_count: prevUser.follower_count - 1
+          follower_count: prevUser.follower_count - 1,
+          does_current_user_subscribe: false
         }
   )
 
   // Decrement the followee count on the current user
-  queryClient.setQueryData(getUserQueryKey(currentUser.user_id), (prevUser) =>
+  queryClient.setQueryData(getUserQueryKey(currentUserId), (prevUser) =>
     !prevUser
       ? undefined
       : {
@@ -253,16 +248,12 @@ export function* unfollowUser(
   yield* put(event)
 
   yield* call(confirmUnfollowUser, action.userId, accountId)
-  yield* put(
-    setNotificationSubscription(
-      action.userId,
-      /* isSubscribed */ false,
-      /* update */ false
-    )
-  )
+
+  // Auto-unsubscribe when unfollowing a user
+  yield* call(unsubscribeFromUserAsync, action.userId)
 }
 
-export function* confirmUnfollowUser(userId: ID, accountId: ID) {
+function* confirmUnfollowUser(userId: ID, accountId: ID) {
   const audiusSdk = yield* getContext('audiusSdk')
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* call(audiusSdk)
@@ -299,8 +290,7 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
-        const users = yield* call(queryUsers, [userId, accountId])
-        const currentUser = users[accountId].metadata
+        const currentUserId = yield* call(queryCurrentUserId)
 
         // Revert decremented follower count on unfollowed user
         queryClient.setQueryData(getUserQueryKey(userId), (prevUser) =>
@@ -314,15 +304,13 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
         )
 
         // Revert decremented followee count on current user
-        queryClient.setQueryData(
-          getUserQueryKey(currentUser.user_id),
-          (prevUser) =>
-            !prevUser
-              ? undefined
-              : {
-                  ...prevUser,
-                  followee_count: prevUser.followee_count + 1
-                }
+        queryClient.setQueryData(getUserQueryKey(currentUserId), (prevUser) =>
+          !prevUser
+            ? undefined
+            : {
+                ...prevUser,
+                followee_count: prevUser.followee_count + 1
+              }
         )
       }
     )
@@ -331,7 +319,25 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
 
 /* SUBSCRIBE */
 
-export function* subscribeToUserAsync(userId: ID) {
+function* watchSubscribeUser() {
+  yield* takeEvery(
+    socialActions.SUBSCRIBE_USER,
+    function* (action: ReturnType<typeof socialActions.subscribeUser>) {
+      yield* call(subscribeToUserAsync, action.userId)
+    }
+  )
+}
+
+function* watchUnsubscribeUser() {
+  yield* takeEvery(
+    socialActions.UNSUBSCRIBE_USER,
+    function* (action: ReturnType<typeof socialActions.unsubscribeUser>) {
+      yield* call(unsubscribeFromUserAsync, action.userId)
+    }
+  )
+}
+
+function* subscribeToUserAsync(userId: ID) {
   yield* call(waitForWrite)
   const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
@@ -352,7 +358,7 @@ export function* subscribeToUserAsync(userId: ID) {
   yield* call(confirmSubscribeToUser, userId, accountId)
 }
 
-export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
+function* confirmSubscribeToUser(userId: ID, accountId: ID) {
   const audiusSdk = yield* getContext('audiusSdk')
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* call(audiusSdk)
@@ -400,7 +406,7 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
   )
 }
 
-export function* unsubscribeFromUserAsync(userId: ID) {
+function* unsubscribeFromUserAsync(userId: ID) {
   yield* call(waitForWrite)
   const queryClient = yield* getContext('queryClient')
   const accountUser = yield* queryAccountUser()
@@ -420,7 +426,7 @@ export function* unsubscribeFromUserAsync(userId: ID) {
   yield* call(confirmUnsubscribeFromUser, userId, accountId)
 }
 
-export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
+function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
   const audiusSdk = yield* getContext('audiusSdk')
   const queryClient = yield* getContext('queryClient')
   const sdk = yield* call(audiusSdk)
@@ -470,7 +476,7 @@ export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
 
 /* SHARE */
 
-export function* watchShareUser() {
+function* watchShareUser() {
   yield* takeEvery(
     socialActions.SHARE_USER,
     function* (action: ReturnType<typeof socialActions.shareUser>) {
@@ -499,6 +505,8 @@ const sagas = () => {
     watchFollowUser,
     watchUnfollowUser,
     watchFollowUserSucceeded,
+    watchSubscribeUser,
+    watchUnsubscribeUser,
     watchShareUser,
     errorSagas
   ]

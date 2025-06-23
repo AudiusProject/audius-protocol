@@ -1,10 +1,8 @@
+import { AudioWei, UsdcWei } from '@audius/fixed-decimal'
 import { createSelector } from '@reduxjs/toolkit'
-import BN from 'bn.js'
 
-import { BNUSDC } from '~/models/Wallet'
 import { CommonState } from '~/store/commonStore'
 import { Nullable, isNullOrUndefined } from '~/utils/typeUtils'
-import { stringWeiToBN } from '~/utils/wallet'
 
 // Previously, the getAccountBalance selector would return different
 // values (although numerically the same) because of the return of a
@@ -17,7 +15,8 @@ const getAccountBalanceStr = (state: CommonState) => {
 }
 export const getAccountBalance = createSelector(
   getAccountBalanceStr,
-  (balance) => (!isNullOrUndefined(balance) ? stringWeiToBN(balance) : balance)
+  (balance) =>
+    !isNullOrUndefined(balance) ? (BigInt(balance) as AudioWei) : balance
 )
 
 export const getAccountBalanceLoading = (state: CommonState) => {
@@ -30,7 +29,7 @@ const getAccountTotalBalanceStr = (state: CommonState) =>
 export const getAccountTotalBalance = createSelector(
   getAccountTotalBalanceStr,
   (totalBalance) =>
-    !isNullOrUndefined(totalBalance) ? stringWeiToBN(totalBalance) : null
+    !isNullOrUndefined(totalBalance) ? (BigInt(totalBalance) as AudioWei) : null
 )
 
 export const getBalanceLoadDidFail = (state: CommonState) =>
@@ -45,5 +44,7 @@ export const getLocalBalanceDidChange = (state: CommonState): boolean =>
 export const getFreezeUntilTime = (state: CommonState): Nullable<number> =>
   state.wallet.freezeBalanceUntil
 
-export const getUSDCBalance = (state: CommonState): Nullable<BNUSDC> =>
-  state.wallet.usdcBalance ? (new BN(state.wallet.usdcBalance) as BNUSDC) : null
+export const getUSDCBalance = (state: CommonState): Nullable<UsdcWei> =>
+  state.wallet.usdcBalance
+    ? (BigInt(state.wallet.usdcBalance) as UsdcWei)
+    : null

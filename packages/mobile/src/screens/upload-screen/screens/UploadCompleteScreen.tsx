@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useCurrentAccountUser, useTrack } from '@audius/common/api'
 import { Name, ShareSource } from '@audius/common/models'
@@ -83,7 +83,7 @@ export const UploadCompleteScreen = () => {
   const dispatch = useDispatch()
   const { data: accountUser } = useCurrentAccountUser()
   const { data: track } = useTrack(trackId)
-  const trackRoute = getTrackRoute(track!, true)
+  const trackRoute = track ? getTrackRoute(track, true) : ''
 
   const handleClose = useCallback(() => {
     navigation.getParent()?.goBack()
