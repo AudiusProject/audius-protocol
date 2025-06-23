@@ -3272,3 +3272,44 @@ class FullUserComments(Resource):
         )
 
         return success_response_with_related(user_comments)
+
+
+recommended_tracks_parser = pagination_with_current_user_parser.copy()
+recommended_tracks_parser.add_argument(
+    "time_range",
+    required=False,
+    default="week",
+    choices=("week", "month", "allTime"),
+    type=str,
+    description="The time range for the recommended tracks",
+)
+
+
+@ns.route("/<string:id>/recommended-tracks")
+class UserRecommendedTracks(Resource):
+    @ns.doc(
+        id="Get User Recommended Tracks",
+        description="Gets the recommended tracks for the user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(recommended_tracks_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, id):
+        # This is stubbed, just generating docs
+        abort_not_found("recommended_tracks", ns)
+
+
+@full_ns.route("/<string:id>/recommended-tracks")
+class FullUserRecommendedTracks(Resource):
+    @ns.doc(
+        id="Get User Recommended Tracks",
+        description="Gets the recommended tracks for the user",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(recommended_tracks_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self, id):
+        # This is stubbed, just generating docs
+        abort_not_found("recommended_tracks", full_ns)

@@ -284,7 +284,7 @@ export class TracksApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/recent_premium`,
+            path: `/tracks/recent-premium`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
