@@ -67,7 +67,7 @@ export const PaymentMethod = ({
   showExtraItemsToggle = true
 }: PaymentMethodProps) => {
   const isMobile = useIsMobile()
-  const balanceFormatted = USDC(balance ?? (BigInt(0) as UsdcWei)).toShorthand()
+  const balanceFormatted = USDC(balance ?? 0).toShorthand()
   const vendorOptions = [
     ...(isCoinflowEnabled ? [{ value: PurchaseVendor.COINFLOW }] : []),
     { value: PurchaseVendor.STRIPE }

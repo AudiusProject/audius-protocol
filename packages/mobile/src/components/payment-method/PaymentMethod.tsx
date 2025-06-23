@@ -101,7 +101,7 @@ export const PaymentMethod = ({
   const neutral = useColor('neutral')
   const dispatch = useDispatch()
 
-  const balanceFormatted = USDC(balance ?? (BigInt(0) as UsdcWei)).toShorthand()
+  const balanceFormatted = USDC(balance ?? 0).toShorthand()
   const purchaseVendor = useSelector(getPurchaseVendor)
   const vendorOptions = [
     isCoinflowEnabled ? PurchaseVendor.COINFLOW : null,

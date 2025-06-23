@@ -9,16 +9,6 @@ import { getWalletAudioBalanceQueryKey } from '../wallets/useAudioBalance'
 import { SwapTokensParams } from './types'
 
 /**
- * Converts a UI-friendly number amount to wAudio AudioWei.
- */
-const wAudioAmountToWei = (amount: number): AudioWei => {
-  const scaledAmount = BigInt(
-    Math.round(amount * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
-  )
-  return AUDIO(wAUDIO(scaledAmount)).value
-}
-
-/**
  * Updates the wAUDIO balance for a Solana wallet in the cache.
  */
 const updateSolanaWAudioBalance = ({
@@ -39,7 +29,7 @@ const updateSolanaWAudioBalance = ({
       includeStaked: true
     }),
     (oldBalance: AudioWei | undefined): AudioWei | undefined => {
-      const changeAmountWei = wAudioAmountToWei(uiAmount)
+      const changeAmountWei = AUDIO(wAUDIO(uiAmount)).value
       const oldBalanceWei = oldBalance ?? AUDIO(0).value
 
       let newBalanceWei: AudioWei

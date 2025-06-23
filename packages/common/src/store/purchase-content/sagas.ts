@@ -705,10 +705,10 @@ function* doStartPurchaseContentFlow({
     const { amount: initialBalance } = tokenAccountInfo ?? { amount: 0 }
 
     // USDC has 6 decimals, so 1 cent = 10^4 wei
-    const USDC_CENT_WEI = BigInt(10000) as UsdcWei
-    const priceWei = (BigInt(price) * USDC_CENT_WEI) as UsdcWei
-    const extraAmountWei = (BigInt(extraAmount ?? 0) * USDC_CENT_WEI) as UsdcWei
-    const totalAmountDueCentsWei = (priceWei + extraAmountWei) as UsdcWei
+    const USDC_CENT_WEI = USDC(1).value
+    const priceWei = USDC(BigInt(price) * USDC_CENT_WEI).value
+    const extraAmountWei = USDC(BigInt(extraAmount ?? 0) * USDC_CENT_WEI).value
+    const totalAmountDueCentsWei = USDC(priceWei + extraAmountWei).value
 
     const balanceNeeded = getBalanceNeeded(
       totalAmountDueCentsWei,

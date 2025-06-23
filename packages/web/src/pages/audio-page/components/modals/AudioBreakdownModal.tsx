@@ -1,6 +1,6 @@
 import { useWalletAudioBalances, useConnectedWallets } from '@audius/common/api'
 import { walletSelectors } from '@audius/common/store'
-import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 import { IconInfo } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -29,8 +29,7 @@ const messages = {
 
 const AudioBreakdownBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
-  const accountBalance = AUDIO(useSelector(getAccountBalance) ?? BigInt(0))
-    .value as AudioWei
+  const accountBalance = AUDIO(useSelector(getAccountBalance) ?? 0).value
 
   const { data: connectedWallets, isPending: isConnectedWalletsPending } =
     useConnectedWallets()
@@ -43,15 +42,12 @@ const AudioBreakdownBody = () => {
   )
 
   const linkedWalletsBalance = AUDIO(
-    balances.reduce(
-      (acc, result) => acc + (result.data ?? BigInt(0)),
-      BigInt(0)
-    )
-  ).value as AudioWei
+    balances.reduce((acc, result) => acc + (result.data ?? 0), 0)
+  ).value
 
   const totalBalance = AUDIO(
     AUDIO(accountBalance).value + AUDIO(linkedWalletsBalance).value
-  ).value as AudioWei
+  ).value
 
   return (
     <div className={wm(styles.container)}>
