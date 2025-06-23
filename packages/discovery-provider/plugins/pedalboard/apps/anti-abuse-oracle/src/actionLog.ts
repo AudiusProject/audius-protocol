@@ -161,7 +161,7 @@ export async function getUserNormalizedScore(userId: number, wallet: string) {
 
   const isEmailDeliverable = await useEmailDeliverable(wallet)
   if (!isEmailDeliverable) {
-    overallScore -= 100000
+    overallScore -= 1000
   }
 
   // override score
