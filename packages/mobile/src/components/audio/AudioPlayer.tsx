@@ -204,7 +204,7 @@ export const AudioPlayer = () => {
     [queueTracks]
   )
 
-  const queueTrackOwnersMap = useUsers(queueTrackOwnerIds)
+  const { byId: queueTrackOwnersMap } = useUsers(queueTrackOwnerIds)
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
@@ -308,7 +308,7 @@ export const AudioPlayer = () => {
       }
       setRetries(retries ?? 0)
 
-      const trackOwner = queueTrackOwnersMap[track.owner_id].metadata
+      const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
       const offlineTrackAvailable =
         trackId && offlineAvailabilityByTrackId[trackId]
