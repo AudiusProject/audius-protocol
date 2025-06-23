@@ -142,16 +142,18 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         f"playlists.py | Updating playlist tracks for {playlist['playlist_id']}"
     )
 
+    # Build a unique list of track IDs from both existing and updated tracks
+    track_ids = list(set(list(existing_tracks.keys()) + updated_track_ids))
+
+    track_records = session.query(Track).filter(Track.track_id.in_(track_ids)).all()
+    track_records_dict = {track.track_id: track for track in track_records}
+
     # delete relations that previously existed but are not in the updated list
     for playlist_track in existing_playlist_tracks:
         if playlist_track.track_id not in updated_track_ids:
             playlist_track.is_removed = True
             playlist_track.updated_at = params.block_datetime
-            track_record = (
-                session.query(Track)
-                .filter(Track.track_id == playlist_track.track_id)
-                .first()
-            )
+            track_record = track_records_dict.get(playlist_track.track_id)
             if track_record:
                 current_playlist_id = playlist["playlist_id"]
                 track = helpers.model_to_dictionary(track_record)
@@ -176,7 +178,7 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
 
     for track_id in updated_track_ids:
         # add playlist_id to playlists_containing_track and remove from playlists_previously_containing_track
-        track_record = session.query(Track).filter(Track.track_id == track_id).first()
+        track_record = track_records_dict.get(track_id)
         if track_record:
             current_playlist_id = playlist["playlist_id"]
             track = helpers.model_to_dictionary(track_record)
