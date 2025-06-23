@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { Flex, Text, useTheme } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 
 import Tooltip from 'components/tooltip/Tooltip'
 
@@ -20,7 +20,6 @@ type TooltipContentProps = {
 const TooltipContent = ({ completionStages }: TooltipContentProps) => {
   const completionPercentage = getPercentageComplete(completionStages).toFixed()
   const strings = makeStrings(Number(completionPercentage))
-  const { color } = useTheme()
 
   return (
     <Flex direction='column'>
@@ -28,9 +27,9 @@ const TooltipContent = ({ completionStages }: TooltipContentProps) => {
         p='l'
         alignItems='center'
         justifyContent='center'
-        css={{
-          backgroundColor: color.secondary.s500
-        }}
+        css={(theme) => ({
+          backgroundColor: theme.color.secondary.s500
+        })}
       >
         <Text variant='title' size='l' color='white'>
           {strings.completionPercentage}
