@@ -55,7 +55,7 @@ type SearchExploreHeaderProps = {
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { filterTranslateY, scrollY, scrollRef } = props
-  const { spacing, color, motion } = useTheme()
+  const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
