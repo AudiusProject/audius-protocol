@@ -238,8 +238,18 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if core_health:
         latest_indexed_block_num = core_health.get("latest_indexed_block") or 0
 
-    # Get latest chain block from tip, irrespective of indexer
-    (latest_block_num, _) = get_latest_chain_block_set_if_nx(redis)
+    # Use the reliable latest_chain_slot from plays data instead of unreliable Redis keys
+    # The plays data already has the correct latest chain slot/block number
+    if play_health_info:
+        latest_block_num = play_health_info.get("latest_chain_slot")
+
+    # If plays data doesn't have latest_chain_slot or is None, fallback to old method
+    if latest_block_num is None:
+        (latest_block_num, _) = get_latest_chain_block_set_if_nx(redis)
+        # Handle case where redis keys are temporarily unavailable during indexing
+        # If latest_block_num is None, try to get it from core_health as fallback
+        if latest_block_num is None and core_health:
+            latest_block_num = core_health.get("latest_chain_block")
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -379,6 +389,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # we set the difference to be an unhealthy amount
         block_difference = default_healthy_block_diff + 1
 
+    # Update health results with corrected latest_block_num
+    health_results["web"]["blocknumber"] = latest_block_num
+    health_results["latest_block_num"] = latest_block_num
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
