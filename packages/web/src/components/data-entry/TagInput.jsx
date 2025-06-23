@@ -153,7 +153,6 @@ const TagInput = ({
     <Tag
       className={cn({ [styles.flash]: displayFlashExistingTag === tag })}
       key={tag}
-      multiselect
       variant='default'
       onClick={(e) => deleteTag(tag, e)}
     >
