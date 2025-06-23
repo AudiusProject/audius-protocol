@@ -161,14 +161,14 @@ export async function getUserNormalizedScore(userId: number, wallet: string) {
 
   const isEmailDeliverable = await useEmailDeliverable(wallet)
   if (!isEmailDeliverable) {
-    overallScore -= 1000
+    overallScore -= 100000
   }
 
   // override score
   if (is_blocked === true) {
-    overallScore = -1000
+    overallScore = -100000
   } else if (is_blocked === false) {
-    overallScore = 1000
+    overallScore = 100000
   }
 
   const normalizedScore = Math.min(
