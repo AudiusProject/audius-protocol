@@ -1,14 +1,10 @@
 import { useCallback, useEffect } from 'react'
 
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
-import type { BNUSDC } from '@audius/common/models'
-import {
-  formatCurrencyBalance,
-  removeNullable,
-  formatUSDCWeiToFloorCentsNumber
-} from '@audius/common/utils'
+import { removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
-import BN from 'bn.js'
+import type { UsdcWei } from '@audius/fixed-decimal'
+import { USDC } from '@audius/fixed-decimal'
 import { FlatList, View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -79,7 +75,7 @@ type PaymentMethodProps = {
   setSelectedMethod: (method: PurchaseMethod) => void
   selectedPurchaseMethodMintAddress?: string
   setSelectedPurchaseMethodMintAddress?: (address: string) => void
-  balance?: Nullable<BNUSDC>
+  balance?: Nullable<UsdcWei>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
   isCoinflowEnabled?: boolean
@@ -105,10 +101,7 @@ export const PaymentMethod = ({
   const neutral = useColor('neutral')
   const dispatch = useDispatch()
 
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
+  const balanceFormatted = USDC(balance ?? 0).toShorthand()
   const purchaseVendor = useSelector(getPurchaseVendor)
   const vendorOptions = [
     isCoinflowEnabled ? PurchaseVendor.COINFLOW : null,

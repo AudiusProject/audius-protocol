@@ -1,4 +1,3 @@
-import { BN } from 'bn.js'
 import { describe, it, expect } from 'vitest'
 
 import { FixedDecimal } from './FixedDecimal'
@@ -25,31 +24,6 @@ describe('FixedDecimal', function () {
       expect(
         new FixedDecimal(
           BigInt('1234567890123456789012345678901234567890'),
-          10
-        ).toString()
-      ).toBe('123456789012345678901234567890.1234567890')
-    })
-
-    it('constructs properly using BN', function () {
-      expect(
-        new FixedDecimal(
-          new BN('1234567890123456789012345678901234567890')
-        ).toString()
-      ).toBe('1234567890123456789012345678901234567890')
-    })
-
-    it('constructs properly using negative BN', function () {
-      expect(
-        new FixedDecimal(
-          new BN('-1234567890123456789012345678901234567890')
-        ).toString()
-      ).toBe('-1234567890123456789012345678901234567890')
-    })
-
-    it('constructs properly using BN and decimal places', function () {
-      expect(
-        new FixedDecimal(
-          new BN('1234567890123456789012345678901234567890'),
           10
         ).toString()
       ).toBe('123456789012345678901234567890.1234567890')

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
@@ -20,7 +20,7 @@ import {
   usePremiumContentPurchaseModal,
   gatedContentSelectors
 } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -356,7 +356,9 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
             </Text>
           </View>
           <Button color='lightGreen' onPress={handlePurchasePress} fullWidth>
-            {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+            {messages.buy(
+              USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
+            )}
           </Button>
         </Flex>
       )

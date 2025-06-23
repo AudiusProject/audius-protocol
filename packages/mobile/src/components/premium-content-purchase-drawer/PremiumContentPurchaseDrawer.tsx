@@ -34,10 +34,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { PurchaseContentError } from '@audius/common/store'
-import {
-  formatPrice,
-  AUDIO_MATCHING_REWARDS_MULTIPLIER
-} from '@audius/common/utils'
+import { AUDIO_MATCHING_REWARDS_MULTIPLIER } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { Formik, useField, useFormikContext } from 'formik'
 import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
@@ -211,7 +208,7 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-      ? `${messages.buy} $${formatPrice(amountDue)}`
+      ? `${messages.buy} $${USDC(amountDue / 100).toLocaleString()}`
       : messages.buy
 
 // The bulk of the form rendering is in a nested component because we want access
@@ -373,7 +370,7 @@ const RenderForm = ({
                     }
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
-                    showExistingBalance={!!(balance && !balance.isZero())}
+                    showExistingBalance={!!(balance && balance !== BigInt(0))}
                     isCoinflowEnabled={showCoinflow}
                     isPayWithAnythingEnabled
                     showVendorChoice={false}

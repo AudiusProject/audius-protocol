@@ -9,13 +9,13 @@ import {
   isValidSolAddress
 } from '@audius/common/store'
 import {
-  formatAudio,
   formatCapitalizeString,
   isNullOrUndefined,
   makeSolanaAccountLink,
   makeSolanaTransactionLink,
   route
 } from '@audius/common/utils'
+import { wAUDIO } from '@audius/fixed-decimal'
 import {
   IconExternalLink,
   IconLogoCoinbasePay,
@@ -266,13 +266,13 @@ export const TransactionDetailsContent = ({
               className={cn(styles.change, { [styles.negative]: isNegative })}
             >
               {isNegative ? '-' : '+'}
-              {formatAudio(transactionDetails.change)}
+              {wAUDIO(BigInt(transactionDetails.change)).toLocaleString()}
             </span>
           </Block>
           {/* If user's balance is still loading or failed to load, don't show it. */}
           {isNullOrUndefined(transactionDetails.balance) ? null : (
             <Block header={messages.balance}>
-              {formatAudio(transactionDetails.balance, 2)}
+              {wAUDIO(BigInt(transactionDetails.balance)).toFixed(2)}
             </Block>
           )}
         </BlockContainer>
