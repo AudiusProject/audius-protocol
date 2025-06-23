@@ -62,7 +62,7 @@ export class ExploreApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/explore/best_selling`,
+            path: `/explore/best-selling`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,

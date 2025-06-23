@@ -32,7 +32,7 @@ best_selling_parser.add_argument(
 )
 
 
-@ns.route("/best_selling")
+@ns.route("/best-selling")
 class BestSelling(Resource):
     @ns.doc(
         id="Get Best Selling",
@@ -47,7 +47,7 @@ class BestSelling(Resource):
         abort_not_found("best_selling", ns)
 
 
-@full_ns.route("/best_selling")
+@full_ns.route("/best-selling")
 class FullBestSelling(Resource):
     @full_ns.doc(
         id="Get Full Best Selling",

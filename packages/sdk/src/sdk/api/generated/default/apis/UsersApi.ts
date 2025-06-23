@@ -346,6 +346,14 @@ export interface GetUserMonthlyTrackListensRequest {
     endTime: string;
 }
 
+export interface GetUserRecommendedTracksRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    timeRange?: GetUserRecommendedTracksTimeRangeEnum;
+}
+
 export interface GetUserTracksRemixedRequest {
     id: string;
     offset?: number;
@@ -1826,6 +1834,53 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the recommended tracks for the user
+     */
+    async getUserRecommendedTracksRaw(params: GetUserRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserRecommendedTracks.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.timeRange !== undefined) {
+            queryParameters['time_range'] = params.timeRange;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/recommended-tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the recommended tracks for the user
+     */
+    async getUserRecommendedTracks(params: GetUserRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getUserRecommendedTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets tracks owned by the user which have been remixed by another track
      */
     async getUserTracksRemixedRaw(params: GetUserTracksRemixedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserTracksRemixedResponse>> {
@@ -2051,6 +2106,15 @@ export const GetTracksByUserFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetTracksByUserFilterTracksEnum = typeof GetTracksByUserFilterTracksEnum[keyof typeof GetTracksByUserFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetUserRecommendedTracksTimeRangeEnum = {
+    Week: 'week',
+    Month: 'month',
+    AllTime: 'allTime'
+} as const;
+export type GetUserRecommendedTracksTimeRangeEnum = typeof GetUserRecommendedTracksTimeRangeEnum[keyof typeof GetUserRecommendedTracksTimeRangeEnum];
 /**
  * @export
  */

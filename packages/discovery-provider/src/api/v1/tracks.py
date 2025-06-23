@@ -2044,7 +2044,7 @@ class GetTrackAccessInfo(Resource):
         return success_response(track)
 
 
-@ns.route("/recent_premium")
+@ns.route("/recent-premium")
 class GetRecentPremiumTracks(Resource):
     @record_metrics
     @ns.doc(
@@ -2058,7 +2058,7 @@ class GetRecentPremiumTracks(Resource):
         abort_not_found("recent_premium", ns)
 
 
-@full_ns.route("/recent_premium")
+@full_ns.route("/recent-premium")
 class GetRecentPremiumTracksFull(Resource):
     @record_metrics
     @full_ns.doc(
