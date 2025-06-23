@@ -3,13 +3,10 @@ import React, { useEffect, useRef } from 'react'
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
-  interpolate,
-  useAnimatedStyle,
-  Extrapolation,
   withTiming
 } from 'react-native-reanimated'
 
-import { useTheme } from '@audius/harmony-native'
+import { Flex, useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -26,14 +23,10 @@ import {
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
-
-// Animation parameters
-const HEADER_SLIDE_HEIGHT = 46
 const FILTER_SCROLL_THRESHOLD = 300
-const HEADER_COLLAPSE_THRESHOLD = 50
 
 const SearchExploreContent = () => {
-  const { spacing, motion } = useTheme()
+  const { spacing } = useTheme()
 
   // Get state from context
   const [category, setCategory] = useSearchCategory()
@@ -98,50 +91,17 @@ const SearchExploreContent = () => {
 
       // Handle filter animation
       if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
-        filterTranslateY.value = withTiming(-spacing['4xl'], motion.calm)
+        filterTranslateY.value = withTiming(-spacing['4xl'])
       } else if (
         y < FILTER_SCROLL_THRESHOLD ||
         scrollDirection.value === 'up'
       ) {
-        filterTranslateY.value = withTiming(0, motion.calm)
+        filterTranslateY.value = withTiming(0)
       }
     }
   })
 
-  // content margin expands when header / filter collapses
-  const contentSlideAnimatedStyle = useAnimatedStyle(() => ({
-    marginTop: query
-      ? withTiming(-HEADER_COLLAPSE_THRESHOLD * 2.5, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(0, motion.calm)
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
-            [0, -HEADER_SLIDE_HEIGHT],
-            Extrapolation.CLAMP
-          ) +
-          interpolate(
-            scrollY.value,
-            [
-              FILTER_SCROLL_THRESHOLD - HEADER_COLLAPSE_THRESHOLD,
-              FILTER_SCROLL_THRESHOLD
-            ],
-            [0, -spacing['4xl']],
-            Extrapolation.CLAMP
-          )
-  }))
-
-  const contentPaddingStyle = useAnimatedStyle(() => ({
-    paddingTop: query
-      ? withTiming(80, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(0, motion.calm)
-        : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP) +
-          filterTranslateY.value,
-    // Add minimum height to prevent jitter with small content
-    minHeight: '100%'
-  }))
-
+  const showSearch = Boolean(category !== 'all' || query)
   return (
     <ScreenContent>
       <SearchExploreHeader
@@ -153,20 +113,16 @@ const SearchExploreContent = () => {
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
-        style={[contentSlideAnimatedStyle, contentPaddingStyle]}
         showsVerticalScrollIndicator={false}
       >
-        {category !== 'all' || query ? (
-          <>
-            {query || hasAnyFilter ? (
-              <SearchResults />
-            ) : (
-              <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-            )}
-          </>
-        ) : (
+        {showSearch && (query || hasAnyFilter) ? (
+          <SearchResults />
+        ) : showSearch ? (
+          <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+        ) : null}
+        <Flex style={{ display: showSearch ? 'none' : 'flex' }}>
           <ExploreContent />
-        )}
+        </Flex>
       </Animated.ScrollView>
     </ScreenContent>
   )

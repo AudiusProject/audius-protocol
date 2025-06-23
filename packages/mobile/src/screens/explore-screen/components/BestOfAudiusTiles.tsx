@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
@@ -6,6 +6,10 @@ import { ExploreCollectionsVariant } from '@audius/common/store'
 import { Flex } from '@audius/harmony-native'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 
+import {
+  useSearchCategory,
+  useSearchFilters
+} from '../../search-screen/searchState'
 import {
   PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
@@ -31,6 +35,8 @@ export const BestOfAudiusTiles = ({
   isLoading: externalLoading
 }: BestOfAudiusTilesProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const [, setCategory] = useSearchCategory()
+  const [, setFilters] = useSearchFilters()
 
   const filteredTiles = useMemo(
     () =>
@@ -42,7 +48,15 @@ export const BestOfAudiusTiles = ({
       }),
     [isUSDCPurchasesEnabled]
   )
-
+  const handleTilePress = useCallback((title) => {
+    if (title === PREMIUM_TRACKS.title) {
+      setCategory('tracks')
+      setFilters({ isPremium: true })
+    } else if (title === REMIXABLES.title) {
+      setCategory('tracks')
+      setFilters({ hasDownloads: true })
+    }
+  }, [])
   return (
     <ExploreSection title={messages.bestOfAudius} isLoading={externalLoading}>
       <Flex gap='s'>
@@ -51,6 +65,7 @@ export const BestOfAudiusTiles = ({
             style={{ flex: 1, flexBasis: '100%' }}
             key={tile.title}
             {...tile}
+            onPress={() => handleTilePress(tile.title)}
           />
         ))}
       </Flex>
