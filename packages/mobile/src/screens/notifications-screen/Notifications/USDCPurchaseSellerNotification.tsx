@@ -2,7 +2,6 @@ import React, { useCallback } from 'react'
 
 import { useNotificationEntity, useUser } from '@audius/common/api'
 import type { USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType } from '@audius/common/store'
-import type { UsdcWei } from '@audius/fixed-decimal'
 import { USDC } from '@audius/fixed-decimal'
 import { capitalize } from 'lodash'
 

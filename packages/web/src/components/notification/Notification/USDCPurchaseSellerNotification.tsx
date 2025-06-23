@@ -8,7 +8,7 @@ import {
   CollectionEntity
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { USDC, UsdcWei } from '@audius/fixed-decimal'
+import { USDC } from '@audius/fixed-decimal'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
