@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 import { useTransition } from 'react-spring'
 
 import { make } from 'common/store/analytics/actions'
+import { localStorage } from 'services/local-storage'
 
 const COMPLETION_DISMISSAL_DELAY_MSEC = 3 * 1000
 
@@ -56,9 +57,16 @@ export const useProfileCompletionDismissal = ({
   const dispatch = useDispatch()
   const [didCompleteThisSession, setDidCompleteThisSession] = useState(false)
   const isComplete = getIsComplete(completionStages)
-  const { data: isAccountComplete = false } = useCurrentAccountUser({
-    select: selectIsAccountComplete
-  })
+  const { data: accountUser } = useCurrentAccountUser()
+
+  // until v1.5.140, trackSaveCount was not being stored in localStorage - which caused it to be null temporarily
+  // In order to not accidentally trigger confetti we wait for it to be loaded in (aka not null).
+  // After v1.5.140, it is stored in localStorage, so it will load in immediately and this check won't be necessary.
+  const accountTrackSavesLoaded =
+    localStorage.getAudiusAccountSync()?.trackSaveCount !== null
+
+  const isAccountComplete =
+    selectIsAccountComplete(accountUser) && accountTrackSavesLoaded
 
   // On account load, check if this profile was *ever* incomplete
   const [wasIncomplete, setWasIncomplete] = useState(false)
@@ -67,11 +75,12 @@ export const useProfileCompletionDismissal = ({
       isAccountLoaded &&
       // Check for partially complete stages. Accounts with all incomplete won't have passed through sign up
       completionStages.some((stage) => stage.isCompleted) &&
-      completionStages.some((stage) => !stage.isCompleted)
+      completionStages.some((stage) => !stage.isCompleted) &&
+      accountTrackSavesLoaded
     ) {
       setWasIncomplete(true)
     }
-  }, [completionStages, isAccountLoaded])
+  }, [accountTrackSavesLoaded, completionStages, isAccountLoaded])
 
   const wasAlwaysComplete = isComplete && !wasIncomplete
 
