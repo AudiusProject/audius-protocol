@@ -55,7 +55,7 @@ type SearchExploreHeaderProps = {
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { filterTranslateY, scrollY, scrollRef } = props
-  const { spacing, color, motion } = useTheme()
+  const { spacing, color } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
@@ -139,7 +139,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         setQuery(inputValue)
       }
     },
-    200,
+    400,
     [inputValue]
   )
 
@@ -149,7 +149,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Height shrinks to collapse rows for avatar + input
   const headerTextAnimatedStyle = useAnimatedStyle(() => ({
     opacity: inputValue
-      ? withTiming(0, motion.calm)
+      ? withTiming(0)
       : scrollY.value === 0
         ? withTiming(1)
         : interpolate(
@@ -158,25 +158,30 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             [1, 0],
             Extrapolation.CLAMP
           ),
-    height: inputValue
-      ? withTiming(0, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(48)
-        : interpolate(
-            scrollY.value,
-            [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
-            [48, 0],
-            Extrapolation.CLAMP
-          )
+    transform: [
+      {
+        translateY: inputValue
+          ? withTiming(-1)
+          : scrollY.value === 0
+            ? withTiming(0)
+            : interpolate(
+                scrollY.value,
+                [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
+                [0, -HEADER_SLIDE_HEIGHT],
+                Extrapolation.CLAMP
+              )
+      }
+    ],
+    display: scrollY.value > HEADER_SLIDE_HEIGHT || inputValue ? 'none' : 'flex'
   }))
 
   const inputAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
         scale: inputValue
-          ? withTiming(0.83, motion.calm)
+          ? withTiming(0.83)
           : scrollY.value === 0
-            ? withTiming(1, motion.calm)
+            ? withTiming(1)
             : interpolate(
                 scrollY.value,
                 [0, HEADER_COLLAPSE_THRESHOLD],
@@ -186,9 +191,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
       },
       {
         translateX: inputValue
-          ? withTiming(30, motion.calm)
+          ? withTiming(30)
           : scrollY.value === 0
-            ? withTiming(0, motion.calm)
+            ? withTiming(0)
             : interpolate(
                 scrollY.value,
                 [0, HEADER_COLLAPSE_THRESHOLD],
@@ -201,20 +206,16 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
 
   // Header slides up to collapse
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: inputValue
-          ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
-          : scrollY.value === 0
-            ? withTiming(0, motion.calm)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [0, -HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              )
-      }
-    ]
+    marginTop: inputValue
+      ? withTiming(-HEADER_SLIDE_HEIGHT)
+      : scrollY.value === 0
+        ? withTiming(0)
+        : interpolate(
+            scrollY.value,
+            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, -HEADER_SLIDE_HEIGHT],
+            Extrapolation.CLAMP
+          )
   }))
 
   // Avatar slides down in relation to colllapsing header
@@ -223,9 +224,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     transform: [
       {
         translateY: inputValue
-          ? withTiming(HEADER_SLIDE_HEIGHT, motion.calm)
+          ? withTiming(HEADER_SLIDE_HEIGHT)
           : scrollY.value === 0
-            ? withTiming(0, motion.calm)
+            ? withTiming(0)
             : interpolate(
                 scrollY.value,
                 [0, HEADER_COLLAPSE_THRESHOLD],
@@ -239,9 +240,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Header padding and gap shrink when collapsing
   const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
     paddingVertical: inputValue
-      ? withTiming(spacing.s, motion.calm)
+      ? withTiming(spacing.s)
       : scrollY.value === 0
-        ? withTiming(spacing.l, motion.calm)
+        ? withTiming(spacing.l)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -249,9 +250,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             Extrapolation.CLAMP
           ),
     gap: inputValue
-      ? withTiming(0, motion.calm)
+      ? withTiming(0)
       : scrollY.value === 0
-        ? withTiming(spacing.l, motion.calm)
+        ? withTiming(spacing.l)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -263,23 +264,13 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Filters slide up when header collapses
   // and hides when scrolling further down
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: inputValue
-          ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
-          : scrollY.value === 0
-            ? withTiming(0, motion.calm)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
-                [0, -HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              ) + filterTranslateY.value
-      }
-    ],
+    marginTop:
+      scrollY.value === 0 || inputValue
+        ? withTiming(0)
+        : filterTranslateY.value,
     backgroundColor:
       scrollY.value === 0
-        ? withTiming('transparent', motion.calm)
+        ? withTiming('transparent')
         : interpolateColor(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -287,7 +278,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
           ),
     borderColor:
       scrollY.value === 0
-        ? withTiming('transparent', motion.calm)
+        ? withTiming('transparent')
         : interpolateColor(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -323,14 +314,15 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
               >
                 <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
               </AnimatedFlex>
-              <AnimatedFlex
-                style={headerTextAnimatedStyle}
-                justifyContent='center'
-              >
-                <Text variant='heading' color='staticWhite'>
+              <Flex justifyContent='center'>
+                <AnimatedText
+                  variant='heading'
+                  color='staticWhite'
+                  style={headerTextAnimatedStyle}
+                >
                   {messages.explore}
-                </Text>
-              </AnimatedFlex>
+                </AnimatedText>
+              </Flex>
             </Flex>
             <AnimatedText
               variant='title'
