@@ -6,7 +6,11 @@ from time import time
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.queries.get_health import get_health
-from src.utils.core import CoreHealth, core_health_check_cache_key
+from src.utils.core import (
+    CoreHealth,
+    core_health_check_cache_key,
+    core_listens_health_check_cache_key,
+)
 from src.utils.redis_constants import (
     TRACK_DELIST_DISCREPANCIES_KEY,
     TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
@@ -30,6 +34,27 @@ from src.utils.redis_constants import (
 
 def cache_core_health_vars(redis_mock, health: CoreHealth):
     redis_mock.set(core_health_check_cache_key, json.dumps(health))
+
+
+def cache_core_listens_health_vars(redis_mock, latest_chain_slot: int):
+    """Cache core listens health data with latest_chain_slot"""
+    listens_health = {
+        "latest_chain_slot": latest_chain_slot,
+        "latest_indexed_slot": latest_chain_slot,
+        "slot_diff": 0,
+        "time_diff": 2.0,
+        "sol_slot_cutover": 315925000,
+        "core_block_cutover": 113180,
+        "tx_info": {
+            "chain_tx": None,
+            "db_tx": {
+                "signature": "",
+                "slot": latest_chain_slot,
+                "timestamp": 1750716115,
+            },
+        },
+    }
+    redis_mock.set(core_listens_health_check_cache_key, json.dumps(listens_health))
 
 
 # Cache values as expected in redis
@@ -105,6 +130,9 @@ def test_get_health(redis_mock, db_mock, mock_requests):
         },
     )
 
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 2)
+
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
@@ -145,6 +173,9 @@ def test_get_health_using_redis(redis_mock, db_mock, mock_requests):
             "latest_indexed_block": 2,
         },
     )
+
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 3)
 
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
@@ -193,6 +224,9 @@ def test_get_health_partial_redis(redis_mock, db_mock, mock_requests):
         },
     )
 
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 3)
+
     # Set up redis state
     redis_mock.set(latest_block_redis_key, "3")
     redis_mock.set(most_recent_indexed_block_redis_key, "2")
@@ -237,6 +271,9 @@ def test_get_health_with_invalid_db_state(redis_mock, db_mock, mock_requests):
             "latest_chain_block": 2,
         },
     )
+
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 2)
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -285,6 +322,9 @@ def test_get_health_skip_redis(redis_mock, db_mock, mock_requests):
         },
     )
 
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 3)
+
     # Set up db state
     with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
@@ -325,6 +365,9 @@ def test_get_health_unhealthy_block_difference(redis_mock, db_mock, mock_request
             "latest_indexed_block": 1,
         },
     )
+
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 50)
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -428,6 +471,9 @@ def test_get_health_verbose(redis_mock, db_mock, get_monitors_mock, mock_request
             "latest_indexed_block": 1,
         },
     )
+
+    # Cache core listens health data for the new logic
+    cache_core_listens_health_vars(redis_mock, 2)
 
     # Set up db state
     with db_mock.scoped_session() as session:
