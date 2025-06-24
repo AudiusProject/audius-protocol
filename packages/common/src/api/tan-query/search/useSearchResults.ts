@@ -293,7 +293,7 @@ const useSearchQueryProps = <T>(
       return data?.pages?.flat()
     },
     ...options,
-    enabled: options?.enabled !== false && currentUserId !== undefined
+    enabled: options?.enabled !== false
   }
 }
 
