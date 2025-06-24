@@ -2,11 +2,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "@audius/common#build",
-        "@audius/sdk#build",
-        "@audius/fixed-decimal#build"
-      ],
+      "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**"],
       "outputLogs": "new-only"
     },

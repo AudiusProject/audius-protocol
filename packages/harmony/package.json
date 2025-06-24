@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "dist": "rollup -c",
     "build-storybook": "storybook build",
     "chromatic": "chromatic",
     "lint": "eslint src --ext=ts,tsx,mdx",
