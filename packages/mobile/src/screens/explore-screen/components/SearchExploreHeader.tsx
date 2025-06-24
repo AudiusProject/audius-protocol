@@ -164,11 +164,11 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     height: inputValue
       ? withTiming(0, motion.calm)
       : scrollY.value === 0
-        ? withTiming(40, motion.calm)
+        ? withTiming(34, motion.calm)
         : interpolate(
             scrollY.value,
             [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
-            [40, 0],
+            [34, 0],
             Extrapolation.CLAMP
           ),
     zIndex: -1
