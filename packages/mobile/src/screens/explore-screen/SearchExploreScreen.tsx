@@ -71,7 +71,7 @@ const SearchExploreContent = () => {
 
   // Animations
   const contentPaddingStyle = useAnimatedStyle(() => ({
-    paddingTop: query
+    paddingVertical: query
       ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
       : scrollY.value === 0
         ? withTiming(0, motion.calm)
