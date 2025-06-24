@@ -6,7 +6,8 @@ module.exports = {
   extends: ['audius'],
   globals: {
     Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly'
+    SharedArrayBuffer: 'readonly',
+    __DEV__: 'readonly'
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
