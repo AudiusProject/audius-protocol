@@ -389,11 +389,3 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     </>
   )
 }
-
-// Export this for use in parent ScrollView:
-// <ScrollView onScroll={handleScroll} ... />
-export const handleScroll = (
-  event: NativeSyntheticEvent<NativeScrollEvent>
-) => {
-  Keyboard.dismiss()
-}

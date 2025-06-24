@@ -70,14 +70,17 @@ const SearchExploreContent = () => {
   })
 
   // Animations
-  const contentPaddingStyle = useAnimatedStyle(() => ({
-    paddingVertical: query
-      ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(0, motion.calm)
-        : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP)
-  }))
-
+  const contentPaddingStyle = useAnimatedStyle(() => {
+    // Clamped scroll prevents jitter
+    const clampedScrollY = Math.max(scrollY.value, 0)
+    return {
+      paddingTop: query
+        ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
+        : clampedScrollY === 0
+          ? withTiming(0, motion.calm)
+          : interpolate(clampedScrollY, [0, 80], [0, 80], Extrapolation.CLAMP)
+    }
+  })
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y
