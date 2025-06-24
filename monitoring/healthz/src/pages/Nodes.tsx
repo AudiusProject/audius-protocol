@@ -340,14 +340,14 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
       {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.status}</td>)}
       {!isContent &&
         <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <a href={sp.endpoint + "/core/grpc/block/" + totalCoreBlocks} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+          <a href={sp.endpoint + "/console/block/" + totalCoreBlocks} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
             {totalCoreBlocks}
           </a>
         </td>
       }
       {!isContent &&
         <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <a href={sp.endpoint + "/core/grpc/block/" + coreHealth?.latest_indexed_block} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+          <a href={sp.endpoint + "/console/block/" + coreHealth?.latest_indexed_block} target="_blank" className="text-sm text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
             {coreHealth?.latest_indexed_block}
           </a>
         </td>
