@@ -1,6 +1,11 @@
 /* eslint-disable import/first */
 /* eslint-disable import/order */
 import 'react-native-gesture-handler'
+
+// Import Reactotron in development mode only
+if (__DEV__) {
+  require('./ReactotronConfig')
+}
 // react-native has an issue with inverted lists on Android, and it got worse
 // with Android 13. To avoid it we patch a react-native style, but that style
 // got deprecated in React Native 0.70. For now the deprecation is limited to a

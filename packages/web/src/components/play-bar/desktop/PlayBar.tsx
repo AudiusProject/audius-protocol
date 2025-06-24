@@ -77,8 +77,10 @@ const PlayBar = () => {
   const [localPlayCounter, setLocalPlayCounter] = useState<number | null>(null)
   const [initialVolume, setInitialVolume] = useState<number | null>(null)
   const [mediaKey, setMediaKey] = useState(0)
+  const [timing, setTiming] = useState({ position: 0, duration: 0 })
 
   const hotkeysHook = useRef<any>(null)
+  const seekInterval = useRef<number | undefined>(undefined)
 
   // Memoized values
   const trackTitle = currentTrack?.title || ''
@@ -87,7 +89,7 @@ const PlayBar = () => {
   const artistUserId = currentUser?.user_id || null
   const isVerified = currentUser?.is_verified || false
   const trackId = currentTrack?.track_id || null
-  const duration = audioPlayer?.getDuration() || null
+  const duration = timing.duration || audioPlayer?.getDuration() || null
   const isOwner = currentTrack?.owner_id === accountUserId
   const isTrackUnlisted = currentTrack?.is_unlisted || false
   const isStreamGated = currentTrack?.is_stream_gated || false
@@ -97,6 +99,34 @@ const PlayBar = () => {
     currentTrack?.genre === Genre.AUDIOBOOKS
 
   const playable = !!uid
+
+  // Update timing state
+  const startSeeking = useCallback(() => {
+    clearInterval(seekInterval.current)
+    seekInterval.current = window.setInterval(async () => {
+      if (!audioPlayer) return
+      const position = await audioPlayer.getPosition()
+      const duration = await audioPlayer.getDuration()
+      setTiming({ position, duration })
+    }, 500) // SEEK_INTERVAL
+  }, [setTiming])
+
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      if (seekInterval.current) clearInterval(seekInterval.current)
+    }
+  }, [seekInterval])
+
+  // Start seeking when play counter changes
+  useEffect(() => {
+    if (playCounter !== localPlayCounter) {
+      setLocalPlayCounter(playCounter)
+      setMediaKey((prev) => prev + 1)
+      setTiming({ position: 0, duration: timing.duration })
+      startSeeking()
+    }
+  }, [playCounter, localPlayCounter, startSeeking, timing.duration])
 
   // Play button status
   let playButtonStatus: 'load' | 'pause' | 'play'
@@ -171,12 +201,12 @@ const PlayBar = () => {
 
   const onPrevious = useCallback(() => {
     if (isLongFormContent) {
-      const position = audioPlayer?.getPosition() || 0
+      const position = timing.position || 0
       const newPosition = position - SKIP_DURATION_SEC
       dispatch(seek({ seconds: Math.max(0, newPosition) }))
       setMediaKey((prev) => prev + 1)
     } else {
-      const position = audioPlayer?.getPosition() || 0
+      const position = timing.position || 0
       const shouldGoToPrevious = position < RESTART_THRESHOLD_SEC
       if (shouldGoToPrevious) {
         dispatch(previous())
@@ -184,19 +214,19 @@ const PlayBar = () => {
         dispatch(reset({ shouldAutoplay: true }))
       }
     }
-  }, [isLongFormContent, dispatch])
+  }, [isLongFormContent, dispatch, timing.position])
 
   const onNext = useCallback(() => {
     if (isLongFormContent) {
-      const duration = audioPlayer?.getDuration() || 0
-      const position = audioPlayer?.getPosition() || 0
+      const duration = timing.duration || 0
+      const position = timing.position || 0
       const newPosition = position + SKIP_DURATION_SEC
       dispatch(seek({ seconds: Math.min(newPosition, duration) }))
       setMediaKey((prev) => prev + 1)
     } else {
       dispatch(next({ skip: true }))
     }
-  }, [isLongFormContent, dispatch])
+  }, [isLongFormContent, dispatch, timing.position, timing.duration])
 
   // Effects
   useEffect(() => {
@@ -215,13 +245,6 @@ const PlayBar = () => {
       }
     }
   }, [togglePlay, onPrevious, onNext])
-
-  useEffect(() => {
-    if (playCounter !== localPlayCounter) {
-      setMediaKey((prev) => prev + 1)
-      setLocalPlayCounter(playCounter)
-    }
-  }, [playCounter, localPlayCounter])
 
   useEffect(() => {
     if (initialVolume !== null && audioPlayer) {
@@ -257,7 +280,7 @@ const PlayBar = () => {
           <div className={styles.timeControls}>
             {audioPlayer ? (
               <Scrubber
-                mediaKey={`${uid}${mediaKey}`}
+                mediaKey={`${uid}${mediaKey}${timing.duration}`}
                 isPlaying={isPlaying && !isBuffering}
                 isDisabled={!uid}
                 includeTimestamps
@@ -266,7 +289,7 @@ const PlayBar = () => {
                 playbackRate={
                   isLongFormContent ? playbackRateValueMap[playbackRate] : 1
                 }
-                elapsedSeconds={audioPlayer?.getPosition()}
+                elapsedSeconds={timing.position}
                 totalSeconds={duration ?? 0}
                 style={{
                   railListenedColor: 'var(--track-slider-rail)',
