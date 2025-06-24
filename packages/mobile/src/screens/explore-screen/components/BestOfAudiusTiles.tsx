@@ -48,15 +48,18 @@ export const BestOfAudiusTiles = ({
       }),
     [isUSDCPurchasesEnabled]
   )
-  const handleTilePress = useCallback((title) => {
-    if (title === PREMIUM_TRACKS.title) {
-      setCategory('tracks')
-      setFilters({ isPremium: true })
-    } else if (title === REMIXABLES.title) {
-      setCategory('tracks')
-      setFilters({ hasDownloads: true })
-    }
-  }, [])
+  const handleTilePress = useCallback(
+    (title) => {
+      if (title === PREMIUM_TRACKS.title) {
+        setCategory('tracks')
+        setFilters({ isPremium: true })
+      } else if (title === REMIXABLES.title) {
+        setCategory('tracks')
+        setFilters({ hasDownloads: true })
+      }
+    },
+    [setCategory, setFilters]
+  )
   return (
     <ExploreSection title={messages.bestOfAudius} isLoading={externalLoading}>
       <Flex gap='s'>
