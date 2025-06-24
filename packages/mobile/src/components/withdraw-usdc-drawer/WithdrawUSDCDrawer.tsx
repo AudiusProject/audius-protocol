@@ -14,6 +14,14 @@ import {
   buyUSDCSelectors,
   createWithdrawUSDCFormSchema
 } from '@audius/common/store'
+import {
+  AMOUNT,
+  METHOD,
+  ADDRESS,
+  CONFIRM,
+  type WithdrawUSDCFormValues as WithdrawFormValues
+} from '@audius/common/store'
+import { filterDecimalString } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import type { FormikProps } from 'formik'
@@ -31,14 +39,6 @@ import { ErrorPage } from './components/ErrorPage'
 import { PrepareTransfer } from './components/PrepareTransfer'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
-import {
-  AMOUNT,
-  METHOD,
-  ADDRESS,
-  CONFIRM,
-  type WithdrawUSDCFormValues as WithdrawFormValues
-} from '@audius/common/store'
-import { filterDecimalString } from '@audius/common/utils'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
