@@ -53,17 +53,23 @@ If you run into issues, try cleaning the android build folder
 cd android && ./gradlew clean && cd ..
 ```
 
-
 ## Running Storybook
-1. 
+
+1.
+
 ```
 npm run start:storybook
 ```
+
 2. Uncomment line three in src/app/index.ts, essentially you need to export the App component from storybook.
 
 ## Debugging
 
 To debug the app follow the instructions [here](https://reactnative.dev/docs/debugging?js-debugger=new-debugger)
+
+### Reactotron
+
+For enhanced debugging capabilities, Reactotron has been integrated into the mobile app. See the [Reactotron Setup Guide](./REACTOTRON_SETUP.md) for installation and usage instructions.
 
 You can also start react and redux devtools with
 
