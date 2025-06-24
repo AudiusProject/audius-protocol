@@ -3,7 +3,8 @@
 }
 
 .tracksContainer {
-  overflow-y: auto;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
   max-height: 240px;
 }
 
