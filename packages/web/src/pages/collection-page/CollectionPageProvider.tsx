@@ -159,7 +159,6 @@ const CollectionPage = (props: CollectionPageProps) => {
   const { location } = props
   const pathname = getPathname(location)
   const params = parseCollectionRoute(pathname)
-  // For now read-only
   const { data: collection } = useCollectionByParams(params)
   const { data: user } = useUser(collection?.playlist_owner_id)
   const { data: currentUserId } = useCurrentUserId()
