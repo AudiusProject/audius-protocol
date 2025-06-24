@@ -15,7 +15,6 @@ import {
   Name,
   Kind,
   CollectionMetadata,
-  Collection,
   ID,
   Track
 } from '@audius/common/models'
@@ -97,7 +96,7 @@ function* optimisticallySaveAlbum(
   const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
   const { user_id, handle } = accountUser
-  const album: Partial<Collection> & { playlist_id: ID } = {
+  const album: Partial<CollectionMetadata> & { playlist_id: ID } = {
     playlist_id: albumId,
     ...formFields
   }
