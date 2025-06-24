@@ -23,7 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Divider, Flex, Text } from '@audius/harmony-native'
+import { Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 
 import { CoinflowConfirmTransfer } from './components/CoinflowConfirmTransfer'
 import { CryptoConfirmTransfer } from './components/CryptoConfirmTransfer'
@@ -133,6 +133,7 @@ const WithdrawUSDCForm = ({
 export const WithdrawUSDCDrawer = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose, onClosed, setData, data } = useWithdrawUSDCModal()
+  const { color } = useTheme()
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.COINFLOW_OFFRAMP_ENABLED
   )
@@ -214,6 +215,8 @@ export const WithdrawUSDCDrawer = () => {
       android_keyboardInputMode='adjustResize'
       enablePanDownToClose={isClosable}
       enableContentPanningGesture={isClosable}
+      backgroundStyle={{ backgroundColor: color.background.white }}
+      handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
     >
       <Formik
         innerRef={formRef}

@@ -16,7 +16,14 @@ import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useField, useFormikContext } from 'formik'
 
-import { Button, Flex, Text, Divider, spacing } from '@audius/harmony-native'
+import {
+  Button,
+  Flex,
+  Text,
+  Divider,
+  spacing,
+  useTheme
+} from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { SegmentedControl } from 'app/components/core'
 import { TextField } from 'app/components/fields'
@@ -32,6 +39,7 @@ export const EnterTransferDetails = ({
   balanceNumberCents: number
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
+  const { color } = useTheme()
   const [
     { value: amountValue },
     { error: amountError, touched: amountTouched },
@@ -44,6 +52,23 @@ export const EnterTransferDetails = ({
     useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(amountValue)
+  )
+
+  const ThemedBottomSheetTextInput = useCallback(
+    (props: any) => (
+      <BottomSheetTextInput
+        {...props}
+        style={[
+          props.style,
+          {
+            color: color.text.default,
+            backgroundColor: color.background.surface1
+          }
+        ]}
+        placeholderTextColor={color.text.subdued}
+      />
+    ),
+    [color]
   )
 
   const onContinuePress = useCallback(async () => {
@@ -112,7 +137,7 @@ export const EnterTransferDetails = ({
                 value={humanizedValue}
                 onBlur={() => handleAmountBlur(humanizedValue)}
                 startAdornmentText={walletMessages.dollarSign}
-                TextInputComponent={BottomSheetTextInput as any}
+                TextInputComponent={ThemedBottomSheetTextInput as any}
                 noGutter
                 errorBeforeSubmit
                 required
