@@ -16,7 +16,6 @@ import {
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import type { FormikProps } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -52,11 +51,9 @@ const DISABLE_DRAWER_CLOSE_PAGES = new Set([
 
 const WithdrawUSDCForm = ({
   onClose,
-  scrollViewRef,
   balanceNumberCents
 }: {
   onClose: () => void
-  scrollViewRef: React.RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
 }) => {
   const { data } = useWithdrawUSDCModal()
@@ -68,10 +65,7 @@ const WithdrawUSDCForm = ({
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
       formPage = (
-        <EnterTransferDetails
-          scrollViewRef={scrollViewRef}
-          balanceNumberCents={balanceNumberCents}
-        />
+        <EnterTransferDetails balanceNumberCents={balanceNumberCents} />
       )
       break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
@@ -96,17 +90,13 @@ const WithdrawUSDCForm = ({
       break
     default:
       formPage = (
-        <EnterTransferDetails
-          scrollViewRef={scrollViewRef}
-          balanceNumberCents={balanceNumberCents}
-        />
+        <EnterTransferDetails balanceNumberCents={balanceNumberCents} />
       )
       break
   }
 
   return (
     <BottomSheetScrollView
-      ref={scrollViewRef}
       style={{ flex: 1 }}
       contentContainerStyle={{
         flexGrow: 1,
@@ -150,7 +140,6 @@ export const WithdrawUSDCDrawer = () => {
   )
 
   const bottomSheetRef = useRef<BottomSheetModal>(null)
-  const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null)
 
   const withdrawalStatus = useSelector(getWithdrawStatus)
   const recoveryStatus = useSelector(getRecoveryStatus)
@@ -239,7 +228,6 @@ export const WithdrawUSDCDrawer = () => {
       >
         <WithdrawUSDCForm
           onClose={handleClose}
-          scrollViewRef={scrollViewRef}
           balanceNumberCents={balanceNumberCents}
         />
       </Formik>

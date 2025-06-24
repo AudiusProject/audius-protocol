@@ -1,4 +1,3 @@
-import type { RefObject } from 'react'
 import React, { useCallback, useState } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
@@ -13,7 +12,6 @@ import {
   padDecimalValue
 } from '@audius/common/utils'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
-import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useField, useFormikContext } from 'formik'
 
 import {
@@ -32,10 +30,8 @@ import type { WithdrawFormValues } from '../types'
 import { AMOUNT, METHOD, ADDRESS } from '../types'
 
 export const EnterTransferDetails = ({
-  scrollViewRef,
   balanceNumberCents
 }: {
-  scrollViewRef: RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
@@ -61,13 +57,14 @@ export const EnterTransferDetails = ({
           {...props}
           ref={ref}
           style={[
-            props.style,
             {
               color: color.text.default,
               backgroundColor: color.background.surface1
-            }
+            },
+            props.style
           ]}
           placeholderTextColor={color.text.subdued}
+          textAlignVertical='center'
         />
       )
     }),
