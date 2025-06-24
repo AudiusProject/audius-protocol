@@ -3,14 +3,13 @@ import React, { useCallback } from 'react'
 import { walletMessages } from '@audius/common/messages'
 import {
   useWithdrawUSDCModal,
-  WithdrawUSDCModalPages
+  WithdrawUSDCModalPages,
+  type WithdrawUSDCFormValues as WithdrawFormValues
 } from '@audius/common/store'
 import { useFormikContext } from 'formik'
 
 import { Button, Divider, Flex, Text } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
-
-import type { WithdrawFormValues } from '../types'
 
 export const CoinflowConfirmTransfer = () => {
   const { submitForm, values } = useFormikContext<WithdrawFormValues>()

@@ -4,7 +4,11 @@ import { walletMessages } from '@audius/common/messages'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  WithdrawMethod
+  WithdrawMethod,
+  AMOUNT,
+  METHOD,
+  ADDRESS,
+  type WithdrawUSDCFormValues as WithdrawFormValues
 } from '@audius/common/store'
 import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
@@ -14,9 +18,6 @@ import { Button, Flex, Text, Divider, spacing } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { SegmentedControl } from 'app/components/core'
 import { TextField } from 'app/components/fields'
-
-import type { WithdrawFormValues } from '../types'
-import { AMOUNT, METHOD, ADDRESS } from '../types'
 
 export const EnterTransferDetails = ({
   balanceNumberCents

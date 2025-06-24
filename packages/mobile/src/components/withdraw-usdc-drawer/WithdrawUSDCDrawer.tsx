@@ -36,8 +36,8 @@ import {
   METHOD,
   ADDRESS,
   CONFIRM,
-  type WithdrawFormValues
-} from './types'
+  type WithdrawUSDCFormValues as WithdrawFormValues
+} from '@audius/common/store'
 import { filterDecimalString } from '@audius/common/utils'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
