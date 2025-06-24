@@ -14,14 +14,7 @@ import {
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import { useField, useFormikContext } from 'formik'
 
-import {
-  Button,
-  Flex,
-  Text,
-  Divider,
-  spacing,
-  useTheme
-} from '@audius/harmony-native'
+import { Button, Flex, Text, Divider, spacing } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { SegmentedControl } from 'app/components/core'
 import { TextField } from 'app/components/fields'
@@ -35,7 +28,6 @@ export const EnterTransferDetails = ({
   balanceNumberCents: number
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
-  const { color } = useTheme()
   const [
     { value: amountValue },
     { error: amountError, touched: amountTouched },
@@ -48,27 +40,6 @@ export const EnterTransferDetails = ({
     useField<WithdrawMethod>(METHOD)
   const [humanizedValue, setHumanizedValue] = useState(
     decimalIntegerToHumanReadable(amountValue)
-  )
-
-  const ThemedBottomSheetTextInput = useCallback(
-    React.forwardRef<any, any>((props, ref) => {
-      return (
-        <BottomSheetTextInput
-          {...props}
-          ref={ref}
-          style={[
-            {
-              color: color.text.default,
-              backgroundColor: color.background.surface1
-            },
-            props.style
-          ]}
-          placeholderTextColor={color.text.subdued}
-          textAlignVertical='center'
-        />
-      )
-    }),
-    [color]
   )
 
   const onContinuePress = useCallback(async () => {
@@ -127,7 +98,7 @@ export const EnterTransferDetails = ({
                 value={humanizedValue}
                 onBlur={() => handleAmountBlur(humanizedValue)}
                 startAdornmentText={walletMessages.dollarSign}
-                TextInputComponent={ThemedBottomSheetTextInput as any}
+                TextInputComponent={BottomSheetTextInput as any}
                 noGutter
                 errorBeforeSubmit
                 required
@@ -185,7 +156,7 @@ export const EnterTransferDetails = ({
             label={walletMessages.destination}
             placeholder={walletMessages.destination}
             name={ADDRESS}
-            TextInputComponent={ThemedBottomSheetTextInput as any}
+            TextInputComponent={BottomSheetTextInput as any}
             keyboardType='default'
             autoCapitalize='none'
             autoCorrect={false}
