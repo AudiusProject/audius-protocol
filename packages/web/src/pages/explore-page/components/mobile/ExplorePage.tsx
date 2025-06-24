@@ -38,13 +38,13 @@ import {
   INTENSE_PLAYLISTS,
   PROVOKING_PLAYLISTS,
   INTIMATE_PLAYLISTS,
+  TRENDING_PLAYLISTS,
+  TRENDING_UNDERGROUND,
   ExploreCollection,
   ExploreMoodCollection,
   PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
 import { BASE_URL } from 'utils/route'
-
-import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
@@ -63,6 +63,9 @@ you based on your likes, reposts, and follows. Refreshes often so if you like a 
   moodPlaylistsDescription:
     'Playlists made by Audius users, sorted by mood and feel.'
 }
+
+// Updated to only include the three requested collections
+const justForYou = [PREMIUM_TRACKS, TRENDING_PLAYLISTS, TRENDING_UNDERGROUND]
 
 const lifestyle = [
   CHILL_PLAYLISTS,
