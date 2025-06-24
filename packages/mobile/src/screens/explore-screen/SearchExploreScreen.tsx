@@ -1,7 +1,10 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import Animated, {
+  Extrapolation,
+  interpolate,
   useAnimatedScrollHandler,
+  useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
@@ -23,15 +26,19 @@ import {
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
+
+// Animation parameters
+const HEADER_SLIDE_HEIGHT = 46
 const FILTER_SCROLL_THRESHOLD = 300
 
 const SearchExploreContent = () => {
-  const { spacing } = useTheme()
+  const { spacing, motion } = useTheme()
 
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
+  const [inputValue, setInputValue] = useState(query)
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -52,6 +59,7 @@ const SearchExploreContent = () => {
     setQuery('')
     setCategory('all')
     setFilters({})
+    setInputValue('')
   })
 
   useEffect(() => {
@@ -62,6 +70,14 @@ const SearchExploreContent = () => {
   })
 
   // Animations
+  const contentPaddingStyle = useAnimatedStyle(() => ({
+    paddingTop: query
+      ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
+      : scrollY.value === 0
+        ? withTiming(0, motion.calm)
+        : interpolate(scrollY.value, [0, 80], [0, 80], Extrapolation.CLAMP)
+  }))
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y
@@ -91,12 +107,12 @@ const SearchExploreContent = () => {
 
       // Handle filter animation
       if (y > FILTER_SCROLL_THRESHOLD && scrollDirection.value === 'down') {
-        filterTranslateY.value = withTiming(-spacing['4xl'])
+        filterTranslateY.value = withTiming(-spacing['4xl'], motion.calm)
       } else if (
         y < FILTER_SCROLL_THRESHOLD ||
         scrollDirection.value === 'up'
       ) {
-        filterTranslateY.value = withTiming(0)
+        filterTranslateY.value = withTiming(0, motion.calm)
       }
     }
   })
@@ -108,11 +124,14 @@ const SearchExploreContent = () => {
         scrollY={scrollY}
         filterTranslateY={filterTranslateY}
         scrollRef={scrollRef}
+        inputValue={inputValue}
+        onInputValueChange={setInputValue}
       />
 
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
+        style={[contentPaddingStyle]}
         showsVerticalScrollIndicator={false}
       >
         {showSearch && (query || hasAnyFilter) ? (

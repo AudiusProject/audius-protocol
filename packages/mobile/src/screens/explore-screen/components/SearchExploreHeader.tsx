@@ -51,11 +51,19 @@ type SearchExploreHeaderProps = {
   filterTranslateY: SharedValue<number>
   scrollY: SharedValue<number>
   scrollRef: React.RefObject<ScrollView>
+  inputValue: string
+  onInputValueChange: (value: string) => void
 }
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
-  const { filterTranslateY, scrollY, scrollRef } = props
-  const { spacing, color } = useTheme()
+  const {
+    filterTranslateY,
+    scrollY,
+    scrollRef,
+    inputValue,
+    onInputValueChange
+  } = props
+  const { spacing, color, motion } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
@@ -63,10 +71,6 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
 
   // Get state from context
   const [query, setQuery] = useSearchQuery()
-  const [inputValue, setInputValue] = useState(query)
-  useEffect(() => {
-    setInputValue(query)
-  }, [query])
 
   // Handle keyboard dismiss
   useEffect(() => {
@@ -107,21 +111,21 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   }, [drawerHelpers])
 
   const handleClearSearch = useCallback(() => {
-    setInputValue('')
+    onInputValueChange('')
     scrollRef.current?.scrollTo({
       y: 0,
       animated: false
     })
-  }, [setInputValue, scrollRef])
+  }, [onInputValueChange, scrollRef])
 
   const handleSearchInputChange = useCallback(
     (text: string) => {
-      setInputValue(text)
+      onInputValueChange(text)
       if (text === '') {
         scrollRef.current?.scrollTo?.({ y: 0, animated: false })
       }
     },
-    [scrollRef]
+    [onInputValueChange, scrollRef]
   )
 
   // Immediate update for first character
@@ -149,39 +153,34 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Height shrinks to collapse rows for avatar + input
   const headerTextAnimatedStyle = useAnimatedStyle(() => ({
     opacity: inputValue
-      ? withTiming(0)
+      ? withTiming(0, motion.calm)
       : scrollY.value === 0
-        ? withTiming(1)
+        ? withTiming(1, motion.calm)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
             [1, 0],
             Extrapolation.CLAMP
           ),
-    transform: [
-      {
-        translateY: inputValue
-          ? withTiming(-1)
-          : scrollY.value === 0
-            ? withTiming(0)
-            : interpolate(
-                scrollY.value,
-                [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
-                [0, -HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              )
-      }
-    ],
-    display: scrollY.value > HEADER_SLIDE_HEIGHT || inputValue ? 'none' : 'flex'
+    height: inputValue
+      ? withTiming(0, motion.calm)
+      : scrollY.value === 0
+        ? withTiming(48, motion.calm)
+        : interpolate(
+            scrollY.value,
+            [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
+            [48, 0],
+            Extrapolation.CLAMP
+          )
   }))
 
   const inputAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
         scale: inputValue
-          ? withTiming(0.83)
+          ? withTiming(0.83, motion.calm)
           : scrollY.value === 0
-            ? withTiming(1)
+            ? withTiming(1, motion.calm)
             : interpolate(
                 scrollY.value,
                 [0, HEADER_COLLAPSE_THRESHOLD],
@@ -191,7 +190,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
       },
       {
         translateX: inputValue
-          ? withTiming(30)
+          ? withTiming(30, motion.calm)
           : scrollY.value === 0
             ? withTiming(0)
             : interpolate(
@@ -207,9 +206,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Header slides up to collapse
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
     marginTop: inputValue
-      ? withTiming(-HEADER_SLIDE_HEIGHT)
+      ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
       : scrollY.value === 0
-        ? withTiming(0)
+        ? withTiming(0, motion.calm)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -224,9 +223,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     transform: [
       {
         translateY: inputValue
-          ? withTiming(HEADER_SLIDE_HEIGHT)
+          ? withTiming(HEADER_SLIDE_HEIGHT, motion.calm)
           : scrollY.value === 0
-            ? withTiming(0)
+            ? withTiming(0, motion.calm)
             : interpolate(
                 scrollY.value,
                 [0, HEADER_COLLAPSE_THRESHOLD],
@@ -240,9 +239,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   // Header padding and gap shrink when collapsing
   const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
     paddingVertical: inputValue
-      ? withTiming(spacing.s)
+      ? withTiming(spacing.s, motion.calm)
       : scrollY.value === 0
-        ? withTiming(spacing.l)
+        ? withTiming(spacing.l, motion.calm)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -250,9 +249,9 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             Extrapolation.CLAMP
           ),
     gap: inputValue
-      ? withTiming(0)
+      ? withTiming(0, motion.calm)
       : scrollY.value === 0
-        ? withTiming(spacing.l)
+        ? withTiming(spacing.l, motion.calm)
         : interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -266,11 +265,11 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     marginTop:
       scrollY.value === 0 || inputValue
-        ? withTiming(0)
+        ? withTiming(0, motion.calm)
         : filterTranslateY.value,
     backgroundColor:
       scrollY.value === 0
-        ? withTiming('transparent')
+        ? withTiming('transparent', motion.calm)
         : interpolateColor(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
@@ -278,7 +277,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
           ),
     borderColor:
       scrollY.value === 0
-        ? withTiming('transparent')
+        ? withTiming('transparent', motion.calm)
         : interpolateColor(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD],
