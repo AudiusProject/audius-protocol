@@ -30,6 +30,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
     label,
     size = 'small',
     isSelected: isSelectedProp,
+    isControlled,
     disabled,
     onPress,
     onChange,
@@ -77,12 +78,13 @@ export const SelectablePill = (props: SelectablePillProps) => {
       if (value) {
         onChange?.(value, !isSelected)
       }
-      setIsSelected(!isSelected)
-      if (isSelected) {
-        // avoids flashing purple when deselecting
-        selected.value = disableUnselectAnimation
-          ? 0
-          : withTiming(0, motion.press)
+      if (!isControlled) {
+        setIsSelected(!isSelected)
+        if (isSelected) {
+          selected.value = disableUnselectAnimation
+            ? 0
+            : withTiming(0, motion.press)
+        }
       }
     },
     [
@@ -93,7 +95,8 @@ export const SelectablePill = (props: SelectablePillProps) => {
       onChange,
       selected,
       disableUnselectAnimation,
-      motion.press
+      motion.press,
+      isControlled
     ]
   )
 
