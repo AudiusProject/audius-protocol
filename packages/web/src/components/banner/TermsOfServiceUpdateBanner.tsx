@@ -11,10 +11,10 @@ import { CallToActionBanner } from './CallToActionBanner'
 const { PRIVACY_POLICY } = route
 
 const messages = {
-  text: 'We’ve updated our Privacy Policy. By continuing to use the Audius Service, you agree to our updated Privacy Policy'
+  text: 'We’ve updated our Terms of Service. By continuing to use Audius, you agree to our updated Terms of Service'
 }
 
-const TOS_BANNER_LOCAL_STORAGE_KEY = 'dismissPrivacyPolicyBanner1.10.25'
+const TOS_BANNER_LOCAL_STORAGE_KEY = 'dismissTermsOfServiceBanner6.24.25'
 
 /**
  * Displays a CTA Banner announcing ToS Updates
