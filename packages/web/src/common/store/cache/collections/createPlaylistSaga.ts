@@ -15,7 +15,6 @@ import {
   Name,
   Kind,
   CollectionMetadata,
-  Collection,
   ID,
   Track
 } from '@audius/common/models'
