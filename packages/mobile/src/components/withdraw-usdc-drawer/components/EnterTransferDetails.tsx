@@ -51,8 +51,8 @@ export const EnterTransferDetails = ({
   }, [balanceNumberCents, setAmount])
 
   const handleAmountFocus = useCallback(() => {
-    // Clear the field if it contains the default value (string or number)
-    if (amountValue === '0.00' || amountValue === 0 || amountValue === '0') {
+    // Clear the field if it contains the default value
+    if (amountValue === '0.00' || amountValue === '0') {
       setAmount('')
     }
   }, [amountValue, setAmount])
