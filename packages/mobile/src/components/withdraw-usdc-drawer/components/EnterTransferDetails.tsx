@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -33,10 +33,12 @@ import { AMOUNT, METHOD, ADDRESS } from '../types'
 
 export const EnterTransferDetails = ({
   scrollViewRef,
-  balanceNumberCents
+  balanceNumberCents,
+  scrollPendingRef
 }: {
   scrollViewRef: RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
+  scrollPendingRef?: React.MutableRefObject<boolean>
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { color } = useTheme()
@@ -55,19 +57,22 @@ export const EnterTransferDetails = ({
   )
 
   const ThemedBottomSheetTextInput = useCallback(
-    (props: any) => (
-      <BottomSheetTextInput
-        {...props}
-        style={[
-          props.style,
-          {
-            color: color.text.default,
-            backgroundColor: color.background.surface1
-          }
-        ]}
-        placeholderTextColor={color.text.subdued}
-      />
-    ),
+    React.forwardRef<any, any>((props, ref) => {
+      return (
+        <BottomSheetTextInput
+          {...props}
+          ref={ref}
+          style={[
+            props.style,
+            {
+              color: color.text.default,
+              backgroundColor: color.background.surface1
+            }
+          ]}
+          placeholderTextColor={color.text.subdued}
+        />
+      )
+    }),
     [color]
   )
 
@@ -103,16 +108,6 @@ export const EnterTransferDetails = ({
     setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
     setAmount(balanceNumberCents)
   }, [balanceNumberCents, setAmount])
-
-  // Scroll to show the continue button when crypto option is selected
-  useEffect(() => {
-    if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
-      // Delay to ensure the destination field has rendered
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-      }, 100)
-    }
-  }, [methodValue, scrollViewRef])
 
   return (
     <Flex gap='xl'>
@@ -195,6 +190,15 @@ export const EnterTransferDetails = ({
             label={walletMessages.destination}
             placeholder={walletMessages.destination}
             name={ADDRESS}
+            TextInputComponent={ThemedBottomSheetTextInput as any}
+            keyboardType='default'
+            autoCapitalize='none'
+            autoCorrect={false}
+            onFocus={() => {
+              if (scrollPendingRef) {
+                scrollPendingRef.current = true
+              }
+            }}
             noGutter
             errorBeforeSubmit
             required

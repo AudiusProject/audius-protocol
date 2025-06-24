@@ -64,6 +64,9 @@ const WithdrawUSDCForm = ({
   const { values } = useFormikContext<WithdrawFormValues>()
   const insets = useSafeAreaInsets()
 
+  // Track if we need to scroll when content size becomes available
+  const scrollPendingRef = useRef(false)
+
   let formPage
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
@@ -71,6 +74,7 @@ const WithdrawUSDCForm = ({
         <EnterTransferDetails
           scrollViewRef={scrollViewRef}
           balanceNumberCents={balanceNumberCents}
+          scrollPendingRef={scrollPendingRef}
         />
       )
       break
@@ -99,6 +103,7 @@ const WithdrawUSDCForm = ({
         <EnterTransferDetails
           scrollViewRef={scrollViewRef}
           balanceNumberCents={balanceNumberCents}
+          scrollPendingRef={scrollPendingRef}
         />
       )
       break
@@ -114,6 +119,17 @@ const WithdrawUSDCForm = ({
       }}
       keyboardShouldPersistTaps='handled'
       showsVerticalScrollIndicator={false}
+      onContentSizeChange={(contentWidth, contentHeight) => {
+        // Simple approach: just ensure content is scrollable when manual transfer is active
+        // This enables manual scrolling which is what the user actually needs
+        if (
+          values.method === WithdrawMethod.MANUAL_TRANSFER &&
+          contentHeight > 600 &&
+          scrollPendingRef.current
+        ) {
+          scrollPendingRef.current = false
+        }
+      }}
     >
       <Flex gap='xl' pb='xl' ph='l'>
         <Flex gap='l'>
