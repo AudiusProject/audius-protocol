@@ -38,6 +38,7 @@ import {
   CONFIRM,
   type WithdrawFormValues
 } from './types'
+import { filterDecimalString } from '@audius/common/utils'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
@@ -175,9 +176,12 @@ export const WithdrawUSDCDrawer = () => {
 
   const handleSubmit = useCallback(
     ({ amount, method, address }: WithdrawFormValues) => {
+      // On mobile, amount is always a string from text input
+      const amountInCents = filterDecimalString(amount as string).value
+
       dispatch(
         beginWithdrawUSDC({
-          amount,
+          amount: amountInCents,
           method,
           currentBalance: balanceNumberCents,
           destinationAddress: address ?? ''
@@ -210,7 +214,7 @@ export const WithdrawUSDCDrawer = () => {
       <Formik
         innerRef={formRef}
         initialValues={{
-          [AMOUNT]: 0,
+          [AMOUNT]: '0.00',
           [METHOD]: isCoinflowEnabled
             ? WithdrawMethod.COINFLOW
             : WithdrawMethod.MANUAL_TRANSFER,

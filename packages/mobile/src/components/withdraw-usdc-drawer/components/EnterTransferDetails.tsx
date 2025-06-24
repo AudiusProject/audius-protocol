@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -6,11 +6,7 @@ import {
   useWithdrawUSDCModal,
   WithdrawMethod
 } from '@audius/common/store'
-import {
-  filterDecimalString,
-  decimalIntegerToHumanReadable,
-  padDecimalValue
-} from '@audius/common/utils'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
 import { useField, useFormikContext } from 'formik'
 
@@ -38,9 +34,6 @@ export const EnterTransferDetails = ({
   const { setData } = useWithdrawUSDCModal()
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
-  const [humanizedValue, setHumanizedValue] = useState(
-    decimalIntegerToHumanReadable(amountValue)
-  )
 
   const onContinuePress = useCallback(async () => {
     setAmountTouched(true)
@@ -52,28 +45,17 @@ export const EnterTransferDetails = ({
     setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
   }, [validateForm, setData, setAmountTouched, setAddressTouched, methodValue])
 
-  const handleAmountChange = useCallback(
-    (text: string) => {
-      const { human, value } = filterDecimalString(text)
-      setHumanizedValue(human)
-      setAmount(value)
-      setAmountTouched(true)
-    },
-    [setAmount, setAmountTouched]
-  )
-
-  const handleAmountBlur = useCallback(
-    (text: string) => {
-      setHumanizedValue(padDecimalValue(text))
-      setAmountTouched(true)
-    },
-    [setHumanizedValue, setAmountTouched]
-  )
-
   const handleMaxPress = useCallback(() => {
-    setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
-    setAmount(balanceNumberCents)
+    const maxHumanized = decimalIntegerToHumanReadable(balanceNumberCents)
+    setAmount(maxHumanized)
   }, [balanceNumberCents, setAmount])
+
+  const handleAmountFocus = useCallback(() => {
+    // Clear the field if it contains the default value (string or number)
+    if (amountValue === '0.00' || amountValue === 0 || amountValue === '0') {
+      setAmount('')
+    }
+  }, [amountValue, setAmount])
 
   return (
     <Flex gap='xl'>
@@ -91,18 +73,16 @@ export const EnterTransferDetails = ({
             <Flex style={{ flex: 1 }}>
               <TextField
                 label={walletMessages.amountToWithdrawLabel}
-                placeholder={walletMessages.amountToWithdrawLabel}
+                placeholder='0.00'
                 keyboardType='numeric'
                 name={AMOUNT}
-                onChangeText={handleAmountChange}
-                value={humanizedValue}
-                onBlur={() => handleAmountBlur(humanizedValue)}
                 startAdornmentText={walletMessages.dollarSign}
                 TextInputComponent={BottomSheetTextInput as any}
                 noGutter
                 errorBeforeSubmit
                 required
                 shouldShowError={false}
+                onFocus={handleAmountFocus}
               />
             </Flex>
             <Button

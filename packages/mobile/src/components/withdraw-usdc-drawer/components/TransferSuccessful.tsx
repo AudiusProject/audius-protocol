@@ -2,10 +2,7 @@ import React from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import { withdrawUSDCSelectors } from '@audius/common/store'
-import {
-  decimalIntegerToHumanReadable,
-  makeSolanaTransactionLink
-} from '@audius/common/utils'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
@@ -47,7 +44,7 @@ export const TransferSuccessful = ({ onDone }: TransferSuccessfulProps) => {
           {walletMessages.amountWithdrawn}
         </Text>
         <Text variant='heading' size='s'>
-          -${decimalIntegerToHumanReadable(amountValue)}
+          -${amountValue}
         </Text>
       </Flex>
 

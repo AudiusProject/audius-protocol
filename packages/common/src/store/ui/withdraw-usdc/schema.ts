@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { walletMessages } from '../../../messages'
 import { SolanaWalletAddress } from '../../../models'
+import { filterDecimalString } from '../../../utils'
 import { isValidSolAddress } from '../../wallet/utils'
 
 import { WithdrawMethod } from './types'
@@ -14,7 +15,7 @@ export const METHOD = 'method' as const
 const MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS = 1
 
 export type WithdrawUSDCFormValues = {
-  [AMOUNT]: number
+  [AMOUNT]: number | string
   [ADDRESS]: string
   [METHOD]: WithdrawMethod
   [CONFIRM]?: boolean
@@ -32,25 +33,34 @@ export const createWithdrawUSDCFormSchema = (
   userBalanceCents: number,
   minWithdrawBalanceCents: number
 ) => {
-  const baseAmount = z
-    .number()
-    .lte(userBalanceCents, walletMessages.errors.insufficientBalanceDetails)
+  // Create a unified amount parser that handles both strings and numbers
+  const amountSchema = z.union([z.string(), z.number()]).transform((val) => {
+    if (typeof val === 'string') {
+      // Convert string (e.g., "5.50") to cents (e.g., 550)
+      return filterDecimalString(val).value
+    }
+    // If it's already a number, assume it's in cents
+    return val
+  })
+
+  const baseAmount = amountSchema.refine((val) => val <= userBalanceCents, {
+    message: walletMessages.errors.insufficientBalanceDetails
+  })
 
   const coinflowAmount =
     userBalanceCents !== 0
-      ? baseAmount.gte(
-          minWithdrawBalanceCents,
-          walletMessages.errors.minCashTransfer
-        )
-      : z.number()
+      ? baseAmount.refine((val) => val >= minWithdrawBalanceCents, {
+          message: walletMessages.errors.minCashTransfer
+        })
+      : amountSchema
 
   const manualAmount =
     userBalanceCents !== 0
-      ? baseAmount.gte(
-          MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS,
-          walletMessages.errors.amountTooLow
+      ? baseAmount.refine(
+          (val) => val >= MINIMUM_MANUAL_TRANSFER_AMOUNT_CENTS,
+          { message: walletMessages.errors.amountTooLow }
         )
-      : z.number()
+      : amountSchema
 
   const coinflowSchema: any = {
     [METHOD]: z.literal(WithdrawMethod.COINFLOW),

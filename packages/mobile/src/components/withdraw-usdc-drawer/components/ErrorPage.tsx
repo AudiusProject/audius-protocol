@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { walletMessages } from '@audius/common/messages'
-import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { useField } from 'formik'
 
 import {
@@ -38,7 +37,7 @@ export const ErrorPage = ({ onClose }: ErrorPageProps) => {
         <Text variant='heading' size='s'>
           {walletMessages.minus}
           {walletMessages.dollarSign}
-          {decimalIntegerToHumanReadable(amountValue)}
+          {amountValue}
         </Text>
       </Flex>
 

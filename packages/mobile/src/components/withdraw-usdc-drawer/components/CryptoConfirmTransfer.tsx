@@ -5,7 +5,6 @@ import {
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages
 } from '@audius/common/store'
-import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useFormikContext, useField } from 'formik'
 
@@ -42,7 +41,7 @@ export const CryptoConfirmTransfer = () => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
-          {walletMessages.minus}${decimalIntegerToHumanReadable(amountValue)}
+          {walletMessages.minus}${amountValue}
         </Text>
       </Flex>
 
