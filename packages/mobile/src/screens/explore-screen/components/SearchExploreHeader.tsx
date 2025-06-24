@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
