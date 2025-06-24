@@ -115,11 +115,11 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     setIsRetrying(true)
     performSwap()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactionData, currentScreen])
+  }, [transactionData, currentScreen, activeTab])
 
   useEffect(() => {
     // Only process if we have new data (avoid processing the same result multiple times)
-    if (swapData === lastSwapDataRef.current && swapStatus !== 'error') {
+    if (swapData === lastSwapDataRef.current) {
       return
     }
     lastSwapDataRef.current = swapData
@@ -149,13 +149,21 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
         } else {
           resetAndReturnToInput()
         }
-      }
-    } else if (swapStatus === 'error' && isRetrying) {
-      // Network/API error, handle retry
-      if (retryCount < MAX_RETRIES) {
-        setRetryCount((prev) => prev + 1)
-        scheduleRetry()
       } else {
+        // Swap failed but not retrying - return to input screen (fallback)
+        resetAndReturnToInput()
+      }
+    } else if (swapStatus === 'error') {
+      if (isRetrying) {
+        // Network/API error, handle retry
+        if (retryCount < MAX_RETRIES) {
+          setRetryCount((prev) => prev + 1)
+          scheduleRetry()
+        } else {
+          resetAndReturnToInput()
+        }
+      } else {
+        // Network/API error but not retrying - return to input screen (fallback)
         resetAndReturnToInput()
       }
     }
