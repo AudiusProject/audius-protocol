@@ -9,6 +9,7 @@ import { User } from '~/models/User'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, SelectableQueryOptions } from '../types'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { primeUserData } from '../utils/primeUserData'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
@@ -56,6 +57,7 @@ export const useUserByHandle = <TResult = User>(
         currentUserId
       ),
     ...(omit(options, 'select') as QueryOptions),
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && !!handle
   })
 

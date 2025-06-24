@@ -13,6 +13,7 @@ import { ID } from '~/models'
 import { useCollections } from '../collection/useCollections'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
@@ -77,6 +78,7 @@ export const useUserAlbums = (
     },
     select: (data) => data.pages.flat(),
     ...options,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && !!userId
   })
 
