@@ -636,12 +636,11 @@ class ProfilePageClassComponent extends PureComponent<
     const {
       didChangeTabsFrom,
       profile: { profile },
-      accountHasTracks
+      isArtist
     } = this.props
     if (profile) {
       let tab = `/${currLabel.toLowerCase()}`
-      const isOwner = this.getIsOwner()
-      if (profile.track_count > 0 || (isOwner && accountHasTracks)) {
+      if (isArtist) {
         // An artist, default route is tracks
         if (currLabel === ProfilePageTabs.TRACKS) {
           tab = ''
@@ -671,7 +670,7 @@ class ProfilePageClassComponent extends PureComponent<
   }
 
   getIsArtist = () => {
-    return this.props.isArtist
+    return this.props.isArtist ?? false
   }
 
   getIsOwner = (overrideProps?: ProfilePageProps) => {
@@ -1125,7 +1124,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 
 type HookStateProps = {
   accountUserId?: ID | undefined
-  isArtist?: boolean | undefined
+  isArtist?: boolean
   chatPermissions?: ReturnType<typeof useCanCreateChat>
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
