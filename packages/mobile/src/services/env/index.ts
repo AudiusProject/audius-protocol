@@ -5,7 +5,7 @@ import { env as envDev } from './env.dev'
 import { env as envProd } from './env.prod'
 import { env as envStage } from './env.stage'
 
-const environment = 'staging' // Config.ENVIRONMENT
+const environment = Config.ENVIRONMENT
 
 let env: Env
 
