@@ -33,12 +33,10 @@ import { AMOUNT, METHOD, ADDRESS } from '../types'
 
 export const EnterTransferDetails = ({
   scrollViewRef,
-  balanceNumberCents,
-  scrollPendingRef
+  balanceNumberCents
 }: {
   scrollViewRef: RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
-  scrollPendingRef?: React.MutableRefObject<boolean>
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
   const { color } = useTheme()
@@ -194,11 +192,6 @@ export const EnterTransferDetails = ({
             keyboardType='default'
             autoCapitalize='none'
             autoCorrect={false}
-            onFocus={() => {
-              if (scrollPendingRef) {
-                scrollPendingRef.current = true
-              }
-            }}
             noGutter
             errorBeforeSubmit
             required
