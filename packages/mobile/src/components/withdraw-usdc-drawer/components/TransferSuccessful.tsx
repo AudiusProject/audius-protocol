@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { walletMessages } from '@audius/common/messages'
 import { withdrawUSDCSelectors } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
@@ -44,7 +42,9 @@ export const TransferSuccessful = ({ onDone }: TransferSuccessfulProps) => {
           {walletMessages.amountWithdrawn}
         </Text>
         <Text variant='heading' size='s'>
-          -${amountValue}
+          {walletMessages.minus}
+          {walletMessages.dollarSign}
+          {amountValue}
         </Text>
       </Flex>
 
