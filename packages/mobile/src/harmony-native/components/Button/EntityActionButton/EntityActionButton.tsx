@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
 import type { TextStyle } from 'react-native'
+import { Platform } from 'react-native'
 import {
   interpolateColor,
   useAnimatedProps,
@@ -102,10 +103,20 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
     animatedPropAdapter
   )
 
+  // Non-animated version for Android
+  const staticIconProps = {
+    fill: dynamicStyles.default.icon
+  }
+
   return (
     <BaseButton
       onPress={handlePress}
-      innerProps={{ icon: { animatedProps: animatedIconProps } }}
+      innerProps={{
+        icon:
+          Platform.OS === 'android'
+            ? staticIconProps
+            : { animatedProps: animatedIconProps }
+      }}
       style={[buttonStyles, animatedButtonStyles, style]}
       sharedValue={pressed}
       styles={{ text: [textStyles, animatedTextStyles] }}

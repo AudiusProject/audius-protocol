@@ -1,5 +1,6 @@
 import type { ReactNativeStyle } from '@emotion/native'
 import type { TextStyle } from 'react-native'
+import { Platform } from 'react-native'
 import {
   interpolate,
   interpolateColor,
@@ -110,6 +111,11 @@ export const PlainButton = (props: PlainButtonProps) => {
     animatedPropAdapter
   )
 
+  // Non-animated version for Android
+  const staticIconProps = {
+    fill: dynamicStyles.default.text
+  }
+
   const textCss: TextStyle = useAnimatedStyle(
     () => ({
       ...(isPressable && {
@@ -131,10 +137,16 @@ export const PlainButton = (props: PlainButtonProps) => {
       style={[buttonStyles, animatedButtonStyles]}
       styles={{ text: textCss, ...styles }}
       innerProps={{
-        icon: {
-          animatedProps: animatedIconProps,
-          size: size === 'large' ? 'm' : 's'
-        }
+        icon:
+          Platform.OS === 'android'
+            ? {
+                ...staticIconProps,
+                size: size === 'large' ? 'm' : 's'
+              }
+            : {
+                animatedProps: animatedIconProps,
+                size: size === 'large' ? 'm' : 's'
+              }
       }}
       {...baseProps}
     />
