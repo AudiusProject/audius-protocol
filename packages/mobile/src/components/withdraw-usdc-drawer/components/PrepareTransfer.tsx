@@ -6,8 +6,11 @@ import {
   useCoinflowWithdrawModal,
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  CoinflowWithdrawState
+  CoinflowWithdrawState,
+  AMOUNT,
+  type WithdrawUSDCFormValues as WithdrawFormValues
 } from '@audius/common/store'
+import { filterDecimalString } from '@audius/common/utils'
 import { useField } from 'formik'
 import { Image } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -15,24 +18,23 @@ import { useSelector } from 'react-redux'
 import { Flex, LoadingSpinner, spacing, Text } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/raised-hand.png'
 
-import type { WithdrawFormValues } from '../types'
-import { AMOUNT } from '../types'
-
 const { getCoinflowState } = withdrawUSDCSelectors
 
 export const PrepareTransfer = () => {
   const coinflowState = useSelector(getCoinflowState)
   const { onOpen } = useCoinflowWithdrawModal()
   const { setData } = useWithdrawUSDCModal()
-  const [{ value: amountCents }] =
+  const [{ value: amountValue }] =
     useField<WithdrawFormValues[typeof AMOUNT]>(AMOUNT)
 
   useEffect(() => {
     if (coinflowState === CoinflowWithdrawState.READY_FOR_WITHDRAWAL) {
       setData({ page: WithdrawUSDCModalPages.COINFLOW_TRANSFER })
+      // Convert string amount to cents, then to dollars for Coinflow
+      const amountCents = filterDecimalString(amountValue as string).value
       onOpen({ amount: amountCents / 100.0 })
     }
-  }, [coinflowState, setData, onOpen, amountCents])
+  }, [coinflowState, setData, onOpen, amountValue])
 
   return (
     <Flex gap='xl' alignItems='center' justifyContent='center' p='xl'>

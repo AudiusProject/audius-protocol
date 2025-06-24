@@ -1,19 +1,17 @@
-import type { RefObject } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
 import {
   WithdrawUSDCModalPages,
   useWithdrawUSDCModal,
-  WithdrawMethod
+  WithdrawMethod,
+  AMOUNT,
+  METHOD,
+  ADDRESS,
+  type WithdrawUSDCFormValues as WithdrawFormValues
 } from '@audius/common/store'
-import {
-  filterDecimalString,
-  decimalIntegerToHumanReadable,
-  padDecimalValue
-} from '@audius/common/utils'
+import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet'
-import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useField, useFormikContext } from 'formik'
 
 import { Button, Flex, Text, Divider, spacing } from '@audius/harmony-native'
@@ -21,14 +19,9 @@ import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceS
 import { SegmentedControl } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 
-import type { WithdrawFormValues } from '../types'
-import { AMOUNT, METHOD, ADDRESS } from '../types'
-
 export const EnterTransferDetails = ({
-  scrollViewRef,
   balanceNumberCents
 }: {
-  scrollViewRef: RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
 }) => {
   const { validateForm } = useFormikContext<WithdrawFormValues>()
@@ -42,9 +35,6 @@ export const EnterTransferDetails = ({
   const { setData } = useWithdrawUSDCModal()
   const [{ value: methodValue }, _ignoredMethodMeta, { setValue: setMethod }] =
     useField<WithdrawMethod>(METHOD)
-  const [humanizedValue, setHumanizedValue] = useState(
-    decimalIntegerToHumanReadable(amountValue)
-  )
 
   const onContinuePress = useCallback(async () => {
     setAmountTouched(true)
@@ -56,38 +46,17 @@ export const EnterTransferDetails = ({
     setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
   }, [validateForm, setData, setAmountTouched, setAddressTouched, methodValue])
 
-  const handleAmountChange = useCallback(
-    (text: string) => {
-      const { human, value } = filterDecimalString(text)
-      setHumanizedValue(human)
-      setAmount(value)
-      setAmountTouched(true)
-    },
-    [setAmount, setAmountTouched]
-  )
-
-  const handleAmountBlur = useCallback(
-    (text: string) => {
-      setHumanizedValue(padDecimalValue(text))
-      setAmountTouched(true)
-    },
-    [setHumanizedValue, setAmountTouched]
-  )
-
   const handleMaxPress = useCallback(() => {
-    setHumanizedValue(decimalIntegerToHumanReadable(balanceNumberCents))
-    setAmount(balanceNumberCents)
+    const maxHumanized = decimalIntegerToHumanReadable(balanceNumberCents)
+    setAmount(maxHumanized)
   }, [balanceNumberCents, setAmount])
 
-  // Scroll to show the continue button when crypto option is selected
-  useEffect(() => {
-    if (methodValue === WithdrawMethod.MANUAL_TRANSFER) {
-      // Delay to ensure the destination field has rendered
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-      }, 100)
+  const handleAmountFocus = useCallback(() => {
+    // Clear the field if it contains the default value
+    if (amountValue === '0.00' || amountValue === '0') {
+      setAmount('')
     }
-  }, [methodValue, scrollViewRef])
+  }, [amountValue, setAmount])
 
   return (
     <Flex gap='xl'>
@@ -105,18 +74,16 @@ export const EnterTransferDetails = ({
             <Flex style={{ flex: 1 }}>
               <TextField
                 label={walletMessages.amountToWithdrawLabel}
-                placeholder={walletMessages.amountToWithdrawLabel}
+                placeholder='0.00'
                 keyboardType='numeric'
                 name={AMOUNT}
-                onChangeText={handleAmountChange}
-                value={humanizedValue}
-                onBlur={() => handleAmountBlur(humanizedValue)}
                 startAdornmentText={walletMessages.dollarSign}
                 TextInputComponent={BottomSheetTextInput as any}
                 noGutter
                 errorBeforeSubmit
                 required
                 shouldShowError={false}
+                onFocus={handleAmountFocus}
               />
             </Flex>
             <Button
@@ -170,6 +137,10 @@ export const EnterTransferDetails = ({
             label={walletMessages.destination}
             placeholder={walletMessages.destination}
             name={ADDRESS}
+            TextInputComponent={BottomSheetTextInput as any}
+            keyboardType='default'
+            autoCapitalize='none'
+            autoCorrect={false}
             noGutter
             errorBeforeSubmit
             required

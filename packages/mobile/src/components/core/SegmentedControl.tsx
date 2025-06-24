@@ -81,7 +81,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     top: 3,
     bottom: 3,
     borderRadius: 4,
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
     shadowOpacity: 0.1,
     shadowOffset: {
       width: 0,

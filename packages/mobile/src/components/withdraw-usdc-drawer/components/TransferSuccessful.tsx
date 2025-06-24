@@ -1,11 +1,11 @@
-import React from 'react'
-
 import { walletMessages } from '@audius/common/messages'
-import { withdrawUSDCSelectors } from '@audius/common/store'
 import {
-  decimalIntegerToHumanReadable,
-  makeSolanaTransactionLink
-} from '@audius/common/utils'
+  withdrawUSDCSelectors,
+  ADDRESS,
+  AMOUNT,
+  type WithdrawUSDCFormValues as WithdrawFormValues
+} from '@audius/common/store'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
@@ -19,9 +19,6 @@ import {
 } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { ExternalLink } from 'app/harmony-native/components/TextLink/ExternalLink'
-
-import type { WithdrawFormValues } from '../types'
-import { ADDRESS, AMOUNT } from '../types'
 
 const { getWithdrawTransaction } = withdrawUSDCSelectors
 
@@ -47,7 +44,9 @@ export const TransferSuccessful = ({ onDone }: TransferSuccessfulProps) => {
           {walletMessages.amountWithdrawn}
         </Text>
         <Text variant='heading' size='s'>
-          -${decimalIntegerToHumanReadable(amountValue)}
+          {walletMessages.minus}
+          {walletMessages.dollarSign}
+          {amountValue}
         </Text>
       </Flex>
 

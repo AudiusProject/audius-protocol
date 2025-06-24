@@ -1,7 +1,11 @@
 import React from 'react'
 
 import { walletMessages } from '@audius/common/messages'
-import { decimalIntegerToHumanReadable } from '@audius/common/utils'
+import {
+  ADDRESS,
+  AMOUNT,
+  type WithdrawUSDCFormValues as WithdrawFormValues
+} from '@audius/common/store'
 import { useField } from 'formik'
 
 import {
@@ -12,9 +16,6 @@ import {
   Text
 } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
-
-import type { WithdrawFormValues } from '../types'
-import { ADDRESS, AMOUNT } from '../types'
 
 type ErrorPageProps = {
   onClose: () => void
@@ -38,7 +39,7 @@ export const ErrorPage = ({ onClose }: ErrorPageProps) => {
         <Text variant='heading' size='s'>
           {walletMessages.minus}
           {walletMessages.dollarSign}
-          {decimalIntegerToHumanReadable(amountValue)}
+          {amountValue}
         </Text>
       </Flex>
 
