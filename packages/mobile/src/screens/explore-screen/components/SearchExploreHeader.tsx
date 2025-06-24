@@ -326,7 +326,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             <AnimatedText
               variant='title'
               color='staticWhite'
-              style={headerTextAnimatedStyle}
+              style={[headerTextAnimatedStyle, { zIndex: -1 }]}
             >
               {messages.description}
             </AnimatedText>
