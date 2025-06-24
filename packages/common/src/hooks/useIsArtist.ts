@@ -1,8 +1,10 @@
 import { useEffect } from 'react'
 
-import { useCurrentAccountUser, useProfileUser } from '@audius/common/api'
-import { accountActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
+
+import { useCurrentAccount } from '~/api/tan-query/users/account/useCurrentAccount'
+import { useProfileUser } from '~/api/tan-query/users/useProfileUser'
+import { accountActions } from '~/store/account'
 
 const { fetchHasTracks } = accountActions
 
@@ -14,13 +16,11 @@ export const useIsArtist = () => {
         track_count: user.track_count
       })
     }).user ?? {}
-  const { data: accountData } = useCurrentAccountUser({
-    select: (user) => ({
-      userId: user?.user_id,
-      hasTracks: (user?.track_count ?? 0) > 0
-    })
-  })
-  const { userId: currentUserId, hasTracks } = accountData ?? {}
+
+  const { data: account } = useCurrentAccount()
+  const currentUserId = account?.userId
+  const hasTracks = account?.hasTracks
+
   const dispatch = useDispatch()
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export const useIsArtist = () => {
     }
   }, [hasTracks, currentUserId, user_id, dispatch])
 
-  return (
+  return Boolean(
     (user_id === currentUserId && hasTracks) || (track_count && track_count > 0)
   )
 }
