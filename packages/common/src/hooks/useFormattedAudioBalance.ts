@@ -4,11 +4,7 @@ import { AUDIO } from '@audius/fixed-decimal'
 
 import { useAudioBalance, useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
-import {
-  formatNumberCommas,
-  getCurrencyDecimalPlaces,
-  isNullOrUndefined
-} from '../utils'
+import { getCurrencyDecimalPlaces, isNullOrUndefined } from '../utils'
 
 // AUDIO token address from Jupiter
 const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
@@ -23,7 +19,9 @@ type UseFormattedAudioBalanceReturn = {
 }
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
-  const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
+  // const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
+  const isAudioBalanceLoading = false
+  const totalBalance = BigInt(1238359190040000000000)
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
@@ -36,11 +34,9 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   }, [audioPrice])
 
   const audioBalanceFormatted = hasFetchedAudioBalance
-    ? formatNumberCommas(
-        AUDIO(totalBalance).toLocaleString('en-US', {
-          maximumFractionDigits: decimalPlaces
-        })
-      )
+    ? AUDIO(totalBalance).toLocaleString('en-US', {
+        maximumFractionDigits: decimalPlaces
+      })
     : null
 
   // Calculate dollar value of user's AUDIO balance
