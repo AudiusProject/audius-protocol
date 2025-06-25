@@ -143,26 +143,30 @@ export const getHasUnreadMessages = (state: CommonState) => {
  * Note that this only takes the first user of each chat that doesn't match the current one,
  * so this will need to be adjusted when we do group chats.
  **/
-export const getUserList = (currentUserId: ID | null | undefined) =>
-  createSelector(
-    [getChats, getHasMoreChats, getChatsStatus],
-    (chats, hasMore, chatsStatus) => {
-      const chatUserListIds = chats
-        .filter((c) => !c.is_blast)
-        .map(
-          (c) =>
-            (c as UserChat).chat_members
-              .filter((u) => HashId.parse(u.user_id) !== currentUserId)
-              .map((u) => HashId.parse(u.user_id))[0]
-        )
-        .filter(removeNullable)
-      return {
-        userIds: chatUserListIds,
-        hasMore,
-        loading: chatsStatus === Status.LOADING
-      }
+export const getUserList = createSelector(
+  [
+    getChats,
+    getHasMoreChats,
+    getChatsStatus,
+    (_: CommonState, currentUserId: ID | null | undefined) => currentUserId
+  ],
+  (chats, hasMore, chatsStatus, currentUserId) => {
+    const chatUserListIds = chats
+      .filter((c) => !c.is_blast)
+      .map(
+        (c) =>
+          (c as UserChat).chat_members
+            .filter((u) => HashId.parse(u.user_id) !== currentUserId)
+            .map((u) => HashId.parse(u.user_id))[0]
+      )
+      .filter(removeNullable)
+    return {
+      userIds: chatUserListIds,
+      hasMore,
+      loading: chatsStatus === Status.LOADING
     }
-  )
+  }
+)
 
 export const getChatMessageByIndex = (
   state: CommonState,
