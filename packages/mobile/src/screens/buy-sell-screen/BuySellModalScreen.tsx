@@ -23,7 +23,7 @@ export const BuySellModalScreen = () => {
       <BottomSheetModalProvider>
         <Stack.Navigator screenOptions={screenOptions}>
           <Stack.Screen
-            name='BuySellMain'
+            name='BuySell'
             component={BuySellScreen}
             initialParams={params}
           />

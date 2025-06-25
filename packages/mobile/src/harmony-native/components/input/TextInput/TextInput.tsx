@@ -7,12 +7,7 @@ import type {
   TextInputChangeEventData,
   TextInputFocusEventData
 } from 'react-native'
-import {
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput as RNTextInput
-} from 'react-native'
+import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import InsetShadow from 'react-native-inset-shadow'
 import Animated, {
@@ -92,8 +87,7 @@ export const TextInput = forwardRef(
 
     const innerInputRef = useRef<RNTextInput>(null)
 
-    const { typography, color, motion, cornerRadius, type, spacing } =
-      useTheme()
+    const { typography, color, motion, cornerRadius, type } = useTheme()
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
@@ -249,14 +243,14 @@ export const TextInput = forwardRef(
         >
           <GestureDetector gesture={tap}>
             <InsetShadow
-              containerStyle={StyleSheet.flatten([
+              containerStyle={[
                 css({
                   width: '100%',
-                  height: isSmall ? spacing['3xl'] : spacing['4xl'],
+                  height: isSmall ? 48 : 64,
                   borderRadius: cornerRadius.s
                 }),
                 inputStyle
-              ])}
+              ]}
               shadowOpacity={0.05}
               shadowColor='#000000'
               shadowRadius={4}

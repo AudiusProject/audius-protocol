@@ -25,7 +25,7 @@ export type TransactionResultScreenParams = {
 
 // This will be extended with the main app navigation types when integrated
 export type BuySellStackParamList = {
-  BuySellMain: BuySellScreenParams
+  BuySellScreen: BuySellScreenParams
   ConfirmSwapScreen: ConfirmSwapScreenParams
   TransactionResultScreen: TransactionResultScreenParams
 }
