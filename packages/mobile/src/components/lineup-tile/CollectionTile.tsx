@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { useCollection, useCurrentUserId, useUser } from '@audius/common/api'
+import { useGatedCollectionAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -89,6 +90,8 @@ export const CollectionTile = (props: CollectionTileProps) => {
       is_deactivated: user.is_deactivated
     })
   })
+
+  const { hasStreamAccess } = useGatedCollectionAccess(id)
 
   const currentTrack = useSelector((state: CommonState) => {
     const uid = getUid(state)
@@ -270,7 +273,7 @@ export const CollectionTile = (props: CollectionTileProps) => {
             collection.is_album ? PurchaseableContentType.ALBUM : undefined
           }
           streamConditions={collection.stream_conditions}
-          hasStreamAccess={true} // This should be determined by the hook
+          hasStreamAccess={hasStreamAccess}
           source={source}
           onPressOverflow={handlePressOverflow}
           onPressRepost={handlePressRepost}
