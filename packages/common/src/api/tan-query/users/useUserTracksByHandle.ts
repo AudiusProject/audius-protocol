@@ -9,6 +9,7 @@ import { QUERY_KEYS } from '../queryKeys'
 import { useTracks } from '../tracks/useTracks'
 import { QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { primeTrackData } from '../utils/primeTrackData'
 
 type GetTracksByUserHandleArgs = {
@@ -64,6 +65,7 @@ export const useUserTracksByHandle = (
       return tracks.map((track) => track.track_id)
     },
     ...options,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && !!handle
   })
 
