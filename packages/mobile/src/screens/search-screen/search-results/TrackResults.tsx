@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useSearchTrackResults } from '@audius/common/api'
 import type { ID } from '@audius/common/models'

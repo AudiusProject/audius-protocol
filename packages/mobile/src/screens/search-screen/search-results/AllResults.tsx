@@ -12,7 +12,6 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
 import { Flex, Paper, Text } from '@audius/harmony-native'
-import { SectionList } from 'app/components/core'
 import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
