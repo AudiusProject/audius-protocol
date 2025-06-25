@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
+import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
-import { Name } from '@audius/common/models'
 import type { BuySellTab } from '@audius/common/store'
 import {
   useBuySellScreen,
@@ -10,14 +10,14 @@ import {
   useBuySellTransactionData,
   useSwapDisplayData,
   SUPPORTED_TOKEN_PAIRS,
-  useAddCashModal
+  useAddCashModal,
+  getSwapTokens
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 
 import { Button, Flex, Hint, TextLink } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { make, track } from 'app/services/analytics'
 
 import { BuyScreen, SellScreen } from './components'
 
@@ -34,6 +34,7 @@ export const BuySellFlow = ({
 }: BuySellFlowProps) => {
   const navigation = useNavigation()
   const { onOpen: openAddCashModal } = useAddCashModal()
+  const { trackSwapRequested, trackAddFundsClicked } = useBuySellAnalytics()
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     initialScreen: 'input'
@@ -98,6 +99,20 @@ export const BuySellFlow = ({
   const [selectedPairIndex] = useState(0)
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
+  // Memoize swap tokens to avoid repeated calculations
+  const swapTokens = useMemo(() => 
+    getSwapTokens(activeTab, selectedPair), 
+    [activeTab, selectedPair]
+  )
+
+  // Memoize exchange rate calculation for current transaction
+  const currentExchangeRate = useMemo(() =>
+    transactionData?.outputAmount && transactionData?.inputAmount
+      ? transactionData.outputAmount / transactionData.inputAmount
+      : undefined,
+    [transactionData?.outputAmount, transactionData?.inputAmount]
+  )
+
   const { confirmationScreenData } = useSwapDisplayData({
     swapStatus: null, // Not needed in this component
     currentScreen,
@@ -115,6 +130,16 @@ export const BuySellFlow = ({
   const handleContinueClick = useCallback(() => {
     setHasAttemptedSubmit(true)
     if (transactionData?.isValid && !isContinueButtonLoading) {
+      // Track swap requested
+      trackSwapRequested({
+        activeTab,
+        inputToken: swapTokens.inputToken,
+        outputToken: swapTokens.outputToken,
+        inputAmount: transactionData.inputAmount,
+        outputAmount: transactionData.outputAmount,
+        exchangeRate: currentExchangeRate
+      })
+
       handleShowConfirmation()
 
       // Navigate to confirmation screen with the data
@@ -126,11 +151,15 @@ export const BuySellFlow = ({
     }
   }, [
     setHasAttemptedSubmit,
-    transactionData?.isValid,
     isContinueButtonLoading,
     handleShowConfirmation,
     confirmationScreenData,
-    navigation
+    navigation,
+    activeTab,
+    transactionData,
+    swapTokens,
+    currentExchangeRate,
+    trackSwapRequested
   ])
 
   useEffect(() => {
@@ -171,12 +200,8 @@ export const BuySellFlow = ({
 
   const handleAddCash = useCallback(() => {
     openAddCashModal()
-    track(
-      make({
-        eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
-      })
-    )
-  }, [openAddCashModal])
+    trackAddFundsClicked('insufficient_balance_hint')
+  }, [openAddCashModal, trackAddFundsClicked])
 
   const shouldShowError =
     !!displayErrorMessage ||

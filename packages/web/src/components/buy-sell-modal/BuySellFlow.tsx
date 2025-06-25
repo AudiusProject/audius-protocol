@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext, useMemo } from 'react'
 
+import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import {
   useBuySellScreen,
@@ -8,7 +9,8 @@ import {
   useBuySellTransactionData,
   useSwapDisplayData,
   BuySellTab,
-  Screen
+  Screen,
+  getSwapTokens
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
@@ -35,6 +37,12 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
   const { toast } = useContext(ToastContext)
+  const {
+    trackSwapRequested,
+    trackSwapSuccess,
+    trackSwapFailure,
+    trackAddFundsClicked
+  } = useBuySellAnalytics()
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
@@ -87,24 +95,66 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   // Track if user has attempted to submit the form
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
+  const [selectedPairIndex] = useState(0)
+  const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
+
+  // Memoize swap tokens to avoid repeated calculations
+  const swapTokens = useMemo(
+    () => getSwapTokens(activeTab, selectedPair),
+    [activeTab, selectedPair]
+  )
+
+  // Memoize exchange rate calculation for current transaction
+  const currentExchangeRate = useMemo(
+    () =>
+      transactionData?.outputAmount && transactionData?.inputAmount
+        ? transactionData.outputAmount / transactionData.inputAmount
+        : undefined,
+    [transactionData?.outputAmount, transactionData?.inputAmount]
+  )
+
   useEffect(() => {
     onLoadingStateChange?.(isConfirmButtonLoading)
   }, [isConfirmButtonLoading, onLoadingStateChange])
 
   useEffect(() => {
     if (swapStatus === 'error' && swapError) {
+      // Track swap failure
+      trackSwapFailure(
+        {
+          activeTab,
+          inputToken: swapTokens.inputToken,
+          outputToken: swapTokens.outputToken,
+          inputAmount: transactionData?.inputAmount,
+          outputAmount: transactionData?.outputAmount,
+          exchangeRate: currentExchangeRate
+        },
+        {
+          errorType: 'swap_error',
+          errorStage: 'transaction',
+          errorMessage: swapError?.message
+            ? swapError.message.substring(0, 500)
+            : 'Unknown error'
+        }
+      )
+
       toast(swapError.message ?? messages.transactionFailed, 5000)
     }
-  }, [swapStatus, swapError, toast])
-
-  const [selectedPairIndex] = useState(0)
+  }, [
+    swapStatus,
+    swapError,
+    toast,
+    activeTab,
+    transactionData,
+    swapTokens,
+    currentExchangeRate,
+    trackSwapFailure
+  ])
 
   const tabs = [
     { key: 'buy' as BuySellTab, text: messages.buy },
     { key: 'sell' as BuySellTab, text: messages.sell }
   ]
-
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
   const {
     successDisplayData,
@@ -119,9 +169,44 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     selectedPair
   })
 
+  // Track swap success when success screen is shown
+  useEffect(() => {
+    if (currentScreen === 'success' && successDisplayData && swapResult) {
+      trackSwapSuccess({
+        activeTab,
+        inputToken: swapTokens.inputToken,
+        outputToken: swapTokens.outputToken,
+        inputAmount: swapResult.inputAmount,
+        outputAmount: swapResult.outputAmount,
+        exchangeRate:
+          swapResult.outputAmount && swapResult.inputAmount
+            ? swapResult.outputAmount / swapResult.inputAmount
+            : undefined,
+        signature: swapResult.signature || ''
+      })
+    }
+  }, [
+    currentScreen,
+    successDisplayData,
+    swapResult,
+    activeTab,
+    swapTokens,
+    trackSwapSuccess
+  ])
+
   const handleContinueClick = () => {
     setHasAttemptedSubmit(true)
     if (transactionData?.isValid && !isContinueButtonLoading) {
+      // Track swap requested
+      trackSwapRequested({
+        activeTab,
+        inputToken: swapTokens.inputToken,
+        outputToken: swapTokens.outputToken,
+        inputAmount: transactionData.inputAmount,
+        outputAmount: transactionData.outputAmount,
+        exchangeRate: currentExchangeRate
+      })
+
       handleShowConfirmation()
     }
   }
@@ -208,6 +293,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
                 variant='visible'
                 href='#'
                 onClick={() => {
+                  trackAddFundsClicked('insufficient_balance_hint')
                   onClose()
                   openAddCashModal()
                 }}
@@ -247,6 +333,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             onBack={() => setCurrentScreen('input')}
             onConfirm={handleConfirmSwap}
             isConfirming={isConfirmButtonLoading}
+            activeTab={activeTab}
+            selectedPair={selectedPair}
           />
         ) : null}
       </Flex>

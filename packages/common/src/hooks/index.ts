@@ -46,3 +46,6 @@ export * from './useFormattedAudioBalance'
 export * from './useCurrentTrack'
 export * from './useDebounce'
 export * from './useIsArtist'
+
+export * from './useAnalytics'
+export * from './useBuySellAnalytics'

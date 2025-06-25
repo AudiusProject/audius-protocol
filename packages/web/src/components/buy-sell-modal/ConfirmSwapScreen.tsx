@@ -1,6 +1,9 @@
-import { formatUSDCValue } from '@audius/common/api'
+import { useMemo } from 'react'
+
+import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
+import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
-import { TokenInfo } from '@audius/common/store'
+import { TokenInfo, getSwapTokens, TokenPair } from '@audius/common/store'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
@@ -24,6 +27,8 @@ type ConfirmSwapScreenProps = {
   onBack: () => void
   onConfirm: () => void
   isConfirming: boolean
+  activeTab: 'buy' | 'sell'
+  selectedPair: TokenPair
 }
 
 export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
@@ -36,8 +41,24 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
     baseTokenSymbol,
     onBack,
     onConfirm,
-    isConfirming
+    isConfirming,
+    activeTab,
+    selectedPair
   } = props
+
+  const { trackSwapConfirmed } = useBuySellAnalytics()
+
+  // Memoize swap tokens to avoid repeated calculations
+  const swapTokens = useMemo(
+    () => getSwapTokens(activeTab, selectedPair),
+    [activeTab, selectedPair]
+  )
+
+  // Memoize exchange rate calculation
+  const exchangeRate = useMemo(
+    () => (receiveAmount && payAmount ? receiveAmount / payAmount : undefined),
+    [receiveAmount, payAmount]
+  )
 
   // balance isn't needed so we pass 0
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
@@ -56,6 +77,21 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
   const priceLabel = isReceivingBaseToken
     ? messages.priceEach(pricePerBaseToken)
     : undefined
+
+  const handleConfirm = () => {
+    // Track swap confirmed
+    trackSwapConfirmed({
+      activeTab,
+      inputToken: swapTokens.inputToken,
+      outputToken: swapTokens.outputToken,
+      inputAmount: payAmount,
+      outputAmount: receiveAmount,
+      exchangeRate,
+      slippageBps: SLIPPAGE_BPS
+    })
+
+    onConfirm()
+  }
 
   if (!formattedPayAmount || !formattedReceiveAmount) {
     return null
@@ -87,7 +123,7 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
         <Button
           variant='primary'
           fullWidth
-          onClick={onConfirm}
+          onClick={handleConfirm}
           isLoading={isConfirming}
         >
           {messages.confirm}

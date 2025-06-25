@@ -58,6 +58,7 @@ export type SuccessDisplayData = {
 export type SwapResult = {
   inputAmount: number
   outputAmount: number
+  signature?: string
 }
 
 export type TransactionData = {
@@ -66,3 +67,25 @@ export type TransactionData = {
   isValid: boolean
   error?: string | null
 } | null
+
+/**
+ * Utility function to get input and output tokens based on active tab and token pair
+ * For 'buy': user pays with quote token (e.g., USDC) to get base token (e.g., AUDIO)
+ * For 'sell': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
+ */
+export const getSwapTokens = (activeTab: BuySellTab, tokenPair: TokenPair) => {
+  return {
+    inputToken:
+      activeTab === 'buy'
+        ? tokenPair.quoteToken.symbol
+        : tokenPair.baseToken.symbol,
+    outputToken:
+      activeTab === 'buy'
+        ? tokenPair.baseToken.symbol
+        : tokenPair.quoteToken.symbol,
+    inputTokenInfo:
+      activeTab === 'buy' ? tokenPair.quoteToken : tokenPair.baseToken,
+    outputTokenInfo:
+      activeTab === 'buy' ? tokenPair.baseToken : tokenPair.quoteToken
+  }
+}

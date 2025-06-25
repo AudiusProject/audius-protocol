@@ -82,7 +82,7 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     retryTimeoutRef.current = setTimeout(() => {
       invalidateBalances()
       performSwap()
-    }, RETRY_DELAY)
+    }, RETRY_DELAY) as unknown as NodeJS.Timeout
   }
 
   const resetAndReturnToInput = useCallback(() => {
@@ -134,7 +134,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
             (transactionData?.inputAmount || 0),
           outputAmount:
             swapData.outputAmount?.uiAmount ??
-            (transactionData?.outputAmount || 0)
+            (transactionData?.outputAmount || 0),
+          signature: swapData.signature
         })
         setCurrentScreen('success')
         setRetryCount(0)

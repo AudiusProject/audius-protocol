@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { formatUSDCValue } from '@audius/common/api'
+import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
+import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import {
@@ -8,7 +9,8 @@ import {
   useBuySellScreen,
   useBuySellSwap,
   useSwapDisplayData,
-  useTokenAmountFormatting
+  useTokenAmountFormatting,
+  getSwapTokens
 } from '@audius/common/store'
 
 import {
@@ -85,6 +87,9 @@ const LoadingScreen = () => (
 
 export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const navigation = useNavigation()
+  const { trackSwapConfirmed, trackSwapSuccess, trackSwapFailure } =
+    useBuySellAnalytics()
+
   const {
     confirmationData: {
       payTokenInfo,
@@ -139,6 +144,18 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const [selectedPairIndex] = useState(0)
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
+  // Memoize swap tokens to avoid repeated calculations
+  const swapTokens = useMemo(
+    () => getSwapTokens(activeTab, selectedPair),
+    [activeTab, selectedPair]
+  )
+
+  // Memoize exchange rate calculation
+  const exchangeRate = useMemo(
+    () => (receiveAmount && payAmount ? receiveAmount / payAmount : undefined),
+    [receiveAmount, payAmount]
+  )
+
   const { successDisplayData } = useSwapDisplayData({
     swapStatus,
     currentScreen,
@@ -150,6 +167,17 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
 
   useEffect(() => {
     if (currentScreen === 'success' && successDisplayData) {
+      // Track swap success
+      trackSwapSuccess({
+        activeTab,
+        inputToken: swapTokens.inputToken,
+        outputToken: swapTokens.outputToken,
+        inputAmount: swapResult?.inputAmount || payAmount,
+        outputAmount: swapResult?.outputAmount || receiveAmount,
+        exchangeRate,
+        signature: swapResult?.signature || ''
+      })
+
       navigation.navigate('TransactionResultScreen', {
         result: {
           status: 'success' as const,
@@ -157,11 +185,41 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
         }
       })
     }
-  }, [currentScreen, successDisplayData, navigation])
+  }, [
+    currentScreen,
+    successDisplayData,
+    navigation,
+    activeTab,
+    swapResult,
+    payAmount,
+    receiveAmount,
+    swapTokens,
+    exchangeRate,
+    trackSwapSuccess
+  ])
 
   // Handle swap error
   useEffect(() => {
     if (swapStatus === 'error' && swapError) {
+      // Track swap failure
+      trackSwapFailure(
+        {
+          activeTab,
+          inputToken: swapTokens.inputToken,
+          outputToken: swapTokens.outputToken,
+          inputAmount: payAmount,
+          outputAmount: receiveAmount,
+          exchangeRate
+        },
+        {
+          errorType: 'swap_error',
+          errorStage: 'transaction',
+          errorMessage: swapError?.message
+            ? swapError.message.substring(0, 500)
+            : 'Unknown error'
+        }
+      )
+
       navigation.navigate('TransactionResultScreen', {
         result: {
           status: 'error' as const,
@@ -169,7 +227,17 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
         }
       })
     }
-  }, [swapStatus, swapError, navigation])
+  }, [
+    swapStatus,
+    swapError,
+    navigation,
+    activeTab,
+    payAmount,
+    receiveAmount,
+    swapTokens,
+    exchangeRate,
+    trackSwapFailure
+  ])
 
   // balance isn't needed so we pass 0
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
@@ -194,6 +262,17 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   }
 
   const handleConfirm = () => {
+    // Track swap confirmed
+    trackSwapConfirmed({
+      activeTab,
+      inputToken: swapTokens.inputToken,
+      outputToken: swapTokens.outputToken,
+      inputAmount: payAmount,
+      outputAmount: receiveAmount,
+      exchangeRate,
+      slippageBps: SLIPPAGE_BPS
+    })
+
     handleConfirmSwap()
   }
 
