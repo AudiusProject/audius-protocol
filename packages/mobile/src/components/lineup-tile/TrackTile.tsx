@@ -6,6 +6,7 @@ import {
   useTrack,
   useUser
 } from '@audius/common/api'
+import { useGatedTrackAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
@@ -67,6 +68,7 @@ export const TrackTile = (props: TrackTileProps) => {
       duration: track.duration,
       field_visibility: track.field_visibility,
       has_current_user_reposted: track.has_current_user_reposted,
+      has_current_user_saved: track.has_current_user_saved,
       title: track.title,
       track_id: track.track_id,
       genre: track.genre,
@@ -87,6 +89,8 @@ export const TrackTile = (props: TrackTileProps) => {
       is_deactivated: user.is_deactivated
     })
   })
+
+  const { hasStreamAccess } = useGatedTrackAccess(id)
 
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === lineupTileProps.uid
@@ -261,7 +265,7 @@ export const TrackTile = (props: TrackTileProps) => {
       {isReadonly ? null : (
         <LineupTileActionButtons
           hasReposted={track.has_current_user_reposted}
-          hasSaved={false} // This will be handled by the hook
+          hasSaved={track.has_current_user_saved}
           isOwner={isOwner}
           isShareHidden={hideShare}
           isUnlisted={track.is_unlisted}
@@ -269,7 +273,7 @@ export const TrackTile = (props: TrackTileProps) => {
           contentId={track.track_id}
           contentType={PurchaseableContentType.TRACK}
           streamConditions={track.stream_conditions}
-          hasStreamAccess={true} // This should be determined by the hook
+          hasStreamAccess={hasStreamAccess}
           source={lineupTileProps.source}
           onPressOverflow={handlePressOverflow}
           onPressRepost={handlePressRepost}

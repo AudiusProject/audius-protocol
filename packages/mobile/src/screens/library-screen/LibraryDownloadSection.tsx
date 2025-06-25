@@ -10,7 +10,7 @@ import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selecto
 import { makeStyles } from 'app/styles'
 
 import { DownloadProgress } from './DownloadProgress'
-import { FavoritesDownloadStatusIndicator } from './FavoritesDownloadStatusIndicator'
+import { LibraryDownloadStatusIndicator } from './LibraryDownloadStatusIndicator'
 
 const useStyles = makeStyles(() => ({
   root: { flexDirection: 'row', alignItems: 'center' }
@@ -38,12 +38,12 @@ const OfflineListeningIndicatorButton = () => {
 
   return (
     <TouchableOpacity onPress={handlePressStatusIndicator}>
-      <FavoritesDownloadStatusIndicator switchValue={switchValue} />
+      <LibraryDownloadStatusIndicator switchValue={switchValue} />
     </TouchableOpacity>
   )
 }
 
-export const FavoritesDownloadSection = () => {
+export const LibraryDownloadSection = () => {
   const styles = useStyles()
 
   return (

@@ -78,6 +78,7 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       clearTimeout(retryTimeoutRef.current)
     }
 
+    // @ts-ignore - weird mobile type issue
     retryTimeoutRef.current = setTimeout(() => {
       invalidateBalances()
       performSwap()

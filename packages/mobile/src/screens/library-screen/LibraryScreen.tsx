@@ -14,8 +14,8 @@ import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { makeStyles } from 'app/styles'
 
 import { AlbumsTab } from './AlbumsTab'
-import { FavoritesDownloadSection } from './FavoritesDownloadSection'
 import { LibraryCategorySelectionMenu } from './LibraryCategorySelectionMenu'
+import { LibraryDownloadSection } from './LibraryDownloadSection'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
 
@@ -23,7 +23,7 @@ const messages = {
   header: 'Library'
 }
 
-const favoritesScreens = [
+const libraryScreens = [
   {
     name: LibraryPageTabs.TRACKS,
     Icon: IconNote,
@@ -49,7 +49,7 @@ const useHeaderStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const FavoritesScreen = () => {
+export const LibraryScreen = () => {
   useAppTabScreen()
   const headerStyles = useHeaderStyles()
 
@@ -61,14 +61,14 @@ export const FavoritesScreen = () => {
           icon={IconLibrary}
           styles={headerStyles}
         >
-          <FavoritesDownloadSection />
+          <LibraryDownloadSection />
           <LibraryCategorySelectionMenu />
         </ScreenHeader>
       </ScreenPrimaryContent>
       <ScreenContent isOfflineCapable>
         <ScreenSecondaryContent>
           <TopTabNavigator
-            screens={favoritesScreens}
+            screens={libraryScreens}
             screenOptions={{ lazy: true }}
           />
         </ScreenSecondaryContent>

@@ -12,7 +12,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const getFavoritesDownloadStatus = (state: AppState) => {
+const getLibraryDownloadStatus = (state: AppState) => {
   const { collectionStatus } = state.offlineDownloads
   const favoritedCollectionStatus = collectionStatus[DOWNLOAD_REASON_FAVORITES]
 
@@ -38,16 +38,16 @@ const getFavoritesDownloadStatus = (state: AppState) => {
   return OfflineDownloadStatus.SUCCESS
 }
 
-type FavoritesDownloadStatusIndicatorProps = {
+type LibraryDownloadStatusIndicatorProps = {
   switchValue: boolean
 }
 
-export const FavoritesDownloadStatusIndicator = (
-  props: FavoritesDownloadStatusIndicatorProps
+export const LibraryDownloadStatusIndicator = (
+  props: LibraryDownloadStatusIndicatorProps
 ) => {
   const { switchValue } = props
   const styles = useStyles()
-  const downloadStatus = useProxySelector(getFavoritesDownloadStatus, [])
+  const downloadStatus = useProxySelector(getLibraryDownloadStatus, [])
 
   return (
     <DownloadStatusIndicator
