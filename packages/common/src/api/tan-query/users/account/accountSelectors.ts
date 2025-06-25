@@ -13,10 +13,6 @@ export const selectIsGuestAccount = (user?: User | null) => {
   return Boolean(!user?.handle && !user?.name)
 }
 
-export const selectAccountHasTracks = (user?: User | null) => {
-  return (user?.track_count ?? 0) > 0
-}
-
 export const selectIsAccountComplete = (user?: User | null) => {
   if (!user) return false
 
