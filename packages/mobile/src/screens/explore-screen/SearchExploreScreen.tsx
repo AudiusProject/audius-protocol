@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 
+import { Platform } from 'react-native'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -30,6 +31,7 @@ import { SearchExploreHeader } from './components/SearchExploreHeader'
 // Animation parameters
 const HEADER_SLIDE_HEIGHT = 46
 const FILTER_SCROLL_THRESHOLD = 300
+export const SCROLL_FACTOR = Platform.OS === 'ios' ? 1 : 3
 
 const SearchExploreContent = () => {
   const { spacing, motion } = useTheme()
@@ -72,13 +74,15 @@ const SearchExploreContent = () => {
   // Animations
   const contentPaddingStyle = useAnimatedStyle(() => {
     // Clamped scroll prevents jitter
-    const clampedScrollY = Math.max(scrollY.value, 0)
     return {
       paddingTop: query
         ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
-        : clampedScrollY === 0
-          ? withTiming(0, motion.calm)
-          : interpolate(clampedScrollY, [0, 80], [0, 80], Extrapolation.CLAMP)
+        : interpolate(
+            scrollY.value,
+            [0, 80 * SCROLL_FACTOR],
+            [0, 80],
+            Extrapolation.CLAMP
+          )
     }
   })
   const scrollHandler = useAnimatedScrollHandler({
@@ -134,6 +138,7 @@ const SearchExploreContent = () => {
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
+        scrollEventThrottle={16} // for android to match iOS
         style={[contentPaddingStyle]}
         showsVerticalScrollIndicator={false}
       >

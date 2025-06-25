@@ -37,6 +37,7 @@ import { AccountPictureHeader } from 'app/screens/app-screen/AccountPictureHeade
 import { SearchCategoriesAndFilters } from 'app/screens/search-screen/SearchCategoriesAndFilters'
 
 import { useSearchQuery } from '../../search-screen/searchState'
+import { SCROLL_FACTOR } from '../SearchExploreScreen'
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 const AnimatedText = Animated.createAnimatedComponent(Text)
@@ -157,7 +158,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(1, motion.calm)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [1, 0],
             Extrapolation.CLAMP
           ),
@@ -167,7 +168,10 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(34, motion.calm)
         : interpolate(
             scrollY.value,
-            [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
+            [
+              HEADER_COLLAPSE_THRESHOLD,
+              (HEADER_COLLAPSE_THRESHOLD + 30) * SCROLL_FACTOR
+            ],
             [34, 0],
             Extrapolation.CLAMP
           ),
@@ -181,7 +185,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(1, motion.calm)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [1, 0],
             Extrapolation.CLAMP
           ),
@@ -191,7 +195,10 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(50, motion.calm)
         : interpolate(
             scrollY.value,
-            [HEADER_COLLAPSE_THRESHOLD, HEADER_COLLAPSE_THRESHOLD + 30],
+            [
+              HEADER_COLLAPSE_THRESHOLD,
+              (HEADER_COLLAPSE_THRESHOLD + 30) * SCROLL_FACTOR
+            ],
             [50, 0],
             Extrapolation.CLAMP
           ),
@@ -207,7 +214,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             ? withTiming(1, motion.calm)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
+                [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
                 [1, 0.83],
                 Extrapolation.CLAMP
               )
@@ -219,7 +226,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             ? withTiming(0)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
+                [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
                 [0, 30],
                 Extrapolation.CLAMP
               )
@@ -235,7 +242,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(0, motion.calm)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [0, -HEADER_SLIDE_HEIGHT],
             Extrapolation.CLAMP
           )
@@ -252,7 +259,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             ? withTiming(0, motion.calm)
             : interpolate(
                 scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD],
+                [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
                 [0, HEADER_SLIDE_HEIGHT],
                 Extrapolation.CLAMP
               )
@@ -268,7 +275,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(spacing.l, motion.calm)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [spacing.l, spacing.s],
             Extrapolation.CLAMP
           ),
@@ -278,7 +285,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming(spacing.l, motion.calm)
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [spacing.l, 0],
             Extrapolation.CLAMP
           )
@@ -296,7 +303,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming('transparent', motion.calm)
         : interpolateColor(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [color.background.default, color.neutral.n25]
           ),
     borderColor:
@@ -304,7 +311,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? withTiming('transparent', motion.calm)
         : interpolateColor(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [color.background.default, color.border.strong]
           )
   }))
@@ -314,7 +321,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         ? spacing.l
         : interpolate(
             scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [spacing.l, spacing.m],
             Extrapolation.CLAMP
           )
