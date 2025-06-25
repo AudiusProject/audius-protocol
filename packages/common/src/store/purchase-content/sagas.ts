@@ -24,7 +24,8 @@ import {
   queryTrack,
   queryUser,
   updateTrackData,
-  queryWalletAddresses
+  queryWalletAddresses,
+  WalletAddresses
 } from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection } from '~/models'
@@ -65,7 +66,7 @@ import {
   coinflowOnrampModalActions,
   CoinflowPurchaseMetadata
 } from '~/store/ui/modals/coinflow-onramp-modal'
-import { waitForValue } from '~/utils'
+import { waitForQueryValue, waitForValue } from '~/utils'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { pollGatedContent } from '../gated-content/sagas'
@@ -647,10 +648,10 @@ function* doStartPurchaseContentFlow({
 
   // wait for guest account creation
   yield* call(
-    waitForValue,
+    waitForQueryValue<WalletAddresses>,
     queryWalletAddresses,
     null,
-    (value) => !!value?.currentUser
+    (value: WalletAddresses) => !!value?.currentUser
   )
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
