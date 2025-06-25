@@ -1,1 +1,1 @@
-export * from './FavoritesScreen'
+export * from './LibraryScreen'
