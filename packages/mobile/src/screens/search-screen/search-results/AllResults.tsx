@@ -168,7 +168,7 @@ export const AllResults = () => {
                   <Flex ph='l' mt='l'>
                     <SearchSectionHeader title={section.title} />
                   </Flex>
-                  <Flex w={'80%'}>{items}</Flex>
+                  <Flex w={'90%'}>{items}</Flex>
                 </Paper>
               )
             })}
