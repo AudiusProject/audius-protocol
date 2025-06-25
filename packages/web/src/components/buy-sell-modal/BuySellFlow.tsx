@@ -98,19 +98,14 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const [selectedPairIndex] = useState(0)
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
-  // Memoize swap tokens to avoid repeated calculations
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
   )
 
-  // Memoize exchange rate calculation for current transaction
   const currentExchangeRate = useMemo(
-    () =>
-      transactionData?.outputAmount && transactionData?.inputAmount
-        ? transactionData.outputAmount / transactionData.inputAmount
-        : undefined,
-    [transactionData?.outputAmount, transactionData?.inputAmount]
+    () => transactionData?.exchangeRate ?? undefined,
+    [transactionData?.exchangeRate]
   )
 
   useEffect(() => {
@@ -178,10 +173,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
         outputToken: swapTokens.outputToken,
         inputAmount: swapResult.inputAmount,
         outputAmount: swapResult.outputAmount,
-        exchangeRate:
-          swapResult.outputAmount && swapResult.inputAmount
-            ? swapResult.outputAmount / swapResult.inputAmount
-            : undefined,
+        exchangeRate: successDisplayData.exchangeRate ?? undefined,
         signature: swapResult.signature || ''
       })
     }

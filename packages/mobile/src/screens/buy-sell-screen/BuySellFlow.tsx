@@ -99,18 +99,14 @@ export const BuySellFlow = ({
   const [selectedPairIndex] = useState(0)
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
-  // Memoize swap tokens to avoid repeated calculations
-  const swapTokens = useMemo(() => 
-    getSwapTokens(activeTab, selectedPair), 
+  const swapTokens = useMemo(
+    () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
   )
 
-  // Memoize exchange rate calculation for current transaction
-  const currentExchangeRate = useMemo(() =>
-    transactionData?.outputAmount && transactionData?.inputAmount
-      ? transactionData.outputAmount / transactionData.inputAmount
-      : undefined,
-    [transactionData?.outputAmount, transactionData?.inputAmount]
+  const currentExchangeRate = useMemo(
+    () => transactionData?.exchangeRate ?? undefined,
+    [transactionData?.exchangeRate]
   )
 
   const { confirmationScreenData } = useSwapDisplayData({
@@ -130,7 +126,6 @@ export const BuySellFlow = ({
   const handleContinueClick = useCallback(() => {
     setHasAttemptedSubmit(true)
     if (transactionData?.isValid && !isContinueButtonLoading) {
-      // Track swap requested
       trackSwapRequested({
         activeTab,
         inputToken: swapTokens.inputToken,

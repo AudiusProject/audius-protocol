@@ -53,6 +53,7 @@ type ConfirmSwapScreenProps = {
         receiveAmount: number
         pricePerBaseToken: number
         baseTokenSymbol: string
+        exchangeRate?: number | null
       }
     }
   }
@@ -97,7 +98,8 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
       payAmount,
       receiveAmount,
       pricePerBaseToken,
-      baseTokenSymbol
+      baseTokenSymbol,
+      exchangeRate = null
     }
   } = route.params
 
@@ -148,12 +150,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
-  )
-
-  // Memoize exchange rate calculation
-  const exchangeRate = useMemo(
-    () => (receiveAmount && payAmount ? receiveAmount / payAmount : undefined),
-    [receiveAmount, payAmount]
   )
 
   const { successDisplayData } = useSwapDisplayData({

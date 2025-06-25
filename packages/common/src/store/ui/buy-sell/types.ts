@@ -45,7 +45,6 @@ export type TokenAmountSectionProps = {
   tooltipPlacement?: TooltipPlacement
 }
 
-// Data structure for the transaction success screen
 export type SuccessDisplayData = {
   payTokenInfo: TokenInfo
   receiveTokenInfo: TokenInfo
@@ -53,6 +52,17 @@ export type SuccessDisplayData = {
   receiveAmount: number
   pricePerBaseToken: number
   baseTokenSymbol: string
+  exchangeRate?: number | null
+}
+
+export type ConfirmationScreenData = {
+  payTokenInfo: TokenInfo
+  receiveTokenInfo: TokenInfo
+  payAmount: number
+  receiveAmount: number
+  pricePerBaseToken: number
+  baseTokenSymbol: string
+  exchangeRate?: number | null
 }
 
 export type SwapResult = {
@@ -66,6 +76,7 @@ export type TransactionData = {
   outputAmount: number
   isValid: boolean
   error?: string | null
+  exchangeRate?: number | null
 } | null
 
 /**

@@ -24,6 +24,7 @@ type ConfirmSwapScreenProps = {
   receiveAmount: number
   pricePerBaseToken: number
   baseTokenSymbol: string
+  exchangeRate?: number | null
   onBack: () => void
   onConfirm: () => void
   isConfirming: boolean
@@ -39,6 +40,7 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
     receiveAmount,
     pricePerBaseToken,
     baseTokenSymbol,
+    exchangeRate,
     onBack,
     onConfirm,
     isConfirming,
@@ -52,12 +54,6 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
-  )
-
-  // Memoize exchange rate calculation
-  const exchangeRate = useMemo(
-    () => (receiveAmount && payAmount ? receiveAmount / payAmount : undefined),
-    [receiveAmount, payAmount]
   )
 
   // balance isn't needed so we pass 0

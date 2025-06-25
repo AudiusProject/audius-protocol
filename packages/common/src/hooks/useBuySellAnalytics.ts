@@ -10,7 +10,7 @@ export type SwapDetails = {
   outputToken: string
   inputAmount?: number
   outputAmount?: number
-  exchangeRate?: number
+  exchangeRate?: number | null
 }
 
 export type SwapError = {

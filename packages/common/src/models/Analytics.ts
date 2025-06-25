@@ -425,7 +425,6 @@ export enum Name {
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
-  // Buy/Sell Swap
   BUY_SELL_SWAP_REQUESTED = 'Buy Sell Modal: Swap Requested',
   BUY_SELL_SWAP_CONFIRMED = 'Buy Sell Modal: Swap Confirmed',
   BUY_SELL_SWAP_SUCCESS = 'Buy Sell Modal: Swap Success',
@@ -2111,15 +2110,13 @@ type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
 
-// Buy/Sell Swap
-
 export type BuySellSwapEventFields = {
   activeTab: 'buy' | 'sell'
   inputToken: string
   outputToken: string
   inputAmount?: number
   outputAmount?: number
-  exchangeRate?: number
+  exchangeRate?: number | null
 }
 
 type BuySellSwapRequested = BuySellSwapEventFields & {
