@@ -17,7 +17,7 @@ const NextButton = ({ onClick, isMobile }: NextButtonProps) => {
       })}
       onClick={onClick}
     >
-      <IconNext className={styles.noAnimation} />
+      <IconNext color='default' className={styles.noAnimation} />
     </button>
   )
 }
