@@ -19,9 +19,7 @@ type UseFormattedAudioBalanceReturn = {
 }
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
-  // const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
-  const isAudioBalanceLoading = false
-  const totalBalance = BigInt(1238359190040000000000)
+  const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
