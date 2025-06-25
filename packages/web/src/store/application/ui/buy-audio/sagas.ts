@@ -1,4 +1,8 @@
-import { queryAccountUser, queryWalletAddresses } from '@audius/common/api'
+import {
+  WalletAddresses,
+  queryAccountUser,
+  queryWalletAddresses
+} from '@audius/common/api'
 import { Name, ErrorLevel, StringWei } from '@audius/common/models'
 import {
   IntKeys,
@@ -29,7 +33,7 @@ import {
   dayjs,
   isNullOrUndefined,
   convertBigIntToAmountObject,
-  waitForValue
+  waitForQueryValue
 } from '@audius/common/utils'
 import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { QuoteResponse } from '@jup-ag/api'
@@ -1073,12 +1077,11 @@ function* recoverPurchaseIfNecessary() {
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const solanaWalletService = yield* getContext('solanaWalletService')
     const identityService = yield* getContext('identityService')
-    const currentUser = yield* call(queryAccountUser)
     yield* call(
-      waitForValue,
+      waitForQueryValue<WalletAddresses>,
       queryWalletAddresses,
       {},
-      (arg: ReturnType<typeof queryWalletAddresses>) => currentUser !== null
+      (wallets) => wallets.currentUser !== null
     )
 
     if (
