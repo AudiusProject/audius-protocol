@@ -50,7 +50,6 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
 
   const { trackSwapConfirmed } = useBuySellAnalytics()
 
-  // Memoize swap tokens to avoid repeated calculations
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
@@ -75,7 +74,6 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
     : undefined
 
   const handleConfirm = () => {
-    // Track swap confirmed
     trackSwapConfirmed({
       activeTab,
       inputToken: swapTokens.inputToken,

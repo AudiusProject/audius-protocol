@@ -146,7 +146,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const [selectedPairIndex] = useState(0)
   const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
-  // Memoize swap tokens to avoid repeated calculations
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
@@ -163,7 +162,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
 
   useEffect(() => {
     if (currentScreen === 'success' && successDisplayData) {
-      // Track swap success
       trackSwapSuccess({
         activeTab,
         inputToken: swapTokens.inputToken,
@@ -197,7 +195,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   // Handle swap error
   useEffect(() => {
     if (swapStatus === 'error' && swapError) {
-      // Track swap failure
       trackSwapFailure(
         {
           activeTab,
@@ -258,7 +255,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   }
 
   const handleConfirm = () => {
-    // Track swap confirmed
     trackSwapConfirmed({
       activeTab,
       inputToken: swapTokens.inputToken,

@@ -114,7 +114,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   useEffect(() => {
     if (swapStatus === 'error' && swapError) {
-      // Track swap failure
       trackSwapFailure(
         {
           activeTab,
