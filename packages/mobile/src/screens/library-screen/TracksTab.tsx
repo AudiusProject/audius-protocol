@@ -46,6 +46,7 @@ const messages = {
   emptyTracksPurchasedText: "You haven't purchased any tracks yet.",
   emptyTracksAllText:
     "You haven't favorited, reposted, or purchased any tracks yet.",
+  noResultsText: 'No tracks found matching your search.',
   inputPlaceholder: 'Filter Tracks'
 }
 
@@ -200,43 +201,54 @@ export const TracksTab = () => {
     isLoadingTracks
 
   const loadingSpinner = <LoadingMoreSpinner />
+
+  const shouldShowFilterInput = trackUids.length > 0 || filterValue
+
+  const renderContent = () => {
+    if (filteredTrackUids.length === 0 && !isPending) {
+      if (!isReachable) {
+        return <NoTracksPlaceholder />
+      }
+      if (filterValue) {
+        return <EmptyTileCTA message={messages.noResultsText} />
+      }
+      return <EmptyTileCTA message={emptyTabText} />
+    }
+
+    return (
+      <WithLoader loading={initialFetch}>
+        <Animated.View layout={Layout}>
+          {filteredTrackUids.length ? (
+            <Tile styles={{ tile: styles.container }}>
+              <TrackList
+                style={styles.trackList}
+                hideArt
+                onEndReached={handleMoreFetchSaves}
+                onEndReachedThreshold={1.5}
+                togglePlay={togglePlay}
+                trackItemAction='overflow'
+                uids={filteredTrackUids}
+              />
+            </Tile>
+          ) : null}
+          {filteredTrackUids.length > 0 && isPending ? loadingSpinner : null}
+        </Animated.View>
+      </WithLoader>
+    )
+  }
+
   return (
     <VirtualizedScrollView>
-      {filteredTrackUids.length === 0 && !isPending ? (
-        !isReachable ? (
-          <NoTracksPlaceholder />
-        ) : (
-          <EmptyTileCTA message={emptyTabText} />
-        )
-      ) : (
-        <>
-          <OfflineContentBanner />
+      <>
+        <OfflineContentBanner />
+        {shouldShowFilterInput && (
           <FilterInput
             placeholder={messages.inputPlaceholder}
             onChangeText={handleChangeFilterValue}
           />
-          <WithLoader loading={initialFetch}>
-            <Animated.View layout={Layout}>
-              {filteredTrackUids.length ? (
-                <Tile styles={{ tile: styles.container }}>
-                  <TrackList
-                    style={styles.trackList}
-                    hideArt
-                    onEndReached={handleMoreFetchSaves}
-                    onEndReachedThreshold={1.5}
-                    togglePlay={togglePlay}
-                    trackItemAction='overflow'
-                    uids={filteredTrackUids}
-                  />
-                </Tile>
-              ) : null}
-              {filteredTrackUids.length > 0 && isPending
-                ? loadingSpinner
-                : null}
-            </Animated.View>
-          </WithLoader>
-        </>
-      )}
+        )}
+        {renderContent()}
+      </>
     </VirtualizedScrollView>
   )
 }
