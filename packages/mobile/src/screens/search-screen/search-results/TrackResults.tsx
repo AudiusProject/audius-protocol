@@ -34,10 +34,6 @@ export const TrackResults = () => {
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
 
-  useEffect(() => {
-    dispatch(searchResultsPageTracksLineupActions.reset())
-  }, [dispatch, query, filters])
-
   const handlePress = useCallback(
     (id: ID) => {
       Keyboard.dismiss()
