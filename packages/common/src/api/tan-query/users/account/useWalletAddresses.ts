@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { QUERY_KEYS, QueryKey } from '~/api'
 
-type WalletAddresses = {
+export type WalletAddresses = {
   currentUser: string | null
   web3User: string | null
 }

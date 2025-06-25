@@ -23,7 +23,8 @@ import {
   queryTrack,
   queryUser,
   updateTrackData,
-  queryWalletAddresses
+  queryWalletAddresses,
+  WalletAddresses
 } from '~/api'
 import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection } from '~/models'
@@ -644,10 +645,10 @@ function* doStartPurchaseContentFlow({
 
   // wait for guest account creation
   yield* call(
-    waitForQueryValue,
+    waitForQueryValue<WalletAddresses>,
     queryWalletAddresses,
     null,
-    (value) => !!value?.currentUser
+    (value: WalletAddresses) => !!value?.currentUser
   )
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
