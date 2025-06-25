@@ -2,11 +2,7 @@ import React, { useCallback, useContext, useEffect, useRef } from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import type {
-  ScrollView,
-  NativeSyntheticEvent,
-  NativeScrollEvent
-} from 'react-native'
+import type { ScrollView } from 'react-native'
 import { ImageBackground, Keyboard } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
 import Animated, {
