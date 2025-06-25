@@ -76,8 +76,8 @@ const getButtonText = (
     ? messages.purchasing
     : amountDue > 0
       ? isGuest
-        ? `Guest Purchase For $${USDC(amountDue / 100).toLocaleString()}`
-        : `${messages.buy} $${USDC(amountDue / 100).toLocaleString()}`
+        ? `Guest Purchase For ${USDC(amountDue / 100).toLocaleString()}`
+        : `${messages.buy} ${USDC(amountDue / 100).toLocaleString()}`
       : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
