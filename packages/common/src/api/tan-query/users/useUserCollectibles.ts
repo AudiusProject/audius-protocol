@@ -6,6 +6,7 @@ import { CollectiblesMetadata, ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 
 export type GetUserCollectiblesArgs = {
   userId: ID | null | undefined
@@ -39,6 +40,7 @@ export const useUserCollectibles = (
       return (data?.data as CollectiblesMetadata) ?? null
     },
     ...options,
+    ...entityCacheOptions,
     enabled: options?.enabled !== false && !!args.userId
   })
 

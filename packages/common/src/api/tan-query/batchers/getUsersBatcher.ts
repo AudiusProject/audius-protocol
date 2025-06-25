@@ -6,6 +6,8 @@ import { userMetadataListFromSDK } from '~/adapters/user'
 import { ID } from '~/models'
 import { UserMetadata } from '~/models/User'
 
+import { primeUserData } from '../utils'
+
 import { contextCacheResolver } from './contextCacheResolver'
 import { BatchContext } from './types'
 
@@ -22,6 +24,7 @@ export const getUsersBatcher = memoize(
 
         const users = userMetadataListFromSDK(data)
 
+        primeUserData({ users, queryClient: context.queryClient })
         return users
       },
       resolver: keyResolver('user_id'),
