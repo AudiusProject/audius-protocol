@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react'
 
-import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { useAudioBalance } from '@audius/common/api'
 import {
   modalsActions,
   tokenDashboardPageActions,
@@ -8,7 +8,8 @@ import {
   walletActions,
   walletSelectors
 } from '@audius/common/store'
-import { isNullOrUndefined } from '@audius/common/utils'
+import { formatNumberCommas, isNullOrUndefined } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -117,8 +118,7 @@ export const AudioScreen = () => {
   const navigation = useNavigation()
   const { toast } = useToast()
 
-  const { audioBalanceFormatted, isAudioBalanceLoading } =
-    useFormattedAudioBalance()
+  const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
   const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
 
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
@@ -159,8 +159,7 @@ export const AudioScreen = () => {
           onPress={hasMultipleWallets ? handlePressWalletInfo : undefined}
         >
           <Flex alignItems='center'>
-            {isAudioBalanceLoading ||
-            isNullOrUndefined(audioBalanceFormatted) ? (
+            {isAudioBalanceLoading || isNullOrUndefined(totalBalance) ? (
               <LoadingSpinner
                 fill={'rgba(255, 255, 255, 0.75)'}
                 style={styles.spinner}
@@ -172,7 +171,11 @@ export const AudioScreen = () => {
                 color='staticWhite'
                 strength='strong'
               >
-                {audioBalanceFormatted}
+                {formatNumberCommas(
+                  AUDIO(totalBalance).toLocaleString('en-US', {
+                    maximumFractionDigits: 0
+                  })
+                )}
               </Text>
             )}
           </Flex>
