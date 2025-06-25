@@ -29,7 +29,7 @@ export const chatMiddleware =
         const fn = async () => {
           const sdk = await audiusSdk()
           openListener = () => {
-            // console.debug('[chats] WebSocket opened. Listening for chats...')
+            console.debug('[chats] WebSocket opened. Listening for chats...')
           }
           messageListener = ({ chatId, message }) => {
             const currentUser = queryClient.getQueryData(
@@ -84,7 +84,7 @@ export const chatMiddleware =
             )
           }
           closeListener = async () => {
-            // console.debug('[chats] WebSocket closed. Reconnecting...')
+            console.debug('[chats] WebSocket closed. Reconnecting...')
             await sdk.chats.listen()
           }
           errorListener = (e) => {
