@@ -17,7 +17,7 @@ const ForwardSkipButton = ({ onClick, isMobile }: ForwardSkipButtonProps) => {
       })}
       onClick={onClick}
     >
-      <IconPodcastForward className={styles.noAnimation} />
+      <IconPodcastForward color='default' className={styles.noAnimation} />
     </button>
   )
 }

@@ -17,7 +17,7 @@ const PreviousButton = ({ onClick, isMobile }: PreviousButtonProps) => {
       })}
       onClick={onClick}
     >
-      <IconPrev className={styles.noAnimation} />
+      <IconPrev color='default' className={styles.noAnimation} />
     </button>
   )
 }

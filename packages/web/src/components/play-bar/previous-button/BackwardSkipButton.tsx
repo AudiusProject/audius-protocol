@@ -17,7 +17,7 @@ const BackwardSkipButton = ({ onClick, isMobile }: BackwardSkipButtonProps) => {
       })}
       onClick={onClick}
     >
-      <IconPodcastBack className={styles.noAnimation} />
+      <IconPodcastBack color='default' className={styles.noAnimation} />
     </button>
   )
 }
