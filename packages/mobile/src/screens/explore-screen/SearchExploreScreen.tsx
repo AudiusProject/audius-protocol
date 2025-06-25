@@ -134,7 +134,11 @@ const SearchExploreContent = () => {
         inputValue={inputValue}
         onInputValueChange={setInputValue}
       />
-
+      {showSearch && (query || hasAnyFilter) ? (
+        <SearchResults />
+      ) : showSearch ? (
+        <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
+      ) : null}
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}
@@ -142,11 +146,6 @@ const SearchExploreContent = () => {
         style={[contentPaddingStyle]}
         showsVerticalScrollIndicator={false}
       >
-        {showSearch && (query || hasAnyFilter) ? (
-          <SearchResults />
-        ) : showSearch ? (
-          <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-        ) : null}
         <Flex style={{ display: showSearch ? 'none' : 'flex' }}>
           <ExploreContent />
         </Flex>

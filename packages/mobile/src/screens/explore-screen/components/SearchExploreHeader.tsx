@@ -296,15 +296,16 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         : filterTranslateY.value,
     backgroundColor:
       scrollY.value === 0
-        ? withTiming('transparent', motion.calm)
+        ? withTiming(color.background.default, motion.calm)
         : interpolateColor(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [color.background.default, color.neutral.n25]
           ),
-    borderColor:
-      scrollY.value === 0
-        ? withTiming('transparent', motion.calm)
+    borderColor: inputValue
+      ? withTiming(color.border.strong, motion.calm)
+      : scrollY.value === 0
+        ? withTiming(color.background.default, motion.calm)
         : interpolateColor(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
