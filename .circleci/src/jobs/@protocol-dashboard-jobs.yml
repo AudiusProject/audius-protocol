@@ -48,36 +48,10 @@ protocol-dashboard-build-staging:
           cd packages/protocol-dashboard
           npm install dotenv@16.3.1
           npm run build:stage
-    - run:
-        name: earthfast bundle
-        command: |
-          cd packages/protocol-dashboard
-          timestamp=$(date +%s)
-          filename="$(npx earthfast-cli bundle create dist${timestamp} dist)"
-          hash="$(npx earthfast-cli bundle checksum $filename)"
-          echo "export FILENAME='$filename'" >> tmp.env
-          echo "export HASH='$hash'" >> tmp.env
     - persist_to_workspace:
         root: ./
         paths:
           - packages/protocol-dashboard/*
-
-protocol-dashboard-pin-staging:
-  working_directory: ~/audius-protocol
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - run:
-        name: install-awscli
-        command: sudo pip install awscli
-    - attach_workspace:
-        at: ./
-    - run:
-        name: deploy to s3
-        command: |
-          cd packages/protocol-dashboard
-          source tmp.env
-          aws s3 cp ${FILENAME} s3://dashboard.staging.audius.org/${FILENAME} --cache-control max-age=0
 
 protocol-dashboard-deploy-staging:
   working_directory: ~/audius-protocol
@@ -90,11 +64,10 @@ protocol-dashboard-deploy-staging:
         name: install deps
         command: sudo apt update && sudo apt install -y libsecret-1-0
     - run:
-        name: earthfast publish
+        name: deploy to staging
         command: |
           cd packages/protocol-dashboard
-          source tmp.env
-          npx earthfast-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
+          npm run deploy:stage
 
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol
@@ -111,36 +84,10 @@ protocol-dashboard-build-prod:
           cd packages/protocol-dashboard
           npm install dotenv@16.3.1
           npm run build:prod
-    - run:
-        name: earthfast bundle
-        command: |
-          cd packages/protocol-dashboard
-          timestamp=$(date +%s)
-          filename="$(npx earthfast-cli bundle create dist${timestamp} dist)"
-          hash="$(npx earthfast-cli bundle checksum $filename)"
-          echo "export FILENAME='$filename'" >> tmp.env
-          echo "export HASH='$hash'" >> tmp.env
     - persist_to_workspace:
         root: ./
         paths:
           - packages/protocol-dashboard/*
-
-protocol-dashboard-pin-prod:
-  working_directory: ~/audius-protocol
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - run:
-        name: install-awscli
-        command: sudo pip install awscli
-    - attach_workspace:
-        at: ./
-    - run:
-        name: deploy to s3
-        command: |
-          cd packages/protocol-dashboard
-          source tmp.env
-          aws s3 cp ${FILENAME} s3://dashboard.audius.org/${FILENAME} --cache-control max-age=0
 
 protocol-dashboard-deploy-prod:
   working_directory: ~/audius-protocol
@@ -153,8 +100,7 @@ protocol-dashboard-deploy-prod:
         name: install deps
         command: sudo apt update && sudo apt install -y libsecret-1-0
     - run:
-        name: earthfast publish
+        name: deploy to prod
         command: |
           cd packages/protocol-dashboard
-          source tmp.env
-          npx earthfast-cli project publish 0xcfe2a20ff701a1f3e14f63bd70d6c6bc6fba8172ec6d5a505cdab3927c0a9de6 https://s3.us-west-1.amazonaws.com/dashboard.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
+          npm run deploy:prod

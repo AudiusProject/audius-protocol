@@ -244,7 +244,6 @@
     "constants-browserify": "^1.0.0",
     "crypto-browserify": "^3.12.0",
     "csstype": "3.1.1",
-    "earthfast-cli": "0.10.2",
     "electron": "33.0.0",
     "electron-builder": "25.1.8",
     "env-cmd": "8.0.2",
