@@ -31,21 +31,22 @@ export const PublishButton = (props: PublishButtonProps) => {
         '_is_publishing',
         'is_scheduled_release',
         'is_album',
-        'track_count',
-        'cover_art_sizes'
+        'cover_art_sizes',
+        'playlist_contents'
       ])
   })
   const { _is_publishing, is_scheduled_release, is_album } =
     partialCollection ?? {}
-
-  const { track_count, cover_art_sizes } = partialCollection ?? {}
+  const { cover_art_sizes } = partialCollection ?? {}
+  const track_count =
+    partialCollection?.playlist_contents?.track_ids.length ?? 0
 
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
 
   const dispatch = useDispatch()
-  const isDisabled = !track_count || track_count === 0 || !cover_art_sizes
+  const isDisabled = !track_count || !cover_art_sizes
 
   const publishRelease = useCallback(() => {
     dispatch(
