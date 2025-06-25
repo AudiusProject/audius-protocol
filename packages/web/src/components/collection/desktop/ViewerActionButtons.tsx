@@ -15,11 +15,13 @@ export const ViewerActionButtons = (props: ViewerActionButtonsProps) => {
   const { collectionId } = props
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
-      pick(collection, 'track_count', 'is_private', 'access')
+      pick(collection, 'playlist_contents', 'is_private', 'access')
   })
-  const { track_count, is_private: isPrivate, access } = partialCollection ?? {}
+  const { is_private: isPrivate, access } = partialCollection ?? {}
+  const track_count =
+    partialCollection?.playlist_contents?.track_ids.length ?? 0
 
-  const isDisabled = !partialCollection || track_count === 0 || isPrivate
+  const isDisabled = !partialCollection || !track_count || isPrivate
   const hasStreamAccess = access?.stream
 
   return isPrivate ? null : (
