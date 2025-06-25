@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  selectIsGuestAccount,
-  useCurrentAccountUser,
-  selectAccountHasTracks
-} from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag, useIsArtist } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import {
@@ -49,24 +44,16 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: accountData } = useCurrentAccountUser({
-    select: (user) => ({
-      hasTracks: selectAccountHasTracks(user),
-      isGuest: selectIsGuestAccount(user)
-    })
-  })
-  const { hasTracks, isGuest } = accountData ?? {}
+  const isArtist = useIsArtist()
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {
-    if (hasTracks !== null || isGuest) {
-      const tableOptions = hasTracks
-        ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
-        : [TableType.PURCHASES, TableType.WITHDRAWALS]
-      setTableOptions(tableOptions)
-      setSelectedTable(tableView ?? tableOptions[0])
-    }
-  }, [hasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
+    const tableOptions = isArtist
+      ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
+      : [TableType.PURCHASES, TableType.WITHDRAWALS]
+    setTableOptions(tableOptions)
+    setSelectedTable(tableView ?? tableOptions[0])
+  }, [isArtist, setSelectedTable, tableView, setTableOptions])
 
   const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
     FeatureFlags.OWN_YOUR_FANS

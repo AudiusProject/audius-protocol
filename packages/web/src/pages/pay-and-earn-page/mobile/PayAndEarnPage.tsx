@@ -1,9 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import {
-  selectAccountHasTracks,
-  useCurrentAccountUser
-} from '@audius/common/api'
+import { useIsArtist } from '@audius/common/hooks'
 import { route } from '@audius/common/utils'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -40,21 +37,16 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: hasTracks } = useCurrentAccountUser({
-    select: (user) => selectAccountHasTracks(user)
-  })
-
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
+  const isArtist = useIsArtist()
   useEffect(() => {
-    if (hasTracks !== null) {
-      const tableOptions = hasTracks
-        ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
-        : [TableType.PURCHASES, TableType.WITHDRAWALS]
-      setTableOptions(tableOptions)
-      setSelectedTable(tableView ?? tableOptions[0])
-    }
-  }, [hasTracks, setSelectedTable, tableView, setTableOptions])
+    const tableOptions = isArtist
+      ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
+      : [TableType.PURCHASES, TableType.WITHDRAWALS]
+    setTableOptions(tableOptions)
+    setSelectedTable(tableView ?? tableOptions[0])
+  }, [isArtist, setSelectedTable, tableView, setTableOptions])
 
   const {
     count: salesCount,
