@@ -87,7 +87,7 @@ export const AudioHoverCard = ({
   const { data: formattedBalance = '0' } = useUser(userId, {
     select: (user) => {
       if (!user?.total_balance) return '0'
-      const audioValue = AUDIO(BigInt(user.total_balance))
+      const audioValue = AUDIO(user.total_balance)
       return formatCount(Number(audioValue.toFixed(2)))
     }
   })
