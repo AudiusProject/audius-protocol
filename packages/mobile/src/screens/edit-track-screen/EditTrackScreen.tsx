@@ -5,10 +5,10 @@ import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { TrackForUpload } from '@audius/common/store'
 import {
   creativeCommons,
+  formatPrice,
   isBpmValid,
   parseMusicalKey
 } from '@audius/common/utils'
-import { USDC } from '@audius/fixed-decimal'
 import { MAX_DESCRIPTION_LENGTH } from '@audius/sdk'
 import { Formik } from 'formik'
 import { z } from 'zod'
@@ -128,9 +128,9 @@ const useEditTrackSchema = () => {
             return true
           },
           {
-            message: `Price must be at least $${USDC(
-              minContentPriceCents / 100
-            ).toLocaleString()}.`,
+            message: `Price must be at least $${formatPrice(
+              minContentPriceCents
+            )}.`,
             path: [TRACK_PRICE]
           }
         )
@@ -146,9 +146,9 @@ const useEditTrackSchema = () => {
             return true
           },
           {
-            message: `Price must be less than $${USDC(
-              maxContentPriceCents / 100
-            ).toLocaleString()}.`,
+            message: `Price must be less than $${formatPrice(
+              maxContentPriceCents
+            )}.`,
             path: [TRACK_PRICE]
           }
         )

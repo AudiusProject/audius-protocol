@@ -3,8 +3,10 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { Status } from '~/models'
 
 import { Chain } from '../../../models/Chain'
-import { StringWei, WalletAddress } from '../../../models/Wallet'
+import { BNWei, StringWei, WalletAddress } from '../../../models/Wallet'
 import { Nullable } from '../../../utils/typeUtils'
+// TODO(nkang) Figure out how to import BNWei from here without invalidating slice.ts
+// import { BNWei } from '../../../models/Wallet'
 
 type ReceiveState = { stage: 'KEY_DISPLAY' }
 type SendingState =
@@ -47,7 +49,7 @@ export type CanReceiveWAudio = 'false' | 'loading' | 'true'
 
 export type AssociatedWallet = {
   address: string
-  balance: bigint
+  balance: BNWei
   collectibleCount: number
 }
 
@@ -71,7 +73,7 @@ export type AssociatedWalletsState = {
   confirmingWallet: {
     wallet: Nullable<WalletAddress>
     chain: Nullable<Chain>
-    balance: Nullable<bigint>
+    balance: Nullable<any> // TODO(nkang) `any` should be `BNWei`
     collectibleCount: Nullable<number>
     signature: Nullable<string>
   }

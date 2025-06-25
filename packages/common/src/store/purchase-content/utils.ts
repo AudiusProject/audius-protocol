@@ -1,13 +1,12 @@
-import { UsdcWei } from '@audius/fixed-decimal'
+import BN from 'bn.js'
 
+import { BNUSDC } from '~/models/Wallet'
 import { Nullable } from '~/utils/typeUtils'
+import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from '~/utils/wallet'
 
 import { PurchaseContentStage } from './types'
 
-export const zeroBalance = () => BigInt(0) as UsdcWei
-
-// USDC has 6 decimals, so 1 cent = 10^4 wei
-const USDC_CENT_WEI = BigInt(10000) as UsdcWei
+export const zeroBalance = () => new BN(0) as BNUSDC
 
 export const isContentPurchaseInProgress = (stage: PurchaseContentStage) => {
   return [
@@ -33,7 +32,7 @@ type PurchaseSummaryValues = {
 
 type GetPurchaseSummaryValuesArgs = {
   price: number
-  currentBalance: Nullable<UsdcWei>
+  currentBalance: Nullable<BNUSDC>
   minPurchaseAmountCents: number
   extraAmount?: number
 }
@@ -55,28 +54,28 @@ export const getPurchaseSummaryValues = ({
 }: GetPurchaseSummaryValuesArgs): PurchaseSummaryValues => {
   let amountDue = price + (extraAmount ?? 0)
   let existingBalance
-  const balanceWei =
-    currentBalance && currentBalance > USDC_CENT_WEI
+  const balanceBN =
+    currentBalance && currentBalance.gt(BN_USDC_CENT_WEI)
       ? currentBalance
       : zeroBalance()
-  const amountDueWei = (BigInt(Math.round(amountDue)) *
-    USDC_CENT_WEI) as UsdcWei
+  const amountDueBN = new BN(amountDue.toString()).mul(BN_USDC_CENT_WEI)
 
-  if (balanceWei >= amountDueWei) {
+  if (balanceBN.gte(amountDueBN)) {
     existingBalance = amountDue
     amountDue = 0
   } else {
     // Note: Rounding amount due *up* to nearest cent for cases where the balance
     // is between cents so that we aren't advertising *lower* than what the user
     // will have to pay.
-    const diff = amountDueWei - balanceWei
-    // Ceiling to nearest cent
-    const diffCents = Number((diff + USDC_CENT_WEI - BigInt(1)) / USDC_CENT_WEI)
-
+    const diff = ceilingBNUSDCToNearestCent(
+      amountDueBN.sub(balanceBN) as BNUSDC
+    )
+      .div(BN_USDC_CENT_WEI)
+      .toNumber()
     // Don't allow use of existing balance if final amount due is less than the minumum purchase amount
-    if (diffCents > 0 && diffCents >= minPurchaseAmountCents) {
-      amountDue = diffCents
-      existingBalance = Number(balanceWei / USDC_CENT_WEI)
+    if (diff > 0 && diff >= minPurchaseAmountCents) {
+      amountDue = diff
+      existingBalance = balanceBN.div(BN_USDC_CENT_WEI).toNumber()
     }
   }
 
@@ -91,18 +90,18 @@ export const getPurchaseSummaryValues = ({
 
 /** Used by sagas to calculate balance needed to complete a USDC transaction. Enforces the given minimum purchase amount and will ignore existing balance if applying it would cause the transaction to fall below that amount. */
 export function getBalanceNeeded(
-  totalAmountDue: UsdcWei,
-  existingBalance: UsdcWei,
+  totalAmountDue: BNUSDC,
+  existingBalance: BNUSDC,
   minPurchaseAmountCents: number
 ) {
-  const diff = totalAmountDue - existingBalance
-  const minPurchaseAmountWei = (BigInt(minPurchaseAmountCents) *
-    USDC_CENT_WEI) as UsdcWei
-
-  if (diff >= minPurchaseAmountWei) {
-    return diff as UsdcWei
-  } else if (diff > BigInt(0)) {
+  const diff = totalAmountDue.sub(existingBalance)
+  const minPurchaseAmountBN = new BN(minPurchaseAmountCents).mul(
+    BN_USDC_CENT_WEI
+  ) as BNUSDC
+  if (diff.gte(minPurchaseAmountBN)) {
+    return diff as BNUSDC
+  } else if (diff.gtn(0)) {
     return totalAmountDue
   }
-  return BigInt(0) as UsdcWei
+  return new BN(0) as BNUSDC
 }

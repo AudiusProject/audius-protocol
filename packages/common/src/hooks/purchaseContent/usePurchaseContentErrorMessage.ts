@@ -1,10 +1,9 @@
-import { USDC } from '@audius/fixed-decimal'
-
 import { BuyUSDCErrorCode } from '~/store/index'
 import {
   PurchaseContentErrorCode,
   PurchaseErrorCode
 } from '~/store/purchase-content'
+import { formatPrice } from '~/utils/formatUtil'
 
 import { useUSDCPurchaseConfig } from './useUSDCPurchaseConfig'
 
@@ -13,13 +12,13 @@ const messages = {
   noQuote: 'Unable to get quote',
   insufficientExternalTokenBalance: 'Insufficient token balance.',
   minimumPurchase: (minAmount: number) =>
-    `Total purchase amount must be at least $${USDC(minAmount / 100).toLocaleString()}.`,
+    `Total purchase amount must be at least $${formatPrice(minAmount)}.`,
   maximumPurchase: (maxAmount: number) =>
-    `Total purchase amount may not exceed $${USDC(maxAmount / 100).toLocaleString()}.`,
+    `Total purchase amount may not exceed $${formatPrice(maxAmount)}.`,
   badAmount: (minAmount: number, maxAmount: number) =>
-    `Total purchase amount must be between $${USDC(
-      minAmount / 100
-    ).toLocaleString()} and ${USDC(maxAmount / 100).toLocaleString()}`,
+    `Total purchase amount must be between $${formatPrice(
+      minAmount
+    )} and ${formatPrice(maxAmount)}`,
   countryNotSupported:
     'Stripe is unable to support transactions in this country'
 }

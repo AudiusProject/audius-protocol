@@ -8,7 +8,7 @@ import {
   gatedContentActions,
   gatedContentSelectors
 } from '@audius/common/store'
-import { USDC } from '@audius/fixed-decimal'
+import { formatPrice } from '@audius/common/utils'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -114,9 +114,7 @@ export const LineupTileAccessStatus = ({
   ])
 
   const buttonText = isUSDCPurchase
-    ? messages.price(
-        USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
-      )
+    ? messages.price(formatPrice(streamConditions.usdc_purchase.price))
     : isUnlocking
       ? messages.unlocking
       : messages.locked

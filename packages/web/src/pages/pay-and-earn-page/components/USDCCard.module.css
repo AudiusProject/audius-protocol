@@ -1,0 +1,65 @@
+.backgroundBlueGradient {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--harmony-unit-4);
+  padding: var(--harmony-unit-6);
+  background: linear-gradient(
+      315deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(255, 255, 255, 0.1) 100%
+    ),
+    #2775ca;
+}
+
+.usdcTitleContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.balance {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--harmony-unit-2);
+}
+
+.spinner {
+  height: var(--harmony-unit-8);
+  width: var(--harmony-unit-8);
+  align-self: center;
+}
+
+.spinner g path {
+  stroke: var(--harmony-static-white);
+}
+
+.usdcInfo {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.withdrawContainer {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--harmony-unit-6);
+  gap: var(--harmony-unit-2);
+}
+
+.withdrawButton {
+  flex-grow: 1;
+}
+
+.addFundsButton {
+  flex-grow: 1;
+}

@@ -1,12 +1,13 @@
 import { userWalletsFromSDK } from '@audius/common/adapters'
 import { queryCurrentUserId } from '@audius/common/api'
-import { Chain, CollectibleState } from '@audius/common/models'
+import { Chain, CollectibleState, BNWei } from '@audius/common/models'
 import {
   tokenDashboardPageActions,
   getContext,
   getSDK
 } from '@audius/common/store'
 import { Id } from '@audius/sdk'
+import BN from 'bn.js'
 import { call, put, takeLatest } from 'typed-redux-saga'
 
 import {
@@ -41,7 +42,7 @@ function* fetchEthWalletInfo(wallets: string[]) {
 
   return wallets.map((_, idx) => ({
     ...ethWalletBalances[idx],
-    balance: BigInt(ethWalletBalances[idx].balance.toString()),
+    balance: new BN(ethWalletBalances[idx].balance.toString()) as BNWei,
     collectibleCount: collectibleCounts[idx]
   }))
 }
@@ -70,7 +71,7 @@ function* fetchSplWalletInfo(wallets: string[]) {
 
   return wallets.map((_, idx) => ({
     ...splWalletBalances[idx],
-    balance: BigInt(splWalletBalances[idx].balance.toString())
+    balance: new BN(splWalletBalances[idx].balance.toString()) as BNWei
   }))
 }
 

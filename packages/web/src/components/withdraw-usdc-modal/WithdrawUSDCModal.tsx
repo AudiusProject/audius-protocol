@@ -21,6 +21,7 @@ import {
   IconTransaction,
   ModalTitle
 } from '@audius/harmony'
+import BN from 'bn.js'
 import { Formik, FormikProps, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -90,7 +91,7 @@ export const WithdrawUSDCModal = () => {
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = Math.floor(
     Number(
-      USDC(balance ?? 0)
+      USDC(balance ?? new BN(0))
         .floor(2)
         .toString()
     ) * 100

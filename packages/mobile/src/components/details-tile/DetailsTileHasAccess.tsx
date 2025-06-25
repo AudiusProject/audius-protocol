@@ -9,7 +9,7 @@ import {
 } from '@audius/common/models'
 import type { AccessConditions, User } from '@audius/common/models'
 import type { PurchaseableContentType } from '@audius/common/store'
-import { USDC } from '@audius/fixed-decimal'
+import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
@@ -175,9 +175,7 @@ const DetailsTileOwnerSection = ({
           <Text>
             <Text style={styles.description}>
               {messages.ownerUSDCPurchase({
-                price: USDC(
-                  streamConditions.usdc_purchase.price / 100
-                ).toLocaleString(),
+                price: formatPrice(streamConditions.usdc_purchase.price),
                 contentType
               })}
             </Text>

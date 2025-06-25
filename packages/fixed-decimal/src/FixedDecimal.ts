@@ -1,3 +1,5 @@
+import type BN from 'bn.js'
+
 import { NoBrand } from './utilityTypes.js'
 
 /**
@@ -126,7 +128,7 @@ const getDefaultFormatOptions = (value: FixedDecimal) =>
     maximumFractionDigits: value.decimalPlaces,
     roundingMode: 'trunc',
     trailingZeroDisplay: 'auto'
-  }) as const
+  } as const)
 
 /**
  * A data structure for fixed precision decimals.
@@ -160,7 +162,10 @@ const getDefaultFormatOptions = (value: FixedDecimal) =>
  * // Represent fractional dollars and round to cents
  * new FixedDecimal(1.32542).toFixed(2) // '1.33'
  */
-export class FixedDecimal<BigIntBrand extends bigint = bigint> {
+export class FixedDecimal<
+  BigIntBrand extends bigint = bigint,
+  BNBrand extends BN = BN
+> {
   public value: BigIntBrand
   public decimalPlaces: number
   private _defaultFormatOptions: FixedDecimalFormatOptions
@@ -182,7 +187,9 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
       | BigIntBrand
       | NoBrand<bigint>
       | number
-      | string,
+      | string
+      | BNBrand
+      | NoBrand<BN>,
     decimalPlaces?: number,
     defaultFormatOptions: FixedDecimalFormatOptions = {}
   ) {
@@ -223,7 +230,12 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
           this.value = value.value as BigIntBrand
           this.decimalPlaces = value.decimalPlaces
         } else {
-          throw new Error('Invalid object type for FixedDecimal constructor')
+          // Construct from BN.
+          // Can't do `value instanceof BN` as the condition because BN is just
+          // a type, instead get BN by elimination. Technically any object works
+          // here that has a toString() that's a valid BigInt() arg.
+          this.value = BigInt(value.toString()) as BigIntBrand
+          this.decimalPlaces = decimalPlaces ?? 0
         }
         break
       }
@@ -253,7 +265,7 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
     }
     const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
-    return new FixedDecimal<BigIntBrand>({
+    return new FixedDecimal<BigIntBrand, BNBrand>({
       value: ((this.value / divisor + bump) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
@@ -276,13 +288,13 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
     const divisor = BigInt(10 ** digitsToRemove)
     // Subtract one if negative w/ remainder
     if (this.value < 0 && this.value % divisor !== BigInt(0)) {
-      return new FixedDecimal<BigIntBrand>({
+      return new FixedDecimal<BigIntBrand, BNBrand>({
         value: ((this.value / divisor) * divisor - divisor) as BigIntBrand,
         decimalPlaces: this.decimalPlaces
       })
     }
     // Truncate otherwise
-    return new FixedDecimal<BigIntBrand>({
+    return new FixedDecimal<BigIntBrand, BNBrand>({
       value: ((this.value / divisor) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
@@ -303,7 +315,7 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    return new FixedDecimal<BigIntBrand>({
+    return new FixedDecimal<BigIntBrand, BNBrand>({
       value: ((this.value / divisor) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
@@ -332,10 +344,10 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
     // Divide by 10 to remove the rounding test digit
     quotient /= BigInt(10)
     // Multiply by the original divisor and 10 to get the number of digits back
-    return new FixedDecimal<BigIntBrand>({
-      value: (quotient * divisor * BigInt(10)) as BigIntBrand,
-      decimalPlaces: this.decimalPlaces
-    })
+    return new FixedDecimal<BigIntBrand, BNBrand>(
+      (quotient * divisor * BigInt(10)) as BigIntBrand,
+      this.decimalPlaces
+    )
   }
 
   /**
@@ -360,11 +372,10 @@ export class FixedDecimal<BigIntBrand extends bigint = bigint> {
     }
     const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
     // If not, truncate and add/sub 1 to the place we're rounding to
-    return new FixedDecimal<BigIntBrand>({
-      value: ((this.value / divisor) * divisor +
-        divisor * signMultiplier) as BigIntBrand,
-      decimalPlaces: this.decimalPlaces
-    })
+    return new FixedDecimal<BigIntBrand, BNBrand>(
+      (this.value / divisor) * divisor + divisor * signMultiplier,
+      this.decimalPlaces
+    )
   }
 
   /**

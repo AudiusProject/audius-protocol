@@ -1,8 +1,11 @@
 import { CSSProperties, ChangeEvent, useCallback } from 'react'
 
-import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
-import { Nullable } from '@audius/common/utils'
-import { USDC, UsdcWei } from '@audius/fixed-decimal'
+import { PurchaseMethod, PurchaseVendor, BNUSDC } from '@audius/common/models'
+import {
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber,
+  Nullable
+} from '@audius/common/utils'
 import {
   FilterButton,
   Flex,
@@ -15,6 +18,7 @@ import {
   RadioGroup,
   Text
 } from '@audius/harmony'
+import BN from 'bn.js'
 
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
@@ -42,7 +46,7 @@ type PaymentMethodProps = {
   setSelectedVendor: (vendor: PurchaseVendor) => void
   selectedPurchaseMethodMintAddress?: string
   setSelectedPurchaseMethodMintAddress?: (address: string) => void
-  balance?: Nullable<UsdcWei>
+  balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   isCoinflowEnabled?: boolean
   isPayWithAnythingEnabled?: boolean
@@ -67,7 +71,10 @@ export const PaymentMethod = ({
   showExtraItemsToggle = true
 }: PaymentMethodProps) => {
   const isMobile = useIsMobile()
-  const balanceFormatted = USDC(balance ?? 0).toShorthand()
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
+  const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
   const vendorOptions = [
     ...(isCoinflowEnabled ? [{ value: PurchaseVendor.COINFLOW }] : []),
     { value: PurchaseVendor.STRIPE }

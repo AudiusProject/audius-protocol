@@ -1,6 +1,9 @@
 import { useUSDCBalance } from '@audius/common/api'
-import type { UsdcWei } from '@audius/fixed-decimal'
-import { USDC } from '@audius/fixed-decimal'
+import type { BNUSDC } from '@audius/common/models'
+import {
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber
+} from '@audius/common/utils'
 import { View } from 'react-native'
 
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
@@ -41,9 +44,8 @@ export const USDCBalanceRow = ({
     commitment: 'confirmed'
   })
   const isUsdcBalanceLoading = usdcBalance === null
-  const usdcBalanceFormatted = USDC(
-    usdcBalance ?? (BigInt(0) as UsdcWei)
-  ).toShorthand()
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(usdcBalance as BNUSDC)
+  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
 
   return (
     <View style={styles.root}>

@@ -1,11 +1,12 @@
-import { type AudioWei, AUDIO } from '@audius/fixed-decimal'
+import { BNWei } from '@audius/common/models'
+import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
 import cn from 'classnames'
 
 import styles from './DisplayAudio.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'
 
 type DisplayAudioProps = {
-  amount: AudioWei
+  amount: BNWei | AudioWei
   showLabel?: boolean
   className?: string
   tokenClassName?: string

@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
+import type { BNWei } from '@audius/common/models'
 import { Chain } from '@audius/common/models'
-import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
+import {
+  formatWei,
+  shortenSPLAddress,
+  shortenEthAddress
+} from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, TouchableWithoutFeedback, View } from 'react-native'
 
@@ -40,7 +44,7 @@ const useSyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-type WalletProps = { chain: Chain; address: string; balance: bigint }
+type WalletProps = { chain: Chain; address: string; balance: BNWei }
 
 export const Wallet = (props: WalletProps) => {
   const { chain, address, balance } = props
@@ -75,7 +79,7 @@ export const Wallet = (props: WalletProps) => {
         </TouchableWithoutFeedback>
       </Animated.View>
       <Text style={styles.linkedAmount} weight='demiBold'>
-        {AUDIO(balance).toLocaleString()}
+        {formatWei(balance, true)}
       </Text>
     </View>
   )

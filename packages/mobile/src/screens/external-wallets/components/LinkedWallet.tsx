@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
-import type { Chain } from '@audius/common/models'
+import type { Chain, BNWei } from '@audius/common/models'
 import { tokenDashboardPageActions } from '@audius/common/store'
-import { AUDIO } from '@audius/fixed-decimal'
+import { formatWei } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -29,7 +29,7 @@ const messages = {
 type WalletProps = {
   chain: Chain
   address: string
-  audioBalance: bigint
+  audioBalance: BNWei
   isLoading: boolean
 }
 
@@ -138,9 +138,7 @@ export const LinkedWallet = ({
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.audioAmount}>
-        {AUDIO(audioBalance).toLocaleString()}
-      </Text>
+      <Text style={styles.audioAmount}>{formatWei(audioBalance, true, 0)}</Text>
       <View style={styles.statusSection}>
         {isLoading ? (
           <LoadingSpinner style={styles.loading} />

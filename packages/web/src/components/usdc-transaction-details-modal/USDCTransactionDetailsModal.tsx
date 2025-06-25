@@ -1,7 +1,9 @@
 import { USDCTransactionType } from '@audius/common/models'
 import { useUSDCTransactionDetailsModal } from '@audius/common/store'
-import { makeSolanaTransactionLink } from '@audius/common/utils'
-import { USDC } from '@audius/fixed-decimal'
+import {
+  formatUSDCWeiToUSDString,
+  makeSolanaTransactionLink
+} from '@audius/common/utils'
 import {
   Modal,
   ModalContent,
@@ -73,7 +75,7 @@ export const USDCTransactionDetailsModal = () => {
         />
         <DetailSection
           label={messages.amountSent}
-          value={USDC(BigInt(transactionDetails.change)).toLocaleString()}
+          value={`$${formatUSDCWeiToUSDString(transactionDetails.change)}`}
         />
         {/* Skip the destination wallet entry for withdrawals to cash */}
         {transactionDetails.transactionType !==

@@ -227,6 +227,7 @@ initializeSentry()
 
 const WebPlayer = (props) => {
   const {
+    isWalletUIUpdateEnabled,
     isSearchExploreEnabled,
     isProduction,
     history,
@@ -792,13 +793,25 @@ const WebPlayer = (props) => {
                 exact
                 path={PAYMENTS_PAGE}
                 isMobile={isMobile}
-                component={WalletPage}
+                render={(props) =>
+                  isWalletUIUpdateEnabled ? (
+                    <Redirect to={WALLET_PAGE} />
+                  ) : (
+                    <PayAndEarnPage {...props} />
+                  )
+                }
               />
               <Route
                 exact
                 path={AUDIO_PAGE}
                 isMobile={isMobile}
-                component={AudioPage}
+                render={(props) =>
+                  isWalletUIUpdateEnabled ? (
+                    <Redirect to={WALLET_AUDIO_PAGE} />
+                  ) : (
+                    <AudioPage {...props} />
+                  )
+                }
               />
               <Route
                 exact
@@ -1069,6 +1082,9 @@ const RouterWebPlayer = withRouter(WebPlayer)
 
 // Taking this approach because the class component cannot use hooks
 const FeatureFlaggedWebPlayer = (props) => {
+  const { isEnabled: isWalletUIUpdateEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_UPDATE
+  )
   const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
@@ -1077,6 +1093,7 @@ const FeatureFlaggedWebPlayer = (props) => {
   return (
     <RouterWebPlayer
       {...props}
+      isWalletUIUpdateEnabled={isWalletUIUpdateEnabled}
       isSearchExploreEnabled={isSearchExploreEnabled}
       isProduction={isProduction}
     />

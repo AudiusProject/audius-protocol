@@ -1,4 +1,4 @@
-import { USDC, UsdcWei } from '@audius/fixed-decimal'
+import { USDC } from '@audius/fixed-decimal'
 import { AudiusSdk } from '@audius/sdk'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
@@ -8,6 +8,7 @@ import {
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import BN from 'bn.js'
 
 import { SwapErrorType, SwapStatus, UserBankManagedTokenInfo } from './types'
 
@@ -212,19 +213,19 @@ export function formatUSDCValue(
   // Convert to wei (multiply by 1,000,000) and ensure it's an integer
   const weiValue = Math.floor(Math.abs(numericValue) * 1000000)
 
-  // Ensure weiValue is valid for BigInt constructor
+  // Ensure weiValue is valid for BN constructor
   if (weiValue < 0 || !Number.isInteger(weiValue)) {
     return null
   }
 
-  // Additional safety check for BigInt constructor limits
+  // Additional safety check for BN constructor limits
   if (weiValue > Number.MAX_SAFE_INTEGER) {
     console.warn('Wei value exceeds MAX_SAFE_INTEGER:', weiValue)
     return null
   }
 
   try {
-    const usdcValue = USDC(BigInt(weiValue) as UsdcWei).floor(2)
+    const usdcValue = USDC(new BN(weiValue)).floor(2)
 
     if (useFixed) {
       const formatted = usdcValue.toFixed(2).replace('$', '')

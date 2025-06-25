@@ -5,7 +5,7 @@ import {
   AccessConditions,
   Name
 } from '@audius/common/models'
-import { USDC } from '@audius/fixed-decimal'
+import { formatPrice } from '@audius/common/utils'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
 
 import { make, track } from 'services/analytics'
@@ -42,7 +42,7 @@ export const GatedConditionsPill = ({
     message = isPurchase ? undefined : messages.unlocking
   } else {
     message = isPurchase
-      ? USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
+      ? `$${formatPrice(streamConditions.usdc_purchase.price)}`
       : messages.locked
   }
 

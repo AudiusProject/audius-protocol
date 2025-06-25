@@ -1,4 +1,4 @@
-import { USDC } from '@audius/fixed-decimal'
+import { formatPrice } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
@@ -12,6 +12,7 @@ const messages = {
   total: 'Total',
   youPaid: 'You Paid',
   zero: '$0.00',
+  price: (val: string) => `$${val}`,
   included: 'included'
 }
 
@@ -46,13 +47,13 @@ export const PurchaseSummaryTable = ({
       items.push({
         id: 'premiumAlbum',
         label: messages.premiumAlbum,
-        value: USDC(basePrice / 100).toLocaleString()
+        value: messages.price(formatPrice(basePrice))
       })
     } else {
       items.push({
         id: 'premiumTrack',
         label: messages.premiumTrack,
-        value: USDC(basePrice / 100).toLocaleString()
+        value: messages.price(formatPrice(basePrice))
       })
     }
   }
@@ -63,7 +64,7 @@ export const PurchaseSummaryTable = ({
       label: `${messages.downloadableFiles} (${downloadCount})`,
       value: streamPurchaseCount
         ? messages.included
-        : USDC(basePrice / 100).toLocaleString(),
+        : messages.price(formatPrice(basePrice)),
       color: streamPurchaseCount ? 'subdued' : 'default'
     })
   }
@@ -72,7 +73,7 @@ export const PurchaseSummaryTable = ({
     items.push({
       id: 'payExtra',
       label: messages.payExtra,
-      value: USDC(extraAmount / 100).toLocaleString()
+      value: messages.price(formatPrice(extraAmount))
     })
   }
 
@@ -83,7 +84,7 @@ export const PurchaseSummaryTable = ({
       collapsible
       secondaryTitle={
         <Text tag='span' color='accent'>
-          {USDC(totalPriceInCents / 100).toLocaleString()}
+          {messages.price(formatPrice(totalPriceInCents))}
         </Text>
       }
     />

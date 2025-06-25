@@ -24,6 +24,7 @@ import {
 import { filterDecimalString } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import BN from 'bn.js'
 import type { FormikProps } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -134,7 +135,7 @@ export const WithdrawUSDCDrawer = () => {
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = Math.floor(
     Number(
-      USDC(balance ?? 0)
+      USDC(balance ?? new BN(0))
         .floor(2)
         .toString()
     ) * 100

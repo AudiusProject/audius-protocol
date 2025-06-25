@@ -17,6 +17,7 @@ import {
   Divider,
   Hint
 } from '@audius/harmony'
+import BN from 'bn.js'
 import QRCode from 'react-qr-code'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -61,10 +62,10 @@ export const USDCManualTransfer = ({
   const { data: walletAddresses } = useWalletAddresses()
   const { currentUser: wallet } = walletAddresses ?? {}
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-  const { data: balanceWei } = useUSDCBalance({
+  const { data: balanceBN } = useUSDCBalance({
     isPolling: true
   })
-  const balance = USDC(balanceWei ?? 0).value
+  const balance = USDC(balanceBN ?? new BN(0)).value
   const amount = USDC((amountInCents ?? 0) / 100).value
   const isBuyButtonDisabled = isUnlocking || balance < amount
 

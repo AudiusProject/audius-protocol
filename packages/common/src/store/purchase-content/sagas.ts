@@ -1,4 +1,4 @@
-import { USDC, UsdcWei } from '@audius/fixed-decimal'
+import { USDC } from '@audius/fixed-decimal'
 import { Id, OptionalId, type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
@@ -9,6 +9,7 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
+import BN from 'bn.js'
 import bs58 from 'bs58'
 import { sumBy } from 'lodash'
 import { takeLatest } from 'redux-saga/effects'
@@ -37,6 +38,7 @@ import {
 } from '~/models/PurchaseContent'
 import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
+import { BNUSDC } from '~/models/Wallet'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import {
   buyUSDCFlowFailed,
@@ -64,6 +66,7 @@ import {
   CoinflowPurchaseMetadata
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { waitForValue } from '~/utils'
+import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
@@ -704,15 +707,13 @@ function* doStartPurchaseContentFlow({
     // just created. Just use 0 for initial balance.
     const { amount: initialBalance } = tokenAccountInfo ?? { amount: 0 }
 
-    // USDC has 6 decimals, so 1 cent = 10^4 wei
-    const USDC_CENT_WEI = USDC(1).value
-    const priceWei = USDC(BigInt(price) * USDC_CENT_WEI).value
-    const extraAmountWei = USDC(BigInt(extraAmount ?? 0) * USDC_CENT_WEI).value
-    const totalAmountDueCentsWei = USDC(priceWei + extraAmountWei).value
+    const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
+    const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
+    const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
 
     const balanceNeeded = getBalanceNeeded(
-      totalAmountDueCentsWei,
-      BigInt(initialBalance) as UsdcWei,
+      totalAmountDueCentsBN,
+      new BN(initialBalance.toString()) as BNUSDC,
       usdcConfig.minUSDCPurchaseAmountCents
     )
 
@@ -720,7 +721,7 @@ function* doStartPurchaseContentFlow({
       case PurchaseMethod.BALANCE:
       case PurchaseMethod.CRYPTO: {
         // Invariant: The user must have enough funds
-        if (balanceNeeded > BigInt(0)) {
+        if (balanceNeeded.gtn(0)) {
           throw new PurchaseContentError(
             PurchaseErrorCode.InsufficientBalance,
             'Unexpected insufficient balance to complete purchase'

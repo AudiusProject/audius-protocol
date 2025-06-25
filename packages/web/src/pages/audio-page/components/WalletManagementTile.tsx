@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { useAudioBalance, useConnectedWallets } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
-import { Client } from '@audius/common/models'
+import { BNWei, Client } from '@audius/common/models'
 import { FeatureFlags, Location, StringKeys } from '@audius/common/services'
 import {
   OnRampProvider,
@@ -28,6 +28,7 @@ import {
   IconWallet,
   Text
 } from '@audius/harmony'
+import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -74,7 +75,7 @@ const OptionButton = (props: ButtonProps) => {
 }
 
 const WalletActions = () => {
-  const balance = useSelector(getAccountBalance) ?? BigInt(0)
+  const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
   const hasBalance = !isNullOrUndefined(balance) && balance !== BigInt(0)
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')

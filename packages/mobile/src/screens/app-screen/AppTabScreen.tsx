@@ -32,6 +32,7 @@ import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import { SearchExploreScreen } from 'app/screens/explore-screen/SearchExploreScreen'
+import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { RewardsScreen } from 'app/screens/rewards-screen'
 import { SearchScreenStack, type SearchParams } from 'app/screens/search-screen'
@@ -108,7 +109,7 @@ export type AppTabScreenParamList = {
   CommentSettingsScreen: undefined
   DownloadSettingsScreen: undefined
   NotificationSettingsScreen: undefined
-
+  PayAndEarnScreen: undefined
   AudioScreen: undefined
   RewardsScreen: undefined
   wallet: undefined
@@ -234,7 +235,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='Reposts' component={RepostsScreen} />
       <Stack.Screen name='TopSupporters' component={TopSupportersScreen} />
       <Stack.Screen name='SupportingUsers' component={SupportingUsersScreen} />
-
+      <Stack.Screen name='PayAndEarnScreen' component={PayAndEarnScreen} />
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
       <Stack.Screen name='wallet' component={WalletScreen} />

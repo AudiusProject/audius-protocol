@@ -1,7 +1,8 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
 
 import { USDCPurchaseDetails } from '@audius/common/models'
-import { USDC } from '@audius/fixed-decimal'
+import { formatUSDCWeiToUSDString } from '@audius/common/utils'
+import BN from 'bn.js'
 import moment from 'moment'
 
 import { UserLink } from 'components/link'
@@ -70,11 +71,8 @@ const renderDateCell = (cellInfo: PurchaseCell) => {
 
 const renderValueCell = (cellInfo: PurchaseCell) => {
   const transaction = cellInfo.row.original
-  const total = BigInt(transaction.amount) + BigInt(transaction.extraAmount)
-  return USDC(total).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+  const total = new BN(transaction.amount).add(new BN(transaction.extraAmount))
+  return `$${formatUSDCWeiToUSDString(total)}`
 }
 
 // Columns

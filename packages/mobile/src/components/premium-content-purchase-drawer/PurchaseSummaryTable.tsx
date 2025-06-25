@@ -1,5 +1,5 @@
 import { PurchaseableContentType } from '@audius/common/store'
-import { USDC } from '@audius/fixed-decimal'
+import { formatPrice } from '@audius/common/utils'
 
 import { Text } from 'app/components/core'
 
@@ -50,13 +50,13 @@ export const PurchaseSummaryTable = ({
       items.push({
         id: messages.premiumTrack,
         label: messages.premiumTrack,
-        value: messages.price(USDC(basePrice / 100).toLocaleString())
+        value: messages.price(formatPrice(basePrice))
       })
     } else if (contentType === PurchaseableContentType.ALBUM) {
       items.push({
         id: messages.premiumAlbum,
         label: messages.premiumAlbum,
-        value: messages.price(USDC(basePrice / 100).toLocaleString())
+        value: messages.price(formatPrice(basePrice))
       })
     }
   }
@@ -68,7 +68,7 @@ export const PurchaseSummaryTable = ({
       label: `${messages.downloadableFiles} (${downloadCount})`,
       value: streamPurchaseCount
         ? messages.included
-        : messages.price(USDC(basePrice / 100).toLocaleString()),
+        : messages.price(formatPrice(basePrice)),
       color: streamPurchaseCount ? 'subdued' : 'default'
     })
   }
@@ -77,7 +77,7 @@ export const PurchaseSummaryTable = ({
     items.push({
       id: 'payExtra',
       label: messages.payExtra,
-      value: messages.price(USDC(extraAmount / 100).toLocaleString())
+      value: messages.price(formatPrice(extraAmount))
     })
   }
 
@@ -87,7 +87,7 @@ export const PurchaseSummaryTable = ({
       title={messages.summary}
       secondaryTitle={
         <Text color='secondary' weight='bold'>
-          {messages.price(USDC(totalPriceInCents / 100).toLocaleString())}
+          {messages.price(formatPrice(totalPriceInCents))}
         </Text>
       }
       items={items}

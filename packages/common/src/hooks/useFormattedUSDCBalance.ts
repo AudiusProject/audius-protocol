@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
 
-import { USDC, UsdcWei } from '@audius/fixed-decimal'
+import { USDC } from '@audius/fixed-decimal'
+import BN from 'bn.js'
 
 import { useUSDCBalance } from '../api/tan-query/wallets/useUSDCBalance'
-import { Status } from '../models'
+import { BNUSDC, Status } from '../models'
 
 type UseFormattedUSDCBalanceReturn = {
-  balance: UsdcWei | null
+  balance: BNUSDC | null
   balanceFormatted: string | null
   balanceCents: number
   usdcValue: ReturnType<typeof USDC>
@@ -18,7 +19,7 @@ export const useFormattedUSDCBalance = (): UseFormattedUSDCBalanceReturn => {
   const { data: balance, status: balanceStatus } = useUSDCBalance({
     isPolling: true
   })
-  const usdcValue = USDC(balance ?? (BigInt(0) as UsdcWei)).floor(2)
+  const usdcValue = USDC(balance ?? new BN(0)).floor(2)
   const balanceCents = Number(usdcValue.floor(2).toString()) * 100
   const balanceFormatted = useMemo(() => {
     const balance =

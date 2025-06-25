@@ -60,13 +60,13 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
   ] = useField(PURCHASE_METHOD_MINT_ADDRESS)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
-  const { data: balanceWei } = useUSDCBalance({
+  const { data: balanceBN } = useUSDCBalance({
     isPolling: true,
     commitment: 'confirmed'
   })
   const { extraAmount } = usePurchaseSummaryValues({
     price,
-    currentBalance: balanceWei
+    currentBalance: balanceBN
   })
   const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
     price,
@@ -152,9 +152,9 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
             setSelectedVendor={handleChangeVendor}
             selectedPurchaseMethodMintAddress={purchaseMethodMintAddress}
             setSelectedPurchaseMethodMintAddress={setPurchaseMethodMintAddress}
-            balance={balanceWei}
+            balance={balanceBN}
             isExistingBalanceDisabled={isExistingBalanceDisabled}
-            showExistingBalance={!!(balanceWei && balanceWei > BigInt(0))}
+            showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
             isCoinflowEnabled={showCoinflow}
             isPayWithAnythingEnabled={isPayWithAnythingEnabled}
             showVendorChoice={false}

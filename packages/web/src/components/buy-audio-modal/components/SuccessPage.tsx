@@ -7,8 +7,7 @@ import {
   transactionDetailsSelectors,
   modalsActions
 } from '@audius/common/store'
-import { isNullOrUndefined } from '@audius/common/utils'
-import { wAUDIO } from '@audius/fixed-decimal'
+import { formatAudio, isNullOrUndefined } from '@audius/common/utils'
 import { IconInfo, Button, PlainButton } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -67,13 +66,8 @@ export const SuccessPage = () => {
           <span>
             +
             {transactionDetails.status === Status.SUCCESS
-              ? wAUDIO(
-                  transactionDetails.transactionDetails.change
-                ).toLocaleString('en-US', {
-                  maximumFractionDigits: 0,
-                  minimumFractionDigits: 0
-                })
-              : 0}
+              ? formatAudio(transactionDetails.transactionDetails.change, 0)
+              : '0'}
           </span>
         </div>
         {/* If user's balance is still loading or failed to load, don't show it. */}
@@ -82,9 +76,7 @@ export const SuccessPage = () => {
           transactionDetails.transactionDetails.balance
         ) ? null : (
           <div className={styles.newBalance}>
-            {wAUDIO(BigInt(transactionDetails.transactionDetails.balance))
-              .trunc()
-              .toFixed()}
+            {formatAudio(transactionDetails.transactionDetails.balance, 0)}
             <span className={styles.label}>{messages.audio}</span>
           </div>
         )}
