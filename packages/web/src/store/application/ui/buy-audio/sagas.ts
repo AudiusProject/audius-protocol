@@ -1,8 +1,4 @@
-import {
-  WalletAddresses,
-  queryAccountUser,
-  queryWalletAddresses
-} from '@audius/common/api'
+import { WalletAddresses, queryWalletAddresses } from '@audius/common/api'
 import { Name, ErrorLevel, StringWei } from '@audius/common/models'
 import {
   IntKeys,
