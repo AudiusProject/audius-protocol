@@ -63,7 +63,7 @@ import {
   coinflowOnrampModalActions,
   CoinflowPurchaseMetadata
 } from '~/store/ui/modals/coinflow-onramp-modal'
-import { waitForValue } from '~/utils'
+import { waitForQueryValue, waitForValue } from '~/utils'
 
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
@@ -644,7 +644,7 @@ function* doStartPurchaseContentFlow({
 
   // wait for guest account creation
   yield* call(
-    waitForValue,
+    waitForQueryValue,
     queryWalletAddresses,
     null,
     (value) => !!value?.currentUser
