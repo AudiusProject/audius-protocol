@@ -7,7 +7,7 @@ import { Chain } from '@audius/common/models'
 import { formatNumberCommas } from '@audius/common/utils'
 import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
 
-import { Divider, Flex, Text } from '@audius/harmony-native'
+import { Divider, Flex, spacing, Text } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 
@@ -50,7 +50,7 @@ export const AudioBreakdownDrawer = () => {
         connectedWallets[index]?.address === address &&
         connectedWallets[index]?.chain === chain
     )
-    return balanceResult?.data ?? AUDIO(0).value
+    return balanceResult?.data
   }
 
   return (
@@ -61,7 +61,7 @@ export const AudioBreakdownDrawer = () => {
     >
       <Flex alignItems='center' p='xl' pt='l' gap='xl'>
         <Flex gap='s'>
-          <GradientText style={{ fontSize: 48 }}>
+          <GradientText style={{ fontSize: spacing.unit12 }}>
             {formatNumberCommas(
               AUDIO(totalBalance).trunc().toLocaleString('en-US', {
                 minimumFractionDigits: 0,
@@ -86,7 +86,7 @@ export const AudioBreakdownDrawer = () => {
               {messages.audiusWallet}
             </Text>
 
-            <GradientText style={{ marginLeft: 12, fontSize: 18 }}>
+            <GradientText style={{ marginLeft: spacing.m, fontSize: 18 }}>
               {formatNumberCommas(
                 AUDIO(accountBalance).trunc().toLocaleString('en-US', {
                   minimumFractionDigits: 0,
@@ -115,7 +115,7 @@ export const AudioBreakdownDrawer = () => {
               {messages.linkedWallets}
             </Text>
 
-            <GradientText style={{ marginLeft: 12, fontSize: 18 }}>
+            <GradientText style={{ marginLeft: spacing.m, fontSize: 18 }}>
               {formatNumberCommas(
                 AUDIO(connectedWalletsBalance).trunc().toLocaleString('en-US', {
                   minimumFractionDigits: 0,
