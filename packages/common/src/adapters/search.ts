@@ -1,5 +1,9 @@
 import { full } from '@audius/sdk'
+import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 
+import { primeCollectionData } from '~/api/tan-query/utils/primeCollectionData'
+import { primeTrackData } from '~/api/tan-query/utils/primeTrackData'
+import { primeUserData } from '~/api/tan-query/utils/primeUserData'
 import {
   UserTrackMetadata,
   UserCollectionMetadata,
@@ -23,47 +27,74 @@ export type SearchResults = {
 }
 
 export const searchResultsFromSDK = (
-  input?: full.SearchModel
+  input?: full.SearchModel,
+  queryClient?: QueryClient
 ): SearchResults => {
-  return input
-    ? {
-        tracks: transformAndCleanList(input.tracks, userTrackMetadataFromSDK),
-        saved_tracks: transformAndCleanList(
-          input.savedTracks,
-          userTrackMetadataFromSDK
-        ),
-        users: transformAndCleanList(input.users, userMetadataFromSDK),
-        followed_users: transformAndCleanList(
-          input.followedUsers,
-          userMetadataFromSDK
-        ),
-        playlists: transformAndCleanList(
-          input.playlists,
-          userCollectionMetadataFromSDK
-        ),
-        saved_playlists: transformAndCleanList(
-          input.savedPlaylists ?? [],
-          userCollectionMetadataFromSDK
-        ),
-        albums: transformAndCleanList(
-          input.albums,
-          userCollectionMetadataFromSDK
-        ),
-        saved_albums: transformAndCleanList(
-          input.savedAlbums,
-          userCollectionMetadataFromSDK
-        )
-      }
-    : {
-        users: [],
-        followed_users: [],
-        tracks: [],
-        saved_tracks: [],
-        playlists: [],
-        saved_playlists: [],
-        saved_albums: [],
-        albums: []
-      }
+  if (!input) {
+    return {
+      users: [],
+      followed_users: [],
+      tracks: [],
+      saved_tracks: [],
+      playlists: [],
+      saved_playlists: [],
+      saved_albums: [],
+      albums: []
+    }
+  }
+
+  const tracks = transformAndCleanList(input.tracks, userTrackMetadataFromSDK)
+  const saved_tracks = transformAndCleanList(
+    input.savedTracks,
+    userTrackMetadataFromSDK
+  )
+
+  const users = transformAndCleanList(input.users, userMetadataFromSDK)
+  const followed_users = transformAndCleanList(
+    input.followedUsers,
+    userMetadataFromSDK
+  )
+
+  const playlists = transformAndCleanList(
+    input.playlists,
+    userCollectionMetadataFromSDK
+  )
+  const saved_playlists = transformAndCleanList(
+    input.savedPlaylists ?? [],
+    userCollectionMetadataFromSDK
+  )
+
+  const albums = transformAndCleanList(
+    input.albums,
+    userCollectionMetadataFromSDK
+  )
+  if (queryClient) primeCollectionData({ collections: albums, queryClient })
+  const saved_albums = transformAndCleanList(
+    input.savedAlbums,
+    userCollectionMetadataFromSDK
+  )
+  if (queryClient)
+    primeCollectionData({ collections: saved_albums, queryClient })
+
+  if (queryClient) {
+    primeTrackData({ tracks, queryClient })
+    primeTrackData({ tracks: saved_tracks, queryClient })
+    primeUserData({ users, queryClient })
+    primeUserData({ users: followed_users, queryClient })
+    primeCollectionData({ collections: playlists, queryClient })
+    primeCollectionData({ collections: saved_playlists, queryClient })
+  }
+
+  return {
+    tracks,
+    saved_tracks,
+    users,
+    followed_users,
+    playlists,
+    saved_playlists,
+    albums,
+    saved_albums
+  }
 }
 
 export const AUTOCOMPLETE_TOTAL_RESULTS = 3
