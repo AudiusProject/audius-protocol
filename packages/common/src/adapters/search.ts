@@ -68,13 +68,10 @@ export const searchResultsFromSDK = (
     input.albums,
     userCollectionMetadataFromSDK
   )
-  if (queryClient) primeCollectionData({ collections: albums, queryClient })
   const saved_albums = transformAndCleanList(
     input.savedAlbums,
     userCollectionMetadataFromSDK
   )
-  if (queryClient)
-    primeCollectionData({ collections: saved_albums, queryClient })
 
   if (queryClient) {
     primeTrackData({ tracks, queryClient })
@@ -83,6 +80,8 @@ export const searchResultsFromSDK = (
     primeUserData({ users: followed_users, queryClient })
     primeCollectionData({ collections: playlists, queryClient })
     primeCollectionData({ collections: saved_playlists, queryClient })
+    primeCollectionData({ collections: albums, queryClient })
+    primeCollectionData({ collections: saved_albums, queryClient })
   }
 
   return {
