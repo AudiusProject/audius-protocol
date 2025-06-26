@@ -1,5 +1,4 @@
 import { HedgehogWalletNotFoundError, Id } from '@audius/sdk'
-import { omit } from 'lodash'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -11,15 +10,13 @@ import {
 } from 'typed-redux-saga'
 
 import {
-  getWalletAccountQueryFn,
-  getWalletAccountQueryKey,
   getWalletAddressesQueryKey,
   queryAccountUser,
   getCurrentAccountQueryKey,
   queryCurrentUserId,
   primeUserData,
   getUserQueryKey,
-  NormalizedAccountUserMetadata
+  getWalletAccountSaga
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { AccountUserMetadata, ErrorLevel, Status, UserMetadata } from '~/models'
@@ -121,13 +118,13 @@ function* initializeMetricsForUser({
   const queryClient = yield* getContext('queryClient')
 
   if (accountUser && accountUser.handle && web3WalletAddress) {
-    const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
-      queryKey: getWalletAccountQueryKey(web3WalletAddress),
-      queryFn: async () =>
-        getWalletAccountQueryFn(web3WalletAddress, sdk, queryClient),
-      staleTime: Infinity,
-      gcTime: Infinity
-    })) as AccountUserMetadata | undefined
+    const accountData = yield* call(
+      getWalletAccountSaga,
+      web3WalletAddress,
+      sdk,
+      queryClient
+    )
+
     const { user: web3User } = accountData ?? {}
 
     let solanaWallet
@@ -221,22 +218,9 @@ export function* fetchAccountAsync({
     return
   }
 
-  let accountData
+  let accountData: AccountUserMetadata | null | undefined
   try {
-    accountData = yield* call(
-      getWalletAccountQueryFn,
-      wallet!,
-      sdk,
-      queryClient
-    )
-    const normalizedAccountData = {
-      ...omit(accountData, ['user']),
-      userId: accountData?.user?.user_id
-    } as NormalizedAccountUserMetadata
-    queryClient.setQueryData(
-      getWalletAccountQueryKey(wallet!),
-      normalizedAccountData
-    )
+    accountData = yield* call(getWalletAccountSaga, wallet!, sdk, queryClient)
   } catch (e) {}
 
   if (!accountData) {

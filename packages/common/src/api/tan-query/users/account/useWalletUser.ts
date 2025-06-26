@@ -1,6 +1,7 @@
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
+import { call } from 'typed-redux-saga'
 
 import { accountFromSDK } from '~/adapters/user'
 import { primeUserData, useQueryContext } from '~/api/tan-query/utils'
@@ -45,6 +46,35 @@ export const getWalletAccountQueryFn = async (
   if (accountData?.user) {
     primeUserData({ users: [omit(accountData.user, 'playlists')], queryClient })
   }
+  return accountData
+}
+
+/**
+ * Returns unnormalized account data but updates query cache with normalized data
+ * @param wallet
+ * @param sdk
+ * @param queryClient
+ * @returns
+ */
+export function* getWalletAccountSaga(
+  wallet: string,
+  sdk: AudiusSdk,
+  queryClient: QueryClient
+) {
+  const accountData = yield* call(
+    getWalletAccountQueryFn,
+    wallet,
+    sdk,
+    queryClient
+  )
+  const normalizedAccountData = {
+    ...omit(accountData, ['user']),
+    userId: accountData?.user?.user_id
+  } as NormalizedAccountUserMetadata
+  queryClient.setQueryData(
+    getWalletAccountQueryKey(wallet),
+    normalizedAccountData
+  )
   return accountData
 }
 
