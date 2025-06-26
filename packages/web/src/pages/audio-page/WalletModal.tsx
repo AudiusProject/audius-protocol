@@ -14,7 +14,6 @@ import {
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
-  walletSelectors,
   TokenDashboardPageModalState
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'

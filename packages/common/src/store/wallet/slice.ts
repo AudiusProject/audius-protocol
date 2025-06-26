@@ -125,9 +125,6 @@ const slice = createSlice({
 })
 
 export const {
-  setBalance,
-  increaseBalance,
-  decreaseBalance,
   setUSDCBalance,
   claim,
   claimSucceeded,

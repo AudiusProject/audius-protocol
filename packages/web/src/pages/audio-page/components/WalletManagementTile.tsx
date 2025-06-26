@@ -10,7 +10,6 @@ import {
   tokenDashboardPageActions,
   useBuySellModal,
   useConnectedWalletsModal,
-  walletSelectors,
   buyAudioActions
 } from '@audius/common/store'
 import { isNullOrUndefined, route } from '@audius/common/utils'

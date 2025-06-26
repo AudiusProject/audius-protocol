@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { AudiusSdk, Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -26,6 +26,28 @@ export const getConnectedWalletsQueryKey = ({
     ConnectedWallet[]
   >
 
+export const getConnectedWalletsQueryFn = async ({
+  sdk,
+  currentUserId
+}: {
+  sdk: AudiusSdk
+  currentUserId: ID | null | undefined
+}) => {
+  const { data } = await sdk.users.getConnectedWallets({
+    id: Id.parse(currentUserId)
+  })
+  return data?.ercWallets
+    ?.map<ConnectedWallet>((address) => ({
+      address,
+      chain: Chain.Eth
+    }))
+    .concat(
+      data?.splWallets?.map((address) => ({
+        address,
+        chain: Chain.Sol
+      }))
+    )
+}
 export const useConnectedWallets = (options?: QueryOptions) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -34,20 +56,10 @@ export const useConnectedWallets = (options?: QueryOptions) => {
     queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.users.getConnectedWallets({
-        id: Id.parse(currentUserId)
+      return getConnectedWalletsQueryFn({
+        sdk,
+        currentUserId
       })
-      return data?.ercWallets
-        ?.map<ConnectedWallet>((address) => ({
-          address,
-          chain: Chain.Eth
-        }))
-        .concat(
-          data?.splWallets?.map((address) => ({
-            address,
-            chain: Chain.Sol
-          }))
-        )
     },
     ...options
   })

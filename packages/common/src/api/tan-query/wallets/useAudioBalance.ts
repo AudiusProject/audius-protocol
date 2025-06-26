@@ -1,7 +1,7 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQueries, useQuery } from '@tanstack/react-query'
-import { call, getContext } from 'typed-redux-saga/dist'
+import { call, getContext } from 'typed-redux-saga'
 import { getAddress } from 'viem'
 
 import {
@@ -10,6 +10,7 @@ import {
 } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
+import { AudiusBackend } from '~/services'
 import { getSDK } from '~/store'
 import { toErrorWithMessage } from '~/utils/error'
 
@@ -19,7 +20,12 @@ import { QueryOptions, type QueryKey } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
 
-import { useConnectedWallets } from './useConnectedWallets'
+import {
+  ConnectedWallet,
+  getConnectedWalletsQueryFn,
+  getConnectedWalletsQueryKey,
+  useConnectedWallets
+} from './useConnectedWallets'
 
 type UseWalletAudioBalanceParams = {
   /** Ethereum or Solana wallet address */
@@ -202,8 +208,11 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   }
 
   // Get linked/connected wallets balances
-  const { data: connectedWallets, isFetched: isConnectedWalletsFetched } =
-    useConnectedWallets()
+  const {
+    data: connectedWallets,
+    isFetched: isConnectedWalletsFetched,
+    isError: isConnectedWalletsError
+  } = useConnectedWallets()
   const connectedWalletsBalances = useWalletAudioBalances(
     {
       wallets: connectedWallets ?? []
@@ -223,18 +232,24 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   // Together they are the total balance
   const totalBalance = AUDIO(accountBalance + connectedWalletsBalance).value
   const isLoading = isAccountBalanceLoading || isConnectedWalletsBalanceLoading
-
+  const isError =
+    isConnectedWalletsError ||
+    accountBalances.some((balanceRes) => balanceRes.isError) ||
+    connectedWalletsBalances.some((balanceRes) => balanceRes.isError)
   return {
     accountBalance,
     connectedWalletsBalance,
     totalBalance,
-    isLoading
+    isLoading,
+    isError
   }
 }
 
 function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
-  const sdk = getSDK()
-  const audiusBackend = yield* getContext('audiusBackendInstance')
+  const sdk = yield* call(getSDK)
+  const audiusBackend = yield* getContext<AudiusBackend>(
+    'audiusBackendInstance'
+  )
   const queryClient = yield* getContext<QueryClient>('queryClient')
   let totalBalance: AudioWei = AUDIO(0).value
   for (const wallet of wallets) {
@@ -250,7 +265,7 @@ function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
           { address: wallet.address, chain: wallet.chain, includeStaked: true }
         )
     })) as AudioWei | undefined
-    totalBalance += balance ?? AUDIO(0).value
+    totalBalance = AUDIO(totalBalance + (balance ?? AUDIO(0).value)).value
   }
   return totalBalance
 }
@@ -266,5 +281,32 @@ export function* getAudioBalance() {
       ? [{ address: user.spl_wallet, chain: Chain.Sol }]
       : [])
   ]
-  retu
+  return yield* call(getWalletBalances, userWallets)
+}
+
+/**
+ * Sums current audio account balance combined with balance from all connected wallets
+ * @returns
+ */
+export function* getTotalAudioBalance() {
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  const sdk = yield* call(getSDK)
+  const accountBalance = yield* call(getAudioBalance)
+  const currentUserId = yield* call(queryCurrentUserId)
+  const connectedWallets = (yield* call(queryClient.fetchQuery, {
+    queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
+    queryFn: async () => {
+      return getConnectedWalletsQueryFn({
+        sdk,
+        currentUserId
+      })
+    }
+  })) as ConnectedWallet[]
+
+  const connectedWalletsBalance = yield* call(
+    getWalletBalances,
+    connectedWallets
+  )
+
+  return AUDIO(accountBalance + connectedWalletsBalance).value
 }

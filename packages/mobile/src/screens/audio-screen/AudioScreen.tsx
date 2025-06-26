@@ -4,8 +4,7 @@ import { useAudioBalance } from '@audius/common/api'
 import {
   modalsActions,
   tokenDashboardPageActions,
-  tokenDashboardPageSelectors,
-  walletSelectors
+  tokenDashboardPageSelectors
 } from '@audius/common/store'
 import { formatNumberCommas, isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
@@ -42,7 +41,6 @@ import { useThemeColors } from 'app/utils/theme'
 import { ClaimAllRewardsTile } from '../rewards-screen/ClaimAllRewardsTile'
 
 const { setVisibility } = modalsActions
-const { getTotalBalanceLoadDidFail } = walletSelectors
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
 
@@ -116,8 +114,11 @@ export const AudioScreen = () => {
   const navigation = useNavigation()
   const { toast } = useToast()
 
-  const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
-  const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
+  const {
+    totalBalance,
+    isLoading: isAudioBalanceLoading,
+    isError: isAudioBalanceError
+  } = useAudioBalance()
 
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
 
@@ -132,14 +133,14 @@ export const AudioScreen = () => {
   )
 
   useEffect(() => {
-    if (balanceLoadDidFail) {
+    if (isAudioBalanceError) {
       toast({
         content: 'Balance failed to load. Please try again later.',
         type: 'error',
         timeout: 10000
       })
     }
-  }, [balanceLoadDidFail, toast])
+  }, [isAudioBalanceError, toast])
 
   const renderAudioTile = () => {
     return (

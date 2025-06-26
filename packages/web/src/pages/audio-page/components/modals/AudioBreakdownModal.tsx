@@ -30,7 +30,7 @@ const messages = {
 
 const AudioBreakdownBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
-  const { accountBalance: balance } = useAudioBalance()
+  const { accountBalance } = useAudioBalance()
 
   const { data: connectedWallets, isPending: isConnectedWalletsPending } =
     useConnectedWallets()
