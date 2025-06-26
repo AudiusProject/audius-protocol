@@ -2,6 +2,7 @@ import {
   getAssetFromKV,
   serveSinglePageApp
 } from '@cloudflare/kv-asset-handler'
+// eslint-disable-next-line import/no-unresolved
 import manifestJSON from '__STATIC_CONTENT_MANIFEST'
 
 const assetManifest = JSON.parse(manifestJSON)
