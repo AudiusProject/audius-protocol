@@ -1,5 +1,5 @@
 import { full } from '@audius/sdk'
-import { useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { type QueryClient } from '@tanstack/react-query'
 
 import { primeCollectionData } from '~/api/tan-query/utils/primeCollectionData'
 import { primeTrackData } from '~/api/tan-query/utils/primeTrackData'
