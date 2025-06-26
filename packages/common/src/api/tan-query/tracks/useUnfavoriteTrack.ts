@@ -126,7 +126,11 @@ export const useUnfavoriteTrack = () => {
       if (!context) return
 
       // Revert optimistic updates
-      queryClient.setQueryData(getTrackQueryKey(trackId), context.previousTrack)
+      primeTrackData({
+        tracks: [context.previousTrack],
+        queryClient,
+        forceReplace: true
+      })
       dispatch(accountActions.incrementTrackSaveCount())
 
       reportToSentry({

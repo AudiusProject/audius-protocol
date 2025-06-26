@@ -179,10 +179,11 @@ export const useUpdateCollection = () => {
     onError: (_err, { collectionId }, context?: MutationContext) => {
       // If the mutation fails, roll back collection data
       if (context?.previousCollection) {
-        queryClient.setQueryData(
-          getCollectionQueryKey(collectionId),
-          context.previousCollection
-        )
+        primeCollectionData({
+          collections: [context.previousCollection],
+          queryClient,
+          forceReplace: true
+        })
       }
     },
     onSettled: (_, __, { collectionId }) => {
