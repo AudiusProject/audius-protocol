@@ -7,6 +7,8 @@ import { mergeCustomizer } from '~/store/cache/mergeCustomizer'
 
 import { getTrackQueryKey } from '../tracks/useTrack'
 
+import { primeTrackData } from './primeTrackData'
+
 type PartialTrackUpdate = Partial<Track> & { track_id: ID }
 
 /**
@@ -27,14 +29,23 @@ type PartialTrackUpdate = Partial<Track> & { track_id: ID }
 export const updateTrackData = function* (partialTracks: PartialTrackUpdate[]) {
   const queryClient = yield* getContext<QueryClient>('queryClient')
 
-  partialTracks.forEach((partialTrack) => {
+  // Get existing track data and merge with updates
+  const tracksToUpdate = partialTracks.map((partialTrack) => {
     const { track_id } = partialTrack
+    const existingTrack = queryClient.getQueryData(
+      getTrackQueryKey(track_id)
+    ) as Track | undefined
 
-    // Update react-query store
-    queryClient.setQueryData(
-      getTrackQueryKey(track_id),
-      // TODO: drop the merge customizer once we're fully off of redux
-      (prev) => prev && mergeWith({}, prev, partialTrack, mergeCustomizer)
-    )
+    if (existingTrack) {
+      return mergeWith({}, existingTrack, partialTrack, mergeCustomizer)
+    }
+    return partialTrack as Track
+  })
+
+  // Use primeTrackData with forceReplace to ensure updates are saved
+  primeTrackData({
+    tracks: tracksToUpdate,
+    queryClient,
+    forceReplace: true
   })
 }

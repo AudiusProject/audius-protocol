@@ -7,6 +7,8 @@ import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { UserMetadata } from '~/models/User'
 
+import { primeUserData } from '../utils/primeUserData'
+
 import { getUserQueryKey } from './useUser'
 
 type MutationContext = {
@@ -49,10 +51,17 @@ export const useUpdateUser = () => {
       const previousUser = queryClient.getQueryData(getUserQueryKey(userId))
 
       // Optimistically update user
-      queryClient.setQueryData(getUserQueryKey(userId), (old: any) => ({
-        ...old,
-        ...metadata
-      }))
+      if (previousUser) {
+        const updatedUser = {
+          ...previousUser,
+          ...metadata
+        }
+        primeUserData({
+          users: [updatedUser],
+          queryClient,
+          forceReplace: true
+        })
+      }
 
       // Return context with the previous user
       return { previousUser }
@@ -60,7 +69,11 @@ export const useUpdateUser = () => {
     onError: (_err, { userId }, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousUser) {
-        queryClient.setQueryData(getUserQueryKey(userId), context.previousUser)
+        primeUserData({
+          users: [context.previousUser],
+          queryClient,
+          forceReplace: true
+        })
       }
     },
     onSettled: (_, __) => {

@@ -4,14 +4,14 @@ import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { useAppContext } from '~/context/appContext'
-import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
-import { update } from '~/store/cache/actions'
 import { removeFolloweeId } from '~/store/gated-content/slice'
 import { revokeFollowGatedAccess } from '~/store/tipping/slice'
+
+import { primeUserData } from '../utils/primeUserData'
 
 import { useCurrentUserId } from './account/useCurrentUserId'
 import { getUserQueryKey } from './useUser'
@@ -84,17 +84,25 @@ export const useUnfollowUser = () => {
           ...previousUser,
           ...followeeUpdate
         }
-        queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
+        primeUserData({
+          users: [updatedUser],
+          queryClient,
+          forceReplace: true
+        })
       }
-      dispatch(update(Kind.USERS, [{ id: followeeUserId, metadata: update }]))
 
       const currentUser = queryClient.getQueryData(
         getUserQueryKey(currentUserId)
       )
       if (currentUser) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
+        const updatedCurrentUser = {
           ...currentUser,
           followee_count: Math.max((currentUser?.followee_count ?? 0) - 1, 0)
+        }
+        primeUserData({
+          users: [updatedCurrentUser],
+          queryClient,
+          forceReplace: true
         })
       }
 
@@ -108,7 +116,11 @@ export const useUnfollowUser = () => {
       const { previousUser } = context ?? {}
 
       if (previousUser) {
-        queryClient.setQueryData(getUserQueryKey(followeeUserId), previousUser)
+        primeUserData({
+          users: [previousUser],
+          queryClient,
+          forceReplace: true
+        })
       }
 
       reportToSentry({
