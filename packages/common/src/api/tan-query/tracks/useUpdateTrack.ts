@@ -111,10 +111,11 @@ export const useUpdateTrack = () => {
     ) => {
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
-        queryClient.setQueryData(
-          getTrackQueryKey(trackId),
-          context.previousTrack
-        )
+        primeTrackData({
+          tracks: [context.previousTrack],
+          queryClient,
+          forceReplace: true
+        })
       }
 
       // Roll back all collections that contain this track
