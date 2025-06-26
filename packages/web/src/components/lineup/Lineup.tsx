@@ -1,9 +1,9 @@
 import { Status } from '@audius/common/models'
 
-import DesktopPlaylistTile from 'components/track/desktop/ConnectedPlaylistTile'
-import DesktopTrackTile from 'components/track/desktop/ConnectedTrackTile'
-import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
-import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
+import { CollectionTile as DesktopCollectionTile } from 'components/track/desktop/CollectionTile'
+import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTile'
+import { CollectionTile as MobileCollectionTile } from 'components/track/mobile/CollectionTile'
+import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import LineupProvider, { LineupProviderProps } from './LineupProvider'
@@ -48,7 +48,7 @@ const Lineup = ({
     isMobile || variant === LineupVariant.SECTION
       ? MobileTrackTile
       : DesktopTrackTile
-  const playlistTile = isMobile ? MobilePlaylistTile : DesktopPlaylistTile
+  const playlistTile = isMobile ? MobileCollectionTile : DesktopCollectionTile
 
   const providerProps = {
     lineup,

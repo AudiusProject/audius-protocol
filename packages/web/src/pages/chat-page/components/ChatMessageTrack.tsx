@@ -20,7 +20,8 @@ import { pick } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
+import { TrackTile } from 'components/track/mobile/TrackTile'
+import { TrackTileSize } from 'components/track/types'
 
 export const ChatMessageTrack = ({
   link,
@@ -88,14 +89,17 @@ export const ChatMessageTrack = ({
   return trackExists && uid && track_id ? (
     // You may wonder why we use the mobile web track tile here.
     // It's simply because the chat track tile uses the same design as mobile web.
-    <MobileTrackTile
+    <TrackTile
       containerClassName={className}
       index={0}
-      togglePlay={togglePlay}
-      id={track_id}
       uid={uid}
-      isLoading={status === Status.LOADING || status === Status.IDLE}
+      id={track_id}
+      size={TrackTileSize.SMALL}
+      ordered={false}
+      trackTileStyles={{}}
+      togglePlay={togglePlay}
       hasLoaded={() => {}}
+      isLoading={status === Status.LOADING || status === Status.IDLE}
       isTrending={false}
       isActive={isTrackPlaying}
       variant='readonly'

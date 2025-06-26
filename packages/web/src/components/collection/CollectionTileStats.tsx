@@ -34,11 +34,7 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
   }
 
   return (
-    <Flex
-      justifyContent='space-between'
-      alignItems='center'
-      pv={isMobile ? 's' : 'xs'}
-    >
+    <Flex justifyContent='space-between' alignItems='center' pv='s'>
       <Flex gap='l'>
         {isTrending && rankIndex !== undefined ? (
           <EntityRank index={rankIndex} />
