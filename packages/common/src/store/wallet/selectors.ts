@@ -19,10 +19,6 @@ export const getAccountBalance = createSelector(
     !isNullOrUndefined(balance) ? (BigInt(balance) as AudioWei) : balance
 )
 
-export const getAccountBalanceLoading = (state: CommonState) => {
-  return state.wallet.balanceLoading
-}
-
 const getAccountTotalBalanceStr = (state: CommonState) =>
   state.wallet.totalBalance
 
@@ -31,20 +27,3 @@ export const getAccountTotalBalance = createSelector(
   (totalBalance) =>
     !isNullOrUndefined(totalBalance) ? (BigInt(totalBalance) as AudioWei) : null
 )
-
-export const getBalanceLoadDidFail = (state: CommonState) =>
-  state.wallet.balanceLoadDidFail
-
-export const getTotalBalanceLoadDidFail = (state: CommonState) =>
-  state.wallet.totalBalanceLoadDidFail
-
-export const getLocalBalanceDidChange = (state: CommonState): boolean =>
-  state.wallet.localBalanceDidChange
-
-export const getFreezeUntilTime = (state: CommonState): Nullable<number> =>
-  state.wallet.freezeBalanceUntil
-
-export const getUSDCBalance = (state: CommonState): Nullable<UsdcWei> =>
-  state.wallet.usdcBalance
-    ? (BigInt(state.wallet.usdcBalance) as UsdcWei)
-    : null

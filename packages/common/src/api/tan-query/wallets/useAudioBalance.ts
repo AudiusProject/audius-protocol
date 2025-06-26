@@ -1,6 +1,7 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { QueryClient, useQueries, useQuery } from '@tanstack/react-query'
+import { call, getContext } from 'typed-redux-saga/dist'
 import { getAddress } from 'viem'
 
 import {
@@ -9,9 +10,11 @@ import {
 } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
+import { getSDK } from '~/store'
 import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { queryCurrentUserId, queryUser } from '../saga-utils'
 import { QueryOptions, type QueryKey } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
@@ -227,4 +230,41 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
     totalBalance,
     isLoading
   }
+}
+
+function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
+  const sdk = getSDK()
+  const audiusBackend = yield* getContext('audiusBackendInstance')
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  let totalBalance: AudioWei = AUDIO(0).value
+  for (const wallet of wallets) {
+    const balance = (yield* call(queryClient.fetchQuery, {
+      queryKey: getWalletAudioBalanceQueryKey({
+        address: wallet.address,
+        chain: wallet.chain,
+        includeStaked: true
+      }),
+      queryFn: async () =>
+        fetchWalletAudioBalance(
+          { sdk, audiusBackend },
+          { address: wallet.address, chain: wallet.chain, includeStaked: true }
+        )
+    })) as AudioWei | undefined
+    totalBalance += balance ?? AUDIO(0).value
+  }
+  return totalBalance
+}
+
+export function* getAudioBalance() {
+  const currentUserId = yield* call(queryCurrentUserId)
+  const user = yield* call(queryUser, currentUserId)
+  const userWallets = [
+    ...(user?.erc_wallet
+      ? [{ address: user.erc_wallet, chain: Chain.Eth }]
+      : []),
+    ...(user?.spl_wallet
+      ? [{ address: user.spl_wallet, chain: Chain.Sol }]
+      : [])
+  ]
+  retu
 }
