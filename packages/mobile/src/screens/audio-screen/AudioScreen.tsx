@@ -5,7 +5,6 @@ import {
   modalsActions,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors,
-  walletActions,
   walletSelectors
 } from '@audius/common/store'
 import { formatNumberCommas, isNullOrUndefined } from '@audius/common/utils'
@@ -43,7 +42,6 @@ import { useThemeColors } from 'app/utils/theme'
 import { ClaimAllRewardsTile } from '../rewards-screen/ClaimAllRewardsTile'
 
 const { setVisibility } = modalsActions
-const { getBalance } = walletActions
 const { getTotalBalanceLoadDidFail } = walletSelectors
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
@@ -130,7 +128,6 @@ export const AudioScreen = () => {
   useFocusEffect(
     useCallback(() => {
       dispatch(fetchAssociatedWallets())
-      dispatch(getBalance())
     }, [dispatch])
   )
 

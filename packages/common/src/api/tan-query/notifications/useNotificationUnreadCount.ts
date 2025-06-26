@@ -1,14 +1,9 @@
-import { useEffect } from 'react'
-
 import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
-import { usePrevious } from 'react-use'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { useRemoteVar } from '~/hooks/useRemoteVar'
 import { ID } from '~/models/Identifiers'
-import { getBalance } from '~/store/wallet/slice'
 
 import { IntKeys } from '../../../services/remote-config'
 import { QUERY_KEYS } from '../queryKeys'
@@ -31,7 +26,6 @@ export const getNotificationUnreadCountQueryKey = (
  * Polls based on the NOTIFICATION_POLLING_FREQ_MS remote config value.
  */
 export const useNotificationUnreadCount = () => {
-  const dispatch = useDispatch()
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const pollingFreqMs = useRemoteVar(IntKeys.NOTIFICATION_POLLING_FREQ_MS)
@@ -51,15 +45,6 @@ export const useNotificationUnreadCount = () => {
     refetchInterval: pollingFreqMs,
     enabled: !!currentUserId
   })
-
-  // When notitifation count increases, update the balance
-  const { data: count } = query
-  const prevCount = usePrevious(count)
-  useEffect(() => {
-    if (prevCount !== undefined && count !== undefined && count > prevCount) {
-      dispatch(getBalance())
-    }
-  }, [count, prevCount, dispatch])
 
   return query
 }

@@ -4,8 +4,7 @@ import { useRemoteVar } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import {
   tokenDashboardPageActions,
-  walletSelectors,
-  walletActions
+  walletSelectors
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -22,7 +21,6 @@ import { ClaimAllRewardsTile } from './ClaimAllRewardsTile'
 import { TiersTile } from './TiersTile'
 import { TrendingRewardsTile } from './TrendingRewardsTile'
 
-const { getBalance } = walletActions
 const { getTotalBalanceLoadDidFail } = walletSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
 
@@ -85,7 +83,6 @@ export const RewardsScreen = () => {
   useFocusEffect(
     useCallback(() => {
       dispatch(fetchAssociatedWallets())
-      dispatch(getBalance())
     }, [dispatch])
   )
 

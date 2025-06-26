@@ -2,7 +2,7 @@ import {
   undisbursedUserChallengeFromSDK,
   userChallengeFromSDK
 } from '@audius/common/adapters'
-import { queryCurrentUserId } from '@audius/common/api'
+import { QUERY_KEYS, queryCurrentUserId } from '@audius/common/api'
 import {
   UserChallenge,
   ChallengeRewardID,
@@ -45,6 +45,7 @@ import {
   Errors,
   RewardManagerError
 } from '@audius/sdk'
+import { QueryClient } from '@tanstack/react-query'
 import {
   call,
   fork,
@@ -68,7 +69,7 @@ import {
 const { AUDIO_PAGE } = route
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
-const { getBalance, increaseBalance } = walletActions
+const { increaseBalance } = walletActions
 const {
   getClaimStatus,
   getClaimToRetry,
@@ -589,6 +590,7 @@ function* fetchUserChallengesAsync() {
 function* checkForNewDisbursements(
   action: ReturnType<typeof fetchUserChallengesSucceeded>
 ) {
+  const queryClient = yield* getContext('queryClient')
   const { userChallenges } = action.payload
   if (!userChallenges) {
     return
@@ -616,7 +618,11 @@ function* checkForNewDisbursements(
     }
   }
   if (newDisbursement) {
-    yield* put(getBalance())
+    // Trigger a refetch for all audio balances
+    yield* call(queryClient.invalidateQueries, {
+      queryKey: [QUERY_KEYS.audioBalance]
+    })
+
     yield* put(showMusicConfetti())
     yield* put(showRewardClaimedToast())
   }

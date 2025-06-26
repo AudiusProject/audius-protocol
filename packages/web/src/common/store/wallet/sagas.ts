@@ -6,7 +6,6 @@ import {
   StringWei
 } from '@audius/common/models'
 import {
-  accountActions,
   tokenDashboardPageActions,
   walletSelectors,
   walletActions,
@@ -16,17 +15,15 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, isNullOrUndefined } from '@audius/common/utils'
 import { AudioWei } from '@audius/fixed-decimal'
-import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
+import { all, call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
 const {
-  getBalance,
   setBalanceError,
   setBalance,
   send,
@@ -40,7 +37,6 @@ const {
   setCanRecipientReceiveWAudio,
   inputSendData
 } = tokenDashboardPageActions
-const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
 // TODO: handle errors
 const errors = {
@@ -172,10 +168,6 @@ function* sendAsync({
   }
 }
 
-function* getWalletBalanceAndWallets() {
-  yield* all([put(getBalance())])
-}
-
 function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
@@ -304,33 +296,12 @@ function* watchSend() {
   yield* takeEvery(send.type, sendAsync)
 }
 
-function* watchGetBalance() {
-  yield* takeEvery(getBalance.type, fetchBalanceAsync)
-}
-
 function* watchInputSendData() {
   yield* takeEvery(inputSendData.type, checkAssociatedTokenAccountOrSol)
 }
 
-function* watchFetchAccountSucceeded() {
-  try {
-    yield* all([
-      take(fetchAccountSucceeded.type),
-      take(SETUP_BACKEND_SUCCEEDED)
-    ])
-    yield* getWalletBalanceAndWallets()
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 const sagas = () => {
-  return [
-    watchGetBalance,
-    watchInputSendData,
-    watchSend,
-    watchFetchAccountSucceeded
-  ]
+  return [watchInputSendData, watchSend]
 }
 
 export default sagas

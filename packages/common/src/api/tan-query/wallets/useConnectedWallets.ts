@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux'
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
-import { walletActions } from '~/store/wallet'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
@@ -102,8 +101,6 @@ export const useAddConnectedWallet = () => {
       })
 
       // Temporarily manually refetch relevant redux states
-      // TODO: Remove once consumers of the redux store migrate to tanquery
-      dispatch(walletActions.getBalance())
       dispatch(
         profilePageActions.fetchProfile(
           null,
@@ -157,8 +154,6 @@ export const useRemoveConnectedWallet = () => {
       })
 
       // Temporarily manually refetch relevant redux states
-      // TODO: Remove once consumers of the redux store migrate to tanquery
-      dispatch(walletActions.getBalance())
       dispatch(
         profilePageActions.fetchProfile(
           null,

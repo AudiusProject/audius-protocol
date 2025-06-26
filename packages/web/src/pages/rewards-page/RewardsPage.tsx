@@ -1,10 +1,8 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
-import { walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconGift } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
@@ -24,7 +22,6 @@ import Tiers from './Tiers'
 import { ChallengeRewardsTile } from './components/ChallengeRewards/ChallengeRewardsTile'
 import { TrendingRewardsTile } from './components/TrendingRewards/TrendingRewardsTile'
 const { REWARDS_PAGE, TRENDING_PAGE } = route
-const { getBalance } = walletActions
 
 const messages = {
   title: 'Rewards & Perks',
@@ -93,11 +90,7 @@ const MobilePage = ({ children }: { children: ReactNode }) => {
 }
 
 export const RewardsPage = () => {
-  const dispatch = useDispatch()
   const isMobile = useIsMobile()
-  useEffect(() => {
-    dispatch(getBalance())
-  }, [dispatch])
   const Page = isMobile ? MobilePage : DesktopPage
   return (
     <Page>

@@ -1,11 +1,6 @@
-import { useEffect } from 'react'
-
-import { walletActions } from '@audius/common/store'
-import { useAppState } from '@react-native-community/hooks'
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import type { NavigatorScreenParams } from '@react-navigation/native'
-import { useDispatch } from 'react-redux'
 
 import { usePhantomConnect } from '../external-wallets/usePhantomConnect'
 
@@ -21,7 +16,6 @@ import type { ProfileTabScreenParamList } from './ProfileTabScreen'
 import type { TrendingTabScreenParamList } from './TrendingTabScreen'
 import { TrendingTabScreen } from './TrendingTabScreen'
 import { usePrefetchNotifications } from './usePrefetchNotifications'
-const { getBalance } = walletActions
 
 export type AppScreenParamList = {
   feed: NavigatorScreenParams<FeedTabScreenParamList>
@@ -37,16 +31,8 @@ const screenOptions = { headerShown: false }
 const tabBar = (props: BottomTabBarProps) => <AppTabBar {...props} />
 
 export const AppTabsScreen = () => {
-  const dispatch = useDispatch()
-  const appState = useAppState()
   usePhantomConnect((route) => route?.params?.params?.params ?? ({} as any))
   usePrefetchNotifications()
-
-  useEffect(() => {
-    if (appState === 'active') {
-      dispatch(getBalance())
-    }
-  }, [appState, dispatch])
 
   return (
     <Tab.Navigator tabBar={tabBar} screenOptions={screenOptions}>
