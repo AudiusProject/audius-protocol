@@ -1,10 +1,8 @@
-// @ts-ignore - import of virtual manifest module provided by Wrangler
 import {
   getAssetFromKV,
   serveSinglePageApp
 } from '@cloudflare/kv-asset-handler'
 import manifestJSON from '__STATIC_CONTENT_MANIFEST'
-// @ts-ignore - kv asset handler helper
 
 const assetManifest = JSON.parse(manifestJSON)
 
