@@ -25,6 +25,7 @@ export type CardProps = PaperProps & {
 
 export const Card = forwardRef((props: CardProps, ref: Ref<HTMLDivElement>) => {
   const { size, children, ...other } = props
+  console.log('asdf size: ', size)
   return (
     <Paper
       ref={ref}
