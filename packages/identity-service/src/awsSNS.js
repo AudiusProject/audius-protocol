@@ -40,7 +40,6 @@ function _promisifySNS(functionName) {
  * @param {any} notification notification object for the push notification
  * @param {Boolean=True} playSound should play a sound when it's sent
  * @param {String} title title of push notification
- * @param {String} imageUrl optional image URL for rich notifications
  */
 function _formatIOSMessage(
   message,
@@ -48,8 +47,7 @@ function _formatIOSMessage(
   badgeCount,
   notification,
   playSound = true,
-  title = null,
-  imageUrl = null
+  title = null
 ) {
   let type = null
   if (targetARN.includes('APNS_SANDBOX')) type = 'APNS_SANDBOX'
@@ -77,15 +75,6 @@ function _formatIOSMessage(
       }
     }
 
-    // Enable rich notifications when image is provided
-    if (imageUrl) {
-      apnsConfig.aps['mutable-content'] = 1
-      apnsConfig.data = {
-        ...notification,
-        imageUrl
-      }
-    }
-
     jsonMessage[type] = JSON.stringify(apnsConfig)
   }
 
@@ -106,7 +95,6 @@ function _formatIOSMessage(
  * @param {any} notification notification object for the push notification
  * @param {Boolean=True} playSound should play a sound when it's sent
  * @param {String} title title of push notification
- * @param {String} imageUrl optional image URL for rich notifications
  * NOTE: For reference on https://firebase.google.com/docs/cloud-messaging/http-server-ref
  */
 function _formatAndroidMessage(
@@ -114,8 +102,7 @@ function _formatAndroidMessage(
   targetARN,
   notification,
   playSound = true,
-  title = null,
-  imageUrl = null
+  title = null
 ) {
   const type = 'GCM'
 
@@ -128,13 +115,9 @@ function _formatAndroidMessage(
       notification: {
         ...(title ? { title } : {}),
         body: message,
-        sound: playSound && 'default',
-        ...(imageUrl ? { image: imageUrl } : {})
+        sound: playSound && 'default'
       },
-      data: {
-        ...notification,
-        ...(imageUrl ? { imageUrl } : {})
-      }
+      data: notification
     }
     jsonMessage[type] = JSON.stringify(messageData)
   }
@@ -166,7 +149,7 @@ async function drainMessageObject(bufferObj) {
   let numSentNotifs = 0
 
   const { userId, notification } = bufferObj
-  const { message, title, playSound, imageUrl } = bufferObj.notificationParams
+  const { message, title, playSound } = bufferObj.notificationParams
 
   // Ensure badge count entry exists for user
   await models.PushNotificationBadgeCounts.findOrCreate({
@@ -201,8 +184,7 @@ async function drainMessageObject(bufferObj) {
             newBadgeCount,
             notification,
             playSound,
-            title,
-            imageUrl
+            title
           )
         }
         if (deviceType === 'android') {
@@ -211,8 +193,7 @@ async function drainMessageObject(bufferObj) {
             awsARN,
             notification,
             playSound,
-            title,
-            imageUrl
+            title
           )
         }
 
