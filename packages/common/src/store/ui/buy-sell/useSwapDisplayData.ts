@@ -4,6 +4,7 @@ import type {
   BuySellTab,
   Screen,
   SuccessDisplayData,
+  ConfirmationScreenData,
   TokenPair,
   SwapResult,
   TransactionData
@@ -60,8 +61,9 @@ export const useSwapDisplayData = ({
       pricePerBaseToken: calculatePriceInternal(transactionData, activeTab),
       baseTokenSymbol: selectedPair.baseToken.symbol,
       payAmount: transactionData.inputAmount,
-      receiveAmount: transactionData.outputAmount
-    }
+      receiveAmount: transactionData.outputAmount,
+      exchangeRate: transactionData.exchangeRate
+    } as ConfirmationScreenData
   }, [activeTab, selectedPair, transactionData])
 
   useEffect(() => {
@@ -95,7 +97,8 @@ export const useSwapDisplayData = ({
         ),
         baseTokenSymbol: selectedPair.baseToken.symbol,
         payAmount,
-        receiveAmount
+        receiveAmount,
+        exchangeRate: transactionData?.exchangeRate
       })
     }
   }, [

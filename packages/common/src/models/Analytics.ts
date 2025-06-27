@@ -425,6 +425,12 @@ export enum Name {
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
+  BUY_SELL_SWAP_REQUESTED = 'Buy Sell Modal: Swap Requested',
+  BUY_SELL_SWAP_CONFIRMED = 'Buy Sell Modal: Swap Confirmed',
+  BUY_SELL_SWAP_SUCCESS = 'Buy Sell Modal: Swap Success',
+  BUY_SELL_SWAP_FAILURE = 'Buy Sell Modal: Swap Failure',
+  BUY_SELL_ADD_FUNDS_CLICKED = 'Buy Sell Modal: Add Funds Clicked',
+
   // Withdraw USDC
 
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
@@ -2104,6 +2110,41 @@ type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
 
+export type BuySellSwapEventFields = {
+  activeTab: 'buy' | 'sell'
+  inputToken: string
+  outputToken: string
+  inputAmount?: number
+  outputAmount?: number
+  exchangeRate?: number | null
+}
+
+type BuySellSwapRequested = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_REQUESTED
+}
+
+type BuySellSwapConfirmed = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_CONFIRMED
+  slippageBps: number
+}
+
+type BuySellSwapSuccess = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_SUCCESS
+  signature: string
+}
+
+type BuySellSwapFailure = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_FAILURE
+  errorType: string
+  errorStage: string
+  errorMessage?: string
+}
+
+type BuySellAddFundsClicked = {
+  eventName: Name.BUY_SELL_ADD_FUNDS_CLICKED
+  source: 'insufficient_balance_hint' | 'input_screen'
+}
+
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
@@ -3042,6 +3083,11 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
+  | BuySellSwapRequested
+  | BuySellSwapConfirmed
+  | BuySellSwapSuccess
+  | BuySellSwapFailure
+  | BuySellAddFundsClicked
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError

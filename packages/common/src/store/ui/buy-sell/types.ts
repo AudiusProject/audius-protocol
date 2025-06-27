@@ -45,7 +45,6 @@ export type TokenAmountSectionProps = {
   tooltipPlacement?: TooltipPlacement
 }
 
-// Data structure for the transaction success screen
 export type SuccessDisplayData = {
   payTokenInfo: TokenInfo
   receiveTokenInfo: TokenInfo
@@ -53,11 +52,23 @@ export type SuccessDisplayData = {
   receiveAmount: number
   pricePerBaseToken: number
   baseTokenSymbol: string
+  exchangeRate?: number | null
+}
+
+export type ConfirmationScreenData = {
+  payTokenInfo: TokenInfo
+  receiveTokenInfo: TokenInfo
+  payAmount: number
+  receiveAmount: number
+  pricePerBaseToken: number
+  baseTokenSymbol: string
+  exchangeRate?: number | null
 }
 
 export type SwapResult = {
   inputAmount: number
   outputAmount: number
+  signature?: string
 }
 
 export type TransactionData = {
@@ -65,4 +76,27 @@ export type TransactionData = {
   outputAmount: number
   isValid: boolean
   error?: string | null
+  exchangeRate?: number | null
 } | null
+
+/**
+ * Utility function to get input and output tokens based on active tab and token pair
+ * For 'buy': user pays with quote token (e.g., USDC) to get base token (e.g., AUDIO)
+ * For 'sell': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
+ */
+export const getSwapTokens = (activeTab: BuySellTab, tokenPair: TokenPair) => {
+  return {
+    inputToken:
+      activeTab === 'buy'
+        ? tokenPair.quoteToken.symbol
+        : tokenPair.baseToken.symbol,
+    outputToken:
+      activeTab === 'buy'
+        ? tokenPair.baseToken.symbol
+        : tokenPair.quoteToken.symbol,
+    inputTokenInfo:
+      activeTab === 'buy' ? tokenPair.quoteToken : tokenPair.baseToken,
+    outputTokenInfo:
+      activeTab === 'buy' ? tokenPair.baseToken : tokenPair.quoteToken
+  }
+}

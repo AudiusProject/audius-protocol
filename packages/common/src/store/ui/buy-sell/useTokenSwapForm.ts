@@ -87,6 +87,7 @@ export type TokenSwapFormProps = {
     isValid: boolean
     error: string | null
     isInsufficientBalance: boolean
+    exchangeRate?: number | null
   }) => void
   /**
    * Initial value for the input field
@@ -241,7 +242,8 @@ export const useTokenSwapForm = ({
         outputAmount: numericOutputAmount,
         isValid,
         error,
-        isInsufficientBalance
+        isInsufficientBalance,
+        exchangeRate: currentExchangeRate
       })
     }
   }, [
@@ -251,7 +253,8 @@ export const useTokenSwapForm = ({
     error, // Use the filtered error
     isExchangeRateLoading,
     onTransactionDataChange,
-    isInsufficientBalance
+    isInsufficientBalance,
+    currentExchangeRate
   ])
 
   // Handle input changes
