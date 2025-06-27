@@ -204,7 +204,10 @@ const useSearchQueryProps = <T>(
         ? await sdk.full.search.searchTags(searchParams)
         : await sdk.full.search.search(searchParams)
 
-      const { tracks, playlists, albums, users } = searchResultsFromSDK(data)
+      const { tracks, playlists, albums, users } = searchResultsFromSDK(
+        data,
+        queryClient
+      )
 
       const primeSearchSlice = <
         T extends LineupData | UserMetadata | UserCollectionMetadata
