@@ -49,9 +49,10 @@ class NotificationService: UNNotificationServiceExtension {
             // Create temporary file
             let fileManager = FileManager.default
             let tmpDir = fileManager.temporaryDirectory
-            let fileName = url.lastPathComponent.isEmpty ? "image" : url.lastPathComponent
+            // Strip any existing extension from the filename to avoid double extensions
+            let baseFileName = url.lastPathComponent.isEmpty ? "image" : url.deletingPathExtension().lastPathComponent
             let fileExtension = self.getFileExtension(from: response)
-            let tmpFileUrl = tmpDir.appendingPathComponent("\(fileName).\(fileExtension)")
+            let tmpFileUrl = tmpDir.appendingPathComponent("\(baseFileName).\(fileExtension)")
             
             do {
                 try data.write(to: tmpFileUrl)
