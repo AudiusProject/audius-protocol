@@ -51,6 +51,7 @@ import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceF
 import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
+import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
@@ -129,7 +130,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
-  WALLET_AUDIO_PAGE,
+  WALLET_SLUG_PAGE,
   REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -790,6 +791,14 @@ const WebPlayer = (props) => {
               />
               <Route
                 exact
+                path={WALLET_SLUG_PAGE}
+                isMobile={isMobile}
+                render={(props) => {
+                  return <AssetDetailPage {...props} />
+                }}
+              />
+              <Route
+                exact
                 path={PAYMENTS_PAGE}
                 isMobile={isMobile}
                 component={WalletPage}
@@ -797,12 +806,6 @@ const WebPlayer = (props) => {
               <Route
                 exact
                 path={AUDIO_PAGE}
-                isMobile={isMobile}
-                component={AudioPage}
-              />
-              <Route
-                exact
-                path={WALLET_AUDIO_PAGE}
                 isMobile={isMobile}
                 component={AudioPage}
               />
