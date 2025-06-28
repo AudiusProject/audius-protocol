@@ -1,9 +1,8 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { useUserByHandle } from '@audius/common/api'
-import { useTwitterButtonStatus } from '@audius/common/hooks'
 import { Nullable } from '@audius/common/utils'
-import { Button, ButtonProps, spacing } from '@audius/harmony'
+import { Button, ButtonProps } from '@audius/harmony'
 
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
@@ -58,15 +57,6 @@ export const XShareButton = (props: XShareButtonProps) => {
     'additionalHandle' in other ? other.additionalHandle : undefined
   )
 
-  const {
-    userName,
-    additionalUserName,
-    shareTwitterStatus,
-    twitterHandle,
-    additionalTwitterHandle,
-    setIdle
-  } = useTwitterButtonStatus(user, additionalUser)
-
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.stopPropagation()
@@ -76,36 +66,41 @@ export const XShareButton = (props: XShareButtonProps) => {
           record(other.analytics)
         }
         onAfterShare?.()
+      } else if (
+        other.type === 'dynamic' &&
+        user?.handle &&
+        (other.additionalHandle ? additionalUser?.handle : true)
+      ) {
+        const handle = user?.handle ? `@${user?.handle}` : user?.name
+
+        const otherHandle = other.additionalHandle
+          ? additionalUser?.handle
+            ? `@${additionalUser?.handle}`
+            : additionalUser?.name
+          : null
+
+        const xData = other.shareData(handle, otherHandle)
+        if (xData) {
+          const { shareText, analytics } = xData
+          openTwitterLink(url, shareText)
+          if (analytics) {
+            record(analytics)
+          }
+          onAfterShare?.()
+        }
       }
     },
-    [url, other, record, onAfterShare]
+    [
+      other,
+      user?.handle,
+      user?.name,
+      additionalUser?.handle,
+      additionalUser?.name,
+      url,
+      onAfterShare,
+      record
+    ]
   )
-
-  if (
-    other.type === 'dynamic' &&
-    shareTwitterStatus === 'success' &&
-    userName &&
-    (other.additionalHandle ? additionalUserName : true)
-  ) {
-    const handle = twitterHandle ? `@${twitterHandle}` : userName
-
-    const otherHandle = other.additionalHandle
-      ? additionalTwitterHandle
-        ? `@${additionalTwitterHandle}`
-        : additionalUserName
-      : null
-
-    const xData = other.shareData(handle, otherHandle)
-    if (xData) {
-      const { shareText, analytics } = xData
-      openTwitterLink(url, shareText)
-      if (analytics) {
-        record(analytics)
-      }
-      onAfterShare?.()
-      setIdle()
-    }
-  }
 
   return (
     <Button
