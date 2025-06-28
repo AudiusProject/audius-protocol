@@ -13,7 +13,7 @@ import ShareButton from 'components/alt-button/ShareButton'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import { GatedConditionsPill } from './GatedConditionsPill'
-import styles from './desktop/TrackTile.module.css'
+import styles from './ViewerActionButtons.module.css'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 
