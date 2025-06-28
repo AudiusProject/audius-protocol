@@ -4,14 +4,13 @@ import { useCurrentAccountUser } from '@audius/common/api'
 import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { IconTwitter, IconCheck, Button } from '@audius/harmony'
+import { IconCheck } from '@audius/harmony'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { useRecord, make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { audiusSdk } from 'services/audius-sdk'
-import { env } from 'services/env'
-import { openTwitterLink } from 'utils/tweet'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
@@ -21,10 +20,9 @@ const { getSendTipData } = tippingSelectors
 const messages = {
   sending: 'SENDING',
   sentSuccessfully: 'SENT SUCCESSFULLY',
-  supportOnTwitter: 'Share your support on Twitter!',
-  shareToTwitter: 'Share to Twitter',
-  twitterCopyPrefix: 'I just tipped ',
-  twitterCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip'
+  supportOnX: 'Share your support on X!',
+  xCopyPrefix: 'I just tipped ',
+  xCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip'
 }
 
 export const TipSent = () => {
@@ -44,48 +42,63 @@ export const TipSent = () => {
   const sendTipData = useSelector(getSendTipData)
   const { user: recipient, amount: sendAmount, source } = sendTipData
 
-  const handleShareClick = useCallback(async () => {
-    const formattedSendAmount = formatNumberCommas(sendAmount)
-    const sdk = await audiusSdk()
-    if (accountUserId && recipient) {
-      let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
-      if (recipient.twitter_handle) {
-        recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
+  const handleShareData = useCallback(
+    (xHandle: string) => {
+      const formattedSendAmount = formatNumberCommas(sendAmount)
+      const recipientAndAmount = `${xHandle} ${formattedSendAmount}`
+      const shareText = `${messages.xCopyPrefix}${recipientAndAmount}${messages.xCopySuffix}`
+
+      const analytics = make(Name.TIP_AUDIO_TWITTER_SHARE, {
+        senderHandle: accountHandle ?? '',
+        recipientHandle: recipient?.handle ?? '',
+        amount: sendAmount,
+        device: 'web' as const,
+        source
+      })
+
+      return { shareText, analytics }
+    },
+    [sendAmount, accountHandle, recipient?.handle, source]
+  )
+
+  const recordDetailedAnalytics = useCallback(async () => {
+    if (accountUserId && recipient && accountErcWallet) {
+      try {
+        const sdk = await audiusSdk()
+        const [senderWallet, recipientWallet] = await Promise.all([
+          sdk.services.claimableTokensClient.deriveUserBank({
+            ethWallet: accountErcWallet,
+            mint: 'wAUDIO'
+          }),
+          sdk.services.claimableTokensClient.deriveUserBank({
+            ethWallet: recipient.erc_wallet,
+            mint: 'wAUDIO'
+          })
+        ])
+
+        record(
+          make(Name.TIP_AUDIO_TWITTER_SHARE, {
+            senderWallet: senderWallet.toBase58() as SolanaWalletAddress,
+            recipientWallet: recipientWallet.toBase58() as SolanaWalletAddress,
+            senderHandle: accountHandle ?? '',
+            recipientHandle: recipient.handle,
+            amount: sendAmount,
+            device: 'web',
+            source
+          })
+        )
+      } catch (error) {
+        console.error('Failed to derive wallet analytics:', error)
       }
-      const message = `${messages.twitterCopyPrefix}${recipientAndAmount}${messages.twitterCopySuffix}`
-      openTwitterLink(`${env.AUDIUS_URL}/${recipient.handle}`, message)
-
-      const [senderWallet, recipientWallet] = await Promise.all([
-        sdk.services.claimableTokensClient.deriveUserBank({
-          ethWallet: accountErcWallet,
-          mint: 'wAUDIO'
-        }),
-        sdk.services.claimableTokensClient.deriveUserBank({
-          ethWallet: recipient.erc_wallet,
-          mint: 'wAUDIO'
-        })
-      ])
-
-      record(
-        make(Name.TIP_AUDIO_TWITTER_SHARE, {
-          senderWallet: senderWallet.toBase58() as SolanaWalletAddress,
-          recipientWallet: recipientWallet.toBase58() as SolanaWalletAddress,
-          senderHandle: accountHandle ?? '',
-          recipientHandle: recipient.handle,
-          amount: sendAmount,
-          device: 'web',
-          source
-        })
-      )
     }
   }, [
-    sendAmount,
     accountUserId,
     recipient,
     accountErcWallet,
-    record,
     accountHandle,
-    source
+    sendAmount,
+    source,
+    record
   ])
 
   const renderSentAudio = () => (
@@ -112,17 +125,16 @@ export const TipSent = () => {
         imgClassName={styles.smallDynamicPhoto}
       />
       <div className={cn(styles.flexCenter, styles.support)}>
-        {messages.supportOnTwitter}
+        {messages.supportOnX}
       </div>
       <div className={styles.flexCenter}>
-        <Button
-          variant='primary'
-          color='blue'
-          onClick={handleShareClick}
-          iconLeft={IconTwitter}
-        >
-          {messages.shareToTwitter}
-        </Button>
+        <XShareButton
+          type='dynamic'
+          handle={recipient.handle}
+          shareData={handleShareData}
+          url={`https://audius.co/${recipient.handle}`}
+          onAfterShare={recordDetailedAnalytics}
+        />
       </div>
     </div>
   ) : null

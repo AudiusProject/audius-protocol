@@ -6,6 +6,7 @@ import { SupportingRankUpNotification } from '@audius/common/store'
 import { IconTrending } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { env } from 'services/env'
 
 import styles from './TopSupportingNotification.module.css'
@@ -15,7 +16,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
@@ -24,7 +24,7 @@ const messages = {
   title: 'Top Supporter',
   supporterChange: "You're now their",
   supporter: 'Top Supporter',
-  twitterShare: (handle: string, rank: number) =>
+  xShare: (handle: string, rank: number) =>
     `I'm now ${handle}'s #${rank} Top Supporter on @audius #Audius $AUDIO  #AUDIOTip`
 }
 
@@ -42,17 +42,16 @@ export const TopSupportingNotification = (
 
   const handleClick = useGoToProfile(user)
 
-  const handleTwitterShare = useCallback(
-    (handle: string) => {
-      const shareText = messages.twitterShare(handle, rank)
-      const analytics = make(
-        Name.NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE,
-        {
-          text: shareText
-        }
-      )
-
-      return { shareText, analytics }
+  const handleXShare = useCallback(
+    (twitterHandle: string) => {
+      const shareText = messages.xShare(twitterHandle, rank)
+      return {
+        shareText,
+        analytics: make(
+          Name.NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE,
+          { text: shareText }
+        )
+      }
     },
     [rank]
   )
@@ -80,11 +79,11 @@ export const TopSupportingNotification = (
           {messages.supporterChange} #{rank} {messages.supporter}
         </span>
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={user.handle}
         url={`${env.AUDIUS_URL}/${user.handle}`}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

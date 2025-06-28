@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { useNotificationEntity, useUsers } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
-  Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
   CollectionEntity
@@ -13,6 +12,7 @@ import { lowerCase } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { push } from 'utils/navigation'
 
 import { EntityLink } from './components/EntityLink'
@@ -21,7 +21,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
@@ -31,11 +30,7 @@ const messages = {
   youJustPurchased: 'You just purchased ',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (
-    title: string,
-    sellerUsername: string,
-    type: Entity.Track | Entity.Album
-  ) =>
+  xShare: (title: string, sellerUsername: string, type: string) =>
     `I bought the ${lowerCase(
       type
     )} ${title} by ${sellerUsername} on @Audius! $AUDIO #AudiusPremium`
@@ -65,7 +60,7 @@ export const USDCPurchaseBuyerNotification = (
 
   const handleShare = useCallback(
     (sellerHandle: string) => {
-      const shareText = messages.twitterShare(
+      const shareText = messages.xShare(
         getEntityTitle(content),
         sellerHandle,
         entityType
@@ -92,7 +87,7 @@ export const USDCPurchaseBuyerNotification = (
         <UserNameLink user={sellerUser} notification={notification} />
         {messages.exclamation}
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         url={getEntityLink(content, true)}
         handle={sellerUser.handle}

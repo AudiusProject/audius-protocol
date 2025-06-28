@@ -9,6 +9,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { push } from 'utils/navigation'
 
 import { EntityLink } from './components/EntityLink'
@@ -17,7 +18,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
@@ -25,7 +25,7 @@ import { getEntityLink } from './utils'
 const messages = {
   title: 'New remix of your track',
   by: 'by',
-  shareTwitterText: (track: TrackMetadata, handle: string) =>
+  shareXText: (track: TrackMetadata, handle: string) =>
     `New remix of ${track.title} by ${handle} on @audius #Audius $AUDIO`
 }
 
@@ -59,10 +59,7 @@ export const RemixCreateNotification = (
   const handleShare = useCallback(
     (twitterHandle: string) => {
       if (!parentTrackEntity) return null
-      const shareText = messages.shareTwitterText(
-        parentTrackEntity,
-        twitterHandle
-      )
+      const shareText = messages.shareXText(parentTrackEntity, twitterHandle)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_REMIX_CREATE_TWITTER_SHARE,
         { text: shareText }
@@ -83,7 +80,7 @@ export const RemixCreateNotification = (
         <EntityLink entity={childTrackEntity} entityType={entityType} />{' '}
         {messages.by} <UserNameLink user={user} notification={notification} />
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={user.handle}
         url={getEntityLink(parentTrackEntity, true)}

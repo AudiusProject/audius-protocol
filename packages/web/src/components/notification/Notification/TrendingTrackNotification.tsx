@@ -9,6 +9,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { push } from 'utils/navigation'
 
 import { EntityLink } from './components/EntityLink'
@@ -17,7 +18,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTrending } from './components/icons'
 import { getEntityLink } from './utils'
 
@@ -25,7 +25,7 @@ const messages = {
   title: "You're Trending",
   is: 'is',
   trending: 'on Trending right now!',
-  twitterShareText: (entityTitle: string) =>
+  xShareText: (entityTitle: string) =>
     `My track ${entityTitle} is trending on @audius! Check it out! #Audius #AudiusTrending $AUDIO`
 }
 
@@ -50,7 +50,7 @@ export const TrendingTrackNotification = (
 
   if (!entity) return null
 
-  const shareText = messages.twitterShareText((entity as TrackEntity).title)
+  const shareText = messages.xShareText((entity as TrackEntity).title)
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -61,7 +61,7 @@ export const TrendingTrackNotification = (
         <EntityLink entity={entity} entityType={entityType} /> {messages.is} #
         {rank} {messages.trending}
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='static'
         url={getEntityLink(entity, true)}
         shareText={shareText}

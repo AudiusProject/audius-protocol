@@ -8,8 +8,8 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { TwitterShareButton } from 'components/notification/Notification/components/TwitterShareButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { preload } from 'utils/image'
 
 import styles from './SearchBarResult.module.css'
@@ -60,7 +60,7 @@ const SearchBarResult = memo((props) => {
   } = props
   const isUser = kind === Kind.USERS
 
-  const handleTwitterShare = useCallback((handle) => {
+  const handleXShare = useCallback((handle) => {
     const shareText = messages.tweet(handle)
     return { shareText }
   }, [])
@@ -116,12 +116,12 @@ const SearchBarResult = memo((props) => {
       {!allowAiAttribution ? (
         <>
           <Tag>{messages.disabledTag}</Tag>
-          <TwitterShareButton
+          <XShareButton
             className={styles.twitterButton}
             type='dynamic'
             handle={handle}
             name={name}
-            shareData={handleTwitterShare}
+            shareData={handleXShare}
             hideText
           />
         </>

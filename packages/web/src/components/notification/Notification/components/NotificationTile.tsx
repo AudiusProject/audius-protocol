@@ -38,6 +38,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
       p='l'
       onClick={handleClick}
       border='strong'
+      gap='m'
     >
       {children}
     </Paper>

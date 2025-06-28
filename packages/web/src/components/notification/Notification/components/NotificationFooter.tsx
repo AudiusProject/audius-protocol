@@ -12,7 +12,7 @@ type NotificationFooterProps = {
 export const NotificationFooter = (props: NotificationFooterProps) => {
   const { timeLabel, isViewed } = props
   return (
-    <Flex alignItems='center' justifyContent='space-between' mt='l'>
+    <Flex alignItems='center' justifyContent='space-between'>
       <Text size='xs' color='subdued'>
         {timeLabel}
       </Text>

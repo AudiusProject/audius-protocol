@@ -6,6 +6,7 @@ import { Name } from '@audius/common/models'
 import { TipSendNotification } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { env } from 'services/env'
 
 import styles from './TipSentNotification.module.css'
@@ -16,7 +17,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
@@ -25,7 +25,7 @@ const messages = {
   title: 'Your Tip Was Sent!',
   sent: 'You successfully sent a tip of',
   to: 'to',
-  twitterShare: (senderHandle: string, uiAmount: number) =>
+  xShare: (senderHandle: string, uiAmount: number) =>
     `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius #AUDIOTip`
 }
 
@@ -43,7 +43,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
 
   const handleShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(senderHandle, uiAmount)
+      const shareText = messages.xShare(senderHandle, uiAmount)
       return {
         shareText,
         analytics: make(Name.NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE, {
@@ -68,7 +68,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
           <UserNameLink user={user} notification={notification} />
         </span>
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={user.handle}
         url={`${env.AUDIUS_URL}/${user.handle}`}

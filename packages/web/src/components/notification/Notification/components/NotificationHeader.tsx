@@ -10,14 +10,7 @@ type NotificationHeaderProps = {
 export const NotificationHeader = (props: NotificationHeaderProps) => {
   const { icon, children } = props
   return (
-    <Flex
-      alignItems='center'
-      w='100%'
-      pb='l'
-      mb='l'
-      borderBottom='default'
-      gap='s'
-    >
+    <Flex alignItems='center' w='100%' pb='l' borderBottom='default' gap='s'>
       {icon}
       {children}
     </Flex>
