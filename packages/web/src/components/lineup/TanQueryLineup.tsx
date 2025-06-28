@@ -27,13 +27,13 @@ import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import PlaylistTileDesktop from 'components/track/desktop/ConnectedPlaylistTile'
-import TrackTileDesktop from 'components/track/desktop/ConnectedTrackTile'
-import PlaylistTileMobile from 'components/track/mobile/ConnectedPlaylistTile'
-import TrackTileMobile from 'components/track/mobile/ConnectedTrackTile'
+import { CollectionTile as CollectionTileDesktop } from 'components/track/desktop/CollectionTile'
+import { TrackTile as TrackTileDesktop } from 'components/track/desktop/TrackTile'
+import { CollectionTile as MobileCollectionTile } from 'components/track/mobile/CollectionTile'
+import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
 import {
   TrackTileProps,
-  PlaylistTileProps,
+  CollectionTileProps,
   TrackTileSize,
   TileProps
 } from 'components/track/types'
@@ -199,8 +199,10 @@ export const TanQueryLineup = ({
   // Memoize component selection based on device type
   const { TrackTile, PlaylistTile } = useMemo(() => {
     return {
-      TrackTile: isSmallTrackTile ? TrackTileMobile : TrackTileDesktop,
-      PlaylistTile: isSmallTrackTile ? PlaylistTileMobile : PlaylistTileDesktop
+      TrackTile: isSmallTrackTile ? MobileTrackTile : TrackTileDesktop,
+      PlaylistTile: isSmallTrackTile
+        ? MobileCollectionTile
+        : CollectionTileDesktop
     }
   }, [isSmallTrackTile])
 
@@ -374,7 +376,7 @@ export const TanQueryLineup = ({
 
           // @ts-ignore - TODO: these types werent enforced before - something smelly here
         } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
-          const playlistProps: PlaylistTileProps = {
+          const playlistProps: CollectionTileProps = {
             ...entry,
             index,
             uid: entry.uid,

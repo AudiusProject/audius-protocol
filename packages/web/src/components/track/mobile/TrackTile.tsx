@@ -1,34 +1,59 @@
-import { useCallback, useEffect, ReactNode } from 'react'
+import { useCallback, useEffect } from 'react'
 
-import { useToggleFavoriteTrack } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
+import {
+  useToggleFavoriteTrack,
+  useCurrentUserId,
+  useTrack,
+  useUser
+} from '@audius/common/api'
+import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,
   ID,
-  AccessConditions,
-  FavoriteSource
+  FavoriteSource,
+  ShareSource,
+  RepostSource
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
   gatedContentSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  tracksSocialActions,
+  mobileOverflowMenuUIActions,
+  shareModalUIActions,
+  themeSelectors,
+  OverflowAction,
+  OverflowSource,
+  playerSelectors
 } from '@audius/common/store'
-import { Genre, formatLineupTileDuration, Nullable } from '@audius/common/utils'
-import { IconVolumeLevel2 as IconVolume, Text, Flex } from '@audius/harmony'
+import { Genre, formatLineupTileDuration } from '@audius/common/utils'
+import {
+  IconVolumeLevel2 as IconVolume,
+  Text,
+  Flex,
+  Box,
+  IconButton,
+  IconKebabHorizontal
+} from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { TextLink, UserLink } from 'components/link'
+import Menu from 'components/menu/Menu'
+import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import Skeleton from 'components/skeleton/Skeleton'
 import { TrackTileProps, TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { AppState } from 'store/types'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { TrackDogEar } from '../TrackDogEar'
 import { TrackTileStats } from '../TrackTileStats'
+import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
@@ -37,66 +62,228 @@ import TrackTileArt from './TrackTileArt'
 
 const { setLockedContentId } = gatedContentActions
 const { getGatedContentStatusMap } = gatedContentSelectors
+const { getUid, getPlaying, getBuffering } = playerSelectors
+const { getTheme } = themeSelectors
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
+const { open } = mobileOverflowMenuUIActions
+const { repostTrack, undoRepostTrack } = tracksSocialActions
 
-type ExtraProps = {
-  permalink: string
-  toggleRepost: (trackId: ID) => void
-  onShare: (trackId: ID) => void
-  isOwner: boolean
-  darkMode: boolean
-  isMatrix: boolean
-  isStreamGated: boolean
-  streamConditions?: Nullable<AccessConditions>
-  hasPreview?: boolean
-  hasStreamAccess: boolean
-  trackId?: number
-  renderOverflow?: () => ReactNode
-}
+type ConnectedTrackTileProps = Omit<
+  TrackTileProps,
+  | 'title'
+  | 'userId'
+  | 'genre'
+  | 'duration'
+  | 'artistName'
+  | 'artistHandle'
+  | 'repostCount'
+  | 'saveCount'
+  | 'commentCount'
+  | 'followeeReposts'
+  | 'followeeSaves'
+  | 'hasCurrentUserReposted'
+  | 'hasCurrentUserSaved'
+  | 'artistIsVerified'
+  | 'isPlaying'
+>
 
-type CombinedProps = TrackTileProps & ExtraProps
+export const TrackTile = ({
+  uid,
+  id,
+  index,
+  size,
+  ordered,
+  trackTileStyles,
+  togglePlay,
+  isLoading,
+  hasLoaded,
+  isTrending,
+  isActive,
+  variant,
+  containerClassName,
+  isFeed = false,
+  source
+}: ConnectedTrackTileProps) => {
+  const dispatch = useDispatch()
 
-const TrackTile = (props: CombinedProps) => {
+  const { data: track } = useTrack(id)
+  const { data: partialUser } = useUser(track?.owner_id, {
+    select: (user) => ({
+      user_id: user?.user_id,
+      handle: user?.handle,
+      name: user?.name,
+      is_verified: user?.is_verified,
+      is_deactivated: user?.is_deactivated
+    })
+  })
+  const { user_id, handle, name, is_deactivated } =
+    getUserWithFallback(partialUser) ?? {}
+  const playingUid = useSelector(getUid)
+  const isBuffering = useSelector(getBuffering)
+  const isPlaying = useSelector(getPlaying)
+  const { data: currentUserId } = useCurrentUserId()
+  const darkMode = useSelector((state: AppState) =>
+    shouldShowDark(getTheme(state))
+  )
+
+  const handleRepostTrack = useCallback(
+    (trackId: ID, isFeed: boolean) => {
+      dispatch(repostTrack(trackId, RepostSource.TILE, isFeed))
+    },
+    [dispatch]
+  )
+
+  const handleUnrepostTrack = useCallback(
+    (trackId: ID) => {
+      dispatch(undoRepostTrack(trackId, RepostSource.TILE))
+    },
+    [dispatch]
+  )
+
+  const clickOverflow = useCallback(
+    (trackId: ID, overflowActions: OverflowAction[]) => {
+      dispatch(
+        open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
+      )
+    },
+    [dispatch]
+  )
+
+  const trackWithFallback = getTrackWithFallback(track)
   const {
-    id,
-    uid,
-    index,
-    showSkeleton,
-    hasLoaded,
-    toggleRepost,
-    onShare,
-    onClickOverflow,
-    togglePlay,
-    coSign,
-    darkMode,
-    isActive,
-    isMatrix,
-    userId,
-    isOwner,
-    isUnlisted,
-    isLoading,
-    isStreamGated,
-    streamConditions,
-    hasStreamAccess,
-    permalink,
-    duration,
-    genre,
-    isPlaying,
-    isBuffering,
-    variant,
-    containerClassName,
-    hasPreview = false,
+    is_delete,
+    is_unlisted,
+    is_stream_gated: isStreamGated,
+    stream_conditions: streamConditions,
+    track_id,
     title,
-    source,
-    renderOverflow,
-    isTrending
-  } = props
+    genre,
+    permalink,
+    has_current_user_reposted,
+    has_current_user_saved,
+    _co_sign,
+    duration,
+    preview_cid,
+    ddex_app: ddexApp,
+    album_backlink
+  } = trackWithFallback
+
+  const isOwner = user_id === currentUserId
+
+  const { isFetchingNFTAccess, hasStreamAccess } =
+    useGatedContentAccess(trackWithFallback)
+  const loading = isLoading || isFetchingNFTAccess
+
+  const toggleRepost = useCallback(
+    (trackId: ID) => {
+      if (has_current_user_reposted) {
+        handleUnrepostTrack(trackId)
+      } else {
+        handleRepostTrack(trackId, isFeed)
+      }
+    },
+    [has_current_user_reposted, handleUnrepostTrack, handleRepostTrack, isFeed]
+  )
+
+  // We wanted to use mobile track tile on desktop, which means shimming in the desktop overflow
+  // menu whenever isMobile is false.
+  const renderOverflowMenu = () => {
+    const menu: Omit<TrackMenuProps, 'children'> = {
+      extraMenuItems: [],
+      handle,
+      includeAddToPlaylist: !is_unlisted || isOwner,
+      includeAddToAlbum: isOwner && !ddexApp,
+      includeArtistPick: isOwner,
+      includeEdit: isOwner,
+      ddexApp: track?.ddex_app,
+      includeEmbed: !(is_unlisted || isStreamGated),
+      includeFavorite: hasStreamAccess,
+      includeRepost: hasStreamAccess,
+      includeShare: true,
+      includeTrackPage: true,
+      isDeleted: is_delete || is_deactivated,
+      isFavorited: has_current_user_saved,
+      isOwner,
+      isReposted: has_current_user_reposted,
+      isUnlisted: is_unlisted,
+      trackId: track_id,
+      trackTitle: title,
+      genre: genre as Genre,
+      trackPermalink: permalink,
+      type: 'track'
+    }
+
+    return (
+      <Menu menu={menu}>
+        {(ref, triggerPopup) => (
+          <Box mb={-8}>
+            <IconButton
+              ref={ref}
+              icon={IconKebabHorizontal}
+              onClick={(e) => {
+                e.stopPropagation()
+                triggerPopup()
+              }}
+              aria-label='More'
+              color='subdued'
+            />
+          </Box>
+        )}
+      </Menu>
+    )
+  }
+
+  const onClickOverflow = useCallback(
+    (trackId: ID) => {
+      const isLongFormContent =
+        genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+
+      const repostAction =
+        !isOwner && hasStreamAccess
+          ? has_current_user_reposted
+            ? OverflowAction.UNREPOST
+            : OverflowAction.REPOST
+          : null
+      const favoriteAction =
+        !isOwner && hasStreamAccess
+          ? has_current_user_saved
+            ? OverflowAction.UNFAVORITE
+            : OverflowAction.FAVORITE
+          : null
+      const addToAlbumAction =
+        isOwner && !ddexApp ? OverflowAction.ADD_TO_ALBUM : null
+      const overflowActions = [
+        repostAction,
+        favoriteAction,
+        addToAlbumAction,
+        !is_unlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
+        isLongFormContent
+          ? OverflowAction.VIEW_EPISODE_PAGE
+          : OverflowAction.VIEW_TRACK_PAGE,
+        album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
+        OverflowAction.VIEW_ARTIST_PAGE
+      ].filter(Boolean) as OverflowAction[]
+
+      clickOverflow(trackId, overflowActions)
+    },
+    [
+      genre,
+      isOwner,
+      hasStreamAccess,
+      has_current_user_reposted,
+      has_current_user_saved,
+      ddexApp,
+      is_unlisted,
+      album_backlink,
+      clickOverflow
+    ]
+  )
 
   const toggleSaveTrack = useToggleFavoriteTrack({
     trackId: id as number,
     source: FavoriteSource.TILE
   })
 
-  const dispatch = useDispatch()
   const [, setModalVisibility] = useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -107,7 +294,16 @@ const TrackTile = (props: CombinedProps) => {
 
   const onToggleRepost = useCallback(() => toggleRepost(id), [toggleRepost, id])
 
-  const onClickShare = useCallback(() => onShare(id), [onShare, id])
+  const onClickShare = useCallback(() => {
+    if (!trackId) return
+    dispatch(
+      requestOpenShareModal({
+        type: 'track',
+        trackId,
+        source: ShareSource.TILE
+      })
+    )
+  }, [dispatch, trackId])
 
   const onClickOverflowMenu = useCallback(
     () => onClickOverflow && onClickOverflow(id),
@@ -161,37 +357,39 @@ const TrackTile = (props: CombinedProps) => {
   )
 
   useEffect(() => {
-    if (!showSkeleton) {
+    if (!loading) {
       hasLoaded?.(index)
     }
-  }, [hasLoaded, index, showSkeleton])
+  }, [hasLoaded, index, loading])
 
   const fadeIn = {
-    [styles.show]: !showSkeleton,
-    [styles.hide]: showSkeleton
+    [styles.show]: !loading,
+    [styles.hide]: loading
   }
 
   const handleClick = useCallback(() => {
-    if (showSkeleton) return
+    if (loading) return
 
-    if (trackId && !hasStreamAccess && !hasPreview) {
+    if (trackId && !hasStreamAccess && !preview_cid) {
       openLockedContentModal()
       return
     }
 
     togglePlay(uid, id)
   }, [
-    showSkeleton,
+    loading,
     togglePlay,
     uid,
     id,
     trackId,
     hasStreamAccess,
-    hasPreview,
+    preview_cid,
     openLockedContentModal
   ])
 
   const isReadonly = variant === 'readonly'
+
+  if (is_delete || is_deactivated) return null
 
   return (
     <div
@@ -202,7 +400,7 @@ const TrackTile = (props: CombinedProps) => {
       )}
       css={{ width: '100%' }}
     >
-      <TrackDogEar trackId={id} hideUnlocked />
+      <TrackDogEar trackId={track_id} hideUnlocked />
       <div className={styles.mainContent} onClick={handleClick}>
         <Text
           variant='body'
@@ -220,14 +418,14 @@ const TrackTile = (props: CombinedProps) => {
         </Text>
         <div className={styles.metadata}>
           <TrackTileArt
-            id={props.id}
+            id={track_id}
             isTrack
-            isPlaying={isPlaying}
+            isPlaying={uid === playingUid && isPlaying}
             isBuffering={isBuffering}
-            showSkeleton={showSkeleton}
-            coSign={coSign}
+            showSkeleton={loading}
+            coSign={_co_sign}
             className={styles.albumArtContainer}
-            label={`${title} by ${props.artistName}`}
+            label={`${title} by ${name}`}
             artworkIconClassName={styles.artworkIcon}
           />
           <Flex
@@ -241,17 +439,17 @@ const TrackTile = (props: CombinedProps) => {
             <TextLink
               to={permalink}
               textVariant='title'
-              isActive={isActive}
+              isActive={uid === playingUid || isActive}
               applyHoverStylesToInnerSvg
             >
               <Text ellipses>{title || messages.loading}</Text>
-              {isPlaying ? <IconVolume size='m' /> : null}
-              {showSkeleton ? (
+              {uid === playingUid && isPlaying ? <IconVolume size='m' /> : null}
+              {loading ? (
                 <Skeleton className={styles.skeleton} height='20px' />
               ) : null}
             </TextLink>
-            <UserLink userId={userId} badgeSize='xs'>
-              {showSkeleton ? (
+            <UserLink userId={user_id} badgeSize='xs'>
+              {loading ? (
                 <>
                   <Text>{messages.loading}</Text>
                   <Skeleton className={styles.skeleton} height='20px' />
@@ -261,35 +459,35 @@ const TrackTile = (props: CombinedProps) => {
           </Flex>
         </div>
         <TrackTileStats
-          trackId={id}
+          trackId={track_id}
           isTrending={isTrending}
           rankIndex={index}
           size={TrackTileSize.SMALL}
-          isLoading={isLoading}
+          isLoading={loading}
         />
         {isReadonly ? null : (
           <BottomButtons
-            hasSaved={props.hasCurrentUserSaved}
-            hasReposted={props.hasCurrentUserReposted}
+            hasSaved={has_current_user_saved}
+            hasReposted={has_current_user_reposted}
             toggleRepost={onToggleRepost}
             toggleSave={toggleSaveTrack}
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
-            renderOverflow={renderOverflow}
+            renderOverflow={renderOverflowMenu}
             onClickGatedUnlockPill={
               isGuestCheckoutEnabled ? onClickPill : onClickPillRequiresAccount
             }
             isOwner={isOwner}
             readonly={isReadonly}
-            isLoading={isLoading}
-            isUnlisted={isUnlisted}
+            isLoading={loading}
+            isUnlisted={is_unlisted}
             hasStreamAccess={hasStreamAccess}
             streamConditions={streamConditions}
             gatedTrackStatus={gatedTrackStatus}
             isDarkMode={darkMode}
-            isMatrixMode={isMatrix}
+            isMatrixMode={isMatrix()}
             isTrack
-            contentId={id}
+            contentId={track_id}
             contentType='track'
           />
         )}
@@ -297,5 +495,3 @@ const TrackTile = (props: CombinedProps) => {
     </div>
   )
 }
-
-export default TrackTile

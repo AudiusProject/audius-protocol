@@ -1,12 +1,4 @@
-import {
-  MouseEvent,
-  memo,
-  useMemo,
-  useEffect,
-  useCallback,
-  ReactChildren,
-  useRef
-} from 'react'
+import { useMemo, useCallback, useEffect, useRef, MouseEvent } from 'react'
 
 import {
   useCollection,
@@ -15,16 +7,16 @@ import {
   useCurrentUserId
 } from '@audius/common/api'
 import {
-  Name,
   ShareSource,
   RepostSource,
   FavoriteSource,
-  PlaybackSource,
   ID,
   UID,
   Track,
   isContentUSDCPurchaseGated,
-  ModalSource
+  ModalSource,
+  Name,
+  PlaybackSource
 } from '@audius/common/models'
 import {
   collectionsSocialActions,
@@ -33,18 +25,30 @@ import {
   usePremiumContentPurchaseModal,
   PurchaseableContentType
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
-import { Text, IconKebabHorizontal } from '@audius/harmony'
-import cn from 'classnames'
+import { formatLineupTileDuration, route } from '@audius/common/utils'
+import {
+  Scrollbar,
+  IconArrowRight as IconArrow,
+  Box,
+  Paper,
+  Text,
+  IconKebabHorizontal,
+  Flex,
+  IconVolumeLevel2 as IconVolume,
+  IconCrown,
+  IconButton
+} from '@audius/harmony'
 import { LocationState } from 'history'
 import { range } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
+import { CollectionTileStats } from 'components/collection/CollectionTileStats'
 import { Draggable } from 'components/dragndrop'
-import { UserLink } from 'components/link'
-import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
+import { TextLink, UserLink } from 'components/link'
+import { OwnProps as CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
+import Skeleton from 'components/skeleton/Skeleton'
 import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
@@ -53,11 +57,12 @@ import { push as pushRoute } from 'utils/navigation'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
+import { OwnerActionButtons } from '../OwnerActionButtons'
+import { ViewerActionButtons } from '../ViewerActionButtons'
 import { getCollectionWithFallback } from '../helpers'
 
-import styles from './ConnectedPlaylistTile.module.css'
-import PlaylistTile from './PlaylistTile'
 import TrackListItem from './TrackListItem'
+
 const { getUid, getBuffering, getPlaying } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
@@ -68,7 +73,7 @@ const {
 } = collectionsSocialActions
 const { collectionPage } = route
 
-type PlaylistTileProps = {
+type CollectionTileProps = {
   uid: UID
   id: ID
   ordered: boolean
@@ -88,7 +93,7 @@ type PlaylistTileProps = {
   source?: ModalSource
 }
 
-const ConnectedPlaylistTile = ({
+export const CollectionTile = ({
   uid,
   id: collectionId,
   ordered,
@@ -106,7 +111,7 @@ const ConnectedPlaylistTile = ({
   isTrending,
   isFeed = false,
   source
-}: PlaylistTileProps) => {
+}: CollectionTileProps) => {
   const dispatch = useDispatch()
 
   const { data: partialCollection } = useCollection(collectionId, {
@@ -212,6 +217,8 @@ const ConnectedPlaylistTile = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
 
+  const isCollectionPlaying = isActive && isPlaying
+
   const onTogglePlay = useCallback(
     (e?: MouseEvent /* click event within TrackTile */) => {
       // Skip playing / pausing track if click event happened within track menu container
@@ -284,38 +291,9 @@ const ConnectedPlaylistTile = ({
     ? ''
     : fullCollectionPage(handle, title, id, permalink, isAlbum)
 
-  const onClickTitle = useCallback(
-    (e: MouseEvent) => {
-      e.stopPropagation()
-      goToRoute(href, { forceFetch: true })
-    },
-    [goToRoute, href]
-  )
-
-  useEffect(() => {
-    if (!isLoading && hasLoaded) {
-      hasLoaded(index)
-    }
-  }, [hasLoaded, index, isLoading])
-
-  const isPlaylistPlaying = isActive && isPlaying
-
-  const renderImage = useCallback(() => {
-    const artworkProps = {
-      id,
-      size: 'large',
-      isBuffering: isBuffering && isActive,
-      isPlaying: isPlaylistPlaying,
-      artworkIconClassName: styles.artworkIcon,
-      showArtworkIcon: !isLoading,
-      showSkeleton: isLoading
-    }
-    return <CollectionArtwork {...artworkProps} />
-  }, [id, isActive, isBuffering, isPlaylistPlaying, isLoading])
-
   const renderOverflowMenu = () => {
-    const menu: Omit<CollectionkMenuProps, 'children'> = {
-      handle,
+    const menu: Omit<CollectionMenuProps, 'children'> = {
+      handle: handle ?? '',
       isFavorited,
       isReposted,
       type: isAlbum ? 'album' : 'playlist', // playlist or album
@@ -335,34 +313,21 @@ const ConnectedPlaylistTile = ({
     return (
       <Menu menu={menu}>
         {(ref, triggerPopup) => (
-          <div className={styles.menuContainer} ref={menuRef}>
-            <div
-              className={styles.menuKebabContainer}
-              onClick={() => triggerPopup()}
-            >
-              <div ref={ref}>
-                <IconKebabHorizontal
-                  className={cn(styles.iconKebabHorizontal)}
-                />
-              </div>
-            </div>
-          </div>
+          <IconButton
+            size={size === TrackTileSize.LARGE ? 'l' : 'm'}
+            aria-label='More options'
+            onClick={(e) => {
+              e.stopPropagation()
+              triggerPopup()
+            }}
+            icon={IconKebabHorizontal}
+            color='subdued'
+            ref={ref}
+          />
         )}
       </Menu>
     )
   }
-
-  const userName = (
-    <Text variant='body' ellipses css={{ display: 'inline-flex', gap: 4 }}>
-      <UserLink
-        ellipses
-        userId={user_id}
-        badgeSize='xs'
-        isActive={isActive}
-        popover
-      />
-    </Text>
-  )
 
   const onClickFavorite = useCallback(() => {
     if (isFavorited) {
@@ -404,23 +369,6 @@ const ConnectedPlaylistTile = ({
 
   const disableActions = false
 
-  const TileTrackContainer = useCallback(
-    ({ children }: { children: ReactChildren }) => (
-      <Draggable
-        key={id}
-        isDisabled={disableActions}
-        text={title}
-        kind={isAlbum ? 'album' : 'playlist'}
-        id={id}
-        isOwner={isOwner}
-        link={fullHref}
-      >
-        {children as any}
-      </Draggable>
-    ),
-    [id, disableActions, title, isAlbum, isOwner, fullHref]
-  )
-
   const renderTrackList = useCallback(() => {
     const showSkeletons = !!(
       !tracks?.length &&
@@ -441,7 +389,7 @@ const ConnectedPlaylistTile = ({
           playing={isPlaying}
           togglePlay={togglePlay}
           goToRoute={goToRoute}
-          artistHandle={handle}
+          artistHandle={handle ?? ''}
         />
       ))
     }
@@ -465,7 +413,7 @@ const ConnectedPlaylistTile = ({
           track={track}
           togglePlay={togglePlay}
           goToRoute={goToRoute}
-          artistHandle={handle}
+          artistHandle={handle ?? ''}
           isLastTrack={i === tracks.length - 1}
         />
       </Draggable>
@@ -484,70 +432,201 @@ const ConnectedPlaylistTile = ({
     numLoadingSkeletonRows
   ])
 
-  const artwork = renderImage()
-  const rightActions = renderOverflowMenu()
-  const trackList = renderTrackList()
+  const onClickTitle = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation()
+      goToRoute(href, { forceFetch: true })
+    },
+    [goToRoute, href]
+  )
+
+  const renderMoreTracks = useCallback(() => {
+    const hasMoreTracks = trackCount
+      ? trackCount > (tracks?.length || 0)
+      : false
+    return (
+      !isLoading &&
+      hasMoreTracks && (
+        <Flex
+          gap='s'
+          alignItems='center'
+          justifyContent='space-between'
+          pv='s'
+          ph='m'
+          onClick={onClickTitle}
+          css={{ cursor: 'pointer' }}
+        >
+          <Text
+            size='xs'
+            color='subdued'
+          >{`${trackCount - (tracks?.length || 0)} More Tracks`}</Text>
+          <IconArrow color='subdued' />
+        </Flex>
+      )
+    )
+  }, [trackCount, tracks, onClickTitle, isLoading])
 
   const order = ordered && index !== undefined ? index + 1 : undefined
-  const header =
-    size === TrackTileSize.LARGE ? (isAlbum ? 'ALBUM' : 'PLAYLIST') : undefined
+
+  const duration =
+    tracks?.reduce(
+      (duration: number, track: Track) => duration + track.duration,
+      0
+    ) ?? 0
+
+  useEffect(() => {
+    if (!isLoading && hasLoaded) {
+      hasLoaded(index)
+    }
+  }, [hasLoaded, index, isLoading])
 
   // Failsafe check - should never get this far, lineups should filter deactivated playlists
   if (isOwnerDeactivated) {
     return null
   }
+
+  const hasOrdering = order !== undefined
+
   return (
-    <PlaylistTile
-      // Track Tile Props
-      size={size}
-      order={order}
-      isFavorited={isFavorited}
-      isReposted={isReposted}
-      isOwner={isOwner}
-      isLoading={isLoading}
-      numLoadingSkeletonRows={numLoadingSkeletonRows}
-      isDarkMode={isDarkMode()}
-      isMatrixMode={isMatrix()}
-      isActive={isActive}
-      isPlaying={isPlaylistPlaying}
-      artwork={artwork}
-      rightActions={rightActions}
-      title={title}
-      userName={userName}
-      header={header}
-      onClickTitle={onClickTitle}
-      onClickRepost={onClickRepost}
-      onClickFavorite={onClickFavorite}
-      onClickShare={onClickShare}
-      onClickGatedUnlockPill={onClickGatedUnlockPill}
-      onTogglePlay={onTogglePlay}
-      key={`${index}-${title}`}
-      TileTrackContainer={TileTrackContainer}
-      duration={
-        tracks?.reduce(
-          (duration: number, track: Track) => duration + track.duration,
-          0
-        ) ?? 0
-      }
-      containerClassName={cn(styles.container, {
-        [containerClassName!]: !!containerClassName,
-        [styles.loading]: isLoading,
-        [styles.active]: isActive,
-        [styles.small]: size === TrackTileSize.SMALL,
-        [styles.large]: TrackTileSize.LARGE
-      })}
-      tileClassName={cn(styles.trackTile)}
-      tracksContainerClassName={cn(styles.tracksContainer)}
-      trackList={trackList ?? []}
-      trackCount={trackCount}
-      isTrending={isTrending}
-      href={href}
-      hasStreamAccess={hasStreamAccess}
-      streamConditions={isStreamGated ? streamConditions : null}
-      source={source}
-      playlistId={id}
-    />
+    <Paper
+      direction='column'
+      className={containerClassName}
+      css={[
+        isLoading && { opacity: 0.6 },
+        disableActions && { opacity: 0.5, pointerEvents: 'none' },
+        { minHeight: size === TrackTileSize.LARGE ? 180 : 120 },
+        { '&:hover .artworkIcon': { opacity: 0.75 } }
+      ]}
+      mb='l'
+      onClick={!isLoading && !disableActions ? onTogglePlay : undefined}
+    >
+      <Flex p='s' gap='l'>
+        <Flex gap='s'>
+          {hasOrdering && (
+            <Flex column gap='2xs' alignItems='center' justifyContent='center'>
+              {!isLoading && index <= 5 && (
+                <IconCrown color='default' size='s' />
+              )}
+              <Text variant='label' color='default'>
+                {!isLoading && index}
+              </Text>
+            </Flex>
+          )}
+          {/* Collection tile image */}
+          <Box h={128} w={128} css={{ minWidth: 128 }}>
+            <CollectionArtwork
+              id={id}
+              size='large'
+              isBuffering={isBuffering && isActive}
+              isPlaying={isCollectionPlaying}
+              artworkIconClassName='artworkIcon'
+              showArtworkIcon={!isLoading}
+              showSkeleton={isLoading}
+            />
+          </Box>
+        </Flex>
+        <Flex direction='column' justifyContent='space-between' flex={1}>
+          <Flex>
+            <Flex direction='column' gap='s' flex={1}>
+              {/* Header */}
+              <Text variant='label' size='s' color='subdued'>
+                {isAlbum ? 'album' : 'playlist'}
+              </Text>
+              <Flex column gap='xs'>
+                {/* Title */}
+                {isLoading ? (
+                  <Skeleton width='80%' height='20px' />
+                ) : (
+                  <Flex>
+                    <TextLink
+                      css={{ alignItems: 'center' }}
+                      to={fullHref}
+                      isActive={isActive}
+                      textVariant='title'
+                      applyHoverStylesToInnerSvg
+                      onClick={onClickTitle}
+                      disabled={disableActions}
+                      ellipses
+                    >
+                      <Text ellipses>{title}</Text>
+                      {isCollectionPlaying ? <IconVolume size='m' /> : null}
+                    </TextLink>
+                  </Flex>
+                )}
+                {/* User */}
+                {isLoading ? (
+                  <Skeleton width='50%' height='20px' />
+                ) : (
+                  <UserLink
+                    ellipses
+                    userId={user_id}
+                    badgeSize='xs'
+                    isActive={isActive}
+                    popover
+                  />
+                )}
+              </Flex>
+              {/* Duration */}
+            </Flex>
+            <Text variant='body' size='xs' color='subdued'>
+              {formatLineupTileDuration(duration, false, true)}
+            </Text>
+          </Flex>
+          {/* Stats */}
+          <CollectionTileStats
+            collectionId={id}
+            isLoading={isLoading}
+            size={size}
+          />
+        </Flex>
+      </Flex>
+      {/* Track list and bottom bar remain unchanged */}
+      <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
+        <Scrollbar css={{ maxHeight: 200, overflowY: 'auto' }}>
+          {renderTrackList()}
+        </Scrollbar>
+        {renderMoreTracks()}
+      </Box>
+      <Box
+        pv='s'
+        ph='m'
+        backgroundColor='white'
+        borderLeft='default'
+        borderRight='default'
+        borderBottom='default'
+        borderBottomLeftRadius='m'
+        borderBottomRightRadius='m'
+      >
+        {isOwner ? (
+          <OwnerActionButtons
+            contentId={id}
+            contentType='collection'
+            isDisabled={disableActions}
+            isLoading={isLoading}
+            rightActions={renderOverflowMenu()}
+            isDarkMode={isDarkMode()}
+            isMatrixMode={isMatrix()}
+            showIconButtons={true}
+            onClickShare={onClickShare}
+          />
+        ) : (
+          <ViewerActionButtons
+            contentId={id}
+            contentType='collection'
+            hasStreamAccess={hasStreamAccess}
+            isDisabled={disableActions}
+            isLoading={isLoading}
+            rightActions={renderOverflowMenu()}
+            isDarkMode={isDarkMode()}
+            isMatrixMode={isMatrix()}
+            showIconButtons={true}
+            onClickFavorite={onClickFavorite}
+            onClickRepost={onClickRepost}
+            onClickShare={onClickShare}
+            onClickGatedUnlockPill={onClickGatedUnlockPill}
+          />
+        )}
+      </Box>
+    </Paper>
   )
 }
-
-export default memo(ConnectedPlaylistTile)

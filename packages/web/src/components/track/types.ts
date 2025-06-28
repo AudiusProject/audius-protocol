@@ -77,7 +77,7 @@ export type TrackTileProps = TileProps & {
   source?: ModalSource
 }
 
-export type PlaylistTileProps = TileProps & {
+export type CollectionTileProps = TileProps & {
   playingUid?: UID | null
   playingTrackId?: ID | null
   isAlbum: boolean
