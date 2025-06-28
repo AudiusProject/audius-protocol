@@ -39,7 +39,7 @@ const messages = {
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
   claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
-  twitterShare: (
+  xShare: (
     modalType:
       | 'referrals'
       | 'ref-v'

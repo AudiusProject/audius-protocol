@@ -6,6 +6,7 @@ import { Name } from '@audius/common/models'
 import { ReactionNotification } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 
 import styles from './TipReactionNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -16,7 +17,6 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
 import { reactionMap } from './components/Reaction'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
@@ -24,7 +24,7 @@ import { useGoToProfile } from './useGoToProfile'
 const messages = {
   reacted: 'reacted',
   react: 'reacted to your tip of ',
-  twitterShare: (handle: string) =>
+  xShare: (handle: string) =>
     `I got a thanks from ${handle} for tipping them $AUDIO on @audius! #Audius #AUDIOTip`
 }
 
@@ -49,7 +49,7 @@ export const TipReactionNotification = (
   const handleClick = useGoToProfile(user)
 
   const handleShare = useCallback((twitterHandle: string) => {
-    const shareText = messages.twitterShare(twitterHandle)
+    const shareText = messages.xShare(twitterHandle)
     const analytics = make(
       Name.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
       { text: shareText }
@@ -94,7 +94,7 @@ export const TipReactionNotification = (
           </div>
         </div>
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={user.handle}
         shareData={handleShare}
