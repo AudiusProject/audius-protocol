@@ -67,7 +67,7 @@ export const formatLineupTileDuration = (
   isCollection = false
 ): string => {
   if (isCollection) {
-    return formatSeconds(seconds)
+    return formatSecondsAsText(seconds)
   }
   if (!isLongFormContent && seconds < SECONDS_PER_HOUR) {
     return formatSeconds(seconds)
