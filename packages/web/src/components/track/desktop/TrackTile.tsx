@@ -10,25 +10,17 @@ import {
   UID
 } from '@audius/common/models'
 import {
-  playbackPositionSelectors,
-  CommonState,
   tracksSocialActions,
   shareModalUIActions,
   gatedContentActions,
   playerSelectors
 } from '@audius/common/store'
-import {
-  formatLineupTileDuration,
-  isLongFormContent,
-  Genre
-} from '@audius/common/utils'
+import { Genre } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
-  IconCheck,
   IconCrown,
   Text,
   Flex,
-  ProgressBar,
   Divider,
   IconKebabHorizontal,
   Paper,
@@ -53,12 +45,10 @@ import { TrackDogEar } from '../TrackDogEar'
 import { TrackTileStats } from '../TrackTileStats'
 import { ViewerActionButtons } from '../ViewerActionButtons'
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
-import { messages } from '../trackTileMessages'
 import { TrackTileSize } from '../types'
 
-import styles from './TrackTile.module.css'
+import { TrackTileDuration } from './TrackTileDuration'
 
-const { getTrackPosition } = playbackPositionSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
   tracksSocialActions
@@ -125,10 +115,6 @@ export const TrackTile = ({
   const isOwner = currentUserId === user_id
   const hasPreview = !!track?.preview_cid
 
-  const trackPositionInfo = useSelector((state: CommonState) =>
-    getTrackPosition(state, { trackId: id, userId: currentUserId })
-  )
-
   const trackWithFallback = getTrackWithFallback(track)
   const {
     is_delete,
@@ -139,8 +125,7 @@ export const TrackTile = ({
     permalink,
     _co_sign: coSign,
     has_current_user_reposted: isReposted,
-    has_current_user_saved: isFavorited,
-    duration
+    has_current_user_saved: isFavorited
   } = trackWithFallback
 
   const { isFetchingNFTAccess, hasStreamAccess } =
@@ -262,7 +247,7 @@ export const TrackTile = ({
         extraMenuItems: [],
         handle: partialUser?.handle || '',
         includeAddToPlaylist: !trackWithFallback.is_unlisted || isOwner,
-        includeAddToAlbum: isOwner && !!trackWithFallback.ddex_app,
+        includeAddToAlbum: isOwner && !trackWithFallback.ddex_app,
         includeArtistPick: isOwner,
         includeEdit: isOwner,
         ddexApp: track?.ddex_app,
@@ -387,44 +372,7 @@ export const TrackTile = ({
             size={size}
             isLoading={isLoading}
           />
-          <Text variant='body' size='xs' className={styles.topRight}>
-            {!isLoading && duration ? (
-              <div className={styles.duration}>
-                {isLongFormContent({ genre }) && trackPositionInfo ? (
-                  trackPositionInfo.status === 'IN_PROGRESS' ? (
-                    <div className={styles.progressTextContainer}>
-                      <p className={styles.progressText}>
-                        {`${formatLineupTileDuration(
-                          duration - trackPositionInfo.playbackPosition,
-                          true,
-                          true
-                        )} ${messages.timeLeft}`}
-                      </p>
-                      <ProgressBar
-                        value={
-                          (trackPositionInfo.playbackPosition / duration) * 100
-                        }
-                        sliderClassName={styles.progressTextSlider}
-                      />
-                    </div>
-                  ) : trackPositionInfo.status === 'COMPLETED' ? (
-                    <div className={styles.completeText}>
-                      {messages.played}
-                      <IconCheck className={styles.completeIcon} />
-                    </div>
-                  ) : (
-                    formatLineupTileDuration(duration, true, true)
-                  )
-                ) : (
-                  formatLineupTileDuration(
-                    duration,
-                    isLongFormContent({ genre }),
-                    true
-                  )
-                )}
-              </div>
-            ) : null}
-          </Text>
+          <TrackTileDuration trackId={trackId} isLoading={isLoading} />
         </Flex>
         {isOwner ? (
           <Flex column gap='s'>
