@@ -10,7 +10,6 @@ import {
   tokenDashboardPageActions,
   useBuySellModal,
   useConnectedWalletsModal,
-  walletSelectors,
   buyAudioActions
 } from '@audius/common/store'
 import { isNullOrUndefined, route } from '@audius/common/utils'
@@ -28,7 +27,7 @@ import {
   IconWallet,
   Text
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -46,7 +45,6 @@ import { pushUniqueRoute } from 'utils/route'
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
 const { pressReceive, pressSend } = tokenDashboardPageActions
-const { getAccountBalance } = walletSelectors
 const { startBuyAudioFlow } = buyAudioActions
 const { TRENDING_PAGE } = route
 
@@ -74,7 +72,7 @@ const OptionButton = (props: ButtonProps) => {
 }
 
 const WalletActions = () => {
-  const balance = useSelector(getAccountBalance) ?? BigInt(0)
+  const { accountBalance: balance } = useAudioBalance()
   const hasBalance = !isNullOrUndefined(balance) && balance !== BigInt(0)
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')

@@ -1,14 +1,18 @@
-import { queryAccountUser, queryCurrentUserId } from '@audius/common/api'
+import {
+  QUERY_KEYS,
+  queryAccountUser,
+  queryCurrentUserId
+} from '@audius/common/api'
 import {
   tokenDashboardPageActions,
-  walletActions,
   confirmerActions,
   confirmTransaction,
   ConfirmRemoveWalletAction,
   getSDK
 } from '@audius/common/store'
 import { Id } from '@audius/sdk'
-import { call, fork, put, takeLatest } from 'typed-redux-saga'
+import { QueryClient } from '@tanstack/react-query'
+import { call, fork, getContext, put, takeLatest } from 'typed-redux-saga'
 
 import {
   fetchEthereumCollectibles,
@@ -23,8 +27,6 @@ const {
   updateWalletError,
   removeWallet: removeWalletAction
 } = tokenDashboardPageActions
-
-const { getBalance } = walletActions
 
 const { requestConfirmation } = confirmerActions
 
@@ -57,8 +59,11 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
   }
 
   function* onSuccess() {
-    // Update the user's balance w/ the new wallet
-    yield* put(getBalance())
+    const queryClient = yield* getContext<QueryClient>('queryClient')
+    // Trigger a refetch for all audio balances
+    yield* call(queryClient.invalidateQueries, {
+      queryKey: [QUERY_KEYS.audioBalance]
+    })
     yield* put(removeWalletAction({ wallet: removeWallet, chain: removeChain }))
 
     const user = yield* call(queryAccountUser)

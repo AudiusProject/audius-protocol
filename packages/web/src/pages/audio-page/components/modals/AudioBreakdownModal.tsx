@@ -1,5 +1,8 @@
-import { useWalletAudioBalances, useConnectedWallets } from '@audius/common/api'
-import { walletSelectors } from '@audius/common/store'
+import {
+  useWalletAudioBalances,
+  useConnectedWallets,
+  useAudioBalance
+} from '@audius/common/api'
 import { AUDIO } from '@audius/fixed-decimal'
 import { IconInfo } from '@audius/harmony'
 
@@ -7,13 +10,11 @@ import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useSelector } from 'utils/reducer'
 
 import DisplayAudio from '../DisplayAudio'
 import WalletsTable from '../WalletsTable'
 
 import styles from './AudioBreakdownModal.module.css'
-const { getAccountBalance } = walletSelectors
 
 const messages = {
   modalTitle: '$AUDIO BREAKDOWN',
@@ -29,7 +30,7 @@ const messages = {
 
 const AudioBreakdownBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
-  const accountBalance = AUDIO(useSelector(getAccountBalance) ?? 0).value
+  const { accountBalance } = useAudioBalance()
 
   const { data: connectedWallets, isPending: isConnectedWalletsPending } =
     useConnectedWallets()

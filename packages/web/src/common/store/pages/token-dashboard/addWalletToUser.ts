@@ -1,17 +1,16 @@
-import { queryCurrentUserId } from '@audius/common/api'
+import { QUERY_KEYS, queryCurrentUserId } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
 import {
   tokenDashboardPageActions,
-  walletActions,
   confirmerActions,
   confirmTransaction,
   getSDK
 } from '@audius/common/store'
 import { Id } from '@audius/sdk'
-import { call, put } from 'typed-redux-saga'
+import { QueryClient } from '@tanstack/react-query'
+import { call, getContext, put } from 'typed-redux-saga'
 
 import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
-const { getBalance } = walletActions
 const { setWalletAddedConfirmed, updateWalletError } = tokenDashboardPageActions
 const { requestConfirmation } = confirmerActions
 
@@ -52,8 +51,11 @@ export function* addWalletToUser(
   }
 
   function* onSuccess() {
-    // Update the user's balance w/ the new wallet
-    yield* put(getBalance())
+    const queryClient = yield* getContext<QueryClient>('queryClient')
+    // Trigger a refetch for all audio balances
+    yield* call(queryClient.invalidateQueries, {
+      queryKey: [QUERY_KEYS.audioBalance]
+    })
 
     yield* put(setWalletAddedConfirmed({}))
 

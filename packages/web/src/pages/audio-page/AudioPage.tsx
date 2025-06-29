@@ -2,10 +2,8 @@ import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
 import { WALLET_AUDIO_PAGE } from '@audius/common/src/utils/route'
-import { walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
@@ -29,7 +27,6 @@ import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
 const { AUDIO_PAGE, TRENDING_PAGE } = route
-const { getBalance } = walletActions
 
 const messages = {
   title: '$AUDIO Wallet',
@@ -108,11 +105,7 @@ const MobilePage = ({ children }: { children: ReactNode }) => {
 }
 
 export const AudioPage = () => {
-  const dispatch = useDispatch()
   const isMobile = useIsMobile()
-  useEffect(() => {
-    dispatch(getBalance())
-  }, [dispatch])
   const Page = isMobile ? MobilePage : DesktopPage
   return (
     <Page>

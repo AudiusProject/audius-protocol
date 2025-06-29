@@ -2,11 +2,10 @@ import {
   undisbursedUserChallengeFromSDK,
   userChallengeFromSDK
 } from '@audius/common/adapters'
-import { queryCurrentUserId } from '@audius/common/api'
+import { QUERY_KEYS, queryCurrentUserId } from '@audius/common/api'
 import {
   UserChallenge,
   ChallengeRewardID,
-  StringWei,
   SpecifierWithAmount,
   Name,
   Feature,
@@ -24,7 +23,6 @@ import {
   audioRewardsPageActions,
   HCaptchaStatus,
   ClaimStatus,
-  walletActions,
   modalsActions,
   getContext,
   musicConfettiActions,
@@ -37,7 +35,6 @@ import {
   waitForValue,
   isPlayCountChallenge
 } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 import {
   Id,
   AudiusSdk,
@@ -68,7 +65,6 @@ import {
 const { AUDIO_PAGE } = route
 const { show: showMusicConfetti } = musicConfettiActions
 const { setVisibility } = modalsActions
-const { getBalance, increaseBalance } = walletActions
 const {
   getClaimStatus,
   getClaimToRetry,
@@ -351,29 +347,26 @@ function* claimSingleChallengeRewardAsync(
     completionPollTimeout
   })
 
-  const decodedUserId = yield* call(queryCurrentUserId)
-  if (!decodedUserId) {
+  const userId = yield* call(queryCurrentUserId)
+  if (!userId) {
     throw new Error('Failed to get current userId')
   }
-  const userId = Id.parse(decodedUserId)
 
   const results = yield* call(claimRewardsForChallenge, {
     sdk,
-    userId,
+    userId: Id.parse(userId),
     challengeId: challengeId as ChallengeId,
     specifiers,
     track,
     make
   })
   const claimed = results.filter((r) => !('error' in r))
-  const claimedAmount = claimed.reduce((sum, { amount }) => {
-    return sum + amount
-  }, 0)
-  yield* put(
-    increaseBalance({
-      amount: AUDIO(claimedAmount).value.toString() as StringWei
-    })
-  )
+
+  const queryClient = yield* getContext('queryClient')
+
+  yield* call(queryClient.invalidateQueries, {
+    queryKey: [QUERY_KEYS.audioBalance]
+  })
   yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
 
   const errors = results.filter((r): r is ErrorResult => 'error' in r)
@@ -589,6 +582,7 @@ function* fetchUserChallengesAsync() {
 function* checkForNewDisbursements(
   action: ReturnType<typeof fetchUserChallengesSucceeded>
 ) {
+  const queryClient = yield* getContext('queryClient')
   const { userChallenges } = action.payload
   if (!userChallenges) {
     return
@@ -616,7 +610,11 @@ function* checkForNewDisbursements(
     }
   }
   if (newDisbursement) {
-    yield* put(getBalance())
+    // Trigger a refetch for all audio balances
+    yield* call(queryClient.invalidateQueries, {
+      queryKey: [QUERY_KEYS.audioBalance]
+    })
+
     yield* put(showMusicConfetti())
     yield* put(showRewardClaimedToast())
   }

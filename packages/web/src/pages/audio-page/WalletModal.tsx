@@ -1,6 +1,10 @@
 import { ReactNode, useCallback } from 'react'
 
-import { useCurrentAccountUser, useQueryContext } from '@audius/common/api'
+import {
+  useAudioBalance,
+  useCurrentAccountUser,
+  useQueryContext
+} from '@audius/common/api'
 import {
   Chain,
   StringWei,
@@ -10,7 +14,6 @@ import {
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
-  walletSelectors,
   TokenDashboardPageModalState
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
@@ -33,7 +36,6 @@ import SendInputBody from './components/SendInputBody'
 import SendInputConfirmation from './components/SendInputConfirmation'
 import SendInputSuccess from './components/SendInputSuccess'
 import SendingModalBody from './components/SendingModalBody'
-const { getAccountBalance } = walletSelectors
 const { getModalState, getModalVisible, getSendData } =
   tokenDashboardPageSelectors
 const { confirmSend, inputSendData, setModalVisibility } =
@@ -151,8 +153,7 @@ const ModalContent = ({
   onConfirmSend,
   onClose
 }: ModalContentProps) => {
-  const balance: AudioWei =
-    useSelector(getAccountBalance) ?? (BigInt(0) as AudioWei)
+  const { accountBalance: balance } = useAudioBalance()
 
   const { data: erc_wallet } = useCurrentAccountUser({
     select: (user) => user?.erc_wallet
