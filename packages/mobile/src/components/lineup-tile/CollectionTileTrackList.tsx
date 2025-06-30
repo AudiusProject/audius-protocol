@@ -120,7 +120,7 @@ const TrackItem = (props: TrackItemProps) => {
                 ]}
                 numberOfLines={1}
               >
-                {`${messages.by} ${track.user.name}`}
+                {`${messages.by} ${track.user?.name}`}
               </Text>
             ) : null}
             {deleted ? (
