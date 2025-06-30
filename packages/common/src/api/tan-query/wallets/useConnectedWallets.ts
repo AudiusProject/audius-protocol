@@ -1,11 +1,10 @@
-import { Id } from '@audius/sdk'
+import { AudiusSdk, Id } from '@audius/sdk'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
-import { walletActions } from '~/store/wallet'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
@@ -27,6 +26,28 @@ export const getConnectedWalletsQueryKey = ({
     ConnectedWallet[]
   >
 
+export const getConnectedWalletsQueryFn = async ({
+  sdk,
+  currentUserId
+}: {
+  sdk: AudiusSdk
+  currentUserId: ID | null | undefined
+}) => {
+  const { data } = await sdk.users.getConnectedWallets({
+    id: Id.parse(currentUserId)
+  })
+  return data?.ercWallets
+    ?.map<ConnectedWallet>((address) => ({
+      address,
+      chain: Chain.Eth
+    }))
+    .concat(
+      data?.splWallets?.map((address) => ({
+        address,
+        chain: Chain.Sol
+      }))
+    )
+}
 export const useConnectedWallets = (options?: QueryOptions) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -35,20 +56,10 @@ export const useConnectedWallets = (options?: QueryOptions) => {
     queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.users.getConnectedWallets({
-        id: Id.parse(currentUserId)
+      return getConnectedWalletsQueryFn({
+        sdk,
+        currentUserId
       })
-      return data?.ercWallets
-        ?.map<ConnectedWallet>((address) => ({
-          address,
-          chain: Chain.Eth
-        }))
-        .concat(
-          data?.splWallets?.map((address) => ({
-            address,
-            chain: Chain.Sol
-          }))
-        )
     },
     ...options
   })
@@ -102,8 +113,6 @@ export const useAddConnectedWallet = () => {
       })
 
       // Temporarily manually refetch relevant redux states
-      // TODO: Remove once consumers of the redux store migrate to tanquery
-      dispatch(walletActions.getBalance())
       dispatch(
         profilePageActions.fetchProfile(
           null,
@@ -157,8 +166,6 @@ export const useRemoveConnectedWallet = () => {
       })
 
       // Temporarily manually refetch relevant redux states
-      // TODO: Remove once consumers of the redux store migrate to tanquery
-      dispatch(walletActions.getBalance())
       dispatch(
         profilePageActions.fetchProfile(
           null,

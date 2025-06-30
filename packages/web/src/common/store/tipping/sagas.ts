@@ -1,4 +1,5 @@
 import {
+  QUERY_KEYS,
   getSupportedUsersQueryKey,
   getSupporterQueryKey,
   getSupportersQueryKey,
@@ -11,7 +12,6 @@ import {
   chatActions,
   tippingSelectors,
   tippingActions,
-  walletActions,
   getContext,
   getSDK
 } from '@audius/common/store'
@@ -31,7 +31,6 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
-const { getBalance } = walletActions
 const {
   confirmSendTip,
   convert,
@@ -216,8 +215,10 @@ function* sendTipAsync() {
       // Wait for tip to index
       yield* call(confirmTipIndexed, { signature })
 
-      // Fetch balance
-      yield* put(getBalance)
+      // Trigger a refetch for all audio balances
+      yield* call(queryClient.invalidateQueries, {
+        queryKey: [QUERY_KEYS.audioBalance]
+      })
 
       // Refetch chat permissions
       yield* put(
