@@ -1,7 +1,7 @@
 import {
   QUERY_KEYS,
   WalletAddresses,
-  getTotalAudioBalance,
+  getAccountTotalAudioBalanceSaga,
   queryWalletAddresses
 } from '@audius/common/api'
 import { Name, ErrorLevel } from '@audius/common/models'
@@ -483,7 +483,7 @@ function* populateAndSaveTransactionDetails() {
     throw new Error('Missing transactionDetailsArgs[transferTransactionId]')
   }
 
-  const postAUDIOBalanceWei = yield* call(getTotalAudioBalance)
+  const postAUDIOBalanceWei = yield* call(getAccountTotalAudioBalanceSaga)
   const purchasedAUDIO = purchasedAudioWei
     ? AUDIO(BigInt(purchasedAudioWei))
         .toLocaleString('en-US', {

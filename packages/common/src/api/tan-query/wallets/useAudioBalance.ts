@@ -245,6 +245,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   }
 }
 
+// Helper fn for the saga selectors below
 function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
   const sdk = yield* call(getSDK)
   const audiusBackend = yield* getContext<AudiusBackend>(
@@ -270,7 +271,7 @@ function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
   return totalBalance
 }
 
-export function* getAudioBalance() {
+export function* getAccountAudioBalanceSaga() {
   const currentUserId = yield* call(queryCurrentUserId)
   const user = yield* call(queryUser, currentUserId)
   const userWallets = [
@@ -288,10 +289,10 @@ export function* getAudioBalance() {
  * Sums current audio account balance combined with balance from all connected wallets
  * @returns
  */
-export function* getTotalAudioBalance() {
+export function* getAccountTotalAudioBalanceSaga() {
   const queryClient = yield* getContext<QueryClient>('queryClient')
   const sdk = yield* call(getSDK)
-  const accountBalance = yield* call(getAudioBalance)
+  const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const currentUserId = yield* call(queryCurrentUserId)
   const connectedWallets = (yield* call(queryClient.fetchQuery, {
     queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),

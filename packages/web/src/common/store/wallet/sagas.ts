@@ -1,5 +1,5 @@
 import {
-  getAudioBalance,
+  getAccountAudioBalanceSaga,
   queryAccountUser,
   queryWalletAddresses
 } from '@audius/common/api'
@@ -49,7 +49,7 @@ function* sendAsync({
 
   const account = yield* call(queryAccountUser)
   const audioWeiAmount = BigInt(weiAudioAmount) as AudioWei
-  const accountBalance = yield* call(getAudioBalance)
+  const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const weiBNBalance = accountBalance
     ? BigInt(accountBalance.toString())
     : BigInt(0)
