@@ -53,7 +53,7 @@ const messages = {
     price: string
     contentType: PurchaseableContentType
   }) =>
-    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+    `Users can unlock access to this ${contentType} for a one time purchase of ${price}`
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({

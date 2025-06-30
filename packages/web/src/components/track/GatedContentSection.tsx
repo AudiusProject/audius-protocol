@@ -89,7 +89,7 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   purchased: `You've purchased this ${contentType}.`,
   buy: (price: string) => `Buy $${price}`,
   usersCanPurchase: (price: string) =>
-    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+    `Users can unlock access to this ${contentType} for a one time purchase of ${price}`
 })
 
 type GatedContentAccessSectionProps = {
