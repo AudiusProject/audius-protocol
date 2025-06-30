@@ -1,5 +1,5 @@
 import { WidthSizes } from '@audius/common/models'
-import { Flex, Paper, Text } from '@audius/harmony'
+import { Flex, Paper, Text, useTheme } from '@audius/harmony'
 
 import UserBadges from 'components/user-badges/UserBadgesV2'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
@@ -10,8 +10,12 @@ import { AssetDetailProps } from '../types'
 const BANNER_HEIGHT = 120
 
 const BannerSection = ({ slug }: AssetDetailProps) => {
+  const { name, userId, icon: TokenIcon } = ACCEPTED_ROUTES[slug]
+
+  const { cornerRadius } = useTheme()
+
   const { image: coverPhoto } = useCoverPhoto({
-    userId: ACCEPTED_ROUTES[slug].userId,
+    userId,
     size: WidthSizes.SIZE_640
   })
 
@@ -48,11 +52,14 @@ const BannerSection = ({ slug }: AssetDetailProps) => {
           borderRadius='circle'
           border='default'
         >
+          {TokenIcon ? (
+            <TokenIcon size='l' css={{ borderRadius: cornerRadius.circle }} />
+          ) : null}
           <Flex alignItems='center' gap='xs'>
             <Text variant='body' size='l'>
-              {ACCEPTED_ROUTES[slug].name}
+              {name}
             </Text>
-            <UserBadges userId={ACCEPTED_ROUTES[slug].userId} size='s' inline />
+            <UserBadges userId={userId} size='s' inline />
           </Flex>
         </Flex>
       </Flex>
