@@ -66,7 +66,7 @@ platform :ios do
     match(
       type: "appstore",
       readonly: is_ci,
-      app_identifier: options[:bundle_id]
+      app_identifier: [options[:bundle_id], "#{options[:bundle_id]}.NotificationService"]
     )
 
     settings_to_override = {
@@ -108,7 +108,8 @@ platform :ios do
       export_method: "app-store",
       export_options: {
           provisioningProfiles: {
-              appId => provisioningProfile
+              appId => provisioningProfile,
+              "#{appId}.NotificationService" => "#{provisioningProfile}.NotificationService"
           }
       }
     )
