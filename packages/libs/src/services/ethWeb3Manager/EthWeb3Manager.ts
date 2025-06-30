@@ -164,7 +164,19 @@ export class EthWeb3Manager {
       return response
     }
 
-    const gasPrice = parseInt(await this.web3.eth.getGasPrice())
+    const block = await this.web3.eth.getBlock('latest')
+    const baseFee = Number(block.baseFeePerGas)
+
+    const feeHistory = await this.web3.eth.getFeeHistory(
+      5,
+      'latest',
+      [50] // 50th percentile (medium priority)
+    )
+
+    const priorityFee = Number(feeHistory?.reward?.[0]?.[0] ?? MIN_GAS_PRICE)
+    const gasPrice = baseFee + priorityFee
+    console.log({ baseFee, priorityFee, gasPrice, feeHistory, block })
+
     return await contractMethod.send({
       from: this.ownerWallet,
       gasPrice

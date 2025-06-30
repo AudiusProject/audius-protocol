@@ -127,7 +127,7 @@ export function fetchRecentProposals(): ThunkAction<
   Action<string>
 > {
   return async (dispatch, getState, aud) => {
-    const proposalEvents = (await aud.Governance.getProposals()).slice(0, 5)
+    const proposalEvents = (await aud.Governance.getProposals()).slice(-5) // Get the last 5 proposals
     const allProposals: (Proposal | null)[] = await Promise.all(
       proposalEvents.map(async (p: ProposalEvent) => {
         const { proposalId, description, name } = p
