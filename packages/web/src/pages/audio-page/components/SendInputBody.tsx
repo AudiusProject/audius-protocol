@@ -144,7 +144,7 @@ const SendInputBody = ({
   const amountToSendWei: AudioWei = useMemo(() => {
     if (!amountToSend.length) return BigInt(0) as AudioWei
     try {
-      return AUDIO(amountToSend).value
+      return AUDIO(BigInt(amountToSend)).value
     } catch {
       return BigInt(0) as AudioWei
     }
