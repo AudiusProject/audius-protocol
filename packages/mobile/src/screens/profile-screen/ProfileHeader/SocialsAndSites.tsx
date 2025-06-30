@@ -4,14 +4,14 @@ import {
   DonationSocialLink,
   InstagramSocialLink,
   TikTokSocialLink,
-  TwitterSocialLink,
+  XSocialLink,
   WebsiteSocialLink
 } from './SocialLink'
 
 export const SocialsAndSites = () => {
   return (
     <Flex pointerEvents='box-none' gap='m'>
-      <TwitterSocialLink showText />
+      <XSocialLink showText />
       <InstagramSocialLink showText />
       <TikTokSocialLink showText />
       <WebsiteSocialLink showText />

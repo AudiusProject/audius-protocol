@@ -8,7 +8,7 @@ import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { env } from 'app/services/env'
 import { EventNames } from 'app/types/analytics'
 
-import { NotificationTile, NotificationTwitterButton } from '../Notification'
+import { NotificationTile, NotificationXButton } from '../Notification'
 
 import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
 
@@ -17,7 +17,7 @@ const messages = {
   supporterChange: 'Became your',
   supporter: 'Top Supporter',
   // NOTE: Send tip -> Send $AUDIO change
-  twitterShare: (handle: string, rank: number, ios: boolean) =>
+  xShare: (handle: string, rank: number, ios: boolean) =>
     `${handle} just became my #${rank} Top Supporter on @audius #Audius $AUDIO${
       ios ? '' : ' #AUDIOTip'
     }`
@@ -40,13 +40,9 @@ export const TopSupporterNotification = (
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (handle: string) => {
-      const shareText = messages.twitterShare(
-        handle,
-        rank,
-        Platform.OS === 'ios'
-      )
+      const shareText = messages.xShare(handle, rank, Platform.OS === 'ios')
       return {
         shareText,
         analytics: {
@@ -68,11 +64,11 @@ export const TopSupporterNotification = (
         title={`#${rank} ${messages.title}`}
         body={`${messages.supporterChange} #${rank} ${messages.supporter}`}
       />
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={user.handle}
         url={`${env.AUDIUS_URL}/${user.handle}`}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
       />
     </NotificationTile>
   )

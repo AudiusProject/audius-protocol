@@ -253,7 +253,7 @@ export const TrendingRewardsDrawer = (titleIcon) => {
           </GradientText>
           <TweetEmbed
             // Refresh it when we toggle
-            key={`twitter-${tweetId}`}
+            key={`x-${tweetId}`}
             tweetId={tweetId}
             options={{
               theme: isDark ? 'dark' : 'light',

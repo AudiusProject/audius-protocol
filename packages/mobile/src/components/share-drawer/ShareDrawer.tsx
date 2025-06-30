@@ -19,7 +19,7 @@ import {
   IconMessage,
   IconShare,
   IconSnapChat,
-  IconTwitter,
+  IconX,
   IconTikTok
 } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -37,7 +37,7 @@ import { useDrawerState } from '../drawer/AppDrawer'
 import { ShareToStorySticker } from './ShareToStorySticker'
 import { messages } from './messages'
 import { useShareToStory } from './useShareToStory'
-import { getContentUrl, getTwitterShareUrl } from './utils'
+import { getContentUrl, getXShareUrl } from './utils'
 
 const { getShareContent, getShareSource } = shareModalUISelectors
 const { shareUser } = usersSocialActions
@@ -99,14 +99,14 @@ export const ShareDrawer = () => {
     }
   }, [content, navigation, source, onCloseNowPlaying])
 
-  const handleShareToTwitter = useCallback(async () => {
+  const handleShareToX = useCallback(async () => {
     if (!content) return
-    const twitterShareUrl = await getTwitterShareUrl(content)
-    const isSupported = await Linking.canOpenURL(twitterShareUrl)
+    const xShareUrl = await getXShareUrl(content)
+    const isSupported = await Linking.canOpenURL(xShareUrl)
     if (isSupported) {
-      Linking.openURL(twitterShareUrl)
+      Linking.openURL(xShareUrl)
     } else {
-      console.error(`Can't open: ${twitterShareUrl}`)
+      console.error(`Can't open: ${xShareUrl}`)
     }
   }, [content])
 
@@ -171,10 +171,10 @@ export const ShareDrawer = () => {
       callback: performActionAndClose(handleShareToDirectMessage)
     }
 
-    const shareToTwitterAction = {
-      icon: <IconTwitter fill={secondary} height={20} width={26} />,
-      text: messages.twitter,
-      callback: performActionAndClose(handleShareToTwitter)
+    const shareToXAction = {
+      icon: <IconX fill={secondary} height={20} width={26} />,
+      text: messages.x,
+      callback: performActionAndClose(handleShareToX)
     }
 
     const shareVideoToTiktokAction = {
@@ -215,7 +215,7 @@ export const ShareDrawer = () => {
     }[] = [shareToChatAction]
 
     if (isShareableTrack) {
-      result.push(shareToTwitterAction)
+      result.push(shareToXAction)
       result.push(shareToInstagramStoriesAction)
       result.push(shareVideoToTiktokAction)
       result.push(shareToSnapchatAction)
@@ -228,7 +228,7 @@ export const ShareDrawer = () => {
     secondary,
     performActionAndClose,
     handleShareToDirectMessage,
-    handleShareToTwitter,
+    handleShareToX,
     handleShareVideoToTiktok,
     handleCopyLink,
     handleOpenShareSheet,

@@ -10,7 +10,7 @@ import {
   IconInstagram,
   IconLink,
   IconTikTok,
-  IconTwitter,
+  IconX,
   Text
 } from '@audius/harmony-native'
 import type { LinkProps } from 'app/components/core'
@@ -115,14 +115,14 @@ export const SocialLink = (props: SocialLinkProps) => {
   )
 }
 
-type TwitterSocialLinkProps = Partial<SocialLinkProps>
+type XSocialLinkProps = Partial<SocialLinkProps>
 
-export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
-  const { handle, twitter_handle } =
+export const XSocialLink = (props: XSocialLinkProps) => {
+  const { handle, x_handle } =
     useProfileUser({
       select: (user) => ({
         handle: user.handle,
-        twitter_handle: user.twitter_handle
+        x_handle: user.twitter_handle
       })
     }).user ?? {}
 
@@ -130,13 +130,13 @@ export const TwitterSocialLink = (props: TwitterSocialLinkProps) => {
 
   return (
     <SocialLink
-      url={`https://twitter.com/${twitter_handle}`}
-      text={twitter_handle ? `@${twitter_handle}` : twitter_handle}
-      icon={IconTwitter}
+      url={`https://x.com/${x_handle}`}
+      text={x_handle ? `@${x_handle}` : x_handle}
+      icon={IconX}
       analytics={make({
         eventName: EventNames.PROFILE_PAGE_CLICK_TWITTER,
         handle: sanitizedHandle ?? 'undefined',
-        twitterHandle: twitter_handle as string
+        twitterHandle: x_handle as string
       })}
       {...props}
     />

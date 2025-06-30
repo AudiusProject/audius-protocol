@@ -22,7 +22,7 @@ import {
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 import { getEntityRoute } from '../Notification/utils'
 
@@ -47,7 +47,7 @@ const messages = {
   }
 }
 
-const getTwitterShareData = (
+const getXShareData = (
   notification: MilestoneNotificationType,
   entity?: Nullable<EntityType>,
   user?: Nullable<User>
@@ -126,7 +126,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     return null
   }
 
-  const { link, text } = getTwitterShareData(notification, entity, user)
+  const { link, text } = getXShareData(notification, entity, user)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -135,7 +135,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       </NotificationHeader>
       <NotificationText>{renderBody()}</NotificationText>
       {link && text ? (
-        <NotificationTwitterButton type='static' url={link} shareText={text} />
+        <NotificationXButton type='static' url={link} shareText={text} />
       ) : null}
     </NotificationTile>
   )

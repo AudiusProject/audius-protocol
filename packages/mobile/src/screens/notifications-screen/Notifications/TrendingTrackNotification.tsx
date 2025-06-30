@@ -17,14 +17,14 @@ import {
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
 const messages = {
   title: "You're Trending",
   is: 'is',
   trending: 'on Trending right now!',
-  twitterShareText: (entityTitle: string) =>
+  xShareText: (entityTitle: string) =>
     `My track ${entityTitle} is trending on @audius! Check it out! #Audius #AudiusTrending $AUDIO`
 }
 
@@ -50,7 +50,7 @@ export const TrendingTrackNotification = (
 
   if (!entity) return null
 
-  const shareText = messages.twitterShareText(entity.title)
+  const shareText = messages.xShareText(entity.title)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -60,7 +60,7 @@ export const TrendingTrackNotification = (
       <NotificationText>
         <EntityLink entity={entity} /> {messages.is} #{rank} {messages.trending}
       </NotificationText>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='static'
         shareText={shareText}
         analytics={{
