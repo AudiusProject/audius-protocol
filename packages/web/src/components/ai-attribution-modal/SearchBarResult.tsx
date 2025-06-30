@@ -7,7 +7,8 @@ import {
   Name,
   BadgeTier,
   SquareSizes,
-  WidthSizes
+  WidthSizes,
+  ID
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Flex, spacing, Tag } from '@audius/harmony'
@@ -30,8 +31,8 @@ const messages = {
 type ImageProps = {
   kind: Kind
   isUser: boolean
-  id: string
-  artwork: any // Using any to match the useImageSize hook expectations
+  id: ID
+  artwork: any
   defaultImage: string
   size: SquareSizes | WidthSizes
 }
@@ -60,21 +61,21 @@ const Image = memo((props: ImageProps) => {
 
 type SearchBarResultProps = {
   kind: Kind
-  id: string
+  id: ID
   userId: number
   primary: string
   secondary?: string
-  artwork: any // Using any to match the artwork prop expectations
+  artwork: any
   size: SquareSizes | WidthSizes
   defaultImage: string
   isVerifiedUser: boolean
   tier?: BadgeTier
-  allowAiAttribution: boolean
+  allowAiAttribution?: boolean
   name: string
   handle: string
 }
 
-const SearchBarResult = memo((props: SearchBarResultProps) => {
+export const SearchBarResult = memo((props: SearchBarResultProps) => {
   const {
     kind,
     id,
@@ -179,5 +180,3 @@ const SearchBarResult = memo((props: SearchBarResultProps) => {
     </Flex>
   )
 })
-
-export default SearchBarResult
