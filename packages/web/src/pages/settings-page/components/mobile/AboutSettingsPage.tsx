@@ -4,7 +4,7 @@ import {
   IconUserGroup as IconCareers,
   IconDiscord,
   IconInstagram,
-  IconTwitter
+  IconX
 } from '@audius/harmony'
 
 import appIcon from 'assets/img/appIcon.png'
@@ -25,7 +25,7 @@ const {
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
   AUDIUS_INSTAGRAM_LINK,
-  AUDIUS_TWITTER_LINK,
+  AUDIUS_X_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
 } = route
@@ -34,7 +34,7 @@ const { version: appVersion } = packageInfo
 const messages = {
   heading: 'About',
   discord: 'Join our community on Discord',
-  twitter: 'Follow us on Twitter',
+  x: 'Follow us on X',
   instagram: 'Follow us on Instagram',
   contact: 'Contact Us',
   careers: 'Careers at Audius',
@@ -72,9 +72,9 @@ const AboutSettingsPage = () => {
               href={AUDIUS_DISCORD_LINK}
             />
             <Row
-              prefix={<IconTwitter className={styles.icon} />}
-              title={messages.twitter}
-              href={AUDIUS_TWITTER_LINK}
+              prefix={<IconX className={styles.icon} />}
+              title={messages.x}
+              href={AUDIUS_X_LINK}
             />
             <Row
               prefix={<IconInstagram className={styles.icon} />}
