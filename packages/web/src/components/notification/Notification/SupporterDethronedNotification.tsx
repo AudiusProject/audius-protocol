@@ -7,6 +7,7 @@ import { Nullable } from '@audius/common/utils'
 
 import crown from 'assets/img/crown2x.png'
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 
 import styles from './SupporterDethronedNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -15,7 +16,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { useGoToProfile } from './useGoToProfile'
 
@@ -27,7 +27,7 @@ const messages = {
   title: "You've Been Dethroned!",
   body1: ' Dethroned You as ',
   body2: "'s #1 Top Supporter! Tip to Reclaim Your Spot?",
-  twitterShare: (usurperHandle: string, supportingHandle: string) =>
+  xShare: (usurperHandle: string, supportingHandle: string) =>
     `I've been dethroned! ${usurperHandle} dethroned me as ${supportingHandle}'s #1 Top Supporter! #Audius $AUDIO #AUDIOTip`
 }
 
@@ -51,7 +51,7 @@ export const SupporterDethronedNotification = ({
       if (!supportingHandle) {
         return null
       }
-      const shareText = messages.twitterShare(usurpingHandle, supportingHandle)
+      const shareText = messages.xShare(usurpingHandle, supportingHandle)
       return {
         shareText,
         analytics: make(Name.NOTIFICATIONS_CLICK_DETHRONED_TWITTER_SHARE, {
@@ -83,7 +83,7 @@ export const SupporterDethronedNotification = ({
           {messages.body2}
         </span>
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={usurpingUser.handle}
         additionalHandle={supportedUser.handle}

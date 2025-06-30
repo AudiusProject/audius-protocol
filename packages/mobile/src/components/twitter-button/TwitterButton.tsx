@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useUserByHandle } from '@audius/common/api'
-import { useTwitterButtonStatus } from '@audius/common/hooks'
 import { makeTwitterShareUrl } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 
@@ -51,15 +50,6 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     'additionalHandle' in other ? other.additionalHandle : undefined
   )
 
-  const {
-    userName,
-    additionalUserName,
-    shareTwitterStatus,
-    twitterHandle,
-    additionalTwitterHandle,
-    setIdle
-  } = useTwitterButtonStatus(user, additionalUser)
-
   const { onPress: onPressLink } = useLink(
     other.type === 'static' ? makeTwitterShareUrl(url, other.shareText) : ''
   )
@@ -71,12 +61,12 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     }
   }, [onPressLink, other])
 
-  if (other.type === 'dynamic' && shareTwitterStatus === 'success') {
-    const handle = twitterHandle ? `@${twitterHandle}` : userName
+  if (other.type === 'dynamic' && user?.handle) {
+    const handle = user?.handle ? `@${user?.handle}` : user?.name
     const otherHandle = other.additionalHandle
-      ? additionalTwitterHandle
-        ? `@${additionalTwitterHandle}`
-        : additionalUserName
+      ? additionalUser?.handle
+        ? `@${additionalUser?.handle}`
+        : additionalUser?.name
       : null
 
     const twitterData = other.shareData(handle, otherHandle)
@@ -85,7 +75,6 @@ export const TwitterButton = (props: TwitterButtonProps) => {
       const { shareText, analytics } = twitterData
       openLink(makeTwitterShareUrl(url, shareText))
       track(make(analytics))
-      setIdle()
     }
   }
 

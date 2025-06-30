@@ -26,7 +26,7 @@ type ShareMessageConfig = Pick<
   | 'audioNftPlaylistShareText'
 >
 
-export const getTwitterShareText = async (
+export const getXShareText = async (
   content: ShareContent,
   isPlaylistOwner = false,
   messageConfig: ShareMessageConfig = messages

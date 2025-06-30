@@ -11,7 +11,7 @@ const shareTypeMap: Record<ShareType, string> = {
 export const messages = {
   modalTitle: (asset: ShareType) => `Share ${shareTypeMap[asset]}`,
   directMessage: 'Direct Message',
-  twitter: 'Twitter',
+  x: 'Share to X',
   copyLink: 'Copy Link',
   embed: 'Embed',
   toast: (asset: ShareType) => `Copied Link to ${shareTypeMap[asset]}`,

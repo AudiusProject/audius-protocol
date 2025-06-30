@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { IconLink, IconShare, IconTwitter } from '@audius/harmony'
+import { IconLink, IconShare, IconX } from '@audius/harmony'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 
@@ -14,18 +14,18 @@ const iconSize = { height: 26, width: 26 }
 type ShareDrawerProps = ShareProps
 
 export const ShareDrawer = ({
-  onShareToTwitter,
+  onShareToX,
   onCopyLink,
   isOpen,
   onClose,
   shareType
 }: ShareDrawerProps) => {
   const getActions = useCallback(() => {
-    const shareToTwitterAction = {
-      text: messages.twitter,
-      icon: <IconTwitter {...iconSize} />,
-      className: styles.shareToTwitterAction,
-      onClick: onShareToTwitter
+    const shareToXAction = {
+      text: messages.x,
+      icon: <IconX {...iconSize} />,
+      className: styles.shareToXAction,
+      onClick: onShareToX
     }
 
     const copyLinkAction = {
@@ -35,8 +35,8 @@ export const ShareDrawer = ({
       onClick: onCopyLink
     }
 
-    return [shareToTwitterAction, copyLinkAction]
-  }, [onShareToTwitter, onCopyLink])
+    return [shareToXAction, copyLinkAction]
+  }, [onShareToX, onCopyLink])
 
   return (
     <ActionDrawer

@@ -25,7 +25,7 @@ import { openTwitterLink } from 'utils/tweet'
 import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
-import { getTwitterShareText } from './utils'
+import { getXShareText } from './utils'
 
 const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
@@ -53,21 +53,19 @@ export const ShareModal = () => {
     onClose()
     openCreateChatModal({
       // Just care about the link
-      presetMessage: (await getTwitterShareText(content, false)).link,
+      presetMessage: (await getXShareText(content, false)).link,
       onCancelAction: setVisibility({ modal: 'Share', visible: true }),
       defaultUserList: 'chats'
     })
     dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'share' }))
   }, [openCreateChatModal, dispatch, onClose, content])
 
-  const handleShareToTwitter = useCallback(async () => {
+  const handleShareToX = useCallback(async () => {
     if (!source || !content) return
-    const isPlaylistOwner =
-      content.type === 'audioNftPlaylist' &&
-      accountUserId === content.user.user_id
-    const { twitterText, link, analyticsEvent } = await getTwitterShareText(
+    const { twitterText, link, analyticsEvent } = await getXShareText(
       content,
-      isPlaylistOwner
+      content.type === 'audioNftPlaylist' &&
+        accountUserId === content.user.user_id
     )
     openTwitterLink(link, twitterText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
@@ -126,7 +124,7 @@ export const ShareModal = () => {
     onShareToDirectMessage: isManagerMode
       ? undefined
       : handleShareToDirectMessage,
-    onShareToTwitter: handleShareToTwitter,
+    onShareToX: handleShareToX,
     onCopyLink: handleCopyLink,
     onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
       ? handleEmbed
