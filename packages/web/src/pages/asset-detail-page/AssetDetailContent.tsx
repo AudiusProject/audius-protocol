@@ -1,5 +1,6 @@
 import { Flex } from '@audius/harmony'
 
+import { AssetInfoSection } from './components/AssetInfoSection'
 import { BalanceSection } from './components/BalanceSection'
 import { AssetDetailProps } from './types'
 
@@ -17,6 +18,7 @@ export const AssetDetailContent = ({ slug }: AssetDetailProps) => {
         gap='m'
       >
         <BalanceSection slug={slug} />
+        <AssetInfoSection slug={slug} />
       </Flex>
 
       <Flex
