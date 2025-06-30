@@ -12,9 +12,9 @@ import { messages } from './messages'
 
 type ShareToTwitterEvent = Omit<ShareToTwitter, 'eventName' | 'source'>
 
-const getTwitterShareHandle = (user: User) => {
-  const twitterHandle = user.twitter_handle
-  return twitterHandle ? `@${twitterHandle}` : user.handle
+const getXShareHandle = (user: User) => {
+  const xHandle = user.twitter_handle
+  return xHandle ? `@${xHandle}` : user.handle
 }
 
 type ShareMessageConfig = Pick<
@@ -31,7 +31,7 @@ export const getXShareText = async (
   isPlaylistOwner = false,
   messageConfig: ShareMessageConfig = messages
 ) => {
-  let twitterText = ''
+  let xText = ''
   let link = ''
   let analyticsEvent: ShareToTwitterEvent
   switch (content.type) {
@@ -40,19 +40,14 @@ export const getXShareText = async (
         track: { title, permalink, track_id },
         artist
       } = content
-      twitterText = messageConfig.trackShareText(
-        title,
-        getTwitterShareHandle(artist)
-      )
+      xText = messageConfig.trackShareText(title, getXShareHandle(artist))
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
       break
     }
     case 'profile': {
       const { profile } = content
-      twitterText = messageConfig.profileShareText(
-        getTwitterShareHandle(profile)
-      )
+      xText = messageConfig.profileShareText(getXShareHandle(profile))
       link = fullProfilePage(profile.handle)
       analyticsEvent = { kind: 'profile', id: profile.user_id, url: link }
       break
@@ -62,9 +57,9 @@ export const getXShareText = async (
         album: { playlist_name, playlist_id, permalink },
         artist
       } = content
-      twitterText = messageConfig.albumShareText(
+      xText = messageConfig.albumShareText(
         playlist_name,
-        getTwitterShareHandle(artist)
+        getXShareHandle(artist)
       )
       link = fullCollectionPage(
         artist.handle,
@@ -81,9 +76,9 @@ export const getXShareText = async (
         playlist: { playlist_name, playlist_id, permalink, is_album },
         creator
       } = content
-      twitterText = messageConfig.playlistShareText(
+      xText = messageConfig.playlistShareText(
         playlist_name,
-        getTwitterShareHandle(creator)
+        getXShareHandle(creator)
       )
       link = fullCollectionPage(
         creator.handle,
@@ -99,7 +94,7 @@ export const getXShareText = async (
       const {
         user: { handle, name, user_id }
       } = content
-      twitterText = messageConfig.audioNftPlaylistShareText(
+      xText = messageConfig.audioNftPlaylistShareText(
         isPlaylistOwner ? 'my' : name
       )
       link = fullAudioNftPlaylistPage(handle)
@@ -108,5 +103,5 @@ export const getXShareText = async (
     }
   }
 
-  return { twitterText, link, analyticsEvent }
+  return { xText, link, analyticsEvent }
 }
