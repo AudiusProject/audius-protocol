@@ -8,7 +8,7 @@ import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { env } from 'app/services/env'
 import { EventNames } from 'app/types/analytics'
 
-import { NotificationTile, NotificationTwitterButton } from '../Notification'
+import { NotificationTile, NotificationXButton } from '../Notification'
 
 import { SupporterAndSupportingNotificationContent } from './SupporterAndSupportingNotificationContent'
 
@@ -68,7 +68,7 @@ export const TopSupportingNotification = (
         body={`${messages.supporterChange} #${rank} ${messages.supporter}`}
         user={user}
       />
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={user.handle}
         url={`${env.AUDIUS_URL}/${user.handle}`}

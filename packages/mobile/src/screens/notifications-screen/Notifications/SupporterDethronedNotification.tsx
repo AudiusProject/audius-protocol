@@ -15,7 +15,7 @@ import {
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  NotificationTwitterButton,
+  NotificationXButton,
   NotificationProfilePicture,
   UserNameLink
 } from '../Notification'
@@ -30,7 +30,7 @@ const messages = {
   body2: "'s #1 Top Supporter! Tip to Reclaim Your Spot?",
   // NOTE: Send tip -> Send $AUDIO change
   body2Alt: "'s #1 Top Supporter! Send $AUDIO to Reclaim Your Spot?", // iOS only
-  twitterShare: (usurperHandle: string, supportingHandle: string) =>
+  xShare: (usurperHandle: string, supportingHandle: string) =>
     `I've been dethroned! ${usurperHandle} dethroned me as ${supportingHandle}'s #1 Top Supporter! #Audius $AUDIO #AUDIOTip`
 }
 
@@ -53,7 +53,7 @@ export const SupporterDethronedNotification = (
       if (!supportingHandle) {
         return null
       }
-      const shareText = messages.twitterShare(usurpingHandle, supportingHandle)
+      const shareText = messages.xShare(usurpingHandle, supportingHandle)
       return {
         shareText,
         analytics: {
@@ -81,7 +81,7 @@ export const SupporterDethronedNotification = (
           {Platform.OS === 'ios' ? messages.body2Alt : messages.body2}
         </NotificationText>
       </NotificationBody>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={usurpingUser.handle}
         additionalHandle={supportedUser.handle}

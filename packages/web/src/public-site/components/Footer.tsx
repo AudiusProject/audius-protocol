@@ -3,8 +3,8 @@ import {
   IconAudiusLogoHorizontalColorNew,
   IconTelegram,
   IconInstagram,
-  IconTwitter as IconTwitterBird,
-  IconDiscord
+  IconDiscord,
+  IconX
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -15,7 +15,7 @@ import { handleClickRoute } from './handleClickRoute'
 
 const {
   HOME_PAGE,
-  AUDIUS_TWITTER_LINK,
+  AUDIUS_X_LINK,
   AUDIUS_INSTAGRAM_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_PRESS_LINK,
@@ -67,9 +67,9 @@ const socialLinks = [
     link: AUDIUS_INSTAGRAM_LINK
   },
   {
-    text: 'Twitter',
-    Icon: IconTwitterBird,
-    link: AUDIUS_TWITTER_LINK
+    text: 'X',
+    Icon: IconX,
+    link: AUDIUS_X_LINK
   },
   {
     text: 'Discord',

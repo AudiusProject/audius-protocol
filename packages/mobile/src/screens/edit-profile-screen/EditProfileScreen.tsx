@@ -14,7 +14,7 @@ import {
   IconInstagram,
   IconLink,
   IconTikTok,
-  IconTwitter
+  IconX
 } from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
@@ -65,7 +65,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type EditProfileFormProps = FormikProps<ProfileValues> & {
-  isTwitterVerified: boolean
+  isXVerified: boolean
   isInstagramVerified: boolean
   isTikTokVerified: boolean
 }
@@ -74,7 +74,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
   const {
     handleSubmit,
     handleReset,
-    isTwitterVerified,
+    isXVerified,
     isInstagramVerified,
     isTikTokVerified,
     errors
@@ -106,11 +106,11 @@ const EditProfileForm = (props: EditProfileFormProps) => {
         <ProfileTextField name='bio' label='Bio' multiline maxLength={256} />
         <ProfileTextField name='location' label='Location' />
         <ProfileTextField
-          editable={!isTwitterVerified}
+          editable={!isXVerified}
           name='twitter_handle'
           label='Twitter Handle'
           prefix='@'
-          icon={IconTwitter}
+          icon={IconX}
         />
         <ProfileTextField
           editable={!isInstagramVerified}
@@ -190,7 +190,7 @@ export const EditProfileScreen = () => {
   if (!profile) return null
 
   const {
-    verified_with_twitter: verifiedWithTwitter,
+    verified_with_twitter: verifiedWithX,
     verified_with_instagram: verifiedWithInstagram,
     verified_with_tiktok: verifiedWithTiktok,
     name,
@@ -229,7 +229,7 @@ export const EditProfileScreen = () => {
         return (
           <EditProfileForm
             {...formikProps}
-            isTwitterVerified={verifiedWithTwitter}
+            isXVerified={verifiedWithX}
             isInstagramVerified={verifiedWithInstagram}
             isTikTokVerified={verifiedWithTiktok}
           />

@@ -5,7 +5,7 @@ import {
   IconAudiusLogoHorizontalNew,
   IconInstagram,
   IconClose,
-  IconTwitter,
+  IconX,
   IconDiscord,
   IconTelegram,
   IconCloudDownload as IconDownloadQueued,
@@ -33,7 +33,7 @@ const {
   AUDIUS_ORG,
   SIGN_UP_PAGE,
   AUDIUS_TELEGRAM_LINK,
-  AUDIUS_TWITTER_LINK,
+  AUDIUS_X_LINK,
   DOWNLOAD_START_LINK
 } = route
 
@@ -52,8 +52,8 @@ const socialLinks = [
     link: AUDIUS_INSTAGRAM_LINK
   },
   {
-    Icon: IconTwitter,
-    link: AUDIUS_TWITTER_LINK
+    Icon: IconX,
+    link: AUDIUS_X_LINK
   },
   {
     Icon: IconDiscord,

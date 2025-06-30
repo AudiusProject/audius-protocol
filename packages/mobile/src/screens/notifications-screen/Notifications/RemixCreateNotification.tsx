@@ -15,13 +15,13 @@ import {
   NotificationTitle,
   EntityLink,
   UserNameLink,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
 const messages = {
   title: 'New Remix of Your Track',
   by: 'by',
-  shareTwitterText: (trackTitle: string, handle: string) =>
+  shareXText: (trackTitle: string, handle: string) =>
     `New remix of ${trackTitle} by ${handle} on @audius #Audius`
 }
 
@@ -49,10 +49,10 @@ export const RemixCreateNotification = (
     }
   }, [childTrack, navigation, notification])
 
-  const handleTwitterShareData = useCallback(
+  const handleXShareData = useCallback(
     (handle: string | undefined) => {
       if (parentTrackTitle && handle) {
-        const shareText = messages.shareTwitterText(parentTrackTitle, handle)
+        const shareText = messages.shareXText(parentTrackTitle, handle)
         const analytics = {
           eventName: EventNames.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
           text: shareText
@@ -66,7 +66,7 @@ export const RemixCreateNotification = (
 
   if (!user || !childTrack || !parentTrack) return null
 
-  const twitterUrl = getTrackRoute(parentTrack, true)
+  const xUrl = getTrackRoute(parentTrack, true)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -77,11 +77,11 @@ export const RemixCreateNotification = (
         <EntityLink entity={childTrack} /> {messages.by}{' '}
         <UserNameLink user={user} />
       </NotificationText>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
-        url={twitterUrl}
+        url={xUrl}
         handle={user.handle}
-        shareData={handleTwitterShareData}
+        shareData={handleXShareData}
       />
     </NotificationTile>
   )

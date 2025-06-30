@@ -13,7 +13,7 @@ export const messages = {
   hiddenPlaylistShareHelperText:
     'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.',
   directMessage: 'Direct Message',
-  twitter: 'Twitter',
+  x: 'X',
   instagramStory: 'Instagram Story',
   snapchat: 'Snapchat',
   tikTokVideo: 'TikTok',

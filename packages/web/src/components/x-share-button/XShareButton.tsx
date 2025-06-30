@@ -5,7 +5,7 @@ import { Nullable } from '@audius/common/utils'
 import { Button, ButtonProps, IconX } from '@audius/harmony'
 
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
-import { openTwitterLink } from 'utils/tweet'
+import { openXLink } from 'utils/xShare'
 
 const messages = {
   share: 'Share'
@@ -59,7 +59,7 @@ export const XShareButton = (props: XShareButtonProps) => {
     (e) => {
       e.stopPropagation()
       if (other.type === 'static') {
-        openTwitterLink(url, other.shareText)
+        openXLink(url, other.shareText)
         if (other.analytics) {
           record(other.analytics)
         }
@@ -80,7 +80,7 @@ export const XShareButton = (props: XShareButtonProps) => {
         const xData = other.shareData(handle, otherHandle)
         if (xData) {
           const { shareText, analytics } = xData
-          openTwitterLink(url, shareText)
+          openXLink(url, shareText)
           if (analytics) {
             record(analytics)
           }

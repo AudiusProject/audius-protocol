@@ -9,7 +9,7 @@ import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconCheck, IconClose, PlainButton } from '@audius/harmony-native'
-import { TwitterButton } from 'app/components/twitter-button'
+import { XButton } from 'app/components/x-button'
 import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -26,16 +26,16 @@ const messages = {
   title: 'Tip Sent',
   // NOTE: Send tip -> Send $AUDIO change
   titleAlt: '$AUDIO Sent', // iOS only
-  description: 'Share your support on Twitter!',
+  description: 'Share your support on X!',
   done: 'Done',
-  twitterCopyPrefix: 'I just tipped ',
-  twitterCopyPrefixAlt: 'I just sent ', // iOS only
-  twitterCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip',
-  twitterCopySuffixAlt: ' $AUDIO on @audius #Audius #AUDIO' // iOS only
+  xCopyPrefix: 'I just tipped ',
+  xCopyPrefixAlt: 'I just sent ', // iOS only
+  xCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip',
+  xCopySuffixAlt: ' $AUDIO on @audius #Audius #AUDIO' // iOS only
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
-  twitter: {
+  x: {
     marginBottom: spacing(6)
   },
   close: {
@@ -64,7 +64,7 @@ export const TipSentScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const getTwitterShareText = () => {
+  const getXShareText = () => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
     if (user_id && recipient) {
       let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
@@ -72,13 +72,9 @@ export const TipSentScreen = () => {
         recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
       }
       return `${
-        Platform.OS === 'ios'
-          ? messages.twitterCopyPrefixAlt
-          : messages.twitterCopyPrefix
+        Platform.OS === 'ios' ? messages.xCopyPrefixAlt : messages.xCopyPrefix
       }${recipientAndAmount}${
-        Platform.OS === 'ios'
-          ? messages.twitterCopySuffixAlt
-          : messages.twitterCopySuffix
+        Platform.OS === 'ios' ? messages.xCopySuffixAlt : messages.xCopySuffix
       }`
     }
     return ''
@@ -105,11 +101,11 @@ export const TipSentScreen = () => {
       <TipHeader status='sent' />
       <ReceiverDetails />
       <DescriptionText>{messages.description}</DescriptionText>
-      <TwitterButton
+      <XButton
         type='static'
         fullWidth
-        style={styles.twitter}
-        shareText={getTwitterShareText()}
+        style={styles.x}
+        shareText={getXShareText()}
         url={recipient ? `${env.AUDIUS_URL}/${recipient.handle}` : undefined}
         analytics={
           user_id && recipient
