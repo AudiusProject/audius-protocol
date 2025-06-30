@@ -1,5 +1,10 @@
-import { WalletAddresses, queryWalletAddresses } from '@audius/common/api'
-import { Name, ErrorLevel, StringWei } from '@audius/common/models'
+import {
+  QUERY_KEYS,
+  WalletAddresses,
+  getAccountTotalAudioBalanceSaga,
+  queryWalletAddresses
+} from '@audius/common/api'
+import { Name, ErrorLevel } from '@audius/common/models'
 import {
   IntKeys,
   FeatureFlags,
@@ -8,8 +13,6 @@ import {
   MEMO_PROGRAM_ID
 } from '@audius/common/services'
 import {
-  walletSelectors,
-  walletActions,
   buyAudioActions,
   buyAudioSelectors,
   transactionDetailsActions,
@@ -90,7 +93,6 @@ const { setVisibility } = modalsActions
 
 const { getBuyAudioFlowStage, getFeesCache, getBuyAudioProvider } =
   buyAudioSelectors
-const { increaseBalance } = walletActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const DEFAULT_SLIPPAGE_BPS = 30 // The default slippage amount to allow for exchanges, overridden in optimizely
@@ -481,9 +483,7 @@ function* populateAndSaveTransactionDetails() {
     throw new Error('Missing transactionDetailsArgs[transferTransactionId]')
   }
 
-  const postAUDIOBalanceWei = yield* select(
-    walletSelectors.getAccountTotalBalance
-  )
+  const postAUDIOBalanceWei = yield* call(getAccountTotalAudioBalanceSaga)
   const purchasedAUDIO = purchasedAudioWei
     ? AUDIO(BigInt(purchasedAudioWei))
         .toLocaleString('en-US', {
@@ -888,12 +888,11 @@ function* transferStep({
     localStorageState
   )
 
-  // Update wallet balance optimistically
-  yield* put(
-    increaseBalance({
-      amount: audioTransferredWei.toString() as StringWei
-    })
-  )
+  // Refetch wallet balance
+  const queryClient = yield* getContext('queryClient')
+  yield* call(queryClient.invalidateQueries, {
+    queryKey: [QUERY_KEYS.audioBalance]
+  })
   yield* put(transferCompleted())
 
   return { audioTransferredWei, transferTransactionId: signature }

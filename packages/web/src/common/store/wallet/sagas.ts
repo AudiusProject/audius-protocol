@@ -1,14 +1,11 @@
-import { queryAccountUser, queryWalletAddresses } from '@audius/common/api'
 import {
-  Name,
-  ErrorLevel,
-  SolanaWalletAddress,
-  StringWei
-} from '@audius/common/models'
+  getAccountAudioBalanceSaga,
+  queryAccountUser,
+  queryWalletAddresses
+} from '@audius/common/api'
+import { Name, SolanaWalletAddress } from '@audius/common/models'
 import {
-  accountActions,
   tokenDashboardPageActions,
-  walletSelectors,
   walletActions,
   getContext,
   InputSendDataAction,
@@ -16,40 +13,23 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, isNullOrUndefined } from '@audius/common/utils'
 import { AudioWei } from '@audius/fixed-decimal'
-import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
+import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
-import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
-const {
-  getBalance,
-  setBalanceError,
-  setBalance,
-  send,
-  sendSucceeded,
-  sendFailed,
-  decreaseBalance
-} = walletActions
-const { getAccountBalance, getFreezeUntilTime } = walletSelectors
+const { send, sendSucceeded, sendFailed } = walletActions
 const {
   transferEthAudioToSolWAudio,
   setCanRecipientReceiveWAudio,
   inputSendData
 } = tokenDashboardPageActions
-const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
 // TODO: handle errors
 const errors = {
   rateLimitError: 'Please wait before trying again'
-}
-
-function* getIsBalanceFrozen() {
-  const freezeUntil = yield* select(getFreezeUntilTime)
-  return freezeUntil && Date.now() < freezeUntil
 }
 
 /**
@@ -69,7 +49,7 @@ function* sendAsync({
 
   const account = yield* call(queryAccountUser)
   const audioWeiAmount = BigInt(weiAudioAmount) as AudioWei
-  const accountBalance = yield* select(getAccountBalance)
+  const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const weiBNBalance = accountBalance
     ? BigInt(accountBalance.toString())
     : BigInt(0)
@@ -139,13 +119,6 @@ function* sendAsync({
       return
     }
 
-    // Only decrease store balance if we haven't already changed
-    const newBalance: ReturnType<typeof getAccountBalance> =
-      yield* select(getAccountBalance)
-    if (newBalance && weiBNBalance === newBalance) {
-      yield* put(decreaseBalance({ amount: weiAudioAmount }))
-    }
-
     yield* put(sendSucceeded())
     yield* put(
       make(Name.SEND_AUDIO_SUCCESS, {
@@ -169,95 +142,6 @@ function* sendAsync({
         error: errorText
       })
     )
-  }
-}
-
-function* getWalletBalanceAndWallets() {
-  yield* all([put(getBalance())])
-}
-
-function* fetchBalanceAsync() {
-  yield* waitForWrite()
-  const walletClient = yield* getContext('walletClient')
-
-  const account = yield* call(queryAccountUser)
-  if (!account || !account.wallet) return
-
-  try {
-    // Opt out of balance refreshes if the balance
-    // is frozen due to a recent optimistic update
-    const isBalanceFrozen = yield* call(getIsBalanceFrozen)
-    if (isBalanceFrozen) return
-
-    const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
-      call([walletClient, walletClient.getCurrentBalance], {
-        ethAddress: account.wallet
-      }),
-      call([walletClient, walletClient.getCurrentWAudioBalance], {
-        ethAddress: account.wallet
-      })
-    ])
-
-    if (isNullOrUndefined(currentEthAudioWeiBalance)) {
-      console.warn(
-        "Failed to fetch and set user's balance - error getting ETH Audio balance."
-      )
-      yield* put(
-        setBalanceError({
-          balanceLoadDidFail: true,
-          totalBalanceLoadDidFail: true
-        })
-      )
-      return
-    }
-
-    const associatedWalletBalance: AudioWei | null = yield* call(
-      [walletClient, walletClient.getAssociatedWalletBalance],
-      account.user_id
-    )
-    if (isNullOrUndefined(associatedWalletBalance)) {
-      console.warn(
-        "Failed to fetch and set user's *total* balance - error getting connected/associated wallet(s) balance."
-      )
-      yield* put(
-        setBalanceError({
-          totalBalanceLoadDidFail: true
-        })
-      )
-    }
-
-    if (isNullOrUndefined(currentSolAudioWeiBalance)) {
-      console.warn(
-        "Failed to fetch and set user's balance - error getting SOL wAudio balance."
-      )
-      yield* put(
-        setBalanceError({
-          balanceLoadDidFail: true,
-          totalBalanceLoadDidFail: true
-        })
-      )
-      return
-    }
-
-    const audioWeiBalance =
-      currentEthAudioWeiBalance + currentSolAudioWeiBalance!
-
-    const totalBalance = isNullOrUndefined(associatedWalletBalance)
-      ? undefined
-      : (audioWeiBalance + associatedWalletBalance).toString()
-    yield* put(
-      setBalance({
-        balance: audioWeiBalance.toString() as StringWei,
-        totalBalance: totalBalance as StringWei | undefined
-      })
-    )
-  } catch (err) {
-    console.error(err)
-    yield* call(reportToSentry, {
-      level: ErrorLevel.Error,
-      error: err as Error,
-      additionalInfo: { user_id: account.user_id }
-    })
   }
 }
 
@@ -304,33 +188,12 @@ function* watchSend() {
   yield* takeEvery(send.type, sendAsync)
 }
 
-function* watchGetBalance() {
-  yield* takeEvery(getBalance.type, fetchBalanceAsync)
-}
-
 function* watchInputSendData() {
   yield* takeEvery(inputSendData.type, checkAssociatedTokenAccountOrSol)
 }
 
-function* watchFetchAccountSucceeded() {
-  try {
-    yield* all([
-      take(fetchAccountSucceeded.type),
-      take(SETUP_BACKEND_SUCCEEDED)
-    ])
-    yield* getWalletBalanceAndWallets()
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 const sagas = () => {
-  return [
-    watchGetBalance,
-    watchInputSendData,
-    watchSend,
-    watchFetchAccountSucceeded
-  ]
+  return [watchInputSendData, watchSend]
 }
 
 export default sagas

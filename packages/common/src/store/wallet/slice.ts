@@ -109,7 +109,6 @@ const slice = createSlice({
       state.usdcBalance = amount
     },
     // Saga Actions
-    getBalance: () => {},
     claim: () => {},
     claimSucceeded: () => {},
     claimFailed: (_state, _action: PayloadAction<{ error?: string }>) => {},
@@ -126,11 +125,7 @@ const slice = createSlice({
 })
 
 export const {
-  setBalance,
-  increaseBalance,
-  decreaseBalance,
   setUSDCBalance,
-  getBalance,
   claim,
   claimSucceeded,
   claimFailed,

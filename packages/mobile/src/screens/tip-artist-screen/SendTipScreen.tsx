@@ -1,14 +1,9 @@
 import { useCallback, useState } from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
-import {
-  tippingSelectors,
-  tippingActions,
-  walletActions
-} from '@audius/common/store'
+import { tippingSelectors, tippingActions } from '@audius/common/store'
 import type { AudioWei } from '@audius/fixed-decimal'
 import { AUDIO } from '@audius/fixed-decimal'
-import { useFocusEffect } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -27,7 +22,6 @@ import { TipInput } from './TipInput'
 import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
 
-const { getBalance } = walletActions
 const { sendTip } = tippingActions
 const { getSendUser } = tippingSelectors
 
@@ -67,12 +61,6 @@ export const SendTipScreen = () => {
     dispatch(sendTip({ amount: tipAmount }))
     navigation.navigate('ConfirmTip')
   }, [dispatch, tipAmount, navigation])
-
-  useFocusEffect(
-    useCallback(() => {
-      dispatch(getBalance())
-    }, [dispatch])
-  )
 
   let tipAmountWei: AudioWei | null = null
   try {

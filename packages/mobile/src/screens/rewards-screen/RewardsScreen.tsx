@@ -1,15 +1,12 @@
 import React, { useCallback, useEffect } from 'react'
 
+import { useAudioBalance } from '@audius/common/api'
 import { useRemoteVar } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
-import {
-  tokenDashboardPageActions,
-  walletSelectors,
-  walletActions
-} from '@audius/common/store'
+import { tokenDashboardPageActions } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 import LinearGradient from 'react-native-linear-gradient'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { IconCrown, Flex, Text } from '@audius/harmony-native'
 import { ScrollView, Screen, Tile, ScreenContent } from 'app/components/core'
@@ -22,8 +19,6 @@ import { ClaimAllRewardsTile } from './ClaimAllRewardsTile'
 import { TiersTile } from './TiersTile'
 import { TrendingRewardsTile } from './TrendingRewardsTile'
 
-const { getBalance } = walletActions
-const { getTotalBalanceLoadDidFail } = walletSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
 
 const messages = {
@@ -80,24 +75,23 @@ export const RewardsScreen = () => {
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
 
-  const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
+  const { isError: isAudioBalanceError } = useAudioBalance()
 
   useFocusEffect(
     useCallback(() => {
       dispatch(fetchAssociatedWallets())
-      dispatch(getBalance())
     }, [dispatch])
   )
 
   useEffect(() => {
-    if (balanceLoadDidFail) {
+    if (isAudioBalanceError) {
       toast({
         content: 'Balance failed to load. Please try again later.',
         type: 'error',
         timeout: 10000
       })
     }
-  }, [balanceLoadDidFail, toast])
+  }, [isAudioBalanceError, toast])
 
   const renderNoticeTile = () => (
     <Tile
