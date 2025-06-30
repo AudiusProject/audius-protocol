@@ -254,7 +254,7 @@ function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
   const queryClient = yield* getContext<QueryClient>('queryClient')
   let totalBalance: AudioWei = AUDIO(0).value
   for (const wallet of wallets) {
-    const balance = (yield* call(queryClient.fetchQuery, {
+    const balance = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAudioBalanceQueryKey({
         address: wallet.address,
         chain: wallet.chain,
