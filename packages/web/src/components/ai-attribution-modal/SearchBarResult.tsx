@@ -2,11 +2,18 @@ import { memo, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
-import { Kind } from '@audius/common/models'
-import { Tag } from '@audius/harmony'
+import {
+  Kind,
+  Name,
+  BadgeTier,
+  SquareSizes,
+  WidthSizes
+} from '@audius/common/models'
+import { Nullable } from '@audius/common/utils'
+import { Flex, spacing, Tag } from '@audius/harmony'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
+import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { XShareButton } from 'components/x-share-button/XShareButton'
@@ -16,11 +23,20 @@ import styles from './SearchBarResult.module.css'
 
 const messages = {
   disabledTag: 'Ai Attrib. Not Enabled',
-  tweet: (handle) =>
+  tweet: (handle: string) =>
     `Hey ${handle}, imagine AI generated tracks inspired by your sound! 🤖 Enable AI generated music on @AudiusMusic and see what your fans create using your tunes as their muse. #AudiusAI`
 }
 
-const Image = memo((props) => {
+type ImageProps = {
+  kind: Kind
+  isUser: boolean
+  id: string
+  artwork: any // Using any to match the useImageSize hook expectations
+  defaultImage: string
+  size: SquareSizes | WidthSizes
+}
+
+const Image = memo((props: ImageProps) => {
   const { defaultImage, artwork, size, isUser } = props
   const image = useImageSize({
     artwork,
@@ -42,7 +58,23 @@ const Image = memo((props) => {
   )
 })
 
-const SearchBarResult = memo((props) => {
+type SearchBarResultProps = {
+  kind: Kind
+  id: string
+  userId: number
+  primary: string
+  secondary?: string
+  artwork: any // Using any to match the artwork prop expectations
+  size: SquareSizes | WidthSizes
+  defaultImage: string
+  isVerifiedUser: boolean
+  tier?: BadgeTier
+  allowAiAttribution: boolean
+  name: string
+  handle: string
+}
+
+const SearchBarResult = memo((props: SearchBarResultProps) => {
   const {
     kind,
     id,
@@ -60,13 +92,32 @@ const SearchBarResult = memo((props) => {
   } = props
   const isUser = kind === Kind.USERS
 
-  const handleXShare = useCallback((handle) => {
-    const shareText = messages.tweet(handle)
-    return { shareText }
-  }, [])
+  const handleXShare = useCallback(
+    (xHandle: string, otherXHandle?: Nullable<string>) => {
+      const shareText = messages.tweet(xHandle)
+      const analytics = make(Name.NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE, {
+        text: shareText
+      })
+      return {
+        shareText,
+        analytics
+      }
+    },
+    []
+  )
 
   return (
-    <div className={styles.searchBarResultContainer}>
+    <Flex
+      w='100%'
+      h={spacing.unit12}
+      gap='m'
+      alignItems='center'
+      justifyContent='flex-end'
+      css={{
+        position: 'relative',
+        display: 'inline-flex'
+      }}
+    >
       <span className={styles.userInfo}>
         <Image
           kind={kind}
@@ -91,7 +142,7 @@ const SearchBarResult = memo((props) => {
               <UserBadges
                 className={styles.verified}
                 userId={userId}
-                badgeSize={12}
+                size='xs'
                 isVerifiedOverride={isVerifiedUser}
                 overrideTier={tier}
               />
@@ -104,7 +155,7 @@ const SearchBarResult = memo((props) => {
                 <UserBadges
                   className={styles.verified}
                   userId={userId}
-                  badgeSize={10}
+                  size='xs'
                   isVerifiedOverride={isVerifiedUser}
                   overrideTier={tier}
                 />
@@ -117,7 +168,6 @@ const SearchBarResult = memo((props) => {
         <>
           <Tag>{messages.disabledTag}</Tag>
           <XShareButton
-            className={styles.twitterButton}
             type='dynamic'
             handle={handle}
             name={name}
@@ -126,21 +176,8 @@ const SearchBarResult = memo((props) => {
           />
         </>
       ) : null}
-    </div>
+    </Flex>
   )
 })
-
-SearchBarResult.propTypes = {
-  imageUrl: PropTypes.string.isRequired,
-  primary: PropTypes.string.isRequired,
-  secondary: PropTypes.string,
-  kind: PropTypes.string,
-  id: PropTypes.string,
-  sizes: PropTypes.object,
-  imageMultihash: PropTypes.string,
-  size: PropTypes.string,
-  defaultImage: PropTypes.string,
-  isVerifiedUser: PropTypes.bool
-}
 
 export default SearchBarResult

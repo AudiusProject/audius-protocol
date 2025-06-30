@@ -60,7 +60,7 @@ export const ShareModal = () => {
     dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'share' }))
   }, [openCreateChatModal, dispatch, onClose, content])
 
-  const handleShareToTwitter = useCallback(async () => {
+  const handleShareToX = useCallback(async () => {
     if (!source || !content) return
     const { twitterText, link, analyticsEvent } = await getXShareText(
       content,
@@ -124,7 +124,7 @@ export const ShareModal = () => {
     onShareToDirectMessage: isManagerMode
       ? undefined
       : handleShareToDirectMessage,
-    onShareToTwitter: handleShareToTwitter,
+    onShareToX: handleShareToX,
     onCopyLink: handleCopyLink,
     onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
       ? handleEmbed

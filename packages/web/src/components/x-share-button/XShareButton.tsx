@@ -2,7 +2,7 @@ import { MouseEventHandler, useCallback } from 'react'
 
 import { useUserByHandle } from '@audius/common/api'
 import { Nullable } from '@audius/common/utils'
-import { Button, ButtonProps } from '@audius/harmony'
+import { Button, ButtonProps, IconX } from '@audius/harmony'
 
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
@@ -33,7 +33,6 @@ type XShareButtonProps = {
   hideText?: boolean
   fullWidth?: ButtonProps['fullWidth']
   size?: ButtonProps['size']
-  className?: string
   onAfterShare?: () => void
 } & (StaticXProps | DynamicXProps)
 
@@ -43,7 +42,6 @@ export const XShareButton = (props: XShareButtonProps) => {
     fullWidth,
     size = 'small',
     hideText,
-    className,
     onAfterShare,
     ...other
   } = props
@@ -108,7 +106,7 @@ export const XShareButton = (props: XShareButtonProps) => {
       fullWidth={fullWidth}
       size={size}
       onClick={handleClick}
-      className={className}
+      iconLeft={IconX}
     >
       {hideText ? undefined : messages.share}
     </Button>
