@@ -24,11 +24,11 @@ import { spacing } from 'app/styles/spacing'
 import { EventNames, RepostSource } from 'app/types/analytics'
 import { getCollectionRoute, getTrackRoute } from 'app/utils/routes'
 
-import { TwitterButton } from '../twitter-button'
+import { XButton } from '../x-button'
 
 const messages = {
   success: 'Your Purchase Was Successful!',
-  shareTwitterText: (contentType: string, trackTitle: string, handle: string) =>
+  shareXText: (contentType: string, trackTitle: string, handle: string) =>
     `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
   view: (contentType: string) => `View ${capitalize(contentType)}`,
   repost: 'Repost',
@@ -56,13 +56,13 @@ export const PurchaseSuccess = ({
 
   const dispatch = useDispatch()
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (handle: string) => {
       let shareText: string
       if (!isAlbum && metadata.is_download_gated && metadata._stems?.length) {
-        shareText = messages.shareTwitterText('stems for', title, handle)
+        shareText = messages.shareXText('stems for', title, handle)
       } else {
-        shareText = messages.shareTwitterText(
+        shareText = messages.shareXText(
           isAlbum ? 'album' : 'track',
           title,
           handle
@@ -111,11 +111,11 @@ export const PurchaseSuccess = ({
           >
             {isReposted ? messages.reposted : messages.repost}
           </EntityActionButton>
-          <TwitterButton
+          <XButton
             fullWidth
             type='dynamic'
             url={link}
-            shareData={handleTwitterShare}
+            shareData={handleXShare}
             handle={handle}
           />
         </Flex>

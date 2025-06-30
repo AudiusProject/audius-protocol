@@ -15,7 +15,7 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTitle,
-  NotificationTwitterButton,
+  NotificationXButton,
   UserNameLink,
   EntityLink
 } from '../Notification'
@@ -26,7 +26,7 @@ const messages = {
   youJustPurchased: 'You just purchased',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (title: string, sellerUsername: string, type: string) =>
+  xShare: (title: string, sellerUsername: string, type: string) =>
     `I bought the ${lowerCase(
       type
     )} ${title} by ${sellerUsername} on @Audius! $AUDIO #AudiusPremium`
@@ -48,11 +48,7 @@ export const USDCPurchaseBuyerNotification = ({
     (sellerHandle: string) => {
       if (!content) return null
       const trackTitle = getEntityTitle(content)
-      const shareText = messages.twitterShare(
-        trackTitle,
-        sellerHandle,
-        entityType
-      )
+      const shareText = messages.xShare(trackTitle, sellerHandle, entityType)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE,
         { text: shareText }
@@ -78,7 +74,7 @@ export const USDCPurchaseBuyerNotification = ({
         <UserNameLink user={sellerUser} />
         {messages.exclamation}
       </NotificationText>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         url={getEntityRoute(content, true)}
         handle={sellerUser.handle}

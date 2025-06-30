@@ -1,11 +1,7 @@
 import { css } from '@emotion/native'
 import { StyleSheet } from 'react-native'
 
-import {
-  IconInstagram,
-  IconTikTok,
-  IconTwitter
-} from 'app/harmony-native/icons'
+import { IconInstagram, IconTikTok, IconX } from 'app/harmony-native/icons'
 
 import { RadialGradient } from '../../RadialGradient/RadialGradient'
 import { Flex } from '../../layout/Flex/Flex'
@@ -17,12 +13,12 @@ import type { SocialButtonProps, SocialMedia } from './types'
 const socialLogos = {
   tiktok: IconTikTok,
   instagram: IconInstagram,
-  twitter: IconTwitter
+  x: IconX
 }
 
 const socialHexColor: Record<SocialMedia, HexColor> = {
   tiktok: '#fe2c55',
-  twitter: '#1ba1f1',
+  x: '#1ba1f1',
   instagram: '#ca1d7e'
 }
 

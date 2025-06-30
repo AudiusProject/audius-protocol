@@ -28,7 +28,7 @@ import {
   NotificationProfilePicture,
   TipText,
   UserNameLink,
-  NotificationTwitterButton,
+  NotificationXButton,
   NotificationBody
 } from '../Notification'
 import { ReactionList } from '../Reaction'
@@ -43,7 +43,7 @@ const messages = {
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
   // NOTE: Send tip -> Send $AUDIO change
-  twitterShare: (senderHandle: string, amount: number, ios: boolean) =>
+  xShare: (senderHandle: string, amount: number, ios: boolean) =>
     `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
       ios ? '$AUDIO' : '$AUDIO tip'
     } on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
@@ -98,9 +98,9 @@ export const TipReceivedNotification = (
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(
+      const shareText = messages.xShare(
         senderHandle,
         uiAmount,
         Platform.OS === 'ios'
@@ -158,10 +158,10 @@ export const TipReceivedNotification = (
         onChange={handleReaction}
         isVisible={isVisible}
       />
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={user.handle}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
       />
     </NotificationTile>
   )

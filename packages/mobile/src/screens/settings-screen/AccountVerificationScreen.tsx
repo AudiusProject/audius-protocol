@@ -44,7 +44,7 @@ const messages = {
   handleMatch:
     'Your Audius handle must exactly match the verified handle you’re connecting.',
   verified: "You're verified!",
-  verifyTwitter: 'Verify with Twitter',
+  verifyX: 'Verify with X',
   verifyInstagram: 'Verify with Instagram',
   verifyTikTok: 'Verify with TikTok',
   backButtonText: 'Back To The Music',
@@ -225,7 +225,7 @@ export const AccountVerificationScreen = () => {
     trackOAuthComplete
   ])
 
-  const handleTwitterPress = () => {
+  const handleXPress = () => {
     if (!accountHandle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setTwitterError(null))
@@ -288,10 +288,10 @@ export const AccountVerificationScreen = () => {
 
       {isTwitterEnabled ? (
         <SocialButton
-          socialType='twitter'
+          socialType='x'
           fullWidth
-          onPress={handleTwitterPress}
-          aria-label={messages.verifyTwitter}
+          onPress={handleXPress}
+          aria-label={messages.verifyX}
         />
       ) : null}
 

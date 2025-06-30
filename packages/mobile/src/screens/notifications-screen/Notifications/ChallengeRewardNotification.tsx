@@ -19,7 +19,7 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTitle,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
 const formatNumber = (amount: FixedDecimal) => {
@@ -31,7 +31,7 @@ const messages = {
     `You've earned ${formatNumber(amount)} $AUDIO`,
   referredText: 'for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: 'for completing this challenge!',
-  twitterShareText:
+  xShareText:
     'I earned $AUDIO for completing challenges on @audius #AudioRewards',
   streakMilestone: (amountEarned: number, listenStreak: number) =>
     `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You'll now earn an additional $AUDIO reward for every day you keep your streak going!`,
@@ -108,10 +108,7 @@ export const ChallengeRewardNotification = (
         </NotificationTitle>
       </NotificationHeader>
       <NotificationText>{notificationText}</NotificationText>
-      <NotificationTwitterButton
-        type='static'
-        shareText={messages.twitterShareText}
-      />
+      <NotificationXButton type='static' shareText={messages.xShareText} />
     </NotificationTile>
   )
 }
