@@ -175,7 +175,6 @@ export class EthWeb3Manager {
 
     const priorityFee = Number(feeHistory?.reward?.[0]?.[0] ?? MIN_GAS_PRICE)
     const gasPrice = baseFee + priorityFee
-    console.log({ baseFee, priorityFee, gasPrice, feeHistory, block })
 
     return await contractMethod.send({
       from: this.ownerWallet,
