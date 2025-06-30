@@ -20,7 +20,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useModalState } from 'pages/modals/useModalState'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
-import { openTwitterLink } from 'utils/tweet'
+import { openXLink } from 'utils/xShare'
 
 import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
@@ -62,12 +62,12 @@ export const ShareModal = () => {
 
   const handleShareToX = useCallback(async () => {
     if (!source || !content) return
-    const { twitterText, link, analyticsEvent } = await getXShareText(
+    const { xText, link, analyticsEvent } = await getXShareText(
       content,
       content.type === 'audioNftPlaylist' &&
         accountUserId === content.user.user_id
     )
-    openTwitterLink(link, twitterText)
+    openXLink(link, xText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
     onClose()
   }, [source, content, accountUserId, record, onClose])
