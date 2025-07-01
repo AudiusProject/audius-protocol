@@ -22,7 +22,7 @@ const GENERATED_DIR = 'src/sdk/api/generated'
 
 const spawnOpenAPIGenerator = async (openApiGeneratorArgs) => {
   console.info('Running OpenAPI Generator:')
-  const fullCmd = `docker run --add-host=host.docker.internal:host-gateway --user $(id -u):$(id -g) --rm -v "${
+  const fullCmd = `docker run --user $(id -u):$(id -g) --rm -v "${
     process.env.PWD
   }:/local" openapitools/openapi-generator-cli:v7.5.0 ${openApiGeneratorArgs.join(
     ' '
