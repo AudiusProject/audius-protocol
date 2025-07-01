@@ -56,13 +56,10 @@ protocol-dashboard-build-staging:
 protocol-dashboard-deploy-staging:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
   steps:
     - attach_workspace:
         at: ./
-    - run:
-        name: install deps
-        command: sudo apt update && sudo apt install -y libsecret-1-0
     - run:
         name: deploy to staging
         command: |
@@ -92,13 +89,10 @@ protocol-dashboard-build-prod:
 protocol-dashboard-deploy-prod:
   working_directory: ~/audius-protocol
   docker:
-    - image: cimg/ruby:2.6-node
+    - image: cimg/node:18.17
   steps:
     - attach_workspace:
         at: ./
-    - run:
-        name: install deps
-        command: sudo apt update && sudo apt install -y libsecret-1-0
     - run:
         name: deploy to prod
         command: |
