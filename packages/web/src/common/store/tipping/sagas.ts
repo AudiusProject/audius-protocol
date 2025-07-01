@@ -123,6 +123,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
           ethAddress: currentUser
         }
       })
+    }
     // Cancel showing the notice if the conversion was magically super quick
     yield cancel(showConvertingMessage)
   }
