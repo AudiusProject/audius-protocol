@@ -22,7 +22,7 @@ const GENERATED_DIR = 'src/sdk/api/generated'
 
 const spawnOpenAPIGenerator = async (openApiGeneratorArgs) => {
   console.info('Running OpenAPI Generator:')
-  const fullCmd = `docker run --add-host=audius-protocol-discovery-provider-1:host-gateway --user $(id -u):$(id -g) --rm -v "${
+  const fullCmd = `docker run --add-host=host.docker.internal:host-gateway --user $(id -u):$(id -g) --rm -v "${
     process.env.PWD
   }:/local" openapitools/openapi-generator-cli:v7.5.0 ${openApiGeneratorArgs.join(
     ' '
@@ -53,13 +53,11 @@ const downloadSpec = async ({ env, apiVersion, apiFlavor }) => {
   // Setup args
   let baseURL = ''
   if (env === 'dev') {
-    baseURL = 'http://audius-protocol-discovery-provider-1'
+    baseURL = 'http://127.0.0.1:1323'
   } else if (env === 'stage') {
-    // Hardcode a stage DN, it doesn't matter
-    baseURL = 'https://discoveryprovider.staging.audius.co'
+    baseURL = 'https://api.staging.audius.co'
   } else if (env === 'prod') {
-    // Hardcode a prod DN, it doesn't matter
-    baseURL = 'https://discoveryprovider.audius.co'
+    baseURL = 'https://api.audius.co'
   }
   const apiPath = apiFlavor === '' ? apiVersion : `${apiVersion}/${apiFlavor}`
 
