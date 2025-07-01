@@ -1,7 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
+import { AUDIO } from '@audius/fixed-decimal'
+
 import { formatUSDCValue } from '../../../api'
-import { getCurrencyDecimalPlaces } from '../../../utils'
+import {
+  getAudioBalanceDecimalPlaces,
+  getCurrencyDecimalPlaces
+} from '../../../utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number
@@ -50,19 +55,16 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(availableBalance)
     }
 
-    const decimals = getDisplayDecimalPlaces(exchangeRate)
+    // Use the same logic as formatAudioBalance for non-stablecoins
+    // Convert to AUDIO fixed decimal for proper truncation formatting
+    const audioAmount = AUDIO(availableBalance)
+    const decimals = getAudioBalanceDecimalPlaces(availableBalance)
 
-    return availableBalance.toLocaleString('en-US', {
-      minimumFractionDigits: defaultDecimalPlaces,
-      maximumFractionDigits: decimals
+    return audioAmount.toLocaleString('en-US', {
+      maximumFractionDigits: decimals,
+      roundingMode: 'trunc'
     })
-  }, [
-    availableBalance,
-    exchangeRate,
-    getDisplayDecimalPlaces,
-    placeholder,
-    isStablecoin
-  ])
+  }, [availableBalance, placeholder, isStablecoin])
 
   const formattedAmount = useMemo(() => {
     if (!amount && amount !== 0) return placeholder
@@ -75,13 +77,16 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(safeNumericAmount)
     }
 
-    const decimals = getDisplayDecimalPlaces(exchangeRate)
+    // Use the same logic as formatAudioBalance for non-stablecoins
+    // Convert to AUDIO fixed decimal for proper truncation formatting
+    const audioAmount = AUDIO(safeNumericAmount)
+    const decimals = getAudioBalanceDecimalPlaces(safeNumericAmount)
 
-    return safeNumericAmount.toLocaleString('en-US', {
-      minimumFractionDigits: defaultDecimalPlaces,
-      maximumFractionDigits: decimals
+    return audioAmount.toLocaleString('en-US', {
+      maximumFractionDigits: decimals,
+      roundingMode: 'trunc'
     })
-  }, [amount, exchangeRate, getDisplayDecimalPlaces, placeholder, isStablecoin])
+  }, [amount, placeholder, isStablecoin])
 
   return {
     formattedAvailableBalance,

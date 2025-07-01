@@ -4,7 +4,7 @@ import { AUDIO } from '@audius/fixed-decimal'
 
 import { useAudioBalance, useTokenPrice } from '../api'
 import { TOKEN_LISTING_MAP } from '../store'
-import { getCurrencyDecimalPlaces, isNullOrUndefined } from '../utils'
+import { formatAudioBalance, isNullOrUndefined } from '../utils'
 
 // AUDIO token address from Jupiter
 const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
@@ -26,15 +26,9 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const hasFetchedAudioBalance = !isNullOrUndefined(totalBalance)
   const audioBalance = hasFetchedAudioBalance ? totalBalance : null
 
-  const decimalPlaces = useMemo(() => {
-    if (!audioPrice) return 2
-    return getCurrencyDecimalPlaces(parseFloat(audioPrice))
-  }, [audioPrice])
-
+  // Format AUDIO balance with dynamic decimal places (minimum 2)
   const audioBalanceFormatted = hasFetchedAudioBalance
-    ? AUDIO(totalBalance).toLocaleString('en-US', {
-        maximumFractionDigits: decimalPlaces
-      })
+    ? formatAudioBalance(totalBalance)
     : null
 
   // Calculate dollar value of user's AUDIO balance
