@@ -1,15 +1,6 @@
+import { queryAccountUser, queryCurrentAccount } from '@audius/common/api'
+import { PlaylistLibraryID } from '@audius/common/models'
 import {
-  queryAccountUser,
-  queryCurrentAccount,
-  queryUser
-} from '@audius/common/api'
-import {
-  PlaylistLibraryID,
-  PlaylistIdentifier,
-  AccountCollection
-} from '@audius/common/models'
-import {
-  AccountState,
   accountActions,
   playlistLibraryActions,
   playlistLibraryHelpers
@@ -23,11 +14,8 @@ import { watchAddToFolderSaga } from './watchAddToFolderSaga'
 import { watchReorderLibrarySaga } from './watchReorderLibrarySaga'
 
 const { update } = playlistLibraryActions
-const {
-  getPlaylistsNotInLibrary,
-  removePlaylistLibraryDuplicates,
-  removeFromPlaylistLibrary
-} = playlistLibraryHelpers
+const { removePlaylistLibraryDuplicates, removeFromPlaylistLibrary } =
+  playlistLibraryHelpers
 
 function* watchUpdatePlaylistLibrary() {
   yield* takeEvery(
@@ -49,48 +37,6 @@ function* watchUpdatePlaylistLibrary() {
       })
     }
   )
-}
-
-/**
- * Gets the account playlists while filtering out playlists by deactivated users
- * @param account - The account state
- * @returns The account playlists
- */
-function* getAccountPlaylists(account: AccountState | null | undefined) {
-  const playlists: { [id: number]: AccountCollection } = {}
-  for (const cur of Object.keys(account?.collections ?? {})) {
-    const collection = account?.collections?.[cur as unknown as number]
-    if (collection?.is_album) continue
-    const user = yield* queryUser(collection?.user.id)
-    if (user?.is_deactivated) continue
-    playlists[cur] = collection
-  }
-  return playlists
-}
-
-/**
- * Goes through the account playlists and adds playlists that are
- * not in the user's set playlist library
- */
-export function* addPlaylistsNotInLibrary() {
-  const account = yield* queryCurrentAccount()
-  const library = account?.playlistLibrary ?? { contents: [] }
-
-  const playlists = yield* getAccountPlaylists(account)
-  const notInLibrary = getPlaylistsNotInLibrary(library, playlists)
-  if (Object.keys(notInLibrary).length > 0) {
-    const newEntries = Object.values(notInLibrary).map(
-      (playlist) =>
-        ({
-          playlist_id: playlist.id,
-          type: 'playlist'
-        }) as PlaylistIdentifier
-    )
-    const newContents = [...newEntries, ...library.contents]
-    yield* put(
-      update({ playlistLibrary: { ...library, contents: newContents } })
-    )
-  }
 }
 
 export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
