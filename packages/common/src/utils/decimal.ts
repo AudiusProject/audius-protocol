@@ -1,4 +1,4 @@
-import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 
 const PRECISION = 2
 
@@ -62,7 +62,7 @@ export const decimalIntegerFromHumanReadable = (
   value: string,
   { precision = PRECISION }: DecimalUtilOptions = {}
 ) => {
-  return Number(new FixedDecimal(value).toString()) * 10 ** precision
+  return parseFloat(value) * 10 ** precision
 }
 
 export const getCurrencyDecimalPlaces = (priceUSD: number) => {

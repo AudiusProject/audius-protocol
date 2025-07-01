@@ -33,7 +33,6 @@ const getSafeNumericValue = (value: string | number): number => {
 export const useTokenAmountFormatting = ({
   amount,
   availableBalance,
-  exchangeRate,
   isStablecoin,
   placeholder = '0.00'
 }: UseTokenAmountFormattingProps) => {
@@ -61,8 +60,7 @@ export const useTokenAmountFormatting = ({
     const decimals = getAudioBalanceDecimalPlaces(availableBalance)
 
     return audioAmount.toLocaleString('en-US', {
-      maximumFractionDigits: decimals,
-      roundingMode: 'trunc'
+      maximumFractionDigits: decimals
     })
   }, [availableBalance, placeholder, isStablecoin])
 
@@ -81,8 +79,7 @@ export const useTokenAmountFormatting = ({
     const decimals = getAudioBalanceDecimalPlaces(safeNumericAmount)
 
     return audioAmount.toLocaleString('en-US', {
-      maximumFractionDigits: decimals,
-      roundingMode: 'trunc'
+      maximumFractionDigits: decimals
     })
   }, [amount, placeholder, isStablecoin])
 

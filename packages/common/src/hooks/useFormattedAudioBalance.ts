@@ -35,7 +35,6 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const audioDollarValue = useMemo(() => {
     if (!audioPrice || !audioBalance) return '$0.00'
 
-    // Use FixedDecimal for proper decimal handling instead of parseFloat
     const priceNumber = Number(new FixedDecimal(audioPrice).toString())
     const balanceValue = Number(AUDIO(audioBalance).toString())
     const totalValue = priceNumber * balanceValue
