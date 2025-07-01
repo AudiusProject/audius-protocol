@@ -298,7 +298,6 @@ export const ChatUserListScreen = () => {
           ) : (
             <KeyboardAwareFlatList
               onEndReached={handleLoadMore}
-              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               data={users}
               renderItem={({ item }) => (
                 <ChatUserListItem
