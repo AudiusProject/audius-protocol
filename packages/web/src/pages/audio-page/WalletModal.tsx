@@ -285,7 +285,8 @@ const WalletModal = () => {
     wallet: WalletAddress,
     chain: Chain
   ) => {
-    const stringWei = amount.toString() as StringWei
+    const stringWei = AUDIO(BigInt(amount)).value.toString() as StringWei
+    console.log('REED onInputSendData', { amount, stringWei })
     dispatch(inputSendData({ amount: stringWei, wallet }))
   }
 

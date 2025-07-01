@@ -144,16 +144,17 @@ const SendInputBody = ({
   const amountToSendWei: AudioWei = useMemo(() => {
     if (!amountToSend.length) return BigInt(0) as AudioWei
     try {
-      return AUDIO(BigInt(amountToSend)).value
+      return AUDIO(amountToSend).value
     } catch {
       return BigInt(0) as AudioWei
     }
   }, [amountToSend])
   const [destinationAddress, setDestinationAddress] = useState('')
+  console.log('REED', { toSend: AUDIO(BigInt(amountToSendWei)).value })
 
   const [min, max] = useMemo(() => {
-    const min = AUDIO('0')
-    const max = AUDIO(currentBalance)
+    const min = AUDIO('0').value
+    const max = currentBalance
     return [min, max]
   }, [currentBalance])
 
@@ -195,7 +196,7 @@ const SendInputBody = ({
     setBalanceError(balanceError)
     setAddressError(walletError)
     if (balanceError || walletError) return
-    onSend(amountToSendWei, destinationAddress, Chain.Sol)
+    onSend(AUDIO(BigInt(amountToSendWei)).value, destinationAddress, Chain.Sol)
   }
 
   const renderBalanceError = () => {
@@ -225,7 +226,7 @@ const SendInputBody = ({
         <DashboardTokenValueSlider
           min={min}
           max={max}
-          value={AUDIO(amountToSendWei)}
+          value={amountToSendWei}
         />
         <TokenAmountInput
           label={messages.sendAmountLabel}
