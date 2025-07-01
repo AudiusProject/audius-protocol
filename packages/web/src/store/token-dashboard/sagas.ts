@@ -6,6 +6,7 @@ import {
   modalsActions,
   TokenDashboardPageModalState
 } from '@audius/common/store'
+import { AUDIO } from '@audius/fixed-decimal'
 import { all, put, race, select, take, takeLatest } from 'typed-redux-saga'
 
 const { setVisibility } = modalsActions
@@ -37,9 +38,7 @@ function* confirmSendAsync() {
   const sendData = yield* select(getSendData)
   if (!sendData) return
   const { recipientWallet, amount } = sendData
-  yield* put(
-    walletSend({ recipientWallet, amount: amount.toString() as StringWei })
-  )
+  yield* put(walletSend({ recipientWallet, amount }))
 
   const { error } = yield* race({
     success: take(sendSucceeded),
@@ -70,7 +69,7 @@ function* confirmSendAsync() {
     stage: 'SEND',
     flowState: {
       stage: 'CONFIRMED_SEND',
-      amount: amount.toString() as StringWei,
+      amount,
       recipientWallet
     }
   }

@@ -12,7 +12,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { getErrorMessage, isNullOrUndefined } from '@audius/common/utils'
-import { AudioWei } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -36,19 +36,20 @@ const errors = {
  * Transfers tokens to recipientWallet for amount tokens on eth or sol chain
  * @param action Object passed as redux action
  * @param action.payload The payload of the action
- * @param action.payload.recipientWallet The reciepint address either sol or eth
+ * @param action.payload.recipientWallet The recipient wallet address either sol or eth
  * @param action.payload.amount The amount in string wei to transfer
  * @param action.playload.chain 'eth' or 'sol'
  */
 function* sendAsync({
-  payload: { recipientWallet, amount: weiAudioAmount }
+  payload: { recipientWallet, amount: audioWeiString }
 }: ReturnType<typeof send>) {
   // WalletClient relies on audiusBackendInstance. Use waitForWrite to ensure it's initialized
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
 
   const account = yield* call(queryAccountUser)
-  const audioWeiAmount = BigInt(weiAudioAmount) as AudioWei
+
+  const audioWeiAmount = AUDIO(BigInt(audioWeiString)).value
   const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const weiBNBalance = accountBalance
     ? BigInt(accountBalance.toString())

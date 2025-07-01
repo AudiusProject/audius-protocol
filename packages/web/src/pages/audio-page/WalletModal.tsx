@@ -7,9 +7,9 @@ import {
 } from '@audius/common/api'
 import {
   Chain,
-  StringWei,
   WalletAddress,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  StringWei
 } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
@@ -158,7 +158,9 @@ const ModalContent = ({
   const { data: erc_wallet } = useCurrentAccountUser({
     select: (user) => user?.erc_wallet
   })
-  const amountPendingTransfer = useSelector(getSendData)
+  const sendData = useSelector(getSendData)
+  const amountPendingTransfer = AUDIO(BigInt(sendData?.amount ?? 0)).value
+  const recipientWalletAddress = sendData?.recipientWallet ?? ''
   const { audiusSdk } = useQueryContext()
 
   const { value: solWallet } = useAsync(async () => {
@@ -201,10 +203,8 @@ const ModalContent = ({
           if (!amountPendingTransfer) return null
           ret = (
             <SendInputConfirmation
-              amountToTransfer={
-                AUDIO(BigInt(amountPendingTransfer.amount.toString())).value
-              }
-              recipientAddress={amountPendingTransfer.recipientWallet}
+              amountToTransfer={amountPendingTransfer}
+              recipientAddress={recipientWalletAddress}
               onSend={onConfirmSend}
               balance={balance}
             />
@@ -217,10 +217,8 @@ const ModalContent = ({
           if (!amountPendingTransfer) return null
           ret = (
             <SendingModalBody
-              amountToTransfer={
-                AUDIO(BigInt(amountPendingTransfer.amount.toString())).value
-              }
-              recipientAddress={amountPendingTransfer.recipientWallet}
+              amountToTransfer={amountPendingTransfer}
+              recipientAddress={recipientWalletAddress}
             />
           )
           break
@@ -228,10 +226,8 @@ const ModalContent = ({
           if (!amountPendingTransfer) return null
           ret = (
             <SendInputSuccess
-              sentAmount={
-                AUDIO(BigInt(amountPendingTransfer.amount.toString())).value
-              }
-              recipientAddress={amountPendingTransfer.recipientWallet}
+              sentAmount={amountPendingTransfer}
+              recipientAddress={recipientWalletAddress}
               balance={balance}
             />
           )
@@ -285,8 +281,7 @@ const WalletModal = () => {
     wallet: WalletAddress,
     chain: Chain
   ) => {
-    const stringWei = AUDIO(BigInt(amount)).value.toString() as StringWei
-    console.log('REED onInputSendData', { amount, stringWei })
+    const stringWei = amount.toString() as StringWei
     dispatch(inputSendData({ amount: stringWei, wallet }))
   }
 

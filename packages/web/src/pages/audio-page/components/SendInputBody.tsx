@@ -150,7 +150,6 @@ const SendInputBody = ({
     }
   }, [amountToSend])
   const [destinationAddress, setDestinationAddress] = useState('')
-  console.log('REED', { toSend: AUDIO(BigInt(amountToSendWei)).value })
 
   const [min, max] = useMemo(() => {
     const min = AUDIO('0').value
@@ -196,7 +195,7 @@ const SendInputBody = ({
     setBalanceError(balanceError)
     setAddressError(walletError)
     if (balanceError || walletError) return
-    onSend(AUDIO(BigInt(amountToSendWei)).value, destinationAddress, Chain.Sol)
+    onSend(amountToSendWei, destinationAddress, Chain.Sol)
   }
 
   const renderBalanceError = () => {

@@ -1,4 +1,4 @@
-import { AUDIO, AudioWei } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { isNullOrUndefined, Nullable } from '~/utils/typeUtils'
@@ -89,14 +89,13 @@ const slice = createSlice({
       { payload: { amount } }: PayloadAction<{ amount: StringWei }>
     ) => {
       if (!state.balance) return
-      const existingBalance = BigInt(state.balance) as AudioWei
+      const existingBalance = AUDIO(state.balance).value
       state.balance = (
-        existingBalance - (BigInt(amount) as AudioWei)
+        existingBalance - AUDIO(amount).value
       ).toString() as StringWei
       if (state.totalBalance) {
         state.totalBalance = (
-          (BigInt(state.totalBalance) as AudioWei) -
-          (BigInt(amount) as AudioWei)
+          AUDIO(state.totalBalance).value - AUDIO(amount).value
         ).toString() as StringWei
       }
       state.localBalanceDidChange = true
