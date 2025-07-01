@@ -66,9 +66,9 @@ const SendInputConfirmation = ({
         <ModalBodyTitle text={messages.title} />
       </div>
       <DashboardTokenValueSlider
-        min={AUDIO('0')}
-        max={AUDIO(balance)}
-        value={AUDIO(amountToTransfer)}
+        min={AUDIO(0).value}
+        max={balance}
+        value={amountToTransfer}
       />
       <DisplayAudio amount={amountToTransfer} />
       <AddressWithArrow address={recipientAddress} />

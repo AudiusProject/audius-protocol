@@ -1,15 +1,17 @@
-import { FixedDecimal } from '@audius/fixed-decimal'
+import { ComponentType } from 'react'
+
+import { AudioWei } from '@audius/fixed-decimal'
 
 export type TokenValueSliderProps = {
   className?: string
   sliderClassName?: string
   sliderBarClassName?: string
-  min: FixedDecimal
-  max: FixedDecimal
-  value: FixedDecimal
+  min: AudioWei
+  max: AudioWei
+  value: AudioWei
   minSliderWidth: number
-  initialValue?: FixedDecimal
+  initialValue?: AudioWei
   isIncrease?: boolean
-  minWrapper?: React.ComponentType<{ value: FixedDecimal }>
-  maxWrapper?: React.ComponentType<{ value: FixedDecimal }>
+  minWrapper?: ComponentType<{ value: AudioWei }>
+  maxWrapper?: ComponentType<{ value: AudioWei }>
 }
