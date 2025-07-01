@@ -1,3 +1,5 @@
+import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
+
 const PRECISION = 2
 
 export type DecimalUtilOptions = {
@@ -60,7 +62,7 @@ export const decimalIntegerFromHumanReadable = (
   value: string,
   { precision = PRECISION }: DecimalUtilOptions = {}
 ) => {
-  return parseFloat(value) * 10 ** precision
+  return Number(new FixedDecimal(value).toString()) * 10 ** precision
 }
 
 export const getCurrencyDecimalPlaces = (priceUSD: number) => {
@@ -88,7 +90,6 @@ export const getCurrencyDecimalPlaces = (priceUSD: number) => {
 export const getAudioBalanceDecimalPlaces = (balance: number) => {
   const absBalance = Math.abs(balance)
 
-  // Dynamic precision based on balance magnitude with minimum 2 decimals
   if (absBalance >= 1000) {
     return 2 // 1,234.56 (minimum 2 decimals even for large amounts)
   }
@@ -115,30 +116,15 @@ export const getAudioBalanceDecimalPlaces = (balance: number) => {
   return 6
 }
 
-/**
- * Formats an AUDIO balance with dynamic decimal places based on magnitude and truncation.
- * Uses smart decimal precision that adapts to the balance size, with a minimum of 2 decimals.
- * Never rounds up.
- *
- * @param balance - The AUDIO balance as AudioWei (bigint)
- * @param locale - Locale for formatting (defaults to 'en-US')
- * @returns Formatted balance string
- */
 export const formatAudioBalance = (
   balance: bigint,
   locale: string = 'en-US'
 ): string => {
-  // Import AUDIO here to avoid circular dependencies
-  const { AUDIO } = require('@audius/fixed-decimal')
-
-  // Convert balance to number for decimal place calculation
-  const balanceNumber = parseFloat(AUDIO(balance).toString())
+  const balanceNumber = Number(AUDIO(balance).toString())
   const decimalPlaces = getAudioBalanceDecimalPlaces(balanceNumber)
 
   return AUDIO(balance).toLocaleString(locale, {
     maximumFractionDigits: decimalPlaces,
-    // Ensure we use truncation (never round up) - this is already the default
-    // but being explicit about it per user requirements
     roundingMode: 'trunc'
   })
 }

@@ -55,8 +55,8 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(availableBalance)
     }
 
-    // Use the same logic as formatAudioBalance for non-stablecoins
-    // Convert to AUDIO fixed decimal for proper truncation formatting
+    // Use AUDIO for non-stablecoins for now, when we expand to other tokens
+    // we will need to use FixedDecimal itself
     const audioAmount = AUDIO(availableBalance)
     const decimals = getAudioBalanceDecimalPlaces(availableBalance)
 
@@ -77,8 +77,6 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(safeNumericAmount)
     }
 
-    // Use the same logic as formatAudioBalance for non-stablecoins
-    // Convert to AUDIO fixed decimal for proper truncation formatting
     const audioAmount = AUDIO(safeNumericAmount)
     const decimals = getAudioBalanceDecimalPlaces(safeNumericAmount)
 
