@@ -772,7 +772,10 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                 useWindow={isMobile}
                 initialLoad={false}
                 getScrollParent={() => {
-                  if (scrollParent?.id === 'mainContent') {
+                  if (
+                    scrollParent?.id === 'mainContent' ||
+                    scrollParent === null
+                  ) {
                     return document.getElementById('mainContent')
                   }
                   return scrollParent
