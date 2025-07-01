@@ -1,5 +1,7 @@
 import {
   getAccountAudioBalanceSaga,
+  optimisticallyDecreaseUserSolBalance,
+  revertOptimisticUserSolBalance,
   queryAccountUser,
   queryWalletAddresses
 } from '@audius/common/api'
@@ -75,6 +77,8 @@ function* sendAsync({
   }
 
   try {
+    yield* call(optimisticallyDecreaseUserSolBalance, audioWeiAmount)
+
     yield* put(
       make(Name.SEND_AUDIO_REQUEST, {
         from: account?.wallet,
@@ -102,6 +106,8 @@ function* sendAsync({
         ethAddress: currentUser
       })
     } catch (e) {
+      yield* call(revertOptimisticUserSolBalance)
+
       const errorMessage = getErrorMessage(e)
       if (errorMessage === 'Missing social proof') {
         yield* put(sendFailed({ error: 'Missing social proof' }))
@@ -128,6 +134,8 @@ function* sendAsync({
       })
     )
   } catch (error) {
+    yield* call(revertOptimisticUserSolBalance)
+
     const errorMessage = getErrorMessage(error)
     const isRateLimit = errorMessage === errors.rateLimitError
     let errorText = errorMessage
