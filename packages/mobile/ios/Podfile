@@ -37,6 +37,11 @@ target 'AudiusReactNative' do
 
   pod 'nSure'
 
+  target 'NotificationService' do
+    inherit! :search_paths
+    # pods needed by the extension (if any)
+  end
+
   config = use_native_modules!
 
   use_react_native!(
@@ -64,6 +69,12 @@ target 'AudiusReactNative' do
 
     framework_paths.each do |framework_relative_path|
       strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+    end
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+      end
     end
 
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
