@@ -46,6 +46,7 @@ function* sendAsync({
   // WalletClient relies on audiusBackendInstance. Use waitForWrite to ensure it's initialized
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
+  const reportToSentry = yield* getContext('reportToSentry')
 
   const account = yield* call(queryAccountUser)
   const audioWeiAmount = BigInt(weiAudioAmount) as AudioWei
@@ -90,9 +91,19 @@ function* sendAsync({
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (audioWeiAmount > waudioWeiAmount!) {
       yield* put(transferEthAudioToSolWAudio())
-      yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
-        ethAddress: currentUser
-      })
+      try {
+        yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
+          ethAddress: currentUser
+        })
+      } catch (e) {
+        reportToSentry({
+          error: e instanceof Error ? e : new Error(e as string),
+          name: 'transferTokensFromEthToSol',
+          additionalInfo: {
+            ethAddress: currentUser
+          }
+        })
+      }
     }
     try {
       yield* call([walletClient, walletClient.sendWAudioTokens], {
