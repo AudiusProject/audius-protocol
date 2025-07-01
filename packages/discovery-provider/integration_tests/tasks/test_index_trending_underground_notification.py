@@ -36,7 +36,7 @@ def test_index_trending_underground_notification(app):
                 {
                     "track_id": i,
                     "score": 1000 - i,
-                    "version": TrendingVersion.pnagD.value,
+                    "version": TrendingVersion.AnlGe.value,
                     "time_range": "week",
                     "type": TrendingType.TRACKS.name,
                 }
@@ -101,7 +101,7 @@ def test_index_trending_underground_notification(app):
                 {
                     "track_id": track_id,
                     "score": 1000 - i,
-                    "version": TrendingVersion.pnagD.value,
+                    "version": TrendingVersion.AnlGe.value,
                     "time_range": "week",
                     "type": TrendingType.TRACKS.name,
                 }
