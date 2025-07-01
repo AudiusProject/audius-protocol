@@ -294,7 +294,7 @@ export function* getAccountTotalAudioBalanceSaga() {
   const sdk = yield* call(getSDK)
   const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const currentUserId = yield* call(queryCurrentUserId)
-  const connectedWallets = (yield* call(queryClient.fetchQuery, {
+  const connectedWallets = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
     queryFn: async () => {
       return getConnectedWalletsQueryFn({
