@@ -1,4 +1,3 @@
-import { StringWei } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
@@ -6,7 +5,6 @@ import {
   modalsActions,
   TokenDashboardPageModalState
 } from '@audius/common/store'
-import { AUDIO } from '@audius/fixed-decimal'
 import { all, put, race, select, take, takeLatest } from 'typed-redux-saga'
 
 const { setVisibility } = modalsActions
