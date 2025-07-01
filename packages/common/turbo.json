@@ -1,0 +1,16 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["@audius/fixed-decimal#build"],
+      "outputLogs": "new-only"
+    },
+    "typecheck": {
+      "outputLogs": "new-only"
+    },
+    "verify": {
+      "outputLogs": "new-only"
+    }
+  }
+}
