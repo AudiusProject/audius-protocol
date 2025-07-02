@@ -50,8 +50,8 @@ export const SellTab = ({
         return 'USDC' as MintName
       case 'AUDIO':
         return 'wAUDIO' as MintName
-      case 'TRUMP':
-        return 'TRUMP' as MintName
+      case 'BONK':
+        return 'BONK' as MintName
       default:
         return 'wAUDIO' as MintName
     }

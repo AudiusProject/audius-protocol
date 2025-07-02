@@ -31,12 +31,12 @@ export const TOKEN_LISTING_MAP: Record<string, JupiterTokenListing> = {
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
   },
-  TRUMP: {
+  BONK: {
     chainId: 101,
-    address: '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN',
-    symbol: 'TRUMP',
-    name: 'OFFICIAL TRUMP',
-    decimals: 6,
+    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+    symbol: 'BONK',
+    name: 'Bonk',
+    decimals: 5,
     logoURI: ''
   }
 }

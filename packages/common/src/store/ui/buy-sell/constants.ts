@@ -24,13 +24,13 @@ export const TOKENS: Record<string, TokenInfo> = {
     isStablecoin: true,
     address: TOKEN_LISTING_MAP.USDC.address
   },
-  TRUMP: {
-    symbol: 'TRUMP',
-    name: 'OFFICIAL TRUMP',
-    decimals: TOKEN_LISTING_MAP.TRUMP.decimals,
+  BONK: {
+    symbol: 'BONK',
+    name: 'Bonk',
+    decimals: TOKEN_LISTING_MAP.BONK.decimals,
     balance: null,
     isStablecoin: false,
-    address: TOKEN_LISTING_MAP.TRUMP.address
+    address: TOKEN_LISTING_MAP.BONK.address
   }
 }
 
@@ -43,12 +43,12 @@ export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   },
   {
     baseToken: TOKENS.AUDIO,
-    quoteToken: TOKENS.TRUMP,
+    quoteToken: TOKENS.BONK,
     exchangeRate: null
   },
   {
     baseToken: TOKENS.USDC,
-    quoteToken: TOKENS.TRUMP,
+    quoteToken: TOKENS.BONK,
     exchangeRate: null
   }
 ]

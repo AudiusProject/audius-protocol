@@ -40,7 +40,7 @@ export const PublicKeySchema = z.union([
   })
 ])
 
-export const TokenNameSchema = z.enum(['wAUDIO', 'USDC', 'TRUMP'])
+export const TokenNameSchema = z.enum(['wAUDIO', 'USDC', 'BONK'])
 
 export type TokenName = z.input<typeof TokenNameSchema>
 

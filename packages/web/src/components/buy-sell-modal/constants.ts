@@ -19,9 +19,9 @@ export const TOKENS: Record<string, TokenInfo> = {
     ...BASE_TOKENS.USDC,
     icon: IconLogoCircleUSDC
   },
-  TRUMP: {
-    ...BASE_TOKENS.TRUMP,
-    icon: IconLogoCircleSOL // Using SOL icon as placeholder for TRUMP
+  BONK: {
+    ...BASE_TOKENS.BONK,
+    icon: IconLogoCircleSOL // Using SOL icon as placeholder for BONK
   }
 }
 
@@ -34,12 +34,12 @@ export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   },
   {
     baseToken: TOKENS.AUDIO,
-    quoteToken: TOKENS.TRUMP,
+    quoteToken: TOKENS.BONK,
     exchangeRate: null
   },
   {
     baseToken: TOKENS.USDC,
-    quoteToken: TOKENS.TRUMP,
+    quoteToken: TOKENS.BONK,
     exchangeRate: null
   }
 ]

@@ -16,9 +16,9 @@ export const USER_BANK_MANAGED_TOKENS: Record<
     claimableTokenMint: 'USDC',
     decimals: TOKEN_LISTING_MAP.USDC.decimals
   },
-  [TOKEN_LISTING_MAP.TRUMP.address.toUpperCase()]: {
-    mintAddress: TOKEN_LISTING_MAP.TRUMP.address,
-    claimableTokenMint: 'TRUMP',
-    decimals: TOKEN_LISTING_MAP.TRUMP.decimals
+  [TOKEN_LISTING_MAP.BONK.address.toUpperCase()]: {
+    mintAddress: TOKEN_LISTING_MAP.BONK.address,
+    claimableTokenMint: 'BONK',
+    decimals: TOKEN_LISTING_MAP.BONK.decimals
   }
 }

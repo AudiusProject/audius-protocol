@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { TRUMP, USDC, wAUDIO } from '@audius/fixed-decimal'
+import { BONK, USDC, wAUDIO } from '@audius/fixed-decimal'
 import { TokenAccountNotFoundError } from '@solana/spl-token'
 import { Commitment } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -17,7 +17,7 @@ import { QueryOptions } from '../types'
 const TOKEN_CONSTRUCTORS = {
   wAUDIO,
   USDC,
-  TRUMP
+  BONK
 } as const
 
 type TokenSymbol = keyof typeof TOKEN_CONSTRUCTORS

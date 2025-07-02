@@ -27,7 +27,7 @@ export type SdkServicesConfig = {
     rpcEndpoint: string
     usdcTokenMint: string
     wAudioTokenMint: string
-    trumpTokenMint: string
+    bonkTokenMint: string
     rewardManagerLookupTableAddress: string
   }
   ethereum: {
