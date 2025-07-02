@@ -1,5 +1,7 @@
 import {
   getAccountAudioBalanceSaga,
+  optimisticallyDecreaseUserSolBalance,
+  revertOptimisticUserSolBalance,
   queryAccountUser,
   queryWalletAddresses
 } from '@audius/common/api'
@@ -12,7 +14,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { getErrorMessage, isNullOrUndefined } from '@audius/common/utils'
-import { AudioWei } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { call, put, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -36,12 +38,12 @@ const errors = {
  * Transfers tokens to recipientWallet for amount tokens on eth or sol chain
  * @param action Object passed as redux action
  * @param action.payload The payload of the action
- * @param action.payload.recipientWallet The reciepint address either sol or eth
+ * @param action.payload.recipientWallet The recipient wallet address either sol or eth
  * @param action.payload.amount The amount in string wei to transfer
  * @param action.playload.chain 'eth' or 'sol'
  */
 function* sendAsync({
-  payload: { recipientWallet, amount: weiAudioAmount }
+  payload: { recipientWallet, amount: audioWeiString }
 }: ReturnType<typeof send>) {
   // WalletClient relies on audiusBackendInstance. Use waitForWrite to ensure it's initialized
   yield* waitForWrite()
@@ -49,7 +51,8 @@ function* sendAsync({
   const reportToSentry = yield* getContext('reportToSentry')
 
   const account = yield* call(queryAccountUser)
-  const audioWeiAmount = BigInt(weiAudioAmount) as AudioWei
+
+  const audioWeiAmount = AUDIO(BigInt(audioWeiString)).value
   const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const weiBNBalance = accountBalance
     ? BigInt(accountBalance.toString())
@@ -75,6 +78,8 @@ function* sendAsync({
   }
 
   try {
+    yield* call(optimisticallyDecreaseUserSolBalance, audioWeiAmount)
+
     yield* put(
       make(Name.SEND_AUDIO_REQUEST, {
         from: account?.wallet,
@@ -112,6 +117,8 @@ function* sendAsync({
         ethAddress: currentUser
       })
     } catch (e) {
+      yield* call(revertOptimisticUserSolBalance)
+
       const errorMessage = getErrorMessage(e)
       if (errorMessage === 'Missing social proof') {
         yield* put(sendFailed({ error: 'Missing social proof' }))
@@ -138,6 +145,8 @@ function* sendAsync({
       })
     )
   } catch (error) {
+    yield* call(revertOptimisticUserSolBalance)
+
     const errorMessage = getErrorMessage(error)
     const isRateLimit = errorMessage === errors.rateLimitError
     let errorText = errorMessage
