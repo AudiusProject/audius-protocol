@@ -6,7 +6,6 @@ import { createSeoDescription } from 'utils/seo'
 
 import DesktopExplorePage from './components/desktop/ExplorePage'
 import NewDesktopExplorePage from './components/desktop/NewExplorePage'
-import MobileExplorePage from './components/mobile/ExplorePage'
 import SearchExplorePage from './components/mobile/SearchExplorePage'
 
 const messages = {
