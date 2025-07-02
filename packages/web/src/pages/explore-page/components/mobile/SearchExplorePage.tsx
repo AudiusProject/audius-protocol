@@ -21,8 +21,6 @@ import {
   TextInputSize,
   IconSearch,
   IconUser,
-  Divider,
-  FilterButton,
   useTheme,
   useMedia,
   RadioGroup,
@@ -32,7 +30,6 @@ import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import { CollectionCard } from 'components/collection'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -41,11 +38,8 @@ import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { RemixContestCard } from 'components/remix-contest-card'
-import SearchBar from 'components/search-bar/SearchBar'
 import { UserCard } from 'components/user-card'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-import useTabs from 'hooks/useTabs/useTabs'
 import {
   PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
@@ -54,9 +48,7 @@ import {
 } from 'pages/explore-page/collections'
 import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { SearchCatalogTile } from 'pages/search-page/SearchCatalogTile'
-import { filters } from 'pages/search-page/SearchFilters'
 import { SearchResults } from 'pages/search-page/SearchResults'
-import { SortMethodFilterButton } from 'pages/search-page/SortMethodFilterButton'
 import { categories } from 'pages/search-page/categories'
 import {
   useSearchCategory,
@@ -67,8 +59,7 @@ import {
   Category,
   CategoryKey,
   CategoryView,
-  ViewLayout,
-  viewLayoutOptions
+  ViewLayout
 } from 'pages/search-page/types'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
@@ -122,10 +113,8 @@ const justForYou = [
   DOWNLOADS_AVAILABLE
 ]
 const DEBOUNCE_MS = 200
-const MIN_WIDTH = 840
-const NORMAL_WIDTH = 1200
 
-const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
+const ExplorePage = () => {
   const [categoryKey, setCategory] = useSearchCategory()
   const [searchParams, setSearchParams] = useSearchParams()
   const [inputValue, setInputValue] = useState(searchParams.get('query') || '')
@@ -134,11 +123,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
-  const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
+  const [tracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color, motion } = useTheme()
+  const { color } = useTheme()
   const { isLarge } = useMedia()
-  const isMobile = useIsMobile()
 
   const { data: exploreContent } = useExploreContent()
 
@@ -196,14 +184,14 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
       } else {
         newParams.delete('query')
       }
-      setSearchParams(newParams, { replace: true })
+      setSearchParams(newParams)
     } else if (categoryKey === SearchTabs.ALL.toLowerCase()) {
       // clear filters when searching all
       const newParams = new URLSearchParams()
       if (debouncedValue) {
         newParams.set('query', debouncedValue)
       }
-      setSearchParams(newParams, { replace: true })
+      setSearchParams(newParams)
     }
   }, [
     debouncedValue,
@@ -213,7 +201,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     categoryKey
   ])
 
-  const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
     const isPremiumTracksTile =
       tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
@@ -221,14 +208,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 
-  const { tabs } = useTabs({
-    isMobile: false,
-    tabs: tabHeaders,
-    elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
-    onTabClick: handleSearchTab,
-    selectedTabLabel: capitalize(categoryKey)
-  })
-  const [bannerIsVisible, setBannerIsVisible] = useState(false)
+  const [, setBannerIsVisible] = useState(false)
 
   useEffect(() => {
     const img = new window.Image()
@@ -236,9 +216,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     img.onload = () => setBannerIsVisible(true)
   }, [])
 
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
-  const { history } = useHistoryContext()
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   const handleCategoryChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -248,24 +225,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     [setCategory]
   )
 
-  const beginSearch = useCallback(() => {
-    // setStackReset(true)
-    // setImmediate(() => search(searchValue))
-  }, [])
-
-  const handleOpenSearch = useCallback(() => {
-    history.push(`/search`)
-  }, [history])
-
-  const onCloseSearch = () => {
-    setIsSearching(false)
-    setSearchValue('')
-  }
-
-  // Hide navbar completely
+  // Hide search header
   useEffect(() => {
-    // setLeft(null)
-    // setCenter(null)
     setRight(null)
   }, [setLeft, setCenter, setRight])
 
@@ -296,7 +257,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               overflow: 'scroll',
               // Hide scrollbar for IE, Edge, and Firefox
               msOverflowStyle: 'none', // IE and Edge
-              scrollbarWidth: 'none' // Firefox
+              scrollbarWidth: 'none', // Firefox
+              marginLeft: '-50vw',
+              marginRight: '-50vw',
+              paddingLeft: '50vw',
+              paddingRight: '50vw'
             }}
           >
             {Object.entries(categories).map(([key, category]) => (
