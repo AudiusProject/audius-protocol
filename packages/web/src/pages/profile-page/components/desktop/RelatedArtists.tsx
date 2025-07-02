@@ -60,7 +60,11 @@ export const RelatedArtists = () => {
       <ProfilePictureListTile
         onClick={handleClick}
         users={relatedArtists as User[]}
-        totalUserCount={relatedArtists.length}
+        totalUserCount={
+          relatedArtists.length < MAX_PROFILE_RELATED_ARTISTS
+            ? relatedArtists.length
+            : 100
+        }
         limit={MAX_PROFILE_RELATED_ARTISTS}
         disableProfileClick
       />

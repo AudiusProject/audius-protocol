@@ -292,7 +292,13 @@ const RelatedArtistsTile = ({ userId }: { userId: number }) => {
       content={
         <UserListWithCount
           users={relatedArtists}
-          count={isLoading ? MAX_CARD_PROFILE_PICTURES : relatedArtists.length}
+          count={
+            isLoading
+              ? MAX_CARD_PROFILE_PICTURES
+              : relatedArtists.length < MAX_CARD_PROFILE_PICTURES
+                ? relatedArtists.length
+                : 100
+          }
           loading={isLoading}
           showCount={false}
         />
