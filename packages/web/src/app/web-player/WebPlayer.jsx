@@ -82,7 +82,6 @@ import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import { RewardsPage } from 'pages/rewards-page/RewardsPage'
-import { SearchPage } from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
@@ -226,14 +225,8 @@ const validSearchCategories = [
 initializeSentry()
 
 const WebPlayer = (props) => {
-  const {
-    isSearchExploreEnabled,
-    isProduction,
-    history,
-    location,
-    mainContentRef,
-    setMainContentRef
-  } = props
+  const { isProduction, history, location, mainContentRef, setMainContentRef } =
+    props
 
   const dispatch = useDispatch()
 
