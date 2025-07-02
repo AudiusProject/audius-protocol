@@ -6,20 +6,31 @@ import { SLIPPAGE_BPS, useSwapTokens, useCurrentAccountUser } from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 
-import { TOKEN_LISTING_MAP } from '../buy-audio/constants'
-
-import type { BuySellTab, Screen, SwapResult, TransactionData } from './types'
+import type {
+  BuySellTab,
+  Screen,
+  SwapResult,
+  TransactionData,
+  TokenPair
+} from './types'
 
 type UseBuySellSwapProps = {
   transactionData: TransactionData
   currentScreen: Screen
   setCurrentScreen: (screen: Screen) => void
   activeTab: BuySellTab
+  selectedPair: TokenPair
   onClose: () => void
 }
 
 export const useBuySellSwap = (props: UseBuySellSwapProps) => {
-  const { transactionData, currentScreen, setCurrentScreen, activeTab } = props
+  const {
+    transactionData,
+    currentScreen,
+    setCurrentScreen,
+    activeTab,
+    selectedPair
+  } = props
   const queryClient = useQueryClient()
   const { data: user } = useCurrentAccountUser()
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null)
@@ -43,27 +54,36 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
 
     const { inputAmount } = transactionData
 
+    // Get the correct input and output token addresses based on the selected pair and active tab
+    let inputMintAddress: string
+    let outputMintAddress: string
+
     if (activeTab === 'buy') {
-      swapTokens({
-        inputMint: TOKEN_LISTING_MAP.USDC.address,
-        outputMint: TOKEN_LISTING_MAP.AUDIO.address,
-        amountUi: inputAmount,
-        slippageBps: SLIPPAGE_BPS
-      })
+      // Buy: pay with quote token, receive base token
+      inputMintAddress = selectedPair.quoteToken.address!
+      outputMintAddress = selectedPair.baseToken.address!
     } else {
-      swapTokens({
-        inputMint: TOKEN_LISTING_MAP.AUDIO.address,
-        outputMint: TOKEN_LISTING_MAP.USDC.address,
-        amountUi: inputAmount,
-        slippageBps: SLIPPAGE_BPS
-      })
+      // Sell: pay with base token, receive quote token
+      inputMintAddress = selectedPair.baseToken.address!
+      outputMintAddress = selectedPair.quoteToken.address!
     }
+
+    swapTokens({
+      inputMint: inputMintAddress,
+      outputMint: outputMintAddress,
+      amountUi: inputAmount,
+      slippageBps: SLIPPAGE_BPS
+    })
   }
 
   const invalidateBalances = () => {
     if (user?.wallet) {
+      // Invalidate balances for all token types that could be involved
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['tokenBalance', user.wallet]
       })
     }
     if (user?.spl_wallet) {

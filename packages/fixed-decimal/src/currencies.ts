@@ -74,3 +74,16 @@ export const USDC = createTokenConstructor<UsdcWei>(6, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })
+
+/**
+ * A `bigint` representing an amount of BONK tokens, which have
+ * 5 decimal places, as a count of the smallest possible denomination of BONK.
+ */
+export type BonkWei = Brand<bigint, 'BONK'>
+/**
+ * Constructs an amount of {@link BonkWei} from a fixed decimal string,
+ * decimal number, or a bigint in the smallest denomination of BONK.
+ *
+ * BONK is used for trading and swapping in the platform.
+ */
+export const BONK = createTokenConstructor<BonkWei>(5)

@@ -23,6 +23,14 @@ export const TOKENS: Record<string, TokenInfo> = {
     balance: null,
     isStablecoin: true,
     address: TOKEN_LISTING_MAP.USDC.address
+  },
+  BONK: {
+    symbol: 'BONK',
+    name: 'Bonk',
+    decimals: TOKEN_LISTING_MAP.BONK.decimals,
+    balance: null,
+    isStablecoin: false,
+    address: TOKEN_LISTING_MAP.BONK.address
   }
 }
 
@@ -31,6 +39,16 @@ export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   {
     baseToken: TOKENS.AUDIO,
     quoteToken: TOKENS.USDC,
+    exchangeRate: null
+  },
+  {
+    baseToken: TOKENS.AUDIO,
+    quoteToken: TOKENS.BONK,
+    exchangeRate: null
+  },
+  {
+    baseToken: TOKENS.USDC,
+    quoteToken: TOKENS.BONK,
     exchangeRate: null
   }
 ]

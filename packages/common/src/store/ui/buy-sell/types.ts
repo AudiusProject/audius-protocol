@@ -6,7 +6,7 @@ export type BuySellTab = 'buy' | 'sell'
 
 export type Screen = 'input' | 'confirm' | 'success'
 
-export type TokenType = 'AUDIO' | 'USDC'
+export type TokenType = 'AUDIO' | 'USDC' | 'BONK'
 
 export type TokenInfo = {
   symbol: string // e.g., 'AUDIO', 'USDC', 'WETH'

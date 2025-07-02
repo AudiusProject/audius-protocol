@@ -43,6 +43,7 @@ const COINFLOW_PROGRAM_ID = 'FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9'
 
 const waudioMintAddress = config.waudioMintAddress
 const usdcMintAddress = config.usdcMintAddress
+const bonkMintAddress = config.bonkMintAddress
 
 const REWARD_MANAGER = config.rewardsManagerAccountAddress
 
@@ -54,7 +55,8 @@ const deriveTokenAuthority = (mint: string) =>
 
 const claimableTokenAuthorities = {
   usdc: deriveTokenAuthority(usdcMintAddress),
-  waudio: deriveTokenAuthority(waudioMintAddress)
+  waudio: deriveTokenAuthority(waudioMintAddress),
+  bonk: deriveTokenAuthority(bonkMintAddress)
 }
 
 const deriveUserBank = async (
@@ -103,7 +105,8 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
     const allowedMints = [
       NATIVE_MINT.toBase58(),
       usdcMintAddress,
-      waudioMintAddress
+      waudioMintAddress,
+      bonkMintAddress
     ]
     const mintAddress = decodedInstruction.keys.mint.pubkey.toBase58()
     if (!allowedMints.includes(mintAddress)) {
@@ -192,14 +195,19 @@ const assertAllowedTokenProgramInstruction = async (
       )
     }
     const destination = decodedInstruction.keys.destination.pubkey
-    const userbank = await deriveUserBank(
+    const usdcUserbank = await deriveUserBank(
       wallet,
       claimableTokenAuthorities.usdc
+    )
+    const bonkUserbank = await deriveUserBank(
+      wallet,
+      claimableTokenAuthorities.bonk
     )
 
     // Check that destination is either a userbank or a payment router token account
     if (
-      !destination.equals(userbank) &&
+      !destination.equals(usdcUserbank) &&
+      !destination.equals(bonkUserbank) &&
       !destination.equals(PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT)
     ) {
       throw new InvalidRelayInstructionError(
@@ -250,7 +258,8 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   const authority = decodedInstruction.keys.authority.pubkey
   if (
     !authority.equals(claimableTokenAuthorities.usdc) &&
-    !authority.equals(claimableTokenAuthorities.waudio)
+    !authority.equals(claimableTokenAuthorities.waudio) &&
+    !authority.equals(claimableTokenAuthorities.bonk)
   ) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
@@ -280,14 +289,16 @@ const JupiterSharedSwapAccountIndex = {
 const allowedSourceMints = [
   NATIVE_MINT.toBase58(),
   usdcMintAddress,
-  waudioMintAddress
+  waudioMintAddress,
+  bonkMintAddress
 ]
 const allowedDestinationMints = [
   NATIVE_MINT.toBase58(),
   usdcMintAddress,
-  waudioMintAddress
+  waudioMintAddress,
+  bonkMintAddress
 ]
-// Only allow swaps to SOL (for withdrawals) or USDC or AUDIO (for userbank purchases)
+// Only allow swaps to SOL (for withdrawals) or USDC, AUDIO, or BONK (for userbank purchases)
 const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
