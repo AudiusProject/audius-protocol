@@ -721,19 +721,14 @@ export const AudioPlayer = () => {
 
       await TrackPlayer.play()
 
-      // Use the actual current track index instead of queueIndex which might be -1
-      const actualQueueIndex = Math.max(0, queueIndex)
-      const firstTrack = newQueueTracks[actualQueueIndex]
+      const firstTrack = newQueueTracks[queueIndex]
       if (!firstTrack) return
 
       await TrackPlayer.add(await makeTrackData(firstTrack))
 
       // Only call enqueueTracks if we have a valid queue index and more than 1 track
-      if (actualQueueIndex >= 0 && newQueueTracks.length > 1) {
-        enqueueTracksJobRef.current = enqueueTracks(
-          newQueueTracks,
-          actualQueueIndex
-        )
+      if (queueIndex >= 0 && newQueueTracks.length > 1) {
+        enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
       }
       await enqueueTracksJobRef.current
       enqueueTracksJobRef.current = undefined
