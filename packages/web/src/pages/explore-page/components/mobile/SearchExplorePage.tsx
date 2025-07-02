@@ -1,4 +1,11 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  ChangeEvent
+} from 'react'
 
 import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
@@ -29,6 +36,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import { CollectionCard } from 'components/collection'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import NavContext from 'components/nav/mobile/NavContext'
 import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
@@ -57,6 +65,7 @@ import {
 import { MOODS } from 'pages/search-page/moods'
 import {
   Category,
+  CategoryKey,
   CategoryView,
   ViewLayout,
   viewLayoutOptions
@@ -182,13 +191,19 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   useEffect(() => {
     if (debouncedValue !== previousDebouncedValue) {
       const newParams = new URLSearchParams(searchParams)
-      newParams.set('query', debouncedValue)
-      setSearchParams(newParams)
+      if (debouncedValue) {
+        newParams.set('query', debouncedValue)
+      } else {
+        newParams.delete('query')
+      }
+      setSearchParams(newParams, { replace: true })
     } else if (categoryKey === SearchTabs.ALL.toLowerCase()) {
       // clear filters when searching all
       const newParams = new URLSearchParams()
-      newParams.set('query', debouncedValue)
-      setSearchParams(newParams)
+      if (debouncedValue) {
+        newParams.set('query', debouncedValue)
+      }
+      setSearchParams(newParams, { replace: true })
     }
   }, [
     debouncedValue,
@@ -224,6 +239,14 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const [isSearching, setIsSearching] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const { history } = useHistoryContext()
+  const { setLeft, setCenter, setRight } = useContext(NavContext)!
+  const handleCategoryChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setCategory(value as CategoryKey)
+    },
+    [setCategory]
+  )
 
   const beginSearch = useCallback(() => {
     // setStackReset(true)
@@ -239,21 +262,36 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     setSearchValue('')
   }
 
+  // Hide navbar completely
+  useEffect(() => {
+    // setLeft(null)
+    // setCenter(null)
+    setRight(null)
+  }, [setLeft, setCenter, setRight])
+
   return (
     <MobilePageContainer
       title={messages.explore}
       containerClassName='search-explore-page'
     >
       <Flex direction='column' w='100%' style={{ overflow: 'hidden' }}>
-        <Flex direction='column' gap='s' p='s' backgroundColor='surface1'>
-          <TextInput label={''} size={TextInputSize.SMALL} />
+        <Flex direction='column' gap='l' p='l' backgroundColor='surface1'>
+          <TextInput
+            ref={searchBarRef}
+            label={messages.searchPlaceholder}
+            value={inputValue}
+            startIcon={IconSearch}
+            size={TextInputSize.SMALL}
+            onChange={handleSearch}
+            onClear={handleClearSearch}
+          />
           <RadioGroup
             direction='row'
             gap='s'
             aria-label={'Select search category'}
             name='searchcategory'
             value={categoryKey}
-            //   onChange={handleCategoryChange}
+            onChange={handleCategoryChange}
             style={{
               overflow: 'scroll',
               // Hide scrollbar for IE, Edge, and Firefox
@@ -261,138 +299,148 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               scrollbarWidth: 'none' // Firefox
             }}
           >
-            {Object.entries(categories)
-              .filter(([key]) => !isMobile || key !== 'all')
-              .map(([key, category]) => (
-                <SelectablePill
-                  aria-label={`${key} search category`}
-                  icon={(category as Category).icon}
-                  key={key}
-                  label={capitalize(key)}
-                  size='large'
-                  type='radio'
-                  value={key}
-                  checked={key === categoryKey}
-                />
-              ))}
+            {Object.entries(categories).map(([key, category]) => (
+              <SelectablePill
+                aria-label={`${key} search category`}
+                icon={(category as Category).icon}
+                key={key}
+                label={capitalize(key)}
+                size='large'
+                type='radio'
+                value={key}
+                checked={key === categoryKey}
+              />
+            ))}
           </RadioGroup>
         </Flex>
-        <Flex direction='column' mt='l'>
-          <ExploreSection
-            title={messages.featuredPlaylists}
-            data={exploreContent?.featuredPlaylists}
-            Card={CollectionCard}
+        {!showSearchResults && categoryKey !== 'all' ? (
+          <Flex direction='column' alignItems='center' gap={'xl'}>
+            <SearchCatalogTile />
+            <RecentSearches />
+          </Flex>
+        ) : inputValue || showSearchResults ? (
+          <SearchResults
+            tracksLayout={tracksLayout}
+            handleSearchTab={handleSearchTab}
           />
-          <ExploreSection
-            title={messages.featuredRemixContests}
-            data={exploreContent?.featuredRemixContests}
-            Card={RemixContestCard}
-          />
+        ) : (
+          <Flex direction='column' mt='l'>
+            <ExploreSection
+              title={messages.featuredPlaylists}
+              data={exploreContent?.featuredPlaylists}
+              Card={CollectionCard}
+            />
+            <ExploreSection
+              title={messages.featuredRemixContests}
+              data={exploreContent?.featuredRemixContests}
+              Card={RemixContestCard}
+            />
 
-          <ExploreSection
-            title={messages.artistSpotlight}
-            data={exploreContent?.featuredProfiles}
-            Card={UserCard}
-          />
+            <ExploreSection
+              title={messages.artistSpotlight}
+              data={exploreContent?.featuredProfiles}
+              Card={UserCard}
+            />
 
-          <ExploreSection
-            title={messages.labelSpotlight}
-            data={exploreContent?.featuredLabels}
-            Card={UserCard}
-          />
-          <Flex direction='column' ph='l' gap='2xl'>
-            <Flex direction='column' gap='l' alignItems='center'>
-              <Text variant='title' size='l'>
-                {messages.exploreByMood}
-              </Text>
-              <Flex
-                gap='m'
-                justifyContent='center'
-                alignItems='flex-start'
-                wrap='wrap'
-              >
-                {Object.entries(MOODS)
-                  .sort()
-                  .map(([mood, moodInfo]) => (
-                    <Paper
-                      key={mood}
-                      pv='l'
-                      ph='xl'
-                      gap='m'
-                      borderRadius='m'
-                      border='default'
-                      backgroundColor='white'
-                      onClick={() => {
-                        navigate(`/search/tracks?mood=${mood}`)
-                      }}
-                      css={{
-                        ':hover': {
-                          background: color.neutral.n25,
-                          border: `1px solid ${color.neutral.n150}`
-                        }
-                      }}
-                    >
-                      {moodInfo.icon}
-                      <Text variant='title' size='s'>
-                        {moodInfo.label}
-                      </Text>
-                    </Paper>
-                  ))}
+            <ExploreSection
+              title={messages.labelSpotlight}
+              data={exploreContent?.featuredLabels}
+              Card={UserCard}
+            />
+            <Flex direction='column' ph='l' gap='2xl'>
+              <Flex direction='column' gap='l' alignItems='center'>
+                <Text variant='title' size='l'>
+                  {messages.exploreByMood}
+                </Text>
+                <Flex
+                  gap='m'
+                  justifyContent='center'
+                  alignItems='flex-start'
+                  wrap='wrap'
+                >
+                  {Object.entries(MOODS)
+                    .sort()
+                    .map(([mood, moodInfo]) => (
+                      <Paper
+                        key={mood}
+                        pv='l'
+                        ph='xl'
+                        gap='m'
+                        borderRadius='m'
+                        border='default'
+                        backgroundColor='white'
+                        onClick={() => {
+                          navigate(`/search/tracks?mood=${mood}`)
+                        }}
+                        css={{
+                          ':hover': {
+                            background: color.neutral.n25,
+                            border: `1px solid ${color.neutral.n150}`
+                          }
+                        }}
+                      >
+                        {moodInfo.icon}
+                        <Text variant='title' size='s'>
+                          {moodInfo.label}
+                        </Text>
+                      </Paper>
+                    ))}
+                </Flex>
               </Flex>
-            </Flex>
-            <Flex direction='column' gap='l'>
-              <Text variant='title' size='l'>
-                {messages.bestOfAudius}
-              </Text>
-              <Flex
-                wrap='wrap'
-                gap='l'
-                direction={isLarge ? 'column' : 'row'}
-                justifyContent='space-between'
-                css={
-                  !isLarge
-                    ? {
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gridTemplateRows: '1fr 1fr',
-                        gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
-                        width: '100%'
-                      }
-                    : undefined
-                }
-              >
-                {justForYouTiles.map((tile) => {
-                  const Icon = tile.icon
-                  return (
-                    <PerspectiveCard
-                      key={tile.title}
-                      backgroundGradient={tile.gradient}
-                      shadowColor={tile.shadow}
-                      useOverlayBlendMode={
-                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                      }
-                      backgroundIcon={
-                        Icon ? (
-                          <Icon height={180} width={180} color='inverse' />
-                        ) : undefined
-                      }
-                      onClick={() => onClickCard(tile.link)}
-                      isIncentivized={!!tile.incentivized}
-                      sensitivity={tile.cardSensitivity}
-                    >
-                      <Flex w={'100%'} h={200}>
-                        <TextInterior
-                          title={tile.title}
-                          subtitle={tile.subtitle}
-                        />
-                      </Flex>
-                    </PerspectiveCard>
-                  )
-                })}
+              <Flex direction='column' gap='l'>
+                <Text variant='title' size='l'>
+                  {messages.bestOfAudius}
+                </Text>
+                <Flex
+                  wrap='wrap'
+                  gap='l'
+                  direction={isLarge ? 'column' : 'row'}
+                  justifyContent='space-between'
+                  css={
+                    !isLarge
+                      ? {
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gridTemplateRows: '1fr 1fr',
+                          gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
+                          width: '100%'
+                        }
+                      : undefined
+                  }
+                >
+                  {justForYouTiles.map((tile) => {
+                    const Icon = tile.icon
+                    return (
+                      <PerspectiveCard
+                        key={tile.title}
+                        backgroundGradient={tile.gradient}
+                        shadowColor={tile.shadow}
+                        useOverlayBlendMode={
+                          tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
+                        }
+                        backgroundIcon={
+                          Icon ? (
+                            <Icon height={180} width={180} color='inverse' />
+                          ) : undefined
+                        }
+                        onClick={() => onClickCard(tile.link)}
+                        isIncentivized={!!tile.incentivized}
+                        sensitivity={tile.cardSensitivity}
+                      >
+                        <Flex w={'100%'} h={200}>
+                          <TextInterior
+                            title={tile.title}
+                            subtitle={tile.subtitle}
+                          />
+                        </Flex>
+                      </PerspectiveCard>
+                    )
+                  })}
+                </Flex>
               </Flex>
             </Flex>
           </Flex>
-        </Flex>
+        )}
       </Flex>
     </MobilePageContainer>
   )
