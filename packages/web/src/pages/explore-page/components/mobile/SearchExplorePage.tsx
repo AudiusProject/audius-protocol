@@ -220,7 +220,6 @@ const ExplorePage = () => {
             aria-label={'Select search category'}
             name='searchcategory'
             value={categoryKey}
-            onChange={handleCategoryChange}
             style={{
               overflow: 'scroll',
               // Hide scrollbar for IE, Edge, and Firefox
@@ -238,6 +237,8 @@ const ExplorePage = () => {
                 icon={(category as Category).icon}
                 key={key}
                 label={capitalize(key)}
+                name='searchCategory'
+                onChange={handleCategoryChange}
                 size='large'
                 type='radio'
                 value={key}
