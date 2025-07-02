@@ -22,7 +22,7 @@ const messages = {
   sentSuccessfully: 'SENT SUCCESSFULLY',
   supportOnX: 'Share your support on X!',
   xCopyPrefix: 'I just tipped ',
-  xCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip'
+  xCopySuffix: ' $AUDIO on @audius'
 }
 
 export const TipSent = () => {

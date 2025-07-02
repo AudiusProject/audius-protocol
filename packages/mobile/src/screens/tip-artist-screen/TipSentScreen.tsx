@@ -30,8 +30,8 @@ const messages = {
   done: 'Done',
   xCopyPrefix: 'I just tipped ',
   xCopyPrefixAlt: 'I just sent ', // iOS only
-  xCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip',
-  xCopySuffixAlt: ' $AUDIO on @audius #Audius #AUDIO' // iOS only
+  xCopySuffix: ' $AUDIO on @audius',
+  xCopySuffixAlt: ' $AUDIO on @audius' // iOS only
 }
 
 const useStyles = makeStyles(({ spacing }) => ({

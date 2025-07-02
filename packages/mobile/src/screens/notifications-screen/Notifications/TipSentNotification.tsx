@@ -31,9 +31,7 @@ const messages = {
   xShare: (senderHandle: string, uiAmount: number, ios: boolean) =>
     `I just ${
       ios ? 'tipped' : 'sent'
-    } ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius ${
-      ios ? '#AUDIO' : '#AUDIOTip'
-    }`
+    } ${senderHandle} ${uiAmount} $AUDIO on @audius ${ios ? '' : ''}`
 }
 
 type TipSentNotificationProps = {

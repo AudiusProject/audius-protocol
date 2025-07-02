@@ -26,7 +26,7 @@ const messages = {
   sent: 'You successfully sent a tip of',
   to: 'to',
   xShare: (senderHandle: string, uiAmount: number) =>
-    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius #AUDIOTip`
+    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @audius`
 }
 
 type TipSentNotificationProps = {

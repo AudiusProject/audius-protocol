@@ -28,7 +28,7 @@ const messages = {
   body1: ' Dethroned You as ',
   body2: "'s #1 Top Supporter! Tip to Reclaim Your Spot?",
   xShare: (usurperHandle: string, supportingHandle: string) =>
-    `I've been dethroned! ${usurperHandle} dethroned me as ${supportingHandle}'s #1 Top Supporter! #Audius $AUDIO #AUDIOTip`
+    `I've been dethroned! ${usurperHandle} dethroned me as ${supportingHandle}'s #1 Top Supporter! $AUDIO`
 }
 
 const Crown = () => (

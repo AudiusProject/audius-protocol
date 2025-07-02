@@ -39,7 +39,7 @@ const messages = {
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
   xShare: (senderHandle: string, amount: number) =>
-    `Thanks ${senderHandle} for the ${amount} $AUDIO tip on @audius! #Audius #AUDIOTip`
+    `Thanks ${senderHandle} for the ${amount} $AUDIO tip on @audius!`
 }
 
 type TipReceivedNotificationProps = {

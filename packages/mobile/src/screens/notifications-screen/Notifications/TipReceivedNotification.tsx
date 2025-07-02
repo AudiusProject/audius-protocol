@@ -46,7 +46,7 @@ const messages = {
   xShare: (senderHandle: string, amount: number, ios: boolean) =>
     `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
       ios ? '$AUDIO' : '$AUDIO tip'
-    } on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
+    } on @audius! ${ios ? '' : ''}`
 }
 
 type TipReceivedNotificationProps = {

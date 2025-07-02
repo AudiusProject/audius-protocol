@@ -25,7 +25,7 @@ const messages = {
   supporterChange: 'Became your',
   supporter: 'Top Supporter',
   xShare: (handle: string, rank: number) =>
-    `${handle} just became my #${rank} Top Supporter on @audius #Audius $AUDIO #AUDIOTip`
+    `${handle} just became my #${rank} Top Supporter on @audius $AUDIO`
 }
 
 type TopSupporterNotificationProps = {
