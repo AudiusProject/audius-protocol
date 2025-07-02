@@ -1,24 +1,23 @@
-import { formatNumberCommas } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 
 import { TokenValueSlider } from 'components/token-value-slider'
 
 import styles from './DashboardTokenValueSlider.module.css'
 
 type DashboardTokenValueSliderProps = {
-  min: FixedDecimal
-  max: FixedDecimal
-  value: FixedDecimal
+  min: AudioWei
+  max: AudioWei
+  value: AudioWei
 }
 
-const MinMaxWrapper = ({ value }: { value: FixedDecimal }) => {
+const MinMaxWrapper = ({ value }: { value: AudioWei }) => {
   return (
-    <div className={styles.minMaxWrapper}>{`${formatNumberCommas(
-      value.trunc(0).toLocaleString('en-US', {
+    <div className={styles.minMaxWrapper}>{`${AUDIO(value)
+      .trunc(0)
+      .toLocaleString('en-US', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
-      })
-    )} $AUDIO`}</div>
+      })} $AUDIO`}</div>
   )
 }
 

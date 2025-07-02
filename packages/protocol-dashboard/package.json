@@ -16,8 +16,8 @@
     "build": "NODE_OPTIONS=--max_old_space_size=8192 tsc -p ./tsconfig.node.json && vite build",
     "build:stage": "npm run configure-stage-env && ./node_modules/.bin/env-cmd -f .env.stage.local turbo run build",
     "build:prod": "npm run configure-prod-env && ./node_modules/.bin/env-cmd -f .env.prod.local turbo run build",
-    "deploy:stage": "npx wrangler deploy --env staging",
-    "deploy:prod": "npx wrangler deploy --env production",
+    "deploy:stage": "wrangler deploy --env staging",
+    "deploy:prod": "wrangler deploy --env production",
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint:env": "dotenv-linter",
@@ -141,7 +141,7 @@
     "vite-plugin-top-level-await": "1.3.1",
     "vite-plugin-wasm": "3.2.2",
     "vite-tsconfig-paths": "4.2.1",
-    "wrangler": "^4.21.2"
+    "wrangler": "3.30.1"
   },
   "resolutions": {
     "bn.js": "5.1.2"
