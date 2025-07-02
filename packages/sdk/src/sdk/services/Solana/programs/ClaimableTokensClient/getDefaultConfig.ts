@@ -11,7 +11,8 @@ export const getDefaultClaimableTokensConfig = (
   programId: new PublicKey(config.solana.claimableTokensProgramAddress),
   mints: {
     wAUDIO: new PublicKey(config.solana.wAudioTokenMint),
-    USDC: new PublicKey(config.solana.usdcTokenMint)
+    USDC: new PublicKey(config.solana.usdcTokenMint),
+    TRUMP: new PublicKey(config.solana.trumpTokenMint)
   },
   logger: new Logger()
 })

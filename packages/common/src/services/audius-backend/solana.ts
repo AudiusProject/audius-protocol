@@ -40,7 +40,7 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
 
-export type MintName = 'wAUDIO' | 'USDC'
+export type MintName = 'wAUDIO' | 'USDC' | 'TRUMP'
 export const DEFAULT_MINT: MintName = 'wAUDIO'
 
 type UserBankConfig = {

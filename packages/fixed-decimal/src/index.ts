@@ -4,8 +4,10 @@ export {
   wAUDIO,
   AUDIO,
   USDC,
+  TRUMP,
   SolWei,
   wAudioWei,
   AudioWei,
-  UsdcWei
+  UsdcWei,
+  TrumpWei
 } from './currencies.js'

@@ -81,6 +81,7 @@ export const stagingConfig: SdkServicesConfig = {
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo",
+    "trumpTokenMint": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
     "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   },
   "ethereum": {

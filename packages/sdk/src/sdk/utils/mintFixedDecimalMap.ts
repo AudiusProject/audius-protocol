@@ -1,6 +1,7 @@
-import { USDC, wAUDIO } from '@audius/fixed-decimal'
+import { USDC, wAUDIO, TRUMP } from '@audius/fixed-decimal'
 
 export const mintFixedDecimalMap = {
   USDC,
-  wAUDIO
+  wAUDIO,
+  TRUMP
 }

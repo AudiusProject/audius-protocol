@@ -74,3 +74,16 @@ export const USDC = createTokenConstructor<UsdcWei>(6, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })
+
+/**
+ * A `bigint` representing an amount of TRUMP tokens, which have
+ * 6 decimal places, as a count of the smallest possible denomination of TRUMP.
+ */
+export type TrumpWei = Brand<bigint, 'TRUMP'>
+/**
+ * Constructs an amount of {@link TrumpWei} from a fixed decimal string,
+ * decimal number, or a bigint in the smallest denomination of TRUMP.
+ *
+ * TRUMP is used for trading and swapping in the platform.
+ */
+export const TRUMP = createTokenConstructor<TrumpWei>(6)
