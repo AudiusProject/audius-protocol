@@ -14,13 +14,9 @@ import {
   Paper,
   Text,
   Flex,
-  IconNote,
-  IconAlbum,
-  IconPlaylists,
   TextInput,
   TextInputSize,
   IconSearch,
-  IconUser,
   useTheme,
   useMedia,
   RadioGroup,
@@ -77,34 +73,6 @@ export enum SearchTabs {
   ALBUMS = 'Albums',
   PLAYLISTS = 'Playlists'
 }
-
-const tabHeaders = [
-  {
-    icon: <IconSearch />,
-    text: SearchTabs.ALL,
-    label: SearchTabs.ALL
-  },
-  {
-    icon: <IconUser />,
-    text: SearchTabs.PROFILES,
-    label: SearchTabs.PROFILES
-  },
-  {
-    icon: <IconNote />,
-    text: SearchTabs.TRACKS,
-    label: SearchTabs.TRACKS
-  },
-  {
-    icon: <IconAlbum />,
-    text: SearchTabs.ALBUMS,
-    label: SearchTabs.ALBUMS
-  },
-  {
-    icon: <IconPlaylists />,
-    text: SearchTabs.PLAYLISTS,
-    label: SearchTabs.PLAYLISTS
-  }
-]
 
 const justForYou = [
   TRENDING_PLAYLISTS,
