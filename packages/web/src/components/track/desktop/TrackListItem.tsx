@@ -119,6 +119,7 @@ const TrackListItem = (props: TrackListItemProps) => {
   }
 
   const onPlayTrack = (e?: MouseEvent) => {
+    e?.stopPropagation()
     // Skip toggle play if click event happened within track menu container
     // because clicking on it should not affect corresponding track.
     // We have to do this instead of stopping the event propagation
