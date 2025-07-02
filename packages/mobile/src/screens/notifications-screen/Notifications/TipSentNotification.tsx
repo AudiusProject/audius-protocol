@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useUser, useTokenPrice } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
+import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import type { TipSendNotification } from '@audius/common/store'
+import { AUDIO } from '@audius/fixed-decimal'
 import { Platform, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'
@@ -28,10 +30,15 @@ const messages = {
   sentAlt: 'You successfully sent', // iOS only
   to: 'to',
   // NOTE: Send tip -> Send $AUDIO changes
-  xShare: (senderHandle: string, uiAmount: number, ios: boolean) =>
+  xShare: (
+    senderHandle: string,
+    uiAmount: number,
+    ios: boolean,
+    price?: string
+  ) =>
     `I just ${
       ios ? 'tipped' : 'sent'
-    } ${senderHandle} ${uiAmount} $AUDIO on @audius ${ios ? '' : ''}`
+    } ${senderHandle} ${uiAmount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius ${ios ? '' : ''}`
 }
 
 type TipSentNotificationProps = {
@@ -44,6 +51,11 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { amount } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
+  const { data: tokenPriceData } = useTokenPrice(
+    TOKEN_LISTING_MAP.AUDIO.address
+  )
+
+  const tokenPrice = tokenPriceData?.price
 
   const { data: user } = useUser(notification.entityId)
 
@@ -56,7 +68,8 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       const shareText = messages.xShare(
         senderHandle,
         uiAmount,
-        Platform.OS === 'ios'
+        Platform.OS === 'ios',
+        tokenPrice
       )
       return {
         shareText,
@@ -66,7 +79,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
         } as const
       }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null

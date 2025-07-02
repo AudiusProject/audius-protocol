@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
 import type { SolanaWalletAddress } from '@audius/common/models'
-import { tippingSelectors } from '@audius/common/store'
+import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,10 +29,8 @@ const messages = {
   titleAlt: '$AUDIO Sent', // iOS only
   description: 'Share your support on X!',
   done: 'Done',
-  xCopyPrefix: 'I just tipped ',
-  xCopyPrefixAlt: 'I just sent ', // iOS only
-  xCopySuffix: ' $AUDIO on @audius',
-  xCopySuffixAlt: ' $AUDIO on @audius' // iOS only
+  xShare: (recipient: string, amount: string, isIOS: boolean, price?: string) =>
+    `I just ${isIOS ? 'sent' : 'tipped'} ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -61,21 +60,26 @@ export const TipSentScreen = () => {
     source,
     onSuccessActions
   } = useSelector(getSendTipData)
+  const { data: tokenPriceData } = useTokenPrice(
+    TOKEN_LISTING_MAP.AUDIO.address
+  )
   const styles = useStyles()
   const navigation = useNavigation()
 
+  const tokenPrice = tokenPriceData?.price
+
   const getXShareText = () => {
-    const formattedSendAmount = formatNumberCommas(sendAmount)
     if (user_id && recipient) {
-      let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
+      let recipientName = recipient.name
       if (recipient.twitter_handle) {
-        recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
+        recipientName = `@${recipient.twitter_handle}`
       }
-      return `${
-        Platform.OS === 'ios' ? messages.xCopyPrefixAlt : messages.xCopyPrefix
-      }${recipientAndAmount}${
-        Platform.OS === 'ios' ? messages.xCopySuffixAlt : messages.xCopySuffix
-      }`
+      return messages.xShare(
+        recipientName,
+        sendAmount,
+        Platform.OS === 'ios',
+        tokenPrice
+      )
     }
     return ''
   }

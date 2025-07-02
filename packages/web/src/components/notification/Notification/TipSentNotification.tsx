@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useTokenPrice, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { TipSendNotification } from '@audius/common/store'
+import { TipSendNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
+import { AUDIO } from '@audius/fixed-decimal'
 
 import { make } from 'common/store/analytics/actions'
 import { XShareButton } from 'components/x-share-button/XShareButton'
@@ -21,12 +22,14 @@ import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
 
+const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
+
 const messages = {
   title: 'Your Tip Was Sent!',
   sent: 'You successfully sent a tip of',
   to: 'to',
-  xShare: (senderHandle: string, uiAmount: number) =>
-    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @audius`
+  xShare: (senderHandle: string, uiAmount: number, price?: string) =>
+    `I just tipped ${senderHandle} ${uiAmount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
 }
 
 type TipSentNotificationProps = {
@@ -37,13 +40,16 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { notification } = props
   const { amount, timeLabel, isViewed } = notification
   const uiAmount = useUIAudio(amount)
+  const { data: tokenPriceData } = useTokenPrice(AUDIO_TOKEN_ID)
+
+  const tokenPrice = tokenPriceData?.price
 
   const { data: user } = useUser(notification.entityId)
   const handleClick = useGoToProfile(user)
 
   const handleShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.xShare(senderHandle, uiAmount)
+      const shareText = messages.xShare(senderHandle, uiAmount, tokenPrice)
       return {
         shareText,
         analytics: make(Name.NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE, {
@@ -51,7 +57,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
         })
       }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null
