@@ -51,13 +51,14 @@ integration-test:
         no_output_timeout: 15m
         command: |
           . ~/.profile; audius-cmd test
-    - run:
-        name: verify sdk types
-        command: |
-          cd ~/audius-protocol/packages/sdk
-          . ~/.profile
-          audius-compose connect --nopass
-          ./scripts/check-generated-types.sh
+    # Disabled until we are able to run bridge server in local stack
+    # - run:
+    #     name: verify sdk types
+    #     command: |
+    #       cd ~/audius-protocol/packages/sdk
+    #       . ~/.profile
+    #       audius-compose connect --nopass
+    #       ./scripts/check-generated-types.sh
     - run:
         name: install playwright
         command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
