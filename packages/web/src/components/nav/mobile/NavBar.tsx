@@ -88,7 +88,7 @@ const NavBar = ({
   }, [pathname])
 
   const handleOpenSearch = useCallback(() => {
-    history.push(`/search`)
+    history.push(`/explore`)
   }, [history])
 
   const onCloseSearch = () => {

@@ -20,10 +20,10 @@ const ExploreButton = ({
       onClick={onClick}
       href={href}
       iconLightJSON={() =>
-        import('../../../assets/animations/iconExploreLight.json')
+        import('../../../assets/animations/iconSearchExplore.json')
       }
       iconDarkJSON={() =>
-        import('../../../assets/animations/iconExploreDark.json')
+        import('../../../assets/animations/iconSearchExplore.json')
       }
       {...buttonProps}
     />

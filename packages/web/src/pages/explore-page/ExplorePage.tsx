@@ -6,7 +6,7 @@ import { createSeoDescription } from 'utils/seo'
 
 import DesktopExplorePage from './components/desktop/ExplorePage'
 import NewDesktopExplorePage from './components/desktop/NewExplorePage'
-import MobileExplorePage from './components/mobile/ExplorePage'
+import SearchExplorePage from './components/mobile/SearchExplorePage'
 
 const messages = {
   title: 'Explore',
@@ -32,7 +32,7 @@ export const ExplorePage = () => {
   }
 
   const Component = isMobile
-    ? MobileExplorePage
+    ? SearchExplorePage
     : isSearchExploreEnabled
       ? NewDesktopExplorePage
       : DesktopExplorePage

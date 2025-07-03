@@ -164,10 +164,7 @@ export const TrackResultsPage = ({ layout }: TrackResultsPageProps) => {
       />
     </Flex>
   ) : (
-    <Flex
-      p={isSearchExploreEnabled ? '' : 'm'}
-      css={{ backgroundColor: 'default' }}
-    >
+    <Flex p={'l'} css={{ backgroundColor: 'default' }}>
       <TrackResults
         viewLayout={isSearchExploreEnabled ? layout : undefined}
         isPending={isPending}
