@@ -65,10 +65,14 @@ export const TrackTileDuration = ({
               <IconCheck className={styles.completeIcon} />
             </div>
           ) : (
-            formatLineupTileDuration(duration, true, true)
+            formatLineupTileDuration(duration, true, false)
           )
         ) : (
-          formatLineupTileDuration(duration, isLongFormContent({ genre }), true)
+          formatLineupTileDuration(
+            duration,
+            isLongFormContent({ genre }),
+            false
+          )
         )}
       </div>
     </Text>
