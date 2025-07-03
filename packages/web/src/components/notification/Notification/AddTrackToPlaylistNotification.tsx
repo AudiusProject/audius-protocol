@@ -28,7 +28,7 @@ import { getEntityLink } from './utils'
 const messages = {
   title: 'Track Added to Playlist',
   shareXText: (handle: string, track: Track, playlist: CollectionEntity) =>
-    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audius! #Audius $AUDIO`
+    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audius! $AUDIO`
 }
 
 type AddTrackToPlaylistNotificationProps = {

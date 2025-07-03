@@ -31,7 +31,7 @@ const messages = {
   // NOTE: Send tip -> Send $AUDIO change
   body2Alt: "'s #1 Top Supporter! Send $AUDIO to Reclaim Your Spot?", // iOS only
   xShare: (usurperHandle: string, supportingHandle: string) =>
-    `I've been dethroned! ${usurperHandle} dethroned me as ${supportingHandle}'s #1 Top Supporter! #Audius $AUDIO #AUDIOTip`
+    `I've been dethroned! ${usurperHandle} dethroned me as ${supportingHandle}'s #1 Top Supporter! $AUDIO`
 }
 
 export const SupporterDethronedNotification = (

@@ -18,8 +18,8 @@ const messages = {
   supporter: 'Top Supporter',
   // NOTE: Send tip -> Send $AUDIO change
   xShare: (handle: string, rank: number, ios: boolean) =>
-    `${handle} just became my #${rank} Top Supporter on @audius #Audius $AUDIO${
-      ios ? '' : ' #AUDIOTip'
+    `${handle} just became my #${rank} Top Supporter on @audius $AUDIO${
+      ios ? '' : ''
     }`
 }
 

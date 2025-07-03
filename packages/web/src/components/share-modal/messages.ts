@@ -16,16 +16,15 @@ export const messages = {
   embed: 'Embed',
   toast: (asset: ShareType) => `Copied Link to ${shareTypeMap[asset]}`,
   trackShareText: (title: string, handle: string) =>
-    `Check out ${title} by ${handle} on @audius #Audius $AUDIO`,
-  profileShareText: (handle: string) =>
-    `Check out ${handle} on @audius #Audius $AUDIO`,
+    `Check out ${title} by ${handle} on @audius $AUDIO`,
+  profileShareText: (handle: string) => `Check out ${handle} on @audius $AUDIO`,
   albumShareText: (albumName: string, handle: string) =>
-    `Check out ${albumName} by ${handle} @audius #Audius $AUDIO`,
+    `Check out ${albumName} by ${handle} @audius $AUDIO`,
   playlistShareText: (playlistName: string, handle: string) =>
-    `Check out ${playlistName} by ${handle} @audius #Audius $AUDIO`,
+    `Check out ${playlistName} by ${handle} @audius $AUDIO`,
   // TODO: See if you can display my when the account user is the user
   audioNftPlaylistShareText: (name: string) =>
-    `Check out ${name} Audio NFTs in a playlist @audius #Audius $AUDIO`,
+    `Check out ${name} Audio NFTs in a playlist @audius $AUDIO`,
   shareDescription: 'Spread the word! Share with your friends and fans!',
   hiddenPlaylistShareDescription:
     'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.'

@@ -27,7 +27,7 @@ const messages = {
   accessInfo:
     'You now have access to exclusive features & a shiny new badge by your name.',
   xShareText: (label: string, icon: string) =>
-    `I've reached ${label} Tier on @audius! Check out the shiny new badge next to my name ${icon} #Audius $AUDIO`
+    `I've reached ${label} Tier on @audius! Check out the shiny new badge next to my name ${icon} $AUDIO`
 }
 
 const tierInfoMap = {
