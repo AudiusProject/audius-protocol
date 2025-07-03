@@ -54,7 +54,7 @@ import { TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { push as pushRoute } from 'utils/navigation'
-import { fullCollectionPage, fullTrackPage } from 'utils/route'
+import { fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { OwnerActionButtons } from '../OwnerActionButtons'
@@ -286,10 +286,6 @@ export const CollectionTile = ({
   const href = isLoading
     ? ''
     : collectionPage(handle, title, id, permalink, isAlbum)
-
-  const fullHref = isLoading
-    ? ''
-    : fullCollectionPage(handle, title, id, permalink, isAlbum)
 
   const renderOverflowMenu = () => {
     const menu: Omit<CollectionMenuProps, 'children'> = {
@@ -540,7 +536,7 @@ export const CollectionTile = ({
                   <Flex>
                     <TextLink
                       css={{ alignItems: 'center' }}
-                      to={fullHref}
+                      to={href}
                       isActive={isActive}
                       textVariant='title'
                       applyHoverStylesToInnerSvg
