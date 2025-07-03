@@ -8,10 +8,10 @@ import { make } from 'common/store/analytics/actions'
 
 import { CallToActionBanner } from './CallToActionBanner'
 
-const { PRIVACY_POLICY } = route
+const { TERMS_OF_SERVICE } = route
 
 const messages = {
-  text: 'We’ve updated our Terms of Service. By continuing to use Audius, you agree to our updated Terms of Service'
+  text: 'We’ve updated our Terms of Use. By continuing to use Audius, you agree to our updated Terms of Use'
 }
 
 const TOS_BANNER_LOCAL_STORAGE_KEY = 'dismissTermsOfServiceBanner6.24.25'
@@ -30,7 +30,7 @@ export const TermsOfServiceUpdateBanner = () => {
   }, [])
 
   const handleAccept = useCallback(() => {
-    window.open(PRIVACY_POLICY)
+    window.open(TERMS_OF_SERVICE)
     dispatch(make(Name.BANNER_TOS_CLICKED, {}))
     handleClose()
   }, [dispatch, handleClose])
