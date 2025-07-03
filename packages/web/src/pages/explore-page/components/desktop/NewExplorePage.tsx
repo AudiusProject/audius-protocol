@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useExploreContent } from '@audius/common/api'
+import {
+  useExploreContent,
+  useBestSellingAlbums,
+  useRecommendedTracks,
+  useRecentPremiumTracks
+} from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
@@ -29,6 +34,7 @@ import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { RemixContestCard } from 'components/remix-contest-card'
+import { TrackTile } from 'components/track/desktop/TrackTile'
 import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -124,6 +130,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { isLarge } = useMedia()
 
   const { data: exploreContent } = useExploreContent()
+  const { data: recommendedTracks } = useRecommendedTracks()
+  const { data: recentPremiumTracks } = useRecentPremiumTracks()
+  const { data: bestSellingAlbums } = useBestSellingAlbums()
 
   const handleSearchTab = useCallback(
     (newTab: string) => {
@@ -323,6 +332,22 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ) : (
           <>
             <Flex direction='column'>
+              <ExploreSection
+                title={messages.forYou}
+                data={recommendedTracks}
+                Tile={TrackTile}
+              />
+              <ExploreSection
+                title={messages.recentlyListedForSale}
+                data={recentPremiumTracks}
+                Tile={TrackTile}
+              />
+              <ExploreSection
+                title={messages.bestSellingAlbums}
+                data={bestSellingAlbums}
+                Card={CollectionCard}
+              />
+
               <ExploreSection
                 title={messages.featuredPlaylists}
                 data={exploreContent?.featuredPlaylists}

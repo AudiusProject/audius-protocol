@@ -9,15 +9,19 @@ import {
   useMedia
 } from '@audius/harmony'
 
+import { TrackTileSize } from 'components/track/types'
+
 type ExploreSectionProps = {
   title: string
   data?: number[]
-  Card: React.ComponentType<any>
+  Card?: React.ComponentType<any>
+  Tile?: React.ComponentType<any>
 }
 export const ExploreSection: React.FC<ExploreSectionProps> = ({
   title,
   data,
-  Card
+  Card,
+  Tile
 }) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -126,12 +130,53 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             css={{ minWidth: 'max-content', overflow: 'visible' }}
             pv='2xs'
           >
-            {data
-              ? data?.map((id) => <Card key={id} id={id} size='s' />)
-              : Array.from({ length: 6 }).map((_, i) => (
-                  // loading skeletons
-                  <Card key={i} id={0} size='s' />
-                ))}
+            {Tile
+              ? data
+                ? (() => {
+                    // Chunk data into pairs for grid layout
+                    const pairs = []
+                    for (let i = 0; i < data.length; i += 2) {
+                      pairs.push(data.slice(i, i + 2))
+                    }
+                    return pairs.map((pair, pairIndex) => (
+                      <Flex
+                        key={pairIndex}
+                        direction='column'
+                        gap='m'
+                        css={{ minWidth: '300px' }}
+                      >
+                        {pair.map((id) => (
+                          <Tile
+                            key={id}
+                            id={id}
+                            size='l'
+                            variant={TrackTileSize.LARGE}
+                          />
+                        ))}
+                      </Flex>
+                    ))
+                  })()
+                : Array.from({ length: 2 }).map((_, i) => (
+                    // loading skeletons - 2 columns with 2 tiles each
+                    <Flex 
+                      key={i} 
+                      direction='column' 
+                      gap='m'
+                      css={{ minWidth: '300px' }}
+                    >
+                      <Tile key={`${i}-0`} id={0} size='m' />
+                      <Tile key={`${i}-1`} id={0} size='m' />
+                    </Flex>
+                  ))
+              : null}
+            {Card
+              ? data
+                ? data?.map((id) => <Card key={id} id={id} size='s' />)
+                : Array.from({ length: 6 }).map((_, i) => (
+                    // loading skeletons
+                    <Card key={i} id={0} size='s' />
+                  ))
+              : null}
           </Flex>
         </Flex>
       </Flex>

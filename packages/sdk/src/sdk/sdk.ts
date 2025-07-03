@@ -9,7 +9,7 @@ import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { EventsApi } from './api/events/EventsApi'
-import { Configuration, TipsApi } from './api/generated/default'
+import { Configuration, ExploreApi, TipsApi } from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
   Configuration as ConfigurationFull,
@@ -21,7 +21,9 @@ import {
   TransactionsApi as TransactionsApiFull,
   NotificationsApi as NotificationsApiFull,
   CidDataApi as CidDataApiFull,
-  CommentsApi as CommentsApiFull
+  CommentsApi as CommentsApiFull.
+    ExploreApi as ExploreApiFull
+
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { NotificationsApi } from './api/notifications/NotificationsApi'
@@ -433,7 +435,6 @@ const initializeApis = ({
     middleware,
     basePath: `${basePath}/v1`
   })
-
   const tracks = new TracksApi(
     apiClientConfig,
     services.storage,
@@ -527,6 +528,9 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
+  const explore = new ExploreApi(   
+     apiClientConfig
+)
 
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfigFull),
@@ -538,7 +542,8 @@ const initializeApis = ({
     transactions: new TransactionsApiFull(generatedApiClientConfigFull),
     notifications: new NotificationsApiFull(generatedApiClientConfigFull),
     cidData: new CidDataApiFull(generatedApiClientConfigFull),
-    comments: new CommentsApiFull(generatedApiClientConfigFull)
+    comments: new CommentsApiFull(generatedApiClientConfigFull),
+    explore: new ExploreApiFull(generatedApiClientConfigFull)
   }
 
   return {
@@ -557,7 +562,8 @@ const initializeApis = ({
     services,
     comments,
     notifications,
-    events
+    events,
+    explore
   }
 }
 
