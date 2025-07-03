@@ -44,6 +44,7 @@ type Config = {
   ethRegistryProgramId: string
   usdcMintAddress: string
   waudioMintAddress: string
+  bonkMintAddress: string
   solanaFeePayerWallets: Keypair[]
   delegatePrivateKey: Buffer
   ipdataApiKey: string | null
@@ -93,6 +94,9 @@ const readConfig = (): Config => {
     }),
     audius_solana_usdc_mint: str({
       default: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y'
+    }),
+    audius_solana_bonk_mint: str({
+      default: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
     }),
     audius_solana_user_bank_program_address: str({
       default: 'testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9'
@@ -173,6 +177,7 @@ const readConfig = (): Config => {
     trackListenCountProgramId: env.audius_solana_track_listen_count_address,
     usdcMintAddress: env.audius_solana_usdc_mint,
     waudioMintAddress: env.audius_solana_waudio_mint,
+    bonkMintAddress: env.audius_solana_bonk_mint,
     solanaFeePayerWallets,
     delegatePrivateKey,
     ipdataApiKey:
