@@ -27,7 +27,7 @@ services:
         TURBO_TEAM: '${TURBO_TEAM}'
         TURBO_TOKEN: '${TURBO_TOKEN}'
     ports:
-      - '7000:7000'
+      - '7001:7000'
       - '9229:9229'
     environment:
       logLevel: debug
