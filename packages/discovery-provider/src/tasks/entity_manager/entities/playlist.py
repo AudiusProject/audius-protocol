@@ -165,19 +165,21 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                     and playlist_record.playlist_id
                     in track_record.playlists_containing_track
                 ):
-                    track_record.playlists_containing_track.remove(
-                        playlist_record.playlist_id
-                    )
+                    updated_playlists = list(track_record.playlists_containing_track)
+                    updated_playlists.remove(playlist_record.playlist_id)
+                    track_record.playlists_containing_track = updated_playlists
                     track_record.updated_at = params.block_datetime
 
                 # Update playlists_previously_containing_track if necessary
-                if (
+                if not track_record.playlists_previously_containing_track or (
                     track_record.playlists_previously_containing_track
                     and str(playlist_record.playlist_id)
                     not in track_record.playlists_previously_containing_track
                 ):
-                    updated_playlists_previously_containing_track = dict(
-                        track_record.playlists_previously_containing_track
+                    updated_playlists_previously_containing_track = (
+                        dict(track_record.playlists_previously_containing_track)
+                        if track_record.playlists_previously_containing_track
+                        else {}
                     )
                     updated_playlists_previously_containing_track[
                         str(playlist_record.playlist_id)
@@ -200,7 +202,9 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                 if not track_record.playlists_containing_track:
                     track_record.playlists_containing_track = [current_playlist_id]
                 else:
-                    track_record.playlists_containing_track.append(current_playlist_id)
+                    updated_playlists = list(track_record.playlists_containing_track)
+                    updated_playlists.append(current_playlist_id)
+                    track_record.playlists_containing_track = updated_playlists
                 track_record.updated_at = params.block_datetime
 
             if (
@@ -216,6 +220,7 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
                 track_record.playlists_previously_containing_track = (
                     updated_playlists_previously_containing_track
                 )
+                track_record.updated_at = params.block_datetime
 
         # add row for each track that is not already in the table
         if track_id not in existing_tracks:
