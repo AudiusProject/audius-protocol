@@ -21,6 +21,8 @@ const {
   AUDIUS_PRESS_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE,
+  API_TERMS,
+  OPEN_MUSIC_LICENSE_LINK,
   TRENDING_PAGE,
   AUDIUS_BLOG_LINK,
   DOWNLOAD_LINK,
@@ -38,6 +40,14 @@ const bottomLinks = [
   {
     text: 'Privacy Policy',
     link: PRIVACY_POLICY
+  },
+  {
+    text: 'API Terms of Service',
+    link: API_TERMS
+  },
+  {
+    text: 'Open Music License',
+    link: OPEN_MUSIC_LICENSE_LINK
   }
 ]
 
