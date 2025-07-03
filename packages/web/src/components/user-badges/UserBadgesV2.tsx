@@ -23,6 +23,7 @@ import cn from 'classnames'
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
+import { HexagonalIcon } from './HexagonalIcon'
 import styles from './UserBadges.module.css'
 
 const { AUDIO_PAGE } = route
@@ -153,6 +154,9 @@ const UserBadges = ({
         )}
       >
         {verifiedBadge}
+        {tierBadge ? (
+          <HexagonalIcon size={size}>{tierBadge}</HexagonalIcon>
+        ) : null}
         {tierBadge}
       </span>
     </Box>
