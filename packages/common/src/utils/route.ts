@@ -9,6 +9,7 @@ import { convertGenreLabelToValue, Genre } from './genres'
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
+export const API_TERMS = '/legal/api-terms'
 export const DOWNLOAD_START_LINK = '/download?start_download=true'
 export const DOWNLOAD_LINK = '/download'
 export const PRESS_PAGE = '/press'
@@ -189,6 +190,8 @@ export const AUDIUS_GATED_CONTENT_BLOG_LINK =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 export const AUDIUS_CONTACT_EMAIL_LINK = 'mailto:contact@audius.co'
 export const AUDIUS_PROTOCOL_DASHBOARD_LINK = 'https://dashboard.audius.org'
+export const OPEN_MUSIC_LICENSE_LINK =
+  'https://audius.org/open-music-license.pdf'
 
 export const externalInternalLinks = [
   AUDIUS_PRESS_LINK,
@@ -245,6 +248,7 @@ export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,
   PRIVACY_POLICY,
+  API_TERMS,
   DOWNLOAD_LINK,
   AUTH_REDIRECT
 ]

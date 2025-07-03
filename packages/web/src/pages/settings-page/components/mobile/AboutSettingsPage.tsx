@@ -27,7 +27,8 @@ const {
   AUDIUS_INSTAGRAM_LINK,
   AUDIUS_TWITTER_LINK,
   PRIVACY_POLICY,
-  TERMS_OF_SERVICE
+  TERMS_OF_SERVICE,
+  API_TERMS
 } = route
 const { version: appVersion } = packageInfo
 
@@ -41,6 +42,7 @@ const messages = {
   help: 'Help / FAQ',
   terms: 'Terms of Service',
   privacy: 'Privacy Policy',
+  apiTerms: 'API Terms',
   title: 'Audius Music',
   version: 'Audius Version',
   copyright: COPYRIGHT_TEXT
@@ -103,6 +105,12 @@ const AboutSettingsPage = () => {
             <Row
               title={messages.privacy}
               to={PRIVACY_POLICY}
+              target='_blank'
+              rel='noreferrer'
+            />
+            <Row
+              title={messages.apiTerms}
+              to={API_TERMS}
               target='_blank'
               rel='noreferrer'
             />
