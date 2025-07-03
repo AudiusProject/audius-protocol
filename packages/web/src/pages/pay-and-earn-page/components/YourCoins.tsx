@@ -23,6 +23,7 @@ import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
 import { ToastContext } from 'components/toast/ToastContext'
+import { HexagonalIcon } from 'components/user-badges/HexagonalIcon'
 
 const messages = {
   ...buySellMessages,
@@ -65,7 +66,7 @@ const YourCoinsHeader = () => {
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
-  const { color, spacing, cornerRadius, motion } = useTheme()
+  const { color, spacing, motion } = useTheme()
   const { isMobile, isExtraSmall } = useMedia()
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
@@ -106,13 +107,9 @@ export const YourCoins = () => {
         }}
       >
         <Flex alignItems='center' gap={isExtraSmall ? 'm' : 'l'}>
-          <IconTokenAUDIO
-            width={DIMENSIONS}
-            height={DIMENSIONS}
-            css={{
-              borderRadius: cornerRadius.circle
-            }}
-          />
+          <HexagonalIcon>
+            <IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} />
+          </HexagonalIcon>
           <Flex
             direction='column'
             gap='xs'
