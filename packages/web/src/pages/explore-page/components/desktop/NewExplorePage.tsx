@@ -338,17 +338,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 Tile={TrackTile}
               />
               <ExploreSection
-                title={messages.recentlyListedForSale}
-                data={recentPremiumTracks}
-                Tile={TrackTile}
-              />
-              <ExploreSection
-                title={messages.bestSellingAlbums}
-                data={bestSellingAlbums}
-                Card={CollectionCard}
-              />
-
-              <ExploreSection
                 title={messages.featuredPlaylists}
                 data={exploreContent?.featuredPlaylists}
                 Card={CollectionCard}
@@ -408,6 +397,18 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                     </Paper>
                   ))}
               </Flex>
+            </Flex>
+            <Flex direction='column'>
+              <ExploreSection
+                title={messages.recentlyListedForSale}
+                data={recentPremiumTracks}
+                Tile={TrackTile}
+              />
+              <ExploreSection
+                title={messages.bestSelling}
+                data={bestSellingAlbums}
+                Card={CollectionCard}
+              />
             </Flex>
 
             {/* Just For You */}

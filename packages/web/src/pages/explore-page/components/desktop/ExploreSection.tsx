@@ -51,6 +51,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
       window.removeEventListener('resize', updateScrollButtons)
     }
   })
+  if (!data || data.length === 0) return null
 
   return (
     <Flex direction='column' gap='l'>
@@ -143,7 +144,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
                         key={pairIndex}
                         direction='column'
                         gap='m'
-                        css={{ minWidth: '300px' }}
+                        css={{ minWidth: '532px', width: '532px' }}
                       >
                         {pair.map((id) => (
                           <Tile
@@ -158,11 +159,11 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
                   })()
                 : Array.from({ length: 2 }).map((_, i) => (
                     // loading skeletons - 2 columns with 2 tiles each
-                    <Flex 
-                      key={i} 
-                      direction='column' 
+                    <Flex
+                      key={i}
+                      direction='column'
                       gap='m'
-                      css={{ minWidth: '300px' }}
+                      css={{ minWidth: '532px', width: '532px' }}
                     >
                       <Tile key={`${i}-0`} id={0} size='m' />
                       <Tile key={`${i}-1`} id={0} size='m' />

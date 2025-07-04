@@ -1,8 +1,6 @@
 import { useContext, useEffect, ReactNode, useCallback, useState } from 'react'
 
 import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
-import { useQuery } from '@tanstack/react-query'
-import { useAudiusSdk } from '@audius/common/hooks'
 import {
   Variant as CollectionVariant,
   SmartCollection,

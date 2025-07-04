@@ -21,9 +21,8 @@ import {
   TransactionsApi as TransactionsApiFull,
   NotificationsApi as NotificationsApiFull,
   CidDataApi as CidDataApiFull,
-  CommentsApi as CommentsApiFull.
-    ExploreApi as ExploreApiFull
-
+  CommentsApi as CommentsApiFull,
+  ExploreApi as ExploreApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { NotificationsApi } from './api/notifications/NotificationsApi'
@@ -140,8 +139,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -423,8 +422,8 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-        ? stagingConfig.network.apiEndpoint
-        : productionConfig.network.apiEndpoint
+      ? stagingConfig.network.apiEndpoint
+      : productionConfig.network.apiEndpoint
 
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
@@ -435,6 +434,7 @@ const initializeApis = ({
     middleware,
     basePath: `${basePath}/v1`
   })
+
   const tracks = new TracksApi(
     apiClientConfig,
     services.storage,
@@ -528,9 +528,7 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
-  const explore = new ExploreApi(   
-     apiClientConfig
-)
+  const explore = new ExploreApi(apiClientConfig)
 
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfigFull),

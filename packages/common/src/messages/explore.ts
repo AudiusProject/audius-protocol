@@ -6,7 +6,7 @@ export const exploreMessages = {
   featuredRemixContests: 'Featured Remix Contests',
   forYou: 'For You',
   recentlyListedForSale: 'Recently Listed for Sale',
-  bestSellingAlbums: 'Best Selling Albums',
+  bestSelling: 'Best Selling',
   artistSpotlight: 'Artist Spotlight',
   labelSpotlight: 'Label Spotlight',
   exploreByMood: 'Explore by Mood',
