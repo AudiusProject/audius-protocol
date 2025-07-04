@@ -11,7 +11,10 @@ interface TrackTileCarouselProps {
   uidPrefix: string
 }
 
-export const TrackTileCarousel = ({ tracks, uidPrefix }: TrackTileCarouselProps) => {
+export const TrackTileCarousel = ({
+  tracks,
+  uidPrefix
+}: TrackTileCarouselProps) => {
   // Chunk tracks into pairs for 2-track columns
   const trackPairs: number[][] = []
   for (let i = 0; i < tracks.length; i += 2) {
