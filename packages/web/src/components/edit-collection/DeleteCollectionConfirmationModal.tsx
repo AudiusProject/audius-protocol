@@ -50,10 +50,8 @@ export const DeleteCollectionConfirmationModal = (
   const handleDelete = useCallback(() => {
     dispatch(deletePlaylist(collectionId))
     onDelete?.()
-    if (!lastLocation || lastLocation.pathname === permalink) {
+    if (lastLocation?.pathname === permalink) {
       history.replace(FEED_PAGE)
-    } else {
-      history.goBack()
     }
   }, [dispatch, collectionId, onDelete, lastLocation, permalink, history])
 

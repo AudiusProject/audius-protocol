@@ -71,6 +71,16 @@ const slice = createSlice({
     },
     addAccountPlaylist: (state, action: PayloadAction<AccountCollection>) => {
       state.collections[action.payload.id] = action.payload
+      state.playlistLibrary = {
+        ...state.playlistLibrary,
+        contents: [
+          ...(state.playlistLibrary?.contents ?? []),
+          {
+            playlist_id: action.payload.id,
+            type: 'playlist'
+          }
+        ]
+      }
     },
     removeAccountPlaylist: (
       state,
