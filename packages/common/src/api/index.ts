@@ -16,6 +16,7 @@ export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
+export * from './tan-query/collection/useBestSellingAlbums'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -95,6 +96,8 @@ export * from './tan-query/tracks/useFileSizes'
 export * from './tan-query/tracks/useTrackFileInfo'
 export * from './tan-query/tracks/useUpdateTrack'
 export * from './tan-query/tracks/useRemixedTracks'
+export * from './tan-query/tracks/useRecommendedTracks'
+export * from './tan-query/tracks/useRecentPremiumTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 
 // Users
