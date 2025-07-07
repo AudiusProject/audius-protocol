@@ -187,7 +187,7 @@ export const TrackTile = ({
       badgeSize='xs'
       isActive={isActive}
       popover
-      style={{ marginTop: '-4px' }}
+      css={{ marginTop: '-4px' }}
     />
   )
 

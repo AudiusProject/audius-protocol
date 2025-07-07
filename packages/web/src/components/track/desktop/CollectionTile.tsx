@@ -559,6 +559,7 @@ export const CollectionTile = ({
                     badgeSize='xs'
                     isActive={isActive}
                     popover
+                    css={{ marginTop: '-4px' }}
                   />
                 )}
               </Flex>

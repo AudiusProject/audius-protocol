@@ -563,7 +563,7 @@ export const CollectionTile = ({
             <UserLink
               userId={collection.playlist_owner_id}
               badgeSize='xs'
-              style={{ marginTop: '-4px' }}
+              css={{ marginTop: '-4px' }}
             >
               {!shouldShow ? (
                 <Skeleton className={styles.skeleton} height='20px' />
