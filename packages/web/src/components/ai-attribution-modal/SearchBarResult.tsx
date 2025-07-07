@@ -25,7 +25,7 @@ import styles from './SearchBarResult.module.css'
 const messages = {
   disabledTag: 'Ai Attrib. Not Enabled',
   tweet: (handle: string) =>
-    `Hey ${handle}, imagine AI generated tracks inspired by your sound! 🤖 Enable AI generated music on @AudiusMusic and see what your fans create using your tunes as their muse. #AudiusAI`
+    `Hey ${handle}, imagine AI generated tracks inspired by your sound! 🤖 Enable AI generated music on @AudiusMusic and see what your fans create using your tunes as their muse.`
 }
 
 type ImageProps = {

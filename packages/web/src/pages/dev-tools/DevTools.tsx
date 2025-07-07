@@ -7,6 +7,7 @@ import {
   IconSolana,
   IconShieldCheck,
   IconDashboard,
+  IconUser,
   Paper,
   Text,
   makeResponsiveStyles
@@ -130,6 +131,10 @@ export const DevTools = () => {
     window.open('https://healthz.audius.co/', '_blank')
   }
 
+  const handleOpenUserIdParser = () => {
+    history.push('/dev-tools/user-id-parser')
+  }
+
   return (
     <Page
       title={messages.pageTitle}
@@ -192,6 +197,14 @@ export const DevTools = () => {
             description={messages.healthzDescription}
             buttonText={messages.healthzButton}
             onButtonClick={handleOpenHealthzDashboard}
+          />
+
+          <DevToolCard
+            icon={IconUser}
+            title={messages.userIdParserTitle}
+            description={messages.userIdParserDescription}
+            buttonText={messages.userIdParserButton}
+            onButtonClick={handleOpenUserIdParser}
           />
         </Flex>
       </Box>

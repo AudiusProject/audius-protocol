@@ -26,7 +26,7 @@ const messages = {
   title: 'New remix of your track',
   by: 'by',
   shareXText: (track: TrackMetadata, handle: string) =>
-    `New remix of ${track.title} by ${handle} on @audius #Audius $AUDIO`
+    `New remix of ${track.title} by ${handle} on @audius $AUDIO`
 }
 
 type RemixCreateNotificationProps = {

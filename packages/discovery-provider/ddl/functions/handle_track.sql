@@ -28,12 +28,13 @@ begin
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
   update aggregate_user
-  set track_count = (
-    select count(*)
+  set (track_count, total_track_count) = (
+    select
+      count(*) filter (where t.is_unlisted = false),
+      count(*)
     from tracks t
     where t.is_current is true
       and t.is_delete is false
-      and t.is_unlisted is false
       and t.is_available is true
       and t.stem_of is null
       and t.owner_id = new.owner_id
