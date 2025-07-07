@@ -500,11 +500,11 @@ export const CollectionTile = ({
         <Flex gap='s'>
           {hasOrdering && (
             <Flex column gap='2xs' alignItems='center' justifyContent='center'>
-              {!isLoading && index <= 5 && (
+              {!isLoading && order <= 5 && (
                 <IconCrown color='default' size='s' />
               )}
               <Text variant='label' color='default'>
-                {!isLoading && index}
+                {!isLoading && order}
               </Text>
             </Flex>
           )}
@@ -559,6 +559,7 @@ export const CollectionTile = ({
                     badgeSize='xs'
                     isActive={isActive}
                     popover
+                    css={{ marginTop: '-4px' }}
                   />
                 )}
               </Flex>
