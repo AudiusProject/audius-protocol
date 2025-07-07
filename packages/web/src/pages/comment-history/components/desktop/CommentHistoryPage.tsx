@@ -102,12 +102,7 @@ const UserComment = ({ comment }: { comment: CommentOrReply }) => {
                   onClick={trackUserCommentClick}
                 />
                 {messages.by}
-                <UserLink
-                  variant='visible'
-                  userId={track?.owner_id}
-                  popover
-                  fullWidth={false}
-                />
+                <UserLink variant='visible' userId={track?.owner_id} popover />
               </Flex>
             ) : (
               <Skeleton w={180} h={20} />
