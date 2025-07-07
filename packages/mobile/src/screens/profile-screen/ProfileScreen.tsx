@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   getProfileRepostsQueryKey,
@@ -20,6 +20,7 @@ import {
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect, useNavigationState } from '@react-navigation/native'
+import type { QueryClient } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -76,8 +77,14 @@ export const ProfileScreen = () => {
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
-  const isScreenReady = useIsScreenReady()
+  const queryClientRef = useRef<QueryClient>()
   const queryClient = useQueryClient()
+  useEffect(() => {
+    if (queryClientRef.current !== queryClient) {
+      console.log('queryClientRef changed')
+      queryClientRef.current = queryClient
+    }
+  }, [queryClient])
 
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
@@ -109,27 +116,12 @@ export const ProfileScreen = () => {
     }
   }) as ProfilePageTabs
 
-  const fetchProfile = useCallback(
-    (forceFetch = false) => {
-      if (!isScreenReady) return
-      dispatch(
-        fetchProfileAction(handleLower, id ?? null, forceFetch, true, false)
-      )
-    },
-    [dispatch, handleLower, id, isScreenReady]
-  )
-
   useFocusEffect(setCurrentUser)
-
-  useEffect(() => {
-    fetchProfile()
-  }, [fetchProfile])
 
   const handleRefresh = useCallback(() => {
     // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
-      fetchProfile(true)
       switch (currentTab) {
         case ProfilePageTabs.TRACKS:
           queryClient.resetQueries({
@@ -163,7 +155,7 @@ export const ProfileScreen = () => {
           break
       }
     }
-  }, [profile, fetchProfile, currentTab, queryClient, handleLower, dispatch])
+  }, [profile, currentTab, queryClient, handleLower, dispatch])
 
   useEffect(() => {
     if (status === Status.SUCCESS) {
