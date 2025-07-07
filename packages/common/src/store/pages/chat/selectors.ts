@@ -2,7 +2,7 @@ import { ChatPermission, HashId, Id, UserChat } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { useCurrentUserId, useUser } from '~/api'
+import { useCurrentUserId } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { CommonState } from '~/store/reducers'
@@ -240,7 +240,6 @@ export const useCanCreateChat = (userId: ID | null | undefined) => {
   const { blockees, blockers, chatPermissions, chats } = useSelector(
     getChatPermissionsInfo
   )
-  const { data: user } = useUser(userId)
   if (!currentUserId) {
     return {
       canCreateChat: false,
@@ -248,7 +247,7 @@ export const useCanCreateChat = (userId: ID | null | undefined) => {
     }
   }
   // cant check for truthy because user.collectible_list may get set before the user data is loaded
-  if (!user || !user.user_id) {
+  if (!userId) {
     return {
       canCreateChat: true,
       callToAction: ChatPermissionAction.NOT_APPLICABLE
@@ -259,15 +258,15 @@ export const useCanCreateChat = (userId: ID | null | undefined) => {
   // don't need permission to continue chatting.
   // Use a callback fn to prevent iteration until necessary to improve perf
   // Note: this only works if the respective chat has been fetched already, like in chatsUserList
-  const encodedUserId = Id.parse(user.user_id)
+  const encodedUserId = Id.parse(userId)
   const existingChat = chats.find(
     (c) =>
       !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
   )
 
-  const userPermissions = chatPermissions[user.user_id]
-  const isBlockee = blockees.includes(user.user_id)
-  const isBlocker = blockers.includes(user.user_id)
+  const userPermissions = chatPermissions[userId]
+  const isBlockee = blockees.includes(userId)
+  const isBlocker = blockers.includes(userId)
   const canCreateChat =
     !isBlockee &&
     !isBlocker &&
@@ -280,7 +279,7 @@ export const useCanCreateChat = (userId: ID | null | undefined) => {
   if (!canCreateChat) {
     if (!userPermissions) {
       action = ChatPermissionAction.WAIT
-    } else if (blockees.includes(user.user_id)) {
+    } else if (blockees.includes(userId)) {
       action = ChatPermissionAction.UNBLOCK
     } else if (userPermissions.permit_list.includes(ChatPermission.FOLLOWERS)) {
       action = ChatPermissionAction.FOLLOW
