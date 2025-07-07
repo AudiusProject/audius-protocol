@@ -2,11 +2,16 @@ import { useCallback, useEffect, useState, useRef } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { SLIPPAGE_BPS, useSwapTokens, useCurrentAccountUser } from '~/api'
+import {
+  SLIPPAGE_BPS,
+  useSwapTokens,
+  useCurrentAccountUser,
+  useQueryContext
+} from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 
-import { TOKEN_LISTING_MAP } from '../buy-audio/constants'
+import { createTokenListingMap } from '../shared/tokenConstants'
 
 import type { BuySellTab, Screen, SwapResult, TransactionData } from './types'
 
@@ -22,6 +27,7 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
   const { transactionData, currentScreen, setCurrentScreen, activeTab } = props
   const queryClient = useQueryClient()
   const { data: user } = useCurrentAccountUser()
+  const { env } = useQueryContext()
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
@@ -42,18 +48,19 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     if (!transactionData || !transactionData.isValid) return
 
     const { inputAmount } = transactionData
+    const tokenListingMap = createTokenListingMap(env)
 
     if (activeTab === 'buy') {
       swapTokens({
-        inputMint: TOKEN_LISTING_MAP.USDC.address,
-        outputMint: TOKEN_LISTING_MAP.AUDIO.address,
+        inputMint: tokenListingMap.USDC.address,
+        outputMint: tokenListingMap.AUDIO.address,
         amountUi: inputAmount,
         slippageBps: SLIPPAGE_BPS
       })
     } else {
       swapTokens({
-        inputMint: TOKEN_LISTING_MAP.AUDIO.address,
-        outputMint: TOKEN_LISTING_MAP.USDC.address,
+        inputMint: tokenListingMap.AUDIO.address,
+        outputMint: tokenListingMap.USDC.address,
         amountUi: inputAmount,
         slippageBps: SLIPPAGE_BPS
       })
