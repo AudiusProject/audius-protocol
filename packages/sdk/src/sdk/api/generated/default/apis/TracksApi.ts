@@ -121,6 +121,12 @@ export interface GetTrackTopListenersRequest {
     userId?: string;
 }
 
+export interface GetTracksWithRecentCommentsRequest {
+    userId?: string;
+    limit?: number;
+    offset?: number;
+}
+
 export interface GetTrendingTracksRequest {
     offset?: number;
     limit?: number;
@@ -290,7 +296,7 @@ export class TracksApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/feeling_lucky`,
+            path: `/tracks/feeling-lucky`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -600,6 +606,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrackTopListeners(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopListener> {
         const response = await this.getTrackTopListenersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the most recent tracks with active discussion
+     */
+    async getTracksWithRecentCommentsRaw(params: GetTracksWithRecentCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/recent-comments`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most recent tracks with active discussion
+     */
+    async getTracksWithRecentComments(params: GetTracksWithRecentCommentsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getTracksWithRecentCommentsRaw(params, initOverrides);
         return await response.value();
     }
 
