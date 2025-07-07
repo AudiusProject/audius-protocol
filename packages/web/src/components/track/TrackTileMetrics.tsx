@@ -26,6 +26,12 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { push } from 'utils/navigation'
 
+const messages = {
+  favorites: 'Favorites',
+  reposts: 'Reposts',
+  comments: 'Comments'
+}
+
 const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 
 const { setFavorite } = favoritesUserListActions
@@ -90,6 +96,7 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
   }
 
   const isLargeSize = size === TrackTileSize.LARGE && !isMobile
+  const shouldRenderName = isLargeSize && followeeReposts.length > 0
 
   return (
     <VanityMetric onClick={handleClick}>
@@ -97,10 +104,12 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
         <AvatarList users={followeeReposts.map(({ user_id }) => user_id)} />
       ) : null}
       <Flex gap='xs'>
-        <IconRepost size='s' color='subdued' />
-        {isLargeSize && followeeReposts.length > 0
-          ? renderName()
-          : formatCount(repostCount)}
+        <IconRepost
+          size='s'
+          color='subdued'
+          title={shouldRenderName ? undefined : messages.reposts}
+        />
+        {shouldRenderName ? renderName() : formatCount(repostCount)}
       </Flex>
     </VanityMetric>
   )
@@ -140,7 +149,7 @@ export const SavesMetric = (props: SavesMetricProps) => {
 
   return (
     <VanityMetric onClick={handleClick}>
-      <IconHeart size='s' color='subdued' />
+      <IconHeart size='s' color='subdued' title={messages.favorites} />
       {formatCount(saveCount)}
     </VanityMetric>
   )
@@ -184,7 +193,7 @@ export const CommentMetric = (props: CommentMetricProps) => {
 
   return (
     <VanityMetric ellipses to={url} onClick={handleClick}>
-      <IconMessage size='s' color='subdued' />
+      <IconMessage size='s' color='subdued' title={messages.comments} />
       {commentCount > 0 || isSmall
         ? formatCount(commentCount)
         : 'Leave a comment'}
