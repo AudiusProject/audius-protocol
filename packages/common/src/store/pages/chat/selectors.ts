@@ -2,7 +2,7 @@ import { ChatPermission, HashId, Id, UserChat } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { useCurrentUserId, useUser } from '~/api'
+import { useCurrentUserId } from '~/api'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { CommonState } from '~/store/reducers'
