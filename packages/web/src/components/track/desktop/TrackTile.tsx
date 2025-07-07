@@ -182,7 +182,13 @@ export const TrackTile = ({
   )
 
   const userName = (
-    <UserLink userId={user_id} badgeSize='xs' isActive={isActive} popover />
+    <UserLink
+      userId={user_id}
+      badgeSize='xs'
+      isActive={isActive}
+      popover
+      style={{ marginTop: '-4px' }}
+    />
   )
 
   const onClickFavorite = useCallback(() => {
