@@ -1,4 +1,4 @@
-import { developmentConfig } from '@audius/sdk'
+import { developmentConfig, Id } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router-dom-v5-compat'
 import { describe, expect, it, beforeAll, afterEach, afterAll } from 'vitest'
@@ -12,7 +12,7 @@ import { TrackTile } from './TrackTile'
 const { apiEndpoint } = developmentConfig.network
 
 const testUser = {
-  id: 'ML51L',
+  id: Id.parse(2),
   handle: 'test-user',
   name: 'Test User',
   is_verified: false,
@@ -21,9 +21,9 @@ const testUser = {
 }
 
 const testTrack = {
-  id: '7eP5n',
-  track_id: '7eP5n',
-  user_id: 'ML51L',
+  id: Id.parse(1),
+  track_id: Id.parse(1),
+  user_id: Id.parse(2),
   genre: 'Electronic',
   title: 'Test Track',
   user: testUser,
@@ -57,7 +57,7 @@ function renderTrackTile(overrides = {}) {
     http.get(`${apiEndpoint}/v1/full/tracks`, ({ request }) => {
       const url = new URL(request.url)
       const id = url.searchParams.get('id')
-      if (id === '7eP5n') {
+      if (id === Id.parse(1)) {
         return HttpResponse.json({ data: [{ ...testTrack, ...overrides }] })
       }
       return new HttpResponse(null, { status: 404 })
@@ -106,7 +106,7 @@ describe('TrackTile', () => {
     mswServer.close()
   })
 
-  it('rendersnon-owner track tile with title and user', async () => {
+  it('Renders non-owner track tile with title and user', async () => {
     renderTrackTile()
     expect(await screen.findByText('Test Track')).toBeInTheDocument()
     expect(await screen.findByText('Test User')).toBeInTheDocument()
