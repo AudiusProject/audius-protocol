@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 
 import {
   useExploreContent,
-  useBestSellingAlbums,
   useRecommendedTracks,
-  useRecentPremiumTracks
+  useRecentPremiumTracks,
+  useBestSelling
 } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { ExploreCollectionsVariant } from '@audius/common/store'
@@ -62,6 +62,7 @@ import {
 } from 'pages/search-page/types'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
+import { BestSellingSection } from './BestSellingSection'
 import { ExploreSection } from './ExploreSection'
 
 export type ExplorePageProps = {
@@ -132,7 +133,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { data: exploreContent } = useExploreContent()
   const { data: recommendedTracks } = useRecommendedTracks()
   const { data: recentPremiumTracks } = useRecentPremiumTracks()
-  const { data: bestSellingAlbums } = useBestSellingAlbums()
+  const { data: bestSelling } = useBestSelling()
 
   const handleSearchTab = useCallback(
     (newTab: string) => {
@@ -207,10 +208,15 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 
+  const tabElements = useMemo(
+    () => tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    []
+  )
+
   const { tabs } = useTabs({
     isMobile: false,
     tabs: tabHeaders,
-    elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    elements: tabElements,
     onTabClick: handleSearchTab,
     selectedTabLabel: capitalize(categoryKey)
   })
@@ -404,10 +410,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 data={recentPremiumTracks}
                 Tile={TrackTile}
               />
-              <ExploreSection
+              <BestSellingSection
                 title={messages.bestSelling}
-                data={bestSellingAlbums}
-                Card={CollectionCard}
+                data={bestSelling}
               />
             </Flex>
 

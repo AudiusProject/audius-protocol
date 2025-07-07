@@ -16,7 +16,6 @@ export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
-export * from './tan-query/collection/useBestSellingAlbums'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -30,6 +29,7 @@ export * from './tan-query/events'
 
 // Explore
 export * from './tan-query/collection/useExploreContent'
+export * from './tan-query/explore/useBestSelling'
 
 // Lineups
 export * from './tan-query/lineups/useFeed'

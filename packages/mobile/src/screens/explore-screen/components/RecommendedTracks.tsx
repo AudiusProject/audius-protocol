@@ -8,6 +8,7 @@ import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const RecommendedTracks = () => {
   const { data: recommendedTracks, isLoading } = useRecommendedTracks()
+
   if (!recommendedTracks || recommendedTracks.length === 0) {
     return null
   }
