@@ -2,11 +2,9 @@ import React from 'react'
 
 import { useBestSelling } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { css } from '@emotion/native'
 import { ScrollView } from 'react-native'
 
 import { Flex, useTheme } from '@audius/harmony-native'
-import { CollectionList } from 'app/components/collection-list'
 import { CollectionCard } from 'app/components/collection-list/CollectionCard'
 import { TrackCard } from 'app/components/track/TrackCard'
 
