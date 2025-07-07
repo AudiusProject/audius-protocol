@@ -107,7 +107,7 @@ export const YourCoins = () => {
         }}
       >
         <Flex alignItems='center' gap={isExtraSmall ? 'm' : 'l'}>
-          <HexagonalIcon>
+          <HexagonalIcon size='5xl'>
             <IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} />
           </HexagonalIcon>
           <Flex
