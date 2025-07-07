@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   getProfileRepostsQueryKey,
@@ -20,7 +20,6 @@ import {
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect, useNavigationState } from '@react-navigation/native'
-import type { QueryClient } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,7 +32,6 @@ import {
 import { Screen, ScreenContent } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
-import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -42,10 +40,7 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const {
-  fetchProfile: fetchProfileAction,
-  setCurrentUser: setCurrentUserAction
-} = profilePageActions
+const { setCurrentUser: setCurrentUserAction } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
 const { setVisibility } = modalsActions
@@ -59,7 +54,7 @@ const useStyles = makeStyles(() => ({
 export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
-  const { handle: userHandle, id } = params
+  const { handle: userHandle } = params
   const { data: profile } = useUserByParams(params, {
     select: (user) => ({
       user_id: user.user_id,
@@ -77,14 +72,7 @@ export const ProfileScreen = () => {
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
-  const queryClientRef = useRef<QueryClient>()
   const queryClient = useQueryClient()
-  useEffect(() => {
-    if (queryClientRef.current !== queryClient) {
-      console.log('queryClientRef changed')
-      queryClientRef.current = queryClient
-    }
-  }, [queryClient])
 
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
