@@ -1,5 +1,5 @@
 ---
-"@audius/sdk": minor
+'@audius/sdk': minor
 ---
 
-Adds history endpoint to non-full API
+Adds history and feeling lucky endpoints to non-full API
