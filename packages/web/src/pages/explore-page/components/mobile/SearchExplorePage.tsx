@@ -93,7 +93,7 @@ const ExplorePage = () => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color } = useTheme()
+  const { color, spacing } = useTheme()
   const { isLarge } = useMedia()
 
   const { data: exploreContent } = useExploreContent()
@@ -220,7 +220,7 @@ const ExplorePage = () => {
             aria-label={'Select search category'}
             name='searchcategory'
             value={categoryKey}
-            style={{
+            css={{
               overflow: 'scroll',
               // Hide scrollbar for IE, Edge, and Firefox
               msOverflowStyle: 'none', // IE and Edge
@@ -336,7 +336,7 @@ const ExplorePage = () => {
                           display: 'grid',
                           gridTemplateColumns: '1fr 1fr',
                           gridTemplateRows: '1fr 1fr',
-                          gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
+                          gap: spacing.l, // or just gap: 'l' if supported
                           width: '100%'
                         }
                       : undefined
