@@ -71,6 +71,12 @@ export interface GetBulkTracksRequest {
     id?: Array<string>;
 }
 
+export interface GetFeelingLuckyTracksRequest {
+    userId?: string;
+    limit?: number;
+    minFollowers?: number;
+}
+
 export interface GetRecentPremiumTracksRequest {
     offset?: number;
     limit?: number;
@@ -259,6 +265,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getBulkTracks(params: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getBulkTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets random tracks found on the \"Feeling Lucky\" smart playlist
+     */
+    async getFeelingLuckyTracksRaw(params: GetFeelingLuckyTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.minFollowers !== undefined) {
+            queryParameters['min_followers'] = params.minFollowers;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/feeling_lucky`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets random tracks found on the \"Feeling Lucky\" smart playlist
+     */
+    async getFeelingLuckyTracks(params: GetFeelingLuckyTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getFeelingLuckyTracksRaw(params, initOverrides);
         return await response.value();
     }
 
