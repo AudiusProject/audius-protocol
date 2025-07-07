@@ -36,7 +36,7 @@ const messages = {
   complete: 'Upload Complete',
   share: 'Share your new track with your fans!',
   xShareText: (title: string) =>
-    `Check out my new track, ${title} on @audius #Audius $AUDIO`,
+    `Check out my new track, ${title} on @audius $AUDIO`,
   copyLink: 'Copy Link',
   linkCopied: 'Link Copied!',
   shareToast: 'Copied Link to Track',

@@ -25,7 +25,7 @@ const messages = {
   reacted: 'reacted',
   react: 'reacted to your tip of ',
   xShare: (handle: string) =>
-    `I got a thanks from ${handle} for tipping them $AUDIO on @audius! #Audius #AUDIOTip`
+    `I got a thanks from ${handle} for tipping them $AUDIO on @audius!`
 }
 
 type TipReactionNotificationProps = {

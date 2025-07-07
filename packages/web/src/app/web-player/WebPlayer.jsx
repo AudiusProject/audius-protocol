@@ -32,6 +32,7 @@ import AppRedirectListener from 'components/app-redirect-popover/AppRedirectList
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
+import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
@@ -60,6 +61,7 @@ import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
 import DevTools from 'pages/dev-tools/DevTools'
 import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
+import UserIdParserPage from 'pages/dev-tools/UserIdParserPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
@@ -199,7 +201,8 @@ const {
   AIRDROP_PAGE,
   WALLET_PAGE,
   DEV_TOOLS_PAGE,
-  SOLANA_TOOLS_PAGE
+  SOLANA_TOOLS_PAGE,
+  USER_ID_PARSER_PAGE
 } = route
 
 // TODO: do we need to lazy load edit?
@@ -488,6 +491,7 @@ const WebPlayer = (props) => {
     <div className={styles.root}>
       <AppBannerWrapper>
         <DownloadAppBanner />
+        <TermsOfServiceUpdateBanner />
         <Web3ErrorBanner />
         {showWebUpdateBanner ? (
           <UpdateAppBanner
@@ -746,6 +750,13 @@ const WebPlayer = (props) => {
                   exact
                   path={SOLANA_TOOLS_PAGE}
                   component={SolanaToolsPage}
+                />
+              ) : null}
+              {!isProduction ? (
+                <Route
+                  exact
+                  path={USER_ID_PARSER_PAGE}
+                  component={UserIdParserPage}
                 />
               ) : null}
 

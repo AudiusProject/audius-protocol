@@ -33,7 +33,7 @@ const messages = {
   xShare: (handle: string, ios: boolean) =>
     `I got a thanks from ${handle} for ${
       ios ? 'sending' : 'tipping'
-    } them $AUDIO on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
+    } them $AUDIO on @audius! ${ios ? '' : ''}`
 }
 
 const useStyles = makeStyles(() => ({

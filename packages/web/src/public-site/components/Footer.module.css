@@ -144,15 +144,12 @@
 .bottomLinks {
   display: inline-flex;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .bottomLink {
   color: var(--harmony-n-400) !important;
   font-size: var(--harmony-font-s);
-}
-
-.bottomLink:first-child {
-  margin-right: 16px;
 }
 
 .bottomLink:hover {

@@ -27,7 +27,7 @@ const messages = {
   is: 'is',
   tastemaker: 'now trending thanks to you! Great work 🙌',
   xShare: (trackOwnerHandle: string, trackTitle: string) => {
-    return `I was one of the first to discover ${trackTitle} by ${trackOwnerHandle} on @audius and it just made it onto trending! #Audius #AudiusTastemaker $AUDIO`
+    return `I was one of the first to discover ${trackTitle} by ${trackOwnerHandle} on @audius and it just made it onto trending! $AUDIO`
   }
 }
 
