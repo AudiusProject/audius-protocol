@@ -2,4 +2,4 @@
 '@audius/sdk': minor
 ---
 
-Adds history and feeling lucky endpoints to non-full API
+Adds history, recently commented, and feeling lucky endpoints to non-full API
