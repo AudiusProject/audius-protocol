@@ -26,7 +26,7 @@ const messages = {
   is: 'is',
   trending: 'on Trending right now!',
   xShareText: (entityTitle: string) =>
-    `My track ${entityTitle} is trending on @audius! Check it out! #Audius #AudiusTrending $AUDIO`
+    `My track ${entityTitle} is trending on @audius! Check it out! $AUDIO`
 }
 
 type TrendingTrackNotificationProps = {

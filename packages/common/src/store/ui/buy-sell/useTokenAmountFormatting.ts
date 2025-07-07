@@ -1,7 +1,12 @@
 import { useCallback, useMemo } from 'react'
 
+import { AUDIO } from '@audius/fixed-decimal'
+
 import { formatUSDCValue } from '../../../api'
-import { getCurrencyDecimalPlaces } from '../../../utils'
+import {
+  getAudioBalanceDecimalPlaces,
+  getCurrencyDecimalPlaces
+} from '../../../utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number
@@ -28,7 +33,6 @@ const getSafeNumericValue = (value: string | number): number => {
 export const useTokenAmountFormatting = ({
   amount,
   availableBalance,
-  exchangeRate,
   isStablecoin,
   placeholder = '0.00'
 }: UseTokenAmountFormattingProps) => {
@@ -50,19 +54,15 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(availableBalance)
     }
 
-    const decimals = getDisplayDecimalPlaces(exchangeRate)
+    // Use AUDIO for non-stablecoins for now, when we expand to other tokens
+    // we will need to use FixedDecimal itself
+    const audioAmount = AUDIO(availableBalance)
+    const decimals = getAudioBalanceDecimalPlaces(availableBalance)
 
-    return availableBalance.toLocaleString('en-US', {
-      minimumFractionDigits: defaultDecimalPlaces,
+    return audioAmount.toLocaleString('en-US', {
       maximumFractionDigits: decimals
     })
-  }, [
-    availableBalance,
-    exchangeRate,
-    getDisplayDecimalPlaces,
-    placeholder,
-    isStablecoin
-  ])
+  }, [availableBalance, placeholder, isStablecoin])
 
   const formattedAmount = useMemo(() => {
     if (!amount && amount !== 0) return placeholder
@@ -75,13 +75,13 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(safeNumericAmount)
     }
 
-    const decimals = getDisplayDecimalPlaces(exchangeRate)
+    const audioAmount = AUDIO(safeNumericAmount)
+    const decimals = getAudioBalanceDecimalPlaces(safeNumericAmount)
 
-    return safeNumericAmount.toLocaleString('en-US', {
-      minimumFractionDigits: defaultDecimalPlaces,
+    return audioAmount.toLocaleString('en-US', {
       maximumFractionDigits: decimals
     })
-  }, [amount, exchangeRate, getDisplayDecimalPlaces, placeholder, isStablecoin])
+  }, [amount, placeholder, isStablecoin])
 
   return {
     formattedAvailableBalance,

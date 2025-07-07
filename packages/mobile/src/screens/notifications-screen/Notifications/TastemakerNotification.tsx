@@ -22,7 +22,7 @@ const messages = {
   title: "You're a Tastemaker!",
   tastemaker: 'is now trending thanks to you! Great work 🙌',
   xShare: (handle: string, trackTitle: string) =>
-    `I was one of the first to discover ${trackTitle} by ${handle} on @audius and it just made it onto trending! #Audius #AudiusTastemaker $AUDIO`
+    `I was one of the first to discover ${trackTitle} by ${handle} on @audius and it just made it onto trending! $AUDIO`
 }
 
 type TastemakerNotificationProps = {

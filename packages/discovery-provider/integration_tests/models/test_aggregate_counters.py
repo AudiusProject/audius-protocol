@@ -97,6 +97,7 @@ def test_aggregate_counters(app):
             AggregateUser(
                 user_id=1,
                 track_count=1,
+                total_track_count=1,
                 playlist_count=1,
                 album_count=1,
                 follower_count=0,
@@ -116,6 +117,7 @@ def test_aggregate_counters(app):
             AggregateUser(
                 user_id=2,
                 track_count=2,
+                total_track_count=3,
                 playlist_count=0,
                 album_count=0,
                 follower_count=1,
@@ -251,6 +253,7 @@ def test_aggregate_track_count_updates(app):
             AggregateUser(
                 user_id=1,
                 track_count=0,
+                total_track_count=1,
                 playlist_count=0,
                 album_count=0,
                 follower_count=0,
@@ -269,6 +272,7 @@ def test_aggregate_track_count_updates(app):
             AggregateUser(
                 user_id=2,
                 track_count=1,
+                total_track_count=1,
                 playlist_count=0,
                 album_count=0,
                 follower_count=0,

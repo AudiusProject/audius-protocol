@@ -14,6 +14,7 @@ import {
 } from '@audius/harmony'
 
 import { TrackTileSize } from 'components/track/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 // Wrapper component to make tiles playable
 const PlayableTile: React.FC<{
@@ -75,6 +76,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   const [canScrollRight, setCanScrollRight] = useState(true)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { isLarge } = useMedia()
+  const isMobile = useIsMobile()
 
   const updateScrollButtons = useCallback(() => {
     const container = scrollContainerRef.current
@@ -141,15 +143,18 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   }
 
   return (
-    <Flex direction='column' gap='l'>
+    <Flex direction='column' gap='l' w='100%'>
       <Flex
         gap='m'
         alignItems='center'
         alignSelf='stretch'
         justifyContent='space-between'
+        ph={isMobile ? 'l' : undefined}
       >
-        <Text variant='heading'>{title}</Text>
-        {canScrollLeft || canScrollRight ? (
+        <Text variant='title' size='l'>
+          {title}
+        </Text>
+        {!isMobile && (canScrollLeft || canScrollRight) ? (
           <Flex gap='l'>
             <IconButton
               ripple
@@ -203,15 +208,21 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
 
             // Some logic to make sure card shadows are not cut off
             marginLeft: !canScrollLeft && !isLarge ? -18 : undefined,
-            paddingRight: isLarge ? '50vw' : undefined,
-            paddingLeft: isLarge
-              ? 'calc(50vw + 2px)'
-              : !canScrollLeft
-                ? 18
+            paddingRight: isMobile
+              ? 'calc(50vw + 16px)'
+              : isLarge
+                ? '50vw'
                 : undefined,
+            paddingLeft: isMobile
+              ? 'calc(50vw + 16px)'
+              : isLarge
+                ? 'calc(50vw + 2px)'
+                : !canScrollLeft
+                  ? 18
+                  : undefined,
             paddingTop: 2
           }}
-          pb='3xl'
+          pb={isMobile ? '2xl' : '3xl'}
         >
           <Flex
             gap='m'
@@ -228,7 +239,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
                 ? data?.map((id) => <Card key={id} id={id} size='s' />)
                 : Array.from({ length: 6 }).map((_, i) => (
                     // loading skeletons
-                    <Card key={i} id={0} size='s' />
+                    <Card key={i} id={0} size={isMobile ? 'xs' : 's'} />
                   ))
               : null}
           </Flex>

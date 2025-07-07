@@ -152,8 +152,8 @@ const SendInputBody = ({
   const [destinationAddress, setDestinationAddress] = useState('')
 
   const [min, max] = useMemo(() => {
-    const min = AUDIO('0')
-    const max = AUDIO(currentBalance)
+    const min = AUDIO('0').value
+    const max = currentBalance
     return [min, max]
   }, [currentBalance])
 
@@ -225,7 +225,7 @@ const SendInputBody = ({
         <DashboardTokenValueSlider
           min={min}
           max={max}
-          value={AUDIO(amountToSendWei)}
+          value={amountToSendWei}
         />
         <TokenAmountInput
           label={messages.sendAmountLabel}

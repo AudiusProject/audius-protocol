@@ -11,18 +11,14 @@ const program = new commander.Command()
 
 const OUT_DIR = 'src/sdk/api/generator/out'
 
-const SWAGGER_JSON_PATH = path.join(OUT_DIR, 'swagger.json')
-
-const OPEN_API_JSON_PATH = path.join(OUT_DIR, 'openapi.json')
-
-const PROCESSED_JSON_PATH = path.join(OUT_DIR, 'processed.json')
+const SWAGGER_SPEC_PATH = path.join(OUT_DIR, 'swagger.yaml')
 
 const TEMPLATES_DIR = 'src/sdk/api/generator/templates'
 const GENERATED_DIR = 'src/sdk/api/generated'
 
 const spawnOpenAPIGenerator = async (openApiGeneratorArgs) => {
   console.info('Running OpenAPI Generator:')
-  const fullCmd = `docker run --add-host=host.docker.internal:host-gateway --user $(id -u):$(id -g) --rm -v "${
+  const fullCmd = `docker run --user $(id -u):$(id -g) --rm -v "${
     process.env.PWD
   }:/local" openapitools/openapi-generator-cli:v7.5.0 ${openApiGeneratorArgs.join(
     ' '
@@ -61,43 +57,9 @@ const downloadSpec = async ({ env, apiVersion, apiFlavor }) => {
   }
   const apiPath = apiFlavor === '' ? apiVersion : `${apiVersion}/${apiFlavor}`
 
-  const res = await fetch(`${baseURL}/${apiPath}/swagger.json`)
-  const json = await res.text()
-  fs.writeFileSync(path.join(process.env.PWD, SWAGGER_JSON_PATH), json)
-}
-
-const upgradeSpec = async () => {
-  const openApiGeneratorArgs = [
-    'generate',
-    '-g',
-    'openapi',
-    '-i',
-    `/local/${SWAGGER_JSON_PATH}`,
-    '-o',
-    `/local/${OUT_DIR}`,
-    '--skip-validate-spec'
-  ]
-  await spawnOpenAPIGenerator(openApiGeneratorArgs)
-}
-
-const processSpec = () => {
-  const swagger = JSON.parse(
-    fs.readFileSync(path.join(process.env.PWD, SWAGGER_JSON_PATH), 'utf-8')
-  )
-  const openApi = JSON.parse(
-    fs.readFileSync(path.join(process.env.PWD, OPEN_API_JSON_PATH), 'utf-8')
-  )
-
-  for (const [key, value] of Object.entries(swagger.definitions)) {
-    if (value.oneOf) {
-      openApi.components.schemas[key] = value
-    }
-  }
-
-  fs.writeFileSync(
-    path.join(process.env.PWD, PROCESSED_JSON_PATH),
-    JSON.stringify(openApi)
-  )
+  const res = await fetch(`${baseURL}/${apiPath}/swagger.yaml`)
+  const spec = await res.text()
+  fs.writeFileSync(path.join(process.env.PWD, SWAGGER_SPEC_PATH), spec)
 }
 
 const generate = async ({ apiFlavor, generator }) => {
@@ -107,10 +69,9 @@ const generate = async ({ apiFlavor, generator }) => {
     '-g',
     generator,
     '-i',
-    `/local/${PROCESSED_JSON_PATH}`,
+    `/local/${SWAGGER_SPEC_PATH}`,
     '-o',
     `/local/${GENERATED_DIR}/${outputFolderName}`,
-    '--skip-validate-spec',
     '--additional-properties=modelPropertyNaming=camelCase,useSingleRequestParameter=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=model',
     '-t',
     `/local/${TEMPLATES_DIR}/${generator}`
@@ -128,8 +89,6 @@ program
   .action(async (options) => {
     clearOutput(options)
     await downloadSpec(options)
-    await upgradeSpec(options)
-    processSpec(options)
     await generate(options)
   })
 

@@ -42,5 +42,9 @@ export const messages = {
   healthzTitle: 'Health Monitor (Healthz)',
   healthzDescription:
     'Access the health monitoring dashboard for Audius network services including discovery nodes, content nodes, and other protocol infrastructure.',
-  healthzButton: 'Open Healthz Dashboard'
+  healthzButton: 'Open Healthz Dashboard',
+  userIdParserTitle: 'User ID Parser',
+  userIdParserDescription:
+    'Parse hash IDs to decode them into numeric user IDs. Useful for debugging and development work with user identifiers.',
+  userIdParserButton: 'Open User ID Parser'
 }

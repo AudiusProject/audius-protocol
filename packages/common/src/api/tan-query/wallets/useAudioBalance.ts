@@ -254,7 +254,7 @@ function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
   const queryClient = yield* getContext<QueryClient>('queryClient')
   let totalBalance: AudioWei = AUDIO(0).value
   for (const wallet of wallets) {
-    const balance = (yield* call(queryClient.fetchQuery, {
+    const balance = (yield* call([queryClient, queryClient.fetchQuery], {
       queryKey: getWalletAudioBalanceQueryKey({
         address: wallet.address,
         chain: wallet.chain,
@@ -294,7 +294,7 @@ export function* getAccountTotalAudioBalanceSaga() {
   const sdk = yield* call(getSDK)
   const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const currentUserId = yield* call(queryCurrentUserId)
-  const connectedWallets = (yield* call(queryClient.fetchQuery, {
+  const connectedWallets = (yield* call([queryClient, queryClient.fetchQuery], {
     queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
     queryFn: async () => {
       return getConnectedWalletsQueryFn({
@@ -310,4 +310,98 @@ export function* getAccountTotalAudioBalanceSaga() {
   )
 
   return AUDIO(accountBalance + connectedWalletsBalance).value
+}
+
+/**
+ * Optimistically updates the user's SOL wallet balance in the cache.
+ * Use this to provide immediate UI feedback before the transaction confirms.
+ *
+ * @param amount - The amount to add (positive) or subtract (negative) from the current balance
+ */
+export function* optimisticallyUpdateUserSolBalance(amount: AudioWei) {
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  const currentUserId = yield* call(queryCurrentUserId)
+  const user = yield* call(queryUser, currentUserId)
+
+  if (!user?.spl_wallet) return
+
+  // Update both staked and non-staked balance queries for the SOL wallet
+  const solWalletQueries = [
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: true
+    },
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: false
+    }
+  ]
+
+  for (const queryParams of solWalletQueries) {
+    const queryKey = getWalletAudioBalanceQueryKey(queryParams)
+
+    yield* call(
+      [queryClient, queryClient.setQueryData],
+      queryKey,
+      (oldBalance: AudioWei | undefined) => {
+        const currentBalance = oldBalance ?? AUDIO(0).value
+        const newBalance = AUDIO(currentBalance + amount).value
+        // Ensure balance doesn't go negative
+        return newBalance >= 0 ? newBalance : AUDIO(0).value
+      }
+    )
+  }
+}
+
+/**
+ * Optimistically decreases the user's SOL wallet balance.
+ * Use this when sending AUDIO to provide immediate UI feedback.
+ *
+ * @param amount - The amount to subtract from the current balance
+ */
+export function* optimisticallyDecreaseUserSolBalance(amount: AudioWei) {
+  yield* call(optimisticallyUpdateUserSolBalance, AUDIO(-amount).value)
+}
+
+/**
+ * Optimistically increases the user's SOL wallet balance.
+ * Use this when receiving AUDIO to provide immediate UI feedback.
+ *
+ * @param amount - The amount to add to the current balance
+ */
+export function* optimisticallyIncreaseUserSolBalance(amount: AudioWei) {
+  yield* call(optimisticallyUpdateUserSolBalance, amount)
+}
+
+/**
+ * Reverts an optimistic balance update by invalidating the cache.
+ * Use this when a transaction fails and you need to revert to the real balance.
+ */
+export function* revertOptimisticUserSolBalance() {
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  const currentUserId = yield* call(queryCurrentUserId)
+  const user = yield* call(queryUser, currentUserId)
+
+  if (!user?.spl_wallet) return
+
+  // Invalidate both staked and non-staked balance queries
+  const solWalletQueries = [
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: true
+    },
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: false
+    }
+  ]
+
+  for (const queryParams of solWalletQueries) {
+    const queryKey = getWalletAudioBalanceQueryKey(queryParams)
+    yield* call([queryClient, queryClient.invalidateQueries], { queryKey })
+  }
 }

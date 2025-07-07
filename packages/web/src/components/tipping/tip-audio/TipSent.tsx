@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
 import { Name, type SolanaWalletAddress } from '@audius/common/models'
-import { tippingSelectors } from '@audius/common/store'
+import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { IconCheck } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -21,8 +22,8 @@ const messages = {
   sending: 'SENDING',
   sentSuccessfully: 'SENT SUCCESSFULLY',
   supportOnX: 'Share your support on X!',
-  xCopyPrefix: 'I just tipped ',
-  xCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip'
+  xShare: (recipient: string, amount: string, price?: string) =>
+    `I just tipped ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
 }
 
 export const TipSent = () => {
@@ -35,6 +36,11 @@ export const TipSent = () => {
     })
   })
   const { accountHandle, accountErcWallet, accountUserId } = accountData ?? {}
+  const { data: tokenPriceData } = useTokenPrice(
+    TOKEN_LISTING_MAP.AUDIO.address
+  )
+
+  const tokenPrice = tokenPriceData?.price
 
   if (!accountErcWallet) {
     throw new Error('Failed to get account ERC wallet')
@@ -44,9 +50,7 @@ export const TipSent = () => {
 
   const handleShareData = useCallback(
     (xHandle: string) => {
-      const formattedSendAmount = formatNumberCommas(sendAmount)
-      const recipientAndAmount = `${xHandle} ${formattedSendAmount}`
-      const shareText = `${messages.xCopyPrefix}${recipientAndAmount}${messages.xCopySuffix}`
+      const shareText = messages.xShare(xHandle, sendAmount, tokenPrice)
 
       const analytics = make(Name.TIP_AUDIO_TWITTER_SHARE, {
         senderHandle: accountHandle ?? '',
@@ -58,7 +62,7 @@ export const TipSent = () => {
 
       return { shareText, analytics }
     },
-    [sendAmount, accountHandle, recipient?.handle, source]
+    [sendAmount, accountHandle, recipient?.handle, source, tokenPrice]
   )
 
   const recordDetailedAnalytics = useCallback(async () => {

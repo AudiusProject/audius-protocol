@@ -150,9 +150,7 @@ export const UserLink = (props: UserLinkProps) => {
           columnGap: spacing.xs,
           alignItems: 'center',
           lineHeight: 'normal',
-          display: 'inline-flex',
-          // Negative margin is needed to fix user-link height
-          marginTop: '-4px'
+          display: 'inline-flex'
         }}
       >
         <ArtistPopover

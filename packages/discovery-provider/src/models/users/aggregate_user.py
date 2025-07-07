@@ -9,6 +9,7 @@ class AggregateUser(Base, RepresentableMixin):
 
     user_id = Column(Integer, primary_key=True)
     track_count = Column(BigInteger, server_default=text("0"))
+    total_track_count = Column(BigInteger, server_default=text("0"))
     playlist_count = Column(BigInteger, server_default=text("0"))
     album_count = Column(BigInteger, server_default=text("0"))
     follower_count = Column(BigInteger, server_default=text("0"))

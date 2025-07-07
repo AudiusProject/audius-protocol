@@ -7,11 +7,13 @@ import {
   reactionOrder,
   ReactionTypes,
   getReactionFromRawValue,
-  useUser
+  useUser,
+  useTokenPrice
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { TipReceiveNotification } from '@audius/common/store'
+import { TipReceiveNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
+import { AUDIO } from '@audius/fixed-decimal'
 
 import { make } from 'common/store/analytics/actions'
 import { XShareButton } from 'components/x-share-button/XShareButton'
@@ -38,8 +40,8 @@ const messages = {
   audio: '$AUDIO',
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
-  xShare: (senderHandle: string, amount: number) =>
-    `Thanks ${senderHandle} for the ${amount} $AUDIO tip on @audius! #Audius #AUDIOTip`
+  xShare: (senderHandle: string, amount: number, price?: string) =>
+    `Thanks ${senderHandle} for the ${amount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} tip on @audius!`
 }
 
 type TipReceivedNotificationProps = {
@@ -59,6 +61,11 @@ export const TipReceivedNotification = (
   } = notification
 
   const { data: user } = useUser(notification.entityId)
+  const { data: tokenPriceData } = useTokenPrice(
+    TOKEN_LISTING_MAP.AUDIO.address
+  )
+
+  const tokenPrice = tokenPriceData?.price
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification
@@ -94,7 +101,7 @@ export const TipReceivedNotification = (
 
   const handleShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.xShare(senderHandle, uiAmount)
+      const shareText = messages.xShare(senderHandle, uiAmount, tokenPrice)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE,
         { text: shareText }
@@ -102,7 +109,7 @@ export const TipReceivedNotification = (
 
       return { shareText, analytics }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null
