@@ -7,6 +7,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.share import Share
 from src.models.social.subscription import Subscription
 from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
@@ -25,6 +26,7 @@ action_to_record_types = {
     Action.UNSAVE: [EntityType.SAVE],
     Action.REPOST: [EntityType.REPOST],
     Action.UNREPOST: [EntityType.REPOST],
+    Action.SHARE: [EntityType.SHARE],
     Action.SUBSCRIBE: [EntityType.SUBSCRIPTION],
     Action.UNSUBSCRIBE: [EntityType.SUBSCRIPTION],
 }
@@ -42,6 +44,7 @@ create_social_action_types = {
     Action.FOLLOW,
     Action.SAVE,
     Action.REPOST,
+    Action.SHARE,
     Action.SUBSCRIBE,
 }
 delete_social_action_types = {
@@ -56,7 +59,7 @@ def create_social_record(params: ManageEntityParameters):
     validate_social_feature(params)
 
     record_types = action_to_record_types[params.action]
-    create_record: Union[Save, Follow, Repost, Subscription, None] = None
+    create_record: Union[Save, Follow, Repost, Share, Subscription, None] = None
     for record_type in record_types:
         if not validate_duplicate_social_feature(record_type, params):
             continue
@@ -75,6 +78,8 @@ def create_social_record(params: ManageEntityParameters):
             create_record = create_save(params)
         elif record_type == EntityType.REPOST:
             create_record = create_repost(params)
+        elif record_type == EntityType.SHARE:
+            create_record = create_share(params)
         elif record_type == EntityType.SUBSCRIPTION:
             create_record = Subscription(
                 blockhash=params.event_blockhash,
@@ -189,6 +194,20 @@ def create_repost(params):
     return create_record
 
 
+def create_share(params):
+    record = Share(
+        blockhash=params.event_blockhash,
+        blocknumber=params.block_number,
+        created_at=params.block_datetime,
+        txhash=params.txhash,
+        user_id=params.user_id,
+        share_item_id=params.entity_id,
+        share_type=params.entity_type.lower(),
+        slot=params.slot if hasattr(params, "slot") else None,
+    )
+    return record
+
+
 def delete_social_record(params):
     validate_social_feature(params)
 
@@ -298,10 +317,17 @@ def validate_duplicate_social_feature(
 
     existing_record = cast(dict, params.existing_records.get(record_type, {})).get(key)
 
+    # TODO: Make sure this works correctly for share, which doesn't have an is_delete column
     if existing_record:
         duplicate_create = (
             params.action
-            in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
+            in (
+                Action.REPOST,
+                Action.SAVE,
+                Action.SHARE,
+                Action.FOLLOW,
+                Action.SUBSCRIBE,
+            )
             and not existing_record.is_delete
         )
         duplicate_delete = (
