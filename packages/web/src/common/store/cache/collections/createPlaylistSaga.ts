@@ -34,7 +34,6 @@ import { Id, OptionalId } from '@audius/sdk'
 import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -166,8 +165,6 @@ function* optimisticallySavePlaylist(
       category: LibraryCategory.Favorite
     })
   )
-
-  yield* call(addPlaylistsNotInLibrary)
 }
 
 function* createAndConfirmPlaylist(
@@ -230,8 +227,6 @@ function* createAndConfirmPlaylist(
     }
 
     yield* call(updateCollectionData, [reformattedPlaylist])
-
-    yield* call(addPlaylistsNotInLibrary)
 
     yield* put(
       make(Name.PLAYLIST_COMPLETE_CREATE, {

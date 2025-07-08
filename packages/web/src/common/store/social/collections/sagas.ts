@@ -40,10 +40,7 @@ import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import {
-  addPlaylistsNotInLibrary,
-  removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
+import { removePlaylistFromLibrary } from 'common/store/playlist-library/sagas'
 import { audioNftPlaylistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -419,8 +416,6 @@ export function* saveCollectionAsync(
       permalink: collection.permalink || ''
     })
   )
-
-  yield* call(addPlaylistsNotInLibrary)
 
   yield* put(
     addLocalCollection({
