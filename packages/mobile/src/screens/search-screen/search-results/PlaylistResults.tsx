@@ -72,6 +72,7 @@ export const PlaylistResults = () => {
             height: '100%',
             paddingVertical: spacing.m
           }}
+          ListFooterComponent={<Flex h={200} />}
           keyboardShouldPersistTaps='handled'
           isLoading={isLoading}
           collection={playlists}
