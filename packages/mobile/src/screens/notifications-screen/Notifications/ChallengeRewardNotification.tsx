@@ -31,8 +31,7 @@ const messages = {
     `You've earned ${formatNumber(amount)} $AUDIO`,
   referredText: 'for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: 'for completing this challenge!',
-  xShareText:
-    'I earned $AUDIO for completing challenges on @audius #AudioRewards',
+  xShareText: 'I earned $AUDIO for completing challenges on @audius',
   streakMilestone: (amountEarned: number, listenStreak: number) =>
     `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You'll now earn an additional $AUDIO reward for every day you keep your streak going!`,
   streakMaintenance: (amountEarned: number) =>

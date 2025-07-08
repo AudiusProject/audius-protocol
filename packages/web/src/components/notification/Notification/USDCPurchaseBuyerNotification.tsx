@@ -33,7 +33,7 @@ const messages = {
   xShare: (title: string, sellerUsername: string, type: string) =>
     `I bought the ${lowerCase(
       type
-    )} ${title} by ${sellerUsername} on @Audius! $AUDIO #AudiusPremium`
+    )} ${title} by ${sellerUsername} on @Audius! $AUDIO`
 }
 
 type USDCPurchaseBuyerNotificationProps = {

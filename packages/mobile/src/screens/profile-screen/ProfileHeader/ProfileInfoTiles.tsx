@@ -48,6 +48,7 @@ import { ProfileTierTile } from './ProfileTierTile'
 
 const MAX_CARD_PROFILE_PICTURES = 4
 const PROFILE_CARD_PICTURE_SIZE = 24
+const DEFAULT_RELATED_ARTISTS_COUNT = 100
 
 const useInfoTileStyles = makeStyles(({ spacing }) => ({
   tile: { flexDirection: 'column', height: 64 },
@@ -292,7 +293,13 @@ const RelatedArtistsTile = ({ userId }: { userId: number }) => {
       content={
         <UserListWithCount
           users={relatedArtists}
-          count={isLoading ? MAX_CARD_PROFILE_PICTURES : relatedArtists.length}
+          count={
+            isLoading
+              ? MAX_CARD_PROFILE_PICTURES
+              : relatedArtists.length < MAX_CARD_PROFILE_PICTURES
+                ? relatedArtists.length
+                : DEFAULT_RELATED_ARTISTS_COUNT
+          }
           loading={isLoading}
           showCount={false}
         />

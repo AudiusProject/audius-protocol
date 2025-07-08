@@ -29,7 +29,7 @@ import { XButton } from '../x-button'
 const messages = {
   success: 'Your Purchase Was Successful!',
   shareXText: (contentType: string, trackTitle: string, handle: string) =>
-    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
+    `I bought the ${contentType} ${trackTitle} by ${handle} on @Audius! $AUDIO`,
   view: (contentType: string) => `View ${capitalize(contentType)}`,
   repost: 'Repost',
   reposted: 'Reposted'

@@ -32,7 +32,6 @@ import AppRedirectListener from 'components/app-redirect-popover/AppRedirectList
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
-import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
@@ -61,6 +60,7 @@ import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
 import DevTools from 'pages/dev-tools/DevTools'
 import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
+import UserIdParserPage from 'pages/dev-tools/UserIdParserPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
@@ -83,7 +83,6 @@ import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import { RewardsPage } from 'pages/rewards-page/RewardsPage'
-import { SearchPage } from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
@@ -200,7 +199,8 @@ const {
   AIRDROP_PAGE,
   WALLET_PAGE,
   DEV_TOOLS_PAGE,
-  SOLANA_TOOLS_PAGE
+  SOLANA_TOOLS_PAGE,
+  USER_ID_PARSER_PAGE
 } = route
 
 // TODO: do we need to lazy load edit?
@@ -227,14 +227,8 @@ const validSearchCategories = [
 initializeSentry()
 
 const WebPlayer = (props) => {
-  const {
-    isSearchExploreEnabled,
-    isProduction,
-    history,
-    location,
-    mainContentRef,
-    setMainContentRef
-  } = props
+  const { isProduction, history, location, mainContentRef, setMainContentRef } =
+    props
 
   const dispatch = useDispatch()
 
@@ -489,7 +483,8 @@ const WebPlayer = (props) => {
     <div className={styles.root}>
       <AppBannerWrapper>
         <DownloadAppBanner />
-        <TermsOfServiceUpdateBanner />
+        {/* Re-enable for ToS updates */}
+        {/* <TermsOfServiceUpdateBanner /> */}
         <Web3ErrorBanner />
         {showWebUpdateBanner ? (
           <UpdateAppBanner
@@ -710,10 +705,8 @@ const WebPlayer = (props) => {
                         }).toString()
                       }}
                     />
-                  ) : isSearchExploreEnabled && !isMobile ? (
-                    <ExplorePage />
                   ) : (
-                    <SearchPage />
+                    <ExplorePage />
                   )
                 }}
               />
@@ -748,6 +741,13 @@ const WebPlayer = (props) => {
                   exact
                   path={SOLANA_TOOLS_PAGE}
                   component={SolanaToolsPage}
+                />
+              ) : null}
+              {!isProduction ? (
+                <Route
+                  exact
+                  path={USER_ID_PARSER_PAGE}
+                  component={UserIdParserPage}
                 />
               ) : null}
 

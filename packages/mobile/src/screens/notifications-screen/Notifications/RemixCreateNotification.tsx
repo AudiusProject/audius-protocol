@@ -22,7 +22,7 @@ const messages = {
   title: 'New Remix of Your Track',
   by: 'by',
   shareXText: (trackTitle: string, handle: string) =>
-    `New remix of ${trackTitle} by ${handle} on @audius #Audius`
+    `New remix of ${trackTitle} by ${handle} on @audius`
 }
 
 type RemixCreateNotificationProps = {

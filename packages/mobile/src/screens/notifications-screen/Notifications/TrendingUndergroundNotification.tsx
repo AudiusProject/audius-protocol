@@ -25,7 +25,7 @@ const messages = {
   is: 'is',
   trending: 'on Underground Trending right now!',
   xShareText: (entityTitle: string) =>
-    `My track ${entityTitle} made it to the top of underground trending on @audius! Check it out! #Audius #AudiusTrending $AUDIO `
+    `My track ${entityTitle} made it to the top of underground trending on @audius! Check it out! $AUDIO`
 }
 
 type TrendingUndergroundNotificationProps = {

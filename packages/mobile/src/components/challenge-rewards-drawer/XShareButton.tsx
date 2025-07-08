@@ -8,7 +8,7 @@ import { Button, IconX } from '@audius/harmony-native'
 const messages = {
   buttonTitleFriends: 'Share Invite With Your Friends',
   buttonTitleFans: 'Share Invite With Your Fans',
-  xCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #Audius #AudioRewards\n\n`
+  xCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n`
 }
 
 export const XShareButton = ({

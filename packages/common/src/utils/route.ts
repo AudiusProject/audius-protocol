@@ -85,6 +85,7 @@ export const WALLET_PAGE = '/wallet'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
+export const USER_ID_PARSER_PAGE = '/dev-tools/user-id-parser'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {

@@ -39,7 +39,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexShrink: 1
   },
   textContainer: {
-    flex: 1,
+    flexShrink: 1,
     minWidth: 0 // Needed for text truncation to work properly
   }
 }))

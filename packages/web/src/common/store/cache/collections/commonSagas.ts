@@ -45,10 +45,7 @@ import { all, call, put, takeEvery, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import {
-  addPlaylistsNotInLibrary,
-  removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
+import { removePlaylistFromLibrary } from 'common/store/playlist-library/sagas'
 import { getUSDCMetadata } from 'common/store/upload/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -708,7 +705,6 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
             })
           )
         ])
-        yield* call(addPlaylistsNotInLibrary)
         yield* put(
           collectionActions.deletePlaylistFailed(
             error,
