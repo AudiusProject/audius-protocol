@@ -126,9 +126,7 @@ const UserBadges = ({
             transition: `opacity ${motion.quick}`,
             '&:hover': {
               opacity: 0.6
-            },
-            width: iconSizes[size],
-            height: iconSizes[size]
+            }
           }}
         >
           {cloneElement(audioTierMap[tier]!, { size })}

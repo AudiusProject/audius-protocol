@@ -23,7 +23,6 @@ import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
 import { ToastContext } from 'components/toast/ToastContext'
-import { HexagonalIcon } from 'components/user-badges/HexagonalIcon'
 
 const messages = {
   ...buySellMessages,
