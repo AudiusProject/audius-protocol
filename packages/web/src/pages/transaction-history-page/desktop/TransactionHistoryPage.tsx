@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useCurrentAccount } from '@audius/common/api'
 import { useFeatureFlag, useIsArtist } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -41,7 +42,9 @@ type TableMetadata = {
 export const TransactionHistoryPage = ({
   tableView
 }: TransactionHistoryPageProps) => {
-  const isArtist = useIsArtist()
+  const { data: isArtist } = useCurrentAccount({
+    select: (account) => account?.hasTracks
+  })
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
 
