@@ -14,5 +14,7 @@ export const exploreMessages = {
   viewAll: 'View All',
   layoutOptionsLabel: 'View As',
   feelingLucky: 'Feeling Lucky?',
-  imFeelingLucky: "I'm Feeling Lucky"
+  imFeelingLucky: "I'm Feeling Lucky",
+  recentlyPlayed: 'Recently Played',
+  activeDiscussions: 'Active Discussions'
 }

@@ -100,6 +100,8 @@ export * from './tan-query/tracks/useRecommendedTracks'
 export * from './tan-query/tracks/useRecentPremiumTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 export * from './tan-query/tracks/useFeelingLuckyTrack'
+export * from './tan-query/tracks/useRecentlyPlayedTracks'
+export * from './tan-query/tracks/useRecentlyCommentedTracks'
 
 // Users
 export * from './tan-query/users/useUpdateProfile'

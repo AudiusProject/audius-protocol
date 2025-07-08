@@ -5,7 +5,8 @@ import {
   useRecommendedTracks,
   useRecentPremiumTracks,
   useBestSelling,
-  useFeelingLuckyTracks
+  useFeelingLuckyTracks,
+  useRecentlyPlayedTracks
 } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { UID, ID } from '@audius/common/models'
@@ -39,6 +40,7 @@ import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { RemixContestCard } from 'components/remix-contest-card'
+import { TrackCard } from 'components/track/TrackCard'
 import { TrackTile } from 'components/track/desktop/TrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { UserCard } from 'components/user-card'
@@ -138,6 +140,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const { data: exploreContent } = useExploreContent()
   const { data: recommendedTracks } = useRecommendedTracks()
+  const { data: recentlyPlayed } = useRecentlyPlayedTracks()
+  const { data: recentlyCommentedTracks } = useRecentlyPlayedTracks()
   const { data: recentPremiumTracks } = useRecentPremiumTracks()
   const { data: bestSelling } = useBestSelling()
   const { data: feelingLuckyTrack, refetch: refetchFeelingLucky } =
@@ -352,6 +356,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 Tile={TrackTile}
               />
               <ExploreSection
+                title={messages.recentlyPlayed}
+                data={recentlyPlayed}
+                Card={TrackCard}
+              />
+
+              <ExploreSection
                 title={messages.featuredPlaylists}
                 data={exploreContent?.featuredPlaylists}
                 Card={CollectionCard}
@@ -372,6 +382,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 title={messages.labelSpotlight}
                 data={exploreContent?.featuredLabels}
                 Card={UserCard}
+              />
+              <ExploreSection
+                title={messages.activeDiscussions}
+                data={recentlyCommentedTracks}
+                Tile={TrackTile}
               />
             </Flex>
             {/* Explore by mood */}
