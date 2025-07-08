@@ -448,7 +448,11 @@ export const TrackTile = ({
                 <Skeleton className={styles.skeleton} height='20px' />
               ) : null}
             </TextLink>
-            <UserLink userId={user_id} badgeSize='xs'>
+            <UserLink
+              userId={user_id}
+              badgeSize='xs'
+              css={{ marginTop: '-4px' }}
+            >
               {loading ? (
                 <>
                   <Text>{messages.loading}</Text>

@@ -29,6 +29,7 @@ export * from './tan-query/events'
 
 // Explore
 export * from './tan-query/collection/useExploreContent'
+export * from './tan-query/explore/useBestSelling'
 
 // Lineups
 export * from './tan-query/lineups/useFeed'
@@ -95,6 +96,8 @@ export * from './tan-query/tracks/useFileSizes'
 export * from './tan-query/tracks/useTrackFileInfo'
 export * from './tan-query/tracks/useUpdateTrack'
 export * from './tan-query/tracks/useRemixedTracks'
+export * from './tan-query/tracks/useRecommendedTracks'
+export * from './tan-query/tracks/useRecentPremiumTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 
 // Users

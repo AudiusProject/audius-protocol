@@ -16,7 +16,7 @@ import {
 
 import { QUERY_KEYS } from '../queryKeys'
 
-import { USER_BANK_MANAGED_TOKENS } from './constants'
+import { createUserBankManagedTokens } from './constants'
 import { updateAudioBalanceOptimistically } from './optimisticUpdates'
 import {
   SwapErrorType,
@@ -32,7 +32,8 @@ import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk, env } =
+    useQueryContext()
   const { data: user } = useCurrentAccountUser()
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
@@ -83,10 +84,11 @@ export const useSwapTokens = () => {
         })
 
         // ---------- 3. Prepare Transaction Instructions ----------
+        const userBankManagedTokens = createUserBankManagedTokens(env)
         const inputTokenConfig =
-          USER_BANK_MANAGED_TOKENS[inputMintUiAddress.toUpperCase()]
+          userBankManagedTokens[inputMintUiAddress.toUpperCase()]
         const outputTokenConfig =
-          USER_BANK_MANAGED_TOKENS[outputMintUiAddress.toUpperCase()]
+          userBankManagedTokens[outputMintUiAddress.toUpperCase()]
 
         // --- 3a. Handle Input Token (if user bank managed) ---
         errorStage = 'INPUT_TOKEN_PREPARATION'

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import { SLIPPAGE_BPS, useSwapTokens, useCurrentAccountUser } from '~/api'
+import { SLIPPAGE_BPS, useCurrentAccountUser, useSwapTokens } from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 
@@ -10,8 +10,8 @@ import type {
   BuySellTab,
   Screen,
   SwapResult,
-  TransactionData,
-  TokenPair
+  TokenPair,
+  TransactionData
 } from './types'
 
 type UseBuySellSwapProps = {
