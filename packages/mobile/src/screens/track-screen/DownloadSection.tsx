@@ -50,8 +50,7 @@ const messages = {
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
     `Fans can unlock & download these files for a one time purchase of ${price}`,
-  downloadAll: 'Download All',
-  download: 'Download'
+  downloadAll: 'Download All'
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -155,17 +154,6 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
     trackId
   ])
 
-  const hasStems = stemTracks.length > 0
-  const downloadButtonText = hasStems ? messages.downloadAll : messages.download
-
-  const handleDownloadButtonPress = useCallback(() => {
-    if (hasStems) {
-      handleDownloadAll()
-    } else {
-      handleDownload({ trackIds: [trackId] })
-    }
-  }, [hasStems, handleDownloadAll, handleDownload, trackId])
-
   const renderHeader = () => {
     return (
       <Flex gap='l' column pb={isExpanded ? 'l' : undefined}>
@@ -216,10 +204,10 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           <Button
             variant='secondary'
             size='small'
-            onPress={handleDownloadButtonPress}
+            onPress={handleDownloadAll}
             fullWidth
           >
-            {downloadButtonText}
+            {messages.downloadAll}
           </Button>
         ) : null}
         {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (
