@@ -498,14 +498,16 @@ export const AudioPlayer = () => {
       const isLongFormContent =
         queueTracks[playerIndex]?.track?.genre === Genre.PODCASTS ||
         queueTracks[playerIndex]?.track?.genre === Genre.AUDIOBOOKS
+
+      // Always set the correct playback rate when the active track changes
+      const newRate = isLongFormContent
+        ? playbackRateValueMap[playbackRate]
+        : 1.0
+      await TrackPlayer.setRate(newRate)
+
+      // Update lock screen and notification controls only when long-form content status changes
       if (isLongFormContent !== isLongFormContentRef.current) {
         isLongFormContentRef.current = isLongFormContent
-        // Update playback rate based on if the track is a podcast or not
-        const newRate = isLongFormContent
-          ? playbackRateValueMap[playbackRate]
-          : 1.0
-        await TrackPlayer.setRate(newRate)
-        // Update lock screen and notification controls
         await updatePlayerOptions(isLongFormContent)
       }
 
