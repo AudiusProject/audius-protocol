@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { useCurrentAccount } from '@audius/common/api'
-import { useFeatureFlag, useIsArtist } from '@audius/common/hooks'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import {
   Button,
