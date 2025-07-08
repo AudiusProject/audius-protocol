@@ -790,6 +790,11 @@ export const AudioPlayer = () => {
     }
   }, [repeatMode])
 
+  const handlePlaybackRateChange = useCallback(async () => {
+    if (!isLongFormContentRef.current) return
+    await TrackPlayer.setRate(playbackRateValueMap[playbackRate])
+  }, [playbackRate])
+
   useEffect(() => {
     if (isAudioSetup) {
       handleRepeatModeChange()
@@ -828,6 +833,10 @@ export const AudioPlayer = () => {
       handleTogglePlay()
     }
   }, [handleTogglePlay, playing, isAudioSetup])
+
+  useEffect(() => {
+    handlePlaybackRateChange()
+  }, [handlePlaybackRateChange, playbackRate])
 
   useEffect(() => {
     // Stop playback if we have unloaded a uid from the player
