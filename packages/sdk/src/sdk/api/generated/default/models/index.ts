@@ -45,6 +45,7 @@ export * from './GetChallenges';
 export * from './GetSupportedUsers';
 export * from './GetSupporters';
 export * from './GetTipsResponse';
+export * from './HistoryResponse';
 export * from './ListenCount';
 export * from './MonthlyAggregatePlay';
 export * from './MutualFollowersResponse';
