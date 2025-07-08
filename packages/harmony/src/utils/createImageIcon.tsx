@@ -8,6 +8,7 @@ export type IconProps = {
   size?: IconSize
   className?: string
   style?: CSSProperties
+  hex?: boolean
 }
 
 export const createImageIcon = (src: string) => {
@@ -16,7 +17,8 @@ export const createImageIcon = (src: string) => {
     height,
     size = 'm',
     className,
-    style
+    style,
+    hex = false
   }) => {
     const finalWidth =
       width ?? (size ? iconSizes[size as keyof typeof iconSizes] : 20)
@@ -29,6 +31,9 @@ export const createImageIcon = (src: string) => {
         height={finalHeight}
         className={className}
         style={style}
+        css={{
+          mask: hex ? 'url(#rounded-hex-clip-path)' : undefined
+        }}
         alt=''
       />
     )
