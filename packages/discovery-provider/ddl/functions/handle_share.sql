@@ -1,4 +1,5 @@
 create or replace function handle_share() returns trigger as $$
+begin
   -- Ensure aggregate_user exists for this user
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
 
