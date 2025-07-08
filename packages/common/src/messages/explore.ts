@@ -12,5 +12,7 @@ export const exploreMessages = {
   exploreByMood: 'Explore by Mood',
   bestOfAudius: 'Best of Audius',
   viewAll: 'View All',
-  layoutOptionsLabel: 'View As'
+  layoutOptionsLabel: 'View As',
+  feelingLucky: 'Feeling Lucky?',
+  imFeelingLucky: "I'm Feeling Lucky"
 }
