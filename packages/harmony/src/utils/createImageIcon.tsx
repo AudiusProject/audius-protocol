@@ -33,7 +33,7 @@ export const createImageIcon = (src: string) => {
         className={className}
         style={style}
         css={{
-          mask: hex ? `url(#${roundedHexClipPath})` : undefined
+          clipPath: hex ? `url(#${roundedHexClipPath})` : undefined
         }}
         alt=''
       />
