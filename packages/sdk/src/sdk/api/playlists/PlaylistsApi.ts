@@ -323,7 +323,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /** @hidden
-   * Favorite a playlist
+   * Share a playlist
    */
   async sharePlaylist(
     params: SharePlaylistRequest,
