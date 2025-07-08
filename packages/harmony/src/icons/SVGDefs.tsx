@@ -1,5 +1,7 @@
 import { useTheme } from '@emotion/react'
 
+export const roundedHexClipPath = 'rounded-hex-clip-path'
+
 export const SVGDefs = () => {
   const { color } = useTheme()
   return (
@@ -21,7 +23,7 @@ export const SVGDefs = () => {
       <svg width='0' height='0' style={{ position: 'absolute' }}>
         <defs>
           <mask
-            id='rounded-hex-clip-path'
+            id={roundedHexClipPath}
             maskUnits='objectBoundingBox'
             maskContentUnits='objectBoundingBox'
           >

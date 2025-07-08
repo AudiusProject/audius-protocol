@@ -1,6 +1,7 @@
 import type { CSSProperties, FC } from 'react'
 
 import { IconSize, iconSizes } from '../foundations/spacing'
+import { roundedHexClipPath } from '../icons/SVGDefs'
 
 export type IconProps = {
   width?: number | string
@@ -32,7 +33,7 @@ export const createImageIcon = (src: string) => {
         className={className}
         style={style}
         css={{
-          mask: hex ? 'url(#rounded-hex-clip-path)' : undefined
+          mask: hex ? `url(#${roundedHexClipPath})` : undefined
         }}
         alt=''
       />
