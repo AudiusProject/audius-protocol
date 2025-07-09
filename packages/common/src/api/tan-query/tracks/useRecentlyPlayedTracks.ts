@@ -32,11 +32,11 @@ export const useRecentlyPlayedTracks = <TResult = ID[]>(
     queryFn: async () => {
       if (!currentUserId) return []
       const sdk = await audiusSdk()
+      console.log('asdf currentUserId', currentUserId)
       const { data = [] } = await sdk.full.users.getUsersTrackHistory({
         id: Id.parse(currentUserId),
         limit: 30
       })
-      console.log('asdf data: ', data)
       const tracks = transformAndCleanList(
         data.map((trackActivity) => trackActivity.item),
         userTrackMetadataFromSDK

@@ -19,7 +19,9 @@ export const getFeelingLuckyTracksQueryKey = ({
   userId,
   limit
 }: UseFeelingLuckyTracksArgs) => {
-  return [QUERY_KEYS.feelingLuckyTracks, userId, limit] as unknown as QueryKey<ID[]>
+  return [QUERY_KEYS.feelingLuckyTracks, userId, limit] as unknown as QueryKey<
+    ID[]
+  >
 }
 
 export const useFeelingLuckyTracks = <TResult = ID[]>(
@@ -39,7 +41,6 @@ export const useFeelingLuckyTracks = <TResult = ID[]>(
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit
       })
-      console.log('asdf data: ', data)
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
       primeTrackData({
