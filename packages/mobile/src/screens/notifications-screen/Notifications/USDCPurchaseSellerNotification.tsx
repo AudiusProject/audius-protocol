@@ -32,7 +32,7 @@ const messages = {
       {buyerUser?.handle ? messages.userNameLink(buyerUser) : 'someone'}
       {` just bought your ${entityType} `}
       {messages.entityLink(content)}
-      {' for '}
+      {' for $'}
       {formattedAmount}
       {'!'}
     </>
@@ -61,7 +61,10 @@ export const USDCPurchaseSellerNotification = (
 
   const totalAmount =
     USDC(BigInt(amount)).value + USDC(BigInt(extraAmount)).value
-  const formattedAmount = USDC(totalAmount).toLocaleString()
+  const formattedAmount = USDC(totalAmount).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
