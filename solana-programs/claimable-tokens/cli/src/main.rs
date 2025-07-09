@@ -468,8 +468,8 @@ fn main() -> anyhow::Result<()> {
             let _base_account = (|| -> anyhow::Result<_> {
                 let mint = pubkey_of(args, "mint").unwrap();
                 let program_id = pubkey_of(args, "program_id").unwrap();
-                println!("Recieved mint {:?}", mint);
-                println!("Recieved program_id {:?}", program_id);
+                println!("Received mint {:?}", mint);
+                println!("Received program_id {:?}", program_id);
                 let program_base_address =
                     Pubkey::find_program_address(&[&mint.to_bytes()[..32]], &program_id);
                 println!("Recieved program_base_address {:?}", program_base_address);
