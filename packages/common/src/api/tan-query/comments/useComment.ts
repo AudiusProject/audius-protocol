@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { commentFromSDK } from '~/adapters'
