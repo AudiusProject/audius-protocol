@@ -30,6 +30,14 @@ const BASE_TOKEN_METADATA = {
     decimals: 6,
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
+  },
+  BONK: {
+    chainId: 101,
+    symbol: 'BONK',
+    name: 'Bonk',
+    decimals: 5,
+    logoURI:
+      'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263/logo.png'
   }
 } as const
 
@@ -49,6 +57,10 @@ export const createTokenListingMap = (
   USDC: {
     ...BASE_TOKEN_METADATA.USDC,
     address: env.USDC_MINT_ADDRESS
+  },
+  BONK: {
+    ...BASE_TOKEN_METADATA.BONK,
+    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
   }
 })
 
@@ -66,5 +78,9 @@ export const TOKEN_LISTING_MAP: Record<string, JupiterTokenListing> = {
   USDC: {
     ...BASE_TOKEN_METADATA.USDC,
     address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+  },
+  BONK: {
+    ...BASE_TOKEN_METADATA.BONK,
+    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
   }
 }

@@ -30,6 +30,14 @@ export const createTokens = (env: Env): Record<string, TokenInfo> => {
       balance: null,
       isStablecoin: true,
       address: tokenListingMap.USDC.address
+    },
+    BONK: {
+      symbol: 'BONK',
+      name: 'Bonk',
+      decimals: tokenListingMap.BONK.decimals,
+      balance: null,
+      isStablecoin: false,
+      address: tokenListingMap.BONK.address
     }
   }
 }
@@ -69,6 +77,16 @@ export const createSupportedTokenPairs = (env: Env): TokenPair[] => {
     {
       baseToken: tokens.AUDIO,
       quoteToken: tokens.USDC,
+      exchangeRate: null
+    },
+    {
+      baseToken: tokens.AUDIO,
+      quoteToken: tokens.BONK,
+      exchangeRate: null
+    },
+    {
+      baseToken: tokens.USDC,
+      quoteToken: tokens.BONK,
       exchangeRate: null
     }
   ]
