@@ -13,8 +13,7 @@ ALTER TABLE aggregate_user ADD COLUMN IF NOT EXISTS track_share_count int DEFAUL
 DO $$ BEGIN
     CREATE TYPE public.sharetype AS ENUM (
         'track',
-        'playlist',
-        'album'
+        'playlist'
     );
 EXCEPTION
     WHEN duplicate_object THEN null;

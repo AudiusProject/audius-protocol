@@ -19,7 +19,6 @@ from src.models.model_utils import RepresentableMixin
 class ShareType(str, enum.Enum):
     track = "track"
     playlist = "playlist"
-    album = "album"
 
 
 class Share(Base, RepresentableMixin):
