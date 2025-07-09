@@ -6,7 +6,7 @@ export type SupportedToken = 'AUDIO' | 'USDC' | 'BONK' | 'wAUDIO'
 /**
  * Token network type
  */
-export type TokenNetwork = 'ethereum' | 'solana'
+type TokenNetwork = 'ethereum' | 'solana'
 
 /**
  * Configuration for a single token
@@ -41,7 +41,7 @@ export interface TokenConfig {
 /**
  * Environment-specific token configuration
  */
-export interface TokenEnvironmentConfig {
+interface TokenEnvironmentConfig {
   /** Development environment tokens */
   development: TokenConfig[]
   /** Staging environment tokens */
@@ -53,63 +53,15 @@ export interface TokenEnvironmentConfig {
 /**
  * Token registry interface for accessing token configurations
  */
-export interface TokenRegistry {
-  /** Get all tokens for current environment */
-  getAllTokens(): TokenConfig[]
-
-  /** Get token configuration by symbol */
-  getTokenConfig(symbol: SupportedToken): TokenConfig | undefined
-
+interface TokenRegistry {
   /** Get all enabled tokens */
   getEnabledTokens(): TokenConfig[]
-
-  /** Get all tokens that support userbank */
-  getUserbankTokens(): TokenConfig[]
 
   /** Get all tokens enabled for Jupiter swaps */
   getJupiterEnabledTokens(): TokenConfig[]
 
-  /** Get all purchasable tokens */
-  getPurchasableTokens(): TokenConfig[]
-
-  /** Get all sellable tokens */
-  getSellableTokens(): TokenConfig[]
-
   /** Get token by address */
   getTokenByAddress(address: string): TokenConfig | undefined
-
-  /** Get all token addresses */
-  getAllTokenAddresses(): string[]
-
-  /** Get all Solana token addresses */
-  getSolanaTokenAddresses(): string[]
-
-  /** Get all Ethereum token addresses */
-  getEthereumTokenAddresses(): string[]
-
-  /** Check if token is supported */
-  isTokenSupported(symbol: string): symbol is SupportedToken
-
-  /** Check if address is a supported token */
-  isAddressSupported(address: string): boolean
 }
 
-/**
- * Token authority configuration for Solana
- */
-export interface TokenAuthority {
-  /** Token symbol */
-  symbol: SupportedToken
-  /** Derived authority public key */
-  authority: string
-}
-
-/**
- * Token userbank configuration
- */
-export interface TokenUserbank {
-  /** Token symbol */
-  symbol: SupportedToken
-  /** Userbank derivation seed */
-  seed: string
-}
+export type { TokenEnvironmentConfig, TokenRegistry }
