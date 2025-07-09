@@ -193,7 +193,6 @@ export class AudioPlayer {
       this.bufferingTimeout = setTimeout(() => {
         this.buffering = true
         this.onBufferingChange(this.buffering)
-        track(make({ eventName: Name.BUFFER_SPINNER_SHOWN }))
       }, MIN_BUFFERING_DELAY_MS)
     }
     this.audio.addEventListener('waiting', this.waitingListener)

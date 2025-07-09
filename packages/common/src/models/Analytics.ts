@@ -300,7 +300,6 @@ export enum Name {
   PLAYBACK_PAUSE = 'Playback: Pause',
   // Playback performance metrics
   BUFFERING_TIME = 'Buffering Time',
-  BUFFER_SPINNER_SHOWN = 'Buffer Spinner Shown',
 
   // A listen is when we record against the backend vs. a play which is a UI action
   LISTEN = 'Listen',
@@ -1493,9 +1492,6 @@ type BufferingTime = {
   duration: number
 }
 
-type BufferSpinnerShown = {
-  eventName: Name.BUFFER_SPINNER_SHOWN
-}
 // Linking
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
