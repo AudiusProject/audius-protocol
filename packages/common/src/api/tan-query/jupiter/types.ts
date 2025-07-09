@@ -41,8 +41,10 @@ export type SwapTokensResult = {
   }
 }
 
+export type ClaimableTokenMint = 'wAUDIO' | 'USDC' | 'BONK'
+
 export interface UserBankManagedTokenInfo {
   mintAddress: string
-  claimableTokenMint: 'wAUDIO' | 'USDC' | 'BONK'
+  claimableTokenMint: ClaimableTokenMint
   decimals: number
 }

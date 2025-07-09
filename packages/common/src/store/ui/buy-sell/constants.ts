@@ -1,9 +1,12 @@
 import { Env } from '~/services/env'
-
 import {
-  createTokenListingMap,
-  TOKEN_LISTING_MAP
-} from '../shared/tokenConstants'
+  createTokenInfoObjects,
+  generateTokenPairs,
+  safeGetTokens,
+  tokenConfigToTokenInfo
+} from '~/services/tokens'
+
+import { TOKEN_LISTING_MAP } from '../shared/tokenConstants'
 
 import { TokenInfo, TokenPair } from './types'
 
@@ -13,36 +16,11 @@ export const MAX_SWAP_AMOUNT_USD = 10000 // $10,000
 
 // Create tokens using environment variables
 export const createTokens = (env: Env): Record<string, TokenInfo> => {
-  const tokenListingMap = createTokenListingMap(env)
-  return {
-    AUDIO: {
-      symbol: 'AUDIO',
-      name: 'Audius',
-      decimals: tokenListingMap.AUDIO.decimals,
-      balance: null,
-      isStablecoin: false,
-      address: tokenListingMap.AUDIO.address
-    },
-    USDC: {
-      symbol: 'USDC',
-      name: 'USD Coin',
-      decimals: tokenListingMap.USDC.decimals,
-      balance: null,
-      isStablecoin: true,
-      address: tokenListingMap.USDC.address
-    },
-    BONK: {
-      symbol: 'BONK',
-      name: 'Bonk',
-      decimals: tokenListingMap.BONK.decimals,
-      balance: null,
-      isStablecoin: false,
-      address: tokenListingMap.BONK.address
-    }
-  }
+  return createTokenInfoObjects(env)
 }
 
-// Token metadata without icons (to avoid circular dependency with harmony)
+// Legacy token metadata without icons (prefer createTokens)
+// @deprecated Use createTokens(env) instead for environment-specific tokens
 export const TOKENS: Record<string, TokenInfo> = {
   AUDIO: {
     symbol: 'AUDIO',
@@ -70,29 +48,41 @@ export const TOKENS: Record<string, TokenInfo> = {
   }
 }
 
-// Create supported token pairs using environment variables
-export const createSupportedTokenPairs = (env: Env): TokenPair[] => {
-  const tokens = createTokens(env)
-  return [
-    {
-      baseToken: tokens.AUDIO,
-      quoteToken: tokens.USDC,
-      exchangeRate: null
-    },
-    {
-      baseToken: tokens.AUDIO,
-      quoteToken: tokens.BONK,
-      exchangeRate: null
-    },
-    {
-      baseToken: tokens.USDC,
-      quoteToken: tokens.BONK,
-      exchangeRate: null
-    }
-  ]
+// Cache for token pairs to avoid repeated computation
+const tokenPairsCache = new Map<string, TokenPair[]>()
+
+/**
+ * Clear token pairs cache (useful for testing or configuration changes)
+ */
+export const clearTokenPairsCache = () => {
+  tokenPairsCache.clear()
 }
 
-// Define supported token pairs without icons
+// Create supported token pairs using environment variables
+export const createSupportedTokenPairs = (env: Env): TokenPair[] => {
+  const cacheKey = env.ENVIRONMENT
+
+  // Return cached result if available
+  if (tokenPairsCache.has(cacheKey)) {
+    return tokenPairsCache.get(cacheKey)!
+  }
+
+  // Get all tradeable tokens (purchasable and sellable)
+  const tradeableTokens = safeGetTokens(
+    env,
+    (token) => token.purchasable || token.sellable
+  ).map(tokenConfigToTokenInfo)
+
+  // Generate all possible pairs efficiently
+  const pairs = generateTokenPairs(tradeableTokens) as TokenPair[]
+
+  // Cache the result
+  tokenPairsCache.set(cacheKey, pairs)
+  return pairs
+}
+
+// Legacy hardcoded supported token pairs (prefer createSupportedTokenPairs)
+// @deprecated Use createSupportedTokenPairs(env) instead for dynamic token pairs
 export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
   {
     baseToken: TOKENS.AUDIO,

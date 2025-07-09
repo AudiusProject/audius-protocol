@@ -1,4 +1,5 @@
 import { Env } from '~/services/env'
+import { getOrInitializeRegistry } from '~/services/tokens'
 
 import { JupiterTokenListing } from '../buy-audio/types'
 
@@ -46,23 +47,33 @@ const BASE_TOKEN_METADATA = {
  */
 export const createTokenListingMap = (
   env: Env
-): Record<string, JupiterTokenListing> => ({
-  AUDIO: {
-    ...BASE_TOKEN_METADATA.AUDIO,
-    address: env.WAUDIO_MINT_ADDRESS
-  },
-  SOL: {
+): Record<string, JupiterTokenListing> => {
+  const registry = getOrInitializeRegistry(env.ENVIRONMENT)
+
+  // Get all tokens from registry
+  const allTokens = registry.getAllTokens()
+  const tokenMap: Record<string, JupiterTokenListing> = {}
+
+  // Add tokens from registry
+  allTokens.forEach((token) => {
+    const baseMetadata =
+      BASE_TOKEN_METADATA[token.symbol as keyof typeof BASE_TOKEN_METADATA]
+    if (baseMetadata) {
+      tokenMap[token.symbol] = {
+        ...baseMetadata,
+        address: token.address,
+        decimals: token.decimals
+      }
+    }
+  })
+
+  // Add SOL which is not in the token registry
+  tokenMap.SOL = {
     ...BASE_TOKEN_METADATA.SOL
-  },
-  USDC: {
-    ...BASE_TOKEN_METADATA.USDC,
-    address: env.USDC_MINT_ADDRESS
-  },
-  BONK: {
-    ...BASE_TOKEN_METADATA.BONK,
-    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
   }
-})
+
+  return tokenMap
+}
 
 /**
  * Legacy token listing map with hardcoded addresses for backward compatibility

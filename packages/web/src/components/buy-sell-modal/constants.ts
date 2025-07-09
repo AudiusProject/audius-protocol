@@ -1,4 +1,7 @@
-import { TOKENS as BASE_TOKENS } from '@audius/common/src/store/ui/buy-sell'
+import {
+  createTokens,
+  createSupportedTokenPairs
+} from '@audius/common/src/store/ui/buy-sell'
 import {
   TokenInfo,
   TokenPair
@@ -9,37 +12,41 @@ import {
   IconLogoCircleSOL
 } from '@audius/harmony'
 
-// Token metadata with icons for web
-export const TOKENS: Record<string, TokenInfo> = {
-  AUDIO: {
-    ...BASE_TOKENS.AUDIO,
-    icon: IconTokenAUDIO
-  },
-  USDC: {
-    ...BASE_TOKENS.USDC,
-    icon: IconLogoCircleUSDC
-  },
-  BONK: {
-    ...BASE_TOKENS.BONK,
-    icon: IconLogoCircleSOL // Using SOL icon as placeholder for BONK
+import { env } from 'services/env'
+
+// Create tokens from centralized configuration with icons for web
+const createTokensWithIcons = (): Record<string, TokenInfo> => {
+  const baseTokens = createTokens(env)
+  const iconMap = {
+    AUDIO: IconTokenAUDIO,
+    USDC: IconLogoCircleUSDC,
+    BONK: IconLogoCircleSOL // Using SOL icon as placeholder for BONK
   }
+
+  const tokensWithIcons: Record<string, TokenInfo> = {}
+  Object.entries(baseTokens).forEach(([symbol, token]) => {
+    tokensWithIcons[symbol] = {
+      ...token,
+      icon: iconMap[symbol as keyof typeof iconMap]
+    }
+  })
+
+  return tokensWithIcons
 }
 
-// Define supported token pairs with icons for web
-export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
-  {
-    baseToken: TOKENS.AUDIO,
-    quoteToken: TOKENS.USDC,
-    exchangeRate: null
-  },
-  {
-    baseToken: TOKENS.AUDIO,
-    quoteToken: TOKENS.BONK,
-    exchangeRate: null
-  },
-  {
-    baseToken: TOKENS.USDC,
-    quoteToken: TOKENS.BONK,
-    exchangeRate: null
-  }
-]
+export const TOKENS: Record<string, TokenInfo> = createTokensWithIcons()
+
+// Create supported token pairs dynamically with icons for web
+const createSupportedTokenPairsWithIcons = (): TokenPair[] => {
+  const basePairs = createSupportedTokenPairs(env)
+  const tokensWithIcons = TOKENS
+
+  return basePairs.map((pair) => ({
+    ...pair,
+    baseToken: tokensWithIcons[pair.baseToken.symbol] || pair.baseToken,
+    quoteToken: tokensWithIcons[pair.quoteToken.symbol] || pair.quoteToken
+  }))
+}
+
+export const SUPPORTED_TOKEN_PAIRS: TokenPair[] =
+  createSupportedTokenPairsWithIcons()
