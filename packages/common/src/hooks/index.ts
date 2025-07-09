@@ -48,3 +48,4 @@ export * from './useIsArtist'
 
 export * from './useAnalytics'
 export * from './useBuySellAnalytics'
+export * from './useShareAction'
