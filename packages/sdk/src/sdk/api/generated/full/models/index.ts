@@ -50,6 +50,7 @@ export * from './CommentReactionNotification';
 export * from './CommentReactionNotificationAction';
 export * from './CommentReactionNotificationActionData';
 export * from './CommentRepliesResponse';
+export * from './CommentResponse';
 export * from './CommentThreadNotification';
 export * from './CommentThreadNotificationAction';
 export * from './CommentThreadNotificationActionData';

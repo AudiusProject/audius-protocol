@@ -30,6 +30,7 @@ models/Comment.ts
 models/CommentMention.ts
 models/CommentNotificationSetting.ts
 models/CommentRepliesResponse.ts
+models/CommentResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
