@@ -4,10 +4,10 @@ import { useCallback, useMemo } from 'react'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind } from '@audius/common/models'
 import { searchActions, searchSelectors } from '@audius/common/store'
+import { ScrollView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Flex, IconCloseAlt, Paper, Text } from '@audius/harmony-native'
-import { FlatList } from 'app/components/core'
 
 import { SearchItem } from './SearchItem'
 import { useSearchCategory } from './searchState.tsx'
@@ -56,7 +56,7 @@ export const RecentSearches = (props: RecentSearchesProps) => {
   if (filteredSearchItems.length === 0) return ListHeaderComponent || null
 
   return (
-    <>
+    <ScrollView>
       {ListHeaderComponent && (
         <Flex ph='xs' pv='l'>
           {ListHeaderComponent}
@@ -75,30 +75,28 @@ export const RecentSearches = (props: RecentSearchesProps) => {
           <Text variant='title'>{messages.title}</Text>
         </Flex>
 
-        <FlatList
-          data={filteredSearchItems}
-          keyExtractor={({ id, kind }) => `${kind}-${id}`}
-          renderItem={({ item }) => (
+        <Flex direction='column' gap='m'>
+          {filteredSearchItems.map((item) => (
             <SearchItem
+              key={`${item.kind}-${item.id}`}
               searchItem={item}
               icon={IconCloseAlt}
               onPressIcon={() => dispatch(removeItem({ searchItem: item }))}
             />
-          )}
-          ListFooterComponent={
-            <Flex pt='l' ph='l'>
-              <Button
-                variant='secondary'
-                size='small'
-                style={{ alignSelf: 'center' }}
-                onPress={handleClearSearchHistory}
-              >
-                {messages.clear}
-              </Button>
-            </Flex>
-          }
-        />
+          ))}
+        </Flex>
+
+        <Flex pt='l' ph='l'>
+          <Button
+            variant='secondary'
+            size='small'
+            style={{ alignSelf: 'center' }}
+            onPress={handleClearSearchHistory}
+          >
+            {messages.clear}
+          </Button>
+        </Flex>
       </Paper>
-    </>
+    </ScrollView>
   )
 }
