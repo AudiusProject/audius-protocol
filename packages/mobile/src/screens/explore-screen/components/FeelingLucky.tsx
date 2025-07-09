@@ -14,7 +14,6 @@ export const FeelingLucky = () => {
     isLoading
   } = useFeelingLuckyTracks({ limit: 1 })
 
-  console.log('asdf feelingLuckyTracks: ', feelingLuckyTracks)
   if (!feelingLuckyTracks || feelingLuckyTracks.length === 0) {
     return null
   }

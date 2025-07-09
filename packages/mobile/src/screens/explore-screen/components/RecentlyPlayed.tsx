@@ -13,7 +13,6 @@ import { TrackTileCarousel } from './TrackTileCarousel'
 export const RecentlyPlayedTracks = () => {
   const { spacing } = useTheme()
   const { data: recentlyPlayedTracks, isLoading } = useRecentlyPlayedTracks()
-  console.log('asdf recentlyPlayedTracks: ', recentlyPlayedTracks)
 
   if (!recentlyPlayedTracks || recentlyPlayedTracks.length === 0) {
     return null

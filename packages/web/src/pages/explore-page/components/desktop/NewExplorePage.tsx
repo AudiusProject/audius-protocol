@@ -146,7 +146,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { data: bestSelling } = useBestSelling()
   const { data: feelingLuckyTrack, refetch: refetchFeelingLucky } =
     useFeelingLuckyTracks({ limit: 1 })
-  console.log('asdf feelingLuckyTrack: ', feelingLuckyTrack)
   const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
