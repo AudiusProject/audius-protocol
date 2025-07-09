@@ -255,8 +255,12 @@ export function formatUSDCValue(
  * @returns Formatted price string
  */
 export function formatTokenPrice(price: string, decimalPlaces: number): string {
+  // USDC constructor uses 6 decimal places, so we need to constrain the display
+  // to not exceed what's available in the FixedDecimal representation
+  const maxDecimalPlaces = Math.min(decimalPlaces, 6)
+
   return USDC(price.replace(/,/g, '')).toLocaleString('en-US', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: decimalPlaces
+    maximumFractionDigits: maxDecimalPlaces
   })
 }

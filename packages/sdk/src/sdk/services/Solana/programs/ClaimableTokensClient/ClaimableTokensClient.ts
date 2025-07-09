@@ -101,16 +101,15 @@ export class ClaimableTokensClient {
     this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
     this.mints = configWithDefaults.mints
-    this.authorities = {
-      wAUDIO: ClaimableTokensProgram.deriveAuthority({
-        programId: configWithDefaults.programId,
-        mint: configWithDefaults.mints.wAUDIO
-      }),
-      USDC: ClaimableTokensProgram.deriveAuthority({
-        programId: configWithDefaults.programId,
-        mint: configWithDefaults.mints.USDC
-      })
-    }
+    this.authorities = Object.fromEntries(
+      Object.entries(configWithDefaults.mints).map(([token, mint]) => [
+        token,
+        ClaimableTokensProgram.deriveAuthority({
+          programId: configWithDefaults.programId,
+          mint
+        })
+      ])
+    ) as Record<TokenName, PublicKey>
     this.audiusWalletClient = configWithDefaults.audiusWalletClient
     this.logger = configWithDefaults.logger.createPrefixedLogger(
       '[claimable-tokens-client]'

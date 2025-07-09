@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
-import { Button, Divider, Flex, Text, TextInput } from '@audius/harmony'
+import { Button, Divider, Flex, Select, Text, TextInput } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
@@ -156,8 +156,13 @@ export const TokenAmountSection = ({
   tokenPrice,
   isTokenPriceLoading,
   tokenPriceDecimalPlaces = 2,
-  tooltipPlacement
-}: TokenAmountSectionProps) => {
+  tooltipPlacement,
+  availableTokens,
+  onTokenChange
+}: TokenAmountSectionProps & {
+  availableTokens?: TokenInfo[]
+  onTokenChange?: (symbol: string) => void
+}) => {
   const { spacing } = useTheme()
 
   const { icon: TokenIcon, symbol, isStablecoin } = tokenInfo
@@ -174,20 +179,49 @@ export const TokenAmountSection = ({
   const priceDisplay =
     tokenPrice && !isTokenPriceLoading
       ? messages.tokenPrice(tokenPrice, tokenPriceDecimalPlaces)
-      : undefined
+      : null
 
   const youPaySection = useMemo(() => {
+    const showTokenSelector =
+      availableTokens && availableTokens.length > 1 && onTokenChange
+
     return (
       <Flex gap='s' p='l' alignItems='flex-start'>
-        <Flex direction='column' gap='xs' alignItems='flex-start'>
-          <Flex alignItems='flex-start' gap='s'>
-            <TextInput
-              label={messages.amountInputLabel(symbol)}
-              placeholder={placeholder}
-              value={amount?.toString() || ''}
-              onChange={(e) => onAmountChange?.(e.target.value)}
-              error={error}
-            />
+        <Flex direction='column' gap='xs' alignItems='flex-start' flex={1}>
+          <Flex alignItems='flex-start' gap='s' w='100%'>
+            {showTokenSelector ? (
+              <Flex direction='column' gap='xs' flex={1}>
+                <Flex gap='s' w='100%'>
+                  <TextInput
+                    label={messages.amountInputLabel(symbol)}
+                    placeholder={placeholder}
+                    value={amount?.toString() || ''}
+                    onChange={(e) => onAmountChange?.(e.target.value)}
+                    error={error}
+                    css={{ flex: 1 }}
+                  />
+                  <Select
+                    label=''
+                    value={symbol}
+                    onChange={onTokenChange}
+                    options={availableTokens.map((token) => ({
+                      value: token.symbol,
+                      label: token.symbol,
+                      icon: token.icon
+                    }))}
+                    css={{ minWidth: spacing.unit20 }}
+                  />
+                </Flex>
+              </Flex>
+            ) : (
+              <TextInput
+                label={messages.amountInputLabel(symbol)}
+                placeholder={placeholder}
+                value={amount?.toString() || ''}
+                onChange={(e) => onAmountChange?.(e.target.value)}
+                error={error}
+              />
+            )}
             <Button
               variant='secondary'
               css={{
@@ -233,31 +267,73 @@ export const TokenAmountSection = ({
     spacing,
     symbol,
     tokenInfo,
-    tooltipPlacement
+    tooltipPlacement,
+    availableTokens,
+    onTokenChange
   ])
 
   const youReceiveSection = useMemo(() => {
-    if (!formattedAmount) {
+    const showTokenSelector =
+      availableTokens && availableTokens.length > 1 && onTokenChange
+
+    if (!formattedAmount && !showTokenSelector) {
       return null
+    }
+
+    if (showTokenSelector) {
+      return (
+        <Flex direction='column' gap='s' p='l'>
+          <Flex alignItems='center' gap='s'>
+            <Select
+              label=''
+              value={symbol}
+              onChange={onTokenChange}
+              options={availableTokens.map((token) => ({
+                value: token.symbol,
+                label: token.symbol,
+                icon: token.icon
+              }))}
+              css={{ minWidth: spacing.unit20 }}
+            />
+          </Flex>
+          {formattedAmount && (
+            <CryptoAmountSection
+              formattedAmount={formattedAmount}
+              tokenInfo={tokenInfo}
+              isStablecoin={!!isStablecoin}
+              priceDisplay={priceDisplay || undefined}
+            />
+          )}
+        </Flex>
+      )
     }
 
     if (isStablecoin) {
       return (
         <Text variant='display' size='s'>
-          {messages.tokenPrice(formattedAmount, 2)}
+          {messages.tokenPrice(formattedAmount || '0', 2)}
         </Text>
       )
     }
 
     return (
       <CryptoAmountSection
-        formattedAmount={formattedAmount}
+        formattedAmount={formattedAmount || '0'}
         tokenInfo={tokenInfo}
         isStablecoin={!!isStablecoin}
-        priceDisplay={priceDisplay}
+        priceDisplay={priceDisplay || undefined}
       />
     )
-  }, [formattedAmount, isStablecoin, priceDisplay, tokenInfo])
+  }, [
+    formattedAmount,
+    isStablecoin,
+    priceDisplay,
+    tokenInfo,
+    availableTokens,
+    onTokenChange,
+    symbol,
+    spacing.unit20
+  ])
 
   const titleText = useMemo(() => {
     if (isStablecoin && !isInput && TokenIcon) {
