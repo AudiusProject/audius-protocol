@@ -32,26 +32,27 @@ const messages = {
     user: User,
     notification: USDCPurchaseSellerNotificationType
   ) => <UserNameLink user={user} notification={notification} />,
-  entityLink: (
-    entity: TrackEntity | CollectionEntity,
-    entityType: Entity.Track | Entity.Album
-  ) => <EntityLink entity={entity} entityType={entityType} />,
   body: (
     buyerUser: Nullable<User>,
     notification: USDCPurchaseSellerNotificationType,
     entityType: Entity.Track | Entity.Album,
     content: TrackEntity | CollectionEntity,
-    formattedAmount: string
+    totalAmount: bigint
   ) => (
     <>
       {'Congrats, '}
-      {buyerUser?.handle
-        ? messages.userNameLink(buyerUser, notification)
-        : 'someone'}
+      {buyerUser?.handle ? (
+        <UserNameLink user={buyerUser} notification={notification} />
+      ) : (
+        'someone'
+      )}
       {` just bought your ${entityType} `}
-      {messages.entityLink(content, entityType)}
+      <EntityLink entity={content} entityType={entityType} />
       {' for '}
-      {formattedAmount}
+      {USDC(totalAmount).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}
       {'!'}
     </>
   )
@@ -73,6 +74,8 @@ export const USDCPurchaseSellerNotification = (
   const { data: users } = useUsers(notification.userIds.slice(0, 1))
   const buyerUser = users?.[0]
   const { amount, extraAmount } = notification
+  const totalAmount =
+    USDC(BigInt(amount)).value + USDC(BigInt(extraAmount)).value
 
   const handleClick = useCallback(() => {
     if (content) {
@@ -81,13 +84,6 @@ export const USDCPurchaseSellerNotification = (
   }, [dispatch, content])
 
   if (!content || !buyerUser) return null
-
-  const totalAmount =
-    USDC(BigInt(amount)).value + USDC(BigInt(extraAmount)).value
-  const formattedAmount = USDC(totalAmount).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -100,7 +96,7 @@ export const USDCPurchaseSellerNotification = (
           notification,
           entityType,
           content,
-          formattedAmount
+          totalAmount
         )}
       </NotificationBody>
     </NotificationTile>

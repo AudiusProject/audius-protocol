@@ -32,14 +32,6 @@ const messages = {
     `I bought the ${lowerCase(
       type
     )} ${title} by ${sellerUsername} on @Audius! $AUDIO`,
-  entityLink: (
-    entity: TrackEntity | CollectionEntity,
-    entityType: Entity.Track | Entity.Album
-  ) => <EntityLink entity={entity} entityType={entityType} />,
-  userNameLink: (
-    user: User,
-    notification: USDCPurchaseBuyerNotificationType
-  ) => <UserNameLink user={user} notification={notification} />,
   body: (
     content: TrackEntity | CollectionEntity,
     entityType: Entity.Track | Entity.Album,
@@ -48,9 +40,9 @@ const messages = {
   ) => (
     <>
       {'You just purchased '}
-      {messages.entityLink(content, entityType)}
+      <EntityLink entity={content} entityType={entityType} />
       {' from '}
-      {messages.userNameLink(sellerUser, notification)}
+      <UserNameLink user={sellerUser} notification={notification} />
       {'!'}
     </>
   )

@@ -1,8 +1,13 @@
 import React, { useCallback } from 'react'
 
 import { useNotificationEntity, useUser } from '@audius/common/api'
+import type { User } from '@audius/common/models'
 import { Name } from '@audius/common/models'
-import type { USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType } from '@audius/common/store'
+import type {
+  CollectionEntity,
+  TrackEntity,
+  USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType
+} from '@audius/common/store'
 import { getEntityTitle } from '@audius/common/utils'
 import { make } from '@audius/web/src/common/store/analytics/actions'
 import { lowerCase } from 'lodash'
@@ -27,14 +32,12 @@ const messages = {
     `I bought the ${lowerCase(
       type
     )} ${title} by ${sellerUsername} on @Audius! $AUDIO`,
-  entityLink: (entity: any) => <EntityLink entity={entity} />,
-  userNameLink: (user: any) => <UserNameLink user={user} />,
-  body: (content: any, sellerUser: any) => (
+  body: (content: TrackEntity | CollectionEntity, sellerUser: User) => (
     <>
       {'You just purchased '}
-      {messages.entityLink(content)}
+      <EntityLink entity={content} />
       {' from '}
-      {messages.userNameLink(sellerUser)}
+      <UserNameLink user={sellerUser} />
       {'!'}
     </>
   )
