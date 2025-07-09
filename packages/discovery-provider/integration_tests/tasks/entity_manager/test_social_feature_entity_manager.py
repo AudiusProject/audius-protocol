@@ -17,6 +17,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.share import Share
 from src.models.social.subscription import Subscription
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import EntityType
@@ -147,6 +148,34 @@ def test_index_valid_social_features(app, mocker):
                 )
             },
         ],
+        "ShareTrackTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Share",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "ShareTrackTx1Dupe": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Share",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         # Delegated social action
         "SaveTrackTx4": [
             {
@@ -198,6 +227,34 @@ def test_index_valid_social_features(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 3,
                         "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+        "SharePlaylistTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 3,
+                        "_action": "Share",
+                        "_metadata": "",
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+        "SharePlaylistTx1Dupe": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 3,
+                        "_action": "Share",
                         "_metadata": "",
                         "_signer": "user3wallet",
                     }
@@ -386,6 +443,17 @@ def test_index_valid_social_features(app, mocker):
         assert current_reposts[1].repost_item_id == 1
         assert current_reposts[1].user_id == 3
         assert current_reposts[1].is_repost_of_repost == False
+
+        # Verify shares
+        all_shares: List[Share] = session.query(Share).all()
+        assert len(all_shares) == 2
+        assert all_shares[0].share_type == EntityType.TRACK.value.lower()
+        assert all_shares[0].share_item_id == 1
+        assert all_shares[0].user_id == 1
+
+        assert all_shares[1].share_type == EntityType.PLAYLIST.value.lower()
+        assert all_shares[1].share_item_id == 1
+        assert all_shares[1].user_id == 3
 
     with db.scoped_session() as session:
         aggregate_playlists: List[AggregatePlaylist] = (

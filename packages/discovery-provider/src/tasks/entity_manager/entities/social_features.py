@@ -317,19 +317,17 @@ def validate_duplicate_social_feature(
 
     existing_record = cast(dict, params.existing_records.get(record_type, {})).get(key)
 
-    # TODO: Make sure this works correctly for share, which doesn't have an is_delete column
     if existing_record:
         duplicate_create = (
             params.action
             in (
                 Action.REPOST,
                 Action.SAVE,
-                Action.SHARE,
                 Action.FOLLOW,
                 Action.SUBSCRIBE,
             )
             and not existing_record.is_delete
-        )
+        ) or (params.action == Action.SHARE)
         duplicate_delete = (
             params.action
             in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
