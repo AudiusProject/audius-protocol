@@ -26,6 +26,11 @@ export const createUserBankManagedTokens = (
       mintAddress: tokenListingMap.USDC.address,
       claimableTokenMint: 'USDC',
       decimals: tokenListingMap.USDC.decimals
+    },
+    [tokenListingMap.BONK.address.toUpperCase()]: {
+      mintAddress: tokenListingMap.BONK.address,
+      claimableTokenMint: 'BONK',
+      decimals: tokenListingMap.BONK.decimals
     }
   }
 }
