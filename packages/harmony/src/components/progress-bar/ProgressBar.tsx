@@ -7,7 +7,7 @@ import { ProgressBarProps, ProgressValue } from './types'
 
 const getBigInt = (num: ProgressValue): bigint => {
   if (typeof num === 'bigint') return num
-  return BigInt(num)
+  return BigInt(Math.round(num))
 }
 
 function clampBigInt(value: bigint, min: bigint, max: bigint): bigint {
