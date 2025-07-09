@@ -19,23 +19,28 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
--- Create shares table
+-- Create shares table following the same pattern as reposts table
 CREATE TABLE IF NOT EXISTS public.shares (
     blockhash character varying,
     blocknumber integer,
     user_id integer NOT NULL,
     share_item_id integer NOT NULL,
     share_type public.sharetype NOT NULL,
-    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    txhash character varying DEFAULT ''::character varying NOT NULL,
-    slot integer
+    created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    txhash character varying NOT NULL DEFAULT ''::character varying,
+    slot integer,
+    PRIMARY KEY (user_id, share_item_id, share_type, txhash)
 );
 
--- Create indexes for common query patterns
-CREATE INDEX IF NOT EXISTS shares_blocknumber_idx ON public.shares USING btree (blocknumber);
-CREATE INDEX IF NOT EXISTS shares_user_id_idx ON public.shares USING btree (user_id, share_type);
-CREATE INDEX IF NOT EXISTS shares_item_id_idx ON public.shares USING btree (share_item_id, share_type);
-CREATE INDEX IF NOT EXISTS shares_created_at_idx ON public.shares USING btree (created_at);
+-- Add foreign key constraint to match reposts table pattern
+ALTER TABLE public.shares ADD CONSTRAINT shares_blocknumber_fkey
+    FOREIGN KEY (blocknumber) REFERENCES blocks(number) ON DELETE CASCADE;
+
+-- Create indexes following the same pattern as reposts table
+CREATE INDEX IF NOT EXISTS shares_item_idx ON public.shares USING btree (share_item_id, share_type, user_id);
+CREATE INDEX IF NOT EXISTS shares_new_blocknumber_idx ON public.shares USING btree (blocknumber);
+CREATE INDEX IF NOT EXISTS shares_new_created_at_idx ON public.shares USING btree (created_at);
+CREATE INDEX IF NOT EXISTS shares_user_idx ON public.shares USING btree (user_id, share_type, share_item_id, created_at);
 CREATE INDEX IF NOT EXISTS shares_slot_idx ON public.shares USING btree (slot);
 
 commit;
