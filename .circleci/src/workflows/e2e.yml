@@ -5,4 +5,4 @@ jobs:
   - e2e-test:
       context: Vercel
       requires:
-        - integration-init
+        - e2e-init
