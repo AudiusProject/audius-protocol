@@ -318,6 +318,15 @@ export const RecordTrackDownloadSchema = z
   })
   .strict()
 
+export const ShareTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type ShareTrackRequest = z.input<typeof ShareTrackSchema>
+
 export type RecordTrackDownloadRequest = z.input<
   typeof RecordTrackDownloadSchema
 >
