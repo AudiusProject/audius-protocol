@@ -363,8 +363,7 @@ function* claimSingleChallengeRewardAsync(
   const claimed = results.filter((r) => !('error' in r))
 
   const queryClient = yield* getContext('queryClient')
-
-  yield* call(queryClient.invalidateQueries, {
+  queryClient.invalidateQueries({
     queryKey: [QUERY_KEYS.audioBalance]
   })
   yield* put(setUserChallengesDisbursed({ challengeId, specifiers: claimed }))
@@ -611,7 +610,7 @@ function* checkForNewDisbursements(
   }
   if (newDisbursement) {
     // Trigger a refetch for all audio balances
-    yield* call(queryClient.invalidateQueries, {
+    queryClient.invalidateQueries({
       queryKey: [QUERY_KEYS.audioBalance]
     })
 

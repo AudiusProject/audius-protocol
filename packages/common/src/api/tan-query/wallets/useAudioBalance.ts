@@ -402,6 +402,6 @@ export function* revertOptimisticUserSolBalance() {
 
   for (const queryParams of solWalletQueries) {
     const queryKey = getWalletAudioBalanceQueryKey(queryParams)
-    yield* call([queryClient, queryClient.invalidateQueries], { queryKey })
+    queryClient.invalidateQueries({ queryKey })
   }
 }
