@@ -95,6 +95,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const claimStatus = useSelector(getClaimStatus)
+  console.log('REED claimStatus', claimStatus)
   const aaoErrorCode = useSelector(getAAOErrorCode)
   const modalType = useSelector(getChallengeRewardsModalType) as ChallengeName
   const { data: currentAccount } = useCurrentAccount()
