@@ -23,13 +23,21 @@ import { getEntityRoute } from '../Notification/utils'
 
 const messages = {
   title: 'Purchase Successful',
-  youJustPurchased: 'You just purchased',
-  from: ' from ',
-  exclamation: '!',
   xShare: (title: string, sellerUsername: string, type: string) =>
     `I bought the ${lowerCase(
       type
-    )} ${title} by ${sellerUsername} on @Audius! $AUDIO`
+    )} ${title} by ${sellerUsername} on @Audius! $AUDIO`,
+  entityLink: (entity: any) => <EntityLink entity={entity} />,
+  userNameLink: (user: any) => <UserNameLink user={user} />,
+  body: (content: any, sellerUser: any) => (
+    <>
+      {'You just purchased '}
+      {messages.entityLink(content)}
+      {' from '}
+      {messages.userNameLink(sellerUser)}
+      {'!'}
+    </>
+  )
 }
 
 type USDCPurchaseBuyerNotificationProps = {
@@ -68,12 +76,7 @@ export const USDCPurchaseBuyerNotification = ({
       <NotificationHeader icon={IconCart}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
-      <NotificationText>
-        {messages.youJustPurchased} <EntityLink entity={content} />
-        {messages.from}
-        <UserNameLink user={sellerUser} />
-        {messages.exclamation}
-      </NotificationText>
+      <NotificationText>{messages.body(content, sellerUser)}</NotificationText>
       <NotificationXButton
         type='dynamic'
         url={getEntityRoute(content, true)}

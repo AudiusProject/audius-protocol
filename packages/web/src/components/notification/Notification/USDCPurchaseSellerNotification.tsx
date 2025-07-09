@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useNotificationEntity, useUsers } from '@audius/common/api'
+import type { User } from '@audius/common/models'
 import {
   Entity,
   TrackEntity,
@@ -24,14 +25,36 @@ import { IconCart } from './components/icons'
 import { getEntityLink } from './utils'
 
 const messages = {
-  title: (type: Entity.Track | Entity.Album) => `${capitalize(type)} Sold`,
-  congrats: 'Congrats, ',
-  someone: 'someone',
-  justBoughtYourTrack: (type: Entity.Track | Entity.Album) =>
-    ` just bought your ${type} `,
-  for: ' for ',
-  exclamation: '!',
-  dollar: '$'
+  title: (entityType: Entity.Track | Entity.Album) =>
+    `${capitalize(entityType)} Sold`,
+
+  userNameLink: (
+    user: User,
+    notification: USDCPurchaseSellerNotificationType
+  ) => <UserNameLink user={user} notification={notification} />,
+  entityLink: (
+    entity: TrackEntity | CollectionEntity,
+    entityType: Entity.Track | Entity.Album
+  ) => <EntityLink entity={entity} entityType={entityType} />,
+  body: (
+    buyerUser: Nullable<User>,
+    notification: USDCPurchaseSellerNotificationType,
+    entityType: Entity.Track | Entity.Album,
+    content: TrackEntity | CollectionEntity,
+    formattedAmount: string
+  ) => (
+    <>
+      {'Congrats, '}
+      {buyerUser?.handle
+        ? messages.userNameLink(buyerUser, notification)
+        : 'someone'}
+      {` just bought your ${entityType} `}
+      {messages.entityLink(content, entityType)}
+      {' for '}
+      {formattedAmount}
+      {'!'}
+    </>
+  )
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -59,8 +82,12 @@ export const USDCPurchaseSellerNotification = (
 
   if (!content || !buyerUser) return null
 
-  const totalAmount = USDC(amount).value + USDC(extraAmount).value
-  const formattedAmount = USDC(totalAmount).toLocaleString()
+  const totalAmount =
+    USDC(BigInt(amount)).value + USDC(BigInt(extraAmount)).value
+  const formattedAmount = USDC(totalAmount).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -68,17 +95,13 @@ export const USDCPurchaseSellerNotification = (
         <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.congrats}
-        {buyerUser.handle ? (
-          <UserNameLink user={buyerUser} notification={notification} />
-        ) : (
-          messages.someone
+        {messages.body(
+          buyerUser,
+          notification,
+          entityType,
+          content,
+          formattedAmount
         )}
-        {messages.justBoughtYourTrack(entityType)}
-        <EntityLink entity={content} entityType={entityType} />
-        {messages.for + messages.dollar}
-        {formattedAmount}
-        {messages.exclamation}
       </NotificationBody>
     </NotificationTile>
   )

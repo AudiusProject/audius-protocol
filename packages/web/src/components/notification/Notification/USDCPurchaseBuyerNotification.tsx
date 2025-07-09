@@ -1,8 +1,9 @@
 import { useCallback } from 'react'
 
 import { useNotificationEntity, useUsers } from '@audius/common/api'
-import { Name } from '@audius/common/models'
+import { Name, User } from '@audius/common/models'
 import {
+  Entity,
   TrackEntity,
   USDCPurchaseBuyerNotification as USDCPurchaseBuyerNotificationType,
   CollectionEntity
@@ -27,13 +28,32 @@ import { getEntityLink } from './utils'
 
 const messages = {
   title: 'Purchase Successful',
-  youJustPurchased: 'You just purchased ',
-  from: ' from ',
-  exclamation: '!',
   xShare: (title: string, sellerUsername: string, type: string) =>
     `I bought the ${lowerCase(
       type
-    )} ${title} by ${sellerUsername} on @Audius! $AUDIO`
+    )} ${title} by ${sellerUsername} on @Audius! $AUDIO`,
+  entityLink: (
+    entity: TrackEntity | CollectionEntity,
+    entityType: Entity.Track | Entity.Album
+  ) => <EntityLink entity={entity} entityType={entityType} />,
+  userNameLink: (
+    user: User,
+    notification: USDCPurchaseBuyerNotificationType
+  ) => <UserNameLink user={user} notification={notification} />,
+  body: (
+    content: TrackEntity | CollectionEntity,
+    entityType: Entity.Track | Entity.Album,
+    sellerUser: User,
+    notification: USDCPurchaseBuyerNotificationType
+  ) => (
+    <>
+      {'You just purchased '}
+      {messages.entityLink(content, entityType)}
+      {' from '}
+      {messages.userNameLink(sellerUser, notification)}
+      {'!'}
+    </>
+  )
 }
 
 type USDCPurchaseBuyerNotificationProps = {
@@ -81,11 +101,7 @@ export const USDCPurchaseBuyerNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.youJustPurchased}
-        <EntityLink entity={content} entityType={entityType} />
-        {messages.from}
-        <UserNameLink user={sellerUser} notification={notification} />
-        {messages.exclamation}
+        {messages.body(content, entityType, sellerUser, notification)}
       </NotificationBody>
       <XShareButton
         type='dynamic'

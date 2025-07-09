@@ -19,12 +19,24 @@ import {
 
 const messages = {
   title: (type: string) => `${capitalize(type)} Sold`,
-  congrats: 'Congrats, ',
-  someone: 'someone',
-  justBoughtYourTrack: (type: string) => ` just bought your ${type} `,
-  for: ' for ',
-  exclamation: '!',
-  dollar: '$'
+  userNameLink: (user: any) => <UserNameLink user={user} />,
+  entityLink: (entity: any) => <EntityLink entity={entity} />,
+  body: (
+    buyerUser: any,
+    entityType: string,
+    content: any,
+    formattedAmount: string
+  ) => (
+    <>
+      {'Congrats, '}
+      {buyerUser?.handle ? messages.userNameLink(buyerUser) : 'someone'}
+      {` just bought your ${entityType} `}
+      {messages.entityLink(content)}
+      {' for '}
+      {formattedAmount}
+      {'!'}
+    </>
+  )
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -47,7 +59,8 @@ export const USDCPurchaseSellerNotification = (
 
   if (!content || !buyerUser) return null
 
-  const totalAmount = USDC(amount).value + USDC(extraAmount).value
+  const totalAmount =
+    USDC(BigInt(amount)).value + USDC(BigInt(extraAmount)).value
   const formattedAmount = USDC(totalAmount).toLocaleString()
 
   return (
@@ -56,17 +69,7 @@ export const USDCPurchaseSellerNotification = (
         <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        {messages.congrats}{' '}
-        {buyerUser.handle ? (
-          <UserNameLink user={buyerUser} />
-        ) : (
-          messages.someone
-        )}
-        {messages.justBoughtYourTrack(entityType)}
-        <EntityLink entity={content} />
-        {messages.for + messages.dollar}
-        {formattedAmount}
-        {messages.exclamation}
+        {messages.body(buyerUser, entityType, content, formattedAmount)}
       </NotificationText>
     </NotificationTile>
   )
