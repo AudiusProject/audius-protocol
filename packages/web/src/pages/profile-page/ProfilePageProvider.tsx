@@ -1129,7 +1129,7 @@ type HookStateProps = {
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
-    const isArtist = useIsArtist()
+    const isArtist = useIsArtist({ id: props.profile?.profile?.user_id })
     const { data: accountData } = useCurrentAccountUser({
       select: (user) => ({
         accountUserId: user?.user_id
