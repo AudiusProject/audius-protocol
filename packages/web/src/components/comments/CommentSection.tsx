@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { useComment } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -9,6 +10,7 @@ import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageSelectors } from '@audius/common/store'
 import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
+import { HashId } from '@audius/sdk'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
@@ -62,6 +64,14 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const showComments = searchParams.get('showComments')
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
   const { history } = useHistoryContext()
+
+  // Get the commentId query param from the url
+  const commentIdParam = searchParams.get('commentId')
+  const { data: highlightComment } = useComment(HashId.parse(commentIdParam))
+  // TODO: Update this when highlighting replies is implemented
+  const parentCommentId = highlightComment?.parentCommentId
+    ? null
+    : HashId.parse(commentIdParam)
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
@@ -152,9 +162,14 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
               ) : (
                 <>
                   {commentIds.length === 0 ? <NoComments /> : null}
-                  {commentIds.map((id) => (
-                    <CommentThread commentId={id} key={id} />
-                  ))}
+                  {parentCommentId ? (
+                    <CommentThread commentId={parentCommentId} />
+                  ) : null}
+                  {commentIds
+                    .filter((id) => id !== parentCommentId)
+                    .map((id) => (
+                      <CommentThread commentId={id} key={id} />
+                    ))}
                   {isLoadingMorePages ? (
                     <Flex justifyContent='center' mt='l'>
                       <LoadingSpinner css={{ width: 20, height: 20 }} />
