@@ -14,7 +14,6 @@ import { getCommentQueryKey } from './utils'
 
 export const useComment = (commentId: ID) => {
   const { audiusSdk, reportToSentry } = useQueryContext()
-  const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useQuery({
@@ -25,14 +24,10 @@ export const useComment = (commentId: ID) => {
       const { data: commentRes } = await sdk.full.comments.getComment({
         commentId: Id.parse(commentId)
       })
-      const comment = Array.isArray(commentRes) ? commentRes[0] : commentRes
 
-      if (!comment) return {}
+      if (!commentRes) return {}
 
-      const marshalledComment = commentFromSDK(comment)
-      queryClient.setQueryData(getCommentQueryKey(commentId), marshalledComment)
-
-      return marshalledComment ?? {}
+      return commentFromSDK(commentRes[0]) ?? {}
     },
     staleTime: Infinity
   })
