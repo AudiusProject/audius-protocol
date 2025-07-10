@@ -52,7 +52,7 @@ import {
   Genre,
   removeNullable,
   dayjs,
-  getLocalTimezone
+  formatContestDeadline
 } from '@audius/common/utils'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
@@ -127,10 +127,7 @@ const messages = {
   remixContest: 'Remix Contest',
   contestEnded: 'Contest Ended',
   contestDeadline: 'Contest Deadline',
-  deadline: (deadline?: string) =>
-    deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} ${getLocalTimezone()}`
-      : '',
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'short'),
   uploadRemixButtonText: 'Upload Your Remix'
 }
 

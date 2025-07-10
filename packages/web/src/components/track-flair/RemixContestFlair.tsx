@@ -1,4 +1,4 @@
-import { formatDate, getLocalTimezone } from '@audius/common/utils'
+import { formatContestDeadline } from '@audius/common/utils'
 import {
   Divider,
   Flex,
@@ -58,8 +58,8 @@ const RemixContestFlair = ({
           <Flex ph='m' pv='s' column gap='xs'>
             <Flex row gap='s' justifyContent='center'>
               <Text strength='strong' textAlign='center'>
-                {messages.submissionDue} {formatDate(endDate)}{' '}
-                {getLocalTimezone()}
+                {messages.submissionDue}{' '}
+                {formatContestDeadline(endDate, 'short')}
               </Text>
             </Flex>
           </Flex>

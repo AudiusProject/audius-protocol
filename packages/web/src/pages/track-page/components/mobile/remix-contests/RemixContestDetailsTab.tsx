@@ -1,7 +1,7 @@
 import { useRemixContest } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { UPLOAD_PAGE } from '@audius/common/src/utils/route'
-import { dayjs, getLocalTimezone } from '@audius/common/utils'
+import { dayjs, formatContestDeadline } from '@audius/common/utils'
 import { Button, Divider, Flex, IconCloudUpload, Text } from '@audius/harmony'
 
 import { UserGeneratedText } from 'components/user-generated-text'
@@ -10,11 +10,7 @@ import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const messages = {
   due: 'Submission Due:',
-  deadline: (deadline?: string) => {
-    if (!deadline) return ''
-    const date = dayjs(deadline)
-    return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')} ${getLocalTimezone()}`
-  },
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'card'),
   ended: 'Contest Ended:',
   fallbackDescription:
     'Enter my remix contest before the deadline for your chance to win!',

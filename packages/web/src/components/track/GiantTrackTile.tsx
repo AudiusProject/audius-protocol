@@ -25,7 +25,7 @@ import {
   Nullable,
   dayjs,
   formatReleaseDate,
-  getLocalTimezone
+  formatContestDeadline
 } from '@audius/common/utils'
 import {
   Text,
@@ -109,11 +109,7 @@ const messages = {
   contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
   contestEnded: 'Contest Ended',
-  deadline: (deadline?: string) => {
-    return deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')} ${getLocalTimezone()}`
-      : ''
-  },
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'long'),
   seeMore: 'See More',
   seeLess: 'See Less'
 }
