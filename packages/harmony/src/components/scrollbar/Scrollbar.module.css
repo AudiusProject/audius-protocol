@@ -48,6 +48,5 @@ only show the scrollbar for ~1s, then fade away if not scrolling. */
 }
 
 :global(.ps) {
-  overflow-y: auto !important;
   overscroll-behavior: contain;
 }
