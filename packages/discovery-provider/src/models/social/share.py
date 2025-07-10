@@ -1,17 +1,6 @@
 import enum
 
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Enum,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Text,
-    text,
-)
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, Enum, Index, Integer, String, Text, text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
@@ -37,7 +26,6 @@ class Share(Base, RepresentableMixin):
     blockhash = Column(Text, nullable=True)
     blocknumber = Column(
         Integer,
-        ForeignKey("blocks.number", ondelete="CASCADE"),
         index=True,
         nullable=True,
     )
@@ -58,7 +46,3 @@ class Share(Base, RepresentableMixin):
         server_default=text("''::character varying"),
     )
     slot = Column(Integer, nullable=True)
-
-    block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Share.blocknumber == Block.number"
-    )
