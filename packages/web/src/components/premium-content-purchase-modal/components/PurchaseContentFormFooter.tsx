@@ -188,6 +188,7 @@ export const PurchaseContentFormFooter = ({
                 <XShareButton
                   fullWidth
                   type='dynamic'
+                  size='default'
                   url={
                     isAlbum
                       ? fullCollectionPage(handle, null, null, permalink)
