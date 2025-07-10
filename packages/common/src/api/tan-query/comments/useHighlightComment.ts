@@ -8,8 +8,8 @@ export const useHighlightComment = () => {
   const commentIdParam = searchParams.get('commentId')
 
   const { data: highlightComment } = useComment(
-    OptionalHashId.parse(commentIdParam) ?? null
+    OptionalHashId.parse(commentIdParam)
   )
 
-  return highlightComment ?? null
+  return highlightComment
 }
