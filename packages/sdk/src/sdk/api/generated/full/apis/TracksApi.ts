@@ -82,6 +82,13 @@ export interface GetMostLovedTracksRequest {
     withUsers?: boolean;
 }
 
+export interface GetMostSharedTracksRequest {
+    userId?: string;
+    limit?: number;
+    offset?: number;
+    timeRange?: GetMostSharedTracksTimeRangeEnum;
+}
+
 export interface GetNFTGatedTrackSignaturesRequest {
     userId: string;
     trackIds?: Array<number>;
@@ -417,6 +424,49 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getMostLovedTracks(params: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
         const response = await this.getMostLovedTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the most shared tracks for a given time range
+     */
+    async getMostSharedTracksRaw(params: GetMostSharedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.timeRange !== undefined) {
+            queryParameters['time_range'] = params.timeRange;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/most-shared`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most shared tracks for a given time range
+     */
+    async getMostSharedTracks(params: GetMostSharedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getMostSharedTracksRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1436,6 +1486,15 @@ export const GetBestNewReleasesWindowEnum = {
     Year: 'year'
 } as const;
 export type GetBestNewReleasesWindowEnum = typeof GetBestNewReleasesWindowEnum[keyof typeof GetBestNewReleasesWindowEnum];
+/**
+ * @export
+ */
+export const GetMostSharedTracksTimeRangeEnum = {
+    Week: 'week',
+    Month: 'month',
+    AllTime: 'allTime'
+} as const;
+export type GetMostSharedTracksTimeRangeEnum = typeof GetMostSharedTracksTimeRangeEnum[keyof typeof GetMostSharedTracksTimeRangeEnum];
 /**
  * @export
  */
