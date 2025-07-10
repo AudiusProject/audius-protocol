@@ -84,7 +84,7 @@ export const ArtistCoinHoverCard = ({
       content={
         <>
           <HoverCardHeader
-            iconLeft={IconTokenBonk}
+            iconLeft={() => <IconTokenBonk size='l' hex />}
             title={coinName}
             onClose={onClose}
             iconRight={IconArrowRight}
@@ -94,6 +94,7 @@ export const ArtistCoinHoverCard = ({
               <IconTokenBonk
                 size='3xl'
                 css={{ borderRadius: cornerRadius.circle }}
+                hex
               />
             }
             amount={formattedBalance}
