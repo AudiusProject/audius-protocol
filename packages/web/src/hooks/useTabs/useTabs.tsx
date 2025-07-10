@@ -24,7 +24,6 @@ import { useDrag } from 'react-use-gesture'
 
 import { SeoLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './TabStyles.module.css'
 
@@ -437,9 +436,9 @@ const GestureSupportingBodyContainer = memo(
     setTabBarFractionalOffset,
     dimensionsAreDirty,
     didSetDimensions,
-    initialScrollOffset
+    initialScrollOffset,
+    isMobile
   }: BodyContainerProps) => {
-    const isMobile = useIsMobile()
     const { containerWidth, containerCallbackRef, elementCallbackRef } =
       useContainerDimensions(activeIndex, dimensionsAreDirty)
 
