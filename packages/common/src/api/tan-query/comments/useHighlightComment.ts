@@ -6,7 +6,10 @@ import { useComment } from './useComment'
 export const useHighlightComment = () => {
   const [searchParams] = useSearchParams()
   const commentIdParam = searchParams.get('commentId')
-  const { data: highlightComment } = useComment(HashId.parse(commentIdParam))
+
+  const { data: highlightComment } = useComment(
+    commentIdParam ? HashId.parse(commentIdParam) : 0
+  )
 
   return highlightComment ?? null
 }
