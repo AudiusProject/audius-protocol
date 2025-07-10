@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import { playerSelectors } from '@audius/common/store'
+import { useCurrentTrack } from '@audius/common/hooks'
+import { playerSelectors, playbackRateValueMap } from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
 import { Animated, Dimensions, Easing } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import TrackPlayer, { useIsPlaying } from 'react-native-track-player'
@@ -57,19 +59,34 @@ export const TrackingBar = (props: TrackingBarProps) => {
   const paused = useSelector(getPaused)
   const isPlaying = playing && !buffering
 
-  const runTranslateXAnimation = useCallback((timeRemaining: number) => {
-    currentAnimation.current = Animated.timing(translateXAnimation.current, {
-      toValue: 1,
-      duration: timeRemaining * 1000,
-      easing: Easing.linear,
-      // Can't use native driver because this animation is potentially hours long,
-      // and would have to be serialized into an array to be passed to the native layer.
-      // The array exceeds the number of properties allowed in hermes
-      useNativeDriver: false
-    })
+  const trackGenre = useCurrentTrack({
+    select: (track) => track?.genre
+  })
+  const playbackRate = useSelector(playerSelectors.getPlaybackRate)
 
-    currentAnimation.current.start()
-  }, [])
+  // Calculate the actual playback rate based on track type
+  const isLongFormContent =
+    trackGenre === Genre.PODCASTS || trackGenre === Genre.AUDIOBOOKS
+  const actualPlaybackRate = isLongFormContent
+    ? playbackRateValueMap[playbackRate]
+    : 1.0
+
+  const runTranslateXAnimation = useCallback(
+    (timeRemaining: number) => {
+      currentAnimation.current = Animated.timing(translateXAnimation.current, {
+        toValue: 1,
+        duration: (timeRemaining * 1000) / actualPlaybackRate,
+        easing: Easing.linear,
+        // Can't use native driver because this animation is potentially hours long,
+        // and would have to be serialized into an array to be passed to the native layer.
+        // The array exceeds the number of properties allowed in hermes
+        useNativeDriver: false
+      })
+
+      currentAnimation.current.start()
+    },
+    [actualPlaybackRate]
+  )
 
   useEffect(() => {
     if (duration) {

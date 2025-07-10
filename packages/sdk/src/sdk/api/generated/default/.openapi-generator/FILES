@@ -30,6 +30,7 @@ models/Comment.ts
 models/CommentMention.ts
 models/CommentNotificationSetting.ts
 models/CommentRepliesResponse.ts
+models/CommentResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
@@ -57,6 +58,7 @@ models/GetChallenges.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
+models/HistoryResponse.ts
 models/ListenCount.ts
 models/MonthlyAggregatePlay.ts
 models/MutualFollowersResponse.ts

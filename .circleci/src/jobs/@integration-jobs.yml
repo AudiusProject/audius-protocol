@@ -1,4 +1,4 @@
-integration-init:
+e2e-init:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
@@ -29,7 +29,7 @@ integration-init:
           - packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
           - packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
-integration-test:
+e2e-test:
   machine: true
   resource_class: audiusproject/gcp-n2-standard-4
   working_directory: ~/audius-protocol

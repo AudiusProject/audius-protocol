@@ -48,6 +48,7 @@ export enum Action {
   FOLLOW = 'Follow',
   UNFOLLOW = 'Unfollow',
   SAVE = 'Save',
+  SHARE = 'Share',
   UNSAVE = 'Unsave',
   REPOST = 'Repost',
   UNREPOST = 'Unrepost',

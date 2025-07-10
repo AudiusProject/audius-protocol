@@ -48,7 +48,8 @@ import {
   renameAccountPlaylist,
   fetchSavedPlaylistsSucceeded,
   incrementTrackSaveCount,
-  decrementTrackSaveCount
+  decrementTrackSaveCount,
+  setGuestEmail
 } from './slice'
 import { AccountState } from './types'
 
@@ -647,7 +648,8 @@ function* syncAccountToQueryClient() {
       setHasTracks.type,
       updatePlaylistLibrary.type,
       incrementTrackSaveCount.type,
-      decrementTrackSaveCount.type
+      decrementTrackSaveCount.type,
+      setGuestEmail.type
     ],
     function* () {
       const state = yield* select((state) => state.account)

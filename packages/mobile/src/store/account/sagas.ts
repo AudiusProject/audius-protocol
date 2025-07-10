@@ -6,7 +6,6 @@ import {
   getSDK
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import webAccountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import FastImage from 'react-native-fast-image'
 import { takeEvery, call } from 'typed-redux-saga'
@@ -70,7 +69,7 @@ function* watchSignedIn() {
 }
 
 const sagas = () => {
-  return [...accountSagas(), ...webAccountSagas(), watchSignedIn]
+  return [...accountSagas(), watchSignedIn]
 }
 
 export default sagas
