@@ -91,6 +91,7 @@ export const AudioHoverCard = ({
               <IconTokenAUDIO
                 size='3xl'
                 css={{ borderRadius: cornerRadius.circle }}
+                hex
               />
             }
             amount={formattedBalance}
