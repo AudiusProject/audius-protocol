@@ -1,5 +1,7 @@
 # pg_migrate.sh
 
+> **⚠️ DEPRECATED: This migration system is no longer maintained. Please refer to [github.com/AudiusProject/api](https://github.com/AudiusProject/api) for the current migration and schema management approach.**
+
 tl;dr
 
 - Your migration sql file MUST be idempotent. See [examples](https://github.com/graphile/migrate/blob/main/docs/idempotent-examples.md) of ways to do this.
