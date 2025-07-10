@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 
-import { useTokenPrice, useUSDCBalance } from '@audius/common/api'
+import { useTokenPrice, useTokenBalance } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { TokenPair } from '@audius/common/store'
+import { MintName } from '@audius/common/services'
+import { TokenPair, TokenInfo } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
 import { SwapTab } from './SwapTab'
@@ -20,6 +21,10 @@ type BuyTabProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
 }
 
 export const BuyTab = ({
@@ -28,10 +33,31 @@ export const BuyTab = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  availableInputTokens,
+  availableOutputTokens,
+  onInputTokenChange,
+  onOutputTokenChange
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
-  const { status: balanceStatus, data: usdcBalance } = useUSDCBalance()
+
+  // Determine which balance hook to use based on input token
+  const mintName = useMemo(() => {
+    switch (quoteToken.symbol) {
+      case 'USDC':
+        return 'USDC' as MintName
+      case 'AUDIO':
+        return 'wAUDIO' as MintName
+      case 'BONK':
+        return 'BONK' as MintName
+      default:
+        return 'USDC' as MintName
+    }
+  }, [quoteToken.symbol])
+
+  const { status: balanceStatus, data: tokenBalanceData } = useTokenBalance({
+    token: mintName
+  })
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useTokenPrice(baseToken.address)
@@ -43,21 +69,21 @@ export const BuyTab = ({
     return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
   }, [tokenPrice])
 
-  const getUsdcBalance = useMemo(() => {
+  const getBalance = useMemo(() => {
     return () => {
-      if (balanceStatus === Status.SUCCESS && usdcBalance) {
-        return parseFloat(usdcBalance.toString()) / 10 ** quoteToken.decimals
+      if (balanceStatus === Status.SUCCESS && tokenBalanceData) {
+        return parseFloat(tokenBalanceData.toString())
       }
       return undefined
     }
-  }, [balanceStatus, usdcBalance, quoteToken.decimals])
+  }, [balanceStatus, tokenBalanceData])
 
   return (
     <SwapTab
       inputToken={quoteToken}
       outputToken={baseToken}
       balance={{
-        get: getUsdcBalance,
+        get: getBalance,
         loading: balanceStatus === Status.LOADING,
         formatError: () => 'Insufficient balance'
       }}
@@ -69,6 +95,8 @@ export const BuyTab = ({
       tokenPriceDecimalPlaces={decimalPlaces}
       initialInputValue={initialInputValue}
       onInputValueChange={onInputValueChange}
+      availableOutputTokens={availableOutputTokens}
+      onOutputTokenChange={onOutputTokenChange}
     />
   )
 }

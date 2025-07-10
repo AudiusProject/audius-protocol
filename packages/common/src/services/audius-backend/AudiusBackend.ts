@@ -1001,7 +1001,9 @@ export const audiusBackend = ({
     const mintKey =
       mint === 'wAUDIO'
         ? new PublicKey(env.WAUDIO_MINT_ADDRESS)
-        : new PublicKey(env.USDC_MINT_ADDRESS)
+        : mint === 'USDC'
+          ? new PublicKey(env.USDC_MINT_ADDRESS)
+          : new PublicKey('DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263') // BONK mint
     const addresses = PublicKey.findProgramAddressSync(
       [
         solanaWalletKey.toBuffer(),
@@ -1075,7 +1077,9 @@ export const audiusBackend = ({
     const mintKey =
       mint === 'wAUDIO'
         ? new PublicKey(env.WAUDIO_MINT_ADDRESS)
-        : new PublicKey(env.USDC_MINT_ADDRESS)
+        : mint === 'USDC'
+          ? new PublicKey(env.USDC_MINT_ADDRESS)
+          : new PublicKey('DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263') // BONK mint
     const accounts = [
       // 0. `[sw]` Funding account (must be a system account)
       {
