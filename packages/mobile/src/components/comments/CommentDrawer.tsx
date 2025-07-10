@@ -33,7 +33,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
@@ -59,7 +59,7 @@ const UserListItem = (props: UserListItemProps) => {
         <Flex direction='column'>
           <Text variant='body' size='s'>
             {user.name}
-            <UserBadges user={user} badgeSize={10} hideName />
+            <UserBadges userId={user.user_id} badgeSize='xs' />
           </Text>
           <Text variant='body' size='xs' color='default'>
             @{user.handle}

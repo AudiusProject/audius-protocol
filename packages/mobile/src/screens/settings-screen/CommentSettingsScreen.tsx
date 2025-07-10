@@ -17,7 +17,7 @@ import {
   IconUser
 } from '@audius/harmony-native'
 import { Screen, ScreenContent, ProfilePicture } from 'app/components/core'
-import { UserBadgesV2 } from 'app/components/user-badges/UserBadgesV2'
+import { UserBadges } from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
@@ -90,7 +90,7 @@ const UserListItem = (props) => {
               <Flex direction='column' gap='2xs'>
                 <Flex direction='row' gap='xs' alignItems='center'>
                   <Text size='s'>{user.name}</Text>
-                  <UserBadgesV2 userId={user.user_id} badgeSize='xs' />
+                  <UserBadges userId={user.user_id} badgeSize='xs' />
                 </Flex>
                 <Text size='s'>@{user.handle}</Text>
               </Flex>

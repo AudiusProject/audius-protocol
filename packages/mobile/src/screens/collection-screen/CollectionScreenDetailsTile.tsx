@@ -47,8 +47,7 @@ import {
   IconVisibilityHidden,
   MusicBadge,
   Paper,
-  Text,
-  spacing
+  Text
 } from '@audius/harmony-native'
 import { CollectionDogEar } from 'app/components/collection/CollectionDogEar'
 import { UserGeneratedText } from 'app/components/core'
@@ -62,7 +61,7 @@ import { DetailsTileStats } from 'app/components/details-tile/DetailsTileStats'
 import type { DetailsTileProps } from 'app/components/details-tile/types'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { make, track } from 'app/services/analytics'
@@ -395,11 +394,11 @@ export const CollectionScreenDetailsTile = ({
             </Text>
             {user ? (
               <TouchableOpacity onPress={handlePressArtistName}>
-                <Flex direction='row' gap='xs'>
+                <Flex row gap='xs'>
                   <Text variant='body' color='accent' size='l'>
                     {user.name}
                   </Text>
-                  <UserBadges badgeSize={spacing.l} user={user} hideName />
+                  <UserBadges userId={user.user_id} badgeSize='s' />
                 </Flex>
               </TouchableOpacity>
             ) : null}
