@@ -24,6 +24,7 @@ import { useDrag } from 'react-use-gesture'
 
 import { SeoLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './TabStyles.module.css'
 
@@ -438,6 +439,7 @@ const GestureSupportingBodyContainer = memo(
     didSetDimensions,
     initialScrollOffset
   }: BodyContainerProps) => {
+    const isMobile = useIsMobile()
     const { containerWidth, containerCallbackRef, elementCallbackRef } =
       useContainerDimensions(activeIndex, dimensionsAreDirty)
 
@@ -552,7 +554,9 @@ const GestureSupportingBodyContainer = memo(
         }
         setIndexDelta(newIndexDelta)
         setScrollContainerX(-1 * activeIndex * containerWidth, false)
-        window.scrollTo(0, initialScrollOffset)
+        if (isMobile) {
+          window.scrollTo(0, initialScrollOffset)
+        }
       }
       // Disable exhaustive deps because we only need to run this if the active index has changed:
       // eslint-disable-next-line react-hooks/exhaustive-deps
