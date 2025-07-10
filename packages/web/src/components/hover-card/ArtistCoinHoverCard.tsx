@@ -1,25 +1,21 @@
-import { ReactNode } from 'react'
-
 import { useUserCoinBalance } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
   HoverCard,
   HoverCardHeader,
+  HoverCardProps,
   IconArrowRight,
   IconTokenBonk,
   useTheme
 } from '@audius/harmony'
-import { Origin } from '@audius/harmony/src/components/popup/types'
 
 import { HoverCardBody } from './HoverCardBody'
 
-type ArtistCoinHoverCardProps = {
-  /**
-   * Content displayed as the hover trigger
-   */
-  children: ReactNode
-
+type ArtistCoinHoverCardProps = Pick<
+  HoverCardProps,
+  'children' | 'onClose' | 'onClick' | 'anchorOrigin' | 'transformOrigin'
+> & {
   /**
    * The mint address of the artist coin
    */
@@ -29,26 +25,6 @@ type ArtistCoinHoverCardProps = {
    * The user ID to fetch balance information for
    */
   userId: ID
-
-  /**
-   * Optional callback fired when the hover card is closed
-   */
-  onClose?: () => void
-
-  /**
-   * Position of the anchor origin
-   */
-  anchorOrigin?: Origin
-
-  /**
-   * Position of the transform origin
-   */
-  transformOrigin?: Origin
-
-  /**
-   * Optional callback fired when the hover card is clicked
-   */
-  onClick?: () => void
 }
 
 const formatCoinBalance = (balance?: number) => {

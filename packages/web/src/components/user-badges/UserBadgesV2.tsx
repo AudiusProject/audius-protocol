@@ -1,8 +1,9 @@
 import { cloneElement, MouseEvent, ReactElement, useCallback } from 'react'
 
 import { useUserCoinBalance } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
-import { getTokenBySymbol } from '@audius/common/services'
+import { FeatureFlags, getTokenBySymbol } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable, route } from '@audius/common/utils'
 import {
@@ -71,6 +72,9 @@ const UserBadges = ({
   overrideTier
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
   const bonkToken = getTokenBySymbol(env, 'BONK')
   const bonkMint = bonkToken?.address
@@ -153,7 +157,7 @@ const UserBadges = ({
     ) : null
 
   const artistCoinBadge =
-    coinBalance && bonkMint ? (
+    coinBalance && bonkMint && isArtistCoinEnabled ? (
       <ArtistCoinHoverCard
         mint={bonkMint}
         userId={userId}
