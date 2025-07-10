@@ -68,6 +68,9 @@ interface TokenRegistry {
 
   /** Get token by address */
   getTokenByAddress(address: string): TokenConfig | undefined
+
+  /** Get token by symbol */
+  getTokenBySymbol(symbol: SupportedToken): TokenConfig | undefined
 }
 
 export type { TokenEnvironmentConfig, TokenRegistry }

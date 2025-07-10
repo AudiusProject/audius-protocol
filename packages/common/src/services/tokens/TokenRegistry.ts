@@ -42,6 +42,10 @@ class TokenRegistryImpl implements TokenRegistry {
   getTokenByAddress(address: string): TokenConfig | undefined {
     return this.addressMap.get(address.toLowerCase())
   }
+
+  getTokenBySymbol(symbol: SupportedToken): TokenConfig | undefined {
+    return this.tokenMap.get(symbol)
+  }
 }
 
 /**

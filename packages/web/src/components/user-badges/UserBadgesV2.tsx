@@ -1,6 +1,15 @@
-import { cloneElement, MouseEvent, ReactElement, useCallback } from 'react'
+import {
+  cloneElement,
+  MouseEvent,
+  ReactElement,
+  useCallback,
+  useMemo
+} from 'react'
 
+import { useUserCoinBalance } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
+import { FeatureFlags, getTokenBySymbol } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable, route } from '@audius/common/utils'
 import {
@@ -9,6 +18,7 @@ import {
   HoverCard,
   IconSize,
   iconSizes,
+  IconTokenBonk,
   IconTokenBronze,
   IconTokenGold,
   IconTokenPlatinum,
@@ -20,8 +30,10 @@ import {
 import { Origin } from '@audius/harmony/src/components/popup/types'
 import cn from 'classnames'
 
+import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { env } from 'services/env'
 
 import styles from './UserBadges.module.css'
 
@@ -66,9 +78,25 @@ const UserBadges = ({
   overrideTier
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
+  const bonkToken = getTokenBySymbol(env, 'BONK')
+  const bonkMint = bonkToken?.address
+  const { data: coinBalance } = useUserCoinBalance(
+    {
+      userId,
+      mint: bonkMint ?? ''
+    },
+    {
+      enabled: !!bonkMint
+    }
+  )
+
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
-  const hasContent = isUserVerified || tier !== 'none'
+  const hasContent = isUserVerified || tier !== 'none' || !!coinBalance
 
   const navigate = useNavigateToPage()
 
@@ -82,37 +110,41 @@ const UserBadges = ({
     e.stopPropagation()
   }, [])
 
-  if (!hasContent) return null
-
   // Wrap the verified badge with a HoverCard
-  const verifiedBadge = isUserVerified ? (
-    <HoverCard
-      content={
-        <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
-          <IconVerified size='l' />
-          <Text variant='title' size='l'>
-            Verified
-          </Text>
-        </Flex>
-      }
-    >
-      <Box
-        css={{
-          cursor: 'pointer',
-          transition: `opacity ${motion.quick}`,
-          '&:hover': {
-            opacity: 0.6
-          }
-        }}
+  const verifiedBadge = useMemo(() => {
+    if (!isUserVerified) return null
+
+    return (
+      <HoverCard
+        content={
+          <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
+            <IconVerified size='l' />
+            <Text variant='title' size='l'>
+              Verified
+            </Text>
+          </Flex>
+        }
       >
-        <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
-      </Box>
-    </HoverCard>
-  ) : null
+        <Box
+          css={{
+            cursor: 'pointer',
+            transition: `opacity ${motion.quick}`,
+            '&:hover': {
+              opacity: 0.6
+            }
+          }}
+        >
+          <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
+        </Box>
+      </HoverCard>
+    )
+  }, [isUserVerified, size])
 
   // Get the tier badge and wrap it with AudioHoverCard if user has a tier
-  const tierBadge =
-    tier !== 'none' ? (
+  const tierBadge = useMemo(() => {
+    if (tier === 'none') return null
+
+    return (
       <AudioHoverCard
         tier={tier}
         userId={userId}
@@ -132,7 +164,42 @@ const UserBadges = ({
           {cloneElement(audioTierMap[tier]!, { size })}
         </Box>
       </AudioHoverCard>
-    ) : null
+    )
+  }, [tier, userId, anchorOrigin, transformOrigin, handleClick, size])
+
+  const artistCoinBadge = useMemo(() => {
+    if (!coinBalance || !bonkMint || !isArtistCoinEnabled) return null
+    return (
+      <ArtistCoinHoverCard
+        mint={bonkMint}
+        userId={userId}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
+      >
+        <Box
+          css={{
+            cursor: 'pointer',
+            transition: `opacity ${motion.quick}`,
+            '&:hover': {
+              opacity: 0.6
+            }
+          }}
+        >
+          <IconTokenBonk size={size} hex />
+        </Box>
+      </ArtistCoinHoverCard>
+    )
+  }, [
+    coinBalance,
+    bonkMint,
+    isArtistCoinEnabled,
+    userId,
+    anchorOrigin,
+    transformOrigin,
+    size
+  ])
+
+  if (!hasContent) return null
 
   return (
     <Box
@@ -154,6 +221,7 @@ const UserBadges = ({
       >
         {verifiedBadge}
         {tierBadge}
+        {artistCoinBadge}
       </span>
     </Box>
   )
