@@ -1,6 +1,8 @@
 import { cloneElement, MouseEvent, ReactElement, useCallback } from 'react'
 
+import { useUserCoinBalance } from '@audius/common/api'
 import { BadgeTier, ID } from '@audius/common/models'
+import { getTokenBySymbol } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable, route } from '@audius/common/utils'
 import {
@@ -9,6 +11,7 @@ import {
   HoverCard,
   IconSize,
   iconSizes,
+  IconTokenBonk,
   IconTokenBronze,
   IconTokenGold,
   IconTokenPlatinum,
@@ -20,8 +23,10 @@ import {
 import { Origin } from '@audius/harmony/src/components/popup/types'
 import cn from 'classnames'
 
+import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { env } from 'services/env'
 
 import styles from './UserBadges.module.css'
 
@@ -66,9 +71,22 @@ const UserBadges = ({
   overrideTier
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
+
+  const bonkToken = getTokenBySymbol(env, 'BONK')
+  const bonkMint = bonkToken?.address
+  const { data: coinBalance } = useUserCoinBalance(
+    {
+      userId,
+      mint: bonkMint ?? ''
+    },
+    {
+      enabled: !!bonkMint
+    }
+  )
+
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
-  const hasContent = isUserVerified || tier !== 'none'
+  const hasContent = isUserVerified || tier !== 'none' || !!coinBalance
 
   const navigate = useNavigateToPage()
 
@@ -134,6 +152,28 @@ const UserBadges = ({
       </AudioHoverCard>
     ) : null
 
+  const artistCoinBadge =
+    coinBalance && bonkMint ? (
+      <ArtistCoinHoverCard
+        mint={bonkMint}
+        userId={userId}
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
+      >
+        <Box
+          css={{
+            cursor: 'pointer',
+            transition: `opacity ${motion.quick}`,
+            '&:hover': {
+              opacity: 0.6
+            }
+          }}
+        >
+          <IconTokenBonk size={size} hex />
+        </Box>
+      </ArtistCoinHoverCard>
+    ) : null
+
   return (
     <Box
       onClick={handleStopPropagation}
@@ -154,6 +194,7 @@ const UserBadges = ({
       >
         {verifiedBadge}
         {tierBadge}
+        {artistCoinBadge}
       </span>
     </Box>
   )

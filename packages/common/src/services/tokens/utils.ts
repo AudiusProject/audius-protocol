@@ -110,3 +110,19 @@ export const createTokenInfoObjects = (env: { ENVIRONMENT: string }) => {
   tokenInfoCache.set(cacheKey, tokenMap)
   return tokenMap
 }
+
+/**
+ * Get a specific token by symbol from the registry
+ */
+export const getTokenBySymbol = (
+  env: { ENVIRONMENT: string },
+  symbol: SupportedToken
+): TokenConfig | undefined => {
+  try {
+    const registry = getOrInitializeRegistry(env.ENVIRONMENT)
+    return registry.getTokenBySymbol(symbol)
+  } catch (error) {
+    console.error(`Failed to get token ${symbol}:`, error)
+    return undefined
+  }
+}

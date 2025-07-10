@@ -3,6 +3,7 @@ export {
   getOrInitializeRegistry,
   createTokenInfoObjects,
   generateTokenPairs,
+  getTokenBySymbol,
   safeGetTokens,
   tokenConfigToTokenInfo
 } from './utils'
