@@ -37,7 +37,6 @@ class Share(Base, RepresentableMixin):
     blockhash = Column(Text, nullable=True)
     blocknumber = Column(
         Integer,
-        ForeignKey("blocks.number", ondelete="CASCADE"),
         index=True,
         nullable=True,
     )
@@ -58,7 +57,3 @@ class Share(Base, RepresentableMixin):
         server_default=text("''::character varying"),
     )
     slot = Column(Integer, nullable=True)
-
-    block1 = relationship(  # type: ignore
-        "Block", primaryjoin="Share.blocknumber == Block.number"
-    )
