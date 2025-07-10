@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useComment } from '@audius/common/api'
+import { useHighlightComment } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -10,7 +10,6 @@ import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { trackPageSelectors } from '@audius/common/store'
 import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
@@ -65,13 +64,11 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
   const { history } = useHistoryContext()
 
-  // Get the commentId query param from the url
-  const commentIdParam = searchParams.get('commentId')
-  const { data: highlightComment } = useComment(HashId.parse(commentIdParam))
+  const highlightComment = useHighlightComment()
   // TODO: Update this when highlighting replies is implemented
-  const parentCommentId = highlightComment?.parentCommentId
+  const highlightCommentId = highlightComment?.parentCommentId
     ? null
-    : HashId.parse(commentIdParam)
+    : highlightComment?.id
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
@@ -162,11 +159,11 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
               ) : (
                 <>
                   {commentIds.length === 0 ? <NoComments /> : null}
-                  {parentCommentId ? (
-                    <CommentThread commentId={parentCommentId} />
+                  {highlightCommentId ? (
+                    <CommentThread commentId={highlightCommentId} />
                   ) : null}
                   {commentIds
-                    .filter((id) => id !== parentCommentId)
+                    .filter((id) => id !== highlightCommentId)
                     .map((id) => (
                       <CommentThread commentId={id} key={id} />
                     ))}

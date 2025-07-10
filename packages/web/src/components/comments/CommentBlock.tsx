@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { useComment, useUser } from '@audius/common/api'
+import { useComment, useHighlightComment, useUser } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment
@@ -16,9 +16,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { HashId } from '@audius/sdk'
 import { keyframes } from '@emotion/react'
-import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
@@ -57,14 +55,11 @@ const CommentBlockInternal = (
   const { track, artistId } = useCurrentCommentSection()
   const isDarkMode = getIsDarkMode()
 
-  // Get the commentId query param from the url
-  const [searchParams] = useSearchParams()
-  const commentIdParam = searchParams.get('commentId')
-  const { data: highlightComment } = useComment(HashId.parse(commentIdParam))
+  const highlightComment = useHighlightComment()
   // TODO: Update this when highlighting replies is implemented
   const highlightCommentId = highlightComment?.parentCommentId
     ? null
-    : HashId.parse(commentIdParam)
+    : highlightComment?.id
 
   const {
     id: commentId,
