@@ -32,10 +32,6 @@ CREATE TABLE IF NOT EXISTS public.shares (
     PRIMARY KEY (user_id, share_item_id, share_type, txhash)
 );
 
--- Add foreign key constraint to match reposts table pattern
-ALTER TABLE public.shares ADD CONSTRAINT shares_blocknumber_fkey
-    FOREIGN KEY (blocknumber) REFERENCES blocks(number) ON DELETE CASCADE;
-
 -- Create indexes following the same pattern as reposts table
 CREATE INDEX IF NOT EXISTS shares_item_idx ON public.shares USING btree (share_item_id, share_type, user_id);
 CREATE INDEX IF NOT EXISTS shares_new_blocknumber_idx ON public.shares USING btree (blocknumber);

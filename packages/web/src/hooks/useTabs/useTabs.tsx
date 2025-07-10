@@ -436,7 +436,8 @@ const GestureSupportingBodyContainer = memo(
     setTabBarFractionalOffset,
     dimensionsAreDirty,
     didSetDimensions,
-    initialScrollOffset
+    initialScrollOffset,
+    isMobile
   }: BodyContainerProps) => {
     const { containerWidth, containerCallbackRef, elementCallbackRef } =
       useContainerDimensions(activeIndex, dimensionsAreDirty)
@@ -552,7 +553,9 @@ const GestureSupportingBodyContainer = memo(
         }
         setIndexDelta(newIndexDelta)
         setScrollContainerX(-1 * activeIndex * containerWidth, false)
-        window.scrollTo(0, initialScrollOffset)
+        if (isMobile) {
+          window.scrollTo(0, initialScrollOffset)
+        }
       }
       // Disable exhaustive deps because we only need to run this if the active index has changed:
       // eslint-disable-next-line react-hooks/exhaustive-deps

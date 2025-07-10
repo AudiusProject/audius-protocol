@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { useHighlightComment } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -62,6 +63,12 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const showComments = searchParams.get('showComments')
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
   const { history } = useHistoryContext()
+
+  const highlightComment = useHighlightComment()
+  // TODO: Update this when highlighting replies is implemented
+  const highlightCommentId = highlightComment?.parentCommentId
+    ? null
+    : highlightComment?.id
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
@@ -152,9 +159,14 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
               ) : (
                 <>
                   {commentIds.length === 0 ? <NoComments /> : null}
-                  {commentIds.map((id) => (
-                    <CommentThread commentId={id} key={id} />
-                  ))}
+                  {highlightCommentId ? (
+                    <CommentThread commentId={highlightCommentId} />
+                  ) : null}
+                  {commentIds
+                    .filter((id) => id !== highlightCommentId)
+                    .map((id) => (
+                      <CommentThread commentId={id} key={id} />
+                    ))}
                   {isLoadingMorePages ? (
                     <Flex justifyContent='center' mt='l'>
                       <LoadingSpinner css={{ width: 20, height: 20 }} />
