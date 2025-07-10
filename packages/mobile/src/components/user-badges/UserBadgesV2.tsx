@@ -38,7 +38,7 @@ export const UserBadgesV2 = (props: UserBadgesProps) => {
     <>
       {isVerified ? <IconVerified size={badgeSize} /> : null}
       <IconAudioBadge tier={tier} size={badgeSize} />
-      {coinBalance ? <IconTokenBonk size={badgeSize} hex /> : null}
+      {coinBalance ? <IconTokenBonk size={badgeSize} /> : null}
     </>
   )
 }
