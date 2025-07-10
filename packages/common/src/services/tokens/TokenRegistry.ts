@@ -23,12 +23,20 @@ class TokenRegistryImpl implements TokenRegistry {
     })
   }
 
+  getAllTokens(): TokenConfig[] {
+    return this.tokens
+  }
+
   getEnabledTokens(): TokenConfig[] {
     return this.tokens.filter((token) => token.enabled)
   }
 
   getJupiterEnabledTokens(): TokenConfig[] {
     return this.tokens.filter((token) => token.jupiterEnabled && token.enabled)
+  }
+
+  getUserbankTokens(): TokenConfig[] {
+    return this.tokens.filter((token) => token.hasUserbank && token.enabled)
   }
 
   getTokenByAddress(address: string): TokenConfig | undefined {

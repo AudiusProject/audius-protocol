@@ -54,11 +54,17 @@ interface TokenEnvironmentConfig {
  * Token registry interface for accessing token configurations
  */
 interface TokenRegistry {
+  /** Get all tokens */
+  getAllTokens(): TokenConfig[]
+
   /** Get all enabled tokens */
   getEnabledTokens(): TokenConfig[]
 
   /** Get all tokens enabled for Jupiter swaps */
   getJupiterEnabledTokens(): TokenConfig[]
+
+  /** Get all tokens with userbank support */
+  getUserbankTokens(): TokenConfig[]
 
   /** Get token by address */
   getTokenByAddress(address: string): TokenConfig | undefined
