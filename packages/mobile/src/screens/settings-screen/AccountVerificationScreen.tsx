@@ -22,7 +22,7 @@ import {
 import LoadingSpinner from 'app/components/loading-spinner'
 import { StatusMessage } from 'app/components/status-message'
 import { TikTokAuthButton } from 'app/components/tiktok-auth'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
@@ -331,7 +331,9 @@ export const AccountVerificationScreen = () => {
         <ProfilePicture userId={accountUser.user_id} mb='xs' />
         <Text style={styles.profileName} variant='h1'>
           {accountName}
-          <UserBadges user={accountUser} badgeSize={12} hideName />
+          {accountUser?.user_id ? (
+            <UserBadges userId={accountUser.user_id} badgeSize='xs' />
+          ) : null}
         </Text>
         <Text style={styles.profileHandle}>@{accountHandle}</Text>
       </View>

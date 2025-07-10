@@ -46,7 +46,7 @@ import {
   IconRemove,
   IconVisibilityHidden
 } from '@audius/harmony-native'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
@@ -412,7 +412,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             </View>
             <Text numberOfLines={1} style={styles.artistName}>
               {name}
-              {user ? <UserBadges user={user} badgeSize={12} hideName /> : null}
+              {user ? (
+                <UserBadges userId={user.user_id} badgeSize='xs' />
+              ) : null}
             </Text>
           </View>
           {isUnlisted ? (

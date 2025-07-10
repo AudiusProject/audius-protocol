@@ -8,7 +8,7 @@ import type { LinearGradientProps } from 'react-native-linear-gradient'
 import type { ImageProps } from '@audius/harmony-native'
 import type { TileProps } from 'app/components/core'
 import { Tile } from 'app/components/core'
-import UserBadges from 'app/components/user-badges/UserBadges'
+import { UserBadges } from 'app/components/user-badges'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
@@ -114,7 +114,7 @@ export const Card = (props: CardProps) => {
             {primaryText}
           </Text>
           {props.type === 'user' ? (
-            <UserBadges user={props.user} badgeSize={12} hideName />
+            <UserBadges userId={props.user.user_id} badgeSize='xs' />
           ) : null}
         </View>
         <View style={styles.secondaryTextContainer}>

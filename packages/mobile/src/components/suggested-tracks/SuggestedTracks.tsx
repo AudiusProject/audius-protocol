@@ -117,7 +117,12 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
             {title}
           </Text>
           {user ? (
-            <UserBadges user={user} nameStyle={styles.artistName} />
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <Text style={styles.artistName}>{user.name}</Text>
+              <UserBadges userId={user.user_id} badgeSize='xs' />
+            </View>
           ) : null}
         </View>
       </View>
