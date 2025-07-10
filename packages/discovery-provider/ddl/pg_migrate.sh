@@ -7,6 +7,7 @@ set -e
 [[ -f .env ]] && source .env
 
 MIGRATIONS_TABLE="schema_version"
+MIGRATION_LOCK_ID="5432109876"  # Unique lock ID for migrations
 
 POSTGRES_USER=${POSTGRES_USER:-postgres}
 POSTGRES_HOST=${POSTGRES_HOST:-127.0.0.1}
@@ -125,18 +126,45 @@ test_dir() {
     done
 }
 
+acquire_migration_lock() {
+    echo "Attempting to acquire migration lock..."
+    lock_acquired=$(psql -c "SELECT pg_try_advisory_lock($MIGRATION_LOCK_ID);")
+    
+    if [[ $lock_acquired == "t" ]]; then
+        echo "Migration lock acquired"
+        return 0
+    else
+        echo "Migration lock not available. Waiting for migrations to complete..."
+        
+        psql -c "SELECT pg_advisory_lock($MIGRATION_LOCK_ID);"
+        echo "Migration lock acquired after waiting"
+
+        # Immediately release the lock since someone else ran it
+        psql -c "SELECT pg_advisory_unlock($MIGRATION_LOCK_ID);"
+        echo "Migration lock released"
+
+        return 1
+    fi
+}
+
 migrate() {
-    create_migrations_table
+    # Try to acquire the migration lock
+    if acquire_migration_lock; then
+        create_migrations_table
 
-    migrate_dir "utils"
-    migrate_dir "migrations"
-    migrate_dir "functions"
+        migrate_dir "utils"
+        migrate_dir "migrations"
+        migrate_dir "functions"
 
-    # "preflight" files run before server starts
-    # to satisfy any necessary preconditions (e.g. inserting initial block)
-    # the intention is to run "preflight" files for all environments EXCEPT test
-    if [[ $PG_MIGRATE_TEST_MODE != "true" ]]; then
-        migrate_dir "preflight"
+        # "preflight" files run before server starts
+        # to satisfy any necessary preconditions (e.g. inserting initial block)
+        # the intention is to run "preflight" files for all environments EXCEPT test
+        if [[ $PG_MIGRATE_TEST_MODE != "true" ]]; then
+            migrate_dir "preflight"
+        fi
+    else
+        # Another replica ran migrations, we're done
+        echo "Another replica completed migrations. No-op."
     fi
 }
 
