@@ -267,6 +267,7 @@ const WebPlayer = (props) => {
 
   const context = useContext(SsrContext)
   const ipcRef = useRef(null)
+  const previousRouteRef = useRef(getPathname(history.location))
 
   const [state, setState] = useState({
     mainContent: null,
@@ -289,12 +290,19 @@ const WebPlayer = (props) => {
     const client = getClient()
 
     const removeHistoryEventListener = history.listen((location, action) => {
-      scrollToTop()
-      setState((prev) => ({
-        ...prev,
-        initialPage: false,
-        currentRoute: getPathname(history.location)
-      }))
+      const newRoute = getPathname(location)
+      const previousRoute = previousRouteRef.current
+
+      // Only scroll to top and update state if the pathname actually changed (we dont want to scroll on query params)
+      if (newRoute !== previousRoute) {
+        scrollToTop()
+        previousRouteRef.current = newRoute
+        setState((prev) => ({
+          ...prev,
+          initialPage: false,
+          currentRoute: newRoute
+        }))
+      }
     })
 
     if (client === Client.ELECTRON) {

@@ -9,25 +9,25 @@ import { useQueryContext } from '~/api/tan-query/utils'
 import { Feature, ID } from '~/models'
 import { toast } from '~/store/ui/toast/slice'
 
-import { CommentOrReply, messages } from './types'
+import { messages } from './types'
 import { getCommentQueryKey } from './utils'
 
-export const useComment = (commentId: ID) => {
+export const useComment = (commentId: ID | null | undefined) => {
   const { audiusSdk, reportToSentry } = useQueryContext()
   const dispatch = useDispatch()
 
   const queryRes = useQuery({
     queryKey: getCommentQueryKey(commentId),
     enabled: !!commentId,
-    queryFn: async (): Promise<CommentOrReply | {}> => {
+    queryFn: async () => {
       const sdk = await audiusSdk()
       const { data: commentRes } = await sdk.full.comments.getComment({
         commentId: Id.parse(commentId)
       })
 
-      if (!commentRes) return {}
+      if (!commentRes || commentRes.length === 0) return null
 
-      return commentFromSDK(commentRes[0]) ?? {}
+      return commentFromSDK(commentRes[0]) ?? null
     },
     staleTime: Infinity
   })

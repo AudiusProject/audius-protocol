@@ -36,6 +36,7 @@ export const commentsMessages = {
   menuActions: {
     pin: 'Pin',
     unpin: 'Unpin',
+    share: 'Share',
     flagAndHide: 'Flag & Hide',
     flagAndRemove: 'Flag & Remove',
     muteUser: 'Mute User',
