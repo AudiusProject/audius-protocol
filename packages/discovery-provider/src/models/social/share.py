@@ -1,17 +1,6 @@
 import enum
 
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Enum,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Text,
-    text,
-)
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, Enum, Index, Integer, String, Text, text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
