@@ -66,7 +66,6 @@ import {
   MusicBadge,
   Paper,
   Text,
-  spacing,
   type ImageProps
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
