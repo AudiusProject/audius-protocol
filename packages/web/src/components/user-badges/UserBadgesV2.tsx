@@ -1,4 +1,10 @@
-import { cloneElement, MouseEvent, ReactElement, useCallback } from 'react'
+import {
+  cloneElement,
+  MouseEvent,
+  ReactElement,
+  useCallback,
+  useMemo
+} from 'react'
 
 import { useUserCoinBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
@@ -104,37 +110,41 @@ const UserBadges = ({
     e.stopPropagation()
   }, [])
 
-  if (!hasContent) return null
-
   // Wrap the verified badge with a HoverCard
-  const verifiedBadge = isUserVerified ? (
-    <HoverCard
-      content={
-        <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
-          <IconVerified size='l' />
-          <Text variant='title' size='l'>
-            Verified
-          </Text>
-        </Flex>
-      }
-    >
-      <Box
-        css={{
-          cursor: 'pointer',
-          transition: `opacity ${motion.quick}`,
-          '&:hover': {
-            opacity: 0.6
-          }
-        }}
+  const verifiedBadge = useMemo(() => {
+    if (!isUserVerified) return null
+
+    return (
+      <HoverCard
+        content={
+          <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
+            <IconVerified size='l' />
+            <Text variant='title' size='l'>
+              Verified
+            </Text>
+          </Flex>
+        }
       >
-        <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
-      </Box>
-    </HoverCard>
-  ) : null
+        <Box
+          css={{
+            cursor: 'pointer',
+            transition: `opacity ${motion.quick}`,
+            '&:hover': {
+              opacity: 0.6
+            }
+          }}
+        >
+          <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
+        </Box>
+      </HoverCard>
+    )
+  }, [isUserVerified, size])
 
   // Get the tier badge and wrap it with AudioHoverCard if user has a tier
-  const tierBadge =
-    tier !== 'none' ? (
+  const tierBadge = useMemo(() => {
+    if (tier === 'none') return null
+
+    return (
       <AudioHoverCard
         tier={tier}
         userId={userId}
@@ -154,10 +164,12 @@ const UserBadges = ({
           {cloneElement(audioTierMap[tier]!, { size })}
         </Box>
       </AudioHoverCard>
-    ) : null
+    )
+  }, [tier, userId, anchorOrigin, transformOrigin, handleClick, size])
 
-  const artistCoinBadge =
-    coinBalance && bonkMint && isArtistCoinEnabled ? (
+  const artistCoinBadge = useMemo(() => {
+    if (!coinBalance || !bonkMint || !isArtistCoinEnabled) return null
+    return (
       <ArtistCoinHoverCard
         mint={bonkMint}
         userId={userId}
@@ -176,7 +188,18 @@ const UserBadges = ({
           <IconTokenBonk size={size} hex />
         </Box>
       </ArtistCoinHoverCard>
-    ) : null
+    )
+  }, [
+    coinBalance,
+    bonkMint,
+    isArtistCoinEnabled,
+    userId,
+    anchorOrigin,
+    transformOrigin,
+    size
+  ])
+
+  if (!hasContent) return null
 
   return (
     <Box
