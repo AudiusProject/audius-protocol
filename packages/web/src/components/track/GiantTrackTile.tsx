@@ -20,7 +20,13 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import { Genre, Nullable, dayjs, formatReleaseDate } from '@audius/common/utils'
+import {
+  Genre,
+  Nullable,
+  dayjs,
+  formatReleaseDate,
+  getLocalTimezone
+} from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -105,7 +111,7 @@ const messages = {
   contestEnded: 'Contest Ended',
   deadline: (deadline?: string) => {
     return deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
+      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')} ${getLocalTimezone()}`
       : ''
   },
   seeMore: 'See More',

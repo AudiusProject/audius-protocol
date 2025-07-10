@@ -2,7 +2,7 @@ import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
 import { useRemixContest, useTrack, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
-import { formatDate } from '@audius/common/utils'
+import { formatDate, getLocalTimezone } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
@@ -14,7 +14,7 @@ const messages = {
   deadline: (releaseDate?: string) =>
     releaseDate
       ? new Date(releaseDate) > new Date()
-        ? `Deadline: ${formatDate(releaseDate)}`
+        ? `Deadline: ${formatDate(releaseDate)} ${getLocalTimezone()}`
         : 'Ended'
       : releaseDate
 }

@@ -2,7 +2,7 @@ import type { RefObject } from 'react'
 
 import { useRemixContest } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { dayjs } from '@audius/common/utils'
+import { dayjs, getLocalTimezone } from '@audius/common/utils'
 import type { ScrollView, FlatList } from 'react-native/types'
 
 import { Flex, Text } from '@audius/harmony-native'
@@ -14,7 +14,7 @@ const messages = {
   deadline: (deadline?: string) => {
     if (!deadline) return ''
     const date = dayjs(deadline)
-    return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')}`
+    return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')} ${getLocalTimezone()}`
   },
   fallbackDescription:
     'Enter my remix contest before the deadline for your chance to win!'

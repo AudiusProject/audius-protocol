@@ -1,6 +1,6 @@
 import { useRemixContest } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { dayjs } from '@audius/common/utils'
+import { dayjs, getLocalTimezone } from '@audius/common/utils'
 import { Flex, spacing, Text } from '@audius/harmony'
 
 import { CollapsibleContent } from 'components/collapsible-content'
@@ -11,7 +11,7 @@ const messages = {
   deadline: (deadline?: string) => {
     if (!deadline) return ''
     const date = dayjs(deadline)
-    return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')}`
+    return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')} ${getLocalTimezone()}`
   },
   ended: 'Contest Ended:',
   fallbackDescription:
