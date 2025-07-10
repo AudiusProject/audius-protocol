@@ -27,10 +27,6 @@ type ArtistCoinHoverCardProps = Pick<
   userId: ID
 }
 
-const formatCoinBalance = (balance: number) => {
-  return formatCount(Number(balance))
-}
-
 /**
  * A complete HoverCard for artist coin badges that includes both header and body
  */
@@ -45,15 +41,15 @@ export const ArtistCoinHoverCard = ({
 }: ArtistCoinHoverCardProps) => {
   const { cornerRadius } = useTheme()
 
-  const { data: coinBalance, isLoading } = useUserCoinBalance({
+  const { data: coinBalance, isPending } = useUserCoinBalance({
     userId,
     mint
   })
 
-  if (isLoading || !coinBalance) return null
+  if (isPending || !coinBalance) return null
 
   const balance = coinBalance?.data[0]?.balance
-  const formattedBalance = formatCoinBalance(balance)
+  const formattedBalance = formatCount(Number(balance))
   const coinName = 'BONK'
 
   return (
