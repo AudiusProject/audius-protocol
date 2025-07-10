@@ -27,9 +27,8 @@ type ArtistCoinHoverCardProps = Pick<
   userId: ID
 }
 
-const formatCoinBalance = (balance?: number) => {
-  if (!balance) return '0'
-  return formatCount(balance)
+const formatCoinBalance = (balance: number) => {
+  return formatCount(Number(balance))
 }
 
 /**
@@ -46,10 +45,12 @@ export const ArtistCoinHoverCard = ({
 }: ArtistCoinHoverCardProps) => {
   const { cornerRadius } = useTheme()
 
-  const { data: coinBalance } = useUserCoinBalance({
+  const { data: coinBalance, isLoading } = useUserCoinBalance({
     userId,
     mint
   })
+
+  if (isLoading || !coinBalance) return null
 
   const balance = coinBalance?.data[0]?.balance
   const formattedBalance = formatCoinBalance(balance)
