@@ -19,8 +19,8 @@ import { animated, useSpring } from '@react-spring/web'
 import { useToggle } from 'react-use'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { UserLink } from 'components/link/UserLink'
 import Skeleton from 'components/skeleton/Skeleton'
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './SuggestedTracks.module.css'
@@ -69,12 +69,7 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
         <DynamicImage wrapperClassName={styles.trackArtwork} image={image} />
         <div className={styles.trackInfo}>
           <p className={styles.trackName}>{title}</p>
-          {user ? (
-            <UserNameAndBadges
-              classes={{ name: styles.artistName }}
-              user={user}
-            />
-          ) : null}
+          {user ? <UserLink userId={user.user_id} textSize='s' /> : null}
         </div>
       </div>
       <Button
