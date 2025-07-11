@@ -11,7 +11,7 @@ const messages = {
 export const CommentSortBar = () => {
   const { currentSort, setCurrentSort } = useCurrentCommentSection()
   return (
-    <Flex gap='s'>
+    <Flex gap='s' ph='xl'>
       <SelectablePill
         label={messages.top}
         isSelected={currentSort === GetTrackCommentsSortMethodEnum.Top}
