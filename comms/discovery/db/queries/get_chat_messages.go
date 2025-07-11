@@ -53,6 +53,29 @@ ORDER BY chat_message.created_at DESC, chat_message.message_id
 LIMIT $3
 `
 
+// Blast sender getting their own outgoing blasts for a given audience
+const outgoingBlastMessages = `
+			SELECT
+				b.blast_id as message_id,
+				$2 as chat_id,
+				b.from_user_id as user_id,
+				b.created_at,
+				b.plaintext as ciphertext,
+				true as is_plaintext,
+				'[]'::json AS reactions
+			FROM chat_blast b
+			WHERE b.from_user_id = $1
+				AND concat_ws(':', audience, audience_content_type, 
+					CASE 
+						WHEN audience_content_id IS NOT NULL THEN id_encode(audience_content_id)
+						ELSE NULL 
+					END) = $2
+			  AND b.created_at < $3
+			  AND b.created_at > $4
+			ORDER BY b.created_at DESC
+			LIMIT $5
+			`
+
 type ChatMessagesAndReactionsParams struct {
 	UserID  int32     `db:"user_id" json:"user_id"`
 	ChatID  string    `db:"chat_id" json:"chat_id"`
@@ -114,7 +137,6 @@ func (t *JSONTime) UnmarshalJSON(b []byte) error {
 func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessagesAndReactionsParams) ([]ChatMessageAndReactionsRow, error) {
 	var rows []ChatMessageAndReactionsRow
 
-	// special case to handle outgoing blasts...
 	if arg.IsBlast {
 		parts := strings.Split(arg.ChatID, ":")
 		if len(parts) < 1 {
@@ -126,28 +148,6 @@ func ChatMessagesAndReactions(q db.Queryable, ctx context.Context, arg ChatMessa
 			schema.ChatBlastAudience(audience) == schema.TipperAudience ||
 			schema.ChatBlastAudience(audience) == schema.CustomerAudience ||
 			schema.ChatBlastAudience(audience) == schema.RemixerAudience {
-			const outgoingBlastMessages = `
-			SELECT
-				b.blast_id as message_id,
-				$2 as chat_id,
-				b.from_user_id as user_id,
-				b.created_at,
-				b.plaintext as ciphertext,
-				true as is_plaintext,
-				'[]'::json AS reactions
-			FROM chat_blast b
-			WHERE b.from_user_id = $1
-				AND concat_ws(':', audience, audience_content_type, 
-					CASE 
-						WHEN audience_content_id IS NOT NULL THEN id_encode(audience_content_id)
-						ELSE NULL 
-					END) = $2
-			  AND b.created_at < $3
-			  AND b.created_at > $4
-			ORDER BY b.created_at DESC
-			LIMIT $5
-			`
-
 			err := q.SelectContext(ctx, &rows, outgoingBlastMessages,
 				arg.UserID,
 				arg.ChatID,
