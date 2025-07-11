@@ -253,8 +253,7 @@ export const CommentActionBar = ({
   const popupMenuItems = useMemo(
     () =>
       [
-        // TODO: Update this when highlighting replies is implemented
-        isParentComment && {
+        {
           onClick: handleShare,
           text: messages.menuActions.share
         },

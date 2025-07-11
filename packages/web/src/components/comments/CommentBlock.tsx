@@ -56,10 +56,7 @@ const CommentBlockInternal = (
   const isDarkMode = getIsDarkMode()
 
   const highlightComment = useHighlightComment()
-  // TODO: Update this when highlighting replies is implemented
-  const highlightCommentId = highlightComment?.parentCommentId
-    ? null
-    : highlightComment?.id
+  const highlightCommentId = highlightComment?.id
 
   const {
     id: commentId,
@@ -98,13 +95,14 @@ const CommentBlockInternal = (
       css={{
         opacity: isTombstone ? 0.5 : 1,
         animation: `${fadeIn} ${motion.calm}`,
+        paddingInline: parentCommentId ? 80 : 24,
         '&::before': {
           content: highlightCommentId === commentId ? '""' : 'none',
           position: 'absolute',
-          top: '-12px',
-          left: '-24px',
-          right: '-24px',
-          bottom: '-12px',
+          top: -12,
+          bottom: -12,
+          left: 0,
+          right: 0,
           backgroundColor: color.focus.default,
           opacity: isDarkMode ? 0.1 : 0.05,
           zIndex: 0
