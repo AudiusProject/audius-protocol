@@ -65,10 +65,8 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const { history } = useHistoryContext()
 
   const highlightComment = useHighlightComment()
-  // TODO: Update this when highlighting replies is implemented
-  const highlightCommentId = highlightComment?.parentCommentId
-    ? null
-    : highlightComment?.id
+  const highlightCommentId =
+    highlightComment?.parentCommentId ?? highlightComment?.id
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
@@ -140,7 +138,7 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
-        <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
+        <Flex pv='l' w='100%' direction='column' gap='l'>
           {commentSectionLoading ? (
             <SortBarSkeletons />
           ) : showCommentSortBar ? (
@@ -153,7 +151,7 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
             useWindow={false}
             threshold={-250}
           >
-            <Flex direction='column' gap='xl' pt='m'>
+            <Flex direction='column' gap='xl' pv='m'>
               {commentSectionLoading ? (
                 <CommentBlockSkeletons />
               ) : (
