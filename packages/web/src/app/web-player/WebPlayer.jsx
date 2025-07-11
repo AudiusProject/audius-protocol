@@ -75,7 +75,6 @@ import { NotificationUsersPage } from 'pages/notification-users-page/Notificatio
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
 import { PickWinnersPage } from 'pages/pick-winners-page/PickWinnersPage'
-import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
@@ -169,7 +168,6 @@ const {
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   PROFILE_PAGE_COMMENTS,
-  EXPLORE_PREMIUM_TRACKS_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
   PURCHASES_PAGE,
@@ -576,13 +574,6 @@ const WebPlayer = (props) => {
                 )}
               />
               <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
-              <Route
-                exact
-                path={EXPLORE_PREMIUM_TRACKS_PAGE}
-                render={() => (
-                  <PremiumTracksPage containerRef={mainContentRef.current} />
-                )}
-              />
               <Route
                 exact
                 path={SEARCH_CATEGORY_PAGE_LEGACY}
