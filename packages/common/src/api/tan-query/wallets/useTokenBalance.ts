@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { BONK, USDC, wAUDIO } from '@audius/fixed-decimal'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { TokenAccountNotFoundError } from '@solana/spl-token'
 import { Commitment } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,19 +9,20 @@ import { useCurrentAccountUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Status } from '~/models/Status'
 import { MintName } from '~/services/audius-backend/solana'
-import { getUserbankAccountInfo } from '~/services/index'
+import { getUserbankAccountInfo, getTokenBySymbol } from '~/services/index'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
-// Map token symbols to their Fixed Decimal constructors
-const TOKEN_CONSTRUCTORS = {
-  wAUDIO,
-  USDC,
-  BONK
-} as const
-
-type TokenSymbol = keyof typeof TOKEN_CONSTRUCTORS
+const createTokenBalance = (
+  amount: string | number | bigint | null | undefined,
+  decimals: number
+): FixedDecimal | null => {
+  if (amount === null || amount === undefined) {
+    return null
+  }
+  return new FixedDecimal(BigInt(amount.toString()), decimals)
+}
 
 export const getTokenBalanceQueryKey = (
   ethAddress: string | null,
@@ -33,7 +34,7 @@ export const getTokenBalanceQueryKey = (
     ethAddress,
     token,
     commitment
-  ] as unknown as QueryKey<any | null>
+  ] as unknown as QueryKey<FixedDecimal | null>
 
 /**
  * Hook to get the balance for any supported token for the current user.
@@ -55,7 +56,7 @@ export const useTokenBalance = ({
   pollingInterval?: number
   commitment?: Commitment
 } & QueryOptions) => {
-  const { audiusSdk } = useQueryContext()
+  const { audiusSdk, env } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const ethAddress = user?.wallet ?? null
   const queryClient = useQueryClient()
@@ -78,27 +79,27 @@ export const useTokenBalance = ({
           commitment
         )
 
-        const TokenConstructor = TOKEN_CONSTRUCTORS[token as TokenSymbol]
-        if (!TokenConstructor) {
-          console.warn(`Unsupported token: ${token}, returning null balance`)
+        // Get token configuration from registry to get decimal places
+        const tokenConfig = getTokenBySymbol(env, token)
+        if (!tokenConfig) {
+          console.warn(
+            `Token not found in registry: ${token}, returning null balance`
+          )
           return null
         }
 
-        const balance =
-          account?.amount !== undefined && account?.amount !== null
-            ? TokenConstructor(BigInt(account.amount.toString()))
-            : TokenConstructor(BigInt(0))
-
-        return balance
+        return createTokenBalance(account?.amount, tokenConfig.decimals)
       } catch (e) {
         // If user doesn't have a token account yet, return 0 balance
         if (e instanceof TokenAccountNotFoundError) {
-          const TokenConstructor = TOKEN_CONSTRUCTORS[token as TokenSymbol]
-          if (!TokenConstructor) {
-            console.warn(`Unsupported token: ${token}, returning null balance`)
+          const tokenConfig = getTokenBySymbol(env, token)
+          if (!tokenConfig) {
+            console.warn(
+              `Token not found in registry: ${token}, returning null balance`
+            )
             return null
           }
-          return TokenConstructor(BigInt(0))
+          return createTokenBalance(BigInt(0), tokenConfig.decimals)
         }
         console.error(`Error fetching ${token} balance:`, e)
         // Return null instead of throwing to prevent infinite loading
