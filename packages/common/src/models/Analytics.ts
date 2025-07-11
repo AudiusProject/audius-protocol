@@ -954,7 +954,7 @@ type Share = {
 
 export type ShareToTwitter = {
   eventName: Name.SHARE_TO_TWITTER
-  kind: 'profile' | 'album' | 'playlist' | 'track' | 'audioNftPlaylist'
+  kind: 'profile' | 'album' | 'playlist' | 'track'
   source: ShareSource
   id: number
   url: string
@@ -2232,7 +2232,7 @@ export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
   signature: string
 }
 
-// Stripe
+// Stripe Tracking
 export type StripeEventFields = {
   amount: string
   destinationCurrency: string

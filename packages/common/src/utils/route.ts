@@ -28,20 +28,8 @@ export const TRENDING_PAGE = '/trending'
 export const TRENDING_PLAYLISTS_PAGE_LEGACY = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
-export const EXPLORE_PREMIUM_TRACKS_PAGE = '/explore/premium-tracks'
-export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
-export const EXPLORE_LET_THEM_DJ_PAGE = '/explore/let-them-dj'
-export const EXPLORE_BEST_NEW_RELEASES_PAGE = '/explore/best-new-releases'
-export const EXPLORE_UNDER_THE_RADAR_PAGE = '/explore/under-the-radar'
-export const EXPLORE_TOP_ALBUMS_PAGE = '/explore/top-albums'
-export const EXPLORE_MOST_LOVED_PAGE = '/explore/most-loved'
-export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
-export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
 export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
 export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
-export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
-
-export const AUDIO_NFT_PLAYLIST_PAGE = '/:handle/audio-nft-playlist'
 
 // DEPRECATED - use /library instead.
 export const SAVED_PAGE = '/favorites'

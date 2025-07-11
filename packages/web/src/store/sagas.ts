@@ -33,7 +33,6 @@ import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import collectionSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
-import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
 import librarySagas from 'common/store/pages/library/sagas'
@@ -53,7 +52,6 @@ import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
-import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import uploadSagas from 'common/store/upload/sagas'
@@ -103,7 +101,6 @@ export default function* rootSaga() {
     collectionSagas(),
     chatSagas(),
     dashboardSagas(),
-    exploreCollectionsPageSagas(),
     feedPageSagas(),
     historySagas(),
     passwordResetSagas(),
@@ -156,7 +153,7 @@ export default function* rootSaga() {
     stripeModalSagas(),
     overflowMenuSagas(),
     toastSagas(),
-    smartCollectionPageSagas(),
+
     searchUsersModalSagas(),
     stemUploadSagas(),
     tokenDashboardSagas(),
@@ -204,7 +201,6 @@ export function* testRootSaga() {
     // collectionSagas(),
     // chatSagas(),
     // dashboardSagas(),
-    // exploreCollectionsPageSagas(),
     // feedPageSagas(),
     // historySagas(),
     // passwordResetSagas(),
@@ -246,7 +242,7 @@ export function* testRootSaga() {
     // stripeModalSagas(),
     // overflowMenuSagas(),
     // toastSagas(),
-    // smartCollectionPageSagas(),
+
     // searchUsersModalSagas(),
     // stemUploadSagas(),
     // tokenDashboardSagas(),

@@ -28,10 +28,6 @@ export const getContentUrl = (content: ShareContent) => {
       const { playlist } = content
       return getCollectionRoute(playlist, true)
     }
-    // TODO: add audioNFTPlaylist link
-    case 'audioNftPlaylist': {
-      return ''
-    }
   }
 }
 
@@ -66,9 +62,6 @@ export const getXShareText = async (content: ShareContent) => {
         creator
       } = content
       return messages.playlistShareText(playlist_name, getXShareHandle(creator))
-    }
-    case 'audioNftPlaylist': {
-      return messages.nftPlaylistShareText
     }
   }
 }

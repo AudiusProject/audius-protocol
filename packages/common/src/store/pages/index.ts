@@ -34,13 +34,6 @@ export {
   actions as tokenDashboardPageActions
 } from './token-dashboard/slice'
 
-export * as smartCollectionPageSelectors from './smart-collection/selectors'
-export {
-  default as smartCollectionPageReducer,
-  actions as smartCollectionPageActions
-} from './smart-collection/slice'
-export * from './smart-collection/types'
-
 export * as settingsPageSelectors from './settings/selectors'
 export {
   default as settingsPageReducer,
@@ -114,13 +107,6 @@ export * as feedPageSelectors from './feed/selectors'
 export * as feedPageActions from './feed/actions'
 export * from './feed/types'
 export { default as feedPageReducer } from './feed/reducer'
-
-export * as explorePageCollectionsSelectors from './explore/exploreCollections/selectors'
-export {
-  default as explorePageCollectionsReducer,
-  actions as explorePageCollectionsActions
-} from './explore/exploreCollections/slice'
-export * from './explore/types'
 
 export { default as collectionPageLineupReducer } from './collection/lineup/reducer'
 export { tracksActions as collectionPageLineupActions } from './collection/lineup/actions'

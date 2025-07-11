@@ -3,7 +3,7 @@ import {
   useGatedContentAccess,
   useGatedContentAccessMap
 } from '@audius/common/hooks'
-import { Variant, SmartCollectionVariant, ID } from '@audius/common/models'
+import { ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import { Button, Flex, IconPause, IconPlay } from '@audius/harmony'
 import cn from 'classnames'
@@ -11,7 +11,6 @@ import { pick } from 'lodash'
 
 import styles from './CollectionHeader.module.css'
 import { OwnerActionButtons } from './OwnerActionButtons'
-import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
@@ -23,35 +22,30 @@ const messages = {
 }
 
 type CollectionActionButtonProps = {
-  collectionId: ID | SmartCollectionVariant
-  variant?: Nullable<Variant>
+  collectionId: ID
   isOwner?: boolean
   isPlaying: boolean
   isPreviewing: boolean
   tracksLoading: boolean
   isPlayable: boolean
   isPremium?: Nullable<boolean>
-  userId: Nullable<ID>
   onPlay: () => void
   onPreview: () => void
 }
 
 export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
   const {
-    variant,
     isOwner,
     collectionId,
     onPlay,
     onPreview,
     isPlaying,
     isPlayable,
-    userId,
     tracksLoading,
     isPremium
   } = props
 
-  const { data: partialCollection } = useCollection(collectionId as number, {
-    enabled: typeof collectionId === 'number',
+  const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
       pick(collection, [
         'playlist_id',
@@ -61,10 +55,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
       ])
   })
   const { hasStreamAccess } = useGatedContentAccess(partialCollection)
-  // Dirty hack to get around the possibility that collectionId is a SmartCollectionVariant
-  const { data: tracks } = useCollectionTracks(
-    typeof collectionId === 'number' ? collectionId : null
-  )
+  const { data: tracks } = useCollectionTracks(collectionId)
   const trackAccessMap = useGatedContentAccessMap(tracks ?? [])
   const doesUserHaveAccessToAnyTrack = Object.values(trackAccessMap).some(
     ({ hasStreamAccess }) => hasStreamAccess
@@ -78,16 +69,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
 
   let actionButtons: Nullable<JSX.Element> = null
 
-  if (typeof collectionId !== 'number') {
-    if (variant === Variant.SMART) {
-      actionButtons = (
-        <SmartCollectionActionButtons
-          collectionId={collectionId}
-          userId={userId}
-        />
-      )
-    }
-  } else if (isOwner) {
+  if (isOwner) {
     actionButtons = <OwnerActionButtons collectionId={collectionId} />
   } else {
     actionButtons = <ViewerActionButtons collectionId={collectionId} />

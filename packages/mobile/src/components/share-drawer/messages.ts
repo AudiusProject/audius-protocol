@@ -4,8 +4,7 @@ const shareTypeMap: Record<ShareType, string> = {
   track: 'Track',
   profile: 'Profile',
   album: 'Album',
-  playlist: 'Playlist',
-  audioNftPlaylist: 'Audio NFT Playlist'
+  playlist: 'Playlist'
 }
 
 export const messages = {
@@ -33,7 +32,6 @@ export const messages = {
   loadingSnapchatSubtitle: 'Preparing to open Snapchat',
   loadingTikTokSubtitle: 'Preparing to open TikTok',
   cancel: 'Cancel',
-  nftPlaylistShareText: '',
   addToPhotoLibraryDenied:
     'You must allow Audius to add to your photo library in order to share to TikTok.',
   addToPhotoLibraryBlocked:

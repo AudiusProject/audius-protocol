@@ -13,7 +13,6 @@ import { DragDropKind } from 'store/dragndrop/slice'
 
 import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
-import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
 
 const { saveCollection } = collectionsSocialActions
@@ -27,7 +26,6 @@ export const PlaylistLibrary = () => {
   const dispatch = useDispatch()
   const { color, motion, spacing } = useTheme()
 
-  useAddAudioNftPlaylistToLibrary()
   useSanitizePlaylistLibrary()
 
   const handleDrop = useCallback(

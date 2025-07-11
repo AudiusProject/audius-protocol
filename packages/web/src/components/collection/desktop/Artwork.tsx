@@ -1,4 +1,4 @@
-import { ComponentType, SVGProps, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { useCollection } from '@audius/common/api'
 import { imageBlank } from '@audius/common/assets'
@@ -22,21 +22,11 @@ const messages = {
 type ArtworkProps = {
   collectionId: number
   callback: () => void
-  gradient?: string
-  icon: ComponentType<SVGProps<SVGSVGElement>>
-  imageOverride?: string
   isOwner: boolean
 }
 
 export const Artwork = (props: ArtworkProps) => {
-  const {
-    collectionId,
-    callback,
-    gradient,
-    icon: Icon,
-    imageOverride,
-    isOwner
-  } = props
+  const { collectionId, callback, isOwner } = props
 
   const { data: partialCollection } = useCollection(collectionId, {
     select: (collection) =>
@@ -52,30 +42,19 @@ export const Artwork = (props: ArtworkProps) => {
   const hasImage = image && image !== imageBlank
 
   useEffect(() => {
-    // If there's a gradient, this is a smart collection. Just immediately call back
-    if (image || gradient || imageOverride || image === '') {
+    // If there's a gradient, just immediately call back
+    if (image || image === '') {
       callback()
     }
-  }, [image, callback, gradient, imageOverride])
+  }, [image, callback])
 
   return (
     <DynamicImage
       wrapperClassName={styles.coverArtWrapper}
       alt={messages.coverArtAltText}
       className={styles.coverArt}
-      image={gradient || imageOverride || image}
+      image={image}
     >
-      {Icon ? (
-        <Icon
-          color='white'
-          width='100%'
-          height='100%'
-          css={{
-            background: gradient,
-            path: { mixBlendMode: 'overlay', opacity: 0.3 }
-          }}
-        />
-      ) : null}
       {isOwner ? (
         <span className={styles.imageEditButtonWrapper}>
           <Button variant='tertiary' iconLeft={IconPencil} asChild>

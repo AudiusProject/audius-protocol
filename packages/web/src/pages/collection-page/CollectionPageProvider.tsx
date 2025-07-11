@@ -18,7 +18,6 @@ import {
   Kind,
   Status,
   Collection,
-  SmartCollection,
   ID,
   UID,
   isContentUSDCPurchaseGated,
@@ -121,7 +120,6 @@ type OwnProps = {
     | ComponentType<DesktopCollectionPageProps>
 
   // Smart collection props
-  smartCollection?: SmartCollection
 }
 
 type CollectionPageProps = OwnProps &
@@ -229,7 +227,6 @@ class CollectionPageClassComponent extends Component<
       userUid,
       status,
       user,
-      smartCollection,
       tracks,
       pathname,
       fetchCollectionSucceeded,
@@ -244,10 +241,6 @@ class CollectionPageClassComponent extends Component<
       playlistUpdates.includes(this.props.playlistId)
     ) {
       updatePlaylistLastViewedAt(this.props.playlistId)
-    }
-
-    if (!prevProps.smartCollection && smartCollection) {
-      this.fetchCollection(pathname, true)
     }
 
     const { updatingRoute, initialOrder } = this.state
@@ -668,14 +661,6 @@ class CollectionPageClassComponent extends Component<
     }
   }
 
-  onSaveSmartCollection = (isSaved: boolean, smartCollectionName: string) => {
-    if (isSaved) {
-      this.props.unsaveSmartCollection(smartCollectionName)
-    } else {
-      this.props.saveSmartCollection(smartCollectionName)
-    }
-  }
-
   onRepostPlaylist = (isReposted: boolean, playlistId: number) => {
     if (isReposted) {
       this.props.undoRepostCollection(playlistId)
@@ -694,17 +679,10 @@ class CollectionPageClassComponent extends Component<
   }
 
   onHeroTrackSave = () => {
-    const { collection: metadata, smartCollection } = this.props
-    const { playlistId } = this.props
+    const { playlistId, collection: metadata } = this.props
     const isSaved =
-      (metadata && playlistId ? metadata.has_current_user_saved : false) ||
-      (smartCollection && smartCollection.has_current_user_saved)
-
-    if (smartCollection && metadata) {
-      this.onSaveSmartCollection(!!isSaved, metadata.playlist_name)
-    } else {
-      this.onSavePlaylist(!!isSaved, playlistId!)
-    }
+      metadata && playlistId ? metadata.has_current_user_saved : false
+    this.onSavePlaylist(!!isSaved, playlistId!)
   }
 
   onHeroTrackRepost = () => {
@@ -772,7 +750,6 @@ class CollectionPageClassComponent extends Component<
       user,
       tracks,
       userId,
-      smartCollection,
       trackCount
     } = this.props
     const { allowReordering } = this.state
@@ -802,9 +779,7 @@ class CollectionPageClassComponent extends Component<
       playing,
       previewing,
       type,
-      collection: smartCollection
-        ? { status: Status.SUCCESS, metadata: smartCollection, user: null }
-        : { status, metadata, user },
+      collection: { status, metadata, user },
       tracks,
       userId,
       getPlayingUid: this.getPlayingUid,
@@ -941,25 +916,11 @@ function mapDispatchToProps(dispatch: Dispatch) {
           FavoriteSource.COLLECTION_PAGE
         )
       ),
-    saveSmartCollection: (smartCollectionName: string) =>
-      dispatch(
-        socialCollectionsActions.saveSmartCollection(
-          smartCollectionName,
-          FavoriteSource.COLLECTION_PAGE
-        )
-      ),
 
     unsaveCollection: (playlistId: number) =>
       dispatch(
         socialCollectionsActions.unsaveCollection(
           playlistId,
-          FavoriteSource.COLLECTION_PAGE
-        )
-      ),
-    unsaveSmartCollection: (smartCollectionName: string) =>
-      dispatch(
-        socialCollectionsActions.unsaveSmartCollection(
-          smartCollectionName,
           FavoriteSource.COLLECTION_PAGE
         )
       ),

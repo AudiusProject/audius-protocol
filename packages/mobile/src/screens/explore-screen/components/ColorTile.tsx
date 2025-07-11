@@ -14,18 +14,12 @@ import type { SvgProps } from 'react-native-svg'
 import IconAudioRewardsPill from 'app/assets/images/iconAudioRewardsPill.svg'
 import { Pressable } from 'app/components/core'
 import Text from 'app/components/text'
-import { useNavigation } from 'app/hooks/useNavigation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import type { ExploreTabScreenParamList } from 'app/screens/app-screen/ExploreTabScreen'
 import { font, makeStyles } from 'app/styles'
-
-import type { CollectionScreen, MoodScreen } from '../collections'
-import type { SmartCollectionScreen } from '../smartCollections'
 
 type ColorTileProps = {
   style?: StyleProp<ViewStyle>
   title: string
-  screen: MoodScreen | CollectionScreen | SmartCollectionScreen
   description?: string
   gradientColors?: string[]
   gradientAngle?: number
@@ -122,7 +116,6 @@ const useStyles = makeStyles(({ palette }) => ({
 export const ColorTile = ({
   style,
   title,
-  screen,
   description,
   gradientColors = [],
   gradientAngle = 0,
@@ -134,7 +127,6 @@ export const ColorTile = ({
   onPress
 }: ColorTileProps) => {
   const styles = useStyles()
-  const navigation = useNavigation<ExploreTabScreenParamList>()
   const {
     scale,
     handlePressIn: handlePressInScale,
@@ -143,10 +135,7 @@ export const ColorTile = ({
 
   const handlePress = useCallback(() => {
     onPress?.()
-    if (screen) {
-      navigation.push(screen as keyof ExploreTabScreenParamList)
-    }
-  }, [navigation, onPress, screen])
+  }, [onPress])
 
   return (
     <Animated.View
