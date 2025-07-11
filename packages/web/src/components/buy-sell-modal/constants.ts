@@ -9,7 +9,7 @@ import {
 import {
   IconLogoCircleUSDC,
   IconTokenAUDIO,
-  IconLogoCircleSOL
+  IconTokenBonk
 } from '@audius/harmony'
 
 import { env } from 'services/env'
@@ -20,7 +20,7 @@ const createTokensWithIcons = (): Record<string, TokenInfo> => {
   const iconMap = {
     AUDIO: IconTokenAUDIO,
     USDC: IconLogoCircleUSDC,
-    BONK: IconLogoCircleSOL // Using SOL icon as placeholder for BONK
+    BONK: IconTokenBonk
   }
 
   const tokensWithIcons: Record<string, TokenInfo> = {}
