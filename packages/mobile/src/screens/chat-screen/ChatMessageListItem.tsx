@@ -12,9 +12,10 @@ import {
 } from '@audius/common/utils'
 import { HashId } from '@audius/sdk'
 import type { ReactionTypes, ChatMessageReaction } from '@audius/sdk'
+import { css } from '@emotion/native'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Dimensions, Keyboard } from 'react-native'
+import { Dimensions, Keyboard, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Flex, IconTokenBonk, spacing, Text } from '@audius/harmony-native'
@@ -59,15 +60,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   messageContainerAuthor: {
     backgroundColor: palette.secondaryLight2
-  },
-  dateContainer: {
-    zIndex: -1,
-    marginTop: spacing(2),
-    marginBottom: spacing(6)
-  },
-  date: {
-    fontSize: typography.fontSize.xs,
-    color: palette.neutralLight2
   },
   shadow: {
     shadowColor: 'black',
@@ -284,13 +276,18 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     >
                       <Flex row gap='xs' alignItems='center'>
                         <IconTokenBonk size='xs' />
-                        <Text variant='label' size='s'>
-                          $Bonk
+                        {/* Alignment bug for label text variant on iOS */}
+                        <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
+                          <Text variant='label' size='s'>
+                            $Bonk
+                          </Text>
+                        </Flex>
+                      </Flex>
+                      <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
+                        <Text variant='label' size='s' color='accent'>
+                          {messages.membersOnly}
                         </Text>
                       </Flex>
-                      <Text variant='label' size='s' color='accent'>
-                        {messages.membersOnly}
-                      </Text>
                     </Flex>
                   ) : null}
                   {isCollection ? (
@@ -390,8 +387,8 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
         {message.hasTail ? (
           <>
             {!isPopup ? (
-              <Flex style={styles.dateContainer}>
-                <Text style={styles.date}>
+              <Flex mt='s' mb='xl' style={css({ zIndex: -1 })}>
+                <Text size='xs' color='subdued'>
                   {isUnderneathPopup
                     ? ' '
                     : formatMessageDate(message.created_at)}
