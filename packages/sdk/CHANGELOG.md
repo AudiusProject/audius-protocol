@@ -1,5 +1,24 @@
 # @audius/sdk
 
+## 9.2.0
+
+### Minor Changes
+
+- dc2f3de: Adds history, recently commented, and feeling lucky endpoints to non-full API
+- 7dcf0ae: add recently listed premium tracks API
+- 8bcfb33: Adds explore/best_selling endpoint
+- 7b6695f: Adds the getMostSharedTracks function to tracks API
+- 111beb0: Adds user recommended tracks endpoint to SDK
+- 3011b29: adds Share entity manager action
+
+### Patch Changes
+
+- 9dadb38: Remix contest winner challenge
+- 1f70f0b: Remix contest winners selected notification
+- 1026ce1: Remove BN.js dependency
+- Updated dependencies [1026ce1]
+  - @audius/fixed-decimal@0.2.0
+
 ## 9.1.0
 
 ### Minor Changes
