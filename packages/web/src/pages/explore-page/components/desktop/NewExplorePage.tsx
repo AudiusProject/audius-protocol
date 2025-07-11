@@ -7,7 +7,6 @@ import {
   useBestSelling
 } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
   Paper,
   Text,
@@ -202,9 +201,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
+    const isPremiumTracksTile = tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 
@@ -443,9 +440,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       key={tile.title}
                       backgroundGradient={tile.gradient}
                       shadowColor={tile.shadow}
-                      useOverlayBlendMode={
-                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                      }
                       backgroundIcon={
                         Icon ? (
                           <Icon height={180} width={180} color='inverse' />

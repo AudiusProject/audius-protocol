@@ -30,7 +30,7 @@ import { getXShareText } from './utils'
 const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
-const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
+const { shareCollection } = collectionsSocialActions
 const { setVisibility } = modalsActions
 
 export const ShareModal = () => {
@@ -63,15 +63,11 @@ export const ShareModal = () => {
 
   const handleShareToX = useCallback(async () => {
     if (!source || !content) return
-    const { xText, link, analyticsEvent } = await getXShareText(
-      content,
-      content.type === 'audioNftPlaylist' &&
-        accountUserId === content.user.user_id
-    )
+    const { xText, link, analyticsEvent } = await getXShareText(content)
     openXLink(link, xText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
     onClose()
-  }, [source, content, accountUserId, record, onClose])
+  }, [source, content, record, onClose])
 
   const handleCopyLink = useCallback(() => {
     if (!source || !content) return
@@ -87,9 +83,6 @@ export const ShareModal = () => {
         break
       case 'playlist':
         dispatch(shareCollection(content.playlist.playlist_id, source))
-        break
-      case 'audioNftPlaylist':
-        dispatch(shareAudioNftPlaylist(content.user.handle, source))
         break
     }
     toast(messages.toast(content.type), SHARE_TOAST_TIMEOUT_MILLIS)

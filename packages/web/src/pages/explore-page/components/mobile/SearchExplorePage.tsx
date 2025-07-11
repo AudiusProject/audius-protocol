@@ -169,9 +169,7 @@ const ExplorePage = () => {
   ])
 
   const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
+    const isPremiumTracksTile = tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 

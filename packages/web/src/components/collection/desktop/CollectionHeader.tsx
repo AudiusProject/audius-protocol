@@ -1,19 +1,9 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
 import { useCollection, useCurrentUserId } from '@audius/common/api'
-import {
-  AccessConditions,
-  AccessPermissions,
-  ID,
-  ModalSource,
-  Variant,
-  isContentUSDCPurchaseGated
-} from '@audius/common/models'
-import {
-  CollectionsPageType,
-  PurchaseableContentType
-} from '@audius/common/store'
-import { Nullable, dayjs, formatReleaseDate } from '@audius/common/utils'
+import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { PurchaseableContentType } from '@audius/common/store'
+import { dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
   Text,
   IconVisibilityHidden,
@@ -38,6 +28,7 @@ import { UserGeneratedText } from 'components/user-generated-text'
 
 import { CollectionMetadataList } from '../CollectionMetadataList'
 import { RepostsFavoritesStats } from '../components/RepostsFavoritesStats'
+import { CollectionHeaderProps } from '../types'
 
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
@@ -51,39 +42,6 @@ const messages = {
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
-}
-
-type CollectionHeaderProps = {
-  isStreamGated: Nullable<boolean>
-  isPlayable: boolean
-  isPublished: boolean
-  tracksLoading: boolean
-  loading: boolean
-  playing: boolean
-  previewing: boolean
-  isOwner: boolean
-  isAlbum: boolean
-  access: Nullable<AccessPermissions>
-  collectionId: ID
-  ownerId: Nullable<ID>
-  type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
-  title: string
-  artistName: string
-  description: string
-  artistHandle: string
-  releaseDate: string | number // either format should be utc time
-  lastModifiedDate?: string | number // either format should be utc time
-  numTracks: number
-  duration: number
-  userId: Nullable<ID>
-  reposts: number
-  saves: number
-  streamConditions: Nullable<AccessConditions>
-  onClickReposts?: () => void
-  onClickFavorites?: () => void
-  onPlay: () => void
-  onPreview: () => void
-  onFilterChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
 export const CollectionHeader = (props: CollectionHeaderProps) => {
@@ -134,7 +92,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const [filterText, setFilterText] = useState('')
 
   const hasStreamAccess = access?.stream
-  const shouldShowStats = variant !== Variant.SMART && (!isPrivate || isOwner)
+  const shouldShowStats = type !== 'album' && (!isPrivate || isOwner)
   const shouldShowScheduledRelease =
     isScheduledRelease && releaseDate && dayjs(releaseDate).isAfter(dayjs())
 

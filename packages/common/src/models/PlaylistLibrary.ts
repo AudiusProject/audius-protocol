@@ -1,6 +1,6 @@
 import { ID } from '~/models/Identifiers'
 
-export type PlaylistLibraryID = ID | string
+export type PlaylistLibraryID = ID
 
 export type PlaylistLibraryKind =
   | 'library-playlist'

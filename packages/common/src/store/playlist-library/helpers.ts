@@ -165,7 +165,7 @@ const playlistIdToPlaylistLibraryIdentifier = (
  */
 export const addPlaylistToFolder = (
   library: PlaylistLibrary,
-  playlistId: ID | string,
+  playlistId: ID,
   folderId: string
 ): PlaylistLibrary => {
   if (!library.contents) return library

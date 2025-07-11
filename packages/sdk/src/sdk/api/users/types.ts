@@ -69,15 +69,9 @@ const ExplorePlaylistIdentifierSchema = z.object({
   playlist_id: z.string()
 })
 
-const AudioNftPlaylistIdentifierSchema = z.object({
-  type: z.literal('audio_nft_playlist'),
-  playlist_id: z.literal('Audio NFTs')
-})
-
 const PlaylistLibraryIdentifierSchema = z.union([
   PlaylistIdentifierSchema,
-  ExplorePlaylistIdentifierSchema,
-  AudioNftPlaylistIdentifierSchema
+  ExplorePlaylistIdentifierSchema
 ])
 
 type PlaylistLibraryFolder = {

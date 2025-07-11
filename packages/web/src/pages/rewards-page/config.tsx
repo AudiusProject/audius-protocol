@@ -11,7 +11,6 @@ import {
 
 const {
   EXPLORE_PAGE,
-  EXPLORE_PREMIUM_TRACKS_PAGE,
   LIBRARY_PAGE,
   SETTINGS_PAGE,
   TRENDING_PAGE,
@@ -77,13 +76,13 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     label: 'View Premium Tracks',
     leftIcon: null,
     rightIcon: IconArrowRight,
-    link: () => EXPLORE_PREMIUM_TRACKS_PAGE
+    link: () => EXPLORE_PAGE
   },
   [ChallengeName.AudioMatchingBuy]: {
     label: 'View Premium Tracks',
     leftIcon: null,
     rightIcon: IconArrowRight,
-    link: () => EXPLORE_PREMIUM_TRACKS_PAGE
+    link: () => EXPLORE_PAGE
   }
 }
 

@@ -1,7 +1,7 @@
 import { memo, useEffect, useContext } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
-import { Variant, Status, Collection, ID, User } from '@audius/common/models'
+import { Status, Collection, ID, User } from '@audius/common/models'
 import {
   OverflowAction,
   CollectionTrack,
@@ -107,10 +107,7 @@ const CollectionPage = ({
   useEffect(() => {
     if (metadata) {
       // If the collection is deleted, don't update the nav
-      if (
-        metadata.variant !== Variant.SMART &&
-        (metadata.is_delete || metadata._marked_deleted)
-      ) {
+      if (metadata.is_delete || metadata._marked_deleted) {
         return
       }
       setLeft(LeftPreset.BACK)
@@ -142,10 +139,7 @@ const CollectionPage = ({
   const isOwner = userId === playlistOwnerId
 
   const isSaved = metadata?.has_current_user_saved
-  const isPublishing =
-    metadata && metadata?.variant !== Variant.USER_GENERATED
-      ? metadata._is_publishing
-      : false
+  const isPublishing = metadata?._is_publishing ?? false
   const access =
     metadata !== null && 'access' in metadata ? metadata?.access : null
 
@@ -237,30 +231,18 @@ const CollectionPage = ({
             previewing={queuedAndPreviewing}
             reposts={playlistRepostCount}
             isReposted={isReposted}
-            isStreamGated={
-              metadata?.variant === Variant.USER_GENERATED
-                ? metadata?.is_stream_gated
-                : null
-            }
-            streamConditions={
-              metadata?.variant === Variant.USER_GENERATED
-                ? metadata?.stream_conditions
-                : null
-            }
+            isStreamGated={metadata?.is_stream_gated ?? null}
+            streamConditions={metadata?.stream_conditions ?? null}
             ownerId={playlistOwnerId}
             // Actions
-            onPlay={onPlay}
-            onPreview={onPreview}
+            onPlay={() => onPlay({})}
+            onPreview={() => onPreview({})}
             onShare={onHeroTrackShare}
             onSave={onHeroTrackSave}
             onRepost={onHeroTrackRepost}
             onClickFavorites={onClickFavorites}
             onClickReposts={onClickReposts}
             onClickMobileOverflow={onClickMobileOverflow}
-            variant={metadata?.variant || Variant.USER_GENERATED}
-            gradient=''
-            imageOverride=''
-            icon={null}
           />
         </div>
         <div className={styles.collectionTracksContainer}>
