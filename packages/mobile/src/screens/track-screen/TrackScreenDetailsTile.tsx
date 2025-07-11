@@ -47,8 +47,13 @@ import {
   usePublishConfirmationModal,
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
-import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import dayjs from 'dayjs'
+import {
+  formatReleaseDate,
+  Genre,
+  removeNullable,
+  dayjs,
+  formatContestDeadline
+} from '@audius/common/utils'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -122,8 +127,7 @@ const messages = {
   remixContest: 'Remix Contest',
   contestEnded: 'Contest Ended',
   contestDeadline: 'Contest Deadline',
-  deadline: (deadline?: string) =>
-    deadline ? `${dayjs(deadline).format('MM/DD/YYYY')}` : '',
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'short'),
   uploadRemixButtonText: 'Upload Your Remix'
 }
 

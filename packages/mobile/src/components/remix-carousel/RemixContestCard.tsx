@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useRemixContest, useTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { formatDate } from '@audius/common/utils'
+import { formatContestDeadlineWithStatus } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
@@ -24,7 +24,7 @@ const messages = {
   deadline: (releaseDate?: string) =>
     releaseDate
       ? new Date(releaseDate) > new Date()
-        ? `Deadline: ${formatDate(releaseDate)}`
+        ? formatContestDeadlineWithStatus(releaseDate, false)
         : 'Ended'
       : releaseDate
 }

@@ -104,3 +104,36 @@ export const getDurationFromTimestampMatch = (match: RegExpMatchArray) => {
   const s = match[3] ? Number(match[3]) : 0
   return s + m * 60 + h * 60 * 60
 }
+
+export const formatContestDeadline = (
+  deadline?: string,
+  format: 'short' | 'long' | 'card' = 'short'
+): string => {
+  if (!deadline) return ''
+
+  const date = dayjs(deadline)
+  const timezone = getLocalTimezone()
+
+  switch (format) {
+    case 'long':
+      return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')} ${timezone}`
+    case 'card':
+      return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')} ${timezone}`
+    case 'short':
+    default:
+      return `${date.format('MM/DD/YY')} ${timezone}`
+  }
+}
+
+export const formatContestDeadlineWithStatus = (
+  deadline?: string,
+  isEnded: boolean = false
+): string => {
+  if (!deadline) return ''
+
+  const date = dayjs(deadline)
+  const timezone = getLocalTimezone()
+  const status = isEnded ? 'Ended' : 'Deadline'
+
+  return `${status}: ${date.format('MM/DD/YY')} ${timezone}`
+}

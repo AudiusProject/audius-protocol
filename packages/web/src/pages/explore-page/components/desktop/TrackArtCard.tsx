@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useRemixContest, useTrack } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
-import { dayjs } from '@audius/common/utils'
+import { dayjs, formatContestDeadlineWithStatus } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
@@ -23,7 +23,7 @@ const messages = {
     if (!endDate) return null
 
     const isContestEnded = dayjs(endDate).isBefore(dayjs())
-    return `${isContestEnded ? messages.ended : messages.deadline}: ${dayjs(endDate).format('MM/DD/YY')}`
+    return formatContestDeadlineWithStatus(endDate, isContestEnded)
   }
 }
 
