@@ -10,32 +10,37 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export type UseRecentPremiumTracksArgs = {
+export type UseFeelingLuckyTracksArgs = {
   userId: ID | null | undefined
+  limit?: number
 }
 
-export const getRecentPremiumTracksQueryKey = ({
-  userId
-}: UseRecentPremiumTracksArgs) => {
-  return [QUERY_KEYS.recentPremiumTracks, userId] as unknown as QueryKey<ID[]>
+export const getFeelingLuckyTracksQueryKey = ({
+  userId,
+  limit
+}: UseFeelingLuckyTracksArgs) => {
+  return [QUERY_KEYS.feelingLuckyTracks, userId, limit] as unknown as QueryKey<
+    ID[]
+  >
 }
 
-export const useRecentPremiumTracks = <TResult = ID[]>(
+export const useFeelingLuckyTracks = <TResult = ID[]>(
+  args?: { limit?: number },
   options?: SelectableQueryOptions<ID[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
+  const { limit } = args || {}
 
   return useQuery({
-    queryKey: getRecentPremiumTracksQueryKey({ userId: currentUserId }),
+    queryKey: getFeelingLuckyTracksQueryKey({ userId: currentUserId, limit }),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const { data = [] } = await sdk.full.tracks.getRecentPremiumTracks({
+      const { data = [] } = await sdk.full.tracks.getFeelingLuckyTracks({
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
-        limit: 30
+        limit
       })
-
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
       primeTrackData({

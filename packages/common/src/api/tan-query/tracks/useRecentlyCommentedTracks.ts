@@ -10,17 +10,19 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export type UseRecentPremiumTracksArgs = {
+export type UseRecentlyCommentedTracksArgs = {
   userId: ID | null | undefined
 }
 
-export const getRecentPremiumTracksQueryKey = ({
+export const getRecentlyCommentedTracksQueryKey = ({
   userId
-}: UseRecentPremiumTracksArgs) => {
-  return [QUERY_KEYS.recentPremiumTracks, userId] as unknown as QueryKey<ID[]>
+}: UseRecentlyCommentedTracksArgs) => {
+  return [QUERY_KEYS.recentlyCommentedTracks, userId] as unknown as QueryKey<
+    ID[]
+  >
 }
 
-export const useRecentPremiumTracks = <TResult = ID[]>(
+export const useRecentlyCommentedTracks = <TResult = ID[]>(
   options?: SelectableQueryOptions<ID[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
@@ -28,10 +30,10 @@ export const useRecentPremiumTracks = <TResult = ID[]>(
   const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: getRecentPremiumTracksQueryKey({ userId: currentUserId }),
+    queryKey: getRecentlyCommentedTracksQueryKey({ userId: currentUserId }),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      const { data = [] } = await sdk.full.tracks.getRecentPremiumTracks({
+      const { data = [] } = await sdk.full.tracks.getTracksWithRecentComments({
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: 30
       })

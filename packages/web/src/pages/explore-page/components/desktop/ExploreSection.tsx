@@ -151,9 +151,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
         justifyContent='space-between'
         ph={isMobile ? 'l' : undefined}
       >
-        <Text variant='title' size='l'>
-          {title}
-        </Text>
+        <Text variant='heading'>{title}</Text>
         {!isMobile && (canScrollLeft || canScrollRight) ? (
           <Flex gap='l'>
             <IconButton
