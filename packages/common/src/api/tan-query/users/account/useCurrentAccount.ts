@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -116,12 +114,6 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
   const currentUserWallet = walletAddresses?.currentUser
   const { localStorage } = useAppContext()
   const queryClient = useQueryClient()
-  // We intentionally cache account data in local storage to quickly render the account details
-  // This initialData primes our query slice up front and will cause the hook to return synchronously (if the data exists)
-  const initialData = useMemo(
-    () => getLocalAccount(localStorage, queryClient),
-    [localStorage, queryClient]
-  )
 
   return useQuery({
     queryKey: getCurrentAccountQueryKey(),
@@ -135,7 +127,6 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
     staleTime: Infinity,
     gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserWallet,
-    initialData: initialData ?? undefined,
     ...options
   })
 }
