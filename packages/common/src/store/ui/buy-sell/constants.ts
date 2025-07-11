@@ -6,8 +6,6 @@ import {
   tokenConfigToTokenInfo
 } from '~/services/tokens'
 
-import { TOKEN_LISTING_MAP } from '../shared/tokenConstants'
-
 import { TokenInfo, TokenPair } from './types'
 
 // USD-based limits that apply to all currencies
@@ -17,35 +15,6 @@ export const MAX_SWAP_AMOUNT_USD = 10000 // $10,000
 // Create tokens using environment variables
 export const createTokens = (env: Env): Record<string, TokenInfo> => {
   return createTokenInfoObjects(env)
-}
-
-// Legacy token metadata without icons (prefer createTokens)
-// @deprecated Use createTokens(env) instead for environment-specific tokens
-export const TOKENS: Record<string, TokenInfo> = {
-  AUDIO: {
-    symbol: 'AUDIO',
-    name: 'Audius',
-    decimals: TOKEN_LISTING_MAP.AUDIO.decimals,
-    balance: null,
-    isStablecoin: false,
-    address: TOKEN_LISTING_MAP.AUDIO.address
-  },
-  USDC: {
-    symbol: 'USDC',
-    name: 'USD Coin',
-    decimals: TOKEN_LISTING_MAP.USDC.decimals,
-    balance: null,
-    isStablecoin: true,
-    address: TOKEN_LISTING_MAP.USDC.address
-  },
-  BONK: {
-    symbol: 'BONK',
-    name: 'Bonk',
-    decimals: TOKEN_LISTING_MAP.BONK.decimals,
-    balance: null,
-    isStablecoin: false,
-    address: TOKEN_LISTING_MAP.BONK.address
-  }
 }
 
 // Cache for token pairs to avoid repeated computation
@@ -101,23 +70,3 @@ export const createSupportedTokenPairs = (env: Env): TokenPair[] => {
   tokenPairsCache.set(cacheKey, pairs)
   return pairs
 }
-
-// Legacy hardcoded supported token pairs (prefer createSupportedTokenPairs)
-// @deprecated Use createSupportedTokenPairs(env) instead for dynamic token pairs
-export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = [
-  {
-    baseToken: TOKENS.AUDIO,
-    quoteToken: TOKENS.USDC,
-    exchangeRate: null
-  },
-  {
-    baseToken: TOKENS.AUDIO,
-    quoteToken: TOKENS.BONK,
-    exchangeRate: null
-  },
-  {
-    baseToken: TOKENS.USDC,
-    quoteToken: TOKENS.BONK,
-    exchangeRate: null
-  }
-]
