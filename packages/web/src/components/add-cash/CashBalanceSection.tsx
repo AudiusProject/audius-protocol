@@ -2,7 +2,7 @@ import { useFormattedUSDCBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
   Flex,
-  IconLogoCircleUSDC,
+  IconLogoCircleUSDCPng,
   Text,
   IconButton,
   IconInfo
@@ -17,7 +17,7 @@ export const CashBalanceSection = () => {
     <Flex column gap='s'>
       <Flex alignItems='center' justifyContent='space-between'>
         <Flex alignItems='center' gap='s'>
-          <IconLogoCircleUSDC />
+          <IconLogoCircleUSDCPng hex />
           <Text variant='heading' size='s' color='subdued'>
             {walletMessages.cashBalance}
           </Text>

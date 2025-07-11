@@ -7,7 +7,7 @@ import { useTokenAmountFormatting } from '@audius/common/store'
 import {
   Button,
   Flex,
-  IconLogoCircleUSDC,
+  IconTokenUSDC,
   IconTokenAUDIO,
   Text,
   TextInput,
@@ -187,7 +187,7 @@ export const TokenAmountSection = ({
       : undefined
 
   const titleText = useMemo(() => {
-    const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+    const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
     if (isStablecoin && !isInput && TokenIcon) {
       return (

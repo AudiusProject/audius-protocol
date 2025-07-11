@@ -184,6 +184,7 @@ export { IconTokenSilver } from './components/IconTokenSilver'
 export { IconTokenGold } from './components/IconTokenGold'
 export { IconTokenNoTier } from './components/IconTokenNoTier'
 export { IconTokenAUDIO } from './components/IconTokenAUDIO'
+export { IconTokenUSDC } from './components/IconTokenUSDC'
 export { IconTokenBonk } from './components/IconTokenBonk'
 
 // File Types
