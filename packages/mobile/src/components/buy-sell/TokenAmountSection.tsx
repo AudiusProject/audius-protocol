@@ -49,7 +49,7 @@ const DefaultBalanceSection = ({
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
   const { cornerRadius } = useTheme()
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
   if (!formattedAvailableBalance || !TokenIcon) {
     return null
@@ -84,7 +84,7 @@ const StackedBalanceSection = ({
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
   const { cornerRadius } = useTheme()
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
   if (!formattedAvailableBalance || !TokenIcon) {
     return null
@@ -118,7 +118,7 @@ const CryptoAmountSection = ({
 }) => {
   const { spacing, cornerRadius } = useTheme()
   const { symbol } = tokenInfo
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
   if (!TokenIcon) {
