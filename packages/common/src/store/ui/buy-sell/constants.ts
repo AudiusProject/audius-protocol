@@ -73,8 +73,29 @@ export const createSupportedTokenPairs = (env: Env): TokenPair[] => {
     (token) => token.purchasable || token.sellable
   ).map(tokenConfigToTokenInfo)
 
-  // Generate all possible pairs efficiently
-  const pairs = generateTokenPairs(tradeableTokens) as TokenPair[]
+  // Find specific tokens for explicit ordering
+  const audioToken = tradeableTokens.find((token) => token.symbol === 'AUDIO')
+  const usdcToken = tradeableTokens.find((token) => token.symbol === 'USDC')
+
+  // Create pairs with explicit ordering to ensure USDC -> AUDIO is first
+  const pairs: TokenPair[] = []
+
+  // First pair: AUDIO/USDC (for Buy: USDC -> AUDIO, Sell: AUDIO -> USDC)
+  if (audioToken && usdcToken) {
+    pairs.push({
+      baseToken: audioToken,
+      quoteToken: usdcToken,
+      exchangeRate: null
+    })
+  }
+
+  // Generate remaining pairs, excluding the AUDIO/USDC pair we already added
+  const remainingPairs = generateTokenPairs(tradeableTokens).filter(
+    (pair) =>
+      !(pair.baseToken.symbol === 'AUDIO' && pair.quoteToken.symbol === 'USDC')
+  ) as TokenPair[]
+
+  pairs.push(...remainingPairs)
 
   // Cache the result
   tokenPairsCache.set(cacheKey, pairs)

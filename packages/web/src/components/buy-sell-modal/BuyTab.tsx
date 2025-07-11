@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
-import { useTokenPrice, useTokenBalance } from '@audius/common/api'
+import { useTokenBalance, useTokenPrice } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { MintName } from '@audius/common/services'
-import { TokenPair, TokenInfo } from '@audius/common/store'
+import { TokenInfo, TokenPair } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
+import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
 
@@ -41,22 +41,8 @@ export const BuyTab = ({
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
 
-  // Determine which balance hook to use based on input token
-  const mintName = useMemo(() => {
-    switch (quoteToken.symbol) {
-      case 'USDC':
-        return 'USDC' as MintName
-      case 'AUDIO':
-        return 'wAUDIO' as MintName
-      case 'BONK':
-        return 'BONK' as MintName
-      default:
-        return 'USDC' as MintName
-    }
-  }, [quoteToken.symbol])
-
   const { status: balanceStatus, data: tokenBalanceData } = useTokenBalance({
-    token: mintName
+    token: 'USDC'
   })
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
@@ -72,7 +58,7 @@ export const BuyTab = ({
   const getBalance = useMemo(() => {
     return () => {
       if (balanceStatus === Status.SUCCESS && tokenBalanceData) {
-        return parseFloat(tokenBalanceData.toString())
+        return Number(new FixedDecimal(tokenBalanceData.toString()))
       }
       return undefined
     }

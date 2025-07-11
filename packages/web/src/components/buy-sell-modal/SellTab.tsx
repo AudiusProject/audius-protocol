@@ -2,10 +2,9 @@ import { useMemo } from 'react'
 
 import { useAudioBalance, useTokenBalance } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { MintName } from '@audius/common/services'
-import { TokenPair, TokenInfo } from '@audius/common/store'
+import { TokenInfo, TokenPair } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
+import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
 
@@ -43,25 +42,11 @@ export const SellTab = ({
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
 
-  // Determine which balance hook to use based on input token
-  const mintName = useMemo(() => {
-    switch (baseToken.symbol) {
-      case 'USDC':
-        return 'USDC' as MintName
-      case 'AUDIO':
-        return 'wAUDIO' as MintName
-      case 'BONK':
-        return 'BONK' as MintName
-      default:
-        return 'wAUDIO' as MintName
-    }
-  }, [baseToken.symbol])
-
   // For AUDIO, use the specialized hook for compatibility
   const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
   const { data: tokenBalanceData, status: tokenBalanceStatus } =
     useTokenBalance({
-      token: mintName
+      token: 'wAUDIO'
     })
 
   const isBalanceLoading =
@@ -74,11 +59,11 @@ export const SellTab = ({
     return () => {
       if (baseToken.symbol === 'AUDIO') {
         if (!isBalanceLoading && accountBalance) {
-          return parseFloat(AUDIO(accountBalance).toString())
+          return Number(AUDIO(accountBalance).toString())
         }
       } else {
         if (tokenBalanceStatus === Status.SUCCESS && tokenBalanceData) {
-          return parseFloat(tokenBalanceData.toString())
+          return Number(new FixedDecimal(tokenBalanceData.toString()))
         }
       }
       return undefined
