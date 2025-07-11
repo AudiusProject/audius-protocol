@@ -70,5 +70,8 @@ export const walletMessages = {
 
   // YourCoins messages
   yourCoins: 'Your Coins',
-  buySell: 'Buy/Sell'
+  buySell: 'Buy/Sell',
+  buy: 'Buy',
+  send: 'Send',
+  receive: 'Receive'
 }
