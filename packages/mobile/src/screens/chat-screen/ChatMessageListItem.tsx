@@ -1,7 +1,9 @@
 import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -12,11 +14,12 @@ import { HashId } from '@audius/sdk'
 import type { ReactionTypes, ChatMessageReaction } from '@audius/sdk'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Dimensions, Keyboard, View } from 'react-native'
+import { Dimensions, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Flex, IconTokenBonk, spacing, Text } from '@audius/harmony-native'
 import ChatTail from 'app/assets/images/ChatTail.svg'
-import { Pressable, UserGeneratedText, Text } from 'app/components/core'
+import { Pressable, UserGeneratedText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
@@ -33,17 +36,11 @@ const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
 
+const messages = {
+  membersOnly: 'Members Only'
+}
+
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  rootOtherUser: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    minHeight: spacing(4)
-  },
-  rootIsAuthor: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    minHeight: spacing(4)
-  },
   bubble: {
     marginTop: spacing(2),
     borderRadius: spacing(3),
@@ -180,6 +177,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   } = props
   const styles = useStyles()
   const { data: userId } = useCurrentUserId()
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )
@@ -238,16 +238,17 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
 
   return message ? (
     <>
-      <View
+      <Flex
+        alignItems={isAuthor ? 'flex-end' : 'flex-start'}
         style={[
-          isAuthor ? styles.rootIsAuthor : styles.rootOtherUser,
           !message.hasTail && message.reactions && message.reactions.length > 0
             ? styles.reactionMarginBottom
             : null,
+          { minHeight: spacing.unit4 },
           styleProp
         ]}
       >
-        <View>
+        <Flex>
           <Pressable
             onLongPress={handleLongPress}
             delayLongPress={REACTION_LONGPRESS_DELAY}
@@ -255,9 +256,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
             onPressOut={isPopup ? handleClosePopup : handlePressOut}
             style={{ opacity: isUnderneathPopup ? 0 : 1 }}
           >
-            <View style={styles.shadow}>
-              <View style={styles.shadow2}>
-                <View
+            <Flex style={styles.shadow}>
+              <Flex style={styles.shadow2}>
+                <Flex
                   style={[
                     styles.bubble,
                     isPressed
@@ -270,6 +271,28 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
                   }
                 >
+                  {isArtistCoinEnabled ? (
+                    <Flex
+                      row
+                      ph='l'
+                      pv='xs'
+                      gap='m'
+                      alignItems='center'
+                      justifyContent='space-between'
+                      backgroundColor='surface1'
+                      borderBottom='default'
+                    >
+                      <Flex row gap='xs' alignItems='center'>
+                        <IconTokenBonk size='xs' />
+                        <Text variant='label' size='s'>
+                          $Bonk
+                        </Text>
+                      </Flex>
+                      <Text variant='label' size='s' color='accent'>
+                        {messages.membersOnly}
+                      </Text>
+                    </Flex>
+                  ) : null}
                   {isCollection ? (
                     <ChatMessagePlaylist
                       key={`${link.value}-${link.start}-${link.end}`}
@@ -302,7 +325,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     />
                   ) : null}
                   {!hideMessage ? (
-                    <View
+                    <Flex
                       style={[
                         styles.messageContainer,
                         isAuthor && styles.messageContainerAuthor
@@ -322,9 +345,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       >
                         {message.message}
                       </UserGeneratedText>
-                    </View>
+                    </Flex>
                   ) : null}
-                </View>
+                </Flex>
                 {message.hasTail ? (
                   <ChatTail
                     fill={tailColor}
@@ -337,7 +360,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                 {message.reactions?.length > 0 ? (
                   <>
                     {!isUnderneathPopup ? (
-                      <View
+                      <Flex
                         style={[
                           styles.reactionContainer,
                           isAuthor
@@ -353,31 +376,31 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                             />
                           )
                         })}
-                      </View>
+                      </Flex>
                     ) : null}
                   </>
                 ) : null}
-              </View>
-            </View>
+              </Flex>
+            </Flex>
           </Pressable>
-        </View>
+        </Flex>
         {isAuthor && message.status === Status.ERROR ? (
           <ResendMessageButton messageId={messageId} chatId={chatId} />
         ) : null}
         {message.hasTail ? (
           <>
             {!isPopup ? (
-              <View style={styles.dateContainer}>
+              <Flex style={styles.dateContainer}>
                 <Text style={styles.date}>
                   {isUnderneathPopup
                     ? ' '
                     : formatMessageDate(message.created_at)}
                 </Text>
-              </View>
+              </Flex>
             ) : null}
           </>
         ) : null}
-      </View>
+      </Flex>
     </>
   ) : null
 })

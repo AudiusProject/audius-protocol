@@ -1,15 +1,16 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { useCurrentUserId, useUsers } from '@audius/common/api'
-import { useCanSendMessage } from '@audius/common/hooks'
+import { useCanSendMessage, useFeatureFlag } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
-import { Flex, IconError, IconPlus } from '@audius/harmony'
+import { Flex, IconError, IconPlus, IconTokenBonk, Text } from '@audius/harmony'
 import { HashId, Id, OptionalHashId, ReactionTypes } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
@@ -37,7 +38,8 @@ type ChatMessageListItemProps = {
 }
 
 const messages = {
-  error: 'Message Failed to Send. Click to Retry.'
+  error: 'Message Failed to Send. Click to Retry.',
+  membersOnly: 'Members Only'
 }
 
 export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
@@ -53,6 +55,9 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
 
   // Selectors
   const { data: userId } = useCurrentUserId()
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const { byId: reactionUsers } = useUsers(
     message.reactions?.map((r) => HashId.parse(r.user_id))
   )
@@ -125,7 +130,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     if (!canSendMessage || chat?.is_blast) return null
 
     return (
-      <div
+      <Flex
         ref={reactionButtonRef}
         className={cn(styles.reactionsContainer, {
           [styles.isOpened]: isReactionPopupVisible,
@@ -154,75 +159,98 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             )
           })
         ) : (
-          <div className={cn(styles.reactionsButton)}>
+          <Flex className={cn(styles.reactionsButton)}>
             <IconPlus className={styles.addReactionIcon} />
-          </div>
+          </Flex>
         )}
-      </div>
+      </Flex>
     )
   }
 
   return (
-    <div
+    <Flex
       className={cn(styles.root, {
         [styles.isAuthor]: isAuthor,
         [styles.hasReaction]: !hasTail && message.reactions?.length > 0
       })}
     >
-      <div
+      <Flex
         className={cn(styles.bubble, {
           [styles.nonInteractive]: !canSendMessage,
           [styles.hideMessage]: hideMessage
         })}
       >
-        <div className={styles.bubbleCorners}>
-          {isCollectionUrl(linkValue) ? (
-            <ChatMessagePlaylist
-              className={styles.unfurl}
-              link={link.value}
-              onEmpty={onUnfurlEmpty}
-              onSuccess={onUnfurlSuccess}
-            />
-          ) : isTrackUrl(linkValue) ? (
-            <ChatMessageTrack
-              className={styles.unfurl}
-              link={link.value}
-              onEmpty={onUnfurlEmpty}
-              onSuccess={onUnfurlSuccess}
-            />
-          ) : link ? (
-            <LinkPreview
-              className={styles.unfurl}
-              href={link.href}
-              chatId={chatId}
-              messageId={message.message_id}
-              onEmpty={onUnfurlEmpty}
-              onSuccess={onUnfurlSuccess}
-            />
-          ) : null}
-          {!hideMessage ? (
-            <Flex className={styles.textWrapper}>
-              <UserGeneratedTextV2
-                className={styles.text}
-                color={isAuthor ? 'white' : 'default'}
-                textAlign='left'
-                linkProps={{
-                  variant: isAuthor ? 'inverted' : 'visible',
-                  showUnderline: true
-                }}
+        <Flex className={styles.bubbleCorners}>
+          <Flex column>
+            {isArtistCoinEnabled ? (
+              <Flex
+                ph='l'
+                pv='xs'
+                gap='m'
+                justifyContent='space-between'
+                alignItems='center'
+                backgroundColor='surface1'
+                borderBottom='default'
               >
-                {message.message}
-              </UserGeneratedTextV2>
-            </Flex>
-          ) : null}
-        </div>
+                <Flex gap='xs' alignItems='center'>
+                  <IconTokenBonk size='xs' />
+                  <Text variant='label' size='s'>
+                    $Bonk
+                  </Text>
+                </Flex>
+                <Text variant='label' size='s' color='accent'>
+                  {messages.membersOnly}
+                </Text>
+              </Flex>
+            ) : null}
+            {isCollectionUrl(linkValue) ? (
+              <ChatMessagePlaylist
+                className={styles.unfurl}
+                link={link.value}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+              />
+            ) : isTrackUrl(linkValue) ? (
+              <ChatMessageTrack
+                className={styles.unfurl}
+                link={link.value}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+              />
+            ) : link ? (
+              <LinkPreview
+                className={styles.unfurl}
+                href={link.href}
+                chatId={chatId}
+                messageId={message.message_id}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+              />
+            ) : null}
+            {!hideMessage ? (
+              <Flex className={styles.textWrapper}>
+                <UserGeneratedTextV2
+                  className={styles.text}
+                  color={isAuthor ? 'white' : 'default'}
+                  textAlign='left'
+                  linkProps={{
+                    variant: isAuthor ? 'inverted' : 'visible',
+                    showUnderline: true
+                  }}
+                >
+                  {message.message}
+                </UserGeneratedTextV2>
+              </Flex>
+            ) : null}
+          </Flex>
+        </Flex>
         {renderReactions()}
         {hasTail ? (
-          <div className={styles.tail}>
+          <Flex className={styles.tail}>
             <ChatTail />
-          </div>
+          </Flex>
         ) : null}
-      </div>
+      </Flex>
       {canSendMessage && !chat?.is_blast ? (
         <ReactionPopupMenu
           anchorRef={reactionButtonRef}
@@ -233,17 +261,17 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
         />
       ) : null}
       {message.status === Status.ERROR ? (
-        <div
+        <Flex
           className={cn(styles.meta, styles.error)}
           onClick={handleResendClicked}
         >
           <IconError /> {messages.error}
-        </div>
+        </Flex>
       ) : hasTail ? (
-        <div className={styles.meta}>
+        <Flex className={styles.meta}>
           {formatMessageDate(message.created_at)}
-        </div>
+        </Flex>
       ) : null}
-    </div>
+    </Flex>
   )
 }
