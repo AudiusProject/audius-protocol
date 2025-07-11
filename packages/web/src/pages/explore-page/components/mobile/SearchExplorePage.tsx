@@ -9,7 +9,6 @@ import {
 
 import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ExploreCollectionsVariant } from '@audius/common/store'
 import {
   Paper,
   Text,
@@ -37,10 +36,10 @@ import { RemixContestCard } from 'components/remix-contest-card'
 import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import {
+  DOWNLOADS_AVAILABLE,
   PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  DOWNLOADS_AVAILABLE
+  TRENDING_UNDERGROUND
 } from 'pages/explore-page/collections'
 import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { SearchCatalogTile } from 'pages/search-page/SearchCatalogTile'
@@ -350,7 +349,7 @@ const ExplorePage = () => {
                         backgroundGradient={tile.gradient}
                         shadowColor={tile.shadow}
                         useOverlayBlendMode={
-                          tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
+                          tile.title !== PREMIUM_TRACKS.title
                         }
                         backgroundIcon={
                           Icon ? (

@@ -2232,7 +2232,7 @@ export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
   signature: string
 }
 
-// Stripe
+// Stripe Tracking
 export type StripeEventFields = {
   amount: string
   destinationCurrency: string

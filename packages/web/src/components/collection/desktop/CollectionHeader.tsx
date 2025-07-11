@@ -24,7 +24,6 @@ import {
   IconSearch,
   IconCart,
   useTheme,
-  IconComponent,
   MusicBadge,
   IconCalendarMonth
 } from '@audius/harmony'
@@ -76,10 +75,6 @@ type CollectionHeaderProps = {
   lastModifiedDate?: string | number // either format should be utc time
   numTracks: number
   duration: number
-  variant: Nullable<Variant>
-  gradient?: string
-  icon: IconComponent
-  imageOverride?: string
   userId: Nullable<ID>
   reposts: number
   saves: number
@@ -108,10 +103,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     previewing,
     onPlay,
     onPreview,
-    variant,
-    gradient,
-    icon,
-    imageOverride,
     userId,
     onFilterChange,
     reposts,
@@ -182,9 +173,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
       <Artwork
         collectionId={collectionId}
         callback={handleLoadArtwork}
-        gradient={gradient}
-        icon={icon}
-        imageOverride={imageOverride}
         isOwner={isOwner}
       />
       <Flex
@@ -266,8 +254,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           <Skeleton height='64px' width='100%' />
         ) : (
           <CollectionActionButtons
-            variant={variant}
-            userId={userId}
             collectionId={collectionId}
             isPlayable={isPlayable}
             isPlaying={playing}

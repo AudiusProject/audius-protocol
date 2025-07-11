@@ -1,34 +1,16 @@
-import { SmartCollectionVariant } from '~/models/SmartCollectionVariant'
-import { Nullable } from '~/utils/typeUtils'
+import { ID } from '~/models/Identifiers'
 
-import { ID } from './Identifiers'
-
-export type PlaylistLibraryID = ID | string | SmartCollectionVariant
+export type PlaylistLibraryID = ID | string
 
 export type PlaylistLibraryKind =
   | 'library-playlist'
   | 'playlist'
   | 'playlist-folder'
 
-export type PlaylistIdentifier = {
+export type PlaylistLibraryIdentifier = {
   type: 'playlist'
   playlist_id: number
 }
-
-export type ExplorePlaylistIdentifier = {
-  type: 'explore_playlist'
-  playlist_id: SmartCollectionVariant
-}
-
-export type AudioNftPlaylistIdentifier = {
-  type: 'audio_nft_playlist'
-  playlist_id: SmartCollectionVariant.AUDIO_NFT_PLAYLIST
-}
-
-export type PlaylistLibraryIdentifier =
-  | PlaylistIdentifier
-  | ExplorePlaylistIdentifier
-  | AudioNftPlaylistIdentifier
 
 export type PlaylistLibraryFolder = {
   id: string
@@ -41,6 +23,10 @@ export type PlaylistLibraryItem =
   | PlaylistLibraryIdentifier
   | PlaylistLibraryFolder
 
+export type PlaylistLibraryItemWithUser = PlaylistLibraryItem & {
+  user: { id: ID; handle: string; is_deactivated?: boolean }
+}
+
 export type PlaylistLibrary = {
   contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[]
 }
@@ -48,5 +34,5 @@ export type PlaylistLibrary = {
 export type PlaylistUpdate = {
   playlist_id: number
   updated_at: number
-  last_seen_at: Nullable<number>
+  last_seen_at: number | null
 }

@@ -9,7 +9,6 @@ import {
   PlaylistLibraryFolder,
   PlaylistLibraryID
 } from '../../models/PlaylistLibrary'
-import { SmartCollectionVariant } from '../../models/SmartCollectionVariant'
 
 /**
  * Finds a playlist by id in the playlist library
@@ -19,7 +18,7 @@ import { SmartCollectionVariant } from '../../models/SmartCollectionVariant'
  */
 export const findInPlaylistLibrary = (
   library: Nullable<PlaylistLibrary | PlaylistLibraryFolder>,
-  playlistId: ID | SmartCollectionVariant | string
+  playlistId: ID | string
 ): PlaylistLibraryIdentifier | false => {
   if (!library || !library.contents) return false
 
@@ -32,7 +31,6 @@ export const findInPlaylistLibrary = (
         break
       }
       case 'playlist':
-      case 'explore_playlist':
         if (item.playlist_id === playlistId) return item
         break
     }
@@ -50,7 +48,7 @@ export const findInPlaylistLibrary = (
  */
 export const findIndexInPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  entityId: ID | SmartCollectionVariant | string
+  entityId: ID | string
 ): number | number[] | -1 => {
   if (!library.contents) return -1
 
@@ -66,7 +64,6 @@ export const findIndexInPlaylistLibrary = (
         break
       }
       case 'playlist':
-      case 'explore_playlist':
         if (item.playlist_id === entityId) return i
         break
     }
@@ -83,7 +80,7 @@ export const findIndexInPlaylistLibrary = (
  */
 export const removeFromPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  entityId: ID | SmartCollectionVariant | string
+  entityId: ID | string
 ): {
   library: PlaylistLibrary | PlaylistLibraryFolder
   removed: PlaylistLibraryIdentifier | PlaylistLibraryFolder | null
@@ -114,7 +111,6 @@ export const removeFromPlaylistLibrary = (
         break
       }
       case 'playlist':
-      case 'explore_playlist':
         if (item.playlist_id === entityId) {
           removed = item
           newItem = null
@@ -147,19 +143,12 @@ export const constructPlaylistFolder = (
 }
 
 const playlistIdToPlaylistLibraryIdentifier = (
-  playlistId: ID | SmartCollectionVariant | string
+  playlistId: ID | string
 ): Nullable<PlaylistLibraryIdentifier> => {
   if (typeof playlistId === 'number') {
     return {
       type: 'playlist',
       playlist_id: playlistId
-    }
-  } else if (
-    (Object.values(SmartCollectionVariant) as string[]).includes(playlistId)
-  ) {
-    return {
-      type: 'explore_playlist',
-      playlist_id: playlistId as SmartCollectionVariant
     }
   }
   return null
@@ -176,7 +165,7 @@ const playlistIdToPlaylistLibraryIdentifier = (
  */
 export const addPlaylistToFolder = (
   library: PlaylistLibrary,
-  playlistId: ID | SmartCollectionVariant | string,
+  playlistId: ID | string,
   folderId: string
 ): PlaylistLibrary => {
   if (!library.contents) return library
@@ -334,7 +323,6 @@ export const removePlaylistLibraryDuplicates = (
         break
       }
       case 'playlist':
-      case 'explore_playlist':
         // If we've seen this playlist already, don't include it in our final result.
         if (ids.has(`${item.playlist_id}`)) {
           break
@@ -428,7 +416,7 @@ export const reorderPlaylistLibrary = (
  */
 export const isInsideFolder = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
-  id: ID | string | SmartCollectionVariant
+  id: ID | string
 ): boolean => {
   return Array.isArray(findIndexInPlaylistLibrary(library, id))
 }

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useCollection } from '@audius/common/api'
-import type { SmartCollectionVariant } from '@audius/common/models'
 import { Kind } from '@audius/common/models'
 import {
   collectionPageLineupActions,
@@ -25,7 +24,7 @@ const { getPositions } = queueSelectors
  * @param collectionId the numeric collection id
  */
 export const useFetchCollectionLineup = (
-  collectionId: number | SmartCollectionVariant | null,
+  collectionId: number | null,
   fetchLineup: () => void
 ) => {
   const dispatch = useDispatch()
@@ -34,13 +33,10 @@ export const useFetchCollectionLineup = (
     areSetsEqual
   )
 
-  const { data: collectionTrackIds } = useCollection(
-    typeof collectionId === 'string' ? null : collectionId,
-    {
-      select: (collection) => collection?.playlist_contents.track_ids,
-      enabled: false
-    }
-  )
+  const { data: collectionTrackIds } = useCollection(collectionId, {
+    select: (collection) => collection?.playlist_contents.track_ids,
+    enabled: false
+  })
 
   const collectionUidSource = `collection:${collectionId}`
   const queuePositions = useSelector(getPositions)

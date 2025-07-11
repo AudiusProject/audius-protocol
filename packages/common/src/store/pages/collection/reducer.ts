@@ -11,11 +11,9 @@ import {
   FETCH_COLLECTION_SUCCEEDED,
   FETCH_COLLECTION_FAILED,
   RESET_COLLECTION,
-  SET_SMART_COLLECTION,
   FetchCollectionSucceededAction,
   FetchCollectionFailedAction,
   CollectionPageAction,
-  SetSmartCollectionAction,
   FetchCollectionAction,
   ResetCollectionAction
 } from './actions'
@@ -26,7 +24,6 @@ export const initialState = {
   collectionId: null,
   userUid: null,
   status: null,
-  smartCollectionVariant: null,
   tracks: initialLineupState,
   collectionPermalink: null
 }
@@ -38,8 +35,7 @@ const actionsMap = {
   ) {
     return {
       ...state,
-      status: Status.LOADING,
-      smartCollectionVariant: null
+      status: Status.LOADING
     }
   },
   [FETCH_COLLECTION_SUCCEEDED](
@@ -71,15 +67,6 @@ const actionsMap = {
     return {
       ...state,
       ...initialState
-    }
-  },
-  [SET_SMART_COLLECTION](
-    state: CollectionsPageState,
-    action: SetSmartCollectionAction
-  ) {
-    return {
-      ...state,
-      smartCollectionVariant: action.smartCollectionVariant
     }
   }
 }

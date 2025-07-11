@@ -12,12 +12,7 @@ import {
   Status,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import type {
-  SmartCollectionVariant,
-  ID,
-  UID,
-  AccessConditions
-} from '@audius/common/models'
+import type { ID, UID, AccessConditions } from '@audius/common/models'
 import {
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
@@ -100,12 +95,8 @@ const selectIsQueued = createSelector(
   }
 )
 
-const useRefetchLineupOnTrackAdd = (
-  collectionId: ID | SmartCollectionVariant
-) => {
-  const numericCollectionId =
-    typeof collectionId === 'number' ? collectionId : undefined
-  const { data: collectionTrackCount } = useCollection(numericCollectionId, {
+const useRefetchLineupOnTrackAdd = (collectionId: ID) => {
+  const { data: collectionTrackCount } = useCollection(collectionId, {
     select: (collection) => collection.playlist_contents.track_ids.length
   })
 
@@ -162,7 +153,7 @@ type CollectionScreenDetailsTileProps = {
   isOwner?: boolean
   isPublishing?: boolean
   isDeleted?: boolean
-  collectionId: number | SmartCollectionVariant
+  collectionId: number
   hasStreamAccess?: boolean
   streamConditions?: Nullable<AccessConditions>
 } & Omit<
