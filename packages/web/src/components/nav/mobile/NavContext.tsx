@@ -33,7 +33,7 @@ export enum CenterPreset {
 }
 
 export enum RightPreset {
-  SEARCH = 'SEARCH'
+  KEBAB = 'KEBAB'
 }
 
 type LeftElement = LeftPreset | ReactNode | null
@@ -46,7 +46,7 @@ const NavContext = createContext<NavContextProps>({
   setRight: () => {},
   leftElement: LeftPreset.NOTIFICATION,
   centerElement: CenterPreset.LOGO,
-  rightElement: RightPreset.SEARCH
+  rightElement: RightPreset.KEBAB
 })
 
 const useNavContext = () => {
@@ -85,7 +85,7 @@ export const useMainPageHeader = () => {
   useEffect(() => {
     setLeft(LeftPreset.NOTIFICATION)
     setCenter(CenterPreset.LOGO)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
   }, [setLeft, setCenter, setRight])
 }
 
@@ -98,7 +98,7 @@ export const useSubPageHeader = () => {
   useEffect(() => {
     setLeft(LeftPreset.BACK)
     setCenter(CenterPreset.LOGO)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
   }, [setLeft, setCenter, setRight])
 }
 
