@@ -135,8 +135,6 @@ export const SwapTab = ({
                 error={error}
                 errorMessage={errorMessage}
                 tooltipPlacement={tooltipPlacement}
-                availableTokens={availableInputTokens}
-                onTokenChange={onInputTokenChange}
               />
 
               <TokenAmountSection
@@ -150,8 +148,6 @@ export const SwapTab = ({
                 isTokenPriceLoading={isTokenPriceLoading}
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
                 tooltipPlacement={tooltipPlacement}
-                availableTokens={availableOutputTokens}
-                onTokenChange={onOutputTokenChange}
               />
             </>
           )}
