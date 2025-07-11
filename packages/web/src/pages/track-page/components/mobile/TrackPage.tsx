@@ -74,7 +74,7 @@ const TrackPage = ({
   useEffect(() => {
     setLeft(LeftPreset.BACK)
     setCenter(CenterPreset.LOGO)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
   }, [setLeft, setCenter, setRight])
 
   const { setHeader } = useContext(HeaderContext)

@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import { WALLET_PAGE } from '@audius/common/src/utils/route'
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
+import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { push } from 'utils/navigation'
 
 const { SETTINGS_PAGE, REWARDS_PAGE } = route
@@ -25,6 +26,7 @@ export const NavBarActionDrawer = ({
   onClose
 }: NavBarActionDrawerProps) => {
   const dispatch = useDispatch()
+  const { setStackReset } = useContext(RouterContext)
 
   const goToRoute = useCallback(
     (route: string) => {
@@ -39,9 +41,10 @@ export const NavBarActionDrawer = ({
   }, [goToRoute, onClose])
 
   const goToSettingsPage = useCallback(() => {
+    setStackReset(true)
     setImmediate(() => goToRoute(SETTINGS_PAGE))
     onClose()
-  }, [goToRoute, onClose])
+  }, [goToRoute, onClose, setStackReset])
 
   const goToRewardsPage = useCallback(() => {
     setImmediate(() => goToRoute(REWARDS_PAGE))

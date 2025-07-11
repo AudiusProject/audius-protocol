@@ -52,7 +52,7 @@ const NavContext = createContext<NavContextProps>({
 const useNavContext = () => {
   const [leftElement, setLeft] = useState<LeftElement>(LeftPreset.NOTIFICATION)
   const [centerElement, setCenter] = useState<CenterElement>(CenterPreset.LOGO)
-  const [rightElement, setRight] = useState<RightElement>(RightPreset.SEARCH)
+  const [rightElement, setRight] = useState<RightElement>(RightPreset.KEBAB)
   return {
     leftElement,
     setLeft,
