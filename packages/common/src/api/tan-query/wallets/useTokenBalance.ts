@@ -11,7 +11,8 @@ import { Status } from '~/models/Status'
 import { MintName } from '~/services/audius-backend/solana'
 import { getUserbankAccountInfo } from '~/services/index'
 
-import { QueryOptions } from '../types'
+import { QUERY_KEYS } from '../queryKeys'
+import { QueryOptions, type QueryKey } from '../types'
 
 // Map token symbols to their Fixed Decimal constructors
 const TOKEN_CONSTRUCTORS = {
@@ -21,6 +22,18 @@ const TOKEN_CONSTRUCTORS = {
 } as const
 
 type TokenSymbol = keyof typeof TOKEN_CONSTRUCTORS
+
+export const getTokenBalanceQueryKey = (
+  ethAddress: string | null,
+  token: MintName,
+  commitment: Commitment
+) =>
+  [
+    QUERY_KEYS.tokenBalance,
+    ethAddress,
+    token,
+    commitment
+  ] as unknown as QueryKey<any | null>
 
 /**
  * Hook to get the balance for any supported token for the current user.
@@ -48,7 +61,7 @@ export const useTokenBalance = ({
   const queryClient = useQueryClient()
 
   const result = useQuery({
-    queryKey: ['tokenBalance', ethAddress, token, commitment],
+    queryKey: getTokenBalanceQueryKey(ethAddress, token, commitment),
     queryFn: async () => {
       const sdk = await audiusSdk()
       if (!ethAddress || !token) {
@@ -117,7 +130,7 @@ export const useTokenBalance = ({
   // This effectively stops the current polling cycle
   const cancelPolling = useCallback(() => {
     queryClient.cancelQueries({
-      queryKey: ['tokenBalance', ethAddress, token, commitment]
+      queryKey: getTokenBalanceQueryKey(ethAddress, token, commitment)
     })
   }, [queryClient, ethAddress, token, commitment])
 

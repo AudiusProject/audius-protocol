@@ -60,12 +60,12 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
 
     if (activeTab === 'buy') {
       // Buy: pay with quote token, receive base token
-      inputMintAddress = selectedPair.quoteToken.address!
-      outputMintAddress = selectedPair.baseToken.address!
+      inputMintAddress = selectedPair.quoteToken.address ?? ''
+      outputMintAddress = selectedPair.baseToken.address ?? ''
     } else {
       // Sell: pay with base token, receive quote token
-      inputMintAddress = selectedPair.baseToken.address!
-      outputMintAddress = selectedPair.quoteToken.address!
+      inputMintAddress = selectedPair.baseToken.address ?? ''
+      outputMintAddress = selectedPair.quoteToken.address ?? ''
     }
 
     swapTokens({
@@ -83,7 +83,7 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
         queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
       })
       queryClient.invalidateQueries({
-        queryKey: ['tokenBalance', user.wallet]
+        queryKey: [QUERY_KEYS.tokenBalance, user.wallet]
       })
     }
     if (user?.spl_wallet) {
