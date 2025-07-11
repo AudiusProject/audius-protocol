@@ -553,9 +553,7 @@ const GestureSupportingBodyContainer = memo(
         }
         setIndexDelta(newIndexDelta)
         setScrollContainerX(-1 * activeIndex * containerWidth, false)
-        if (isMobile) {
-          window.scrollTo(0, initialScrollOffset)
-        }
+        window.scrollTo(0, initialScrollOffset)
       }
       // Disable exhaustive deps because we only need to run this if the active index has changed:
       // eslint-disable-next-line react-hooks/exhaustive-deps

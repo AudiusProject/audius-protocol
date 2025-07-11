@@ -1,5 +1,3 @@
-import { ReactNode } from 'react'
-
 import { useAudioBalance, useCurrentUserId, useUser } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
@@ -7,6 +5,7 @@ import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import {
   HoverCard,
   HoverCardHeader,
+  HoverCardProps,
   IconArrowRight,
   IconComponent,
   IconTokenAUDIO,
@@ -16,16 +15,13 @@ import {
   IconTokenSilver,
   useTheme
 } from '@audius/harmony'
-import { Origin } from '@audius/harmony/src/components/popup/types'
 
 import { HoverCardBody } from './HoverCardBody'
 
-type AudioHoverCardProps = {
-  /**
-   * Content displayed as the hover trigger
-   */
-  children: ReactNode
-
+type AudioHoverCardProps = Pick<
+  HoverCardProps,
+  'children' | 'onClose' | 'onClick' | 'anchorOrigin' | 'transformOrigin'
+> & {
   /**
    * The $AUDIO tier to display
    */
@@ -35,26 +31,6 @@ type AudioHoverCardProps = {
    * The user ID to fetch balance and tier information for
    */
   userId: ID
-
-  /**
-   * Optional callback fired when the hover card is closed
-   */
-  onClose?: () => void
-
-  /**
-   * Position of the anchor origin
-   */
-  anchorOrigin?: Origin
-
-  /**
-   * Position of the transform origin
-   */
-  transformOrigin?: Origin
-
-  /**
-   * Optional callback fired when the hover card is clicked
-   */
-  onClick?: () => void
 }
 
 // Audio tier badge map for header icons
@@ -115,6 +91,7 @@ export const AudioHoverCard = ({
               <IconTokenAUDIO
                 size='3xl'
                 css={{ borderRadius: cornerRadius.circle }}
+                hex
               />
             }
             amount={formattedBalance}

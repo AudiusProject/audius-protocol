@@ -66,7 +66,6 @@ import {
   MusicBadge,
   Paper,
   Text,
-  spacing,
   type ImageProps
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
@@ -83,7 +82,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackDogEar } from 'app/components/track/TrackDogEar'
 import { TrackFlair, Size } from 'app/components/track-flair'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -590,7 +589,7 @@ export const TrackScreenDetailsTile = ({
                 <Text variant='body' color='accent' size='l'>
                   {user.name}
                 </Text>
-                <UserBadges badgeSize={spacing.l} user={user} hideName />
+                <UserBadges userId={user.user_id} badgeSize='s' />
               </Flex>
             </TouchableOpacity>
           ) : null}

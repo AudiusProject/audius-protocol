@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconRobot } from '@audius/harmony-native'
 import { Text, Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useProfileRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -113,7 +113,16 @@ export const AiGeneratedTracksScreen = () => {
               <View style={styles.header}>
                 <Text>{messages.headerText}</Text>
                 <TouchableOpacity onPress={handleGoToProfile}>
-                  <UserBadges user={user} nameStyle={styles.userBadgeTitle} />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4
+                    }}
+                  >
+                    <Text style={styles.userBadgeTitle}>{user.name}</Text>
+                    <UserBadges userId={user.user_id} badgeSize='xs' />
+                  </View>
                 </TouchableOpacity>
               </View>
             ) : null

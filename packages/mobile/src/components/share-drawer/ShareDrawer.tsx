@@ -1,6 +1,7 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
+import { useShareAction } from '@audius/common/hooks'
 import { Name, ShareSource } from '@audius/common/models'
 import {
   collectionsSocialActions,
@@ -70,6 +71,7 @@ export const ShareDrawer = () => {
   const styles = useStyles()
   const viewShotRef = useRef() as React.RefObject<ViewShot>
   const navigation = useNavigation<AppTabScreenParamList>()
+  const sendShareAction = useShareAction()
 
   const { onClose } = useDrawerState('Share')
   const { onClose: onCloseNowPlaying } = useDrawer('NowPlaying')
@@ -236,6 +238,21 @@ export const ShareDrawer = () => {
     handleShareToInstagramStory,
     isShareableTrack
   ])
+
+  // Trigger share action on mount with new content
+  useEffect(() => {
+    if (!content) return
+    switch (content.type) {
+      case 'track':
+        sendShareAction(content.track.track_id, 'track')
+        break
+      case 'album':
+        sendShareAction(content.album.playlist_id, 'playlist')
+        break
+      case 'playlist':
+        sendShareAction(content.playlist.playlist_id, 'playlist')
+    }
+  }, [content, sendShareAction])
 
   return (
     <>

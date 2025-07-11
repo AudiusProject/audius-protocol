@@ -12,7 +12,7 @@ import { ProfilePicture } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
 import { TrackFlair, Size } from 'app/components/track-flair'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -149,7 +149,7 @@ const TrackScreenRemixComponent = ({
             {name}
           </Text>
           <View style={styles.badges}>
-            <UserBadges user={user} badgeSize={12} hideName />
+            <UserBadges userId={user.user_id} badgeSize='xs' />
           </View>
         </View>
       </Pressable>

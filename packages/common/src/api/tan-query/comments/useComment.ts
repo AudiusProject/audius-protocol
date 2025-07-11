@@ -12,7 +12,7 @@ import { toast } from '~/store/ui/toast/slice'
 import { messages } from './types'
 import { getCommentQueryKey } from './utils'
 
-export const useComment = (commentId: ID) => {
+export const useComment = (commentId: ID | null | undefined) => {
   const { audiusSdk, reportToSentry } = useQueryContext()
   const dispatch = useDispatch()
 

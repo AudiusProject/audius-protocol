@@ -171,6 +171,8 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
     goToRoute(profilePage(handle))
   }, [goToRoute, handle])
 
+  if (!userId) return null
+
   return (
     <div className={styles.container}>
       <div className={styles.verified}>

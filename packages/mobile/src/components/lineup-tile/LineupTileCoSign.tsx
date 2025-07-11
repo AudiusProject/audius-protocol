@@ -2,7 +2,7 @@ import type { Remix } from '@audius/common/models'
 import { StyleSheet, View } from 'react-native'
 
 import Text from 'app/components/text'
-import UserBadges from 'app/components/user-badges/UserBadges'
+import { UserBadges } from 'app/components/user-badges'
 import { flexRowCentered } from 'app/styles'
 
 import { useStyles as useTrackTileStyles } from './styles'
@@ -58,12 +58,9 @@ export const LineupTileCoSign = ({ coSign }: Props) => {
     <View style={styles.coSignText}>
       <View style={styles.coSignName}>
         <Text style={trackTileStyles.statText}>{coSign.user.name}</Text>
-        <UserBadges
-          user={coSign.user}
-          style={styles.coSignIcon}
-          badgeSize={8}
-          hideName
-        />
+        <View style={styles.coSignIcon}>
+          <UserBadges userId={coSign.user.user_id} badgeSize='xs' />
+        </View>
       </View>
       <Text style={trackTileStyles.statText}>
         {formatCoSign({
