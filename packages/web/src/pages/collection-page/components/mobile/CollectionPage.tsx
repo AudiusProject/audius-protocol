@@ -111,7 +111,7 @@ const CollectionPage = ({
         return
       }
       setLeft(LeftPreset.BACK)
-      setRight(RightPreset.SEARCH)
+      setRight(RightPreset.KEBAB)
       setCenter(CenterPreset.LOGO)
     }
   }, [setLeft, setCenter, setRight, metadata])

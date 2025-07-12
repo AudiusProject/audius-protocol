@@ -1,9 +1,12 @@
+import { useContext, useEffect } from 'react'
+
 import { Flex, IconWallet } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { CashWallet } from 'pages/pay-and-earn-page/components/CashWallet'
@@ -16,6 +19,11 @@ const messages = {
 export const WalletPage = () => {
   const isMobile = useIsMobile()
   const { spacing } = useTheme()
+
+  const { setLeft } = useContext(NavContext)!
+  useEffect(() => {
+    setLeft(LeftPreset.BACK)
+  }, [setLeft])
 
   // Set up mobile header with icon
   useMobileHeader({

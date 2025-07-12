@@ -85,7 +85,7 @@ const useMobileNavContext = () => {
   const { setLeft, setRight } = useContext(NavContext)!
   useEffect(() => {
     setLeft(LeftPreset.BACK)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
   }, [setLeft, setRight])
 }
 

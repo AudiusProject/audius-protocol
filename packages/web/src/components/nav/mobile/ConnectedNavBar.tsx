@@ -19,7 +19,7 @@ import { push, goBack } from 'utils/navigation'
 
 import NavBar from './NavBar'
 
-const { NOTIFICATION_PAGE, SETTINGS_PAGE, REWARDS_PAGE } = route
+const { NOTIFICATION_PAGE } = route
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -56,19 +56,9 @@ const ConnectedNavBar = ({
     record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
   }, [goToRoute, setStackReset, setSlideDirection, record])
 
-  const goToSettingsPage = useCallback(() => {
-    setStackReset(true)
-    setImmediate(() => goToRoute(SETTINGS_PAGE))
-  }, [goToRoute, setStackReset])
-
   const signUp = useCallback(() => {
     setStackReset(true)
   }, [setStackReset])
-
-  const goToRewardsPage = useCallback(() => {
-    setStackReset(true)
-    setImmediate(() => goToRoute(REWARDS_PAGE))
-  }, [goToRoute, setStackReset])
 
   return (
     <NavBar
@@ -77,11 +67,9 @@ const ConnectedNavBar = ({
       signUp={signUp}
       rewardsCount={rewardsCount}
       goToNotificationPage={goToNotificationPage}
-      goToSettingsPage={goToSettingsPage}
       search={search}
       goBack={goBack}
       history={history}
-      goToRewardsPage={goToRewardsPage}
     />
   )
 }

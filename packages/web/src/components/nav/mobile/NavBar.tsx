@@ -1,17 +1,15 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
-  IconSettings,
   IconCaretLeft,
   IconClose,
   IconNotificationOn,
   IconButton,
-  IconGift,
-  Flex
+  Flex,
+  IconKebabHorizontal
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
@@ -19,7 +17,6 @@ import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import {
   RouterContext,
   SlideDirection
@@ -29,10 +26,10 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import SearchBar from 'components/search-bar/SearchBar'
 import { getIsIOS } from 'utils/browser'
 
 import styles from './NavBar.module.css'
+import { NavBarActionDrawer } from './NavBarActionDrawer'
 
 const { SIGN_UP_PAGE, TRENDING_PAGE } = route
 
@@ -42,8 +39,6 @@ interface NavBarProps {
   rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
-  goToSettingsPage: () => void
-  goToRewardsPage: () => void
   search: (term: string) => void
   goBack: () => void
   history: History<any>
@@ -61,40 +56,25 @@ const NavBar = ({
   search,
   signUp,
   goToNotificationPage,
-  goToSettingsPage,
   goBack,
-  goToRewardsPage,
   history: {
     location: { pathname }
   }
 }: NavBarProps) => {
-  const { history } = useHistoryContext()
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
   const [isSearching, setIsSearching] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
 
   const { setStackReset } = useContext(RouterContext)
-  const beginSearch = useCallback(() => {
-    setStackReset(true)
-    setImmediate(() => search(searchValue))
-  }, [setStackReset, search, searchValue])
+
+  const [isActionDrawerOpen, setIsActionDrawerOpen] = useState(false)
 
   useEffect(() => {
     const splitPath = pathname.split('/')
     const isSearch = splitPath.length > 1 && splitPath[1] === 'search'
     setIsSearching(isSearch)
   }, [pathname])
-
-  const handleOpenSearch = useCallback(() => {
-    history.push(`/explore`)
-  }, [history])
-
-  const onCloseSearch = () => {
-    setIsSearching(false)
-    setSearchValue('')
-  }
 
   const logoTransitions = useTransition(!isSearching, null, {
     from: {
@@ -194,74 +174,25 @@ const NavBar = ({
             </Flex>
           )}
         </Flex>
-        <Flex>
-          <IconButton
-            aria-label='audio rewards'
-            color={rewardsCount > 0 ? 'warning' : 'subdued'}
-            icon={IconGift}
-            onClick={goToRewardsPage}
-          />
-          {rewardsCount > 0 && (
-            <Flex
-              css={{
-                position: 'absolute',
-                top: 0,
-                right: 6,
-                backgroundColor: 'var(--harmony-red)',
-                color: 'var(--harmony-white)',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                letterSpacing: '0.07px',
-                lineHeight: '14px',
-                textTransform: 'uppercase',
-                padding: '0px 6px',
-                transform: 'translateX(50%)',
-                borderRadius: '8px'
-              }}
-            >
-              {formatCount(rewardsCount)}
-            </Flex>
-          )}
-        </Flex>
       </Flex>
-    )
-  } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
-    left = (
-      <>
-        <IconButton
-          aria-label='settings'
-          color='subdued'
-          icon={IconSettings}
-          onClick={goToSettingsPage}
-        />
-        <IconButton
-          aria-label='audio rewards'
-          color={rewardsCount > 0 ? 'warning' : 'subdued'}
-          icon={IconGift}
-          onClick={goToRewardsPage}
-        />
-        {rewardsCount > 0 && (
-          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
-        )}
-      </>
     )
   } else {
     left = leftElement
   }
 
   return (
-    <div
+    <Flex
       className={cn(styles.container, {
         [styles.containerNoBorder]: isSearching
       })}
     >
-      <div
+      <Flex
         className={cn(styles.leftElement, {
           [styles.isLoading]: isLoading
         })}
       >
         {left}
-      </div>
+      </Flex>
       {centerElement === CenterPreset.LOGO ? (
         <Link to={TRENDING_PAGE} className={styles.logo}>
           {logoTransitions.map(({ item, props, key }) =>
@@ -279,36 +210,31 @@ const NavBar = ({
       ) : null}
       {typeof centerElement === 'string' &&
         !Object.values(CenterPreset).includes(centerElement as any) && (
-          <div className={styles.centerText}> {centerElement} </div>
+          <Flex className={styles.centerText}> {centerElement} </Flex>
         )}
-      <div
+      <Flex
         className={cn(styles.rightElement, {
           [styles.isLoading]: isLoading
         })}
       >
-        {rightElement === RightPreset.SEARCH ? (
-          <SearchBar
-            open={isSearching}
-            onOpen={handleOpenSearch}
-            onClose={onCloseSearch}
-            value={searchValue}
-            onSearch={setSearchValue}
-            placeholder={messages.searchPlaceholderV2}
-            showHeader={false}
-            className={cn(
-              styles.searchBar,
-              { [styles.searchBarClosed]: !isSearching },
-              { [styles.searchBarClosedSignedOut]: !isSearching && !isSignedIn }
-            )}
-            iconClassname={styles.searchIcon}
-            beginSearch={beginSearch}
-            status={isSearching ? Status.LOADING : Status.IDLE}
-          />
+        {rightElement === RightPreset.KEBAB ? (
+          <Flex mr='s'>
+            <IconButton
+              aria-label='menu'
+              icon={IconKebabHorizontal}
+              color-='subdued'
+              onClick={() => setIsActionDrawerOpen(true)}
+            />
+          </Flex>
         ) : (
           rightElement
         )}
-      </div>
-    </div>
+      </Flex>
+      <NavBarActionDrawer
+        isOpen={isActionDrawerOpen}
+        onClose={() => setIsActionDrawerOpen(false)}
+      />
+    </Flex>
   )
 }
 

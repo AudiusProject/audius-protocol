@@ -43,7 +43,7 @@ export const NotFoundPage = () => {
     if (isMobile) {
       const { setLeft, setCenter, setRight } = navContext
       setLeft(null)
-      setRight(RightPreset.SEARCH)
+      setRight(RightPreset.KEBAB)
       setCenter(CenterPreset.LOGO)
     }
   }, [isMobile, navContext])
