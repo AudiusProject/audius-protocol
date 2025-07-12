@@ -5,7 +5,7 @@ import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
   IconLogoCircle,
-  IconLogoCircleUSDC,
+  IconLogoCircleUSDCPng,
   LoadingSpinner,
   Paper,
   Text,
@@ -71,7 +71,7 @@ export const PayoutWalletCard = () => {
             alignItems='center'
           >
             {accountSplWallet ? (
-              <IconLogoCircleUSDC />
+              <IconLogoCircleUSDCPng hex />
             ) : (
               <IconLogoCircle size='m' />
             )}
