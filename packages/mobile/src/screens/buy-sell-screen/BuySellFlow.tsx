@@ -9,7 +9,7 @@ import {
   useBuySellTabs,
   useBuySellTransactionData,
   useSwapDisplayData,
-  SUPPORTED_TOKEN_PAIRS,
+  createSupportedTokenPairs,
   useAddCashModal,
   getSwapTokens
 } from '@audius/common/store'
@@ -18,6 +18,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { Button, Flex, Hint, TextLink } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { env } from 'app/services/env'
 
 import { BuyScreen, SellScreen } from './components'
 
@@ -85,19 +86,21 @@ export const BuySellFlow = ({
     }))
   }
 
+  const [selectedPairIndex] = useState(0)
+  const supportedTokenPairs = useMemo(() => createSupportedTokenPairs(env), [])
+  const selectedPair = supportedTokenPairs[selectedPairIndex]
+
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
     currentScreen,
     setCurrentScreen,
     activeTab,
+    selectedPair,
     onClose
   })
 
   // Track if user has attempted to submit the form
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
-
-  const [selectedPairIndex] = useState(0)
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),

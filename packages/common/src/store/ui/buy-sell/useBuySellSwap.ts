@@ -1,33 +1,38 @@
-import { useCallback, useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import {
-  SLIPPAGE_BPS,
-  useSwapTokens,
-  useCurrentAccountUser,
-  useQueryContext
-} from '~/api'
+import { SLIPPAGE_BPS, useCurrentAccountUser, useSwapTokens } from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 
-import { createTokenListingMap } from '../shared/tokenConstants'
-
-import type { BuySellTab, Screen, SwapResult, TransactionData } from './types'
+import type {
+  BuySellTab,
+  Screen,
+  SwapResult,
+  TokenPair,
+  TransactionData
+} from './types'
 
 type UseBuySellSwapProps = {
   transactionData: TransactionData
   currentScreen: Screen
   setCurrentScreen: (screen: Screen) => void
   activeTab: BuySellTab
+  selectedPair: TokenPair
   onClose: () => void
 }
 
 export const useBuySellSwap = (props: UseBuySellSwapProps) => {
-  const { transactionData, currentScreen, setCurrentScreen, activeTab } = props
+  const {
+    transactionData,
+    currentScreen,
+    setCurrentScreen,
+    activeTab,
+    selectedPair
+  } = props
   const queryClient = useQueryClient()
   const { data: user } = useCurrentAccountUser()
-  const { env } = useQueryContext()
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
@@ -48,29 +53,37 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     if (!transactionData || !transactionData.isValid) return
 
     const { inputAmount } = transactionData
-    const tokenListingMap = createTokenListingMap(env)
+
+    // Get the correct input and output token addresses based on the selected pair and active tab
+    let inputMintAddress: string
+    let outputMintAddress: string
 
     if (activeTab === 'buy') {
-      swapTokens({
-        inputMint: tokenListingMap.USDC.address,
-        outputMint: tokenListingMap.AUDIO.address,
-        amountUi: inputAmount,
-        slippageBps: SLIPPAGE_BPS
-      })
+      // Buy: pay with quote token, receive base token
+      inputMintAddress = selectedPair.quoteToken.address ?? ''
+      outputMintAddress = selectedPair.baseToken.address ?? ''
     } else {
-      swapTokens({
-        inputMint: tokenListingMap.AUDIO.address,
-        outputMint: tokenListingMap.USDC.address,
-        amountUi: inputAmount,
-        slippageBps: SLIPPAGE_BPS
-      })
+      // Sell: pay with base token, receive quote token
+      inputMintAddress = selectedPair.baseToken.address ?? ''
+      outputMintAddress = selectedPair.quoteToken.address ?? ''
     }
+
+    swapTokens({
+      inputMint: inputMintAddress,
+      outputMint: outputMintAddress,
+      amountUi: inputAmount,
+      slippageBps: SLIPPAGE_BPS
+    })
   }
 
   const invalidateBalances = () => {
     if (user?.wallet) {
+      // Invalidate balances for all token types that could be involved
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.tokenBalance, user.wallet]
       })
     }
     if (user?.spl_wallet) {

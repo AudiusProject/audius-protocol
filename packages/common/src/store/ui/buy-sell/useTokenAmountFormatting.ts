@@ -2,11 +2,8 @@ import { useCallback, useMemo } from 'react'
 
 import { AUDIO } from '@audius/fixed-decimal'
 
-import { formatUSDCValue } from '../../../api'
-import {
-  getAudioBalanceDecimalPlaces,
-  getCurrencyDecimalPlaces
-} from '../../../utils'
+import { formatUSDCValue } from '~/api'
+import { getTokenDecimalPlaces, getCurrencyDecimalPlaces } from '~/utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number
@@ -57,7 +54,7 @@ export const useTokenAmountFormatting = ({
     // Use AUDIO for non-stablecoins for now, when we expand to other tokens
     // we will need to use FixedDecimal itself
     const audioAmount = AUDIO(availableBalance)
-    const decimals = getAudioBalanceDecimalPlaces(availableBalance)
+    const decimals = getTokenDecimalPlaces(availableBalance)
 
     return audioAmount.toLocaleString('en-US', {
       maximumFractionDigits: decimals
@@ -76,7 +73,7 @@ export const useTokenAmountFormatting = ({
     }
 
     const audioAmount = AUDIO(safeNumericAmount)
-    const decimals = getAudioBalanceDecimalPlaces(safeNumericAmount)
+    const decimals = getTokenDecimalPlaces(safeNumericAmount)
 
     return audioAmount.toLocaleString('en-US', {
       maximumFractionDigits: decimals

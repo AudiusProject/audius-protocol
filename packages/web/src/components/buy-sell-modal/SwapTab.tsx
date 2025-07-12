@@ -54,6 +54,10 @@ export type SwapTabProps = {
   tooltipPlacement?: TooltipPlacement
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
 }
 
 export const SwapTab = ({
@@ -71,7 +75,11 @@ export const SwapTab = ({
   tokenPriceDecimalPlaces = 2,
   tooltipPlacement,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  availableInputTokens,
+  availableOutputTokens,
+  onInputTokenChange,
+  onOutputTokenChange
 }: SwapTabProps) => {
   const {
     formik,
