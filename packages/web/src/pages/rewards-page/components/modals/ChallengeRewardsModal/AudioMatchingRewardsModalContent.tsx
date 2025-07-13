@@ -26,7 +26,7 @@ import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import { type AudioMatchingChallengeProps } from './types'
 
-const { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } = route
+const { EXPLORE_PAGE, UPLOAD_PAGE } = route
 
 const { getUndisbursedUserChallenges, getClaimStatus } =
   audioRewardsPageSelectors
@@ -118,7 +118,7 @@ export const AudioMatchingRewardsModalContent = ({
   const handleClickCTA = useCallback(() => {
     const route =
       challengeName === ChallengeName.AudioMatchingBuy
-        ? EXPLORE_PREMIUM_TRACKS_PAGE
+        ? EXPLORE_PAGE
         : UPLOAD_PAGE
     navigateToPage(route)
     onNavigateAway()

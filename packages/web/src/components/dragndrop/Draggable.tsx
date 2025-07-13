@@ -21,7 +21,7 @@ export type DraggableProps = {
   text?: string
   link?: string
   kind: DragDropKind
-  id: ID | string // One of trackId, collectionId, userId
+  id: ID | string // Entity id or folder id
   index?: number
   children: ReactNode
   onDrag?: () => void

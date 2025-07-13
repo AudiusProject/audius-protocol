@@ -8,9 +8,11 @@ import {
   useFeelingLuckyTracks,
   useRecentlyPlayedTracks
 } from '@audius/common/api'
+import { useToggleTrack } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { UID, ID } from '@audius/common/models'
-import { ExploreCollectionsVariant } from '@audius/common/store'
+import { UID, ID, Kind } from '@audius/common/models'
+import { QueueSource } from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import {
   Paper,
   Text,
@@ -27,7 +29,6 @@ import {
   useTheme,
   useMedia,
   Button,
-  IconRepost,
   IconArrowRotate
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
@@ -146,6 +147,22 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { data: bestSelling } = useBestSelling()
   const { data: feelingLuckyTrack, refetch: refetchFeelingLucky } =
     useFeelingLuckyTracks({ limit: 1 })
+
+  // Create UID and togglePlay for feeling lucky track
+  const feelingLuckyTrackId = feelingLuckyTrack?.[0]?.track_id ?? 0
+  const feelingLuckyUid = useMemo(
+    () =>
+      feelingLuckyTrackId
+        ? makeUid(Kind.TRACKS, feelingLuckyTrackId, QueueSource.EXPLORE)
+        : '',
+    [feelingLuckyTrackId]
+  )
+
+  const { togglePlay: toggleFeelingLucky } = useToggleTrack({
+    id: feelingLuckyTrackId,
+    uid: feelingLuckyUid,
+    source: QueueSource.EXPLORE
+  })
   const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
@@ -213,9 +230,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
+    const isPremiumTracksTile = tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 
@@ -451,14 +466,19 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                   </Button>
                 </Flex>
                 <TrackTile
-                  uid={''}
-                  id={feelingLuckyTrack?.[0] ?? 0}
+                  uid={feelingLuckyUid}
+                  id={feelingLuckyTrackId}
                   index={0}
                   size={TrackTileSize.LARGE}
                   statSize={'small'}
                   ordered={false}
-                  togglePlay={function (uid: UID, id: ID): void {
-                    throw new Error('Function not implemented.')
+                  togglePlay={(tileUid: UID, trackId: ID) => {
+                    if (
+                      tileUid === feelingLuckyUid &&
+                      trackId === feelingLuckyTrackId
+                    ) {
+                      toggleFeelingLucky()
+                    }
                   }}
                   hasLoaded={() => {}}
                   isLoading={false}
@@ -495,9 +515,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       key={tile.title}
                       backgroundGradient={tile.gradient}
                       shadowColor={tile.shadow}
-                      useOverlayBlendMode={
-                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                      }
                       backgroundIcon={
                         Icon ? (
                           <Icon height={180} width={180} color='inverse' />

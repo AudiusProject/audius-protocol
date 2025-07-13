@@ -24,6 +24,21 @@
       "name": "toolroom",
       "appKey": "0971d74d0ea82387d6fc8d780eeb3f122ece8792",
       "url": "http://ddex.audius.co"
+    },
+    {
+      "name": "higheq",
+      "appKey": "f327a13ad819f02abcc7fcee5db0bd0b828e710c",
+      "url": "http://ddex.audius.co"
+    },
+    {
+      "name": "sme",
+      "appKey": "52511242f575dab814c06d1f80ca1cbad9cc58ea",
+      "url": "http://ddex.audius.co"
+    },
+    {
+      "name": "orchard",
+      "appKey": "d3a331d096ed4377654fe25fb33613f746667db8",
+      "url": "http://ddex.audius.co"
     }
   ]
 }

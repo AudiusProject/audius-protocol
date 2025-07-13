@@ -6,27 +6,12 @@ import { TouchableOpacity } from 'react-native'
 import { Flex, Text } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import { UserBadges } from 'app/components/user-badges'
-import { makeStyles } from 'app/styles'
 
 import { AppDrawerContext } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
 
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    paddingLeft: spacing(4),
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between'
-  },
-  accountBadges: {
-    flexGrow: 1,
-    alignSelf: 'center'
-  }
-}))
-
 export const AccountDetails = () => {
   const { drawerHelpers } = useContext(AppDrawerContext)
-  const styles = useStyles()
   const { data: accountUser } = useCurrentAccountUser({
     select: (user) => ({
       user_id: user?.user_id,
@@ -60,11 +45,7 @@ export const AccountDetails = () => {
             <Text numberOfLines={1} variant='body' size='l' strength='strong'>
               {name}
             </Text>
-            <UserBadges
-              user={accountUser}
-              hideName
-              style={styles.accountBadges}
-            />
+            {user_id ? <UserBadges userId={user_id} badgeSize='xs' /> : null}
           </Flex>
           <Text numberOfLines={1} variant='body' size='s'>
             @{handle}

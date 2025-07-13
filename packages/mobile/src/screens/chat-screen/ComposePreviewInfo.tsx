@@ -8,7 +8,7 @@ import { pick } from 'lodash'
 import { Flex, Text } from '@audius/harmony-native'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { TrackImage } from 'app/components/image/TrackImage'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 
 type ComposePreviewInfoProps = {
   title?: string
@@ -44,7 +44,7 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
           <Text variant='body' strength='strong'>
             {name}
           </Text>
-          {user ? <UserBadges hideName user={user} badgeSize={14} /> : null}
+          {user ? <UserBadges userId={user.user_id} badgeSize='xs' /> : null}
         </Flex>
       </Flex>
     </Flex>

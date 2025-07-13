@@ -1,7 +1,7 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { useIsManagedAccount } from '@audius/common/hooks'
+import { useIsManagedAccount, useShareAction } from '@audius/common/hooks'
 import { Name, PlayableType } from '@audius/common/models'
 import {
   collectionsSocialActions,
@@ -30,11 +30,12 @@ import { getXShareText } from './utils'
 const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
-const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
+const { shareCollection } = collectionsSocialActions
 const { setVisibility } = modalsActions
 
 export const ShareModal = () => {
   const { isOpen, onClose, onClosed } = useModalState('Share')
+  const sendShareAction = useShareAction()
 
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
@@ -62,15 +63,11 @@ export const ShareModal = () => {
 
   const handleShareToX = useCallback(async () => {
     if (!source || !content) return
-    const { xText, link, analyticsEvent } = await getXShareText(
-      content,
-      content.type === 'audioNftPlaylist' &&
-        accountUserId === content.user.user_id
-    )
+    const { xText, link, analyticsEvent } = await getXShareText(content)
     openXLink(link, xText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
     onClose()
-  }, [source, content, accountUserId, record, onClose])
+  }, [source, content, record, onClose])
 
   const handleCopyLink = useCallback(() => {
     if (!source || !content) return
@@ -86,9 +83,6 @@ export const ShareModal = () => {
         break
       case 'playlist':
         dispatch(shareCollection(content.playlist.playlist_id, source))
-        break
-      case 'audioNftPlaylist':
-        dispatch(shareAudioNftPlaylist(content.user.handle, source))
         break
     }
     toast(messages.toast(content.type), SHARE_TOAST_TIMEOUT_MILLIS)
@@ -116,6 +110,21 @@ export const ShareModal = () => {
       onClose()
     }
   }, [content, dispatch, onClose])
+
+  // Trigger share action on mount with new content
+  useEffect(() => {
+    if (!content) return
+    switch (content.type) {
+      case 'track':
+        sendShareAction(content.track.track_id, 'track')
+        break
+      case 'album':
+        sendShareAction(content.album.playlist_id, 'playlist')
+        break
+      case 'playlist':
+        sendShareAction(content.playlist.playlist_id, 'playlist')
+    }
+  }, [content, sendShareAction])
 
   const shareProps = {
     isOpen,

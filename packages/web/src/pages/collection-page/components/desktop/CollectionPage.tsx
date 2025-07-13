@@ -4,14 +4,13 @@ import { useFavoriteTrack, useUnfavoriteTrack } from '@audius/common/api'
 import {
   Variant,
   Status,
-  Collection,
-  SmartCollection,
   ID,
   User,
   isContentUSDCPurchaseGated,
   ModalSource,
   Track,
-  FavoriteSource
+  FavoriteSource,
+  Collection
 } from '@audius/common/models'
 import {
   CollectionTrack,
@@ -23,17 +22,12 @@ import {
 import { removeNullable } from '@audius/common/utils'
 import { Divider, Flex, Paper, Text } from '@audius/harmony'
 
-import {
-  CollectiblesPlaylistTableColumn,
-  CollectiblesPlaylistTable
-} from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import { CollectionDogEar } from 'components/collection'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
-import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { TracksTable } from 'components/tracks-table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
-import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
@@ -98,7 +92,7 @@ export type CollectionPageProps = {
   type: CollectionsPageType
   collection: {
     status: string
-    metadata: Collection | SmartCollection | null
+    metadata: Collection
     user: User | null | undefined
   }
   tracks: {
@@ -184,22 +178,10 @@ const CollectionPage = ({
   const playlistOwnerId = user?.user_id ?? null
   const isOwner = userId === playlistOwnerId
 
-  const variant = metadata?.variant ?? null
-  const gradient = metadata?.variant === Variant.SMART ? metadata.gradient : ''
-  const icon =
-    metadata?.variant === Variant.SMART
-      ? smartCollectionIcons[metadata.playlist_name]
-      : null
-  const imageOverride =
-    metadata?.variant === Variant.SMART ? metadata.imageOverride : ''
-  const typeTitle =
-    metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
-  const customEmptyText =
-    metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
+  const typeTitle = type
+  const customEmptyText = null
   const access =
     metadata !== null && 'access' in metadata ? metadata?.access : null
-
-  const isNftPlaylist = typeTitle === 'Audio NFT Playlist'
 
   const {
     isEmpty,
@@ -259,7 +241,7 @@ const CollectionPage = ({
       access={access}
       collectionId={playlistId}
       userId={playlistOwnerId}
-      loading={isNftPlaylist ? tracksLoading : collectionLoading}
+      loading={collectionLoading}
       tracksLoading={tracksLoading}
       type={typeTitle}
       title={playlistName}
@@ -284,11 +266,6 @@ const CollectionPage = ({
       onPreview={onPreview}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
-      // Smart collection
-      variant={variant}
-      gradient={gradient}
-      icon={icon}
-      imageOverride={imageOverride}
       ownerId={playlistOwnerId}
       isStreamGated={
         metadata?.variant === Variant.USER_GENERATED
@@ -303,33 +280,19 @@ const CollectionPage = ({
     />
   )
 
-  const TableComponent = useMemo(() => {
-    return isNftPlaylist ? CollectiblesPlaylistTable : TracksTable
-  }, [isNftPlaylist])
-
   const tracksTableColumns = useMemo(() => {
-    let columns: (
-      | TracksTableColumn
-      | CollectiblesPlaylistTableColumn
-      | undefined
-    )[]
-
-    if (isNftPlaylist) {
-      columns = ['playButton', 'collectibleName', 'chain', 'length', 'spacer']
-    } else {
-      columns = [
-        'playButton',
-        'trackName',
-        isAlbum ? undefined : 'artistName',
-        isAlbum ? 'date' : 'addedDate',
-        'length',
-        areAllTracksPremium ? undefined : 'plays',
-        'reposts',
-        'overflowActions'
-      ]
-    }
+    const columns = [
+      'playButton',
+      'trackName',
+      isAlbum ? undefined : 'artistName',
+      isAlbum ? 'date' : 'addedDate',
+      'length',
+      areAllTracksPremium ? undefined : 'plays',
+      'reposts',
+      'overflowActions'
+    ]
     return columns.filter(removeNullable)
-  }, [areAllTracksPremium, isAlbum, isNftPlaylist])
+  }, [areAllTracksPremium, isAlbum])
 
   const messages = getMessages(isAlbum ? 'album' : 'playlist')
   return (
@@ -356,12 +319,12 @@ const CollectionPage = ({
           <NoSearchResultsContent />
         ) : (
           <div className={styles.tableWrapper}>
-            <TableComponent
+            <TracksTable
               // @ts-ignore
               columns={tracksTableColumns}
               wrapperClassName={styles.tracksTableWrapper}
               key={playlistName}
-              loading={isNftPlaylist ? collectionLoading : tracksLoading}
+              loading={collectionLoading}
               userId={userId}
               playing={playing}
               activeIndex={activeIndex}
@@ -390,7 +353,7 @@ const CollectionPage = ({
         )}
       </Paper>
 
-      {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
+      {!collectionLoading && isOwner && !isAlbum ? (
         <Flex column gap='2xl' pv='2xl' w='100%' css={{ minWidth: 774 }}>
           <Divider />
           <SuggestedTracks collectionId={playlistId} />

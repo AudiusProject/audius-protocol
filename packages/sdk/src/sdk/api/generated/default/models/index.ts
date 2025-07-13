@@ -18,6 +18,7 @@ export * from './Comment';
 export * from './CommentMention';
 export * from './CommentNotificationSetting';
 export * from './CommentRepliesResponse';
+export * from './CommentResponse';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';

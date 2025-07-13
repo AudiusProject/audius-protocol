@@ -49,7 +49,7 @@ export const ProfileTabNavigator = ({
   const { params } = useRoute<'Profile'>()
 
   const initialParams = { id: user_id, handle: params.handle }
-  const isArtist = useIsArtist()
+  const isArtist = useIsArtist(params)
 
   const showCollectiblesTab = useShouldShowCollectiblesTab()
 

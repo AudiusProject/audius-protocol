@@ -17,14 +17,21 @@
 import * as runtime from '../runtime';
 import type {
   CommentRepliesResponse,
+  CommentResponse,
   UnclaimedIdResponse,
 } from '../models';
 import {
     CommentRepliesResponseFromJSON,
     CommentRepliesResponseToJSON,
+    CommentResponseFromJSON,
+    CommentResponseToJSON,
     UnclaimedIdResponseFromJSON,
     UnclaimedIdResponseToJSON,
 } from '../models';
+
+export interface GetCommentRequest {
+    commentId: string;
+}
 
 export interface GetCommentRepliesRequest {
     commentId: string;
@@ -37,6 +44,37 @@ export interface GetCommentRepliesRequest {
  * 
  */
 export class CommentsApi extends runtime.BaseAPI {
+
+    /**
+     * @hidden
+     * Gets a comment by ID
+     */
+    async getCommentRaw(params: GetCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommentResponse>> {
+        if (params.commentId === null || params.commentId === undefined) {
+            throw new runtime.RequiredError('commentId','Required parameter params.commentId was null or undefined when calling getComment.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/comments/{comment_id}`.replace(`{${"comment_id"}}`, encodeURIComponent(String(params.commentId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CommentResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a comment by ID
+     */
+    async getComment(params: GetCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
+        const response = await this.getCommentRaw(params, initOverrides);
+        return await response.value();
+    }
 
     /**
      * @hidden

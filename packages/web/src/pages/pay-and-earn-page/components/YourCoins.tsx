@@ -65,7 +65,7 @@ const YourCoinsHeader = () => {
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
-  const { color, spacing, cornerRadius, motion } = useTheme()
+  const { color, spacing, motion } = useTheme()
   const { isMobile, isExtraSmall } = useMedia()
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
@@ -106,13 +106,7 @@ export const YourCoins = () => {
         }}
       >
         <Flex alignItems='center' gap={isExtraSmall ? 'm' : 'l'}>
-          <IconTokenAUDIO
-            width={DIMENSIONS}
-            height={DIMENSIONS}
-            css={{
-              borderRadius: cornerRadius.circle
-            }}
-          />
+          <IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} hex />
           <Flex
             direction='column'
             gap='xs'

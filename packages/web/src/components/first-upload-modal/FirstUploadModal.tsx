@@ -75,6 +75,8 @@ const FirstUploadModal = ({ isOpen, close }: FirstUploadModalProps) => {
     }
   }, [isOpen, dispatch])
 
+  if (!userId) return null
+
   return (
     <>
       <Modal

@@ -30,6 +30,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.share import Share
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
@@ -143,6 +144,7 @@ environment = shared_config["discprov"]["env"]
 entity_type_table_mapping = {
     "Save": Save.__tablename__,
     "Repost": Repost.__tablename__,
+    "Share": Share.__tablename__,
     "Follow": Follow.__tablename__,
     "Subscription": Subscription.__tablename__,
     "Playlist": Playlist.__tablename__,
@@ -1171,6 +1173,39 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 respost_json["repost_item_id"],
             ): respost_json
             for _, respost_json in reposts
+        }
+
+    # SHARES
+    if entities_to_fetch["Share"]:
+        shares_to_fetch: Set[Tuple] = entities_to_fetch["Share"]
+        and_queries = []
+        for share_to_fetch in shares_to_fetch:
+            user_id = share_to_fetch[0]
+            entity_type = share_to_fetch[1]
+            entity_id = share_to_fetch[2]
+            and_queries.append(
+                and_(
+                    Share.user_id == user_id,
+                    Share.share_type == entity_type.lower(),
+                    Share.share_item_id == entity_id,
+                )
+            )
+        shares: List[Tuple[Share, dict]] = (
+            session.query(Share, literal_column(f"row_to_json({Share.__tablename__})"))
+            .filter(or_(*and_queries))
+            .all()
+        )
+        existing_entities[EntityType.SHARE] = {
+            get_record_key(share.user_id, share.share_type, share.share_item_id): share
+            for share, _ in shares
+        }
+        existing_entities_in_json[EntityType.SHARE] = {
+            get_record_key(
+                share_json["user_id"],
+                share_json["share_type"],
+                share_json["share_item_id"],
+            ): share_json
+            for _, share_json in shares
         }
 
     # SUBSCRIPTIONS

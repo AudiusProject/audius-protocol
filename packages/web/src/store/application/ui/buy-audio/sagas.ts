@@ -890,7 +890,7 @@ function* transferStep({
 
   // Refetch wallet balance
   const queryClient = yield* getContext('queryClient')
-  yield* call(queryClient.invalidateQueries, {
+  queryClient.invalidateQueries({
     queryKey: [QUERY_KEYS.audioBalance]
   })
   yield* put(transferCompleted())

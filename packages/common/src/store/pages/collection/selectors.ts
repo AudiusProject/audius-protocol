@@ -5,8 +5,7 @@ export const getCollectionId = (state: CommonState) =>
 export const getUserUid = (state: CommonState) => state.pages.collection.userUid
 export const getCollectionStatus = (state: CommonState) =>
   state.pages.collection.status
-export const getSmartCollectionVariant = (state: CommonState) =>
-  state.pages.collection.smartCollectionVariant
+
 export const getCollectionPermalink = (state: CommonState) =>
   state.pages.collection.collectionPermalink
 

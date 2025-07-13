@@ -2,7 +2,7 @@ import React from 'react'
 
 import type { TokenInfo } from '@audius/common/store'
 
-import { Flex, IconLogoCircleUSDC, Text } from '@audius/harmony-native'
+import { Flex, IconTokenUSDC, Text } from '@audius/harmony-native'
 
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
@@ -25,7 +25,7 @@ export const USDCBalanceSection = ({
     <Flex direction='column' gap='m'>
       {/* Header */}
       <Flex direction='row' alignItems='center' gap='s'>
-        <IconLogoCircleUSDC size='l' />
+        <IconTokenUSDC size='l' />
         <Text variant='heading' size='s' color='subdued'>
           {title}
         </Text>

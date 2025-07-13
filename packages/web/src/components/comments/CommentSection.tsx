@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { useHighlightComment } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -62,6 +63,10 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const showComments = searchParams.get('showComments')
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
   const { history } = useHistoryContext()
+
+  const highlightComment = useHighlightComment()
+  const highlightCommentId =
+    highlightComment?.parentCommentId ?? highlightComment?.id
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
@@ -133,7 +138,7 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
             <Divider color='default' orientation='horizontal' />
           </>
         ) : null}
-        <Flex ph='xl' pv='l' w='100%' direction='column' gap='l'>
+        <Flex pv='l' w='100%' direction='column' gap='l'>
           {commentSectionLoading ? (
             <SortBarSkeletons />
           ) : showCommentSortBar ? (
@@ -146,15 +151,20 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
             useWindow={false}
             threshold={-250}
           >
-            <Flex direction='column' gap='xl' pt='m'>
+            <Flex direction='column' gap='xl' pv='m'>
               {commentSectionLoading ? (
                 <CommentBlockSkeletons />
               ) : (
                 <>
                   {commentIds.length === 0 ? <NoComments /> : null}
-                  {commentIds.map((id) => (
-                    <CommentThread commentId={id} key={id} />
-                  ))}
+                  {highlightCommentId ? (
+                    <CommentThread commentId={highlightCommentId} />
+                  ) : null}
+                  {commentIds
+                    .filter((id) => id !== highlightCommentId)
+                    .map((id) => (
+                      <CommentThread commentId={id} key={id} />
+                    ))}
                   {isLoadingMorePages ? (
                     <Flex justifyContent='center' mt='l'>
                       <LoadingSpinner css={{ width: 20, height: 20 }} />

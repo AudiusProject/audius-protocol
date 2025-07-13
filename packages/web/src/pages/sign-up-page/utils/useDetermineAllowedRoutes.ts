@@ -28,12 +28,11 @@ export const useDetermineAllowedRoute = () => {
   const signUpState = useSelector(getSignOn)
   const { data: accountUser } = useCurrentAccountUser({
     select: (user) => ({
-      userId: user?.user_id,
+      isAccountComplete: !!user?.user_id && !!user?.handle && user?.name,
       followeeCount: user?.followee_count
     })
   })
-  const { userId, followeeCount } = accountUser ?? {}
-  const isAccountComplete = !!userId
+  const { followeeCount, isAccountComplete } = accountUser ?? {}
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
   const isFastReferral = useFastReferral()
 
@@ -63,6 +62,7 @@ export const useDetermineAllowedRoute = () => {
       allowedRoutes.push(SignUpPath.createLoginDetails)
       allowedRoutes.push(SignUpPath.reviewHandle)
     }
+
     if (pastAccountPhase) {
       // At this point their identity account is either fully created or being created in the background
       // Either way the user can't go back any more

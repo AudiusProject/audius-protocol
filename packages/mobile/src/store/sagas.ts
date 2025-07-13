@@ -30,7 +30,6 @@ import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import collectionPageSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
-import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
 import librarySagas from 'common/store/pages/library/sagas'
@@ -49,7 +48,6 @@ import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
-import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import uploadSagas from 'common/store/upload/sagas'
@@ -123,7 +121,6 @@ export default function* rootSaga() {
     ...mobileChatSagas(),
     ...collectionPageSagas(),
     ...feedPageSagas(),
-    ...exploreCollectionsPageSagas(),
     ...trendingPageSagas(),
     ...trendingPlaylistSagas(),
     ...trendingUndergroundSagas(),
@@ -144,7 +141,7 @@ export default function* rootSaga() {
     // Application
     ...addToCollectionSagas(),
     ...changePasswordSagas(),
-    ...smartCollectionPageSagas(),
+
     ...overflowMenuSagas(),
     ...rateCtaSagas(),
     ...deactivateAccountSagas(),

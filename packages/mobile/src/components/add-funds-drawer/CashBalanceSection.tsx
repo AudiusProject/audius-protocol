@@ -1,8 +1,7 @@
 import { useFormattedUSDCBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 
-import { Flex, Text, spacing } from '@audius/harmony-native'
-import LogoUSDC from 'app/assets/images/logoUSDC.svg'
+import { Flex, Text, spacing, IconTokenUSDC } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 
 export const CashBalanceSection = () => {
@@ -11,7 +10,7 @@ export const CashBalanceSection = () => {
   return (
     <Flex direction='column' gap='xs'>
       <Flex direction='row' alignItems='center' gap='s'>
-        <LogoUSDC height={spacing.unit6} width={spacing.unit6} />
+        <IconTokenUSDC height={spacing.unit6} width={spacing.unit6} />
         <Text variant='heading' color='subdued' size='s'>
           {walletMessages.cashBalance}
         </Text>

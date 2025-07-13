@@ -14,10 +14,8 @@ import {
   IconCart,
   IconCollectible,
   IconComponent,
-  IconSparkles,
-  useTheme
+  IconSparkles
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import { CollectionDogEar } from 'components/collection'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -71,7 +69,6 @@ export const LockedContentDetailsTile = ({
   const label = `${title} by ${owner.name}`
   const isCollectibleGated = isContentCollectibleGated(streamConditions)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
-  const { color } = useTheme()
 
   let IconComponent: Nullable<IconComponent>
   let message: Nullable<string>
@@ -113,22 +110,20 @@ export const LockedContentDetailsTile = ({
       ) : (
         <TrackDogEar trackId={contentId} />
       )}
-      <Flex css={{ overflow: 'hidden' }}>
+      <Flex column css={{ overflow: 'hidden' }} gap='s'>
         {showLabel && IconComponent && message ? (
-          <Flex
-            className={cn(styles.gatedContentLabel, {
-              [styles.usdcContentLabel]: isUSDCPurchaseGated
-            })}
-          >
+          <Flex gap='s' alignItems='center'>
             <IconComponent
               size='s'
-              fill={
-                isUSDCPurchaseGated
-                  ? color.special.lightGreen
-                  : color.special.blue
-              }
+              color={isUSDCPurchaseGated ? 'premium' : 'special'}
             />
-            <Text>{message}</Text>
+            <Text
+              variant='label'
+              size='s'
+              color={isUSDCPurchaseGated ? 'premium' : 'special'}
+            >
+              {message}
+            </Text>
           </Flex>
         ) : null}
         <Flex w='100%' direction='column' gap='xs'>

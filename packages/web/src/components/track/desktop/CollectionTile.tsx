@@ -579,7 +579,9 @@ export const CollectionTile = ({
       </Flex>
       {/* Track list and bottom bar remain unchanged */}
       <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
-        <Scrollbar css={{ maxHeight: 240 }}>{renderTrackList()}</Scrollbar>
+        <Scrollbar css={{ maxHeight: 240, overflowY: 'auto' }}>
+          {renderTrackList()}
+        </Scrollbar>
         {renderMoreTracks()}
       </Box>
       <Box

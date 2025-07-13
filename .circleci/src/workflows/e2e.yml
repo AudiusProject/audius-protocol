@@ -1,0 +1,8 @@
+when: << pipeline.parameters.run-integration-workflow >>
+jobs:
+  - e2e-init:
+      context: Vercel
+  - e2e-test:
+      context: Vercel
+      requires:
+        - e2e-init

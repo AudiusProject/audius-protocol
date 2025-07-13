@@ -187,7 +187,8 @@ export const {
   unsubscribeBrowserPushNotifications,
   updatePlaylistLibrary,
   incrementTrackSaveCount,
-  decrementTrackSaveCount
+  decrementTrackSaveCount,
+  setGuestEmail
 } = slice.actions
 
 export const actions = slice.actions
