@@ -14,10 +14,6 @@ export const FeelingLucky = () => {
     isLoading
   } = useFeelingLuckyTracks({ limit: 1 })
 
-  if (!feelingLuckyTracks || feelingLuckyTracks.length === 0) {
-    return null
-  }
-
   return (
     <Flex mb='l' justifyContent={'flex-start'} gap='m'>
       <Flex direction='row' justifyContent='space-between'>

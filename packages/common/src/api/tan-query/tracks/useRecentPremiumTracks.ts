@@ -32,7 +32,6 @@ export const useRecentPremiumTracks = <TResult = ID[]>(
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.tracks.getRecentPremiumTracks({
-        userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: 30
       })
 
