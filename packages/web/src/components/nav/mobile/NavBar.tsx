@@ -1,7 +1,6 @@
-import { useState, useContext, useCallback, useEffect } from 'react'
+import { useContext, useCallback } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
@@ -17,7 +16,6 @@ import cn from 'classnames'
 import { History } from 'history'
 import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { useTransition, animated } from 'react-spring'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import {

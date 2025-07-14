@@ -14,9 +14,7 @@ import {
 } from '@audius/harmony'
 import { Link } from 'react-router-dom-v5-compat'
 
-import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackArtwork } from 'components/track/TrackArtwork'
-import { Size } from 'components/track-flair/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
