@@ -135,6 +135,8 @@ export const SwapTab = ({
                 error={error}
                 errorMessage={errorMessage}
                 tooltipPlacement={tooltipPlacement}
+                availableTokens={!isDefault ? availableInputTokens : undefined}
+                onTokenChange={!isDefault ? onInputTokenChange : undefined}
               />
 
               <TokenAmountSection

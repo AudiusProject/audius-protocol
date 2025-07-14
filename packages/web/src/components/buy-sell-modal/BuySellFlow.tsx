@@ -76,14 +76,41 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     }))
   }
 
+  // Track if user has attempted to submit the form
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+
+  const selectedPair = SUPPORTED_TOKEN_PAIRS[0]
+
+  // State for dynamic token selection - separate states for each tab
+  const [buyTabTokens, setBuyTabTokens] = useState<{
+    baseToken: string
+    quoteToken: string
+  }>({
+    baseToken: selectedPair.baseToken.symbol, // AUDIO by default
+    quoteToken: selectedPair.quoteToken.symbol // USDC by default
+  })
+
+  const [sellTabTokens, setSellTabTokens] = useState<{
+    baseToken: string
+    quoteToken: string
+  }>({
+    baseToken: selectedPair.baseToken.symbol, // AUDIO by default
+    quoteToken: selectedPair.quoteToken.symbol // USDC by default
+  })
+
+  // Get current tab's token symbols
+  const currentTabTokens = activeTab === 'buy' ? buyTabTokens : sellTabTokens
+  const baseTokenSymbol = currentTabTokens.baseToken
+  const quoteTokenSymbol = currentTabTokens.quoteToken
+
   // Handle token changes
   const handleInputTokenChange = (symbol: string) => {
     if (activeTab === 'sell') {
       // On sell tab, input token change means base token change
-      setBaseTokenSymbol(symbol)
+      setSellTabTokens((prev) => ({ ...prev, baseToken: symbol }))
     } else {
       // On buy tab, input token change means quote token change
-      setQuoteTokenSymbol(symbol)
+      setBuyTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
     }
     // Reset transaction data when tokens change
     resetTransactionData()
@@ -92,27 +119,14 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const handleOutputTokenChange = (symbol: string) => {
     if (activeTab === 'buy') {
       // On buy tab, output token change means base token change
-      setBaseTokenSymbol(symbol)
+      setBuyTabTokens((prev) => ({ ...prev, baseToken: symbol }))
     } else {
       // On sell tab, output token change means quote token change
-      setQuoteTokenSymbol(symbol)
+      setSellTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
     }
     // Reset transaction data when tokens change
     resetTransactionData()
   }
-
-  // Track if user has attempted to submit the form
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
-
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[0]
-
-  // State for dynamic token selection - using base/quote terminology
-  const [baseTokenSymbol, setBaseTokenSymbol] = useState<string>(
-    selectedPair.baseToken.symbol // AUDIO by default
-  )
-  const [quoteTokenSymbol, setQuoteTokenSymbol] = useState<string>(
-    selectedPair.quoteToken.symbol // USDC by default
-  )
 
   // Get all available tokens
   const availableTokens = useMemo(() => {
@@ -352,14 +366,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.buy}
               onInputValueChange={handleTabInputValueChange}
-              availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol
-              )}
-              availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol
-              )}
-              onInputTokenChange={handleInputTokenChange}
-              onOutputTokenChange={handleOutputTokenChange}
             />
           ) : (
             <SellTab
@@ -370,10 +376,10 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleTabInputValueChange}
               availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol
+                (t) => t.symbol !== baseTokenSymbol
               )}
               availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol
+                (t) => t.symbol !== quoteTokenSymbol
               )}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}

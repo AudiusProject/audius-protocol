@@ -42,19 +42,23 @@ export const SellTab = ({
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
 
-  // For AUDIO, use the specialized hook for compatibility
+  // Dynamically fetch balance for the currently selected input token
   const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
   const { data: tokenBalanceData, status: tokenBalanceStatus } =
     useTokenBalance({
-      token: 'wAUDIO'
+      token: baseToken.symbol as any // Cast to satisfy the MintName type
     })
 
-  const isBalanceLoading =
-    baseToken.symbol === 'AUDIO'
-      ? isNullOrUndefined(accountBalance)
-      : tokenBalanceStatus === Status.LOADING
+  // Determine loading state based on the selected token
+  const isBalanceLoading = useMemo(() => {
+    if (baseToken.symbol === 'AUDIO') {
+      return isNullOrUndefined(accountBalance)
+    } else {
+      return tokenBalanceStatus === Status.LOADING
+    }
+  }, [baseToken.symbol, accountBalance, tokenBalanceStatus])
 
-  // Get balance in UI format
+  // Get balance in UI format based on the selected token
   const getBalance = useMemo(() => {
     return () => {
       if (baseToken.symbol === 'AUDIO') {
