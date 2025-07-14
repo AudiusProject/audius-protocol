@@ -4,6 +4,7 @@ import { SearchSortMethod } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { isEmpty } from 'lodash'
+import { flushSync } from 'react-dom'
 import { generatePath, useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
@@ -45,8 +46,12 @@ export const useSearchCategory = () => {
 
   const setCategory = useCallback(
     (newCategory: CategoryKey) => {
-      // Do not animate on mobile
-      setStackReset(true)
+      // Do not animate on mobile - use flushSync to ensure this is processed before navigation
+      if (isMobile) {
+        flushSync(() => {
+          setStackReset(true)
+        })
+      }
 
       const commonFilterParams = Object.fromEntries(
         Object.entries(searchParams)
@@ -73,7 +78,7 @@ export const useSearchCategory = () => {
         state: {}
       })
     },
-    [searchParams, history, setStackReset]
+    [searchParams, history, setStackReset, isMobile]
   )
 
   return [category || CategoryView.ALL, setCategory] as const

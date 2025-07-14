@@ -2,7 +2,6 @@ import { useRef } from 'react'
 
 import { useSearchAllResults } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
-import tracks from '@audius/common/src/store/pages/track/lineup/reducer'
 import { SearchKind } from '@audius/common/store'
 import {
   Flex,
@@ -10,10 +9,12 @@ import {
   PlainButton,
   Text,
   Avatar,
-  Artwork
+  Artwork,
+  Skeleton
 } from '@audius/harmony'
 import { Link } from 'react-router-dom-v5-compat'
 
+import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackArtwork } from 'components/track/TrackArtwork'
 import { Size } from 'components/track-flair/types'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -32,7 +33,9 @@ const messages = {
   tracks: 'Tracks',
   track: 'Track',
   albums: 'Albums',
+  album: 'Album',
   playlists: 'Playlists',
+  playlist: 'Playlist',
   showAll: 'Show All'
 }
 
@@ -63,59 +66,146 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
+  const SearchResultItem = ({
+    keyValue,
+    imageComponent,
+    primaryText,
+    secondaryText
+  }: {
+    keyValue: string
+    imageComponent: React.ReactNode
+    primaryText: string
+    secondaryText: string
+  }) => (
+    <Flex p='xs' key={keyValue} gap='m'>
+      {imageComponent}
+      <Flex direction='column' flex={1}>
+        <Text size='s' ellipses style={{ maxWidth: '90%' }}>
+          {primaryText}
+        </Text>
+        <Text size='xs' color='subdued'>
+          {secondaryText}
+        </Text>
+      </Flex>
+    </Flex>
+  )
+
+  const SearchResultCard = ({
+    title,
+    items,
+    renderItem,
+    isLoading
+  }: {
+    title: string
+    items: any[]
+    renderItem: (item: any) => React.ReactNode
+    isLoading?: boolean
+  }) => {
+    if (!isLoading && items.length === 0) return null
+    return (
+      <Paper border='default' shadow='mid' p='l'>
+        <Flex direction='column' gap='s' style={{ minWidth: '100%' }}>
+          <Text variant='label' size='s' textTransform='uppercase'>
+            {title}
+          </Text>
+          {isLoading
+            ? Array.from({ length: 5 }, (_, index) => (
+                <Flex p='xs' key={index} gap='m'>
+                  <Artwork isLoading={isLoading} w={40} h={40} />
+                  <Flex direction='column' flex={1} gap='xs'>
+                    <Skeleton h={18} w='60%' />
+                    <Skeleton h={16} w='40%' />
+                  </Flex>
+                </Flex>
+              ))
+            : items.slice(0, 5).map(renderItem)}
+        </Flex>
+      </Paper>
+    )
+  }
   if (isMobile) {
     return (
       <Flex direction='column' ph='l' pb='xl' pt='s' gap='m'>
-        <Paper border='default' shadow='mid' p='l'>
-          {data?.users?.length ? (
-            <Flex direction='column' style={{ minWidth: '100%' }}>
-              <Text size='s' ellipses style={{ maxWidth: '70%' }}>
-                {messages.profiles}
-              </Text>
-              {data.users.slice(0, 5).map((user) => (
-                <Flex p='xs' key={user.name} gap='m'>
-                  <Avatar
-                    size='medium'
-                    src={user.profile_picture?.['480x480']}
-                  />
-                  <Flex direction='column'>
-                    <Text size='s'> {user.name}</Text>
-                    <Text size='xs' color='subdued'>
-                      {messages.profile}
-                    </Text>
-                  </Flex>
-                </Flex>
-              ))}
-            </Flex>
-          ) : null}
-        </Paper>
-        <Paper border='default' shadow='mid' p='l'>
-          {data?.tracks?.length ? (
-            <Flex direction='column' gap='s'>
-              <Text variant='label' size='s' textTransform='uppercase'>
-                {messages.tracks}
-              </Text>
-              {data.tracks.slice(0, 5).map((track) => (
-                <Flex p='xs' key={track.title} gap='m'>
-                  <TrackArtwork
-                    size={SquareSizes.SIZE_150_BY_150}
-                    trackId={track.track_id}
-                    h={40}
-                    w={40}
-                  />
-                  <Flex direction='column' style={{ minWidth: '100%' }}>
-                    <Text size='s' ellipses style={{ maxWidth: '70%' }}>
-                      {track.title}
-                    </Text>
-                    <Text size='xs' color='subdued'>
-                      {messages.track}
-                    </Text>
-                  </Flex>
-                </Flex>
-              ))}
-            </Flex>
-          ) : null}
-        </Paper>
+        <SearchResultCard
+          title={messages.profiles}
+          items={data?.users ?? []}
+          isLoading={isLoading}
+          renderItem={(user) => (
+            <SearchResultItem
+              keyValue={user.name}
+              imageComponent={
+                <Avatar
+                  size='medium'
+                  src={user.profile_picture?.['480x480']}
+                  isLoading={isLoading}
+                />
+              }
+              primaryText={user.name}
+              secondaryText={messages.profile}
+            />
+          )}
+        />
+        <SearchResultCard
+          title={messages.tracks}
+          items={data?.tracks ?? []}
+          isLoading={isLoading}
+          renderItem={(track) => (
+            <SearchResultItem
+              keyValue={track.title}
+              imageComponent={
+                <TrackArtwork
+                  size={SquareSizes.SIZE_150_BY_150}
+                  trackId={track.track_id}
+                  isLoading={isLoading}
+                  h={40}
+                  w={40}
+                />
+              }
+              primaryText={track.title}
+              secondaryText={messages.track}
+            />
+          )}
+        />
+        <SearchResultCard
+          title={messages.playlists}
+          items={data?.playlists ?? []}
+          isLoading={isLoading}
+          renderItem={(playlist) => (
+            <SearchResultItem
+              keyValue={playlist.playlist_name}
+              imageComponent={
+                <Artwork
+                  src={playlist.artwork?.['150x150']}
+                  isLoading={isLoading}
+                  w={40}
+                  h={40}
+                />
+              }
+              primaryText={playlist.playlist_name}
+              secondaryText={messages.playlist}
+            />
+          )}
+        />
+        <SearchResultCard
+          title={messages.albums}
+          items={data?.albums ?? []}
+          isLoading={isLoading}
+          renderItem={(album) => (
+            <SearchResultItem
+              keyValue={album.playlist_name}
+              imageComponent={
+                <Artwork
+                  src={album.artwork?.['150x150']}
+                  isLoading={isLoading}
+                  w={40}
+                  h={40}
+                />
+              }
+              primaryText={album.playlist_name}
+              secondaryText={messages.album}
+            />
+          )}
+        />
       </Flex>
     )
   }
