@@ -8,7 +8,6 @@ import { Flex, useTheme } from '@audius/harmony-native'
 import { TrackCard } from 'app/components/track/TrackCard'
 
 import { ExploreSection } from './ExploreSection'
-import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const RecentlyPlayedTracks = () => {
   const { spacing } = useTheme()

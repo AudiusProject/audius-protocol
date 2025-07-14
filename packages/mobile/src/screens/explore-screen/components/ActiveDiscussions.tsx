@@ -1,9 +1,6 @@
 import React from 'react'
 
-import {
-  useRecentlyCommentedTracks,
-  useRecommendedTracks
-} from '@audius/common/api'
+import { useRecentlyCommentedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
 import { ExploreSection } from './ExploreSection'

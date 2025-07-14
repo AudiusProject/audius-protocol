@@ -1,4 +1,4 @@
-import { HashId, Id } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'

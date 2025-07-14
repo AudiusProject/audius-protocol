@@ -1,10 +1,9 @@
-import { HashId, Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { primeTrackData, useQueryContext } from '~/api/tan-query/utils'
-import { ID, UserTrack, UserTrackMetadata } from '~/models'
+import { ID } from '~/models'
 
 import { TQTrack } from '../models'
 import { QUERY_KEYS } from '../queryKeys'
