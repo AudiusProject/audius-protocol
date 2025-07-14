@@ -6,7 +6,7 @@ import {
   useMemo
 } from 'react'
 
-import { useTokenBalance, useUserCoinBalance } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags, getTokenBySymbol } from '@audius/common/services'
