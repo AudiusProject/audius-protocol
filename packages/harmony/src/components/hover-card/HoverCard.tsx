@@ -45,42 +45,47 @@ const HoverCardComponent = ({
   onClick,
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
   transformOrigin = DEFAULT_TRANSFORM_ORIGIN,
-  mouseEnterDelay = 0.5
+  mouseEnterDelay = 0.5,
+  triggeredBy = 'hover'
 }: HoverCardProps) => {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const {
-    isHovered,
+    isVisible,
     handleMouseEnter,
     handleMouseLeave,
+    handleClick,
     clearTimer,
-    setIsHovered
-  } = useHoverDelay(mouseEnterDelay)
+    setIsHovered,
+    setIsClicked
+  } = useHoverDelay(mouseEnterDelay, triggeredBy)
 
   const handleClose = useCallback(() => {
     clearTimer()
-    onClose?.()
-  }, [clearTimer, onClose])
-
-  const handleClick = useCallback(() => {
-    onClick?.()
-    clearTimer()
     setIsHovered(false)
-  }, [onClick, clearTimer, setIsHovered])
+    setIsClicked(false)
+    onClose?.()
+  }, [clearTimer, setIsHovered, setIsClicked, onClose])
+
+  const handleClickInternal = useCallback(() => {
+    handleClick()
+    onClick?.()
+  }, [handleClick, onClick])
 
   return (
     <Flex
       ref={anchorRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={triggeredBy !== 'hover' ? handleClickInternal : undefined}
     >
       {children}
 
       <Popup
         shadow='near'
         anchorRef={anchorRef}
-        isVisible={isHovered}
+        isVisible={isVisible}
         onClose={handleClose}
-        dismissOnMouseLeave
+        dismissOnMouseLeave={triggeredBy !== 'click'}
         hideCloseButton
         zIndex={30000}
         anchorOrigin={anchorOrigin}
@@ -91,7 +96,7 @@ const HoverCardComponent = ({
           borderRadius='m'
           backgroundColor='white'
           direction='column'
-          onClick={handleClick}
+          onClick={onClick}
         >
           {content}
         </Paper>
