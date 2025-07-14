@@ -10,7 +10,7 @@ import {
   useSwapDisplayData,
   BuySellTab,
   Screen,
-  getSwapTokens
+  TokenInfo
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
@@ -22,7 +22,7 @@ import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
-import { SUPPORTED_TOKEN_PAIRS } from './constants'
+import { SUPPORTED_TOKEN_PAIRS, TOKENS } from './constants'
 
 const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
@@ -76,6 +76,104 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     }))
   }
 
+  // Handle token changes
+  const handleInputTokenChange = (symbol: string) => {
+    if (activeTab === 'sell') {
+      // On sell tab, input token change means base token change
+      setBaseTokenSymbol(symbol)
+    } else {
+      // On buy tab, input token change means quote token change
+      setQuoteTokenSymbol(symbol)
+    }
+    // Reset transaction data when tokens change
+    resetTransactionData()
+  }
+
+  const handleOutputTokenChange = (symbol: string) => {
+    if (activeTab === 'buy') {
+      // On buy tab, output token change means base token change
+      setBaseTokenSymbol(symbol)
+    } else {
+      // On sell tab, output token change means quote token change
+      setQuoteTokenSymbol(symbol)
+    }
+    // Reset transaction data when tokens change
+    resetTransactionData()
+  }
+
+  // Track if user has attempted to submit the form
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+
+  const selectedPair = SUPPORTED_TOKEN_PAIRS[0]
+
+  // State for dynamic token selection - using base/quote terminology
+  const [baseTokenSymbol, setBaseTokenSymbol] = useState<string>(
+    selectedPair.baseToken.symbol // AUDIO by default
+  )
+  const [quoteTokenSymbol, setQuoteTokenSymbol] = useState<string>(
+    selectedPair.quoteToken.symbol // USDC by default
+  )
+
+  // Get all available tokens
+  const availableTokens = useMemo(() => {
+    const tokensSet = new Set<string>()
+    SUPPORTED_TOKEN_PAIRS.forEach((pair) => {
+      tokensSet.add(pair.baseToken.symbol)
+      tokensSet.add(pair.quoteToken.symbol)
+    })
+    return Array.from(tokensSet)
+      .map((symbol) => Object.values(TOKENS).find((t) => t.symbol === symbol))
+      .filter(Boolean) as TokenInfo[]
+  }, [])
+
+  // Create current token pair based on selected base and quote tokens
+  const currentTokenPair = useMemo(() => {
+    const baseTokenInfo = availableTokens.find(
+      (t) => t.symbol === baseTokenSymbol
+    )
+    const quoteTokenInfo = availableTokens.find(
+      (t) => t.symbol === quoteTokenSymbol
+    )
+
+    if (!baseTokenInfo || !quoteTokenInfo) {
+      return selectedPair
+    }
+
+    // Find existing pair that matches our tokens
+    const pair = SUPPORTED_TOKEN_PAIRS.find(
+      (p) =>
+        p.baseToken.symbol === baseTokenSymbol &&
+        p.quoteToken.symbol === quoteTokenSymbol
+    )
+
+    if (pair) {
+      return pair
+    }
+
+    // Create a dynamic pair if no exact match found
+    return {
+      baseToken: baseTokenInfo,
+      quoteToken: quoteTokenInfo,
+      exchangeRate: null
+    }
+  }, [baseTokenSymbol, quoteTokenSymbol, availableTokens, selectedPair])
+
+  const swapTokens = useMemo(
+    () => ({
+      inputToken: activeTab === 'buy' ? quoteTokenSymbol : baseTokenSymbol,
+      outputToken: activeTab === 'buy' ? baseTokenSymbol : quoteTokenSymbol,
+      inputTokenInfo:
+        activeTab === 'buy'
+          ? currentTokenPair.quoteToken
+          : currentTokenPair.baseToken,
+      outputTokenInfo:
+        activeTab === 'buy'
+          ? currentTokenPair.baseToken
+          : currentTokenPair.quoteToken
+    }),
+    [activeTab, baseTokenSymbol, quoteTokenSymbol, currentTokenPair]
+  )
+
   const {
     handleShowConfirmation,
     handleConfirmSwap,
@@ -89,19 +187,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     currentScreen,
     setCurrentScreen,
     activeTab,
+    selectedPair: currentTokenPair,
     onClose
   })
-
-  // Track if user has attempted to submit the form
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
-
-  const [selectedPairIndex] = useState(0)
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
-
-  const swapTokens = useMemo(
-    () => getSwapTokens(activeTab, selectedPair),
-    [activeTab, selectedPair]
-  )
 
   const currentExchangeRate = useMemo(
     () => transactionData?.exchangeRate ?? undefined,
@@ -160,7 +248,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     transactionData,
     swapResult,
     activeTab,
-    selectedPair
+    selectedPair: currentTokenPair
   })
 
   // Track swap success when success screen is shown
@@ -258,21 +346,37 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
           {activeTab === 'buy' ? (
             <BuyTab
-              tokenPair={selectedPair}
+              tokenPair={currentTokenPair}
               onTransactionDataChange={handleTransactionDataChange}
               error={shouldShowError}
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.buy}
               onInputValueChange={handleTabInputValueChange}
+              availableInputTokens={availableTokens.filter(
+                (t) => t.symbol !== baseTokenSymbol
+              )}
+              availableOutputTokens={availableTokens.filter(
+                (t) => t.symbol !== quoteTokenSymbol
+              )}
+              onInputTokenChange={handleInputTokenChange}
+              onOutputTokenChange={handleOutputTokenChange}
             />
           ) : (
             <SellTab
-              tokenPair={selectedPair}
+              tokenPair={currentTokenPair}
               onTransactionDataChange={handleTransactionDataChange}
               error={shouldShowError}
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleTabInputValueChange}
+              availableInputTokens={availableTokens.filter(
+                (t) => t.symbol !== quoteTokenSymbol
+              )}
+              availableOutputTokens={availableTokens.filter(
+                (t) => t.symbol !== baseTokenSymbol
+              )}
+              onInputTokenChange={handleInputTokenChange}
+              onOutputTokenChange={handleOutputTokenChange}
             />
           )}
 
@@ -325,7 +429,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             onConfirm={handleConfirmSwap}
             isConfirming={isConfirmButtonLoading}
             activeTab={activeTab}
-            selectedPair={selectedPair}
+            selectedPair={currentTokenPair}
           />
         ) : null}
       </Flex>

@@ -1,4 +1,5 @@
 import { Env } from '~/services/env'
+import { getOrInitializeRegistry } from '~/services/tokens'
 
 import { JupiterTokenListing } from '../buy-audio/types'
 
@@ -30,6 +31,14 @@ const BASE_TOKEN_METADATA = {
     decimals: 6,
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png'
+  },
+  BONK: {
+    chainId: 101,
+    symbol: 'BONK',
+    name: 'Bonk',
+    decimals: 5,
+    logoURI:
+      'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263/logo.png'
   }
 } as const
 
@@ -38,19 +47,33 @@ const BASE_TOKEN_METADATA = {
  */
 export const createTokenListingMap = (
   env: Env
-): Record<string, JupiterTokenListing> => ({
-  AUDIO: {
-    ...BASE_TOKEN_METADATA.AUDIO,
-    address: env.WAUDIO_MINT_ADDRESS
-  },
-  SOL: {
+): Record<string, JupiterTokenListing> => {
+  const registry = getOrInitializeRegistry(env.ENVIRONMENT)
+
+  // Get all tokens from registry
+  const allTokens = registry.getAllTokens()
+  const tokenMap: Record<string, JupiterTokenListing> = {}
+
+  // Add tokens from registry
+  allTokens.forEach((token) => {
+    const baseMetadata =
+      BASE_TOKEN_METADATA[token.symbol as keyof typeof BASE_TOKEN_METADATA]
+    if (baseMetadata) {
+      tokenMap[token.symbol] = {
+        ...baseMetadata,
+        address: token.address,
+        decimals: token.decimals
+      }
+    }
+  })
+
+  // Add SOL which is not in the token registry
+  tokenMap.SOL = {
     ...BASE_TOKEN_METADATA.SOL
-  },
-  USDC: {
-    ...BASE_TOKEN_METADATA.USDC,
-    address: env.USDC_MINT_ADDRESS
   }
-})
+
+  return tokenMap
+}
 
 /**
  * Legacy token listing map with hardcoded addresses for backward compatibility
@@ -66,5 +89,9 @@ export const TOKEN_LISTING_MAP: Record<string, JupiterTokenListing> = {
   USDC: {
     ...BASE_TOKEN_METADATA.USDC,
     address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+  },
+  BONK: {
+    ...BASE_TOKEN_METADATA.BONK,
+    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
   }
 }

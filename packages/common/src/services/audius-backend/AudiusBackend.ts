@@ -43,6 +43,7 @@ import {
   PushNotifications
 } from '../../store'
 import { getErrorMessage, uuid, Maybe, Nullable } from '../../utils'
+import { getTokenBySymbol } from '../tokens'
 
 import { MintName } from './solana'
 import { MonitoringCallbacks } from './types'
@@ -162,6 +163,14 @@ export const audiusBackend = ({
     if (currentDiscoveryProvider !== null) {
       listener(currentDiscoveryProvider)
     }
+  }
+
+  function getMintAddress(mint: MintName): PublicKey {
+    const token = getTokenBySymbol(env, mint)
+    if (!token) {
+      throw new Error(`Token not found: ${mint}`)
+    }
+    return new PublicKey(token.address)
   }
 
   async function recordTrackListen({
@@ -998,10 +1007,7 @@ export const audiusBackend = ({
     mint: MintName
   }) {
     const solanaTokenProgramKey = new PublicKey(TOKEN_PROGRAM_ID)
-    const mintKey =
-      mint === 'wAUDIO'
-        ? new PublicKey(env.WAUDIO_MINT_ADDRESS)
-        : new PublicKey(env.USDC_MINT_ADDRESS)
+    const mintKey = getMintAddress(mint)
     const addresses = PublicKey.findProgramAddressSync(
       [
         solanaWalletKey.toBuffer(),
@@ -1072,10 +1078,7 @@ export const audiusBackend = ({
       solanaWalletKey,
       mint
     })
-    const mintKey =
-      mint === 'wAUDIO'
-        ? new PublicKey(env.WAUDIO_MINT_ADDRESS)
-        : new PublicKey(env.USDC_MINT_ADDRESS)
+    const mintKey = getMintAddress(mint)
     const accounts = [
       // 0. `[sw]` Funding account (must be a system account)
       {
