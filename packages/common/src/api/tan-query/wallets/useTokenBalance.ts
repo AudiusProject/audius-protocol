@@ -5,8 +5,9 @@ import { TokenAccountNotFoundError } from '@solana/spl-token'
 import { Commitment } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useCurrentAccountUser } from '~/api'
+import { useCurrentUserId, useUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
+import { ID } from '~/models'
 import { Status } from '~/models/Status'
 import { MintName } from '~/services/audius-backend/solana'
 import { getUserbankAccountInfo, getTokenBySymbol } from '~/services/index'
@@ -46,18 +47,22 @@ export const getTokenBalanceQueryKey = (
  */
 export const useTokenBalance = ({
   token,
+  userId,
   isPolling,
   pollingInterval = 1000,
   commitment = 'processed',
   ...queryOptions
 }: {
   token: MintName
+  userId?: ID
   isPolling?: boolean
   pollingInterval?: number
   commitment?: Commitment
 } & QueryOptions) => {
   const { audiusSdk, env } = useQueryContext()
-  const { data: user } = useCurrentAccountUser()
+  const { data: user } = useUser(userId)
+  const { data: currentUserId } = useCurrentUserId()
+  const isCurrentUser = userId === currentUserId
   const ethAddress = user?.wallet ?? null
   const queryClient = useQueryClient()
 
@@ -88,6 +93,16 @@ export const useTokenBalance = ({
           return null
         }
 
+        // TODO: temporarily fake balances for testing
+        if (!account?.amount) {
+          if (isCurrentUser) {
+            return createTokenBalance(100000000, tokenConfig.decimals)
+          }
+          return createTokenBalance(
+            Math.floor(Math.random() * 500000000) + 100000000,
+            tokenConfig.decimals
+          )
+        }
         return createTokenBalance(account?.amount, tokenConfig.decimals)
       } catch (e) {
         // If user doesn't have a token account yet, return 0 balance

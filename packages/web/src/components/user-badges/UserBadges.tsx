@@ -6,7 +6,7 @@ import {
   useMemo
 } from 'react'
 
-import { useUserCoinBalance } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags, getTokenBySymbol } from '@audius/common/services'
@@ -84,15 +84,10 @@ const UserBadges = ({
 
   const bonkToken = getTokenBySymbol(env, 'BONK')
   const bonkMint = bonkToken?.address
-  const { data: coinBalance } = useUserCoinBalance(
-    {
-      userId,
-      mint: bonkMint ?? ''
-    },
-    {
-      enabled: !!bonkMint
-    }
-  )
+  const { data: coinBalance } = useTokenBalance({
+    userId,
+    token: 'BONK'
+  })
 
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
