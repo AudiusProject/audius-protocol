@@ -1,10 +1,21 @@
 import { useRef } from 'react'
 
 import { useSearchAllResults } from '@audius/common/api'
+import { SquareSizes } from '@audius/common/models'
+import tracks from '@audius/common/src/store/pages/track/lineup/reducer'
 import { SearchKind } from '@audius/common/store'
-import { Flex, PlainButton, Text } from '@audius/harmony'
+import {
+  Flex,
+  Paper,
+  PlainButton,
+  Text,
+  Avatar,
+  Artwork
+} from '@audius/harmony'
 import { Link } from 'react-router-dom-v5-compat'
 
+import { TrackArtwork } from 'components/track/TrackArtwork'
+import { Size } from 'components/track-flair/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -17,7 +28,9 @@ import { TrackResults } from './TrackResults'
 
 const messages = {
   profiles: 'Profiles',
+  profile: 'Profile',
   tracks: 'Tracks',
+  track: 'Track',
   albums: 'Albums',
   playlists: 'Playlists',
   showAll: 'Show All'
@@ -50,13 +63,65 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
+  if (isMobile) {
+    return (
+      <Flex direction='column' ph='l' pb='xl' pt='s' gap='m'>
+        <Paper border='default' shadow='mid' p='l'>
+          {data?.users?.length ? (
+            <Flex direction='column' style={{ minWidth: '100%' }}>
+              <Text size='s' ellipses style={{ maxWidth: '70%' }}>
+                {messages.profiles}
+              </Text>
+              {data.users.slice(0, 5).map((user) => (
+                <Flex p='xs' key={user.name} gap='m'>
+                  <Avatar
+                    size='medium'
+                    src={user.profile_picture?.['480x480']}
+                  />
+                  <Flex direction='column'>
+                    <Text size='s'> {user.name}</Text>
+                    <Text size='xs' color='subdued'>
+                      {messages.profile}
+                    </Text>
+                  </Flex>
+                </Flex>
+              ))}
+            </Flex>
+          ) : null}
+        </Paper>
+        <Paper border='default' shadow='mid' p='l'>
+          {data?.tracks?.length ? (
+            <Flex direction='column' gap='s'>
+              <Text variant='label' size='s' textTransform='uppercase'>
+                {messages.tracks}
+              </Text>
+              {data.tracks.slice(0, 5).map((track) => (
+                <Flex p='xs' key={track.title} gap='m'>
+                  <TrackArtwork
+                    size={SquareSizes.SIZE_150_BY_150}
+                    trackId={track.track_id}
+                    h={40}
+                    w={40}
+                  />
+                  <Flex direction='column' style={{ minWidth: '100%' }}>
+                    <Text size='s' ellipses style={{ maxWidth: '70%' }}>
+                      {track.title}
+                    </Text>
+                    <Text size='xs' color='subdued'>
+                      {messages.track}
+                    </Text>
+                  </Flex>
+                </Flex>
+              ))}
+            </Flex>
+          ) : null}
+        </Paper>
+      </Flex>
+    )
+  }
+
   return (
-    <Flex
-      direction='column'
-      gap='unit10'
-      p={isMobile ? 'm' : undefined}
-      ref={containerRef}
-    >
+    <Flex direction='column' gap='unit10' ref={containerRef}>
       {isLoading || data?.users?.length ? (
         <Flex gap='xl' direction='column'>
           <Flex justifyContent='space-between' alignItems='center'>

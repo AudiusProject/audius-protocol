@@ -69,50 +69,14 @@ const NavBar = ({
   }
 }: NavBarProps) => {
   const { history } = useHistoryContext()
+
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchValue, setSearchValue] = useState('')
-
   const { setStackReset } = useContext(RouterContext)
-  const beginSearch = useCallback(() => {
-    setStackReset(true)
-    setImmediate(() => search(searchValue))
-  }, [setStackReset, search, searchValue])
-
-  useEffect(() => {
-    const splitPath = pathname.split('/')
-    const isSearch = splitPath.length > 1 && splitPath[1] === 'search'
-    setIsSearching(isSearch)
-  }, [pathname])
-
   const handleOpenSearch = useCallback(() => {
     history.push(`/explore`)
   }, [history])
-
-  const onCloseSearch = () => {
-    setIsSearching(false)
-    setSearchValue('')
-  }
-
-  const logoTransitions = useTransition(!isSearching, null, {
-    from: {
-      opacity: 0,
-      transform: 'scale(0.9)'
-    },
-    enter: {
-      opacity: 1,
-      transform: 'scale(1)'
-    },
-    leave: {
-      opacity: 0,
-      transform: 'scale(0.9)'
-    },
-    config: {
-      duration: 150
-    }
-  })
 
   const { setSlideDirection } = useContext(RouterContext)
 
@@ -250,11 +214,7 @@ const NavBar = ({
   }
 
   return (
-    <div
-      className={cn(styles.container, {
-        [styles.containerNoBorder]: isSearching
-      })}
-    >
+    <div className={cn(styles.container)}>
       <div
         className={cn(styles.leftElement, {
           [styles.isLoading]: isLoading
@@ -264,17 +224,7 @@ const NavBar = ({
       </div>
       {centerElement === CenterPreset.LOGO ? (
         <Link to={TRENDING_PAGE} className={styles.logo}>
-          {logoTransitions.map(({ item, props, key }) =>
-            item ? (
-              <animated.div style={props} key={key}>
-                <IconAudiusLogoHorizontal
-                  sizeH='l'
-                  color='subdued'
-                  width='auto'
-                />
-              </animated.div>
-            ) : null
-          )}
+          <IconAudiusLogoHorizontal sizeH='l' color='subdued' width='auto' />
         </Link>
       ) : null}
       {typeof centerElement === 'string' &&
@@ -288,21 +238,16 @@ const NavBar = ({
       >
         {rightElement === RightPreset.SEARCH ? (
           <SearchBar
-            open={isSearching}
             onOpen={handleOpenSearch}
-            onClose={onCloseSearch}
-            value={searchValue}
-            onSearch={setSearchValue}
+            onClose={() => {}}
+            onSearch={() => {}}
             placeholder={messages.searchPlaceholderV2}
             showHeader={false}
-            className={cn(
-              styles.searchBar,
-              { [styles.searchBarClosed]: !isSearching },
-              { [styles.searchBarClosedSignedOut]: !isSearching && !isSignedIn }
-            )}
+            className={cn(styles.searchBar)}
             iconClassname={styles.searchIcon}
-            beginSearch={beginSearch}
-            status={isSearching ? Status.LOADING : Status.IDLE}
+            beginSearch={() => {}}
+            open={false}
+            value={''}
           />
         ) : (
           rightElement
