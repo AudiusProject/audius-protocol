@@ -20,7 +20,6 @@ import { NotificationReminder } from 'app/components/notification-reminder/Notif
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
-import { useAndroidAppLifecycleManager } from 'app/hooks/useAndroidAppLifecycleManager'
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
