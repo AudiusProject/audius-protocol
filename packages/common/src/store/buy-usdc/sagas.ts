@@ -392,8 +392,9 @@ function* recoverPurchaseIfNecessary() {
     } catch (e) {
       if (e instanceof TokenAccountNotFoundError) {
         amount = BigInt(0)
+      } else {
+        throw e
       }
-      throw e
     }
 
     if (amount === BigInt(0)) {
