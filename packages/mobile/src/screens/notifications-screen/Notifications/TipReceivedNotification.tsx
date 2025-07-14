@@ -14,7 +14,6 @@ import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import type { TipReceiveNotification } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 import { Image, Platform, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'
@@ -51,10 +50,12 @@ const messages = {
     amount: number,
     ios: boolean,
     price?: string
-  ) =>
-    `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
+  ) => {
+    const totalValue = price && amount ? Number(price) * amount : null
+    return `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
       ios ? '$AUDIO' : '$AUDIO tip'
-    } ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius! ${ios ? '' : ''}`
+    } ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius! ${ios ? '' : ''}`
+  }
 }
 
 type TipReceivedNotificationProps = {
