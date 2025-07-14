@@ -1,4 +1,4 @@
-import { useUserCoinBalance } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
@@ -41,14 +41,14 @@ export const ArtistCoinHoverCard = ({
 }: ArtistCoinHoverCardProps) => {
   const { cornerRadius } = useTheme()
 
-  const { data: coinBalance, isPending } = useUserCoinBalance({
+  const { data: coinBalance } = useTokenBalance({
     userId,
-    mint
+    token: 'BONK'
   })
 
-  if (isPending || !coinBalance) return null
+  if (!coinBalance) return null
 
-  const balance = coinBalance?.data[0]?.balance
+  const balance = coinBalance
   const formattedBalance = formatCount(Number(balance))
   const coinName = 'BONK'
 
