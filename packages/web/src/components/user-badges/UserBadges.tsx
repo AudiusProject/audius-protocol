@@ -106,6 +106,7 @@ const UserBadges = ({
 
     return (
       <HoverCard
+        triggeredBy='both'
         content={
           <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
             <IconVerified size='l' />
