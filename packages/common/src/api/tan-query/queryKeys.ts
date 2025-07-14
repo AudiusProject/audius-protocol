@@ -100,5 +100,8 @@ export const QUERY_KEYS = {
   managedAccounts: 'managedAccounts',
   userManagers: 'userManagers',
   reactions: 'reactions',
-  entityReaction: 'entityReaction'
+  entityReaction: 'entityReaction',
+  feelingLuckyTracks: 'feelingLuckyTracks',
+  recentlyPlayedTracks: 'recentlyPlayedTracks',
+  recentlyCommentedTracks: 'recentlyCommentedTracks'
 } as const
