@@ -1,4 +1,4 @@
-import { HashId } from '@audius/sdk'
+import { HashId, Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -10,17 +10,17 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export type UseRecentPremiumTracksArgs = {
+export type UseRecentlyPlayedTracksArgs = {
   userId: ID | null | undefined
 }
 
-export const getRecentPremiumTracksQueryKey = ({
+export const getRecentlyPlayedTracksQueryKey = ({
   userId
-}: UseRecentPremiumTracksArgs) => {
-  return [QUERY_KEYS.recentPremiumTracks, userId] as unknown as QueryKey<ID[]>
+}: UseRecentlyPlayedTracksArgs) => {
+  return [QUERY_KEYS.recentlyPlayedTracks, userId] as unknown as QueryKey<ID[]>
 }
 
-export const useRecentPremiumTracks = <TResult = ID[]>(
+export const useRecentlyPlayedTracks = <TResult = ID[]>(
   options?: SelectableQueryOptions<ID[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
@@ -28,22 +28,27 @@ export const useRecentPremiumTracks = <TResult = ID[]>(
   const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: getRecentPremiumTracksQueryKey({ userId: currentUserId }),
+    queryKey: getRecentlyPlayedTracksQueryKey({ userId: currentUserId }),
     queryFn: async () => {
+      if (!currentUserId) return []
       const sdk = await audiusSdk()
-      const { data = [] } = await sdk.full.tracks.getRecentPremiumTracks({
+      const { data = [] } = await sdk.full.users.getUsersTrackHistory({
+        id: Id.parse(currentUserId),
         limit: 30
       })
-
-      const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
+      const tracks = transformAndCleanList(
+        data.map((trackActivity) => trackActivity.item),
+        userTrackMetadataFromSDK
+      )
 
       primeTrackData({
         tracks,
         queryClient
       })
-      return data.map((item) => HashId.parse(item.id))
+
+      return data.map((trackActivity) => HashId.parse(trackActivity.item.id))
     },
     ...options,
-    enabled: options?.enabled !== false
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }
