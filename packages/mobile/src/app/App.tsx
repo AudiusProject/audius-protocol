@@ -66,8 +66,6 @@ const App = () => {
     forceRefreshConnectivity()
   })
 
-  useAndroidAppLifecycleManager()
-
   return (
     <AppContextProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
