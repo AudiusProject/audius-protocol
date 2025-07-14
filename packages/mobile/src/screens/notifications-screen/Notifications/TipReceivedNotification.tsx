@@ -51,10 +51,13 @@ const messages = {
     amount: number,
     ios: boolean,
     price?: string
-  ) =>
-    `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
+  ) => {
+    const totalValue =
+      price && amount ? Number(AUDIO(price).toString()) * amount : null
+    return `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
       ios ? '$AUDIO' : '$AUDIO tip'
-    } ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius! ${ios ? '' : ''}`
+    } ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius! ${ios ? '' : ''}`
+  }
 }
 
 type TipReceivedNotificationProps = {

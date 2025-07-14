@@ -29,8 +29,16 @@ const messages = {
   titleAlt: '$AUDIO Sent', // iOS only
   description: 'Share your support on X!',
   done: 'Done',
-  xShare: (recipient: string, amount: string, isIOS: boolean, price?: string) =>
-    `I just ${isIOS ? 'sent' : 'tipped'} ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  xShare: (
+    recipient: string,
+    amount: string,
+    isIOS: boolean,
+    price?: string
+  ) => {
+    const totalValue =
+      price && amount ? Number(AUDIO(price).toString()) * Number(amount) : null
+    return `I just ${isIOS ? 'sent' : 'tipped'} ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  }
 }
 
 const useStyles = makeStyles(({ spacing }) => ({

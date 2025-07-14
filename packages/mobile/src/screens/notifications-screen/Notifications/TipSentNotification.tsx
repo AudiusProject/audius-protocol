@@ -35,10 +35,13 @@ const messages = {
     uiAmount: number,
     ios: boolean,
     price?: string
-  ) =>
-    `I just ${
+  ) => {
+    const totalValue =
+      price && uiAmount ? Number(AUDIO(price).toString()) * uiAmount : null
+    return `I just ${
       ios ? 'tipped' : 'sent'
-    } ${senderHandle} ${uiAmount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius ${ios ? '' : ''}`
+    } ${senderHandle} ${uiAmount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius ${ios ? '' : ''}`
+  }
 }
 
 type TipSentNotificationProps = {

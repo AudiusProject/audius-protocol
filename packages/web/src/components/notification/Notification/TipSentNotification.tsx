@@ -28,8 +28,11 @@ const messages = {
   title: 'Your Tip Was Sent!',
   sent: 'You successfully sent a tip of',
   to: 'to',
-  xShare: (senderHandle: string, uiAmount: number, price?: string) =>
-    `I just tipped ${senderHandle} ${uiAmount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  xShare: (senderHandle: string, uiAmount: number, price?: string) => {
+    const totalValue =
+      price && uiAmount ? Number(AUDIO(price).toString()) * uiAmount : null
+    return `I just tipped ${senderHandle} ${uiAmount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  }
 }
 
 type TipSentNotificationProps = {

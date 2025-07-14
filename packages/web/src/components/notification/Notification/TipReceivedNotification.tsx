@@ -40,8 +40,11 @@ const messages = {
   audio: '$AUDIO',
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
-  xShare: (senderHandle: string, amount: number, price?: string) =>
-    `Thanks ${senderHandle} for the ${amount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} tip on @audius!`
+  xShare: (senderHandle: string, amount: number, price?: string) => {
+    const totalValue =
+      price && amount ? Number(AUDIO(price).toString()) * amount : null
+    return `Thanks ${senderHandle} for the ${amount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} tip on @audius!`
+  }
 }
 
 type TipReceivedNotificationProps = {

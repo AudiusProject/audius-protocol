@@ -22,8 +22,13 @@ const messages = {
   sending: 'SENDING',
   sentSuccessfully: 'SENT SUCCESSFULLY',
   supportOnX: 'Share your support on X!',
-  xShare: (recipient: string, amount: string, price?: string) =>
-    `I just tipped ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  xShare: (recipient: string, amount: string, price?: string) => {
+    const totalValue =
+      price && amount
+        ? Number(AUDIO(price).toString()) * Number(AUDIO(amount).toString())
+        : null
+    return `I just tipped ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  }
 }
 
 export const TipSent = () => {
