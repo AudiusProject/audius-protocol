@@ -4,7 +4,6 @@ import { useTokenPrice, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { TipSendNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
-import { AUDIO } from '@audius/fixed-decimal'
 
 import { make } from 'common/store/analytics/actions'
 import { XShareButton } from 'components/x-share-button/XShareButton'
@@ -29,8 +28,7 @@ const messages = {
   sent: 'You successfully sent a tip of',
   to: 'to',
   xShare: (senderHandle: string, uiAmount: number, price?: string) => {
-    const totalValue =
-      price && uiAmount ? Number(AUDIO(price).toString()) * uiAmount : null
+    const totalValue = price && uiAmount ? Number(price) * uiAmount : null
     return `I just tipped ${senderHandle} ${uiAmount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
   }
 }

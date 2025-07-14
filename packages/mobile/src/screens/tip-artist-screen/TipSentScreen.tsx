@@ -4,7 +4,6 @@ import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
 import type { SolanaWalletAddress } from '@audius/common/models'
 import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -35,8 +34,7 @@ const messages = {
     isIOS: boolean,
     price?: string
   ) => {
-    const totalValue =
-      price && amount ? Number(AUDIO(price).toString()) * Number(amount) : null
+    const totalValue = price && amount ? Number(price) * Number(amount) : null
     return `I just ${isIOS ? 'sent' : 'tipped'} ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
   }
 }

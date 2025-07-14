@@ -4,7 +4,6 @@ import { useUser, useTokenPrice } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import type { TipSendNotification } from '@audius/common/store'
-import { AUDIO } from '@audius/fixed-decimal'
 import { Platform, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'
@@ -36,8 +35,7 @@ const messages = {
     ios: boolean,
     price?: string
   ) => {
-    const totalValue =
-      price && uiAmount ? Number(AUDIO(price).toString()) * uiAmount : null
+    const totalValue = price && uiAmount ? Number(price) * uiAmount : null
     return `I just ${
       ios ? 'tipped' : 'sent'
     } ${senderHandle} ${uiAmount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius ${ios ? '' : ''}`
