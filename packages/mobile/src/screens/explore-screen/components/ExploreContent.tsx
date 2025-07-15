@@ -1,5 +1,8 @@
 import React from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
+
 import { ActiveDiscussions } from './ActiveDiscussions'
 import { ArtistSpotlight } from './ArtistSpotlight'
 import { BestOfAudiusTiles } from './BestOfAudiusTiles'
@@ -15,19 +18,32 @@ import { RecentlyPlayedTracks } from './RecentlyPlayed'
 import { RecommendedTracks } from './RecommendedTracks'
 
 const MemoizedExploreContent = () => {
+  const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
+
   return (
     <ProgressiveScrollView>
-      <RecommendedTracks />
-      <RecentlyPlayedTracks />
+      {isSearchExploreGoodiesEnabled ? (
+        <>
+          <RecommendedTracks />
+          <RecentlyPlayedTracks />
+        </>
+      ) : null}
       <FeaturedPlaylists />
       <FeaturedRemixContests />
       <ArtistSpotlight />
       <LabelSpotlight />
-      <ActiveDiscussions />
+      {isSearchExploreGoodiesEnabled ? <ActiveDiscussions /> : null}
       <MoodsGrid />
-      <BestSelling />
-      <FeelingLucky />
-      <RecentPremiumTracks />
+      {isSearchExploreGoodiesEnabled ? (
+        <>
+          <BestSelling />
+          <FeelingLucky />
+          <RecentPremiumTracks />
+        </>
+      ) : null}
+
       <BestOfAudiusTiles />
     </ProgressiveScrollView>
   )
