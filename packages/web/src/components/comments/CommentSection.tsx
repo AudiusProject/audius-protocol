@@ -33,6 +33,7 @@ const { getLineup } = trackPageSelectors
 
 type CommentSectionInnerProps = {
   commentSectionRef: React.RefObject<HTMLDivElement>
+  entityId: ID
 }
 
 /**
@@ -42,7 +43,7 @@ type CommentSectionInnerProps = {
  * - Infinite scrolling pagination
  */
 const CommentSectionInner = (props: CommentSectionInnerProps) => {
-  const { commentSectionRef } = props
+  const { commentSectionRef, entityId } = props
   const {
     currentUserId,
     commentIds,
@@ -66,7 +67,9 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
 
   const highlightComment = useHighlightComment()
   const highlightCommentId =
-    highlightComment?.parentCommentId ?? highlightComment?.id
+    highlightComment?.entityId === entityId
+      ? (highlightComment?.parentCommentId ?? highlightComment?.id)
+      : null
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
 
@@ -196,7 +199,10 @@ export const CommentSection = (props: CommentSectionProps) => {
       lineupActions={tracksActions}
       uid={uid}
     >
-      <CommentSectionInner commentSectionRef={commentSectionRef} />
+      <CommentSectionInner
+        commentSectionRef={commentSectionRef}
+        entityId={entityId}
+      />
     </CommentSectionProvider>
   )
 }

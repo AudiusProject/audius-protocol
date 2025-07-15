@@ -46,6 +46,6 @@ export const useRecommendedTracks = <TResult = ID[]>(
       return data.map((item) => HashId.parse(item.id))
     },
     ...options,
-    enabled: options?.enabled !== false
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

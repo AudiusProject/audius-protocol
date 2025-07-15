@@ -20,7 +20,12 @@ import { HoverCardBody } from './HoverCardBody'
 
 type AudioHoverCardProps = Pick<
   HoverCardProps,
-  'children' | 'onClose' | 'onClick' | 'anchorOrigin' | 'transformOrigin'
+  | 'children'
+  | 'onClose'
+  | 'onClick'
+  | 'anchorOrigin'
+  | 'transformOrigin'
+  | 'triggeredBy'
 > & {
   /**
    * The $AUDIO tier to display
@@ -61,7 +66,8 @@ export const AudioHoverCard = ({
   onClose,
   anchorOrigin,
   transformOrigin,
-  onClick
+  onClick,
+  triggeredBy
 }: AudioHoverCardProps) => {
   const { cornerRadius } = useTheme()
 
@@ -101,6 +107,7 @@ export const AudioHoverCard = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
       onClick={onClick}
+      triggeredBy={triggeredBy}
     >
       {children}
     </HoverCard>

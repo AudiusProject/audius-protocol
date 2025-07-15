@@ -14,7 +14,12 @@ import { HoverCardBody } from './HoverCardBody'
 
 type ArtistCoinHoverCardProps = Pick<
   HoverCardProps,
-  'children' | 'onClose' | 'onClick' | 'anchorOrigin' | 'transformOrigin'
+  | 'children'
+  | 'onClose'
+  | 'onClick'
+  | 'anchorOrigin'
+  | 'transformOrigin'
+  | 'triggeredBy'
 > & {
   /**
    * The mint address of the artist coin
@@ -37,7 +42,8 @@ export const ArtistCoinHoverCard = ({
   onClose,
   anchorOrigin,
   transformOrigin,
-  onClick
+  onClick,
+  triggeredBy
 }: ArtistCoinHoverCardProps) => {
   const { cornerRadius } = useTheme()
 
@@ -78,6 +84,7 @@ export const ArtistCoinHoverCard = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
       onClick={onClick}
+      triggeredBy={triggeredBy}
     >
       {children}
     </HoverCard>

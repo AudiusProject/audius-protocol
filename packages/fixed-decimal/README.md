@@ -56,3 +56,12 @@ console.log(
 ```
 
 More examples and documentation can be found in the JSDoc and in the tests.
+
+## Examples
+
+See the [./examples](./examples/) folder for examples on usage of this package.
+
+Run with
+```
+npx tsx examples/audio.ts
+```
