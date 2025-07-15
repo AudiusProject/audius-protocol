@@ -1,4 +1,4 @@
-import { useContext, useCallback, useState } from 'react'
+import { useState, useContext, useCallback } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
 import { formatCount, route } from '@audius/common/utils'
@@ -16,7 +16,6 @@ import { History } from 'history'
 import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import {
   RouterContext,
   SlideDirection
@@ -26,7 +25,6 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import SearchBar from 'components/search-bar/SearchBar'
 import { getIsIOS } from 'utils/browser'
 
 import styles from './NavBar.module.css'
@@ -62,11 +60,6 @@ const NavBar = ({
     location: { pathname }
   }
 }: NavBarProps) => {
-  const { history } = useHistoryContext()
-
-  const handleOpenSearch = useCallback(() => {
-    history.push(`/explore`)
-  }, [history])
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
@@ -183,20 +176,7 @@ const NavBar = ({
           [styles.isLoading]: isLoading
         })}
       >
-        {rightElement === RightPreset.SEARCH ? (
-          <SearchBar
-            onOpen={handleOpenSearch}
-            onClose={() => {}}
-            onSearch={() => {}}
-            placeholder={messages.searchPlaceholderV2}
-            showHeader={false}
-            className={cn(styles.searchBar)}
-            iconClassname={styles.searchIcon}
-            beginSearch={() => {}}
-            open={false}
-            value={''}
-          />
-        ) : rightElement === RightPreset.KEBAB ? (
+        {rightElement === RightPreset.KEBAB ? (
           <Flex mr='s'>
             <IconButton
               aria-label='menu'
