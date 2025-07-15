@@ -58,5 +58,26 @@ BEGIN
       )
     );
 
+  -- coin_holder_audience
+  SELECT chat_blast.blast_id, u.user_id AS to_user_id
+  FROM chat_blast
+  JOIN artist_coins ac ON chat_blast.blast_id = blast_id_param
+    AND chat_blast.audience = 'coin_holder_audience'
+    AND ac.user_id = chat_blast.from_user_id
+  JOIN sol_claimable_accounts sca ON sca.mint = ac.mint
+  JOIN users u ON u.wallet = sca.ethereum_address
+  JOIN (
+    SELECT DISTINCT account, mint
+    FROM (
+      SELECT account, mint, balance,
+             ROW_NUMBER() OVER (PARTITION BY account, mint ORDER BY stbc.created_at DESC) as rn
+      FROM sol_token_account_balance_changes stbc
+      JOIN chat_blast cb ON cb.blast_id = blast_id_param
+        AND stbc.created_at < cb.created_at
+    ) ranked
+    WHERE rn = 1 AND balance > 0
+  ) latest_balances ON latest_balances.account = sca.account
+    AND latest_balances.mint = ac.mint;
+
 END;
 $$ LANGUAGE plpgsql;
