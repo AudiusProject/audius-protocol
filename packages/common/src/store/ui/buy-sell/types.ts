@@ -83,7 +83,7 @@ export type TransactionData = {
  * Utility function to get input and output tokens based on active tab and token pair
  * For 'buy': user pays with quote token (e.g., USDC) to get base token (e.g., AUDIO)
  * For 'sell': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
- * For 'convert': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
+ * For 'convert': user pays with base token (e.g., AUDIO) to get quote token (e.g., BONK)
  */
 export const getSwapTokens = (activeTab: BuySellTab, tokenPair: TokenPair) => {
   return {

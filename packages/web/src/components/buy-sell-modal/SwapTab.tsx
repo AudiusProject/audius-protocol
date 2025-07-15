@@ -3,10 +3,17 @@ import { useRef } from 'react'
 import { buySellMessages } from '@audius/common/messages'
 import { TokenInfo, useTokenSwapForm } from '@audius/common/store'
 import { Flex, Skeleton, Text } from '@audius/harmony'
-import { TooltipPlacement } from 'antd/lib/tooltip'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
+import type {
+  BalanceConfig,
+  TokenPricing,
+  UIConfiguration,
+  InputConfiguration,
+  TokenSelection,
+  SwapCallbacks
+} from './types'
 
 const messages = {
   ...buySellMessages,
@@ -27,44 +34,17 @@ const SwapFormSkeleton = () => (
   </Flex>
 )
 
+// Legacy props interface for backward compatibility
 export type SwapTabProps = {
   inputToken: TokenInfo
   outputToken: TokenInfo
-  min?: number
-  max?: number
-  balance: {
-    get: () => number | undefined
-    loading: boolean
-    formatError: () => string
-  }
-  outputBalance?: {
-    get: () => number | undefined
-    loading: boolean
-    formatError: () => string
-  }
-
-  onTransactionDataChange?: (data: {
-    inputAmount: number
-    outputAmount: number
-    isValid: boolean
-    error: string | null
-    isInsufficientBalance: boolean
-  }) => void
-  isDefault?: boolean
-  error?: boolean
-  errorMessage?: string
-  tokenPrice?: string | null
-  isTokenPriceLoading?: boolean
-  tokenPriceDecimalPlaces?: number
-  tooltipPlacement?: TooltipPlacement
-  initialInputValue?: string
-  onInputValueChange?: (value: string) => void
-  availableInputTokens?: TokenInfo[]
-  availableOutputTokens?: TokenInfo[]
-  onInputTokenChange?: (symbol: string) => void
-  onOutputTokenChange?: (symbol: string) => void
-  showExchangeRate?: boolean
-}
+  balance: BalanceConfig
+  outputBalance?: BalanceConfig
+} & TokenPricing &
+  UIConfiguration &
+  InputConfiguration &
+  TokenSelection &
+  SwapCallbacks
 
 export const SwapTab = ({
   inputToken,
