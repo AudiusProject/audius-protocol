@@ -56,7 +56,9 @@ BEGIN
         chat_blast.audience_content_type = p.content_type::text
         AND chat_blast.audience_content_id = p.content_id
       )
-    );
+    )
+
+  UNION
 
   -- coin_holder_audience
   SELECT chat_blast.blast_id, u.user_id AS to_user_id
