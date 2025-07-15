@@ -37,9 +37,6 @@ const YourCoinsHeader = () => {
   const { onOpen: openBuySellModal } = useBuySellModal()
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
-  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
-    FeatureFlags.ARTIST_COINS
-  )
 
   const handleBuySellClick = useCallback(() => {
     if (isManagedAccount) {
