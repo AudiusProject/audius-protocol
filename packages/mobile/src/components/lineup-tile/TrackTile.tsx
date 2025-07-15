@@ -41,7 +41,6 @@ import { TrackDogEar } from '../track/TrackDogEar'
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
-import { LineupTileTopRight } from './LineupTileTopRight'
 import { TrackTileStats } from './TrackTileStats'
 
 const { getUid } = playerSelectors
@@ -238,14 +237,6 @@ export const TrackTile = (props: TrackTileProps) => {
       scaleTo={scale}
     >
       <TrackDogEar trackId={track.track_id} hideUnlocked />
-      <LineupTileTopRight
-        duration={track.duration}
-        trackId={track.track_id}
-        isLongFormContent={
-          track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
-        }
-        isCollection={false}
-      />
       <LineupTileMetadata
         renderImage={renderImage}
         onPressTitle={handlePressTitle}
@@ -254,6 +245,10 @@ export const TrackTile = (props: TrackTileProps) => {
         isPlayingUid={isPlayingUid}
         type='track'
         trackId={track.track_id}
+        duration={track.duration}
+        isLongFormContent={
+          track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
+        }
       />
       <TrackTileStats
         trackId={track.track_id}
