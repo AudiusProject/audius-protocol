@@ -18,11 +18,14 @@ import {
   type ReplyComment
 } from '@audius/common/models'
 import { removeNullable } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
+import Clipboard from '@react-native-clipboard/clipboard'
 
 import { Hint, IconButton, IconKebabHorizontal } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { track as trackEvent, make } from 'app/services/analytics'
+import { env } from 'app/services/env'
 
 import {
   ActionDrawerWithoutRedux,
@@ -114,7 +117,21 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     })
   }
 
+  const handleShare = useCallback(() => {
+    const url = `${env.AUDIUS_URL}${track.permalink}?commentId=${Id.parse(comment.id)}`
+    Clipboard.setString(url)
+    toast({
+      content: 'Link copied to clipboard!',
+      type: 'info',
+      timeout: 1500
+    })
+  }, [comment.id, track.permalink, toast])
+
   const rows: ActionDrawerRow[] = [
+    {
+      callback: handleShare,
+      text: messages.menuActions.share
+    },
     isEntityOwner &&
       isParentComment && {
         text: isPinned ? messages.menuActions.unpin : messages.menuActions.pin,

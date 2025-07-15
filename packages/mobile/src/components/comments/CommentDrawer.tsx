@@ -12,7 +12,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { Comment, ID, UserMetadata } from '@audius/common/models'
 import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -140,14 +140,25 @@ const CommentDrawerAutocompleteContent = ({
 
 const CommentDrawerContent = (props: {
   commentListRef: RefObject<BottomSheetFlatListMethods>
+  highlightComment?: Comment
 }) => {
-  const { commentListRef } = props
+  const { commentListRef, highlightComment } = props
   const {
-    commentIds,
+    commentIds: allCommentIds,
     commentSectionLoading: isLoading,
     loadMorePages,
     isLoadingMorePages
   } = useCurrentCommentSection()
+
+  const highlightCommentId =
+    highlightComment?.parentCommentId ?? highlightComment?.id ?? null
+
+  const commentIds = highlightCommentId
+    ? [
+        highlightCommentId,
+        ...allCommentIds.filter((id) => id !== highlightCommentId)
+      ]
+    : allCommentIds
 
   // Loading state
   if (isLoading) {
@@ -191,9 +202,7 @@ const CommentDrawerContent = (props: {
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
       renderItem={({ item: id }) => (
-        <Box ph='l'>
-          <CommentThread commentId={id} />
-        </Box>
+        <CommentThread commentId={id} highlightComment={highlightComment} />
       )}
     />
   )
@@ -211,6 +220,7 @@ export type CommentDrawerData = {
    *  so it doesnt need to worry about changing lineups
    */
   actions?: LineupBaseActions | typeof playerActions
+  highlightComment?: Comment
 }
 
 type CommentDrawerProps = {
@@ -226,7 +236,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     handleClose,
     autoFocusInput,
     uid,
-    actions
+    actions,
+    highlightComment
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -334,7 +345,10 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
               onSelect={onAutocomplete}
             />
           ) : (
-            <CommentDrawerContent commentListRef={commentListRef} />
+            <CommentDrawerContent
+              commentListRef={commentListRef}
+              highlightComment={highlightComment}
+            />
           )}
         </CommentSectionProvider>
       </BottomSheetModal>

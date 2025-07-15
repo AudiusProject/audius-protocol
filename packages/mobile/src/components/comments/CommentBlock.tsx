@@ -17,6 +17,7 @@ import Animated, { FadeIn } from 'react-native-reanimated'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
+import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { Skeleton } from '../skeleton'
@@ -32,6 +33,7 @@ import { TimestampLink } from './TimestampLink'
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
+  highlightCommentId?: ID
   isPreview?: boolean
 }
 
@@ -40,7 +42,7 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, isPreview, parentCommentId } = props
+  const { comment, isPreview, parentCommentId, highlightCommentId } = props
   const { artistId, track, navigation, closeDrawer } =
     useCurrentCommentSection()
   const {
@@ -55,7 +57,11 @@ export const CommentBlockInternal = (
   } = comment
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = track.pinned_comment_id === commentId
+  const isHighlighted = highlightCommentId === commentId
 
+  const { focus } = useThemeColors()
+  const theme = useThemeVariant()
+  const highlightColor = focus.slice(0, 7) + (theme === 'dark' ? '20' : '0D') // set opacity for background color
   const { isPending: isUserPending } = useUser(userId)
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
@@ -88,9 +94,15 @@ export const CommentBlockInternal = (
     <Animated.View style={{ width: '100%' }} entering={FadeIn.duration(500)}>
       <Flex
         direction='row'
+        pv={isHighlighted ? 's' : 'none'}
+        ph='l'
+        pl={parentCommentId ? 40 : 'l'}
         w='100%'
         gap='s'
-        style={css({ opacity: isTombstone ? 0.5 : 1 })}
+        style={css({
+          opacity: isTombstone ? 0.5 : 1,
+          backgroundColor: isHighlighted ? highlightColor : 'transparent'
+        })}
       >
         <TouchableOpacity
           {...profilePicLinkProps}
