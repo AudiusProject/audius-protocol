@@ -1,16 +1,15 @@
-import { useContext, useCallback } from 'react'
+import { useContext, useCallback, useState } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
-  IconSettings,
   IconCaretLeft,
   IconClose,
   IconNotificationOn,
   IconButton,
-  IconGift,
-  Flex
+  Flex,
+  IconKebabHorizontal
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
@@ -31,6 +30,7 @@ import SearchBar from 'components/search-bar/SearchBar'
 import { getIsIOS } from 'utils/browser'
 
 import styles from './NavBar.module.css'
+import { NavBarActionDrawer } from './NavBarActionDrawer'
 
 const { SIGN_UP_PAGE, TRENDING_PAGE } = route
 
@@ -40,8 +40,6 @@ interface NavBarProps {
   rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
-  goToSettingsPage: () => void
-  goToRewardsPage: () => void
   search: (term: string) => void
   goBack: () => void
   history: History<any>
@@ -59,22 +57,22 @@ const NavBar = ({
   search,
   signUp,
   goToNotificationPage,
-  goToSettingsPage,
   goBack,
-  goToRewardsPage,
   history: {
     location: { pathname }
   }
 }: NavBarProps) => {
   const { history } = useHistoryContext()
 
+  const handleOpenSearch = useCallback(() => {
+    history.push(`/explore`)
+  }, [history])
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
   const { setStackReset } = useContext(RouterContext)
-  const handleOpenSearch = useCallback(() => {
-    history.push(`/explore`)
-  }, [history])
+
+  const [isActionDrawerOpen, setIsActionDrawerOpen] = useState(false)
 
   const { setSlideDirection } = useContext(RouterContext)
 
@@ -156,70 +154,21 @@ const NavBar = ({
             </Flex>
           )}
         </Flex>
-        <Flex>
-          <IconButton
-            aria-label='audio rewards'
-            color={rewardsCount > 0 ? 'warning' : 'subdued'}
-            icon={IconGift}
-            onClick={goToRewardsPage}
-          />
-          {rewardsCount > 0 && (
-            <Flex
-              css={{
-                position: 'absolute',
-                top: 0,
-                right: 6,
-                backgroundColor: 'var(--harmony-red)',
-                color: 'var(--harmony-white)',
-                fontSize: '11px',
-                fontWeight: 'bold',
-                letterSpacing: '0.07px',
-                lineHeight: '14px',
-                textTransform: 'uppercase',
-                padding: '0px 6px',
-                transform: 'translateX(50%)',
-                borderRadius: '8px'
-              }}
-            >
-              {formatCount(rewardsCount)}
-            </Flex>
-          )}
-        </Flex>
       </Flex>
-    )
-  } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
-    left = (
-      <>
-        <IconButton
-          aria-label='settings'
-          color='subdued'
-          icon={IconSettings}
-          onClick={goToSettingsPage}
-        />
-        <IconButton
-          aria-label='audio rewards'
-          color={rewardsCount > 0 ? 'warning' : 'subdued'}
-          icon={IconGift}
-          onClick={goToRewardsPage}
-        />
-        {rewardsCount > 0 && (
-          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
-        )}
-      </>
     )
   } else {
     left = leftElement
   }
 
   return (
-    <div className={cn(styles.container)}>
-      <div
+    <Flex className={cn(styles.container)}>
+      <Flex
         className={cn(styles.leftElement, {
           [styles.isLoading]: isLoading
         })}
       >
         {left}
-      </div>
+      </Flex>
       {centerElement === CenterPreset.LOGO ? (
         <Link to={TRENDING_PAGE} className={styles.logo}>
           <IconAudiusLogoHorizontal sizeH='l' color='subdued' width='auto' />
@@ -227,9 +176,9 @@ const NavBar = ({
       ) : null}
       {typeof centerElement === 'string' &&
         !Object.values(CenterPreset).includes(centerElement as any) && (
-          <div className={styles.centerText}> {centerElement} </div>
+          <Flex className={styles.centerText}> {centerElement} </Flex>
         )}
-      <div
+      <Flex
         className={cn(styles.rightElement, {
           [styles.isLoading]: isLoading
         })}
@@ -247,11 +196,24 @@ const NavBar = ({
             open={false}
             value={''}
           />
+        ) : rightElement === RightPreset.KEBAB ? (
+          <Flex mr='s'>
+            <IconButton
+              aria-label='menu'
+              icon={IconKebabHorizontal}
+              color-='subdued'
+              onClick={() => setIsActionDrawerOpen(true)}
+            />
+          </Flex>
         ) : (
           rightElement
         )}
-      </div>
-    </div>
+      </Flex>
+      <NavBarActionDrawer
+        isOpen={isActionDrawerOpen}
+        onClose={() => setIsActionDrawerOpen(false)}
+      />
+    </Flex>
   )
 }
 

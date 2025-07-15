@@ -13,7 +13,6 @@ import {
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { TipReceiveNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
-import { AUDIO } from '@audius/fixed-decimal'
 
 import { make } from 'common/store/analytics/actions'
 import { XShareButton } from 'components/x-share-button/XShareButton'
@@ -40,8 +39,10 @@ const messages = {
   audio: '$AUDIO',
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
-  xShare: (senderHandle: string, amount: number, price?: string) =>
-    `Thanks ${senderHandle} for the ${amount} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} tip on @audius!`
+  xShare: (senderHandle: string, amount: number, price?: string) => {
+    const totalValue = price && amount ? Number(price) * amount : null
+    return `Thanks ${senderHandle} for the ${amount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} tip on @audius!`
+  }
 }
 
 type TipReceivedNotificationProps = {
