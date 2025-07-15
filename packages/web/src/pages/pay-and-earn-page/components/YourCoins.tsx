@@ -1,26 +1,17 @@
 import { useCallback, useContext } from 'react'
 
-import { useTokenBalance, useTokenPrice } from '@audius/common/api'
-import {
-  useFeatureFlag,
-  useFormattedAudioBalance,
-  useIsManagedAccount
-} from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
-import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { useBuySellModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { BONK } from '@audius/fixed-decimal'
 import {
   Button,
   Flex,
-  IconTokenAUDIO,
   Paper,
   Text,
   useMedia,
   useTheme,
-  IconTokenBonk,
   Divider,
   IconCaretRight
 } from '@audius/harmony'
@@ -29,7 +20,8 @@ import { push } from 'redux-first-history'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
-import { CoinCard } from './CoinCard'
+import { AudioCoinCard } from './AudioCoinCard'
+import { BonkCoinCard } from './BonkCoinCard'
 
 const messages = {
   ...buySellMessages,
@@ -39,7 +31,6 @@ const messages = {
   bonkTicker: '$BONK'
 }
 
-const DIMENSIONS = 64
 const { WALLET_AUDIO_PAGE } = route
 
 const YourCoinsHeader = () => {
@@ -80,39 +71,9 @@ export const YourCoins = () => {
     FeatureFlags.WALLET_UI_BUY_SELL
   )
 
-  const {
-    audioBalanceFormatted,
-    audioDollarValue,
-    isAudioBalanceLoading,
-    isAudioPriceLoading
-  } = useFormattedAudioBalance()
-
-  const { data: bonkBalance, status: bonkBalanceStatus } = useTokenBalance({
-    token: 'BONK'
-  })
-  // TODO: use getTokenRegistry instead
-  const BONK_MINT = 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263'
-  const { data: bonkPriceData, isPending: isBonkPriceLoading } =
-    useTokenPrice(BONK_MINT)
-
-  const bonkBalanceFormatted = bonkBalance
-    ? BONK(bonkBalance.toString()).toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-      })
-    : null
-  const bonkDollarValue =
-    bonkPriceData?.price && bonkBalance
-      ? `$${(Number(bonkBalance.toString()) * Number(bonkPriceData.price)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : null
-  const isBonkLoading =
-    bonkBalanceStatus === Status.LOADING || isBonkPriceLoading
-
   const handleTokenClick = useCallback(() => {
     dispatch(push(WALLET_AUDIO_PAGE))
   }, [dispatch])
-
-  const isLoading = isAudioBalanceLoading || isAudioPriceLoading
 
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
@@ -123,23 +84,9 @@ export const YourCoins = () => {
         p={isMobile ? spacing.l : undefined}
         alignSelf='stretch'
       >
-        <CoinCard
-          icon={<IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} hex />}
-          symbol={messages.audioTicker}
-          balance={audioBalanceFormatted ?? ''}
-          dollarValue={audioDollarValue ?? ''}
-          loading={isLoading}
-          onClick={handleTokenClick}
-        />
+        <AudioCoinCard onClick={handleTokenClick} />
         <Divider orientation='vertical' />
-        <CoinCard
-          icon={<IconTokenBonk width={DIMENSIONS} height={DIMENSIONS} hex />}
-          symbol={messages.bonkTicker}
-          balance={bonkBalanceFormatted ?? ''}
-          dollarValue={bonkDollarValue ?? ''}
-          loading={isBonkLoading}
-          onClick={handleTokenClick}
-        />
+        <BonkCoinCard onClick={handleTokenClick} />
       </Flex>
       <Flex
         p={isMobile ? spacing.l : spacing.xl}
