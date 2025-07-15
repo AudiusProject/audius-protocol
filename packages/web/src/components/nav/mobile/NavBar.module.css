@@ -16,10 +16,6 @@
   touch-action: none;
 }
 
-.containerNoBorder {
-  border-bottom: none;
-}
-
 .leftElement {
   display: flex;
   justify-content: flex-start;
@@ -98,14 +94,6 @@
   margin-left: 24px;
 }
 
-.searchBarClosed {
-  flex: 0 1 24px;
-}
-
-.searchBarClosedSignedOut {
-  flex: 0 1 72px;
-}
-
 .searchBar input {
   position: static;
   background-color: var(--notification-background-active);
@@ -143,15 +131,4 @@
   height: 100%;
   height: calc(100% - env(safe-area-inset-top, 0px));
   text-transform: uppercase;
-}
-
-.earlyAccess {
-  font-size: 10px;
-  position: absolute;
-  font-weight: var(--harmony-font-bold);
-  color: var(--harmony-primary);
-  letter-spacing: 0.5px;
-  left: 30px;
-  top: 18px;
-  width: 72px;
 }
