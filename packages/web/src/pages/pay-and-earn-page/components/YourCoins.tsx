@@ -37,6 +37,9 @@ const YourCoinsHeader = () => {
   const { onOpen: openBuySellModal } = useBuySellModal()
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
   const handleBuySellClick = useCallback(() => {
     if (isManagedAccount) {
@@ -67,6 +70,9 @@ export const YourCoins = () => {
   const dispatch = useDispatch()
   const { color, spacing } = useTheme()
   const { isMobile } = useMedia()
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
@@ -85,8 +91,12 @@ export const YourCoins = () => {
         alignSelf='stretch'
       >
         <AudioCoinCard onClick={handleTokenClick} />
-        <Divider orientation='vertical' />
-        <BonkCoinCard onClick={handleTokenClick} />
+        {isArtistCoinsEnabled ? (
+          <>
+            <Divider orientation='vertical' />
+            <BonkCoinCard onClick={handleTokenClick} />
+          </>
+        ) : null}
       </Flex>
       <Flex
         p={isMobile ? spacing.l : spacing.xl}
