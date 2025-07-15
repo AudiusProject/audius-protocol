@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import {
@@ -140,7 +140,7 @@ const CommentDrawerAutocompleteContent = ({
 
 const CommentDrawerContent = (props: {
   commentListRef: RefObject<BottomSheetFlatListMethods>
-  highlightComment?: Comment
+  highlightComment?: Comment | null
 }) => {
   const { commentListRef, highlightComment } = props
   const {
@@ -153,12 +153,14 @@ const CommentDrawerContent = (props: {
   const highlightCommentId =
     highlightComment?.parentCommentId ?? highlightComment?.id ?? null
 
-  const commentIds = highlightCommentId
-    ? [
-        highlightCommentId,
-        ...allCommentIds.filter((id) => id !== highlightCommentId)
-      ]
-    : allCommentIds
+  const commentIds = useMemo(() => {
+    if (highlightCommentId === null) return allCommentIds
+
+    return [
+      highlightCommentId,
+      ...allCommentIds.filter((id) => id !== highlightCommentId)
+    ]
+  }, [highlightCommentId, allCommentIds])
 
   // Loading state
   if (isLoading) {
@@ -220,7 +222,7 @@ export type CommentDrawerData = {
    *  so it doesnt need to worry about changing lineups
    */
   actions?: LineupBaseActions | typeof playerActions
-  highlightComment?: Comment
+  highlightComment?: Comment | null
 }
 
 type CommentDrawerProps = {

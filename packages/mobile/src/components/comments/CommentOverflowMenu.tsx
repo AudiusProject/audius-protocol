@@ -121,7 +121,7 @@ export const CommentOverflowMenu = (props: CommentOverflowMenuProps) => {
     const url = `${env.AUDIUS_URL}${track.permalink}?commentId=${Id.parse(comment.id)}`
     Clipboard.setString(url)
     toast({
-      content: 'Link copied to clipboard!',
+      content: messages.toasts.linkCopied,
       type: 'info',
       timeout: 1500
     })

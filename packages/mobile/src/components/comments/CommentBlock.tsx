@@ -15,9 +15,8 @@ import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import Animated, { FadeIn } from 'react-native-reanimated'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex, Text, useTheme } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
-import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
 import { ProfilePicture } from '../core/ProfilePicture'
 import { Skeleton } from '../skeleton'
@@ -59,9 +58,10 @@ export const CommentBlockInternal = (
   const isPinned = track.pinned_comment_id === commentId
   const isHighlighted = highlightCommentId === commentId
 
-  const { focus } = useThemeColors()
-  const theme = useThemeVariant()
-  const highlightColor = focus.slice(0, 7) + (theme === 'dark' ? '20' : '0D') // set opacity for background color
+  const { color, spacing, type } = useTheme()
+  // replace opacity for background color
+  const highlightColor =
+    color.focus.default.slice(0, 7) + (type === 'dark' ? '20' : '0D')
   const { isPending: isUserPending } = useUser(userId)
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
@@ -96,7 +96,7 @@ export const CommentBlockInternal = (
         direction='row'
         pv={isHighlighted ? 's' : 'none'}
         ph='l'
-        pl={parentCommentId ? 40 : 'l'}
+        pl={parentCommentId ? spacing.unit10 : 'l'}
         w='100%'
         gap='s'
         style={css({

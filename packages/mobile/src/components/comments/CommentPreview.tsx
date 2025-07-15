@@ -6,7 +6,7 @@ import {
   useCurrentCommentSection
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import type { Comment, ID } from '@audius/common/models'
+import type { ID } from '@audius/common/models'
 import { trackPageSelectors } from '@audius/common/store'
 import { OptionalHashId } from '@audius/sdk'
 import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
@@ -169,7 +169,7 @@ export const CommentPreview = (props: CommentPreviewProps) => {
         entityId,
         navigation,
         autoFocusInput,
-        highlightComment: highlightComment as Comment | undefined,
+        highlightComment,
         uid: trackUid,
         actions: tracksActions
       })

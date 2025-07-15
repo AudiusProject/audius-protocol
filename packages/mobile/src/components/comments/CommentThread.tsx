@@ -32,12 +32,12 @@ import { CommentBlock } from './CommentBlock'
 
 type CommentThreadProps = {
   commentId: ID
-  highlightComment?: Comment
+  highlightComment?: Comment | null
 }
 
 export const CommentThread = (props: CommentThreadProps) => {
   const { commentId, highlightComment } = props
-  const { motion } = useTheme()
+  const { motion, spacing } = useTheme()
   const { entityId } = useCurrentCommentSection()
   const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
@@ -145,7 +145,7 @@ export const CommentThread = (props: CommentThreadProps) => {
       />
       <Flex direction='column' mv='s' gap='s' alignItems='flex-start'>
         {(replies.length ?? 0) > 0 ? (
-          <Box mv='xs' pl={40}>
+          <Box mv='xs' pl={spacing.unit10}>
             <PlainButton
               onPress={() => toggleReplies(rootComment.id)}
               variant='subdued'
