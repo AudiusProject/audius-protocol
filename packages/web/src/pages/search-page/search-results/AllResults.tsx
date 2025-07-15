@@ -335,6 +335,7 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             isFetching={isLoading}
             isPending={isPending}
             isError={isError}
+            waitForAllResults={isLoading}
           />
         </Flex>
       ) : null}
