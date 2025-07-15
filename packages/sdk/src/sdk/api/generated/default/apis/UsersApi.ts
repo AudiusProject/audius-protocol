@@ -28,6 +28,7 @@ import type {
   GetChallenges,
   GetSupportedUsers,
   GetSupporters,
+  HistoryResponse,
   MutualFollowersResponse,
   PlaylistsResponse,
   PurchasersResponse,
@@ -73,6 +74,8 @@ import {
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
+    HistoryResponseFromJSON,
+    HistoryResponseToJSON,
     MutualFollowersResponseFromJSON,
     MutualFollowersResponseToJSON,
     PlaylistsResponseFromJSON,
@@ -359,6 +362,17 @@ export interface GetUserTracksRemixedRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+}
+
+export interface GetUsersTrackHistoryRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    query?: string;
+    sortMethod?: GetUsersTrackHistorySortMethodEnum;
+    sortDirection?: GetUsersTrackHistorySortDirectionEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
 }
 
 export interface SearchUsersRequest {
@@ -1924,6 +1938,65 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Get the tracks the user recently listened to.
+     */
+    async getUsersTrackHistoryRaw(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HistoryResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUsersTrackHistory.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => HistoryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the tracks the user recently listened to.
+     */
+    async getUsersTrackHistory(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HistoryResponse> {
+        const response = await this.getUsersTrackHistoryRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Search for users that match the given query
      */
     async searchUsersRaw(params: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserSearch>> {
@@ -2115,6 +2188,29 @@ export const GetUserRecommendedTracksTimeRangeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetUserRecommendedTracksTimeRangeEnum = typeof GetUserRecommendedTracksTimeRangeEnum[keyof typeof GetUserRecommendedTracksTimeRangeEnum];
+/**
+ * @export
+ */
+export const GetUsersTrackHistorySortMethodEnum = {
+    Title: 'title',
+    ArtistName: 'artist_name',
+    ReleaseDate: 'release_date',
+    LastListenDate: 'last_listen_date',
+    AddedDate: 'added_date',
+    Plays: 'plays',
+    Reposts: 'reposts',
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
+} as const;
+export type GetUsersTrackHistorySortMethodEnum = typeof GetUsersTrackHistorySortMethodEnum[keyof typeof GetUsersTrackHistorySortMethodEnum];
+/**
+ * @export
+ */
+export const GetUsersTrackHistorySortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetUsersTrackHistorySortDirectionEnum = typeof GetUsersTrackHistorySortDirectionEnum[keyof typeof GetUsersTrackHistorySortDirectionEnum];
 /**
  * @export
  */

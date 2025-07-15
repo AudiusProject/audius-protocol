@@ -1,4 +1,3 @@
-import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { isNullOrUndefined, Nullable } from '~/utils/typeUtils'
@@ -26,11 +25,6 @@ const initialState: WalletState = {
   freezeBalanceUntil: null,
   usdcBalance: null
 }
-
-// After optimistically updating the balance, it can be useful
-// to briefly freeze the value so fetching an outdated
-// value from chain doesn't overwrite the state.
-const BALANCE_FREEZE_DURATION_SEC = 15
 
 const slice = createSlice({
   name: 'wallet',
@@ -67,41 +61,6 @@ const slice = createSlice({
         state.totalBalanceLoadDidFail = totalBalanceLoadDidFail
       }
     },
-    increaseBalance: (
-      state,
-      { payload: { amount } }: PayloadAction<{ amount: StringWei }>
-    ) => {
-      if (isNullOrUndefined(state.balance)) return
-      const existingBalance = AUDIO(state.balance).value
-      state.balance = (
-        existingBalance + AUDIO(amount).value
-      ).toString() as StringWei
-      if (!isNullOrUndefined(state.totalBalance)) {
-        state.totalBalance = (
-          AUDIO(state.totalBalance).value + AUDIO(amount).value
-        ).toString() as StringWei
-      }
-      state.localBalanceDidChange = true
-      state.freezeBalanceUntil = Date.now() + BALANCE_FREEZE_DURATION_SEC * 1000
-    },
-    decreaseBalance: (
-      state,
-      { payload: { amount } }: PayloadAction<{ amount: StringWei }>
-    ) => {
-      if (!state.balance) return
-      const existingBalance = BigInt(state.balance) as AudioWei
-      state.balance = (
-        existingBalance - (BigInt(amount) as AudioWei)
-      ).toString() as StringWei
-      if (state.totalBalance) {
-        state.totalBalance = (
-          (BigInt(state.totalBalance) as AudioWei) -
-          (BigInt(amount) as AudioWei)
-        ).toString() as StringWei
-      }
-      state.localBalanceDidChange = true
-      state.freezeBalanceUntil = Date.now() + BALANCE_FREEZE_DURATION_SEC * 1000
-    },
     setUSDCBalance: (
       state,
       { payload: { amount } }: PayloadAction<{ amount: StringUSDC }>
@@ -109,7 +68,6 @@ const slice = createSlice({
       state.usdcBalance = amount
     },
     // Saga Actions
-    getBalance: () => {},
     claim: () => {},
     claimSucceeded: () => {},
     claimFailed: (_state, _action: PayloadAction<{ error?: string }>) => {},
@@ -126,11 +84,7 @@ const slice = createSlice({
 })
 
 export const {
-  setBalance,
-  increaseBalance,
-  decreaseBalance,
   setUSDCBalance,
-  getBalance,
   claim,
   claimSucceeded,
   claimFailed,

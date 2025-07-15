@@ -16,7 +16,7 @@ type UserParams = { id?: ID } | { handle?: string | null }
  * @returns The user data or null if not found
  */
 export const useUserByParams = <
-  TResult extends { user_id: number; handle: string } = UserMetadata
+  TResult extends Partial<UserMetadata> = UserMetadata
 >(
   params: UserParams,
   options?: SelectableQueryOptions<UserMetadata, TResult>

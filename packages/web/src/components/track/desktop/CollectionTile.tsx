@@ -54,7 +54,7 @@ import { TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { isDescendantElementOf } from 'utils/domUtils'
 import { push as pushRoute } from 'utils/navigation'
-import { fullCollectionPage, fullTrackPage } from 'utils/route'
+import { fullTrackPage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { OwnerActionButtons } from '../OwnerActionButtons'
@@ -287,10 +287,6 @@ export const CollectionTile = ({
     ? ''
     : collectionPage(handle, title, id, permalink, isAlbum)
 
-  const fullHref = isLoading
-    ? ''
-    : fullCollectionPage(handle, title, id, permalink, isAlbum)
-
   const renderOverflowMenu = () => {
     const menu: Omit<CollectionMenuProps, 'children'> = {
       handle: handle ?? '',
@@ -504,11 +500,11 @@ export const CollectionTile = ({
         <Flex gap='s'>
           {hasOrdering && (
             <Flex column gap='2xs' alignItems='center' justifyContent='center'>
-              {!isLoading && index <= 5 && (
+              {!isLoading && order <= 5 && (
                 <IconCrown color='default' size='s' />
               )}
               <Text variant='label' color='default'>
-                {!isLoading && index}
+                {!isLoading && order}
               </Text>
             </Flex>
           )}
@@ -540,7 +536,7 @@ export const CollectionTile = ({
                   <Flex>
                     <TextLink
                       css={{ alignItems: 'center' }}
-                      to={fullHref}
+                      to={href}
                       isActive={isActive}
                       textVariant='title'
                       applyHoverStylesToInnerSvg
@@ -563,6 +559,7 @@ export const CollectionTile = ({
                     badgeSize='xs'
                     isActive={isActive}
                     popover
+                    css={{ marginTop: '-4px' }}
                   />
                 )}
               </Flex>
@@ -582,7 +579,7 @@ export const CollectionTile = ({
       </Flex>
       {/* Track list and bottom bar remain unchanged */}
       <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
-        <Scrollbar css={{ maxHeight: 200, overflowY: 'auto' }}>
+        <Scrollbar css={{ maxHeight: 240, overflowY: 'auto' }}>
           {renderTrackList()}
         </Scrollbar>
         {renderMoreTracks()}

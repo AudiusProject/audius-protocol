@@ -6,6 +6,7 @@ import { repostPlaylistCommand } from './repost-playlist'
 import { unfavoritePlaylistCommand } from './unfavorite-playlist'
 import { unrepostPlaylistCommand } from './unrepost-playlist'
 import { getPlaylistCommand } from './get-playlist'
+import { sharePlaylistCommand } from './share-playlist'
 
 export const playlistCommand = new Command('playlist')
   .description('Commands that create or target a specific playlist')
@@ -14,5 +15,6 @@ export const playlistCommand = new Command('playlist')
   .addCommand(favoritePlaylistCommand)
   .addCommand(getPlaylistCommand)
   .addCommand(repostPlaylistCommand)
+  .addCommand(sharePlaylistCommand)
   .addCommand(unfavoritePlaylistCommand)
   .addCommand(unrepostPlaylistCommand)

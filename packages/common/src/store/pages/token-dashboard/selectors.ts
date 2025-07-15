@@ -1,11 +1,10 @@
-import { AUDIO } from '@audius/fixed-decimal'
-
+import { StringWei } from '../../../models/Wallet'
 import { Nullable } from '../../../utils/typeUtils'
 import { CommonState } from '../../commonStore'
 
 export const getSendData = (
   state: CommonState
-): Nullable<{ recipientWallet: string; amount: bigint }> => {
+): Nullable<{ recipientWallet: string; amount: StringWei }> => {
   const modalState = state.pages.tokenDashboard.modalState
   if (
     !(
@@ -17,7 +16,7 @@ export const getSendData = (
   )
     return null
   const { recipientWallet, amount } = modalState.flowState
-  return { recipientWallet, amount: AUDIO(amount).value }
+  return { recipientWallet, amount }
 }
 
 export const getModalState = (state: CommonState) =>

@@ -14,8 +14,7 @@ import {
 import { User, UserMetadata } from './User'
 
 export enum Variant {
-  USER_GENERATED = 'user-generated',
-  SMART = 'smart'
+  USER_GENERATED = 'user-generated'
 }
 
 export type PlaylistTrackId = {
@@ -103,26 +102,6 @@ export type UserCollectionMetadata = CollectionMetadata & { user: UserMetadata }
 
 export type UserCollection = Collection & {
   user: User
-}
-
-export type SmartCollection = {
-  variant: Variant.SMART
-  playlist_name: string
-  description?: string
-  makeDescription?: (...args: any) => string
-  // Where this type of playlist is given a different classification
-  // e.g. "Audio NFT Playlist" instead of just "Playlist"
-  typeTitle?: 'Playlist' | 'Audio NFT Playlist'
-  gradient?: string
-  imageOverride?: string
-  shadow?: string
-  link: string
-  playlist_contents?: PlaylistContents
-  has_current_user_saved?: boolean
-  incentivized?: boolean // Whether we reward winners with Audio
-  cardSensitivity?: number
-  customEmptyText?: string
-  ddex_app?: string | null
 }
 
 export type CollectionImage = {

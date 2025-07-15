@@ -1,6 +1,5 @@
 export * from './useUploadCompletionRoute'
 export * from './useUIAudio'
-export * from './useTwitterButtonStatus'
 export * from './useTrackMetadata'
 export * from './useTrackDogEar'
 export * from './useTrackAccessTypeLabel'
@@ -49,3 +48,4 @@ export * from './useIsArtist'
 
 export * from './useAnalytics'
 export * from './useBuySellAnalytics'
+export * from './useShareAction'

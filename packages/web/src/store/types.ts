@@ -7,7 +7,6 @@ import {
   ChangePasswordState,
   CollectionsPageState,
   HistoryPageState,
-  SmartCollectionState,
   ReachabilityState,
   CommonState,
   FavoritesPageState,
@@ -76,7 +75,6 @@ export type AppState = CommonState & {
       following: FollowingPageState
       notificationUsers: NotificationUsersPageState
       unfollowConfirmation: UnfollowConfirmationModalState
-      smartCollection: SmartCollectionState
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
     }

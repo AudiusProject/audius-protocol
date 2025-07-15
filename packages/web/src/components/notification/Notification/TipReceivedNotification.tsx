@@ -7,13 +7,15 @@ import {
   reactionOrder,
   ReactionTypes,
   getReactionFromRawValue,
-  useUser
+  useUser,
+  useTokenPrice
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { TipReceiveNotification } from '@audius/common/store'
+import { TipReceiveNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 
 import styles from './TipReceivedNotification.module.css'
 import { AudioText } from './components/AudioText'
@@ -24,7 +26,6 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
 import { ReactionProps, reactionMap } from './components/Reaction'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconTip } from './components/icons'
 import { useGoToProfile } from './useGoToProfile'
@@ -38,8 +39,10 @@ const messages = {
   audio: '$AUDIO',
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
-  twitterShare: (senderHandle: string, amount: number) =>
-    `Thanks ${senderHandle} for the ${amount} $AUDIO tip on @audius! #Audius #AUDIOTip`
+  xShare: (senderHandle: string, amount: number, price?: string) => {
+    const totalValue = price && amount ? Number(price) * amount : null
+    return `Thanks ${senderHandle} for the ${amount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} tip on @audius!`
+  }
 }
 
 type TipReceivedNotificationProps = {
@@ -59,6 +62,11 @@ export const TipReceivedNotification = (
   } = notification
 
   const { data: user } = useUser(notification.entityId)
+  const { data: tokenPriceData } = useTokenPrice(
+    TOKEN_LISTING_MAP.AUDIO.address
+  )
+
+  const tokenPrice = tokenPriceData?.price
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification
@@ -94,7 +102,7 @@ export const TipReceivedNotification = (
 
   const handleShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(senderHandle, uiAmount)
+      const shareText = messages.xShare(senderHandle, uiAmount, tokenPrice)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE,
         { text: shareText }
@@ -102,7 +110,7 @@ export const TipReceivedNotification = (
 
       return { shareText, analytics }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null
@@ -149,7 +157,7 @@ export const TipReceivedNotification = (
           ))}
         </div>
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={user.handle}
         shareData={handleShare}

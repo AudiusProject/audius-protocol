@@ -9,6 +9,7 @@ import { convertGenreLabelToValue, Genre } from './genres'
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
+export const API_TERMS = '/legal/api-terms'
 export const DOWNLOAD_START_LINK = '/download?start_download=true'
 export const DOWNLOAD_LINK = '/download'
 export const PRESS_PAGE = '/press'
@@ -27,20 +28,8 @@ export const TRENDING_PAGE = '/trending'
 export const TRENDING_PLAYLISTS_PAGE_LEGACY = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
-export const EXPLORE_PREMIUM_TRACKS_PAGE = '/explore/premium-tracks'
-export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
-export const EXPLORE_LET_THEM_DJ_PAGE = '/explore/let-them-dj'
-export const EXPLORE_BEST_NEW_RELEASES_PAGE = '/explore/best-new-releases'
-export const EXPLORE_UNDER_THE_RADAR_PAGE = '/explore/under-the-radar'
-export const EXPLORE_TOP_ALBUMS_PAGE = '/explore/top-albums'
-export const EXPLORE_MOST_LOVED_PAGE = '/explore/most-loved'
-export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
-export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
 export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
 export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
-export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
-
-export const AUDIO_NFT_PLAYLIST_PAGE = '/:handle/audio-nft-playlist'
 
 // DEPRECATED - use /library instead.
 export const SAVED_PAGE = '/favorites'
@@ -85,6 +74,7 @@ export const WALLET_PAGE = '/wallet'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
+export const USER_ID_PARSER_PAGE = '/dev-tools/user-id-parser'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -176,7 +166,7 @@ export const TRENDING_GENRES = '/trending/genres'
 export const EMPTY_PAGE = '/empty_page'
 
 // External Links
-export const AUDIUS_TWITTER_LINK = 'https://twitter.com/audius'
+export const AUDIUS_X_LINK = 'https://x.com/audius'
 export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audius'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
 export const AUDIUS_TELEGRAM_LINK = 'https://t.me/Audius'
@@ -190,6 +180,8 @@ export const AUDIUS_GATED_CONTENT_BLOG_LINK =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 export const AUDIUS_CONTACT_EMAIL_LINK = 'mailto:contact@audius.co'
 export const AUDIUS_PROTOCOL_DASHBOARD_LINK = 'https://dashboard.audius.org'
+export const OPEN_MUSIC_LICENSE_LINK =
+  'https://audius.org/open-music-license.pdf'
 
 export const externalInternalLinks = [
   AUDIUS_PRESS_LINK,
@@ -246,6 +238,7 @@ export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,
   PRIVACY_POLICY,
+  API_TERMS,
   DOWNLOAD_LINK,
   AUTH_REDIRECT
 ]

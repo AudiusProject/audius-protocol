@@ -19,7 +19,7 @@ export const Default: Story = {
     <Flex direction='row' gap='m' pv='l' justifyContent='center'>
       <SocialButton socialType='tiktok' aria-label='TikTok button' />
       <SocialButton socialType='instagram' aria-label='Instagram button' />
-      <SocialButton socialType='twitter' aria-label='Twitter button' />
+      <SocialButton socialType='x' aria-label='X button' />
     </Flex>
   )
 }

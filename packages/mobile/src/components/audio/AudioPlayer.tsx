@@ -498,14 +498,16 @@ export const AudioPlayer = () => {
       const isLongFormContent =
         queueTracks[playerIndex]?.track?.genre === Genre.PODCASTS ||
         queueTracks[playerIndex]?.track?.genre === Genre.AUDIOBOOKS
+
+      // Always set the correct playback rate when the active track changes
+      const newRate = isLongFormContent
+        ? playbackRateValueMap[playbackRate]
+        : 1.0
+      await TrackPlayer.setRate(newRate)
+
+      // Update lock screen and notification controls only when long-form content status changes
       if (isLongFormContent !== isLongFormContentRef.current) {
         isLongFormContentRef.current = isLongFormContent
-        // Update playback rate based on if the track is a podcast or not
-        const newRate = isLongFormContent
-          ? playbackRateValueMap[playbackRate]
-          : 1.0
-        await TrackPlayer.setRate(newRate)
-        // Update lock screen and notification controls
         await updatePlayerOptions(isLongFormContent)
       }
 
@@ -677,23 +679,36 @@ export const AudioPlayer = () => {
       queuableTracks: QueueableTrack[],
       queueIndex = -1
     ) => {
+      // Safety check: Don't proceed if queueIndex is invalid
+      if (queueIndex < 0 || queueIndex >= queuableTracks.length) {
+        return
+      }
+
       let currentPivot = 1
       while (
         queueIndex - currentPivot >= 0 ||
-        queueIndex + currentPivot < queueTracks.length
+        queueIndex + currentPivot < queuableTracks.length
       ) {
         if (abortEnqueueControllerRef.current.signal.aborted) {
           return
         }
 
-        const nextTrack = queuableTracks[queueIndex + currentPivot]
-        if (nextTrack) {
-          await TrackPlayer.add(await makeTrackData(nextTrack))
+        // Only add next track if index is valid
+        const nextIndex = queueIndex + currentPivot
+        if (nextIndex < queuableTracks.length) {
+          const nextTrack = queuableTracks[nextIndex]
+          if (nextTrack) {
+            await TrackPlayer.add(await makeTrackData(nextTrack))
+          }
         }
 
-        const previousTrack = queuableTracks[queueIndex - currentPivot]
-        if (previousTrack) {
-          await TrackPlayer.add(await makeTrackData(previousTrack), 0)
+        // Only add previous track if index is valid
+        const prevIndex = queueIndex - currentPivot
+        if (prevIndex >= 0) {
+          const previousTrack = queuableTracks[prevIndex]
+          if (previousTrack) {
+            await TrackPlayer.add(await makeTrackData(previousTrack), 0)
+          }
         }
         currentPivot++
       }
@@ -713,7 +728,10 @@ export const AudioPlayer = () => {
 
       await TrackPlayer.add(await makeTrackData(firstTrack))
 
-      enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
+      // Only call enqueueTracks if we have a valid queue index and more than 1 track
+      if (queueIndex >= 0 && newQueueTracks.length > 1) {
+        enqueueTracksJobRef.current = enqueueTracks(newQueueTracks, queueIndex)
+      }
       await enqueueTracksJobRef.current
       enqueueTracksJobRef.current = undefined
     }
@@ -727,16 +745,26 @@ export const AudioPlayer = () => {
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
-    await enqueueTracksJobRef.current
-    const playerIdx = await TrackPlayer.getActiveTrackIndex()
-    const queue = await TrackPlayer.getQueue()
+    try {
+      await enqueueTracksJobRef.current
+      const playerIdx = await TrackPlayer.getActiveTrackIndex()
+      const queue = await TrackPlayer.getQueue()
 
-    if (
-      queueIndex !== -1 &&
-      queueIndex !== playerIdx &&
-      queueIndex < queue.length
-    ) {
-      await TrackPlayer.skip(queueIndex)
+      if (
+        queueIndex !== -1 &&
+        queueIndex !== playerIdx &&
+        queueIndex < queue.length
+      ) {
+        // Safety check: Don't skip if the target track has no URL (corrupted queue)
+        const targetTrack = queue[queueIndex]
+        if (!targetTrack?.url || targetTrack.url.trim() === '') {
+          return
+        }
+
+        await TrackPlayer.skip(queueIndex)
+      }
+    } catch (error) {
+      console.error('Error in handleQueueIdxChange:', error)
     }
   }, [queueIndex])
 

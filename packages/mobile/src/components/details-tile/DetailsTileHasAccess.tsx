@@ -20,7 +20,7 @@ import {
   IconSparkles
 } from '@audius/harmony-native'
 import { LockedStatusBadge, Text, useLink } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -53,7 +53,7 @@ const messages = {
     price: string
     contentType: PurchaseableContentType
   }) =>
-    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+    `Users can unlock access to this ${contentType} for a one time purchase of ${price}`
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -236,12 +236,7 @@ export const DetailsTileHasAccess = ({
             >
               {entity.name}
             </Text>
-            <UserBadges
-              badgeSize={16}
-              user={entity}
-              nameStyle={styles.description}
-              hideName
-            />
+            <UserBadges userId={entity.user_id} badgeSize='xs' />
             <Text style={styles.description}>{suffix}</Text>
           </Text>
         </View>

@@ -6,9 +6,11 @@ import {
   useWriteReaction,
   useCurrentUserId,
   getReactionFromRawValue,
-  useUser
+  useUser,
+  useTokenPrice
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
+import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import type { TipReceiveNotification } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
@@ -28,7 +30,7 @@ import {
   NotificationProfilePicture,
   TipText,
   UserNameLink,
-  NotificationTwitterButton,
+  NotificationXButton,
   NotificationBody
 } from '../Notification'
 import { ReactionList } from '../Reaction'
@@ -43,10 +45,17 @@ const messages = {
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
   // NOTE: Send tip -> Send $AUDIO change
-  twitterShare: (senderHandle: string, amount: number, ios: boolean) =>
-    `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
+  xShare: (
+    senderHandle: string,
+    amount: number,
+    ios: boolean,
+    price?: string
+  ) => {
+    const totalValue = price && amount ? Number(price) * amount : null
+    return `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
       ios ? '$AUDIO' : '$AUDIO tip'
-    } on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
+    } ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius! ${ios ? '' : ''}`
+  }
 }
 
 type TipReceivedNotificationProps = {
@@ -65,6 +74,11 @@ export const TipReceivedNotification = (
   } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
+  const { data: tokenPriceData } = useTokenPrice(
+    TOKEN_LISTING_MAP.AUDIO.address
+  )
+
+  const tokenPrice = tokenPriceData?.price
 
   const { data: user } = useUser(notification.entityId)
 
@@ -98,12 +112,13 @@ export const TipReceivedNotification = (
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(
+      const shareText = messages.xShare(
         senderHandle,
         uiAmount,
-        Platform.OS === 'ios'
+        Platform.OS === 'ios',
+        tokenPrice
       )
       return {
         shareText,
@@ -113,7 +128,7 @@ export const TipReceivedNotification = (
         } as const
       }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null
@@ -158,10 +173,10 @@ export const TipReceivedNotification = (
         onChange={handleReaction}
         isVisible={isVisible}
       />
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={user.handle}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
       />
     </NotificationTile>
   )

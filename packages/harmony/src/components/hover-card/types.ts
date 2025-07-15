@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { TriggerType } from '../../hooks/useHoverDelay'
 import { IconComponent } from '../icon'
 import { Origin } from '../popup/types'
 
@@ -46,6 +47,12 @@ export type HoverCardProps = {
    * @default 0.5
    */
   mouseEnterDelay?: number
+
+  /**
+   * Whether to trigger the hover card on hover, click, or both
+   * @default 'hover'
+   */
+  triggeredBy?: TriggerType
 }
 
 export type HoverCardHeaderProps = {

@@ -11,7 +11,7 @@ import { ProfileTierTile } from './ProfileTierTile'
 import {
   InstagramSocialLink,
   TikTokSocialLink,
-  TwitterSocialLink,
+  XSocialLink,
   WebsiteSocialLink
 } from './SocialLink'
 
@@ -27,12 +27,12 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const ProfileSocials = () => {
-  const { user_id, twitter_handle, instagram_handle, tiktok_handle, website } =
+  const { user_id, x_handle, instagram_handle, tiktok_handle, website } =
     useProfileUser({
       select: (user) => ({
         handle: user.handle,
         user_id: user.user_id,
-        twitter_handle: user.twitter_handle,
+        x_handle: user.twitter_handle,
         instagram_handle: user.instagram_handle,
         tiktok_handle: user.tiktok_handle,
         website: user.website
@@ -42,9 +42,9 @@ export const ProfileSocials = () => {
   const socialLinks = useMemo(() => {
     const links = [
       {
-        type: 'twitter',
-        handle: twitter_handle,
-        SocialLink: TwitterSocialLink
+        type: 'x',
+        handle: x_handle,
+        SocialLink: XSocialLink
       },
       {
         type: 'instagram',
@@ -55,7 +55,7 @@ export const ProfileSocials = () => {
       { type: 'website', handle: website, SocialLink: WebsiteSocialLink }
     ]
     return links.filter(({ handle }) => !(handle === null || handle === ''))
-  }, [twitter_handle, instagram_handle, tiktok_handle, website])
+  }, [x_handle, instagram_handle, tiktok_handle, website])
 
   const socialsCount = useMemo(() => {
     return socialLinks.filter(({ handle }) => !!handle).length

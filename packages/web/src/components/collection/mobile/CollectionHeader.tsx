@@ -5,7 +5,7 @@ import {
   useGatedContentAccessMap,
   useGatedContentAccess
 } from '@audius/common/hooks'
-import { Variant, SquareSizes, ID, ModalSource } from '@audius/common/models'
+import { SquareSizes, ID, ModalSource } from '@audius/common/models'
 import { OverflowAction, PurchaseableContentType } from '@audius/common/store'
 import { dayjs, formatReleaseDate } from '@audius/common/utils'
 import {
@@ -68,7 +68,6 @@ type MobileCollectionHeaderProps = CollectionHeaderProps & {
 }
 
 const CollectionHeader = ({
-  type,
   collectionId,
   userId,
   title,
@@ -95,11 +94,7 @@ const CollectionHeader = ({
   onRepost,
   onClickFavorites = () => {},
   onClickReposts = () => {},
-  onClickMobileOverflow,
-  variant,
-  gradient,
-  imageOverride,
-  icon: Icon
+  onClickMobileOverflow
 }: MobileCollectionHeaderProps) => {
   const navigate = useNavigate()
 
@@ -138,8 +133,7 @@ const CollectionHeader = ({
   const shouldShowPreview = isPremium && !hasStreamAccess && !shouldShowPlay
 
   const showPremiumSection = isAlbum && streamConditions && collectionId
-  const shouldShowStats =
-    isPublished && variant !== Variant.SMART && (!isPrivate || isOwner)
+  const shouldShowStats = isPublished && (!isPrivate || isOwner)
   const shouldShowScheduledRelease =
     isScheduledRelease && releaseDate && dayjs(releaseDate).isAfter(dayjs())
 
@@ -219,21 +213,8 @@ const CollectionHeader = ({
         <DynamicImage
           alt={messages.coverArtAltText}
           wrapperClassName={styles.coverArt}
-          image={gradient || imageOverride || image}
-        >
-          {Icon && (
-            <Icon
-              color='white'
-              height='100%'
-              width='100%'
-              css={{
-                opacity: 0.3,
-                background: gradient,
-                mixBlendMode: 'overlay'
-              }}
-            />
-          )}
-        </DynamicImage>
+          image={image}
+        />
         <Flex gap='xs' direction='column' alignItems='center'>
           <Text variant='heading' size='s' tag='h1'>
             {title}
@@ -276,19 +257,11 @@ const CollectionHeader = ({
           onClickOverflow={onClickOverflow}
           onClickEdit={handleClickEdit}
           showFavorite={!!onSave && !isOwner && hasStreamAccess && !isPrivate}
-          showRepost={
-            variant !== Variant.SMART &&
-            !isOwner &&
-            hasStreamAccess &&
-            !isPrivate
-          }
-          showShare={
-            (variant !== Variant.SMART || type === 'Audio NFT Playlist') &&
-            !isPrivate
-          }
-          showOverflow={variant !== Variant.SMART && !isPrivate}
+          showRepost={!isOwner && hasStreamAccess && !isPrivate}
+          showShare={!isPrivate}
+          showOverflow={!isPrivate}
           darkMode={isDarkMode()}
-          showEdit={variant !== Variant.SMART && isOwner}
+          showEdit={isOwner}
         />
       </Flex>
       <Flex

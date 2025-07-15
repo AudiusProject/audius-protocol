@@ -1,19 +1,3 @@
-.gatedContentLabel {
-  margin-bottom: var(--harmony-unit-5);
-  display: flex;
-  align-items: center;
-  gap: var(--harmony-unit-2);
-  letter-spacing: 2px;
-  font-weight: var(--harmony-font-demi-bold);
-  font-size: var(--harmony-font-s);
-  color: var(--harmony-blue);
-  text-transform: uppercase;
-}
-
-.usdcContentLabel {
-  color: var(--harmony-light-green);
-}
-
 .imageWrapper {
   min-width: 80px;
   width: 80px;

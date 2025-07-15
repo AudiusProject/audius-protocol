@@ -1,4 +1,3 @@
-import { StringWei } from '@audius/common/models'
 import {
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
@@ -37,9 +36,7 @@ function* confirmSendAsync() {
   const sendData = yield* select(getSendData)
   if (!sendData) return
   const { recipientWallet, amount } = sendData
-  yield* put(
-    walletSend({ recipientWallet, amount: amount.toString() as StringWei })
-  )
+  yield* put(walletSend({ recipientWallet, amount }))
 
   const { error } = yield* race({
     success: take(sendSucceeded),
@@ -70,7 +67,7 @@ function* confirmSendAsync() {
     stage: 'SEND',
     flowState: {
       stage: 'CONFIRMED_SEND',
-      amount: amount.toString() as StringWei,
+      amount,
       recipientWallet
     }
   }

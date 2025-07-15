@@ -4,7 +4,7 @@ import type { TokenInfo } from '@audius/common/store'
 
 import {
   Flex,
-  IconLogoCircleUSDC,
+  IconTokenUSDC,
   IconTokenAUDIO,
   Text,
   useTheme
@@ -31,7 +31,7 @@ export const CryptoBalanceSection = ({
   const { symbol } = tokenInfo
 
   // Get the appropriate token icon for mobile
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
   return (
     <Flex direction='column' gap='m'>

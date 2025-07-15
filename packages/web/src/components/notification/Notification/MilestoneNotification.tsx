@@ -19,6 +19,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { push } from 'utils/navigation'
 import { fullProfilePage } from 'utils/route'
 
@@ -28,7 +29,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconMilestone } from './components/icons'
 import { getEntityLink } from './utils'
 
@@ -40,7 +40,7 @@ const messages = {
   your: 'Your',
   reached: 'has reached over',
   followerAchievementText: (followersCount: number) =>
-    `I just hit over ${followersCount} followers on @audius! #Audius $AUDIO`,
+    `I just hit over ${followersCount} followers on @audius! $AUDIO`,
   achievementText: (
     type: string,
     name: string,
@@ -50,7 +50,7 @@ const messages = {
     const achievementText =
       achievement === Achievement.Listens ? 'plays' : achievement
     return `My ${type} ${name} has more than ${value} ${achievementText} on @audius
-Check it out! #Audius $AUDIO`
+Check it out! $AUDIO`
   }
 }
 
@@ -148,7 +148,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       </NotificationHeader>
       <NotificationBody>{renderBody()}</NotificationBody>
       {link && text ? (
-        <TwitterShareButton
+        <XShareButton
           type='static'
           url={link}
           shareText={text}

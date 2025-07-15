@@ -7,6 +7,7 @@ import {
 import { capitalize } from 'lodash'
 
 import { audioTierMap } from 'components/user-badges/UserBadges'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { fullProfilePage } from 'utils/route'
 
 import styles from './TierChangeNotification.module.css'
@@ -15,7 +16,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTier } from './components/icons'
 
 const messages = {
@@ -26,8 +26,8 @@ const messages = {
   audioLabel: 'audio tokens',
   accessInfo:
     'You now have access to exclusive features & a shiny new badge by your name.',
-  twitterShareText: (label: string, icon: string) =>
-    `I've reached ${label} Tier on @audius! Check out the shiny new badge next to my name ${icon} #Audius $AUDIO`
+  xShareText: (label: string, icon: string) =>
+    `I've reached ${label} Tier on @audius! Check out the shiny new badge next to my name ${icon} $AUDIO`
 }
 
 const tierInfoMap = {
@@ -55,7 +55,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { humanReadableAmount } = tierInfo
 
   const { label, icon } = tierInfoMap[tier]
-  const shareText = messages.twitterShareText(label, icon)
+  const shareText = messages.xShareText(label, icon)
 
   if (!user) return null
 
@@ -70,7 +70,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         {messages.reached} {capitalize(tier)} {messages.having}{' '}
         {humanReadableAmount} {messages.audio} {messages.accessInfo}
       </NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='static'
         url={fullProfilePage(user.handle)}
         shareText={shareText}

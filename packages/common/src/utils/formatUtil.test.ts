@@ -9,6 +9,7 @@ describe('formatUtil', function () {
     expect(formatCount(1001)).toBe('1K')
     expect(formatCount(1200)).toBe('1.2K')
     // expect(formatCount(1239)).toBe('1.23K') fails: rounds up
+    expect(formatCount(9998)).toBe('10K')
     expect(formatCount(10023)).toBe('10K')
     expect(formatCount(10423)).toBe('10.4K')
     expect(formatCount(100000)).toBe('100K')

@@ -7,6 +7,7 @@ import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { getChallengeConfig } from 'pages/rewards-page/config'
 import { env } from 'services/env'
 import { push } from 'utils/navigation'
@@ -16,7 +17,6 @@ import { NotificationFooter } from './components/NotificationFooter'
 import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconRewards } from './components/icons'
 
 const { REWARDS_PAGE } = route
@@ -31,8 +31,7 @@ const messages = {
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
-  twitterShareText:
-    'I earned $AUDIO for completing challenges on @audius #Audius #AudioRewards',
+  xShareText: 'I earned $AUDIO for completing challenges on @audius',
   streakMilestone: (amountEarned: number, listenStreak: number) =>
     `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You'll now earn an additional $AUDIO reward for every day you keep your streak going!`,
   streakMaintenance: (amountEarned: number) =>
@@ -97,10 +96,10 @@ export const ChallengeRewardNotification = (
         <NotificationTitle>{notificationTitle}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>{amountEarnedText}</NotificationBody>
-      <TwitterShareButton
+      <XShareButton
         type='static'
         url={env.AUDIUS_URL}
-        shareText={messages.twitterShareText}
+        shareText={messages.xShareText}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

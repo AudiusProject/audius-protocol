@@ -29,6 +29,7 @@ export * from './tan-query/events'
 
 // Explore
 export * from './tan-query/collection/useExploreContent'
+export * from './tan-query/explore/useBestSelling'
 
 // Lineups
 export * from './tan-query/lineups/useFeed'
@@ -95,7 +96,12 @@ export * from './tan-query/tracks/useFileSizes'
 export * from './tan-query/tracks/useTrackFileInfo'
 export * from './tan-query/tracks/useUpdateTrack'
 export * from './tan-query/tracks/useRemixedTracks'
+export * from './tan-query/tracks/useRecommendedTracks'
+export * from './tan-query/tracks/useRecentPremiumTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
+export * from './tan-query/tracks/useFeelingLuckyTrack'
+export * from './tan-query/tracks/useRecentlyPlayedTracks'
+export * from './tan-query/tracks/useRecentlyCommentedTracks'
 
 // Users
 export * from './tan-query/users/useUpdateProfile'
@@ -151,6 +157,7 @@ export * from './tan-query/wallets/useTokenPrice'
 export * from './tan-query/wallets/useWalletCollectibles'
 export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
+export * from './tan-query/wallets/useTokenBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
 export * from './tan-query/jupiter/utils'

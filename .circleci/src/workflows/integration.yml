@@ -1,8 +1,0 @@
-when: << pipeline.parameters.run-integration-workflow >>
-jobs:
-  - integration-init:
-      context: Vercel
-  - integration-test:
-      context: Vercel
-      requires:
-        - integration-init

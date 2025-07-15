@@ -22,7 +22,7 @@ import {
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 import { getEntityRoute } from '../Notification/utils'
 
@@ -34,7 +34,7 @@ const messages = {
   your: 'Your',
   reached: 'has reached over',
   followerAchievementText: (followersCount: number) =>
-    `I just hit over ${followersCount} followers on @audius! #Audius $AUDIO`,
+    `I just hit over ${followersCount} followers on @audius! $AUDIO`,
   achievementText: (
     type: string,
     name: string,
@@ -43,11 +43,11 @@ const messages = {
   ) => {
     const achievementText =
       achievement === Achievement.Listens ? 'plays' : achievement
-    return `My ${type} ${name} has more than ${value} ${achievementText} on @audius\nCheck it out! #Audius $AUDIO`
+    return `My ${type} ${name} has more than ${value} ${achievementText} on @audius\nCheck it out! $AUDIO`
   }
 }
 
-const getTwitterShareData = (
+const getXShareData = (
   notification: MilestoneNotificationType,
   entity?: Nullable<EntityType>,
   user?: Nullable<User>
@@ -126,7 +126,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
     return null
   }
 
-  const { link, text } = getTwitterShareData(notification, entity, user)
+  const { link, text } = getXShareData(notification, entity, user)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -135,7 +135,7 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
       </NotificationHeader>
       <NotificationText>{renderBody()}</NotificationText>
       {link && text ? (
-        <NotificationTwitterButton type='static' url={link} shareText={text} />
+        <NotificationXButton type='static' url={link} shareText={text} />
       ) : null}
     </NotificationTile>
   )

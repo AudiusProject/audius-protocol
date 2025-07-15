@@ -11,6 +11,7 @@ import { Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { push } from 'utils/navigation'
 
 import { EntityLink } from './components/EntityLink'
@@ -20,19 +21,14 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { ProfilePicture } from './components/ProfilePicture'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconAddTrackToPlaylist } from './components/icons'
 import { getEntityLink } from './utils'
 
 const messages = {
   title: 'Track Added to Playlist',
-  shareTwitterText: (
-    handle: string,
-    track: Track,
-    playlist: CollectionEntity
-  ) =>
-    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audius! #Audius $AUDIO`
+  shareXText: (handle: string, track: Track, playlist: CollectionEntity) =>
+    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audius! $AUDIO`
 }
 
 type AddTrackToPlaylistNotificationProps = {
@@ -50,21 +46,19 @@ export const AddTrackToPlaylistNotification = (
 
   const dispatch = useDispatch()
 
-  const handleTwitterShare = useCallback(
-    (twitterHandle: string) => {
-      if (track && playlist && twitterHandle) {
-        const shareText = messages.shareTwitterText(
-          twitterHandle,
-          track,
-          playlist
-        )
-        const analytics = make(
-          Name.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
-          { text: shareText }
-        )
-        return { shareText, analytics }
-      }
-      return null
+  const handleXShare = useCallback(
+    (playlistOwnerHandle: string) => {
+      if (!track || !playlist) return null
+      const shareText = messages.shareXText(
+        playlistOwnerHandle,
+        track as Track,
+        playlist as CollectionEntity
+      )
+      const analytics = make(
+        Name.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
+        { text: shareText }
+      )
+      return { shareText, analytics }
     },
     [track, playlist]
   )
@@ -92,10 +86,10 @@ export const AddTrackToPlaylistNotification = (
           <EntityLink entity={playlist} entityType={Entity.Playlist} />
         </span>
       </Flex>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={playlistOwner.handle}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
         url={getEntityLink(playlist, true)}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

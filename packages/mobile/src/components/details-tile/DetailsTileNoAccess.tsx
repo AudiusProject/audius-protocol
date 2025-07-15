@@ -36,7 +36,7 @@ import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { LockedStatusBadge, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
@@ -54,7 +54,7 @@ const messages = {
   goToCollection: 'Go To Collection',
   followArtist: 'Follow Artist',
   sendTip: 'Send Tip',
-  buy: (price: string) => `Buy $${price}`,
+  buy: (price: string) => `Buy ${price}`,
   lockedCollectibleGated:
     'To unlock this track, you must link a wallet containing a collectible from:',
   unlockingCollectibleGatedPrefix: 'A Collectible from ',
@@ -255,12 +255,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
           >
             {entity.name}
           </Text>
-          <UserBadges
-            badgeSize={spacing(4)}
-            user={entity}
-            nameStyle={styles.description}
-            hideName
-          />
+          <UserBadges userId={entity.user_id} badgeSize='xs' />
           {suffix ? <Text style={styles.description}>{suffix}</Text> : null}
         </View>
       )
@@ -400,12 +395,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
             >
               {entity.name}
             </Text>
-            <UserBadges
-              badgeSize={spacing(4)}
-              user={entity}
-              nameStyle={styles.description}
-              hideName
-            />
+            <UserBadges userId={entity.user_id} badgeSize='xs' />
             <Text style={styles.description}>{suffix}</Text>
           </Text>
         </View>

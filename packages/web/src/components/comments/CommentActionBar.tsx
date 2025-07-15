@@ -24,11 +24,14 @@ import {
   Text,
   TextLink
 } from '@audius/harmony'
+import { Id } from '@audius/sdk'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track as trackEvent } from 'services/analytics'
+import { env } from 'services/env'
+import { copyToClipboard } from 'utils/clipboardUtil'
 import { removeNullable } from 'utils/typeUtils'
 
 import { useCommentActionCallback } from './useCommentActionCallback'
@@ -162,6 +165,12 @@ export const CommentActionBar = ({
     )
   }, [onClickReply, commentId])
 
+  const handleShare = useCallback(() => {
+    const url = `${env.AUDIUS_URL}${track.permalink}?commentId=${Id.parse(comment.id)}`
+    copyToClipboard(url)
+    toast('Copied to clipboard')
+  }, [comment.id, toast, track.permalink])
+
   // Confirmation Modal state
   const confirmationModals: {
     [k in ConfirmationAction]: ConfirmationModalState
@@ -244,6 +253,10 @@ export const CommentActionBar = ({
   const popupMenuItems = useMemo(
     () =>
       [
+        {
+          onClick: handleShare,
+          text: messages.menuActions.share
+        },
         isEntityOwner &&
           isParentComment && {
             onClick: () => setCurrentConfirmationModalType('pin'),
@@ -286,13 +299,14 @@ export const CommentActionBar = ({
         }
       ].filter(removeNullable),
     [
-      isEntityOwner,
       isParentComment,
+      handleShare,
+      isEntityOwner,
       isPinned,
       isCommentOwner,
-      onClickEdit,
       handleMuteNotifs,
-      isMuted
+      isMuted,
+      onClickEdit
     ]
   )
 

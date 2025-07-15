@@ -20,7 +20,7 @@ import {
   IconSparkles
 } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -65,10 +65,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   streamContentLabel: {
     letterSpacing: spacing(0.5)
-  },
-  trackOwnerContainer: {
-    ...flexRowCentered(),
-    marginTop: spacing(1)
   },
   trackOwner: {
     fontFamily: typography.fontByWeight.medium,
@@ -169,10 +165,10 @@ export const TrackDetailsTile = ({
           >
             {track.title}
           </Text>
-          <View style={styles.trackOwnerContainer}>
+          <Flex row alignItems='center' gap='xs' mt='xs'>
             <Text fontSize='medium'>{owner.name}</Text>
-            <UserBadges badgeSize={spacing(4)} user={owner} hideName />
-          </View>
+            <UserBadges userId={owner.user_id} badgeSize='xs' />
+          </Flex>
           {earnAmount ? (
             <Flex direction='row' alignItems='center' gap='xs' pt='xs'>
               <IconCart size='s' color='premium' />

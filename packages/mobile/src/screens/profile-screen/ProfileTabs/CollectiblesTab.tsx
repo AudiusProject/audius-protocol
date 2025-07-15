@@ -13,7 +13,7 @@ import { View, Text } from 'react-native'
 import { IconShare, Button } from '@audius/harmony-native'
 import { Tile, GradientText, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { UserBadgesV2 } from 'app/components/user-badges/UserBadgesV2'
+import { UserBadges } from 'app/components/user-badges'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -169,7 +169,7 @@ export const CollectiblesTab = () => {
           </GradientText>
           <Text style={styles.subtitle}>
             {messages.subtitle} {isOwner ? messages.you : name}{' '}
-            {isOwner ? null : <UserBadgesV2 userId={user_id} />}
+            {isOwner ? null : <UserBadges userId={user_id} />}
           </Text>
           <Button
             fullWidth

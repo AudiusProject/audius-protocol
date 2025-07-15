@@ -31,7 +31,7 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { SignOnLink } from 'components/SignOnLink'
-import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -44,8 +44,8 @@ const messages = {
     `View ${capitalize(contentType)}`,
   purchasing: 'Purchasing',
   shareButtonContent: 'I just purchased a track on Audius!',
-  shareTwitterText: (contentType: string, title: string, handle: string) =>
-    `I bought the ${contentType} ${title} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
+  shareXText: (contentType: string, title: string, handle: string) =>
+    `I bought the ${contentType} ${title} by ${handle} on @Audius! $AUDIO`,
   reposted: 'Reposted',
   repost: 'Repost',
   finishSigningUp: 'Finish Signing Up',
@@ -104,7 +104,6 @@ export const PurchaseContentFormFooter = ({
   } = metadata
   const contentId =
     'track_id' in metadata ? metadata.track_id : metadata.playlist_id
-  const title = 'title' in metadata ? metadata.title : metadata.playlist_name
   const isAlbum = isPurchaseableAlbum(metadata)
   const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
   const dispatch = useDispatch()
@@ -112,9 +111,11 @@ export const PurchaseContentFormFooter = ({
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (handle: string) => {
-      const shareText = messages.shareTwitterText(
+      const title =
+        'title' in metadata ? metadata.title : metadata.playlist_name
+      const shareText = messages.shareXText(
         isAlbum ? 'album' : 'track',
         title,
         handle
@@ -124,7 +125,7 @@ export const PurchaseContentFormFooter = ({
       })
       return { shareText, analytics }
     },
-    [title, isAlbum]
+    [isAlbum, metadata]
   )
   const { onClose } = usePremiumContentPurchaseModal()
 
@@ -184,15 +185,16 @@ export const PurchaseContentFormFooter = ({
                 {isReposted ? messages.reposted : messages.repost}
               </Button>
               {!isHidden && permalink ? (
-                <TwitterShareButton
+                <XShareButton
                   fullWidth
                   type='dynamic'
+                  size='default'
                   url={
                     isAlbum
                       ? fullCollectionPage(handle, null, null, permalink)
                       : fullTrackPage(permalink)
                   }
-                  shareData={handleTwitterShare}
+                  shareData={handleXShare}
                   handle={handle}
                 />
               ) : null}

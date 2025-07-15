@@ -1,6 +1,7 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { QueryClient, useQueries, useQuery } from '@tanstack/react-query'
+import { call, getContext } from 'typed-redux-saga'
 import { getAddress } from 'viem'
 
 import {
@@ -9,14 +10,22 @@ import {
 } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
+import { AudiusBackend } from '~/services'
+import { getSDK } from '~/store'
 import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { queryCurrentUserId, queryUser } from '../saga-utils'
 import { QueryOptions, type QueryKey } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
 
-import { useConnectedWallets } from './useConnectedWallets'
+import {
+  ConnectedWallet,
+  getConnectedWalletsQueryFn,
+  getConnectedWalletsQueryKey,
+  useConnectedWallets
+} from './useConnectedWallets'
 
 type UseWalletAudioBalanceParams = {
   /** Ethereum or Solana wallet address */
@@ -199,8 +208,11 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   }
 
   // Get linked/connected wallets balances
-  const { data: connectedWallets, isFetched: isConnectedWalletsFetched } =
-    useConnectedWallets()
+  const {
+    data: connectedWallets,
+    isFetched: isConnectedWalletsFetched,
+    isError: isConnectedWalletsError
+  } = useConnectedWallets()
   const connectedWalletsBalances = useWalletAudioBalances(
     {
       wallets: connectedWallets ?? []
@@ -220,11 +232,176 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   // Together they are the total balance
   const totalBalance = AUDIO(accountBalance + connectedWalletsBalance).value
   const isLoading = isAccountBalanceLoading || isConnectedWalletsBalanceLoading
-
+  const isError =
+    isConnectedWalletsError ||
+    accountBalances.some((balanceRes) => balanceRes.isError) ||
+    connectedWalletsBalances.some((balanceRes) => balanceRes.isError)
   return {
     accountBalance,
     connectedWalletsBalance,
     totalBalance,
-    isLoading
+    isLoading,
+    isError
+  }
+}
+
+// Helper fn for the saga selectors below
+function* getWalletBalances(wallets: Array<{ address: string; chain: Chain }>) {
+  const sdk = yield* call(getSDK)
+  const audiusBackend = yield* getContext<AudiusBackend>(
+    'audiusBackendInstance'
+  )
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  let totalBalance: AudioWei = AUDIO(0).value
+  for (const wallet of wallets) {
+    const balance = (yield* call([queryClient, queryClient.fetchQuery], {
+      queryKey: getWalletAudioBalanceQueryKey({
+        address: wallet.address,
+        chain: wallet.chain,
+        includeStaked: true
+      }),
+      queryFn: async () =>
+        fetchWalletAudioBalance(
+          { sdk, audiusBackend },
+          { address: wallet.address, chain: wallet.chain, includeStaked: true }
+        )
+    })) as AudioWei | undefined
+    totalBalance = AUDIO(totalBalance + (balance ?? AUDIO(0).value)).value
+  }
+  return totalBalance
+}
+
+export function* getAccountAudioBalanceSaga() {
+  const currentUserId = yield* call(queryCurrentUserId)
+  const user = yield* call(queryUser, currentUserId)
+  const userWallets = [
+    ...(user?.erc_wallet
+      ? [{ address: user.erc_wallet, chain: Chain.Eth }]
+      : []),
+    ...(user?.spl_wallet
+      ? [{ address: user.spl_wallet, chain: Chain.Sol }]
+      : [])
+  ]
+  return yield* call(getWalletBalances, userWallets)
+}
+
+/**
+ * Sums current audio account balance combined with balance from all connected wallets
+ * @returns
+ */
+export function* getAccountTotalAudioBalanceSaga() {
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  const sdk = yield* call(getSDK)
+  const accountBalance = yield* call(getAccountAudioBalanceSaga)
+  const currentUserId = yield* call(queryCurrentUserId)
+  const connectedWallets = (yield* call([queryClient, queryClient.fetchQuery], {
+    queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
+    queryFn: async () => {
+      return getConnectedWalletsQueryFn({
+        sdk,
+        currentUserId
+      })
+    }
+  })) as ConnectedWallet[]
+
+  const connectedWalletsBalance = yield* call(
+    getWalletBalances,
+    connectedWallets
+  )
+
+  return AUDIO(accountBalance + connectedWalletsBalance).value
+}
+
+/**
+ * Optimistically updates the user's SOL wallet balance in the cache.
+ * Use this to provide immediate UI feedback before the transaction confirms.
+ *
+ * @param amount - The amount to add (positive) or subtract (negative) from the current balance
+ */
+export function* optimisticallyUpdateUserSolBalance(amount: AudioWei) {
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  const currentUserId = yield* call(queryCurrentUserId)
+  const user = yield* call(queryUser, currentUserId)
+
+  if (!user?.spl_wallet) return
+
+  // Update both staked and non-staked balance queries for the SOL wallet
+  const solWalletQueries = [
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: true
+    },
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: false
+    }
+  ]
+
+  for (const queryParams of solWalletQueries) {
+    const queryKey = getWalletAudioBalanceQueryKey(queryParams)
+
+    yield* call(
+      [queryClient, queryClient.setQueryData],
+      queryKey,
+      (oldBalance: AudioWei | undefined) => {
+        const currentBalance = oldBalance ?? AUDIO(0).value
+        const newBalance = AUDIO(currentBalance + amount).value
+        // Ensure balance doesn't go negative
+        return newBalance >= 0 ? newBalance : AUDIO(0).value
+      }
+    )
+  }
+}
+
+/**
+ * Optimistically decreases the user's SOL wallet balance.
+ * Use this when sending AUDIO to provide immediate UI feedback.
+ *
+ * @param amount - The amount to subtract from the current balance
+ */
+export function* optimisticallyDecreaseUserSolBalance(amount: AudioWei) {
+  yield* call(optimisticallyUpdateUserSolBalance, AUDIO(-amount).value)
+}
+
+/**
+ * Optimistically increases the user's SOL wallet balance.
+ * Use this when receiving AUDIO to provide immediate UI feedback.
+ *
+ * @param amount - The amount to add to the current balance
+ */
+export function* optimisticallyIncreaseUserSolBalance(amount: AudioWei) {
+  yield* call(optimisticallyUpdateUserSolBalance, amount)
+}
+
+/**
+ * Reverts an optimistic balance update by invalidating the cache.
+ * Use this when a transaction fails and you need to revert to the real balance.
+ */
+export function* revertOptimisticUserSolBalance() {
+  const queryClient = yield* getContext<QueryClient>('queryClient')
+  const currentUserId = yield* call(queryCurrentUserId)
+  const user = yield* call(queryUser, currentUserId)
+
+  if (!user?.spl_wallet) return
+
+  // Invalidate both staked and non-staked balance queries
+  const solWalletQueries = [
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: true
+    },
+    {
+      address: user.spl_wallet,
+      chain: Chain.Sol,
+      includeStaked: false
+    }
+  ]
+
+  for (const queryParams of solWalletQueries) {
+    const queryKey = getWalletAudioBalanceQueryKey(queryParams)
+    queryClient.invalidateQueries({ queryKey })
   }
 }

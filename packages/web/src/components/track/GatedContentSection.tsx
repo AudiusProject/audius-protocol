@@ -57,11 +57,11 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 const BUY_BUTTON_WIDTH = 250
 
 const getMessages = (contentType: PurchaseableContentType) => ({
-  howToUnlock: 'HOW TO UNLOCK',
-  payToUnlock: 'PAY TO UNLOCK',
-  purchasing: 'PURCHASING',
-  unlocking: 'UNLOCKING',
-  unlocked: 'UNLOCKED',
+  howToUnlock: 'how to unlock',
+  payToUnlock: 'pay to unlock',
+  purchasing: 'purchasing',
+  unlocking: 'unlocking',
+  unlocked: 'unlocked',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   goToCollection: 'Open Collection',
@@ -87,9 +87,9 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   unlockedTipGatedContentSuffix: `by sending them a tip! This ${contentType} is now available.`,
   unlockWithPurchase: `Unlock this ${contentType} with a one-time purchase!`,
   purchased: `You've purchased this ${contentType}.`,
-  buy: (price: string) => `Buy $${price}`,
+  buy: (price: string) => `Buy ${price}`,
   usersCanPurchase: (price: string) =>
-    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+    `Users can unlock access to this ${contentType} for a one time purchase of ${price}`
 })
 
 type GatedContentAccessSectionProps = {
@@ -264,7 +264,7 @@ const LockedGatedContentSection = ({
       return (
         <Text variant='body' strength='strong'>
           {messages.unlockTipGatedContentPrefix}{' '}
-          <UserLink userId={tippedUser.user_id} />
+          <UserLink userId={tippedUser.user_id} />{' '}
           {messages.unlockTipGatedContentSuffix}
         </Text>
       )

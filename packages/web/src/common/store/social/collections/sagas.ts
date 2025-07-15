@@ -1,28 +1,17 @@
 import {
   queryAccountUser,
   queryCollection,
-  queryCurrentAccount,
   queryUser,
-  queryUserByHandle,
   updateCollectionData,
   selectIsGuestAccount,
   getUserQueryKey
 } from '@audius/common/api'
-import {
-  Name,
-  Kind,
-  SmartCollectionVariant,
-  ID,
-  PlaylistLibrary,
-  User
-} from '@audius/common/models'
+import { Name, Kind, ID, User } from '@audius/common/models'
 import {
   accountActions,
   cacheActions,
   libraryPageActions,
   LibraryCategory,
-  playlistLibraryActions,
-  playlistLibraryHelpers,
   collectionsSocialActions as socialActions,
   getContext,
   playlistUpdatesActions,
@@ -40,17 +29,11 @@ import { call, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import {
-  addPlaylistsNotInLibrary,
-  removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
-import { audioNftPlaylistPage } from 'utils/route'
+import { removePlaylistFromLibrary } from 'common/store/playlist-library/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { update: updatePlaylistLibrary } = playlistLibraryActions
-const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { addLocalCollection, removeLocalCollection } = libraryPageActions
 const { collectionPage } = route
 
@@ -310,49 +293,6 @@ export function* watchSaveCollection() {
   )
 }
 
-export function* watchSaveSmartCollection() {
-  yield* takeEvery(
-    socialActions.SAVE_SMART_COLLECTION,
-    function* (action: ReturnType<typeof socialActions.saveSmartCollection>) {
-      yield* call(saveSmartCollection, action)
-    }
-  )
-}
-
-export function* saveSmartCollection(
-  action: ReturnType<typeof socialActions.saveSmartCollection>
-) {
-  yield* call(waitForWrite)
-  const account = yield* queryCurrentAccount()
-  const { playlistLibrary, userId } = account ?? {}
-  const accountUser = yield* queryAccountUser()
-  const isGuest = yield* call(selectIsGuestAccount, accountUser)
-  if (!userId || isGuest) {
-    yield* put(signOnActions.showRequiresAccountToast())
-    yield* put(signOnActions.openSignOn(false))
-    yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
-    return
-  }
-  const newPlaylistLibrary: PlaylistLibrary = {
-    ...playlistLibrary,
-    contents: [
-      {
-        type: 'explore_playlist',
-        playlist_id: action.smartCollectionName as SmartCollectionVariant
-      },
-      ...(playlistLibrary?.contents || [])
-    ]
-  }
-  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
-
-  const event = make(Name.FAVORITE, {
-    kind: 'playlist',
-    source: action.source,
-    id: action.smartCollectionName
-  })
-  yield* put(event)
-}
-
 export function* saveCollectionAsync(
   action: ReturnType<typeof socialActions.saveCollection>
 ) {
@@ -420,8 +360,6 @@ export function* saveCollectionAsync(
     })
   )
 
-  yield* call(addPlaylistsNotInLibrary)
-
   yield* put(
     addLocalCollection({
       collectionId: action.collectionId,
@@ -488,37 +426,6 @@ export function* watchUnsaveCollection() {
       yield* call(unsaveCollectionAsync, action)
     }
   )
-}
-
-export function* watchUnsaveSmartCollection() {
-  yield* takeEvery(
-    socialActions.UNSAVE_SMART_COLLECTION,
-    function* (action: ReturnType<typeof socialActions.unsaveSmartCollection>) {
-      yield* call(unsaveSmartCollection, action)
-    }
-  )
-}
-
-export function* unsaveSmartCollection(
-  action: ReturnType<typeof socialActions.unsaveSmartCollection>
-) {
-  yield* call(waitForWrite)
-
-  const accountData = yield* queryCurrentAccount()
-  const { playlistLibrary } = accountData ?? {}
-  if (!playlistLibrary) return
-
-  const newPlaylistLibrary = removeFromPlaylistLibrary(
-    playlistLibrary,
-    action.smartCollectionName as SmartCollectionVariant
-  ).library
-  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
-  const event = make(Name.UNFAVORITE, {
-    kind: 'playlist',
-    source: action.source,
-    id: action.smartCollectionName
-  })
-  yield* put(event)
 }
 
 export function* unsaveCollectionAsync(
@@ -630,38 +537,14 @@ export function* watchShareCollection() {
   )
 }
 
-export function* watchShareAudioNftPlaylist() {
-  yield* takeEvery(
-    socialActions.SHARE_AUDIO_NFT_PLAYLIST,
-    function* (action: ReturnType<typeof socialActions.shareAudioNftPlaylist>) {
-      const { handle } = action
-      const user = yield* queryUserByHandle(handle)
-
-      const link = audioNftPlaylistPage(handle)
-      const share = yield* getContext('share')
-      share(link, formatShareText('Audio NFT Playlist', user?.name ?? handle))
-
-      const event = make(Name.SHARE, {
-        kind: 'audioNftPlaylist',
-        source: action.source,
-        url: link
-      })
-      yield* put(event)
-    }
-  )
-}
-
 const sagas = () => {
   return [
     watchRepostCollection,
     watchUndoRepostCollection,
     watchSaveCollection,
-    watchSaveSmartCollection,
     watchUnsaveCollection,
-    watchUnsaveSmartCollection,
     watchCollectionErrors,
-    watchShareCollection,
-    watchShareAudioNftPlaylist
+    watchShareCollection
   ]
 }
 

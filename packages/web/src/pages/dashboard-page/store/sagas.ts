@@ -8,14 +8,12 @@ import {
   queryCurrentUserId
 } from '@audius/common/api'
 import { Track } from '@audius/common/models'
-import { IntKeys } from '@audius/common/services'
-import { walletActions, getContext, getSDK } from '@audius/common/store'
-import { doEvery, route } from '@audius/common/utils'
+import { getContext, getSDK } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
 import { each } from 'lodash'
 import moment from 'moment'
-import { EventChannel } from 'redux-saga'
-import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
+import { all, call, put, takeEvery } from 'typed-redux-saga'
 
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
@@ -25,7 +23,6 @@ import { actions as dashboardActions } from './slice'
 import ArtistDashboardState from './types'
 
 const { DASHBOARD_PAGE } = route
-const { getBalance } = walletActions
 
 const formatMonth = (date: moment.Moment | string) =>
   moment.utc(date).format('MMM').toUpperCase()
@@ -69,7 +66,6 @@ function* fetchDashboardAsync(
     yield* put(dashboardActions.fetchFailed({}))
     return
   }
-  yield* fork(pollForBalance)
 
   const sdk = yield* getSDK()
   const { offset, limit } = action.payload
@@ -196,18 +192,6 @@ function* fetchDashboardListenDataAsync(
   } else {
     yield* put(dashboardActions.fetchListenDataFailed({}))
   }
-}
-
-function* pollForBalance() {
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  const pollingFreq = remoteConfigInstance.getRemoteVar(
-    IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS
-  )
-  const chan = (yield* call(doEvery, pollingFreq || 1000, function* () {
-    yield* put(getBalance())
-  })) as unknown as EventChannel<any>
-  yield* take(dashboardActions.reset.type)
-  chan.close()
 }
 
 function* watchFetchDashboardTracks() {

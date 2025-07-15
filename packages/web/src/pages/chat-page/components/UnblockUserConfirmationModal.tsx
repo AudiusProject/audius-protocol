@@ -14,7 +14,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { UserLink } from 'components/link/UserLink'
 
 const { unblockUser } = chatActions
 
@@ -24,8 +24,9 @@ const messages = {
   cancel: 'Cancel',
   content: (user: User) => (
     <>
-      Are you sure you want to unblock <UserNameAndBadges user={user} /> and
-      allow them to send messages to your inbox?
+      Are you sure you want to unblock{' '}
+      <UserLink userId={user.user_id} textSize='l' /> and allow them to send
+      messages to your inbox?
     </>
   )
 }

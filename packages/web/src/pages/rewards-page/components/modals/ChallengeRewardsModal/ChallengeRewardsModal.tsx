@@ -39,7 +39,7 @@ const messages = {
   claimErrorAAO:
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
   claimableAmountLabel: (amount: number) => `Claim $${amount} AUDIO`,
-  twitterShare: (
+  xShare: (
     modalType:
       | 'referrals'
       | 'ref-v'
@@ -51,7 +51,7 @@ const messages = {
         ? 'Friends'
         : 'Fans'
     }`,
-  twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #Audius #AudioRewards\n\n`,
+  twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n`,
   twitterReferralLabel: 'Share referral link on Twitter',
   verifiedChallenge: 'VERIFIED CHALLENGE',
   claimAmountLabel: '$AUDIO available to claim',

@@ -66,7 +66,7 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
                 style={css({ width: spacing.unit12, height: spacing.unit12 })}
               />
               <Flex column pt='2xs' ml='s' mb='s' flex={1}>
-                <Flex row mb='xs' wrap='nowrap'>
+                <Flex row mb='xs' wrap='nowrap' alignItems='center' gap='xs'>
                   <Text
                     size='l'
                     strength='strong'
@@ -75,7 +75,7 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
                   >
                     {otherUser.name}
                   </Text>
-                  <UserBadges user={otherUser} hideName />
+                  <UserBadges userId={otherUser.user_id} badgeSize='xs' />
                 </Flex>
                 <Text size='s' numberOfLines={1}>
                   @{otherUser.handle}

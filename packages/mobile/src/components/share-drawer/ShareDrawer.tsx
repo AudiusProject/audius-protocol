@@ -1,6 +1,7 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
+import { useShareAction } from '@audius/common/hooks'
 import { Name, ShareSource } from '@audius/common/models'
 import {
   collectionsSocialActions,
@@ -19,7 +20,7 @@ import {
   IconMessage,
   IconShare,
   IconSnapChat,
-  IconTwitter,
+  IconX,
   IconTikTok
 } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -37,7 +38,7 @@ import { useDrawerState } from '../drawer/AppDrawer'
 import { ShareToStorySticker } from './ShareToStorySticker'
 import { messages } from './messages'
 import { useShareToStory } from './useShareToStory'
-import { getContentUrl, getTwitterShareUrl } from './utils'
+import { getContentUrl, getXShareUrl } from './utils'
 
 const { getShareContent, getShareSource } = shareModalUISelectors
 const { shareUser } = usersSocialActions
@@ -70,6 +71,7 @@ export const ShareDrawer = () => {
   const styles = useStyles()
   const viewShotRef = useRef() as React.RefObject<ViewShot>
   const navigation = useNavigation<AppTabScreenParamList>()
+  const sendShareAction = useShareAction()
 
   const { onClose } = useDrawerState('Share')
   const { onClose: onCloseNowPlaying } = useDrawer('NowPlaying')
@@ -99,14 +101,14 @@ export const ShareDrawer = () => {
     }
   }, [content, navigation, source, onCloseNowPlaying])
 
-  const handleShareToTwitter = useCallback(async () => {
+  const handleShareToX = useCallback(async () => {
     if (!content) return
-    const twitterShareUrl = await getTwitterShareUrl(content)
-    const isSupported = await Linking.canOpenURL(twitterShareUrl)
+    const xShareUrl = await getXShareUrl(content)
+    const isSupported = await Linking.canOpenURL(xShareUrl)
     if (isSupported) {
-      Linking.openURL(twitterShareUrl)
+      Linking.openURL(xShareUrl)
     } else {
-      console.error(`Can't open: ${twitterShareUrl}`)
+      console.error(`Can't open: ${xShareUrl}`)
     }
   }, [content])
 
@@ -171,10 +173,10 @@ export const ShareDrawer = () => {
       callback: performActionAndClose(handleShareToDirectMessage)
     }
 
-    const shareToTwitterAction = {
-      icon: <IconTwitter fill={secondary} height={20} width={26} />,
-      text: messages.twitter,
-      callback: performActionAndClose(handleShareToTwitter)
+    const shareToXAction = {
+      icon: <IconX fill={secondary} height={20} width={26} />,
+      text: messages.x,
+      callback: performActionAndClose(handleShareToX)
     }
 
     const shareVideoToTiktokAction = {
@@ -215,7 +217,7 @@ export const ShareDrawer = () => {
     }[] = [shareToChatAction]
 
     if (isShareableTrack) {
-      result.push(shareToTwitterAction)
+      result.push(shareToXAction)
       result.push(shareToInstagramStoriesAction)
       result.push(shareVideoToTiktokAction)
       result.push(shareToSnapchatAction)
@@ -228,7 +230,7 @@ export const ShareDrawer = () => {
     secondary,
     performActionAndClose,
     handleShareToDirectMessage,
-    handleShareToTwitter,
+    handleShareToX,
     handleShareVideoToTiktok,
     handleCopyLink,
     handleOpenShareSheet,
@@ -236,6 +238,21 @@ export const ShareDrawer = () => {
     handleShareToInstagramStory,
     isShareableTrack
   ])
+
+  // Trigger share action on mount with new content
+  useEffect(() => {
+    if (!content) return
+    switch (content.type) {
+      case 'track':
+        sendShareAction(content.track.track_id, 'track')
+        break
+      case 'album':
+        sendShareAction(content.album.playlist_id, 'playlist')
+        break
+      case 'playlist':
+        sendShareAction(content.playlist.playlist_id, 'playlist')
+    }
+  }, [content, sendShareAction])
 
   return (
     <>

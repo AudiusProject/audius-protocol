@@ -32,7 +32,6 @@ import {
 import { Screen, ScreenContent } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
-import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -41,10 +40,7 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const {
-  fetchProfile: fetchProfileAction,
-  setCurrentUser: setCurrentUserAction
-} = profilePageActions
+const { setCurrentUser: setCurrentUserAction } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
 const { setVisibility } = modalsActions
@@ -58,7 +54,7 @@ const useStyles = makeStyles(() => ({
 export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
-  const { handle: userHandle, id } = params
+  const { handle: userHandle } = params
   const { data: profile } = useUserByParams(params, {
     select: (user) => ({
       user_id: user.user_id,
@@ -76,7 +72,6 @@ export const ProfileScreen = () => {
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
-  const isScreenReady = useIsScreenReady()
   const queryClient = useQueryClient()
 
   const setCurrentUser = useCallback(() => {
@@ -109,27 +104,12 @@ export const ProfileScreen = () => {
     }
   }) as ProfilePageTabs
 
-  const fetchProfile = useCallback(
-    (forceFetch = false) => {
-      if (!isScreenReady) return
-      dispatch(
-        fetchProfileAction(handleLower, id ?? null, forceFetch, true, false)
-      )
-    },
-    [dispatch, handleLower, id, isScreenReady]
-  )
-
   useFocusEffect(setCurrentUser)
-
-  useEffect(() => {
-    fetchProfile()
-  }, [fetchProfile])
 
   const handleRefresh = useCallback(() => {
     // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
-      fetchProfile(true)
       switch (currentTab) {
         case ProfilePageTabs.TRACKS:
           queryClient.resetQueries({
@@ -163,7 +143,7 @@ export const ProfileScreen = () => {
           break
       }
     }
-  }, [profile, fetchProfile, currentTab, queryClient, handleLower, dispatch])
+  }, [profile, currentTab, queryClient, handleLower, dispatch])
 
   useEffect(() => {
     if (status === Status.SUCCESS) {

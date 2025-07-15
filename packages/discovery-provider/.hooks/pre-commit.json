@@ -1,6 +1,11 @@
 {
   "steps": [
     {
+      "name": "Don't touch API",
+      "command": "echo 'API endpoints all go through Bridge now, not discovery. Talk to the bridge team if you really need to make changes here.' && false",
+      "onlyOn": "src/api/**"
+    },
+    {
       "name": "Sort imports",
       "command": "isort --diff --check . --skip ./src/tasks/core/gen --skip ./plugins --skip ./src/tasks/core/audiusd_gen"
     },

@@ -11,7 +11,7 @@ import { getSearchResults } from 'common/store/search-ai-bar/selectors'
 import { useSelector } from 'utils/reducer'
 
 import DropdownInput from './DropdownInput'
-import SearchBarResult from './SearchBarResult'
+import { SearchBarResult } from './SearchBarResult'
 
 const selectSearchResults = createSelector(getSearchResults, (results) => {
   const items = results

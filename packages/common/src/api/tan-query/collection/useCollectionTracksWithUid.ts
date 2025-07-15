@@ -20,10 +20,15 @@ export const useCollectionTracksWithUid = (
 ) => {
   const collectionSource = Uid.fromString(collectionUid ?? '')?.source
 
-  const { byId } = useTracks(collection?.trackIds, { enabled: !!collectionUid })
+  const { byId, isPending } = useTracks(collection?.trackIds, {
+    enabled: !!collectionUid
+  })
 
   // Return tracks & rebuild UIDs for the track so they refer directly to this collection
   return useMemo(() => {
+    if (isPending) {
+      return []
+    }
     return (collection?.playlist_contents?.track_ids ?? [])
       .map((t, i) => {
         const { uid, track: trackId } = t ?? {}
@@ -41,5 +46,10 @@ export const useCollectionTracksWithUid = (
         }
       })
       .filter(Boolean) as CollectionTrackWithUid[]
-  }, [collection?.playlist_contents?.track_ids, collectionSource, byId])
+  }, [
+    isPending,
+    collection?.playlist_contents?.track_ids,
+    collectionSource,
+    byId
+  ])
 }

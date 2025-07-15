@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import * as React from 'react'
+import { FC, useState, useRef, useEffect } from 'react'
 
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import cn from 'classnames'
 
 import styles from './TokenValueSlider.module.css'
@@ -20,12 +20,12 @@ const messages = {
  * @returns Percentage as a number between 0 and 1
  */
 const calculatePercentage = (
-  value: bigint,
-  min: bigint,
-  max: bigint
+  value: AudioWei,
+  min: AudioWei,
+  max: AudioWei
 ): number => {
-  const valueDiff = value - min
-  const maxDiff = max - min
+  const valueDiff = BigInt(value - min)
+  const maxDiff = BigInt(max - min)
 
   if (maxDiff === BigInt(0)) {
     return 0
@@ -37,7 +37,7 @@ const calculatePercentage = (
   return percentage
 }
 
-export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
+export const TokenValueSlider: FC<TokenValueSliderProps> = ({
   className,
   sliderClassName,
   sliderBarClassName,
@@ -59,8 +59,8 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
 
   useEffect(() => {
     if (containerRef.current) {
-      const valueDiff = value.value - min.value
-      const percentage = calculatePercentage(value.value, min.value, max.value)
+      const valueDiff = BigInt(value) - min
+      const percentage = calculatePercentage(value, min, max)
       const totalWidth = containerRef.current.offsetWidth
 
       if (valueDiff === BigInt(0)) {
@@ -77,11 +77,7 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
 
   useEffect(() => {
     if (initialValue && !initialSliderWidth && containerRef.current) {
-      const percentage = calculatePercentage(
-        initialValue.value,
-        min.value,
-        max.value
-      )
+      const percentage = calculatePercentage(initialValue, min, max)
       const totalWidth = containerRef.current.offsetWidth
       const newSliderWidth = Math.max(
         totalWidth * Math.min(Math.max(percentage, 0), 1),
@@ -113,8 +109,7 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
           className={cn(
             styles.newValueSlider,
             {
-              [styles.invalid]:
-                value.value > max.value || value.value < min.value,
+              [styles.invalid]: value > max || value < min,
               [styles.lighter]: isIncrease
             },
             sliderBarClassName
@@ -143,7 +138,7 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
                     : messages.min}
                 </span>
                 <span>
-                  {min.trunc().toLocaleString('en-US', {
+                  {AUDIO(min).trunc().toLocaleString('en-US', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                   })}
@@ -159,7 +154,7 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
             ) : (
               <>
                 <span>
-                  {max.trunc().toLocaleString('en-US', {
+                  {AUDIO(max).trunc().toLocaleString('en-US', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0
                   })}

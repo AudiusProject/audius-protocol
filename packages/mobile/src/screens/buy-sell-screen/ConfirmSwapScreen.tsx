@@ -5,7 +5,7 @@ import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import {
-  SUPPORTED_TOKEN_PAIRS,
+  createSupportedTokenPairs,
   useBuySellScreen,
   useBuySellSwap,
   useSwapDisplayData,
@@ -28,6 +28,7 @@ import {
   FixedFooterContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { env } from 'app/services/env'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
 
@@ -129,6 +130,10 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   // Determine if this is a buy or sell based on token types
   const activeTab = payTokenInfo.symbol === 'USDC' ? 'buy' : 'sell'
 
+  const [selectedPairIndex] = useState(0)
+  const supportedTokenPairs = useMemo(() => createSupportedTokenPairs(env), [])
+  const selectedPair = supportedTokenPairs[selectedPairIndex]
+
   const {
     handleConfirmSwap,
     isConfirmButtonLoading,
@@ -140,11 +145,9 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     currentScreen,
     setCurrentScreen,
     activeTab,
+    selectedPair,
     onClose: () => navigation.goBack()
   })
-
-  const [selectedPairIndex] = useState(0)
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),

@@ -1,8 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 
-import { useExploreContent } from '@audius/common/api'
+import {
+  useExploreContent,
+  useRecommendedTracks,
+  useRecentPremiumTracks,
+  useBestSelling,
+  useFeelingLuckyTracks,
+  useRecentlyPlayedTracks
+} from '@audius/common/api'
+import { useToggleTrack } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ExploreCollectionsVariant } from '@audius/common/store'
+import { UID, ID, Kind } from '@audius/common/models'
+import { QueueSource } from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import {
   Paper,
   Text,
@@ -17,7 +27,9 @@ import {
   Divider,
   FilterButton,
   useTheme,
-  useMedia
+  useMedia,
+  Button,
+  IconArrowRotate
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
@@ -29,6 +41,9 @@ import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { RemixContestCard } from 'components/remix-contest-card'
+import { TrackCard } from 'components/track/TrackCard'
+import { TrackTile } from 'components/track/desktop/TrackTile'
+import { TrackTileSize } from 'components/track/types'
 import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -56,6 +71,7 @@ import {
 } from 'pages/search-page/types'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
+import { BestSellingSection } from './BestSellingSection'
 import { ExploreSection } from './ExploreSection'
 
 export type ExplorePageProps = {
@@ -124,7 +140,29 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { isLarge } = useMedia()
 
   const { data: exploreContent } = useExploreContent()
+  const { data: recommendedTracks } = useRecommendedTracks()
+  const { data: recentlyPlayed } = useRecentlyPlayedTracks()
+  const { data: recentlyCommentedTracks } = useRecentlyPlayedTracks()
+  const { data: recentPremiumTracks } = useRecentPremiumTracks()
+  const { data: bestSelling } = useBestSelling()
+  const { data: feelingLuckyTrack, refetch: refetchFeelingLucky } =
+    useFeelingLuckyTracks({ limit: 1 })
 
+  // Create UID and togglePlay for feeling lucky track
+  const feelingLuckyTrackId = feelingLuckyTrack?.[0]?.track_id ?? 0
+  const feelingLuckyUid = useMemo(
+    () =>
+      feelingLuckyTrackId
+        ? makeUid(Kind.TRACKS, feelingLuckyTrackId, QueueSource.EXPLORE)
+        : '',
+    [feelingLuckyTrackId]
+  )
+
+  const { togglePlay: toggleFeelingLucky } = useToggleTrack({
+    id: feelingLuckyTrackId,
+    uid: feelingLuckyUid,
+    source: QueueSource.EXPLORE
+  })
   const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
@@ -192,16 +230,19 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const filterKeys: string[] = categories[categoryKey].filters
   const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
+    const isPremiumTracksTile = tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
+
+  const tabElements = useMemo(
+    () => tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    []
+  )
 
   const { tabs } = useTabs({
     isMobile: false,
     tabs: tabHeaders,
-    elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    elements: tabElements,
     onTabClick: handleSearchTab,
     selectedTabLabel: capitalize(categoryKey)
   })
@@ -324,6 +365,17 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           <>
             <Flex direction='column'>
               <ExploreSection
+                title={messages.forYou}
+                data={recommendedTracks}
+                Tile={TrackTile}
+              />
+              <ExploreSection
+                title={messages.recentlyPlayed}
+                data={recentlyPlayed}
+                Card={TrackCard}
+              />
+
+              <ExploreSection
                 title={messages.featuredPlaylists}
                 data={exploreContent?.featuredPlaylists}
                 Card={CollectionCard}
@@ -344,6 +396,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 title={messages.labelSpotlight}
                 data={exploreContent?.featuredLabels}
                 Card={UserCard}
+              />
+              <ExploreSection
+                title={messages.activeDiscussions}
+                data={recentlyCommentedTracks}
+                Tile={TrackTile}
               />
             </Flex>
             {/* Explore by mood */}
@@ -384,6 +441,52 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                   ))}
               </Flex>
             </Flex>
+            <Flex direction='column'>
+              <BestSellingSection
+                title={messages.bestSelling}
+                data={bestSelling}
+              />
+
+              <ExploreSection
+                title={messages.recentlyListedForSale}
+                data={recentPremiumTracks}
+                Tile={TrackTile}
+              />
+
+              <Flex gap='xl' direction='column'>
+                <Flex justifyContent='space-between'>
+                  <Text variant='heading'>{messages.feelingLucky}</Text>
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    onClick={() => refetchFeelingLucky()}
+                    iconLeft={IconArrowRotate}
+                  >
+                    {messages.imFeelingLucky}
+                  </Button>
+                </Flex>
+                <TrackTile
+                  uid={feelingLuckyUid}
+                  id={feelingLuckyTrackId}
+                  index={0}
+                  size={TrackTileSize.LARGE}
+                  statSize={'small'}
+                  ordered={false}
+                  togglePlay={(tileUid: UID, trackId: ID) => {
+                    if (
+                      tileUid === feelingLuckyUid &&
+                      trackId === feelingLuckyTrackId
+                    ) {
+                      toggleFeelingLucky()
+                    }
+                  }}
+                  hasLoaded={() => {}}
+                  isLoading={false}
+                  isTrending={false}
+                  isFeed={false}
+                />
+              </Flex>
+            </Flex>
 
             {/* Just For You */}
             <Flex direction='column' gap='l'>
@@ -412,9 +515,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                       key={tile.title}
                       backgroundGradient={tile.gradient}
                       shadowColor={tile.shadow}
-                      useOverlayBlendMode={
-                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                      }
                       backgroundIcon={
                         Icon ? (
                           <Icon height={180} width={180} color='inverse' />

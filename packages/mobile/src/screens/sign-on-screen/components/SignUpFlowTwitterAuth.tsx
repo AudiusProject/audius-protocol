@@ -240,7 +240,7 @@ export const SignUpFlowTwitterAuth = ({
         onResponse={handleResponse}
       />
       <SocialButton
-        socialType='twitter'
+        socialType='x'
         onPress={handlePress}
         aria-label={socialMediaMessages.signUpTwitter}
       />

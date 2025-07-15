@@ -4,8 +4,7 @@ const shareTypeMap: Record<ShareType, string> = {
   track: 'Track',
   profile: 'Profile',
   album: 'Album',
-  playlist: 'Playlist',
-  audioNftPlaylist: 'Audio NFT Playlist'
+  playlist: 'Playlist'
 }
 
 export const messages = {
@@ -13,7 +12,7 @@ export const messages = {
   hiddenPlaylistShareHelperText:
     'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.',
   directMessage: 'Direct Message',
-  twitter: 'Twitter',
+  x: 'X',
   instagramStory: 'Instagram Story',
   snapchat: 'Snapchat',
   tikTokVideo: 'TikTok',
@@ -22,19 +21,17 @@ export const messages = {
   shareSheet: 'More...',
   toast: (asset: ShareType) => `Copied Link to ${shareTypeMap[asset]}`,
   trackShareText: (title: string, handle: string) =>
-    `Check out ${title} by ${handle} on @audius #Audius $AUDIO`,
-  profileShareText: (handle: string) =>
-    `Check out ${handle} on @audius #Audius $AUDIO`,
+    `Check out ${title} by ${handle} on @audius $AUDIO`,
+  profileShareText: (handle: string) => `Check out ${handle} on @audius $AUDIO`,
   albumShareText: (albumName: string, handle: string) =>
-    `Check out ${albumName} by ${handle} @audius #Audius $AUDIO`,
+    `Check out ${albumName} by ${handle} @audius $AUDIO`,
   playlistShareText: (playlistName: string, handle: string) =>
-    `Check out ${playlistName} by ${handle} @audius #Audius $AUDIO`,
+    `Check out ${playlistName} by ${handle} @audius $AUDIO`,
   loadingStoryModalTitle: 'Generating Story',
   loadingInstagramStorySubtitle: 'Preparing to open Instagram',
   loadingSnapchatSubtitle: 'Preparing to open Snapchat',
   loadingTikTokSubtitle: 'Preparing to open TikTok',
   cancel: 'Cancel',
-  nftPlaylistShareText: '',
   addToPhotoLibraryDenied:
     'You must allow Audius to add to your photo library in order to share to TikTok.',
   addToPhotoLibraryBlocked:

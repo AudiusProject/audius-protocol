@@ -1,11 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import {
   tippingActions,
   tippingSelectors,
-  TippingSendStatus,
-  walletActions
+  TippingSendStatus
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -27,7 +26,6 @@ import { ConfirmSendTip } from './ConfirmSendTip'
 import { SendTip } from './SendTip'
 import styles from './TipAudio.module.css'
 import { TipSent } from './TipSent'
-const { getBalance } = walletActions
 const { resetSend } = tippingActions
 const { getSendStatus, getSendTipData } = tippingSelectors
 
@@ -144,12 +142,6 @@ export const TipAudioModal = () => {
     recipient?.user_id,
     sendStatus
   ])
-
-  useEffect(() => {
-    if (sendStatus !== null) {
-      dispatch(getBalance())
-    }
-  }, [dispatch, sendStatus])
 
   const transitions =
     !previousSendStatus ||

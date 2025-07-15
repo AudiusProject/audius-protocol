@@ -209,3 +209,12 @@ export const UnrepostPlaylistSchema = z
   .strict()
 
 export type UnrepostPlaylistRequest = z.input<typeof UnrepostPlaylistSchema>
+
+export const SharePlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId
+  })
+  .strict()
+
+export type SharePlaylistRequest = z.input<typeof SharePlaylistSchema>

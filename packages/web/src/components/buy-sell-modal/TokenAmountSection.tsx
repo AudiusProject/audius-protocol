@@ -61,7 +61,6 @@ const StackedBalanceSection = ({
   tokenInfo,
   isStablecoin
 }: BalanceSectionProps) => {
-  const { cornerRadius } = useTheme()
   const { icon: TokenIcon, symbol } = tokenInfo
 
   if (!formattedAvailableBalance || !TokenIcon) {
@@ -89,7 +88,7 @@ const StackedBalanceSection = ({
           </Text>
         </Flex>
         {/* We need the border radius to be circle here because the AUDIO icon is a square image */}
-        <TokenIcon size='4xl' css={{ borderRadius: cornerRadius.circle }} />
+        <TokenIcon size='4xl' hex />
       </Flex>
     </Flex>
   )
@@ -106,7 +105,7 @@ const CryptoAmountSection = ({
   isStablecoin: boolean
   priceDisplay?: string
 }) => {
-  const { spacing, cornerRadius } = useTheme()
+  const { spacing } = useTheme()
   const { icon: TokenIcon, symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
@@ -116,11 +115,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p='l' alignItems='center' gap='s'>
-      <TokenIcon
-        width={spacing.unit16}
-        height={spacing.unit16}
-        css={{ borderRadius: cornerRadius.circle }}
-      />
+      <TokenIcon width={spacing.unit16} height={spacing.unit16} hex />
       <Flex direction='column'>
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <Text variant='heading' size='l'>

@@ -34,8 +34,12 @@ export const ChatMessagePlaylist = ({
   const { data: collection } = useCollectionByPermalink(permalink)
 
   const trackIds = collection?.trackIds ?? []
-  const { data: tracks } = useTracks(trackIds)
-  const { byId: usersById } = useUsers(tracks?.map((t) => t.owner_id))
+  const { data: tracks, isPending: isTracksPending } = useTracks(trackIds)
+  const { byId: usersById, isPending: isUsersPending } = useUsers(
+    tracks?.map((t) => t.owner_id)
+  )
+
+  const isLoading = isTracksPending || isUsersPending
 
   const collectionId = collection?.playlist_id
 
@@ -129,7 +133,7 @@ export const ChatMessagePlaylist = ({
     }
   }, [collectionExists, uid, onSuccess, onEmpty])
 
-  return collectionId && uid ? (
+  return collectionId && uid && !isLoading ? (
     <CollectionTile
       index={0}
       id={collectionId}
