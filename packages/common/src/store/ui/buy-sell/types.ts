@@ -2,7 +2,7 @@ import type { ComponentType } from 'react'
 
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
-export type BuySellTab = 'buy' | 'sell'
+export type BuySellTab = 'buy' | 'sell' | 'convert'
 
 export type Screen = 'input' | 'confirm' | 'success'
 
@@ -83,6 +83,7 @@ export type TransactionData = {
  * Utility function to get input and output tokens based on active tab and token pair
  * For 'buy': user pays with quote token (e.g., USDC) to get base token (e.g., AUDIO)
  * For 'sell': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
+ * For 'convert': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
  */
 export const getSwapTokens = (activeTab: BuySellTab, tokenPair: TokenPair) => {
   return {

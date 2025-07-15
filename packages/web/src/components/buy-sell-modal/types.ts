@@ -1,4 +1,4 @@
-export type BuySellTab = 'buy' | 'sell'
+export type BuySellTab = 'buy' | 'sell' | 'convert'
 
 export type Screen = 'input' | 'confirm' | 'success'
 

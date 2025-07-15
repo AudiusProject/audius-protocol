@@ -1,15 +1,15 @@
 import { useRef } from 'react'
 
+import { buySellMessages } from '@audius/common/messages'
 import { TokenInfo, useTokenSwapForm } from '@audius/common/store'
-import { Flex, Skeleton } from '@audius/harmony'
+import { Flex, Skeleton, Text } from '@audius/harmony'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
 
 const messages = {
-  youPay: 'You Pay',
-  youReceive: 'You Receive',
+  ...buySellMessages,
   placeholder: '0.00'
 }
 
@@ -37,6 +37,11 @@ export type SwapTabProps = {
     loading: boolean
     formatError: () => string
   }
+  outputBalance?: {
+    get: () => number | undefined
+    loading: boolean
+    formatError: () => string
+  }
 
   onTransactionDataChange?: (data: {
     inputAmount: number
@@ -58,6 +63,7 @@ export type SwapTabProps = {
   availableOutputTokens?: TokenInfo[]
   onInputTokenChange?: (symbol: string) => void
   onOutputTokenChange?: (symbol: string) => void
+  showExchangeRate?: boolean
 }
 
 export const SwapTab = ({
@@ -66,6 +72,7 @@ export const SwapTab = ({
   min,
   max,
   balance,
+  outputBalance,
   onTransactionDataChange,
   isDefault = true,
   error,
@@ -79,7 +86,8 @@ export const SwapTab = ({
   availableInputTokens,
   availableOutputTokens,
   onInputTokenChange,
-  onOutputTokenChange
+  onOutputTokenChange,
+  showExchangeRate = false
 }: SwapTabProps) => {
   const {
     formik,
@@ -144,13 +152,32 @@ export const SwapTab = ({
                 tokenInfo={outputToken}
                 isInput={false}
                 amount={outputAmount}
-                availableBalance={0}
+                availableBalance={outputBalance?.get() || 0}
                 exchangeRate={currentExchangeRate}
                 tokenPrice={tokenPrice}
                 isTokenPriceLoading={isTokenPriceLoading}
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
                 tooltipPlacement={tooltipPlacement}
+                isDefault={isDefault}
+                availableTokens={!isDefault ? availableOutputTokens : undefined}
+                onTokenChange={!isDefault ? onOutputTokenChange : undefined}
               />
+
+              {/* Show exchange rate for convert flow */}
+              {showExchangeRate && currentExchangeRate && (
+                <Flex p='l' justifyContent='flex-start'>
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.exchangeRateLabel}&nbsp;
+                  </Text>
+                  <Text variant='body' size='s' color='default'>
+                    {messages.exchangeRateValue(
+                      inputToken.symbol,
+                      outputToken.symbol,
+                      currentExchangeRate
+                    )}
+                  </Text>
+                </Flex>
+              )}
             </>
           )}
         </Flex>

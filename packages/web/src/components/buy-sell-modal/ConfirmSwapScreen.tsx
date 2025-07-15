@@ -28,7 +28,7 @@ type ConfirmSwapScreenProps = {
   onBack: () => void
   onConfirm: () => void
   isConfirming: boolean
-  activeTab: 'buy' | 'sell'
+  activeTab: 'buy' | 'sell' | 'convert'
   selectedPair: TokenPair
 }
 

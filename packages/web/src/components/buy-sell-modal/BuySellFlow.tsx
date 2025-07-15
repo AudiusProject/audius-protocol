@@ -20,6 +20,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
+import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 import { SUPPORTED_TOKEN_PAIRS, TOKENS } from './constants'
@@ -65,7 +66,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     Record<BuySellTab, string>
   >({
     buy: '',
-    sell: ''
+    sell: '',
+    convert: ''
   })
 
   // Update input value for current tab
@@ -98,8 +100,21 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     quoteToken: selectedPair.quoteToken.symbol // USDC by default
   })
 
+  const [convertTabTokens, setConvertTabTokens] = useState<{
+    baseToken: string
+    quoteToken: string
+  }>({
+    baseToken: selectedPair.baseToken.symbol, // AUDIO by default
+    quoteToken: 'BONK' // BONK by default for convert tab (excluding USDC)
+  })
+
   // Get current tab's token symbols
-  const currentTabTokens = activeTab === 'buy' ? buyTabTokens : sellTabTokens
+  const currentTabTokens =
+    activeTab === 'buy'
+      ? buyTabTokens
+      : activeTab === 'sell'
+        ? sellTabTokens
+        : convertTabTokens
   const baseTokenSymbol = currentTabTokens.baseToken
   const quoteTokenSymbol = currentTabTokens.quoteToken
 
@@ -108,9 +123,12 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     if (activeTab === 'sell') {
       // On sell tab, input token change means base token change
       setSellTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    } else {
+    } else if (activeTab === 'buy') {
       // On buy tab, input token change means quote token change
       setBuyTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
+    } else {
+      // On convert tab, input token change means base token change
+      setConvertTabTokens((prev) => ({ ...prev, baseToken: symbol }))
     }
     // Reset transaction data when tokens change
     resetTransactionData()
@@ -120,9 +138,12 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     if (activeTab === 'buy') {
       // On buy tab, output token change means base token change
       setBuyTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    } else {
+    } else if (activeTab === 'sell') {
       // On sell tab, output token change means quote token change
       setSellTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
+    } else {
+      // On convert tab, output token change means quote token change
+      setConvertTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
     }
     // Reset transaction data when tokens change
     resetTransactionData()
@@ -249,7 +270,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const tabs = [
     { key: 'buy' as BuySellTab, text: messages.buy },
-    { key: 'sell' as BuySellTab, text: messages.sell }
+    { key: 'sell' as BuySellTab, text: messages.sell },
+    { key: 'convert' as BuySellTab, text: messages.convert }
   ]
 
   const {
@@ -367,7 +389,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               initialInputValue={tabInputValues.buy}
               onInputValueChange={handleTabInputValueChange}
             />
-          ) : (
+          ) : activeTab === 'sell' ? (
             <SellTab
               tokenPair={currentTokenPair}
               onTransactionDataChange={handleTransactionDataChange}
@@ -376,11 +398,23 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleTabInputValueChange}
               availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol
+                (t) => t.symbol !== baseTokenSymbol && t.symbol !== 'USDC'
               )}
               availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol
+                (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
               )}
+              onInputTokenChange={handleInputTokenChange}
+              onOutputTokenChange={handleOutputTokenChange}
+            />
+          ) : (
+            <ConvertTab
+              tokenPair={currentTokenPair}
+              onTransactionDataChange={handleTransactionDataChange}
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.convert}
+              onInputValueChange={handleTabInputValueChange}
+              availableTokens={availableTokens}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
             />
@@ -404,7 +438,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             </Hint>
           ) : null}
 
-          {hasSufficientBalance ? (
+          {hasSufficientBalance && activeTab !== 'convert' ? (
             <Hint>
               {messages.helpCenter}{' '}
               <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
@@ -453,7 +487,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               resetSuccessDisplayData()
               setCurrentScreen('input')
               // Clear all tab input values on completion
-              setTabInputValues({ buy: '', sell: '' })
+              setTabInputValues({ buy: '', sell: '', convert: '' })
             }}
           />
         ) : null}
