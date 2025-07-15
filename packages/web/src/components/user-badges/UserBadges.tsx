@@ -6,12 +6,12 @@ import {
   useMemo
 } from 'react'
 
-import { useUserCoinBalance } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags, getTokenBySymbol } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
-import { Nullable, route } from '@audius/common/utils'
+import { Nullable } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -32,12 +32,9 @@ import cn from 'classnames'
 
 import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { env } from 'services/env'
 
 import styles from './UserBadges.module.css'
-
-const { AUDIO_PAGE } = route
 
 export const audioTierMap: {
   [tier in BadgeTier]: Nullable<ReactElement>
@@ -84,26 +81,14 @@ const UserBadges = ({
 
   const bonkToken = getTokenBySymbol(env, 'BONK')
   const bonkMint = bonkToken?.address
-  const { data: coinBalance } = useUserCoinBalance(
-    {
-      userId,
-      mint: bonkMint ?? ''
-    },
-    {
-      enabled: !!bonkMint
-    }
-  )
+  const { data: coinBalance } = useTokenBalance({
+    userId,
+    token: 'BONK'
+  })
 
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
   const hasContent = isUserVerified || tier !== 'none' || !!coinBalance
-
-  const navigate = useNavigateToPage()
-
-  // Create a click handler that stops propagation and navigates to AUDIO page
-  const handleClick = useCallback(() => {
-    navigate(AUDIO_PAGE)
-  }, [navigate])
 
   // Create a handler to stop event propagation
   const handleStopPropagation = useCallback((e: MouseEvent) => {
@@ -116,6 +101,7 @@ const UserBadges = ({
 
     return (
       <HoverCard
+        triggeredBy='both'
         content={
           <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
             <IconVerified size='l' />
@@ -150,7 +136,7 @@ const UserBadges = ({
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
-        onClick={handleClick}
+        triggeredBy='both'
       >
         <Box
           css={{
@@ -165,7 +151,7 @@ const UserBadges = ({
         </Box>
       </AudioHoverCard>
     )
-  }, [tier, userId, anchorOrigin, transformOrigin, handleClick, size])
+  }, [tier, userId, anchorOrigin, transformOrigin, size])
 
   const artistCoinBadge = useMemo(() => {
     if (!coinBalance || !bonkMint || !isArtistCoinEnabled) return null
@@ -175,6 +161,7 @@ const UserBadges = ({
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
+        triggeredBy='both'
       >
         <Box
           css={{

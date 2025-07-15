@@ -71,7 +71,7 @@ const TrendingPageMobileContent = ({
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
     setLeft(LeftPreset.NOTIFICATION)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
     setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
 

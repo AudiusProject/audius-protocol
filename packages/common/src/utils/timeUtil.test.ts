@@ -8,7 +8,9 @@ import {
   formatDate,
   utcToLocalTime,
   getLocalTimezone,
-  formatDateWithTimezoneOffset
+  formatDateWithTimezoneOffset,
+  formatContestDeadline,
+  formatContestDeadlineWithStatus
 } from './timeUtil'
 
 describe('formatSeconds', () => {
@@ -68,5 +70,52 @@ describe('getLocalTimezone', () => {
   test('should return the local timezone', () => {
     const timezone = getLocalTimezone()
     expect(timezone).toBe(dayjs().format('z'))
+  })
+})
+
+describe('formatContestDeadline', () => {
+  test('should format deadline with short format', () => {
+    const result = formatContestDeadline('2023-12-17T15:30:00Z', 'short')
+    expect(result).toContain('12/17/23')
+    expect(result).toContain(getLocalTimezone())
+  })
+
+  test('should format deadline with card format', () => {
+    const result = formatContestDeadline('2023-12-17T15:30:00Z', 'card')
+    expect(result).toContain('12/17/23 at 3:30 PM')
+    expect(result).toContain(getLocalTimezone())
+  })
+
+  test('should format deadline with long format', () => {
+    const result = formatContestDeadline('2023-12-17T15:30:00Z', 'long')
+    expect(result).toContain('Sun. Dec 17, 2023 at 3:30 PM')
+    expect(result).toContain(getLocalTimezone())
+  })
+
+  test('should return empty string for undefined deadline', () => {
+    expect(formatContestDeadline(undefined)).toBe('')
+  })
+})
+
+describe('formatContestDeadlineWithStatus', () => {
+  test('should format active deadline', () => {
+    const result = formatContestDeadlineWithStatus(
+      '2023-12-17T15:30:00Z',
+      false
+    )
+    expect(result).toContain('Deadline:')
+    expect(result).toContain('12/17/23')
+    expect(result).toContain(getLocalTimezone())
+  })
+
+  test('should format ended deadline', () => {
+    const result = formatContestDeadlineWithStatus('2023-12-17T15:30:00Z', true)
+    expect(result).toContain('Ended:')
+    expect(result).toContain('12/17/23')
+    expect(result).toContain(getLocalTimezone())
+  })
+
+  test('should return empty string for undefined deadline', () => {
+    expect(formatContestDeadlineWithStatus(undefined)).toBe('')
   })
 })

@@ -1,4 +1,4 @@
-import { useUserCoinBalance } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
@@ -14,7 +14,12 @@ import { HoverCardBody } from './HoverCardBody'
 
 type ArtistCoinHoverCardProps = Pick<
   HoverCardProps,
-  'children' | 'onClose' | 'onClick' | 'anchorOrigin' | 'transformOrigin'
+  | 'children'
+  | 'onClose'
+  | 'onClick'
+  | 'anchorOrigin'
+  | 'transformOrigin'
+  | 'triggeredBy'
 > & {
   /**
    * The mint address of the artist coin
@@ -37,18 +42,19 @@ export const ArtistCoinHoverCard = ({
   onClose,
   anchorOrigin,
   transformOrigin,
-  onClick
+  onClick,
+  triggeredBy
 }: ArtistCoinHoverCardProps) => {
   const { cornerRadius } = useTheme()
 
-  const { data: coinBalance, isPending } = useUserCoinBalance({
+  const { data: coinBalance } = useTokenBalance({
     userId,
-    mint
+    token: 'BONK'
   })
 
-  if (isPending || !coinBalance) return null
+  if (!coinBalance) return null
 
-  const balance = coinBalance?.data[0]?.balance
+  const balance = coinBalance
   const formattedBalance = formatCount(Number(balance))
   const coinName = 'BONK'
 
@@ -78,6 +84,7 @@ export const ArtistCoinHoverCard = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
       onClick={onClick}
+      triggeredBy={triggeredBy}
     >
       {children}
     </HoverCard>

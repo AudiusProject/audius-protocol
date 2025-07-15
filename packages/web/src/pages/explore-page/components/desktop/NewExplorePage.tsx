@@ -4,9 +4,15 @@ import {
   useExploreContent,
   useRecommendedTracks,
   useRecentPremiumTracks,
-  useBestSelling
+  useBestSelling,
+  useFeelingLuckyTracks,
+  useRecentlyPlayedTracks
 } from '@audius/common/api'
+import { useToggleTrack } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { UID, ID, Kind } from '@audius/common/models'
+import { QueueSource } from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import {
   Paper,
   Text,
@@ -21,7 +27,9 @@ import {
   Divider,
   FilterButton,
   useTheme,
-  useMedia
+  useMedia,
+  Button,
+  IconArrowRotate
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
@@ -33,7 +41,9 @@ import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { RemixContestCard } from 'components/remix-contest-card'
+import { TrackCard } from 'components/track/TrackCard'
 import { TrackTile } from 'components/track/desktop/TrackTile'
+import { TrackTileSize } from 'components/track/types'
 import { UserCard } from 'components/user-card'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
@@ -131,9 +141,28 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const { data: exploreContent } = useExploreContent()
   const { data: recommendedTracks } = useRecommendedTracks()
+  const { data: recentlyPlayed } = useRecentlyPlayedTracks()
+  const { data: recentlyCommentedTracks } = useRecentlyPlayedTracks()
   const { data: recentPremiumTracks } = useRecentPremiumTracks()
   const { data: bestSelling } = useBestSelling()
+  const { data: feelingLuckyTrack, refetch: refetchFeelingLucky } =
+    useFeelingLuckyTracks({ limit: 1 })
 
+  // Create UID and togglePlay for feeling lucky track
+  const feelingLuckyTrackId = feelingLuckyTrack?.[0]?.track_id ?? 0
+  const feelingLuckyUid = useMemo(
+    () =>
+      feelingLuckyTrackId
+        ? makeUid(Kind.TRACKS, feelingLuckyTrackId, QueueSource.EXPLORE)
+        : '',
+    [feelingLuckyTrackId]
+  )
+
+  const { togglePlay: toggleFeelingLucky } = useToggleTrack({
+    id: feelingLuckyTrackId,
+    uid: feelingLuckyUid,
+    source: QueueSource.EXPLORE
+  })
   const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
@@ -341,6 +370,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 Tile={TrackTile}
               />
               <ExploreSection
+                title={messages.recentlyPlayed}
+                data={recentlyPlayed}
+                Card={TrackCard}
+              />
+
+              <ExploreSection
                 title={messages.featuredPlaylists}
                 data={exploreContent?.featuredPlaylists}
                 Card={CollectionCard}
@@ -361,6 +396,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 title={messages.labelSpotlight}
                 data={exploreContent?.featuredLabels}
                 Card={UserCard}
+              />
+              <ExploreSection
+                title={messages.activeDiscussions}
+                data={recentlyCommentedTracks}
+                Tile={TrackTile}
               />
             </Flex>
             {/* Explore by mood */}
@@ -402,15 +442,50 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               </Flex>
             </Flex>
             <Flex direction='column'>
+              <BestSellingSection
+                title={messages.bestSelling}
+                data={bestSelling}
+              />
+
               <ExploreSection
                 title={messages.recentlyListedForSale}
                 data={recentPremiumTracks}
                 Tile={TrackTile}
               />
-              <BestSellingSection
-                title={messages.bestSelling}
-                data={bestSelling}
-              />
+
+              <Flex gap='xl' direction='column'>
+                <Flex justifyContent='space-between'>
+                  <Text variant='heading'>{messages.feelingLucky}</Text>
+                  <Button
+                    variant='secondary'
+                    size='small'
+                    onClick={() => refetchFeelingLucky()}
+                    iconLeft={IconArrowRotate}
+                  >
+                    {messages.imFeelingLucky}
+                  </Button>
+                </Flex>
+                <TrackTile
+                  uid={feelingLuckyUid}
+                  id={feelingLuckyTrackId}
+                  index={0}
+                  size={TrackTileSize.LARGE}
+                  statSize={'small'}
+                  ordered={false}
+                  togglePlay={(tileUid: UID, trackId: ID) => {
+                    if (
+                      tileUid === feelingLuckyUid &&
+                      trackId === feelingLuckyTrackId
+                    ) {
+                      toggleFeelingLucky()
+                    }
+                  }}
+                  hasLoaded={() => {}}
+                  isLoading={false}
+                  isTrending={false}
+                  isFeed={false}
+                />
+              </Flex>
             </Flex>
 
             {/* Just For You */}
