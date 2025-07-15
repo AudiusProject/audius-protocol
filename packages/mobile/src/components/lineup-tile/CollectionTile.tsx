@@ -36,7 +36,6 @@ import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
-import { LineupTileTopRight } from './LineupTileTopRight'
 import { LineupTileSource, type CollectionTileProps } from './types'
 import { useEnhancedCollectionTracks } from './useEnhancedCollectionTracks'
 
