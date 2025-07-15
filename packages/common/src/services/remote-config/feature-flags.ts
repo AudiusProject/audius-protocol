@@ -33,6 +33,7 @@ export enum FeatureFlags {
   SEARCH_EXPLORE = 'search_explore',
   SEARCH_EXPLORE_MOBILE = 'search_explore_mobile',
   EXPLORE_REMIX_SECTION = 'explore_remix_section',
+  SEARCH_EXPLORE_GOODIES = 'search_explore_goodies',
   WALLET_UI_BUY_SELL = 'wallet_ui_buy_sell',
   REMIX_CONTEST_WINNERS_MILESTONE = 'remix_contest_winners_milestone',
   ARTIST_COINS = 'artist_coins'
@@ -86,5 +87,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.EXPLORE_REMIX_SECTION]: false,
   [FeatureFlags.WALLET_UI_BUY_SELL]: false,
   [FeatureFlags.REMIX_CONTEST_WINNERS_MILESTONE]: false,
-  [FeatureFlags.ARTIST_COINS]: false
+  [FeatureFlags.ARTIST_COINS]: false,
+  [FeatureFlags.SEARCH_EXPLORE_GOODIES]: false
 }
