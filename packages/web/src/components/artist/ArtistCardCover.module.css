@@ -24,11 +24,12 @@
   );
 }
 
-.badgeArtist {
+.badge {
   position: absolute;
   top: 8px;
   right: 8px;
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
+  fill: var(--harmony-static-white);
 }
 
 .profilePictureWrapper {
