@@ -118,7 +118,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
-  WALLET_SLUG_PAGE,
+  ASSET_DETAIL_PAGE,
   REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -693,7 +693,7 @@ const WebPlayer = (props) => {
               />
               <Route
                 exact
-                path={WALLET_SLUG_PAGE}
+                path={ASSET_DETAIL_PAGE}
                 isMobile={isMobile}
                 render={(props) => {
                   return <AssetDetailPage {...props} />
