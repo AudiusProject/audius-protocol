@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 
 import useTabs from 'hooks/useTabs/useTabs'
 import { AudioWalletTransactions } from 'pages/audio-page/AudioWalletTransactions'
-import Tiers from 'pages/rewards-page/Tiers'
 
 import { AssetDetailContent } from './AssetDetailContent'
 import { AcceptedRouteKey } from './types'
@@ -28,7 +27,6 @@ export const AssetDetailTabs = ({ slug }: AssetDetailTabsProps) => {
 
   const tabElements = [
     <AssetDetailContent key='home' slug={slug} />,
-    <Tiers key='perks' />,
     <AudioWalletTransactions key='transactions' />
   ]
 
@@ -43,10 +41,7 @@ export const AssetDetailTabs = ({ slug }: AssetDetailTabsProps) => {
         text: messages.home,
         label: AssetDetailTabType.HOME
       },
-      {
-        text: messages.perks,
-        label: AssetDetailTabType.PERKS
-      },
+
       {
         text: messages.transactions,
         label: AssetDetailTabType.TRANSACTIONS

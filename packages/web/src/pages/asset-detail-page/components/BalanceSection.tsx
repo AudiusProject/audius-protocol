@@ -3,7 +3,16 @@ import { ComponentType } from 'react'
 import { useAudioBalance } from '@audius/common/api'
 import { useFormattedAudioBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
+import {
+  useBuySellModal,
+  useAddCashModal,
+  tokenDashboardPageActions
+} from '@audius/common/store'
 import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
+
+import { useModalState } from 'common/hooks/useModalState'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ACCEPTED_ROUTES } from '../constants'
 import { AssetDetailProps } from '../types'
@@ -11,6 +20,9 @@ import { AssetDetailProps } from '../types'
 type BalanceStateProps = {
   title: string
   icon?: ComponentType<any>
+  onBuy?: () => void
+  onReceive?: () => void
+  onSend?: () => void
 }
 
 const TokenIcon = ({ icon: Icon }: { icon?: ComponentType<any> }) => {
@@ -19,7 +31,12 @@ const TokenIcon = ({ icon: Icon }: { icon?: ComponentType<any> }) => {
   return <Icon size='4xl' css={{ borderRadius: cornerRadius.circle }} />
 }
 
-const ZeroBalanceState = ({ title, icon }: BalanceStateProps) => {
+const ZeroBalanceState = ({
+  title,
+  icon,
+  onBuy,
+  onReceive
+}: BalanceStateProps) => {
   return (
     <>
       <Flex gap='s' alignItems='center'>
@@ -29,10 +46,10 @@ const ZeroBalanceState = ({ title, icon }: BalanceStateProps) => {
         </Text>
       </Flex>
       <Flex gap='s'>
-        <Button variant='primary' fullWidth>
+        <Button variant='primary' fullWidth onClick={onBuy}>
           {walletMessages.buy}
         </Button>
-        <Button variant='secondary' fullWidth>
+        <Button variant='secondary' fullWidth onClick={onReceive}>
           {walletMessages.receive}
         </Button>
       </Flex>
@@ -40,7 +57,13 @@ const ZeroBalanceState = ({ title, icon }: BalanceStateProps) => {
   )
 }
 
-const HasBalanceState = ({ title, icon }: BalanceStateProps) => {
+const HasBalanceState = ({
+  title,
+  icon,
+  onBuy,
+  onSend,
+  onReceive
+}: BalanceStateProps) => {
   const { motion } = useTheme()
   const {
     audioBalanceFormatted,
@@ -77,14 +100,14 @@ const HasBalanceState = ({ title, icon }: BalanceStateProps) => {
         </Flex>
       </Flex>
       <Flex direction='column' gap='s'>
-        <Button variant='secondary' fullWidth>
+        <Button variant='secondary' fullWidth onClick={onBuy}>
           {walletMessages.buySell}
         </Button>
         <Flex gap='s'>
-          <Button variant='secondary' fullWidth>
+          <Button variant='secondary' fullWidth onClick={onSend}>
             {walletMessages.send}
           </Button>
-          <Button variant='secondary' fullWidth>
+          <Button variant='secondary' fullWidth onClick={onReceive}>
             {walletMessages.receive}
           </Button>
         </Flex>
@@ -97,13 +120,63 @@ export const BalanceSection = ({ slug }: AssetDetailProps) => {
   const { totalBalance } = useAudioBalance()
   const { title, icon } = ACCEPTED_ROUTES[slug]
 
+  // Modal hooks
+  const { onOpen: openBuySellModal } = useBuySellModal()
+  const { onOpen: openAddCashModal } = useAddCashModal()
+  const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
+
+  // Redux and mobile detection
+  const dispatch = useDispatch()
+  const isMobile = useIsMobile()
+
+  // Action destructuring
+  const { pressReceive, pressSend } = tokenDashboardPageActions
+
+  // Handler functions
+  const handleBuySell = () => {
+    // Has balance - show buy/sell modal
+    openBuySellModal()
+  }
+
+  const handleAddCash = () => {
+    // No balance - show add cash modal (uses Coinflow)
+    openAddCashModal()
+  }
+
+  const handleReceive = () => {
+    if (isMobile) {
+      openTransferDrawer(true)
+    } else {
+      dispatch(pressReceive())
+    }
+  }
+
+  const handleSend = () => {
+    if (isMobile) {
+      openTransferDrawer(true)
+    } else {
+      dispatch(pressSend())
+    }
+  }
+
   return (
     <Paper ph='xl' pv='l'>
       <Flex direction='column' gap='l' w='100%'>
         {!totalBalance ? (
-          <ZeroBalanceState title={title} icon={icon} />
+          <ZeroBalanceState
+            title={title}
+            icon={icon}
+            onBuy={handleAddCash}
+            onReceive={handleReceive}
+          />
         ) : (
-          <HasBalanceState title={title} icon={icon} />
+          <HasBalanceState
+            title={title}
+            icon={icon}
+            onBuy={handleBuySell}
+            onSend={handleSend}
+            onReceive={handleReceive}
+          />
         )}
       </Flex>
     </Paper>
