@@ -80,7 +80,10 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   }, [commentSectionLoading, isFirstLoad])
 
   const handleScrollEnd = useCallback(() => {
-    history.replace({ search: '' })
+    const searchParams = new URLSearchParams(history.location.search)
+    searchParams.delete('showComments')
+    history.replace({ search: searchParams.toString() })
+
     // replacing history scrolls to top, so we need to scroll to the comment section
     commentSectionRef.current?.scrollIntoView()
     setHasScrolledIntoView(true)
@@ -89,7 +92,7 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
 
   useEffect(() => {
     if (
-      showComments &&
+      (showComments || highlightCommentId) &&
       !hasScrolledIntoView &&
       !commentSectionLoading &&
       commentSectionRef.current
@@ -110,7 +113,8 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
     commentSectionRef,
     history,
     handleScrollEnd,
-    mainContentRef
+    mainContentRef,
+    highlightCommentId
   ])
 
   return (
