@@ -1,7 +1,7 @@
 import { WidthSizes } from '@audius/common/models'
 import { Flex, Paper, Text, useTheme } from '@audius/harmony'
 
-import UserBadges from 'components/user-badges/UserBadgesV2'
+import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 
 import { ACCEPTED_ROUTES, ASSET_INFO_SECTION_MESSAGES } from '../constants'
