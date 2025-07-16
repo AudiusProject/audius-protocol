@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
+import { IconArtistBadge, IconLabelBadge } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -19,12 +19,12 @@ const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0,
 
 type ArtistCoverProps = {
   artist: User
-  isArtist: boolean
+  profileType: 'artist' | 'label' | null
   onNavigateAway?: () => void
 }
 
 export const ArtistCardCover = (props: ArtistCoverProps) => {
-  const { isArtist, artist, onNavigateAway } = props
+  const { profileType, artist, onNavigateAway } = props
 
   const { user_id, name, handle } = artist
   const dispatch = useDispatch()
@@ -55,7 +55,11 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
       useBlur={shouldBlur}
     >
       <div className={styles.coverPhotoContentContainer}>
-        {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}
+        {profileType === 'artist' ? (
+          <IconArtistBadge className={styles.badge} />
+        ) : profileType === 'label' ? (
+          <IconLabelBadge className={styles.badge} />
+        ) : null}
         <DynamicImage
           wrapperClassName={styles.profilePictureWrapper}
           skeletonClassName={styles.profilePictureSkeleton}
