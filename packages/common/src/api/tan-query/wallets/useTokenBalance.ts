@@ -60,9 +60,9 @@ export const useTokenBalance = ({
   commitment?: Commitment
 } & QueryOptions) => {
   const { audiusSdk, env } = useQueryContext()
-  const { data: user } = useUser(userId)
   const { data: currentUserId } = useCurrentUserId()
-  const isCurrentUser = userId === currentUserId
+  const { data: user } = useUser(userId ?? currentUserId)
+  const isCurrentUser = !userId || userId === currentUserId
   const ethAddress = user?.wallet ?? null
   const queryClient = useQueryClient()
 
@@ -93,16 +93,6 @@ export const useTokenBalance = ({
           return null
         }
 
-        // TODO: temporarily fake balances for testing
-        if (!account?.amount) {
-          if (isCurrentUser) {
-            return createTokenBalance(100000000, tokenConfig.decimals)
-          }
-          return createTokenBalance(
-            Math.floor(Math.random() * 500000000) + 100000000,
-            tokenConfig.decimals
-          )
-        }
         return createTokenBalance(account?.amount, tokenConfig.decimals)
       } catch (e) {
         // If user doesn't have a token account yet, return 0 balance
@@ -114,10 +104,16 @@ export const useTokenBalance = ({
             )
             return null
           }
-          return createTokenBalance(BigInt(0), tokenConfig.decimals)
+          // TODO: temporarily fake balances for testing
+          if (isCurrentUser) {
+            return createTokenBalance(100000000, tokenConfig.decimals)
+          }
+          return createTokenBalance(
+            Math.floor(Math.random() * 500000000) + 100000000,
+            tokenConfig.decimals
+          )
         }
         console.error(`Error fetching ${token} balance:`, e)
-        // Return null instead of throwing to prevent infinite loading
         return null
       }
     },
