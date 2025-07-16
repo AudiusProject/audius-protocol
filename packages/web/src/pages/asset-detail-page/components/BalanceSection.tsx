@@ -4,9 +4,9 @@ import { useAudioBalance } from '@audius/common/api'
 import { useFormattedAudioBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
-  useBuySellModal,
+  tokenDashboardPageActions,
   useAddCashModal,
-  tokenDashboardPageActions
+  useBuySellModal
 } from '@audius/common/store'
 import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -26,9 +26,8 @@ type BalanceStateProps = {
 }
 
 const TokenIcon = ({ icon: Icon }: { icon?: ComponentType<any> }) => {
-  const { cornerRadius } = useTheme()
   if (!Icon) return null
-  return <Icon size='4xl' css={{ borderRadius: cornerRadius.circle }} />
+  return <Icon size='4xl' hex />
 }
 
 const ZeroBalanceState = ({
