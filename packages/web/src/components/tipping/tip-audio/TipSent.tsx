@@ -135,6 +135,7 @@ export const TipSent = () => {
       <div className={styles.flexCenter}>
         <XShareButton
           type='dynamic'
+          size='default'
           handle={recipient.handle}
           shareData={handleShareData}
           url={`https://audius.co/${recipient.handle}`}

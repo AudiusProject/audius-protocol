@@ -1,10 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import {
-  useFeatureFlag,
-  useFormattedAudioBalance,
-  useIsManagedAccount
-} from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { useBuySellModal } from '@audius/common/store'
@@ -12,28 +8,32 @@ import { route } from '@audius/common/utils'
 import {
   Button,
   Flex,
-  IconCaretRight,
-  IconTokenAUDIO,
   Paper,
   Text,
   useMedia,
-  useTheme
+  useTheme,
+  Divider,
+  IconCaretRight
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
+import { AudioCoinCard } from './AudioCoinCard'
+import { BonkCoinCard } from './BonkCoinCard'
+
 const messages = {
   ...buySellMessages,
-  managedAccount: "You can't do that as a managed user"
+  managedAccount: "You can't do that as a managed user",
+  findMoreCoins: 'Find More Coins',
+  exploreArtistCoins: 'Explore available artist coins on Audius.',
+  bonkTicker: '$BONK'
 }
 
-const DIMENSIONS = 64
 const { WALLET_AUDIO_PAGE } = route
 
 const YourCoinsHeader = () => {
-  const { color } = useTheme()
   const { onOpen: openBuySellModal } = useBuySellModal()
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
@@ -51,7 +51,7 @@ const YourCoinsHeader = () => {
       alignItems='center'
       justifyContent='space-between'
       p='l'
-      css={{ borderBottom: `1px solid ${color.border.default}` }}
+      borderBottom='default'
     >
       <Text variant='heading' size='m' color='heading'>
         {messages.yourCoins}
@@ -65,71 +65,52 @@ const YourCoinsHeader = () => {
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
-  const { color, spacing, motion } = useTheme()
-  const { isMobile, isExtraSmall } = useMedia()
+  const { color, spacing } = useTheme()
+  const { isMobile } = useMedia()
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
-
-  const {
-    audioBalanceFormatted,
-    audioDollarValue,
-    isAudioBalanceLoading,
-    isAudioPriceLoading
-  } = useFormattedAudioBalance()
 
   const handleTokenClick = useCallback(() => {
     dispatch(push(WALLET_AUDIO_PAGE))
   }, [dispatch])
 
-  const isLoading = isAudioBalanceLoading || isAudioPriceLoading
-
   return (
-    <Paper
-      direction='column'
-      shadow='far'
-      borderRadius='l'
-      css={{ overflow: 'hidden' }}
-    >
+    <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
       {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
       <Flex
         alignItems='center'
         justifyContent='space-between'
-        p={isMobile ? spacing.l : spacing.xl}
+        p={isMobile ? spacing.l : undefined}
         alignSelf='stretch'
-        onClick={handleTokenClick}
+      >
+        <AudioCoinCard onClick={handleTokenClick} />
+        {isArtistCoinsEnabled ? (
+          <>
+            <Divider orientation='vertical' />
+            <BonkCoinCard onClick={handleTokenClick} />
+          </>
+        ) : null}
+      </Flex>
+      <Flex
+        p={isMobile ? spacing.l : spacing.xl}
         css={{
           cursor: 'pointer',
-          '&:hover': {
-            backgroundColor: color.background.surface2
-          }
+          '&:hover': { backgroundColor: color.background.surface2 }
         }}
       >
-        <Flex alignItems='center' gap={isExtraSmall ? 'm' : 'l'}>
-          <IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} hex />
-          <Flex
-            direction='column'
-            gap='xs'
-            css={{
-              opacity: isLoading ? 0 : 1,
-              transition: `opacity ${motion.expressive}`
-            }}
-          >
-            <Flex gap='xs'>
-              <Text variant='heading' size='l' color='default'>
-                {audioBalanceFormatted}
-              </Text>
-              <Text variant='heading' size='l' color='subdued'>
-                {messages.audioTicker}
-              </Text>
-            </Flex>
-            <Text variant='heading' size='s' color='subdued'>
-              {audioDollarValue}
+        <Flex flex={1} alignItems='center' justifyContent='space-between'>
+          <Flex column gap='xs'>
+            <Text variant='heading' size='m' color='default'>
+              {messages.findMoreCoins}
             </Text>
+            <Text color='subdued'>{messages.exploreArtistCoins}</Text>
           </Flex>
+          <IconCaretRight size='l' color='subdued' />
         </Flex>
-
-        <IconCaretRight size='l' color='subdued' />
       </Flex>
     </Paper>
   )

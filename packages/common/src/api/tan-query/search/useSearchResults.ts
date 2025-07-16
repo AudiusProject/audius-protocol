@@ -223,7 +223,7 @@ const useSearchQueryProps = <T>(
           // @ts-ignore search type is conditional on category, too verbose to inline
           (queryData: InfiniteData<T[]>): InfiniteData<T[]> => {
             const prevPages = (queryData?.pages as T[][]) ?? []
-            const currentIndex = pageParam % pageSize
+            const currentIndex = Math.floor(pageParam / pageSize)
             prevPages[currentIndex] = data
             return {
               pages: prevPages as T[][],

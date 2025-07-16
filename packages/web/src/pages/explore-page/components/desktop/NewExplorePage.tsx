@@ -8,9 +8,10 @@ import {
   useFeelingLuckyTracks,
   useRecentlyPlayedTracks
 } from '@audius/common/api'
-import { useToggleTrack } from '@audius/common/hooks'
+import { useFeatureFlag, useToggleTrack } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { UID, ID, Kind } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { QueueSource } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import {
@@ -138,6 +139,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const searchBarRef = useRef<HTMLInputElement>(null)
   const { color, motion } = useTheme()
   const { isLarge } = useMedia()
+  const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
 
   const { data: exploreContent } = useExploreContent()
   const { data: recommendedTracks } = useRecommendedTracks()
@@ -364,16 +368,20 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         ) : (
           <>
             <Flex direction='column'>
-              <ExploreSection
-                title={messages.forYou}
-                data={recommendedTracks}
-                Tile={TrackTile}
-              />
-              <ExploreSection
-                title={messages.recentlyPlayed}
-                data={recentlyPlayed}
-                Card={TrackCard}
-              />
+              {isSearchExploreGoodiesEnabled ? (
+                <>
+                  <ExploreSection
+                    title={messages.forYou}
+                    data={recommendedTracks}
+                    Tile={TrackTile}
+                  />
+                  <ExploreSection
+                    title={messages.recentlyPlayed}
+                    data={recentlyPlayed}
+                    Card={TrackCard}
+                  />
+                </>
+              ) : null}
 
               <ExploreSection
                 title={messages.featuredPlaylists}
@@ -397,11 +405,13 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 data={exploreContent?.featuredLabels}
                 Card={UserCard}
               />
-              <ExploreSection
-                title={messages.activeDiscussions}
-                data={recentlyCommentedTracks}
-                Tile={TrackTile}
-              />
+              {isSearchExploreGoodiesEnabled ? (
+                <ExploreSection
+                  title={messages.activeDiscussions}
+                  data={recentlyCommentedTracks}
+                  Tile={TrackTile}
+                />
+              ) : null}
             </Flex>
             {/* Explore by mood */}
             <Flex direction='column' gap='l' alignItems='center'>
@@ -442,49 +452,56 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               </Flex>
             </Flex>
             <Flex direction='column'>
-              <BestSellingSection
-                title={messages.bestSelling}
-                data={bestSelling}
-              />
+              {isSearchExploreGoodiesEnabled ? (
+                <>
+                  <BestSellingSection
+                    title={messages.bestSelling}
+                    data={bestSelling}
+                  />
 
-              <ExploreSection
-                title={messages.recentlyListedForSale}
-                data={recentPremiumTracks}
-                Tile={TrackTile}
-              />
-
+                  <ExploreSection
+                    title={messages.recentlyListedForSale}
+                    data={recentPremiumTracks}
+                    Tile={TrackTile}
+                  />
+                </>
+              ) : null}
               <Flex gap='xl' direction='column'>
-                <Flex justifyContent='space-between'>
-                  <Text variant='heading'>{messages.feelingLucky}</Text>
-                  <Button
-                    variant='secondary'
-                    size='small'
-                    onClick={() => refetchFeelingLucky()}
-                    iconLeft={IconArrowRotate}
-                  >
-                    {messages.imFeelingLucky}
-                  </Button>
-                </Flex>
-                <TrackTile
-                  uid={feelingLuckyUid}
-                  id={feelingLuckyTrackId}
-                  index={0}
-                  size={TrackTileSize.LARGE}
-                  statSize={'small'}
-                  ordered={false}
-                  togglePlay={(tileUid: UID, trackId: ID) => {
-                    if (
-                      tileUid === feelingLuckyUid &&
-                      trackId === feelingLuckyTrackId
-                    ) {
-                      toggleFeelingLucky()
-                    }
-                  }}
-                  hasLoaded={() => {}}
-                  isLoading={false}
-                  isTrending={false}
-                  isFeed={false}
-                />
+                {isSearchExploreGoodiesEnabled ? (
+                  <>
+                    <Flex justifyContent='space-between'>
+                      <Text variant='heading'>{messages.feelingLucky}</Text>
+                      <Button
+                        variant='secondary'
+                        size='small'
+                        onClick={() => refetchFeelingLucky()}
+                        iconLeft={IconArrowRotate}
+                      >
+                        {messages.imFeelingLucky}
+                      </Button>
+                    </Flex>
+                    <TrackTile
+                      uid={feelingLuckyUid}
+                      id={feelingLuckyTrackId}
+                      index={0}
+                      size={TrackTileSize.LARGE}
+                      statSize={'small'}
+                      ordered={false}
+                      togglePlay={(tileUid: UID, trackId: ID) => {
+                        if (
+                          tileUid === feelingLuckyUid &&
+                          trackId === feelingLuckyTrackId
+                        ) {
+                          toggleFeelingLucky()
+                        }
+                      }}
+                      hasLoaded={() => {}}
+                      isLoading={false}
+                      isTrending={false}
+                      isFeed={false}
+                    />
+                  </>
+                ) : null}
               </Flex>
             </Flex>
 
