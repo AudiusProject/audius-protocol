@@ -114,6 +114,7 @@ export const useTokenBalance = ({
           )
         }
         console.error(`Error fetching ${token} balance:`, e)
+        return null
       }
     },
     enabled: !!ethAddress && !!token,
