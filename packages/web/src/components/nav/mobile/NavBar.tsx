@@ -1,4 +1,4 @@
-import { useState, useContext, useCallback, useEffect } from 'react'
+import { useState, useContext, useCallback } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
 import { formatCount, route } from '@audius/common/utils'
@@ -15,7 +15,6 @@ import cn from 'classnames'
 import { History } from 'history'
 import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { useTransition, animated } from 'react-spring'
 
 import {
   RouterContext,
@@ -64,35 +63,9 @@ const NavBar = ({
   const { leftElement, centerElement, rightElement } = useContext(NavContext)!
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
 
-  const [isSearching, setIsSearching] = useState(false)
-
   const { setStackReset } = useContext(RouterContext)
 
   const [isActionDrawerOpen, setIsActionDrawerOpen] = useState(false)
-
-  useEffect(() => {
-    const splitPath = pathname.split('/')
-    const isSearch = splitPath.length > 1 && splitPath[1] === 'search'
-    setIsSearching(isSearch)
-  }, [pathname])
-
-  const logoTransitions = useTransition(!isSearching, null, {
-    from: {
-      opacity: 0,
-      transform: 'scale(0.9)'
-    },
-    enter: {
-      opacity: 1,
-      transform: 'scale(1)'
-    },
-    leave: {
-      opacity: 0,
-      transform: 'scale(0.9)'
-    },
-    config: {
-      duration: 150
-    }
-  })
 
   const { setSlideDirection } = useContext(RouterContext)
 
@@ -181,11 +154,7 @@ const NavBar = ({
   }
 
   return (
-    <Flex
-      className={cn(styles.container, {
-        [styles.containerNoBorder]: isSearching
-      })}
-    >
+    <Flex className={cn(styles.container)}>
       <Flex
         className={cn(styles.leftElement, {
           [styles.isLoading]: isLoading
@@ -195,17 +164,7 @@ const NavBar = ({
       </Flex>
       {centerElement === CenterPreset.LOGO ? (
         <Link to={TRENDING_PAGE} className={styles.logo}>
-          {logoTransitions.map(({ item, props, key }) =>
-            item ? (
-              <animated.div style={props} key={key}>
-                <IconAudiusLogoHorizontal
-                  sizeH='l'
-                  color='subdued'
-                  width='auto'
-                />
-              </animated.div>
-            ) : null
-          )}
+          <IconAudiusLogoHorizontal sizeH='l' color='subdued' width='auto' />
         </Link>
       ) : null}
       {typeof centerElement === 'string' &&
