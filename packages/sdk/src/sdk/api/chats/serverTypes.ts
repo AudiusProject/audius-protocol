@@ -158,6 +158,7 @@ export type ChatMessage = {
   sender_user_id: string
   created_at: string
   message: string
+  audience: ChatBlastAudience
   is_plaintext: boolean
   reactions: ChatMessageReaction[]
 }
