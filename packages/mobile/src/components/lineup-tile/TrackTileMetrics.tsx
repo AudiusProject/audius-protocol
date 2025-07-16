@@ -94,10 +94,11 @@ type CommentMetricProps = {
   trackId: ID
   actions?: LineupBaseActions
   uid?: string
+  showLeaveCommentText?: boolean
 }
 
 export const CommentMetric = (props: CommentMetricProps) => {
-  const { trackId, actions, uid } = props
+  const { trackId, actions, uid, showLeaveCommentText } = props
   const { open } = useCommentDrawer()
   const navigation = useNavigation()
   const { isEnabled } = useFeatureFlag(FeatureFlags.COMMENTS_ENABLED)
@@ -129,11 +130,13 @@ export const CommentMetric = (props: CommentMetricProps) => {
     )
   }, [open, trackId, navigation, uid, actions])
 
-  if (!commentCount || !isEnabled || commentsDisabled) return null
+  if (commentCount === undefined || !isEnabled || commentsDisabled) return null
 
   return (
     <VanityMetric icon={IconMessage} onPress={handlePress}>
-      {commentCount > 0 ? formatCount(commentCount) : 'Leave a comment'}
+      {commentCount === 0 && showLeaveCommentText
+        ? 'Leave a comment'
+        : formatCount(commentCount)}
     </VanityMetric>
   )
 }
