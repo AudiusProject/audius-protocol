@@ -8,6 +8,8 @@ import { Pressable, StyleSheet } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { usePrevious } from 'react-use'
 
+import * as haptics from 'app/haptics'
+
 import { BOTTOM_BAR_BUTTON_HEIGHT } from '../constants'
 
 export type BaseBottomTabBarButtonProps = {
@@ -59,6 +61,15 @@ export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
   )
   const [isPressing, setIsPressing] = useState(false)
 
+  const handlePressIn = useCallback(() => {
+    // Trigger haptics on press down
+    if (isActive) {
+      haptics.light()
+    } else {
+      haptics.medium()
+    }
+  }, [isActive])
+
   const handlePress = useCallback(() => {
     if (!isActive) {
       animationRef.current?.play()
@@ -74,7 +85,14 @@ export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
     }
   }, [isActive, previousActive])
 
-  const handleLongPress = isActive ? onLongPress : handlePress
+  const handleLongPress = useCallback(() => {
+    haptics.medium()
+    if (isActive) {
+      onLongPress()
+    } else {
+      handlePress()
+    }
+  }, [onLongPress, handlePress, isActive])
 
   const { primary } = color.primary
   const { neutral } = color.neutral
@@ -91,6 +109,7 @@ export const BottomTabBarButton = (props: BottomTabBarButtonProps) => {
   return (
     <Pressable
       onPress={handlePress}
+      onPressIn={handlePressIn}
       onLongPress={handleLongPress}
       pointerEvents='box-only'
       style={styles.root}

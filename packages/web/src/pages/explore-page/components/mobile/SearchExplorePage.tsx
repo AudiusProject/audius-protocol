@@ -23,12 +23,12 @@ import {
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
 import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
-import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
+import { useDebounce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import { CollectionCard } from 'components/collection'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import NavContext from 'components/nav/mobile/NavContext'
+import NavContext, { CenterPreset } from 'components/nav/mobile/NavContext'
 import PerspectiveCard, {
   TextInterior
 } from 'components/perspective-card/PerspectiveCard'
@@ -103,12 +103,6 @@ const ExplorePage = () => {
     },
     [setCategory]
   )
-
-  useEffectOnce(() => {
-    if (inputValue && searchBarRef.current) {
-      searchBarRef.current.focus()
-    }
-  })
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,6 +187,7 @@ const ExplorePage = () => {
   // Hide search header
   useEffect(() => {
     setRight(null)
+    setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
 
   return (
@@ -201,7 +196,7 @@ const ExplorePage = () => {
       containerClassName='search-explore-page'
     >
       <Flex direction='column' w='100%' style={{ overflow: 'hidden' }}>
-        <Flex direction='column' gap='l' p='l' backgroundColor='surface1'>
+        <Flex direction='column' ph='l' pt='l' backgroundColor='surface1'>
           <TextInput
             ref={searchBarRef}
             label={messages.searchPlaceholder}
@@ -225,7 +220,7 @@ const ExplorePage = () => {
               marginLeft: '-50vw',
               marginRight: '-50vw',
               paddingLeft: '50vw',
-              paddingRight: '50vw'
+              padding: '16px 50vw'
             }}
           >
             {Object.entries(categories).map(([key, category]) => (
