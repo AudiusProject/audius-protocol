@@ -68,21 +68,9 @@ BEGIN
     AND chat_blast.audience = 'coin_holder_audience'
     AND ac.user_id = chat_blast.from_user_id
   JOIN sol_claimable_accounts sca ON sca.mint = ac.mint
+  JOIN sol_token_account_balances stab ON stab.account = sca.account
   JOIN users u ON u.wallet = sca.ethereum_address
-  JOIN (
-    SELECT DISTINCT ON (account, mint)
-      mint,
-      account,
-      balance
-    FROM sol_token_account_balance_changes stabc
-    JOIN chat_blast cb
-      ON cb.blast_id = blast_id_param
-      AND cb.created_at > stabc.created_at
-    WHERE balance > 0
-    ORDER BY mint, account, slot DESC
-  ) latest_balances 
-    ON latest_balances.account = sca.account
-    AND latest_balances.mint = ac.mint;
+  WHERE stab.balance > 0;
 
 END;
 $$ LANGUAGE plpgsql;
