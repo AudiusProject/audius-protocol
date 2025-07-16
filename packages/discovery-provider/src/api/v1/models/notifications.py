@@ -368,7 +368,7 @@ create_playlist_notification_action_data = ns.model(
     "create_playlist_notification_action_data",
     {
         "is_album": fields.Boolean(required=True),
-        "playlist_id": fields.List(fields.String(required=True), required=True),
+        "playlist_id": fields.String(required=True),
     },
 )
 create_track_notification_action_data = ns.model(
