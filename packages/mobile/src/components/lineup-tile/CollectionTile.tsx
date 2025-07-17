@@ -36,7 +36,6 @@ import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
-import { LineupTileTopRight } from './LineupTileTopRight'
 import { LineupTileSource, type CollectionTileProps } from './types'
 import { useEnhancedCollectionTracks } from './useEnhancedCollectionTracks'
 
@@ -234,12 +233,6 @@ export const CollectionTile = (props: CollectionTileProps) => {
       scaleTo={scale}
     >
       <CollectionDogEar collectionId={collection.playlist_id} hideUnlocked />
-      <LineupTileTopRight
-        duration={duration}
-        trackId={collection.playlist_id}
-        isLongFormContent={false}
-        isCollection={true}
-      />
       <LineupTileMetadata
         renderImage={renderImage}
         onPressTitle={handlePressTitle}
@@ -248,6 +241,8 @@ export const CollectionTile = (props: CollectionTileProps) => {
         isPlayingUid={isPlayingUid}
         type={contentType}
         trackId={collection.playlist_id}
+        duration={duration}
+        isLongFormContent={false}
       />
       <CollectionTileStats
         collectionId={collection.playlist_id}

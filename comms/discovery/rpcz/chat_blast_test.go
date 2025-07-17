@@ -713,6 +713,166 @@ func TestChatBlast(t *testing.T) {
 
 	err = tx.Rollback()
 	assert.NoError(t, err)
+
+	// ------------- COIN HOLDER AUDIENCE
+
+	// Setup artist coin for user 69
+	tx.MustExec(`
+	insert into artist_coins
+	(mint, ticker, user_id, decimals, created_at)
+	values
+	('mint123', 'COIN69', 69, 6, $1);
+	`, t0)
+
+	// Setup users with wallets
+	tx.MustExec(`
+	update users set wallet = 'wallet204' where user_id = 204;
+	update users set wallet = 'wallet205' where user_id = 205;
+	update users set wallet = 'wallet206' where user_id = 206;
+	`)
+
+	// Setup claimable accounts for users
+	tx.MustExec(`
+	insert into sol_claimable_accounts
+	(signature, instruction_index, slot, mint, ethereum_address, account)
+	values
+	('sig1', 0, 1000, 'mint123', 'wallet204', 'account204'),
+	('sig2', 0, 1001, 'mint123', 'wallet205', 'account205'),
+	('sig3', 0, 1002, 'mint123', 'wallet206', 'account206');
+	`)
+
+	// Setup token balance changes - user 204 has positive balance, 205 has zero, 206 has positive then zero
+	tx.MustExec(`
+	insert into sol_token_account_balance_changes
+	(signature, mint, account, change, balance, slot, created_at, block_timestamp)
+	values
+	-- user 204: positive balance before blast
+	('tx1', 'mint123', 'account204', 1000, 1000, 1100, $1, $1),
+	-- user 205: zero balance before blast
+	('tx2', 'mint123', 'account205', 0, 0, 1101, $1, $1),
+	-- user 206: had positive balance, then sold to zero before blast
+	('tx3', 'mint123', 'account206', 500, 500, 1102, $1, $1),
+	('tx4', 'mint123', 'account206', -500, 0, 1103, $2, $2);
+	`, t0, t1)
+
+	// 69 sends blast to coin holders
+	_, err = chatBlast(tx, 69, t3, schema.ChatBlastRPCParams{
+		BlastID:  "blast_coin_holders_1",
+		Audience: schema.CoinHolderAudience,
+		Message:  "thanks for holding my coin",
+	})
+	assert.NoError(t, err)
+
+	// Only user 204 should have a pending blast (has positive balance)
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 204,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 1)
+	}
+
+	// User 205 should have no pending blast (zero balance)
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 205,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 0)
+	}
+
+	// User 206 should have no pending blast (sold before blast)
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 206,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 0)
+	}
+
+	// 204 upgrades to real DM
+	chatId_204_69 := misc.ChatID(204, 69)
+	err = chatCreate(tx, 204, t4, schema.ChatCreateRPCParams{
+		ChatID: chatId_204_69,
+		Invites: []schema.PurpleInvite{
+			{UserID: misc.MustEncodeHashID(204), InviteCode: "earlier"},
+			{UserID: misc.MustEncodeHashID(69), InviteCode: "earlier"},
+		},
+	})
+	assert.NoError(t, err)
+
+	// Both users should have 1 message
+	{
+		messages := mustGetMessagesAndReactions(204, chatId_204_69)
+		assert.Len(t, messages, 1)
+		assert.Equal(t, "thanks for holding my coin", messages[0].Ciphertext)
+	}
+	{
+		messages := mustGetMessagesAndReactions(69, chatId_204_69)
+		assert.Len(t, messages, 1)
+	}
+
+	// 204 should have no pending blast after upgrade
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 204,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 0)
+	}
+
+	// Test that new balance changes after blast don't affect existing blast
+	tx.MustExec(`
+	insert into sol_token_account_balance_changes
+	(signature, mint, account, change, balance, slot, created_at, block_timestamp)
+	values
+	-- user 205 gets tokens AFTER the blast
+	('tx5', 'mint123', 'account205', 2000, 2000, 1104, $1, $1);
+	`, t5)
+
+	// User 205 still should have no pending blast (balance change was after blast)
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 205,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 0)
+	}
+
+	// Send another blast - now 205 should be included
+	_, err = chatBlast(tx, 69, t6, schema.ChatBlastRPCParams{
+		BlastID:  "blast_coin_holders_2",
+		Audience: schema.CoinHolderAudience,
+		Message:  "welcome new holders",
+	})
+	assert.NoError(t, err)
+
+	// Now user 205 should have a pending blast
+	{
+		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{
+			UserID: 205,
+		})
+		assert.NoError(t, err)
+		assert.Len(t, pending, 1)
+	}
+
+	// User 204 should have the new blast added to existing chat
+	{
+		messages := mustGetMessagesAndReactions(204, chatId_204_69)
+		assert.Len(t, messages, 2)
+		assert.Equal(t, "welcome new holders", messages[0].Ciphertext)
+		assert.Equal(t, "thanks for holding my coin", messages[1].Ciphertext)
+	}
+
+	// Test blast chat view for sender
+	{
+		chat, err := queries.UserChat(tx, ctx, queries.ChatMembershipParams{
+			UserID: 69,
+			ChatID: "coin_holder_audience",
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, "coin_holder_audience", chat.ChatID)
+	}
 }
 
 func stringPointer(val string) *string {
