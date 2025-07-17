@@ -201,6 +201,7 @@ def create_comment(params: ManageEntityParameters):
                 "type": entity_type,
                 "entity_id": entity_id,
                 "comment_user_id": user_id,
+                "comment_id": comment_id,
             },
         )
 
@@ -252,6 +253,7 @@ def create_comment(params: ManageEntityParameters):
                         "entity_id": entity_id,
                         "entity_user_id": entity_user_id,
                         "comment_user_id": user_id,
+                        "comment_id": comment_id,
                     },
                 )
                 safe_add_notification(params.session, mention_notification)
@@ -315,6 +317,7 @@ def create_comment(params: ManageEntityParameters):
                     "entity_id": entity_id,
                     "entity_user_id": entity_user_id,
                     "comment_user_id": user_id,
+                    "comment_id": comment_id,
                 },
             )
             safe_add_notification(params.session, thread_notification)
@@ -485,6 +488,7 @@ def update_comment(params: ManageEntityParameters):
                             "entity_id": entity_id,
                             "entity_user_id": entity_user_id,
                             "comment_user_id": user_id,
+                            "comment_id": comment_id,
                         },
                     )
                     safe_add_notification(params.session, mention_notification)

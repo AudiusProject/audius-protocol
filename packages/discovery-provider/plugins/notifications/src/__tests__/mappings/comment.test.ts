@@ -56,7 +56,8 @@ describe('Comment Notification', () => {
         data: {
           type: 'Track',
           entity_id: 10,
-          comment_user_id: 2
+          comment_user_id: 2,
+          comment_id: 1
         }
       }
     ])
@@ -82,7 +83,8 @@ describe('Comment Notification', () => {
           type: 'Comment',
           userIds: [2],
           entityType: 'Track',
-          entityId: 10
+          entityId: 10,
+          commentId: 1
         }
       }
     )
@@ -110,7 +112,8 @@ describe('Comment Notification', () => {
         data: {
           type: EntityType.Track,
           comment_user_id: 2,
-          entity_id: 10
+          entity_id: 10,
+          comment_id: 1
         },
         user_ids: [1],
         receiver_user_id: 1
@@ -154,7 +157,8 @@ describe('Comment Notification', () => {
         data: {
           type: EntityType.Track,
           comment_user_id: num + 2,
-          entity_id: 10
+          entity_id: 10,
+          comment_id: num + 1
         },
         user_ids: [1],
         receiver_user_id: 1

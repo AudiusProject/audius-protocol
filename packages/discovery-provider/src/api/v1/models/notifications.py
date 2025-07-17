@@ -955,6 +955,7 @@ comment_notification_action_data = ns.model(
         "type": fields.String(required=True, enum=["Track", "Playlist", "Album"]),
         "entity_id": fields.String(required=True),
         "comment_user_id": fields.String(required=True),
+        "comment_id": fields.String(required=True),
     },
 )
 comment_notification_action = ns.clone(
@@ -979,6 +980,7 @@ comment_thread_notification_action_data = ns.model(
         "entity_id": fields.String(required=True),
         "entity_user_id": fields.String(required=True),
         "comment_user_id": fields.String(required=True),
+        "comment_id": fields.String(required=True),
     },
 )
 comment_thread_notification_action = ns.clone(
@@ -1004,6 +1006,7 @@ comment_mention_notification_action_data = ns.model(
         "entity_id": fields.String(required=True),
         "entity_user_id": fields.String(required=True),
         "comment_user_id": fields.String(required=True),
+        "comment_id": fields.String(required=True),
     },
 )
 comment_mention_notification_action = ns.clone(
@@ -1029,6 +1032,7 @@ comment_reaction_notification_action_data = ns.model(
         "entity_id": fields.String(required=True),
         "entity_user_id": fields.String(required=True),
         "reacter_user_id": fields.String(required=True),
+        "comment_id": fields.String(required=True),
     },
 )
 comment_reaction_notification_action = ns.clone(

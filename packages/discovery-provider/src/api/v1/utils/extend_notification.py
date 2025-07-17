@@ -689,6 +689,7 @@ def extend_comment(action: NotificationAction):
             "type": data["type"],
             "entity_id": encode_int_id(data["entity_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
+            "comment_id": encode_int_id(data["comment_id"]),
         },
     }
 
@@ -708,6 +709,7 @@ def extend_comment_thread(action: NotificationAction):
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
+            "comment_id": encode_int_id(data["comment_id"]),
         },
     }
 
@@ -727,6 +729,7 @@ def extend_comment_mention(action: NotificationAction):
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
+            "comment_id": encode_int_id(data["comment_id"]),
         },
     }
 
@@ -746,6 +749,7 @@ def extend_comment_reaction(action: NotificationAction):
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
             "reacter_user_id": encode_int_id(data["reacter_user_id"]),
+            "comment_id": encode_int_id(data["comment_id"]),
         },
     }
 
