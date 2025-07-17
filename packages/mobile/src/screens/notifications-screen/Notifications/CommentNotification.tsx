@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import { useNotificationEntity, useUsers } from '@audius/common/api'
 import type { CommentNotification as CommentNotificationType } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 
 import { IconMessage } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -56,7 +57,10 @@ export const CommentNotification = (props: CommentNotificationProps) => {
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
         {messages.commented} {entityType.toLowerCase()}{' '}
-        <EntityLink entity={entity} />
+        <EntityLink
+          entity={entity}
+          commentId={Id.parse(notification.commentId)}
+        />
       </NotificationText>
     </NotificationTile>
   )

@@ -29,7 +29,8 @@ type EntityLinkProps = {
 export const useGoToEntity = (
   entity: Nullable<EntityType>,
   entityType: Entity,
-  goToComments?: boolean
+  goToComments?: boolean,
+  commentId?: string
 ) => {
   const dispatch = useDispatch()
   const record = useRecord()
@@ -40,12 +41,17 @@ export const useGoToEntity = (
       if (!entity) return
       event.stopPropagation()
       event.preventDefault()
-      let link = getEntityLink(entity)
-      if (goToComments) {
-        link = `${link}?showComments=true`
+      const link = getEntityLink(entity)
+      const urlParams = new URLSearchParams(link)
+      if (commentId) {
+        urlParams.set('commentId', commentId)
+      } else if (goToComments) {
+        urlParams.set('showComments', 'true')
       }
+      const newLink = `${link}?${urlParams.toString()}`
+
       onClose()
-      dispatch(push(link))
+      dispatch(push(newLink))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
           kind: entityType,
@@ -53,7 +59,7 @@ export const useGoToEntity = (
         })
       )
     },
-    [dispatch, entity, entityType, goToComments, onClose, record]
+    [commentId, dispatch, entity, entityType, goToComments, onClose, record]
   )
   return handleClick
 }
