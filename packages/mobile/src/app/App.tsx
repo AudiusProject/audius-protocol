@@ -4,7 +4,6 @@ import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Platform, UIManager } from 'react-native'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   SafeAreaProvider,
   initialWindowMetrics
@@ -20,19 +19,16 @@ import { NotificationReminder } from 'app/components/notification-reminder/Notif
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
-import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { localStorage } from 'app/services/local-storage'
 import { queryClient } from 'app/services/query-client'
 import { persistor, store } from 'app/store'
-import {
-  forceRefreshConnectivity,
-  subscribeToNetworkStatusUpdates
-} from 'app/utils/reachability'
+import { subscribeToNetworkStatusUpdates } from 'app/utils/reachability'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
+import { ConnectivityManager } from './ConnectivityManager'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
@@ -61,10 +57,6 @@ const App = () => {
     TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })
 
-  useEnterForeground(() => {
-    forceRefreshConnectivity()
-  })
-
   return (
     <AppContextProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
@@ -74,29 +66,28 @@ const App = () => {
               <SyncLocalStorageUserProvider localStorage={localStorage}>
                 <PersistGate loading={null} persistor={persistor}>
                   <ThemeProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <PortalProvider>
-                        <ErrorBoundary>
-                          <NavigationContainer
-                            navigationIntegration={navigationIntegration}
-                          >
-                            <BottomSheetModalProvider>
-                              <CommentDrawerProvider>
-                                <Toasts />
-                                <Airplay />
-                                <RootScreen />
-                                <Drawers />
-                                <OAuthWebView />
-                                <NotificationReminder />
-                                <RateCtaReminder />
-                                <PortalHost name='ChatReactionsPortal' />
-                              </CommentDrawerProvider>
-                            </BottomSheetModalProvider>
-                            <PortalHost name='DrawerPortal' />
-                          </NavigationContainer>
-                        </ErrorBoundary>
-                      </PortalProvider>
-                    </GestureHandlerRootView>
+                    <PortalProvider>
+                      <ErrorBoundary>
+                        <ConnectivityManager />
+                        <NavigationContainer
+                          navigationIntegration={navigationIntegration}
+                        >
+                          <BottomSheetModalProvider>
+                            <CommentDrawerProvider>
+                              <Toasts />
+                              <Airplay />
+                              <RootScreen />
+                              <Drawers />
+                              <OAuthWebView />
+                              <NotificationReminder />
+                              <RateCtaReminder />
+                              <PortalHost name='ChatReactionsPortal' />
+                            </CommentDrawerProvider>
+                          </BottomSheetModalProvider>
+                          <PortalHost name='DrawerPortal' />
+                        </NavigationContainer>
+                      </ErrorBoundary>
+                    </PortalProvider>
                   </ThemeProvider>
                 </PersistGate>
               </SyncLocalStorageUserProvider>
