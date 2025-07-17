@@ -74,7 +74,7 @@ export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
 export const USER_ID_PARSER_PAGE = '/dev-tools/user-id-parser'
-export const WALLET_API_TEST_PAGE = '/dev-tools/wallet-api-test'
+export const COIN_API_MOCKS_PAGE = '/dev-tools/coin-api-mocks'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {

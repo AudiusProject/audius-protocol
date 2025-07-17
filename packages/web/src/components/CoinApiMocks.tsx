@@ -2,14 +2,16 @@ import React, { useState } from 'react'
 
 import { developmentConfig, stagingConfig, productionConfig } from '@audius/sdk'
 
+import { env } from 'services/env'
+
 // Import MSW browser setup
 import '../test/mocks/browser'
 
 // Get the correct API endpoint based on environment
 const getApiEndpoint = () => {
-  const env = process.env.NODE_ENV || 'development'
+  const environment = env.ENVIRONMENT || 'development'
 
-  switch (env) {
+  switch (environment) {
     case 'production':
       return productionConfig.network.apiEndpoint
     case 'staging':
@@ -59,7 +61,7 @@ interface UserCoinApiResponse {
   data: UserCoin
 }
 
-const WalletApiTest: React.FC = () => {
+const CoinApiMocks: React.FC = () => {
   const [coinData, setCoinData] = useState<CoinData | null>(null)
   const [coinMembers, setCoinMembers] = useState<CoinMember[] | null>(null)
   const [userCoins, setUserCoins] = useState<UserCoin[] | null>(null)
@@ -391,4 +393,4 @@ const WalletApiTest: React.FC = () => {
   )
 }
 
-export default WalletApiTest
+export default CoinApiMocks

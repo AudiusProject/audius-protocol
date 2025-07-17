@@ -27,7 +27,7 @@ import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
 import { Pages as SignOnPages } from 'common/store/pages/signon/types'
-import WalletApiTest from 'components/WalletApiTest'
+import CoinApiMocks from 'components/CoinApiMocks'
 import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
@@ -187,7 +187,7 @@ const {
   DEV_TOOLS_PAGE,
   SOLANA_TOOLS_PAGE,
   USER_ID_PARSER_PAGE,
-  WALLET_API_TEST_PAGE
+  COIN_API_MOCKS_PAGE: WALLET_API_TEST_PAGE
 } = route
 
 // TODO: do we need to lazy load edit?
@@ -649,7 +649,7 @@ const WebPlayer = (props) => {
                 <Route
                   exact
                   path={WALLET_API_TEST_PAGE}
-                  component={WalletApiTest}
+                  component={CoinApiMocks}
                 />
               ) : null}
               {!isProduction ? (

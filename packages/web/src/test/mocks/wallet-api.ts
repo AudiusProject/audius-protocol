@@ -1,6 +1,8 @@
 import { developmentConfig, stagingConfig, productionConfig } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
 
+import { env } from 'services/env'
+
 // TypeScript interfaces for wallet API types
 export interface ArtistCoin {
   ticker: string
@@ -45,14 +47,13 @@ export interface GetCoinMembersQueryParams {
 
 // Get the correct API endpoint based on environment
 const getApiEndpoint = () => {
-  const env = process.env.NODE_ENV || 'development'
+  const environment = env.ENVIRONMENT || 'development'
 
-  switch (env) {
+  switch (environment) {
     case 'production':
       return productionConfig.network.apiEndpoint
     case 'staging':
       return stagingConfig.network.apiEndpoint
-    case 'development':
     default:
       return developmentConfig.network.apiEndpoint
   }
