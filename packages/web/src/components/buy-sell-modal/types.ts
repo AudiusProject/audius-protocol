@@ -1,49 +1,81 @@
-export type BuySellTab = 'buy' | 'sell'
+import { TokenInfo } from '@audius/common/store'
+import { TooltipPlacement } from 'antd/lib/tooltip'
 
-export type Screen = 'input' | 'confirm' | 'success'
-
-export type TokenType = 'AUDIO' | 'USDC'
-
-export type TokenInfo = {
-  symbol: string // e.g., 'AUDIO', 'USDC', 'WETH'
-  name: string // e.g., 'Audius', 'USD Coin', 'Wrapped Ether'
-  icon: React.ComponentType<any> // Component for the token's icon
-  decimals: number // Number of decimal places (e.g., 18 for ETH)
-  balance: number | null // User's balance for this token
-  address?: string // Optional contract address
-  isStablecoin?: boolean // Flag for UI formatting ($ prefix, etc.)
+// Balance configuration for token operations
+export type BalanceConfig = {
+  get: () => number | undefined
+  loading: boolean
+  formatError: () => string
 }
 
+// Token pair configuration
 export type TokenPair = {
-  baseToken: TokenInfo // The token being priced (e.g., AUDIO)
-  quoteToken: TokenInfo // The token used for pricing (e.g., USDC)
-  exchangeRate: number | null // Rate of baseToken in terms of quoteToken
+  input: TokenInfo
+  output: TokenInfo
 }
 
-export type TokenAmountSectionProps = {
-  title: string
-  tokenInfo: TokenInfo
-  isInput: boolean
-  amount: number | string
-  onAmountChange?: (value: string) => void
-  onMaxClick?: () => void
-  availableBalance: number
-  exchangeRate?: number | null
-  placeholder?: string
+// Balance configuration for both input and output tokens
+export type BalanceConfiguration = {
+  input: BalanceConfig
+  output?: BalanceConfig
+}
+
+// Transaction data structure
+export type TransactionData = {
+  inputAmount: number
+  outputAmount: number
+  isValid: boolean
+  error: string | null
+  isInsufficientBalance: boolean
+}
+
+// UI configuration options
+export type UIConfiguration = {
   isDefault?: boolean
   error?: boolean
   errorMessage?: string
+  tooltipPlacement?: TooltipPlacement
+  showExchangeRate?: boolean
+}
+
+// Token pricing configuration
+export type TokenPricing = {
   tokenPrice?: string | null
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
 }
 
-// Data structure for the transaction success screen
-export type SuccessDisplayData = {
-  payTokenInfo: TokenInfo
-  receiveTokenInfo: TokenInfo
-  payAmount: number
-  receiveAmount: number
-  pricePerBaseToken: number
-  baseTokenSymbol: string
+// Input handling configuration
+export type InputConfiguration = {
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
+  min?: number
+  max?: number
 }
+
+// Token selection configuration
+export type TokenSelection = {
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
+}
+
+// Callback functions
+export type SwapCallbacks = {
+  onTransactionDataChange?: (data: TransactionData) => void
+}
+
+// Main SwapTab props interface composed of smaller interfaces
+export type SwapTabProps = {
+  tokens: TokenPair
+  balances: BalanceConfiguration
+  configuration: UIConfiguration
+  pricing: TokenPricing
+  input: InputConfiguration
+  tokenSelection: TokenSelection
+  callbacks: SwapCallbacks
+}
+
+// Modal screen types
+export type Screen = 'input' | 'confirm' | 'success'

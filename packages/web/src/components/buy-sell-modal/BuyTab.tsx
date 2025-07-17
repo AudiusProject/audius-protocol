@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useTokenBalance, useTokenPrice } from '@audius/common/api'
 import { Status } from '@audius/common/models'
-import { TokenInfo, TokenPair } from '@audius/common/store'
+import { TokenPair } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 
@@ -21,10 +21,6 @@ type BuyTabProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
-  availableInputTokens?: TokenInfo[]
-  availableOutputTokens?: TokenInfo[]
-  onInputTokenChange?: (symbol: string) => void
-  onOutputTokenChange?: (symbol: string) => void
 }
 
 export const BuyTab = ({
@@ -33,11 +29,7 @@ export const BuyTab = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange,
-  availableInputTokens,
-  availableOutputTokens,
-  onInputTokenChange,
-  onOutputTokenChange
+  onInputValueChange
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
 
@@ -81,8 +73,6 @@ export const BuyTab = ({
       tokenPriceDecimalPlaces={decimalPlaces}
       initialInputValue={initialInputValue}
       onInputValueChange={onInputValueChange}
-      availableOutputTokens={availableOutputTokens}
-      onOutputTokenChange={onOutputTokenChange}
     />
   )
 }

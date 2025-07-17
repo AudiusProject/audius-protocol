@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useMemo } from 'react'
 
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import {
   useBuySellScreen,
   useBuySellSwap,
@@ -17,9 +18,11 @@ import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
+import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 import { SUPPORTED_TOKEN_PAIRS, TOKENS } from './constants'
@@ -37,6 +40,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
   const { toast } = useContext(ToastContext)
+  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
   const {
     trackSwapRequested,
     trackSwapSuccess,
@@ -65,7 +69,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     Record<BuySellTab, string>
   >({
     buy: '',
-    sell: ''
+    sell: '',
+    convert: ''
   })
 
   // Update input value for current tab
@@ -76,14 +81,57 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     }))
   }
 
+  // Track if user has attempted to submit the form
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
+
+  const selectedPair = SUPPORTED_TOKEN_PAIRS[0]
+
+  // State for dynamic token selection - separate states for each tab
+  const [buyTabTokens, setBuyTabTokens] = useState<{
+    baseToken: string
+    quoteToken: string
+  }>({
+    baseToken: selectedPair.baseToken.symbol, // AUDIO by default
+    quoteToken: selectedPair.quoteToken.symbol // USDC by default
+  })
+
+  const [sellTabTokens, setSellTabTokens] = useState<{
+    baseToken: string
+    quoteToken: string
+  }>({
+    baseToken: selectedPair.baseToken.symbol, // AUDIO by default
+    quoteToken: selectedPair.quoteToken.symbol // USDC by default
+  })
+
+  const [convertTabTokens, setConvertTabTokens] = useState<{
+    baseToken: string
+    quoteToken: string
+  }>({
+    baseToken: selectedPair.baseToken.symbol, // AUDIO by default
+    quoteToken: 'BONK' // BONK by default for convert tab (excluding USDC)
+  })
+
+  // Get current tab's token symbols
+  const currentTabTokens =
+    activeTab === 'buy'
+      ? buyTabTokens
+      : activeTab === 'sell'
+        ? sellTabTokens
+        : convertTabTokens
+  const baseTokenSymbol = currentTabTokens.baseToken
+  const quoteTokenSymbol = currentTabTokens.quoteToken
+
   // Handle token changes
   const handleInputTokenChange = (symbol: string) => {
     if (activeTab === 'sell') {
       // On sell tab, input token change means base token change
-      setBaseTokenSymbol(symbol)
-    } else {
+      setSellTabTokens((prev) => ({ ...prev, baseToken: symbol }))
+    } else if (activeTab === 'buy') {
       // On buy tab, input token change means quote token change
-      setQuoteTokenSymbol(symbol)
+      setBuyTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
+    } else {
+      // On convert tab, input token change means base token change
+      setConvertTabTokens((prev) => ({ ...prev, baseToken: symbol }))
     }
     // Reset transaction data when tokens change
     resetTransactionData()
@@ -92,27 +140,17 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const handleOutputTokenChange = (symbol: string) => {
     if (activeTab === 'buy') {
       // On buy tab, output token change means base token change
-      setBaseTokenSymbol(symbol)
-    } else {
+      setBuyTabTokens((prev) => ({ ...prev, baseToken: symbol }))
+    } else if (activeTab === 'sell') {
       // On sell tab, output token change means quote token change
-      setQuoteTokenSymbol(symbol)
+      setSellTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
+    } else {
+      // On convert tab, output token change means quote token change
+      setConvertTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
     }
     // Reset transaction data when tokens change
     resetTransactionData()
   }
-
-  // Track if user has attempted to submit the form
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
-
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[0]
-
-  // State for dynamic token selection - using base/quote terminology
-  const [baseTokenSymbol, setBaseTokenSymbol] = useState<string>(
-    selectedPair.baseToken.symbol // AUDIO by default
-  )
-  const [quoteTokenSymbol, setQuoteTokenSymbol] = useState<string>(
-    selectedPair.quoteToken.symbol // USDC by default
-  )
 
   // Get all available tokens
   const availableTokens = useMemo(() => {
@@ -233,10 +271,18 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     trackSwapFailure
   ])
 
-  const tabs = [
-    { key: 'buy' as BuySellTab, text: messages.buy },
-    { key: 'sell' as BuySellTab, text: messages.sell }
-  ]
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { key: 'buy' as BuySellTab, text: messages.buy },
+      { key: 'sell' as BuySellTab, text: messages.sell }
+    ]
+
+    if (isArtistCoinsEnabled) {
+      baseTabs.push({ key: 'convert' as BuySellTab, text: messages.convert })
+    }
+
+    return baseTabs
+  }, [isArtistCoinsEnabled])
 
   const {
     successDisplayData,
@@ -352,16 +398,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.buy}
               onInputValueChange={handleTabInputValueChange}
-              availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol
-              )}
-              availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol
-              )}
-              onInputTokenChange={handleInputTokenChange}
-              onOutputTokenChange={handleOutputTokenChange}
             />
-          ) : (
+          ) : activeTab === 'sell' ? (
             <SellTab
               tokenPair={currentTokenPair}
               onTransactionDataChange={handleTransactionDataChange}
@@ -370,15 +408,27 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleTabInputValueChange}
               availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol
+                (t) => t.symbol !== baseTokenSymbol && t.symbol !== 'USDC'
               )}
               availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol
+                (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
               )}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
             />
-          )}
+          ) : isArtistCoinsEnabled ? (
+            <ConvertTab
+              tokenPair={currentTokenPair}
+              onTransactionDataChange={handleTransactionDataChange}
+              error={shouldShowError}
+              errorMessage={displayErrorMessage}
+              initialInputValue={tabInputValues.convert}
+              onInputValueChange={handleTabInputValueChange}
+              availableTokens={availableTokens}
+              onInputTokenChange={handleInputTokenChange}
+              onOutputTokenChange={handleOutputTokenChange}
+            />
+          ) : null}
 
           {activeTab === 'buy' && !hasSufficientBalance ? (
             <Hint>
@@ -398,7 +448,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             </Hint>
           ) : null}
 
-          {hasSufficientBalance ? (
+          {hasSufficientBalance &&
+          (activeTab !== 'convert' || !isArtistCoinsEnabled) ? (
             <Hint>
               {messages.helpCenter}{' '}
               <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
@@ -447,7 +498,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               resetSuccessDisplayData()
               setCurrentScreen('input')
               // Clear all tab input values on completion
-              setTabInputValues({ buy: '', sell: '' })
+              setTabInputValues({ buy: '', sell: '', convert: '' })
             }}
           />
         ) : null}

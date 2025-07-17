@@ -82,7 +82,6 @@ const UserBadges = ({
   const bonkToken = getTokenBySymbol(env, 'BONK')
   const bonkMint = bonkToken?.address
   const { data: coinBalance } = useTokenBalance({
-    userId,
     token: 'BONK'
   })
 

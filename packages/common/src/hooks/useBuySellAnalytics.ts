@@ -5,7 +5,7 @@ import { Name } from '~/models/Analytics'
 import { useAnalytics } from './useAnalytics'
 
 export type SwapDetails = {
-  activeTab: 'buy' | 'sell'
+  activeTab: 'buy' | 'sell' | 'convert'
   inputToken: string
   outputToken: string
   inputAmount?: number

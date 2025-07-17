@@ -2111,7 +2111,7 @@ type BuyUSDCAddFundsManually = {
 }
 
 export type BuySellSwapEventFields = {
-  activeTab: 'buy' | 'sell'
+  activeTab: 'buy' | 'sell' | 'convert'
   inputToken: string
   outputToken: string
   inputAmount?: number

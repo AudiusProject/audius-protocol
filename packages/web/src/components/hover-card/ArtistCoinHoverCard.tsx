@@ -48,7 +48,6 @@ export const ArtistCoinHoverCard = ({
   const { cornerRadius } = useTheme()
 
   const { data: coinBalance } = useTokenBalance({
-    userId,
     token: 'BONK'
   })
 

@@ -6,6 +6,7 @@ export const buySellMessages = {
   title: 'BUY / SELL',
   buy: 'Buy',
   sell: 'Sell',
+  convert: 'Convert',
   youPay: 'You Pay',
   youPaid: 'You Paid',
   youReceive: 'You Receive',
@@ -61,5 +62,13 @@ export const buySellMessages = {
   stackedBalance: (formattedAvailableBalance: string) =>
     `${formattedAvailableBalance}  Available`,
   tokenTicker: (symbol: string, isStablecoin: boolean) =>
-    isStablecoin ? symbol : `$${symbol}`
+    isStablecoin ? symbol : `$${symbol}`,
+  exchangeRate: (inputSymbol: string, outputSymbol: string, rate: number) =>
+    `Rate 1 $${inputSymbol} ≈ ${rate} $${outputSymbol}`,
+  exchangeRateLabel: 'Rate',
+  exchangeRateValue: (
+    inputSymbol: string,
+    outputSymbol: string,
+    rate: number
+  ) => `1 $${inputSymbol} ≈ ${rate} $${outputSymbol}`
 }

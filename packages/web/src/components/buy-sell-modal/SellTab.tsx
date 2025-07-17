@@ -1,12 +1,7 @@
-import { useMemo } from 'react'
-
-import { useAudioBalance, useTokenBalance } from '@audius/common/api'
-import { Status } from '@audius/common/models'
 import { TokenInfo, TokenPair } from '@audius/common/store'
-import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
+import { useTokenBalanceManager } from './hooks/useTokenBalanceManager'
 
 type SellTabProps = {
   tokenPair: TokenPair
@@ -42,49 +37,14 @@ export const SellTab = ({
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
 
-  // For AUDIO, use the specialized hook for compatibility
-  const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
-  const { data: tokenBalanceData, status: tokenBalanceStatus } =
-    useTokenBalance({
-      token: 'wAUDIO'
-    })
-
-  const isBalanceLoading =
-    baseToken.symbol === 'AUDIO'
-      ? isNullOrUndefined(accountBalance)
-      : tokenBalanceStatus === Status.LOADING
-
-  // Get balance in UI format
-  const getBalance = useMemo(() => {
-    return () => {
-      if (baseToken.symbol === 'AUDIO') {
-        if (!isBalanceLoading && accountBalance) {
-          return Number(AUDIO(accountBalance).toString())
-        }
-      } else {
-        if (tokenBalanceStatus === Status.SUCCESS && tokenBalanceData) {
-          return Number(new FixedDecimal(tokenBalanceData.toString()))
-        }
-      }
-      return undefined
-    }
-  }, [
-    accountBalance,
-    isBalanceLoading,
-    baseToken.symbol,
-    tokenBalanceData,
-    tokenBalanceStatus
-  ])
+  // Use shared token balance manager
+  const { inputBalance } = useTokenBalanceManager(baseToken, quoteToken)
 
   return (
     <SwapTab
       inputToken={baseToken}
       outputToken={quoteToken}
-      balance={{
-        get: getBalance,
-        loading: isBalanceLoading,
-        formatError: () => 'Insufficient balance'
-      }}
+      balance={inputBalance}
       onTransactionDataChange={onTransactionDataChange}
       isDefault={false}
       error={error}
