@@ -1,5 +1,6 @@
 import { FavoriteType } from '@audius/common/models'
 import {
+  coinLeaderboardUserListActions,
   topSupportersUserListActions as topSupporterActions,
   supportingUserListActions as supportingActions,
   repostsUserListActions as repostActions,
@@ -29,6 +30,18 @@ function* watchSetUsers() {
       const { userListType, entityType } = payload
       if (userListType === UserListType.NOTIFICATION && 'entity' in payload) {
         yield put(notificationActions.setNotification(payload.entity))
+        return
+      }
+
+      if (
+        userListType === UserListType.COIN_LEADERBOARD &&
+        'entity' in payload
+      ) {
+        yield put(
+          coinLeaderboardUserListActions.setCoinLeaderboard(
+            payload.entity as string
+          )
+        )
         return
       }
 

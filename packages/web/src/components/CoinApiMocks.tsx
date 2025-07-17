@@ -4,9 +4,6 @@ import { developmentConfig, stagingConfig, productionConfig } from '@audius/sdk'
 
 import { env } from 'services/env'
 
-// Import MSW browser setup
-import '../test/mocks/browser'
-
 // Get the correct API endpoint based on environment
 const getApiEndpoint = () => {
   const environment = env.ENVIRONMENT || 'development'

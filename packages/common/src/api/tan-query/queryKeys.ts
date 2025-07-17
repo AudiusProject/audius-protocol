@@ -104,5 +104,7 @@ export const QUERY_KEYS = {
   entityReaction: 'entityReaction',
   feelingLuckyTracks: 'feelingLuckyTracks',
   recentlyPlayedTracks: 'recentlyPlayedTracks',
-  recentlyCommentedTracks: 'recentlyCommentedTracks'
+  recentlyCommentedTracks: 'recentlyCommentedTracks',
+  coin: 'coin',
+  coinLeaderboard: 'coinLeaderboard'
 } as const
