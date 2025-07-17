@@ -49,7 +49,7 @@ export const useTrackImage = ({
       return track.artwork
     }
   })
-  const image = useImageSize({
+  const { imageUrl, onError } = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: '',
@@ -58,10 +58,11 @@ export const useTrackImage = ({
     }
   })
 
-  if (image === '') {
+  if (imageUrl === '') {
     return {
       source: imageEmpty,
-      isFallbackImage: true
+      isFallbackImage: true,
+      onError
     }
   }
 
@@ -73,13 +74,15 @@ export const useTrackImage = ({
     return {
       // @ts-ignore
       source: primitiveToImageSource(artwork.url),
-      isFallbackImage: false
+      isFallbackImage: false,
+      onError
     }
   }
 
   return {
-    source: primitiveToImageSource(image),
-    isFallbackImage: false
+    source: primitiveToImageSource(imageUrl),
+    isFallbackImage: false,
+    onError
   }
 }
 
@@ -89,6 +92,7 @@ type TrackImageProps = {
   style?: FastImageProps['style']
   borderRadius?: CornerRadiusOptions
   onLoad?: FastImageProps['onLoad']
+  onError?: FastImageProps['onError']
   children?: React.ReactNode
 }
 
@@ -106,9 +110,20 @@ export const TrackImage = (props: TrackImageProps) => {
   const trackImageSource = useTrackImage({ trackId, size })
   const { cornerRadius } = useTheme()
   const { skeleton } = useThemeColors()
-  const { source: loadedSource, isFallbackImage } = trackImageSource
+  const { source: loadedSource, isFallbackImage, onError } = trackImageSource
 
   const source = loadedSource ?? localTrackImageUri
+
+  const handleError = () => {
+    if (
+      source &&
+      typeof source === 'object' &&
+      'uri' in source &&
+      typeof source.uri === 'string'
+    ) {
+      onError(source.uri)
+    }
+  }
 
   return (
     <FastImage
@@ -121,6 +136,7 @@ export const TrackImage = (props: TrackImageProps) => {
         style
       ]}
       source={source ?? { uri: '' }}
+      onError={handleError}
       onLoad={onLoad}
     />
   )

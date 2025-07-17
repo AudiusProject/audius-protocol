@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useCollection } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
@@ -49,7 +51,7 @@ export const useCollectionImage = ({
   const { data: artwork } = useCollection(collectionId, {
     select: (collection) => collection.artwork
   })
-  const image = useImageSize({
+  const { imageUrl, onError } = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: '',
@@ -58,10 +60,11 @@ export const useCollectionImage = ({
     }
   })
 
-  if (image === '') {
+  if (imageUrl === '') {
     return {
       source: imageEmpty,
-      isFallbackImage: true
+      isFallbackImage: true,
+      onError
     }
   }
 
@@ -73,13 +76,15 @@ export const useCollectionImage = ({
     return {
       // @ts-ignore
       source: primitiveToImageSource(artwork.url),
-      isFallbackImage: false
+      isFallbackImage: false,
+      onError
     }
   }
 
   return {
-    source: primitiveToImageSource(image),
-    isFallbackImage: false
+    source: primitiveToImageSource(imageUrl),
+    isFallbackImage: false,
+    onError
   }
 }
 
@@ -98,9 +103,19 @@ export const CollectionImage = (props: CollectionImageProps) => {
   const collectionImageSource = useCollectionImage({ collectionId, size })
   const { cornerRadius } = useTheme()
   const { skeleton } = useThemeColors()
-  const { source: loadedSource, isFallbackImage } = collectionImageSource
+  const {
+    source: loadedSource,
+    isFallbackImage,
+    onError
+  } = collectionImageSource
 
   const source = loadedSource ?? localCollectionImageUri
+
+  const handleError = useCallback(() => {
+    if (source && typeof source === 'object' && 'uri' in source && source.uri) {
+      onError(source.uri)
+    }
+  }, [source, onError])
 
   return (
     <FastImage
@@ -114,6 +129,7 @@ export const CollectionImage = (props: CollectionImageProps) => {
       ]}
       source={source ?? { uri: '' }}
       onLoad={onLoad}
+      onError={handleError}
     />
   )
 }

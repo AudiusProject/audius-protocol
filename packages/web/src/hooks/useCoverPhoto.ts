@@ -32,14 +32,14 @@ export const useCoverPhoto = ({
     select: (user) => pick(user, 'cover_photo', 'updatedCoverPhoto')
   })
   const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
-  const image = useImageSize({
+  const { imageUrl } = useImageSize({
     artwork: cover_photo,
     targetSize: size,
     defaultImage: defaultImage ?? imageCoverPhotoBlank,
     preloadImageFn: preload
   })
 
-  const isDefaultCover = image === imageCoverPhotoBlank
+  const isDefaultCover = imageUrl === imageCoverPhotoBlank
   const isDefaultProfile = profilePicture === imageProfilePicEmpty
   const shouldBlur = isDefaultCover && !isDefaultProfile
 
@@ -47,5 +47,5 @@ export const useCoverPhoto = ({
     return { image: updatedCoverPhoto.url, shouldBlur }
   }
 
-  return { image: shouldBlur ? profilePicture : image, shouldBlur }
+  return { image: shouldBlur ? profilePicture : imageUrl, shouldBlur }
 }

@@ -57,6 +57,7 @@ export const useImageSize = <
   preloadImageFn?: (url: string) => Promise<void>
 }) => {
   const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set())
 
   const fetchWithFallback = useCallback(
     async (url: string) => {
@@ -81,6 +82,25 @@ export const useImageSize = <
     [artwork?.mirrors, preloadImageFn]
   )
 
+  const getNextMirrorUrl = useCallback(
+    (originalUrl: string, failedUrls: Set<string>) => {
+      const mirrors = artwork?.mirrors ?? []
+      if (mirrors.length === 0) return null
+
+      for (const mirror of mirrors) {
+        const nextUrl = new URL(originalUrl)
+        nextUrl.hostname = new URL(mirror).hostname
+        const mirrorUrl = nextUrl.toString()
+
+        if (!failedUrls.has(mirrorUrl)) {
+          return mirrorUrl
+        }
+      }
+      return null
+    },
+    [artwork?.mirrors]
+  )
+
   const resolveImageUrl = useCallback(async () => {
     if (!artwork) {
       return
@@ -89,6 +109,15 @@ export const useImageSize = <
     if (!targetUrl) {
       setImageUrl(defaultImage)
       return
+    }
+
+    // If the original URL failed, try mirrors
+    if (failedUrls.has(targetUrl)) {
+      const mirrorUrl = getNextMirrorUrl(targetUrl, failedUrls)
+      if (mirrorUrl) {
+        setImageUrl(mirrorUrl)
+        return
+      }
     }
 
     if (IMAGE_CACHE.has(targetUrl)) {
@@ -136,11 +165,22 @@ export const useImageSize = <
     } catch (e) {
       console.error(`Unable to load image ${targetUrl} after retries: ${e}`)
     }
-  }, [artwork, targetSize, fetchWithFallback, defaultImage])
+  }, [
+    artwork,
+    targetSize,
+    fetchWithFallback,
+    defaultImage,
+    failedUrls,
+    getNextMirrorUrl
+  ])
+
+  const onError = useCallback((url: string) => {
+    setFailedUrls((prev) => new Set(prev).add(url))
+  }, [])
 
   useEffect(() => {
     resolveImageUrl()
   }, [resolveImageUrl])
 
-  return imageUrl
+  return { imageUrl, onError }
 }
