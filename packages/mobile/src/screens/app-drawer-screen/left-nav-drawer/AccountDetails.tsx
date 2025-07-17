@@ -5,7 +5,7 @@ import { TouchableOpacity } from 'react-native'
 
 import { Flex, Text } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
-import { UserBadges } from 'app/components/user-badges'
+import { UserLink } from 'app/components/user-link'
 
 import { AppDrawerContext } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
@@ -15,12 +15,10 @@ export const AccountDetails = () => {
   const { data: accountUser } = useCurrentAccountUser({
     select: (user) => ({
       user_id: user?.user_id,
-      name: user?.name,
-      handle: user?.handle,
-      is_verified: user?.is_verified
+      handle: user?.handle
     })
   })
-  const { name, handle, user_id } = accountUser ?? {}
+  const { handle, user_id } = accountUser ?? {}
 
   const navigation = useAppDrawerNavigation()
 
@@ -41,12 +39,9 @@ export const AccountDetails = () => {
           borderWidth='thin'
         />
         <Flex gap='unitHalf'>
-          <Flex row justifyContent='space-around'>
-            <Text numberOfLines={1} variant='body' size='l' strength='strong'>
-              {name}
-            </Text>
-            {user_id ? <UserBadges userId={user_id} badgeSize='xs' /> : null}
-          </Flex>
+          {user_id ? (
+            <UserLink userId={user_id} size='l' strength='strong' />
+          ) : null}
           <Text numberOfLines={1} variant='body' size='s'>
             @{handle}
           </Text>
