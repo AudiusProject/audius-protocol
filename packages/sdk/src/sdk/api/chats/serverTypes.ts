@@ -213,7 +213,8 @@ export enum ChatBlastAudience {
   FOLLOWERS = 'follower_audience',
   TIPPERS = 'tipper_audience',
   REMIXERS = 'remixer_audience',
-  CUSTOMERS = 'customer_audience'
+  CUSTOMERS = 'customer_audience',
+  COIN_HOLDERS = 'coin_holder_audience'
 }
 
 export type CommsResponse = {
