@@ -100,8 +100,7 @@ const productionConfig: SdkServicesConfig = {
       '4UQwpGupH66RgQrWRqmPM9Two6VJEE68VZ7GeqZ3mvVv'
   },
   ethereum: {
-    rpcEndpoint:
-      'https://eth-mainnet.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ',
+    rpcEndpoint: 'https://eth-client.audius.co',
     addresses: {
       ethRewardsManagerAddress: '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0',
       serviceProviderFactoryAddress:
@@ -146,8 +145,7 @@ const stagingConfig: SdkServicesConfig = {
       'ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J'
   },
   ethereum: {
-    rpcEndpoint:
-      'https://eth-sepolia.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ',
+    rpcEndpoint: 'https://eth-client.staging.audius.co',
     addresses: {
       ethRewardsManagerAddress: '0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1',
       serviceProviderFactoryAddress:
