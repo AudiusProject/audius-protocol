@@ -279,5 +279,8 @@
     "vite-plugin-glslify": "2.0.2",
     "vite-plugin-svgr": "4.1.0",
     "vitest": "0.34.6"
+  },
+  "msw": {
+    "workerDirectory": "public"
   }
 }
