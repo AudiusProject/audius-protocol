@@ -39,7 +39,7 @@ type ImageProps = {
 
 const Image = memo((props: ImageProps) => {
   const { defaultImage, artwork, size, isUser } = props
-  const image = useImageSize({
+  const { imageUrl } = useImageSize({
     artwork,
     targetSize: size,
     defaultImage,
@@ -50,11 +50,11 @@ const Image = memo((props: ImageProps) => {
       skeletonClassName={cn({ [styles.userImageContainerSkeleton]: isUser })}
       wrapperClassName={cn(styles.imageContainer)}
       className={cn({
-        [styles.image]: image,
+        [styles.image]: imageUrl,
         [styles.userImage]: isUser,
-        [styles.emptyUserImage]: isUser && image === defaultImage
+        [styles.emptyUserImage]: isUser && imageUrl === defaultImage
       })}
-      image={image}
+      image={imageUrl}
     />
   )
 })
