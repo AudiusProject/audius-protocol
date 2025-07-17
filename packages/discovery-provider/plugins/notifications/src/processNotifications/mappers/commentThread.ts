@@ -74,13 +74,10 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
         this.entityUserId
       ])
       .then((rows) =>
-        rows.reduce(
-          (acc, row) => {
-            acc[row.user_id] = row
-            return acc
-          },
-          {} as Record<number, UserRow>
-        )
+        rows.reduce((acc, row) => {
+          acc[row.user_id] = row
+          return acc
+        }, {} as Record<number, UserRow>)
       )
 
     if (users[this.receiverUserId]?.is_deactivated) {
@@ -100,8 +97,8 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
       this.entityUserId === this.receiverUserId
         ? 'your'
         : this.entityUserId === this.commenterUserId
-          ? 'their'
-          : `${users[this.entityUserId]?.name}'s`
+        ? 'their'
+        : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(
@@ -153,7 +150,8 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
                 userIds: [this.commenterUserId],
                 type: 'CommentThread',
                 entityType: 'Track',
-                entityId: this.entityId
+                entityId: this.entityId,
+                commentId: this.notification.data.comment_id
               }
             }
           )

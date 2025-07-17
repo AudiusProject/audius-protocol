@@ -91,7 +91,8 @@ describe('Comment Reaction Notification', () => {
           entityType: 'Track',
           entityId: 1,
           entityUserId: 1,
-          userIds: [2]
+          userIds: [2],
+          commentId: 1
         }
       }
     )
@@ -130,6 +131,8 @@ describe('Comment Reaction Notification', () => {
           type: 'Track',
           entity_id: 1,
           entity_user_id: 3,
+          comment_id: 1,
+          comment_user_id: 1,
           reacter_user_id: 2
         }
       }
@@ -158,7 +161,8 @@ describe('Comment Reaction Notification', () => {
           entityType: 'Track',
           entityId: 1,
           entityUserId: 3,
-          userIds: [2]
+          userIds: [2],
+          commentId: 1
         }
       }
     )

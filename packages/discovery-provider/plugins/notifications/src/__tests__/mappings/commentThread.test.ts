@@ -70,7 +70,8 @@ describe('Comment Thread Notification', () => {
           type: 'Track',
           entity_id: 1,
           entity_user_id: 1,
-          comment_user_id: 2
+          comment_user_id: 2,
+          comment_id: 2
         }
       }
     ])
@@ -94,7 +95,8 @@ describe('Comment Thread Notification', () => {
           type: 'CommentThread',
           entityType: 'Track',
           entityId: 1,
-          userIds: [2]
+          userIds: [2],
+          commentId: 2
         }
       }
     )
@@ -139,7 +141,8 @@ describe('Comment Thread Notification', () => {
           type: 'Track',
           entity_id: 1,
           entity_user_id: 3,
-          comment_user_id: 2
+          comment_user_id: 2,
+          comment_id: 2
         }
       }
     ])
@@ -166,7 +169,8 @@ describe('Comment Thread Notification', () => {
           type: 'CommentThread',
           entityType: 'Track',
           entityId: 1,
-          userIds: [2]
+          userIds: [2],
+          commentId: 2
         }
       }
     )

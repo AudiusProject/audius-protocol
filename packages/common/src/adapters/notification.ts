@@ -541,12 +541,14 @@ export const notificationFromSDK = (
     case 'comment': {
       let entityId = 0
       let entityType = Entity.Track
+      let commentId = 0
       const userIds = Array.from(
         new Set(
           notification.actions
             .map((action) => {
               const data = action.data
               entityId = HashId.parse(data.entityId)
+              commentId = HashId.parse(data.commentId)
               // @ts-ignore
               entityType = data.type
               return HashId.parse(data.commentUserId)
@@ -559,6 +561,7 @@ export const notificationFromSDK = (
         userIds,
         entityId,
         entityType,
+        commentId,
         ...formatBaseNotification(notification)
       }
     }
@@ -566,6 +569,7 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
+      let commentId = 0
       const userIds = Array.from(
         new Set(
           notification.actions
@@ -573,6 +577,7 @@ export const notificationFromSDK = (
               const data = action.data
               entityId = HashId.parse(data.entityId)
               entityUserId = HashId.parse(data.entityUserId)
+              commentId = HashId.parse(data.commentId)
               // @ts-ignore
               entityType = data.type
               return HashId.parse(data.commentUserId)
@@ -586,6 +591,7 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        commentId,
         ...formatBaseNotification(notification)
       }
     }
@@ -593,11 +599,13 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
+      let commentId = 0
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
           entityId = HashId.parse(data.entityId)
           entityUserId = HashId.parse(data.entityUserId)
+          commentId = HashId.parse(data.commentId)
           // @ts-ignore
           entityType = data.type
           return HashId.parse(data.commentUserId)
@@ -609,6 +617,7 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        commentId,
         ...formatBaseNotification(notification)
       }
     }
@@ -616,11 +625,13 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
+      let commentId = 0
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
           entityId = HashId.parse(data.entityId)
           entityUserId = HashId.parse(data.entityUserId)
+          commentId = HashId.parse(data.commentId)
           // @ts-ignore
           entityType = data.type
           return HashId.parse(data.reacterUserId)
@@ -632,6 +643,7 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        commentId,
         ...formatBaseNotification(notification)
       }
     }
@@ -718,5 +730,4 @@ export const notificationFromSDK = (
       }
     }
   }
-  return undefined
 }

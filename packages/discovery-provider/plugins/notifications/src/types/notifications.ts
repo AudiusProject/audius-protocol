@@ -299,6 +299,7 @@ export type CommentNotification = {
   type: EntityType
   entity_id: number
   comment_user_id: number
+  comment_id: number
 }
 
 export type CommentThreadNotification = {
@@ -306,6 +307,7 @@ export type CommentThreadNotification = {
   entity_id: number
   entity_user_id: number
   comment_user_id: number
+  comment_id: number
 }
 
 export type CommentMentionNotification = {
@@ -313,6 +315,7 @@ export type CommentMentionNotification = {
   entity_id: number
   entity_user_id: number
   comment_user_id: number
+  comment_id: number
 }
 
 export type CommentReactionNotification = {

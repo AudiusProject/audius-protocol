@@ -44,6 +44,12 @@ export interface CommentMentionNotificationActionData {
      * @memberof CommentMentionNotificationActionData
      */
     commentUserId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CommentMentionNotificationActionData
+     */
+    commentId: string;
 }
 
 
@@ -67,6 +73,7 @@ export function instanceOfCommentMentionNotificationActionData(value: object): v
     isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
     isInstance = isInstance && "entityUserId" in value && value["entityUserId"] !== undefined;
     isInstance = isInstance && "commentUserId" in value && value["commentUserId"] !== undefined;
+    isInstance = isInstance && "commentId" in value && value["commentId"] !== undefined;
 
     return isInstance;
 }
@@ -85,6 +92,7 @@ export function CommentMentionNotificationActionDataFromJSONTyped(json: any, ign
         'entityId': json['entity_id'],
         'entityUserId': json['entity_user_id'],
         'commentUserId': json['comment_user_id'],
+        'commentId': json['comment_id'],
     };
 }
 
@@ -101,6 +109,7 @@ export function CommentMentionNotificationActionDataToJSON(value?: CommentMentio
         'entity_id': value.entityId,
         'entity_user_id': value.entityUserId,
         'comment_user_id': value.commentUserId,
+        'comment_id': value.commentId,
     };
 }
 
