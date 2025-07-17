@@ -213,8 +213,14 @@ const validSearchCategories = [
 initializeSentry()
 
 const WebPlayer = (props) => {
-  const { isProduction, history, location, mainContentRef, setMainContentRef } =
-    props
+  const {
+    isProduction,
+    history,
+    location,
+    mainContentRef,
+    setMainContentRef,
+    isArtistCoinsEnabled
+  } = props
 
   const dispatch = useDispatch()
 
@@ -696,7 +702,11 @@ const WebPlayer = (props) => {
                 path={ASSET_DETAIL_PAGE}
                 isMobile={isMobile}
                 render={(props) => {
-                  return <AssetDetailPage {...props} />
+                  return isArtistCoinsEnabled ? (
+                    <AssetDetailPage {...props} />
+                  ) : (
+                    <AudioPage {...props} />
+                  )
                 }}
               />
               <Route
@@ -977,12 +987,16 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const { isProduction } = useEnvironment()
 
   return (
     <RouterWebPlayer
       {...props}
       isSearchExploreEnabled={isSearchExploreEnabled}
+      isArtistCoinsEnabled={isArtistCoinsEnabled}
       isProduction={isProduction}
     />
   )
