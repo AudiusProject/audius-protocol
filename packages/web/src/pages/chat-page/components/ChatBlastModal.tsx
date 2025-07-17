@@ -5,7 +5,7 @@ import {
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/src/services/remote-config'
+import { FeatureFlags } from '@audius/common/services'
 import {
   useChatBlastModal,
   chatActions,
