@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useTrack } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
@@ -114,7 +116,7 @@ export const TrackImage = (props: TrackImageProps) => {
 
   const source = loadedSource ?? localTrackImageUri
 
-  const handleError = () => {
+  const handleError = useCallback(() => {
     if (
       source &&
       typeof source === 'object' &&
@@ -123,7 +125,7 @@ export const TrackImage = (props: TrackImageProps) => {
     ) {
       onError(source.uri)
     }
-  }
+  }, [source, onError])
 
   return (
     <FastImage
@@ -135,7 +137,7 @@ export const TrackImage = (props: TrackImageProps) => {
         },
         style
       ]}
-      source={source ?? { uri: '' }}
+      source={source}
       onError={handleError}
       onLoad={onLoad}
     />

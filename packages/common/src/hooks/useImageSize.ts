@@ -64,7 +64,7 @@ export const useImageSize = <
       const mirrors = [...(artwork?.mirrors ?? [])]
       let currentUrl = url
 
-      while (mirrors.length > 0) {
+      while (mirrors.length >= 0) {
         try {
           await preloadImageFn?.(currentUrl)
           return currentUrl
@@ -174,9 +174,12 @@ export const useImageSize = <
     getNextMirrorUrl
   ])
 
-  const onError = useCallback((url: string) => {
-    setFailedUrls((prev) => new Set(prev).add(url))
-  }, [])
+  const onError = useCallback(
+    (url: string) => {
+      setFailedUrls((prev) => new Set(prev).add(url))
+    },
+    [setFailedUrls]
+  )
 
   useEffect(() => {
     resolveImageUrl()

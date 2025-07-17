@@ -67,8 +67,8 @@ export const useHoverDelay = (
     triggeredBy === 'click'
       ? isClicked
       : triggeredBy === 'both'
-      ? isHovered || isClicked
-      : isHovered
+        ? isHovered || isClicked
+        : isHovered
 
   return {
     isHovered,

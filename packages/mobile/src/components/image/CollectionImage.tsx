@@ -127,7 +127,7 @@ export const CollectionImage = (props: CollectionImageProps) => {
         },
         style
       ]}
-      source={source ?? { uri: '' }}
+      source={source}
       onLoad={onLoad}
       onError={handleError}
     />

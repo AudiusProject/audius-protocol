@@ -74,11 +74,5 @@ export const UserImage = (props: UserImageProps) => {
     }
   }, [source, onError])
 
-  return (
-    <FastImage
-      {...imageProps}
-      source={source ?? { uri: '' }}
-      onError={handleError}
-    />
-  )
+  return <FastImage {...imageProps} source={source} onError={handleError} />
 }
