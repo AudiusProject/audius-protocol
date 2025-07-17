@@ -115,9 +115,9 @@ const HasBalanceState = ({
   )
 }
 
-export const BalanceSection = ({ slug }: AssetDetailProps) => {
+export const BalanceSection = ({ mint }: AssetDetailProps) => {
   const { totalBalance } = useAudioBalance()
-  const { title, icon } = ACCEPTED_ROUTES[slug]
+  const { title, icon } = ACCEPTED_ROUTES[mint]
 
   // Modal hooks
   const { onOpen: openBuySellModal } = useBuySellModal()

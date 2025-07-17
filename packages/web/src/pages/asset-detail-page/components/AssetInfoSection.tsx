@@ -9,8 +9,8 @@ import { AssetDetailProps } from '../types'
 
 const BANNER_HEIGHT = 120
 
-const BannerSection = ({ slug }: AssetDetailProps) => {
-  const { name, userId, icon: TokenIcon } = ACCEPTED_ROUTES[slug]
+const BannerSection = ({ mint }: AssetDetailProps) => {
+  const { name, userId, icon: TokenIcon } = ACCEPTED_ROUTES[mint]
 
   const { cornerRadius } = useTheme()
 
@@ -67,9 +67,9 @@ const BannerSection = ({ slug }: AssetDetailProps) => {
   )
 }
 
-export const AssetInfoSection = ({ slug }: AssetDetailProps) => {
-  const { title } = ACCEPTED_ROUTES[slug]
-  const CTAIcon = ASSET_INFO_SECTION_MESSAGES[slug].ctaIcon
+export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
+  const { title } = ACCEPTED_ROUTES[mint]
+  const CTAIcon = ASSET_INFO_SECTION_MESSAGES[mint].ctaIcon
 
   return (
     <Paper
@@ -78,7 +78,7 @@ export const AssetInfoSection = ({ slug }: AssetDetailProps) => {
       direction='column'
       alignItems='flex-start'
     >
-      <BannerSection slug={slug} />
+      <BannerSection mint={mint} />
 
       <Flex
         direction='column'
@@ -94,9 +94,9 @@ export const AssetInfoSection = ({ slug }: AssetDetailProps) => {
         </Flex>
 
         <Flex direction='column' gap='m'>
-          {ASSET_INFO_SECTION_MESSAGES[slug].description.map((text, index) => (
+          {ASSET_INFO_SECTION_MESSAGES[mint].description.map((text, index) => (
             <Text
-              key={`${slug}-description-${index}`}
+              key={`${mint}-description-${index}`}
               variant='body'
               size='m'
               color='subdued'
@@ -111,7 +111,7 @@ export const AssetInfoSection = ({ slug }: AssetDetailProps) => {
         <Flex alignItems='center' justifyContent='center' gap='s'>
           <CTAIcon size='m' color='default' />
           <Text variant='title' size='m'>
-            {ASSET_INFO_SECTION_MESSAGES[slug].cta}
+            {ASSET_INFO_SECTION_MESSAGES[mint].cta}
           </Text>
         </Flex>
       </Flex>

@@ -4,7 +4,7 @@ import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import WalletModal from 'pages/audio-page/WalletModal'
 
-import { AssetDetailTabs } from './AssetDetailTabs'
+import { useAssetDetailTabs } from './AssetDetailTabs'
 import { ACCEPTED_ROUTES } from './constants'
 import { AcceptedRouteKey } from './types'
 
@@ -20,11 +20,24 @@ export const AssetDetailPage = () => {
   const routeConfig = ACCEPTED_ROUTES[typedSlug]
   const title = routeConfig.title
 
-  const { tabs, body } = AssetDetailTabs({ slug: typedSlug })
+  return <AssetDetailPageContent mint={typedSlug} title={title} />
+}
+
+type AssetDetailPageContentProps = {
+  mint: AcceptedRouteKey
+  title: string
+}
+
+const AssetDetailPageContent = ({
+  mint,
+  title
+}: AssetDetailPageContentProps) => {
+  const { tabs, body } = useAssetDetailTabs({ mint })
 
   const header = (
     <Header primary={title} showBackButton={true} bottomBar={tabs} />
   )
+
   return (
     <Page title={title} header={header}>
       <WalletModal />

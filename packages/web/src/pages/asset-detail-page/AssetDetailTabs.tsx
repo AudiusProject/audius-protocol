@@ -8,40 +8,37 @@ import { AcceptedRouteKey } from './types'
 
 export enum AssetDetailTabType {
   HOME = 'home',
-  PERKS = 'perks',
   TRANSACTIONS = 'transactions'
 }
 
 const messages = {
   home: 'Home',
-  perks: 'Perks',
   transactions: 'Transactions'
 }
 
-type AssetDetailTabsProps = {
-  slug: AcceptedRouteKey
+type UseAssetDetailTabsProps = {
+  mint: AcceptedRouteKey
 }
 
-export const AssetDetailTabs = ({ slug }: AssetDetailTabsProps) => {
+export const useAssetDetailTabs = ({ mint }: UseAssetDetailTabsProps) => {
   const [selectedTab, setSelectedTab] = useState(AssetDetailTabType.HOME)
 
   const tabElements = [
-    <AssetDetailContent key='home' slug={slug} />,
+    <AssetDetailContent key='home' mint={mint} />,
     <AudioWalletTransactions key='transactions' />
   ]
 
-  const handleTabChange = useCallback((from: string, to: string) => {
+  const handleTabChange = useCallback((_from: string, to: string) => {
     setSelectedTab(to as AssetDetailTabType)
   }, [])
 
-  const { tabs, body } = useTabs({
+  return useTabs({
     isMobile: false,
     tabs: [
       {
         text: messages.home,
         label: AssetDetailTabType.HOME
       },
-
       {
         text: messages.transactions,
         label: AssetDetailTabType.TRANSACTIONS
@@ -51,6 +48,4 @@ export const AssetDetailTabs = ({ slug }: AssetDetailTabsProps) => {
     elements: tabElements,
     didChangeTabsFrom: handleTabChange
   })
-
-  return { tabs, body }
 }

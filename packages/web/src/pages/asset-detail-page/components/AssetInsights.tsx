@@ -108,7 +108,7 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
   )
 }
 
-export const AssetInsights = ({ slug }: AssetDetailProps) => {
+export const AssetInsights = ({ mint: _mint }: AssetDetailProps) => {
   return (
     <Paper
       direction='column'
@@ -123,8 +123,8 @@ export const AssetInsights = ({ slug }: AssetDetailProps) => {
         </Text>
       </Flex>
 
-      {MOCK_METRICS.map((metric, index) => (
-        <MetricRow key={index} metric={metric} />
+      {MOCK_METRICS.map((metric) => (
+        <MetricRow key={metric.label} metric={metric} />
       ))}
     </Paper>
   )

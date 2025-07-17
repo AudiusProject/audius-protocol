@@ -8,28 +8,16 @@ import { AssetDetailProps } from './types'
 const LEFT_SECTION_WIDTH = '704px'
 const RIGHT_SECTION_WIDTH = '360px'
 
-export const AssetDetailContent = ({ slug }: AssetDetailProps) => {
+export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
   return (
-    <Flex direction='row' gap='l'>
-      <Flex
-        css={{
-          width: LEFT_SECTION_WIDTH
-        }}
-        direction='column'
-        gap='m'
-      >
-        <BalanceSection slug={slug} />
-        <AssetInfoSection slug={slug} />
+    <Flex gap='l'>
+      <Flex w={LEFT_SECTION_WIDTH} direction='column' gap='m'>
+        <BalanceSection mint={mint} />
+        <AssetInfoSection mint={mint} />
       </Flex>
 
-      <Flex
-        css={{
-          width: RIGHT_SECTION_WIDTH
-        }}
-        direction='column'
-        gap='m'
-      >
-        <AssetInsights slug={slug} />
+      <Flex w={RIGHT_SECTION_WIDTH} direction='column' gap='m'>
+        <AssetInsights mint={mint} />
       </Flex>
     </Flex>
   )
