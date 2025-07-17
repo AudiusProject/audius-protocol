@@ -45,6 +45,7 @@
 
 .unfurl {
   border-radius: 0;
+  flex: 1 1;
 }
 
 .bubble .unfurl:not(:last-child) {
