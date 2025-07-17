@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 import { cleanEnv, str, num, json } from 'envalid'
 
 import { logger } from './logger'
-import { backendTokenConfigs, BackendTokenConfig } from './config/tokenConfig'
 
 export const LISTENS_RATE_LIMIT_IP_PREFIX = 'listens-rate-limit-ip'
 export const LISTENS_RATE_LIMIT_TRACK_PREFIX = 'listens-rate-limit-track'
@@ -46,7 +45,6 @@ type Config = {
   usdcMintAddress: string
   waudioMintAddress: string
   bonkMintAddress: string
-  tokens: Record<string, BackendTokenConfig & { address: string }>
   solanaFeePayerWallets: Keypair[]
   delegatePrivateKey: Buffer
   ipdataApiKey: string | null
@@ -163,16 +161,6 @@ const readConfig = (): Config => {
     ? Buffer.from(env.audius_delegate_private_key, 'hex')
     : Buffer.from([])
 
-  // Build token configurations from environment variables
-  const tokens: Record<string, BackendTokenConfig & { address: string }> = {}
-  backendTokenConfigs.forEach(tokenConfig => {
-    const envValue = (env as any)[tokenConfig.envKey]
-    tokens[tokenConfig.symbol] = {
-      ...tokenConfig,
-      address: envValue
-    }
-  })
-
   cachedConfig = {
     environment: env.audius_discprov_env,
     endpoint: env.audius_discprov_url,
@@ -190,7 +178,6 @@ const readConfig = (): Config => {
     usdcMintAddress: env.audius_solana_usdc_mint,
     waudioMintAddress: env.audius_solana_waudio_mint,
     bonkMintAddress: env.audius_solana_bonk_mint,
-    tokens,
     solanaFeePayerWallets,
     delegatePrivateKey,
     ipdataApiKey:
