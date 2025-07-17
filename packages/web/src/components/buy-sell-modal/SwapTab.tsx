@@ -34,7 +34,6 @@ const SwapFormSkeleton = () => (
   </Flex>
 )
 
-// Legacy props interface for backward compatibility
 export type SwapTabProps = {
   inputToken: TokenInfo
   outputToken: TokenInfo

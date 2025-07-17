@@ -79,7 +79,7 @@ const TokenSelectionPopup = ({
   onTokenSelect: (symbol: string) => void
   onClose: () => void
 }) => {
-  const { spacing } = useTheme()
+  const { spacing, color } = useTheme()
 
   const handleTokenClick = useCallback(
     (symbol: string) => {
@@ -105,7 +105,7 @@ const TokenSelectionPopup = ({
               justifyContent: 'flex-start',
               padding: spacing.s,
               '&:hover': {
-                backgroundColor: 'var(--harmony-n-50)'
+                backgroundColor: color.background.surface2
               }
             }}
           >
