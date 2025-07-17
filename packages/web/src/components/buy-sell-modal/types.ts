@@ -76,3 +76,6 @@ export type SwapTabProps = {
   tokenSelection: TokenSelection
   callbacks: SwapCallbacks
 }
+
+// Modal screen types
+export type Screen = 'input' | 'confirm' | 'success'

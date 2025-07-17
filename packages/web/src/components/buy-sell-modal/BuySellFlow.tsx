@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useMemo } from 'react'
 
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import {
   useBuySellScreen,
   useBuySellSwap,
@@ -17,6 +18,7 @@ import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
@@ -38,6 +40,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
   const { toast } = useContext(ToastContext)
+  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
   const {
     trackSwapRequested,
     trackSwapSuccess,
@@ -268,11 +271,18 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     trackSwapFailure
   ])
 
-  const tabs = [
-    { key: 'buy' as BuySellTab, text: messages.buy },
-    { key: 'sell' as BuySellTab, text: messages.sell },
-    { key: 'convert' as BuySellTab, text: messages.convert }
-  ]
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { key: 'buy' as BuySellTab, text: messages.buy },
+      { key: 'sell' as BuySellTab, text: messages.sell }
+    ]
+
+    if (isArtistCoinsEnabled) {
+      baseTabs.push({ key: 'convert' as BuySellTab, text: messages.convert })
+    }
+
+    return baseTabs
+  }, [isArtistCoinsEnabled])
 
   const {
     successDisplayData,
@@ -406,7 +416,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
             />
-          ) : (
+          ) : isArtistCoinsEnabled ? (
             <ConvertTab
               tokenPair={currentTokenPair}
               onTransactionDataChange={handleTransactionDataChange}
@@ -418,7 +428,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
             />
-          )}
+          ) : null}
 
           {activeTab === 'buy' && !hasSufficientBalance ? (
             <Hint>
@@ -438,7 +448,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             </Hint>
           ) : null}
 
-          {hasSufficientBalance && activeTab !== 'convert' ? (
+          {hasSufficientBalance &&
+          (activeTab !== 'convert' || !isArtistCoinsEnabled) ? (
             <Hint>
               {messages.helpCenter}{' '}
               <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
