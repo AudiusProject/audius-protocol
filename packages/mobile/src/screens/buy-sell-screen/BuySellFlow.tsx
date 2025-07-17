@@ -67,7 +67,8 @@ export const BuySellFlow = ({
     Record<BuySellTab, string>
   >({
     buy: '',
-    sell: ''
+    sell: '',
+    convert: ''
   })
 
   // Update input value for buy tab
