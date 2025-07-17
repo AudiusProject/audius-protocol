@@ -51,6 +51,7 @@ import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceF
 import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
+import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import CollectionPage from 'pages/collection-page/CollectionPage'
@@ -117,7 +118,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
-  WALLET_AUDIO_PAGE,
+  ASSET_DETAIL_PAGE,
   REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -212,8 +213,14 @@ const validSearchCategories = [
 initializeSentry()
 
 const WebPlayer = (props) => {
-  const { isProduction, history, location, mainContentRef, setMainContentRef } =
-    props
+  const {
+    isProduction,
+    history,
+    location,
+    mainContentRef,
+    setMainContentRef,
+    isArtistCoinsEnabled
+  } = props
 
   const dispatch = useDispatch()
 
@@ -692,6 +699,18 @@ const WebPlayer = (props) => {
               />
               <Route
                 exact
+                path={ASSET_DETAIL_PAGE}
+                isMobile={isMobile}
+                render={(props) => {
+                  return isArtistCoinsEnabled ? (
+                    <AssetDetailPage {...props} />
+                  ) : (
+                    <AudioPage {...props} />
+                  )
+                }}
+              />
+              <Route
+                exact
                 path={PAYMENTS_PAGE}
                 isMobile={isMobile}
                 component={WalletPage}
@@ -699,12 +718,6 @@ const WebPlayer = (props) => {
               <Route
                 exact
                 path={AUDIO_PAGE}
-                isMobile={isMobile}
-                component={AudioPage}
-              />
-              <Route
-                exact
-                path={WALLET_AUDIO_PAGE}
                 isMobile={isMobile}
                 component={AudioPage}
               />
@@ -974,12 +987,16 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const { isProduction } = useEnvironment()
 
   return (
     <RouterWebPlayer
       {...props}
       isSearchExploreEnabled={isSearchExploreEnabled}
+      isArtistCoinsEnabled={isArtistCoinsEnabled}
       isProduction={isProduction}
     />
   )
