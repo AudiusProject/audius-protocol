@@ -1,0 +1,3 @@
+- Improved app warm start by another 75% (down 2 renders / down ~150ms)
+- Improved app warm start by 83% (removed 21 rerenders from App.tsx / down ~1785ms)
+- Improved profile screen render time by 50% (down 2 renders / down ~250ms)
