@@ -1,40 +1,35 @@
 import {
+  decodeAssociatedTokenAccountInstruction,
   ClaimableTokensProgram,
   RewardManagerProgram,
-  Secp256k1Program,
-  decodeAssociatedTokenAccountInstruction,
   isCreateAssociatedTokenAccountIdempotentInstruction,
-  isCreateAssociatedTokenAccountInstruction
+  isCreateAssociatedTokenAccountInstruction,
+  Secp256k1Program
 } from '@audius/spl'
 import { Users } from '@pedalboard/storage'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   NATIVE_MINT,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   decodeInstruction,
-  getAssociatedTokenAddressSync,
   isCloseAccountInstruction,
+  isTransferCheckedInstruction,
   isSyncNativeInstruction,
-  isTransferCheckedInstruction
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
-  ComputeBudgetProgram,
   PublicKey,
-  SystemInstruction,
+  TransactionInstruction,
   SystemProgram,
-  TransactionInstruction
+  SystemInstruction,
+  ComputeBudgetProgram
 } from '@solana/web3.js'
+import bs58 from 'bs58'
 
 import { config } from '../../config'
 import { rateLimitTokenAccountCreation } from '../../redis'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
-import {
-  deriveUserBank,
-  getClaimableTokenAuthorities,
-  getJupiterAllowedMints,
-  getSupportedTokenAddresses
-} from './tokenUtils'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
@@ -46,22 +41,48 @@ const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 const COINFLOW_PROGRAM_ID = 'FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9'
 
+const waudioMintAddress = config.waudioMintAddress
+const usdcMintAddress = config.usdcMintAddress
+const bonkMintAddress = config.bonkMintAddress
+
 const REWARD_MANAGER = config.rewardsManagerAccountAddress
+
+const deriveTokenAuthority = (mint: string) =>
+  PublicKey.findProgramAddressSync(
+    [new PublicKey(mint).toBytes().slice(0, 32)],
+    new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID)
+  )[0]
+
+const claimableTokenAuthorities = {
+  usdc: deriveTokenAuthority(usdcMintAddress),
+  waudio: deriveTokenAuthority(waudioMintAddress),
+  bonk: deriveTokenAuthority(bonkMintAddress)
+}
+
+const deriveUserBank = async (
+  ethAddress: string,
+  claimableTokenAuthority: PublicKey
+) => {
+  const ethAddressArray = Uint8Array.from(
+    Buffer.from(ethAddress.substring(2), 'hex')
+  )
+  return await PublicKey.createWithSeed(
+    claimableTokenAuthority,
+    bs58.encode(ethAddressArray),
+    TOKEN_PROGRAM_ID
+  )
+}
 
 const PAYMENT_ROUTER_WALLET = PublicKey.findProgramAddressSync(
   [Buffer.from('payment_router')],
   new PublicKey(PAYMENT_ROUTER_PROGRAM_ID)
 )[0]
 
-// Get payment router token account for USDC
-const getPaymentRouterUsdcTokenAccount = () => {
-  const tokens = config.tokens
-  return getAssociatedTokenAddressSync(
-    new PublicKey(tokens.usdc.address),
-    PAYMENT_ROUTER_WALLET,
-    true
-  )
-}
+const PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT = getAssociatedTokenAddressSync(
+  new PublicKey(usdcMintAddress),
+  PAYMENT_ROUTER_WALLET,
+  true
+)
 
 /**
  * Only allow the createTokenAccount instruction of the Associated Token
@@ -83,7 +104,9 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
   ) {
     const allowedMints = [
       NATIVE_MINT.toBase58(),
-      ...getSupportedTokenAddresses()
+      usdcMintAddress,
+      waudioMintAddress,
+      bonkMintAddress
     ]
     const mintAddress = decodedInstruction.keys.mint.pubkey.toBase58()
     if (!allowedMints.includes(mintAddress)) {
@@ -172,23 +195,21 @@ const assertAllowedTokenProgramInstruction = async (
       )
     }
     const destination = decodedInstruction.keys.destination.pubkey
-    const claimableTokenAuthorities = getClaimableTokenAuthorities()
-
-    // Get all userbank addresses for this wallet
-    const userbankAddresses = await Promise.all(
-      Object.values(claimableTokenAuthorities).map((authority) =>
-        deriveUserBank(wallet, authority)
-      )
+    const usdcUserbank = await deriveUserBank(
+      wallet,
+      claimableTokenAuthorities.usdc
+    )
+    const bonkUserbank = await deriveUserBank(
+      wallet,
+      claimableTokenAuthorities.bonk
     )
 
-    const paymentRouterUsdcAccount = getPaymentRouterUsdcTokenAccount()
-
     // Check that destination is either a userbank or a payment router token account
-    const isValidDestination =
-      userbankAddresses.some((userbank) => destination.equals(userbank)) ||
-      destination.equals(paymentRouterUsdcAccount)
-
-    if (!isValidDestination) {
+    if (
+      !destination.equals(usdcUserbank) &&
+      !destination.equals(bonkUserbank) &&
+      !destination.equals(PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT)
+    ) {
       throw new InvalidRelayInstructionError(
         instructionIndex,
         `Invalid destination account: ${destination.toBase58()}`
@@ -235,13 +256,11 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   const decodedInstruction =
     ClaimableTokensProgram.decodeInstruction(instruction)
   const authority = decodedInstruction.keys.authority.pubkey
-  const claimableTokenAuthorities = getClaimableTokenAuthorities()
-
-  const isValidAuthority = Object.values(claimableTokenAuthorities).some(
-    (validAuthority) => authority.equals(validAuthority)
-  )
-
-  if (!isValidAuthority) {
+  if (
+    !authority.equals(claimableTokenAuthorities.usdc) &&
+    !authority.equals(claimableTokenAuthorities.waudio) &&
+    !authority.equals(claimableTokenAuthorities.bonk)
+  ) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid Claimable Token Authority: ${authority}`
@@ -266,6 +285,19 @@ const JupiterSharedSwapAccountIndex = {
   PLATFORM_FEE_ACCOUNT: 9,
   TOKEN_2022_PROGRAM: 10
 }
+// Only allow swaps from USDC (for withdrawals) or SOL (for userbank purchases)
+const allowedSourceMints = [
+  NATIVE_MINT.toBase58(),
+  usdcMintAddress,
+  waudioMintAddress,
+  bonkMintAddress
+]
+const allowedDestinationMints = [
+  NATIVE_MINT.toBase58(),
+  usdcMintAddress,
+  waudioMintAddress,
+  bonkMintAddress
+]
 // Only allow swaps to SOL (for withdrawals) or USDC, AUDIO, or BONK (for userbank purchases)
 const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
@@ -291,16 +323,14 @@ const assertAllowedJupiterProgramInstruction = async (
       JupiterSharedSwapAccountIndex.USER_TRANSFER_AUTHORITY
     ].pubkey.toBase58()
 
-  const allowedMints = [NATIVE_MINT.toBase58(), ...getJupiterAllowedMints()]
-
-  if (!allowedMints.includes(sourceMint)) {
+  if (!allowedSourceMints.includes(sourceMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid source mint: ${sourceMint}`
     )
   }
 
-  if (!allowedMints.includes(destinationMint)) {
+  if (!allowedDestinationMints.includes(destinationMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid destination mint: ${destinationMint}`
