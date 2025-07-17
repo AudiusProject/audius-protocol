@@ -75,7 +75,8 @@ export const UserLink = (props: UserLinkProps) => {
         columnGap: spacing.xs,
         alignItems: 'center',
         lineHeight: 'normal',
-        display: 'inline-flex'
+        display: 'inline-flex',
+        width: '100%'
       }}
     >
       <TextLink
@@ -83,7 +84,6 @@ export const UserLink = (props: UserLinkProps) => {
         css={{
           lineHeight: 'normal'
         }}
-        ellipses={popover}
         {...other}
       >
         <Text ellipses size={textSize}>
@@ -107,7 +107,8 @@ export const UserLink = (props: UserLinkProps) => {
           columnGap: spacing.xs,
           alignItems: 'center',
           lineHeight: 'normal',
-          display: 'inline-flex'
+          display: 'inline-flex',
+          width: '100%'
         }}
       >
         <ArtistPopover
@@ -119,7 +120,7 @@ export const UserLink = (props: UserLinkProps) => {
           component='span'
           mount={popoverMount}
         >
-          <TextLink to={url} ellipses={popover} {...other}>
+          <TextLink to={url} {...other}>
             <Text ellipses size={textSize}>
               {name}
             </Text>

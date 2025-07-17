@@ -149,12 +149,22 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
           {title}
         </Text>
         <Flex alignItems='baseline'>
-          <Text variant='body' size='xs' color='subdued'>
+          <Text
+            variant='body'
+            size='xs'
+            color='subdued'
+            style={{ width: '100%' }}
+          >
             {messages.track}
             {' |'}
             &nbsp;
-            <UserLink userId={user.user_id} variant='subdued' badgeSize='2xs' />
           </Text>
+          <UserLink
+            textSize='xs'
+            userId={user.user_id}
+            variant='subdued'
+            badgeSize='2xs'
+          />
         </Flex>
       </Flex>
     </RecentSearch>
@@ -213,16 +223,22 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
           {playlist_name}
         </Text>
         <Flex alignItems='baseline'>
-          <Text variant='body' size='xs' color='subdued'>
+          <Text
+            variant='body'
+            size='xs'
+            color='subdued'
+            style={{ width: '100%' }}
+          >
             {is_album ? messages.album : messages.playlist}
             {' |'}
             &nbsp;
-            <UserLink
-              userId={playlist_owner_id}
-              variant='subdued'
-              badgeSize='2xs'
-            />
           </Text>
+          <UserLink
+            textSize='xs'
+            userId={playlist_owner_id}
+            variant='subdued'
+            badgeSize='2xs'
+          />
         </Flex>
       </Flex>
     </RecentSearch>
