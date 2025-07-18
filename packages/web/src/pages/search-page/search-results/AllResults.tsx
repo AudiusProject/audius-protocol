@@ -17,6 +17,7 @@ import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
+import { CollectionImage } from 'components/collection/CollectionImage'
 import { TrackArtwork } from 'components/track/TrackArtwork'
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -68,8 +69,8 @@ const SearchResultItem = ({
     }}
   >
     {imageComponent}
-    <Flex direction='column' flex={1}>
-      <Text size='s' ellipses style={{ maxWidth: '90%' }}>
+    <Flex direction='column' css={{ minWidth: 0, flex: 1 }}>
+      <Text size='s' ellipses>
         {name}
       </Text>
       <Text size='xs' color='subdued'>
@@ -253,12 +254,15 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
               kind={Kind.COLLECTIONS}
               onClick={handleClickSearchResult}
               imageComponent={
-                <Artwork
-                  src={playlist.artwork?.['150x150']}
-                  isLoading={isLoading}
-                  w={40}
-                  h={40}
-                />
+                <Flex>
+                  <CollectionImage
+                    collectionId={playlist.playlist_id}
+                    size={SquareSizes.SIZE_150_BY_150}
+                    data-testid={`cover-art-${playlist.playlist_id}`}
+                    h={40}
+                    w={40}
+                  />
+                </Flex>
               }
               name={playlist.playlist_name}
               entityType={messages.playlist}

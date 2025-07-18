@@ -82,6 +82,7 @@ export const UserCard = (props: UserCardProps) => {
           center
           onClick={onUserLinkClick}
           popover={true}
+          css={{ width: '100%' }}
         />
         <ArtistPopover handle={handle} css={{ width: '100%' }}>
           <TextLink

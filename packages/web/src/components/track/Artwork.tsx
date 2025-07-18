@@ -4,7 +4,9 @@ import { SquareSizes, ID } from '@audius/common/models'
 import {
   IconLock,
   IconPlaybackPlay as IconPlay,
-  IconPlaybackPause as IconPause
+  IconPlaybackPause as IconPause,
+  Box,
+  BoxProps
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -31,7 +33,7 @@ type TileArtworkProps = {
     user: { name: string; is_verified: boolean; user_id: ID }
   }
   hasStreamAccess?: boolean
-}
+} & Omit<BoxProps, 'id'>
 
 export const ArtworkIcon = ({
   isBuffering,
@@ -86,7 +88,8 @@ const Artwork = memo(
     coSign,
     label,
     hasStreamAccess,
-    isTrack
+    isTrack,
+    ...other
   }: ArtworkProps) => {
     const imageElement = (
       <DynamicImage
@@ -121,6 +124,8 @@ const Artwork = memo(
       >
         {imageElement}
       </TrackFlair>
+    ) : other ? (
+      <Box {...other}>{imageElement}</Box>
     ) : (
       imageElement
     )
