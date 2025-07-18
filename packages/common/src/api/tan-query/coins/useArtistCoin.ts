@@ -15,7 +15,7 @@ export type UseArtistCoinParams = {
   owner_id?: ID[]
 }
 
-// TODO: Replace this with sdk call
+// TODO: PE-6542 Replace this with sdk call
 export const useArtistCoin = (params: UseArtistCoinParams = {}) => {
   return useQuery({
     queryKey: [QUERY_KEYS.artistCoins, params],
