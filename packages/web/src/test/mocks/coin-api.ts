@@ -87,44 +87,124 @@ export const mockWalletData = {
   coinMembers: {
     data: [
       {
-        user_id: 'eAZl3',
+        user_id: 'eARNR',
         balance: 10000
       },
       {
-        user_id: 'eBZm4',
+        user_id: 'wLWkL',
+        balance: 9500
+      },
+      {
+        user_id: 'D809W',
+        balance: 9000
+      },
+      {
+        user_id: '5epYn',
         balance: 8500
       },
       {
-        user_id: 'eCAn5',
-        balance: 7200
+        user_id: '07wAJpk',
+        balance: 8000
       },
       {
-        user_id: 'eDBo6',
+        user_id: 'nV59e',
+        balance: 7500
+      },
+      {
+        user_id: 'no8XL',
+        balance: 7000
+      },
+      {
+        user_id: 'DrAOL',
         balance: 6500
       },
       {
-        user_id: 'eECp7',
-        balance: 5800
+        user_id: 'ebGKn',
+        balance: 6000
       },
       {
-        user_id: 'eFDq8',
-        balance: 5200
+        user_id: 'epYKn',
+        balance: 5500
       },
       {
-        user_id: 'eGEr9',
-        balance: 4800
+        user_id: 'LMZjD',
+        balance: 5000
       },
       {
-        user_id: 'eHFs0',
-        balance: 4200
+        user_id: 'ezbPe',
+        balance: 4500
       },
       {
-        user_id: 'eIGt1',
-        balance: 3800
+        user_id: 'ngNmq',
+        balance: 4000
       },
       {
-        user_id: 'eJHv2',
+        user_id: 'DNBEw',
         balance: 3500
+      },
+      {
+        user_id: '51Aq2',
+        balance: 3000
+      },
+      {
+        user_id: 'nkPKL',
+        balance: 2800
+      },
+      {
+        user_id: 'ebWQP',
+        balance: 2600
+      },
+      {
+        user_id: 'D2p1n',
+        balance: 2400
+      },
+      {
+        user_id: 'epVBL',
+        balance: 2200
+      },
+      {
+        user_id: 'D9p2L',
+        balance: 2000
+      },
+      {
+        user_id: 'DO6RL',
+        balance: 1800
+      },
+      {
+        user_id: 'DX94Z',
+        balance: 1600
+      },
+      {
+        user_id: 'DvqmL',
+        balance: 1400
+      },
+      {
+        user_id: 'eYPzm',
+        balance: 1200
+      },
+      {
+        user_id: 'BZk61',
+        balance: 1000
+      },
+      {
+        user_id: 'DNyKQ',
+        balance: 900
+      },
+      {
+        user_id: 'ep2KL',
+        balance: 800
+      },
+      {
+        user_id: 'nl13K',
+        balance: 700
+      },
+      {
+        user_id: 'eGlEn',
+        balance: 600
+      },
+      {
+        user_id: 'Lw81D',
+        balance: 500
       }
     ]
   },
@@ -177,7 +257,7 @@ export const mockWalletData = {
 }
 
 // MSW handlers for coin API endpoints
-export const walletApiHandlers = [
+export const coinApiHandlers = [
   // GET /v1/coin/:mint - Get Artist Coin Information
   http.get(`${apiEndpoint}/v1/coin/:mint`, ({ params }) => {
     const { mint } = params
@@ -337,6 +417,6 @@ export const walletApiHandlers = [
 ]
 
 // Helper function to use these handlers in tests
-export const useWalletApiMocks = () => {
-  return walletApiHandlers
+export const useCoinApiMocks = () => {
+  return coinApiHandlers
 }

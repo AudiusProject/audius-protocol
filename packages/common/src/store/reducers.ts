@@ -99,6 +99,7 @@ import vipDiscordModalReducer from './ui/vip-discord-modal/slice'
 import { VipDiscordModalState } from './ui/vip-discord-modal/types'
 import upload from './upload/reducer'
 import { UploadState } from './upload/types'
+import coinLeaderboardUserListReducer from './user-list/coin-leaderboard/reducers'
 import favoritesUserListReducer from './user-list/favorites/reducers'
 import followersUserListReducer from './user-list/followers/reducers'
 import followingUserListReducer from './user-list/following/reducers'
@@ -165,6 +166,7 @@ export const reducers = (storage: Storage, history?: History) => ({
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
     userList: combineReducers({
+      coinLeaderboard: coinLeaderboardUserListReducer,
       followers: followersUserListReducer,
       following: followingUserListReducer,
       reposts: repostsUserListReducer,
@@ -277,6 +279,7 @@ export type CommonState = {
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
     userList: {
+      coinLeaderboard: ReturnType<typeof coinLeaderboardUserListReducer>
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>
       followers: ReturnType<typeof followersUserListReducer>

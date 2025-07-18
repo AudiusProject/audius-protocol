@@ -1,8 +1,17 @@
 import { WidthSizes } from '@audius/common/models'
-import { Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { Flex, Paper, Text, useTheme, PlainButton } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListType,
+  UserListEntityType
+} from 'store/application/ui/userListModal/types'
 
 import { ACCEPTED_ROUTES, ASSET_INFO_SECTION_MESSAGES } from '../constants'
 import { AssetDetailProps } from '../types'
@@ -68,8 +77,20 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
 }
 
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
+  const dispatch = useDispatch()
   const { title } = ACCEPTED_ROUTES[mint]
   const CTAIcon = ASSET_INFO_SECTION_MESSAGES[mint].ctaIcon
+
+  const handleViewLeaderboard = () => {
+    dispatch(
+      setUsers({
+        userListType: UserListType.COIN_LEADERBOARD,
+        entityType: UserListEntityType.USER,
+        entity: mint
+      })
+    )
+    dispatch(setVisibility(true))
+  }
 
   return (
     <Paper
@@ -107,13 +128,27 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
         </Flex>
       </Flex>
 
-      <Flex alignItems='center' alignSelf='stretch' p='xl' borderTop='default'>
+      <Flex
+        alignItems='center'
+        justifyContent='space-between'
+        alignSelf='stretch'
+        p='xl'
+        borderTop='default'
+      >
         <Flex alignItems='center' justifyContent='center' gap='s'>
           <CTAIcon size='m' color='default' />
           <Text variant='title' size='m'>
             {ASSET_INFO_SECTION_MESSAGES[mint].cta}
           </Text>
         </Flex>
+
+        <PlainButton
+          variant='default'
+          size='default'
+          onClick={handleViewLeaderboard}
+        >
+          View Leaderboard
+        </PlainButton>
       </Flex>
     </Paper>
   )

@@ -17,6 +17,9 @@ export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
 
+// Coins
+export * from './tan-query/coins/useArtistCoinMembers'
+
 // Developer Apps
 export * from '../schemas/developerApps'
 export * from './tan-query/developer-apps/useDeveloperApps'
