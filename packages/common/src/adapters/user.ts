@@ -164,7 +164,8 @@ export const userMetadataToSdk = (
       'handle',
       'is_deactivated',
       'allow_ai_attribution',
-      'profile_type'
+      'profile_type',
+      'spl_usdc_payout_wallet'
     ])
   ),
   bio: input.bio ?? undefined,
@@ -179,6 +180,5 @@ export const userMetadataToSdk = (
   twitterHandle: input.twitter_handle ?? undefined,
   instagramHandle: input.instagram_handle ?? undefined,
   playlistLibrary: input.playlist_library ?? undefined,
-  tiktokHandle: input.tiktok_handle ?? undefined,
-  splUsdcPayoutWallet: input.spl_usdc_payout_wallet ?? undefined
+  tiktokHandle: input.tiktok_handle ?? undefined
 })
