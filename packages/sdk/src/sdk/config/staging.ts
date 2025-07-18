@@ -85,7 +85,7 @@ export const stagingConfig: SdkServicesConfig = {
     "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   },
   "ethereum": {
-    "rpcEndpoint": "https://eth-sepolia.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ",
+    "rpcEndpoint": "https://eth-client.staging.audius.co",
     "addresses": {
       "ethRewardsManagerAddress": "0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1",
       "serviceProviderFactoryAddress": "0x377BE01aD31360d0DFB16035A4515954395A8185",
