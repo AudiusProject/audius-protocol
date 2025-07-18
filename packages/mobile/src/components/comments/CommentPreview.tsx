@@ -178,7 +178,7 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   )
 
   useEffectOnce(() => {
-    if (showComments) {
+    if (showComments || highlightCommentId) {
       openCommentDrawer()
     }
   })
