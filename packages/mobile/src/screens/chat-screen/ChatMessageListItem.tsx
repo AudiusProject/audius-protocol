@@ -1,9 +1,7 @@
 import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -166,9 +164,6 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   } = props
   const styles = useStyles()
   const { data: userId } = useCurrentUserId()
-  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
-    FeatureFlags.ARTIST_COINS
-  )
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )
@@ -260,41 +255,11 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
                   }
                 >
-                  {isArtistCoinEnabled && senderUserId ? (
+                  {senderUserId ? (
                     <ArtistCoinHeader
                       userId={senderUserId}
                       audience={message?.audience}
                     />
-                  ) : null}
-                  {message?.audience &&
-                  message.audience !== 'customer_audience' ? (
-                    <Flex
-                      row
-                      ph='l'
-                      pv='xs'
-                      gap='m'
-                      alignItems='center'
-                      justifyContent='space-between'
-                      backgroundColor='surface1'
-                      borderBottom='default'
-                    >
-                      <Flex row gap='xs' alignItems='center'>
-                        <Text variant='label' size='s' color='subdued'>
-                          Sent to:
-                        </Text>
-                        <Text variant='label' size='s' color='accent'>
-                          {message.audience === 'follower_audience'
-                            ? 'Followers'
-                            : message.audience === 'tipper_audience'
-                              ? 'Tippers'
-                              : message.audience === 'remixer_audience'
-                                ? 'Remixers'
-                                : message.audience === 'coin_holder_audience'
-                                  ? 'Coin Holders'
-                                  : message.audience}
-                        </Text>
-                      </Flex>
-                    </Flex>
                   ) : null}
                   {isCollection ? (
                     <ChatMessagePlaylist

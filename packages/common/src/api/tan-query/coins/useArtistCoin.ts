@@ -6,11 +6,8 @@ import { ID } from '~/models'
 import { QUERY_KEYS } from '../queryKeys'
 
 export type ArtistCoin = {
-  // Add fields as returned by the /v1/coins endpoint
-  // Example fields (replace with actual response fields):
   mint: string
   owner_id: string
-  // ...other fields
 }
 
 export type UseArtistCoinParams = {
@@ -18,6 +15,7 @@ export type UseArtistCoinParams = {
   owner_id?: ID[]
 }
 
+// TODO: Replace this with sdk call
 export const useArtistCoin = (params: UseArtistCoinParams = {}) => {
   return useQuery({
     queryKey: [QUERY_KEYS.coins, params],
