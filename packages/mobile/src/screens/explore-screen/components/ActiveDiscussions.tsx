@@ -10,15 +10,19 @@ export const ActiveDiscussions = () => {
   const { data: recentlyCommentedTracks, isLoading } =
     useRecentlyCommentedTracks()
 
-  if (!recentlyCommentedTracks || recentlyCommentedTracks.length === 0) {
+  if (
+    !isLoading &&
+    (!recentlyCommentedTracks || recentlyCommentedTracks.length === 0)
+  ) {
     return null
   }
 
   return (
-    <ExploreSection title={messages.activeDiscussions} isLoading={isLoading}>
+    <ExploreSection title={messages.activeDiscussions}>
       <TrackTileCarousel
         tracks={recentlyCommentedTracks}
         uidPrefix='recently-commented-track'
+        isLoading={isLoading}
       />
     </ExploreSection>
   )
