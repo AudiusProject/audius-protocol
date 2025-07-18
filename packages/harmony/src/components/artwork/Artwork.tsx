@@ -38,6 +38,7 @@ export const Artwork = (props: ArtworkProps) => {
   const [isLoadingState, setIsLoadingState] = useState(true)
   const isLoading = isLoadingProp ?? isLoadingState
   const { color, motion } = useTheme()
+
   useEffect(() => {
     setIsLoadingState(true)
   }, [src])
