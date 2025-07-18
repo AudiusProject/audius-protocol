@@ -1,16 +1,15 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { useCurrentUserId, useUsers } from '@audius/common/api'
-import { useCanSendMessage, useFeatureFlag } from '@audius/common/hooks'
+import { useCanSendMessage } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
-import { Flex, IconError, IconPlus, IconTokenBonk, Text } from '@audius/harmony'
+import { Flex, IconError, IconPlus } from '@audius/harmony'
 import { HashId, Id, OptionalHashId, ReactionTypes } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
@@ -22,6 +21,7 @@ import { UserGeneratedTextV2 } from 'components/user-generated-text/UserGenerate
 
 import ChatTail from '../../../assets/img/ChatTail.svg'
 
+import { ArtistCoinHeader } from './ArtistCoinHeader'
 import styles from './ChatMessageListItem.module.css'
 import { ChatMessagePlaylist } from './ChatMessagePlaylist'
 import { ChatMessageTrack } from './ChatMessageTrack'
@@ -55,9 +55,6 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
 
   // Selectors
   const { data: userId } = useCurrentUserId()
-  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
-    FeatureFlags.ARTIST_COINS
-  )
   const { byId: reactionUsers } = useUsers(
     message.reactions?.map((r) => HashId.parse(r.user_id))
   )
@@ -182,27 +179,10 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       >
         <Flex className={styles.bubbleCorners}>
           <Flex column>
-            {isArtistCoinEnabled ? (
-              <Flex
-                ph='l'
-                pv='xs'
-                gap='m'
-                justifyContent='space-between'
-                alignItems='center'
-                backgroundColor='surface1'
-                borderBottom='default'
-              >
-                <Flex gap='xs' alignItems='center'>
-                  <IconTokenBonk size='xs' />
-                  <Text variant='label' size='s'>
-                    $Bonk
-                  </Text>
-                </Flex>
-                <Text variant='label' size='s' color='accent'>
-                  {messages.membersOnly}
-                </Text>
-              </Flex>
-            ) : null}
+            <ArtistCoinHeader
+              userId={senderUserId}
+              audience={message.audience}
+            />
             {isCollectionUrl(linkValue) ? (
               <ChatMessagePlaylist
                 className={styles.unfurl}

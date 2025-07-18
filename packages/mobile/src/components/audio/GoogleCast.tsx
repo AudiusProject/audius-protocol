@@ -43,7 +43,7 @@ export const useChromecast = () => {
   const previousCastState = usePrevious(castState)
 
   const [internalCounter, setInternalCounter] = useState(0)
-  const imageUrl = useImageSize({
+  const { imageUrl } = useImageSize({
     artwork: track?.artwork,
     targetSize: SquareSizes.SIZE_1000_BY_1000
   })

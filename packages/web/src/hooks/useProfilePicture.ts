@@ -20,7 +20,7 @@ export const useProfilePicture = ({
   })
   const { profile_picture, updatedProfilePicture } = partialUser ?? {}
 
-  const image = useImageSize({
+  const { imageUrl } = useImageSize({
     artwork: profile_picture,
     targetSize: size,
     defaultImage: defaultImage ?? profilePicEmpty,
@@ -30,5 +30,5 @@ export const useProfilePicture = ({
   if (updatedProfilePicture) {
     return updatedProfilePicture.url
   }
-  return image
+  return imageUrl
 }

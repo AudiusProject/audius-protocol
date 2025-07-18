@@ -55,6 +55,7 @@ export type ChatMessageRPC = {
     message: string
     parent_message_id?: string
     is_plaintext?: boolean
+    audience?: ChatBlastAudience
   }
 }
 
@@ -159,6 +160,7 @@ export type ChatMessage = {
   created_at: string
   message: string
   is_plaintext: boolean
+  audience?: ChatBlastAudience
   reactions: ChatMessageReaction[]
 }
 

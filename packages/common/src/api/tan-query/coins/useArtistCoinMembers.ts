@@ -28,7 +28,7 @@ export const getCoinLeaderboardQueryKey = (
   sortDirection?: 'asc' | 'desc'
 ) =>
   [
-    QUERY_KEYS.coinLeaderboard,
+    QUERY_KEYS.artistCoinMembers,
     mint,
     pageSize,
     minBalance,

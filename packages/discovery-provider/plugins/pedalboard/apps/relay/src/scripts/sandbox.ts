@@ -9,7 +9,7 @@ export const main = async () => {
   dotenv.config({ path: './dev.env' })
 
   const provider = new ethers.providers.JsonRpcProvider(
-    'http://eth.staging.audius.co'
+    'http://eth-client.staging.audius.co'
   )
   const { chainId } = await provider.getNetwork()
   console.log(`chain id = ${chainId}`)
