@@ -1,9 +1,7 @@
 import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -15,10 +13,10 @@ import type { ReactionTypes, ChatMessageReaction } from '@audius/sdk'
 import { css } from '@emotion/native'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Dimensions, Keyboard, Platform } from 'react-native'
+import { Dimensions, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex, IconTokenBonk, spacing, Text } from '@audius/harmony-native'
+import { Flex, spacing, Text } from '@audius/harmony-native'
 import ChatTail from 'app/assets/images/ChatTail.svg'
 import { Pressable, UserGeneratedText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -27,6 +25,7 @@ import { zIndex } from 'app/utils/zIndex'
 
 import { reactionMap } from '../notifications-screen/Reaction'
 
+import { ArtistCoinHeader } from './ArtistCoinHeader'
 import { ChatMessagePlaylist } from './ChatMessagePlaylist'
 import { ChatMessageTrack } from './ChatMessageTrack'
 import { LinkPreview } from './LinkPreview'
@@ -36,10 +35,6 @@ import { REACTION_LONGPRESS_DELAY } from './constants'
 const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
-
-const messages = {
-  membersOnly: 'Members Only'
-}
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   bubble: {
@@ -169,9 +164,6 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   } = props
   const styles = useStyles()
   const { data: userId } = useCurrentUserId()
-  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
-    FeatureFlags.ARTIST_COINS
-  )
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )
@@ -263,32 +255,11 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
                   }
                 >
-                  {isArtistCoinEnabled ? (
-                    <Flex
-                      row
-                      ph='l'
-                      pv='xs'
-                      gap='m'
-                      alignItems='center'
-                      justifyContent='space-between'
-                      backgroundColor='surface1'
-                      borderBottom='default'
-                    >
-                      <Flex row gap='xs' alignItems='center'>
-                        <IconTokenBonk size='xs' />
-                        {/* Alignment bug for label text variant on iOS */}
-                        <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
-                          <Text variant='label' size='s'>
-                            $Bonk
-                          </Text>
-                        </Flex>
-                      </Flex>
-                      <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
-                        <Text variant='label' size='s' color='accent'>
-                          {messages.membersOnly}
-                        </Text>
-                      </Flex>
-                    </Flex>
+                  {senderUserId ? (
+                    <ArtistCoinHeader
+                      userId={senderUserId}
+                      audience={message?.audience}
+                    />
                   ) : null}
                   {isCollection ? (
                     <ChatMessagePlaylist
