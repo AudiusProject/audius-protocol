@@ -22,11 +22,9 @@ export const ArtistCoinHeader = ({
     audience
   })
 
-  console.log('REED', { artistCoinSymbol })
   if (!artistCoinSymbol) return null
 
   const ArtistCoinIcon = TOKENS[artistCoinSymbol]?.icon
-  console.log('REED', { ArtistCoinIcon, TOKENS })
 
   return (
     <Flex
