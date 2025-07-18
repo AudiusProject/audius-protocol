@@ -33,7 +33,7 @@ type TileArtworkProps = {
     user: { name: string; is_verified: boolean; user_id: ID }
   }
   hasStreamAccess?: boolean
-} & BoxProps
+} & Omit<BoxProps, 'id'>
 
 export const ArtworkIcon = ({
   isBuffering,
