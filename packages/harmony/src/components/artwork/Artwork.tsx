@@ -38,7 +38,6 @@ export const Artwork = (props: ArtworkProps) => {
   const [isLoadingState, setIsLoadingState] = useState(true)
   const isLoading = isLoadingProp ?? isLoadingState
   const { color, motion } = useTheme()
-  console.log('asdf imgRef', imgRef.current)
   useEffect(() => {
     setIsLoadingState(true)
   }, [src])
@@ -90,7 +89,6 @@ export const Artwork = (props: ArtworkProps) => {
               setIsLoadingState(false)
             }}
             onError={(event) => {
-              console.log('asdf error: ', event)
               setIsLoadingState(false)
               onError?.(event)
             }}

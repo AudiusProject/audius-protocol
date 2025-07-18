@@ -146,7 +146,6 @@ export const CollectionArtwork = memo((props: TileArtworkProps) => {
     collectionId: props.id,
     size: SquareSizes.SIZE_150_BY_150
   })
-  console.log('asdf image', props.id, image)
 
   return <Artwork {...props} image={image} />
 })
