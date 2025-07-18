@@ -22,7 +22,7 @@ export const useArtistCoinMessageHeader = ({
   const { data: coins } = useArtistCoin({ owner_id: [userId] })
 
   let artistCoinTicker
-  if (coins && coins.length > 0) {
+  if (!!coins && coins.length > 0) {
     const firstCoin = coins[0]
     if (firstCoin.mint) {
       const tokenRegistry = getTokenRegistry()
