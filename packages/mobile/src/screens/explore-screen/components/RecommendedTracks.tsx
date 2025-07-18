@@ -9,15 +9,16 @@ import { TrackTileCarousel } from './TrackTileCarousel'
 export const RecommendedTracks = () => {
   const { data: recommendedTracks, isLoading } = useRecommendedTracks()
 
-  if (!recommendedTracks || recommendedTracks.length === 0) {
+  if (!isLoading && (!recommendedTracks || recommendedTracks.length === 0)) {
     return null
   }
 
   return (
-    <ExploreSection title={messages.forYou} isLoading={isLoading}>
+    <ExploreSection title={messages.forYou}>
       <TrackTileCarousel
         tracks={recommendedTracks}
         uidPrefix='recommended-track'
+        isLoading={isLoading}
       />
     </ExploreSection>
   )

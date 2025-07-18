@@ -8,17 +8,18 @@ import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const RecentPremiumTracks = () => {
   const { data: recentPremiumTracks, isLoading } = useRecentPremiumTracks()
-  if (!recentPremiumTracks || recentPremiumTracks.length === 0) {
+  if (
+    !isLoading &&
+    (!recentPremiumTracks || recentPremiumTracks.length === 0)
+  ) {
     return null
   }
   return (
-    <ExploreSection
-      title={messages.recentlyListedForSale}
-      isLoading={isLoading}
-    >
+    <ExploreSection title={messages.recentlyListedForSale}>
       <TrackTileCarousel
         tracks={recentPremiumTracks}
         uidPrefix='recent-premium'
+        isLoading={isLoading}
       />
     </ExploreSection>
   )
