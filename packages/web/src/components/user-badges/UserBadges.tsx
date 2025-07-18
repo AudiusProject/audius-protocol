@@ -153,7 +153,14 @@ const UserBadges = ({
   }, [tier, userId, anchorOrigin, transformOrigin, size])
 
   const artistCoinBadge = useMemo(() => {
-    if (!coinBalance || !bonkMint || !isArtistCoinEnabled) return null
+    if (
+      !coinBalance ||
+      !bonkMint ||
+      !isArtistCoinEnabled ||
+      coinBalance.value === BigInt(0)
+    )
+      return null
+
     return (
       <ArtistCoinHoverCard
         mint={bonkMint}
