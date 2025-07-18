@@ -31,7 +31,7 @@ const messages = {
   bonkTicker: '$BONK'
 }
 
-const { WALLET_AUDIO_PAGE } = route
+const { WALLET_AUDIO_PAGE, ASSET_DETAIL_PAGE } = route
 
 const YourCoinsHeader = () => {
   const { onOpen: openBuySellModal } = useBuySellModal()
@@ -78,6 +78,10 @@ export const YourCoins = () => {
     dispatch(push(WALLET_AUDIO_PAGE))
   }, [dispatch])
 
+  const handleBonkClick = useCallback(() => {
+    dispatch(push(ASSET_DETAIL_PAGE.replace(':slug', 'bonk')))
+  }, [dispatch])
+
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
       {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
@@ -91,7 +95,7 @@ export const YourCoins = () => {
         {isArtistCoinsEnabled ? (
           <>
             <Divider orientation='vertical' />
-            <BonkCoinCard onClick={handleTokenClick} />
+            <BonkCoinCard onClick={handleBonkClick} />
           </>
         ) : null}
       </Flex>
