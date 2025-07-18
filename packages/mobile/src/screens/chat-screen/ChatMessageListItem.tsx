@@ -15,10 +15,10 @@ import type { ReactionTypes, ChatMessageReaction } from '@audius/sdk'
 import { css } from '@emotion/native'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Dimensions, Keyboard, Platform } from 'react-native'
+import { Dimensions, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex, IconTokenBonk, spacing, Text } from '@audius/harmony-native'
+import { Flex, spacing, Text } from '@audius/harmony-native'
 import ChatTail from 'app/assets/images/ChatTail.svg'
 import { Pressable, UserGeneratedText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -27,6 +27,7 @@ import { zIndex } from 'app/utils/zIndex'
 
 import { reactionMap } from '../notifications-screen/Reaction'
 
+import { ArtistCoinHeader } from './ArtistCoinHeader'
 import { ChatMessagePlaylist } from './ChatMessagePlaylist'
 import { ChatMessageTrack } from './ChatMessageTrack'
 import { LinkPreview } from './LinkPreview'
@@ -36,10 +37,6 @@ import { REACTION_LONGPRESS_DELAY } from './constants'
 const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
-
-const messages = {
-  membersOnly: 'Members Only'
-}
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   bubble: {
@@ -263,7 +260,14 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
                   }
                 >
-                  {isArtistCoinEnabled ? (
+                  {isArtistCoinEnabled && senderUserId ? (
+                    <ArtistCoinHeader
+                      userId={senderUserId}
+                      audience={message?.audience}
+                    />
+                  ) : null}
+                  {message?.audience &&
+                  message.audience !== 'customer_audience' ? (
                     <Flex
                       row
                       ph='l'
@@ -275,17 +279,19 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       borderBottom='default'
                     >
                       <Flex row gap='xs' alignItems='center'>
-                        <IconTokenBonk size='xs' />
-                        {/* Alignment bug for label text variant on iOS */}
-                        <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
-                          <Text variant='label' size='s'>
-                            $Bonk
-                          </Text>
-                        </Flex>
-                      </Flex>
-                      <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
+                        <Text variant='label' size='s' color='subdued'>
+                          Sent to:
+                        </Text>
                         <Text variant='label' size='s' color='accent'>
-                          {messages.membersOnly}
+                          {message.audience === 'follower_audience'
+                            ? 'Followers'
+                            : message.audience === 'tipper_audience'
+                              ? 'Tippers'
+                              : message.audience === 'remixer_audience'
+                                ? 'Remixers'
+                                : message.audience === 'coin_holder_audience'
+                                  ? 'Coin Holders'
+                                  : message.audience}
                         </Text>
                       </Flex>
                     </Flex>
