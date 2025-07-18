@@ -79,6 +79,7 @@ const UserBadges = ({
     FeatureFlags.ARTIST_COINS
   )
 
+  // TODO: PE-6541 Show artist coin for which user has highest balance
   const bonkToken = getTokenBySymbol(env, 'BONK')
   const bonkMint = bonkToken?.address
   const { data: coinBalance } = useTokenBalance({
@@ -152,14 +153,14 @@ const UserBadges = ({
     )
   }, [tier, userId, anchorOrigin, transformOrigin, size])
 
+  const shouldShowArtistCoinBadge =
+    !!coinBalance &&
+    !!bonkMint &&
+    isArtistCoinEnabled &&
+    coinBalance.value !== BigInt(0)
+
   const artistCoinBadge = useMemo(() => {
-    if (
-      !coinBalance ||
-      !bonkMint ||
-      !isArtistCoinEnabled ||
-      coinBalance.value === BigInt(0)
-    )
-      return null
+    if (!shouldShowArtistCoinBadge) return null
 
     return (
       <ArtistCoinHoverCard
@@ -183,9 +184,8 @@ const UserBadges = ({
       </ArtistCoinHoverCard>
     )
   }, [
-    coinBalance,
+    shouldShowArtistCoinBadge,
     bonkMint,
-    isArtistCoinEnabled,
     userId,
     anchorOrigin,
     transformOrigin,
