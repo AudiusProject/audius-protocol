@@ -33,14 +33,6 @@ export const ASSET_INFO_SECTION_MESSAGES = {
     cta: 'Browse Rewards',
     ctaIcon: IconGift
   },
-  usdc: {
-    description: [
-      '$USDC is a stablecoin pegged to the US Dollar. It provides stability and is commonly used for trading and transactions.',
-      'You can use $USDC for purchasing other tokens, tipping artists, and as a stable store of value within the Audius ecosystem.'
-    ],
-    cta: 'Learn More',
-    ctaIcon: IconGift
-  },
   bonk: {
     description: [
       '$BONK is a community-driven meme token on Solana. It has gained popularity for its vibrant community and ecosystem.',
