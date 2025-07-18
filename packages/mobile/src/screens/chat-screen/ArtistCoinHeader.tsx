@@ -17,13 +17,12 @@ export const ArtistCoinHeader = ({
   userId: ID
   audience?: ChatBlastAudience
 }) => {
-  const { shouldShowArtistCoinHeader, artistCoinTicker } =
-    useArtistCoinMessageHeader({
-      userId,
-      audience
-    })
+  const artistCoinSymbol = useArtistCoinMessageHeader({
+    userId,
+    audience
+  })
 
-  if (!shouldShowArtistCoinHeader) return null
+  if (!artistCoinSymbol) return null
 
   return (
     <Flex
@@ -37,12 +36,13 @@ export const ArtistCoinHeader = ({
       borderBottom='default'
     >
       <Flex row gap='xs' alignItems='center'>
+        {/* TODO: Lookup artist coin icon from TOKENS */}
         <IconTokenBonk size='xs' />
         {/* Alignment bug for label text variant on iOS */}
         <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
           <Text variant='label' size='s'>
             {walletMessages.dollarSign}
-            {artistCoinTicker}
+            {artistCoinSymbol}
           </Text>
         </Flex>
       </Flex>

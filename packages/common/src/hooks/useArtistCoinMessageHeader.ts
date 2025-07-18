@@ -21,23 +21,24 @@ export const useArtistCoinMessageHeader = ({
 
   const { data: coins } = useArtistCoin({ owner_id: [userId] })
 
-  let artistCoinTicker
+  if (
+    !isArtistCoinEnabled ||
+    !audience ||
+    audience !== ChatBlastAudience.COIN_HOLDERS
+  ) {
+    return null
+  }
+
+  let artistCoinSymbol
+  let artistCoin
   if (!!coins && coins.length > 0) {
-    const firstCoin = coins[0]
-    if (firstCoin.mint) {
+    artistCoin = coins[0]
+    if (artistCoin.mint) {
       const tokenRegistry = getTokenRegistry()
-      const token = tokenRegistry.getTokenByAddress(firstCoin.mint)
-      artistCoinTicker = token?.symbol
+      const token = tokenRegistry.getTokenByAddress(artistCoin.mint)
+      artistCoinSymbol = token?.symbol
     }
   }
 
-  const shouldShowArtistCoinHeader =
-    isArtistCoinEnabled &&
-    audience === ChatBlastAudience.COIN_HOLDERS &&
-    artistCoinTicker
-
-  return {
-    shouldShowArtistCoinHeader,
-    artistCoinTicker
-  }
+  return artistCoinSymbol
 }

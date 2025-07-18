@@ -18,7 +18,7 @@ export type UseArtistCoinParams = {
 // TODO: Replace this with sdk call
 export const useArtistCoin = (params: UseArtistCoinParams = {}) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.coins, params],
+    queryKey: [QUERY_KEYS.artistCoins, params],
     queryFn: async () => {
       const searchParams = new URLSearchParams()
       if (params.mint) {
