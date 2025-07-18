@@ -18,8 +18,7 @@ export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
 
 // Coins
-export * from './tan-query/coins/useCoin'
-export * from './tan-query/coins/useCoinLeaderboard'
+export * from './tan-query/coins/useArtistCoinMembers'
 
 // Developer Apps
 export * from '../schemas/developerApps'

@@ -14,8 +14,8 @@ export interface CoinMember {
   balance: number
 }
 
-export interface UseCoinLeaderboardArgs {
-  mint: string | null | undefined
+export interface UseArtistCoinMembersArgs {
+  mint: string | null
   pageSize?: number
   minBalance?: number
   sortDirection?: 'asc' | 'desc'
@@ -35,13 +35,13 @@ export const getCoinLeaderboardQueryKey = (
     sortDirection
   ] as unknown as QueryKey<InfiniteData<CoinMember[]>>
 
-export const useCoinLeaderboard = (
+export const useArtistCoinMembers = (
   {
     mint,
     pageSize = DEFAULT_PAGE_SIZE,
     minBalance,
     sortDirection = 'desc'
-  }: UseCoinLeaderboardArgs,
+  }: UseArtistCoinMembersArgs,
   options?: QueryOptions
 ) => {
   const { env } = useQueryContext()

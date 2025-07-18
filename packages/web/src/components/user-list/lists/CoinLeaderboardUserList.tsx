@@ -1,4 +1,4 @@
-import { useCoinLeaderboard } from '@audius/common/api'
+import { useArtistCoinMembers } from '@audius/common/api'
 import { coinLeaderboardUserListSelectors } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -9,7 +9,7 @@ export const CoinLeaderboardUserList = () => {
   const mint = useSelector(coinLeaderboardUserListSelectors.getMint)
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
-    useCoinLeaderboard({ mint })
+    useArtistCoinMembers({ mint })
 
   if (!mint) return null
 
