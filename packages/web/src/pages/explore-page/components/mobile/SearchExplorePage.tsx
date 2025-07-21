@@ -8,7 +8,9 @@ import {
 } from 'react'
 
 import { useExploreContent } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Paper,
   Text,
@@ -60,6 +62,8 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ExploreSection } from '../desktop/ExploreSection'
 
+import { MostSharedSection } from './MostSharedSection'
+
 export type ExplorePageProps = {
   title: string
   pageTitle: string
@@ -94,6 +98,10 @@ const ExplorePage = () => {
   const searchBarRef = useRef<HTMLInputElement>(null)
   const { color, spacing } = useTheme()
   const { isLarge } = useMedia()
+
+  const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
 
   const { data: exploreContent } = useExploreContent()
 
@@ -272,6 +280,7 @@ const ExplorePage = () => {
               data={exploreContent?.featuredLabels}
               Card={UserCard}
             />
+
             <Flex direction='column' ph='l' gap='2xl'>
               <Flex direction='column' gap='l' alignItems='center'>
                 <Text variant='title' size='l'>
@@ -312,6 +321,7 @@ const ExplorePage = () => {
                     ))}
                 </Flex>
               </Flex>
+              {isSearchExploreGoodiesEnabled && <MostSharedSection />}
               <Flex direction='column' gap='l'>
                 <Text variant='title' size='l'>
                   {messages.bestOfAudius}
