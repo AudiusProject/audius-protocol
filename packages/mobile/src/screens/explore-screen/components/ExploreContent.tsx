@@ -39,13 +39,12 @@ const MemoizedExploreContent = () => {
       <MoodsGrid />
       {isSearchExploreGoodiesEnabled ? (
         <>
+          <MostSharedTracks />
           <BestSelling />
           <FeelingLucky />
           <RecentPremiumTracks />
         </>
       ) : null}
-
-      <MostSharedTracks />
 
       <BestOfAudiusTiles />
     </ProgressiveScrollView>
