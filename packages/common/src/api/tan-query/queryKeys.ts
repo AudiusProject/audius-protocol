@@ -73,6 +73,7 @@ export const QUERY_KEYS = {
   purchasersCount: 'purchasersCount',
   remixedTracks: 'remixedTracks',
   recommendedTracks: 'recommendedTracks',
+  mostSharedTracks: 'mostSharedTracks',
   recentPremiumTracks: 'recentPremiumTracks',
   mutedUsers: 'mutedUsers',
   salesAggregate: 'salesAggregate',
