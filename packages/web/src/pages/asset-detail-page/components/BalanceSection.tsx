@@ -1,8 +1,9 @@
 import { ComponentType } from 'react'
 
-import { useAudioBalance } from '@audius/common/api'
-import { useFormattedAudioBalance } from '@audius/common/hooks'
+import { useTokenBalance } from '@audius/common/api'
+import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
+import { MintName } from '@audius/common/services'
 import {
   tokenDashboardPageActions,
   useAddCashModal,
@@ -61,17 +62,18 @@ const HasBalanceState = ({
   icon,
   onBuy,
   onSend,
-  onReceive
-}: BalanceStateProps) => {
+  onReceive,
+  token
+}: BalanceStateProps & { token: MintName }) => {
   const { motion } = useTheme()
   const {
-    audioBalanceFormatted,
-    audioDollarValue,
-    isAudioBalanceLoading,
-    isAudioPriceLoading
-  } = useFormattedAudioBalance()
+    tokenBalanceFormatted,
+    tokenDollarValue,
+    isTokenBalanceLoading,
+    isTokenPriceLoading
+  } = useFormattedTokenBalance(token)
 
-  const isLoading = isAudioBalanceLoading || isAudioPriceLoading
+  const isLoading = isTokenBalanceLoading || isTokenPriceLoading
 
   return (
     <>
@@ -87,14 +89,14 @@ const HasBalanceState = ({
         >
           <Flex gap='xs'>
             <Text variant='heading' size='l' color='default'>
-              {audioBalanceFormatted}
+              {tokenBalanceFormatted}
             </Text>
             <Text variant='heading' size='l' color='subdued'>
               {title}
             </Text>
           </Flex>
           <Text variant='heading' size='s' color='subdued'>
-            {audioDollarValue}
+            {tokenDollarValue}
           </Text>
         </Flex>
       </Flex>
@@ -116,8 +118,11 @@ const HasBalanceState = ({
 }
 
 export const BalanceSection = ({ mint }: AssetDetailProps) => {
-  const { totalBalance } = useAudioBalance()
-  const { title, icon } = ACCEPTED_ROUTES[mint]
+  const { title, icon, symbol } = ACCEPTED_ROUTES[mint]
+
+  // Convert the route symbol to the appropriate MintName for the token balance hook
+  const tokenMint = symbol === 'AUDIO' ? 'wAUDIO' : (symbol as MintName)
+  const { data: tokenBalance } = useTokenBalance({ token: tokenMint })
 
   // Modal hooks
   const { onOpen: openBuySellModal } = useBuySellModal()
@@ -161,7 +166,7 @@ export const BalanceSection = ({ mint }: AssetDetailProps) => {
   return (
     <Paper ph='xl' pv='l'>
       <Flex direction='column' gap='l' w='100%'>
-        {!totalBalance ? (
+        {!tokenBalance || Number(tokenBalance.toString()) === 0 ? (
           <ZeroBalanceState
             title={title}
             icon={icon}
@@ -175,6 +180,7 @@ export const BalanceSection = ({ mint }: AssetDetailProps) => {
             onBuy={handleBuySell}
             onSend={handleSend}
             onReceive={handleReceive}
+            token={tokenMint}
           />
         )}
       </Flex>

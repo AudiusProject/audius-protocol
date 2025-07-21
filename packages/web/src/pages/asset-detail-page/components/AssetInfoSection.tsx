@@ -24,7 +24,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
   const { cornerRadius } = useTheme()
 
   const { image: coverPhoto } = useCoverPhoto({
-    userId,
+    userId: userId || undefined,
     size: WidthSizes.SIZE_640
   })
 
@@ -68,7 +68,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
             <Text variant='body' size='l'>
               {name}
             </Text>
-            <UserBadges userId={userId} size='s' inline />
+            {userId && <UserBadges userId={userId} size='s' inline />}
           </Flex>
         </Flex>
       </Flex>
