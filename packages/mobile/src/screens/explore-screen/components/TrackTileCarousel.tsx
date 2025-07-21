@@ -1,6 +1,5 @@
 import React from 'react'
 
-import { css } from '@emotion/native'
 import { ScrollView } from 'react-native'
 
 import { Flex } from '@audius/harmony-native'
