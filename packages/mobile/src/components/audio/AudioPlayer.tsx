@@ -679,6 +679,19 @@ export const AudioPlayer = () => {
       queuableTracks: QueueableTrack[],
       queueIndex = -1
     ) => {
+      // If queueIndex is -1, we're appending tracks - enqueue them all sequentially
+      if (queueIndex === -1) {
+        for (const track of queuableTracks) {
+          if (abortEnqueueControllerRef.current.signal.aborted) {
+            return
+          }
+          if (track) {
+            await TrackPlayer.add(await makeTrackData(track))
+          }
+        }
+        return
+      }
+
       // Safety check: Don't proceed if queueIndex is invalid
       if (queueIndex < 0 || queueIndex >= queuableTracks.length) {
         return
