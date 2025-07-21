@@ -755,13 +755,13 @@ export const AudioPlayer = () => {
         queueIndex !== playerIdx &&
         queueIndex < queue.length
       ) {
-        // Safety check: Don't skip if the target track has no URL (corrupted queue)
+        // Only skip if the target track exists and has a valid URL
         const targetTrack = queue[queueIndex]
-        if (!targetTrack?.url || targetTrack.url.trim() === '') {
-          return
+        if (targetTrack?.url && targetTrack.url.trim() !== '') {
+          await TrackPlayer.skip(queueIndex)
         }
-
-        await TrackPlayer.skip(queueIndex)
+        // If the track doesn't have a URL yet, don't skip but also don't return early
+        // This allows the queue change to be processed when the URL becomes available
       }
     } catch (error) {
       console.error('Error in handleQueueIdxChange:', error)
