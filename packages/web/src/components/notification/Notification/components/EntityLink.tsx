@@ -42,7 +42,7 @@ export const useGoToEntity = (
       event.stopPropagation()
       event.preventDefault()
       const link = getEntityLink(entity)
-      const urlParams = new URLSearchParams(link)
+      const urlParams = new URLSearchParams()
       if (commentId) {
         urlParams.set('commentId', commentId)
       } else if (goToComments) {

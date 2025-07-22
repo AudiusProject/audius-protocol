@@ -32,21 +32,21 @@ import { CommentBlock } from './CommentBlock'
 
 type CommentThreadProps = {
   commentId: ID
-  highlightComment?: Comment | null
+  highlightedComment?: Comment | null
 }
 
 export const CommentThread = (props: CommentThreadProps) => {
-  const { commentId, highlightComment } = props
+  const { commentId, highlightedComment } = props
   const { motion, spacing } = useTheme()
   const { entityId } = useCurrentCommentSection()
   const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
 
   const isReplyHighlighted =
-    highlightComment?.parentCommentId === rootComment.id
-  const highlightCommentId =
-    isReplyHighlighted || highlightComment?.id === rootComment.id
-      ? highlightComment.id
+    highlightedComment?.parentCommentId === rootComment.id
+  const highlightedCommentId =
+    isReplyHighlighted || highlightedComment?.id === rootComment.id
+      ? highlightedComment.id
       : null
 
   const [hiddenReplies, setHiddenReplies] = useState<{
@@ -130,8 +130,8 @@ export const CommentThread = (props: CommentThreadProps) => {
   const replies = rootComment.replies ?? []
   const repliesWithHighlight = isReplyHighlighted
     ? [
-        highlightComment,
-        ...replies.filter((reply) => reply.id !== highlightComment.id)
+        highlightedComment,
+        ...replies.filter((reply) => reply.id !== highlightedComment.id)
       ]
     : replies
 
@@ -141,7 +141,7 @@ export const CommentThread = (props: CommentThreadProps) => {
     <>
       <CommentBlock
         commentId={rootComment.id}
-        highlightCommentId={highlightCommentId ?? undefined}
+        highlightedCommentId={highlightedCommentId ?? undefined}
       />
       <Flex direction='column' mv='s' gap='s' alignItems='flex-start'>
         {(replies.length ?? 0) > 0 ? (
@@ -167,7 +167,7 @@ export const CommentThread = (props: CommentThreadProps) => {
                   <CommentBlock
                     commentId={reply.id}
                     parentCommentId={rootComment.id}
-                    highlightCommentId={highlightCommentId ?? undefined}
+                    highlightedCommentId={highlightedCommentId ?? undefined}
                   />
                 </Flex>
               ))}

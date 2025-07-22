@@ -140,9 +140,9 @@ const CommentDrawerAutocompleteContent = ({
 
 const CommentDrawerContent = (props: {
   commentListRef: RefObject<BottomSheetFlatListMethods>
-  highlightComment?: Comment | null
+  highlightedComment?: Comment | null
 }) => {
-  const { commentListRef, highlightComment } = props
+  const { commentListRef, highlightedComment } = props
   const {
     commentIds: allCommentIds,
     commentSectionLoading: isLoading,
@@ -150,17 +150,17 @@ const CommentDrawerContent = (props: {
     isLoadingMorePages
   } = useCurrentCommentSection()
 
-  const highlightCommentId =
-    highlightComment?.parentCommentId ?? highlightComment?.id ?? null
+  const highlightedCommentId =
+    highlightedComment?.parentCommentId ?? highlightedComment?.id ?? null
 
   const commentIds = useMemo(() => {
-    if (highlightCommentId === null) return allCommentIds
+    if (highlightedCommentId === null) return allCommentIds
 
     return [
-      highlightCommentId,
-      ...allCommentIds.filter((id) => id !== highlightCommentId)
+      highlightedCommentId,
+      ...allCommentIds.filter((id) => id !== highlightedCommentId)
     ]
-  }, [highlightCommentId, allCommentIds])
+  }, [highlightedCommentId, allCommentIds])
 
   // Loading state
   if (isLoading) {
@@ -204,7 +204,7 @@ const CommentDrawerContent = (props: {
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
       renderItem={({ item: id }) => (
-        <CommentThread commentId={id} highlightComment={highlightComment} />
+        <CommentThread commentId={id} highlightedComment={highlightedComment} />
       )}
     />
   )
@@ -222,7 +222,7 @@ export type CommentDrawerData = {
    *  so it doesnt need to worry about changing lineups
    */
   actions?: LineupBaseActions | typeof playerActions
-  highlightComment?: Comment | null
+  highlightedComment?: Comment | null
 }
 
 type CommentDrawerProps = {
@@ -239,7 +239,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     autoFocusInput,
     uid,
     actions,
-    highlightComment
+    highlightedComment
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -349,7 +349,7 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           ) : (
             <CommentDrawerContent
               commentListRef={commentListRef}
-              highlightComment={highlightComment}
+              highlightedComment={highlightedComment}
             />
           )}
         </CommentSectionProvider>
