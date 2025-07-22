@@ -133,10 +133,6 @@ export const ColorTile = ({
     handlePressOut: handlePressOutScale
   } = usePressScaleAnimation()
 
-  const handlePress = useCallback(() => {
-    onPress?.()
-  }, [onPress])
-
   return (
     <Animated.View
       style={[
@@ -153,7 +149,7 @@ export const ColorTile = ({
       >
         <Pressable
           style={[styles.colorTile, !!emoji && styles.hasEmoji]}
-          onPress={handlePress}
+          onPress={onPress}
           onPressIn={handlePressInScale}
           onPressOut={handlePressOutScale}
         >
