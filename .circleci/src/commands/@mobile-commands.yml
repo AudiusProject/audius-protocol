@@ -27,7 +27,7 @@ mobile-prepare-ios:
         name: install gems
         command: |
           cd packages/mobile/ios
-          sudo bundle update --bundler
+          sudo gem install bundler:2.5.16
           bundle check || bundle install --path vendor/bundle
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
