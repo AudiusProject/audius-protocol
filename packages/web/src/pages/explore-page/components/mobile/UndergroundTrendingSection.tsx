@@ -3,11 +3,11 @@ import { useMemo } from 'react'
 import { useTrendingUnderground } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTile'
+import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
 
-import { ExploreSection } from './ExploreSection'
+import { ExploreSection } from '../desktop/ExploreSection'
 
-export const UndergroundTrendingTracks = () => {
+export const UndergroundTrendingSection = () => {
   const { data: undergroundTrendingTracks, isLoading } =
     useTrendingUnderground()
 
@@ -24,7 +24,7 @@ export const UndergroundTrendingTracks = () => {
       isLoading={isLoading}
       title={messages.undergroundTrending}
       data={trackIds}
-      Tile={DesktopTrackTile}
+      Tile={MobileTrackTile}
     />
   )
 }
