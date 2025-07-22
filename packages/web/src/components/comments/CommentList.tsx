@@ -5,7 +5,11 @@ import { CommentBlockSkeletons } from './CommentSkeletons'
 import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
-export const CommentList = () => {
+type CommentListProps = {
+  highlightCommentId?: number | null
+}
+
+export const CommentList = ({ highlightCommentId }: CommentListProps) => {
   const { commentIds, commentSectionLoading } = useCurrentCommentSection()
 
   return (
@@ -15,9 +19,14 @@ export const CommentList = () => {
       ) : (
         <>
           {commentIds.length === 0 ? <NoComments /> : null}
-          {commentIds.map((id) => (
-            <CommentThread commentId={id} key={id} />
-          ))}
+          {highlightCommentId ? (
+            <CommentThread commentId={highlightCommentId} />
+          ) : null}
+          {commentIds
+            .filter((id) => id !== highlightCommentId)
+            .map((id) => (
+              <CommentThread commentId={id} key={id} />
+            ))}
         </>
       )}
     </Flex>
