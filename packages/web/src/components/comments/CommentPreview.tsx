@@ -138,17 +138,22 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   })
   const [searchParams] = useSearchParams()
   const showComments = searchParams.get('showComments')
+  const commentId = searchParams.get('commentId')
   const { history } = useHistoryContext()
   const lineup = useSelector(getLineup)
   const uid = lineup?.entries?.[0]?.uid
 
-  // Show the comment screen if the showComments query param is present
+  // Show the comment screen if the showComments or commentId query param is present
   useEffect(() => {
-    if (showComments) {
+    if ((showComments || commentId) && trackPermalink) {
       history.replace({ search: '' })
-      dispatch(pushRoute(`${trackPermalink}/comments`))
+      dispatch(
+        pushRoute(
+          `${trackPermalink}/comments${commentId ? `?commentId=${commentId}` : ''}`
+        )
+      )
     }
-  }, [showComments, trackPermalink, dispatch, searchParams, history])
+  }, [showComments, commentId, trackPermalink, dispatch, searchParams, history])
 
   return (
     <CommentSectionProvider

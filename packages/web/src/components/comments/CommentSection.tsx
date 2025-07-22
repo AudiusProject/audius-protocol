@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useHighlightComment } from '@audius/common/api'
+import { useHighlightedComment } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -65,10 +65,10 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false)
   const { history } = useHistoryContext()
 
-  const highlightComment = useHighlightComment()
-  const highlightCommentId =
-    highlightComment?.entityId === entityId
-      ? (highlightComment?.parentCommentId ?? highlightComment?.id)
+  const highlightedComment = useHighlightedComment()
+  const highlightedCommentId =
+    highlightedComment?.entityId === entityId
+      ? (highlightedComment?.parentCommentId ?? highlightedComment?.id)
       : null
 
   const [isFirstLoad, setIsFirstLoad] = useState(true)
@@ -92,7 +92,7 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
 
   useEffect(() => {
     if (
-      (showComments || highlightCommentId) &&
+      (showComments || highlightedCommentId) &&
       !hasScrolledIntoView &&
       !commentSectionLoading &&
       commentSectionRef.current
@@ -114,7 +114,7 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
     history,
     handleScrollEnd,
     mainContentRef,
-    highlightCommentId
+    highlightedCommentId
   ])
 
   return (
@@ -164,11 +164,11 @@ const CommentSectionInner = (props: CommentSectionInnerProps) => {
               ) : (
                 <>
                   {commentIds.length === 0 ? <NoComments /> : null}
-                  {highlightCommentId ? (
-                    <CommentThread commentId={highlightCommentId} />
+                  {highlightedCommentId ? (
+                    <CommentThread commentId={highlightedCommentId} />
                   ) : null}
                   {commentIds
-                    .filter((id) => id !== highlightCommentId)
+                    .filter((id) => id !== highlightedCommentId)
                     .map((id) => (
                       <CommentThread commentId={id} key={id} />
                     ))}

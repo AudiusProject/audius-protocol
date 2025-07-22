@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { useComment, useHighlightComment, useUser } from '@audius/common/api'
+import { useComment, useHighlightedComment, useUser } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment
@@ -55,8 +55,8 @@ const CommentBlockInternal = (
   const { track, artistId } = useCurrentCommentSection()
   const isDarkMode = getIsDarkMode()
 
-  const highlightComment = useHighlightComment()
-  const highlightCommentId = highlightComment?.id
+  const highlightedComment = useHighlightedComment()
+  const highlightedCommentId = highlightedComment?.id
 
   const {
     id: commentId,
@@ -97,7 +97,7 @@ const CommentBlockInternal = (
         animation: `${fadeIn} ${motion.calm}`,
         paddingInline: parentCommentId ? 80 : 24,
         '&::before': {
-          content: highlightCommentId === commentId ? '""' : 'none',
+          content: highlightedCommentId === commentId ? '""' : 'none',
           position: 'absolute',
           top: -12,
           bottom: -12,

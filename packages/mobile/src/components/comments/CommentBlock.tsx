@@ -32,7 +32,7 @@ import { TimestampLink } from './TimestampLink'
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
-  highlightCommentId?: ID
+  highlightedCommentId?: ID
   isPreview?: boolean
 }
 
@@ -41,7 +41,7 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, isPreview, parentCommentId, highlightCommentId } = props
+  const { comment, isPreview, parentCommentId, highlightedCommentId } = props
   const { artistId, track, navigation, closeDrawer } =
     useCurrentCommentSection()
   const {
@@ -56,7 +56,7 @@ export const CommentBlockInternal = (
   } = comment
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = track.pinned_comment_id === commentId
-  const isHighlighted = highlightCommentId === commentId
+  const isHighlighted = highlightedCommentId === commentId
 
   const { color, spacing, type } = useTheme()
   // replace opacity for background color
