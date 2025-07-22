@@ -6,10 +6,10 @@ import { CommentThread } from './CommentThread'
 import { NoComments } from './NoComments'
 
 type CommentListProps = {
-  highlightCommentId?: number | null
+  highlightedCommentId?: number | null
 }
 
-export const CommentList = ({ highlightCommentId }: CommentListProps) => {
+export const CommentList = ({ highlightedCommentId }: CommentListProps) => {
   const { commentIds, commentSectionLoading } = useCurrentCommentSection()
 
   return (
@@ -19,11 +19,11 @@ export const CommentList = ({ highlightCommentId }: CommentListProps) => {
       ) : (
         <>
           {commentIds.length === 0 ? <NoComments /> : null}
-          {highlightCommentId ? (
-            <CommentThread commentId={highlightCommentId} />
+          {highlightedCommentId ? (
+            <CommentThread commentId={highlightedCommentId} />
           ) : null}
           {commentIds
-            .filter((id) => id !== highlightCommentId)
+            .filter((id) => id !== highlightedCommentId)
             .map((id) => (
               <CommentThread commentId={id} key={id} />
             ))}

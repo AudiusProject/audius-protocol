@@ -3,7 +3,7 @@ import { useState } from 'react'
 import {
   useComment,
   useCommentReplies,
-  useHighlightComment
+  useHighlightedComment
 } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
@@ -23,10 +23,10 @@ import { CommentBlock } from './CommentBlock'
 export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
-  const highlightComment = useHighlightComment()
+  const highlightedComment = useHighlightedComment()
   const highlightReplyId =
-    highlightComment?.parentCommentId === commentId
-      ? highlightComment?.id
+    highlightedComment?.parentCommentId === commentId
+      ? highlightedComment?.id
       : null
 
   const { entityId } = useCurrentCommentSection()

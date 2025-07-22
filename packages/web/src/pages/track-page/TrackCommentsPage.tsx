@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import { useHighlightComment, useTrackByPermalink } from '@audius/common/api'
+import { useHighlightedComment, useTrackByPermalink } from '@audius/common/api'
 import { CommentSectionProvider } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Flex, Text } from '@audius/harmony'
@@ -26,10 +26,10 @@ export const TrackCommentsPage = () => {
   const { setLeft, setCenter, setRight } = useContext(NavContext)
 
   // Use the same highlighting logic as desktop
-  const highlightComment = useHighlightComment()
-  const highlightCommentId =
-    highlightComment?.entityId === partialTrack?.track_id
-      ? (highlightComment?.parentCommentId ?? highlightComment?.id)
+  const highlightedComment = useHighlightedComment()
+  const highlightedCommentId =
+    highlightedComment?.entityId === partialTrack?.track_id
+      ? (highlightedComment?.parentCommentId ?? highlightedComment?.id)
       : null
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const TrackCommentsPage = () => {
         </Flex>
       ) : (
         <CommentSectionProvider entityId={track_id}>
-          <CommentList highlightCommentId={highlightCommentId} />
+          <CommentList highlightedCommentId={highlightedCommentId} />
         </CommentSectionProvider>
       )}
     </MobilePageContainer>
