@@ -1,4 +1,4 @@
-import { HashId, OptionalId } from '@audius/sdk'
+import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -37,14 +37,12 @@ export const useMostSharedTracks = <TResult = ID[]>(
         limit: 10,
         timeRange: 'week'
       })
-      const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-
-      primeTrackData({
-        tracks,
+      const tracks = primeTrackData({
+        tracks: transformAndCleanList(data, userTrackMetadataFromSDK),
         queryClient
       })
 
-      return data.map((item) => HashId.parse(item.id))
+      return tracks.map(({ track_id }) => track_id)
     },
     ...options,
     enabled: options?.enabled !== false
