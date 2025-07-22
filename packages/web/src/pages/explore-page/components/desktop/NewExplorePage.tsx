@@ -75,6 +75,7 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { BestSellingSection } from './BestSellingSection'
 import { ExploreSection } from './ExploreSection'
+import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 export type ExplorePageProps = {
   title: string
@@ -395,6 +396,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 data={exploreContent?.featuredRemixContests}
                 Card={RemixContestCard}
               />
+
+              {isSearchExploreGoodiesEnabled ? (
+                <UndergroundTrendingTracks />
+              ) : null}
 
               <ExploreSection
                 title={messages.artistSpotlight}

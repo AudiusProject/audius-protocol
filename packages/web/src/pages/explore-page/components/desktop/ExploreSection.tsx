@@ -63,12 +63,14 @@ const PlayableTile: React.FC<{
 type ExploreSectionProps = {
   title: string
   data?: number[]
+  isLoading?: boolean
   Card?: React.ComponentType<any>
   Tile?: React.ComponentType<any>
 }
 export const ExploreSection: React.FC<ExploreSectionProps> = ({
   title,
   data,
+  isLoading,
   Card,
   Tile
 }) => {
@@ -233,17 +235,17 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             pv='2xs'
           >
             {Tile && !Card
-              ? data
-                ? renderTilePairs(data, Tile)
-                : renderTileSkeletons(Tile)
+              ? isLoading || !data
+                ? renderTileSkeletons(Tile)
+                : renderTilePairs(data, Tile)
               : null}
             {Card
-              ? data
-                ? data?.map((id) => <Card key={id} id={id} size='s' />)
-                : Array.from({ length: 6 }).map((_, i) => (
+              ? !data || isLoading
+                ? Array.from({ length: 6 }).map((_, i) => (
                     // loading skeletons
                     <Card key={i} id={0} size={isMobile ? 'xs' : 's'} />
                   ))
+                : data?.map((id) => <Card key={id} id={id} size='s' />)
               : null}
           </Flex>
         </Flex>
