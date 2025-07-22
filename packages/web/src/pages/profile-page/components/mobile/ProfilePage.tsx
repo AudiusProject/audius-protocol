@@ -522,6 +522,8 @@ const ProfilePage = g(
           description={description}
           canonicalUrl={canonicalUrl}
           structuredData={structuredData}
+          entityType='user'
+          entityId={userId!}
           containerClassName={styles.container}
         >
           <ProfileHeader
