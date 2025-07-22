@@ -1,4 +1,4 @@
-import { HashId, Id } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -38,13 +38,12 @@ export const useRecentlyCommentedTracks = <TResult = ID[]>(
         limit: 30
       })
 
-      const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-
-      primeTrackData({
-        tracks,
+      const tracks = primeTrackData({
+        tracks: transformAndCleanList(data, userTrackMetadataFromSDK),
         queryClient
       })
-      return data.map((item) => HashId.parse(item.id))
+
+      return tracks.map(({ track_id }) => track_id)
     },
     ...options,
     enabled: options?.enabled !== false

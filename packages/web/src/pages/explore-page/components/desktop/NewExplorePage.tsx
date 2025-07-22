@@ -6,7 +6,8 @@ import {
   useRecentPremiumTracks,
   useBestSelling,
   useFeelingLuckyTracks,
-  useRecentlyPlayedTracks
+  useRecentlyPlayedTracks,
+  useMostSharedTracks
 } from '@audius/common/api'
 import { useFeatureFlag, useToggleTrack } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
@@ -145,6 +146,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const { data: exploreContent } = useExploreContent()
   const { data: recommendedTracks } = useRecommendedTracks()
+  const { data: mostSharedTracks } = useMostSharedTracks()
   const { data: recentlyPlayed } = useRecentlyPlayedTracks()
   const { data: recentlyCommentedTracks } = useRecentlyPlayedTracks()
   const { data: recentPremiumTracks } = useRecentPremiumTracks()
@@ -454,6 +456,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <Flex direction='column'>
               {isSearchExploreGoodiesEnabled ? (
                 <>
+                  <ExploreSection
+                    title={messages.mostShared}
+                    data={mostSharedTracks}
+                    Card={TrackCard}
+                  />
                   <BestSellingSection
                     title={messages.bestSelling}
                     data={bestSelling}

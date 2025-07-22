@@ -12,6 +12,7 @@ import { FeaturedRemixContests } from './FeaturedRemixContests'
 import { FeelingLucky } from './FeelingLucky'
 import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
+import { MostSharedTracks } from './MostSharedTracks'
 import { ProgressiveScrollView } from './ProgressiveScrollView'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
@@ -38,6 +39,7 @@ const MemoizedExploreContent = () => {
       <MoodsGrid />
       {isSearchExploreGoodiesEnabled ? (
         <>
+          <MostSharedTracks />
           <BestSelling />
           <FeelingLucky />
           <RecentPremiumTracks />
