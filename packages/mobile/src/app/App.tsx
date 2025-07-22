@@ -52,6 +52,7 @@ if (Platform.OS === 'android') {
 incrementSessionCount()
 
 const App = () => {
+  // adding a comment here to trigger a build
   useEffectOnce(() => {
     subscribeToNetworkStatusUpdates()
     TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
