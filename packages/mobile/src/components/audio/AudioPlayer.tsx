@@ -679,6 +679,19 @@ export const AudioPlayer = () => {
       queuableTracks: QueueableTrack[],
       queueIndex = -1
     ) => {
+      // If queueIndex is -1, we're appending tracks - enqueue them all sequentially
+      if (queueIndex === -1) {
+        for (const track of queuableTracks) {
+          if (abortEnqueueControllerRef.current.signal.aborted) {
+            return
+          }
+          if (track) {
+            await TrackPlayer.add(await makeTrackData(track))
+          }
+        }
+        return
+      }
+
       // Safety check: Don't proceed if queueIndex is invalid
       if (queueIndex < 0 || queueIndex >= queuableTracks.length) {
         return
@@ -755,13 +768,13 @@ export const AudioPlayer = () => {
         queueIndex !== playerIdx &&
         queueIndex < queue.length
       ) {
-        // Safety check: Don't skip if the target track has no URL (corrupted queue)
+        // Only skip if the target track exists and has a valid URL
         const targetTrack = queue[queueIndex]
-        if (!targetTrack?.url || targetTrack.url.trim() === '') {
-          return
+        if (targetTrack?.url && targetTrack.url.trim() !== '') {
+          await TrackPlayer.skip(queueIndex)
         }
-
-        await TrackPlayer.skip(queueIndex)
+        // If the track doesn't have a URL yet, don't skip but also don't return early
+        // This allows the queue change to be processed when the URL becomes available
       }
     } catch (error) {
       console.error('Error in handleQueueIdxChange:', error)
