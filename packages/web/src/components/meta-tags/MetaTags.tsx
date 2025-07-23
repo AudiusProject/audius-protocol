@@ -40,7 +40,7 @@ const generateOgUrl = (
   entityType?: 'user' | 'collection' | 'track',
   entityId?: number
 ): string | undefined => {
-  if (!entityType || entityId === undefined) {
+  if (!entityType || !entityId) {
     return undefined
   }
 
