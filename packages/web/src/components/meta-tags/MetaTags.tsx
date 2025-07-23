@@ -1,4 +1,7 @@
+import { Id } from '@audius/sdk'
 import { Helmet } from 'react-helmet'
+
+import { env } from 'services/env'
 
 const messages = {
   dotAudius: '• Audius',
@@ -20,6 +23,40 @@ export type MetaTagsProps = {
   canonicalUrl?: string
   structuredData?: object
   noIndex?: boolean
+  /**
+   * Entity type for OG URL generation
+   */
+  entityType?: 'user' | 'collection' | 'track'
+  /**
+   * Entity ID for OG URL generation (will be converted to hash-id)
+   */
+  entityId?: number
+}
+
+/**
+ * Generates the OG URL based on environment and entity type
+ */
+const generateOgUrl = (
+  entityType?: 'user' | 'collection' | 'track',
+  entityId?: number
+): string | undefined => {
+  if (!entityType || !entityId) {
+    return undefined
+  }
+
+  // Get the base OG URL based on environment
+  const baseOgUrl =
+    env.ENVIRONMENT === 'staging'
+      ? 'https://og.staging.audius.co'
+      : 'https://og.audius.co'
+
+  // Convert entity ID to hash-id
+  const hashId = Id.parse(entityId)
+
+  // Generate the path based on entity type
+  const path = `/${entityType}/${hashId}`
+
+  return `${baseOgUrl}${path}`
 }
 
 /**
@@ -35,12 +72,17 @@ export const MetaTags = (props: MetaTagsProps) => {
     imageAlt,
     canonicalUrl,
     structuredData,
-    noIndex = false
+    noIndex = false,
+    entityType,
+    entityId
   } = props
 
   const formattedTitle = title
     ? `${title} ${messages.dotAudius}`
     : messages.audius
+
+  // Generate OG URL if entity type and ID are provided
+  const ogUrl = generateOgUrl(entityType, entityId)
 
   return (
     <>
@@ -73,11 +115,11 @@ export const MetaTags = (props: MetaTagsProps) => {
         </Helmet>
       ) : null}
 
-      {/* Canonical URL */}
-      {canonicalUrl ? (
+      {/* Canonical URL - use OG URL if available, otherwise use provided canonicalUrl */}
+      {ogUrl || canonicalUrl ? (
         <Helmet encodeSpecialCharacters={false}>
-          <link rel='canonical' href={canonicalUrl} />
-          <meta property='og:url' content={canonicalUrl} />
+          <link rel='canonical' href={ogUrl || canonicalUrl} />
+          <meta property='og:url' content={ogUrl || canonicalUrl} />
         </Helmet>
       ) : null}
 
