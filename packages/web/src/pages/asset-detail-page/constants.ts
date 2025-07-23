@@ -1,21 +1,19 @@
 import { TOKEN_LISTING_MAP } from '@audius/common/store'
-import { IconGift } from '@audius/harmony'
-
-import { TOKENS } from 'components/buy-sell-modal/constants'
+import { IconGift, IconTokenAUDIO, IconTokenBonk } from '@audius/harmony'
 
 export const ACCEPTED_ROUTES = {
   audio: {
     title: '$AUDIO',
     symbol: TOKEN_LISTING_MAP.AUDIO.symbol,
-    icon: TOKENS.AUDIO.icon,
-    name: TOKENS.AUDIO.name,
+    icon: IconTokenAUDIO,
+    name: 'Audius',
     userId: 51
   },
   bonk: {
     title: '$BONK',
     symbol: 'BONK',
-    icon: TOKENS.BONK.icon,
-    name: TOKENS.BONK.name,
+    icon: IconTokenBonk,
+    name: 'Bonk',
     userId: null
   }
 }

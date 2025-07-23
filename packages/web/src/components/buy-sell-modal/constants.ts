@@ -1,7 +1,7 @@
-import {
-  createTokens,
-  createSupportedTokenPairs
-} from '@audius/common/src/store/ui/buy-sell'
+import { useMemo } from 'react'
+
+import { transformArtistCoinsToTokenInfoMap } from '@audius/common/src/api/tan-query/coins/tokenUtils'
+import { useArtistCoins } from '@audius/common/src/api/tan-query/coins/useArtistCoins'
 import {
   TokenInfo,
   TokenPair
@@ -12,41 +12,85 @@ import {
   IconTokenBonk
 } from '@audius/harmony'
 
-import { env } from 'services/env'
+// Icon mapping for web components
+export const TOKEN_ICON_MAP = {
+  AUDIO: IconTokenAUDIO,
+  USDC: IconLogoCircleUSDC,
+  BONK: IconTokenBonk
+}
 
-// Create tokens from centralized configuration with icons for web
-const createTokensWithIcons = (): Record<string, TokenInfo> => {
-  const baseTokens = createTokens(env)
-  const iconMap = {
-    AUDIO: IconTokenAUDIO,
-    USDC: IconLogoCircleUSDC,
-    BONK: IconTokenBonk
-  }
+// Hook to get tokens from API
+export const useTokens = () => {
+  const { data: artistCoins = [], isLoading, error } = useArtistCoins()
 
-  const tokensWithIcons: Record<string, TokenInfo> = {}
-  Object.entries(baseTokens).forEach(([symbol, token]) => {
-    tokensWithIcons[symbol] = {
-      ...token,
-      icon: iconMap[symbol as keyof typeof iconMap]
+  return useMemo(() => {
+    const tokensMap = transformArtistCoinsToTokenInfoMap(
+      artistCoins,
+      TOKEN_ICON_MAP
+    )
+    return {
+      tokens: tokensMap,
+      isLoading,
+      error
     }
-  })
-
-  return tokensWithIcons
+  }, [artistCoins, isLoading, error])
 }
 
-export const TOKENS: Record<string, TokenInfo> = createTokensWithIcons()
+// Hook to get supported token pairs
+export const useSupportedTokenPairs = () => {
+  const { tokens, isLoading, error } = useTokens()
 
-// Create supported token pairs dynamically with icons for web
-const createSupportedTokenPairsWithIcons = (): TokenPair[] => {
-  const basePairs = createSupportedTokenPairs(env)
-  const tokensWithIcons = TOKENS
+  return useMemo(() => {
+    if (isLoading || error || Object.keys(tokens).length === 0) {
+      return {
+        pairs: [] as TokenPair[],
+        isLoading,
+        error
+      }
+    }
 
-  return basePairs.map((pair) => ({
-    ...pair,
-    baseToken: tokensWithIcons[pair.baseToken.symbol] || pair.baseToken,
-    quoteToken: tokensWithIcons[pair.quoteToken.symbol] || pair.quoteToken
-  }))
+    const pairs: TokenPair[] = []
+    const tokenList = Object.values(tokens)
+
+    // Find specific tokens for explicit ordering
+    const audioToken = tokenList.find((token) => token.symbol === 'AUDIO')
+    const usdcToken = tokenList.find((token) => token.symbol === 'USDC')
+
+    // First pair: AUDIO/USDC (for Buy: USDC -> AUDIO, Sell: AUDIO -> USDC)
+    if (audioToken && usdcToken) {
+      pairs.push({
+        baseToken: audioToken,
+        quoteToken: usdcToken,
+        exchangeRate: null
+      })
+    }
+
+    // Generate remaining pairs, excluding the AUDIO/USDC pair we already added
+    tokenList.forEach((baseToken) => {
+      tokenList.forEach((quoteToken) => {
+        if (baseToken.symbol !== quoteToken.symbol) {
+          // Skip AUDIO/USDC pair as we already added it
+          if (baseToken.symbol === 'AUDIO' && quoteToken.symbol === 'USDC') {
+            return
+          }
+          pairs.push({
+            baseToken,
+            quoteToken,
+            exchangeRate: null
+          })
+        }
+      })
+    })
+
+    return {
+      pairs,
+      isLoading,
+      error
+    }
+  }, [tokens, isLoading, error])
 }
 
-export const SUPPORTED_TOKEN_PAIRS: TokenPair[] =
-  createSupportedTokenPairsWithIcons()
+// Backward compatibility - static exports (deprecated)
+// These will be empty until the hooks are used
+export const TOKENS: Record<string, TokenInfo> = {}
+export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = []

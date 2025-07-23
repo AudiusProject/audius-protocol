@@ -83,6 +83,196 @@ export const mockWalletData = {
     }
   },
 
+  // Mock data for /v1/coins endpoint - list of artist coins
+  artistCoins: {
+    data: [
+      {
+        ticker: 'AUDIO',
+        mint: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
+        owner_id: 'eAUD1',
+        created_at: '2023-01-01T00:00:00.000Z',
+        members: 25000,
+        members_24h_change_percent: 2.5,
+        token_info: {
+          address: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
+          decimals: 8,
+          symbol: 'AUDIO',
+          name: 'Audius',
+          marketCap: 150000000,
+          fdv: 200000000,
+          extensions: {
+            coingeckoId: 'audius',
+            description: 'Audius is a decentralized music streaming protocol',
+            twitter: 'https://twitter.com/audius',
+            website: 'https://audius.co',
+            discord: 'https://discord.gg/audius'
+          },
+          logoURI: '/img/tokenLogos/audio.svg',
+          liquidity: 5000000,
+          lastTradeUnixTime: 1640995200,
+          lastTradeHumanTime: '2024-01-01T00:00:00Z',
+          price: 0.15,
+          history24hPrice: 0.14,
+          priceChange24hPercent: 7.14,
+          uniqueWallet24h: 1250,
+          uniqueWalletHistory24h: 1200,
+          uniqueWallet24hChangePercent: 4.17,
+          totalSupply: 1000000000,
+          circulatingSupply: 750000000,
+          holder: 25000,
+          trade24h: 850,
+          tradeHistory24h: 820,
+          trade24hChangePercent: 3.66,
+          sell24h: 425,
+          sellHistory24h: 410,
+          sell24hChangePercent: 3.66,
+          buy24h: 425,
+          buyHistory24h: 410,
+          buy24hChangePercent: 3.66,
+          v24h: 2500000,
+          v24hUSD: 375000,
+          vHistory24h: 2400000,
+          vHistory24hUSD: 336000,
+          v24hChangePercent: 4.17,
+          vBuy24h: 1250000,
+          vBuy24hUSD: 187500,
+          vBuyHistory24h: 1200000,
+          vBuyHistory24hUSD: 168000,
+          vBuy24hChangePercent: 4.17,
+          vSell24h: 1250000,
+          vSell24hUSD: 187500,
+          vSellHistory24h: 1200000,
+          vSellHistory24hUSD: 168000,
+          vSell24hChangePercent: 4.17,
+          numberMarkets: 12
+        }
+      },
+      {
+        ticker: 'BONK',
+        mint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+        owner_id: 'eBONK',
+        created_at: '2023-06-01T00:00:00.000Z',
+        members: 15000,
+        members_24h_change_percent: 8.2,
+        token_info: {
+          address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+          decimals: 5,
+          symbol: 'BONK',
+          name: 'Bonk',
+          marketCap: 500000000,
+          fdv: 750000000,
+          extensions: {
+            coingeckoId: 'bonk',
+            description:
+              'The first Solana dog coin for the people, by the people',
+            twitter: 'https://twitter.com/bonk_inu',
+            website: 'https://bonkcoin.com',
+            discord: 'https://discord.gg/bonk'
+          },
+          logoURI: '/img/tokenLogos/bonk.svg',
+          liquidity: 2000000,
+          lastTradeUnixTime: 1640995200,
+          lastTradeHumanTime: '2024-01-01T00:00:00Z',
+          price: 0.000015,
+          history24hPrice: 0.000014,
+          priceChange24hPercent: 7.14,
+          uniqueWallet24h: 850,
+          uniqueWalletHistory24h: 800,
+          uniqueWallet24hChangePercent: 6.25,
+          totalSupply: 93000000000000,
+          circulatingSupply: 69000000000000,
+          holder: 15000,
+          trade24h: 650,
+          tradeHistory24h: 620,
+          trade24hChangePercent: 4.84,
+          sell24h: 325,
+          sellHistory24h: 310,
+          sell24hChangePercent: 4.84,
+          buy24h: 325,
+          buyHistory24h: 310,
+          buy24hChangePercent: 4.84,
+          v24h: 1500000,
+          v24hUSD: 22500,
+          vHistory24h: 1400000,
+          vHistory24hUSD: 19600,
+          v24hChangePercent: 7.14,
+          vBuy24h: 750000,
+          vBuy24hUSD: 11250,
+          vBuyHistory24h: 700000,
+          vBuyHistory24hUSD: 9800,
+          vBuy24hChangePercent: 7.14,
+          vSell24h: 750000,
+          vSell24hUSD: 11250,
+          vSellHistory24h: 700000,
+          vSellHistory24hUSD: 9800,
+          vSell24hChangePercent: 7.14,
+          numberMarkets: 8
+        }
+      },
+      {
+        ticker: 'USDC',
+        mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        owner_id: 'eUSDC',
+        created_at: '2023-03-01T00:00:00.000Z',
+        members: 50000,
+        members_24h_change_percent: 1.2,
+        token_info: {
+          address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+          decimals: 6,
+          symbol: 'USDC',
+          name: 'USD Coin',
+          marketCap: 25000000000,
+          fdv: 25000000000,
+          extensions: {
+            coingeckoId: 'usd-coin',
+            description: 'USD Coin is a fully-backed US dollar stablecoin',
+            twitter: 'https://twitter.com/centre_io',
+            website: 'https://www.centre.io',
+            discord: ''
+          },
+          logoURI: '/img/tokenLogos/usdc.svg',
+          liquidity: 15000000,
+          lastTradeUnixTime: 1640995200,
+          lastTradeHumanTime: '2024-01-01T00:00:00Z',
+          price: 1.0,
+          history24hPrice: 0.999,
+          priceChange24hPercent: 0.1,
+          uniqueWallet24h: 2500,
+          uniqueWalletHistory24h: 2450,
+          uniqueWallet24hChangePercent: 2.04,
+          totalSupply: 25000000000,
+          circulatingSupply: 25000000000,
+          holder: 50000,
+          trade24h: 1850,
+          tradeHistory24h: 1800,
+          trade24hChangePercent: 2.78,
+          sell24h: 925,
+          sellHistory24h: 900,
+          sell24hChangePercent: 2.78,
+          buy24h: 925,
+          buyHistory24h: 900,
+          buy24hChangePercent: 2.78,
+          v24h: 75000000,
+          v24hUSD: 75000000,
+          vHistory24h: 72000000,
+          vHistory24hUSD: 71928000,
+          v24hChangePercent: 4.17,
+          vBuy24h: 37500000,
+          vBuy24hUSD: 37500000,
+          vBuyHistory24h: 36000000,
+          vBuyHistory24hUSD: 35964000,
+          vBuy24hChangePercent: 4.17,
+          vSell24h: 37500000,
+          vSell24hUSD: 37500000,
+          vSellHistory24h: 36000000,
+          vSellHistory24hUSD: 35964000,
+          vSell24hChangePercent: 4.17,
+          numberMarkets: 25
+        }
+      }
+    ]
+  },
+
   // Mock data for /v1/coins/:mint/members endpoint
   coinMembers: {
     data: [
@@ -258,6 +448,52 @@ export const mockWalletData = {
 
 // MSW handlers for coin API endpoints
 export const coinApiHandlers = [
+  // GET /v1/coins - Get Artist Coins List
+  http.get(`${apiEndpoint}/v1/coins`, ({ request }) => {
+    const url = new URL(request.url)
+
+    // Parse query parameters
+    const mints = url.searchParams.getAll('mint')
+    const ownerIds = url.searchParams.getAll('owner_id')
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const offset = parseInt(url.searchParams.get('offset') || '0')
+
+    // Validate parameters
+    if (limit < 1 || limit > 100) {
+      return HttpResponse.json(
+        { error: 'limit must be between 1 and 100' },
+        { status: 400 }
+      )
+    }
+
+    if (offset < 0) {
+      return HttpResponse.json(
+        { error: 'offset must be >= 0' },
+        { status: 400 }
+      )
+    }
+
+    // Filter coins based on query parameters
+    let filteredCoins = mockWalletData.artistCoins.data
+
+    if (mints.length > 0) {
+      filteredCoins = filteredCoins.filter((coin) => mints.includes(coin.mint))
+    }
+
+    if (ownerIds.length > 0) {
+      filteredCoins = filteredCoins.filter((coin) =>
+        ownerIds.includes(coin.owner_id)
+      )
+    }
+
+    // Apply pagination
+    const paginatedCoins = filteredCoins.slice(offset, offset + limit)
+
+    return HttpResponse.json({
+      data: paginatedCoins
+    })
+  }),
+
   // GET /v1/coin/:mint - Get Artist Coin Information
   http.get(`${apiEndpoint}/v1/coin/:mint`, ({ params }) => {
     const { mint } = params
