@@ -12,6 +12,7 @@ export type SharedData = {
   web3: ethers.providers.JsonRpcProvider
   sdk: AudiusSdk
   wallets: WalletManager
+  audiusSdk: AudiusSdk
 }
 
 export const config = readConfig()
@@ -29,21 +30,22 @@ export let wallets: WalletManager
 export let audiusSdk: AudiusSdk
 
 const main = async () => {
+  audiusSdk = sdk({
+    appName: 'relay',
+    environment:
+      config.environment === ' '
+        ? 'development'
+        : config.environment === 'stage'
+          ? 'staging'
+          : 'production'
+  })
+  logger.warn('audiusSdk', audiusSdk)
   try {
     // async config
     const connectedWeb3 = await connectWeb3(config)
     web3 = connectedWeb3.web3
     config.acdcChainId = connectedWeb3.chainId.toString()
     wallets = new WalletManager(web3)
-    audiusSdk = sdk({
-      appName: 'relay',
-      environment:
-        config.environment === ' '
-          ? 'development'
-          : config.environment === 'stage'
-            ? 'staging'
-            : 'production'
-    })
   } catch (e) {
     logger.warn('web3 not configured for relay, acdc not reachable')
   }

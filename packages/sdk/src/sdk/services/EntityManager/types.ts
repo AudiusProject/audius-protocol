@@ -1,9 +1,7 @@
-import { DecodeFunctionDataReturnType, Hex } from 'viem'
+import { Hex } from 'viem'
 
 import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { LoggerService } from '../Logger'
-
-import { EntityManager } from './contract/EntityManagerContract'
 
 export type EntityManagerTransactionReceipt = {
   blockHash: string
@@ -51,7 +49,7 @@ export type EntityManagerService = {
     nonce: string
     subjectSig: string
   }
-  recoverSigner: (encodedABI: Hex) => string
+  recoverSigner: (encodedABI: Hex) => Promise<string>
 }
 
 export enum Action {

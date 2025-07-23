@@ -1,9 +1,9 @@
-import { recoverTypedSignature } from 'eth-sig-util'
 import {
   encodeFunctionData,
   decodeFunctionData,
   type Hex,
-  type TypedDataDefinition
+  type TypedDataDefinition,
+  recoverTypedDataAddress
 } from 'viem'
 
 import * as runtime from '../../api/generated/default/runtime'
@@ -243,7 +243,7 @@ export class EntityManagerClient implements EntityManagerService {
    * @param encodedABI - The encoded ABI
    * @returns The recovered signer address
    */
-  public recoverSigner(encodedABI: Hex) {
+  public async recoverSigner(encodedABI: Hex) {
     const decodedAbi = this.decodeManageEntity(encodedABI)
     const {
       userId,
@@ -255,7 +255,7 @@ export class EntityManagerClient implements EntityManagerService {
       subjectSig
     } = decodedAbi
 
-    const data: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
+    return await recoverTypedDataAddress({
       domain: this.getDomain(),
       primaryType: 'ManageEntity',
       message: {
@@ -269,8 +269,8 @@ export class EntityManagerClient implements EntityManagerService {
         metadata,
         nonce
       },
-      types: EntityManager.types
-    }
-    return recoverTypedSignature({ data, sig: subjectSig })
+      types: EntityManager.types,
+      signature: subjectSig
+    })
   }
 }
