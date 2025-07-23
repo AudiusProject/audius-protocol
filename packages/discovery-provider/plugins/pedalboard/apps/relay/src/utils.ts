@@ -1,6 +1,6 @@
 import { audiusSdk } from '.'
 
-export const isUserCreate = async (encodedABI: string): Promise<boolean> => {
+export const isUserCreate = (encodedABI: string): boolean => {
   const decodedAbi = audiusSdk.services.entityManager.decodeManageEntity(
     encodedABI as `0x${string}`
   )

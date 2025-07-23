@@ -39,7 +39,6 @@ const main = async () => {
           ? 'staging'
           : 'production'
   })
-  logger.warn('audiusSdk', audiusSdk)
   try {
     // async config
     const connectedWeb3 = await connectWeb3(config)
