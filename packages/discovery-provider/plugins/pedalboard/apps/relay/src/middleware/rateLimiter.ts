@@ -96,9 +96,6 @@ export const getEntityManagerActionKey = (encodedABI: string): string => {
     encodedABI as `0x${string}`
   )
   const { action, entityType } = decodedABI
-  if (action === undefined) throw new Error('action not defined in encodedABI')
-  if (entityType === undefined)
-    throw new Error('entityType not defined in encodedABI')
   return action + entityType
 }
 

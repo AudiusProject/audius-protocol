@@ -42,9 +42,15 @@ export type EntityManagerService = {
     confirmationTimeout?: number
     confirmationPollingInterval?: number
   }) => Promise<boolean>
-  decodeManageEntity: (
-    encodedABI: Hex
-  ) => DecodeFunctionDataReturnType<typeof EntityManager.abi>
+  decodeManageEntity: (encodedABI: Hex) => {
+    userId: bigint
+    entityType: EntityType
+    entityId: bigint
+    action: Action
+    metadata: string
+    nonce: string
+    subjectSig: string
+  }
   recoverSigner: (encodedABI: Hex) => string
 }
 

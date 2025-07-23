@@ -175,11 +175,11 @@ export const coreRelay = async (
     const { encodedABI } = request
 
     const {
-      userId: userIdBig,
-      entityId: entityIdBig,
+      userId,
+      entityId,
       entityType,
       action,
-      metadata: metadataAny,
+      metadata,
       subjectSig,
       nonce: nonceBytes
     } = audiusSdk.services.entityManager.decodeManageEntity(
@@ -187,9 +187,6 @@ export const coreRelay = async (
     )
 
     const signer = request.senderAddress
-    const userId = BigInt(userIdBig.toString())
-    const entityId = BigInt(entityIdBig.toString())
-    const metadata = metadataAny as string
     const signature = ethers.utils.hexlify(subjectSig)
     const nonce = ethers.utils.hexlify(nonceBytes)
 

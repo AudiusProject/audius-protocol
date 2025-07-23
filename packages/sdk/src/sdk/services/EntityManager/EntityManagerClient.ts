@@ -3,8 +3,7 @@ import {
   encodeFunctionData,
   decodeFunctionData,
   type Hex,
-  type TypedDataDefinition,
-  DecodeFunctionDataReturnType
+  type TypedDataDefinition
 } from 'viem'
 
 import * as runtime from '../../api/generated/default/runtime'
@@ -21,10 +20,12 @@ import {
 } from './contract/EntityManagerContract'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import {
+  Action,
   BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
   EntityManagerTransactionReceipt,
+  EntityType,
   ManageEntityOptions
 } from './types'
 
@@ -99,9 +100,9 @@ export class EntityManagerClient implements EntityManagerService {
         encodedABI: encodeFunctionData({
           abi: EntityManager.abi,
           args: [
-            userId,
+            BigInt(userId!),
             entityType,
-            entityId,
+            BigInt(entityId),
             action,
             metadata,
             nonce,
@@ -192,10 +193,36 @@ export class EntityManagerClient implements EntityManagerService {
    * @param data - The encoded function data
    * @returns The decoded function data
    */
-  public decodeManageEntity(
-    data: Hex
-  ): DecodeFunctionDataReturnType<typeof EntityManager.abi> {
-    return decodeFunctionData({ abi: EntityManager.abi, data })
+  public decodeManageEntity(data: Hex) {
+    const decodedAbi = decodeFunctionData({
+      abi: EntityManager.abi,
+      data
+    })
+    if (decodedAbi.functionName !== 'manageEntity') {
+      throw new Error('Expected manageEntity function')
+    }
+    const [userId, entityType, entityId, action, metadata, nonce, subjectSig] =
+      decodedAbi.args
+    if (
+      !userId ||
+      !entityType ||
+      !entityId ||
+      !action ||
+      !metadata ||
+      !nonce ||
+      !subjectSig
+    ) {
+      throw new Error('Missing complete manageEntity function data')
+    }
+    return {
+      userId,
+      entityType: entityType as EntityType,
+      entityId,
+      action: action as Action,
+      metadata,
+      nonce,
+      subjectSig
+    }
   }
 
   /**
@@ -227,16 +254,17 @@ export class EntityManagerClient implements EntityManagerService {
       nonce,
       subjectSig
     } = decodedAbi
+
     const data: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
       domain: this.getDomain(),
       primaryType: 'ManageEntity',
       message: {
         // TODO: Strictly check callsites to ensure userId always passed in
         // @ts-ignore Need to update this type to "uint32" instead of "uint"
-        userId: userId!,
+        userId: Number(userId),
         entityType,
         // @ts-ignore Need to update this type to "uint32" instead of "uint"
-        entityId,
+        entityId: Number(entityId),
         action,
         metadata,
         nonce
