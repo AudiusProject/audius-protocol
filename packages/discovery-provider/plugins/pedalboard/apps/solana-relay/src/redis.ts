@@ -81,20 +81,22 @@ const TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT = 100
 export const rateLimitTokenAccountCreation = async (
   wallet: string,
   isVerified: boolean,
-  variation: 'payoutWallet' | 'withdrawal' | 'system' = 'system'
+  memo?: string // an optional memo creates a custom rate limit bucket
 ) => {
   const redis = await getRedisConnection()
 
   const currentDate = new Date().toISOString().split('T')[0]
+  // Rate limit individual users from doing this too many times
   const userKey = `ata-creation-count:user:${wallet}:${currentDate}`
-  const globalKey = `ata-creation-count:${variation}:${currentDate}`
+  // Rate limit the whole userbase
+  const key = `ata-creation-count:${memo ?? 'global'}:${currentDate}`
 
   const limit = isVerified
     ? TOKEN_ACCOUNT_CREATION_VERIFIED_USER_LIMIT
     : TOKEN_ACCOUNT_CREATION_USER_LIMIT
 
   const currentUserCount = await redis.get(userKey)
-  const currentSystemCount = await redis.get(globalKey)
+  const currentSystemCount = await redis.get(key)
 
   logger.info(
     {
@@ -128,7 +130,7 @@ export const rateLimitTokenAccountCreation = async (
 
   const [systemCount] = await redis
     .multi()
-    .incr(globalKey)
+    .incr(key)
     .expire(userKey, 60 * 60 * 48) // Expire old keys after 48 hrs
     .exec()
 
