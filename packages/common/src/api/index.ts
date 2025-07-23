@@ -40,6 +40,7 @@ export * from './tan-query/lineups/useLibraryTracks'
 export * from './tan-query/lineups/useProfileReposts'
 export * from './tan-query/lineups/useProfileTracks'
 export * from './tan-query/lineups/useTrending'
+export * from './tan-query/lineups/useTrendingUnderground'
 export * from './tan-query/lineups/useTrackPageLineup'
 
 // Notifications

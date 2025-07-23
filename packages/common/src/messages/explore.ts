@@ -17,5 +17,6 @@ export const exploreMessages = {
   imFeelingLucky: "I'm Feeling Lucky",
   recentlyPlayed: 'Recently Played',
   activeDiscussions: 'Active Discussions',
-  mostShared: 'Most Shared Tracks This Week'
+  mostShared: 'Most Shared Tracks This Week',
+  undergroundTrending: 'Underground Trending'
 }

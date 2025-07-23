@@ -17,6 +17,7 @@ import { ProgressiveScrollView } from './ProgressiveScrollView'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
 import { RecommendedTracks } from './RecommendedTracks'
+import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 const MemoizedExploreContent = () => {
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
@@ -33,6 +34,7 @@ const MemoizedExploreContent = () => {
       ) : null}
       <FeaturedPlaylists />
       <FeaturedRemixContests />
+      {isSearchExploreGoodiesEnabled ? <UndergroundTrendingTracks /> : null}
       <ArtistSpotlight />
       <LabelSpotlight />
       {isSearchExploreGoodiesEnabled ? <ActiveDiscussions /> : null}
