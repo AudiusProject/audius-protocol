@@ -24,31 +24,31 @@ import {
 /**
  * 
  * @export
- * @interface GetCoin200Response
+ * @interface CoinResponse
  */
-export interface GetCoin200Response {
+export interface CoinResponse {
     /**
      * 
      * @type {Coin}
-     * @memberof GetCoin200Response
+     * @memberof CoinResponse
      */
     data?: Coin;
 }
 
 /**
- * Check if a given object implements the GetCoin200Response interface.
+ * Check if a given object implements the CoinResponse interface.
  */
-export function instanceOfGetCoin200Response(value: object): value is GetCoin200Response {
+export function instanceOfCoinResponse(value: object): value is CoinResponse {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function GetCoin200ResponseFromJSON(json: any): GetCoin200Response {
-    return GetCoin200ResponseFromJSONTyped(json, false);
+export function CoinResponseFromJSON(json: any): CoinResponse {
+    return CoinResponseFromJSONTyped(json, false);
 }
 
-export function GetCoin200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetCoin200Response {
+export function CoinResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -58,7 +58,7 @@ export function GetCoin200ResponseFromJSONTyped(json: any, ignoreDiscriminator: 
     };
 }
 
-export function GetCoin200ResponseToJSON(value?: GetCoin200Response | null): any {
+export function CoinResponseToJSON(value?: CoinResponse | null): any {
     if (value === undefined) {
         return undefined;
     }

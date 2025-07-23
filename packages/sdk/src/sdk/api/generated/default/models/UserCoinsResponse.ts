@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { UserCoinBalance } from './UserCoinBalance';
+import type { UserCoin } from './UserCoin';
 import {
-    UserCoinBalanceFromJSON,
-    UserCoinBalanceFromJSONTyped,
-    UserCoinBalanceToJSON,
-} from './UserCoinBalance';
+    UserCoinFromJSON,
+    UserCoinFromJSONTyped,
+    UserCoinToJSON,
+} from './UserCoin';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface UserCoinsResponse {
     /**
      * 
-     * @type {Array<UserCoinBalance>}
+     * @type {Array<UserCoin>}
      * @memberof UserCoinsResponse
      */
-    data?: Array<UserCoinBalance>;
+    data?: Array<UserCoin>;
 }
 
 /**
@@ -54,7 +54,7 @@ export function UserCoinsResponseFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserCoinBalanceFromJSON)),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserCoinFromJSON)),
     };
 }
 
@@ -67,7 +67,7 @@ export function UserCoinsResponseToJSON(value?: UserCoinsResponse | null): any {
     }
     return {
         
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserCoinBalanceToJSON)),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserCoinToJSON)),
     };
 }
 

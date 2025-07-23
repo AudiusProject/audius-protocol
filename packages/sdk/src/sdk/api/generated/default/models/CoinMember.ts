@@ -17,27 +17,27 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface GetCoinMembers200ResponseDataInner
+ * @interface CoinMember
  */
-export interface GetCoinMembers200ResponseDataInner {
+export interface CoinMember {
     /**
      * The user's balance of the specific coin (in wei)
      * @type {number}
-     * @memberof GetCoinMembers200ResponseDataInner
+     * @memberof CoinMember
      */
     balance: number;
     /**
      * The ID of the user with a non-zero balance
      * @type {string}
-     * @memberof GetCoinMembers200ResponseDataInner
+     * @memberof CoinMember
      */
     userId: string;
 }
 
 /**
- * Check if a given object implements the GetCoinMembers200ResponseDataInner interface.
+ * Check if a given object implements the CoinMember interface.
  */
-export function instanceOfGetCoinMembers200ResponseDataInner(value: object): value is GetCoinMembers200ResponseDataInner {
+export function instanceOfCoinMember(value: object): value is CoinMember {
     let isInstance = true;
     isInstance = isInstance && "balance" in value && value["balance"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
@@ -45,11 +45,11 @@ export function instanceOfGetCoinMembers200ResponseDataInner(value: object): val
     return isInstance;
 }
 
-export function GetCoinMembers200ResponseDataInnerFromJSON(json: any): GetCoinMembers200ResponseDataInner {
-    return GetCoinMembers200ResponseDataInnerFromJSONTyped(json, false);
+export function CoinMemberFromJSON(json: any): CoinMember {
+    return CoinMemberFromJSONTyped(json, false);
 }
 
-export function GetCoinMembers200ResponseDataInnerFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetCoinMembers200ResponseDataInner {
+export function CoinMemberFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinMember {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -60,7 +60,7 @@ export function GetCoinMembers200ResponseDataInnerFromJSONTyped(json: any, ignor
     };
 }
 
-export function GetCoinMembers200ResponseDataInnerToJSON(value?: GetCoinMembers200ResponseDataInner | null): any {
+export function CoinMemberToJSON(value?: CoinMember | null): any {
     if (value === undefined) {
         return undefined;
     }

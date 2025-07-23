@@ -25,8 +25,12 @@ models/BestSellingResponse.ts
 models/BlobInfo.ts
 models/ChallengeResponse.ts
 models/Coin.ts
+models/CoinMember.ts
+models/CoinMembersResponse.ts
+models/CoinResponse.ts
 models/CoinTokenInfo.ts
 models/CoinTokenInfoExtensions.ts
+models/CoinsResponse.ts
 models/Collectibles.ts
 models/CollectiblesResponse.ts
 models/CollectionActivity.ts
@@ -59,10 +63,6 @@ models/FollowGate.ts
 models/FollowersResponse.ts
 models/FollowingResponse.ts
 models/GetChallenges.ts
-models/GetCoin200Response.ts
-models/GetCoinMembers200Response.ts
-models/GetCoinMembers200ResponseDataInner.ts
-models/GetCoins200Response.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
@@ -121,10 +121,10 @@ models/UndisbursedChallenge.ts
 models/UndisbursedChallenges.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
+models/UserCoin.ts
 models/UserCoinAccount.ts
-models/UserCoinAccountsResponse.ts
-models/UserCoinBalance.ts
-models/UserCoinDetails.ts
+models/UserCoinResponse.ts
+models/UserCoinWithAccounts.ts
 models/UserCoinsResponse.ts
 models/UserCommentsResponse.ts
 models/UserResponse.ts

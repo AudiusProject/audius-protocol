@@ -16,17 +16,17 @@
 
 import * as runtime from '../runtime';
 import type {
-  GetCoin200Response,
-  GetCoinMembers200Response,
-  GetCoins200Response,
+  CoinMembersResponse,
+  CoinResponse,
+  CoinsResponse,
 } from '../models';
 import {
-    GetCoin200ResponseFromJSON,
-    GetCoin200ResponseToJSON,
-    GetCoinMembers200ResponseFromJSON,
-    GetCoinMembers200ResponseToJSON,
-    GetCoins200ResponseFromJSON,
-    GetCoins200ResponseToJSON,
+    CoinMembersResponseFromJSON,
+    CoinMembersResponseToJSON,
+    CoinResponseFromJSON,
+    CoinResponseToJSON,
+    CoinsResponseFromJSON,
+    CoinsResponseToJSON,
 } from '../models';
 
 export interface GetCoinRequest {
@@ -57,7 +57,7 @@ export class CoinsApi extends runtime.BaseAPI {
      * @hidden
      * Gets information about a specific coin by its mint address
      */
-    async getCoinRaw(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetCoin200Response>> {
+    async getCoinRaw(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoinResponse>> {
         if (params.mint === null || params.mint === undefined) {
             throw new runtime.RequiredError('mint','Required parameter params.mint was null or undefined when calling getCoin.');
         }
@@ -73,13 +73,13 @@ export class CoinsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => GetCoin200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoinResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets information about a specific coin by its mint address
      */
-    async getCoin(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetCoin200Response> {
+    async getCoin(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
         const response = await this.getCoinRaw(params, initOverrides);
         return await response.value();
     }
@@ -88,7 +88,7 @@ export class CoinsApi extends runtime.BaseAPI {
      * @hidden
      * Gets a list of Audius users with a non-zero balance of a specific coin
      */
-    async getCoinMembersRaw(params: GetCoinMembersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetCoinMembers200Response>> {
+    async getCoinMembersRaw(params: GetCoinMembersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoinMembersResponse>> {
         if (params.mint === null || params.mint === undefined) {
             throw new runtime.RequiredError('mint','Required parameter params.mint was null or undefined when calling getCoinMembers.');
         }
@@ -116,13 +116,13 @@ export class CoinsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => GetCoinMembers200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoinMembersResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets a list of Audius users with a non-zero balance of a specific coin
      */
-    async getCoinMembers(params: GetCoinMembersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetCoinMembers200Response> {
+    async getCoinMembers(params: GetCoinMembersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinMembersResponse> {
         const response = await this.getCoinMembersRaw(params, initOverrides);
         return await response.value();
     }
@@ -131,7 +131,7 @@ export class CoinsApi extends runtime.BaseAPI {
      * @hidden
      * Gets information about coins
      */
-    async getCoinsRaw(params: GetCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetCoins200Response>> {
+    async getCoinsRaw(params: GetCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoinsResponse>> {
         const queryParameters: any = {};
 
         if (params.mint) {
@@ -163,13 +163,13 @@ export class CoinsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => GetCoins200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoinsResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets information about coins
      */
-    async getCoins(params: GetCoinsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetCoins200Response> {
+    async getCoins(params: GetCoinsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinsResponse> {
         const response = await this.getCoinsRaw(params, initOverrides);
         return await response.value();
     }

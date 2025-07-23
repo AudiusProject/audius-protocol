@@ -17,39 +17,39 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface UserCoinBalance
+ * @interface UserCoin
  */
-export interface UserCoinBalance {
+export interface UserCoin {
     /**
      * The coin mint address
      * @type {string}
-     * @memberof UserCoinBalance
+     * @memberof UserCoin
      */
     mint: string;
     /**
      * The coin symbol
      * @type {string}
-     * @memberof UserCoinBalance
+     * @memberof UserCoin
      */
     ticker: string;
     /**
      * The balance of the coin in the user's account (in wei)
      * @type {number}
-     * @memberof UserCoinBalance
+     * @memberof UserCoin
      */
     balance: number;
     /**
      * The balance of the coin in the user's account in USD
      * @type {number}
-     * @memberof UserCoinBalance
+     * @memberof UserCoin
      */
     balanceUsd: number;
 }
 
 /**
- * Check if a given object implements the UserCoinBalance interface.
+ * Check if a given object implements the UserCoin interface.
  */
-export function instanceOfUserCoinBalance(value: object): value is UserCoinBalance {
+export function instanceOfUserCoin(value: object): value is UserCoin {
     let isInstance = true;
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
     isInstance = isInstance && "ticker" in value && value["ticker"] !== undefined;
@@ -59,11 +59,11 @@ export function instanceOfUserCoinBalance(value: object): value is UserCoinBalan
     return isInstance;
 }
 
-export function UserCoinBalanceFromJSON(json: any): UserCoinBalance {
-    return UserCoinBalanceFromJSONTyped(json, false);
+export function UserCoinFromJSON(json: any): UserCoin {
+    return UserCoinFromJSONTyped(json, false);
 }
 
-export function UserCoinBalanceFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserCoinBalance {
+export function UserCoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserCoin {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -76,7 +76,7 @@ export function UserCoinBalanceFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-export function UserCoinBalanceToJSON(value?: UserCoinBalance | null): any {
+export function UserCoinToJSON(value?: UserCoin | null): any {
     if (value === undefined) {
         return undefined;
     }

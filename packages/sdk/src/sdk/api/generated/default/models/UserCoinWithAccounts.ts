@@ -24,33 +24,33 @@ import {
 /**
  * 
  * @export
- * @interface UserCoinDetails
+ * @interface UserCoinWithAccounts
  */
-export interface UserCoinDetails {
+export interface UserCoinWithAccounts {
     /**
      * The total balance of the coin in the user's account (in wei)
      * @type {number}
-     * @memberof UserCoinDetails
+     * @memberof UserCoinWithAccounts
      */
     totalBalance: number;
     /**
      * The total balance of the coin in the user's account in USD
      * @type {number}
-     * @memberof UserCoinDetails
+     * @memberof UserCoinWithAccounts
      */
     totalBalanceUSD: number;
     /**
      * 
      * @type {Array<UserCoinAccount>}
-     * @memberof UserCoinDetails
+     * @memberof UserCoinWithAccounts
      */
     accounts: Array<UserCoinAccount>;
 }
 
 /**
- * Check if a given object implements the UserCoinDetails interface.
+ * Check if a given object implements the UserCoinWithAccounts interface.
  */
-export function instanceOfUserCoinDetails(value: object): value is UserCoinDetails {
+export function instanceOfUserCoinWithAccounts(value: object): value is UserCoinWithAccounts {
     let isInstance = true;
     isInstance = isInstance && "totalBalance" in value && value["totalBalance"] !== undefined;
     isInstance = isInstance && "totalBalanceUSD" in value && value["totalBalanceUSD"] !== undefined;
@@ -59,11 +59,11 @@ export function instanceOfUserCoinDetails(value: object): value is UserCoinDetai
     return isInstance;
 }
 
-export function UserCoinDetailsFromJSON(json: any): UserCoinDetails {
-    return UserCoinDetailsFromJSONTyped(json, false);
+export function UserCoinWithAccountsFromJSON(json: any): UserCoinWithAccounts {
+    return UserCoinWithAccountsFromJSONTyped(json, false);
 }
 
-export function UserCoinDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserCoinDetails {
+export function UserCoinWithAccountsFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserCoinWithAccounts {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -75,7 +75,7 @@ export function UserCoinDetailsFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-export function UserCoinDetailsToJSON(value?: UserCoinDetails | null): any {
+export function UserCoinWithAccountsToJSON(value?: UserCoinWithAccounts | null): any {
     if (value === undefined) {
         return undefined;
     }
