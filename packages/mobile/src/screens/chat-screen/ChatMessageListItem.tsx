@@ -1,7 +1,9 @@
 import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -164,6 +166,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   } = props
   const styles = useStyles()
   const { data: userId } = useCurrentUserId()
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )
@@ -255,7 +260,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
                   }
                 >
-                  {senderUserId ? (
+                  {senderUserId && isArtistCoinEnabled ? (
                     <ArtistCoinHeader
                       userId={senderUserId}
                       audience={message?.audience}

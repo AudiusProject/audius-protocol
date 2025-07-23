@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { useCurrentUserId, useUsers } from '@audius/common/api'
-import { useCanSendMessage } from '@audius/common/hooks'
+import { useCanSendMessage, useFeatureFlag } from '@audius/common/hooks'
 import { Status, ChatMessageWithExtras } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { chatActions, chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -44,6 +45,9 @@ const messages = {
 
 export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const { chatId, message, hasTail } = props
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
   // Refs
   const reactionButtonRef = useRef<HTMLDivElement>(null)
@@ -179,10 +183,12 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       >
         <Flex className={styles.bubbleCorners}>
           <Flex column>
-            <ArtistCoinHeader
-              userId={senderUserId}
-              audience={message.audience}
-            />
+            {isArtistCoinEnabled ? (
+              <ArtistCoinHeader
+                userId={senderUserId}
+                audience={message.audience}
+              />
+            ) : null}
             {isCollectionUrl(linkValue) ? (
               <ChatMessagePlaylist
                 className={styles.unfurl}
