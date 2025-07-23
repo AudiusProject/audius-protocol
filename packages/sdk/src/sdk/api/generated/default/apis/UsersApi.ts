@@ -28,8 +28,6 @@ import type {
   GetChallenges,
   GetSupportedUsers,
   GetSupporters,
-  GetUserCoin200Response,
-  GetUserCoins200Response,
   HistoryResponse,
   MutualFollowersResponse,
   PlaylistsResponse,
@@ -43,6 +41,8 @@ import type {
   TagsResponse,
   TracksResponse,
   UserAssociatedWalletResponse,
+  UserCoinAccountsResponse,
+  UserCoinsResponse,
   UserCommentsResponse,
   UserResponse,
   UserSearch,
@@ -76,10 +76,6 @@ import {
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
-    GetUserCoin200ResponseFromJSON,
-    GetUserCoin200ResponseToJSON,
-    GetUserCoins200ResponseFromJSON,
-    GetUserCoins200ResponseToJSON,
     HistoryResponseFromJSON,
     HistoryResponseToJSON,
     MutualFollowersResponseFromJSON,
@@ -106,6 +102,10 @@ import {
     TracksResponseToJSON,
     UserAssociatedWalletResponseFromJSON,
     UserAssociatedWalletResponseToJSON,
+    UserCoinAccountsResponseFromJSON,
+    UserCoinAccountsResponseToJSON,
+    UserCoinsResponseFromJSON,
+    UserCoinsResponseToJSON,
     UserCommentsResponseFromJSON,
     UserCommentsResponseToJSON,
     UserResponseFromJSON,
@@ -1676,7 +1676,7 @@ export class UsersApi extends runtime.BaseAPI {
      * @hidden
      * Gets information about a specific coin owned by the user and their wallets
      */
-    async getUserCoinRaw(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetUserCoin200Response>> {
+    async getUserCoinRaw(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCoinAccountsResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCoin.');
         }
@@ -1696,13 +1696,13 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => GetUserCoin200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCoinAccountsResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets information about a specific coin owned by the user and their wallets
      */
-    async getUserCoin(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetUserCoin200Response> {
+    async getUserCoin(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCoinAccountsResponse> {
         const response = await this.getUserCoinRaw(params, initOverrides);
         return await response.value();
     }
@@ -1711,7 +1711,7 @@ export class UsersApi extends runtime.BaseAPI {
      * @hidden
      * Gets a list of the coins owned by the user and their balances
      */
-    async getUserCoinsRaw(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetUserCoins200Response>> {
+    async getUserCoinsRaw(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCoinsResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCoins.');
         }
@@ -1735,13 +1735,13 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => GetUserCoins200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCoinsResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets a list of the coins owned by the user and their balances
      */
-    async getUserCoins(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetUserCoins200Response> {
+    async getUserCoins(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCoinsResponse> {
         const response = await this.getUserCoinsRaw(params, initOverrides);
         return await response.value();
     }

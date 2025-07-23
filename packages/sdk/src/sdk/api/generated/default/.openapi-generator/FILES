@@ -66,11 +66,6 @@ models/GetCoins200Response.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
-models/GetUserCoin200Response.ts
-models/GetUserCoin200ResponseData.ts
-models/GetUserCoin200ResponseDataAccountsInner.ts
-models/GetUserCoins200Response.ts
-models/GetUserCoins200ResponseDataInner.ts
 models/HistoryResponse.ts
 models/ListenCount.ts
 models/MonthlyAggregatePlay.ts
@@ -126,6 +121,11 @@ models/UndisbursedChallenge.ts
 models/UndisbursedChallenges.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
+models/UserCoinAccount.ts
+models/UserCoinAccountsResponse.ts
+models/UserCoinBalance.ts
+models/UserCoinDetails.ts
+models/UserCoinsResponse.ts
 models/UserCommentsResponse.ts
 models/UserResponse.ts
 models/UserSearch.ts

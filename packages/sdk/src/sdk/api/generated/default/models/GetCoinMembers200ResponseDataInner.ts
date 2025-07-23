@@ -25,13 +25,13 @@ export interface GetCoinMembers200ResponseDataInner {
      * @type {number}
      * @memberof GetCoinMembers200ResponseDataInner
      */
-    balance?: number;
+    balance: number;
     /**
      * The ID of the user with a non-zero balance
      * @type {string}
      * @memberof GetCoinMembers200ResponseDataInner
      */
-    userId?: string;
+    userId: string;
 }
 
 /**
@@ -39,6 +39,8 @@ export interface GetCoinMembers200ResponseDataInner {
  */
 export function instanceOfGetCoinMembers200ResponseDataInner(value: object): value is GetCoinMembers200ResponseDataInner {
     let isInstance = true;
+    isInstance = isInstance && "balance" in value && value["balance"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
 
     return isInstance;
 }
@@ -53,8 +55,8 @@ export function GetCoinMembers200ResponseDataInnerFromJSONTyped(json: any, ignor
     }
     return {
         
-        'balance': !exists(json, 'balance') ? undefined : json['balance'],
-        'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
+        'balance': json['balance'],
+        'userId': json['user_id'],
     };
 }
 

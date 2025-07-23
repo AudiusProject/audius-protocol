@@ -32,43 +32,43 @@ export interface Coin {
      * @type {string}
      * @memberof Coin
      */
-    ticker?: string;
+    ticker: string;
     /**
      * The coin mint address
      * @type {string}
      * @memberof Coin
      */
-    mint?: string;
+    mint: string;
     /**
      * The ID of the user associated with the coin
      * @type {string}
      * @memberof Coin
      */
-    userId?: string;
+    userId: string;
     /**
      * The number of Audius users holding the coin
      * @type {number}
      * @memberof Coin
      */
-    members?: number;
+    members: number;
     /**
      * The percentage change in the number of members holding the coin over the last 24 hours
      * @type {number}
      * @memberof Coin
      */
-    membersChange24hPercent?: number;
+    membersChange24hPercent: number;
     /**
      * The date and time when the coin was added to Audius.
      * @type {string}
      * @memberof Coin
      */
-    createdAt?: string;
+    createdAt: string;
     /**
      * 
      * @type {CoinTokenInfo}
      * @memberof Coin
      */
-    tokenInfo?: CoinTokenInfo;
+    tokenInfo: CoinTokenInfo;
 }
 
 /**
@@ -76,6 +76,13 @@ export interface Coin {
  */
 export function instanceOfCoin(value: object): value is Coin {
     let isInstance = true;
+    isInstance = isInstance && "ticker" in value && value["ticker"] !== undefined;
+    isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
+    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "members" in value && value["members"] !== undefined;
+    isInstance = isInstance && "membersChange24hPercent" in value && value["membersChange24hPercent"] !== undefined;
+    isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
+    isInstance = isInstance && "tokenInfo" in value && value["tokenInfo"] !== undefined;
 
     return isInstance;
 }
@@ -90,13 +97,13 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
     }
     return {
         
-        'ticker': !exists(json, 'ticker') ? undefined : json['ticker'],
-        'mint': !exists(json, 'mint') ? undefined : json['mint'],
-        'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
-        'members': !exists(json, 'members') ? undefined : json['members'],
-        'membersChange24hPercent': !exists(json, 'members_change_24h_percent') ? undefined : json['members_change_24h_percent'],
-        'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
-        'tokenInfo': !exists(json, 'token_info') ? undefined : CoinTokenInfoFromJSON(json['token_info']),
+        'ticker': json['ticker'],
+        'mint': json['mint'],
+        'userId': json['user_id'],
+        'members': json['members'],
+        'membersChange24hPercent': json['members_change_24h_percent'],
+        'createdAt': json['created_at'],
+        'tokenInfo': CoinTokenInfoFromJSON(json['token_info']),
     };
 }
 
