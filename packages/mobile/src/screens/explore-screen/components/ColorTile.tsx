@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react'
-import { useCallback } from 'react'
 
 import type {
   ImageSourcePropType,
