@@ -32,7 +32,7 @@ export interface Coin {
      * @type {string}
      * @memberof Coin
      */
-    ticker: string;
+    ticker?: string;
     /**
      * The coin mint address
      * @type {string}
@@ -76,7 +76,6 @@ export interface Coin {
  */
 export function instanceOfCoin(value: object): value is Coin {
     let isInstance = true;
-    isInstance = isInstance && "ticker" in value && value["ticker"] !== undefined;
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "members" in value && value["members"] !== undefined;
@@ -97,7 +96,7 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
     }
     return {
         
-        'ticker': json['ticker'],
+        'ticker': !exists(json, 'ticker') ? undefined : json['ticker'],
         'mint': json['mint'],
         'userId': json['user_id'],
         'members': json['members'],

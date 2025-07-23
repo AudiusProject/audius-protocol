@@ -32,7 +32,7 @@ export interface CoinMembersResponse {
      * @type {Array<CoinMember>}
      * @memberof CoinMembersResponse
      */
-    data?: Array<CoinMember>;
+    data: Array<CoinMember>;
 }
 
 /**
@@ -40,6 +40,7 @@ export interface CoinMembersResponse {
  */
 export function instanceOfCoinMembersResponse(value: object): value is CoinMembersResponse {
     let isInstance = true;
+    isInstance = isInstance && "data" in value && value["data"] !== undefined;
 
     return isInstance;
 }
@@ -54,7 +55,7 @@ export function CoinMembersResponseFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CoinMemberFromJSON)),
+        'data': ((json['data'] as Array<any>).map(CoinMemberFromJSON)),
     };
 }
 
@@ -67,7 +68,7 @@ export function CoinMembersResponseToJSON(value?: CoinMembersResponse | null): a
     }
     return {
         
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CoinMemberToJSON)),
+        'data': ((value.data as Array<any>).map(CoinMemberToJSON)),
     };
 }
 
