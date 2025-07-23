@@ -76,6 +76,7 @@ export const TrackResults = () => {
         loadMore={loadNextPage}
         keyboardShouldPersistTaps='handled'
         onPressItem={handlePress}
+        ListFooterComponent={<Flex h={200} />}
       />
     </Flex>
   )
