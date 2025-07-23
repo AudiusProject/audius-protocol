@@ -4,6 +4,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 
 import { Flex } from '@audius/harmony-native'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import {
   useSearchCategory,
@@ -30,7 +31,7 @@ export const BestOfAudiusTiles = ({
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const [, setCategory] = useSearchCategory()
   const [, setFilters] = useSearchFilters()
-
+  const { navigate } = useNavigation()
   const filteredTiles = useMemo(
     () =>
       tiles.filter((tile) => {
@@ -40,13 +41,17 @@ export const BestOfAudiusTiles = ({
     [isUSDCPurchasesEnabled]
   )
   const handleTilePress = useCallback(
-    (title) => {
+    (title: string) => {
       if (title === PREMIUM_TRACKS.title) {
         setCategory('tracks')
         setFilters({ isPremium: true })
+      } else if (title === TRENDING_PLAYLISTS.title) {
+        navigate('TrendingPlaylists')
+      } else if (title === TRENDING_UNDERGROUND.title) {
+        navigate('TrendingUnderground')
       }
     },
-    [setCategory, setFilters]
+    [navigate, setCategory, setFilters]
   )
   return (
     <ExploreSection title={messages.bestOfAudius} isLoading={externalLoading}>
