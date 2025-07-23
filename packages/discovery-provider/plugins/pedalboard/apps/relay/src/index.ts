@@ -5,10 +5,12 @@ import { logger } from './logger'
 import { initializeDiscoveryDb } from '@pedalboard/basekit'
 import { connectWeb3 } from './web3'
 import { app } from './server'
+import { AudiusSdk, sdk } from '@audius/sdk'
 
 export type SharedData = {
   config: Config
   web3: ethers.providers.JsonRpcProvider
+  sdk: AudiusSdk
   wallets: WalletManager
 }
 
@@ -24,6 +26,7 @@ export const discoveryDb = initializeDiscoveryDb(
 
 export let web3: providers.JsonRpcProvider
 export let wallets: WalletManager
+export let audiusSdk: AudiusSdk
 
 const main = async () => {
   try {
@@ -32,8 +35,17 @@ const main = async () => {
     web3 = connectedWeb3.web3
     config.acdcChainId = connectedWeb3.chainId.toString()
     wallets = new WalletManager(web3)
+    audiusSdk = sdk({
+      appName: 'relay',
+      environment:
+        config.environment === ' '
+          ? 'development'
+          : config.environment === 'stage'
+            ? 'staging'
+            : 'production'
+    })
   } catch (e) {
-    logger.warn("web3 not configured for relay, acdc not reachable")
+    logger.warn('web3 not configured for relay, acdc not reachable')
   }
   // needs to stay so decoding can happen correctly
   config.acdcChainId = chainId(config)

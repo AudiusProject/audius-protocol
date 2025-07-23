@@ -1,8 +1,10 @@
+import { recoverTypedSignature } from 'eth-sig-util'
 import {
   encodeFunctionData,
   decodeFunctionData,
   type Hex,
-  type TypedDataDefinition
+  type TypedDataDefinition,
+  DecodeFunctionDataReturnType
 } from 'viem'
 
 import * as runtime from '../../api/generated/default/runtime'
@@ -190,7 +192,9 @@ export class EntityManagerClient implements EntityManagerService {
    * @param data - The encoded function data
    * @returns The decoded function data
    */
-  public async decodeManageEntity(data: Hex) {
+  public decodeManageEntity(
+    data: Hex
+  ): DecodeFunctionDataReturnType<typeof EntityManager.abi> {
     return decodeFunctionData({ abi: EntityManager.abi, data })
   }
 
@@ -205,5 +209,40 @@ export class EntityManagerClient implements EntityManagerService {
       version: '1',
       verifyingContract: this.contractAddress as Hex
     } as const
+  }
+
+  /**
+   * Recovers the signer address from the encoded ABI
+   * @param encodedABI - The encoded ABI
+   * @returns The recovered signer address
+   */
+  public recoverSigner(encodedABI: Hex) {
+    const decodedAbi = this.decodeManageEntity(encodedABI)
+    const {
+      userId,
+      entityType,
+      entityId,
+      action,
+      metadata,
+      nonce,
+      subjectSig
+    } = decodedAbi
+    const data: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
+      domain: this.getDomain(),
+      primaryType: 'ManageEntity',
+      message: {
+        // TODO: Strictly check callsites to ensure userId always passed in
+        // @ts-ignore Need to update this type to "uint32" instead of "uint"
+        userId: userId!,
+        entityType,
+        // @ts-ignore Need to update this type to "uint32" instead of "uint"
+        entityId,
+        action,
+        metadata,
+        nonce
+      },
+      types: EntityManager.types
+    }
+    return recoverTypedSignature({ data, sig: subjectSig })
   }
 }
