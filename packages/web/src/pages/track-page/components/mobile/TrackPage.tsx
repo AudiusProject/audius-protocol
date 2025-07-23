@@ -118,6 +118,8 @@ const TrackPage = ({
       ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='track'
+      entityId={heroTrack?.track_id}
       noIndex={defaults.isUnlisted}
     >
       <Flex column p='l' gap='2xl' w='100%'>

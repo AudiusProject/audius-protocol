@@ -56,6 +56,8 @@ const MobilePageContainer = (props: MobilePageContainerProps) => {
     className,
     containerClassName,
     description,
+    entityId,
+    entityType,
     fullHeight = false,
     hasDefaultHeader = false,
     hasPlayBar,
@@ -118,7 +120,9 @@ const MobilePageContainer = (props: MobilePageContainerProps) => {
     image,
     canonicalUrl,
     structuredData,
-    noIndex
+    noIndex,
+    entityId,
+    entityType
   }
 
   return (
