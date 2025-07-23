@@ -1,5 +1,6 @@
 .openapi-generator-ignore
 apis/ChallengesApi.ts
+apis/CoinsApi.ts
 apis/CommentsApi.ts
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
@@ -23,6 +24,9 @@ models/BestSellingItem.ts
 models/BestSellingResponse.ts
 models/BlobInfo.ts
 models/ChallengeResponse.ts
+models/Coin.ts
+models/CoinTokenInfo.ts
+models/CoinTokenInfoExtensions.ts
 models/Collectibles.ts
 models/CollectiblesResponse.ts
 models/CollectionActivity.ts
@@ -55,9 +59,18 @@ models/FollowGate.ts
 models/FollowersResponse.ts
 models/FollowingResponse.ts
 models/GetChallenges.ts
+models/GetCoin200Response.ts
+models/GetCoinMembers200Response.ts
+models/GetCoinMembers200ResponseDataInner.ts
+models/GetCoins200Response.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
+models/GetUserCoin200Response.ts
+models/GetUserCoin200ResponseData.ts
+models/GetUserCoin200ResponseDataAccountsInner.ts
+models/GetUserCoins200Response.ts
+models/GetUserCoins200ResponseDataInner.ts
 models/HistoryResponse.ts
 models/ListenCount.ts
 models/MonthlyAggregatePlay.ts

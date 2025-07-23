@@ -28,6 +28,8 @@ import type {
   GetChallenges,
   GetSupportedUsers,
   GetSupporters,
+  GetUserCoin200Response,
+  GetUserCoins200Response,
   HistoryResponse,
   MutualFollowersResponse,
   PlaylistsResponse,
@@ -74,6 +76,10 @@ import {
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
+    GetUserCoin200ResponseFromJSON,
+    GetUserCoin200ResponseToJSON,
+    GetUserCoins200ResponseFromJSON,
+    GetUserCoins200ResponseToJSON,
     HistoryResponseFromJSON,
     HistoryResponseToJSON,
     MutualFollowersResponseFromJSON,
@@ -321,6 +327,17 @@ export interface GetUserByHandleRequest {
 export interface GetUserChallengesRequest {
     id: string;
     showHistorical?: boolean;
+}
+
+export interface GetUserCoinRequest {
+    id: string;
+    mint: string;
+}
+
+export interface GetUserCoinsRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
 }
 
 export interface GetUserCollectiblesRequest {
@@ -1652,6 +1669,80 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserChallenges(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChallenges> {
         const response = await this.getUserChallengesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets information about a specific coin owned by the user and their wallets
+     */
+    async getUserCoinRaw(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetUserCoin200Response>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCoin.');
+        }
+
+        if (params.mint === null || params.mint === undefined) {
+            throw new runtime.RequiredError('mint','Required parameter params.mint was null or undefined when calling getUserCoin.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/coins/{mint}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))).replace(`{${"mint"}}`, encodeURIComponent(String(params.mint))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetUserCoin200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets information about a specific coin owned by the user and their wallets
+     */
+    async getUserCoin(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetUserCoin200Response> {
+        const response = await this.getUserCoinRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets a list of the coins owned by the user and their balances
+     */
+    async getUserCoinsRaw(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetUserCoins200Response>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCoins.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/coins`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetUserCoins200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of the coins owned by the user and their balances
+     */
+    async getUserCoins(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetUserCoins200Response> {
+        const response = await this.getUserCoinsRaw(params, initOverrides);
         return await response.value();
     }
 
