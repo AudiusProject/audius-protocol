@@ -16,9 +16,11 @@ interface CollectionTileCarouselProps {
 
 const CarouselItem = ({
   id,
+  index,
   isTrending
 }: {
   id: number
+  index: number
   isTrending?: boolean
 }) => {
   const uid = useMemo(
@@ -30,14 +32,11 @@ const CarouselItem = ({
       id={id}
       uid={uid}
       togglePlay={() => {}}
-      index={0}
+      index={index}
       isTrending={isTrending}
     />
   )
 }
-
-// TODO: Not rendering full height w/ tracks (is it based on available space? )
-// Spacing between tiles is wrong
 
 export const CollectionTileCarousel = ({
   collectionIds,
@@ -61,7 +60,6 @@ export const CollectionTileCarousel = ({
               mr={columnIndex === 0 ? 16 : 0}
             >
               <LineupTileSkeleton />
-              <LineupTileSkeleton />
             </Flex>
           ))}
         </ScrollView>
@@ -74,34 +72,17 @@ export const CollectionTileCarousel = ({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
       >
-        {collectionIds.map((collectionId) => (
-          <CarouselItem
-            key={collectionId}
-            id={collectionId}
-            isTrending={isTrending}
-          />
-        ))}
-        {/* {trackPairs.map((pair, pairIndex) => (
-          <Flex
-            key={pairIndex}
-            direction='column'
-            gap='m'
-            w={343}
-            mr={pairIndex < trackPairs.length - 1 ? 16 : 0}
-          >
-            {pair.map((track, trackIndex) => (
-              <TrackTile
-                key={track}
-                id={track}
-                uid={`${uidPrefix}-${track}`}
-                togglePlay={() => {}}
-                index={pairIndex * 2 + trackIndex}
-              />
-            ))}
+        {collectionIds.map((collectionId, index) => (
+          <Flex key={collectionId} direction='column' w={343}>
+            <CarouselItem
+              id={collectionId}
+              isTrending={isTrending}
+              index={index}
+            />
           </Flex>
-        ))} */}
+        ))}
       </ScrollView>
     </Flex>
   )
