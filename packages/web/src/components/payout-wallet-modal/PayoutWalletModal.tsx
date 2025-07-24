@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
 import { SolanaWalletAddress } from '@audius/common/models'
+import { MEMO_PROGRAM_ID } from '@audius/common/services'
 import { isValidSolAddress, profilePageActions } from '@audius/common/store'
 import {
   Button,
@@ -26,7 +27,11 @@ import {
   getAssociatedTokenAddressSync,
   unpackAccount
 } from '@solana/spl-token'
-import { PublicKey, SystemProgram } from '@solana/web3.js'
+import {
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction
+} from '@solana/web3.js'
 import { Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -167,6 +172,8 @@ const PayoutWalletModalForm = ({
   )
 }
 
+const SET_PAYOUT_WALLET_MEMO_STRING = 'Payout Wallet'
+
 export const PayoutWalletModal = () => {
   const [isOpen, setIsOpen] = useModalState('PayoutWallet')
   const { data: user } = useCurrentAccountUser()
@@ -249,7 +256,18 @@ export const PayoutWalletModal = () => {
                         ataPubkey,
                         addressPubkey,
                         usdcMint
-                      )
+                      ),
+                      new TransactionInstruction({
+                        keys: [
+                          {
+                            pubkey: payer,
+                            isSigner: true,
+                            isWritable: true
+                          }
+                        ],
+                        programId: MEMO_PROGRAM_ID,
+                        data: Buffer.from(SET_PAYOUT_WALLET_MEMO_STRING)
+                      })
                     ]
                   })
 
