@@ -208,7 +208,8 @@ export class EntityManagerClient implements EntityManagerService {
       !entityType ||
       !entityId ||
       !action ||
-      !metadata ||
+      // Empty string is valid metadata for some actions
+      (!metadata && metadata !== '') ||
       !nonce ||
       !subjectSig
     ) {
