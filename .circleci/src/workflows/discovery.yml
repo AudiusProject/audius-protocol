@@ -3,7 +3,15 @@ jobs:
   - push-docker-image:
       name: push-discovery-provider
       context: [Vercel, dockerhub]
-      service: discovery-provider discovery-provider-openresty comms
+      service: discovery-provider discovery-provider-openresty
+      filters:
+        branches:
+          only: /(^main|^rj-discovery-build)/
+
+  - push-docker-image:
+      name: push-discovery-provider-comms
+      context: [Vercel, dockerhub]
+      service: comms
       filters:
         branches:
           only: /(^main|^rj-discovery-build)/
