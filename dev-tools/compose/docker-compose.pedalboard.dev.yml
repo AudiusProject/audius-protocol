@@ -44,15 +44,6 @@ services:
     volumes:
       - ${PROJECT_ROOT}:/app
 
-  sla-auditor:
-    extends:
-      file: docker-compose.pedalboard.prod.yml
-      service: sla-auditor
-    build:
-      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
-    volumes:
-      - ${PROJECT_ROOT}:/app
-
   relay:
     extends:
       file: docker-compose.pedalboard.prod.yml

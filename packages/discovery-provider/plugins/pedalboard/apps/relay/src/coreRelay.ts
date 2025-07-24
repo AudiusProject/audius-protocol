@@ -1,8 +1,10 @@
 import { ethers } from 'ethers'
-import { decodeAbi } from './abi.js'
 import { create } from '@bufbuild/protobuf'
 import { createClient, Client } from '@connectrpc/connect'
-import { createGrpcTransport, createConnectTransport } from '@connectrpc/connect-node'
+import {
+  createGrpcTransport,
+  createConnectTransport
+} from '@connectrpc/connect-node'
 import {
   Protocol,
   SignedTransactionSchema,
@@ -18,6 +20,7 @@ import {
   PingRequestSchema,
   SendTransactionResponse as ConnectTransactionResponse
 } from './audiusd-sdk/core/v1/types_pb.js'
+import { audiusSdk } from '.'
 
 type ClientType = 'grpc' | 'connect'
 
@@ -37,9 +40,13 @@ let activeClient: ClientInfo | null = null
 async function pingClient(clientInfo: ClientInfo): Promise<boolean> {
   try {
     if (clientInfo.type === 'grpc') {
-      await (clientInfo.client as Client<typeof Protocol>).ping(create(GrpcPingRequestSchema, {}))
+      await (clientInfo.client as Client<typeof Protocol>).ping(
+        create(GrpcPingRequestSchema, {})
+      )
     } else {
-      await (clientInfo.client as Client<typeof CoreService>).ping(create(PingRequestSchema, {}))
+      await (clientInfo.client as Client<typeof CoreService>).ping(
+        create(PingRequestSchema, {})
+      )
     }
     clientInfo.lastSuccessfulPing = Date.now()
     return true
@@ -61,9 +68,10 @@ async function updateActiveClient(logger: pino.Logger) {
 
   if (grpcSuccess && connectSuccess) {
     // Use the client with the most recent successful ping
-    activeClient = clients.grpc!.lastSuccessfulPing > clients.connect!.lastSuccessfulPing
-      ? clients.grpc!
-      : clients.connect!
+    activeClient =
+      clients.grpc!.lastSuccessfulPing > clients.connect!.lastSuccessfulPing
+        ? clients.grpc!
+        : clients.connect!
   } else if (grpcSuccess) {
     activeClient = clients.grpc!
   } else if (connectSuccess) {
@@ -106,7 +114,7 @@ async function initializeClients(logger: pino.Logger): Promise<boolean> {
   try {
     const connectTransport = createConnectTransport({
       baseUrl: config.coreEndpoint,
-      httpVersion: "2",
+      httpVersion: '2',
       useBinaryFormat: true
     })
     const connectClient = createClient(CoreService, connectTransport)
@@ -167,19 +175,18 @@ export const coreRelay = async (
     const { encodedABI } = request
 
     const {
-      userId: userIdBig,
-      entityId: entityIdBig,
+      userId,
+      entityId,
       entityType,
       action,
-      metadata: metadataAny,
+      metadata,
       subjectSig,
       nonce: nonceBytes
-    } = decodeAbi(encodedABI)
+    } = audiusSdk.services.entityManager.decodeManageEntity(
+      encodedABI as `0x${string}`
+    )
 
     const signer = request.senderAddress
-    const userId = BigInt(userIdBig.toString())
-    const entityId = BigInt(entityIdBig.toString())
-    const metadata = metadataAny as string
     const signature = ethers.utils.hexlify(subjectSig)
     const nonce = ethers.utils.hexlify(nonceBytes)
 
@@ -209,7 +216,9 @@ export const coreRelay = async (
     })
 
     // Extract transaction info based on client type
-    let txHash = '', blockHeight = BigInt(0), blockHash = ''
+    let txHash = '',
+      blockHeight = BigInt(0),
+      blockHash = ''
 
     if (activeClient.type === 'grpc') {
       const grpcRes = res as GrpcTransactionResponse
