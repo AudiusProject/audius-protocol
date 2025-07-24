@@ -3,7 +3,7 @@ jobs:
   - push-docker-image:
       name: push-discovery-provider
       context: [Vercel, dockerhub]
-      service: discovery-provider discovery-provider-openresty discovery-provider-notifications comms es-indexer
+      service: discovery-provider discovery-provider-openresty comms
       filters:
         branches:
           only: /(^main|^rj-discovery-build)/
@@ -11,7 +11,7 @@ jobs:
   - push-docker-image:
       name: push-discovery-provider-plugins
       context: [Vercel, dockerhub]
-      service: trending-challenge-rewards staking relay solana-relay crm mri verified-notifications anti-abuse archiver
+      service: discovery-provider-notifications trending-challenge-rewards staking relay solana-relay crm mri verified-notifications anti-abuse archiver es-indexer
       filters:
         branches:
           only: /(^main|^rj-discovery-build)/
