@@ -462,7 +462,7 @@ class CommentNotification(TypedDict):
     type: str
     entity_id: int
     comment_user_id: int
-    comment_id: int
+    comment_id: Optional[int]
 
 
 class CommentThreadNotification(TypedDict):
@@ -470,7 +470,7 @@ class CommentThreadNotification(TypedDict):
     entity_id: int
     entity_user_id: int
     comment_user_id: int
-    comment_id: int
+    comment_id: Optional[int]
 
 
 class CommentMentionNotification(TypedDict):
@@ -478,7 +478,7 @@ class CommentMentionNotification(TypedDict):
     entity_id: int
     entity_user_id: int
     comment_user_id: int
-    comment_id: int
+    comment_id: Optional[int]
 
 
 class CommentReactionNotification(TypedDict):
@@ -486,7 +486,7 @@ class CommentReactionNotification(TypedDict):
     entity_id: int
     entity_user_id: int
     reacter_user_id: int
-    comment_id: int
+    comment_id: Optional[int]
 
 
 class ListenStreakReminderNotification(TypedDict):
