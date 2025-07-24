@@ -46,9 +46,5 @@ export const messages = {
   userIdParserTitle: 'User ID Parser',
   userIdParserDescription:
     'Parse hash IDs to decode them into numeric user IDs. Useful for debugging and development work with user identifiers.',
-  userIdParserButton: 'Open User ID Parser',
-  coinApiMocksTitle: 'Coin API Mocks',
-  coinApiMocksDescription:
-    'Test the MSW (Mock Service Worker) mocks for coin-related API endpoints. This allows frontend development without relying on live backend responses.',
-  coinApiMocksButton: 'Open Coin API Mocks'
+  userIdParserButton: 'Open User ID Parser'
 }

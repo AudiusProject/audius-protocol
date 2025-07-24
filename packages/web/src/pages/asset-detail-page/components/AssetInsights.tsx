@@ -1,3 +1,4 @@
+import { useCoin } from '@audius/common/api'
 import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 
 import { AssetDetailProps } from '../types'
@@ -20,44 +21,35 @@ type MetricData = {
   }
 }
 
-const MOCK_METRICS: MetricData[] = [
-  {
-    value: '$0.082',
-    label: messages.pricePerCoin,
-    change: {
-      value: '0.005',
-      isPositive: false
-    }
-  },
-  {
-    value: '12.6K',
-    label: messages.holdersOnAudius,
-    change: {
-      value: '0.5%',
-      isPositive: true
-    }
-  },
-  {
-    value: '37.7K',
-    label: messages.uniqueHolders,
-    change: {
-      value: '0.01%',
-      isPositive: true
-    }
-  },
-  {
-    value: '5.9M',
-    label: messages.volume24hr,
-    change: {
-      value: '1.68%',
-      isPositive: true
-    }
-  },
-  {
-    value: '514K',
-    label: messages.totalTransfers
+// Helper function to format numbers
+const formatNumber = (num: number): string => {
+  if (num >= 1e9) {
+    return `${(num / 1e9).toFixed(1)}B`
   }
-]
+  if (num >= 1e6) {
+    return `${(num / 1e6).toFixed(1)}M`
+  }
+  if (num >= 1e3) {
+    return `${(num / 1e3).toFixed(1)}K`
+  }
+  return num.toLocaleString()
+}
+
+// Helper function to format currency
+const formatCurrency = (num: number): string => {
+  if (num >= 1) {
+    return `$${num.toFixed(2)}`
+  }
+  if (num >= 0.01) {
+    return `$${num.toFixed(4)}`
+  }
+  return `$${num.toExponential(2)}`
+}
+
+// Helper function to format percentage
+const formatPercentage = (num: number): string => {
+  return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`
+}
 
 const MetricRow = ({ metric }: { metric: MetricData }) => {
   const changeColor = metric.change?.isPositive ? 'premium' : 'danger'
@@ -108,7 +100,112 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
   )
 }
 
-export const AssetInsights = ({ mint: _mint }: AssetDetailProps) => {
+export const AssetInsights = ({ mint }: AssetDetailProps) => {
+  const { data: coin, isLoading, error } = useCoin({ mint })
+
+  if (isLoading) {
+    return (
+      <Paper
+        direction='column'
+        alignItems='flex-start'
+        backgroundColor='white'
+        borderRadius='m'
+        border='default'
+      >
+        <Flex
+          direction='row'
+          alignItems='center'
+          gap='xs'
+          pv='m'
+          ph='l'
+          w='100%'
+        >
+          <Text variant='heading' size='s' color='heading'>
+            {messages.title}
+          </Text>
+        </Flex>
+        <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
+          <Text variant='body' color='subdued'>
+            Loading insights...
+          </Text>
+        </Flex>
+      </Paper>
+    )
+  }
+
+  if (error || !coin) {
+    return (
+      <Paper
+        direction='column'
+        alignItems='flex-start'
+        backgroundColor='white'
+        borderRadius='m'
+        border='default'
+      >
+        <Flex
+          direction='row'
+          alignItems='center'
+          gap='xs'
+          pv='m'
+          ph='l'
+          w='100%'
+        >
+          <Text variant='heading' size='s' color='heading'>
+            {messages.title}
+          </Text>
+        </Flex>
+        <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
+          <Text variant='body' color='subdued'>
+            Unable to load insights
+          </Text>
+        </Flex>
+      </Paper>
+    )
+  }
+
+  const metrics: MetricData[] = [
+    {
+      value: formatCurrency(coin.tokenInfo.price),
+      label: messages.pricePerCoin,
+      change: {
+        value: formatPercentage(coin.tokenInfo.priceChange24hPercent),
+        isPositive: coin.tokenInfo.priceChange24hPercent >= 0
+      }
+    },
+    {
+      value: formatNumber(coin.members),
+      label: messages.holdersOnAudius,
+      change: {
+        value: formatPercentage(coin.membersChange24hPercent),
+        isPositive: coin.membersChange24hPercent >= 0
+      }
+    },
+    {
+      value: formatNumber(coin.tokenInfo.holder),
+      label: messages.uniqueHolders,
+      change: {
+        value: formatPercentage(coin.tokenInfo.uniqueWallet24hChangePercent),
+        isPositive: coin.tokenInfo.uniqueWallet24hChangePercent >= 0
+      }
+    },
+    {
+      value: formatCurrency(coin.tokenInfo.v24hUSD),
+      label: messages.volume24hr,
+      change: {
+        value: formatPercentage(coin.tokenInfo.v24hChangePercent || 0),
+        isPositive: (coin.tokenInfo.v24hChangePercent || 0) >= 0
+      }
+    },
+    {
+      value: formatNumber(coin.tokenInfo.trade24h),
+      label: messages.totalTransfers,
+      change: {
+        value: formatPercentage(coin.tokenInfo.trade24hChangePercent),
+        isPositive: coin.tokenInfo.trade24hChangePercent >= 0
+      }
+    }
+  ]
+
   return (
     <Paper
       direction='column'
@@ -123,7 +220,7 @@ export const AssetInsights = ({ mint: _mint }: AssetDetailProps) => {
         </Text>
       </Flex>
 
-      {MOCK_METRICS.map((metric) => (
+      {metrics.map((metric) => (
         <MetricRow key={metric.label} metric={metric} />
       ))}
     </Paper>

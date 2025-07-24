@@ -253,7 +253,6 @@
     "fs-extra": "8.1.0",
     "https-browserify": "^1.0.0",
     "jest-canvas-mock": "2.5.2",
-    "msw": "2.7.6",
     "net-browserify": "^0.2.4",
     "node-fetch": "2.6.1",
     "os-browserify": "^0.3.0",
@@ -279,8 +278,5 @@
     "vite-plugin-glslify": "2.0.2",
     "vite-plugin-svgr": "4.1.0",
     "vitest": "0.34.6"
-  },
-  "msw": {
-    "workerDirectory": "public"
   }
 }
