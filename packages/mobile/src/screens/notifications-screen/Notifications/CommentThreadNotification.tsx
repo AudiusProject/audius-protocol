@@ -26,7 +26,7 @@ import {
 const messages = {
   others: (userCount: number) =>
     ` and ${formatCount(userCount)} other${userCount > 1 ? 's' : ''}`,
-  replied: ' replied to your comment on',
+  replied: 'replied to your comment on',
   your: 'your',
   their: 'their'
 }

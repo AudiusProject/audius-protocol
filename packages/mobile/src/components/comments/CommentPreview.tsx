@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useComment } from '@audius/common/api'
 import {
@@ -11,7 +11,6 @@ import { trackPageSelectors } from '@audius/common/store'
 import { OptionalHashId } from '@audius/sdk'
 import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import {
@@ -180,11 +179,18 @@ export const CommentPreview = (props: CommentPreviewProps) => {
     [open, entityId, navigation, trackUid, highlightedComment]
   )
 
-  useEffectOnce(() => {
-    if (showComments || highlightedCommentId) {
+  useEffect(() => {
+    if (highlightedComment) {
+      openCommentDrawer()
+    } else if (showComments && !highlightedCommentId) {
       openCommentDrawer()
     }
-  })
+  }, [
+    showComments,
+    openCommentDrawer,
+    highlightedComment,
+    highlightedCommentId
+  ])
 
   return (
     <CommentSectionProvider
