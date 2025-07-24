@@ -6,11 +6,6 @@ import { ID } from '~/models'
 import { QUERY_KEYS } from '../queryKeys'
 import { useQueryContext } from '../utils'
 
-export type ArtistCoin = {
-  mint: string
-  owner_id: string
-}
-
 export type UseArtistCoinParams = {
   mint?: string[]
   owner_id?: ID[]
@@ -35,7 +30,7 @@ export const useArtistCoin = (params: UseArtistCoinParams = {}) => {
       }
 
       const response = await sdk.coins.getCoins(searchParams)
-      return response.data as ArtistCoin[]
+      return response.data
     }
   })
 }
