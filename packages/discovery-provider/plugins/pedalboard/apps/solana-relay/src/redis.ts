@@ -6,6 +6,8 @@ import { logger } from './logger'
 let redisClient: RedisClientType
 let isReady: boolean
 
+const TWO_DAYS_IN_SECONDS = 60 * 60 * 24 * 2
+
 export const getRedisConnection = async () => {
   if (!isReady) {
     redisClient = createClient({ url: config.redisUrl })
@@ -74,25 +76,29 @@ export const getCachedContentNodes = async () => {
   )
 }
 
-const TOKEN_ACCOUNT_CREATION_USER_KEY_EXPIRY = 60 * 60 * 24
 const TOKEN_ACCOUNT_CREATION_USER_LIMIT = 2
 const TOKEN_ACCOUNT_CREATION_VERIFIED_USER_LIMIT = 5
-const TOKEN_ACCOUNT_CREATION_SYSTEM_KEY_EXPIRY = 60 * 60 * 24
-const TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT = 5000
+const TOKEN_ACCOUNT_CREATION_SYSTEM_LIMIT = 100
 
 export const rateLimitTokenAccountCreation = async (
   wallet: string,
-  isVerified: boolean
+  isVerified: boolean,
+  memo?: string // an optional memo creates a custom rate limit bucket
 ) => {
   const redis = await getRedisConnection()
-  const userKey = `ata-creation-count:user:${wallet}`
+
+  const currentDate = new Date().toISOString().split('T')[0]
+  // Rate limit individual users from doing this too many times
+  const userKey = `ata-creation-count:user:${wallet}:${currentDate}`
+  // Rate limit the whole userbase
+  const key = `ata-creation-count:${memo ?? 'global'}:${currentDate}`
+
   const limit = isVerified
     ? TOKEN_ACCOUNT_CREATION_VERIFIED_USER_LIMIT
     : TOKEN_ACCOUNT_CREATION_USER_LIMIT
 
   const currentUserCount = await redis.get(userKey)
-  const currentSystemKey = 'ata-creation-count'
-  const currentSystemCount = await redis.get(currentSystemKey)
+  const currentSystemCount = await redis.get(key)
 
   logger.info(
     {
@@ -109,7 +115,7 @@ export const rateLimitTokenAccountCreation = async (
   const [userCount] = await redis
     .multi()
     .incr(userKey)
-    .expire(userKey, TOKEN_ACCOUNT_CREATION_USER_KEY_EXPIRY)
+    .expire(userKey, TWO_DAYS_IN_SECONDS)
     .exec()
   if (typeof userCount !== 'number' || userCount > limit) {
     logger.error(
@@ -124,11 +130,10 @@ export const rateLimitTokenAccountCreation = async (
     throw new Error(`User ${wallet} has created too many token accounts`)
   }
 
-  const systemKey = `ata-creation-count`
   const [systemCount] = await redis
     .multi()
-    .incr(systemKey)
-    .expire(systemKey, TOKEN_ACCOUNT_CREATION_SYSTEM_KEY_EXPIRY)
+    .incr(key)
+    .expire(key, TWO_DAYS_IN_SECONDS)
     .exec()
 
   if (
