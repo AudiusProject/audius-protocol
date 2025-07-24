@@ -6,6 +6,8 @@ import { logger } from './logger'
 let redisClient: RedisClientType
 let isReady: boolean
 
+const TWO_DAYS_IN_SECONDS = 60 * 60 * 24 * 2
+
 export const getRedisConnection = async () => {
   if (!isReady) {
     redisClient = createClient({ url: config.redisUrl })
@@ -113,7 +115,7 @@ export const rateLimitTokenAccountCreation = async (
   const [userCount] = await redis
     .multi()
     .incr(userKey)
-    .expire(userKey, 60 * 60 * 48) // Expire old keys after 48 hrs
+    .expire(userKey, TWO_DAYS_IN_SECONDS)
     .exec()
   if (typeof userCount !== 'number' || userCount > limit) {
     logger.error(
@@ -131,7 +133,7 @@ export const rateLimitTokenAccountCreation = async (
   const [systemCount] = await redis
     .multi()
     .incr(key)
-    .expire(userKey, 60 * 60 * 48) // Expire old keys after 48 hrs
+    .expire(userKey, TWO_DAYS_IN_SECONDS)
     .exec()
 
   if (
