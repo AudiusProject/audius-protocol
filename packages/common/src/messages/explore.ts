@@ -18,5 +18,6 @@ export const exploreMessages = {
   recentlyPlayed: 'Recently Played',
   activeDiscussions: 'Active Discussions',
   mostShared: 'Most Shared Tracks This Week',
-  undergroundTrending: 'Underground Trending'
+  undergroundTrending: 'Underground Trending',
+  trendingPlaylists: 'Trending Playlists'
 }

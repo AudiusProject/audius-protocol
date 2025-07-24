@@ -2,6 +2,7 @@ import React from 'react'
 
 import { useRecommendedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { QueueSource } from '@audius/common/store'
 
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
@@ -17,8 +18,8 @@ export const RecommendedTracks = () => {
     <ExploreSection title={messages.forYou}>
       <TrackTileCarousel
         tracks={recommendedTracks}
-        uidPrefix='recommended-track'
         isLoading={isLoading}
+        source={QueueSource.EXPLORE}
       />
     </ExploreSection>
   )

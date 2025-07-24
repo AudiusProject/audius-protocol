@@ -1,56 +1,50 @@
 import React, { useMemo } from 'react'
 
-import { useToggleTrack } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
-import type { QueueSource } from '@audius/common/store'
+import { QueueSource } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { ScrollView } from 'react-native'
 
 import { Flex } from '@audius/harmony-native'
-import { LineupTileSkeleton, TrackTile } from 'app/components/lineup-tile'
+import { CollectionTile, LineupTileSkeleton } from 'app/components/lineup-tile'
 
-interface TrackTileCarouselProps {
-  tracks?: number[]
+interface CollectionTileCarouselProps {
+  collectionIds?: number[]
   isLoading?: boolean
-  source: QueueSource
+  isTrending?: boolean
 }
 
 const CarouselItem = ({
   id,
-  pairIndex,
-  trackIndex,
-  source
+  isTrending
 }: {
   id: number
-  pairIndex: number
-  trackIndex: number
-  source: QueueSource
+  isTrending?: boolean
 }) => {
-  const uid = useMemo(() => makeUid(Kind.TRACKS, id, source), [id, source])
-
-  const { togglePlay } = useToggleTrack({
-    id,
-    uid,
-    source
-  })
-
+  const uid = useMemo(
+    () => makeUid(Kind.COLLECTIONS, id, QueueSource.EXPLORE),
+    [id]
+  )
   return (
-    <TrackTile
-      key={id}
+    <CollectionTile
       id={id}
       uid={uid}
-      togglePlay={togglePlay}
-      index={pairIndex * 2 + trackIndex}
+      togglePlay={() => {}}
+      index={0}
+      isTrending={isTrending}
     />
   )
 }
 
-export const TrackTileCarousel = ({
-  tracks,
+// TODO: Not rendering full height w/ tracks (is it based on available space? )
+// Spacing between tiles is wrong
+
+export const CollectionTileCarousel = ({
+  collectionIds,
   isLoading,
-  source
-}: TrackTileCarouselProps) => {
-  if (isLoading || !tracks) {
+  isTrending
+}: CollectionTileCarouselProps) => {
+  if (isLoading) {
     return (
       <Flex direction='row' mh={-16}>
         <ScrollView
@@ -75,20 +69,21 @@ export const TrackTileCarousel = ({
     )
   }
 
-  // Chunk tracks into pairs for 2-track columns
-  const trackPairs: number[][] = []
-  for (let i = 0; i < tracks.length; i += 2) {
-    trackPairs.push(tracks.slice(i, i + 2))
-  }
-
-  return (
+  return !collectionIds || collectionIds.length === 0 ? null : (
     <Flex direction='row' mh={-16}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
       >
-        {trackPairs.map((pair, pairIndex) => (
+        {collectionIds.map((collectionId) => (
+          <CarouselItem
+            key={collectionId}
+            id={collectionId}
+            isTrending={isTrending}
+          />
+        ))}
+        {/* {trackPairs.map((pair, pairIndex) => (
           <Flex
             key={pairIndex}
             direction='column'
@@ -97,16 +92,16 @@ export const TrackTileCarousel = ({
             mr={pairIndex < trackPairs.length - 1 ? 16 : 0}
           >
             {pair.map((track, trackIndex) => (
-              <CarouselItem
+              <TrackTile
                 key={track}
                 id={track}
-                pairIndex={pairIndex}
-                trackIndex={trackIndex}
-                source={source}
+                uid={`${uidPrefix}-${track}`}
+                togglePlay={() => {}}
+                index={pairIndex * 2 + trackIndex}
               />
             ))}
           </Flex>
-        ))}
+        ))} */}
       </ScrollView>
     </Flex>
   )
