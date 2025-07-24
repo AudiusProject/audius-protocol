@@ -135,10 +135,6 @@ export const DevTools = () => {
     history.push('/dev-tools/user-id-parser')
   }
 
-  const handleOpenCoinApiMocks = () => {
-    history.push('/dev-tools/coin-api-mocks')
-  }
-
   return (
     <Page
       title={messages.pageTitle}
@@ -209,14 +205,6 @@ export const DevTools = () => {
             description={messages.userIdParserDescription}
             buttonText={messages.userIdParserButton}
             onButtonClick={handleOpenUserIdParser}
-          />
-
-          <DevToolCard
-            icon={IconSettings}
-            title={messages.coinApiMocksTitle}
-            description={messages.coinApiMocksDescription}
-            buttonText={messages.coinApiMocksButton}
-            onButtonClick={handleOpenCoinApiMocks}
           />
         </Flex>
       </Box>
