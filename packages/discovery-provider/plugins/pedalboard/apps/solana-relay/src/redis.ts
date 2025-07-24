@@ -133,7 +133,7 @@ export const rateLimitTokenAccountCreation = async (
   const [systemCount] = await redis
     .multi()
     .incr(key)
-    .expire(userKey, TWO_DAYS_IN_SECONDS)
+    .expire(key, TWO_DAYS_IN_SECONDS)
     .exec()
 
   if (
