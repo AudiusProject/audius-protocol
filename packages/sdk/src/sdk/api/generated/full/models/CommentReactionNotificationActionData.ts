@@ -49,7 +49,7 @@ export interface CommentReactionNotificationActionData {
      * @type {string}
      * @memberof CommentReactionNotificationActionData
      */
-    commentId: string;
+    commentId?: string;
 }
 
 
@@ -73,7 +73,6 @@ export function instanceOfCommentReactionNotificationActionData(value: object): 
     isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
     isInstance = isInstance && "entityUserId" in value && value["entityUserId"] !== undefined;
     isInstance = isInstance && "reacterUserId" in value && value["reacterUserId"] !== undefined;
-    isInstance = isInstance && "commentId" in value && value["commentId"] !== undefined;
 
     return isInstance;
 }
@@ -92,7 +91,7 @@ export function CommentReactionNotificationActionDataFromJSONTyped(json: any, ig
         'entityId': json['entity_id'],
         'entityUserId': json['entity_user_id'],
         'reacterUserId': json['reacter_user_id'],
-        'commentId': json['comment_id'],
+        'commentId': !exists(json, 'comment_id') ? undefined : json['comment_id'],
     };
 }
 
