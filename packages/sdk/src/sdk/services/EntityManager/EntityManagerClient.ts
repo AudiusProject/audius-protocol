@@ -259,7 +259,6 @@ export class EntityManagerClient implements EntityManagerService {
       domain: this.getDomain(),
       primaryType: 'ManageEntity',
       message: {
-        // TODO: Strictly check callsites to ensure userId always passed in
         // @ts-ignore Need to update this type to "uint32" instead of "uint"
         userId: Number(userId),
         entityType,
