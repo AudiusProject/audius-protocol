@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollection, useCurrentUserId, useUser } from '@audius/common/api'
+import {
+  useCollectionByParams,
+  useCurrentUserId,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -73,9 +77,18 @@ export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { id = null, searchCollection, collectionType } = params ?? {}
+  const {
+    id = null,
+    searchCollection,
+    collectionType,
+    handle,
+    slug
+  } = params ?? {}
 
-  const { data: cachedCollection } = useCollection(id)
+  // Use useCollectionByParams to handle both ID-based and permalink-based collection fetching
+  const collectionParams = id ? { collectionId: id } : { handle, slug }
+
+  const { data: cachedCollection } = useCollectionByParams(collectionParams)
   const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
 
   const collection = cachedCollection ?? searchCollection
