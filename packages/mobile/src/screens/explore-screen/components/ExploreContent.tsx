@@ -17,6 +17,7 @@ import { ProgressiveScrollView } from './ProgressiveScrollView'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
 import { RecommendedTracks } from './RecommendedTracks'
+import { TrendingPlaylists } from './TrendingPlaylists'
 import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 const MemoizedExploreContent = () => {
@@ -41,6 +42,7 @@ const MemoizedExploreContent = () => {
       <MoodsGrid />
       {isSearchExploreGoodiesEnabled ? (
         <>
+          <TrendingPlaylists />
           <MostSharedTracks />
           <BestSelling />
           <FeelingLucky />
