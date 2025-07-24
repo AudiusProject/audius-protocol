@@ -16,8 +16,6 @@ interface CollectionTileCarouselProps {
   isTrending?: boolean
 }
 
-// TODO: This might be useful outside of the Explore screen
-
 export const CollectionLineupCarousel = ({
   lineup,
   isTrending,
