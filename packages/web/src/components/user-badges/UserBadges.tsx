@@ -6,19 +6,19 @@ import {
   useMemo
 } from 'react'
 
-import { useTokenBalance } from '@audius/common/api'
+import { useTokenBalance, useArtistCoin } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
-import { FeatureFlags, getTokenBySymbol } from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
+  Artwork,
   Box,
   Flex,
   HoverCard,
   IconSize,
   iconSizes,
-  IconTokenBonk,
   IconTokenBronze,
   IconTokenGold,
   IconTokenPlatinum,
@@ -32,7 +32,6 @@ import cn from 'classnames'
 
 import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
-import { env } from 'services/env'
 
 import styles from './UserBadges.module.css'
 
@@ -59,6 +58,10 @@ type UserBadgesProps = {
   // in a controlled context where the desired store state is not available.
   isVerifiedOverride?: boolean
   overrideTier?: BadgeTier
+
+  // Optional mint address for displaying specific artist coin
+  // If provided, shows the artist coin badge for that token
+  mint?: string
 }
 
 /**
@@ -72,18 +75,20 @@ const UserBadges = ({
   anchorOrigin,
   transformOrigin,
   isVerifiedOverride,
-  overrideTier
+  overrideTier,
+  mint
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useTierAndVerifiedForUser(userId)
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
 
-  // TODO: PE-6541 Show artist coin for which user has highest balance
-  const bonkToken = getTokenBySymbol(env, 'BONK')
-  const bonkMint = bonkToken?.address
+  const { data: coin } = useArtistCoin({
+    mint: mint || ''
+  })
+
   const { data: coinBalance } = useTokenBalance({
-    token: 'BONK'
+    mint: mint || ''
   })
 
   const tier = overrideTier || currentTier
@@ -155,16 +160,16 @@ const UserBadges = ({
 
   const shouldShowArtistCoinBadge =
     !!coinBalance &&
-    !!bonkMint &&
+    !!mint &&
     isArtistCoinEnabled &&
-    coinBalance.value !== BigInt(0)
+    coinBalance.balance.value !== BigInt(0)
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null
 
     return (
       <ArtistCoinHoverCard
-        mint={bonkMint}
+        mint={mint}
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
@@ -179,17 +184,26 @@ const UserBadges = ({
             }
           }}
         >
-          <IconTokenBonk size={size} hex />
+          {coin?.tokenInfo?.logoURI ? (
+            <Artwork
+              src={coin.tokenInfo.logoURI}
+              hex
+              w={iconSizes[size]}
+              h={iconSizes[size]}
+              borderWidth={0}
+            />
+          ) : null}
         </Box>
       </ArtistCoinHoverCard>
     )
   }, [
     shouldShowArtistCoinBadge,
-    bonkMint,
+    mint,
     userId,
     anchorOrigin,
     transformOrigin,
-    size
+    size,
+    coin?.tokenInfo?.logoURI
   ])
 
   if (!hasContent) return null

@@ -1,6 +1,6 @@
 import { ChatBlastAudience } from '@audius/sdk'
 
-import { useArtistCoin } from '~/api/tan-query/coins/useArtistCoin'
+import { useArtistCoins } from '~/api/tan-query/coins/useArtistCoins'
 import { ID } from '~/models'
 import { getTokenRegistry } from '~/services/tokens/TokenRegistry'
 
@@ -19,7 +19,7 @@ export const useArtistCoinMessageHeader = ({
     FeatureFlags.ARTIST_COINS
   )
 
-  const { data: coins } = useArtistCoin({ owner_id: [userId] })
+  const { data: coins } = useArtistCoins({ owner_id: [userId] })
 
   if (
     !isArtistCoinEnabled ||

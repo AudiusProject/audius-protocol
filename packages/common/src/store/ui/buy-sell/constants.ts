@@ -12,6 +12,10 @@ import { TokenInfo, TokenPair } from './types'
 export const MIN_SWAP_AMOUNT_USD = 0.01 // $0.01
 export const MAX_SWAP_AMOUNT_USD = 10000 // $10,000
 
+// Legacy functions for backward compatibility (mobile package still uses these)
+// Web components should use the new API-driven approach
+// Will fully remove these functions in the future
+
 // Create tokens using environment variables
 export const createTokens = (env: Env): Record<string, TokenInfo> => {
   return createTokenInfoObjects(env)

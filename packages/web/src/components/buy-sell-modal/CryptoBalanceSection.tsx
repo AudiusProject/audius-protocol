@@ -19,7 +19,7 @@ export const CryptoBalanceSection = ({
   amount,
   priceLabel
 }: CryptoBalanceSectionProps) => {
-  const { cornerRadius, spacing } = useTheme()
+  const { spacing } = useTheme()
   const { icon: TokenIcon } = tokenInfo
 
   return (
@@ -32,11 +32,7 @@ export const CryptoBalanceSection = ({
       </Flex>
       <Flex alignItems='center' gap='s' data-testid='token-icon'>
         {TokenIcon ? (
-          <TokenIcon
-            width={spacing.unit16}
-            height={spacing.unit16}
-            css={{ borderRadius: cornerRadius.circle }}
-          />
+          <TokenIcon width={spacing.unit16} height={spacing.unit16} hex />
         ) : null}
         <Flex direction='column'>
           <Text variant='heading' size='l'>

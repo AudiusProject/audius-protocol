@@ -21,7 +21,9 @@ export * from './tan-query/collection/useCollectionByParams'
 export * from './tan-query/coins/useArtistCoin'
 export * from './tan-query/coins/useArtistCoinMembers'
 export * from './tan-query/coins/useUserCoins'
-export * from './tan-query/coins/useCoin'
+
+export * from './tan-query/coins/useArtistCoins'
+export * from './tan-query/coins/tokenUtils'
 
 // Developer Apps
 export * from '../schemas/developerApps'
