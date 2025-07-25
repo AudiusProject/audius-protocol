@@ -1,9 +1,9 @@
 import { ReactNode } from 'react'
 
-import { Flex, Text, useTheme, IconCaretRight } from '@audius/harmony'
+import { Flex, Text, useTheme, IconCaretRight, Artwork } from '@audius/harmony'
 
 export type CoinCardProps = {
-  icon: ReactNode
+  icon: string | ReactNode
   symbol: string
   balance: string
   dollarValue: string
@@ -19,7 +19,23 @@ export const CoinCard = ({
   loading = false,
   onClick
 }: CoinCardProps) => {
-  const { color, motion } = useTheme()
+  const { color, motion, spacing } = useTheme()
+
+  const renderIcon = () => {
+    if (typeof icon === 'string') {
+      return (
+        <Artwork
+          src={icon}
+          hex
+          w={spacing.unit16}
+          h={spacing.unit16}
+          borderWidth={0}
+        />
+      )
+    }
+    return icon
+  }
+
   return (
     <Flex
       alignItems='center'
@@ -34,7 +50,7 @@ export const CoinCard = ({
       }}
     >
       <Flex alignItems='center' gap='m'>
-        {icon}
+        {renderIcon()}
         <Flex
           direction='column'
           gap='xs'

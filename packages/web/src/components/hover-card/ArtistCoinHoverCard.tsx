@@ -1,12 +1,12 @@
-import { useTokenBalance } from '@audius/common/api'
+import { useTokenBalance, useArtistCoin } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
+  Artwork,
   HoverCard,
   HoverCardHeader,
   HoverCardProps,
   IconArrowRight,
-  IconTokenBonk,
   useTheme
 } from '@audius/harmony'
 
@@ -45,35 +45,50 @@ export const ArtistCoinHoverCard = ({
   onClick,
   triggeredBy
 }: ArtistCoinHoverCardProps) => {
-  const { cornerRadius } = useTheme()
+  const { cornerRadius, spacing } = useTheme()
 
-  const { data: coinBalance } = useTokenBalance({
-    token: 'BONK'
-  })
+  const { data: coin } = useArtistCoin({ mint })
+  const { data: coinBalance } = useTokenBalance({ mint })
 
-  if (!coinBalance) return null
+  if (!coinBalance || !coin) return null
 
   const balance = coinBalance
   const formattedBalance = formatCount(Number(balance))
-  const coinName = 'BONK'
+  const coinName = coin.ticker || ''
+  const logoURI = coin.tokenInfo?.logoURI
 
   return (
     <HoverCard
       content={
         <>
           <HoverCardHeader
-            iconLeft={() => <IconTokenBonk size='l' hex />}
+            iconLeft={() =>
+              logoURI ? (
+                <Artwork
+                  src={logoURI}
+                  hex
+                  w={spacing.unit6}
+                  h={spacing.unit6}
+                  borderWidth={0}
+                />
+              ) : null
+            }
             title={coinName}
             onClose={onClose}
             iconRight={IconArrowRight}
           />
           <HoverCardBody
             icon={
-              <IconTokenBonk
-                size='3xl'
-                css={{ borderRadius: cornerRadius.circle }}
-                hex
-              />
+              logoURI ? (
+                <Artwork
+                  src={logoURI}
+                  hex
+                  w={spacing.unit16}
+                  h={spacing.unit16}
+                  borderWidth={0}
+                  css={{ borderRadius: cornerRadius.circle }}
+                />
+              ) : null
             }
             amount={formattedBalance}
             currency={coinName}

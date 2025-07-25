@@ -1,6 +1,8 @@
-import { useCoin } from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 
+import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
+import { createCoinMetrics, MetricData } from '../../../utils/coinMetrics'
 import { AssetDetailProps } from '../types'
 
 const messages = {
@@ -12,46 +14,7 @@ const messages = {
   totalTransfers: 'Total Transfers'
 }
 
-type MetricData = {
-  value: string
-  label: string
-  change?: {
-    value: string
-    isPositive: boolean
-  }
-}
-
-// Helper function to format numbers
-const formatNumber = (num: number): string => {
-  if (num >= 1e9) {
-    return `${(num / 1e9).toFixed(1)}B`
-  }
-  if (num >= 1e6) {
-    return `${(num / 1e6).toFixed(1)}M`
-  }
-  if (num >= 1e3) {
-    return `${(num / 1e3).toFixed(1)}K`
-  }
-  return num.toLocaleString()
-}
-
-// Helper function to format currency
-const formatCurrency = (num: number): string => {
-  if (num >= 1) {
-    return `$${num.toFixed(2)}`
-  }
-  if (num >= 0.01) {
-    return `$${num.toFixed(4)}`
-  }
-  return `$${num.toExponential(2)}`
-}
-
-// Helper function to format percentage
-const formatPercentage = (num: number): string => {
-  return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`
-}
-
-const MetricRow = ({ metric }: { metric: MetricData }) => {
+const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
   const changeColor = metric.change?.isPositive ? 'premium' : 'danger'
 
   return (
@@ -100,10 +63,15 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
   )
 }
 
-export const AssetInsights = ({ mint }: AssetDetailProps) => {
-  const { data: coin, isLoading, error } = useCoin({ mint })
+const MetricRow = componentWithErrorBoundary(MetricRowComponent, {
+  fallback: null,
+  name: 'MetricRow'
+})
 
-  if (isLoading) {
+export const AssetInsights = ({ mint }: AssetDetailProps) => {
+  const { data: coin, isLoading, error } = useArtistCoin({ mint })
+
+  if (isLoading || !coin || !coin.tokenInfo) {
     return (
       <Paper
         direction='column'
@@ -163,48 +131,7 @@ export const AssetInsights = ({ mint }: AssetDetailProps) => {
     )
   }
 
-  const metrics: MetricData[] = [
-    {
-      value: formatCurrency(coin.tokenInfo.price),
-      label: messages.pricePerCoin,
-      change: {
-        value: formatPercentage(coin.tokenInfo.priceChange24hPercent),
-        isPositive: coin.tokenInfo.priceChange24hPercent >= 0
-      }
-    },
-    {
-      value: formatNumber(coin.members),
-      label: messages.holdersOnAudius,
-      change: {
-        value: formatPercentage(coin.membersChange24hPercent),
-        isPositive: coin.membersChange24hPercent >= 0
-      }
-    },
-    {
-      value: formatNumber(coin.tokenInfo.uniqueWallet24h || 0),
-      label: messages.uniqueHolders,
-      change: {
-        value: formatPercentage(coin.tokenInfo.uniqueWallet24hChangePercent),
-        isPositive: coin.tokenInfo.uniqueWallet24hChangePercent >= 0
-      }
-    },
-    {
-      value: formatCurrency(coin.tokenInfo.v24hUSD),
-      label: messages.volume24hr,
-      change: {
-        value: formatPercentage(coin.tokenInfo.v24hChangePercent || 0),
-        isPositive: (coin.tokenInfo.v24hChangePercent || 0) >= 0
-      }
-    },
-    {
-      value: formatNumber(coin.tokenInfo.trade24h),
-      label: messages.totalTransfers,
-      change: {
-        value: formatPercentage(coin.tokenInfo.trade24hChangePercent),
-        isPositive: coin.tokenInfo.trade24hChangePercent >= 0
-      }
-    }
-  ]
+  const metrics = createCoinMetrics(coin)
 
   return (
     <Paper

@@ -31,13 +31,13 @@ export const useTokenBalanceManager = (
   // Fetch balance for input token
   const { data: inputTokenBalanceData, status: inputTokenBalanceStatus } =
     useTokenBalance({
-      token: getTokenMintName(inputToken.symbol)
+      mint: getTokenMintName(inputToken.symbol)
     })
 
   // Fetch balance for output token
   const { data: outputTokenBalanceData, status: outputTokenBalanceStatus } =
     useTokenBalance({
-      token: getTokenMintName(outputToken.symbol)
+      mint: getTokenMintName(outputToken.symbol)
     })
 
   // Determine loading state for input token

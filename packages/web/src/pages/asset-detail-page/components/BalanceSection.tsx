@@ -1,46 +1,53 @@
-import { ComponentType } from 'react'
-
-import { useTokenBalance } from '@audius/common/api'
+import { useArtistCoin, useTokenBalance } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { MintName } from '@audius/common/services'
 import {
   tokenDashboardPageActions,
   useAddCashModal,
   useBuySellModal
 } from '@audius/common/store'
-import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { Button, Flex, Paper, Text, useTheme, Artwork } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ACCEPTED_ROUTES } from '../constants'
 import { AssetDetailProps } from '../types'
 
 type BalanceStateProps = {
   title: string
-  icon?: ComponentType<any>
+  logoURI?: string
   onBuy?: () => void
   onReceive?: () => void
   onSend?: () => void
 }
 
-const TokenIcon = ({ icon: Icon }: { icon?: ComponentType<any> }) => {
-  if (!Icon) return null
-  return <Icon size='4xl' hex />
+const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
+  const { spacing } = useTheme()
+
+  if (!logoURI) return null
+
+  return (
+    <Artwork
+      src={logoURI}
+      hex
+      w={spacing.unit16}
+      h={spacing.unit16}
+      borderWidth={0}
+    />
+  )
 }
 
 const ZeroBalanceState = ({
   title,
-  icon,
+  logoURI,
   onBuy,
   onReceive
 }: BalanceStateProps) => {
   return (
     <>
       <Flex gap='s' alignItems='center'>
-        <TokenIcon icon={icon} />
+        <TokenIcon logoURI={logoURI} />
         <Text variant='heading' size='l' color='subdued'>
           {title}
         </Text>
@@ -59,26 +66,26 @@ const ZeroBalanceState = ({
 
 const HasBalanceState = ({
   title,
-  icon,
+  logoURI,
   onBuy,
   onSend,
   onReceive,
-  token
-}: BalanceStateProps & { token: MintName }) => {
+  mint
+}: BalanceStateProps & { mint: string }) => {
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
     tokenDollarValue,
     isTokenBalanceLoading,
     isTokenPriceLoading
-  } = useFormattedTokenBalance(token)
+  } = useFormattedTokenBalance(mint)
 
   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
 
   return (
     <>
       <Flex gap='s' alignItems='center'>
-        <TokenIcon icon={icon} />
+        <TokenIcon logoURI={logoURI} />
         <Flex
           direction='column'
           gap='xs'
@@ -118,20 +125,39 @@ const HasBalanceState = ({
 }
 
 export const BalanceSection = ({ mint }: AssetDetailProps) => {
-  const { title, icon, symbol } = ACCEPTED_ROUTES[mint]
-
-  // Convert the route symbol to the appropriate MintName for the token balance hook
-  const tokenMint = symbol === 'AUDIO' ? 'wAUDIO' : (symbol as MintName)
-  const { data: tokenBalance } = useTokenBalance({ token: tokenMint })
+  const { data: coin, isLoading: coinsLoading } = useArtistCoin({ mint })
+  const { data: tokenBalance } = useTokenBalance({ mint })
 
   // Modal hooks
   const { onOpen: openBuySellModal } = useBuySellModal()
   const { onOpen: openAddCashModal } = useAddCashModal()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
-  // Redux and mobile detection
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
+
+  if (coinsLoading || !coin) {
+    return (
+      <Paper ph='xl' pv='l'>
+        <Flex direction='column' gap='l' w='100%'>
+          <Text variant='body' size='m' color='subdued'>
+            Loading...
+          </Text>
+        </Flex>
+      </Paper>
+    )
+  }
+
+  const tokenInfo = coin.tokenInfo.logoURI
+    ? { logoURI: coin.tokenInfo.logoURI }
+    : undefined
+
+  if (!tokenInfo) {
+    return null
+  }
+
+  const title = coin.ticker ?? ''
+  const logoURI = tokenInfo.logoURI
 
   // Action destructuring
   const { pressReceive, pressSend } = tokenDashboardPageActions
@@ -166,21 +192,22 @@ export const BalanceSection = ({ mint }: AssetDetailProps) => {
   return (
     <Paper ph='xl' pv='l'>
       <Flex direction='column' gap='l' w='100%'>
-        {!tokenBalance || Number(tokenBalance.toString()) === 0 ? (
+        {!tokenBalance?.balance ||
+        Number(tokenBalance.balance.toString()) === 0 ? (
           <ZeroBalanceState
             title={title}
-            icon={icon}
+            logoURI={logoURI}
             onBuy={handleAddCash}
             onReceive={handleReceive}
           />
         ) : (
           <HasBalanceState
             title={title}
-            icon={icon}
+            logoURI={logoURI}
             onBuy={handleBuySell}
             onSend={handleSend}
             onReceive={handleReceive}
-            token={tokenMint}
+            mint={mint}
           />
         )}
       </Flex>

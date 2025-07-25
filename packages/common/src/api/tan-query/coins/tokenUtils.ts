@@ -1,18 +1,18 @@
 import type { ComponentType } from 'react'
 
+import type { Coin } from '@audius/sdk'
+
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
-import { ArtistCoinWithTokenInfo } from './useArtistCoins'
-
 export const transformArtistCoinToTokenInfo = (
-  artistCoin: ArtistCoinWithTokenInfo,
+  artistCoin: Coin,
   icon?: ComponentType<any>
 ): TokenInfo => {
-  const tokenInfo = artistCoin.token_info
+  const tokenInfo = artistCoin.tokenInfo
 
   return {
-    symbol: artistCoin.ticker,
-    name: tokenInfo?.name || artistCoin.ticker,
+    symbol: artistCoin.ticker || '',
+    name: tokenInfo?.name || artistCoin.ticker || '',
     decimals: tokenInfo?.decimals || 8,
     balance: null, // This would come from user's wallet state
     address: artistCoin.mint,
@@ -22,21 +22,22 @@ export const transformArtistCoinToTokenInfo = (
 }
 
 export const transformArtistCoinsToTokenInfoMap = (
-  artistCoins: ArtistCoinWithTokenInfo[],
+  artistCoins: Coin[],
   iconMap: Record<string, ComponentType<any>> = {}
 ): Record<string, TokenInfo> => {
   const tokenMap: Record<string, TokenInfo> = {}
 
   artistCoins.forEach((coin) => {
-    const icon = iconMap[coin.ticker]
-    tokenMap[coin.ticker] = transformArtistCoinToTokenInfo(coin, icon)
+    const ticker = coin.ticker || ''
+    const icon = iconMap[ticker]
+    tokenMap[ticker] = transformArtistCoinToTokenInfo(coin, icon)
   })
 
   return tokenMap
 }
 
 export const getTokenInfoBySymbol = (
-  artistCoins: ArtistCoinWithTokenInfo[],
+  artistCoins: Coin[],
   symbol: string,
   iconMap: Record<string, ComponentType<any>> = {}
 ): TokenInfo | undefined => {
@@ -47,17 +48,15 @@ export const getTokenInfoBySymbol = (
   return transformArtistCoinToTokenInfo(coin, icon)
 }
 
-export const getAllTokenSymbols = (
-  artistCoins: ArtistCoinWithTokenInfo[]
-): string[] => {
-  return artistCoins.map((coin) => coin.ticker)
+export const getAllTokenSymbols = (artistCoins: Coin[]): string[] => {
+  return artistCoins.map((coin) => coin.ticker || '')
 }
 
 export const getTokenMintsBySymbols = (
-  artistCoins: ArtistCoinWithTokenInfo[],
+  artistCoins: Coin[],
   symbols: string[]
 ): string[] => {
   return artistCoins
-    .filter((coin) => symbols.includes(coin.ticker))
+    .filter((coin) => coin.ticker && symbols.includes(coin.ticker))
     .map((coin) => coin.mint)
 }
