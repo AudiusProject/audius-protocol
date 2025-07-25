@@ -46,6 +46,7 @@ export * from './tan-query/lineups/useTrending'
 export * from './tan-query/lineups/useTrendingPlaylists'
 export * from './tan-query/lineups/useTrendingUnderground'
 export * from './tan-query/lineups/useTrackPageLineup'
+export * from './tan-query/lineups/useLineupQuery'
 
 // Notifications
 export * from './tan-query/notifications/useMarkNotificationsAsViewed'

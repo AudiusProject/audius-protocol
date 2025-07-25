@@ -63,7 +63,7 @@ const DesktopTrendingPlaylistPage = ({
       <div className={styles.bannerContainer}>
         <RewardsBanner bannerType='playlists' />
       </div>
-      <Lineup {...lineupProps} />
+      <Lineup {...lineupProps} numPlaylistSkeletonRows={5} />
     </Page>
   )
 }
