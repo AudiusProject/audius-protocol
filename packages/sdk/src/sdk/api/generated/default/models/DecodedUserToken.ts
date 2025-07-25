@@ -32,6 +32,12 @@ export interface DecodedUserToken {
      * @type {string}
      * @memberof DecodedUserToken
      */
+    apiKey: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DecodedUserToken
+     */
     userId: string;
     /**
      * 
@@ -82,6 +88,7 @@ export interface DecodedUserToken {
  */
 export function instanceOfDecodedUserToken(value: object): value is DecodedUserToken {
     let isInstance = true;
+    isInstance = isInstance && "apiKey" in value && value["apiKey"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "email" in value && value["email"] !== undefined;
     isInstance = isInstance && "name" in value && value["name"] !== undefined;
@@ -103,6 +110,7 @@ export function DecodedUserTokenFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
+        'apiKey': json['apiKey'],
         'userId': json['userId'],
         'email': json['email'],
         'name': json['name'],
@@ -123,6 +131,7 @@ export function DecodedUserTokenToJSON(value?: DecodedUserToken | null): any {
     }
     return {
         
+        'apiKey': value.apiKey,
         'userId': value.userId,
         'email': value.email,
         'name': value.name,
