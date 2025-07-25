@@ -1,4 +1,4 @@
-import { formatCount, getCurrencyDecimalPlaces } from '@audius/common/utils'
+import { formatCount, formatCurrency } from '@audius/common/utils'
 import { Coin } from '@audius/sdk'
 
 export type MetricData = {
@@ -16,24 +16,6 @@ const messages = {
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
   totalTransfers: 'Total Transfers'
-}
-
-const formatCurrency = (num: number): string => {
-  if (num === 0) return '$0.00'
-
-  try {
-    const decimalPlaces = getCurrencyDecimalPlaces(num)
-    const formatted = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: Math.min(decimalPlaces, 2),
-      maximumFractionDigits: decimalPlaces
-    }).format(num)
-
-    return formatted
-  } catch {
-    return `$${num.toFixed(2)}`
-  }
 }
 
 const formatPercentage = (num: number): string => {

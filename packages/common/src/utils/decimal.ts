@@ -128,3 +128,37 @@ export const formatAudioBalance = (
     roundingMode: 'trunc'
   })
 }
+
+/**
+ * Formats a number as currency with dynamic decimal places based on value magnitude.
+ * Uses getCurrencyDecimalPlaces to determine appropriate precision.
+ *
+ * @param num - The number to format as currency
+ * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @returns Formatted currency string
+ *
+ * @example
+ * formatCurrency(123.456)  // "$123.46"
+ * formatCurrency(0.0012)   // "$0.001200"
+ * formatCurrency(0)        // "$0.00"
+ */
+export const formatCurrency = (
+  num: number,
+  locale: string = 'en-US'
+): string => {
+  if (num === 0) return '$0.00'
+
+  try {
+    const decimalPlaces = getCurrencyDecimalPlaces(num)
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: Math.min(decimalPlaces, 2),
+      maximumFractionDigits: decimalPlaces
+    }).format(num)
+
+    return formatted
+  } catch {
+    return `$${num.toFixed(2)}`
+  }
+}
