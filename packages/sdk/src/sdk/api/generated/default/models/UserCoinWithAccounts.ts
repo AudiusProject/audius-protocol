@@ -28,17 +28,35 @@ import {
  */
 export interface UserCoinWithAccounts {
     /**
+     * The coin mint address
+     * @type {string}
+     * @memberof UserCoinWithAccounts
+     */
+    mint: string;
+    /**
+     * The coin symbol
+     * @type {string}
+     * @memberof UserCoinWithAccounts
+     */
+    ticker: string;
+    /**
+     * The number of decimals for the coin
+     * @type {number}
+     * @memberof UserCoinWithAccounts
+     */
+    decimals: number;
+    /**
      * The total balance of the coin in the user's account (in wei)
      * @type {number}
      * @memberof UserCoinWithAccounts
      */
-    totalBalance: number;
+    balance: number;
     /**
      * The total balance of the coin in the user's account in USD
      * @type {number}
      * @memberof UserCoinWithAccounts
      */
-    totalBalanceUSD: number;
+    balanceUsd: number;
     /**
      * 
      * @type {Array<UserCoinAccount>}
@@ -52,8 +70,11 @@ export interface UserCoinWithAccounts {
  */
 export function instanceOfUserCoinWithAccounts(value: object): value is UserCoinWithAccounts {
     let isInstance = true;
-    isInstance = isInstance && "totalBalance" in value && value["totalBalance"] !== undefined;
-    isInstance = isInstance && "totalBalanceUSD" in value && value["totalBalanceUSD"] !== undefined;
+    isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
+    isInstance = isInstance && "ticker" in value && value["ticker"] !== undefined;
+    isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
+    isInstance = isInstance && "balance" in value && value["balance"] !== undefined;
+    isInstance = isInstance && "balanceUsd" in value && value["balanceUsd"] !== undefined;
     isInstance = isInstance && "accounts" in value && value["accounts"] !== undefined;
 
     return isInstance;
@@ -69,8 +90,11 @@ export function UserCoinWithAccountsFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'totalBalance': json['totalBalance'],
-        'totalBalanceUSD': json['totalBalanceUSD'],
+        'mint': json['mint'],
+        'ticker': json['ticker'],
+        'decimals': json['decimals'],
+        'balance': json['balance'],
+        'balanceUsd': json['balance_usd'],
         'accounts': ((json['accounts'] as Array<any>).map(UserCoinAccountFromJSON)),
     };
 }
@@ -84,8 +108,11 @@ export function UserCoinWithAccountsToJSON(value?: UserCoinWithAccounts | null):
     }
     return {
         
-        'totalBalance': value.totalBalance,
-        'totalBalanceUSD': value.totalBalanceUSD,
+        'mint': value.mint,
+        'ticker': value.ticker,
+        'decimals': value.decimals,
+        'balance': value.balance,
+        'balance_usd': value.balanceUsd,
         'accounts': ((value.accounts as Array<any>).map(UserCoinAccountToJSON)),
     };
 }
