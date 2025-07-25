@@ -199,7 +199,7 @@ export const retrieveUser = async (
         encodedABI as `0x${string}`
       )
 
-    query = query.where('wallet', '=', recoveredAddress)
+    query = query.where('wallet', '=', recoveredAddress.toLowerCase())
     addedWalletClause = true
   }
 
@@ -236,6 +236,6 @@ export const retrieveDeveloperApp = async (params: {
     encodedABI as `0x${string}`
   )
   return await discoveryDb<DeveloperApps>(Table.DeveloperApps)
-    .where('address', '=', recoveredAddress)
+    .where('address', '=', recoveredAddress.toLowerCase())
     .first()
 }
