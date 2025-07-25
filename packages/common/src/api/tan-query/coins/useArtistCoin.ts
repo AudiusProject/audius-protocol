@@ -1,4 +1,4 @@
-import { encodeHashId } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
@@ -23,10 +23,7 @@ export const useArtistCoin = (params: UseArtistCoinParams = {}) => {
         searchParams.mint = params.mint
       }
       if (params.owner_id) {
-        searchParams.ownerId = params.owner_id.map((id) => {
-          const encodedId = encodeHashId(id)
-          return encodedId || id.toString()
-        })
+        searchParams.ownerId = params.owner_id.map((id) => Id.parse(id))
       }
 
       const response = await sdk.coins.getCoins(searchParams)

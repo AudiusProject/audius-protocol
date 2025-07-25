@@ -181,7 +181,7 @@ export const AssetInsights = ({ mint }: AssetDetailProps) => {
       }
     },
     {
-      value: formatNumber(coin.tokenInfo.holder),
+      value: formatNumber(coin.tokenInfo.uniqueWallet24h || 0),
       label: messages.uniqueHolders,
       change: {
         value: formatPercentage(coin.tokenInfo.uniqueWallet24hChangePercent),
