@@ -7,10 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */; };
+		23FCE9862E317F50008CA09B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23FCE9852E317F50008CA09B /* AppDelegate.swift */; };
 		253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */ = {isa = PBXBuildFile; fileRef = 253BCCF92B324974007DC74C /* NSureSDK.m */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
@@ -31,17 +29,12 @@
 
 /* Begin PBXFileReference section */
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
-		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		00E356F21AD99517003FC87E /* AudiusReactNativeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudiusReactNativeTests.m; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Audius Music.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Audius Music.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = AudiusReactNative/AppDelegate.h; sourceTree = "<group>"; };
-		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = AudiusReactNative/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AudiusReactNative/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AudiusReactNative/Info.plist; sourceTree = "<group>"; };
-		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AudiusReactNative/main.m; sourceTree = "<group>"; };
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
-		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
 		1FBFACF443D7D1D743A6B13A /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
+		23FCE9852E317F50008CA09B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		253BCCF82B324974007DC74C /* NSureSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSureSDK.h; path = AudiusReactNative/NSureSDK.h; sourceTree = "<group>"; };
 		253BCCF92B324974007DC74C /* NSureSDK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSureSDK.m; path = AudiusReactNative/NSureSDK.m; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
@@ -81,39 +74,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		00E356EF1AD99517003FC87E /* AudiusReactNativeTests */ = {
-			isa = PBXGroup;
-			children = (
-				00E356F21AD99517003FC87E /* AudiusReactNativeTests.m */,
-				00E356F01AD99517003FC87E /* Supporting Files */,
-			);
-			path = AudiusReactNativeTests;
-			sourceTree = "<group>";
-		};
-		00E356F01AD99517003FC87E /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				00E356F11AD99517003FC87E /* Info.plist */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* AudiusReactNative */ = {
 			isa = PBXGroup;
 			children = (
+				23FCE9852E317F50008CA09B /* AppDelegate.swift */,
 				253BCCF82B324974007DC74C /* NSureSDK.h */,
 				253BCCF92B324974007DC74C /* NSureSDK.m */,
 				838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */,
 				A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
-				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
-				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */,
-				13B07FB71A68108700A75B9A /* main.m */,
 				83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */,
 				83F735A423C64C950040A4C5 /* AirplayEvent.m */,
+				13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */,
 			);
 			name = AudiusReactNative;
 			sourceTree = "<group>";
@@ -140,14 +115,11 @@
 			isa = PBXGroup;
 			children = (
 				9E5B39082BB49198009C765B /* PrivacyInfo.xcprivacy */,
-				13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */,
 				13B07FAE1A68108700A75B9A /* AudiusReactNative */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				00E356EF1AD99517003FC87E /* AudiusReactNativeTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				9203ADA7911C8949B98165F4 /* Pods */,
-				13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */,
 				A5F065694F9E40CE97972CFA /* Resources */,
 				F2E727A52732EE4F008E4614 /* Recovered References */,
 			);
@@ -411,12 +383,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23FCE9862E317F50008CA09B /* AppDelegate.swift in Sources */,
 				253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */,
-				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				83F7359F23C55C2D0040A4C5 /* AirplayViewManager.m in Sources */,
-				13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */,
 				83F735A523C64C950040A4C5 /* AirplayEvent.m in Sources */,
-				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
