@@ -44,7 +44,7 @@ export const useArtistCoinMembers = (
   }: UseArtistCoinMembersArgs,
   options?: QueryOptions
 ) => {
-  const { env } = useQueryContext()
+  const { audiusSdk } = useQueryContext()
 
   // Map route key to actual mint address if needed
   const getMintAddress = (mintKey: string) => {
@@ -68,35 +68,26 @@ export const useArtistCoinMembers = (
     queryFn: async ({ pageParam }): Promise<CoinMember[]> => {
       if (!mint) return []
 
+      const sdk = await audiusSdk()
       const mintAddress = getMintAddress(mint)
 
       // Build query parameters
-      const params = new URLSearchParams({
-        limit: pageSize.toString(),
-        offset: pageParam.toString(),
-        sort_direction: sortDirection
-      })
-
-      if (minBalance !== undefined) {
-        params.append('min_balance', minBalance.toString())
+      const params: any = {
+        mint: mintAddress,
+        limit: pageSize,
+        offset: pageParam,
+        sortDirection
       }
 
       // Make the API call to the coin members endpoint
-      const response = await fetch(
-        `${env.API_URL}/v1/coins/${mintAddress}/members?${params.toString()}`
+      const response = await sdk.coins.getCoinMembers(params)
+
+      const members: CoinMember[] = (response.data || []).map(
+        (member: any) => ({
+          user_id: decodeHashId(member.user_id) || 0,
+          balance: member.balance
+        })
       )
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch coin leaderboard: ${response.statusText}`
-        )
-      }
-
-      const data = await response.json()
-      const members: CoinMember[] = (data.data || []).map((member: any) => ({
-        user_id: decodeHashId(member.user_id) || 0,
-        balance: member.balance
-      }))
 
       return members
     },

@@ -161,6 +161,8 @@ const TrackPage = ({
       ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='track'
+      entityId={heroTrack?.track_id}
       variant='flush'
       scrollableSearch
       fromOpacity={1}

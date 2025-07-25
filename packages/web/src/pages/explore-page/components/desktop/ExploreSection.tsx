@@ -16,6 +16,9 @@ import {
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
+const TILE_WIDTH = 532
+const MOBILE_TILE_WIDTH = 343
+
 // Wrapper component to make tiles playable
 const PlayableTile: React.FC<{
   id: ID
@@ -63,12 +66,14 @@ const PlayableTile: React.FC<{
 type ExploreSectionProps = {
   title: string
   data?: number[]
+  isLoading?: boolean
   Card?: React.ComponentType<any>
   Tile?: React.ComponentType<any>
 }
 export const ExploreSection: React.FC<ExploreSectionProps> = ({
   title,
   data,
+  isLoading,
   Card,
   Tile
 }) => {
@@ -103,6 +108,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   })
 
   const renderTilePairs = (data: number[], Tile: React.ComponentType<any>) => {
+    const tileWidth = isMobile ? MOBILE_TILE_WIDTH : TILE_WIDTH
     const pairs = []
     for (let i = 0; i < data.length; i += 2) {
       pairs.push(data.slice(i, i + 2))
@@ -112,7 +118,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
         key={pairIndex}
         direction='column'
         gap='m'
-        css={{ minWidth: '532px', width: '532px' }}
+        css={{ minWidth: tileWidth, width: tileWidth }}
       >
         {pair.map((id, idIndex) => (
           <PlayableTile
@@ -129,12 +135,13 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   }
 
   const renderTileSkeletons = (Tile: React.ComponentType<any>) => {
+    const tileWidth = isMobile ? MOBILE_TILE_WIDTH : TILE_WIDTH
     return Array.from({ length: 2 }).map((_, i) => (
       <Flex
         key={i}
         direction='column'
         gap='m'
-        css={{ minWidth: '532px', width: '532px' }}
+        css={{ minWidth: tileWidth, width: tileWidth }}
       >
         <Tile key={`${i}-0`} id={0} size='m' />
         <Tile key={`${i}-1`} id={0} size='m' />
@@ -233,17 +240,17 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
             pv='2xs'
           >
             {Tile && !Card
-              ? data
-                ? renderTilePairs(data, Tile)
-                : renderTileSkeletons(Tile)
+              ? isLoading || !data
+                ? renderTileSkeletons(Tile)
+                : renderTilePairs(data, Tile)
               : null}
             {Card
-              ? data
-                ? data?.map((id) => <Card key={id} id={id} size='s' />)
-                : Array.from({ length: 6 }).map((_, i) => (
+              ? !data || isLoading
+                ? Array.from({ length: 6 }).map((_, i) => (
                     // loading skeletons
                     <Card key={i} id={0} size={isMobile ? 'xs' : 's'} />
                   ))
+                : data?.map((id) => <Card key={id} id={id} size='s' />)
               : null}
           </Flex>
         </Flex>

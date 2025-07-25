@@ -8,7 +8,9 @@ import {
 } from 'react'
 
 import { useExploreContent } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Paper,
   Text,
@@ -60,6 +62,9 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ExploreSection } from '../desktop/ExploreSection'
 
+import { MostSharedSection } from './MostSharedSection'
+import { UndergroundTrendingSection } from './UndergroundTrendingSection'
+
 export type ExplorePageProps = {
   title: string
   pageTitle: string
@@ -94,6 +99,10 @@ const ExplorePage = () => {
   const searchBarRef = useRef<HTMLInputElement>(null)
   const { color, spacing } = useTheme()
   const { isLarge } = useMedia()
+
+  const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
 
   const { data: exploreContent } = useExploreContent()
 
@@ -261,6 +270,10 @@ const ExplorePage = () => {
               Card={RemixContestCard}
             />
 
+            {isSearchExploreGoodiesEnabled ? (
+              <UndergroundTrendingSection />
+            ) : null}
+
             <ExploreSection
               title={messages.artistSpotlight}
               data={exploreContent?.featuredProfiles}
@@ -272,6 +285,7 @@ const ExplorePage = () => {
               data={exploreContent?.featuredLabels}
               Card={UserCard}
             />
+
             <Flex direction='column' ph='l' gap='2xl'>
               <Flex direction='column' gap='l' alignItems='center'>
                 <Text variant='title' size='l'>
@@ -312,56 +326,57 @@ const ExplorePage = () => {
                     ))}
                 </Flex>
               </Flex>
-              <Flex direction='column' gap='l'>
-                <Text variant='title' size='l'>
-                  {messages.bestOfAudius}
-                </Text>
-                <Flex
-                  wrap='wrap'
-                  gap='l'
-                  direction={isLarge ? 'column' : 'row'}
-                  justifyContent='space-between'
-                  css={
-                    !isLarge
-                      ? {
-                          display: 'grid',
-                          gridTemplateColumns: '1fr 1fr',
-                          gridTemplateRows: '1fr 1fr',
-                          gap: spacing.l, // or just gap: 'l' if supported
-                          width: '100%'
-                        }
-                      : undefined
-                  }
-                >
-                  {justForYouTiles.map((tile) => {
-                    const Icon = tile.icon
-                    return (
-                      <PerspectiveCard
-                        key={tile.title}
-                        backgroundGradient={tile.gradient}
-                        shadowColor={tile.shadow}
-                        useOverlayBlendMode={
-                          tile.title !== PREMIUM_TRACKS.title
-                        }
-                        backgroundIcon={
-                          Icon ? (
-                            <Icon height={180} width={180} color='inverse' />
-                          ) : undefined
-                        }
-                        onClick={() => onClickCard(tile.link)}
-                        isIncentivized={!!tile.incentivized}
-                        sensitivity={tile.cardSensitivity}
-                      >
-                        <Flex w={'100%'} h={200}>
-                          <TextInterior
-                            title={tile.title}
-                            subtitle={tile.subtitle}
-                          />
-                        </Flex>
-                      </PerspectiveCard>
-                    )
-                  })}
-                </Flex>
+            </Flex>
+            <Flex direction='column' mt='2xl' gap='l'>
+              {isSearchExploreGoodiesEnabled ? <MostSharedSection /> : null}
+            </Flex>
+            <Flex direction='column' ph='l' gap='l'>
+              <Text variant='title' size='l'>
+                {messages.bestOfAudius}
+              </Text>
+              <Flex
+                wrap='wrap'
+                gap='l'
+                direction={isLarge ? 'column' : 'row'}
+                justifyContent='space-between'
+                css={
+                  !isLarge
+                    ? {
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateRows: '1fr 1fr',
+                        gap: spacing.l, // or just gap: 'l' if supported
+                        width: '100%'
+                      }
+                    : undefined
+                }
+              >
+                {justForYouTiles.map((tile) => {
+                  const Icon = tile.icon
+                  return (
+                    <PerspectiveCard
+                      key={tile.title}
+                      backgroundGradient={tile.gradient}
+                      shadowColor={tile.shadow}
+                      useOverlayBlendMode={tile.title !== PREMIUM_TRACKS.title}
+                      backgroundIcon={
+                        Icon ? (
+                          <Icon height={180} width={180} color='inverse' />
+                        ) : undefined
+                      }
+                      onClick={() => onClickCard(tile.link)}
+                      isIncentivized={!!tile.incentivized}
+                      sensitivity={tile.cardSensitivity}
+                    >
+                      <Flex w={'100%'} h={200}>
+                        <TextInterior
+                          title={tile.title}
+                          subtitle={tile.subtitle}
+                        />
+                      </Flex>
+                    </PerspectiveCard>
+                  )
+                })}
               </Flex>
             </Flex>
           </Flex>

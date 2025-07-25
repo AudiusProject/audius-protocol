@@ -240,6 +240,14 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Add leading slash if it is missing
       if (path[0] !== '/') path = `/${path}`
 
+      // Decode URL-encoded characters in the path
+      try {
+        path = decodeURIComponent(path)
+      } catch (e) {
+        // If decoding fails, continue with the original path
+        console.warn('Failed to decode URL path:', path, e)
+      }
+
       path = path.replace('#embed', '')
 
       const connectPath = /^\/(connect)/

@@ -28,10 +28,10 @@ export interface CreatePlaylistNotificationActionData {
     isAlbum: boolean;
     /**
      * 
-     * @type {Array<string>}
+     * @type {string}
      * @memberof CreatePlaylistNotificationActionData
      */
-    playlistId: Array<string>;
+    playlistId: string;
 }
 
 /**

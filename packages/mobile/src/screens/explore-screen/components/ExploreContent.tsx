@@ -12,10 +12,12 @@ import { FeaturedRemixContests } from './FeaturedRemixContests'
 import { FeelingLucky } from './FeelingLucky'
 import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
+import { MostSharedTracks } from './MostSharedTracks'
 import { ProgressiveScrollView } from './ProgressiveScrollView'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
 import { RecommendedTracks } from './RecommendedTracks'
+import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 const MemoizedExploreContent = () => {
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
@@ -32,12 +34,14 @@ const MemoizedExploreContent = () => {
       ) : null}
       <FeaturedPlaylists />
       <FeaturedRemixContests />
+      {isSearchExploreGoodiesEnabled ? <UndergroundTrendingTracks /> : null}
       <ArtistSpotlight />
       <LabelSpotlight />
       {isSearchExploreGoodiesEnabled ? <ActiveDiscussions /> : null}
       <MoodsGrid />
       {isSearchExploreGoodiesEnabled ? (
         <>
+          <MostSharedTracks />
           <BestSelling />
           <FeelingLucky />
           <RecentPremiumTracks />

@@ -201,6 +201,8 @@ const CollectionPage = ({
       description={pageDescription}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='collection'
+      entityId={playlistId}
     >
       <div className={styles.collectionContent}>
         <div>

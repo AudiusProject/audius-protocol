@@ -8,6 +8,7 @@ import {
 } from '@audius/common/models'
 import { Entity, useNotificationModal } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { OptionalId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -30,7 +31,7 @@ export const useGoToEntity = (
   entity: Nullable<EntityType>,
   entityType: Entity,
   goToComments?: boolean,
-  commentId?: string
+  commentId?: number
 ) => {
   const dispatch = useDispatch()
   const record = useRecord()
@@ -42,9 +43,12 @@ export const useGoToEntity = (
       event.stopPropagation()
       event.preventDefault()
       const link = getEntityLink(entity)
-      const urlParams = new URLSearchParams(link)
+      const urlParams = new URLSearchParams()
       if (commentId) {
-        urlParams.set('commentId', commentId)
+        const parsedCommentId = OptionalId.parse(commentId)
+        if (parsedCommentId) {
+          urlParams.set('commentId', parsedCommentId)
+        }
       } else if (goToComments) {
         urlParams.set('showComments', 'true')
       }

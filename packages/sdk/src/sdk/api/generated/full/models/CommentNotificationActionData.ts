@@ -43,7 +43,7 @@ export interface CommentNotificationActionData {
      * @type {string}
      * @memberof CommentNotificationActionData
      */
-    commentId: string;
+    commentId?: string;
 }
 
 
@@ -66,7 +66,6 @@ export function instanceOfCommentNotificationActionData(value: object): value is
     isInstance = isInstance && "type" in value && value["type"] !== undefined;
     isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
     isInstance = isInstance && "commentUserId" in value && value["commentUserId"] !== undefined;
-    isInstance = isInstance && "commentId" in value && value["commentId"] !== undefined;
 
     return isInstance;
 }
@@ -84,7 +83,7 @@ export function CommentNotificationActionDataFromJSONTyped(json: any, ignoreDisc
         'type': json['type'],
         'entityId': json['entity_id'],
         'commentUserId': json['comment_user_id'],
-        'commentId': json['comment_id'],
+        'commentId': !exists(json, 'comment_id') ? undefined : json['comment_id'],
     };
 }
 

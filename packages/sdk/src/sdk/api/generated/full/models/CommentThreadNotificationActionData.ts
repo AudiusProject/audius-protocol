@@ -49,7 +49,7 @@ export interface CommentThreadNotificationActionData {
      * @type {string}
      * @memberof CommentThreadNotificationActionData
      */
-    commentId: string;
+    commentId?: string;
 }
 
 
@@ -73,7 +73,6 @@ export function instanceOfCommentThreadNotificationActionData(value: object): va
     isInstance = isInstance && "entityId" in value && value["entityId"] !== undefined;
     isInstance = isInstance && "entityUserId" in value && value["entityUserId"] !== undefined;
     isInstance = isInstance && "commentUserId" in value && value["commentUserId"] !== undefined;
-    isInstance = isInstance && "commentId" in value && value["commentId"] !== undefined;
 
     return isInstance;
 }
@@ -92,7 +91,7 @@ export function CommentThreadNotificationActionDataFromJSONTyped(json: any, igno
         'entityId': json['entity_id'],
         'entityUserId': json['entity_user_id'],
         'commentUserId': json['comment_user_id'],
-        'commentId': json['comment_id'],
+        'commentId': !exists(json, 'comment_id') ? undefined : json['comment_id'],
     };
 }
 

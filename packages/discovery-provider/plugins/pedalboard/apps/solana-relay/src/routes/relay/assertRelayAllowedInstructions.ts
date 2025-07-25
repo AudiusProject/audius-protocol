@@ -33,6 +33,8 @@ import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+const PAYOUT_WALLET_MEMO = 'Payout Wallet'
+const PREPARE_WITHDRAWAL_MEMO = 'Prepare Withdrawal'
 const CLAIMABLE_TOKEN_PROGRAM_ID = config.claimableTokenProgramId
 const REWARDS_MANAGER_PROGRAM_ID = config.rewardsManagerProgramId
 const TRACK_LISTEN_COUNT_PROGRAM_ID = config.trackListenCountProgramId
@@ -83,6 +85,21 @@ const PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT = getAssociatedTokenAddressSync(
   PAYMENT_ROUTER_WALLET,
   true
 )
+
+const findSpecificMemo = (
+  instructions: TransactionInstruction[],
+  memo: string
+) => {
+  for (const instruction of instructions) {
+    if (
+      instruction.programId.toBase58() === MEMO_PROGRAM_ID &&
+      instruction.data.toString() === memo
+    ) {
+      return instruction.data.toString()
+    }
+  }
+  return null
+}
 
 /**
  * Only allow the createTokenAccount instruction of the Associated Token
@@ -156,7 +173,16 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
       matchingCreateInstructions.length !== matchingCloseInstructions.length
     ) {
       try {
-        await rateLimitTokenAccountCreation(wallet, !!isVerified)
+        let memo: string | undefined
+        if (findSpecificMemo(instructions, PAYOUT_WALLET_MEMO)) {
+          memo = PAYOUT_WALLET_MEMO
+        } else if (findSpecificMemo(instructions, PREPARE_WITHDRAWAL_MEMO)) {
+          memo = PREPARE_WITHDRAWAL_MEMO
+        }
+        // In this situation, we could be losing SOL because the user is allowed to
+        // close their own ATA and reclaim the rent that we've fronted, so
+        // rate limit it cautiously.
+        await rateLimitTokenAccountCreation(wallet, !!isVerified, memo)
       } catch (e) {
         const error = e as Error
         throw new InvalidRelayInstructionError(instructionIndex, error.message)

@@ -18,7 +18,10 @@ export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
 
 // Coins
+export * from './tan-query/coins/useArtistCoin'
 export * from './tan-query/coins/useArtistCoinMembers'
+export * from './tan-query/coins/useUserCoins'
+export * from './tan-query/coins/useCoin'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -40,6 +43,7 @@ export * from './tan-query/lineups/useLibraryTracks'
 export * from './tan-query/lineups/useProfileReposts'
 export * from './tan-query/lineups/useProfileTracks'
 export * from './tan-query/lineups/useTrending'
+export * from './tan-query/lineups/useTrendingUnderground'
 export * from './tan-query/lineups/useTrackPageLineup'
 
 // Notifications
@@ -105,6 +109,7 @@ export * from './tan-query/tracks/useSuggestedPlaylistTracks'
 export * from './tan-query/tracks/useFeelingLuckyTrack'
 export * from './tan-query/tracks/useRecentlyPlayedTracks'
 export * from './tan-query/tracks/useRecentlyCommentedTracks'
+export * from './tan-query/tracks/useMostSharedTracks'
 
 // Users
 export * from './tan-query/users/useUpdateProfile'

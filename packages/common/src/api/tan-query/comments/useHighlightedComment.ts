@@ -3,13 +3,13 @@ import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useComment } from './useComment'
 
-export const useHighlightComment = () => {
+export const useHighlightedComment = () => {
   const [searchParams] = useSearchParams()
   const commentIdParam = searchParams.get('commentId')
 
-  const { data: highlightComment } = useComment(
+  const { data: highlightedComment } = useComment(
     OptionalHashId.parse(commentIdParam)
   )
 
-  return highlightComment
+  return highlightedComment
 }

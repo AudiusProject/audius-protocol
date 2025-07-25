@@ -191,12 +191,6 @@ services:
       service: solana-relay
     <<: *common
 
-  sla-auditor:
-    extends:
-      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
-      service: sla-auditor
-    <<: *common
-
   crm:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml

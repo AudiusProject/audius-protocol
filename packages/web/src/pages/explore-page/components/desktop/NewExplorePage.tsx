@@ -6,7 +6,8 @@ import {
   useRecentPremiumTracks,
   useBestSelling,
   useFeelingLuckyTracks,
-  useRecentlyPlayedTracks
+  useRecentlyPlayedTracks,
+  useMostSharedTracks
 } from '@audius/common/api'
 import { useFeatureFlag, useToggleTrack } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
@@ -74,6 +75,7 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { BestSellingSection } from './BestSellingSection'
 import { ExploreSection } from './ExploreSection'
+import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 export type ExplorePageProps = {
   title: string
@@ -145,6 +147,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
 
   const { data: exploreContent } = useExploreContent()
   const { data: recommendedTracks } = useRecommendedTracks()
+  const { data: mostSharedTracks } = useMostSharedTracks()
   const { data: recentlyPlayed } = useRecentlyPlayedTracks()
   const { data: recentlyCommentedTracks } = useRecentlyPlayedTracks()
   const { data: recentPremiumTracks } = useRecentPremiumTracks()
@@ -394,6 +397,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 Card={RemixContestCard}
               />
 
+              {isSearchExploreGoodiesEnabled ? (
+                <UndergroundTrendingTracks />
+              ) : null}
+
               <ExploreSection
                 title={messages.artistSpotlight}
                 data={exploreContent?.featuredProfiles}
@@ -454,6 +461,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <Flex direction='column'>
               {isSearchExploreGoodiesEnabled ? (
                 <>
+                  <ExploreSection
+                    title={messages.mostShared}
+                    data={mostSharedTracks}
+                    Card={TrackCard}
+                  />
                   <BestSellingSection
                     title={messages.bestSelling}
                     data={bestSelling}

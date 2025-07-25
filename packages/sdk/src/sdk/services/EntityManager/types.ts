@@ -1,3 +1,5 @@
+import { Hex } from 'viem'
+
 import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { LoggerService } from '../Logger'
 
@@ -38,6 +40,16 @@ export type EntityManagerService = {
     confirmationTimeout?: number
     confirmationPollingInterval?: number
   }) => Promise<boolean>
+  decodeManageEntity: (encodedABI: Hex) => {
+    userId: bigint
+    entityType: EntityType
+    entityId: bigint
+    action: Action
+    metadata: string
+    nonce: string
+    subjectSig: string
+  }
+  recoverSigner: (encodedABI: Hex) => Promise<string>
 }
 
 export enum Action {
