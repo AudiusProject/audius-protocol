@@ -1,4 +1,4 @@
-import { useCallback, useContext, Fragment } from 'react'
+import { Fragment, useCallback, useContext } from 'react'
 
 import { env } from 'process'
 
@@ -15,7 +15,6 @@ import {
   Button,
   Divider,
   Flex,
-  IconCaretRight,
   Paper,
   Text,
   useMedia,
@@ -104,7 +103,7 @@ const CoinCardWithBalance = ({ coin }: { coin: Coin }) => {
 }
 
 export const YourCoins = () => {
-  const { color, spacing } = useTheme()
+  const { spacing } = useTheme()
   const { isMobile } = useMedia()
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
@@ -134,23 +133,6 @@ export const YourCoins = () => {
             </Fragment>
           )
         })}
-      </Flex>
-      <Flex
-        p={isMobile ? spacing.l : spacing.xl}
-        css={{
-          cursor: 'pointer',
-          '&:hover': { backgroundColor: color.background.surface2 }
-        }}
-      >
-        <Flex flex={1} alignItems='center' justifyContent='space-between'>
-          <Flex column gap='xs'>
-            <Text variant='heading' size='m' color='default'>
-              {messages.findMoreCoins}
-            </Text>
-            <Text color='subdued'>{messages.exploreArtistCoins}</Text>
-          </Flex>
-          <IconCaretRight size='l' color='subdued' />
-        </Flex>
       </Flex>
     </Paper>
   )
