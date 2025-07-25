@@ -9,7 +9,12 @@ import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { EventsApi } from './api/events/EventsApi'
-import { Configuration, ExploreApi, TipsApi } from './api/generated/default'
+import {
+  CoinsApi,
+  Configuration,
+  ExploreApi,
+  TipsApi
+} from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
   Configuration as ConfigurationFull,
@@ -475,6 +480,7 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
+  const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
@@ -561,7 +567,8 @@ const initializeApis = ({
     comments,
     notifications,
     events,
-    explore
+    explore,
+    coins
   }
 }
 

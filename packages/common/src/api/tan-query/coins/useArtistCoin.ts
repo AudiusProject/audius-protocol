@@ -1,41 +1,33 @@
-import { encodeHashId } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
-
-export type ArtistCoin = {
-  mint: string
-  owner_id: string
-}
+import { useQueryContext } from '../utils'
 
 export type UseArtistCoinParams = {
   mint?: string[]
   owner_id?: ID[]
 }
 
-// TODO: PE-6542 Replace this with sdk call
 export const useArtistCoin = (params: UseArtistCoinParams = {}) => {
+  const { audiusSdk } = useQueryContext()
+
   return useQuery({
     queryKey: [QUERY_KEYS.artistCoins, params],
     queryFn: async () => {
-      const searchParams = new URLSearchParams()
+      const sdk = await audiusSdk()
+      const searchParams: any = {}
       if (params.mint) {
-        params.mint.forEach((m) => searchParams.append('mint', m))
+        searchParams.mint = params.mint
       }
       if (params.owner_id) {
-        params.owner_id.forEach((id) => {
-          const encodedId = encodeHashId(id)
-          if (encodedId) {
-            searchParams.append('owner_id', encodedId)
-          }
-        })
+        searchParams.ownerId = params.owner_id.map((id) => Id.parse(id))
       }
-      const res = await fetch(`https://api.audius.co/v1/coins?${searchParams}`)
-      if (!res.ok) throw new Error('Failed to fetch coins')
-      const data = await res.json()
-      return data.coins as ArtistCoin[]
+
+      const response = await sdk.coins.getCoins(searchParams)
+      return response.data
     }
   })
 }
