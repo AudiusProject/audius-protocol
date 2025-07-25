@@ -578,13 +578,21 @@ export const CollectionTile = ({
         </Flex>
       </Flex>
       {/* Track list and bottom bar remain unchanged */}
-      <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
+      <Flex
+        backgroundColor='surface1'
+        borderTop='strong'
+        borderBottom='strong'
+        direction='column'
+        flex={1}
+        css={{ minHeight: 0 }}
+      >
         <Scrollbar css={{ maxHeight: 240, overflowY: 'auto' }}>
           {renderTrackList()}
         </Scrollbar>
         {renderMoreTracks()}
-      </Box>
+      </Flex>
       <Box
+        css={{ flexShrink: 0 }}
         pv='s'
         ph='m'
         backgroundColor='white'
@@ -594,7 +602,9 @@ export const CollectionTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {isOwner ? (
+        {isLoading ? (
+          <Box h={40} />
+        ) : isOwner ? (
           <OwnerActionButtons
             contentId={id}
             contentType='collection'

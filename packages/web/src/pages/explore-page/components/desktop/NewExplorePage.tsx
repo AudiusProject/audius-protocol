@@ -75,6 +75,7 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { BestSellingSection } from './BestSellingSection'
 import { ExploreSection } from './ExploreSection'
+import { TrendingPlaylists } from './TrendingPlaylists'
 import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 export type ExplorePageProps = {
@@ -461,6 +462,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <Flex direction='column'>
               {isSearchExploreGoodiesEnabled ? (
                 <>
+                  <TrendingPlaylists />
                   <ExploreSection
                     title={messages.mostShared}
                     data={mostSharedTracks}

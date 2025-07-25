@@ -1,5 +1,9 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
+import { useToggleTrack } from '@audius/common/hooks'
+import { Kind } from '@audius/common/models'
+import type { QueueSource } from '@audius/common/store'
+import { makeUid } from '@audius/common/utils'
 import { ScrollView } from 'react-native'
 
 import { Flex } from '@audius/harmony-native'
@@ -7,14 +11,44 @@ import { LineupTileSkeleton, TrackTile } from 'app/components/lineup-tile'
 
 interface TrackTileCarouselProps {
   tracks?: number[]
-  uidPrefix: string
   isLoading?: boolean
+  source: QueueSource
+}
+
+const CarouselItem = ({
+  id,
+  pairIndex,
+  trackIndex,
+  source
+}: {
+  id: number
+  pairIndex: number
+  trackIndex: number
+  source: QueueSource
+}) => {
+  const uid = useMemo(() => makeUid(Kind.TRACKS, id, source), [id, source])
+
+  const { togglePlay } = useToggleTrack({
+    id,
+    uid,
+    source
+  })
+
+  return (
+    <TrackTile
+      key={id}
+      id={id}
+      uid={uid}
+      togglePlay={togglePlay}
+      index={pairIndex * 2 + trackIndex}
+    />
+  )
 }
 
 export const TrackTileCarousel = ({
   tracks,
-  uidPrefix,
-  isLoading
+  isLoading,
+  source
 }: TrackTileCarouselProps) => {
   if (isLoading || !tracks) {
     return (
@@ -63,12 +97,12 @@ export const TrackTileCarousel = ({
             mr={pairIndex < trackPairs.length - 1 ? 16 : 0}
           >
             {pair.map((track, trackIndex) => (
-              <TrackTile
+              <CarouselItem
                 key={track}
                 id={track}
-                uid={`${uidPrefix}-${track}`}
-                togglePlay={() => {}}
-                index={pairIndex * 2 + trackIndex}
+                pairIndex={pairIndex}
+                trackIndex={trackIndex}
+                source={source}
               />
             ))}
           </Flex>
