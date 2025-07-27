@@ -89,7 +89,7 @@ export type DesktopCollectionTileProps = {
   hasLoaded: (index: number) => void
   numLoadingSkeletonRows?: number
   isTrending: boolean
-  isFeed: boolean
+  isFeed?: boolean
   source?: ModalSource
 }
 
