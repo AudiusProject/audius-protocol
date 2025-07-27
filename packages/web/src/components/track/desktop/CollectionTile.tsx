@@ -73,7 +73,7 @@ const {
 } = collectionsSocialActions
 const { collectionPage } = route
 
-type CollectionTileProps = {
+export type DesktopCollectionTileProps = {
   uid: UID
   id: ID
   ordered: boolean
@@ -111,7 +111,7 @@ export const CollectionTile = ({
   isTrending,
   isFeed = false,
   source
-}: CollectionTileProps) => {
+}: DesktopCollectionTileProps) => {
   const dispatch = useDispatch()
 
   const { data: partialCollection } = useCollection(collectionId, {

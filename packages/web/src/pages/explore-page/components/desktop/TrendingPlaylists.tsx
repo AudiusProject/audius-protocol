@@ -4,7 +4,8 @@ import { ID, PlaybackSource, Status, UID } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
 import { ClassNames } from '@emotion/react'
 
-import { CollectionTile } from 'components/track/desktop/CollectionTile'
+import { CollectionTile as DesktopCollectionTile } from 'components/track/desktop/CollectionTile'
+import { CollectionTile as MobileCollectionTile } from 'components/track/mobile/CollectionTile'
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -16,7 +17,15 @@ import {
   TILE_WIDTH
 } from './constants'
 
-const CollectionTileSkeleton = ({ size }: { size: TrackTileSize }) => {
+type TileType = typeof DesktopCollectionTile | typeof MobileCollectionTile
+
+const CollectionTileSkeleton = ({
+  size,
+  Tile
+}: {
+  size: TrackTileSize
+  Tile: TileType
+}) => {
   return (
     <ClassNames>
       {({ css }) => (
@@ -28,12 +37,12 @@ const CollectionTileSkeleton = ({ size }: { size: TrackTileSize }) => {
               : MOBILE_COLLECTION_TILE_HEIGHT
           }
         >
-          <CollectionTile
+          <Tile
             hasLoaded={() => {}}
             isTrending={false}
             isFeed={false}
             id={0}
-            containerClassName={css({ width: '100%' })}
+            containerClassName={css({ width: '100%', height: '100%' })}
             numLoadingSkeletonRows={5}
             size={size}
             isLoading={true}
@@ -55,58 +64,61 @@ const CollectionLineupCarousel = ({
   play,
   pause,
   togglePlay,
-  size
+  size,
+  Tile
 }: {
   lineup: UseLineupQueryData['lineup']
   play: (uid: UID, id: ID, source: PlaybackSource) => void
   pause: (uid: UID, id: ID, source: PlaybackSource) => void
   togglePlay: (uid: UID, id: ID, source: PlaybackSource) => void
   size: TrackTileSize
+  Tile: TileType
 }) => {
   return (
     <>
-      {lineup.entries.map((item, index) => (
-        <Flex
-          key={item.id}
-          w={size === TrackTileSize.LARGE ? TILE_WIDTH : MOBILE_TILE_WIDTH}
-          h={
-            size === TrackTileSize.LARGE
-              ? COLLECTION_TILE_HEIGHT
-              : MOBILE_COLLECTION_TILE_HEIGHT
-          }
-        >
-          <ClassNames>
-            {({ css }) => (
-              <CollectionTile
-                ordered={true}
-                size={size}
-                togglePlay={() =>
-                  togglePlay(
-                    item.uid,
-                    item.id,
-                    PlaybackSource.PLAYLIST_TILE_TRACK
-                  )
-                }
-                playTrack={() =>
-                  play(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
-                }
-                pauseTrack={() =>
-                  pause(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
-                }
-                {...item}
-                id={item.id}
-                index={index}
-                isTrending={true}
-                uid={item.uid}
-                isLoading={false}
-                containerClassName={css({ width: '100%' })}
-                hasLoaded={() => {}}
-                isFeed={false}
-              />
-            )}
-          </ClassNames>
-        </Flex>
-      ))}
+      {lineup.entries.map((item, index) => {
+        return (
+          <Flex
+            key={item.id}
+            w={size === TrackTileSize.LARGE ? TILE_WIDTH : MOBILE_TILE_WIDTH}
+            h={
+              size === TrackTileSize.LARGE
+                ? COLLECTION_TILE_HEIGHT
+                : MOBILE_COLLECTION_TILE_HEIGHT
+            }
+          >
+            <ClassNames>
+              {({ css }) => (
+                <Tile
+                  ordered={true}
+                  size={size}
+                  togglePlay={() =>
+                    togglePlay(
+                      item.uid,
+                      item.id,
+                      PlaybackSource.PLAYLIST_TILE_TRACK
+                    )
+                  }
+                  playTrack={() =>
+                    play(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
+                  }
+                  pauseTrack={() =>
+                    pause(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
+                  }
+                  id={item.id}
+                  index={index}
+                  isTrending={true}
+                  uid={item.uid}
+                  isLoading={false}
+                  containerClassName={css({ width: '100%', height: '100%' })}
+                  hasLoaded={() => {}}
+                  isFeed={false}
+                />
+              )}
+            </ClassNames>
+          </Flex>
+        )
+      })}
     </>
   )
 }
@@ -122,6 +134,7 @@ export const TrendingPlaylists = () => {
     togglePlay
   } = useTrendingPlaylists()
   const isLoading = hookIsLoading || lineup.status === Status.LOADING
+  const Tile = isMobile ? MobileCollectionTile : DesktopCollectionTile
 
   if (!isLoading && lineup.entries.length === 0) {
     return null
@@ -131,8 +144,8 @@ export const TrendingPlaylists = () => {
     <Carousel title={messages.trendingPlaylists}>
       {isLoading ? (
         <>
-          <CollectionTileSkeleton size={size} />
-          <CollectionTileSkeleton size={size} />
+          <CollectionTileSkeleton size={size} Tile={Tile} />
+          <CollectionTileSkeleton size={size} Tile={Tile} />
         </>
       ) : (
         <CollectionLineupCarousel
@@ -141,6 +154,7 @@ export const TrendingPlaylists = () => {
           pause={pause}
           togglePlay={togglePlay}
           size={size}
+          Tile={Tile}
         />
       )}
     </Carousel>
