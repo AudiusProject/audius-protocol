@@ -9,10 +9,19 @@ import { useCurrentAccountUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Status } from '~/models/Status'
 import { isNullOrUndefined } from '~/utils'
+import { isResponseError } from '~/utils/error'
 
 import { useArtistCoin } from '../coins/useArtistCoin'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
+
+/**
+ * Checks if the error is a 404 ResponseError from the balance endpoint
+ * which indicates the user has no balance for the token (not a real error)
+ */
+const isNoBalanceError = (error: unknown): boolean => {
+  return isResponseError(error) && error.response.status === 404
+}
 
 export const getTokenBalanceQueryKey = (
   ethAddress: string | null,
@@ -92,8 +101,21 @@ export const useTokenBalance = ({
           decimals: coin.tokenInfo.decimals
         }
       } catch (e) {
+        // Handle specific 404 "no rows in result set" case
+        // This typically means the user has no balance for this token
+        if (isNoBalanceError(e)) {
+          return {
+            balance: new FixedDecimal(
+              BigInt(0),
+              coin?.tokenInfo?.decimals || 0
+            ),
+            decimals: coin?.tokenInfo?.decimals || 0,
+            isEmpty: true
+          }
+        }
+
         console.error(`Error fetching balance for mint ${mint}:`, e)
-        // Return null instead of throwing to prevent infinite loading
+        // Return null for other errors to prevent infinite loading
         return null
       }
     },

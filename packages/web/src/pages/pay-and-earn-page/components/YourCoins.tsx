@@ -2,7 +2,12 @@ import { Fragment, useCallback, useContext } from 'react'
 
 import { env } from 'process'
 
-import { useArtistCoins } from '@audius/common/api'
+import {
+  useUserCoins,
+  useCurrentUserId,
+  useArtistCoin,
+  UserCoin
+} from '@audius/common/api'
 import {
   useFeatureFlag,
   useFormattedTokenBalance,
@@ -20,7 +25,7 @@ import {
   useMedia,
   useTheme
 } from '@audius/harmony'
-import { Coin } from '@audius/sdk'
+import { encodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
@@ -67,7 +72,7 @@ const YourCoinsHeader = () => {
   )
 }
 
-const CoinCardWithBalance = ({ coin }: { coin: Coin }) => {
+const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   const dispatch = useDispatch()
 
   const tokenSymbol = coin.ticker
@@ -86,13 +91,15 @@ const CoinCardWithBalance = ({ coin }: { coin: Coin }) => {
     isTokenPriceLoading
   } = useFormattedTokenBalance(coin.mint)
 
+  const { data: coinData } = useArtistCoin({ mint: coin.mint })
+
   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
 
   if (coin.mint === env.WAUDIO_MINT_ADDRESS) return <AudioCoinCard />
 
   return (
     <CoinCard
-      icon={coin.tokenInfo.logoURI}
+      icon={coinData?.tokenInfo?.logoURI}
       symbol={tokenSymbol ?? ''}
       balance={tokenBalanceFormatted || ''}
       dollarValue={tokenDollarValue || ''}
@@ -109,9 +116,14 @@ export const YourCoins = () => {
     FeatureFlags.WALLET_UI_BUY_SELL
   )
 
-  const { data: artistCoins, isPending: isLoadingCoins } = useArtistCoins()
+  const { data: currentUserId } = useCurrentUserId()
+  const userIdString = currentUserId ? encodeHashId(currentUserId) : ''
 
-  if (isLoadingCoins) {
+  const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
+    userId: userIdString || ''
+  })
+
+  if (isLoadingCoins || !userIdString) {
     return null
   }
 
