@@ -1,5 +1,5 @@
 /**
- * proxy upgrade for DelegateManager to DelegateManagerV2
+ * proxy upgrade for EthRewardsManager to EthRewardsManagerV2
  * uses governance guardian override
  * NOTE this is for local dev only, real deploy will require full governance proposal process
  */

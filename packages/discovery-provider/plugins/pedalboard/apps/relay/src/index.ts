@@ -33,7 +33,7 @@ const main = async () => {
   audiusSdk = sdk({
     appName: 'relay',
     environment:
-      config.environment === ' '
+      config.environment === 'dev'
         ? 'development'
         : config.environment === 'stage'
           ? 'staging'

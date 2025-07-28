@@ -7,13 +7,12 @@ import { useBuySellModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
+  Divider,
   Flex,
   Paper,
   Text,
   useMedia,
-  useTheme,
-  Divider,
-  IconCaretRight
+  useTheme
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
@@ -65,7 +64,7 @@ const YourCoinsHeader = () => {
 
 export const YourCoins = () => {
   const dispatch = useDispatch()
-  const { color, spacing } = useTheme()
+  const { spacing } = useTheme()
   const { isMobile } = useMedia()
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
@@ -98,23 +97,6 @@ export const YourCoins = () => {
             <BonkCoinCard onClick={handleBonkClick} />
           </>
         ) : null}
-      </Flex>
-      <Flex
-        p={isMobile ? spacing.l : spacing.xl}
-        css={{
-          cursor: 'pointer',
-          '&:hover': { backgroundColor: color.background.surface2 }
-        }}
-      >
-        <Flex flex={1} alignItems='center' justifyContent='space-between'>
-          <Flex column gap='xs'>
-            <Text variant='heading' size='m' color='default'>
-              {messages.findMoreCoins}
-            </Text>
-            <Text color='subdued'>{messages.exploreArtistCoins}</Text>
-          </Flex>
-          <IconCaretRight size='l' color='subdued' />
-        </Flex>
       </Flex>
     </Paper>
   )
