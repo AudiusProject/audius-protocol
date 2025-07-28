@@ -44,7 +44,7 @@ export interface Coin {
      * @type {string}
      * @memberof Coin
      */
-    userId: string;
+    ownerId: string;
     /**
      * The number of Audius users holding the coin
      * @type {number}
@@ -77,7 +77,7 @@ export interface Coin {
 export function instanceOfCoin(value: object): value is Coin {
     let isInstance = true;
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
-    isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
+    isInstance = isInstance && "ownerId" in value && value["ownerId"] !== undefined;
     isInstance = isInstance && "members" in value && value["members"] !== undefined;
     isInstance = isInstance && "membersChange24hPercent" in value && value["membersChange24hPercent"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
@@ -98,7 +98,7 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
         
         'ticker': !exists(json, 'ticker') ? undefined : json['ticker'],
         'mint': json['mint'],
-        'userId': json['user_id'],
+        'ownerId': json['owner_id'],
         'members': json['members'],
         'membersChange24hPercent': json['members_change_24h_percent'],
         'createdAt': json['created_at'],
@@ -117,7 +117,7 @@ export function CoinToJSON(value?: Coin | null): any {
         
         'ticker': value.ticker,
         'mint': value.mint,
-        'user_id': value.userId,
+        'owner_id': value.ownerId,
         'members': value.members,
         'members_change_24h_percent': value.membersChange24hPercent,
         'created_at': value.createdAt,
