@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,6 +11,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */; };
+		23194AD02E3813E7009B2F97 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23194ACD2E3813E7009B2F97 /* NotificationService.swift */; };
 		23A43AB92E37E73000CDCDF2 /* RichPushExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 23A43AB12E37E73000CDCDF2 /* RichPushExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */ = {isa = PBXBuildFile; fileRef = 253BCCF92B324974007DC74C /* NSureSDK.m */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
@@ -67,6 +68,8 @@
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
 		1FBFACF443D7D1D743A6B13A /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
+		23194ACC2E3813E7009B2F97 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		23194ACD2E3813E7009B2F97 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		23A43AB12E37E73000CDCDF2 /* RichPushExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RichPushExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		253BCCF82B324974007DC74C /* NSureSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSureSDK.h; path = AudiusReactNative/NSureSDK.h; sourceTree = "<group>"; };
 		253BCCF92B324974007DC74C /* NSureSDK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSureSDK.m; path = AudiusReactNative/NSureSDK.m; sourceTree = "<group>"; };
@@ -94,20 +97,6 @@
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		23A43AC02E37E73000CDCDF2 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 23A43AB02E37E73000CDCDF2 /* RichPushExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		23A43AB22E37E73000CDCDF2 /* RichPushExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (23A43AC02E37E73000CDCDF2 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = RichPushExtension; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
@@ -165,6 +154,15 @@
 			name = AudiusReactNative;
 			sourceTree = "<group>";
 		};
+		23194ACE2E3813E7009B2F97 /* RichPushExtension */ = {
+			isa = PBXGroup;
+			children = (
+				23194ACC2E3813E7009B2F97 /* Info.plist */,
+				23194ACD2E3813E7009B2F97 /* NotificationService.swift */,
+			);
+			path = RichPushExtension;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -191,7 +189,7 @@
 				13B07FAE1A68108700A75B9A /* AudiusReactNative */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* AudiusReactNativeTests */,
-				23A43AB22E37E73000CDCDF2 /* RichPushExtension */,
+				23194ACE2E3813E7009B2F97 /* RichPushExtension */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				9203ADA7911C8949B98165F4 /* Pods */,
@@ -289,12 +287,7 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				23A43AB22E37E73000CDCDF2 /* RichPushExtension */,
-			);
 			name = RichPushExtension;
-			packageProductDependencies = (
-			);
 			productName = RichPushExtension;
 			productReference = 23A43AB12E37E73000CDCDF2 /* RichPushExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -444,13 +437,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -465,13 +454,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -517,6 +502,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23194AD02E3813E7009B2F97 /* NotificationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
