@@ -28,4 +28,4 @@ export const BonkLeaderboardButton = () => {
       {messages.viewLeaderboard}
     </Button>
   )
-} 
+}

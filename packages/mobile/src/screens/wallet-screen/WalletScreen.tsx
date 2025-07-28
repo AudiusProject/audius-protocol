@@ -1,20 +1,23 @@
 import React from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
+
 import { Flex, IconWallet } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 
+import { BonkLeaderboardButton } from './components/BonkLeaderboardButton'
 import { CashWallet } from './components/CashWallet'
 import { YourCoins } from './components/YourCoins'
-import { BonkLeaderboardButton } from './components/BonkLeaderboardButton'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 
 const messages = {
   title: 'WALLET'
 }
 
 export const WalletScreen = () => {
-  const {isEnabled: isArtistCoinsEnabled} = useFeatureFlag(FeatureFlags.ARTIST_COINS)
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   return (
     <Screen
       url='/wallet'

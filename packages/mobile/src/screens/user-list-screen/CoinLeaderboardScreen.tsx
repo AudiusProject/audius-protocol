@@ -1,13 +1,17 @@
 import { useEffect } from 'react'
+
+import { useArtistCoinMembers } from '@audius/common/api'
+import {
+  coinLeaderboardUserListActions,
+  coinLeaderboardUserListSelectors
+} from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { IconTrophy, Text } from '@audius/harmony-native'
-import { coinLeaderboardUserListActions, coinLeaderboardUserListSelectors } from '@audius/common/store'
-import { useArtistCoinMembers } from '@audius/common/api'
-
-import { UserListScreen } from './UserListScreen'
-import { UserList } from './UserList'
 import { useRoute } from 'app/hooks/useRoute'
+
+import { UserList } from './UserList'
+import { UserListScreen } from './UserListScreen'
 
 const messages = {
   title: 'BONK Leaderboard'
@@ -26,7 +30,7 @@ export const CoinLeaderboardScreen = () => {
     if (mint) {
       dispatch(coinLeaderboardUserListActions.setCoinLeaderboard(mint))
     }
-    
+
     return () => {
       // Clean up when component unmounts
       dispatch(coinLeaderboardUserListActions.setCoinLeaderboard(null))
@@ -45,7 +49,7 @@ export const CoinLeaderboardScreen = () => {
         tag='COIN_LEADERBOARD'
         showRank={true}
         renderRightContent={(userId) => {
-          const member = data?.find(m => m.user_id === userId)
+          const member = data?.find((m) => m.user_id === userId)
           return member ? (
             <Text size='s' strength='strong'>
               {member.balance.toLocaleString()}
@@ -55,4 +59,4 @@ export const CoinLeaderboardScreen = () => {
       />
     </UserListScreen>
   )
-} 
+}

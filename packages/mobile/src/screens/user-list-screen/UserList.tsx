@@ -119,9 +119,9 @@ export const UserList = (props: UserListProps) => {
       '_loading' in item ? (
         <UserListItemSkeleton tag={tag} />
       ) : (
-        <MemoizedUserListItem 
-          userId={item.user_id} 
-          tag={tag} 
+        <MemoizedUserListItem
+          userId={item.user_id}
+          tag={tag}
           showRank={showRank}
           rank={showRank ? index + 1 : undefined}
           renderRightContent={renderRightContent}
