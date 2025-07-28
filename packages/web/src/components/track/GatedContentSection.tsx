@@ -255,7 +255,6 @@ const LockedGatedContentSection = ({
         <Text variant='body' strength='strong'>
           {messages.unlockFollowGatedContentPrefix}{' '}
           <UserLink userId={followee.user_id} />
-          {messages.period}
         </Text>
       )
     }

@@ -113,7 +113,6 @@ export const TrackTile = ({
   const isTrackBuffering = isActive && isBuffering
   const isTrackPlaying = isActive && isPlaying
   const isOwner = currentUserId === user_id
-  const hasPreview = !!track?.preview_cid
 
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -128,7 +127,7 @@ export const TrackTile = ({
     has_current_user_saved: isFavorited
   } = trackWithFallback
 
-  const { isFetchingNFTAccess, hasStreamAccess } =
+  const { isFetchingNFTAccess, hasStreamAccess, isPreviewable } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess || isPending
 
@@ -231,7 +230,7 @@ export const TrackTile = ({
         menuRef.current
       )
       if (shouldSkipTogglePlay) return
-      if (trackId && !hasStreamAccess && !hasPreview) {
+      if (trackId && !hasStreamAccess && !isPreviewable) {
         openLockedContentModal()
         return
       }
@@ -239,7 +238,7 @@ export const TrackTile = ({
     },
     [
       togglePlay,
-      hasPreview,
+      isPreviewable,
       uid,
       trackId,
       hasStreamAccess,
@@ -341,7 +340,7 @@ export const TrackTile = ({
             artworkIconClassName='artworkIcon'
             showArtworkIcon={!loading}
             showSkeleton={loading}
-            hasStreamAccess={hasStreamAccess || hasPreview}
+            hasStreamAccess={hasStreamAccess || isPreviewable}
           />
         </Box>
       </Flex>
