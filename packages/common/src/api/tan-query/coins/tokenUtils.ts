@@ -17,7 +17,8 @@ export const transformArtistCoinToTokenInfo = (
     balance: null, // This would come from user's wallet state
     address: artistCoin.mint,
     icon,
-    isStablecoin: artistCoin.ticker === 'USDC'
+    logoURI: tokenInfo?.logoURI,
+    isStablecoin: false // API tokens are never stablecoins, only USDC is (which is frontend-only)
   }
 }
 

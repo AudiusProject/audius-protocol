@@ -15,6 +15,8 @@ import { useArtistCoin } from '../coins/useArtistCoin'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
+import { useUSDCBalance } from './useUSDCBalance'
+
 /**
  * Checks if the error is a 404 ResponseError from the balance endpoint
  * which indicates the user has no balance for the token (not a real error)
@@ -51,13 +53,22 @@ export const useTokenBalance = ({
   isPolling?: boolean
   pollingInterval?: number
 } & QueryOptions) => {
-  const { audiusSdk } = useQueryContext()
+  const { audiusSdk, env } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const ethAddress = user?.wallet ?? null
   const queryClient = useQueryClient()
+  const isUsdc = mint === env.USDC_MINT_ADDRESS
 
-  // Get coin metadata for decimals
+  // Get coin metadata for decimals (only for non-USDC tokens)
   const { data: coin } = useArtistCoin({ mint })
+
+  // Use specialized USDC hook when dealing with USDC
+  const usdcResult = useUSDCBalance({
+    isPolling,
+    pollingInterval,
+    enabled: isUsdc && !!ethAddress,
+    ...queryOptions
+  })
 
   const result = useQuery({
     queryKey: getTokenBalanceQueryKey(ethAddress, mint),
@@ -120,13 +131,47 @@ export const useTokenBalance = ({
       }
     },
     enabled:
-      !!ethAddress && !!mint && !!user?.user_id && !!coin?.tokenInfo?.decimals,
+      !isUsdc &&
+      !!ethAddress &&
+      !!mint &&
+      !!user?.user_id &&
+      !!coin?.tokenInfo?.decimals,
     // TanStack Query's built-in polling - only poll when isPolling is true
     refetchInterval: isPolling ? pollingInterval : false,
     // Prevent refetching when window regains focus during polling to avoid conflicts
     refetchOnWindowFocus: !isPolling,
     ...queryOptions
   })
+
+  // Function to cancel polling by invalidating and refetching the query
+  // This effectively stops the current polling cycle
+  const cancelPolling = useCallback(() => {
+    if (isUsdc) {
+      return usdcResult.cancelPolling()
+    }
+    queryClient.cancelQueries({
+      queryKey: getTokenBalanceQueryKey(ethAddress, mint)
+    })
+  }, [isUsdc, usdcResult, queryClient, ethAddress, mint])
+
+  // If this is USDC, return data from the USDC hook with proper formatting
+  if (isUsdc) {
+    const usdcData = usdcResult.data
+    const formattedData = usdcData
+      ? {
+          balance: new FixedDecimal(usdcData, 6), // USDC has 6 decimals
+          decimals: 6
+        }
+      : null
+
+    return {
+      status: usdcResult.status,
+      data: formattedData,
+      error: usdcResult.error,
+      refresh: usdcResult.refresh,
+      cancelPolling
+    }
+  }
 
   // Map TanStack Query states to the Status enum for API compatibility
   let status = Status.IDLE
@@ -140,15 +185,6 @@ export const useTokenBalance = ({
 
   // For compatibility with existing code
   const data = result.data ?? null
-
-  // Function to cancel polling by invalidating and refetching the query
-  // This effectively stops the current polling cycle
-  const cancelPolling = useCallback(() => {
-    queryClient.cancelQueries({
-      queryKey: getTokenBalanceQueryKey(ethAddress, mint)
-    })
-  }, [queryClient, ethAddress, mint])
-
   return {
     status,
     data,

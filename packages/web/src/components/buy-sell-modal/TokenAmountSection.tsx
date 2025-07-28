@@ -13,7 +13,8 @@ import {
   TextInput,
   TokenAmountInput,
   TokenAmountInputChangeHandler,
-  Popup
+  Popup,
+  Artwork
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import { TooltipPlacement } from 'antd/lib/tooltip'
@@ -22,6 +23,38 @@ import { useFlag } from '../../hooks/useRemoteConfig'
 
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 import { useTokenAmountFormatting } from './hooks'
+
+// Component to render token icon - handles both icon component and logoURI
+const TokenIcon = ({
+  tokenInfo,
+  size = 'l',
+  ...props
+}: {
+  tokenInfo: TokenInfo
+  size?: string
+  [key: string]: any
+}) => {
+  const { spacing } = useTheme()
+  const { icon: IconComponent, logoURI } = tokenInfo
+
+  if (IconComponent) {
+    return <IconComponent size={size} {...props} />
+  }
+
+  if (logoURI) {
+    // Handle different size props for Artwork component
+    const sizeMap: Record<string, { w: number; h: number }> = {
+      l: { w: spacing.unit6, h: spacing.unit6 },
+      '4xl': { w: spacing.unit16, h: spacing.unit16 }
+    }
+
+    const dimensions = sizeMap[size] || { w: spacing.unit6, h: spacing.unit6 }
+
+    return <Artwork src={logoURI} {...dimensions} borderWidth={0} {...props} />
+  }
+
+  return null
+}
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -40,9 +73,8 @@ const DefaultBalanceSection = ({
   tooltipPlacement
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
-  const { icon: TokenIcon } = tokenInfo
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
     return null
   }
 
@@ -56,7 +88,11 @@ const DefaultBalanceSection = ({
       alignSelf='stretch'
     >
       <Flex alignItems='center' gap='xs'>
-        <TokenIcon size='l' css={{ borderRadius: cornerRadius.circle }} />
+        <TokenIcon
+          tokenInfo={tokenInfo}
+          size='l'
+          css={{ borderRadius: cornerRadius.circle }}
+        />
         <Text variant='heading' size='s' color='subdued'>
           {messages.available}
         </Text>
@@ -95,9 +131,9 @@ const TokenSelectionPopup = ({
   return (
     <Flex direction='column' gap='xs' p='s'>
       {availableTokens.map((token) => {
-        const { icon: TokenIcon, symbol, name } = token
+        const { symbol, name } = token
 
-        if (!TokenIcon) return null
+        if (!token.icon && !token.logoURI) return null
 
         return (
           <Button
@@ -113,7 +149,7 @@ const TokenSelectionPopup = ({
             }}
           >
             <Flex gap='s' alignItems='center'>
-              <TokenIcon size='l' hex />
+              <TokenIcon tokenInfo={token} size='l' hex />
               <Flex direction='column' alignItems='flex-start'>
                 <Text variant='body' size='s' strength='strong'>
                   {symbol}
@@ -138,7 +174,7 @@ const StackedBalanceSection = ({
   onTokenChange,
   isConvertFlow = false
 }: BalanceSectionProps) => {
-  const { icon: TokenIcon, symbol } = tokenInfo
+  const { symbol } = tokenInfo
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
 
@@ -160,7 +196,7 @@ const StackedBalanceSection = ({
     setIsPopupVisible(false)
   }, [])
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
     return null
   }
 
@@ -197,7 +233,7 @@ const StackedBalanceSection = ({
           w='100%'
         >
           <Flex gap='s' alignItems='center'>
-            <TokenIcon size='4xl' hex />
+            <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
             <Flex direction='column'>
               <Flex alignSelf='flex-start'>
                 <Text variant='heading' size='s' color='subdued'>
@@ -237,9 +273,9 @@ const OldStackedBalanceSection = ({
   tokenInfo,
   isStablecoin
 }: BalanceSectionProps) => {
-  const { icon: TokenIcon, symbol } = tokenInfo
+  const { symbol } = tokenInfo
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
     return null
   }
 
@@ -263,7 +299,7 @@ const OldStackedBalanceSection = ({
             {messages.stackedBalance(formattedAvailableBalance)}
           </Text>
         </Flex>
-        <TokenIcon size='4xl' hex />
+        <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
       </Flex>
     </Flex>
   )
@@ -285,17 +321,22 @@ const CryptoAmountSection = ({
   verticalLayout?: boolean
 }) => {
   const { spacing } = useTheme()
-  const { icon: TokenIcon, symbol } = tokenInfo
+  const { symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
-  if (!TokenIcon) {
+  if (!tokenInfo.icon && !tokenInfo.logoURI) {
     return null
   }
 
   if (verticalLayout) {
     return (
       <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-        <TokenIcon width={spacing.unit16} height={spacing.unit16} hex />
+        <TokenIcon
+          tokenInfo={tokenInfo}
+          width={spacing.unit16}
+          height={spacing.unit16}
+          hex
+        />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {formattedAmount}
@@ -315,7 +356,12 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-      <TokenIcon width={spacing.unit16} height={spacing.unit16} hex />
+      <TokenIcon
+        tokenInfo={tokenInfo}
+        width={spacing.unit16}
+        height={spacing.unit16}
+        hex
+      />
       <Flex direction='column'>
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <Text variant='heading' size='l'>
@@ -361,7 +407,7 @@ export const TokenAmountSection = ({
   const { spacing } = useTheme()
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
-  const { icon: TokenIcon, symbol, isStablecoin } = tokenInfo
+  const { symbol, isStablecoin } = tokenInfo
 
   const { formattedAvailableBalance, formattedAmount } =
     useTokenAmountFormatting({
@@ -532,10 +578,10 @@ export const TokenAmountSection = ({
   ])
 
   const titleText = useMemo(() => {
-    if (isStablecoin && !isInput && TokenIcon) {
+    if (isStablecoin && !isInput && (tokenInfo.icon || tokenInfo.logoURI)) {
       return (
         <Flex alignItems='center' gap='s'>
-          <TokenIcon size='l' />
+          <TokenIcon tokenInfo={tokenInfo} size='l' />
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
@@ -564,7 +610,7 @@ export const TokenAmountSection = ({
         {title}
       </Text>
     )
-  }, [TokenIcon, isInput, isStablecoin, title, tooltipPlacement, isDefault])
+  }, [tokenInfo, isInput, isStablecoin, title, tooltipPlacement, isDefault])
 
   return (
     <Flex direction='column' gap='m'>

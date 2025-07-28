@@ -1,14 +1,10 @@
 import { useMemo } from 'react'
 
-import {
-  useAudioBalance,
-  useTokenBalance,
-  getTokenMintName
-} from '@audius/common/api'
+import { useAudioBalance, useTokenBalance } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { TokenInfo } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 
 import type { BalanceConfig } from '../types'
 
@@ -31,13 +27,13 @@ export const useTokenBalanceManager = (
   // Fetch balance for input token
   const { data: inputTokenBalanceData, status: inputTokenBalanceStatus } =
     useTokenBalance({
-      mint: getTokenMintName(inputToken.symbol)
+      mint: inputToken.address
     })
 
   // Fetch balance for output token
   const { data: outputTokenBalanceData, status: outputTokenBalanceStatus } =
     useTokenBalance({
-      mint: getTokenMintName(outputToken.symbol)
+      mint: outputToken.address
     })
 
   // Determine loading state for input token
@@ -68,9 +64,9 @@ export const useTokenBalanceManager = (
       } else {
         if (
           inputTokenBalanceStatus === Status.SUCCESS &&
-          inputTokenBalanceData
+          inputTokenBalanceData?.balance
         ) {
-          return Number(new FixedDecimal(inputTokenBalanceData.toString()))
+          return Number(inputTokenBalanceData.balance.toString())
         }
       }
       return undefined
@@ -93,9 +89,9 @@ export const useTokenBalanceManager = (
       } else {
         if (
           outputTokenBalanceStatus === Status.SUCCESS &&
-          outputTokenBalanceData
+          outputTokenBalanceData?.balance
         ) {
-          return Number(new FixedDecimal(outputTokenBalanceData.toString()))
+          return Number(outputTokenBalanceData.balance.toString())
         }
       }
       return undefined

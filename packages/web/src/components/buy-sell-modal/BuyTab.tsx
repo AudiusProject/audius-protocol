@@ -1,14 +1,9 @@
 import { useMemo } from 'react'
 
-import {
-  useTokenBalance,
-  useTokenPrice,
-  getTokenMintName
-} from '@audius/common/api'
+import { useTokenBalance, useTokenPrice } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { TokenPair } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
 
@@ -38,7 +33,7 @@ export const BuyTab = ({
   const { baseToken, quoteToken } = tokenPair
 
   const { status: balanceStatus, data: tokenBalanceData } = useTokenBalance({
-    mint: getTokenMintName('USDC')
+    mint: quoteToken.address
   })
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
@@ -53,8 +48,8 @@ export const BuyTab = ({
 
   const getBalance = useMemo(() => {
     return () => {
-      if (balanceStatus === Status.SUCCESS && tokenBalanceData) {
-        return Number(new FixedDecimal(tokenBalanceData.toString()))
+      if (balanceStatus === Status.SUCCESS && tokenBalanceData?.balance) {
+        return Number(tokenBalanceData.balance.toString())
       }
       return undefined
     }
