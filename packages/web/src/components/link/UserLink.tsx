@@ -1,7 +1,7 @@
 import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { IconSize, Text, useTheme, Flex, TextSize } from '@audius/harmony'
+import { IconSize, Text, useTheme, Flex } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -14,7 +14,6 @@ const { profilePage } = route
 
 type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID | undefined
-  textSize?: TextSize
   badgeSize?: IconSize
   popover?: boolean
   popoverMount?: MountPlacement
@@ -30,7 +29,6 @@ export const UserLink = (props: UserLinkProps) => {
   const {
     userId,
     badgeSize = 's',
-    textSize = 'm',
     popover,
     popoverMount,
     children,
@@ -86,9 +84,7 @@ export const UserLink = (props: UserLinkProps) => {
         }}
         {...other}
       >
-        <Text ellipses size={textSize}>
-          {name}
-        </Text>
+        <Text ellipses>{name}</Text>
       </TextLink>
       {badges}
       {children}
@@ -121,9 +117,7 @@ export const UserLink = (props: UserLinkProps) => {
           mount={popoverMount}
         >
           <TextLink to={url} {...other}>
-            <Text ellipses size={textSize}>
-              {name}
-            </Text>
+            <Text ellipses>{name}</Text>
           </TextLink>
         </ArtistPopover>
         {badges}

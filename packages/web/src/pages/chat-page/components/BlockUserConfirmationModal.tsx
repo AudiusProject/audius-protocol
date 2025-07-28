@@ -30,7 +30,7 @@ const messages = {
   content: (user: User, isReport?: boolean) => (
     <>
       Are you sure you want to {isReport ? 'report' : 'block'}{' '}
-      <UserLink userId={user.user_id} textSize='l' />{' '}
+      <UserLink userId={user.user_id} size='l' />{' '}
       {isReport
         ? 'for abuse? They will be blocked from sending you new messages.'
         : 'from sending messages to your inbox?'}
