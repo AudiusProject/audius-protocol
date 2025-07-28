@@ -68,6 +68,14 @@ type UserListProps = {
    * Tag for the UserListItem component
    */
   tag: string
+  /**
+   * Whether to show ranks (1, 2, 3, etc.) next to users
+   */
+  showRank?: boolean
+  /**
+   * Function to render the right content for each user row
+   */
+  renderRightContent?: (userId: ID, index: number) => React.ReactNode
 }
 
 export const UserList = (props: UserListProps) => {
@@ -77,7 +85,9 @@ export const UserList = (props: UserListProps) => {
     isFetchingNextPage,
     isPending,
     fetchNextPage,
-    tag
+    tag,
+    showRank = false,
+    renderRightContent
   } = props
   const { data: currentUserId } = useCurrentUserId()
   const styles = useStyles()
@@ -105,13 +115,19 @@ export const UserList = (props: UserListProps) => {
   }, [data, isPending, isFetchingNextPage, skeletonData])
 
   const renderItem: ListRenderItem<User | SkeletonItem> = useCallback(
-    ({ item }) =>
+    ({ item, index }) =>
       '_loading' in item ? (
         <UserListItemSkeleton tag={tag} />
       ) : (
-        <MemoizedUserListItem userId={item.user_id} tag={tag} />
+        <MemoizedUserListItem 
+          userId={item.user_id} 
+          tag={tag} 
+          showRank={showRank}
+          rank={showRank ? index + 1 : undefined}
+          renderRightContent={renderRightContent}
+        />
       ),
-    [tag]
+    [tag, showRank, renderRightContent]
   )
 
   const getItemLayout = useCallback(
