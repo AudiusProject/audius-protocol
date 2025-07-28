@@ -30,7 +30,6 @@ export let wallets: WalletManager
 export let audiusSdk: AudiusSdk
 
 const main = async () => {
-  console.log('config', config)
   audiusSdk = sdk({
     appName: 'relay',
     environment:
