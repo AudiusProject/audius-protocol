@@ -107,9 +107,10 @@ platform :ios do
       xcargs: settings_to_override,
       export_method: "app-store",
       export_options: {
-          provisioningProfiles: {
-              appId => provisioningProfile
-          }
+        signingStyle: "manual",
+        provisioningProfiles: {
+          appId => provisioningProfile,
+        }
       }
     )
   end
