@@ -69,7 +69,7 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
         <DynamicImage wrapperClassName={styles.trackArtwork} image={image} />
         <div className={styles.trackInfo}>
           <p className={styles.trackName}>{title}</p>
-          {user ? <UserLink userId={user.user_id} textSize='s' /> : null}
+          {user ? <UserLink userId={user.user_id} size='s' /> : null}
         </div>
       </div>
       <Button

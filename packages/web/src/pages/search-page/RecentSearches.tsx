@@ -160,7 +160,7 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
             &nbsp;
           </Text>
           <UserLink
-            textSize='xs'
+            size='xs'
             userId={user.user_id}
             variant='subdued'
             badgeSize='2xs'
@@ -234,7 +234,7 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
             &nbsp;
           </Text>
           <UserLink
-            textSize='xs'
+            size='xs'
             userId={playlist_owner_id}
             variant='subdued'
             badgeSize='2xs'
