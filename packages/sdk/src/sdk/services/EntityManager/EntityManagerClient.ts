@@ -115,8 +115,8 @@ export class EntityManagerClient implements EntityManagerService {
         senderAddress
       })
     })
-    const jsonResponse = await response.json()
     if (response.ok) {
+      const jsonResponse = await response.json()
       if (!skipConfirmation) {
         await this.confirmWrite({
           blockHash: jsonResponse.receipt.blockHash,

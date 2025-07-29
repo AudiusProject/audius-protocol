@@ -34,10 +34,15 @@ const useStyles = makeStyles(({ spacing }) => ({
 type UserListItemProps = {
   tag: string
   userId: ID
+  // Add optional rank display
+  showRank?: boolean
+  rank?: number
+  // Add optional right content renderer
+  renderRightContent?: (userId: ID, index: number) => React.ReactNode
 }
 
 export const UserListItem = (props: UserListItemProps) => {
-  const { tag, userId } = props
+  const { tag, userId, showRank, rank, renderRightContent } = props
   const { data: user } = useUser(userId, {
     select: (user) => pick(user, ['handle', 'follower_count'])
   })
@@ -63,9 +68,14 @@ export const UserListItem = (props: UserListItemProps) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <Flex row gap='s'>
+        <Flex row gap='s' alignItems='center'>
+          {showRank && rank && (
+            <Text size='l' strength='strong' style={{ minWidth: 30 }}>
+              {rank}
+            </Text>
+          )}
           <ProfilePicture userId={userId} size='large' />
-          <Flex gap='s'>
+          <Flex gap='s' flex={1}>
             <Flex>
               <UserLink userId={userId} strength='strong' />
               <Text size='s'>@{handle}</Text>
@@ -92,8 +102,13 @@ export const UserListItem = (props: UserListItemProps) => {
               <SupporterInfo userId={userId} />
             ) : null}
           </Flex>
+          {renderRightContent && (
+            <Flex alignItems='center'>
+              {renderRightContent(userId, rank ? rank - 1 : 0)}
+            </Flex>
+          )}
         </Flex>
-        {currentUserId !== userId ? (
+        {currentUserId !== userId && !renderRightContent ? (
           <FollowButton
             variant='pill'
             userId={userId}

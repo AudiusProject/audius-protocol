@@ -57,7 +57,8 @@ import {
   MutualsScreen,
   RelatedArtistsScreen,
   TopSupportersScreen,
-  SupportingUsersScreen
+  SupportingUsersScreen,
+  CoinLeaderboardScreen
 } from 'app/screens/user-list-screen'
 import { WalletScreen } from 'app/screens/wallet-screen'
 
@@ -92,6 +93,7 @@ export type AppTabScreenParamList = {
   SupportingUsers: { userId: ID }
   TagSearch: { query: string }
   TopSupporters: { userId: ID; source: TipSource }
+  CoinLeaderboard: { mint: string }
   NotificationUsers: {
     notification: any
     notificationType: NotificationType
@@ -235,6 +237,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='Reposts' component={RepostsScreen} />
       <Stack.Screen name='TopSupporters' component={TopSupportersScreen} />
       <Stack.Screen name='SupportingUsers' component={SupportingUsersScreen} />
+      <Stack.Screen name='CoinLeaderboard' component={CoinLeaderboardScreen} />
 
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />

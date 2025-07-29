@@ -33,6 +33,18 @@ export interface UserCoin {
      */
     ticker: string;
     /**
+     * The number of decimals for the coin
+     * @type {number}
+     * @memberof UserCoin
+     */
+    decimals: number;
+    /**
+     * The ID of the user associated with the coin
+     * @type {string}
+     * @memberof UserCoin
+     */
+    ownerId: string;
+    /**
      * The balance of the coin in the user's account (in wei)
      * @type {number}
      * @memberof UserCoin
@@ -53,6 +65,8 @@ export function instanceOfUserCoin(value: object): value is UserCoin {
     let isInstance = true;
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
     isInstance = isInstance && "ticker" in value && value["ticker"] !== undefined;
+    isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
+    isInstance = isInstance && "ownerId" in value && value["ownerId"] !== undefined;
     isInstance = isInstance && "balance" in value && value["balance"] !== undefined;
     isInstance = isInstance && "balanceUsd" in value && value["balanceUsd"] !== undefined;
 
@@ -71,6 +85,8 @@ export function UserCoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'mint': json['mint'],
         'ticker': json['ticker'],
+        'decimals': json['decimals'],
+        'ownerId': json['owner_id'],
         'balance': json['balance'],
         'balanceUsd': json['balance_usd'],
     };
@@ -87,6 +103,8 @@ export function UserCoinToJSON(value?: UserCoin | null): any {
         
         'mint': value.mint,
         'ticker': value.ticker,
+        'decimals': value.decimals,
+        'owner_id': value.ownerId,
         'balance': value.balance,
         'balance_usd': value.balanceUsd,
     };
