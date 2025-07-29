@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux'
 
 import { IconLock } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import { DetailsTileGatedAccess } from 'app/components/details-tile/DetailsTilePremiumAccess'
+import { DetailsTileGatedAccess } from 'app/components/details-tile/DetailsTileGatedAccess'
 import { NativeDrawer } from 'app/components/drawer'
 import { TrackDetailsTile } from 'app/components/track-details-tile/TrackDetailsTile'
 import { makeStyles, flexRowCentered } from 'app/styles'
