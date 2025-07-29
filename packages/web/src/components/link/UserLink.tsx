@@ -1,7 +1,7 @@
 import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { IconSize, Text, useTheme, Flex, TextSize } from '@audius/harmony'
+import { IconSize, Text, useTheme, Flex } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -75,8 +75,7 @@ export const UserLink = (props: UserLinkProps) => {
         columnGap: spacing.xs,
         alignItems: 'center',
         lineHeight: 'normal',
-        display: 'inline-flex',
-        width: '100%'
+        display: 'inline-flex'
       }}
     >
       <TextLink
@@ -107,8 +106,7 @@ export const UserLink = (props: UserLinkProps) => {
           columnGap: spacing.xs,
           alignItems: 'center',
           lineHeight: 'normal',
-          display: 'inline-flex',
-          width: '100%'
+          display: 'inline-flex'
         }}
       >
         <ArtistPopover
