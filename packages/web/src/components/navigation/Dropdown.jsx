@@ -21,10 +21,9 @@ const Dropdown = ({
   textClassName,
   focused: focusedProp
 }) => {
-  const [internalIndex, setInternalIndex] = useState(defaultIndex)
+  const [index, setIndex] = useState(defaultIndex)
   const [internalFocused, setInternalFocused] = useState(false)
 
-  const index = defaultIndex !== undefined ? defaultIndex : internalIndex
   const focused = focusedProp !== undefined ? focusedProp : internalFocused
 
   const handleVisibleChange = (visible) => {
@@ -32,7 +31,7 @@ const Dropdown = ({
   }
 
   const handleClick = (clickedIndex, callback) => {
-    setInternalIndex(clickedIndex)
+    setIndex(clickedIndex)
     setInternalFocused(false)
     if (callback) callback()
     onSelect?.(menu?.items[clickedIndex]?.text)
