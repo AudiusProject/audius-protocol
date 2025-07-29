@@ -270,7 +270,7 @@ describe('UsersApi', () => {
     it('creates and relays a tip transaction with properly formed instructions', async () => {
       const senderUserId = '7eP5n'
       const receiverUserId = 'ML51L'
-      const amount = 1
+      const amount = BigInt(100000000)
       const outputAmount = BigInt(100000000) // wAUDIO has 8 decimals
       // Arbitrary
       const ethWallets: Record<string, string> = {
