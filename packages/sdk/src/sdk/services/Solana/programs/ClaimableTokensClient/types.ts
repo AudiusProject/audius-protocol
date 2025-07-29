@@ -71,8 +71,8 @@ export const CreateSecpSchema = z
     ethWallet: z.string().optional(),
     /** The public key of the destination account. */
     destination: PublicKeySchema,
-    /** The amount to send, either in "lamports"/"wei" (bigint) or decimal number. */
-    amount: z.union([z.bigint(), z.number()]),
+    /** The amount to send, in "lamports"/"wei" (bigint). */
+    amount: z.bigint(),
     /** The name of the token mint. */
     mint: MintSchema,
     /** The index of this instruction within the transaction. */

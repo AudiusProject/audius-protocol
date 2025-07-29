@@ -18,7 +18,7 @@ export type PaymentRouterClientConfig =
 
 export const CreateTransferInstructionSchema = z.object({
   mint: MintSchema,
-  total: z.union([z.bigint(), z.number()]),
+  total: z.bigint(),
   sourceWallet: PublicKeySchema
 })
 
@@ -29,7 +29,7 @@ export type CreateTransferInstructionRequest = z.input<
 export const CreateRouteInstructionSchema = z.object({
   mint: MintSchema,
   splits: z.array(z.object({ wallet: PublicKeySchema, amount: z.bigint() })),
-  total: z.union([z.bigint(), z.number()])
+  total: z.bigint()
 })
 
 export type CreateRouteInstructionRequest = z.input<
