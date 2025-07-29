@@ -22,8 +22,7 @@ interface MoodsGridProps {
 
 export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
   const { spacing } = useTheme()
-
-  const [, setCategory] = useSearchCategory()
+  const [category, setCategory] = useSearchCategory()
   const [, setFilters] = useSearchFilters()
 
   const moodEntries = useMemo(
@@ -33,10 +32,12 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
 
   const handleMoodPress = useCallback(
     (moodLabel: Mood) => {
-      setCategory('tracks')
+      if (category === 'all') {
+        setCategory('tracks')
+      }
       setFilters({ mood: moodLabel })
     },
-    [setCategory, setFilters]
+    [setFilters, setCategory, category]
   )
 
   if (externalLoading) {
@@ -44,7 +45,7 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
   }
   return (
     <ExploreSection
-      title={messages.exploreByMood}
+      title={messages.exploreByMood(category)}
       centered
       isLoading={externalLoading}
     >

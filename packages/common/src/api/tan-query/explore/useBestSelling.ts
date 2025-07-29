@@ -1,4 +1,4 @@
-import { HashId, Id, BestSellingItem } from '@audius/sdk'
+import { HashId, Id, BestSellingItem, full } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { userCollectionMetadataFromSDK } from '~/adapters'
@@ -17,29 +17,35 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
 export type UseBestSellingArgs = {
   userId: ID | null | undefined
+  type?: full.GetFullBestSellingTypeEnum
 }
 
 export type BestSellingItemWithId = BestSellingItem & { id: ID }
 
-export const getBestSellingQueryKey = ({ userId }: UseBestSellingArgs) => {
-  return [QUERY_KEYS.bestSellingAlbums, userId] as unknown as QueryKey<
+export const getBestSellingQueryKey = ({
+  userId,
+  type
+}: UseBestSellingArgs) => {
+  return [QUERY_KEYS.bestSellingAlbums, userId, type] as unknown as QueryKey<
     BestSellingItemWithId[]
   >
 }
 
 export const useBestSelling = <TResult = BestSellingItemWithId[]>(
+  { type }: { type?: full.GetFullBestSellingTypeEnum } = { type: 'all' },
   options?: SelectableQueryOptions<BestSellingItemWithId[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   return useQuery({
-    queryKey: getBestSellingQueryKey({ userId: currentUserId }),
+    queryKey: getBestSellingQueryKey({ userId: currentUserId, type }),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [], related = {} } =
         await sdk.full.explore.getFullBestSelling({
-          userId: currentUserId ? Id.parse(currentUserId) : undefined
+          userId: currentUserId ? Id.parse(currentUserId) : undefined,
+          type
         })
 
       const tracks = transformAndCleanList(

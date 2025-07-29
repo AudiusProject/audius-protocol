@@ -17,7 +17,7 @@ export const ExploreSection = ({
   children
 }: ExploreSectionProps) => {
   return (
-    <Flex mb='l' justifyContent={centered ? 'center' : 'flex-start'} gap='m'>
+    <Flex justifyContent={centered ? 'center' : 'flex-start'} gap='m'>
       <Text variant='title' size='l' textAlign={centered ? 'center' : 'left'}>
         {title}
       </Text>
