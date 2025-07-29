@@ -9,6 +9,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
@@ -49,8 +50,10 @@ const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
 const BannerSection = ({ mint }: AssetDetailProps) => {
   const { data: coin, isLoading } = useArtistCoin({ mint })
 
-  // Always call hooks at the top level
-  const userId = coin?.userId ? parseInt(coin.userId) : undefined
+  const userId = coin?.ownerId
+    ? (decodeHashId(coin.ownerId) ?? undefined)
+    : undefined
+
   const { image: coverPhoto } = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_640

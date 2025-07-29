@@ -137,7 +137,7 @@ export const YourCoins = () => {
         alignSelf='stretch'
       >
         {artistCoins?.map((coin, index) => {
-          if (coin.ticker === '$USDC') return null
+          if (coin.ticker === 'USDC') return null
           return (
             <Fragment key={coin.mint}>
               {index > 0 && <Divider orientation='vertical' />}

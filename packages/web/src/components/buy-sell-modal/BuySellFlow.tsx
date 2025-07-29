@@ -11,7 +11,9 @@ import {
   useSwapDisplayData,
   BuySellTab,
   Screen,
-  TokenInfo
+  useTokenStates,
+  useCurrentTokenPair,
+  useAvailableTokens
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
@@ -93,158 +95,44 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const selectedPair = supportedTokenPairs[0]
 
-  // State for dynamic token selection - separate states for each tab
-  // Initialize with default values, will be updated when token pairs load
-  const [buyTabTokens, setBuyTabTokens] = useState<{
-    baseToken: string
-    quoteToken: string
-  }>({
-    baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'USDC' // USDC by default
-  })
-
-  const [sellTabTokens, setSellTabTokens] = useState<{
-    baseToken: string
-    quoteToken: string
-  }>({
-    baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'USDC' // USDC by default
-  })
-
-  const [convertTabTokens, setConvertTabTokens] = useState<{
-    baseToken: string
-    quoteToken: string
-  }>({
-    baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'BONK' // BONK by default for convert tab (excluding USDC)
-  })
-
-  // Update token states when selected pair becomes available
-  useEffect(() => {
-    if (selectedPair && selectedPair.baseToken && selectedPair.quoteToken) {
-      setBuyTabTokens({
-        baseToken: selectedPair.baseToken.symbol,
-        quoteToken: selectedPair.quoteToken.symbol
-      })
-      setSellTabTokens({
-        baseToken: selectedPair.baseToken.symbol,
-        quoteToken: selectedPair.quoteToken.symbol
-      })
-      setConvertTabTokens((prev) => ({
-        baseToken: selectedPair.baseToken.symbol,
-        quoteToken: prev.quoteToken // Keep BONK for convert tab
-      }))
-    }
-  }, [selectedPair])
+  // Use custom hooks for token state management
+  const {
+    getCurrentTabTokens,
+    handleInputTokenChange: handleInputTokenChangeInternal,
+    handleOutputTokenChange: handleOutputTokenChangeInternal
+  } = useTokenStates(selectedPair)
 
   // Get current tab's token symbols
-  const currentTabTokens =
-    activeTab === 'buy'
-      ? buyTabTokens
-      : activeTab === 'sell'
-        ? sellTabTokens
-        : convertTabTokens
+  const currentTabTokens = getCurrentTabTokens(activeTab)
   const baseTokenSymbol = currentTabTokens.baseToken
   const quoteTokenSymbol = currentTabTokens.quoteToken
 
-  // Handle token changes
+  // Handle token changes with transaction reset
   const handleInputTokenChange = (symbol: string) => {
-    if (activeTab === 'sell') {
-      // On sell tab, input token change means base token change
-      setSellTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    } else if (activeTab === 'buy') {
-      // On buy tab, input token change means quote token change
-      setBuyTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
-    } else {
-      // On convert tab, input token change means base token change
-      setConvertTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    }
-    // Reset transaction data when tokens change
+    handleInputTokenChangeInternal(symbol, activeTab)
     resetTransactionData()
   }
 
   const handleOutputTokenChange = (symbol: string) => {
-    if (activeTab === 'buy') {
-      // On buy tab, output token change means base token change
-      setBuyTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    } else if (activeTab === 'sell') {
-      // On sell tab, output token change means quote token change
-      setSellTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
-    } else {
-      // On convert tab, output token change means quote token change
-      setConvertTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
-    }
-    // Reset transaction data when tokens change
+    handleOutputTokenChangeInternal(symbol, activeTab)
     resetTransactionData()
   }
 
   // Get all available tokens
-  const availableTokens = useMemo(() => {
-    if (isTokenDataLoading || Object.keys(tokens).length === 0) {
-      return []
-    }
-
-    const tokensSet = new Set<string>()
-    supportedTokenPairs.forEach((pair) => {
-      tokensSet.add(pair.baseToken.symbol)
-      tokensSet.add(pair.quoteToken.symbol)
-    })
-    return Array.from(tokensSet)
-      .map((symbol) => Object.values(tokens).find((t) => t.symbol === symbol))
-      .filter(Boolean) as TokenInfo[]
-  }, [tokens, supportedTokenPairs, isTokenDataLoading])
+  const availableTokens = useAvailableTokens({
+    tokens,
+    supportedTokenPairs,
+    isTokenDataLoading
+  })
 
   // Create current token pair based on selected base and quote tokens
-  const currentTokenPair = useMemo(() => {
-    // Handle both regular and $ prefixed symbols from API
-    const baseTokenInfo = availableTokens.find(
-      (t) =>
-        t.symbol === baseTokenSymbol ||
-        t.symbol === `$${baseTokenSymbol}` ||
-        t.symbol === baseTokenSymbol.replace('$', '')
-    )
-    const quoteTokenInfo = availableTokens.find(
-      (t) =>
-        t.symbol === quoteTokenSymbol ||
-        t.symbol === `$${quoteTokenSymbol}` ||
-        t.symbol === quoteTokenSymbol.replace('$', '')
-    )
-
-    if (!baseTokenInfo || !quoteTokenInfo) {
-      return selectedPair || null
-    }
-
-    // Find existing pair that matches our tokens
-    // Handle symbol variations for pair matching
-    const pair = supportedTokenPairs.find((p) => {
-      const baseMatch =
-        p.baseToken.symbol === baseTokenSymbol ||
-        p.baseToken.symbol === `$${baseTokenSymbol}` ||
-        p.baseToken.symbol === baseTokenSymbol.replace('$', '')
-      const quoteMatch =
-        p.quoteToken.symbol === quoteTokenSymbol ||
-        p.quoteToken.symbol === `$${quoteTokenSymbol}` ||
-        p.quoteToken.symbol === quoteTokenSymbol.replace('$', '')
-      return baseMatch && quoteMatch
-    })
-
-    if (pair) {
-      return pair
-    }
-
-    // Create a dynamic pair if no exact match found
-    return {
-      baseToken: baseTokenInfo,
-      quoteToken: quoteTokenInfo,
-      exchangeRate: null
-    }
-  }, [
+  const currentTokenPair = useCurrentTokenPair({
     baseTokenSymbol,
     quoteTokenSymbol,
     availableTokens,
     selectedPair,
     supportedTokenPairs
-  ])
+  })
 
   const swapTokens = useMemo(() => {
     // Return safe defaults if currentTokenPair is not available

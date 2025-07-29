@@ -1,12 +1,11 @@
 import { useMemo } from 'react'
 
-import { transformArtistCoinsToTokenInfoMap } from '@audius/common/src/api/tan-query/coins/tokenUtils'
-import { useArtistCoins } from '@audius/common/src/api/tan-query/coins/useArtistCoins'
-import { useQueryContext } from '@audius/common/src/api/tan-query/utils'
 import {
-  TokenInfo,
-  TokenPair
-} from '@audius/common/src/store/ui/buy-sell/types'
+  transformArtistCoinsToTokenInfoMap,
+  useArtistCoins,
+  useQueryContext
+} from '@audius/common/api'
+import { TokenInfo, TokenPair } from '@audius/common/store'
 import {
   IconLogoCircleUSDC,
   IconTokenAUDIO,

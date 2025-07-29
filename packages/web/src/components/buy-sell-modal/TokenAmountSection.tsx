@@ -13,48 +13,16 @@ import {
   TextInput,
   TokenAmountInput,
   TokenAmountInputChangeHandler,
-  Popup,
-  Artwork
+  Popup
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { useFlag } from '../../hooks/useRemoteConfig'
 
+import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 import { useTokenAmountFormatting } from './hooks'
-
-// Component to render token icon - handles both icon component and logoURI
-const TokenIcon = ({
-  tokenInfo,
-  size = 'l',
-  ...props
-}: {
-  tokenInfo: TokenInfo
-  size?: string
-  [key: string]: any
-}) => {
-  const { spacing } = useTheme()
-  const { icon: IconComponent, logoURI } = tokenInfo
-
-  if (IconComponent) {
-    return <IconComponent size={size} {...props} />
-  }
-
-  if (logoURI) {
-    // Handle different size props for Artwork component
-    const sizeMap: Record<string, { w: number; h: number }> = {
-      l: { w: spacing.unit6, h: spacing.unit6 },
-      '4xl': { w: spacing.unit16, h: spacing.unit16 }
-    }
-
-    const dimensions = sizeMap[size] || { w: spacing.unit6, h: spacing.unit6 }
-
-    return <Artwork src={logoURI} {...dimensions} borderWidth={0} {...props} />
-  }
-
-  return null
-}
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -320,7 +288,6 @@ const CryptoAmountSection = ({
   noPadding?: boolean
   verticalLayout?: boolean
 }) => {
-  const { spacing } = useTheme()
   const { symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
@@ -331,12 +298,7 @@ const CryptoAmountSection = ({
   if (verticalLayout) {
     return (
       <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-        <TokenIcon
-          tokenInfo={tokenInfo}
-          width={spacing.unit16}
-          height={spacing.unit16}
-          hex
-        />
+        <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {formattedAmount}
@@ -356,12 +318,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-      <TokenIcon
-        tokenInfo={tokenInfo}
-        width={spacing.unit16}
-        height={spacing.unit16}
-        hex
-      />
+      <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
       <Flex direction='column'>
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <Text variant='heading' size='l'>

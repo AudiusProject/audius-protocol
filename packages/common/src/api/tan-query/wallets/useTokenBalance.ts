@@ -99,28 +99,35 @@ export const useTokenBalance = ({
         // TODO: [PE-6571] Update to use totalBalance once it's available in the API
         const balance = response?.data?.accounts[0]?.balance
 
-        if (isNullOrUndefined(balance) || !coin?.tokenInfo?.decimals) {
+        if (isNullOrUndefined(balance)) {
+          return null
+        }
+
+        // Ensure we have valid decimals from coin metadata
+        const decimals = coin?.tokenInfo?.decimals
+        if (isNullOrUndefined(decimals)) {
+          console.warn(`Missing decimals for token ${mint}`)
           return null
         }
 
         // Return FixedDecimal with proper decimals from coin metadata
         return {
-          balance: new FixedDecimal(
-            BigInt(balance.toString()),
-            coin.tokenInfo.decimals
-          ),
-          decimals: coin.tokenInfo.decimals
+          balance: new FixedDecimal(BigInt(balance.toString()), decimals),
+          decimals
         }
       } catch (e) {
         // Handle specific 404 "no rows in result set" case
         // This typically means the user has no balance for this token
         if (isNoBalanceError(e)) {
+          const decimals = coin?.tokenInfo?.decimals
+          if (isNullOrUndefined(decimals)) {
+            console.warn(`Missing decimals for token ${mint} in error handling`)
+            return null
+          }
+
           return {
-            balance: new FixedDecimal(
-              BigInt(0),
-              coin?.tokenInfo?.decimals || 0
-            ),
-            decimals: coin?.tokenInfo?.decimals || 0,
+            balance: new FixedDecimal(BigInt(0), decimals),
+            decimals,
             isEmpty: true
           }
         }
