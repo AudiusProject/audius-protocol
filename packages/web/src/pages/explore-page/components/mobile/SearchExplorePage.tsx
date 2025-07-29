@@ -259,7 +259,7 @@ const ExplorePage = () => {
             handleSearchTab={handleSearchTab}
           />
         ) : (
-          <Flex direction='column' mt='l'>
+          <Flex direction='column' mt='l' gap='2xl'>
             <ExploreSection
               title={messages.featuredPlaylists}
               data={exploreContent?.featuredPlaylists}
