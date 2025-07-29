@@ -29,7 +29,7 @@ import { config } from '../../config'
 import { rateLimitTokenAccountCreation } from '../../redis'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
-import { initializeDiscoveryDb } from '@pedalboard/basekit'
+import { getAllowedMints } from './getAllowedMints'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
@@ -71,12 +71,6 @@ const findSpecificMemo = (
     }
   }
   return null
-}
-
-const db = initializeDiscoveryDb(config.discoveryDbConnectionString)
-const getAllowedMints = async () => {
-  const artistCoinMints = await db.select('mint').from('artist_coins')
-  return [usdcMintAddress, ...artistCoinMints]
 }
 
 /**
@@ -202,7 +196,7 @@ const assertAllowedTokenProgramInstruction = async (
       allowedMints.map(async (mint) => {
         const authority = ClaimableTokensProgram.deriveAuthority({
           programId: new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID),
-          mint
+          mint: new PublicKey(mint)
         })
         const userbank = await ClaimableTokensProgram.deriveUserBank({
           ethAddress: wallet,
@@ -265,7 +259,7 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   const authorities = allowedMints.map((mint) =>
     ClaimableTokensProgram.deriveAuthority({
       programId: new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID),
-      mint
+      mint: new PublicKey(mint)
     })
   )
   if (!authorities.some((auth) => auth.equals(authority))) {

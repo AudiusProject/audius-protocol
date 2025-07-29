@@ -22,7 +22,7 @@ import {
   SystemProgram,
   TransactionInstruction
 } from '@solana/web3.js'
-import { describe, it } from 'vitest'
+import { vi, beforeEach, afterEach, describe, it } from 'vitest'
 
 import { config } from '../../config'
 
@@ -58,6 +58,27 @@ const audioClaimableTokenAuthority = ClaimableTokensProgram.deriveAuthority({
 const getRandomPublicKey = () => Keypair.generate().publicKey
 
 describe('Solana Relay', function () {
+  beforeEach(() => {
+    // Mock initializeDiscoveryDb to avoid real DB connection
+    vi.mock('@pedalboard/basekit', () => ({
+      initializeDiscoveryDb: vi.fn(() => ({
+        select: vi.fn(() => ({
+          from: vi.fn(() => []) // returns empty array for artist_coins
+        }))
+      }))
+    }))
+    // Mock getAllowedMints to always return audioMintKey and usdcMintKey
+    vi.mock('./getAllowedMints', () => ({
+      getAllowedMints: vi.fn(async () => [
+        config.usdcMintAddress,
+        config.waudioMintAddress
+      ])
+    }))
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   describe('Associated Token Account Program', function () {
     it('should allow create token account with matching close for valid mints', async function () {
       const payer = getRandomPublicKey()
