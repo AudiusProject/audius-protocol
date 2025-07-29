@@ -15,7 +15,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
 import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Platform, View, ScrollView } from 'react-native'
+import { View, ScrollView } from 'react-native'
 import Animated, {
   FadeIn,
   LayoutAnimationConfig,
@@ -82,7 +82,6 @@ const messages = {
   mutuals: 'Mutuals',
   relatedArtists: 'Related Artists',
   viewAll: 'View All',
-  tipSupporters: 'Tip Supporters',
   topSupporters: 'Top Supporters',
   supportedUsers: 'Supporting'
 }
@@ -230,9 +229,7 @@ const SupportersTile = ({
     <ProfileInfoTile
       screen='TopSupporters'
       icon={IconTrophy}
-      title={
-        Platform.OS === 'ios' ? messages.topSupporters : messages.tipSupporters
-      }
+      title={messages.topSupporters}
       content={
         <UserListWithCount
           users={supporters}
