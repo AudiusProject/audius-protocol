@@ -181,9 +181,11 @@ export const useStreamConditionsEntity = (
     ? streamConditions?.nft_collection
     : null
 
-  const users = useUsers([followUserId, tipUserId].filter(removeNullable))
-  const followee = followUserId ? users[followUserId]?.metadata : null
-  const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
+  const { byId: usersById } = useUsers(
+    [followUserId, tipUserId].filter(removeNullable)
+  )
+  const followee = followUserId ? usersById[followUserId] : null
+  const tippedUser = tipUserId ? usersById[tipUserId] : null
 
   const collectionLink = useMemo(() => {
     if (!nftCollection) return ''
