@@ -82,7 +82,7 @@ const CollectibleDetails = (props: CollectibleDetailsProps) => {
     const url = `/${handle}/collectibles/${getHash(collectible.id)}`
     // Push window state as to not trigger router change & component remount
     window.history.pushState('', '', url)
-    dispatch(setCollectible({ collectible }))
+    dispatch(setCollectible({ collectible, ownerHandle: handle }))
     setIsModalOpen(true)
     onClick(getHash(collectible.id))
   }, [collectible, handle, dispatch, setIsModalOpen, onClick])
