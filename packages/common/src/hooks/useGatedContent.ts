@@ -87,7 +87,8 @@ export const useGatedContentAccess = (
       return {
         isFetchingNFTAccess: false,
         hasStreamAccess: true,
-        hasDownloadAccess: true
+        hasDownloadAccess: true,
+        isPreviewable: false
       }
     }
 
