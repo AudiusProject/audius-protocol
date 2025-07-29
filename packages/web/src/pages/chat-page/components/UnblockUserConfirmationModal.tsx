@@ -25,7 +25,7 @@ const messages = {
   content: (user: User) => (
     <>
       Are you sure you want to unblock{' '}
-      <UserLink userId={user.user_id} textSize='l' /> and allow them to send
+      <UserLink userId={user.user_id} size='l' /> and allow them to send
       messages to your inbox?
     </>
   )

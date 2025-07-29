@@ -14,7 +14,6 @@ const { profilePage } = route
 
 type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   userId: ID | undefined
-  textSize?: TextSize
   badgeSize?: IconSize
   popover?: boolean
   popoverMount?: MountPlacement
@@ -30,7 +29,6 @@ export const UserLink = (props: UserLinkProps) => {
   const {
     userId,
     badgeSize = 's',
-    textSize = 'm',
     popover,
     popoverMount,
     children,
@@ -85,9 +83,7 @@ export const UserLink = (props: UserLinkProps) => {
         }}
         {...other}
       >
-        <Text ellipses size={textSize}>
-          {name}
-        </Text>
+        <Text ellipses>{name}</Text>
       </TextLink>
       {badges}
       {children}
@@ -119,9 +115,7 @@ export const UserLink = (props: UserLinkProps) => {
           mount={popoverMount}
         >
           <TextLink to={url} {...other}>
-            <Text ellipses size={textSize}>
-              {name}
-            </Text>
+            <Text ellipses>{name}</Text>
           </TextLink>
         </ArtistPopover>
         {badges}
