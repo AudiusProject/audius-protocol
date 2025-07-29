@@ -46,14 +46,14 @@ const MEMO_V2_PROGRAM_ID = new PublicKey(
 const usdcMintKey = new PublicKey(config.usdcMintAddress)
 const audioMintKey = new PublicKey(config.waudioMintAddress)
 
-const usdcClaimableTokenAuthority = PublicKey.findProgramAddressSync(
-  [usdcMintKey.toBytes().slice(0, 32)],
-  CLAIMABLE_TOKEN_PROGRAM_ID
-)[0]
-const audioClaimableTokenAuthority = PublicKey.findProgramAddressSync(
-  [audioMintKey.toBytes().slice(0, 32)],
-  CLAIMABLE_TOKEN_PROGRAM_ID
-)[0]
+const usdcClaimableTokenAuthority = ClaimableTokensProgram.deriveAuthority({
+  programId: CLAIMABLE_TOKEN_PROGRAM_ID,
+  mint: usdcMintKey
+})
+const audioClaimableTokenAuthority = ClaimableTokensProgram.deriveAuthority({
+  programId: CLAIMABLE_TOKEN_PROGRAM_ID,
+  mint: audioMintKey
+})
 
 const getRandomPublicKey = () => Keypair.generate().publicKey
 
@@ -215,7 +215,8 @@ describe('Solana Relay', function () {
       ]
       await assertRelayAllowedInstructions(instructions, {
         user: {
-          wallet
+          wallet,
+          is_verified: false
         }
       })
     })
@@ -248,7 +249,8 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              wallet
+              wallet,
+              is_verified: false
             }
           }),
         InvalidRelayInstructionError,
@@ -640,7 +642,8 @@ describe('Solana Relay', function () {
 
       await assertRelayAllowedInstructions(instructions, {
         user: {
-          wallet: 'something'
+          wallet: 'something',
+          is_verified: false
         }
       })
     })
@@ -791,7 +794,8 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              wallet: 'something'
+              wallet: 'something',
+              is_verified: false
             }
           }),
         InvalidRelayInstructionError,
@@ -870,7 +874,8 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              wallet: 'something'
+              wallet: 'something',
+              is_verified: false
             }
           }),
         InvalidRelayInstructionError,
@@ -894,7 +899,7 @@ describe('Solana Relay', function () {
             lamports: 1
           })
         ],
-        { user: { wallet }, feePayer: feePayer.toBase58() }
+        { user: { wallet, is_verified: false }, feePayer: feePayer.toBase58() }
       )
     })
 
@@ -926,7 +931,10 @@ describe('Solana Relay', function () {
             })
           ],
 
-          { user: { wallet }, feePayer: feePayer.toBase58() }
+          {
+            user: { wallet, is_verified: false },
+            feePayer: feePayer.toBase58()
+          }
         )
       )
     })
@@ -949,7 +957,10 @@ describe('Solana Relay', function () {
             })
           ],
 
-          { user: { wallet }, feePayer: feePayer.toBase58() }
+          {
+            user: { wallet, is_verified: false },
+            feePayer: feePayer.toBase58()
+          }
         )
       )
     })

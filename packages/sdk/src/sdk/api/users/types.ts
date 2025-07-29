@@ -180,7 +180,7 @@ export type UnsubscribeFromUserRequest = z.input<
 
 export const SendTipSchema = z
   .object({
-    amount: z.number().positive().int(),
+    amount: z.bigint().positive(),
     senderUserId: HashId,
     receiverUserId: HashId
   })
