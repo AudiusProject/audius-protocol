@@ -12,9 +12,9 @@ import { getContext } from '../../effects'
 import { getSDK } from '../../sdkUtils'
 import { withdrawUSDCModalActions, WithdrawUSDCModalPages } from '../modals'
 
+import { USDC } from '@audius/fixed-decimal'
 import { actions as withdrawUSDCActions } from './slice'
 import { WithdrawMethod } from './types'
-import { USDC } from '@audius/fixed-decimal'
 
 const {
   beginWithdrawUSDC,
