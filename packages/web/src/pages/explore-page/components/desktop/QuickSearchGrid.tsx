@@ -117,7 +117,7 @@ export const QuickSearchGrid = () => {
   )
 
   return (
-    <Flex direction='column' gap='l' alignItems='center'>
+    <Flex direction='column' gap='l' alignItems='center' ph='l'>
       <Text variant='heading'>{messages.quickSearch}</Text>
       <Flex gap='s' justifyContent='center' alignItems='flex-start' wrap='wrap'>
         {QUICK_SEARCH_PRESETS.map((preset, idx) => (

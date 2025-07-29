@@ -61,6 +61,7 @@ import {
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ExploreSection } from '../desktop/ExploreSection'
+import { QuickSearchGrid } from '../desktop/QuickSearchGrid'
 import { TrendingPlaylists } from '../desktop/TrendingPlaylists'
 
 import { MostSharedSection } from './MostSharedSection'
@@ -260,6 +261,7 @@ const ExplorePage = () => {
           />
         ) : (
           <Flex direction='column' mt='l' gap='2xl'>
+            <QuickSearchGrid />
             <ExploreSection
               title={messages.featuredPlaylists}
               data={exploreContent?.featuredPlaylists}
