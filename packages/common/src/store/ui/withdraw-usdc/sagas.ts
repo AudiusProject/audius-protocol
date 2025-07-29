@@ -1,3 +1,4 @@
+import { USDC } from '@audius/fixed-decimal'
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, take } from 'typed-redux-saga'
@@ -12,7 +13,6 @@ import { getContext } from '../../effects'
 import { getSDK } from '../../sdkUtils'
 import { withdrawUSDCModalActions, WithdrawUSDCModalPages } from '../modals'
 
-import { USDC } from '@audius/fixed-decimal'
 import { actions as withdrawUSDCActions } from './slice'
 import { WithdrawMethod } from './types'
 
