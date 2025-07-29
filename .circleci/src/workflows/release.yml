@@ -32,7 +32,7 @@ jobs:
       context: github
       requires:
         - release-audius-docker-compose-trigger
-  - release-discord:
-      context: discord
-      requires:
-        - release-audius-docker-compose-trigger
+  # - release-discord:
+  #     context: discord
+  #     requires:
+  #       - release-audius-docker-compose-trigger
