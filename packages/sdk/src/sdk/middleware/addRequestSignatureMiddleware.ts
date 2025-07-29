@@ -5,6 +5,7 @@ import {
   type RequestContext,
   type FetchParams
 } from '../api/generated/default'
+import { HedgehogWalletNotFoundError } from '../services/AudiusWalletClient'
 import { ServicesContainer } from '../types'
 
 const SIGNATURE_EXPIRY_MS =
@@ -62,7 +63,10 @@ export const addRequestSignatureMiddleware = ({
           timestamp = currentTimestamp
         }
       } catch (e) {
-        logger.warn(`Unable to add request signature: ${e}`)
+        // Don't log a warning for HedgehogWalletNotFoundError as it's expected when user is logged out
+        if (!(e instanceof HedgehogWalletNotFoundError)) {
+          logger.warn(`Unable to add request signature: ${e}`)
+        }
       }
       return { message, signature }
     })
