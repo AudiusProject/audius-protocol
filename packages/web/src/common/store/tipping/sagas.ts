@@ -16,7 +16,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { Id } from '@audius/sdk'
 import {
   call,
@@ -194,7 +194,7 @@ function* sendTipAsync() {
     yield* call(wormholeAudioIfNecessary, { amount })
 
     const signature = yield* call([sdk.users, sdk.users.sendTip], {
-      amount,
+      amount: wAUDIO(amount).value,
       senderUserId,
       receiverUserId
     })

@@ -14,6 +14,7 @@ import { withdrawUSDCModalActions, WithdrawUSDCModalPages } from '../modals'
 
 import { actions as withdrawUSDCActions } from './slice'
 import { WithdrawMethod } from './types'
+import { USDC } from '@audius/fixed-decimal'
 
 const {
   beginWithdrawUSDC,
@@ -79,7 +80,7 @@ function* doWithdrawUSDCCoinflow({
       sdk,
       mint,
       connection,
-      amount: amount / 100, // amount is given in cents, fn expects dollars
+      amount: USDC(amount / 100).value, // amount is given in cents, fn expects wei
       ethWallet,
       destinationWallet,
       track,
@@ -238,7 +239,7 @@ function* doWithdrawUSDCManualTransfer({
       connection,
       sdk,
       mint,
-      amount: amount / 100, // amount is in cents, fn expects dollars
+      amount: USDC(amount / 100).value, // amount is in cents, fn expects wei
       ethWallet,
       destinationWallet,
       track,
