@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 
 import { useTrendingUnderground } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { QueueSource } from '@audius/common/store'
 
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
@@ -22,8 +23,8 @@ export const UndergroundTrendingTracks = () => {
     <ExploreSection title={messages.undergroundTrending}>
       <TrackTileCarousel
         tracks={trackIds}
-        uidPrefix='underground-trending-track'
         isLoading={isLoading}
+        source={QueueSource.EXPLORE}
       />
     </ExploreSection>
   )

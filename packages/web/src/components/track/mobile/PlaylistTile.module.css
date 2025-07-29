@@ -63,7 +63,7 @@
 
 .metadata {
   display: flex;
-  flex: 1 1;
+  flex: 0;
 }
 
 .duration {

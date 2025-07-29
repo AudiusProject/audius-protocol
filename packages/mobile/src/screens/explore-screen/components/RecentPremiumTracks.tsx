@@ -2,6 +2,7 @@ import React from 'react'
 
 import { useRecentPremiumTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { QueueSource } from '@audius/common/store'
 
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
@@ -18,8 +19,8 @@ export const RecentPremiumTracks = () => {
     <ExploreSection title={messages.recentlyListedForSale}>
       <TrackTileCarousel
         tracks={recentPremiumTracks}
-        uidPrefix='recent-premium'
         isLoading={isLoading}
+        source={QueueSource.EXPLORE}
       />
     </ExploreSection>
   )

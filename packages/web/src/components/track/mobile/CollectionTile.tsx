@@ -48,12 +48,13 @@ import { CollectionDogEar } from 'components/collection'
 import { CollectionTileStats } from 'components/collection/CollectionTileStats'
 import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { CollectionTileProps, TrackTileSize } from 'components/track/types'
+import { TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
+import { DesktopCollectionTileProps } from '../desktop/CollectionTile'
 import { getCollectionWithFallback } from '../helpers'
 
 import BottomButtons from './BottomButtons'
@@ -74,7 +75,7 @@ const {
 const { setLockedContentId } = gatedContentActions
 
 type OwnProps = Omit<
-  CollectionTileProps,
+  DesktopCollectionTileProps,
   | 'userId'
   | 'duration'
   | 'artistName'
@@ -99,8 +100,9 @@ type OwnProps = Omit<
   | 'goToRoute'
 > & {
   collection?: any
+  uploading?: boolean
   user?: any
-  tracks?: Track[]
+  variant?: 'readonly'
 }
 
 type TrackItemProps = {

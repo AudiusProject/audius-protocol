@@ -2,6 +2,7 @@ import React from 'react'
 
 import { useMostSharedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { QueueSource } from '@audius/common/store'
 
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
@@ -17,8 +18,8 @@ export const MostSharedTracks = () => {
     <ExploreSection title={messages.mostShared}>
       <TrackTileCarousel
         tracks={mostSharedTracks}
-        uidPrefix='most-shared-track'
         isLoading={isLoading}
+        source={QueueSource.EXPLORE}
       />
     </ExploreSection>
   )
