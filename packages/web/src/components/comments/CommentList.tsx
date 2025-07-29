@@ -13,7 +13,7 @@ export const CommentList = ({ highlightedCommentId }: CommentListProps) => {
   const { commentIds, commentSectionLoading } = useCurrentCommentSection()
 
   return (
-    <Flex p='l' as='ul' column gap='xl' w='100%' backgroundColor='white'>
+    <Flex pv='l' as='ul' column gap='xl' w='100%' backgroundColor='white'>
       {commentSectionLoading ? (
         <CommentBlockSkeletons />
       ) : (

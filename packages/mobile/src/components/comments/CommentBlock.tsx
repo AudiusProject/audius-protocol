@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useComment, useUser } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -13,7 +13,7 @@ import { css } from '@emotion/native'
 import { useLinkProps } from '@react-navigation/native'
 import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
-import Animated, { FadeIn } from 'react-native-reanimated'
+import Animated, { FadeIn, Keyframe } from 'react-native-reanimated'
 
 import { Flex, Text, useTheme } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
@@ -59,9 +59,6 @@ export const CommentBlockInternal = (
   const isHighlighted = highlightedCommentId === commentId
 
   const { color, spacing, type } = useTheme()
-  // replace opacity for background color
-  const highlightColor =
-    color.focus.default.slice(0, 7) + (type === 'dark' ? '20' : '0D')
   const { isPending: isUserPending } = useUser(userId)
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
@@ -88,20 +85,44 @@ export const CommentBlockInternal = (
     [commentId]
   )
 
+  const highlightBackgroundFadeAnimation = useMemo(
+    () =>
+      new Keyframe({
+        0: {
+          backgroundColor: 'transparent'
+        },
+        50: {
+          backgroundColor:
+            color.focus.default.slice(0, 7) + (type === 'dark' ? '33' : '1a')
+        },
+        100: {
+          backgroundColor:
+            color.focus.default.slice(0, 7) + (type === 'dark' ? '20' : '0D')
+        }
+      }),
+    [color.focus.default, type]
+  )
+
   const isCommentByArtist = userId === artistId
 
   return (
     <Animated.View style={{ width: '100%' }} entering={FadeIn.duration(500)}>
-      <Flex
-        direction='row'
-        pv={isHighlighted ? 's' : 'none'}
-        ph='l'
-        pl={parentCommentId ? spacing.unit10 : 'l'}
-        w='100%'
-        gap='s'
+      <Animated.View
+        entering={
+          isHighlighted
+            ? highlightBackgroundFadeAnimation.duration(660).delay(800)
+            : undefined
+        }
         style={css({
+          display: 'flex',
+          flexDirection: 'row',
+          paddingVertical: isHighlighted ? spacing.unit2 : 0,
+          paddingHorizontal: spacing.unit4,
+          paddingLeft: parentCommentId ? spacing.unit10 : spacing.unit4,
+          width: '100%',
+          gap: spacing.unit2,
           opacity: isTombstone ? 0.5 : 1,
-          backgroundColor: isHighlighted ? highlightColor : 'transparent'
+          backgroundColor: 'transparent'
         })}
       >
         <TouchableOpacity
@@ -201,7 +222,7 @@ export const CommentBlockInternal = (
             />
           ) : null}
         </Flex>
-      </Flex>
+      </Animated.View>
     </Animated.View>
   )
 }
