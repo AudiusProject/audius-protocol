@@ -473,6 +473,7 @@ export const GiantTrackTile = ({
       genre,
       handle: artistHandle,
       isFavorited: isSaved,
+      isReposted,
       mount: 'page',
       isOwner,
       includeFavorite: hasStreamAccess,
