@@ -66,12 +66,11 @@ platform :ios do
     match(
       type: "appstore",
       readonly: is_ci,
-      app_identifier: options[:bundle_id]
+      app_identifier: [options[:bundle_id], "#{options[:bundle_id]}.RichPushExtension"]
     )
 
     settings_to_override = {
       :BUNDLE_IDENTIFIER => appId,
-      :PROVISIONING_PROFILE_SPECIFIER => provisioningProfile,
       :DEVELOPMENT_TEAM => TEAM
     }
 
@@ -110,6 +109,7 @@ platform :ios do
         signingStyle: "manual",
         provisioningProfiles: {
           appId => provisioningProfile,
+          "#{appId}.RichPushExtension" => "#{provisioningProfile}.RichPushExtension"
         }
       }
     )
