@@ -7,15 +7,20 @@ import { ScrollView } from 'react-native'
 import { Flex, useTheme } from '@audius/harmony-native'
 import { CollectionCard } from 'app/components/collection-list/CollectionCard'
 import { TrackCard } from 'app/components/track/TrackCard'
+import { useSearchCategory } from 'app/screens/search-screen/searchState'
 
 import { ExploreSection } from './ExploreSection'
 
 export const BestSelling = () => {
   const { spacing } = useTheme()
+  const [category] = useSearchCategory()
 
-  const { data, isLoading } = useBestSelling()
+  const { data, isLoading } = useBestSelling({
+    type:
+      category === 'albums' ? 'album' : category === 'tracks' ? 'track' : 'all'
+  })
 
-  return (
+  return !isLoading && data && data.length > 0 ? (
     <ExploreSection title={messages.bestSelling} isLoading={isLoading}>
       <Flex mh={-16}>
         <ScrollView
@@ -38,5 +43,5 @@ export const BestSelling = () => {
         </ScrollView>
       </Flex>
     </ExploreSection>
-  )
+  ) : null
 }
