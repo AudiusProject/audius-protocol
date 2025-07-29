@@ -17,11 +17,11 @@ const Dropdown = ({
   menu,
   onSelect,
   onSelectIndex,
-  defaultIndex = 0,
+  defaultIndex,
   textClassName,
   focused: focusedProp
 }) => {
-  const [internalIndex, setInternalIndex] = useState(defaultIndex)
+  const [internalIndex, setInternalIndex] = useState(defaultIndex ?? 0)
   const [internalFocused, setInternalFocused] = useState(false)
 
   const index = defaultIndex !== undefined ? defaultIndex : internalIndex
