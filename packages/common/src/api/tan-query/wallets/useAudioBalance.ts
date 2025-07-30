@@ -226,7 +226,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   if (includeConnectedWallets) {
     for (const balanceRes of connectedWalletsBalances.data ?? []) {
       connectedWalletsBalance = AUDIO(
-        connectedWalletsBalance + (balanceRes ?? AUDIO(0).value)
+        connectedWalletsBalance + balanceRes
       ).value
     }
   }
