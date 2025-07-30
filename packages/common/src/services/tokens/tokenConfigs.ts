@@ -7,14 +7,14 @@ const developmentTokens: TokenConfig[] = [
   {
     symbol: 'AUDIO',
     name: 'Audius',
-    network: 'ethereum',
-    address: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998', // Dev AUDIO token
-    decimals: 18,
+    network: 'solana',
+    address: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM', // Solana AUDIO mint address
+    decimals: 8,
     enabled: true,
     purchasable: true,
     sellable: true,
-    hasUserbank: false,
-    jupiterEnabled: false,
+    hasUserbank: true,
+    jupiterEnabled: true,
     logoUrl: '/img/tokenLogos/audio.svg',
     coingeckoId: 'audius'
   },
@@ -69,14 +69,14 @@ const stagingTokens: TokenConfig[] = [
   {
     symbol: 'AUDIO',
     name: 'Audius',
-    network: 'ethereum',
-    address: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998', // Staging AUDIO token
-    decimals: 18,
+    network: 'solana',
+    address: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM', // Solana AUDIO mint address
+    decimals: 8,
     enabled: true,
     purchasable: true,
     sellable: true,
-    hasUserbank: false,
-    jupiterEnabled: false,
+    hasUserbank: true,
+    jupiterEnabled: true,
     logoUrl: '/img/tokenLogos/audio.svg',
     coingeckoId: 'audius'
   },
@@ -131,14 +131,14 @@ const productionTokens: TokenConfig[] = [
   {
     symbol: 'AUDIO',
     name: 'Audius',
-    network: 'ethereum',
-    address: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
-    decimals: 18,
+    network: 'solana',
+    address: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM', // Solana AUDIO mint address
+    decimals: 8,
     enabled: true,
     purchasable: true,
     sellable: true,
-    hasUserbank: false,
-    jupiterEnabled: false,
+    hasUserbank: true,
+    jupiterEnabled: true,
     logoUrl: '/img/tokenLogos/audio.svg',
     coingeckoId: 'audius'
   },
