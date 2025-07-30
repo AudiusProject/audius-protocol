@@ -1,7 +1,5 @@
 import { Fragment, useCallback, useContext } from 'react'
 
-import { env } from 'process'
-
 import {
   useUserCoins,
   useCurrentUserId,
@@ -29,10 +27,36 @@ import { encodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
+import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
+import { env } from 'services/env'
 
 import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
+
+const YourCoinsSkeleton = () => {
+  const { spacing } = useTheme()
+  const { isMobile } = useMedia()
+
+  return (
+    <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
+      <Flex
+        alignItems='center'
+        justifyContent='space-between'
+        p={isMobile ? spacing.l : undefined}
+        alignSelf='stretch'
+      >
+        <Flex alignItems='center' gap='m' p='xl' flex={1}>
+          <Skeleton width='64px' height='64px' />
+          <Flex direction='column' gap='xs'>
+            <Skeleton width='120px' height='24px' />
+            <Skeleton width='80px' height='16px' />
+          </Flex>
+        </Flex>
+      </Flex>
+    </Paper>
+  )
+}
 
 const messages = {
   ...buySellMessages,
@@ -95,7 +119,8 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
 
   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
 
-  if (coin.mint === env.WAUDIO_MINT_ADDRESS) return <AudioCoinCard />
+  if (coin.mint === env.WAUDIO_MINT_ADDRESS)
+    return <AudioCoinCard onClick={() => handleCoinClick(coin.mint)} />
 
   return (
     <CoinCard
@@ -124,7 +149,7 @@ export const YourCoins = () => {
   })
 
   if (isLoadingCoins || !userIdString) {
-    return null
+    return <YourCoinsSkeleton />
   }
 
   return (
