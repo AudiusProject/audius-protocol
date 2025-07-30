@@ -8,7 +8,7 @@
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
     "pretty": "prettier --write .",
-    "start": "pm2-runtime build/src/main.js --restart-delay=3000 --node-args=\"--max-old-space-size=512\"",
+    "start": "pm2-runtime build/src/main.js --restart-delay=3000 --node-args=\"--max-old-space-size=2048\"",
     "test:watch": "jest --runInBand --watchAll",
     "test": "jest --runInBand --forceExit",
     "test-push": "ts-node scripts/test-push-notification.ts",
