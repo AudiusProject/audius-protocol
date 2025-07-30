@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type CommentNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CommentNotification
@@ -49,18 +50,20 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
       user_id: number
       name: string
       is_deactivated: boolean
+      profile_picture_sizes?: string | null
     }> = await this.dnDB
-      .select('user_id', 'name', 'is_deactivated')
+      .select('user_id', 'name', 'is_deactivated', 'profile_picture_sizes')
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.commenterUserId])
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = {
         name: user.name,
-        isDeactivated: user.is_deactivated
+        isDeactivated: user.is_deactivated,
+        profile_picture_sizes: user.profile_picture_sizes
       }
       return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    }, {} as Record<number, { name: string; isDeactivated: boolean; profile_picture_sizes?: string | null }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -93,6 +96,13 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
 
     const title = 'New Comment'
     const body = `${commenterUserName} commented on your ${entityType.toLowerCase()} ${entityName}`
+
+    // Get commenter's profile picture URL for rich notification (150x150 size)
+    const commenterUser = users[this.commenterUserId]
+    const imageUrl = commenterUser.profile_picture_sizes
+      ? formatImageUrl(commenterUser.profile_picture_sizes, 150)
+      : undefined
+
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(
         this.receiverUserId,
@@ -145,7 +155,8 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
                 entityType: 'Track',
                 entityId: this.entityId,
                 commentId: this.notification.data.comment_id
-              }
+              },
+              imageUrl
             }
           )
         })
