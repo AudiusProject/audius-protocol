@@ -146,7 +146,7 @@ export const useWalletAudioBalances = (
       queryFn: async () => {
         try {
           const sdk = await audiusSdk()
-          return await fetchWalletAudioBalance(
+          const balance = await fetchWalletAudioBalance(
             { sdk, audiusBackend },
             {
               address,
@@ -154,6 +154,7 @@ export const useWalletAudioBalances = (
               includeStaked: true
             }
           )
+          return { address, chain, balance }
         } catch (error) {
           reportToSentry({
             error: toErrorWithMessage(error),
@@ -166,7 +167,9 @@ export const useWalletAudioBalances = (
       },
       ...options
     })),
-    combine: combineQueryResults<AudioWei[]>
+    combine: combineQueryResults<
+      { balance: AudioWei; address: string; chain: Chain }[]
+    >
   })
 }
 
@@ -204,7 +207,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   let accountBalance = AUDIO(0).value
   const isAccountBalanceLoading = accountBalances.isPending
   for (const balanceRes of accountBalances.data ?? []) {
-    accountBalance = AUDIO(accountBalance + balanceRes).value
+    accountBalance = AUDIO(accountBalance + balanceRes.balance).value
   }
 
   // Get linked/connected wallets balances
@@ -226,7 +229,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   if (includeConnectedWallets) {
     for (const balanceRes of connectedWalletsBalances.data ?? []) {
       connectedWalletsBalance = AUDIO(
-        connectedWalletsBalance + balanceRes
+        connectedWalletsBalance + balanceRes.balance
       ).value
     }
   }
