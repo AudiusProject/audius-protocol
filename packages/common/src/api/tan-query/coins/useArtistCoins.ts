@@ -18,7 +18,7 @@ export const useArtistCoins = (params: UseArtistCoinsParams = {}) => {
   const { audiusSdk } = useQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.artistCoins, 'list', params],
+    queryKey: [QUERY_KEYS.coins, 'list', params],
     queryFn: async () => {
       const sdk = await audiusSdk()
 

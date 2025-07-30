@@ -2,24 +2,32 @@ import type { ComponentType } from 'react'
 
 import type { Coin } from '@audius/sdk'
 
+import { coinFromSDK, type CoinMetadata } from '~/adapters'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
+
+/**
+ * Transform a CoinMetadata to TokenInfo for UI use
+ */
+const coinMetadataToTokenInfo = (
+  coin: CoinMetadata,
+  icon?: ComponentType<any>
+): TokenInfo => ({
+  symbol: coin.ticker ?? '',
+  name: coin.tokenInfo?.name ?? coin.ticker ?? '',
+  decimals: coin.tokenInfo?.decimals ?? 8,
+  balance: null, // This would come from user's wallet state
+  address: coin.mint,
+  icon,
+  logoURI: coin.tokenInfo?.logoURI ?? '',
+  isStablecoin: false // API tokens are never stablecoins, only USDC is (which is frontend-only)
+})
 
 export const transformArtistCoinToTokenInfo = (
   artistCoin: Coin,
   icon?: ComponentType<any>
 ): TokenInfo => {
-  const tokenInfo = artistCoin.tokenInfo
-
-  return {
-    symbol: artistCoin.ticker || '',
-    name: tokenInfo?.name || artistCoin.ticker || '',
-    decimals: tokenInfo?.decimals || 8,
-    balance: null, // This would come from user's wallet state
-    address: artistCoin.mint,
-    icon,
-    logoURI: tokenInfo?.logoURI,
-    isStablecoin: false // API tokens are never stablecoins, only USDC is (which is frontend-only)
-  }
+  const coinMetadata = coinFromSDK(artistCoin)
+  return coinMetadataToTokenInfo(coinMetadata, icon)
 }
 
 export const transformArtistCoinsToTokenInfoMap = (
@@ -29,9 +37,12 @@ export const transformArtistCoinsToTokenInfoMap = (
   const tokenMap: Record<string, TokenInfo> = {}
 
   artistCoins.forEach((coin) => {
-    const ticker = coin.ticker || ''
+    const coinMetadata = coinFromSDK(coin)
+    const ticker = coinMetadata.ticker || ''
     const icon = iconMap[ticker]
-    tokenMap[ticker] = transformArtistCoinToTokenInfo(coin, icon)
+    if (ticker) {
+      tokenMap[ticker] = coinMetadataToTokenInfo(coinMetadata, icon)
+    }
   })
 
   return tokenMap
@@ -45,8 +56,9 @@ export const getTokenInfoBySymbol = (
   const coin = artistCoins.find((c) => c.ticker === symbol)
   if (!coin) return undefined
 
+  const coinMetadata = coinFromSDK(coin)
   const icon = iconMap[symbol]
-  return transformArtistCoinToTokenInfo(coin, icon)
+  return coinMetadataToTokenInfo(coinMetadata, icon)
 }
 
 export const getAllTokenSymbols = (artistCoins: Coin[]): string[] => {
