@@ -107,7 +107,9 @@ export const QUERY_KEYS = {
   recentlyPlayedTracks: 'recentlyPlayedTracks',
   recentlyCommentedTracks: 'recentlyCommentedTracks',
   artistCoinMembers: 'artistCoinMembers',
-  artistCoins: 'artistCoins',
+  coins: 'coins',
   userCoins: 'userCoins',
-  coin: 'coin'
+  coin: 'coin',
+  artistCoin: 'artistCoin',
+  artistCoinByMint: 'artistCoinByMint'
 } as const

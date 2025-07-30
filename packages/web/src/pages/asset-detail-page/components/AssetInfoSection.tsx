@@ -1,5 +1,15 @@
+import { useArtistCoin } from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
-import { Flex, Paper, Text, useTheme, PlainButton } from '@audius/harmony'
+import {
+  Avatar,
+  Flex,
+  IconGift,
+  Paper,
+  PlainButton,
+  Text,
+  useTheme
+} from '@audius/harmony'
+import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
@@ -9,24 +19,64 @@ import {
   setVisibility
 } from 'store/application/ui/userListModal/slice'
 import {
-  UserListType,
-  UserListEntityType
+  UserListEntityType,
+  UserListType
 } from 'store/application/ui/userListModal/types'
 
-import { ACCEPTED_ROUTES, ASSET_INFO_SECTION_MESSAGES } from '../constants'
 import { AssetDetailProps } from '../types'
+
+const messages = {
+  loading: 'Loading...',
+  createdBy: 'Created By',
+  whatIs: (title: string) => `What is ${title}?`,
+  description1: (title: string) =>
+    `${title} is a community token on the Audius platform. You can use ${title} for tipping artists, participating in community activities, and engaging with the decentralized music ecosystem.`,
+  description2: (title: string) =>
+    `Holding ${title} gives you access to exclusive features and helps support your favorite artists on Audius.`,
+  learnMore: 'Learn More',
+  viewLeaderboard: 'View Leaderboard'
+}
 
 const BANNER_HEIGHT = 120
 
-const BannerSection = ({ mint }: AssetDetailProps) => {
-  const { name, userId, icon: TokenIcon } = ACCEPTED_ROUTES[mint]
+const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
+  const { spacing } = useTheme()
 
-  const { cornerRadius } = useTheme()
+  if (!logoURI) return null
+
+  return <Avatar src={logoURI} w={spacing.unit8} h={spacing.unit8} />
+}
+
+const BannerSection = ({ mint }: AssetDetailProps) => {
+  const { data: coin, isLoading } = useArtistCoin({ mint })
+
+  const userId = coin?.ownerId
+    ? (decodeHashId(coin.ownerId) ?? undefined)
+    : undefined
 
   const { image: coverPhoto } = useCoverPhoto({
-    userId: userId || undefined,
+    userId,
     size: WidthSizes.SIZE_640
   })
+
+  if (isLoading || !coin) {
+    return (
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        alignSelf='stretch'
+        h={BANNER_HEIGHT}
+        css={{ backgroundColor: '#f0f0f0' }}
+      >
+        <Text variant='body' size='m' color='subdued'>
+          {messages.loading}
+        </Text>
+      </Flex>
+    )
+  }
+
+  const logoURI = coin.tokenInfo?.logoURI
+  const name = coin.ticker
 
   return (
     <Flex
@@ -50,7 +100,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
         gap='s'
       >
         <Text variant='label' size='m' color='staticWhite' shadow='emphasis'>
-          {ASSET_INFO_SECTION_MESSAGES.default.createdBy}
+          {messages.createdBy}
         </Text>
 
         <Flex
@@ -61,9 +111,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
           borderRadius='circle'
           border='default'
         >
-          {TokenIcon ? (
-            <TokenIcon size='l' css={{ borderRadius: cornerRadius.circle }} />
-          ) : null}
+          <TokenIcon logoURI={logoURI} />
           <Flex alignItems='center' gap='xs'>
             <Text variant='body' size='l'>
               {name}
@@ -78,8 +126,25 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
 
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const dispatch = useDispatch()
-  const { title } = ACCEPTED_ROUTES[mint]
-  const CTAIcon = ASSET_INFO_SECTION_MESSAGES[mint].ctaIcon
+  const { data: coin, isLoading } = useArtistCoin({ mint })
+
+  if (isLoading || !coin) {
+    return (
+      <Paper
+        borderRadius='l'
+        shadow='far'
+        direction='column'
+        alignItems='flex-start'
+      >
+        <Text variant='body' size='m' color='subdued'>
+          {messages.loading}
+        </Text>
+      </Paper>
+    )
+  }
+
+  const title = coin.ticker ?? ''
+  const CTAIcon = IconGift // Default icon for now
 
   const handleViewLeaderboard = () => {
     dispatch(
@@ -110,21 +175,17 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
       >
         <Flex alignItems='center' alignSelf='stretch'>
           <Text variant='heading' size='s' color='heading'>
-            {ASSET_INFO_SECTION_MESSAGES.default.whatIs(title)}
+            {messages.whatIs(title)}
           </Text>
         </Flex>
 
         <Flex direction='column' gap='m'>
-          {ASSET_INFO_SECTION_MESSAGES[mint].description.map((text, index) => (
-            <Text
-              key={`${mint}-description-${index}`}
-              variant='body'
-              size='m'
-              color='subdued'
-            >
-              {text}
-            </Text>
-          ))}
+          <Text variant='body' size='m' color='subdued'>
+            {messages.description1(title)}
+          </Text>
+          <Text variant='body' size='m' color='subdued'>
+            {messages.description2(title)}
+          </Text>
         </Flex>
       </Flex>
 
@@ -138,7 +199,7 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
         <Flex alignItems='center' justifyContent='center' gap='s'>
           <CTAIcon size='m' color='default' />
           <Text variant='title' size='m'>
-            {ASSET_INFO_SECTION_MESSAGES[mint].cta}
+            {messages.learnMore}
           </Text>
         </Flex>
 
@@ -147,7 +208,7 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
           size='default'
           onClick={handleViewLeaderboard}
         >
-          View Leaderboard
+          {messages.viewLeaderboard}
         </PlainButton>
       </Flex>
     </Paper>

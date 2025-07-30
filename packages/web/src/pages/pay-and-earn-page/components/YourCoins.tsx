@@ -1,10 +1,21 @@
-import { useCallback, useContext } from 'react'
+import { Fragment, useCallback, useContext } from 'react'
 
-import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
+import { env } from 'process'
+
+import {
+  useUserCoins,
+  useCurrentUserId,
+  useArtistCoin,
+  UserCoin
+} from '@audius/common/api'
+import {
+  useFeatureFlag,
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { useBuySellModal } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
   Button,
   Divider,
@@ -14,13 +25,14 @@ import {
   useMedia,
   useTheme
 } from '@audius/harmony'
+import { encodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { AudioCoinCard } from './AudioCoinCard'
-import { BonkCoinCard } from './BonkCoinCard'
+import { CoinCard } from './CoinCard'
 
 const messages = {
   ...buySellMessages,
@@ -29,8 +41,6 @@ const messages = {
   exploreArtistCoins: 'Explore available artist coins on Audius.',
   bonkTicker: '$BONK'
 }
-
-const { WALLET_AUDIO_PAGE, ASSET_DETAIL_PAGE } = route
 
 const YourCoinsHeader = () => {
   const { onOpen: openBuySellModal } = useBuySellModal()
@@ -62,24 +72,60 @@ const YourCoinsHeader = () => {
   )
 }
 
-export const YourCoins = () => {
+const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   const dispatch = useDispatch()
+
+  const tokenSymbol = coin.ticker
+
+  const handleCoinClick = useCallback(
+    (mint: string) => {
+      dispatch(push(`/wallet/${mint}`))
+    },
+    [dispatch]
+  )
+
+  const {
+    tokenBalanceFormatted,
+    tokenDollarValue,
+    isTokenBalanceLoading,
+    isTokenPriceLoading
+  } = useFormattedTokenBalance(coin.mint)
+
+  const { data: coinData } = useArtistCoin({ mint: coin.mint })
+
+  const isLoading = isTokenBalanceLoading || isTokenPriceLoading
+
+  if (coin.mint === env.WAUDIO_MINT_ADDRESS) return <AudioCoinCard />
+
+  return (
+    <CoinCard
+      icon={coinData?.tokenInfo?.logoURI}
+      symbol={tokenSymbol ?? ''}
+      balance={tokenBalanceFormatted || ''}
+      dollarValue={tokenDollarValue || ''}
+      loading={isLoading}
+      onClick={() => handleCoinClick(coin.mint)}
+    />
+  )
+}
+
+export const YourCoins = () => {
   const { spacing } = useTheme()
   const { isMobile } = useMedia()
-  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
-    FeatureFlags.ARTIST_COINS
-  )
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
 
-  const handleTokenClick = useCallback(() => {
-    dispatch(push(WALLET_AUDIO_PAGE))
-  }, [dispatch])
+  const { data: currentUserId } = useCurrentUserId()
+  const userIdString = currentUserId ? encodeHashId(currentUserId) : ''
 
-  const handleBonkClick = useCallback(() => {
-    dispatch(push(ASSET_DETAIL_PAGE.replace(':slug', 'bonk')))
-  }, [dispatch])
+  const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
+    userId: userIdString || ''
+  })
+
+  if (isLoadingCoins || !userIdString) {
+    return null
+  }
 
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
@@ -90,13 +136,15 @@ export const YourCoins = () => {
         p={isMobile ? spacing.l : undefined}
         alignSelf='stretch'
       >
-        <AudioCoinCard onClick={handleTokenClick} />
-        {isArtistCoinsEnabled ? (
-          <>
-            <Divider orientation='vertical' />
-            <BonkCoinCard onClick={handleBonkClick} />
-          </>
-        ) : null}
+        {artistCoins?.map((coin, index) => {
+          if (coin.ticker === 'USDC') return null
+          return (
+            <Fragment key={coin.mint}>
+              {index > 0 && <Divider orientation='vertical' />}
+              <CoinCardWithBalance coin={coin} />
+            </Fragment>
+          )
+        })}
       </Flex>
     </Paper>
   )

@@ -6,7 +6,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { buySellMessages as messages } from '~/messages'
 
 import { useTokenExchangeRate, useTokenPrice } from '../../../api'
-import type { JupiterTokenSymbol } from '../../../services/Jupiter'
 
 import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
 import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
@@ -112,9 +111,9 @@ export const useTokenSwapForm = ({
   initialInputValue = '',
   onInputValueChange
 }: TokenSwapFormProps) => {
-  // Get token symbols for the exchange rate API
-  const inputTokenSymbol = inputToken.symbol as JupiterTokenSymbol
-  const outputTokenSymbol = outputToken.symbol as JupiterTokenSymbol
+  // Get token mint addresses for the exchange rate API
+  const inputMint = inputToken.address
+  const outputMint = outputToken.address
 
   const { get: getInputBalance, loading: isBalanceLoading } = balance
 
@@ -185,8 +184,8 @@ export const useTokenSwapForm = ({
     isLoading: isExchangeRateLoading,
     error: exchangeRateError
   } = useTokenExchangeRate({
-    inputTokenSymbol,
-    outputTokenSymbol,
+    inputMint,
+    outputMint,
     inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
   })
 

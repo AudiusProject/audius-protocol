@@ -1,6 +1,7 @@
 import { TokenInfo } from '@audius/common/store'
 import { Divider, Flex, Text } from '@audius/harmony'
-import { useTheme } from '@emotion/react'
+
+import { TokenIcon } from './TokenIcon'
 
 const messages = {
   symbol: (symbol: string) => `$${symbol}`
@@ -19,9 +20,6 @@ export const CryptoBalanceSection = ({
   amount,
   priceLabel
 }: CryptoBalanceSectionProps) => {
-  const { cornerRadius, spacing } = useTheme()
-  const { icon: TokenIcon } = tokenInfo
-
   return (
     <Flex direction='column' gap='l'>
       <Flex alignItems='center' gap='m'>
@@ -31,13 +29,7 @@ export const CryptoBalanceSection = ({
         <Divider css={{ flexGrow: 1 }} />
       </Flex>
       <Flex alignItems='center' gap='s' data-testid='token-icon'>
-        {TokenIcon ? (
-          <TokenIcon
-            width={spacing.unit16}
-            height={spacing.unit16}
-            css={{ borderRadius: cornerRadius.circle }}
-          />
-        ) : null}
+        <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {amount}
