@@ -22,7 +22,7 @@ import {
   SystemProgram,
   TransactionInstruction
 } from '@solana/web3.js'
-import { describe, it } from 'vitest'
+import { vi, beforeEach, afterEach, describe, it } from 'vitest'
 
 import { config } from '../../config'
 
@@ -46,18 +46,39 @@ const MEMO_V2_PROGRAM_ID = new PublicKey(
 const usdcMintKey = new PublicKey(config.usdcMintAddress)
 const audioMintKey = new PublicKey(config.waudioMintAddress)
 
-const usdcClaimableTokenAuthority = PublicKey.findProgramAddressSync(
-  [usdcMintKey.toBytes().slice(0, 32)],
-  CLAIMABLE_TOKEN_PROGRAM_ID
-)[0]
-const audioClaimableTokenAuthority = PublicKey.findProgramAddressSync(
-  [audioMintKey.toBytes().slice(0, 32)],
-  CLAIMABLE_TOKEN_PROGRAM_ID
-)[0]
+const usdcClaimableTokenAuthority = ClaimableTokensProgram.deriveAuthority({
+  programId: CLAIMABLE_TOKEN_PROGRAM_ID,
+  mint: usdcMintKey
+})
+const audioClaimableTokenAuthority = ClaimableTokensProgram.deriveAuthority({
+  programId: CLAIMABLE_TOKEN_PROGRAM_ID,
+  mint: audioMintKey
+})
 
 const getRandomPublicKey = () => Keypair.generate().publicKey
 
 describe('Solana Relay', function () {
+  beforeEach(() => {
+    // Mock initializeDiscoveryDb to avoid real DB connection
+    vi.mock('@pedalboard/basekit', () => ({
+      initializeDiscoveryDb: vi.fn(() => ({
+        select: vi.fn(() => ({
+          from: vi.fn(() => []) // returns empty array for artist_coins
+        }))
+      }))
+    }))
+    // Mock getAllowedMints to always return audioMintKey and usdcMintKey
+    vi.mock('./getAllowedMints', () => ({
+      getAllowedMints: vi.fn(async () => [
+        config.usdcMintAddress,
+        config.waudioMintAddress
+      ])
+    }))
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   describe('Associated Token Account Program', function () {
     it('should allow create token account with matching close for valid mints', async function () {
       const payer = getRandomPublicKey()
@@ -215,7 +236,8 @@ describe('Solana Relay', function () {
       ]
       await assertRelayAllowedInstructions(instructions, {
         user: {
-          wallet
+          wallet,
+          is_verified: false
         }
       })
     })
@@ -248,7 +270,8 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              wallet
+              wallet,
+              is_verified: false
             }
           }),
         InvalidRelayInstructionError,
@@ -640,7 +663,8 @@ describe('Solana Relay', function () {
 
       await assertRelayAllowedInstructions(instructions, {
         user: {
-          wallet: 'something'
+          wallet: 'something',
+          is_verified: false
         }
       })
     })
@@ -791,7 +815,8 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              wallet: 'something'
+              wallet: 'something',
+              is_verified: false
             }
           }),
         InvalidRelayInstructionError,
@@ -870,7 +895,8 @@ describe('Solana Relay', function () {
         async () =>
           assertRelayAllowedInstructions(instructions, {
             user: {
-              wallet: 'something'
+              wallet: 'something',
+              is_verified: false
             }
           }),
         InvalidRelayInstructionError,
@@ -894,7 +920,7 @@ describe('Solana Relay', function () {
             lamports: 1
           })
         ],
-        { user: { wallet }, feePayer: feePayer.toBase58() }
+        { user: { wallet, is_verified: false }, feePayer: feePayer.toBase58() }
       )
     })
 
@@ -926,7 +952,10 @@ describe('Solana Relay', function () {
             })
           ],
 
-          { user: { wallet }, feePayer: feePayer.toBase58() }
+          {
+            user: { wallet, is_verified: false },
+            feePayer: feePayer.toBase58()
+          }
         )
       )
     })
@@ -949,7 +978,10 @@ describe('Solana Relay', function () {
             })
           ],
 
-          { user: { wallet }, feePayer: feePayer.toBase58() }
+          {
+            user: { wallet, is_verified: false },
+            feePayer: feePayer.toBase58()
+          }
         )
       )
     })

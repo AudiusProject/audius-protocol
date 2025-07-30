@@ -9,7 +9,7 @@ import { TokenName } from '../services'
  * @returns the mint address and token name
  * @throws if the token isn't in the mint map
  */
-export const parseMintToken = (
+export const parseMint = (
   mintOrToken: PublicKey | TokenName,
   mints: Partial<Record<TokenName, PublicKey>>
 ) => {
@@ -18,14 +18,5 @@ export const parseMintToken = (
   if (!mint) {
     throw Error('Mint not configured')
   }
-  const token =
-    mintOrToken instanceof PublicKey
-      ? (Object.entries(mints).find((m) => !!m[1] && mint.equals(m[1]))?.[0] as
-          | TokenName
-          | undefined)
-      : mintOrToken
-  if (!token) {
-    throw Error('Mint not configured')
-  }
-  return { mint, token }
+  return mint
 }

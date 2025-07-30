@@ -1,6 +1,6 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { LocalStorage } from '@audius/hedgehog'
-import { AudiusSdk, Id } from '@audius/sdk'
+import { AudiusSdk, Id, HedgehogWalletNotFoundError } from '@audius/sdk'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
@@ -371,8 +371,11 @@ export const audiusBackend = ({
       })
       return { data, signature }
     } catch (e) {
-      console.error(e)
-      reportError({ error: e as Error })
+      // Don't log an error for HedgehogWalletNotFoundError as it's expected when user is logged out
+      if (!(e instanceof HedgehogWalletNotFoundError)) {
+        console.error(e)
+        reportError({ error: e as Error })
+      }
       return { data, signature: '' }
     }
   }

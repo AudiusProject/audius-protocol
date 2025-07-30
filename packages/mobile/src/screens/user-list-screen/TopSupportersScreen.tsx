@@ -11,8 +11,7 @@ import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
 
 const messages = {
-  title: 'Tip Supporters',
-  titleAlt: 'Top Supporters'
+  title: 'Top Supporters'
 }
 
 export const TopSupportersScreen = () => {

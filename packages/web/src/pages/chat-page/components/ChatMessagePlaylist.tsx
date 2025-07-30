@@ -99,7 +99,6 @@ export const ChatMessagePlaylist = ({
       id={collectionId}
       size={TrackTileSize.SMALL}
       ordered={false}
-      trackTileStyles={{}}
       togglePlay={() => {}}
       playTrack={playTrack}
       pauseTrack={pauseTrack}
@@ -109,7 +108,6 @@ export const ChatMessagePlaylist = ({
       numLoadingSkeletonRows={tracksWithUids.length}
       variant='readonly'
       source={ModalSource.DirectMessageCollectionTile}
-      tracks={tracksWithUids}
     />
   ) : null
 }

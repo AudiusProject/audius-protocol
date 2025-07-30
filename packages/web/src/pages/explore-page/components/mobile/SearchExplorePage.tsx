@@ -61,6 +61,7 @@ import {
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ExploreSection } from '../desktop/ExploreSection'
+import { TrendingPlaylists } from '../desktop/TrendingPlaylists'
 
 import { MostSharedSection } from './MostSharedSection'
 import { UndergroundTrendingSection } from './UndergroundTrendingSection'
@@ -327,9 +328,12 @@ const ExplorePage = () => {
                 </Flex>
               </Flex>
             </Flex>
-            <Flex direction='column' mt='2xl' gap='l'>
-              {isSearchExploreGoodiesEnabled ? <MostSharedSection /> : null}
-            </Flex>
+            {isSearchExploreGoodiesEnabled ? (
+              <Flex direction='column' mt='2xl' gap='l'>
+                <TrendingPlaylists />
+                <MostSharedSection />
+              </Flex>
+            ) : null}
             <Flex direction='column' ph='l' gap='l'>
               <Text variant='title' size='l'>
                 {messages.bestOfAudius}

@@ -434,8 +434,8 @@ type TransferFromUserBankParams = {
   /** The token mint address */
   mint: PublicKey
   connection: Connection
-  /** Amount, in decimal token amounts (eg dollars for USDC) */
-  amount: number
+  /** Amount, in wei token amounts (eg 10^6 for USDC) */
+  amount: bigint
   /** The eth address of the sender (for deriving user bank) */
   ethWallet: string
   /** The destination wallet (not token account but Solana wallet) */

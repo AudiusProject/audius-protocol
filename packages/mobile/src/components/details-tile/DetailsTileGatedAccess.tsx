@@ -2,7 +2,9 @@ import type { ID, AccessConditions } from '@audius/common/models'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
-  isContentTipGated
+  isContentTipGated,
+  isContentSpecialAccess,
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { PurchaseableContentType } from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
@@ -30,7 +32,9 @@ export const DetailsTileGatedAccess = ({
   const shouldDisplay =
     isContentCollectibleGated(streamConditions) ||
     isContentFollowGated(streamConditions) ||
-    isContentTipGated(streamConditions)
+    isContentTipGated(streamConditions) ||
+    isContentSpecialAccess(streamConditions) ||
+    isContentUSDCPurchaseGated(streamConditions)
 
   if (!shouldDisplay) return null
 

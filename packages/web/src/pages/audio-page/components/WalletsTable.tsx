@@ -160,7 +160,7 @@ type WalletsTableProps = {
 }
 
 const WalletsTable = ({
-  renderWallet = (props) => <WalletTableRow {...props} />,
+  renderWallet = (props) => <WalletTableRow key={props.address} {...props} />,
   showWalletActionMenus = false,
   className
 }: WalletsTableProps) => {

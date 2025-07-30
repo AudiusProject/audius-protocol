@@ -12,7 +12,9 @@ import {
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  SquareSizes
+  SquareSizes,
+  isContentUSDCPurchaseGated,
+  ModalSource
 } from '@audius/common/models'
 import {
   tracksSocialActions,
@@ -23,8 +25,10 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   trackPageActions,
-  usePublishConfirmationModal,
-  PurchaseableContentType
+  PurchaseableContentType,
+  gatedContentActions,
+  usePremiumContentPurchaseModal,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
@@ -33,7 +37,9 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
 import type { TrackTileProps } from 'app/components/lineup-tile/types'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { setVisibility } from 'app/store/drawers/slice'
 
 import { TrackImage } from '../image/TrackImage'
 import { TrackDogEar } from '../track/TrackDogEar'
@@ -48,6 +54,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getTrackPosition } = playbackPositionSelectors
+const { setLockedContentId } = gatedContentActions
 
 export const TrackTile = (props: TrackTileProps) => {
   const { id, onPress, togglePlay, variant, ...lineupTileProps } = props
@@ -61,6 +68,9 @@ export const TrackTile = (props: TrackTileProps) => {
   })
   const { data: currentUserId } = useCurrentUserId()
   const { onOpen: openPublishModal } = usePublishConfirmationModal()
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+  const isUSDCEnabled = useIsUSDCEnabled()
 
   const { data: track } = useTrack(id, {
     select: (track) => ({
@@ -77,7 +87,8 @@ export const TrackTile = (props: TrackTileProps) => {
       album_backlink: track.album_backlink,
       owner_id: track.owner_id,
       is_delete: track.is_delete,
-      is_scheduled_release: track.is_scheduled_release
+      is_scheduled_release: track.is_scheduled_release,
+      preview_cid: track.preview_cid
     })
   })
 
@@ -90,6 +101,13 @@ export const TrackTile = (props: TrackTileProps) => {
   })
 
   const { hasStreamAccess } = useGatedTrackAccess(id)
+
+  const openLockedContentModal = useCallback(() => {
+    if (track?.track_id) {
+      dispatch(setLockedContentId({ id: track.track_id }))
+      dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
+    }
+  }, [track?.track_id, dispatch])
 
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === lineupTileProps.uid
@@ -108,6 +126,27 @@ export const TrackTile = (props: TrackTileProps) => {
 
   const handlePress = useCallback(() => {
     if (!track) return
+
+    const isUSDCPurchase =
+      isUSDCEnabled && isContentUSDCPurchaseGated(track.stream_conditions)
+    const isStreamGated = !!track.stream_conditions
+
+    // Check if track is gated and user doesn't have access
+    if (isStreamGated && !hasStreamAccess && !track.preview_cid) {
+      if (isUSDCPurchase) {
+        openPremiumContentPurchaseModal(
+          {
+            contentId: track.track_id,
+            contentType: PurchaseableContentType.TRACK
+          },
+          { source: ModalSource.LineUpTrackTile }
+        )
+      } else {
+        openLockedContentModal()
+      }
+      return
+    }
+
     setTimeout(() => {
       togglePlay({
         uid: lineupTileProps.uid,
@@ -116,7 +155,16 @@ export const TrackTile = (props: TrackTileProps) => {
       })
       onPress?.(track.track_id)
     }, 100)
-  }, [togglePlay, lineupTileProps.uid, track, onPress])
+  }, [
+    track,
+    hasStreamAccess,
+    isUSDCEnabled,
+    openPremiumContentPurchaseModal,
+    openLockedContentModal,
+    togglePlay,
+    lineupTileProps.uid,
+    onPress
+  ])
 
   const handlePressTitle = useCallback(() => {
     if (!track) return
