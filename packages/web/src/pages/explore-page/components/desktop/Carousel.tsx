@@ -130,7 +130,6 @@ export const Carousel = ({
                   : undefined,
             paddingTop: 2
           }}
-          pb={isMobile ? '2xl' : '3xl'}
         >
           <Flex
             gap='m'
