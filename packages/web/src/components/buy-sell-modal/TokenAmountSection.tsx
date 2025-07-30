@@ -298,7 +298,7 @@ const CryptoAmountSection = ({
   if (verticalLayout) {
     return (
       <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-        <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
+        <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {formattedAmount}
@@ -318,7 +318,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-      <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
+      <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
       <Flex direction='column'>
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <Text variant='heading' size='l'>

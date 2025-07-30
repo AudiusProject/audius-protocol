@@ -350,7 +350,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }
 
   if (isTokenDataLoading) {
-    return <ModalLoading />
+    return <ModalLoading noText />
   }
 
   return (
