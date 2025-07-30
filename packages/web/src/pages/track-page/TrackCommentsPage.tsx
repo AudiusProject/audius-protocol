@@ -47,7 +47,7 @@ export const TrackCommentsPage = () => {
       title={messages.title}
       css={(theme) => ({
         backgroundColor: theme.color.background.white,
-        height: '100%'
+        minHeight: '100%'
       })}
     >
       {comments_disabled ? (

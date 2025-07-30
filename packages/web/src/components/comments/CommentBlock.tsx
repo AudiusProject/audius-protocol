@@ -88,6 +88,18 @@ const CommentBlockInternal = (
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isCommentByArtist = userId === artistId
 
+  const highlightBackgroundFadeAnimation = keyframes`
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: ${isDarkMode ? 0.2 : 0.1};
+    }
+    100% {
+      opacity: ${isDarkMode ? 0.1 : 0.05};
+    }
+  `
+
   return (
     <Flex
       w='100%'
@@ -104,7 +116,8 @@ const CommentBlockInternal = (
           left: 0,
           right: 0,
           backgroundColor: color.focus.default,
-          opacity: isDarkMode ? 0.1 : 0.05,
+          opacity: 0,
+          animation: `${highlightBackgroundFadeAnimation} forwards 0.66s 1.2s ease-in-out`,
           zIndex: 0
         }
       }}
