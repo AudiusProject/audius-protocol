@@ -61,6 +61,7 @@ export const useConnectedWallets = (options?: QueryOptions) => {
         currentUserId
       })
     },
+    enabled: options?.enabled !== false && !!currentUserId,
     ...options
   })
 }
@@ -80,6 +81,9 @@ export const useAddConnectedWallet = () => {
 
   return useMutation({
     mutationFn: async ({ wallet, signature }: AddConnectedWalletParams) => {
+      if (!currentUserId) {
+        throw new Error('Cannot add connected wallet: user not logged in')
+      }
       const sdk = await audiusSdk()
       await sdk.users.addAssociatedWallet({
         userId: Id.parse(currentUserId),
@@ -150,6 +154,9 @@ export const useRemoveConnectedWallet = () => {
 
   return useMutation({
     mutationFn: async ({ wallet }: RemoveConnectedWalletParams) => {
+      if (!currentUserId) {
+        throw new Error('Cannot remove connected wallet: user not logged in')
+      }
       const sdk = await audiusSdk()
       const response = await sdk.users.removeAssociatedWallet({
         userId: Id.parse(currentUserId),
