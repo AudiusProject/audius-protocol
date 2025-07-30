@@ -40,7 +40,7 @@ export const CryptoBalanceSection = ({
 
       {/* Amount and token info */}
       <Flex direction='row' alignItems='center' gap='s'>
-        <TokenIcon size='l' />
+        <TokenIcon size='4xl' />
         <Flex direction='column'>
           <Flex direction='row' gap='xs' alignItems='center'>
             <Text variant='heading' size='l'>

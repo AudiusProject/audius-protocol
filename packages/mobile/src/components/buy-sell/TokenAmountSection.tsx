@@ -124,7 +124,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex direction='row' alignItems='center' gap='s'>
-      <TokenIcon size='l' />
+      <TokenIcon size='4xl' />
       <Flex direction='column'>
         <Flex direction='row' alignItems='center' gap='xs'>
           <Text variant='heading' size='l'>
