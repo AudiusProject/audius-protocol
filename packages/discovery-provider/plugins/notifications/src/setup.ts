@@ -24,13 +24,13 @@ $$ language plpgsql;
 
 export async function setupTriggers(db: Knex) {
   // Setup notification trigger
-  const { notificationCount }: { notificationCount: string } = await db(
+  const [{ notificationCount }]: { notificationCount: string }[] = await db(
     'information_schema.routines'
   )
     .where('routine_name', '=', notificationFunctionName)
     .count({ notificationCount: '*' })
 
-  const skipNotification = parseInt(notificationCount) == 1
+  const skipNotification = parseInt(notificationCount) === 1
 
   if (skipNotification) {
     logger.info(
@@ -56,11 +56,10 @@ export async function setupTriggers(db: Knex) {
   }
 
   // Setup notification_seen trigger
-  const { notificationSeenCount }: { notificationSeenCount: string } = await db(
-    'information_schema.routines'
-  )
-    .where('routine_name', '=', notificationSeenFunctionName)
-    .count({ notificationSeenCount: '*' })
+  const [{ notificationSeenCount }]: { notificationSeenCount: string }[] =
+    await db('information_schema.routines')
+      .where('routine_name', '=', notificationSeenFunctionName)
+      .count({ notificationSeenCount: '*' })
 
   const skipNotificationSeen = parseInt(notificationSeenCount) == 1
 
