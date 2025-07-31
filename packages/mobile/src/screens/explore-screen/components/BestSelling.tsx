@@ -16,6 +16,7 @@ export const BestSelling = () => {
   const [category] = useSearchCategory()
 
   const { data, isLoading } = useBestSelling({
+    pageSize: 10,
     type:
       category === 'albums' ? 'album' : category === 'tracks' ? 'track' : 'all'
   })
