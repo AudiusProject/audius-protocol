@@ -8,7 +8,7 @@ import { TrackTile } from 'components/track/desktop/TrackTile'
 import { ExploreSection } from './ExploreSection'
 
 export const RecentPremiumTracksSection = () => {
-  const { data, isLoading } = useRecentPremiumTracks()
+  const { data, isLoading } = useRecentPremiumTracks({ pageSize: 10 })
 
   if (!isLoading && (!data || data.length === 0)) {
     return null

@@ -1,22 +1,20 @@
 import React from 'react'
 
-import { BestSellingItemWithId } from '@audius/common/api'
+import { useBestSelling } from '@audius/common/api'
+import { exploreMessages as messages } from '@audius/common/messages'
 
 import { BestSellingCard } from 'components/best-selling-card'
+import { useSearchCategory } from 'pages/search-page/hooks'
 
 import { ExploreSection } from './ExploreSection'
 
-type BestSellingSectionProps = {
-  title: string
-  data?: BestSellingItemWithId[]
-  loading?: boolean
-}
+export const BestSellingSection = () => {
+  const [category] = useSearchCategory()
 
-export const BestSellingSection: React.FC<BestSellingSectionProps> = ({
-  title,
-  data,
-  loading
-}) => {
+  const { data, isLoading } = useBestSelling({
+    type:
+      category === 'albums' ? 'album' : category === 'tracks' ? 'track' : 'all'
+  })
   // Deduplicate data by ID to avoid duplicate keys
   const uniqueData = data?.filter(
     (item, index, self) => self.findIndex((t) => t.id === item.id) === index
@@ -30,15 +28,14 @@ export const BestSellingSection: React.FC<BestSellingSectionProps> = ({
     const item = uniqueData?.find((item) => item.id === id)
     if (!item) return null
 
-    return <BestSellingCard item={item} size='s' loading={loading} />
+    return <BestSellingCard item={item} size='s' loading={isLoading} />
   }
 
   return (
     <ExploreSection
-      title={title}
+      title={messages.bestSelling}
       data={ids}
       Card={BestSellingCardWithData}
-      key={`best-selling-${title}`}
     />
   )
 }
