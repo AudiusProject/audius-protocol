@@ -178,19 +178,21 @@ export const ChatListScreen = () => {
                   />
                 ))
             ) : (
-              <FlashList
-                refreshing={chatsStatus === 'REFRESHING'}
-                onRefresh={refresh}
-                data={nonEmptyChats}
-                renderItem={renderItem}
-                keyExtractor={keyExtractor}
-                ListEmptyComponent={() => (
-                  <ChatsEmpty onPress={navigateToChatUserList} />
-                )}
-                onEndReached={handleLoadMore}
-                onEndReachedThreshold={0.7}
-                estimatedItemSize={CHAT_ITEM_HEIGHT}
-              />
+              <View style={styles.listContainer}>
+                <FlashList
+                  refreshing={chatsStatus === 'REFRESHING'}
+                  onRefresh={refresh}
+                  data={nonEmptyChats}
+                  renderItem={renderItem}
+                  keyExtractor={keyExtractor}
+                  ListEmptyComponent={() => (
+                    <ChatsEmpty onPress={navigateToChatUserList} />
+                  )}
+                  onEndReached={handleLoadMore}
+                  onEndReachedThreshold={0.7}
+                  estimatedItemSize={CHAT_ITEM_HEIGHT}
+                />
+              </View>
             )}
           </View>
         </ScreenPrimaryContent>
