@@ -37,13 +37,23 @@ export const usePlayTrack = (recordAnalytics?: RecordAnalytics) => {
   const playingUid = useSelector(getUid)
 
   const playTrack = useCallback(
-    ({ id, uid, entries }: { id?: ID; uid: string; entries: Queueable[] }) => {
+    ({
+      id,
+      uid,
+      entries,
+      passUid
+    }: {
+      id?: ID
+      uid: string
+      entries: Queueable[]
+      passUid?: boolean
+    }) => {
       if (playingUid !== uid) {
         dispatch(clear({}))
         dispatch(add({ entries }))
         dispatch(play({ uid }))
       } else {
-        dispatch(play({}))
+        dispatch(play(passUid ? { uid } : {}))
       }
       if (recordAnalytics && id) {
         recordAnalytics({ name: Name.PLAYBACK_PLAY, id })
