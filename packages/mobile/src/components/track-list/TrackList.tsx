@@ -196,7 +196,7 @@ export const TrackList = (props: TrackListProps) => {
     />
   ) : (
     <FlashList
-      {...otherProps}
+      {...(otherProps as Partial<FlashListProps<UID | ID | LoadingItem>>)}
       data={data}
       keyExtractor={keyExtractor}
       renderItem={renderTrack}
