@@ -13,7 +13,7 @@ export const UndergroundTrendingTracksSection = () => {
     data: undergroundTrendingTracks,
     isLoading: hookIsLoading,
     lineup
-  } = useTrendingUnderground()
+  } = useTrendingUnderground({ pageSize: 10 })
 
   const isLoading = hookIsLoading || lineup.status === Status.LOADING
 

@@ -8,7 +8,9 @@ import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const RecentPremiumTracks = () => {
-  const { data: recentPremiumTracks, isLoading } = useRecentPremiumTracks()
+  const { data: recentPremiumTracks, isLoading } = useRecentPremiumTracks({
+    pageSize: 10
+  })
   if (
     !isLoading &&
     (!recentPremiumTracks || recentPremiumTracks.length === 0)
