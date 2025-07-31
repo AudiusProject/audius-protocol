@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   useCreateEvent,
@@ -52,6 +52,10 @@ export const HostRemixContestModal = () => {
   const isEdit = !!remixContest
   const hasContestEntries = remixesLoading || remixes?.length
   const displayTurnOffButton = !hasContestEntries && isEdit
+  const contestMinDate = useMemo(
+    () => (remixContest ? dayjs(remixContest.endDate) : dayjs()),
+    [remixContest]
+  )
 
   const remixContestData = remixContest?.eventData
 
@@ -115,7 +119,7 @@ export const HostRemixContestModal = () => {
     const hasDescriptionError = !contestDescription
     const hasDateError =
       !parsedDate ||
-      dayjs(parsedDate.toISOString()).isBefore(dayjs()) ||
+      dayjs(parsedDate.toISOString()).isBefore(contestMinDate) ||
       dayjs(parsedDate.toISOString()).isAfter(dayjs().add(90, 'days'))
     const hasError = hasDateError || hasDescriptionError
 
@@ -170,6 +174,7 @@ export const HostRemixContestModal = () => {
     contestEndDate,
     meridianValue,
     contestDescription,
+    contestMinDate,
     trackId,
     userId,
     contestPrizeInfo,
@@ -263,9 +268,9 @@ export const HostRemixContestModal = () => {
               label={remixMessages.endDateLabel}
               onChange={handleEndDateChange}
               value={contestEndDate?.toISOString()}
-              futureDatesOnly
               error={endDateError ? remixMessages.endDateError : undefined}
               touched={endDateTouched}
+              minDate={contestMinDate.toDate()}
               maxDate={dayjs().add(90, 'days').toDate()}
             />
             <Flex gap='l'>
