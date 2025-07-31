@@ -2,15 +2,20 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
+import { useSearchCategory } from 'pages/search-page/hooks'
 import { MOODS } from 'pages/search-page/moods'
+import { labelByCategoryView } from 'pages/search-page/types'
 
 export const MoodGrid = () => {
   const navigate = useNavigate()
+  const [category] = useSearchCategory()
   const { color } = useTheme()
 
   return (
     <Flex direction='column' gap='l' alignItems='center'>
-      <Text variant='heading'>{messages.exploreByMood}</Text>
+      <Text variant='heading'>
+        {messages.exploreByMood(labelByCategoryView[category])}
+      </Text>
       <Flex gap='s' justifyContent='center' alignItems='flex-start' wrap='wrap'>
         {Object.entries(MOODS)
           .sort()

@@ -59,7 +59,8 @@ export const remoteConfigInstance = remoteConfig({
   setFeatureFlagSessionId: async (id) =>
     AsyncStorage.setItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY, id.toString()),
   setLogLevel: () => optimizely.setLogLevel('warn'),
-  environment: Config.ENVIRONMENT as Environment
+  // environment: Config.ENVIRONMENT as Environment
+  environment: 'staging'
 })
 
 remoteConfigInstance.init()

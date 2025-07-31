@@ -56,13 +56,14 @@ import {
   Category,
   CategoryKey,
   CategoryView,
-  ViewLayout
+  ViewLayout,
+  labelByCategoryView
 } from 'pages/search-page/types'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ExploreSection } from '../desktop/ExploreSection'
 import { QuickSearchGrid } from '../desktop/QuickSearchGrid'
-import { TrendingPlaylists } from '../desktop/TrendingPlaylists'
+import { TrendingPlaylistsSection } from '../desktop/TrendingPlaylistsSection'
 
 import { MostSharedSection } from './MostSharedSection'
 import { UndergroundTrendingSection } from './UndergroundTrendingSection'
@@ -292,7 +293,7 @@ const ExplorePage = () => {
             <Flex direction='column' ph='l' gap='2xl'>
               <Flex direction='column' gap='l' alignItems='center'>
                 <Text variant='title' size='l'>
-                  {messages.exploreByMood}
+                  {messages.exploreByMood(labelByCategoryView[categoryKey])}
                 </Text>
                 <Flex
                   gap='m'
@@ -332,7 +333,7 @@ const ExplorePage = () => {
             </Flex>
             {isSearchExploreGoodiesEnabled ? (
               <Flex direction='column' mt='2xl' gap='l'>
-                <TrendingPlaylists />
+                <TrendingPlaylistsSection />
                 <MostSharedSection />
               </Flex>
             ) : null}

@@ -1,41 +1,64 @@
-import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Id, full } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { primeTrackData, useQueryContext } from '~/api/tan-query/utils'
+import { SDKInfiniteQueryArgs } from '~/api/types'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, SelectableQueryOptions } from '../types'
+import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export type UseRecentlyCommentedTracksArgs = {
-  userId: ID | null | undefined
+const DEFAULT_PAGE_SIZE = 10
+
+export type UseRecentlyCommentedTracksArgs =
+  SDKInfiniteQueryArgs<full.GetTracksWithRecentCommentsRequest>
+
+export const getRecentlyCommentedTracksQueryKey = (
+  userId: ID | null | undefined,
+  args: UseRecentlyCommentedTracksArgs
+) => {
+  return [
+    QUERY_KEYS.recentlyCommentedTracks,
+    userId,
+    args
+  ] as unknown as QueryKey<InfiniteData<ID[]>>
 }
 
-export const getRecentlyCommentedTracksQueryKey = ({
-  userId
-}: UseRecentlyCommentedTracksArgs) => {
-  return [QUERY_KEYS.recentlyCommentedTracks, userId] as unknown as QueryKey<
-    ID[]
-  >
-}
-
-export const useRecentlyCommentedTracks = <TResult = ID[]>(
-  options?: SelectableQueryOptions<ID[], TResult>
+export const useRecentlyCommentedTracks = (
+  {
+    pageSize = DEFAULT_PAGE_SIZE,
+    ...args
+  }: UseRecentlyCommentedTracksArgs = {},
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
 
-  return useQuery({
-    queryKey: getRecentlyCommentedTracksQueryKey({ userId: currentUserId }),
-    queryFn: async () => {
+  return useInfiniteQuery({
+    queryKey: getRecentlyCommentedTracksQueryKey(currentUserId, {
+      pageSize,
+      ...args
+    }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: ID[], allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
+      if (!currentUserId) return []
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.tracks.getTracksWithRecentComments({
-        userId: currentUserId ? Id.parse(currentUserId) : undefined,
-        limit: 30
+        ...args,
+        userId: Id.parse(currentUserId),
+        offset: pageParam
       })
 
       const tracks = primeTrackData({
@@ -45,6 +68,7 @@ export const useRecentlyCommentedTracks = <TResult = ID[]>(
 
       return tracks.map(({ track_id }) => track_id)
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false
   })

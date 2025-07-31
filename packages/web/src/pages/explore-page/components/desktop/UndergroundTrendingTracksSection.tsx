@@ -8,7 +8,7 @@ import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTil
 
 import { ExploreSection } from './ExploreSection'
 
-export const UndergroundTrendingTracks = () => {
+export const UndergroundTrendingTracksSection = () => {
   const {
     data: undergroundTrendingTracks,
     isLoading: hookIsLoading,
