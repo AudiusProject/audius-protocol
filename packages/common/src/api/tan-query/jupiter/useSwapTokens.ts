@@ -13,18 +13,41 @@ import {
   getJupiterQuoteByMint,
   jupiterInstance
 } from '~/services/Jupiter'
+import { useTokens } from '~/store/ui/buy-sell'
+import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 import { QUERY_KEYS } from '../queryKeys'
 
-import { createUserBankManagedTokens } from './constants'
 import { updateAudioBalanceOptimistically } from './optimisticUpdates'
 import {
+  ClaimableTokenMint,
   SwapErrorType,
   SwapStatus,
   SwapTokensParams,
-  SwapTokensResult
+  SwapTokensResult,
+  UserBankManagedTokenInfo
 } from './types'
 import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
+
+const findTokenByAddress = (
+  tokens: Record<string, TokenInfo>,
+  address: string
+): TokenInfo | undefined => {
+  return Object.values(tokens).find(
+    (token) => token.address.toLowerCase() === address.toLowerCase()
+  )
+}
+
+const getClaimableTokenMint = (token: TokenInfo): ClaimableTokenMint => {
+  if (token.symbol === 'USDC') return 'USDC'
+  return new PublicKey(token.address)
+}
+
+const createTokenConfig = (token: TokenInfo): UserBankManagedTokenInfo => ({
+  mintAddress: token.address,
+  claimableTokenMint: getClaimableTokenMint(token),
+  decimals: token.decimals
+})
 
 /**
  * Hook for executing token swaps using Jupiter.
@@ -32,9 +55,9 @@ import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk, env } =
-    useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
+  const { tokens } = useTokens()
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
     mutationFn: async (params): Promise<SwapTokensResult> => {
@@ -84,17 +107,29 @@ export const useSwapTokens = () => {
         })
 
         // ---------- 3. Prepare Transaction Instructions ----------
-        const userBankManagedTokens = createUserBankManagedTokens(env)
-        const inputTokenConfig =
-          userBankManagedTokens[inputMintUiAddress.toUpperCase()]
-        const outputTokenConfig =
-          userBankManagedTokens[outputMintUiAddress.toUpperCase()]
+        // Find input and output tokens from our backend-driven token data
+        const inputToken = findTokenByAddress(tokens, inputMintUiAddress)
+        const outputToken = findTokenByAddress(tokens, outputMintUiAddress)
+
+        if (!inputToken || !outputToken) {
+          return {
+            status: SwapStatus.ERROR,
+            error: {
+              type: SwapErrorType.BUILD_FAILED,
+              message: 'Token not found in available tokens'
+            }
+          }
+        }
+
+        // Create UserBankManagedTokenInfo objects
+        const inputTokenConfig = createTokenConfig(inputToken)
+        const outputTokenConfig = createTokenConfig(outputToken)
 
         // --- 3a. Handle Input Token (if user bank managed) ---
         errorStage = 'INPUT_TOKEN_PREPARATION'
 
         const sourceAtaForJupiter = await addUserBankToAtaInstructions({
-          tokenInfo: inputTokenConfig!,
+          tokenInfo: inputTokenConfig,
           userPublicKey,
           ethAddress: ethAddress!,
           amountLamports: BigInt(quoteResult.inputAmount.amount),
@@ -109,7 +144,7 @@ export const useSwapTokens = () => {
         const result =
           await sdk.services.claimableTokensClient.getOrCreateUserBank({
             ethWallet: ethAddress!,
-            mint: outputTokenConfig!.claimableTokenMint
+            mint: outputTokenConfig.claimableTokenMint
           })
         const outputUserBankAddress = result.userBank
         const preferredJupiterDestination = outputUserBankAddress.toBase58()

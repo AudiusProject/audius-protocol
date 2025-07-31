@@ -31,7 +31,6 @@ type BalanceSectionProps = {
   tooltipPlacement?: TooltipPlacement
   availableTokens?: TokenInfo[]
   onTokenChange?: (symbol: string) => void
-  isConvertFlow?: boolean
 }
 
 const DefaultBalanceSection = ({
@@ -139,8 +138,7 @@ const StackedBalanceSection = ({
   tokenInfo,
   isStablecoin,
   availableTokens,
-  onTokenChange,
-  isConvertFlow = false
+  onTokenChange
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
   const [isPopupVisible, setIsPopupVisible] = useState(false)
@@ -178,8 +176,8 @@ const StackedBalanceSection = ({
         alignItems='flex-start'
         justifyContent='center'
         gap='xs'
-        flex={isConvertFlow ? undefined : 1}
-        alignSelf={isConvertFlow ? 'flex-end' : 'stretch'}
+        flex={1}
+        alignSelf='stretch'
         border='default'
         pv='s'
         ph='m'
@@ -494,21 +492,12 @@ export const TokenAmountSection = ({
     ) {
       return (
         <Flex p='l' alignItems='center' gap='s' justifyContent='space-between'>
-          <CryptoAmountSection
-            formattedAmount={formattedAmount}
-            tokenInfo={tokenInfo}
-            isStablecoin={!!isStablecoin}
-            priceDisplay={priceDisplay}
-            noPadding
-            verticalLayout
-          />
           <StackedBalanceSection
             formattedAvailableBalance={formattedAvailableBalance}
             tokenInfo={tokenInfo}
             isStablecoin={!!isStablecoin}
             availableTokens={availableTokens}
             onTokenChange={onTokenChange}
-            isConvertFlow={true}
           />
         </Flex>
       )
