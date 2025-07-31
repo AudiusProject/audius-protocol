@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 
-import { useBestSelling } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -118,8 +117,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_GOODIES
   )
-
-  const { data: bestSelling } = useBestSelling()
   const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
@@ -325,10 +322,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 <>
                   <TrendingPlaylistsSection />
                   <MostSharedSection />
-                  <BestSellingSection
-                    title={messages.bestSelling}
-                    data={bestSelling}
-                  />
+                  <BestSellingSection />
                   <RecentPremiumTracksSection />
                 </>
               ) : null}

@@ -29,7 +29,7 @@ export const QUERY_KEYS = {
   userTracksByHandle: 'userTracksByHandle',
   userPlaylists: 'userPlaylists',
   userAlbums: 'userAlbums',
-  bestSellingAlbums: 'bestSellingAlbums',
+  bestSellingItems: 'bestSellingItems',
   userCollectibles: 'userCollectibles',
   collection: 'collection',
   collections: 'collections',
