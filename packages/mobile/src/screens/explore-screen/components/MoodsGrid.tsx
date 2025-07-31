@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from 'react'
 
+import { labelByCategory } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import type { Mood } from '@audius/sdk'
 import { MOODS } from 'pages/search-page/moods'
@@ -45,7 +46,7 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
   }
   return (
     <ExploreSection
-      title={messages.exploreByMood(category)}
+      title={messages.exploreByMood(labelByCategory[category])}
       centered
       isLoading={externalLoading}
     >

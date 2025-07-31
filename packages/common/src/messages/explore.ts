@@ -1,8 +1,3 @@
-import {
-  SearchCategory,
-  labelByCategory
-} from '~/api/tan-query/search/useSearchResults'
-
 export const exploreMessages = {
   explore: 'Explore',
   description: 'Discover new releases, fan favorites, and rising hits',
@@ -14,8 +9,8 @@ export const exploreMessages = {
   bestSelling: 'Best Selling',
   artistSpotlight: 'Artist Spotlight',
   labelSpotlight: 'Label Spotlight',
-  exploreByMood: (category: SearchCategory) =>
-    `Explore${category !== 'all' ? ` ${labelByCategory[category]}` : ''} by Mood`,
+  exploreByMood: (category?: string) =>
+    `Explore${category ? ` ${category}` : ''} by Mood`,
   bestOfAudius: 'Best of Audius',
   viewAll: 'View All',
   layoutOptionsLabel: 'View As',
