@@ -1,12 +1,18 @@
-import React, { useCallback, useContext, useEffect, useRef } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import { exploreMessages as messages } from '@audius/common/messages'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import type { ScrollView } from 'react-native'
 import { ImageBackground, Keyboard } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { SharedValue } from 'react-native-reanimated'
 import Animated, {
-  useSharedValue,
   interpolate,
   useAnimatedStyle,
   interpolateColor,
@@ -32,7 +38,11 @@ import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AccountPictureHeader } from 'app/screens/app-screen/AccountPictureHeader'
 import { SearchCategoriesAndFilters } from 'app/screens/search-screen/SearchCategoriesAndFilters'
 
-import { useSearchQuery } from '../../search-screen/searchState'
+import {
+  useSearchCategory,
+  useSearchFilters,
+  useSearchQuery
+} from '../../search-screen/searchState'
 import { SCROLL_FACTOR } from '../SearchExploreScreen'
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
@@ -46,28 +56,46 @@ type SearchExploreHeaderProps = {
   filterTranslateY: SharedValue<number>
   scrollY: SharedValue<number>
   scrollRef: React.RefObject<ScrollView>
-  inputValue: string
-  onInputValueChange: (value: string) => void
 }
 
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
-  const {
-    filterTranslateY,
-    scrollY,
-    scrollRef,
-    inputValue,
-    onInputValueChange
-  } = props
+  const { filterTranslateY, scrollY, scrollRef } = props
   const { spacing, color, motion } = useTheme()
   const { params } = useRoute<'Search'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
   const textInputRef = useRef<any>(null)
+  const [isFocused, setIsFocused] = useState(!!params?.autoFocus)
 
   // Get state from context
   const [query, setQuery] = useSearchQuery()
+  const [inputValue, setInputValue] = useState(query)
+  useDebounce(() => setQuery(inputValue), 400, [inputValue])
 
-  // Handle keyboard dismiss
+  const [category] = useSearchCategory()
+  const [filters] = useSearchFilters()
+
+  const hasAnyFilter = Object.values(filters).some(
+    (value) => value !== undefined
+  )
+
+  const shouldCollapse =
+    isFocused ||
+    !!inputValue ||
+    category !== 'all' ||
+    hasAnyFilter ||
+    params?.autoFocus
+
+  // Focus the input when autoFocus is true and screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (params?.autoFocus === true && textInputRef.current) {
+        textInputRef.current?.focus()
+      }
+    }, [params?.autoFocus])
+  )
+
+  // When the user dismisses the keyboard, we need to set autoFocus to false
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
@@ -82,157 +110,120 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     return () => keyboardDidHideListener?.remove()
   }, [navigation, params?.autoFocus])
 
-  // Focus the input when autoFocus is true and screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      if (params?.autoFocus === true && textInputRef.current) {
-        const timer = setTimeout(() => {
-          textInputRef.current?.focus()
-        }, 100)
+  // Create derived values for better performance
+  const isScrolled = useDerivedValue(() => {
+    return scrollY.value > 0
+  })
 
-        return () => clearTimeout(timer)
-      }
-    }, [params?.autoFocus])
-  )
-
-  // State
-
-  // Data fetching
-  const animatedFilterPaddingVertical = useSharedValue(spacing.l)
-
-  // Handlers
   const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
   }, [drawerHelpers])
 
   const handleClearSearch = useCallback(() => {
-    onInputValueChange('')
+    setInputValue('')
+    setQuery('')
     scrollRef.current?.scrollTo({
       y: 0,
       animated: false
     })
     Keyboard.dismiss()
-  }, [onInputValueChange, scrollRef])
+  }, [setInputValue, setQuery, scrollRef])
 
   const handleSearchInputChange = useCallback(
     (text: string) => {
-      onInputValueChange(text)
+      setInputValue(text)
       if (text === '') {
         scrollRef.current?.scrollTo?.({ y: 0, animated: false })
       }
     },
-    [onInputValueChange, scrollRef]
+    [setInputValue, scrollRef]
   )
-
-  // Immediate update for first character
-  useEffect(() => {
-    if (inputValue.length < 2) {
-      setQuery(inputValue)
-    }
-  }, [inputValue, query, setQuery])
-
-  // Normal debounced update for everything else
-  useDebounce(
-    () => {
-      // Skip if we already handled the first character
-      if (inputValue.length >= 2) {
-        setQuery(inputValue)
-      }
-    },
-    400,
-    [inputValue]
-  )
-
-  // Animated styles
 
   // Header text fades out when collapsing
   // Height shrinks to collapse rows for avatar + input
   const headerTextAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: inputValue
+    opacity: shouldCollapse
       ? withTiming(0)
-      : scrollY.value === 0
-        ? withTiming(1, motion.calm)
-        : interpolate(
+      : isScrolled.value
+        ? interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [1, 0],
             Extrapolation.CLAMP
-          ),
-    height: inputValue
+          )
+        : withTiming(1, motion.calm),
+    height: shouldCollapse
       ? withTiming(0, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(34, motion.calm)
-        : interpolate(
+      : isScrolled.value
+        ? interpolate(
             scrollY.value,
-            [
-              HEADER_COLLAPSE_THRESHOLD,
-              (HEADER_COLLAPSE_THRESHOLD + 30) * SCROLL_FACTOR
-            ],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [34, 0],
             Extrapolation.CLAMP
-          ),
+          )
+        : withTiming(34, motion.calm),
     zIndex: -1
   }))
 
   const descriptionTextAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: inputValue
+    opacity: shouldCollapse
       ? withTiming(0)
-      : scrollY.value === 0
-        ? withTiming(1, motion.calm)
-        : interpolate(
+      : isScrolled.value
+        ? interpolate(
             scrollY.value,
             [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [1, 0],
             Extrapolation.CLAMP
-          ),
-    height: inputValue
+          )
+        : withTiming(1, motion.calm),
+    height: shouldCollapse
       ? withTiming(0, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(50, motion.calm)
-        : interpolate(
+      : isScrolled.value
+        ? interpolate(
             scrollY.value,
-            [
-              HEADER_COLLAPSE_THRESHOLD,
-              (HEADER_COLLAPSE_THRESHOLD + 30) * SCROLL_FACTOR
-            ],
+            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [50, 0],
             Extrapolation.CLAMP
-          ),
+          )
+        : withTiming(50, motion.calm),
     zIndex: -1
   }))
 
-  const inputAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: inputValue
-          ? withTiming(0.83, motion.calm)
-          : scrollY.value === 0
-            ? withTiming(1, motion.calm)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
-                [1, 0.83],
-                Extrapolation.CLAMP
-              )
-      },
-      {
-        translateX: inputValue
-          ? withTiming(30, motion.calm)
-          : scrollY.value === 0
-            ? withTiming(0)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
-                [0, 30],
-                Extrapolation.CLAMP
-              )
-      }
-    ]
-  }))
+  const inputAnimatedStyle = useAnimatedStyle(
+    () => ({
+      transform: [
+        {
+          scale: shouldCollapse
+            ? withTiming(0.83, motion.calm)
+            : scrollY.value === 0
+              ? withTiming(1, motion.calm)
+              : interpolate(
+                  scrollY.value,
+                  [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
+                  [1, 0.83],
+                  Extrapolation.CLAMP
+                )
+        },
+        {
+          translateX: shouldCollapse
+            ? withTiming(30, motion.calm)
+            : scrollY.value === 0
+              ? withTiming(0)
+              : interpolate(
+                  scrollY.value,
+                  [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
+                  [0, 30],
+                  Extrapolation.CLAMP
+                )
+        }
+      ]
+    }),
+    [shouldCollapse]
+  )
 
   // Header slides up to collapse
   const headerSlideAnimatedStyle = useAnimatedStyle(() => ({
-    marginTop: inputValue
+    marginTop: shouldCollapse
       ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
       : scrollY.value === 0
         ? withTiming(0, motion.calm)
@@ -244,54 +235,38 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
           )
   }))
 
-  // Avatar slides down in relation to colllapsing header
-  // to stay in place visually
-  const avatarSlideAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: inputValue
-          ? withTiming(HEADER_SLIDE_HEIGHT, motion.calm)
-          : scrollY.value === 0
-            ? withTiming(0, motion.calm)
-            : interpolate(
-                scrollY.value,
-                [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
-                [0, HEADER_SLIDE_HEIGHT],
-                Extrapolation.CLAMP
-              )
-      }
-    ]
-  }))
-
   // Header padding and gap shrink when collapsing
-  const headerPaddingShrinkStyle = useAnimatedStyle(() => ({
-    paddingVertical: inputValue
-      ? withTiming(spacing.s, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(spacing.l, motion.calm)
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
-            [spacing.l, spacing.s],
-            Extrapolation.CLAMP
-          ),
-    gap: inputValue
-      ? withTiming(0, motion.calm)
-      : scrollY.value === 0
-        ? withTiming(spacing.l, motion.calm)
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
-            [spacing.l, 0],
-            Extrapolation.CLAMP
-          )
-  }))
+  const headerPaddingShrinkStyle = useAnimatedStyle(
+    () => ({
+      paddingVertical: shouldCollapse
+        ? withTiming(spacing.s, motion.calm)
+        : scrollY.value === 0
+          ? withTiming(spacing.l, motion.calm)
+          : interpolate(
+              scrollY.value,
+              [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
+              [spacing.l, spacing.s],
+              Extrapolation.CLAMP
+            ),
+      gap: shouldCollapse
+        ? withTiming(0, motion.calm)
+        : scrollY.value === 0
+          ? withTiming(spacing.l, motion.calm)
+          : interpolate(
+              scrollY.value,
+              [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
+              [spacing.l, 0],
+              Extrapolation.CLAMP
+            )
+    }),
+    [shouldCollapse]
+  )
 
   // Filters slide up when header collapses
   // and hides when scrolling further down
   const filtersAnimatedStyle = useAnimatedStyle(() => ({
     marginTop:
-      scrollY.value === 0 || inputValue
+      scrollY.value === 0 || shouldCollapse
         ? withTiming(0, motion.calm)
         : filterTranslateY.value,
     backgroundColor:
@@ -302,7 +277,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
             [color.background.default, color.neutral.n25]
           ),
-    borderColor: inputValue
+    borderColor: shouldCollapse
       ? withTiming(color.border.strong, motion.calm)
       : scrollY.value === 0
         ? withTiming(color.background.default, motion.calm)
@@ -312,20 +287,31 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
             [color.background.default, color.border.strong]
           )
   }))
-  useDerivedValue(() => {
-    animatedFilterPaddingVertical.value =
-      scrollY.value === 0
-        ? spacing.l
-        : interpolate(
-            scrollY.value,
-            [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
-            [spacing.l, spacing.m],
-            Extrapolation.CLAMP
-          )
+
+  const animatedFilterPaddingVertical = useDerivedValue(() => {
+    return shouldCollapse || !isScrolled.value
+      ? spacing.l
+      : interpolate(
+          scrollY.value,
+          [0, HEADER_COLLAPSE_THRESHOLD * SCROLL_FACTOR],
+          [spacing.l, spacing.m],
+          Extrapolation.CLAMP
+        )
   })
 
   return (
     <>
+      <Flex
+        style={{
+          position: 'absolute',
+          left: spacing.l,
+          top: spacing.unit14,
+          zIndex: 3
+        }}
+        w={spacing.unit10}
+      >
+        <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+      </Flex>
       <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
         <ImageBackground source={imageSearchHeaderBackground}>
           <AnimatedFlex pt='unit14' ph='l' style={headerPaddingShrinkStyle}>
@@ -334,13 +320,8 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
               gap='m'
               h={spacing.unit11}
               alignItems='center'
+              style={{ marginLeft: spacing.unit10 + spacing.m }}
             >
-              <AnimatedFlex
-                style={[inputAnimatedStyle, avatarSlideAnimatedStyle]}
-                w={spacing.unit10}
-              >
-                <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-              </AnimatedFlex>
               <AnimatedText
                 variant='heading'
                 color='staticWhite'
@@ -367,6 +348,8 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
                 startIcon={IconSearch}
                 onChangeText={handleSearchInputChange}
                 value={inputValue}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 endIcon={(props) =>
                   inputValue ? (
                     <IconButton
