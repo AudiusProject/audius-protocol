@@ -1,5 +1,5 @@
 import { formatCount, formatCurrency } from '@audius/common/utils'
-import { Coin } from '@audius/sdk'
+import { CoinInsights } from '@audius/sdk'
 
 export type MetricData = {
   value: string
@@ -52,32 +52,32 @@ const createMetric = (
   }
 }
 
-export const createCoinMetrics = (coin: Coin): MetricData[] => {
+export const createCoinMetrics = (coinInsights: CoinInsights): MetricData[] => {
   const potentialMetrics = [
     createMetric(
-      formatCurrency(coin.tokenInfo.price),
+      formatCurrency(coinInsights.price),
       messages.pricePerCoin,
-      coin.tokenInfo.priceChange24hPercent
+      coinInsights.priceChange24hPercent
     ),
     createMetric(
-      formatCount(coin.members),
+      formatCount(coinInsights.members),
       messages.holdersOnAudius,
-      coin.membersChange24hPercent
+      coinInsights.membersChange24hPercent
     ),
     createMetric(
-      formatCount(coin.tokenInfo.uniqueWallet24h || 0),
+      formatCount(coinInsights.uniqueWallet24h || 0),
       messages.uniqueHolders,
-      coin.tokenInfo.uniqueWallet24hChangePercent
+      coinInsights.uniqueWallet24hChangePercent
     ),
     createMetric(
-      formatCurrency(coin.tokenInfo.v24hUSD),
+      formatCurrency(coinInsights.v24hUSD),
       messages.volume24hr,
-      coin.tokenInfo.v24hChangePercent
+      coinInsights.v24hChangePercent
     ),
     createMetric(
-      formatCount(coin.tokenInfo.trade24h),
+      formatCount(coinInsights.trade24h),
       messages.totalTransfers,
-      coin.tokenInfo.trade24hChangePercent
+      coinInsights.trade24hChangePercent
     )
   ]
 

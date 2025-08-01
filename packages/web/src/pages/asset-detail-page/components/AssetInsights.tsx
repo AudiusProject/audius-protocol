@@ -1,7 +1,8 @@
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoinInsights } from '@audius/common/api'
 import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
+import Skeleton from '../../../components/skeleton/Skeleton'
 import { createCoinMetrics, MetricData } from '../../../utils/coinMetrics'
 import { AssetDetailProps } from '../types'
 
@@ -12,6 +13,47 @@ const messages = {
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
   totalTransfers: 'Total Transfers'
+}
+
+const AssetInsightsSkeleton = () => {
+  return (
+    <Paper
+      direction='column'
+      alignItems='flex-start'
+      backgroundColor='white'
+      borderRadius='m'
+      border='default'
+    >
+      <Flex direction='row' alignItems='center' gap='xs' pv='m' ph='l' w='100%'>
+        <Text variant='heading' size='s' color='heading'>
+          {messages.title}
+        </Text>
+      </Flex>
+      
+      {/* Skeleton for 5 metric rows */}
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Flex
+          key={index}
+          direction='row'
+          alignItems='flex-start'
+          justifyContent='space-between'
+          borderTop='default'
+          pv='m'
+          ph='l'
+          w='100%'
+        >
+          <Flex direction='column' alignItems='flex-start' gap='xs' flex={1}>
+            <Skeleton width='80px' height='32px' />
+            <Skeleton width='120px' height='20px' />
+          </Flex>
+          <Flex direction='row' alignItems='center' gap='xs'>
+            <Skeleton width='60px' height='16px' />
+            <Skeleton width='16px' height='16px' />
+          </Flex>
+        </Flex>
+      ))}
+    </Paper>
+  )
 }
 
 const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
@@ -69,39 +111,17 @@ const MetricRow = componentWithErrorBoundary(MetricRowComponent, {
 })
 
 export const AssetInsights = ({ mint }: AssetDetailProps) => {
-  const { data: coin, isLoading, error } = useArtistCoin({ mint })
+  const {
+    data: coinInsights,
+    isPending,
+    error
+  } = useArtistCoinInsights({ mint })
 
-  if (isLoading || !coin || !coin.tokenInfo) {
-    return (
-      <Paper
-        direction='column'
-        alignItems='flex-start'
-        backgroundColor='white'
-        borderRadius='m'
-        border='default'
-      >
-        <Flex
-          direction='row'
-          alignItems='center'
-          gap='xs'
-          pv='m'
-          ph='l'
-          w='100%'
-        >
-          <Text variant='heading' size='s' color='heading'>
-            {messages.title}
-          </Text>
-        </Flex>
-        <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
-          <Text variant='body' color='subdued'>
-            Loading insights...
-          </Text>
-        </Flex>
-      </Paper>
-    )
+  if (isPending || !coinInsights) {
+    return <AssetInsightsSkeleton />
   }
 
-  if (error || !coin) {
+  if (error || !coinInsights) {
     return (
       <Paper
         direction='column'
@@ -131,7 +151,7 @@ export const AssetInsights = ({ mint }: AssetDetailProps) => {
     )
   }
 
-  const metrics = createCoinMetrics(coin)
+  const metrics = createCoinMetrics(coinInsights)
 
   return (
     <Paper
