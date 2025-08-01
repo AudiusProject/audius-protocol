@@ -14,13 +14,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { CoinTokenInfo } from './CoinTokenInfo';
-import {
-    CoinTokenInfoFromJSON,
-    CoinTokenInfoFromJSONTyped,
-    CoinTokenInfoToJSON,
-} from './CoinTokenInfo';
-
 /**
  * 
  * @export
@@ -40,35 +33,41 @@ export interface Coin {
      */
     mint: string;
     /**
+     * The number of decimals for the coin
+     * @type {number}
+     * @memberof Coin
+     */
+    decimals: number;
+    /**
      * The ID of the user associated with the coin
      * @type {string}
      * @memberof Coin
      */
     ownerId: string;
     /**
-     * The number of Audius users holding the coin
-     * @type {number}
+     * URL to the coin's logo image
+     * @type {string}
      * @memberof Coin
      */
-    members: number;
+    logoUri?: string;
     /**
-     * The percentage change in the number of members holding the coin over the last 24 hours
-     * @type {number}
+     * A longform description about the coin
+     * @type {string}
      * @memberof Coin
      */
-    membersChange24hPercent: number;
+    description?: string;
+    /**
+     * The official website for the coin
+     * @type {string}
+     * @memberof Coin
+     */
+    website?: string;
     /**
      * The date and time when the coin was added to Audius.
      * @type {string}
      * @memberof Coin
      */
     createdAt: string;
-    /**
-     * 
-     * @type {CoinTokenInfo}
-     * @memberof Coin
-     */
-    tokenInfo: CoinTokenInfo;
 }
 
 /**
@@ -77,11 +76,9 @@ export interface Coin {
 export function instanceOfCoin(value: object): value is Coin {
     let isInstance = true;
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
+    isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
     isInstance = isInstance && "ownerId" in value && value["ownerId"] !== undefined;
-    isInstance = isInstance && "members" in value && value["members"] !== undefined;
-    isInstance = isInstance && "membersChange24hPercent" in value && value["membersChange24hPercent"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
-    isInstance = isInstance && "tokenInfo" in value && value["tokenInfo"] !== undefined;
 
     return isInstance;
 }
@@ -98,11 +95,12 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
         
         'ticker': !exists(json, 'ticker') ? undefined : json['ticker'],
         'mint': json['mint'],
+        'decimals': json['decimals'],
         'ownerId': json['owner_id'],
-        'members': json['members'],
-        'membersChange24hPercent': json['members_change_24h_percent'],
+        'logoUri': !exists(json, 'logo_uri') ? undefined : json['logo_uri'],
+        'description': !exists(json, 'description') ? undefined : json['description'],
+        'website': !exists(json, 'website') ? undefined : json['website'],
         'createdAt': json['created_at'],
-        'tokenInfo': CoinTokenInfoFromJSON(json['token_info']),
     };
 }
 
@@ -117,11 +115,12 @@ export function CoinToJSON(value?: Coin | null): any {
         
         'ticker': value.ticker,
         'mint': value.mint,
+        'decimals': value.decimals,
         'owner_id': value.ownerId,
-        'members': value.members,
-        'members_change_24h_percent': value.membersChange24hPercent,
+        'logo_uri': value.logoUri,
+        'description': value.description,
+        'website': value.website,
         'created_at': value.createdAt,
-        'token_info': CoinTokenInfoToJSON(value.tokenInfo),
     };
 }
 

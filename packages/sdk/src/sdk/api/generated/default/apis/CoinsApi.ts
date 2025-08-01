@@ -16,11 +16,14 @@
 
 import * as runtime from '../runtime';
 import type {
+  CoinInsightsResponse,
   CoinMembersResponse,
   CoinResponse,
   CoinsResponse,
 } from '../models';
 import {
+    CoinInsightsResponseFromJSON,
+    CoinInsightsResponseToJSON,
     CoinMembersResponseFromJSON,
     CoinMembersResponseToJSON,
     CoinResponseFromJSON,
@@ -30,6 +33,10 @@ import {
 } from '../models';
 
 export interface GetCoinRequest {
+    mint: string;
+}
+
+export interface GetCoinInsightsRequest {
     mint: string;
 }
 
@@ -81,6 +88,37 @@ export class CoinsApi extends runtime.BaseAPI {
      */
     async getCoin(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
         const response = await this.getCoinRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets insights about a specific coin by its mint address
+     */
+    async getCoinInsightsRaw(params: GetCoinInsightsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoinInsightsResponse>> {
+        if (params.mint === null || params.mint === undefined) {
+            throw new runtime.RequiredError('mint','Required parameter params.mint was null or undefined when calling getCoinInsights.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/coins/{mint}/insights`.replace(`{${"mint"}}`, encodeURIComponent(String(params.mint))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoinInsightsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets insights about a specific coin by its mint address
+     */
+    async getCoinInsights(params: GetCoinInsightsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinInsightsResponse> {
+        const response = await this.getCoinInsightsRaw(params, initOverrides);
         return await response.value();
     }
 
