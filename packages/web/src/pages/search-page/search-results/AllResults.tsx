@@ -17,16 +17,16 @@ import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
+import { CollectionCard } from 'components/collection'
 import { CollectionImage } from 'components/collection/CollectionImage'
 import { TrackArtwork } from 'components/track/TrackArtwork'
+import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { Carousel } from 'pages/explore-page/components/desktop/Carousel'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { useSearchParams } from '../hooks'
 
-import { AlbumResults } from './AlbumResults'
-import { PlaylistResults } from './PlaylistResults'
-import { ProfileResultsTiles } from './ProfileResults'
 import { TrackResults } from './TrackResults'
 
 const messages = {
@@ -38,7 +38,7 @@ const messages = {
   album: 'Album',
   playlists: 'Playlists',
   playlist: 'Playlist',
-  showAll: 'Show All'
+  viewAll: 'View All'
 }
 const { addItem: addRecentSearch } = searchActions
 const { profilePage } = route
@@ -298,28 +298,23 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
 
   return (
     <Flex direction='column' gap='unit10' ref={containerRef}>
+      {/* Profiles with Carousel */}
       {isLoading || data?.users?.length ? (
-        <Flex gap='xl' direction='column'>
-          <Flex justifyContent='space-between' alignItems='center'>
-            <Text variant='heading' textAlign='left'>
-              {messages.profiles}
-            </Text>
-            <PlainButton size='large' asChild>
-              <Link to={`/search/profiles?query=${query}`}>
-                {messages.showAll}
-              </Link>
-            </PlainButton>
-          </Flex>
-          <ProfileResultsTiles
-            skeletonCount={5}
-            limit={5}
-            data={data?.users ?? []}
-            isFetching={isLoading}
-            isPending={isPending}
-          />
-        </Flex>
+        <Carousel
+          title={messages.profiles}
+          viewAllLink={`/search/profiles?query=${query}`}
+        >
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <UserCard key={i} id={0} size='s' loading />
+              ))
+            : data?.users?.map((user) => (
+                <UserCard key={user.user_id} id={user.user_id} size='s' />
+              ))}
+        </Carousel>
       ) : null}
 
+      {/* Tracks with original layout */}
       {isLoading || data?.tracks?.length ? (
         <Flex gap='xl' direction='column'>
           <Flex justifyContent='space-between' alignItems='center'>
@@ -328,7 +323,7 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
             </Text>
             <PlainButton size='large' asChild>
               <Link to={`/search/tracks?query=${query}`}>
-                {messages.showAll}
+                {messages.viewAll}
               </Link>
             </PlainButton>
           </Flex>
@@ -344,48 +339,44 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
         </Flex>
       ) : null}
 
+      {/* Albums with Carousel */}
       {isLoading || data?.albums?.length ? (
-        <Flex gap='xl' direction='column'>
-          <Flex justifyContent='space-between' alignItems='center'>
-            <Text variant='heading' textAlign='left'>
-              {messages.albums}
-            </Text>
-            <PlainButton size='large' asChild>
-              <Link to={`/search/albums?query=${query}`}>
-                {messages.showAll}
-              </Link>
-            </PlainButton>
-          </Flex>
-          <AlbumResults
-            limit={5}
-            data={data?.albums ?? []}
-            isFetching={isLoading}
-            isPending={isPending}
-            skeletonCount={5}
-          />
-        </Flex>
+        <Carousel
+          title={messages.albums}
+          viewAllLink={`/search/albums?query=${query}`}
+        >
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <CollectionCard key={i} id={0} size='s' loading />
+              ))
+            : data?.albums?.map((album) => (
+                <CollectionCard
+                  key={album.playlist_id}
+                  id={album.playlist_id}
+                  size='s'
+                />
+              ))}
+        </Carousel>
       ) : null}
 
+      {/* Playlists with Carousel */}
       {isLoading || data?.playlists?.length ? (
-        <Flex gap='xl' direction='column'>
-          <Flex justifyContent='space-between' alignItems='center'>
-            <Text variant='heading' textAlign='left'>
-              {messages.playlists}
-            </Text>
-            <PlainButton size='large' asChild>
-              <Link to={`/search/playlists?query=${query}`}>
-                {messages.showAll}
-              </Link>
-            </PlainButton>
-          </Flex>
-          <PlaylistResults
-            skeletonCount={5}
-            limit={5}
-            data={data?.playlists ?? []}
-            isFetching={isLoading}
-            isPending={isPending}
-          />
-        </Flex>
+        <Carousel
+          title={messages.playlists}
+          viewAllLink={`/search/playlists?query=${query}`}
+        >
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <CollectionCard key={i} id={0} size='s' loading />
+              ))
+            : data?.playlists?.map((playlist) => (
+                <CollectionCard
+                  key={playlist.playlist_id}
+                  id={playlist.playlist_id}
+                  size='s'
+                />
+              ))}
+        </Carousel>
       ) : null}
     </Flex>
   )
