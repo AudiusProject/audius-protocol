@@ -36,6 +36,7 @@ export const UserLink = (props: UserLinkProps) => {
     noBadges,
     noOverflow,
     center,
+    fullWidth,
     ...other
   } = props
   const { spacing } = useTheme()
@@ -73,7 +74,8 @@ export const UserLink = (props: UserLinkProps) => {
         columnGap: spacing.xs,
         alignItems: 'center',
         lineHeight: 'normal',
-        display: 'inline-flex'
+        display: 'inline-flex',
+        width: fullWidth ? '100%' : undefined
       }}
     >
       <TextLink
@@ -102,7 +104,8 @@ export const UserLink = (props: UserLinkProps) => {
           columnGap: spacing.xs,
           alignItems: 'center',
           lineHeight: 'normal',
-          display: 'inline-flex'
+          display: 'inline-flex',
+          width: fullWidth ? '100%' : undefined
         }}
       >
         <ArtistPopover
