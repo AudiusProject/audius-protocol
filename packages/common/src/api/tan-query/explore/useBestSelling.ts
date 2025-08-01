@@ -1,4 +1,4 @@
-import { HashId, Id, BestSellingItem, full } from '@audius/sdk'
+import { HashId, BestSellingItem, full, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -64,7 +64,7 @@ export const useBestSelling = (
       const { data = [], related = {} } =
         await sdk.full.explore.getFullBestSelling({
           ...args,
-          userId: currentUserId ? Id.parse(currentUserId) : undefined,
+          userId: OptionalId.parse(currentUserId),
           type,
           limit: pageSize,
           offset: pageParam
