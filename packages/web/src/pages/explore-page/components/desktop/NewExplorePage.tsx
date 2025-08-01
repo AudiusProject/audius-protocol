@@ -26,7 +26,6 @@ import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import useTabs from 'hooks/useTabs/useTabs'
 import { RecentSearches } from 'pages/search-page/RecentSearches'
-import { SearchCatalogTile } from 'pages/search-page/SearchCatalogTile'
 import { filters } from 'pages/search-page/SearchFilters'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { SortMethodFilterButton } from 'pages/search-page/SortMethodFilterButton'
@@ -190,6 +189,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     img.onload = () => setBannerIsVisible(true)
   }, [])
 
+  const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
+  const showPlaylistContent =
+    categoryKey === 'playlists' || categoryKey === 'all'
+  const showUserContent = categoryKey === 'profiles' || categoryKey === 'all'
+  const showAlbumContent = categoryKey === 'albums' || categoryKey === 'all'
+
   return (
     <Flex
       justifyContent='center'
@@ -287,50 +292,49 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         </Flex>
 
         {/* Content Section */}
-        {!showSearchResults && categoryKey !== 'all' ? (
-          <Flex direction='column' alignItems='center' gap={'xl'}>
-            <SearchCatalogTile />
-            <RecentSearches />
-          </Flex>
-        ) : inputValue || showSearchResults ? (
+        {inputValue || showSearchResults ? (
           <SearchResults
             tracksLayout={tracksLayout}
             handleSearchTab={handleSearchTab}
           />
-        ) : (
-          <>
-            <Flex direction='column' gap='3xl'>
-              {isSearchExploreGoodiesEnabled ? (
-                <>
-                  <RecommendedTracksSection />
-                  <RecentlyPlayedSection />
-                  <QuickSearchGrid />
-                </>
-              ) : null}
-              <FeaturedPlaylistsSection />
-              <FeaturedRemixContestsSection />
-              {isSearchExploreGoodiesEnabled ? (
-                <UndergroundTrendingTracksSection />
-              ) : null}
-              <ArtistSpotlightSection />
-              <LabelSpotlightSection />
-              {isSearchExploreGoodiesEnabled ? (
-                <ActiveDiscussionsSection />
-              ) : null}
-              <MoodGrid />
-              {isSearchExploreGoodiesEnabled ? (
-                <>
-                  <TrendingPlaylistsSection />
-                  <MostSharedSection />
-                  <BestSellingSection />
-                  <RecentPremiumTracksSection />
-                </>
-              ) : null}
-            </Flex>
-            {isSearchExploreGoodiesEnabled ? <FeelingLuckySection /> : null}
-            <JustForYouSection />
-          </>
-        )}
+        ) : null}
+        <Flex
+          direction='column'
+          gap='3xl'
+          css={{ display: showSearchResults ? 'none' : undefined }}
+        >
+          {isSearchExploreGoodiesEnabled ? (
+            <>
+              {showTrackContent && <RecommendedTracksSection />}
+              {showTrackContent && <RecentlyPlayedSection />}
+              {showTrackContent && <QuickSearchGrid />}
+            </>
+          ) : null}
+          {showPlaylistContent && <FeaturedPlaylistsSection />}
+          {showTrackContent && <FeaturedRemixContestsSection />}
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <UndergroundTrendingTracksSection />
+          )}
+          {showUserContent && <ArtistSpotlightSection />}
+          {showUserContent && <LabelSpotlightSection />}
+          {isSearchExploreGoodiesEnabled && showTrackContent ? (
+            <ActiveDiscussionsSection />
+          ) : null}
+          {(showTrackContent || showAlbumContent || showPlaylistContent) && (
+            <MoodGrid />
+          )}
+          {isSearchExploreGoodiesEnabled ? (
+            <>
+              {showPlaylistContent && <TrendingPlaylistsSection />}
+              {showTrackContent && <MostSharedSection />}
+              {(showAlbumContent || showTrackContent) && <BestSellingSection />}
+              {showTrackContent && <RecentPremiumTracksSection />}
+              {showTrackContent ? <FeelingLuckySection /> : null}
+            </>
+          ) : null}
+          <RecentSearches />
+          <JustForYouSection />
+        </Flex>
       </Flex>
     </Flex>
   )
