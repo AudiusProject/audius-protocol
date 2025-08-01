@@ -1,4 +1,4 @@
-import { useArtistCoin, useTokenBalance } from '@audius/common/api'
+import { useArtistCoinInsights, useTokenBalance } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
+import Skeleton from 'components/skeleton/Skeleton'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { AssetDetailProps } from '../types'
@@ -21,6 +22,23 @@ type BalanceStateProps = {
   onBuy?: () => void
   onReceive?: () => void
   onSend?: () => void
+}
+
+const BalanceSectionSkeleton = () => {
+  return (
+    <Paper ph='xl' pv='l'>
+      <Flex direction='column' gap='l' w='100%'>
+        <Flex gap='s' alignItems='center'>
+          <Skeleton width='64px' height='64px' />
+          <Skeleton width='120px' height='24px' />
+        </Flex>
+        <Flex gap='s'>
+          <Skeleton width='100%' height='40px' />
+          <Skeleton width='100%' height='40px' />
+        </Flex>
+      </Flex>
+    </Paper>
+  )
 }
 
 const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
@@ -126,7 +144,9 @@ const HasBalanceState = ({
 }
 
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
-  const { data: coin, isLoading: coinsLoading } = useArtistCoin({ mint })
+  const { data: coinInsights, isPending: coinsLoading } = useArtistCoinInsights(
+    { mint }
+  )
   const { data: tokenBalance } = useTokenBalance({ mint })
 
   // Modal hooks
@@ -137,28 +157,16 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  if (coinsLoading || !coin) {
-    return (
-      <Paper ph='xl' pv='l'>
-        <Flex direction='column' gap='l' w='100%'>
-          <Text variant='body' size='m' color='subdued'>
-            Loading...
-          </Text>
-        </Flex>
-      </Paper>
-    )
+  if (coinsLoading || !coinInsights) {
+    return <BalanceSectionSkeleton />
   }
 
-  const tokenInfo = coin.tokenInfo.logoURI
-    ? { logoURI: coin.tokenInfo.logoURI }
-    : undefined
-
-  if (!tokenInfo) {
+  if (!coinInsights.logoURI) {
     return null
   }
 
-  const title = coin.ticker ?? ''
-  const logoURI = tokenInfo.logoURI
+  const title = coinInsights.symbol ?? ''
+  const logoURI = coinInsights.logoURI
 
   // Action destructuring
   const { pressReceive, pressSend } = tokenDashboardPageActions

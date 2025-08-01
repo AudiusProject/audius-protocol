@@ -104,7 +104,7 @@ export const useTokenBalance = ({
         }
 
         // Ensure we have valid decimals from coin metadata
-        const decimals = coin?.tokenInfo?.decimals
+        const decimals = coin?.decimals
         if (isNullOrUndefined(decimals)) {
           console.warn(`Missing decimals for token ${mint}`)
           return null
@@ -119,7 +119,7 @@ export const useTokenBalance = ({
         // Handle specific 404 "no rows in result set" case
         // This typically means the user has no balance for this token
         if (isNoBalanceError(e)) {
-          const decimals = coin?.tokenInfo?.decimals
+          const decimals = coin?.decimals
           if (isNullOrUndefined(decimals)) {
             console.warn(`Missing decimals for token ${mint} in error handling`)
             return null
@@ -138,11 +138,7 @@ export const useTokenBalance = ({
       }
     },
     enabled:
-      !isUsdc &&
-      !!ethAddress &&
-      !!mint &&
-      !!user?.user_id &&
-      !!coin?.tokenInfo?.decimals,
+      !isUsdc && !!ethAddress && !!mint && !!user?.user_id && !!coin?.decimals,
     // TanStack Query's built-in polling - only poll when isPolling is true
     refetchInterval: isPolling ? pollingInterval : false,
     // Prevent refetching when window regains focus during polling to avoid conflicts

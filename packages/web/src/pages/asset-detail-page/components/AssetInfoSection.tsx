@@ -12,6 +12,7 @@ import {
 import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
+import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import {
@@ -38,6 +39,79 @@ const messages = {
 }
 
 const BANNER_HEIGHT = 120
+
+const AssetInfoSectionSkeleton = () => {
+  return (
+    <Paper
+      borderRadius='l'
+      shadow='far'
+      direction='column'
+      alignItems='flex-start'
+    >
+      {/* Banner skeleton */}
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        alignSelf='stretch'
+        h={BANNER_HEIGHT}
+        css={{ backgroundColor: '#f0f0f0' }}
+      >
+        <Flex
+          direction='column'
+          alignItems='flex-start'
+          alignSelf='stretch'
+          p='l'
+          gap='s'
+        >
+          <Skeleton width='80px' height='16px' />
+          <Flex
+            alignItems='center'
+            gap='xs'
+            p='xs'
+            backgroundColor='white'
+            borderRadius='circle'
+            border='default'
+          >
+            <Skeleton width='32px' height='32px' circle />
+            <Skeleton width='100px' height='20px' />
+          </Flex>
+        </Flex>
+      </Flex>
+
+      {/* Content skeleton */}
+      <Flex
+        direction='column'
+        alignItems='flex-start'
+        alignSelf='stretch'
+        p='xl'
+        gap='l'
+      >
+        <Skeleton width='200px' height='24px' />
+        <Flex direction='column' gap='m'>
+          <Skeleton width='100%' height='20px' />
+          <Skeleton width='90%' height='20px' />
+          <Skeleton width='100%' height='20px' />
+          <Skeleton width='80%' height='20px' />
+        </Flex>
+      </Flex>
+
+      {/* Footer skeleton */}
+      <Flex
+        alignItems='center'
+        justifyContent='space-between'
+        alignSelf='stretch'
+        p='xl'
+        borderTop='default'
+      >
+        <Flex alignItems='center' gap='s'>
+          <Skeleton width='24px' height='24px' />
+          <Skeleton width='100px' height='20px' />
+        </Flex>
+        <Skeleton width='120px' height='20px' />
+      </Flex>
+    </Paper>
+  )
+}
 
 const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
   const { spacing } = useTheme()
@@ -68,9 +142,26 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
         h={BANNER_HEIGHT}
         css={{ backgroundColor: '#f0f0f0' }}
       >
-        <Text variant='body' size='m' color='subdued'>
-          {messages.loading}
-        </Text>
+        <Flex
+          direction='column'
+          alignItems='flex-start'
+          alignSelf='stretch'
+          p='l'
+          gap='s'
+        >
+          <Skeleton width='80px' height='16px' />
+          <Flex
+            alignItems='center'
+            gap='xs'
+            p='xs'
+            backgroundColor='white'
+            borderRadius='circle'
+            border='default'
+          >
+            <Skeleton width='32px' height='32px' circle />
+            <Skeleton width='100px' height='20px' />
+          </Flex>
+        </Flex>
       </Flex>
     )
   }
@@ -129,18 +220,7 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const { data: coin, isLoading } = useArtistCoin({ mint })
 
   if (isLoading || !coin) {
-    return (
-      <Paper
-        borderRadius='l'
-        shadow='far'
-        direction='column'
-        alignItems='flex-start'
-      >
-        <Text variant='body' size='m' color='subdued'>
-          {messages.loading}
-        </Text>
-      </Paper>
-    )
+    return <AssetInfoSectionSkeleton />
   }
 
   const title = coin.ticker ?? ''
