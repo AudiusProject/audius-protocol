@@ -46,7 +46,9 @@ const MemoizedExploreContent = () => {
       ) : null}
       {showPlaylistContent && <FeaturedPlaylists />}
       {showTrackContent && <FeaturedRemixContests />}
-      {showTrackContent && <UndergroundTrendingTracks />}
+      {isSearchExploreGoodiesEnabled && showTrackContent && (
+        <UndergroundTrendingTracks />
+      )}
       {showUserContent && <ArtistSpotlight />}
       {showUserContent && <LabelSpotlight />}
       {isSearchExploreGoodiesEnabled && showTrackContent ? (
@@ -63,8 +65,8 @@ const MemoizedExploreContent = () => {
           {/* TODO: Feeling lucky for playlists/albums
           https://linear.app/audius/issue/PE-6585/feeling-lucky-for-playlistsalbums
            */}
-          {showTrackContent && <FeelingLucky />}
           {showTrackContent && <RecentPremiumTracks />}
+          {showTrackContent && <FeelingLucky />}
         </>
       ) : null}
       <RecentSearches />

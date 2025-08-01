@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { useBestSelling } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
@@ -31,6 +29,8 @@ export const BestSellingSection = () => {
 
     return <BestSellingCard item={item} size='s' loading={isLoading} />
   }
+
+  if (!isLoading && !ids?.length) return null
 
   return (
     <ExploreSection
