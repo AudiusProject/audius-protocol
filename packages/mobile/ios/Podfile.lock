@@ -1,5 +1,5 @@
 PODS:
-  - amplitude-react-native (1.4.11):
+  - amplitude-react-native (1.5.0):
     - React-Core
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
@@ -1480,7 +1480,7 @@ PODS:
     - React-Core
   - react-native-restart (0.0.27):
     - React-Core
-  - react-native-safe-area-context (4.10.0):
+  - react-native-safe-area-context (5.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1493,8 +1493,8 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-safe-area-context/common (= 4.10.0)
-    - react-native-safe-area-context/fabric (= 4.10.0)
+    - react-native-safe-area-context/common (= 5.5.2)
+    - react-native-safe-area-context/fabric (= 5.5.2)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1503,7 +1503,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/common (4.10.0):
+  - react-native-safe-area-context/common (5.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1524,7 +1524,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/fabric (4.10.0):
+  - react-native-safe-area-context/fabric (5.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2375,7 +2375,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
-  - "amplitude-react-native (from `../../../node_modules/@amplitude/analytics-react-native`)"
+  - "amplitude-react-native (from `../node_modules/@amplitude/analytics-react-native`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -2436,7 +2436,7 @@ DEPENDENCIES:
   - react-native-pager-view (from `../../../node_modules/react-native-pager-view`)
   - react-native-randombytes (from `../../../node_modules/react-native-randombytes`)
   - react-native-restart (from `../node_modules/react-native-restart`)
-  - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
+  - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-tiktok (from `../../../node_modules/react-native-tiktok`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
@@ -2471,7 +2471,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RNBootSplash (from `../../../node_modules/react-native-bootsplash`)
+  - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
@@ -2517,7 +2517,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   amplitude-react-native:
-    :path: "../../../node_modules/@amplitude/analytics-react-native"
+    :path: "../node_modules/@amplitude/analytics-react-native"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
@@ -2634,7 +2634,7 @@ EXTERNAL SOURCES:
   react-native-restart:
     :path: "../node_modules/react-native-restart"
   react-native-safe-area-context:
-    :path: "../../../node_modules/react-native-safe-area-context"
+    :path: "../node_modules/react-native-safe-area-context"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
   react-native-tiktok:
@@ -2704,7 +2704,7 @@ EXTERNAL SOURCES:
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
   RNBootSplash:
-    :path: "../../../node_modules/react-native-bootsplash"
+    :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
     :path: "../../../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -2749,7 +2749,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  amplitude-react-native: 9d57e1bcc4175039e36283390aa3daeaea9441a5
+  amplitude-react-native: 8dc7c16ff85dc83cf35cec6d9a4380b205a3f45b
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
@@ -2814,7 +2814,7 @@ SPEC CHECKSUMS:
   react-native-pager-view: 33d4f12bbe57ec944d59a416fe7c2f2289449c3a
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
-  react-native-safe-area-context: e93ff0eb655470a1e869dcd6ba30fabc0e401772
+  react-native-safe-area-context: f5d022f80950065dea96f5cc592534b480b1ea88
   react-native-slider: 900287c957a1e839693ec4a33c512a7f000af791
   react-native-tiktok: d272eb4831cbf235231ef41c1acec7a8d737fea0
   react-native-track-player: 97d76dbbd35f27cc709e5f04540615e54264b3f9
