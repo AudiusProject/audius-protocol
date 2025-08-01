@@ -84,6 +84,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     transform: [{ scaleX: -1 }]
   },
   reaction: {
+    position: 'absolute',
     height: spacing(16),
     width: spacing(16)
   },

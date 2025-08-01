@@ -16,5 +16,5 @@ export const getContentNode = () => {
   if (getEnv() === 'stage') {
     return 'https://creatornode5.staging.audius.co'
   }
-  return 'https://creatornode.audius.co'
+  return 'https://creatornode2.audius.co'
 }

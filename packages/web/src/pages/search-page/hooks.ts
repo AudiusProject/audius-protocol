@@ -45,7 +45,7 @@ export const useSearchCategory = () => {
   const { setStackReset } = useContext(RouterContext)
 
   const setCategory = useCallback(
-    (newCategory: CategoryKey) => {
+    (newCategory: CategoryKey, params?: UseSearchParamsResult) => {
       // Do not animate on mobile - use flushSync to ensure this is processed before navigation
       if (isMobile) {
         flushSync(() => {
@@ -54,7 +54,7 @@ export const useSearchCategory = () => {
       }
 
       const commonFilterParams = Object.fromEntries(
-        Object.entries(searchParams)
+        Object.entries(params || searchParams)
           .filter(([key, value]) => value !== undefined && value !== null)
           .map(([key, value]) => [key, String(value)])
       )
@@ -84,7 +84,18 @@ export const useSearchCategory = () => {
   return [category || CategoryView.ALL, setCategory] as const
 }
 
-export const useSearchParams = () => {
+type UseSearchParamsResult = {
+  query?: string
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
+}
+export const useSearchParams = (): UseSearchParamsResult => {
   const [urlSearchParams] = useParams()
 
   const query = urlSearchParams.get('query')
@@ -98,17 +109,18 @@ export const useSearchParams = () => {
   const isPremium = urlSearchParams.get('isPremium')
 
   const searchParams = useMemo(
-    () => ({
-      query: query || undefined,
-      genre: (genre || undefined) as Genre,
-      mood: (mood || undefined) as Mood,
-      bpm: bpm || undefined,
-      key: key || undefined,
-      isVerified: isVerified === 'true' ? true : undefined,
-      hasDownloads: hasDownloads === 'true' ? true : undefined,
-      isPremium: isPremium === 'true' ? true : undefined,
-      sortMethod: sortMethod || undefined
-    }),
+    () =>
+      ({
+        query: query || undefined,
+        genre: (genre || undefined) as Genre | undefined,
+        mood: (mood || undefined) as Mood | undefined,
+        bpm: bpm || undefined,
+        key: key || undefined,
+        isVerified: isVerified === 'true' ? true : undefined,
+        hasDownloads: hasDownloads === 'true' ? true : undefined,
+        isPremium: isPremium === 'true' ? true : undefined,
+        sortMethod: sortMethod || undefined
+      }) as UseSearchParamsResult,
     [
       query,
       genre,

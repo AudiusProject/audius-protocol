@@ -17,55 +17,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * Token metadata and links
  * @export
- * @interface CoinTokenInfoExtensions
+ * @interface CoinInsightsExtensions
  */
-export interface CoinTokenInfoExtensions {
+export interface CoinInsightsExtensions {
     /**
      * CoinGecko ID
      * @type {string}
-     * @memberof CoinTokenInfoExtensions
+     * @memberof CoinInsightsExtensions
      */
     coingeckoId?: string;
     /**
      * Token description
      * @type {string}
-     * @memberof CoinTokenInfoExtensions
+     * @memberof CoinInsightsExtensions
      */
     description?: string;
     /**
      * Twitter URL
      * @type {string}
-     * @memberof CoinTokenInfoExtensions
+     * @memberof CoinInsightsExtensions
      */
     twitter?: string;
     /**
      * Website URL
      * @type {string}
-     * @memberof CoinTokenInfoExtensions
+     * @memberof CoinInsightsExtensions
      */
     website?: string;
     /**
      * Discord invite URL
      * @type {string}
-     * @memberof CoinTokenInfoExtensions
+     * @memberof CoinInsightsExtensions
      */
     discord?: string;
 }
 
 /**
- * Check if a given object implements the CoinTokenInfoExtensions interface.
+ * Check if a given object implements the CoinInsightsExtensions interface.
  */
-export function instanceOfCoinTokenInfoExtensions(value: object): value is CoinTokenInfoExtensions {
+export function instanceOfCoinInsightsExtensions(value: object): value is CoinInsightsExtensions {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function CoinTokenInfoExtensionsFromJSON(json: any): CoinTokenInfoExtensions {
-    return CoinTokenInfoExtensionsFromJSONTyped(json, false);
+export function CoinInsightsExtensionsFromJSON(json: any): CoinInsightsExtensions {
+    return CoinInsightsExtensionsFromJSONTyped(json, false);
 }
 
-export function CoinTokenInfoExtensionsFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinTokenInfoExtensions {
+export function CoinInsightsExtensionsFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinInsightsExtensions {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -79,7 +79,7 @@ export function CoinTokenInfoExtensionsFromJSONTyped(json: any, ignoreDiscrimina
     };
 }
 
-export function CoinTokenInfoExtensionsToJSON(value?: CoinTokenInfoExtensions | null): any {
+export function CoinInsightsExtensionsToJSON(value?: CoinInsightsExtensions | null): any {
     if (value === undefined) {
         return undefined;
     }

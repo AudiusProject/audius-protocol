@@ -65,7 +65,6 @@ import {
   useSearchCategory,
   useShowSearchResults
 } from 'pages/search-page/hooks'
-import { MOODS } from 'pages/search-page/moods'
 import {
   CategoryView,
   ViewLayout,
@@ -75,6 +74,8 @@ import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { BestSellingSection } from './BestSellingSection'
 import { ExploreSection } from './ExploreSection'
+import { MoodGrid } from './MoodGrid'
+import { QuickSearchGrid } from './QuickSearchGrid'
 import { TrendingPlaylists } from './TrendingPlaylists'
 import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
@@ -140,7 +141,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color, motion } = useTheme()
+  const { motion } = useTheme()
   const { isLarge } = useMedia()
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_GOODIES
@@ -371,7 +372,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           />
         ) : (
           <>
-            <Flex direction='column'>
+            <Flex direction='column' gap='3xl'>
               {isSearchExploreGoodiesEnabled ? (
                 <>
                   <ExploreSection
@@ -384,6 +385,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                     data={recentlyPlayed}
                     Card={TrackCard}
                   />
+                  <QuickSearchGrid />
                 </>
               ) : null}
 
@@ -422,43 +424,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               ) : null}
             </Flex>
             {/* Explore by mood */}
-            <Flex direction='column' gap='l' alignItems='center'>
-              <Text variant='heading'>{messages.exploreByMood}</Text>
-              <Flex
-                gap='m'
-                justifyContent='center'
-                alignItems='flex-start'
-                wrap='wrap'
-              >
-                {Object.entries(MOODS)
-                  .sort()
-                  .map(([mood, moodInfo]) => (
-                    <Paper
-                      key={mood}
-                      pv='l'
-                      ph='xl'
-                      gap='m'
-                      borderRadius='m'
-                      border='default'
-                      backgroundColor='white'
-                      onClick={() => {
-                        navigate(`/search/tracks?mood=${mood}`)
-                      }}
-                      css={{
-                        ':hover': {
-                          background: color.neutral.n25,
-                          border: `1px solid ${color.neutral.n150}`
-                        }
-                      }}
-                    >
-                      {moodInfo.icon}
-                      <Text variant='title' size='s'>
-                        {moodInfo.label}
-                      </Text>
-                    </Paper>
-                  ))}
-              </Flex>
-            </Flex>
+            <MoodGrid />
             <Flex direction='column'>
               {isSearchExploreGoodiesEnabled ? (
                 <>

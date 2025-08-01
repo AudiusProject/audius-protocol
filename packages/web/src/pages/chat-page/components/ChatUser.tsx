@@ -38,6 +38,7 @@ export const ChatUser = ({
             popover
             onClick={goToProfile}
             className={styles.name}
+            fullWidth
           />
         </div>
         <ArtistPopover handle={user.handle}>

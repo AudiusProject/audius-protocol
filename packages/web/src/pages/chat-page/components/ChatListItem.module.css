@@ -45,6 +45,17 @@
   white-space: nowrap;
 }
 
+.minimizedUnreadIndicatorTag {
+  display: none;
+  position: absolute;
+  top: var(--harmony-unit-4);
+  right: var(--harmony-unit-4);
+  height: var(--harmony-unit-4);
+  width: var(--harmony-unit-4);
+  background-color: var(--harmony-secondary);
+  border-radius: 50%;
+}
+
 .messagePreview {
   width: 100%;
   text-align: start;
@@ -64,5 +75,9 @@
   .unreadIndicatorTag,
   .blastPreview {
     display: none;
+  }
+
+  .minimizedUnreadIndicatorTag {
+    display: flex;
   }
 }

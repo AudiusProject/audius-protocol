@@ -14,6 +14,7 @@ import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
 import { MostSharedTracks } from './MostSharedTracks'
 import { ProgressiveScrollView } from './ProgressiveScrollView'
+import { QuickSearchGrid } from './QuickSearchGrid'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
 import { RecommendedTracks } from './RecommendedTracks'
@@ -31,6 +32,7 @@ const MemoizedExploreContent = () => {
         <>
           <RecommendedTracks />
           <RecentlyPlayedTracks />
+          <QuickSearchGrid />
         </>
       ) : null}
       <FeaturedPlaylists />

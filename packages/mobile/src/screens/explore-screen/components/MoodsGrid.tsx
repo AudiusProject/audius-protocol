@@ -55,7 +55,7 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
             key={moodInfo.label}
             pv='l'
             ph='xl'
-            gap='m'
+            gap='s'
             borderRadius='m'
             border='default'
             backgroundColor='white'
@@ -70,7 +70,6 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
                 width: spacing.unit5
               }}
             />
-
             <Text variant='title' size='s'>
               {moodInfo.label}
             </Text>
