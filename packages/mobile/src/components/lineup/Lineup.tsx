@@ -545,6 +545,19 @@ export const Lineup = ({
 
   useScrollToTop(scrollToTop, disableTopTabScroll)
 
+  const getItemLayout = useCallback(
+    (_data: any, index: number) => {
+      const itemHeight = totalTileHeight[variant]
+      const offset = index * itemHeight
+      return {
+        length: itemHeight,
+        offset,
+        index
+      }
+    },
+    [variant]
+  )
+
   const handleScroll = useCallback(
     ({ nativeEvent }) => {
       const { layoutMeasurement, contentOffset, contentSize } = nativeEvent
@@ -600,6 +613,13 @@ export const Lineup = ({
           return null
         }}
         scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
+        // Perf optimizations
+        initialNumToRender={5} // note: this will only affect loading skeletons
+        maxToRenderPerBatch={5}
+        windowSize={4}
+        updateCellsBatchingPeriod={50}
+        removeClippedSubviews={true}
+        getItemLayout={getItemLayout}
       />
     </View>
   )

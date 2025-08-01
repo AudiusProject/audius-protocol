@@ -2,17 +2,12 @@ import { useCallback, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { chatActions, chatSelectors } from '@audius/common/store'
+import { FlashList } from '@shopify/flash-list'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, IconCompose, IconMessage } from '@audius/harmony-native'
-import {
-  Text,
-  Screen,
-  FlatList,
-  ScreenContent,
-  HeaderShadow
-} from 'app/components/core'
+import { Text, Screen, ScreenContent, HeaderShadow } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
@@ -28,6 +23,8 @@ const { getChats, getChatsStatus, getHasMoreChats } = chatSelectors
 const { fetchMoreMessages, fetchLatestChats, fetchMoreChats } = chatActions
 
 const CHATS_MESSAGES_PREFETCH_LIMIT = 10
+// Precalculated height for perf optimization
+const CHAT_ITEM_HEIGHT = 88 // Calculated height: pv='l' (32px) + ProfilePicture unit12 (48px) + text/margins (~8px)
 
 const messages = {
   title: 'Messages',
@@ -156,6 +153,8 @@ export const ChatListScreen = () => {
     return <ChatListItem chatId={item.chat_id} />
   }, [])
 
+  const keyExtractor = useCallback((chat) => chat.chat_id, [])
+
   return (
     <Screen
       url='/chat'
@@ -179,18 +178,21 @@ export const ChatListScreen = () => {
                   />
                 ))
             ) : (
-              <FlatList
-                refreshing={chatsStatus === 'REFRESHING'}
-                onRefresh={refresh}
-                data={nonEmptyChats}
-                contentContainerStyle={styles.listContainer}
-                renderItem={renderItem}
-                keyExtractor={(chat) => chat.chat_id}
-                ListEmptyComponent={() => (
-                  <ChatsEmpty onPress={navigateToChatUserList} />
-                )}
-                onEndReached={handleLoadMore}
-              />
+              <View style={styles.listContainer}>
+                <FlashList
+                  refreshing={chatsStatus === 'REFRESHING'}
+                  onRefresh={refresh}
+                  data={nonEmptyChats}
+                  renderItem={renderItem}
+                  keyExtractor={keyExtractor}
+                  ListEmptyComponent={() => (
+                    <ChatsEmpty onPress={navigateToChatUserList} />
+                  )}
+                  onEndReached={handleLoadMore}
+                  onEndReachedThreshold={0.7}
+                  estimatedItemSize={CHAT_ITEM_HEIGHT}
+                />
+              </View>
             )}
           </View>
         </ScreenPrimaryContent>
