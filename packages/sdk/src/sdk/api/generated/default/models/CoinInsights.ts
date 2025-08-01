@@ -14,297 +14,309 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { CoinTokenInfoExtensions } from './CoinTokenInfoExtensions';
+import type { CoinInsightsExtensions } from './CoinInsightsExtensions';
 import {
-    CoinTokenInfoExtensionsFromJSON,
-    CoinTokenInfoExtensionsFromJSONTyped,
-    CoinTokenInfoExtensionsToJSON,
-} from './CoinTokenInfoExtensions';
+    CoinInsightsExtensionsFromJSON,
+    CoinInsightsExtensionsFromJSONTyped,
+    CoinInsightsExtensionsToJSON,
+} from './CoinInsightsExtensions';
 
 /**
  * Additional token information from Birdeye's defi token overview API.
  * Includes price, volume, supply, market cap, and other on-chain and market data.
  * 
  * @export
- * @interface CoinTokenInfo
+ * @interface CoinInsights
  */
-export interface CoinTokenInfo {
+export interface CoinInsights {
     /**
      * The SPL token mint address
      * @type {string}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     address: string;
     /**
      * Number of decimals for the token
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     decimals: number;
     /**
      * The token symbol
      * @type {string}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     symbol: string;
     /**
      * The token name
      * @type {string}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     name: string;
     /**
      * Market capitalization in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     marketCap: number;
     /**
      * Fully diluted valuation in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     fdv: number;
     /**
      * 
-     * @type {CoinTokenInfoExtensions}
-     * @memberof CoinTokenInfo
+     * @type {CoinInsightsExtensions}
+     * @memberof CoinInsights
      */
-    extensions: CoinTokenInfoExtensions;
+    extensions: CoinInsightsExtensions;
     /**
      * URL to the token's logo image
      * @type {string}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     logoURI: string;
     /**
      * Current liquidity in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     liquidity: number;
     /**
      * Unix timestamp of the last trade
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     lastTradeUnixTime: number;
     /**
      * ISO8601 time of the last trade
      * @type {string}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     lastTradeHumanTime: string;
     /**
      * Current price in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     price: number;
     /**
      * Price 24 hours ago in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     history24hPrice: number;
     /**
      * 24h price change in percent
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     priceChange24hPercent: number;
     /**
      * Unique wallets traded in last 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     uniqueWallet24h: number;
     /**
      * Unique wallets traded in previous 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     uniqueWalletHistory24h: number;
     /**
      * 24h change in unique wallets (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     uniqueWallet24hChangePercent: number;
     /**
      * Total supply of the token
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     totalSupply: number;
     /**
      * Circulating supply of the token
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     circulatingSupply: number;
     /**
      * Number of holders
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     holder: number;
     /**
      * Number of trades in last 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     trade24h: number;
     /**
      * Number of trades in previous 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     tradeHistory24h: number;
     /**
      * 24h change in trade count (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     trade24hChangePercent: number;
     /**
      * Number of sell trades in last 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     sell24h: number;
     /**
      * Number of sell trades in previous 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     sellHistory24h: number;
     /**
      * 24h change in sell trades (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     sell24hChangePercent: number;
     /**
      * Number of buy trades in last 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     buy24h: number;
     /**
      * Number of buy trades in previous 24h
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     buyHistory24h: number;
     /**
      * 24h change in buy trades (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     buy24hChangePercent: number;
     /**
      * 24h trading volume (token units)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     v24h: number;
     /**
      * 24h trading volume in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     v24hUSD: number;
     /**
      * Previous 24h trading volume (token units)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vHistory24h: number;
     /**
      * Previous 24h trading volume in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vHistory24hUSD?: number;
     /**
      * 24h change in volume (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     v24hChangePercent?: number;
     /**
      * 24h buy volume (token units)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vBuy24h?: number;
     /**
      * 24h buy volume in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vBuy24hUSD?: number;
     /**
      * Previous 24h buy volume (token units)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vBuyHistory24h?: number;
     /**
      * Previous 24h buy volume in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vBuyHistory24hUSD?: number;
     /**
      * 24h change in buy volume (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vBuy24hChangePercent?: number;
     /**
      * 24h sell volume (token units)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vSell24h?: number;
     /**
      * 24h sell volume in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vSell24hUSD?: number;
     /**
      * Previous 24h sell volume (token units)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vSellHistory24h?: number;
     /**
      * Previous 24h sell volume in USD
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vSellHistory24hUSD?: number;
     /**
      * 24h change in sell volume (percent)
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     vSell24hChangePercent?: number;
     /**
      * Number of markets the token is traded on
      * @type {number}
-     * @memberof CoinTokenInfo
+     * @memberof CoinInsights
      */
     numberMarkets?: number;
+    /**
+     * The number of Audius users holding the coin
+     * @type {number}
+     * @memberof CoinInsights
+     */
+    members: number;
+    /**
+     * The percentage change in the number of members holding the coin over the last 24 hours
+     * @type {number}
+     * @memberof CoinInsights
+     */
+    membersChange24hPercent: number;
 }
 
 /**
- * Check if a given object implements the CoinTokenInfo interface.
+ * Check if a given object implements the CoinInsights interface.
  */
-export function instanceOfCoinTokenInfo(value: object): value is CoinTokenInfo {
+export function instanceOfCoinInsights(value: object): value is CoinInsights {
     let isInstance = true;
     isInstance = isInstance && "address" in value && value["address"] !== undefined;
     isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
@@ -338,15 +350,17 @@ export function instanceOfCoinTokenInfo(value: object): value is CoinTokenInfo {
     isInstance = isInstance && "v24h" in value && value["v24h"] !== undefined;
     isInstance = isInstance && "v24hUSD" in value && value["v24hUSD"] !== undefined;
     isInstance = isInstance && "vHistory24h" in value && value["vHistory24h"] !== undefined;
+    isInstance = isInstance && "members" in value && value["members"] !== undefined;
+    isInstance = isInstance && "membersChange24hPercent" in value && value["membersChange24hPercent"] !== undefined;
 
     return isInstance;
 }
 
-export function CoinTokenInfoFromJSON(json: any): CoinTokenInfo {
-    return CoinTokenInfoFromJSONTyped(json, false);
+export function CoinInsightsFromJSON(json: any): CoinInsights {
+    return CoinInsightsFromJSONTyped(json, false);
 }
 
-export function CoinTokenInfoFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinTokenInfo {
+export function CoinInsightsFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinInsights {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -358,7 +372,7 @@ export function CoinTokenInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'name': json['name'],
         'marketCap': json['marketCap'],
         'fdv': json['fdv'],
-        'extensions': CoinTokenInfoExtensionsFromJSON(json['extensions']),
+        'extensions': CoinInsightsExtensionsFromJSON(json['extensions']),
         'logoURI': json['logoURI'],
         'liquidity': json['liquidity'],
         'lastTradeUnixTime': json['lastTradeUnixTime'],
@@ -397,10 +411,12 @@ export function CoinTokenInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
         'vSellHistory24hUSD': !exists(json, 'vSellHistory24hUSD') ? undefined : json['vSellHistory24hUSD'],
         'vSell24hChangePercent': !exists(json, 'vSell24hChangePercent') ? undefined : json['vSell24hChangePercent'],
         'numberMarkets': !exists(json, 'numberMarkets') ? undefined : json['numberMarkets'],
+        'members': json['members'],
+        'membersChange24hPercent': json['membersChange24hPercent'],
     };
 }
 
-export function CoinTokenInfoToJSON(value?: CoinTokenInfo | null): any {
+export function CoinInsightsToJSON(value?: CoinInsights | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -415,7 +431,7 @@ export function CoinTokenInfoToJSON(value?: CoinTokenInfo | null): any {
         'name': value.name,
         'marketCap': value.marketCap,
         'fdv': value.fdv,
-        'extensions': CoinTokenInfoExtensionsToJSON(value.extensions),
+        'extensions': CoinInsightsExtensionsToJSON(value.extensions),
         'logoURI': value.logoURI,
         'liquidity': value.liquidity,
         'lastTradeUnixTime': value.lastTradeUnixTime,
@@ -454,6 +470,8 @@ export function CoinTokenInfoToJSON(value?: CoinTokenInfo | null): any {
         'vSellHistory24hUSD': value.vSellHistory24hUSD,
         'vSell24hChangePercent': value.vSell24hChangePercent,
         'numberMarkets': value.numberMarkets,
+        'members': value.members,
+        'membersChange24hPercent': value.membersChange24hPercent,
     };
 }
 
