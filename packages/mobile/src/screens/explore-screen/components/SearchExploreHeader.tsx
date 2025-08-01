@@ -10,7 +10,6 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import type { ScrollView } from 'react-native'
 import { ImageBackground, Keyboard } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { SharedValue } from 'react-native-reanimated'
 import Animated, {
   interpolate,
@@ -20,6 +19,7 @@ import Animated, {
   withTiming,
   useDerivedValue
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDebounce } from 'react-use'
 
 import {
@@ -66,6 +66,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const navigation = useNavigation()
   const textInputRef = useRef<any>(null)
   const [isFocused, setIsFocused] = useState(!!params?.autoFocus)
+  const { top } = useSafeAreaInsets()
 
   // Get state from context
   const [query, setQuery] = useSearchQuery()
@@ -305,7 +306,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         style={{
           position: 'absolute',
           left: spacing.l,
-          top: spacing.unit14,
+          top,
           zIndex: 3
         }}
         w={spacing.unit10}
