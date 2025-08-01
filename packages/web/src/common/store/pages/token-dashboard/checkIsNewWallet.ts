@@ -16,8 +16,8 @@ export function* checkIsNewWallet(walletAddress: string, chain: Chain) {
   const { connectedEthWallets, connectedSolWallets } =
     yield* select(getAssociatedWallets)
 
-  const { data } = yield* call([sdk.users, sdk.users.getUserIDFromWallet], {
-    associatedWallet: walletAddress
+  const { data } = yield* call([sdk.users, sdk.users.getUserIDsByAddresses], {
+    address: [walletAddress]
   })
   const associatedUserId =
     data && data.userId ? HashId.parse(data.userId) : null
