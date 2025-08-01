@@ -11,7 +11,9 @@ import { ExploreSection } from './ExploreSection'
 
 export const RecentlyPlayedTracks = () => {
   const { spacing } = useTheme()
-  const { data: recentlyPlayedTracks, isLoading } = useRecentlyPlayedTracks()
+  const { data: recentlyPlayedTracks, isLoading } = useRecentlyPlayedTracks({
+    pageSize: 10
+  })
 
   if (!recentlyPlayedTracks || recentlyPlayedTracks.length === 0) {
     return null

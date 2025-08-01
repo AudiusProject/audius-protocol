@@ -8,8 +8,9 @@ import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const UndergroundTrendingTracks = () => {
-  const { data: undergroundTrendingTracks, isLoading } =
-    useTrendingUnderground()
+  const { data: undergroundTrendingTracks, isLoading } = useTrendingUnderground(
+    { pageSize: 10 }
+  )
 
   const trackIds = useMemo(() => {
     return undergroundTrendingTracks?.map(({ id }) => id) ?? []

@@ -9,7 +9,8 @@ export const exploreMessages = {
   bestSelling: 'Best Selling',
   artistSpotlight: 'Artist Spotlight',
   labelSpotlight: 'Label Spotlight',
-  exploreByMood: 'Explore by Mood',
+  exploreByMood: (category?: string) =>
+    `Explore${category ? ` ${category}` : ''} by Mood`,
   bestOfAudius: 'Best of Audius',
   viewAll: 'View All',
   layoutOptionsLabel: 'View As',
