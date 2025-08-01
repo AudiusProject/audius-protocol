@@ -43,7 +43,6 @@ import {
   PushNotifications
 } from '../../store'
 import { getErrorMessage, uuid, Maybe, Nullable } from '../../utils'
-import { getTokenBySymbol } from '../tokens'
 
 import { MintName } from './solana'
 import { MonitoringCallbacks } from './types'
@@ -166,11 +165,17 @@ export const audiusBackend = ({
   }
 
   function getMintAddress(mint: MintName): PublicKey {
-    const token = getTokenBySymbol(env, mint)
-    if (!token) {
-      throw new Error(`Token not found: ${mint}`)
+    // Simple mapping for the fixed set of mint names
+    const mintAddresses: Record<MintName, string> = {
+      wAUDIO: env.WAUDIO_MINT_ADDRESS,
+      USDC: env.USDC_MINT_ADDRESS
     }
-    return new PublicKey(token.address)
+
+    const address = mintAddresses[mint]
+    if (!address) {
+      throw new Error(`Token address not found for mint: ${mint}`)
+    }
+    return new PublicKey(address)
   }
 
   async function recordTrackListen({

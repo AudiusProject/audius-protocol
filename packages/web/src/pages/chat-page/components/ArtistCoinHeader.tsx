@@ -1,10 +1,9 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
+import { useTokens } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
-
-import { useTokens } from 'components/buy-sell-modal/constants'
 
 const messages = {
   membersOnly: 'Members Only'

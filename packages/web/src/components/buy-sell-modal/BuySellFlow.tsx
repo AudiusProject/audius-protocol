@@ -13,7 +13,9 @@ import {
   Screen,
   useTokenStates,
   useCurrentTokenPair,
-  useAvailableTokens
+  useAvailableTokens,
+  useSupportedTokenPairs,
+  useTokens
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 
@@ -27,7 +29,6 @@ import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
-import { useSupportedTokenPairs, useTokens } from './constants'
 
 const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
@@ -350,7 +351,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }
 
   if (isTokenDataLoading) {
-    return <ModalLoading />
+    return <ModalLoading noText />
   }
 
   return (
@@ -377,6 +378,10 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.buy}
               onInputValueChange={handleTabInputValueChange}
+              availableOutputTokens={availableTokens.filter(
+                (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
+              )}
+              onOutputTokenChange={handleOutputTokenChange}
             />
           ) : activeTab === 'sell' && currentTokenPair ? (
             <SellTab

@@ -39,6 +39,8 @@ export type SwapTabProps = {
   outputToken: TokenInfo
   balance: BalanceConfig
   outputBalance?: BalanceConfig
+  inputIsDefault?: boolean
+  outputIsDefault?: boolean
 } & TokenPricing &
   UIConfiguration &
   InputConfiguration &
@@ -54,6 +56,8 @@ export const SwapTab = ({
   outputBalance,
   onTransactionDataChange,
   isDefault = true,
+  inputIsDefault,
+  outputIsDefault,
   error,
   errorMessage,
   tokenPrice,
@@ -101,6 +105,12 @@ export const SwapTab = ({
     isBalanceLoading ||
     (isExchangeRateLoading && !hasRateEverBeenFetched.current)
 
+  // Determine isDefault values for input and output sections
+  const inputSectionIsDefault =
+    inputIsDefault !== undefined ? inputIsDefault : isDefault
+  const outputSectionIsDefault =
+    outputIsDefault !== undefined ? outputIsDefault : isDefault
+
   return (
     <FormikProvider value={formik}>
       <Form>
@@ -118,12 +128,16 @@ export const SwapTab = ({
                 onMaxClick={handleMaxClick}
                 availableBalance={availableBalance}
                 placeholder={messages.placeholder}
-                isDefault={isDefault}
+                isDefault={inputSectionIsDefault}
                 error={error}
                 errorMessage={errorMessage}
                 tooltipPlacement={tooltipPlacement}
-                availableTokens={!isDefault ? availableInputTokens : undefined}
-                onTokenChange={!isDefault ? onInputTokenChange : undefined}
+                availableTokens={
+                  !inputSectionIsDefault ? availableInputTokens : undefined
+                }
+                onTokenChange={
+                  !inputSectionIsDefault ? onInputTokenChange : undefined
+                }
               />
 
               <TokenAmountSection
@@ -137,9 +151,13 @@ export const SwapTab = ({
                 isTokenPriceLoading={isTokenPriceLoading}
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
                 tooltipPlacement={tooltipPlacement}
-                isDefault={isDefault}
-                availableTokens={!isDefault ? availableOutputTokens : undefined}
-                onTokenChange={!isDefault ? onOutputTokenChange : undefined}
+                isDefault={outputSectionIsDefault}
+                availableTokens={
+                  !outputSectionIsDefault ? availableOutputTokens : undefined
+                }
+                onTokenChange={
+                  !outputSectionIsDefault ? onOutputTokenChange : undefined
+                }
               />
 
               {/* Show exchange rate for convert flow */}

@@ -2,7 +2,6 @@ import { ChatBlastAudience } from '@audius/sdk'
 
 import { useArtistCoins } from '~/api/tan-query/coins/useArtistCoins'
 import { ID } from '~/models'
-import { getTokenRegistry } from '~/services/tokens/TokenRegistry'
 
 import { FeatureFlags } from '../services'
 
@@ -33,11 +32,8 @@ export const useArtistCoinMessageHeader = ({
   let artistCoin
   if (!!coins && coins.length > 0) {
     artistCoin = coins[0]
-    if (artistCoin.mint) {
-      const tokenRegistry = getTokenRegistry()
-      const token = tokenRegistry.getTokenByAddress(artistCoin.mint)
-      artistCoinSymbol = token?.symbol
-    }
+    // Get symbol directly from the coin data
+    artistCoinSymbol = artistCoin.ticker
   }
 
   return artistCoinSymbol

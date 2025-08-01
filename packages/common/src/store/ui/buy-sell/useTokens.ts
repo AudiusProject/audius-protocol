@@ -4,33 +4,9 @@ import {
   transformArtistCoinsToTokenInfoMap,
   useArtistCoins,
   useQueryContext
-} from '@audius/common/api'
-import { TokenInfo, TokenPair } from '@audius/common/store'
-import {
-  IconLogoCircleUSDC,
-  IconTokenAUDIO,
-  IconTokenBonk
-} from '@audius/harmony'
+} from '~/api'
 
-// Icon mapping for web components - handles symbols with $ prefix
-const createTokenIconMap = () => {
-  const baseMap = {
-    AUDIO: IconTokenAUDIO,
-    USDC: IconLogoCircleUSDC,
-    BONK: IconTokenBonk
-  }
-
-  const iconMap: Record<string, any> = { ...baseMap }
-
-  // Add $ prefixed versions
-  Object.entries(baseMap).forEach(([key, value]) => {
-    iconMap[`$${key}`] = value
-  })
-
-  return iconMap
-}
-
-export const TOKEN_ICON_MAP = createTokenIconMap()
+import { TokenPair } from './types'
 
 // Hook to get tokens from API
 export const useTokens = () => {
@@ -38,10 +14,7 @@ export const useTokens = () => {
   const { env } = useQueryContext()
 
   return useMemo(() => {
-    const tokensMap = transformArtistCoinsToTokenInfoMap(
-      artistCoins,
-      TOKEN_ICON_MAP
-    )
+    const tokensMap = transformArtistCoinsToTokenInfoMap(artistCoins)
 
     // Add USDC manually since it's frontend-only and not from API
     tokensMap.USDC = {
@@ -50,8 +23,8 @@ export const useTokens = () => {
       decimals: 6,
       balance: null,
       address: env.USDC_MINT_ADDRESS,
-      icon: IconLogoCircleUSDC,
-      logoURI: undefined, // Use icon instead of logoURI for USDC
+      logoURI:
+        'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
       isStablecoin: true
     }
 
@@ -122,8 +95,3 @@ export const useSupportedTokenPairs = () => {
     }
   }, [tokens, isLoading, error])
 }
-
-// Backward compatibility - static exports (deprecated)
-// These will be empty until the hooks are used
-export const TOKENS: Record<string, TokenInfo> = {}
-export const SUPPORTED_TOKEN_PAIRS: TokenPair[] = []
