@@ -1,4 +1,4 @@
-import { Id, full } from '@audius/sdk'
+import { full, OptionalId } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -57,7 +57,7 @@ export const useRecentlyCommentedTracks = (
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.tracks.getTracksWithRecentComments({
         ...args,
-        userId: Id.parse(currentUserId),
+        userId: OptionalId.parse(currentUserId),
         offset: pageParam
       })
 
