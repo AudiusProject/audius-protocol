@@ -20,7 +20,7 @@ export function* checkIsNewWallet(walletAddress: string, chain: Chain) {
     address: [walletAddress]
   })
   const associatedUserId =
-    data && data.userId ? HashId.parse(data.userId) : null
+    data && data[0]?.userId ? HashId.parse(data[0].userId) : null
 
   const associatedWallets =
     chain === Chain.Eth ? connectedEthWallets : connectedSolWallets
