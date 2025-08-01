@@ -10,6 +10,7 @@ import { Button, Flex, Paper, Text, useTheme, Artwork } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { AssetDetailProps } from '../types'
@@ -124,7 +125,7 @@ const HasBalanceState = ({
   )
 }
 
-export const BalanceSection = ({ mint }: AssetDetailProps) => {
+const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { data: coin, isLoading: coinsLoading } = useArtistCoin({ mint })
   const { data: tokenBalance } = useTokenBalance({ mint })
 
@@ -214,3 +215,19 @@ export const BalanceSection = ({ mint }: AssetDetailProps) => {
     </Paper>
   )
 }
+
+export const BalanceSection = componentWithErrorBoundary(
+  BalanceSectionContent,
+  {
+    name: 'BalanceSection',
+    fallback: (
+      <Paper ph='xl' pv='l'>
+        <Flex direction='column' gap='l' w='100%'>
+          <Text variant='body' size='m' color='subdued'>
+            {walletMessages.errors.unableToLoadBalance}
+          </Text>
+        </Flex>
+      </Paper>
+    )
+  }
+)
