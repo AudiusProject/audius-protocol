@@ -1934,7 +1934,7 @@ PODS:
     - React-logger
     - React-perflogger
     - React-utils (= 0.76.9)
-  - RNBootSplash (5.2.1):
+  - RNBootSplash (6.3.10):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2471,7 +2471,7 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RNBootSplash (from `../node_modules/react-native-bootsplash`)
+  - RNBootSplash (from `../../../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
@@ -2704,7 +2704,7 @@ EXTERNAL SOURCES:
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
   RNBootSplash:
-    :path: "../node_modules/react-native-bootsplash"
+    :path: "../../../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
     :path: "../../../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -2849,7 +2849,7 @@ SPEC CHECKSUMS:
   React-utils: 54df9ada708578c8ad40d92895d6fed03e0e8a9e
   ReactCodegen: 21a52ccddc6479448fc91903a437dd23ddc7366c
   ReactCommon: bfd3600989d79bc3acbe7704161b171a1480b9fd
-  RNBootSplash: 1f4441625b0e5f5bc1a0fe6948cc17d1c739e53e
+  RNBootSplash: 83d1d6e2f946bd98d36cc9ffbec068bce8daebcb
   RNCAsyncStorage: 2cdb957226cdaf6cb11564a930165c799ad8964c
   RNCClipboard: 81c79ddbd1494f49b6480fa56dfed718dc9cfe88
   RNCMaskedView: 090213d32d8b3bb83a4dcb7d12c18f0152591906
