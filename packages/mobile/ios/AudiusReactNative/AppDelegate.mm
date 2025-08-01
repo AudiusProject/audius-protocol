@@ -7,7 +7,6 @@
 #import <React/RCTRootView.h>
 #import <React/RCTLinkingManager.h>
 #import "RNNotifications.h"
-#import <TiktokOpensdkReactNative-Bridging-Header.h>
 
 @implementation AppDelegate
 
@@ -15,20 +14,18 @@
    openURL:(NSURL *)url
    options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
 {
-  BOOL handledByTikTokOpenSDK = [TiktokOpensdkReactNative handleOpenURL:url];
   BOOL handledByRNLinkingManager = [RCTLinkingManager application:application openURL:url options:options];
-  return handledByTikTokOpenSDK || handledByRNLinkingManager;
+  return handledByRNLinkingManager;
 }
 
 // Only if your app is using [Universal Links](https://developer.apple.com/library/prerelease/ios/documentation/General/Conceptual/AppSearch/UniversalLinks.html).
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity
  restorationHandler:(void (^)(NSArray * _Nullable))restorationHandler
 {
-  BOOL handledByTikTokOpenSDK = [TiktokOpensdkReactNative handleUserActivity:userActivity];
   BOOL handledByRNLinkingManager = [RCTLinkingManager application:application
                   continueUserActivity:userActivity
                     restorationHandler:restorationHandler];
-  return handledByTikTokOpenSDK || handledByRNLinkingManager;
+  return handledByRNLinkingManager;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

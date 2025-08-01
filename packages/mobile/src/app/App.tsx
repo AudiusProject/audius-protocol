@@ -9,7 +9,7 @@ import {
   SafeAreaProvider,
   initialWindowMetrics
 } from 'react-native-safe-area-context'
-import TrackPlayer from 'react-native-track-player'
+// import TrackPlayer from 'react-native-track-player'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -55,7 +55,7 @@ incrementSessionCount()
 const App = () => {
   useEffectOnce(() => {
     subscribeToNetworkStatusUpdates()
-    TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
+    // TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })
 
   return (
