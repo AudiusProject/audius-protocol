@@ -140,3 +140,22 @@ export const getTrendingChallengesByDate = async (
     .where('challenge_id', '=', 'tt')
     .where('specifier', 'like', `${specifierPrefix}%`)
     .limit(100)
+
+// Get the completed block number from the first record that's older than 8 days ago
+export const getCompletedBlockNumberFromDaysAgo = async (
+  discoveryDb: Knex,
+  daysAgo: number
+): Promise<number | null> => {
+  const daysAgoDate = new Date()
+  daysAgoDate.setDate(daysAgoDate.getDate() - daysAgo)
+
+  const result = await discoveryDb
+    .select('completed_blocknumber')
+    .from<UserChallenges>(Table.UserChallenges)
+    .where('challenge_id', '=', 'tt')
+    .where('created_at', '<', daysAgoDate)
+    .orderBy('created_at', 'desc')
+    .first()
+
+  return result?.completed_blocknumber || null
+}
