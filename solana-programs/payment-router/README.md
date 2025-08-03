@@ -1,6 +1,6 @@
 # Payment Router
 
-The Payment Router program splits a single SPL token payment to multiple recipients. It is intended to be used with SPL-AUDIO and SPL-USDC. While payments can be made indepdently of the Payment Router program, it is designed to improve space-efficiency and usability off-chain.
+The Payment Router program splits a single SPL token payment to multiple recipients. It is intended to be used with SPL-AUDIO and SPL-USDC. While payments can be made independently of the Payment Router program, it is designed to improve space-efficiency and usability off-chain.
 
 The program derives a PDA to own tokens as an intermediary before paying out.
 

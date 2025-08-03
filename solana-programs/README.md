@@ -51,7 +51,7 @@ This script will make sure to use the correct versions of Solana CLI and Anchor 
 There is a world in which we can build the Solana programs inside the docker image. However, this in practice is _insanely_ slow in comparison to building on the host. There's no prebuilt binaries for ARM64 Linux for Solana CLI, and even if there was, it's not a supported target for `build-bpf`. Therefore, the docker image would require:
 
 1. Building legacy programs from a amd64-linux emulated Rust 1.59 image using Solana 1.14.18
-2. Buliding Anchor programs from an amd64-linux emulated Rust 1.79 image using Solana 1.16.9
+2. Building Anchor programs from an amd64-linux emulated Rust 1.79 image using Solana 1.16.9
 3. Building solana-test-validator in an arm64-linux Rust 1.79 image using Solana 1.18.22
 
 Each of which takes _forever_ on our dev machines, and despite parallelizing 1 and 2, in total takes over 30 minutes.
