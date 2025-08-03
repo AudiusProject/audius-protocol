@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import React, { type ReactNode } from 'react'
 
 import { reachabilitySelectors } from '@audius/common/store'
 import Animated, { FadeIn } from 'react-native-reanimated'
