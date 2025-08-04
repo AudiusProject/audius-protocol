@@ -3,6 +3,7 @@ import { useMemo, useCallback, useState, useRef } from 'react'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
+  DEFAULT_TOKEN_AMOUNT_PLACEHOLDER,
   TokenAmountSectionProps,
   TokenInfo,
   useTokenAmountFormatting
@@ -170,10 +171,12 @@ const StackedBalanceSection = ({
   }, [])
 
   // Show component if we have either available balance or receive amount to display
-  const hasAvailableBalance = formattedAvailableBalance
   const hasReceiveAmount = showReceiveAmount && formattedReceiveAmount
+  const shouldShowLargeTicker =
+    !hasReceiveAmount ||
+    formattedReceiveAmount === DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
 
-  if (!hasAvailableBalance && !hasReceiveAmount) {
+  if (!formattedAvailableBalance && !hasReceiveAmount) {
     return null
   }
 
@@ -212,16 +215,29 @@ const StackedBalanceSection = ({
           <Flex gap='s' alignItems='center'>
             <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
             <Flex direction='column'>
-              <Flex alignSelf='flex-start'>
-                <Text variant='heading' size='s' color='subdued'>
-                  {messages.tokenTicker(symbol, !!isStablecoin)}
+              {shouldShowLargeTicker ? (
+                <Flex alignSelf='flex-start'>
+                  <Text variant='heading' size='s' color='subdued'>
+                    {messages.tokenTicker(symbol, !!isStablecoin)}
+                  </Text>
+                </Flex>
+              ) : null}
+              {!hasReceiveAmount ? (
+                <Text variant='title' size='s' color='default'>
+                  {messages.stackedBalance(formattedAvailableBalance!)}
                 </Text>
-              </Flex>
-              <Text variant='title' size='s' color='default'>
-                {showReceiveAmount && formattedReceiveAmount
-                  ? formattedReceiveAmount
-                  : messages.stackedBalance(formattedAvailableBalance!)}
-              </Text>
+              ) : null}
+              {hasReceiveAmount &&
+              formattedReceiveAmount !== DEFAULT_TOKEN_AMOUNT_PLACEHOLDER ? (
+                <Flex direction='column'>
+                  <Text variant='heading' size='s'>
+                    {formattedReceiveAmount}
+                  </Text>
+                  <Text variant='title' size='s' color='subdued'>
+                    {messages.tokenTicker(symbol, !!isStablecoin)}
+                  </Text>
+                </Flex>
+              ) : null}
             </Flex>
           </Flex>
           <IconCaretDown size='s' color='default' />
@@ -508,8 +524,8 @@ export const TokenAmountSection = ({
             isStablecoin={!!isStablecoin}
             availableTokens={availableTokens}
             onTokenChange={onTokenChange}
-            showReceiveAmount={true}
             formattedReceiveAmount={formattedAmount}
+            showReceiveAmount
           />
         </Flex>
       )

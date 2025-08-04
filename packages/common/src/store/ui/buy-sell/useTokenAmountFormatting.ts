@@ -14,6 +14,8 @@ export type UseTokenAmountFormattingProps = {
   placeholder?: string
 }
 
+export const DEFAULT_TOKEN_AMOUNT_PLACEHOLDER = '0.00'
+
 const defaultDecimalPlaces = 2
 
 // Maximum safe amount for calculations to prevent overflow errors
@@ -33,7 +35,7 @@ export const useTokenAmountFormatting = ({
   availableBalance,
   isStablecoin,
   decimals,
-  placeholder = '0.00'
+  placeholder = DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
 }: UseTokenAmountFormattingProps) => {
   const getDisplayDecimalPlaces = useCallback(
     (currentExchangeRate: number | null | undefined) => {
