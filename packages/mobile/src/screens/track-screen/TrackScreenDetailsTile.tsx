@@ -70,8 +70,7 @@ import {
   IconTrending,
   MusicBadge,
   Paper,
-  Text,
-  type ImageProps
+  Text
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag } from 'app/components/core'
