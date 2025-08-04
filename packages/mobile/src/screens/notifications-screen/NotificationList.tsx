@@ -3,10 +3,10 @@ import { useCallback, useContext, useState } from 'react'
 import { useNotifications } from '@audius/common/api'
 import type { Notification } from '@audius/common/store'
 import { useIsFocused } from '@react-navigation/native'
+import { FlashList } from '@shopify/flash-list'
 import type { ViewToken } from 'react-native'
 import { View } from 'react-native'
 
-import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
@@ -128,7 +128,7 @@ export const NotificationList = () => {
   }
 
   return (
-    <FlatList
+    <FlashList
       contentContainerStyle={styles.container}
       style={styles.list}
       refreshing={isRefreshing}
@@ -146,6 +146,7 @@ export const NotificationList = () => {
       onEndReached={handleLoadMore}
       scrollEnabled={!gesturesDisabled}
       onViewableItemsChanged={visibilityCallback}
+      estimatedItemSize={190} // size varies - this is an estimated average
     />
   )
 }
