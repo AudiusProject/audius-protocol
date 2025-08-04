@@ -86,9 +86,13 @@ export const RemixContestCard = forwardRef(
             >
               <Text ellipses>{track?.title}</Text>
             </TextLink>
-            <Flex justifyContent='center'>
-              <UserLink userId={user?.user_id} popover center />
-            </Flex>
+            <UserLink
+              userId={user?.user_id}
+              popover
+              center
+              fullWidth
+              ellipses
+            />
           </CardContent>
         </Flex>
         <CardFooter>
