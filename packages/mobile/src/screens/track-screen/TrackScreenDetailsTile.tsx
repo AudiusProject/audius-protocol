@@ -70,8 +70,7 @@ import {
   IconTrending,
   MusicBadge,
   Paper,
-  Text,
-  type ImageProps
+  Text
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag } from 'app/components/core'
@@ -314,23 +313,13 @@ export const TrackScreenDetailsTile = ({
       : messages.replay
     : messages.play
 
-  const renderImage = useCallback(
-    (props: ImageProps) => (
+  const imageElement = (
+    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
       <TrackImage
         trackId={track.track_id}
         size={SquareSizes.SIZE_480_BY_480}
-        {...props}
+        style={styles.coverArt}
       />
-    ),
-    [track]
-  )
-  const innerImageElement = renderImage({
-    style: styles.coverArt
-  })
-
-  const imageElement = (
-    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
-      {innerImageElement}
     </TrackFlair>
   )
 
