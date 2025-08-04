@@ -49,7 +49,7 @@ export const useTokenAmountFormatting = ({
   )
 
   const formattedAvailableBalance = useMemo(() => {
-    if (availableBalance == null || isNaN(availableBalance)) return placeholder
+    if (availableBalance == null || isNaN(availableBalance)) return null
 
     if (isStablecoin) {
       return formatUSDCValue(availableBalance)
@@ -61,10 +61,10 @@ export const useTokenAmountFormatting = ({
     return tokenAmount.toLocaleString('en-US', {
       maximumFractionDigits: displayDecimals
     })
-  }, [availableBalance, placeholder, isStablecoin, decimals])
+  }, [availableBalance, isStablecoin, decimals])
 
   const formattedAmount = useMemo(() => {
-    if (!amount && amount !== 0) return placeholder
+    if (!amount && amount !== 0) return null
 
     // Use safe value for calculations while preserving original for display logic
     const safeNumericAmount = getSafeNumericValue(amount)
