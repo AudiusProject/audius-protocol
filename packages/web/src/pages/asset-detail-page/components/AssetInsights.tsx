@@ -29,7 +29,7 @@ const AssetInsightsSkeleton = () => {
           {messages.title}
         </Text>
       </Flex>
-      
+
       {/* Skeleton for 5 metric rows */}
       {Array.from({ length: 5 }).map((_, index) => (
         <Flex

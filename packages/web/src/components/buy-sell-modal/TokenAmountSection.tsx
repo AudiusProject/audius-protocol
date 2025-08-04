@@ -2,7 +2,11 @@ import { useMemo, useCallback, useState, useRef } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
+import {
+  TokenAmountSectionProps,
+  TokenInfo,
+  useTokenAmountFormatting
+} from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -22,7 +26,6 @@ import { useFlag } from '../../hooks/useRemoteConfig'
 
 import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
-import { useTokenAmountFormatting } from './hooks'
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -31,6 +34,8 @@ type BalanceSectionProps = {
   tooltipPlacement?: TooltipPlacement
   availableTokens?: TokenInfo[]
   onTokenChange?: (symbol: string) => void
+  showReceiveAmount?: boolean
+  formattedReceiveAmount?: string
 }
 
 const DefaultBalanceSection = ({
@@ -41,7 +46,7 @@ const DefaultBalanceSection = ({
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
 
-  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
+  if (!formattedAvailableBalance) {
     return null
   }
 
@@ -100,8 +105,6 @@ const TokenSelectionPopup = ({
       {availableTokens.map((token) => {
         const { symbol, name } = token
 
-        if (!token.icon && !token.logoURI) return null
-
         return (
           <Button
             key={symbol}
@@ -138,11 +141,15 @@ const StackedBalanceSection = ({
   tokenInfo,
   isStablecoin,
   availableTokens,
-  onTokenChange
+  onTokenChange,
+  showReceiveAmount,
+  formattedReceiveAmount
 }: BalanceSectionProps) => {
-  const { symbol } = tokenInfo
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
+  const { color } = useTheme()
+
+  const { symbol } = tokenInfo
 
   const handleClick = useCallback(() => {
     if (availableTokens && availableTokens.length > 0) {
@@ -162,7 +169,11 @@ const StackedBalanceSection = ({
     setIsPopupVisible(false)
   }, [])
 
-  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
+  // Show component if we have either available balance or receive amount to display
+  const hasAvailableBalance = formattedAvailableBalance
+  const hasReceiveAmount = showReceiveAmount && formattedReceiveAmount
+
+  if (!hasAvailableBalance && !hasReceiveAmount) {
     return null
   }
 
@@ -187,7 +198,7 @@ const StackedBalanceSection = ({
           cursor: isClickable ? 'pointer' : 'default',
           '&:hover': isClickable
             ? {
-                backgroundColor: 'var(--harmony-n-50)'
+                backgroundColor: color.background.surface2
               }
             : undefined
         }}
@@ -207,7 +218,9 @@ const StackedBalanceSection = ({
                 </Text>
               </Flex>
               <Text variant='title' size='s' color='default'>
-                {messages.stackedBalance(formattedAvailableBalance)}
+                {showReceiveAmount && formattedReceiveAmount
+                  ? formattedReceiveAmount
+                  : messages.stackedBalance(formattedAvailableBalance!)}
               </Text>
             </Flex>
           </Flex>
@@ -241,7 +254,7 @@ const OldStackedBalanceSection = ({
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
 
-  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
+  if (!formattedAvailableBalance) {
     return null
   }
 
@@ -288,10 +301,6 @@ const CryptoAmountSection = ({
 }) => {
   const { symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
-
-  if (!tokenInfo.icon && !tokenInfo.logoURI) {
-    return null
-  }
 
   if (verticalLayout) {
     return (
@@ -498,6 +507,8 @@ export const TokenAmountSection = ({
             isStablecoin={!!isStablecoin}
             availableTokens={availableTokens}
             onTokenChange={onTokenChange}
+            showReceiveAmount={true}
+            formattedReceiveAmount={formattedAmount}
           />
         </Flex>
       )
@@ -524,7 +535,7 @@ export const TokenAmountSection = ({
   ])
 
   const titleText = useMemo(() => {
-    if (isStablecoin && !isInput && (tokenInfo.icon || tokenInfo.logoURI)) {
+    if (isStablecoin && !isInput) {
       return (
         <Flex alignItems='center' gap='s'>
           <TokenIcon tokenInfo={tokenInfo} size='l' />

@@ -7,7 +7,7 @@ import { getTokenDecimalPlaces, getCurrencyDecimalPlaces } from '~/utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number
-  availableBalance: number
+  availableBalance?: number | null
   exchangeRate?: number | null
   isStablecoin: boolean
   placeholder?: string
@@ -45,7 +45,7 @@ export const useTokenAmountFormatting = ({
   )
 
   const formattedAvailableBalance = useMemo(() => {
-    if (isNaN(availableBalance)) return placeholder
+    if (availableBalance == null || isNaN(availableBalance)) return placeholder
 
     if (isStablecoin) {
       return formatUSDCValue(availableBalance)

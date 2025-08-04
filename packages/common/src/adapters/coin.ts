@@ -6,11 +6,8 @@ import { removeNullable } from '~/utils/typeUtils'
 export type CoinMetadata = {
   mint: string
   ticker: string | null
-  tokenInfo: {
-    name: string | null
-    decimals: number | null
-    logoURI: string | null
-  } | null
+  logoUri: string | null
+  decimals: number | null
 }
 
 /**
@@ -19,13 +16,8 @@ export type CoinMetadata = {
 export const coinFromSDK = (input: Coin): CoinMetadata => ({
   mint: input.mint,
   ticker: input.ticker ?? null,
-  tokenInfo: input.tokenInfo
-    ? {
-        name: input.tokenInfo.name ?? null,
-        decimals: input.tokenInfo.decimals ?? null,
-        logoURI: input.tokenInfo.logoURI ?? null
-      }
-    : null
+  logoUri: input.logoUri ?? null,
+  decimals: input.decimals ?? null
 })
 
 /**

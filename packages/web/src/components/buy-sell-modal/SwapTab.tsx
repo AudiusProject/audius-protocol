@@ -70,7 +70,7 @@ export const SwapTab = ({
   availableOutputTokens,
   onInputTokenChange,
   onOutputTokenChange,
-  showExchangeRate = false
+  showExchangeRate = true
 }: SwapTabProps) => {
   const {
     formik,

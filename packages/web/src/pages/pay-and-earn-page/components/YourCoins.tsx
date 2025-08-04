@@ -3,7 +3,7 @@ import { Fragment, useCallback, useContext } from 'react'
 import {
   useUserCoins,
   useCurrentUserId,
-  useArtistCoin,
+  useArtistCoins,
   UserCoin
 } from '@audius/common/api'
 import {
@@ -115,7 +115,8 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
     isTokenPriceLoading
   } = useFormattedTokenBalance(coin.mint)
 
-  const { data: coinData } = useArtistCoin({ mint: coin.mint })
+  const { data: coinsData } = useArtistCoins({ mint: [coin.mint] })
+  const coinData = coinsData?.[0] ?? null
 
   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
 
@@ -124,7 +125,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
 
   return (
     <CoinCard
-      icon={coinData?.tokenInfo?.logoURI}
+      icon={coinData?.logoUri}
       symbol={tokenSymbol ?? ''}
       balance={tokenBalanceFormatted || ''}
       dollarValue={tokenDollarValue || ''}
