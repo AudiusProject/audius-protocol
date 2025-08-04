@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { Fragment, useCallback, useContext } from 'react'
 
 import {
   useArtistCoins,
@@ -188,7 +188,7 @@ export const YourCoins = () => {
           <>
             <Flex key={`row-${rowIndex}`} alignItems='stretch'>
               {pair.map((item: CoinPairItem, colIndex) => (
-                <>
+                <Fragment key={item === 'find-more' ? 'find-more' : item.mint}>
                   {colIndex > 0 && <Divider orientation='vertical' />}
                   <Box flex={1}>
                     {item === 'find-more' ? (
@@ -197,7 +197,7 @@ export const YourCoins = () => {
                       <CoinCardWithBalance coin={item} />
                     )}
                   </Box>
-                </>
+                </Fragment>
               ))}
             </Flex>
             {rowIndex < coinPairs.length - 1 && <Divider />}
