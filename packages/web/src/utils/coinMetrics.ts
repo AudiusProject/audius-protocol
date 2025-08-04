@@ -65,7 +65,7 @@ export const createCoinMetrics = (coinInsights: CoinInsights): MetricData[] => {
       coinInsights.membersChange24hPercent
     ),
     createMetric(
-      formatCount(coinInsights.uniqueWallet24h || 0),
+      formatCount(coinInsights.holder || 0),
       messages.uniqueHolders,
       coinInsights.uniqueWallet24hChangePercent
     ),
