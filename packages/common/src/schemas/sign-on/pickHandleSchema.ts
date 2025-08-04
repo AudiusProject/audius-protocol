@@ -8,7 +8,7 @@ import { restrictedHandles as commonRestrictedHandles } from '~/utils/restricted
 
 export const pickHandleErrorMessages = {
   badCharacterError: 'Please only use A-Z, 0-9, . and _',
-  twitterReservedError: 'This verified Twitter handle is reserved.',
+  xReservedError: 'This verified X handle is reserved.',
   instagramReservedError: 'This verified Instagram handle is reserved.',
   tiktokReservedError: 'This verified TikTok handle is reserved.',
   genericReservedError: 'This verified handle is reserved.',
@@ -78,7 +78,7 @@ export const pickHandleSchema = ({
           if (handleReservedStatus === 'twitterReserved') {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: pickHandleErrorMessages.twitterReservedError
+              message: pickHandleErrorMessages.xReservedError
             })
           } else if (handleReservedStatus === 'instagramReserved') {
             context.addIssue({

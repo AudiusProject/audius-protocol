@@ -6,7 +6,7 @@ import { BooleanKeys } from '@audius/common/services'
 import { Flex } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { SignUpFlowInstagramAuth } from 'app/screens/sign-on-screen/components/SignUpFlowInstagramAuth'
-import { SignUpFlowTwitterAuth } from 'app/screens/sign-on-screen/components/SignUpFlowTwitterAuth'
+import { SignUpFlowXAuth } from 'app/screens/sign-on-screen/components/SignUpFlowXAuth'
 
 import { SignUpFlowTikTokAuth } from './SignUpFlowTikTokAuth'
 
@@ -74,8 +74,8 @@ export const SocialMediaSignUpButtons = ({
   return (
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
-        <SignUpFlowTwitterAuth
-          onError={handleError('twitter')}
+        <SignUpFlowXAuth
+          onError={handleError('x')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}

@@ -33,7 +33,7 @@ export const useSocialMediaLoader = ({
       if (platform === 'instagram') {
         dispatch(make(Name.CREATE_ACCOUNT_START_INSTAGRAM, { page }))
       }
-      if (platform === 'twitter') {
+      if (platform === 'x') {
         dispatch(make(Name.CREATE_ACCOUNT_START_TWITTER, { page }))
       }
       if (platform === 'tiktok') {
@@ -62,7 +62,7 @@ export const useSocialMediaLoader = ({
           )
         }
       }
-      if (platform === 'twitter') {
+      if (platform === 'x') {
         if (isUserClose) {
           dispatch(make(Name.CREATE_ACCOUNT_CLOSED_TWITTER, { page }))
         } else {
