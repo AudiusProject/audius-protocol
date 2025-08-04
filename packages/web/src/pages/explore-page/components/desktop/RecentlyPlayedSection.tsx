@@ -22,6 +22,7 @@ export const RecentlyPlayedSection = () => {
       data={data}
       isLoading={isLoading}
       Card={TrackCard}
+      viewAllLink='/history'
     />
   )
 }

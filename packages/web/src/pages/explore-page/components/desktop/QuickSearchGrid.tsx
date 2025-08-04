@@ -119,7 +119,12 @@ export const QuickSearchGrid = () => {
   )
 
   return (
-    <Flex direction='column' gap='l' alignItems='center' mh='l'>
+    <Flex
+      direction='column'
+      gap={isMobile ? 'l' : 'xl'}
+      alignItems='center'
+      mh='l'
+    >
       <Text
         variant={isMobile ? 'title' : 'heading'}
         size={isMobile ? 'l' : 'm'}

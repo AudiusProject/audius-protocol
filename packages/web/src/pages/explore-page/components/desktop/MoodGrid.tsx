@@ -23,7 +23,12 @@ export const MoodGrid = () => {
   )
 
   return (
-    <Flex direction='column' mh='l' gap='l' alignItems='center'>
+    <Flex
+      direction='column'
+      mh='l'
+      gap={isMobile ? 'l' : 'xl'}
+      alignItems='center'
+    >
       <Text
         variant={isMobile ? 'title' : 'heading'}
         size={isMobile ? 'l' : 'm'}
