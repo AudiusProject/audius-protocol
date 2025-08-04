@@ -15,7 +15,7 @@ import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
   useBuySellModal,
-  groupCoinsIntoPairs,
+  useGroupCoinPairs,
   CoinPairItem
 } from '@audius/common/store'
 import {
@@ -179,7 +179,7 @@ export const YourCoins = () => {
     userId: userIdString || ''
   })
 
-  const coinPairs = groupCoinsIntoPairs(artistCoins)
+  const coinPairs = useGroupCoinPairs(artistCoins)
 
   if (isLoadingCoins || !userIdString) {
     return <YourCoinsSkeleton />
