@@ -253,22 +253,9 @@ const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({
 export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
   z
     .object({
-      artwork: z
-        .object({
-          url: z.string()
-        })
-        .nullable()
-        .refine(
-          (artwork) => {
-            return (
-              collectionType === 'playlist' ||
-              (artwork !== null && artwork.url !== imageBlank)
-            )
-          },
-          {
-            message: messages.artworkRequiredError
-          }
-        ),
+      artwork: z.object({
+        url: z.string().nullable().optional()
+      }),
       playlist_name: z.string({
         required_error: messages[collectionType].nameRequiredError
       }),
@@ -312,6 +299,31 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       })
     )
     .merge(hiddenMetadataSchema)
+    .superRefine((data, ctx) => {
+      // For albums, artwork is always required
+      if (collectionType === 'album') {
+        if (!data.artwork?.url || data.artwork.url === imageBlank) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messages.artworkRequiredError,
+            path: ['artwork']
+          })
+        }
+      }
+      // For playlists, artwork is only required if the playlist is public (not private)
+      else if (collectionType === 'playlist') {
+        if (
+          !data.is_private &&
+          (!data.artwork?.url || data.artwork.url === imageBlank)
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messages.artworkRequiredError,
+            path: ['artwork']
+          })
+        }
+      }
+    })
 
 /**
  * Extra metadata on the collection that doesn't get validated to
