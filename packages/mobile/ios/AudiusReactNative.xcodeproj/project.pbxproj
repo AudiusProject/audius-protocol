@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -16,6 +16,9 @@
 		232C0A9A2E40892300D99173 /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 232C0A992E40892300D99173 /* UserNotificationsUI.framework */; };
 		232C0AA42E40892300D99173 /* NotificationContentExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 232C0A962E40892300D99173 /* NotificationContentExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		23A43AB92E37E73000CDCDF2 /* RichPushExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 23A43AB12E37E73000CDCDF2 /* RichPushExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		23AE7C8F2E412BD7003B3E77 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 23AE7C8A2E412BD7003B3E77 /* MainInterface.storyboard */; };
+		23AE7C902E412BD7003B3E77 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 23AE7C8C2E412BD7003B3E77 /* README.md */; };
+		23AE7C912E412BD7003B3E77 /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AE7C8B2E412BD7003B3E77 /* NotificationViewController.swift */; };
 		253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */ = {isa = PBXBuildFile; fileRef = 253BCCF92B324974007DC74C /* NSureSDK.m */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
@@ -85,6 +88,10 @@
 		232C0A972E40892300D99173 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		232C0A992E40892300D99173 /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
 		23A43AB12E37E73000CDCDF2 /* RichPushExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RichPushExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		23AE7C882E412BD7003B3E77 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		23AE7C892E412BD7003B3E77 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
+		23AE7C8B2E412BD7003B3E77 /* NotificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewController.swift; sourceTree = "<group>"; };
+		23AE7C8C2E412BD7003B3E77 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		253BCCF82B324974007DC74C /* NSureSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSureSDK.h; path = AudiusReactNative/NSureSDK.h; sourceTree = "<group>"; };
 		253BCCF92B324974007DC74C /* NSureSDK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSureSDK.m; path = AudiusReactNative/NSureSDK.m; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
@@ -111,20 +118,6 @@
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		232C0AAB2E40892400D99173 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 232C0A952E40892300D99173 /* NotificationContentExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		232C0A9B2E40892300D99173 /* NotificationContentExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (232C0AAB2E40892400D99173 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = NotificationContentExtension; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
@@ -200,6 +193,17 @@
 			path = RichPushExtension;
 			sourceTree = "<group>";
 		};
+		23AE7C8D2E412BD7003B3E77 /* NotificationContentExtension */ = {
+			isa = PBXGroup;
+			children = (
+				23AE7C882E412BD7003B3E77 /* Info.plist */,
+				23AE7C8A2E412BD7003B3E77 /* MainInterface.storyboard */,
+				23AE7C8B2E412BD7003B3E77 /* NotificationViewController.swift */,
+				23AE7C8C2E412BD7003B3E77 /* README.md */,
+			);
+			path = NotificationContentExtension;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -229,7 +233,7 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* AudiusReactNativeTests */,
 				23194ACE2E3813E7009B2F97 /* RichPushExtension */,
-				232C0A9B2E40892300D99173 /* NotificationContentExtension */,
+				23AE7C8D2E412BD7003B3E77 /* NotificationContentExtension */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				9203ADA7911C8949B98165F4 /* Pods */,
@@ -329,9 +333,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				232C0A9B2E40892300D99173 /* NotificationContentExtension */,
-			);
 			name = NotificationContentExtension;
 			packageProductDependencies = (
 			);
@@ -424,6 +425,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23AE7C8F2E412BD7003B3E77 /* MainInterface.storyboard in Resources */,
+				23AE7C902E412BD7003B3E77 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -585,6 +588,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				23AE7C912E412BD7003B3E77 /* NotificationViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -610,6 +614,17 @@
 			targetProxy = 23A43AB62E37E73000CDCDF2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		23AE7C8A2E412BD7003B3E77 /* MainInterface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				23AE7C892E412BD7003B3E77 /* Base */,
+			);
+			name = MainInterface.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
