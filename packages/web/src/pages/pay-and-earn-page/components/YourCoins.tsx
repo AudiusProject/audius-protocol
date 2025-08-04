@@ -199,8 +199,6 @@ export const YourCoins = () => {
                   </Box>
                 </>
               ))}
-              {/* If only one item in pair (FindMoreCoins on its own row), no divider needed */}
-              {pair.length === 1 && pair[0] === 'find-more' && null}
             </Flex>
             {rowIndex < coinPairs.length - 1 && <Divider />}
           </>
