@@ -125,9 +125,7 @@ export const TrackCard = forwardRef(
             >
               <Text ellipses>{title}</Text>
             </TextLink>
-            <Flex justifyContent='center'>
-              <UserLink userId={owner_id!} popover center />
-            </Flex>
+            <UserLink userId={owner_id!} popover center fullWidth ellipses />
           </CardContent>
         </Flex>
         <CardFooter>
