@@ -60,6 +60,8 @@ import { MoodGrid } from '../desktop/MoodGrid'
 import { MostSharedSection } from '../desktop/MostSharedSection'
 import { QuickSearchGrid } from '../desktop/QuickSearchGrid'
 import { RecentPremiumTracksSection } from '../desktop/RecentPremiumTracksSection'
+import { RecentlyPlayedSection } from '../desktop/RecentlyPlayedSection'
+import { RecommendedTracksSection } from '../desktop/RecommendedTracksSection'
 import { TrendingPlaylistsSection } from '../desktop/TrendingPlaylistsSection'
 import { UndergroundTrendingTracksSection } from '../desktop/UndergroundTrendingTracksSection'
 
@@ -257,7 +259,11 @@ const ExplorePage = () => {
           css={{ display: showSearchResults ? 'none' : undefined }}
         >
           {isSearchExploreGoodiesEnabled && showTrackContent && (
-            <QuickSearchGrid />
+            <>
+              {showTrackContent && <RecommendedTracksSection />}
+              {showTrackContent && <RecentlyPlayedSection />}
+              <QuickSearchGrid />
+            </>
           )}
           {showPlaylistContent && <FeaturedPlaylistsSection />}
           {showTrackContent && <FeaturedRemixContestsSection />}
