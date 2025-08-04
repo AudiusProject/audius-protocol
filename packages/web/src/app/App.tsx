@@ -38,6 +38,7 @@ export const App = () => {
   const { history } = useHistoryContext()
 
   useEffect(() => {
+    // hello world
     initWebVitals(history.location)
   }, [history])
 
