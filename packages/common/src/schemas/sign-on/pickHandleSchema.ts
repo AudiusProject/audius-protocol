@@ -40,7 +40,7 @@ export const pickHandleSchema = ({
       .regex(/^[a-zA-Z0-9_.]*$/, pickHandleErrorMessages.badCharacterError)
       .refine(
         (handle) => !restrictedHandles.has(handle.toLowerCase()),
-        pickHandleErrorMessages.xReservedError
+        pickHandleErrorMessages.handleTakenError
       )
       .superRefine(async (handle, context) => {
         try {
@@ -52,7 +52,7 @@ export const pickHandleSchema = ({
           if (isHandleInUse) {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: pickHandleErrorMessages.xReservedError,
+              message: pickHandleErrorMessages.handleTakenError,
               fatal: true
             })
             return z.NEVER
