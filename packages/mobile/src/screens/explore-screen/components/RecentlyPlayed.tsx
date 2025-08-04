@@ -19,7 +19,11 @@ export const RecentlyPlayedTracks = () => {
     return null
   }
   return (
-    <ExploreSection title={messages.recentlyPlayed} isLoading={isLoading}>
+    <ExploreSection
+      title={messages.recentlyPlayed}
+      isLoading={isLoading}
+      viewAllLink='ListeningHistoryScreen'
+    >
       <Flex mh={-16}>
         <ScrollView
           horizontal
