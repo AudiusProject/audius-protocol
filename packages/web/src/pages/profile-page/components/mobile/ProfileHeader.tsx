@@ -228,9 +228,9 @@ const ProfileHeader = ({
 
   const onGoToX = useCallback(() => {
     record(
-      make(Name.PROFILE_PAGE_CLICK_X, {
+      make(Name.PROFILE_PAGE_CLICK_TWITTER, {
         handle: handle.replace('@', ''),
-        xHandle
+        twitterHandle: xHandle
       })
     )
   }, [record, xHandle, handle])

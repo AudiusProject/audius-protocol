@@ -152,7 +152,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
             <SocialLinkInput
               defaultValue={twitterHandle}
               isDisabled={!!twitterVerified}
-              type={Type.TWITTER}
+              type={Type.X}
               onChange={onUpdateTwitterHandle}
             />
             <SocialLinkInput
