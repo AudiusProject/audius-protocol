@@ -207,9 +207,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   let accountBalance = AUDIO(0).value
   const isAccountBalanceLoading = accountBalances.isPending
   for (const balanceRes of accountBalances.data ?? []) {
-    accountBalance = AUDIO(
-      accountBalance + (balanceRes.balance ?? BigInt(0))
-    ).value
+    accountBalance = AUDIO(accountBalance + balanceRes.balance).value
   }
 
   // Get linked/connected wallets balances
@@ -231,7 +229,7 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   if (includeConnectedWallets) {
     for (const balanceRes of connectedWalletsBalances.data ?? []) {
       connectedWalletsBalance = AUDIO(
-        connectedWalletsBalance + (balanceRes.balance ?? BigInt(0))
+        connectedWalletsBalance + balanceRes.balance
       ).value
     }
   }
