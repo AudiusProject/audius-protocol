@@ -249,7 +249,7 @@ async function claimRewardsForChallenge({
         })
       )
         .then(() =>
-          sdk.challenges.claimReward({
+          sdk.challenges.claimRewardsV2({
             challengeId,
             specifier: specifierWithAmount.specifier,
             amount: specifierWithAmount.amount,
