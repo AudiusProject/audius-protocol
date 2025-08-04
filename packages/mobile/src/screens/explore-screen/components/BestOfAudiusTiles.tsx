@@ -19,7 +19,7 @@ import {
 import { ColorTile } from './ColorTile'
 import { ExploreSection } from './ExploreSection'
 
-const tiles = [TRENDING_PLAYLISTS, TRENDING_UNDERGROUND, PREMIUM_TRACKS]
+const tiles = [PREMIUM_TRACKS]
 
 interface BestOfAudiusTilesProps {
   isLoading?: boolean
