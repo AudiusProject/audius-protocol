@@ -11,7 +11,7 @@ import { Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
-import { Lineup } from 'app/components/lineup'
+import { TanQueryLineup } from 'app/components/lineup'
 import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -27,10 +27,11 @@ const { addItem: addRecentSearch } = searchActions
 export const TrackResults = () => {
   const [query] = useSearchQuery()
   const [filters] = useSearchFilters()
-  const { lineup, loadNextPage } = useSearchTrackResults({
-    query,
-    ...filters
-  })
+  const { data, isFetching, loadNextPage, isPending, hasNextPage } =
+    useSearchTrackResults({
+      query,
+      ...filters
+    })
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
 
@@ -60,23 +61,24 @@ export const TrackResults = () => {
   )
 
   if (isEmptySearch) return <SearchCatalogTile />
-  if (
-    (!lineup || lineup.entries.length === 0) &&
-    lineup.status === Status.SUCCESS
-  ) {
+  if ((!data || data.length === 0) && !isPending) {
     return <NoResultsTile />
   }
 
   return (
     <Flex h='100%' backgroundColor='default'>
-      <Lineup
-        tanQuery
+      <TanQueryLineup
         actions={searchResultsPageTracksLineupActions}
-        lineup={lineup}
-        loadMore={loadNextPage}
+        pageSize={20}
+        isFetching={isFetching}
+        loadNextPage={loadNextPage}
+        hasMore={hasNextPage}
+        isPending={isPending}
+        queryData={data}
         keyboardShouldPersistTaps='handled'
         onPressItem={handlePress}
         ListFooterComponent={<Flex h={200} />}
+        hidePlayBarChin={false}
       />
     </Flex>
   )

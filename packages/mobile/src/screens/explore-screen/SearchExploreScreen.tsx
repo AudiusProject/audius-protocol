@@ -12,6 +12,7 @@ import Animated, {
 
 import { Flex, useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
@@ -142,6 +143,7 @@ const SearchExploreContent = () => {
         <Flex style={{ display: showSearch ? 'none' : 'flex' }}>
           <ExploreContent />
         </Flex>
+        {showSearch ? <PlayBarChin /> : null}
       </Animated.ScrollView>
     </ScreenContent>
   )

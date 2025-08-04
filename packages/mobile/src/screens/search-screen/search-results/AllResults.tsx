@@ -12,6 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
 import { Flex, Paper, Text } from '@audius/harmony-native'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
 import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -173,6 +174,7 @@ export const AllResults = () => {
             })}
           </Flex>
         )}
+        <PlayBarChin />
       </Flex>
     </ScrollView>
   )
