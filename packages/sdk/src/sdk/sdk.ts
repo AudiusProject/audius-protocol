@@ -13,6 +13,7 @@ import {
   CoinsApi,
   Configuration,
   ExploreApi,
+  RewardsApi,
   TipsApi
 } from './api/generated/default'
 import {
@@ -126,11 +127,11 @@ export const sdk = (config: SdkConfig) => {
   const oauth =
     typeof window !== 'undefined'
       ? new OAuth({
-          appName,
-          apiKey,
-          usersApi: apis.users,
-          logger: services.logger
-        })
+        appName,
+        apiKey,
+        usersApi: apis.users,
+        logger: services.logger
+      })
       : undefined
 
   return {
@@ -232,22 +233,22 @@ const initializeServices = (config: SdkConfig) => {
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
-        addRequestSignatureMiddleware({
-          services: { audiusWalletClient, logger }
-        })
-      )
+      addRequestSignatureMiddleware({
+        services: { audiusWalletClient, logger }
+      })
+    )
     : new SolanaRelay(
-        new Configuration({
-          middleware
-        })
-      )
+      new Configuration({
+        middleware
+      })
+    )
 
   const archiverService = config.services?.archiverService
     ? config.services.archiverService.withMiddleware(
-        addRequestSignatureMiddleware({
-          services: { audiusWalletClient, logger }
-        })
-      )
+      addRequestSignatureMiddleware({
+        services: { audiusWalletClient, logger }
+      })
+    )
     : undefined
 
   const emailEncryptionService =
@@ -483,6 +484,7 @@ const initializeApis = ({
   const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
+  const rewardsApi = new RewardsApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
@@ -510,6 +512,7 @@ const initializeApis = ({
   const challenges = new ChallengesApi(
     apiClientConfig,
     users,
+    rewardsApi,
     services.discoveryNodeSelector,
     services.rewardManagerClient,
     services.claimableTokensClient,

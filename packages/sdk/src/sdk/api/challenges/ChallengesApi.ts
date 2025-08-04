@@ -37,6 +37,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
   constructor(
     config: Configuration,
     private readonly usersApi: UsersApi,
+    private readonly rewardsApi: RewardsApi,
     private readonly discoveryNodeSelector: DiscoveryNodeSelectorService,
     private readonly rewardManager: RewardManagerClient,
     private readonly claimableTokens: ClaimableTokensClient,
@@ -355,9 +356,19 @@ export class ChallengesApi extends GeneratedChallengesApi {
   }
 
   public async claimRewardsV2(request: ClaimChallengeRewardsRequest) {
-    const rewardsApi = new RewardsApi(this.configuration)
-    return await rewardsApi.claimRewards({
+    const rewardsApi = this.rewardsApi
+    const response = await rewardsApi.claimRewards({
       claimRewardsRequest: request
     })
+
+    const sigs = Array.isArray(response.data?.[0]?.signatures)
+      ? response.data[0].signatures
+      : []
+
+    // Pick the last signature if available, this is the disbursement tx
+    const finalSignature = sigs.length > 0 ? sigs[sigs.length - 1] : null
+
+    return finalSignature
   }
+
 }
