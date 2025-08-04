@@ -46,7 +46,6 @@ import { BestSellingSection } from './BestSellingSection'
 import { FeaturedPlaylistsSection } from './FeaturedPlaylistsSection'
 import { FeaturedRemixContestsSection } from './FeaturedRemixContestsSection'
 import { FeelingLuckySection } from './FeelingLuckySection'
-import { JustForYouSection } from './JustForYouSection'
 import { LabelSpotlightSection } from './LabelSpotlightSection'
 import { MoodGrid } from './MoodGrid'
 import { MostSharedSection } from './MostSharedSection'
@@ -335,7 +334,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           <Flex justifyContent='center'>
             <RecentSearches />
           </Flex>
-          <JustForYouSection />
         </Flex>
       </Flex>
     </Flex>

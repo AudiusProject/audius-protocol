@@ -26,7 +26,14 @@ export const ExploreSection = ({
   const navigation = useNavigation()
   return (
     <Flex justifyContent={centered ? 'center' : 'flex-start'} gap='m'>
-      <Flex row gap='l' alignItems='center' justifyContent='space-between'>
+      <Flex
+        row
+        gap='l'
+        alignItems='center'
+        justifyContent={
+          viewAllLink ? 'space-between' : centered ? 'center' : 'flex-start'
+        }
+      >
         <Text variant='title' size='l' textAlign={centered ? 'center' : 'left'}>
           {title}
         </Text>

@@ -11,31 +11,20 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  Text,
   Flex,
   TextInput,
   TextInputSize,
   IconSearch,
-  useTheme,
-  useMedia,
   RadioGroup,
   SelectablePill
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
-import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { CenterPreset } from 'components/nav/mobile/NavContext'
-import PerspectiveCard, {
-  TextInterior
-} from 'components/perspective-card/PerspectiveCard'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-import {
-  DOWNLOADS_AVAILABLE,
-  PREMIUM_TRACKS
-} from 'pages/explore-page/collections'
 import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { categories } from 'pages/search-page/categories'
@@ -49,7 +38,6 @@ import {
   CategoryView,
   ViewLayout
 } from 'pages/search-page/types'
-import { BASE_URL, stripBaseUrl } from 'utils/route'
 
 import { ArtistSpotlightSection } from '../desktop/ArtistSpotlightSection'
 import { BestSellingSection } from '../desktop/BestSellingSection'
@@ -79,7 +67,6 @@ export enum SearchTabs {
   PLAYLISTS = 'Playlists'
 }
 
-const justForYou = [PREMIUM_TRACKS, DOWNLOADS_AVAILABLE]
 const DEBOUNCE_MS = 200
 
 const ExplorePage = () => {
@@ -88,13 +75,9 @@ const ExplorePage = () => {
   const [inputValue, setInputValue] = useState(searchParams.get('query') || '')
   const [debouncedValue, setDebouncedValue] = useState(inputValue)
   const previousDebouncedValue = usePrevious(debouncedValue)
-  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
   const [tracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { spacing } = useTheme()
-  const { isLarge } = useMedia()
 
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_GOODIES
@@ -117,20 +100,6 @@ const ExplorePage = () => {
   const handleClearSearch = useCallback(() => {
     setInputValue('')
   }, [])
-
-  const onClickCard = useCallback(
-    (url: string) => {
-      if (url.startsWith(BASE_URL)) {
-        navigate(stripBaseUrl(url))
-      } else if (url.startsWith('http')) {
-        const win = window.open(url, '_blank')
-        if (win) win.focus()
-      } else {
-        navigate(url)
-      }
-    },
-    [navigate]
-  )
 
   useDebounce(
     () => {
@@ -164,11 +133,6 @@ const ExplorePage = () => {
     previousDebouncedValue,
     categoryKey
   ])
-
-  const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile = tile.title === PREMIUM_TRACKS.title
-    return !isPremiumTracksTile || isUSDCPurchasesEnabled
-  })
 
   const [, setBannerIsVisible] = useState(false)
 
@@ -291,55 +255,6 @@ const ExplorePage = () => {
             </>
           ) : null}
           <RecentSearches />
-          <Flex direction='column' ph='l' gap='l'>
-            <Text variant='title' size='l'>
-              {messages.bestOfAudius}
-            </Text>
-            <Flex
-              wrap='wrap'
-              gap='l'
-              direction={isLarge ? 'column' : 'row'}
-              justifyContent='space-between'
-              css={
-                !isLarge
-                  ? {
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gridTemplateRows: '1fr 1fr',
-                      gap: spacing.l, // or just gap: 'l' if supported
-                      width: '100%'
-                    }
-                  : undefined
-              }
-            >
-              {justForYouTiles.map((tile) => {
-                const Icon = tile.icon
-                return (
-                  <PerspectiveCard
-                    key={tile.title}
-                    backgroundGradient={tile.gradient}
-                    shadowColor={tile.shadow}
-                    useOverlayBlendMode={tile.title !== PREMIUM_TRACKS.title}
-                    backgroundIcon={
-                      Icon ? (
-                        <Icon height={180} width={180} color='inverse' />
-                      ) : undefined
-                    }
-                    onClick={() => onClickCard(tile.link)}
-                    isIncentivized={!!tile.incentivized}
-                    sensitivity={tile.cardSensitivity}
-                  >
-                    <Flex w={'100%'} h={200}>
-                      <TextInterior
-                        title={tile.title}
-                        subtitle={tile.subtitle}
-                      />
-                    </Flex>
-                  </PerspectiveCard>
-                )
-              })}
-            </Flex>
-          </Flex>
         </Flex>
       </Flex>
     </MobilePageContainer>

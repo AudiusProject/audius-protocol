@@ -63,16 +63,18 @@ export const RecentSearches = (props: RecentSearchesProps) => {
         </Flex>
       )}
       <Paper
+        w='100%'
         pv='l'
-        mh='l'
         direction='column'
-        shadow='flat'
+        shadow='mid'
         backgroundColor='surface1'
         border='default'
         gap='m'
       >
         <Flex ph='l'>
-          <Text variant='title'>{messages.title}</Text>
+          <Text variant='title' size='l'>
+            {messages.title}
+          </Text>
         </Flex>
 
         <Flex direction='column' gap='m'>
