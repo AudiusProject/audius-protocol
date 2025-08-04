@@ -206,7 +206,8 @@ export class EntityManagerClient implements EntityManagerService {
     if (
       !userId ||
       !entityType ||
-      !entityId ||
+      // 0 is a valid entityId for some actions
+      (!entityId && entityId !== BigInt(0)) ||
       !action ||
       // Empty string is valid metadata for some actions
       (!metadata && metadata !== '') ||

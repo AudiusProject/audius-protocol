@@ -2,6 +2,7 @@ import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme, Flex } from '@audius/harmony'
+import { CSSObject } from '@emotion/react'
 import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -36,6 +37,7 @@ export const UserLink = (props: UserLinkProps) => {
     noBadges,
     noOverflow,
     center,
+    fullWidth,
     ...other
   } = props
   const { spacing } = useTheme()
@@ -65,17 +67,17 @@ export const UserLink = (props: UserLinkProps) => {
     />
   )
 
+  const containerStyles: CSSObject = {
+    columnGap: spacing.xs,
+    alignItems: 'center',
+    lineHeight: 'normal',
+    display: 'inline-flex',
+    width: fullWidth ? '100%' : undefined
+  }
+
   // Badges should be outside the TextLink to prevent hover effects on badges
   const textLink = (
-    <Flex
-      justifyContent={center ? 'center' : undefined}
-      css={{
-        columnGap: spacing.xs,
-        alignItems: 'center',
-        lineHeight: 'normal',
-        display: 'inline-flex'
-      }}
-    >
+    <Flex justifyContent={center ? 'center' : undefined} css={containerStyles}>
       <TextLink
         to={url}
         css={{
@@ -98,12 +100,7 @@ export const UserLink = (props: UserLinkProps) => {
     return (
       <Flex
         justifyContent={center ? 'center' : undefined}
-        css={{
-          columnGap: spacing.xs,
-          alignItems: 'center',
-          lineHeight: 'normal',
-          display: 'inline-flex'
-        }}
+        css={containerStyles}
       >
         <ArtistPopover
           css={{

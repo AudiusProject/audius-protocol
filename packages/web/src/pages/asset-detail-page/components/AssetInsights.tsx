@@ -1,4 +1,4 @@
-import { useCoin } from '@audius/common/api'
+import { useCoinInsights } from '@audius/common/api'
 import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 
 import { AssetDetailProps } from '../types'
@@ -101,7 +101,7 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
 }
 
 export const AssetInsights = ({ mint }: AssetDetailProps) => {
-  const { data: coin, isLoading, error } = useCoin({ mint })
+  const { data: insights, isLoading, error } = useCoinInsights({ mint })
 
   if (isLoading) {
     return (
@@ -133,7 +133,7 @@ export const AssetInsights = ({ mint }: AssetDetailProps) => {
     )
   }
 
-  if (error || !coin) {
+  if (error || !insights) {
     return (
       <Paper
         direction='column'
@@ -165,43 +165,43 @@ export const AssetInsights = ({ mint }: AssetDetailProps) => {
 
   const metrics: MetricData[] = [
     {
-      value: formatCurrency(coin.tokenInfo.price),
+      value: formatCurrency(insights.price),
       label: messages.pricePerCoin,
       change: {
-        value: formatPercentage(coin.tokenInfo.priceChange24hPercent),
-        isPositive: coin.tokenInfo.priceChange24hPercent >= 0
+        value: formatPercentage(insights.priceChange24hPercent),
+        isPositive: insights.priceChange24hPercent >= 0
       }
     },
     {
-      value: formatNumber(coin.members),
+      value: formatNumber(insights.members),
       label: messages.holdersOnAudius,
       change: {
-        value: formatPercentage(coin.membersChange24hPercent),
-        isPositive: coin.membersChange24hPercent >= 0
+        value: formatPercentage(insights.membersChange24hPercent),
+        isPositive: insights.membersChange24hPercent >= 0
       }
     },
     {
-      value: formatNumber(coin.tokenInfo.uniqueWallet24h || 0),
+      value: formatNumber(insights.uniqueWallet24h || 0),
       label: messages.uniqueHolders,
       change: {
-        value: formatPercentage(coin.tokenInfo.uniqueWallet24hChangePercent),
-        isPositive: coin.tokenInfo.uniqueWallet24hChangePercent >= 0
+        value: formatPercentage(insights.uniqueWallet24hChangePercent),
+        isPositive: insights.uniqueWallet24hChangePercent >= 0
       }
     },
     {
-      value: formatCurrency(coin.tokenInfo.v24hUSD),
+      value: formatCurrency(insights.v24hUSD),
       label: messages.volume24hr,
       change: {
-        value: formatPercentage(coin.tokenInfo.v24hChangePercent || 0),
-        isPositive: (coin.tokenInfo.v24hChangePercent || 0) >= 0
+        value: formatPercentage(insights.v24hChangePercent || 0),
+        isPositive: (insights.v24hChangePercent || 0) >= 0
       }
     },
     {
-      value: formatNumber(coin.tokenInfo.trade24h),
+      value: formatNumber(insights.trade24h),
       label: messages.totalTransfers,
       change: {
-        value: formatPercentage(coin.tokenInfo.trade24hChangePercent),
-        isPositive: coin.tokenInfo.trade24hChangePercent >= 0
+        value: formatPercentage(insights.trade24hChangePercent),
+        isPositive: insights.trade24hChangePercent >= 0
       }
     }
   ]

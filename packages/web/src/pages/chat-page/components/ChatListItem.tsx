@@ -8,7 +8,8 @@ import styles from './ChatListItem.module.css'
 import { ChatUser } from './ChatUser'
 
 const messages = {
-  new: 'New'
+  new: ' New',
+  ninePlus: '9+'
 }
 
 type ChatListItemProps = {
@@ -37,10 +38,15 @@ export const ChatListItem = (props: ChatListItemProps) => {
     >
       <ChatUser user={users[0]} textClassName={styles.userText}>
         {chat.unread_message_count > 0 ? (
-          <div className={styles.unreadIndicatorTag}>
-            {chat.unread_message_count > 9 ? '9+' : chat.unread_message_count}{' '}
-            {messages.new}
-          </div>
+          <>
+            <div className={styles.minimizedUnreadIndicatorTag} />
+            <div className={styles.unreadIndicatorTag}>
+              {chat.unread_message_count > 9
+                ? messages.ninePlus
+                : chat.unread_message_count}
+              {messages.new}
+            </div>
+          </>
         ) : null}
       </ChatUser>
       <div className={styles.messagePreview}>{chat.last_message}</div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { Platform } from 'react-native'
 import Animated, {
@@ -35,12 +35,12 @@ export const SCROLL_FACTOR = Platform.OS === 'ios' ? 1 : 3
 
 const SearchExploreContent = () => {
   const { spacing, motion } = useTheme()
+  const { params } = useRoute<'Search'>()
 
   // Get state from context
   const [category, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
-  const [inputValue, setInputValue] = useState(query)
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -61,7 +61,6 @@ const SearchExploreContent = () => {
     setQuery('')
     setCategory('all')
     setFilters({})
-    setInputValue('')
   })
 
   useEffect(() => {
@@ -75,16 +74,18 @@ const SearchExploreContent = () => {
   const contentPaddingStyle = useAnimatedStyle(() => {
     // Clamped scroll prevents jitter
     return {
-      paddingTop: query
-        ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
-        : interpolate(
-            scrollY.value,
-            [0, 80 * SCROLL_FACTOR],
-            [0, 80],
-            Extrapolation.CLAMP
-          )
+      paddingTop:
+        query || params?.autoFocus
+          ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
+          : interpolate(
+              scrollY.value,
+              [0, 80 * SCROLL_FACTOR],
+              [0, 80],
+              Extrapolation.CLAMP
+            )
     }
   })
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y
@@ -131,8 +132,6 @@ const SearchExploreContent = () => {
         scrollY={scrollY}
         filterTranslateY={filterTranslateY}
         scrollRef={scrollRef}
-        inputValue={inputValue}
-        onInputValueChange={setInputValue}
       />
       {showSearch && (query || hasAnyFilter) ? (
         <SearchResults />

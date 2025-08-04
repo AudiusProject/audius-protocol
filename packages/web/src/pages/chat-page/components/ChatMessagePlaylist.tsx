@@ -72,7 +72,8 @@ export const ChatMessagePlaylist = ({
   const play = usePlayTrack()
   const playTrack = useCallback(
     (uid: string) => {
-      play({ uid, entries })
+      // Have to pass the uid bc the sagas cant get the lineup from the route in the ChatPage
+      play({ uid, entries, passUid: true })
     },
     [play, entries]
   )

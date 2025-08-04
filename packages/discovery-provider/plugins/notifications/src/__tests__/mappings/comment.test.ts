@@ -35,7 +35,10 @@ describe('Comment Notification', () => {
   })
 
   test('Process push notification for comment on track', async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createUsers(processor.discoveryDB, [
+      { user_id: 1 },
+      { user_id: 2, profile_picture_sizes: 'test-hash' }
+    ])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createComments(processor.discoveryDB, [
       {
@@ -85,7 +88,8 @@ describe('Comment Notification', () => {
           entityType: 'Track',
           entityId: 10,
           commentId: 1
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
