@@ -9,7 +9,7 @@ import { Flex } from '@audius/harmony'
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { Carousel } from './Carousel'
+import { Carousel, CarouselProps } from './Carousel'
 import { TILE_WIDTH, MOBILE_TILE_WIDTH } from './constants'
 
 // Wrapper component to make tiles playable
@@ -56,8 +56,7 @@ const PlayableTile: React.FC<{
   )
 }
 
-type ExploreSectionProps = {
-  title: string
+type ExploreSectionProps = Pick<CarouselProps, 'title' | 'viewAllLink'> & {
   data?: number[]
   isLoading?: boolean
   Card?: React.ComponentType<any>
@@ -65,6 +64,7 @@ type ExploreSectionProps = {
 }
 export const ExploreSection: React.FC<ExploreSectionProps> = ({
   title,
+  viewAllLink,
   data,
   isLoading,
   Card,
@@ -115,7 +115,7 @@ export const ExploreSection: React.FC<ExploreSectionProps> = ({
   }
 
   return (
-    <Carousel title={title}>
+    <Carousel title={title} viewAllLink={viewAllLink}>
       {Tile && !Card
         ? isLoading || !data
           ? renderTileSkeletons(Tile)

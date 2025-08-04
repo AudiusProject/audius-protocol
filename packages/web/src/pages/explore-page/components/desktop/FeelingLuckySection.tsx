@@ -50,7 +50,7 @@ export const FeelingLuckySection = () => {
   }
 
   return (
-    <Flex direction='column' mh='l'>
+    <Flex direction='column' ph={isMobile ? 'l' : undefined}>
       <Flex gap='xl' direction='column'>
         <Flex justifyContent='space-between' gap='l' alignItems='center'>
           <Text

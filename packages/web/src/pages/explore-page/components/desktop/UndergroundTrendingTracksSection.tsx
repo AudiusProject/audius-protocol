@@ -34,6 +34,7 @@ export const UndergroundTrendingTracksSection = () => {
       title={messages.undergroundTrending}
       data={trackIds}
       Tile={isMobile ? MobileTrackTile : DesktopTrackTile}
+      viewAllLink='/explore/underground'
     />
   )
 }

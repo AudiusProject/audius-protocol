@@ -13,15 +13,13 @@ import { Link } from 'react-router-dom-v5-compat'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
-export const Carousel = ({
-  title,
-  children,
-  viewAllLink
-}: {
+export type CarouselProps = {
   title: React.ReactNode
   children: React.ReactNode
   viewAllLink?: string
-}) => {
+}
+
+export const Carousel = ({ title, children, viewAllLink }: CarouselProps) => {
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -66,39 +64,41 @@ export const Carousel = ({
         >
           {title}
         </Text>
-        {!isMobile && (canScrollLeft || canScrollRight || viewAllLink) ? (
+        {canScrollLeft || canScrollRight || viewAllLink ? (
           <Flex gap='l' alignItems='center'>
             {viewAllLink && (
-              <PlainButton size='large' asChild>
+              <PlainButton size={isMobile ? 'default' : 'large'} asChild>
                 <Link to={viewAllLink}>View All</Link>
               </PlainButton>
             )}
-            <Flex gap='l'>
-              <IconButton
-                ripple
-                icon={IconCaretLeft}
-                color={canScrollLeft ? 'default' : 'disabled'}
-                aria-label={`${title} scroll left`}
-                onClick={() => {
-                  scrollContainerRef.current?.scrollBy({
-                    left: -648,
-                    behavior: 'smooth'
-                  })
-                }}
-              />
-              <IconButton
-                ripple
-                icon={IconCaretRight}
-                color={canScrollRight ? 'default' : 'disabled'}
-                aria-label={`${title} scroll right`}
-                onClick={() => {
-                  scrollContainerRef.current?.scrollBy({
-                    left: 648,
-                    behavior: 'smooth'
-                  })
-                }}
-              />
-            </Flex>
+            {!isMobile && (
+              <Flex gap='l'>
+                <IconButton
+                  ripple
+                  icon={IconCaretLeft}
+                  color={canScrollLeft ? 'default' : 'disabled'}
+                  aria-label={`${title} scroll left`}
+                  onClick={() => {
+                    scrollContainerRef.current?.scrollBy({
+                      left: -648,
+                      behavior: 'smooth'
+                    })
+                  }}
+                />
+                <IconButton
+                  ripple
+                  icon={IconCaretRight}
+                  color={canScrollRight ? 'default' : 'disabled'}
+                  aria-label={`${title} scroll right`}
+                  onClick={() => {
+                    scrollContainerRef.current?.scrollBy({
+                      left: 648,
+                      behavior: 'smooth'
+                    })
+                  }}
+                />
+              </Flex>
+            )}
           </Flex>
         ) : null}
       </Flex>

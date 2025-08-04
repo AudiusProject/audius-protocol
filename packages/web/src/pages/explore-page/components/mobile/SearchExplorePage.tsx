@@ -34,9 +34,7 @@ import PerspectiveCard, {
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import {
   DOWNLOADS_AVAILABLE,
-  PREMIUM_TRACKS,
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND
+  PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { categories } from 'pages/search-page/categories'
@@ -78,12 +76,7 @@ export enum SearchTabs {
   PLAYLISTS = 'Playlists'
 }
 
-const justForYou = [
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  PREMIUM_TRACKS,
-  DOWNLOADS_AVAILABLE
-]
+const justForYou = [PREMIUM_TRACKS, DOWNLOADS_AVAILABLE]
 const DEBOUNCE_MS = 200
 
 const ExplorePage = () => {

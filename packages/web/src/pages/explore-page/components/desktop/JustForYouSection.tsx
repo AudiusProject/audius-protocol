@@ -8,18 +8,11 @@ import PerspectiveCard, {
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import {
   PREMIUM_TRACKS,
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
   DOWNLOADS_AVAILABLE
 } from 'pages/explore-page/collections'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
-const justForYou = [
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  PREMIUM_TRACKS,
-  DOWNLOADS_AVAILABLE
-]
+const justForYou = [PREMIUM_TRACKS, DOWNLOADS_AVAILABLE]
 
 export const JustForYouSection = () => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
