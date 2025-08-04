@@ -4,6 +4,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useSearchCategory } from 'pages/search-page/hooks'
 import { MOODS } from 'pages/search-page/moods'
 import { labelByCategoryView } from 'pages/search-page/types'
@@ -11,6 +12,8 @@ import { labelByCategoryView } from 'pages/search-page/types'
 export const MoodGrid = () => {
   const [category, setCategory] = useSearchCategory()
   const { color } = useTheme()
+
+  const isMobile = useIsMobile()
 
   const handleMoodPress = useCallback(
     (mood: Mood) => {
@@ -20,13 +23,21 @@ export const MoodGrid = () => {
   )
 
   return (
-    <Flex direction='column' gap='l' alignItems='center'>
-      <Text variant='heading'>
+    <Flex direction='column' mh='l' gap='l' alignItems='center'>
+      <Text
+        variant={isMobile ? 'title' : 'heading'}
+        size={isMobile ? 'l' : 'm'}
+      >
         {messages.exploreByMood(
           category === 'all' ? undefined : labelByCategoryView[category]
         )}
       </Text>
-      <Flex gap='s' justifyContent='center' alignItems='flex-start' wrap='wrap'>
+      <Flex
+        gap={isMobile ? 'm' : 's'}
+        justifyContent='center'
+        alignItems='flex-start'
+        wrap='wrap'
+      >
         {Object.entries(MOODS)
           .sort()
           .map(([mood, moodInfo]) => (

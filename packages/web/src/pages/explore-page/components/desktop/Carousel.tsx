@@ -52,7 +52,7 @@ export const Carousel = ({
     }
   })
   return (
-    <Flex direction='column' gap='l' w='100%'>
+    <Flex direction='column' gap={isMobile ? 'l' : 'xl'} w='100%'>
       <Flex
         gap='m'
         alignItems='center'

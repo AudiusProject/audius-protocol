@@ -329,7 +329,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               {showTrackContent && <MostSharedSection />}
               {(showAlbumContent || showTrackContent) && <BestSellingSection />}
               {showTrackContent && <RecentPremiumTracksSection />}
-              {showTrackContent ? <FeelingLuckySection /> : null}
+              {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}
           <RecentSearches />

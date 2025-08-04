@@ -8,6 +8,7 @@ import {
 } from '@audius/common/utils'
 import { Flex, Paper, Text, useTheme } from '@audius/harmony'
 
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useSearchCategory } from 'pages/search-page/hooks'
 import { MOODS } from 'pages/search-page/moods'
 
@@ -100,6 +101,7 @@ const QuickSearchPresetButton = ({
 }
 
 export const QuickSearchGrid = () => {
+  const isMobile = useIsMobile()
   const [, setCategory] = useSearchCategory()
 
   const handleClickPreset = useCallback(
@@ -117,8 +119,13 @@ export const QuickSearchGrid = () => {
   )
 
   return (
-    <Flex direction='column' gap='l' alignItems='center' ph='l'>
-      <Text variant='heading'>{messages.quickSearch}</Text>
+    <Flex direction='column' gap='l' alignItems='center' mh='l'>
+      <Text
+        variant={isMobile ? 'title' : 'heading'}
+        size={isMobile ? 'l' : 'm'}
+      >
+        {messages.quickSearch}
+      </Text>
       <Flex gap='s' justifyContent='center' alignItems='flex-start' wrap='wrap'>
         {QUICK_SEARCH_PRESETS.map((preset, idx) => (
           <QuickSearchPresetButton
