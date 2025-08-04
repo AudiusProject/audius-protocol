@@ -38,6 +38,7 @@ export const App = () => {
   const { history } = useHistoryContext()
 
   useEffect(() => {
+    // trigger rebuild
     initWebVitals(history.location)
   }, [history])
 
