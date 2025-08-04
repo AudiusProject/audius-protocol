@@ -1,7 +1,7 @@
 import {
   IconLink,
   IconTikTok,
-  IconTwitter as IconTwitterBird,
+  IconX,
   IconInstagram,
   IconDonate
 } from '@audius/harmony'
@@ -82,7 +82,7 @@ const EditProfile = ({
             maxLength={30}
           />
           <EditableRow
-            label={<IconTwitterBird className={styles.icon} />}
+            label={<IconX className={styles.icon} />}
             format={Format.INPUT}
             initialValue={xHandle}
             onChange={onUpdateXHandle}

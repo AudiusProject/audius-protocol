@@ -2,11 +2,11 @@ import { useCallback } from 'react'
 
 import { route } from '@audius/common/utils'
 import {
-  IconTwitter,
   IconCloudUpload,
   IconInstagram,
   Button,
-  SocialButton
+  SocialButton,
+  IconX
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -102,7 +102,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.subtitle}>{messages.step3Subtitle}</span>
       <div className={styles.findUsCTA}>
         <div className={styles.ctaContainer}>
-          <IconTwitter />
+          <IconX />
           <div className={styles.ctaRight}>
             <span>{messages.findUsTwitter}</span>
             <div className={styles.link} onClick={onClickTwitter}>
