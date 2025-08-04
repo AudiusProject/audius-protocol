@@ -43,7 +43,7 @@ export const combineQueryStatuses = (
  */
 export const combineQueryResults = <T>(
   queries: UseQueryResult<T, Error>[]
-): UseQueryResult<T | undefined, Error> => {
+): UseQueryResult<T, Error> => {
   const { isPending, isFetching, isLoading, isSuccess, isError } =
     combineQueryStatuses(queries)
 
@@ -122,5 +122,5 @@ export const combineQueryResults = <T>(
     promise
   } as UseQueryResult<T | undefined>
 
-  return result as UseQueryResult<T | undefined, Error>
+  return result as UseQueryResult<T, Error>
 }

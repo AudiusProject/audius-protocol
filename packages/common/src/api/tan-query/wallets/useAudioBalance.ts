@@ -36,6 +36,12 @@ type UseWalletAudioBalanceParams = {
   includeStaked?: boolean
 }
 
+type UseWalletAudioBalanceResult = {
+  balance: AudioWei
+  address: string
+  chain: Chain
+}
+
 export const getWalletAudioBalanceQueryKey = ({
   address,
   includeStaked,
@@ -46,7 +52,7 @@ export const getWalletAudioBalanceQueryKey = ({
     chain,
     address,
     { includeStaked }
-  ] as unknown as QueryKey<AudioWei>
+  ] as unknown as QueryKey<UseWalletAudioBalanceResult>
 
 const fetchWalletAudioBalance = async (
   {
@@ -167,9 +173,7 @@ export const useWalletAudioBalances = (
       },
       ...options
     })),
-    combine: combineQueryResults<
-      { balance: AudioWei; address: string; chain: Chain }[]
-    >
+    combine: combineQueryResults<UseWalletAudioBalanceResult[]>
   })
 }
 
@@ -318,6 +322,39 @@ export function* getAccountTotalAudioBalanceSaga() {
 }
 
 /**
+ * Optimistically updates the AUDIO balance for a specific wallet address in the cache.
+ */
+export const optimisticallyUpdateWalletAudioBalance = (
+  queryClient: QueryClient,
+  address: string,
+  chain: Chain,
+  change: AudioWei
+) => {
+  // Update both staked and non-staked balance queries for the SOL wallet
+  for (const includeStaked of [true, false]) {
+    const queryKey = getWalletAudioBalanceQueryKey({
+      address,
+      chain,
+      includeStaked
+    })
+
+    queryClient.setQueryData(
+      queryKey,
+      (oldBalance: UseWalletAudioBalanceResult | undefined) => {
+        const currentBalance = oldBalance?.balance ?? AUDIO(0).value
+        const newBalance = AUDIO(currentBalance + change).value
+        // Ensure balance doesn't go negative
+        return {
+          address,
+          chain,
+          balance: newBalance >= 0 ? newBalance : AUDIO(0).value
+        }
+      }
+    )
+  }
+}
+
+/**
  * Optimistically updates the user's SOL wallet balance in the cache.
  * Use this to provide immediate UI feedback before the transaction confirms.
  *
@@ -330,34 +367,12 @@ export function* optimisticallyUpdateUserSolBalance(amount: AudioWei) {
 
   if (!user?.spl_wallet) return
 
-  // Update both staked and non-staked balance queries for the SOL wallet
-  const solWalletQueries = [
-    {
-      address: user.spl_wallet,
-      chain: Chain.Sol,
-      includeStaked: true
-    },
-    {
-      address: user.spl_wallet,
-      chain: Chain.Sol,
-      includeStaked: false
-    }
-  ]
-
-  for (const queryParams of solWalletQueries) {
-    const queryKey = getWalletAudioBalanceQueryKey(queryParams)
-
-    yield* call(
-      [queryClient, queryClient.setQueryData],
-      queryKey,
-      (oldBalance: AudioWei | undefined) => {
-        const currentBalance = oldBalance ?? AUDIO(0).value
-        const newBalance = AUDIO(currentBalance + amount).value
-        // Ensure balance doesn't go negative
-        return newBalance >= 0 ? newBalance : AUDIO(0).value
-      }
-    )
-  }
+  optimisticallyUpdateWalletAudioBalance(
+    queryClient,
+    user.spl_wallet,
+    Chain.Sol,
+    amount
+  )
 }
 
 /**
