@@ -109,8 +109,8 @@ platform :ios do
         signingStyle: "manual",
         provisioningProfiles: {
           appId => provisioningProfile,
-          "#{appId}.RichPushExtension" => "match AppStore #{provisioningProfile}.RichPushExtension",
-          "#{appId}.NotificationContentExtension" => "match AppStore #{provisioningProfile}.NotificationContentExtension"
+          "#{appId}.RichPushExtension" => "#{provisioningProfile}.RichPushExtension",
+          "#{appId}.NotificationContentExtension" => "#{provisioningProfile}.NotificationContentExtension"
         }
       }
     )
