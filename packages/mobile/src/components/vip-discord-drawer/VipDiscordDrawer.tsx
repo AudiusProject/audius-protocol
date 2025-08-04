@@ -1,14 +1,13 @@
-import { vipDiscordModalSelectors } from '@audius/common/store'
+import { useDiscordCode } from '@audius/common/api'
+import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconDiscord, Button } from '@audius/harmony-native'
 import { CopyTextTile } from 'app/components/copy-text-tile'
 import { Text, useLink } from 'app/components/core'
 import Drawer, { useDrawerState } from 'app/components/drawer'
 import { makeStyles } from 'app/styles'
-const { getDiscordCode } = vipDiscordModalSelectors
 
 const messages = {
   title: 'Launch the VIP Discord',
@@ -38,8 +37,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 export const VipDiscordDrawer = () => {
   const styles = useStyles()
   const { isOpen, onClose } = useDrawerState('VipDiscord')
-
-  const discordCode = useSelector(getDiscordCode)
+  const { data: discordCode } = useDiscordCode(TOKEN_LISTING_MAP.AUDIO.symbol)
 
   const { onPress } = useLink(route.AUDIUS_DISCORD_LINK)
 

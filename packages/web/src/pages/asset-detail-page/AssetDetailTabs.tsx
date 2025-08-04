@@ -4,7 +4,7 @@ import useTabs from 'hooks/useTabs/useTabs'
 import { AudioWalletTransactions } from 'pages/audio-page/AudioWalletTransactions'
 
 import { AssetDetailContent } from './AssetDetailContent'
-import { AcceptedRouteKey } from './types'
+import { AssetName } from './types'
 
 export enum AssetDetailTabType {
   HOME = 'home',
@@ -17,14 +17,14 @@ const messages = {
 }
 
 type UseAssetDetailTabsProps = {
-  mint: AcceptedRouteKey
+  assetName: AssetName
 }
 
-export const useAssetDetailTabs = ({ mint }: UseAssetDetailTabsProps) => {
+export const useAssetDetailTabs = ({ assetName }: UseAssetDetailTabsProps) => {
   const [selectedTab, setSelectedTab] = useState(AssetDetailTabType.HOME)
 
   const tabElements = [
-    <AssetDetailContent key='home' mint={mint} />,
+    <AssetDetailContent key='home' assetName={assetName} />,
     <AudioWalletTransactions key='transactions' />
   ]
 
