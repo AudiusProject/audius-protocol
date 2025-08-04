@@ -143,7 +143,7 @@ export const ProfileBio = ({
       <Flex gap='m'>
         {twitterHandle && (
           <SocialLink
-            type={Type.TWITTER}
+            type={Type.X}
             link={twitterHandle}
             onClick={onClickTwitter}
             iconOnly
@@ -182,7 +182,7 @@ export const ProfileBio = ({
     <Flex column gap='m'>
       {twitterHandle && (
         <SocialLink
-          type={Type.TWITTER}
+          type={Type.X}
           link={twitterHandle}
           onClick={onClickTwitter}
         />

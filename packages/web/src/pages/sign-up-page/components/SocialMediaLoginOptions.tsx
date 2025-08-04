@@ -10,7 +10,7 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
-import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
+import { SignupFlowXAuth } from './SignupFlowXAuth'
 
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {
@@ -61,7 +61,7 @@ export const SocialMediaLoginOptions = ({
       platform
     })
   }
-  const isTwitterEnabled = useRemoteVar(
+  const isXEnabled = useRemoteVar(
     BooleanKeys.DISPLAY_TWITTER_VERIFICATION_WEB_AND_DESKTOP
   )
   const isInstagramEnabled = useRemoteVar(
@@ -72,10 +72,10 @@ export const SocialMediaLoginOptions = ({
   )
   return (
     <Flex direction='row' gap='s' w='100%'>
-      {isTwitterEnabled ? (
-        <SignupFlowTwitterAuth
-          onStart={handleStart('twitter')}
-          onFailure={handleError('twitter')}
+      {isXEnabled ? (
+        <SignupFlowXAuth
+          onStart={handleStart('x')}
+          onFailure={handleError('x')}
           onSuccess={handleSuccess}
         />
       ) : null}
