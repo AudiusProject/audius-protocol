@@ -14,7 +14,7 @@ export type CoinPairItem = UserCoin | 'find-more'
  * @param coins Array of user coins
  * @returns Array of coin pairs, where each pair contains 1-2 items
  */
-export const useGroupCoinPairs = (coins: UserCoin[] | undefined) => {
+export const useGroupCoinPairs = (coins?: UserCoin[]) => {
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
