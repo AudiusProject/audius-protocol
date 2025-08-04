@@ -213,7 +213,7 @@ const StackedBalanceSection = ({
           w='100%'
         >
           <Flex gap='s' alignItems='center'>
-            <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
+            <TokenIcon tokenInfo={tokenInfo} size='2xl' hex />
             <Flex direction='column'>
               {shouldShowLargeTicker ? (
                 <Flex alignSelf='flex-start'>
