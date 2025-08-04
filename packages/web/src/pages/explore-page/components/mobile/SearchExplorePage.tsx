@@ -36,6 +36,7 @@ import {
   DOWNLOADS_AVAILABLE,
   PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
+import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { categories } from 'pages/search-page/categories'
 import {
@@ -289,6 +290,7 @@ const ExplorePage = () => {
               {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}
+          <RecentSearches />
           <Flex direction='column' ph='l' gap='l'>
             <Text variant='title' size='l'>
               {messages.bestOfAudius}

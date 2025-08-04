@@ -332,7 +332,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}
-          <RecentSearches />
+          <Flex justifyContent='center'>
+            <RecentSearches />
+          </Flex>
           <JustForYouSection />
         </Flex>
       </Flex>
