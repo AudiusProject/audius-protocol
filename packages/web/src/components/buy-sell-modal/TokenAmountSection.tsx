@@ -379,6 +379,7 @@ export const TokenAmountSection = ({
       availableBalance,
       exchangeRate,
       isStablecoin: !!isStablecoin,
+      decimals: tokenInfo.decimals,
       placeholder
     })
 

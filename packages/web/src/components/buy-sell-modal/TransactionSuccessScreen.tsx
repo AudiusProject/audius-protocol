@@ -30,13 +30,15 @@ export const TransactionSuccessScreen = (
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
     availableBalance: payAmount, // Use actual amount as available balance for display
-    isStablecoin: !!payTokenInfo.isStablecoin
+    isStablecoin: !!payTokenInfo.isStablecoin,
+    decimals: payTokenInfo.decimals
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
     availableBalance: receiveAmount, // Use actual amount as available balance for display
-    isStablecoin: !!receiveTokenInfo.isStablecoin
+    isStablecoin: !!receiveTokenInfo.isStablecoin,
+    decimals: receiveTokenInfo.decimals
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol

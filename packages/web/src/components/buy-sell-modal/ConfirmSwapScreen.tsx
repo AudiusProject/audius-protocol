@@ -62,12 +62,14 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
   // balance isn't needed so we pass 0
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
-    isStablecoin: !!payTokenInfo.isStablecoin
+    isStablecoin: !!payTokenInfo.isStablecoin,
+    decimals: payTokenInfo.decimals
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
-    isStablecoin: !!receiveTokenInfo.isStablecoin
+    isStablecoin: !!receiveTokenInfo.isStablecoin,
+    decimals: receiveTokenInfo.decimals
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol

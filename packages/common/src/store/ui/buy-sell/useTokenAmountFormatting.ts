@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { AUDIO } from '@audius/fixed-decimal'
+import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { formatUSDCValue } from '~/api'
 import { getTokenDecimalPlaces, getCurrencyDecimalPlaces } from '~/utils'
@@ -10,6 +10,7 @@ export type UseTokenAmountFormattingProps = {
   availableBalance?: number | null
   exchangeRate?: number | null
   isStablecoin: boolean
+  decimals?: number
   placeholder?: string
 }
 
@@ -31,6 +32,7 @@ export const useTokenAmountFormatting = ({
   amount,
   availableBalance,
   isStablecoin,
+  decimals,
   placeholder = '0.00'
 }: UseTokenAmountFormattingProps) => {
   const getDisplayDecimalPlaces = useCallback(
@@ -51,15 +53,13 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(availableBalance)
     }
 
-    // Use AUDIO for non-stablecoins for now, when we expand to other tokens
-    // we will need to use FixedDecimal itself
-    const audioAmount = AUDIO(availableBalance)
-    const decimals = getTokenDecimalPlaces(availableBalance)
+    const tokenAmount = new FixedDecimal(availableBalance, decimals)
+    const displayDecimals = getTokenDecimalPlaces(availableBalance)
 
-    return audioAmount.toLocaleString('en-US', {
-      maximumFractionDigits: decimals
+    return tokenAmount.toLocaleString('en-US', {
+      maximumFractionDigits: displayDecimals
     })
-  }, [availableBalance, placeholder, isStablecoin])
+  }, [availableBalance, placeholder, isStablecoin, decimals])
 
   const formattedAmount = useMemo(() => {
     if (!amount && amount !== 0) return placeholder
@@ -72,13 +72,13 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(safeNumericAmount)
     }
 
-    const audioAmount = AUDIO(safeNumericAmount)
-    const decimals = getTokenDecimalPlaces(safeNumericAmount)
+    const tokenAmount = new FixedDecimal(safeNumericAmount, decimals)
+    const displayDecimals = getTokenDecimalPlaces(safeNumericAmount)
 
-    return audioAmount.toLocaleString('en-US', {
-      maximumFractionDigits: decimals
+    return tokenAmount.toLocaleString('en-US', {
+      maximumFractionDigits: displayDecimals
     })
-  }, [amount, placeholder, isStablecoin])
+  }, [amount, placeholder, isStablecoin, decimals])
 
   return {
     formattedAvailableBalance,
