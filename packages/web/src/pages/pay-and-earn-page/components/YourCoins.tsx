@@ -1,10 +1,10 @@
-import { Fragment, useCallback, useContext } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
-  useUserCoins,
-  useCurrentUserId,
   useArtistCoins,
-  UserCoin
+  useCurrentUserId,
+  UserCoin,
+  useUserCoins
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -13,11 +13,17 @@ import {
 } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { useBuySellModal } from '@audius/common/store'
 import {
+  useBuySellModal,
+  groupCoinsIntoPairs,
+  CoinPairItem
+} from '@audius/common/store'
+import {
+  Box,
   Button,
   Divider,
   Flex,
+  IconCaretRight,
   Paper,
   Text,
   useMedia,
@@ -135,9 +141,33 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   )
 }
 
-export const YourCoins = () => {
-  const { spacing } = useTheme()
+const FindMoreCoins = ({ css }: { css?: any }) => {
+  const { color, spacing } = useTheme()
   const { isMobile } = useMedia()
+
+  return (
+    <Flex
+      p={isMobile ? spacing.l : spacing.xl}
+      css={{
+        cursor: 'pointer',
+        '&:hover': { backgroundColor: color.background.surface2 },
+        ...css
+      }}
+    >
+      <Flex flex={1} alignItems='center' justifyContent='space-between'>
+        <Flex column gap='xs'>
+          <Text variant='heading' size='m' color='default'>
+            {messages.findMoreCoins}
+          </Text>
+          <Text color='subdued'>{messages.exploreArtistCoins}</Text>
+        </Flex>
+        <IconCaretRight size='l' color='subdued' />
+      </Flex>
+    </Flex>
+  )
+}
+
+export const YourCoins = () => {
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
@@ -149,6 +179,8 @@ export const YourCoins = () => {
     userId: userIdString || ''
   })
 
+  const coinPairs = groupCoinsIntoPairs(artistCoins)
+
   if (isLoadingCoins || !userIdString) {
     return <YourCoinsSkeleton />
   }
@@ -156,21 +188,28 @@ export const YourCoins = () => {
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
       {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
-      <Flex
-        alignItems='center'
-        justifyContent='space-between'
-        p={isMobile ? spacing.l : undefined}
-        alignSelf='stretch'
-      >
-        {artistCoins?.map((coin, index) => {
-          if (coin.ticker === 'USDC') return null
-          return (
-            <Fragment key={coin.mint}>
-              {index > 0 && <Divider orientation='vertical' />}
-              <CoinCardWithBalance coin={coin} />
-            </Fragment>
-          )
-        })}
+      <Flex column>
+        {coinPairs.map((pair, rowIndex) => (
+          <>
+            <Flex key={`row-${rowIndex}`} alignItems='stretch'>
+              {pair.map((item: CoinPairItem, colIndex) => (
+                <>
+                  {colIndex > 0 && <Divider orientation='vertical' />}
+                  <Box flex={1}>
+                    {item === 'find-more' ? (
+                      <FindMoreCoins />
+                    ) : (
+                      <CoinCardWithBalance coin={item} />
+                    )}
+                  </Box>
+                </>
+              ))}
+              {/* If only one item in pair (FindMoreCoins on its own row), no divider needed */}
+              {pair.length === 1 && pair[0] === 'find-more' && null}
+            </Flex>
+            {rowIndex < coinPairs.length - 1 && <Divider />}
+          </>
+        ))}
       </Flex>
     </Paper>
   )
