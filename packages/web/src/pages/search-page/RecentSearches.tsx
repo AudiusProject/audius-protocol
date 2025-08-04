@@ -41,7 +41,7 @@ const { removeItem, clearHistory } = searchActions
 const { getSearchHistory } = searchSelectors
 
 const RecentSearchSkeleton = () => (
-  <Flex w='100%' pv='s' ph='xl' justifyContent='space-between'>
+  <Flex w='100%' pv='s' justifyContent='space-between'>
     <Flex gap='m'>
       <Skeleton w='40px' h='40px' />
 
@@ -79,7 +79,6 @@ const RecentSearch = (props: RecentSearchProps) => {
       <Flex
         w='100%'
         pv='s'
-        ph='xl'
         gap='m'
         justifyContent='space-between'
         alignItems='center'
@@ -324,52 +323,50 @@ export const RecentSearches = () => {
     dispatch(clearHistory())
   }, [dispatch])
 
-  const content = (
-    <>
-      <Flex mh='xl'>
-        <Text variant='heading' size='s' css={{ alignSelf: 'flex-start' }}>
-          {messages.title}
-        </Text>
-      </Flex>
-      <Flex direction='column'>
-        {(truncatedSearchItems || []).map((searchItem) => {
-          if (isSearchItem(searchItem)) {
-            const { kind, id } = searchItem
-            const ItemComponent =
-              itemComponentByKind[kind as keyof typeof itemComponentByKind]
-            return <ItemComponent searchItem={searchItem} key={id} />
-          }
-          return null
-        })}
-      </Flex>
-      <Button
-        variant='secondary'
-        size='small'
-        css={{ alignSelf: 'center' }}
-        onClick={handleClickClear}
-      >
-        {messages.clear}
-      </Button>
-    </>
-  )
-
   if (!truncatedSearchItems.length) return null
 
-  return isMobile ? (
-    <Flex w='100%' direction='column' gap='l'>
-      {content}
-    </Flex>
-  ) : (
-    <Paper
-      pv='xl'
+  return (
+    <Flex
       w='100%'
-      css={{ maxWidth: '688px' }}
-      backgroundColor='white'
-      border='default'
       direction='column'
-      gap='l'
+      ph={isMobile ? 'l' : 'xl'}
+      css={{ maxWidth: isMobile ? undefined : '688px' }}
     >
-      {content}
-    </Paper>
+      <Paper
+        w='100%'
+        p={isMobile ? 'l' : 'xl'}
+        backgroundColor='white'
+        border='default'
+        direction='column'
+        gap={isMobile ? 'l' : 'xl'}
+      >
+        <Text
+          variant={isMobile ? 'title' : 'heading'}
+          size={isMobile ? 'l' : 's'}
+          css={{ alignSelf: 'flex-start' }}
+        >
+          {messages.title}
+        </Text>
+        <Flex direction='column'>
+          {(truncatedSearchItems || []).map((searchItem) => {
+            if (isSearchItem(searchItem)) {
+              const { kind, id } = searchItem
+              const ItemComponent =
+                itemComponentByKind[kind as keyof typeof itemComponentByKind]
+              return <ItemComponent searchItem={searchItem} key={id} />
+            }
+            return null
+          })}
+        </Flex>
+        <Button
+          variant='secondary'
+          size='small'
+          css={{ alignSelf: 'center' }}
+          onClick={handleClickClear}
+        >
+          {messages.clear}
+        </Button>
+      </Paper>
+    </Flex>
   )
 }

@@ -21,7 +21,10 @@ export const UndergroundTrendingTracks = () => {
   }
 
   return (
-    <ExploreSection title={messages.undergroundTrending}>
+    <ExploreSection
+      title={messages.undergroundTrending}
+      viewAllLink='TrendingUnderground'
+    >
       <TrackTileCarousel
         tracks={trackIds}
         isLoading={isLoading}
