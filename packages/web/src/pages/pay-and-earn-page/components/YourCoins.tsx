@@ -14,9 +14,9 @@ import {
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
+  CoinPairItem,
   useBuySellModal,
-  useGroupCoinPairs,
-  CoinPairItem
+  useGroupCoinPairs
 } from '@audius/common/store'
 import {
   Box,
@@ -35,9 +35,7 @@ import { push } from 'redux-first-history'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
-import { env } from 'services/env'
 
-import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
 
 const YourCoinsSkeleton = () => {
@@ -125,9 +123,6 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   const coinData = coinsData?.[0] ?? null
 
   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
-
-  if (coin.mint === env.WAUDIO_MINT_ADDRESS)
-    return <AudioCoinCard onClick={() => handleCoinClick(coin.mint)} />
 
   return (
     <CoinCard
