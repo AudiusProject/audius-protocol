@@ -20,7 +20,7 @@ import {
   IconDonate,
   IconLink,
   IconTikTok,
-  IconTwitter as IconTwitterBird,
+  IconX,
   Flex,
   Button,
   IconPencil,
@@ -102,7 +102,7 @@ type ProfileHeaderProps = {
   setFollowersUserId: (id: ID) => void
   followingCount: number
   setFollowingUserId: (id: ID) => void
-  twitterHandle: string
+  xHandle: string
   instagramHandle: string
   tikTokHandle: string
   website: string
@@ -146,7 +146,7 @@ const ProfileHeader = ({
   trackCount,
   followerCount,
   followingCount,
-  twitterHandle,
+  xHandle,
   instagramHandle,
   tikTokHandle,
   website,
@@ -226,14 +226,14 @@ const ProfileHeader = ({
     )
   }, [record, instagramHandle, handle])
 
-  const onGoToTwitter = useCallback(() => {
+  const onGoToX = useCallback(() => {
     record(
-      make(Name.PROFILE_PAGE_CLICK_TWITTER, {
+      make(Name.PROFILE_PAGE_CLICK_X, {
         handle: handle.replace('@', ''),
-        twitterHandle
+        xHandle
       })
     )
-  }, [record, twitterHandle, handle])
+  }, [record, xHandle, handle])
 
   const onGoToTikTok = useCallback(() => {
     record(
@@ -393,11 +393,11 @@ const ProfileHeader = ({
           <Flex alignItems='center' gap='m'>
             <ProfilePageBadge userId={userId} isCompact />
             <Flex gap='xl' justifyContent='center' flex={1}>
-              {twitterHandle ? (
+              {xHandle ? (
                 <SocialLink
-                  to={`https://twitter.com/${twitterHandle}`}
-                  onClick={onGoToTwitter}
-                  icon={<IconTwitterBird size='xl' />}
+                  to={`https://x.com/${xHandle}`}
+                  onClick={onGoToX}
+                  icon={<IconX size='xl' />}
                 />
               ) : null}
               {instagramHandle ? (

@@ -70,7 +70,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.title}>{messages.step1Title}</span>
       <span className={styles.subtitle}>{messages.step1Subtitle}</span>
       <div className={styles.verifyButtons}>
-        <SocialButton socialType='twitter' onClick={onClickVerify}>
+        <SocialButton socialType='x' onClick={onClickVerify}>
           {messages.verifyTwitterButton}
         </SocialButton>
         <SocialButton

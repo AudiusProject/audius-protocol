@@ -10,13 +10,13 @@ export const socialMediaMessages = {
     )} account already exists. Please sign in.`,
   socialMediaLoginSucess: (platform: SocialPlatform) => {
     const platformName = {
-      twitter: 'Twitter',
+      x: 'X',
       instagram: 'Instagram',
       tiktok: 'TikTok'
     }[platform]
     return `${platformName} connection successful!`
   },
-  signUpTwitter: 'Sign up with Twitter',
+  signUpX: 'Sign up with X',
   signUpInstagram: 'Sign up with Instagram',
   signUpTikTok: 'Sign up with TikTok'
 }

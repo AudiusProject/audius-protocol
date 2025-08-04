@@ -19,16 +19,16 @@ import { ToastContext } from 'components/toast/ToastContext'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
-import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
+import { SignupFlowXAuth } from './SignupFlowXAuth'
 
 const platformErrorMap = {
-  [pickHandleErrorMessages.twitterReservedError]: 'twitter',
+  [pickHandleErrorMessages.xReservedError]: 'x',
   [pickHandleErrorMessages.instagramReservedError]: 'instagram',
   [pickHandleErrorMessages.tiktokReservedError]: 'tiktok'
 }
 
 const handleAuthMap = {
-  [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
+  [pickHandleErrorMessages.xReservedError]: SignupFlowXAuth,
   [pickHandleErrorMessages.instagramReservedError]: SignupFlowInstagramAuth,
   [pickHandleErrorMessages.tiktokReservedError]: SignupFlowTikTokAuth
 }

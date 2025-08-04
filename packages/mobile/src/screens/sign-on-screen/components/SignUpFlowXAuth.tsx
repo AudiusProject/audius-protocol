@@ -19,11 +19,11 @@ import { reportToSentry } from 'app/utils/reportToSentry'
 
 import OAuthWebView from '../../../components/oauth/OAuthWebView'
 
-type SignUpFlowTwitterAuthProps = Partial<SocialButtonProps> & {
+type SignUpFlowXAuthProps = Partial<SocialButtonProps> & {
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter'
+    platform: 'x'
   }) => void
   onError: (e: unknown) => void
   onStart?: () => void
@@ -63,18 +63,18 @@ const getOauthToken = async (
 }
 
 const authenticationUrl = (oauthToken: string | undefined) =>
-  `https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}&force_login=${twitterApi.forceLogin}`
+  `https://api.x.com/oauth/authenticate?oauth_token=${oauthToken}&force_login=${twitterApi.forceLogin}`
 
 type CredentialsType = 'omit' | 'same-origin' | 'include'
 
-const getTwitterProfile = async ({
+const getXProfile = async ({
   oauthVerifier,
   oauthToken
 }: {
   oauthVerifier: string
   oauthToken: string
 }) => {
-  // Get profile details from twitter
+  // Get profile details from x
   const tokenRes = await getOauthToken(
     twitterApi.loginUrl,
     oauthVerifier,
@@ -106,13 +106,13 @@ const getTwitterProfile = async ({
   }
 }
 
-export const SignUpFlowTwitterAuth = ({
+export const SignUpFlowXAuth = ({
   onSuccess,
   onError,
   onStart,
   onClose,
   page
-}: SignUpFlowTwitterAuthProps) => {
+}: SignUpFlowXAuthProps) => {
   const dispatch = useDispatch()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const queryContext = useQueryContext()
@@ -184,7 +184,7 @@ export const SignUpFlowTwitterAuth = ({
     try {
       // Call Twitter API with auth token details
       const { handle, isVerified, profile, profileImage, profileBanner, uuid } =
-        await getTwitterProfile({
+        await getXProfile({
           oauthVerifier,
           oauthToken
         })
@@ -219,7 +219,7 @@ export const SignUpFlowTwitterAuth = ({
           handle: handle || 'unknown'
         })
       )
-      onSuccess?.({ handle, requiresReview, platform: 'twitter' })
+      onSuccess?.({ handle, requiresReview, platform: 'x' })
     } catch (e) {
       reportToSentry({
         error: e as Error,
@@ -242,7 +242,7 @@ export const SignUpFlowTwitterAuth = ({
       <SocialButton
         socialType='x'
         onPress={handlePress}
-        aria-label={socialMediaMessages.signUpTwitter}
+        aria-label={socialMediaMessages.signUpX}
       />
     </>
   )

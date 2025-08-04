@@ -18,7 +18,7 @@ import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButt
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
-import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
+import { XAuthButton } from 'components/x-auth/XAuthButton'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import styles from './SocialProof.module.css'
@@ -103,13 +103,13 @@ const VerifyBody = ({
       <p>{messages.description}</p>
       <div className={styles.btnContainer}>
         {isTwitterEnabled ? (
-          <TwitterAuthButton
+          <XAuthButton
             onSuccess={onTwitterLogin}
             onFailure={(error: Error) => onFailure('twitter', error)}
             onClick={handleClickTwitter}
           >
             {messages.twitterConfirm}
-          </TwitterAuthButton>
+          </XAuthButton>
         ) : null}
         {isInstagramEnabled && (
           <InstagramAuthButton

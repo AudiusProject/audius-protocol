@@ -8,7 +8,7 @@ import { restrictedHandles as commonRestrictedHandles } from '~/utils/restricted
 
 export const pickHandleErrorMessages = {
   badCharacterError: 'Please only use A-Z, 0-9, . and _',
-  twitterReservedError: 'This verified Twitter handle is reserved.',
+  xReservedError: 'This verified X handle is reserved.',
   instagramReservedError: 'This verified Instagram handle is reserved.',
   tiktokReservedError: 'This verified TikTok handle is reserved.',
   genericReservedError: 'This verified handle is reserved.',
@@ -40,7 +40,7 @@ export const pickHandleSchema = ({
       .regex(/^[a-zA-Z0-9_.]*$/, pickHandleErrorMessages.badCharacterError)
       .refine(
         (handle) => !restrictedHandles.has(handle.toLowerCase()),
-        pickHandleErrorMessages.handleTakenError
+        pickHandleErrorMessages.xReservedError
       )
       .superRefine(async (handle, context) => {
         try {
@@ -52,7 +52,7 @@ export const pickHandleSchema = ({
           if (isHandleInUse) {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: pickHandleErrorMessages.handleTakenError,
+              message: pickHandleErrorMessages.xReservedError,
               fatal: true
             })
             return z.NEVER
@@ -78,7 +78,7 @@ export const pickHandleSchema = ({
           if (handleReservedStatus === 'twitterReserved') {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: pickHandleErrorMessages.twitterReservedError
+              message: pickHandleErrorMessages.xReservedError
             })
           } else if (handleReservedStatus === 'instagramReserved') {
             context.addIssue({

@@ -111,7 +111,7 @@ const FirstUploadModal = ({ isOpen, close }: FirstUploadModalProps) => {
             <div className={styles.text}>{messages.deal}</div>
             <div className={styles.text}>{messages.share}</div>
             <SocialButton
-              socialType='twitter'
+              socialType='x'
               onClick={onShare}
               className={styles.tweetButton}
             >
