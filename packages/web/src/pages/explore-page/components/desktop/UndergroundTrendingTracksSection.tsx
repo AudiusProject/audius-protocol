@@ -8,12 +8,12 @@ import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTil
 
 import { ExploreSection } from './ExploreSection'
 
-export const UndergroundTrendingTracks = () => {
+export const UndergroundTrendingTracksSection = () => {
   const {
     data: undergroundTrendingTracks,
     isLoading: hookIsLoading,
     lineup
-  } = useTrendingUnderground()
+  } = useTrendingUnderground({ pageSize: 10 })
 
   const isLoading = hookIsLoading || lineup.status === Status.LOADING
 

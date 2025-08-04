@@ -1,5 +1,9 @@
-import { HashId, Id, BestSellingItem } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { HashId, BestSellingItem, full, OptionalId } from '@audius/sdk'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 
 import { userCollectionMetadataFromSDK } from '~/adapters'
 import { userTrackMetadataFromSDK } from '~/adapters/track'
@@ -9,37 +13,61 @@ import {
   primeTrackData,
   useQueryContext
 } from '~/api/tan-query/utils'
+import { SDKInfiniteQueryArgs } from '~/api/types'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, SelectableQueryOptions } from '../types'
+import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-export type UseBestSellingArgs = {
-  userId: ID | null | undefined
-}
+const DEFAULT_PAGE_SIZE = 10
+
+export type UseBestSellingArgs =
+  SDKInfiniteQueryArgs<full.GetFullBestSellingRequest>
 
 export type BestSellingItemWithId = BestSellingItem & { id: ID }
 
-export const getBestSellingQueryKey = ({ userId }: UseBestSellingArgs) => {
-  return [QUERY_KEYS.bestSellingAlbums, userId] as unknown as QueryKey<
-    BestSellingItemWithId[]
+export const getBestSellingQueryKey = (
+  userId: ID | null | undefined,
+  args: UseBestSellingArgs
+) => {
+  return [QUERY_KEYS.bestSellingItems, userId, args] as unknown as QueryKey<
+    InfiniteData<BestSellingItemWithId[]>
   >
 }
 
-export const useBestSelling = <TResult = BestSellingItemWithId[]>(
-  options?: SelectableQueryOptions<BestSellingItemWithId[], TResult>
+export const useBestSelling = (
+  {
+    pageSize = DEFAULT_PAGE_SIZE,
+    type = 'all',
+    ...args
+  }: UseBestSellingArgs = {},
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  return useQuery({
-    queryKey: getBestSellingQueryKey({ userId: currentUserId }),
-    queryFn: async () => {
+
+  return useInfiniteQuery({
+    queryKey: getBestSellingQueryKey(currentUserId, {
+      pageSize,
+      type,
+      ...args
+    }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: BestSellingItemWithId[], allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const { data = [], related = {} } =
         await sdk.full.explore.getFullBestSelling({
-          userId: currentUserId ? Id.parse(currentUserId) : undefined
+          ...args,
+          userId: OptionalId.parse(currentUserId),
+          type,
+          limit: pageSize,
+          offset: pageParam
         })
 
       const tracks = transformAndCleanList(
@@ -64,6 +92,7 @@ export const useBestSelling = <TResult = BestSellingItemWithId[]>(
 
       return data.map((item) => ({ ...item, id: HashId.parse(item.contentId) }))
     },
+    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false
   })

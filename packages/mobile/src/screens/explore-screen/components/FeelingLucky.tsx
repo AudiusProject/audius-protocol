@@ -29,7 +29,7 @@ export const FeelingLucky = () => {
   })
 
   return (
-    <Flex mb='l' justifyContent={'flex-start'} gap='m'>
+    <Flex justifyContent={'flex-start'} gap='m'>
       <Flex direction='row' justifyContent='space-between'>
         <Text variant='title' size='l' textAlign={'left'}>
           {messages.feelingLucky}

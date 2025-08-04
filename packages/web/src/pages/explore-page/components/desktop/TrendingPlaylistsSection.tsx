@@ -123,7 +123,7 @@ const CollectionLineupCarousel = ({
   )
 }
 
-export const TrendingPlaylists = () => {
+export const TrendingPlaylistsSection = () => {
   const isMobile = useIsMobile()
   const size = isMobile ? TrackTileSize.SMALL : TrackTileSize.LARGE
   const {
