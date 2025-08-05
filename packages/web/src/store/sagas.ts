@@ -9,6 +9,7 @@ import {
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   stripeModalUISagas as stripeModalSagas,
+  vipDiscordModalSagas,
   toastSagas,
   searchUsersModalSagas,
   modalsSagas,
@@ -157,6 +158,7 @@ export default function* rootSaga() {
     stemUploadSagas(),
     tokenDashboardSagas(),
     userListModalSagas(),
+    vipDiscordModalSagas(),
     commonReachabilitySagas(),
 
     // Remote config
@@ -245,6 +247,7 @@ export function* testRootSaga() {
     // stemUploadSagas(),
     // tokenDashboardSagas(),
     // userListModalSagas(),
+    // vipDiscordModalSagas(),
     // commonReachabilitySagas(),
 
     // Remote config
