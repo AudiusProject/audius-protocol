@@ -29,6 +29,7 @@ import { config } from '../../config'
 import { rateLimitTokenAccountCreation } from '../../redis'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
+import { isUserAbusive } from './antiAbuse'
 import { getAllowedMints } from './getAllowedMints'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -148,6 +149,13 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
           memo = PAYOUT_WALLET_MEMO
         } else if (findSpecificMemo(instructions, PREPARE_WITHDRAWAL_MEMO)) {
           memo = PREPARE_WITHDRAWAL_MEMO
+        }
+        const isAbusive = await isUserAbusive(wallet)
+        if (isAbusive) {
+          throw new InvalidRelayInstructionError(
+            instructionIndex,
+            'User is abusive'
+          )
         }
         // In this situation, we could be losing SOL because the user is allowed to
         // close their own ATA and reclaim the rent that we've fronted, so
