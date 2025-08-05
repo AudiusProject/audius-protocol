@@ -5,7 +5,7 @@ import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import {
-  createSupportedTokenPairs,
+  useSupportedTokenPairs,
   useBuySellScreen,
   useBuySellSwap,
   useSwapDisplayData,
@@ -28,7 +28,6 @@ import {
   FixedFooterContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { env } from 'app/services/env'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
 
@@ -131,7 +130,7 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const activeTab = payTokenInfo.symbol === 'USDC' ? 'buy' : 'sell'
 
   const [selectedPairIndex] = useState(0)
-  const supportedTokenPairs = useMemo(() => createSupportedTokenPairs(env), [])
+  const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
   const selectedPair = supportedTokenPairs[selectedPairIndex]
 
   const {
@@ -239,13 +238,15 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
     availableBalance: 0,
-    isStablecoin: !!payTokenInfo.isStablecoin
+    isStablecoin: !!payTokenInfo.isStablecoin,
+    decimals: payTokenInfo.decimals
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
     availableBalance: 0,
-    isStablecoin: !!receiveTokenInfo.isStablecoin
+    isStablecoin: !!receiveTokenInfo.isStablecoin,
+    decimals: receiveTokenInfo.decimals
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
