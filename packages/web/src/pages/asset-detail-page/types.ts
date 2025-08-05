@@ -1,7 +1,7 @@
-import { ACCEPTED_ROUTES } from './constants'
+import { ASSET_ROUTES } from './constants'
 
-export type AcceptedRouteKey = keyof typeof ACCEPTED_ROUTES
+export type AssetName = keyof typeof ASSET_ROUTES
 
 export type AssetDetailProps = {
-  mint: AcceptedRouteKey
+  assetName: AssetName
 }

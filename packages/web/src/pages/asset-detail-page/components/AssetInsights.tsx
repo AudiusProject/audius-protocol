@@ -100,8 +100,12 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
   )
 }
 
-export const AssetInsights = ({ mint }: AssetDetailProps) => {
-  const { data: insights, isLoading, error } = useCoinInsights({ mint })
+export const AssetInsights = ({ assetName }: AssetDetailProps) => {
+  const {
+    data: insights,
+    isLoading,
+    error
+  } = useCoinInsights({ mint: assetName })
 
   if (isLoading) {
     return (

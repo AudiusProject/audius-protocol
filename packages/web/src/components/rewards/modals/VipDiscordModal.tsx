@@ -1,7 +1,6 @@
-import { vipDiscordModalSelectors } from '@audius/common/store'
+import { useDiscordCode } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { Button, IconDiscord } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
@@ -13,7 +12,6 @@ import ClickableAddress from '../ClickableAddress'
 import styles from './VipDiscordModal.module.css'
 
 const { AUDIUS_DISCORD_LINK } = route
-const { getDiscordCode } = vipDiscordModalSelectors
 
 const messages = {
   title: 'Launch the VIP Discord',
@@ -24,7 +22,7 @@ const messages = {
 }
 
 export const VipDiscordModal = () => {
-  const discordCode = useSelector(getDiscordCode)
+  const { data: discordCode } = useDiscordCode('audio')
   const [isOpen, setIsOpen] = useModalState('VipDiscord')
   const isMobile = useIsMobile()
 

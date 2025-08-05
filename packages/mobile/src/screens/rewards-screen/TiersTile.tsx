@@ -11,7 +11,7 @@ import {
 import {
   badgeTiers,
   getTierAndNumberForBalance,
-  vipDiscordModalActions
+  modalsActions
 } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { formatNumberCommas } from '@audius/common/utils'
@@ -43,7 +43,7 @@ const audioTierMapSvg: {
   platinum: <IconTokenPlatinum size='l' />
 }
 
-const { pressDiscord } = vipDiscordModalActions
+const { setVisibility } = modalsActions
 
 const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 
@@ -65,8 +65,8 @@ export const TiersTile = () => {
     totalBalance?.toString() as StringWei
   )
 
-  const onPressLaunchDiscord = () => {
-    dispatch(pressDiscord())
+  const onPressLaunchDiscord = async () => {
+    dispatch(setVisibility({ modal: 'VipDiscord', visible: true }))
   }
 
   return (

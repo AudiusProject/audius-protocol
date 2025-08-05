@@ -3,7 +3,7 @@ import { IconGift } from '@audius/harmony'
 
 import { TOKENS } from 'components/buy-sell-modal/constants'
 
-export const ACCEPTED_ROUTES = {
+export const ASSET_ROUTES = {
   audio: {
     title: '$AUDIO',
     symbol: TOKEN_LISTING_MAP.AUDIO.symbol,

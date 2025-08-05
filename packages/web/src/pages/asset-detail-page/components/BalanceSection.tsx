@@ -15,7 +15,7 @@ import { useDispatch } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ACCEPTED_ROUTES } from '../constants'
+import { ASSET_ROUTES } from '../constants'
 import { AssetDetailProps } from '../types'
 
 type BalanceStateProps = {
@@ -117,8 +117,8 @@ const HasBalanceState = ({
   )
 }
 
-export const BalanceSection = ({ mint }: AssetDetailProps) => {
-  const { title, icon, symbol } = ACCEPTED_ROUTES[mint]
+export const BalanceSection = ({ assetName }: AssetDetailProps) => {
+  const { title, icon, symbol } = ASSET_ROUTES[assetName]
 
   // Convert the route symbol to the appropriate MintName for the token balance hook
   const tokenMint = symbol === 'AUDIO' ? 'wAUDIO' : (symbol as MintName)
