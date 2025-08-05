@@ -74,7 +74,6 @@ export const sendIOSMessage = async ({
 
   // Enable rich notifications when image is provided
   if (imageUrl) {
-    apnsConfig.aps['category'] = 'COMMUNICATION'
     apnsConfig.aps['mutable-content'] = 1
     apnsConfig['media-url'] = imageUrl
   }
