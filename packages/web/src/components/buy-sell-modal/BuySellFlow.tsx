@@ -394,11 +394,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               availableInputTokens={availableTokens.filter(
                 (t) => t.symbol !== baseTokenSymbol && t.symbol !== 'USDC'
               )}
-              availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
-              )}
               onInputTokenChange={handleInputTokenChange}
-              onOutputTokenChange={handleOutputTokenChange}
             />
           ) : isArtistCoinsEnabled && currentTokenPair ? (
             <ConvertTab

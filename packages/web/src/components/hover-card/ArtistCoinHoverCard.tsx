@@ -55,7 +55,7 @@ export const ArtistCoinHoverCard = ({
   const balance = coinBalance
   const formattedBalance = formatCount(Number(balance))
   const coinName = coin.ticker || ''
-  const logoURI = coin.tokenInfo?.logoURI
+  const logoURI = coin.logoUri
 
   return (
     <HoverCard

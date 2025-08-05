@@ -184,9 +184,9 @@ const UserBadges = ({
             }
           }}
         >
-          {coin?.tokenInfo?.logoURI ? (
+          {coin?.logoUri ? (
             <Artwork
-              src={coin.tokenInfo.logoURI}
+              src={coin.logoUri}
               hex
               w={iconSizes[size]}
               h={iconSizes[size]}
@@ -202,8 +202,8 @@ const UserBadges = ({
     userId,
     anchorOrigin,
     transformOrigin,
-    size,
-    coin?.tokenInfo?.logoURI
+    coin?.logoUri,
+    size
   ])
 
   if (!hasContent) return null
