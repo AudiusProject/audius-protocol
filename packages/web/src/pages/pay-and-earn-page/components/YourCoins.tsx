@@ -139,6 +139,11 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
 const FindMoreCoins = ({ css }: { css?: any }) => {
   const { color, spacing } = useTheme()
   const { isMobile } = useMedia()
+  const dispatch = useDispatch()
+
+  const handleClick = useCallback(() => {
+    dispatch(push('/wallet/coins'))
+  }, [dispatch])
 
   return (
     <Flex
@@ -148,6 +153,7 @@ const FindMoreCoins = ({ css }: { css?: any }) => {
         '&:hover': { backgroundColor: color.background.surface2 },
         ...css
       }}
+      onClick={handleClick}
     >
       <Flex flex={1} alignItems='center' justifyContent='space-between'>
         <Flex column gap='xs'>
@@ -185,8 +191,8 @@ export const YourCoins = () => {
       {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
       <Flex column>
         {coinPairs.map((pair, rowIndex) => (
-          <>
-            <Flex key={`row-${rowIndex}`} alignItems='stretch'>
+          <Fragment key={`row-${rowIndex}`}>
+            <Flex alignItems='stretch'>
               {pair.map((item: CoinPairItem, colIndex) => (
                 <Fragment key={item === 'find-more' ? 'find-more' : item.mint}>
                   {colIndex > 0 && <Divider orientation='vertical' />}
@@ -201,7 +207,7 @@ export const YourCoins = () => {
               ))}
             </Flex>
             {rowIndex < coinPairs.length - 1 && <Divider />}
-          </>
+          </Fragment>
         ))}
       </Flex>
     </Paper>

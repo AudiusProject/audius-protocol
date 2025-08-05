@@ -33,7 +33,7 @@ export const getCoinLeaderboardQueryKey = (
     pageSize,
     minBalance,
     sortDirection
-  ] as unknown as QueryKey<InfiniteData<CoinMember[]>>
+  ] as unknown as QueryKey<InfiniteData<CoinMember[], number>>
 
 export const useArtistCoinMembers = (
   {

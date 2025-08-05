@@ -1,3 +1,4 @@
+import { CoinInsights } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -9,11 +10,13 @@ export interface UseArtistCoinInsightsParams {
 }
 
 export const getArtistCoinInsightsQueryKey = (mint: string) =>
-  [QUERY_KEYS.coinInsights, mint] as unknown as QueryKey<any>
+  [QUERY_KEYS.coinInsights, mint] as unknown as QueryKey<
+    CoinInsights | undefined
+  >
 
-export const useArtistCoinInsights = <TResult = any>(
+export const useArtistCoinInsights = <TResult = CoinInsights | undefined>(
   params: UseArtistCoinInsightsParams,
-  options?: SelectableQueryOptions<any, TResult>
+  options?: SelectableQueryOptions<CoinInsights | undefined, TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
 

@@ -1,4 +1,4 @@
-import { encodeHashId } from '@audius/sdk'
+import { encodeHashId, UserCoinWithAccounts } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { useCurrentAccountUser } from '~/api'
@@ -15,11 +15,16 @@ export interface UseUserCoinParams {
 export const getUserCoinQueryKey = (
   userId: ID | null | undefined,
   mint: string
-) => [QUERY_KEYS.userCoin, userId, mint] as unknown as QueryKey<any>
+) =>
+  [
+    QUERY_KEYS.userCoin,
+    userId,
+    mint
+  ] as unknown as QueryKey<UserCoinWithAccounts | null>
 
-export const useUserCoin = <TResult = any>(
+export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
   params: UseUserCoinParams,
-  options?: SelectableQueryOptions<any, TResult>
+  options?: SelectableQueryOptions<UserCoinWithAccounts | null, TResult>
 ) => {
   const { audiusSdk, env } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
@@ -43,7 +48,7 @@ export const useUserCoin = <TResult = any>(
         mint: params.mint
       })
 
-      return response.data
+      return response.data ?? null
     },
     enabled:
       options?.enabled !== false &&

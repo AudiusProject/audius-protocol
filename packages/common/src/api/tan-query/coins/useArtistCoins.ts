@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { Id, Coin } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
@@ -16,11 +16,11 @@ export type UseArtistCoinsParams = {
 }
 
 export const getArtistCoinsQueryKey = (params: UseArtistCoinsParams) =>
-  [QUERY_KEYS.coins, 'list', params] as unknown as QueryKey<any>
+  [QUERY_KEYS.coins, 'list', params] as unknown as QueryKey<Coin[]>
 
-export const useArtistCoins = <TResult = any>(
+export const useArtistCoins = <TResult = Coin[]>(
   params: UseArtistCoinsParams = {},
-  options?: SelectableQueryOptions<any, TResult>
+  options?: SelectableQueryOptions<Coin[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
 

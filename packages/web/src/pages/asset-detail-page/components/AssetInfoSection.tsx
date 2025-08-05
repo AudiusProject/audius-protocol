@@ -72,7 +72,7 @@ const AssetInfoSectionSkeleton = () => {
             borderRadius='circle'
             border='default'
           >
-            <Skeleton width='32px' height='32px' circle />
+            <Skeleton width='32px' height='32px' />
             <Skeleton width='100px' height='20px' />
           </Flex>
         </Flex>
@@ -158,7 +158,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
             borderRadius='circle'
             border='default'
           >
-            <Skeleton width='32px' height='32px' circle />
+            <Skeleton width='32px' height='32px' />
             <Skeleton width='100px' height='20px' />
           </Flex>
         </Flex>
@@ -166,7 +166,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
     )
   }
 
-  const logoURI = coin.tokenInfo?.logoURI
+  const logoURI = coin.logoUri
   const name = coin.ticker
 
   return (
