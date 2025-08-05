@@ -17,10 +17,7 @@ export const isUserAbusive = async (
   try {
     const url = `${config.antiAbuseOracle}/attestation/check?wallet=${wallet}`
     const response = await fetch(url)
-    if (response.status !== 200) {
-      return true
-    }
-    return false
+    return response.status !== 200
   } catch (error) {
     log.error(
       { error, wallet },
