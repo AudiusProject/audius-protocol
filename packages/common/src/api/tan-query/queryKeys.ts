@@ -109,6 +109,5 @@ export const QUERY_KEYS = {
   artistCoinMembers: 'artistCoinMembers',
   artistCoins: 'artistCoins',
   userCoins: 'userCoins',
-  coin: 'coin',
-  discordCode: 'discordCode'
+  coin: 'coin'
 } as const

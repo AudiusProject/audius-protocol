@@ -61,6 +61,14 @@ export {
   actions as coinflowModalUIActions
 } from './coinflow-modal/slice'
 
+export {
+  default as vipDiscordModalReducer,
+  actions as vipDiscordModalActions
+} from './vip-discord-modal/slice'
+export * from './vip-discord-modal/types'
+export * as vipDiscordModalSelectors from './vip-discord-modal/selectors'
+export { default as vipDiscordModalSagas } from './vip-discord-modal/sagas'
+
 export { default as themeReducer, actions as themeActions } from './theme/slice'
 export type { SetThemeAction, SetSystemAppearanceAction } from './theme/slice'
 export * as themeSelectors from './theme/selectors'

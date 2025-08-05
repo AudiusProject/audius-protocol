@@ -95,6 +95,8 @@ import theme, { ThemeState } from './ui/theme/slice'
 import toastReducer from './ui/toast/slice'
 import transactionDetailsReducer from './ui/transaction-details/slice'
 import { UploadConfirmationModalState } from './ui/upload-confirmation-modal/types'
+import vipDiscordModalReducer from './ui/vip-discord-modal/slice'
+import { VipDiscordModalState } from './ui/vip-discord-modal/types'
 import upload from './upload/reducer'
 import { UploadState } from './upload/types'
 import coinLeaderboardUserListReducer from './user-list/coin-leaderboard/reducers'
@@ -178,6 +180,7 @@ export const reducers = (storage: Storage, history?: History) => ({
       remixers: remixersUserListReducer
     }),
     theme,
+    vipDiscordModal: vipDiscordModalReducer,
     recoveryEmail: recoveryEmailReducer
   }),
 
@@ -290,6 +293,7 @@ export type CommonState = {
       remixers: ReturnType<typeof remixersUserListReducer>
     }
     theme: ThemeState
+    vipDiscordModal: VipDiscordModalState
     recoveryEmail: RecoveryEmailState
   }
 

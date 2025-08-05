@@ -50,7 +50,7 @@ const ClickableAddress = ({
           text={
             <div className={styles.addressContainer}>
               <div className={styles.address}>{address}</div>
-              <IconCopy className={styles.icon} css={{ flexShrink: 0 }} />
+              <IconCopy className={styles.icon} />
             </div>
           }
         />

@@ -10,12 +10,11 @@ import {
 import {
   badgeTiers,
   getTierNumber,
+  vipDiscordModalActions,
   musicConfettiActions,
-  modalsActions,
   useTierAndVerifiedForUser
 } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
-import { formatNumberCommas } from '@audius/common/utils'
+import { formatNumberCommas, Nullable } from '@audius/common/utils'
 import {
   IconTokenBronze,
   IconTokenGold,
@@ -37,7 +36,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 import styles from './Tiers.module.css'
 const { show } = musicConfettiActions
-const { setVisibility } = modalsActions
+const { pressDiscord } = vipDiscordModalActions
 
 const messages = {
   title: 'Reward Perks',
@@ -164,10 +163,7 @@ const TierColumn = ({
 }) => {
   const { color } = useTheme()
   const dispatch = useDispatch()
-
-  const onClickDiscord = useCallback(async () => {
-    dispatch(setVisibility({ modal: 'VipDiscord', visible: true }))
-  }, [dispatch])
+  const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
 
   const tierFeatures =
     tier !== 'none' ? tierFeatureMap[tier] : tierFeatureMap.none
@@ -303,14 +299,10 @@ const Tiers = () => {
   const { tier } = useTierAndVerifiedForUser(userId)
 
   const dispatch = useDispatch()
-
+  const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
   const onClickExplainMore = useCallback(() => {
     window.open(LEARN_MORE_URL, '_blank')
   }, [])
-
-  const onClickDiscord = useCallback(() => {
-    dispatch(setVisibility({ modal: 'VipDiscord', visible: true }))
-  }, [dispatch])
 
   const showConfetti = useShowConfetti(tier)
   useEffect(() => {
