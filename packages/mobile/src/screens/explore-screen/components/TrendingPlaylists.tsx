@@ -11,7 +11,11 @@ export const TrendingPlaylists = () => {
   const { lineup, isLoading } = useTrendingPlaylists()
 
   return (
-    <ExploreSection title={messages.trendingPlaylists} isLoading={isLoading}>
+    <ExploreSection
+      title={messages.trendingPlaylists}
+      isLoading={isLoading}
+      viewAllLink='TrendingPlaylists'
+    >
       <CollectionLineupCarousel
         lineup={lineup}
         isTrending

@@ -9,7 +9,7 @@ import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const ActiveDiscussions = () => {
   const { data: recentlyCommentedTracks, isLoading } =
-    useRecentlyCommentedTracks()
+    useRecentlyCommentedTracks({ pageSize: 10 })
 
   if (
     !isLoading &&

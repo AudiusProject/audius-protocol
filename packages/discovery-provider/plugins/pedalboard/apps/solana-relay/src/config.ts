@@ -57,6 +57,7 @@ type Config = {
   listensTrackHourlyRateLimit: number
   listensTrackDailyRateLimit: number
   listensTrackWeeklyRateLimit: number
+  antiAbuseOracle: string
 }
 
 let cachedConfig: Config | null = null
@@ -148,7 +149,10 @@ const readConfig = (): Config => {
     audius_solana_listens_ip_weekly_rate_limit: num({ default: 50000000 }),
     audius_solana_listens_track_hourly_rate_limit: num({ default: 120 }),
     audius_solana_listens_track_daily_rate_limit: num({ default: 50000 }),
-    audius_solana_listens_track_weekly_rate_limit: num({ default: 50000000 })
+    audius_solana_listens_track_weekly_rate_limit: num({ default: 50000000 }),
+    audius_anti_abuse_oracle: str({
+      default: 'http://audius-protocol-anti-abuse-oracle-1:8000'
+    })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
@@ -194,7 +198,8 @@ const readConfig = (): Config => {
     listensTrackDailyRateLimit:
       env.audius_solana_listens_track_daily_rate_limit,
     listensTrackWeeklyRateLimit:
-      env.audius_solana_listens_track_weekly_rate_limit
+      env.audius_solana_listens_track_weekly_rate_limit,
+    antiAbuseOracle: env.audius_anti_abuse_oracle
   }
   return readConfig()
 }

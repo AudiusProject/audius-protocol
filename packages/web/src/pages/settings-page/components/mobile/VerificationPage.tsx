@@ -20,8 +20,8 @@ import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButt
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
-import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { XAuthButton } from 'components/x-auth/XAuthButton'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { push } from 'utils/navigation'
@@ -111,14 +111,14 @@ const VerifyBody = (props: VerifyBodyProps) => {
       <div className={cn(styles.text, styles.warning)}>{messages.warning}</div>
       <div className={styles.btnContainer}>
         {isTwitterEnabled ? (
-          <TwitterAuthButton
+          <XAuthButton
             onClick={handleClickTwitter}
             onSuccess={props.onTwitterLogin}
             onFailure={props.onFailure}
             css={{ width: '100%' }}
           >
             {messages.twitterVerify}
-          </TwitterAuthButton>
+          </XAuthButton>
         ) : null}
         {isInstagramEnabled ? (
           <InstagramAuthButton

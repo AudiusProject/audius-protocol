@@ -25,7 +25,7 @@ export const UserBadges = (props: UserBadgesProps) => {
   const { tier } = useTierAndVerifiedForUser(userId)
 
   const { data: coinBalance } = useTokenBalance({
-    token: 'BONK'
+    mint: 'BONK'
   })
 
   return (

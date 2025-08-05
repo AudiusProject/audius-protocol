@@ -11,13 +11,19 @@ import { ExploreSection } from './ExploreSection'
 
 export const RecentlyPlayedTracks = () => {
   const { spacing } = useTheme()
-  const { data: recentlyPlayedTracks, isLoading } = useRecentlyPlayedTracks()
+  const { data: recentlyPlayedTracks, isLoading } = useRecentlyPlayedTracks({
+    pageSize: 10
+  })
 
   if (!recentlyPlayedTracks || recentlyPlayedTracks.length === 0) {
     return null
   }
   return (
-    <ExploreSection title={messages.recentlyPlayed} isLoading={isLoading}>
+    <ExploreSection
+      title={messages.recentlyPlayed}
+      isLoading={isLoading}
+      viewAllLink='ListeningHistoryScreen'
+    >
       <Flex mh={-16}>
         <ScrollView
           horizontal

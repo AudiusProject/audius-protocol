@@ -2,7 +2,13 @@ import { useMemo, useCallback, useState, useRef } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
+import {
+  DEFAULT_TOKEN_AMOUNT_PLACEHOLDER,
+  TokenAmountSectionProps,
+  TokenInfo,
+  useTokenAmountFormatting,
+  BuySellTab
+} from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -20,8 +26,8 @@ import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { useFlag } from '../../hooks/useRemoteConfig'
 
+import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
-import { useTokenAmountFormatting } from './hooks'
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -30,7 +36,8 @@ type BalanceSectionProps = {
   tooltipPlacement?: TooltipPlacement
   availableTokens?: TokenInfo[]
   onTokenChange?: (symbol: string) => void
-  isConvertFlow?: boolean
+  showReceiveAmount?: boolean
+  formattedReceiveAmount?: string
 }
 
 const DefaultBalanceSection = ({
@@ -40,9 +47,8 @@ const DefaultBalanceSection = ({
   tooltipPlacement
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
-  const { icon: TokenIcon } = tokenInfo
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance) {
     return null
   }
 
@@ -56,7 +62,11 @@ const DefaultBalanceSection = ({
       alignSelf='stretch'
     >
       <Flex alignItems='center' gap='xs'>
-        <TokenIcon size='l' css={{ borderRadius: cornerRadius.circle }} />
+        <TokenIcon
+          tokenInfo={tokenInfo}
+          size='l'
+          css={{ borderRadius: cornerRadius.circle }}
+        />
         <Text variant='heading' size='s' color='subdued'>
           {messages.available}
         </Text>
@@ -75,10 +85,12 @@ const DefaultBalanceSection = ({
 
 const TokenSelectionPopup = ({
   availableTokens,
+  activeTokenSymbol,
   onTokenSelect,
   onClose
 }: {
   availableTokens: TokenInfo[]
+  activeTokenSymbol: string
   onTokenSelect: (symbol: string) => void
   onClose: () => void
 }) => {
@@ -92,12 +104,14 @@ const TokenSelectionPopup = ({
     [onTokenSelect, onClose]
   )
 
+  const filteredTokens = availableTokens.filter(
+    (token) => token.symbol !== activeTokenSymbol
+  )
+
   return (
     <Flex direction='column' gap='xs' p='s'>
-      {availableTokens.map((token) => {
-        const { icon: TokenIcon, symbol, name } = token
-
-        if (!TokenIcon) return null
+      {filteredTokens.map((token) => {
+        const { symbol, name } = token
 
         return (
           <Button
@@ -113,7 +127,7 @@ const TokenSelectionPopup = ({
             }}
           >
             <Flex gap='s' alignItems='center'>
-              <TokenIcon size='l' hex />
+              <TokenIcon tokenInfo={token} size='l' hex />
               <Flex direction='column' alignItems='flex-start'>
                 <Text variant='body' size='s' strength='strong'>
                   {symbol}
@@ -130,17 +144,20 @@ const TokenSelectionPopup = ({
   )
 }
 
-const StackedBalanceSection = ({
+const DropdownSection = ({
   formattedAvailableBalance,
   tokenInfo,
   isStablecoin,
   availableTokens,
   onTokenChange,
-  isConvertFlow = false
+  showReceiveAmount,
+  formattedReceiveAmount
 }: BalanceSectionProps) => {
-  const { icon: TokenIcon, symbol } = tokenInfo
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
+  const { color } = useTheme()
+
+  const { symbol } = tokenInfo
 
   const handleClick = useCallback(() => {
     if (availableTokens && availableTokens.length > 0) {
@@ -160,7 +177,13 @@ const StackedBalanceSection = ({
     setIsPopupVisible(false)
   }, [])
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  // Show component if we have either available balance or receive amount to display
+  const hasReceiveAmount = showReceiveAmount && formattedReceiveAmount
+  const shouldShowLargeTicker =
+    !hasReceiveAmount ||
+    formattedReceiveAmount === DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
+
+  if (!formattedAvailableBalance && !hasReceiveAmount) {
     return null
   }
 
@@ -174,8 +197,8 @@ const StackedBalanceSection = ({
         alignItems='flex-start'
         justifyContent='center'
         gap='xs'
-        flex={isConvertFlow ? undefined : 1}
-        alignSelf={isConvertFlow ? 'flex-end' : 'stretch'}
+        flex={1}
+        alignSelf='stretch'
         border='default'
         pv='s'
         ph='m'
@@ -185,7 +208,7 @@ const StackedBalanceSection = ({
           cursor: isClickable ? 'pointer' : 'default',
           '&:hover': isClickable
             ? {
-                backgroundColor: 'var(--harmony-n-50)'
+                backgroundColor: color.background.surface2
               }
             : undefined
         }}
@@ -197,16 +220,31 @@ const StackedBalanceSection = ({
           w='100%'
         >
           <Flex gap='s' alignItems='center'>
-            <TokenIcon size='4xl' hex />
+            <TokenIcon tokenInfo={tokenInfo} size='2xl' hex />
             <Flex direction='column'>
-              <Flex alignSelf='flex-start'>
-                <Text variant='heading' size='s' color='subdued'>
-                  {messages.tokenTicker(symbol, !!isStablecoin)}
+              {shouldShowLargeTicker ? (
+                <Flex alignSelf='flex-start'>
+                  <Text variant='heading' size='s' color='subdued'>
+                    {messages.tokenTicker(symbol, !!isStablecoin)}
+                  </Text>
+                </Flex>
+              ) : null}
+              {!hasReceiveAmount ? (
+                <Text variant='title' size='s' color='default'>
+                  {messages.stackedBalance(formattedAvailableBalance!)}
                 </Text>
-              </Flex>
-              <Text variant='title' size='s' color='default'>
-                {messages.stackedBalance(formattedAvailableBalance)}
-              </Text>
+              ) : null}
+              {hasReceiveAmount &&
+              formattedReceiveAmount !== DEFAULT_TOKEN_AMOUNT_PLACEHOLDER ? (
+                <Flex direction='column'>
+                  <Text variant='heading' size='s'>
+                    {formattedReceiveAmount}
+                  </Text>
+                  <Text variant='title' size='s' color='subdued'>
+                    {messages.tokenTicker(symbol, !!isStablecoin)}
+                  </Text>
+                </Flex>
+              ) : null}
             </Flex>
           </Flex>
           <IconCaretDown size='s' color='default' />
@@ -223,6 +261,7 @@ const StackedBalanceSection = ({
         >
           <TokenSelectionPopup
             availableTokens={availableTokens}
+            activeTokenSymbol={symbol}
             onTokenSelect={handleTokenSelect}
             onClose={handlePopupClose}
           />
@@ -237,9 +276,9 @@ const OldStackedBalanceSection = ({
   tokenInfo,
   isStablecoin
 }: BalanceSectionProps) => {
-  const { icon: TokenIcon, symbol } = tokenInfo
+  const { symbol } = tokenInfo
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance) {
     return null
   }
 
@@ -263,7 +302,7 @@ const OldStackedBalanceSection = ({
             {messages.stackedBalance(formattedAvailableBalance)}
           </Text>
         </Flex>
-        <TokenIcon size='4xl' hex />
+        <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
       </Flex>
     </Flex>
   )
@@ -284,18 +323,13 @@ const CryptoAmountSection = ({
   noPadding?: boolean
   verticalLayout?: boolean
 }) => {
-  const { spacing } = useTheme()
-  const { icon: TokenIcon, symbol } = tokenInfo
+  const { symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
-
-  if (!TokenIcon) {
-    return null
-  }
 
   if (verticalLayout) {
     return (
       <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-        <TokenIcon width={spacing.unit16} height={spacing.unit16} hex />
+        <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {formattedAmount}
@@ -315,7 +349,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-      <TokenIcon width={spacing.unit16} height={spacing.unit16} hex />
+      <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
       <Flex direction='column'>
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <Text variant='heading' size='l'>
@@ -353,15 +387,17 @@ export const TokenAmountSection = ({
   tokenPriceDecimalPlaces = 2,
   tooltipPlacement,
   availableTokens,
-  onTokenChange
+  onTokenChange,
+  tab
 }: TokenAmountSectionProps & {
   availableTokens?: TokenInfo[]
   onTokenChange?: (symbol: string) => void
+  tab?: BuySellTab
 }) => {
   const { spacing } = useTheme()
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
-  const { icon: TokenIcon, symbol, isStablecoin } = tokenInfo
+  const { symbol, isStablecoin } = tokenInfo
 
   const { formattedAvailableBalance, formattedAmount } =
     useTokenAmountFormatting({
@@ -369,6 +405,7 @@ export const TokenAmountSection = ({
       availableBalance,
       exchangeRate,
       isStablecoin: !!isStablecoin,
+      decimals: tokenInfo.decimals,
       placeholder
     })
 
@@ -432,7 +469,7 @@ export const TokenAmountSection = ({
             tooltipPlacement={tooltipPlacement}
           />
         ) : isArtistCoinsEnabled ? (
-          <StackedBalanceSection
+          <DropdownSection
             formattedAvailableBalance={formattedAvailableBalance}
             tokenInfo={tokenInfo}
             isStablecoin={!!isStablecoin}
@@ -474,7 +511,7 @@ export const TokenAmountSection = ({
       return null
     }
 
-    if (isStablecoin) {
+    if (isStablecoin && !availableTokens) {
       return (
         <Text variant='display' size='s'>
           {messages.tokenPrice(formattedAmount, 2)}
@@ -491,21 +528,14 @@ export const TokenAmountSection = ({
     ) {
       return (
         <Flex p='l' alignItems='center' gap='s' justifyContent='space-between'>
-          <CryptoAmountSection
-            formattedAmount={formattedAmount}
-            tokenInfo={tokenInfo}
-            isStablecoin={!!isStablecoin}
-            priceDisplay={priceDisplay}
-            noPadding
-            verticalLayout
-          />
-          <StackedBalanceSection
+          <DropdownSection
             formattedAvailableBalance={formattedAvailableBalance}
             tokenInfo={tokenInfo}
             isStablecoin={!!isStablecoin}
             availableTokens={availableTokens}
             onTokenChange={onTokenChange}
-            isConvertFlow={true}
+            formattedReceiveAmount={formattedAmount}
+            showReceiveAmount
           />
         </Flex>
       )
@@ -532,10 +562,10 @@ export const TokenAmountSection = ({
   ])
 
   const titleText = useMemo(() => {
-    if (isStablecoin && !isInput && TokenIcon) {
+    if (isStablecoin && !isInput && !availableTokens) {
       return (
         <Flex alignItems='center' gap='s'>
-          <TokenIcon size='l' />
+          <TokenIcon tokenInfo={tokenInfo} size='l' />
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
@@ -548,7 +578,7 @@ export const TokenAmountSection = ({
     }
 
     // Add transaction icon for "You Receive" title in convert flow only
-    if (!isInput && title === messages.youReceive && !isDefault) {
+    if (!isInput && title === messages.youReceive && tab === 'convert') {
       return (
         <Flex alignItems='center' gap='s'>
           <IconTransaction size='s' color='subdued' />
@@ -564,7 +594,15 @@ export const TokenAmountSection = ({
         {title}
       </Text>
     )
-  }, [TokenIcon, isInput, isStablecoin, title, tooltipPlacement, isDefault])
+  }, [
+    isStablecoin,
+    isInput,
+    availableTokens,
+    title,
+    tab,
+    tokenInfo,
+    tooltipPlacement
+  ])
 
   return (
     <Flex direction='column' gap='m'>

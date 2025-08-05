@@ -24,13 +24,13 @@ const messages = {
 export const UpdateDiscordRoleModal = ({
   isOpen,
   onClose,
-  assetSymbol
+  mint
 }: {
   isOpen: boolean
   onClose: () => void
-  assetSymbol: string
+  mint: string
 }) => {
-  const { data: discordCode } = useDiscordCode(assetSymbol)
+  const { data: discordCode } = useDiscordCode(mint)
   const handleDiscordClick = () => {
     window.open(AUDIUS_DISCORD_LINK, '_blank')
   }

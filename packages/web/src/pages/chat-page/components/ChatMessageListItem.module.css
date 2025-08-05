@@ -48,14 +48,6 @@
   flex: 1 1;
 }
 
-.bubble .unfurl:not(:last-child) {
-  border-bottom: 1px solid var(--harmony-n-150);
-}
-
-.isAuthor .bubble .unfurl:not(:last-child) {
-  border-bottom: 1px solid var(--harmony-s-400);
-}
-
 .textWrapper {
   background-color: var(--bubble-color);
   padding: var(--harmony-unit-4);

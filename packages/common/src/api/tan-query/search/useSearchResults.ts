@@ -39,6 +39,14 @@ import { primeUserData } from '../utils/primeUserData'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
+export const labelByCategory: Record<SearchCategory, string> = {
+  all: 'All',
+  tracks: 'Tracks',
+  users: 'Profiles',
+  albums: 'Albums',
+  playlists: 'Playlists'
+}
+
 export type SearchFilters = {
   genre?: Genre
   mood?: Mood

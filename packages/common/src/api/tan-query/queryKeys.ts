@@ -29,7 +29,7 @@ export const QUERY_KEYS = {
   userTracksByHandle: 'userTracksByHandle',
   userPlaylists: 'userPlaylists',
   userAlbums: 'userAlbums',
-  bestSellingAlbums: 'bestSellingAlbums',
+  bestSellingItems: 'bestSellingItems',
   userCollectibles: 'userCollectibles',
   collection: 'collection',
   collections: 'collections',
@@ -107,8 +107,12 @@ export const QUERY_KEYS = {
   recentlyPlayedTracks: 'recentlyPlayedTracks',
   recentlyCommentedTracks: 'recentlyCommentedTracks',
   artistCoinMembers: 'artistCoinMembers',
-  artistCoins: 'artistCoins',
+  coins: 'coins',
   userCoins: 'userCoins',
   coin: 'coin',
-  discordCode: 'discordCode'
+  discordCode: 'discordCode',
+  coinInsights: 'coinInsights',
+  artistCoin: 'artistCoin',
+  artistCoinByMint: 'artistCoinByMint',
+  userCoin: 'userCoin'
 } as const

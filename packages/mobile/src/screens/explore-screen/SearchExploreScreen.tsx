@@ -15,8 +15,6 @@ import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
-import { RecentSearches } from '../search-screen/RecentSearches'
-import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
 import {
   SearchProvider,
@@ -38,7 +36,7 @@ const SearchExploreContent = () => {
   const { params } = useRoute<'Search'>()
 
   // Get state from context
-  const [category, setCategory] = useSearchCategory()
+  const [, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
   // Animation state
@@ -125,7 +123,7 @@ const SearchExploreContent = () => {
     }
   })
 
-  const showSearch = Boolean(category !== 'all' || query)
+  const showSearch = Boolean(query || hasAnyFilter)
   return (
     <ScreenContent>
       <SearchExploreHeader
@@ -133,11 +131,7 @@ const SearchExploreContent = () => {
         filterTranslateY={filterTranslateY}
         scrollRef={scrollRef}
       />
-      {showSearch && (query || hasAnyFilter) ? (
-        <SearchResults />
-      ) : showSearch ? (
-        <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-      ) : null}
+      {showSearch ? <SearchResults /> : null}
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}

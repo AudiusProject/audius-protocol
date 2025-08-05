@@ -3,14 +3,13 @@ import { useMemo } from 'react'
 import { QuoteResponse, SwapMode } from '@jup-ag/api'
 import { useQuery } from '@tanstack/react-query'
 
-import { JupiterTokenSymbol, getJupiterQuoteByMint } from '~/services/Jupiter'
-import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
+import { getJupiterQuoteByMint } from '~/services/Jupiter'
 
 import { QueryOptions, type QueryKey } from '../types'
 
 export type TokenExchangeRateParams = {
-  inputTokenSymbol: JupiterTokenSymbol
-  outputTokenSymbol: JupiterTokenSymbol
+  inputMint: string
+  outputMint: string
   inputAmount?: number
   swapMode?: SwapMode
 }
@@ -38,15 +37,15 @@ const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
 
 // Define exchange rate query key
 export const getTokenExchangeRateQueryKey = ({
-  inputTokenSymbol,
-  outputTokenSymbol,
+  inputMint,
+  outputMint,
   inputAmount,
   swapMode
 }: TokenExchangeRateParams) =>
   [
     'tokenExchangeRate',
-    inputTokenSymbol,
-    outputTokenSymbol,
+    inputMint,
+    outputMint,
     inputAmount ?? 1,
     swapMode ?? 'ExactIn'
   ] as unknown as QueryKey<TokenExchangeRateResponse>
@@ -79,27 +78,17 @@ export const useTokenExchangeRate = (
 
   return useQuery({
     queryKey: getTokenExchangeRateQueryKey({
-      inputTokenSymbol: params.inputTokenSymbol,
-      outputTokenSymbol: params.outputTokenSymbol,
+      inputMint: params.inputMint,
+      outputMint: params.outputMint,
       inputAmount: safeInputAmount,
       swapMode: params.swapMode
     }),
     queryFn: async () => {
       try {
-        // Get token mint addresses
-        const inputToken = TOKEN_LISTING_MAP[params.inputTokenSymbol]
-        const outputToken = TOKEN_LISTING_MAP[params.outputTokenSymbol]
-
-        if (!inputToken || !outputToken) {
-          throw new Error(
-            `Token not found: ${params.inputTokenSymbol} or ${params.outputTokenSymbol}`
-          )
-        }
-
-        // Get quote from Jupiter using the mint addresses
+        // Get quote from Jupiter using the mint addresses directly
         const quoteResult = await getJupiterQuoteByMint({
-          inputMint: inputToken.address,
-          outputMint: outputToken.address,
+          inputMint: params.inputMint,
+          outputMint: params.outputMint,
           amountUi: safeInputAmount,
           slippageBps: SLIPPAGE_BPS,
           swapMode: params.swapMode ?? 'ExactIn',
