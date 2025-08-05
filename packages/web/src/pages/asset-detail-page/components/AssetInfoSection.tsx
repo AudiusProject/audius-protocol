@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import { useDiscordCode } from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
 import { AUDIUS_DISCORD_LINK } from '@audius/common/src/utils/route'
 import {
@@ -9,23 +8,15 @@ import {
   Text,
   useTheme,
   PlainButton,
-  ModalContent,
-  Modal,
-  ModalTitle,
-  ModalHeader,
-  ModalFooter,
-  Button,
   IconDiscord,
   PopupMenu,
   PopupMenuItem,
   IconKebabHorizontal,
   IconButton,
-  IconRefresh,
-  ModalContentText
+  IconRefresh
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import ClickableAddress from 'components/rewards/ClickableAddress'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import {
@@ -40,15 +31,13 @@ import {
 import { ASSET_ROUTES, ASSET_INFO_SECTION_MESSAGES } from '../constants'
 import { AssetDetailProps } from '../types'
 
+import { UpdateDiscordRoleModal } from './UpdateDiscordRoleModal'
+
 const messages = {
   title: 'Bronze +',
   profileFlair: 'Profile Flair',
   customDiscordRole: 'Custom Discord Role',
   messageBlasts: 'Message Blasts',
-  copyThisCode: 'COPY THIS CODE',
-  discordDescription:
-    'To access the private token-holders only Discord channel and/or update your Discord role, copy & paste this code into a DM to the Audius VIP Discord Bot (@$AUDIO-BOT)',
-  launch: 'LAUNCH THE VIP DISCORD',
   openDiscord: 'Open The Discord',
   refreshDiscordRole: 'Refresh Discord Role'
 }
@@ -110,54 +99,6 @@ const BannerSection = ({ assetName }: AssetDetailProps) => {
         </Flex>
       </Flex>
     </Flex>
-  )
-}
-
-const UpdateDiscordRoleModal = ({
-  isOpen,
-  onClose,
-  assetSymbol
-}: {
-  isOpen: boolean
-  onClose: () => void
-  assetSymbol: string
-}) => {
-  const { data: discordCode } = useDiscordCode(assetSymbol)
-  const handleDiscordClick = () => {
-    window.open(AUDIUS_DISCORD_LINK, '_blank')
-  }
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalHeader onClose={onClose}>
-        <ModalTitle title='Update Discord Role' />
-      </ModalHeader>
-      <ModalContent>
-        <Flex direction='column' gap='2xl'>
-          {/* 600px max width just makes it look better; the text stretches the modal out otherwise */}
-          <ModalContentText css={{ maxWidth: '600px' }}>
-            {messages.discordDescription}
-          </ModalContentText>
-          {discordCode ? (
-            <ClickableAddress
-              label={messages.copyThisCode}
-              address={discordCode}
-              isCompact
-            />
-          ) : null}
-        </Flex>
-      </ModalContent>
-      <ModalFooter>
-        <Button
-          variant='primary'
-          css={(theme) => ({ margin: theme.spacing['2xl'] })}
-          onClick={handleDiscordClick}
-          iconLeft={IconDiscord}
-        >
-          {messages.launch}
-        </Button>
-      </ModalFooter>
-    </Modal>
   )
 }
 
