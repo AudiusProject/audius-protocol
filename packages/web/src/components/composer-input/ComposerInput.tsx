@@ -59,18 +59,12 @@ const ComposerText = ({
   )
 }
 
-const createTextSections = (
-  text: string,
-  lineIndex: number
-): [ReactNode[], number] => {
+const createTextSections = (text: string, lineIndex: number): ReactNode[] => {
   const splitText = splitOnNewline(text)
 
-  return [
-    splitText.map((t, index) => (
-      <ComposerText key={`${t}-${index + lineIndex}`}>{t}</ComposerText>
-    )),
-    splitText.length
-  ]
+  return splitText.map((t, index) => (
+    <ComposerText key={`${t}-${index + lineIndex}`}>{t}</ComposerText>
+  ))
 }
 
 export const ComposerInput = (props: ComposerInputProps) => {
@@ -406,8 +400,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // If there are no highlightable sections, render text normally
       if (!fullMatches.length && !isUserAutocompleteActive) {
-        const [textSections] = createTextSections(value, lineIndex)
-        return textSections
+        return createTextSections(value, lineIndex)
       }
 
       const renderedTextSections = []
@@ -450,12 +443,12 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
         // Add text before the match
         if (index > lastIndex) {
-          const [textSections, textSectionsLength] = createTextSections(
+          const textSections = createTextSections(
             value.slice(lastIndex, index),
             lineIndex
           )
           renderedTextSections.push(...textSections)
-          lineIndex += textSectionsLength
+          lineIndex += textSections.length
         }
 
         // Add the matched word with accent color
@@ -486,12 +479,12 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Add remaining text after the last match
       if (lastIndex < value.length) {
-        const [textSections, textSectionsLength] = createTextSections(
+        const textSections = createTextSections(
           value.slice(lastIndex),
           lineIndex
         )
         renderedTextSections.push(...textSections)
-        lineIndex += textSectionsLength
+        lineIndex += textSections.length
       }
 
       return renderedTextSections
