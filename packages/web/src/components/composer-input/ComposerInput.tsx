@@ -1,5 +1,6 @@
 import {
   ChangeEvent,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -48,7 +49,7 @@ const ESCAPE_KEY = 'Escape'
 const SPACE_KEY = ' '
 
 const ComposerText = ({
-  color,
+  color = 'default',
   children
 }: Pick<TextProps, 'color' | 'children'>) => {
   return (
@@ -61,14 +62,12 @@ const ComposerText = ({
 const createTextSections = (
   text: string,
   lineIndex: number
-): [JSX.Element[], number] => {
+): [ReactNode[], number] => {
   const splitText = splitOnNewline(text)
 
   return [
     splitText.map((t, index) => (
-      <ComposerText key={`${t}-${index + lineIndex}`} color='default'>
-        {t}
-      </ComposerText>
+      <ComposerText key={`${t}-${index + lineIndex}`}>{t}</ComposerText>
     )),
     splitText.length
   ]
