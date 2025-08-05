@@ -43,8 +43,8 @@ const AudioBreakdownBody = () => {
   )
 
   const linkedWalletsBalance = AUDIO(
-    balances.data?.reduce(
-      (acc, result) => AUDIO(acc + result.balance).value,
+    balances.reduce(
+      (acc, result) => AUDIO(acc + (result.data ?? BigInt(0))).value,
       AUDIO(0).value
     ) ?? 0
   ).value
