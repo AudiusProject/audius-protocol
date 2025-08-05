@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 
 import { buySellMessages } from '@audius/common/messages'
-import { TokenInfo, useTokenSwapForm } from '@audius/common/store'
+import { TokenInfo, useTokenSwapForm, BuySellTab } from '@audius/common/store'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import { Form, FormikProvider } from 'formik'
 
@@ -41,6 +41,7 @@ export type SwapTabProps = {
   outputBalance?: BalanceConfig
   inputIsDefault?: boolean
   outputIsDefault?: boolean
+  tab?: BuySellTab
 } & TokenPricing &
   UIConfiguration &
   InputConfiguration &
@@ -58,6 +59,7 @@ export const SwapTab = ({
   isDefault = true,
   inputIsDefault,
   outputIsDefault,
+  tab,
   error,
   errorMessage,
   tokenPrice,
@@ -69,8 +71,7 @@ export const SwapTab = ({
   availableInputTokens,
   availableOutputTokens,
   onInputTokenChange,
-  onOutputTokenChange,
-  showExchangeRate = true
+  onOutputTokenChange
 }: SwapTabProps) => {
   const {
     formik,
@@ -159,6 +160,7 @@ export const SwapTab = ({
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
                 tooltipPlacement={tooltipPlacement}
                 isDefault={outputSectionIsDefault}
+                tab={tab}
                 availableTokens={
                   !outputSectionIsDefault ? availableOutputTokens : undefined
                 }
@@ -168,22 +170,20 @@ export const SwapTab = ({
               />
 
               {/* Show exchange rate for convert flow */}
-              {showExchangeRate &&
-                currentExchangeRate &&
-                displayExchangeRate && (
-                  <Flex p='l' justifyContent='flex-start'>
-                    <Text variant='body' size='s' color='subdued'>
-                      {messages.exchangeRateLabel}&nbsp;
-                    </Text>
-                    <Text variant='body' size='s' color='default'>
-                      {messages.exchangeRateValue(
-                        inputToken.symbol,
-                        outputToken.symbol,
-                        displayExchangeRate
-                      )}
-                    </Text>
-                  </Flex>
-                )}
+              {displayExchangeRate ? (
+                <Flex p='l' justifyContent='flex-start'>
+                  <Text variant='body' size='s' color='subdued'>
+                    {messages.exchangeRateLabel}&nbsp;
+                  </Text>
+                  <Text variant='body' size='s' color='default'>
+                    {messages.exchangeRateValue(
+                      inputToken.symbol,
+                      outputToken.symbol,
+                      displayExchangeRate
+                    )}
+                  </Text>
+                </Flex>
+              ) : null}
             </>
           )}
         </Flex>

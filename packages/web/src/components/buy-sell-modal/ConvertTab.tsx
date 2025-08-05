@@ -1,27 +1,8 @@
 import { useMemo, useCallback } from 'react'
 
-import { TokenInfo, TokenPair } from '@audius/common/store'
-
 import { SwapTab } from './SwapTab'
 import { useTokenBalanceManager } from './hooks/useTokenBalanceManager'
-
-type ConvertTabProps = {
-  tokenPair: TokenPair
-  onTransactionDataChange?: (data: {
-    inputAmount: number
-    outputAmount: number
-    isValid: boolean
-    error: string | null
-    isInsufficientBalance: boolean
-  }) => void
-  error?: boolean
-  errorMessage?: string
-  initialInputValue?: string
-  onInputValueChange?: (value: string) => void
-  availableTokens?: TokenInfo[]
-  onInputTokenChange?: (symbol: string) => void
-  onOutputTokenChange?: (symbol: string) => void
-}
+import type { ConvertTabProps } from './types'
 
 export const ConvertTab = ({
   tokenPair,
@@ -43,30 +24,29 @@ export const ConvertTab = ({
     quoteToken
   )
 
-  // Filter available tokens to prevent same token selection and exclude USDC
+  // Filter available tokens to prevent same token selection
   const availableInputTokens = useMemo(() => {
     return availableTokens?.filter(
-      (token) => token.symbol !== baseToken.symbol && token.symbol !== 'USDC'
+      (token) =>
+        token.symbol !== baseToken.symbol && token.symbol !== quoteToken.symbol
     )
-  }, [availableTokens, baseToken.symbol])
+  }, [availableTokens, baseToken.symbol, quoteToken.symbol])
 
   const availableOutputTokens = useMemo(() => {
     return availableTokens?.filter(
-      (token) => token.symbol !== quoteToken.symbol && token.symbol !== 'USDC'
+      (token) =>
+        token.symbol !== quoteToken.symbol && token.symbol !== baseToken.symbol
     )
-  }, [availableTokens, quoteToken.symbol])
+  }, [availableTokens, quoteToken.symbol, baseToken.symbol])
 
   // Enhanced token change handlers for automatic swapping when only 2 tokens available
   const handleInputTokenChange = useCallback(
     (symbol: string) => {
       onInputTokenChange?.(symbol)
 
-      // If there are only 2 available tokens (excluding USDC), automatically set the other as output
-      const nonUSDCTokens = availableTokens?.filter(
-        (token) => token.symbol !== 'USDC'
-      )
-      if (nonUSDCTokens?.length === 2) {
-        const otherToken = nonUSDCTokens.find(
+      // If there are only 2 available tokens, automatically set the other as output
+      if (availableTokens?.length === 2) {
+        const otherToken = availableTokens.find(
           (token) => token.symbol !== symbol
         )
         if (otherToken) {
@@ -81,12 +61,9 @@ export const ConvertTab = ({
     (symbol: string) => {
       onOutputTokenChange?.(symbol)
 
-      // If there are only 2 available tokens (excluding USDC), automatically set the other as input
-      const nonUSDCTokens = availableTokens?.filter(
-        (token) => token.symbol !== 'USDC'
-      )
-      if (nonUSDCTokens?.length === 2) {
-        const otherToken = nonUSDCTokens.find(
+      // If there are only 2 available tokens, automatically set the other as input
+      if (availableTokens?.length === 2) {
+        const otherToken = availableTokens.find(
           (token) => token.symbol !== symbol
         )
         if (otherToken) {
@@ -105,6 +82,7 @@ export const ConvertTab = ({
       outputBalance={outputBalance}
       onTransactionDataChange={onTransactionDataChange}
       isDefault={false}
+      tab='convert'
       error={error}
       errorMessage={errorMessage}
       tooltipPlacement='right'
@@ -114,7 +92,6 @@ export const ConvertTab = ({
       availableOutputTokens={availableOutputTokens}
       onInputTokenChange={handleInputTokenChange}
       onOutputTokenChange={handleOutputTokenChange}
-      showExchangeRate
     />
   )
 }

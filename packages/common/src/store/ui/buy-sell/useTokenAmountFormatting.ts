@@ -10,7 +10,7 @@ export type UseTokenAmountFormattingProps = {
   availableBalance?: number | null
   exchangeRate?: number | null
   isStablecoin: boolean
-  decimals?: number
+  decimals: number
   placeholder?: string
 }
 
@@ -57,9 +57,10 @@ export const useTokenAmountFormatting = ({
 
     const tokenAmount = new FixedDecimal(availableBalance, decimals)
     const displayDecimals = getTokenDecimalPlaces(availableBalance)
+    const maxFractionDigits = Math.min(displayDecimals, decimals)
 
     return tokenAmount.toLocaleString('en-US', {
-      maximumFractionDigits: displayDecimals
+      maximumFractionDigits: maxFractionDigits
     })
   }, [availableBalance, isStablecoin, decimals])
 
@@ -76,9 +77,10 @@ export const useTokenAmountFormatting = ({
 
     const tokenAmount = new FixedDecimal(safeNumericAmount, decimals)
     const displayDecimals = getTokenDecimalPlaces(safeNumericAmount)
+    const maxFractionDigits = Math.min(displayDecimals, decimals)
 
     return tokenAmount.toLocaleString('en-US', {
-      maximumFractionDigits: displayDecimals
+      maximumFractionDigits: maxFractionDigits
     })
   }, [amount, placeholder, isStablecoin, decimals])
 

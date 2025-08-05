@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
-import { encodeHashId } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -11,7 +10,7 @@ import { Status } from '~/models/Status'
 import { isNullOrUndefined } from '~/utils'
 import { isResponseError } from '~/utils/error'
 
-import { useArtistCoin } from '../coins/useArtistCoin'
+import { useUserCoin } from '../coins/useUserCoin'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
@@ -58,9 +57,7 @@ export const useTokenBalance = ({
   const ethAddress = user?.wallet ?? null
   const queryClient = useQueryClient()
   const isUsdc = mint === env.USDC_MINT_ADDRESS
-
-  // Get coin metadata for decimals (only for non-USDC tokens)
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: userCoin } = useUserCoin({ mint })
 
   // Use specialized USDC hook when dealing with USDC
   const usdcResult = useUSDCBalance({
@@ -85,26 +82,14 @@ export const useTokenBalance = ({
           mint: new PublicKey(mint)
         })
 
-        const encodedUserId = encodeHashId(user.user_id)
-        if (!encodedUserId) {
-          console.warn('Failed to encode user ID')
-          return null
-        }
-
-        const response = await sdk.users.getUserCoin({
-          id: encodedUserId,
-          mint
-        })
-
-        // TODO: [PE-6571] Update to use totalBalance once it's available in the API
-        const balance = response?.data?.accounts[0]?.balance
+        const balance = userCoin?.balance
 
         if (isNullOrUndefined(balance)) {
           return null
         }
 
         // Ensure we have valid decimals from coin metadata
-        const decimals = coin?.decimals
+        const decimals = userCoin?.decimals
         if (isNullOrUndefined(decimals)) {
           console.warn(`Missing decimals for token ${mint}`)
           return null
@@ -119,7 +104,7 @@ export const useTokenBalance = ({
         // Handle specific 404 "no rows in result set" case
         // This typically means the user has no balance for this token
         if (isNoBalanceError(e)) {
-          const decimals = coin?.decimals
+          const decimals = userCoin?.decimals
           if (isNullOrUndefined(decimals)) {
             console.warn(`Missing decimals for token ${mint} in error handling`)
             return null
@@ -138,7 +123,11 @@ export const useTokenBalance = ({
       }
     },
     enabled:
-      !isUsdc && !!ethAddress && !!mint && !!user?.user_id && !!coin?.decimals,
+      !isUsdc &&
+      !!ethAddress &&
+      !!mint &&
+      !!user?.user_id &&
+      !!userCoin?.decimals,
     // TanStack Query's built-in polling - only poll when isPolling is true
     refetchInterval: isPolling ? pollingInterval : false,
     // Prevent refetching when window regains focus during polling to avoid conflicts

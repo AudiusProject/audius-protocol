@@ -1,28 +1,11 @@
 import { useMemo } from 'react'
 
 import { useTokenPrice } from '@audius/common/api'
-import { TokenPair, TokenInfo } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
 import { SwapTab } from './SwapTab'
 import { useTokenBalanceManager } from './hooks/useTokenBalanceManager'
-
-type BuyTabProps = {
-  tokenPair: TokenPair
-  onTransactionDataChange?: (data: {
-    inputAmount: number
-    outputAmount: number
-    isValid: boolean
-    error: string | null
-    isInsufficientBalance: boolean
-  }) => void
-  error?: boolean
-  errorMessage?: string
-  initialInputValue?: string
-  onInputValueChange?: (value: string) => void
-  availableOutputTokens?: TokenInfo[]
-  onOutputTokenChange?: (symbol: string) => void
-}
+import type { BuyTabProps } from './types'
 
 export const BuyTab = ({
   tokenPair,

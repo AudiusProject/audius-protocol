@@ -1,22 +1,30 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey, SelectableQueryOptions } from '../types'
 import { useQueryContext } from '../utils'
 
 export interface UseArtistCoinInsightsParams {
   mint: string
 }
 
-export const useArtistCoinInsights = (params: UseArtistCoinInsightsParams) => {
+export const getArtistCoinInsightsQueryKey = (mint: string) =>
+  [QUERY_KEYS.coinInsights, mint] as unknown as QueryKey<any>
+
+export const useArtistCoinInsights = <TResult = any>(
+  params: UseArtistCoinInsightsParams,
+  options?: SelectableQueryOptions<any, TResult>
+) => {
   const { audiusSdk } = useQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.coinInsights, params.mint],
+    queryKey: getArtistCoinInsightsQueryKey(params.mint),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const response = await sdk.coins.getCoinInsights({ mint: params.mint })
       return response.data
     },
-    enabled: !!params.mint
+    enabled: options?.enabled !== false && !!params.mint,
+    ...options
   })
 }

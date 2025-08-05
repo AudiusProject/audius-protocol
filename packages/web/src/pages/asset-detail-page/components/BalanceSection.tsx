@@ -1,4 +1,4 @@
-import { useArtistCoinInsights, useTokenBalance } from '@audius/common/api'
+import { useArtistCoins, useTokenBalance } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -6,7 +6,7 @@ import {
   useAddCashModal,
   useBuySellModal
 } from '@audius/common/store'
-import { Button, Flex, Paper, Text, useTheme, Artwork } from '@audius/harmony'
+import { Artwork, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -144,10 +144,12 @@ const HasBalanceState = ({
 }
 
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
-  const { data: coinInsights, isPending: coinsLoading } = useArtistCoinInsights(
-    { mint }
-  )
+  const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
+    mint: [mint]
+  })
   const { data: tokenBalance } = useTokenBalance({ mint })
+
+  const coin = coinInsights?.[0]
 
   // Modal hooks
   const { onOpen: openBuySellModal } = useBuySellModal()
@@ -157,16 +159,16 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  if (coinsLoading || !coinInsights) {
+  if (coinsLoading || !coin) {
     return <BalanceSectionSkeleton />
   }
 
-  if (!coinInsights.logoURI) {
+  if (!coin.logoUri) {
     return null
   }
 
-  const title = coinInsights.symbol ?? ''
-  const logoURI = coinInsights.logoURI
+  const title = coin.ticker ?? ''
+  const logoURI = coin.logoUri
 
   // Action destructuring
   const { pressReceive, pressSend } = tokenDashboardPageActions

@@ -26,7 +26,7 @@ export const useTokenStates = (selectedPair: TokenPair | null) => {
     quoteToken: string
   }>({
     baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'BONK' // BONK by default for convert tab (excluding USDC)
+    quoteToken: 'USDC' // USDC by default for convert tab
   })
 
   // Update token states when selected pair becomes available
@@ -42,7 +42,7 @@ export const useTokenStates = (selectedPair: TokenPair | null) => {
       })
       setConvertTabTokens((prev) => ({
         baseToken: selectedPair.baseToken.symbol,
-        quoteToken: prev.quoteToken // Keep BONK for convert tab
+        quoteToken: prev.quoteToken // Keep USDC for convert tab
       }))
     }
   }, [selectedPair])

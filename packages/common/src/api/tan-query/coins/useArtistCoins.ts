@@ -5,6 +5,7 @@ import { ID } from '~/models'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { QueryKey, SelectableQueryOptions } from '../types'
 import { useQueryContext } from '../utils/QueryContext'
 
 export type UseArtistCoinsParams = {
@@ -14,11 +15,17 @@ export type UseArtistCoinsParams = {
   offset?: number
 }
 
-export const useArtistCoins = (params: UseArtistCoinsParams = {}) => {
+export const getArtistCoinsQueryKey = (params: UseArtistCoinsParams) =>
+  [QUERY_KEYS.coins, 'list', params] as unknown as QueryKey<any>
+
+export const useArtistCoins = <TResult = any>(
+  params: UseArtistCoinsParams = {},
+  options?: SelectableQueryOptions<any, TResult>
+) => {
   const { audiusSdk } = useQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.coins, 'list', params],
+    queryKey: getArtistCoinsQueryKey(params),
     queryFn: async () => {
       const sdk = await audiusSdk()
 
@@ -35,6 +42,8 @@ export const useArtistCoins = (params: UseArtistCoinsParams = {}) => {
       })
 
       return response?.data
-    }
+    },
+    enabled: options?.enabled !== false,
+    ...options
   })
 }
