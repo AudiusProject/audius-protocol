@@ -5,15 +5,18 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 
 import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTile'
+import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ExploreSection } from './ExploreSection'
 
-export const UndergroundTrendingTracks = () => {
+export const UndergroundTrendingTracksSection = () => {
+  const isMobile = useIsMobile()
   const {
     data: undergroundTrendingTracks,
     isLoading: hookIsLoading,
     lineup
-  } = useTrendingUnderground()
+  } = useTrendingUnderground({ pageSize: 10 })
 
   const isLoading = hookIsLoading || lineup.status === Status.LOADING
 
@@ -30,7 +33,8 @@ export const UndergroundTrendingTracks = () => {
       isLoading={isLoading}
       title={messages.undergroundTrending}
       data={trackIds}
-      Tile={DesktopTrackTile}
+      Tile={isMobile ? MobileTrackTile : DesktopTrackTile}
+      viewAllLink='/explore/underground'
     />
   )
 }

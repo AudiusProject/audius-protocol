@@ -123,7 +123,7 @@ const CollectionLineupCarousel = ({
   )
 }
 
-export const TrendingPlaylists = () => {
+export const TrendingPlaylistsSection = () => {
   const isMobile = useIsMobile()
   const size = isMobile ? TrackTileSize.SMALL : TrackTileSize.LARGE
   const {
@@ -141,7 +141,10 @@ export const TrendingPlaylists = () => {
   }
 
   return (
-    <Carousel title={messages.trendingPlaylists}>
+    <Carousel
+      title={messages.trendingPlaylists}
+      viewAllLink='/explore/playlists'
+    >
       {isLoading ? (
         <>
           <CollectionTileSkeleton size={size} Tile={Tile} />

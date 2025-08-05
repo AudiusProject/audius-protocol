@@ -16,7 +16,7 @@ import { Grant } from './Grant'
 import { Timestamped } from './Timestamped'
 import { UserEvent } from './UserEvent'
 
-export type SocialPlatform = 'twitter' | 'instagram' | 'tiktok'
+export type SocialPlatform = 'x' | 'instagram' | 'tiktok'
 
 export type UserMetadata = {
   album_count: number

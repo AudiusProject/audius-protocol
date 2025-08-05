@@ -4,6 +4,7 @@ import type {
   SearchFilter,
   SearchCategory as SearchCategoryType
 } from '@audius/common/api'
+import { labelByCategory } from '@audius/common/api'
 import { useFocusEffect } from '@react-navigation/native'
 import { ScrollView } from 'react-native'
 import type { SharedValue } from 'react-native-reanimated'
@@ -38,13 +39,6 @@ const SearchCategory = (props: SearchCategoryProps) => {
   const [currentCategory, setCategory] = useSearchCategory()
   const [, setFilters] = useSearchFilters()
   const isSelected = currentCategory === category
-
-  const labelByCategory = {
-    tracks: 'Tracks',
-    users: 'Profiles',
-    albums: 'Albums',
-    playlists: 'Playlists'
-  }
 
   if (currentCategory !== 'all' && !isSelected) return null
 

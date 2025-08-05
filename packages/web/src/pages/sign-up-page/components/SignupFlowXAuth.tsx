@@ -5,31 +5,31 @@ import { SocialPlatform } from '@audius/common/models'
 import { TwitterProfile } from '@audius/common/store'
 import { SerializedStyles } from '@emotion/react'
 
-import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
+import { XAuthButton } from 'components/x-auth/XAuthButton'
 
 import { useSetProfileFromTwitter } from '../hooks/socialMediaLogin'
 
-type SignupFlowTwitterAuthProps = PropsWithChildren<{
+type SignupFlowXAuthProps = PropsWithChildren<{
   onFailure: (e: Error) => void
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
-    platform: 'twitter'
+    platform: 'x'
   }) => void
   onStart: (platform: SocialPlatform) => void
   css?: SerializedStyles
 }>
 
-export const SignupFlowTwitterAuth = ({
+export const SignupFlowXAuth = ({
   onFailure,
   onSuccess,
   onStart,
   css
-}: SignupFlowTwitterAuthProps) => {
+}: SignupFlowXAuthProps) => {
   const setProfileFromTwitter = useSetProfileFromTwitter()
 
   const handleStart = () => {
-    onStart('twitter')
+    onStart('x')
   }
 
   const handleTwitterLogin = async (params: {
@@ -46,19 +46,19 @@ export const SignupFlowTwitterAuth = ({
     onSuccess({
       requiresReview: res.requiresReview,
       handle: res.handle,
-      platform: 'twitter'
+      platform: 'x'
     })
   }
 
   return (
-    <TwitterAuthButton
+    <XAuthButton
       forceLogin
       onClick={handleStart}
       onFailure={onFailure}
       onSuccess={(uuid, profile) =>
         handleTwitterLogin({ uuid, twitterProfile: profile })
       }
-      aria-label={socialMediaMessages.signUpTwitter}
+      aria-label={socialMediaMessages.signUpX}
       css={{ flex: 1, width: '100%', padding: 0 }}
     />
   )

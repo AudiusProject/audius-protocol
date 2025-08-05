@@ -5,7 +5,8 @@ import { SharedData } from './config'
 import {
   getChallengesDisbursementsUserbanksFriendlyEnsureSlots,
   getTrendingChallenges,
-  getTrendingChallengesByDate
+  getTrendingChallengesByDate,
+  getCompletedBlockNumberFromDaysAgo
 } from './queries'
 import { WebClient } from '@slack/web-api'
 import { formatDisbursementTable } from './slack'
@@ -69,7 +70,12 @@ export const onDisburse = async (
     specifier = challenge.specifier
     completedBlock = challenge.completed_blocknumber! - 1
   }
-  console.log('completed blockNumber = ', completedBlock, 'specifier = ', specifier)
+  console.log(
+    'completed blockNumber = ',
+    completedBlock,
+    'specifier = ',
+    specifier
+  )
 
   let endpointRetries = 10
   while (endpointRetries > 0) {
@@ -81,14 +87,15 @@ export const onDisburse = async (
     console.log('endpoint = ', endpoint)
     const toDisburse: Challenge[] = []
     for (const challengeId of TRENDING_REWARD_IDS) {
-      // Get all undisbursed challenges for the given challenge id starting from a known point where
-      // completion is consistent
-      const url = `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=99980800`
+      let completedBlocknumber = await getCompletedBlockNumberFromDaysAgo(db, 6)
+      if (completedBlocknumber === null) {
+        console.error('Could not find a completed block number')
+        completedBlocknumber = 0
+      }
+      const url = `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=${completedBlocknumber}`
       console.log('fetching undisbursed challenges from url = ', url)
       // Fetch all undisbursed challenges
-      const res = await axios.get(
-        url
-      )
+      const res = await axios.get(url)
       toDisburse.push(...res.data.data)
     }
 
@@ -104,7 +111,14 @@ export const onDisburse = async (
       while (attestationRetries > 0) {
         try {
           if (!dryRun) {
-            console.log('Claiming reward for challengeId = ', challengeId, 'specifier = ', challenge.specifier, 'amount = ', challenge.amount)
+            console.log(
+              'Claiming reward for challengeId = ',
+              challengeId,
+              'specifier = ',
+              challenge.specifier,
+              'amount = ',
+              challenge.amount
+            )
             res = await sdk.challenges.claimReward({
               challengeId,
               userId: challenge.user_id,

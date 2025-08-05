@@ -1,17 +1,48 @@
+import { useCallback } from 'react'
+
 import { exploreMessages as messages } from '@audius/common/messages'
 import { Flex, Paper, Text, useTheme } from '@audius/harmony'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { Mood } from '@audius/sdk'
 
+import { useIsMobile } from 'hooks/useIsMobile'
+import { useSearchCategory } from 'pages/search-page/hooks'
 import { MOODS } from 'pages/search-page/moods'
+import { labelByCategoryView } from 'pages/search-page/types'
 
 export const MoodGrid = () => {
-  const navigate = useNavigate()
+  const [category, setCategory] = useSearchCategory()
   const { color } = useTheme()
 
+  const isMobile = useIsMobile()
+
+  const handleMoodPress = useCallback(
+    (mood: Mood) => {
+      setCategory(category, { mood })
+    },
+    [category, setCategory]
+  )
+
   return (
-    <Flex direction='column' gap='l' alignItems='center'>
-      <Text variant='heading'>{messages.exploreByMood}</Text>
-      <Flex gap='s' justifyContent='center' alignItems='flex-start' wrap='wrap'>
+    <Flex
+      direction='column'
+      mh='l'
+      gap={isMobile ? 'l' : 'xl'}
+      alignItems='center'
+    >
+      <Text
+        variant={isMobile ? 'title' : 'heading'}
+        size={isMobile ? 'l' : 'm'}
+      >
+        {messages.exploreByMood(
+          category === 'all' ? undefined : labelByCategoryView[category]
+        )}
+      </Text>
+      <Flex
+        gap={isMobile ? 'm' : 's'}
+        justifyContent='center'
+        alignItems='flex-start'
+        wrap='wrap'
+      >
         {Object.entries(MOODS)
           .sort()
           .map(([mood, moodInfo]) => (
@@ -23,9 +54,7 @@ export const MoodGrid = () => {
               borderRadius='m'
               border='default'
               backgroundColor='white'
-              onClick={() => {
-                navigate(`/search/tracks?mood=${mood}`)
-              }}
+              onClick={() => handleMoodPress(moodInfo.value)}
               css={{
                 ':hover': {
                   background: color.neutral.n25,

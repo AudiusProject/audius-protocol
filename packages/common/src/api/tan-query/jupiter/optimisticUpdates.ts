@@ -1,53 +1,12 @@
-import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { QueryClient } from '@tanstack/react-query'
 
 import { Chain } from '~/models'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 
-import { getWalletAudioBalanceQueryKey } from '../wallets/useAudioBalance'
+import { optimisticallyUpdateWalletAudioBalance } from '../wallets/useAudioBalance'
 
 import { SwapTokensParams } from './types'
-
-/**
- * Updates the wAUDIO balance for a Solana wallet in the cache.
- */
-const updateSolanaWAudioBalance = ({
-  queryClient,
-  walletAddress,
-  uiAmount,
-  isInput
-}: {
-  queryClient: QueryClient
-  walletAddress: string
-  uiAmount: number
-  isInput: boolean
-}) => {
-  queryClient.setQueryData(
-    getWalletAudioBalanceQueryKey({
-      address: walletAddress,
-      chain: Chain.Sol,
-      includeStaked: true
-    }),
-    (oldBalance: AudioWei | undefined): AudioWei | undefined => {
-      const changeAmountWei = AUDIO(wAUDIO(uiAmount)).value
-      const oldBalanceWei = oldBalance ?? AUDIO(0).value
-
-      let newBalanceWei: AudioWei
-      if (isInput) {
-        // Decreasing balance
-        if (oldBalanceWei > changeAmountWei) {
-          newBalanceWei = (oldBalanceWei - changeAmountWei) as AudioWei
-        } else {
-          newBalanceWei = AUDIO(0).value
-        }
-      } else {
-        // Increasing balance
-        newBalanceWei = (oldBalanceWei + changeAmountWei) as AudioWei
-      }
-      return newBalanceWei
-    }
-  )
-}
 
 /**
  * Updates the wAUDIO balance in the cache optimistically based on Jupiter swap parameters.
@@ -87,18 +46,18 @@ export const updateAudioBalanceOptimistically = (
   }
 
   if (isInputWAudio) {
-    updateSolanaWAudioBalance({
+    optimisticallyUpdateWalletAudioBalance(
       queryClient,
-      walletAddress: solWalletAddress,
-      uiAmount: inputAmountUi,
-      isInput: true
-    })
+      solWalletAddress,
+      Chain.Sol,
+      AUDIO(wAUDIO(0 - inputAmountUi)).value
+    )
   } else if (isOutputWAudio && estimatedOutputAmount !== undefined) {
-    updateSolanaWAudioBalance({
+    optimisticallyUpdateWalletAudioBalance(
       queryClient,
-      walletAddress: solWalletAddress,
-      uiAmount: estimatedOutputAmount,
-      isInput: false
-    })
+      solWalletAddress,
+      Chain.Sol,
+      AUDIO(wAUDIO(estimatedOutputAmount)).value
+    )
   }
 }

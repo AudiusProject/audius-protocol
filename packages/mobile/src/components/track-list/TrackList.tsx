@@ -2,8 +2,9 @@ import type { ReactElement } from 'react'
 import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import type { ID, UID } from '@audius/common/models'
-import type { FlatListProps } from 'react-native'
-import { FlatList, View } from 'react-native'
+import type { FlashListProps } from '@shopify/flash-list'
+import { FlashList } from '@shopify/flash-list'
+import { View } from 'react-native'
 import type {
   DragEndParams,
   DraggableFlatListProps
@@ -22,23 +23,33 @@ type LoadingItem = {
   _loading: true
 }
 
-type TrackListProps = {
+type BaseTrackListProps = {
   hideArt?: boolean
   // Accept ids as well as uids because some use cases don't have uids available
   // For example the EditPlaylist track list
   ids?: ID[]
   contextPlaylistId?: ID
-  isReorderable?: boolean
   isAlbumPage?: boolean
   onRemove?: (index: number) => void
-  onReorder?: DraggableFlatListProps<UID | ID>['onDragEnd']
   showSkeleton?: boolean
   hasNextPage?: boolean
   pageSize?: number
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
   uids?: UID[]
-} & Partial<FlatListProps<UID | ID | LoadingItem>>
+}
+
+type TrackListProps = BaseTrackListProps &
+  (
+    | ({
+        isReorderable: true
+        onReorder?: DraggableFlatListProps<UID | ID>['onDragEnd']
+      } & Partial<DraggableFlatListProps<UID | ID | LoadingItem>>)
+    | ({
+        isReorderable?: false
+        onReorder?: never
+      } & Partial<FlashListProps<UID | ID | LoadingItem>>)
+  )
 
 const noOp = () => {}
 const keyExtractor = (item: string | number | LoadingItem) => {
@@ -56,22 +67,23 @@ const DEFAULT_INITIAL_SKELETON_COUNT = 8
  * If isReorderable === true, make sure the TrackList is not nested in a ScrollView,
  * otherwise certain features like auto scroll while dragging will not work
  */
-export const TrackList = ({
-  contextPlaylistId,
-  hideArt,
-  ids,
-  isReorderable,
-  isAlbumPage = false,
-  onRemove,
-  onReorder,
-  showSkeleton,
-  hasNextPage,
-  pageSize = DEFAULT_PAGE_SIZE,
-  togglePlay,
-  trackItemAction,
-  uids,
-  ...otherProps
-}: TrackListProps) => {
+export const TrackList = (props: TrackListProps) => {
+  const {
+    contextPlaylistId,
+    hideArt,
+    ids,
+    isReorderable,
+    isAlbumPage = false,
+    onRemove,
+    onReorder,
+    showSkeleton,
+    hasNextPage,
+    pageSize = DEFAULT_PAGE_SIZE,
+    togglePlay,
+    trackItemAction,
+    uids,
+    ...otherProps
+  } = props
   const data = useMemo(() => {
     const baseData = uids ?? ids ?? []
     if (hasNextPage) {
@@ -128,7 +140,7 @@ export const TrackList = ({
     ]
   )
 
-  const renderTrack: FlatListProps<UID | ID | LoadingItem>['renderItem'] =
+  const renderTrack: FlashListProps<UID | ID | LoadingItem>['renderItem'] =
     useCallback(
       ({ item, index }) =>
         renderDraggableTrack({
@@ -155,20 +167,23 @@ export const TrackList = ({
 
   if (showSkeleton)
     return (
-      <FlatList
-        {...otherProps}
+      <FlashList
+        {...(otherProps as Partial<FlashListProps<UID | ID | LoadingItem>>)}
         data={
           data.length > 0
             ? data
             : new Array(DEFAULT_INITIAL_SKELETON_COUNT).fill({ _loading: true })
         }
         renderItem={renderSkeletonTrack}
+        estimatedItemSize={60}
       />
     )
 
   return isReorderable ? (
     <DraggableFlatList
-      {...otherProps}
+      {...(otherProps as Partial<
+        DraggableFlatListProps<UID | ID | LoadingItem>
+      >)}
       autoscrollThreshold={200}
       activationDistance={scrollEnable ? 100 : 1}
       data={data}
@@ -180,11 +195,12 @@ export const TrackList = ({
       renderPlaceholder={() => <View />}
     />
   ) : (
-    <FlatList
-      {...otherProps}
+    <FlashList
+      {...(otherProps as Partial<FlashListProps<UID | ID | LoadingItem>>)}
       data={data}
       keyExtractor={keyExtractor}
       renderItem={renderTrack}
+      estimatedItemSize={60}
     />
   )
 }
