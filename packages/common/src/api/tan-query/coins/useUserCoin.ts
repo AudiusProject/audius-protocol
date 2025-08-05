@@ -21,7 +21,7 @@ export const useUserCoin = <TResult = any>(
   params: UseUserCoinParams,
   options?: SelectableQueryOptions<any, TResult>
 ) => {
-  const { audiusSdk } = useQueryContext()
+  const { audiusSdk, env } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
 
   return useQuery({
@@ -45,7 +45,11 @@ export const useUserCoin = <TResult = any>(
 
       return response.data
     },
-    enabled: options?.enabled !== false && !!params.mint && !!user?.user_id,
+    enabled:
+      options?.enabled !== false &&
+      !!params.mint &&
+      !!user?.user_id &&
+      params.mint !== env.USDC_MINT_ADDRESS,
     ...options
   })
 }
