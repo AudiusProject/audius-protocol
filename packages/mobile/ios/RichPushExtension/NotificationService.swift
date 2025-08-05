@@ -17,10 +17,10 @@ class NotificationService: UNNotificationServiceExtension {
             return
         }
 
-        // Look for a media URL in the push payload using the new 'media-url' field
+        // Look for media-url in userInfo
         if let mediaURLString = bestAttemptContent.userInfo["media-url"] as? String,
            let mediaURL = URL(string: mediaURLString) {
-            downloadImage(from: mediaURL) { attachment in
+            downloadAndAttachImage(from: mediaURL) { attachment in
                 if let attachment = attachment {
                     bestAttemptContent.attachments = [attachment]
                 }
@@ -32,35 +32,30 @@ class NotificationService: UNNotificationServiceExtension {
     }
 
     override func serviceExtensionTimeWillExpire() {
+        // Called just before the extension will be terminated by the system.
         if let contentHandler = contentHandler, let bestAttemptContent = bestAttemptContent {
             contentHandler(bestAttemptContent)
         }
     }
 
-    private func downloadImage(from url: URL, completion: @escaping (UNNotificationAttachment?) -> Void) {
-        let task = URLSession.shared.downloadTask(with: url) { tempURL, response, error in
-            guard let tempURL = tempURL else {
-                print("Failed to download image: \(error?.localizedDescription ?? "Unknown error")")
+    private func downloadAndAttachImage(from url: URL, completion: @escaping (UNNotificationAttachment?) -> Void) {
+        let task = URLSession.shared.downloadTask(with: url) { (downloadedUrl, response, error) in
+            guard let downloadedUrl = downloadedUrl else {
+                print("Failed to download image: \(error?.localizedDescription ?? "No error info")")
                 completion(nil)
                 return
             }
 
-            let fileManager = FileManager.default
-            let fileExtension = url.pathExtension.isEmpty ? "jpg" : url.pathExtension
-            let tmpDir = URL(fileURLWithPath: NSTemporaryDirectory())
-            let localURL = tmpDir.appendingPathComponent("rich-notification-image.\(fileExtension)")
-
             do {
-                // Remove existing file if it exists
-                if fileManager.fileExists(atPath: localURL.path) {
-                    try fileManager.removeItem(at: localURL)
-                }
-                
-                try fileManager.moveItem(at: tempURL, to: localURL)
-                let attachment = try UNNotificationAttachment(identifier: "rich-media", url: localURL)
+                let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
+                let uniqueFilename = ProcessInfo.processInfo.globallyUniqueString + ".jpg"
+                let localUrl = tempDirectory.appendingPathComponent(uniqueFilename)
+                try FileManager.default.moveItem(at: downloadedUrl, to: localUrl)
+
+                let attachment = try UNNotificationAttachment(identifier: "media", url: localUrl, options: nil)
                 completion(attachment)
             } catch {
-                print("Failed to create notification attachment: \(error.localizedDescription)")
+                print("Failed to create attachment: \(error)")
                 completion(nil)
             }
         }
