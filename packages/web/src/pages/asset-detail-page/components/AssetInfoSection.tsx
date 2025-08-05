@@ -1,8 +1,12 @@
+import { useState } from 'react'
+
 import { useArtistCoin } from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
 import {
   Avatar,
+  Button,
   Flex,
+  IconDiscord,
   IconGift,
   Paper,
   PlainButton,
@@ -12,6 +16,7 @@ import {
 import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
+import { ArtistCoinDiscordModal } from 'components/rewards/modals/ArtistCoinDiscordModal'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
@@ -218,6 +223,7 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const dispatch = useDispatch()
   const { data: coin, isLoading } = useArtistCoin({ mint })
+  const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false)
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -235,6 +241,10 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
       })
     )
     dispatch(setVisibility(true))
+  }
+
+  const handleDiscordClick = () => {
+    setIsDiscordModalOpen(true)
   }
 
   return (
@@ -283,14 +293,31 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
           </Text>
         </Flex>
 
-        <PlainButton
-          variant='default'
-          size='default'
-          onClick={handleViewLeaderboard}
-        >
-          {messages.viewLeaderboard}
-        </PlainButton>
+        <Flex alignItems='center' gap='m'>
+          <Button
+            variant='secondary'
+            size='small'
+            iconLeft={IconDiscord}
+            onClick={handleDiscordClick}
+          >
+            Discord
+          </Button>
+          <PlainButton
+            variant='default'
+            size='default'
+            onClick={handleViewLeaderboard}
+          >
+            {messages.viewLeaderboard}
+          </PlainButton>
+        </Flex>
       </Flex>
+
+      <ArtistCoinDiscordModal
+        isOpen={isDiscordModalOpen}
+        onClose={() => setIsDiscordModalOpen(false)}
+        coinSymbol={coin.ticker}
+        mint={mint}
+      />
     </Paper>
   )
 }

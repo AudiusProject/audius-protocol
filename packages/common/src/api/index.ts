@@ -25,6 +25,7 @@ export * from './tan-query/coins/useUserCoins'
 
 export * from './tan-query/coins/useArtistCoins'
 export * from './tan-query/coins/tokenUtils'
+export * from './tan-query/coins/useDiscordCode'
 
 // Developer Apps
 export * from '../schemas/developerApps'
