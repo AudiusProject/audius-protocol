@@ -1,6 +1,6 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { QueryClient, useQuery } from '@tanstack/react-query'
+import { QueryClient, useQuery, useQueries } from '@tanstack/react-query'
 import { call, getContext } from 'typed-redux-saga'
 import { getAddress } from 'viem'
 
@@ -19,7 +19,6 @@ import { queryCurrentUserId, queryUser } from '../saga-utils'
 import { QueryOptions, type QueryKey } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
-import { combineQueryResults, useQueries } from '../utils'
 
 import {
   ConnectedWallet,
@@ -36,12 +35,6 @@ type UseWalletAudioBalanceParams = {
   includeStaked?: boolean
 }
 
-type UseWalletAudioBalanceResult = {
-  balance: AudioWei
-  address: string
-  chain: Chain
-}
-
 export const getWalletAudioBalanceQueryKey = ({
   address,
   includeStaked,
@@ -52,7 +45,7 @@ export const getWalletAudioBalanceQueryKey = ({
     chain,
     address,
     { includeStaked }
-  ] as unknown as QueryKey<UseWalletAudioBalanceResult>
+  ] as unknown as QueryKey<AudioWei>
 
 const fetchWalletAudioBalance = async (
   {
@@ -173,8 +166,7 @@ export const useWalletAudioBalances = (
         }
       },
       ...options
-    })),
-    combine: combineQueryResults<UseWalletAudioBalanceResult[]>
+    }))
   })
 }
 
@@ -210,9 +202,11 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
     { enabled: isUserFetched }
   )
   let accountBalance = AUDIO(0).value
-  const isAccountBalanceLoading = accountBalances.isPending
-  for (const balanceRes of accountBalances.data ?? []) {
-    accountBalance = AUDIO(accountBalance + balanceRes.balance).value
+  const isAccountBalanceLoading = accountBalances.some((r) => r.isPending)
+  for (const balanceRes of accountBalances) {
+    accountBalance = AUDIO(
+      accountBalance + (balanceRes?.data ?? AUDIO(0).value)
+    ).value
   }
 
   // Get linked/connected wallets balances
@@ -229,12 +223,12 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   )
   let connectedWalletsBalance = AUDIO(0).value
   const isConnectedWalletsBalanceLoading = includeConnectedWallets
-    ? connectedWalletsBalances.isPending
+    ? connectedWalletsBalances.some((r) => r.isPending)
     : false
   if (includeConnectedWallets) {
-    for (const balanceRes of connectedWalletsBalances.data ?? []) {
+    for (const balanceRes of connectedWalletsBalances) {
       connectedWalletsBalance = AUDIO(
-        connectedWalletsBalance + balanceRes.balance
+        connectedWalletsBalance + (balanceRes?.data ?? AUDIO(0).value)
       ).value
     }
   }
@@ -244,8 +238,8 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   const isLoading = isAccountBalanceLoading || isConnectedWalletsBalanceLoading
   const isError =
     isConnectedWalletsError ||
-    accountBalances.isError ||
-    connectedWalletsBalances.isError
+    accountBalances.some((r) => r.isError) ||
+    connectedWalletsBalances.some((r) => r.isError)
   return {
     accountBalance,
     connectedWalletsBalance,
@@ -339,19 +333,12 @@ export const optimisticallyUpdateWalletAudioBalance = (
       includeStaked
     })
 
-    queryClient.setQueryData(
-      queryKey,
-      (oldBalance: UseWalletAudioBalanceResult | undefined) => {
-        const currentBalance = oldBalance?.balance ?? AUDIO(0).value
-        const newBalance = AUDIO(currentBalance + change).value
-        // Ensure balance doesn't go negative
-        return {
-          address,
-          chain,
-          balance: newBalance >= 0 ? newBalance : AUDIO(0).value
-        }
-      }
-    )
+    queryClient.setQueryData(queryKey, (oldBalance: AudioWei | undefined) => {
+      const currentBalance = oldBalance ?? AUDIO(0).value
+      const newBalance = AUDIO(currentBalance + change).value
+      // Ensure balance doesn't go negative
+      return newBalance >= 0 ? newBalance : AUDIO(0).value
+    })
   }
 }
 
