@@ -189,6 +189,13 @@ export const useTokenSwapForm = ({
     inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
   })
 
+  // Get a static display rate using base amount of 1 for consistent display
+  const { data: displayExchangeRateData } = useTokenExchangeRate({
+    inputMint,
+    outputMint,
+    inputAmount: 1
+  })
+
   // Update output amount when exchange rate or input amount changes
   useEffect(() => {
     if (numericInputAmount <= 0) {
@@ -215,6 +222,9 @@ export const useTokenSwapForm = ({
   }, [values.outputAmount])
 
   const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
+  const displayExchangeRate = displayExchangeRateData
+    ? displayExchangeRateData.rate
+    : null
 
   // Only show error if field has been touched, has a value, and has an error
   // This prevents showing "Required" error when field is empty during typing
@@ -294,6 +304,7 @@ export const useTokenSwapForm = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
+    displayExchangeRate,
     handleInputAmountChange,
     handleMaxClick,
     formik,

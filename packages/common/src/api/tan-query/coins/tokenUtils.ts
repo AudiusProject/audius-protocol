@@ -8,11 +8,11 @@ import { TokenInfo } from '~/store/ui/buy-sell/types'
  */
 const coinMetadataToTokenInfo = (coin: CoinMetadata): TokenInfo => ({
   symbol: coin.ticker ?? '',
-  name: coin.tokenInfo?.name ?? coin.ticker ?? '',
-  decimals: coin.tokenInfo?.decimals ?? 8,
+  name: coin.ticker ?? '',
+  decimals: coin.decimals ?? 8,
   balance: null, // This would come from user's wallet state
   address: coin.mint,
-  logoURI: coin.tokenInfo?.logoURI ?? '',
+  logoURI: coin.logoUri ?? '',
   isStablecoin: false // API tokens are never stablecoins, only USDC is (which is frontend-only)
 })
 

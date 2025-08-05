@@ -1,17 +1,20 @@
 import { useCallback, useMemo } from 'react'
 
-import { AUDIO } from '@audius/fixed-decimal'
+import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { formatUSDCValue } from '~/api'
 import { getTokenDecimalPlaces, getCurrencyDecimalPlaces } from '~/utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number
-  availableBalance: number
+  availableBalance?: number | null
   exchangeRate?: number | null
   isStablecoin: boolean
+  decimals?: number
   placeholder?: string
 }
+
+export const DEFAULT_TOKEN_AMOUNT_PLACEHOLDER = '0.00'
 
 const defaultDecimalPlaces = 2
 
@@ -31,7 +34,8 @@ export const useTokenAmountFormatting = ({
   amount,
   availableBalance,
   isStablecoin,
-  placeholder = '0.00'
+  decimals,
+  placeholder = DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
 }: UseTokenAmountFormattingProps) => {
   const getDisplayDecimalPlaces = useCallback(
     (currentExchangeRate: number | null | undefined) => {
@@ -45,24 +49,22 @@ export const useTokenAmountFormatting = ({
   )
 
   const formattedAvailableBalance = useMemo(() => {
-    if (isNaN(availableBalance)) return placeholder
+    if (availableBalance == null || isNaN(availableBalance)) return null
 
     if (isStablecoin) {
       return formatUSDCValue(availableBalance)
     }
 
-    // Use AUDIO for non-stablecoins for now, when we expand to other tokens
-    // we will need to use FixedDecimal itself
-    const audioAmount = AUDIO(availableBalance)
-    const decimals = getTokenDecimalPlaces(availableBalance)
+    const tokenAmount = new FixedDecimal(availableBalance, decimals)
+    const displayDecimals = getTokenDecimalPlaces(availableBalance)
 
-    return audioAmount.toLocaleString('en-US', {
-      maximumFractionDigits: decimals
+    return tokenAmount.toLocaleString('en-US', {
+      maximumFractionDigits: displayDecimals
     })
-  }, [availableBalance, placeholder, isStablecoin])
+  }, [availableBalance, isStablecoin, decimals])
 
   const formattedAmount = useMemo(() => {
-    if (!amount && amount !== 0) return placeholder
+    if (!amount && amount !== 0) return null
 
     // Use safe value for calculations while preserving original for display logic
     const safeNumericAmount = getSafeNumericValue(amount)
@@ -72,13 +74,13 @@ export const useTokenAmountFormatting = ({
       return formatUSDCValue(safeNumericAmount)
     }
 
-    const audioAmount = AUDIO(safeNumericAmount)
-    const decimals = getTokenDecimalPlaces(safeNumericAmount)
+    const tokenAmount = new FixedDecimal(safeNumericAmount, decimals)
+    const displayDecimals = getTokenDecimalPlaces(safeNumericAmount)
 
-    return audioAmount.toLocaleString('en-US', {
-      maximumFractionDigits: decimals
+    return tokenAmount.toLocaleString('en-US', {
+      maximumFractionDigits: displayDecimals
     })
-  }, [amount, placeholder, isStablecoin])
+  }, [amount, placeholder, isStablecoin, decimals])
 
   return {
     formattedAvailableBalance,

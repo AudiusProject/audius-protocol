@@ -1,10 +1,10 @@
 import { Fragment, useCallback, useContext } from 'react'
 
 import {
-  useUserCoins,
+  useArtistCoins,
   useCurrentUserId,
-  useArtistCoin,
-  UserCoin
+  UserCoin,
+  useUserCoins
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -13,11 +13,17 @@ import {
 } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { useBuySellModal } from '@audius/common/store'
 import {
+  CoinPairItem,
+  useBuySellModal,
+  useGroupCoinPairs
+} from '@audius/common/store'
+import {
+  Box,
   Button,
   Divider,
   Flex,
+  IconCaretRight,
   Paper,
   Text,
   useMedia,
@@ -29,9 +35,7 @@ import { push } from 'redux-first-history'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
-import { env } from 'services/env'
 
-import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
 
 const YourCoinsSkeleton = () => {
@@ -115,16 +119,14 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
     isTokenPriceLoading
   } = useFormattedTokenBalance(coin.mint)
 
-  const { data: coinData } = useArtistCoin({ mint: coin.mint })
+  const { data: coinsData } = useArtistCoins({ mint: [coin.mint] })
+  const coinData = coinsData?.[0] ?? null
 
   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
 
-  if (coin.mint === env.WAUDIO_MINT_ADDRESS)
-    return <AudioCoinCard onClick={() => handleCoinClick(coin.mint)} />
-
   return (
     <CoinCard
-      icon={coinData?.tokenInfo?.logoURI}
+      icon={coinData?.logoUri}
       symbol={tokenSymbol ?? ''}
       balance={tokenBalanceFormatted || ''}
       dollarValue={tokenDollarValue || ''}
@@ -134,9 +136,33 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   )
 }
 
-export const YourCoins = () => {
-  const { spacing } = useTheme()
+const FindMoreCoins = ({ css }: { css?: any }) => {
+  const { color, spacing } = useTheme()
   const { isMobile } = useMedia()
+
+  return (
+    <Flex
+      p={isMobile ? spacing.l : spacing.xl}
+      css={{
+        cursor: 'pointer',
+        '&:hover': { backgroundColor: color.background.surface2 },
+        ...css
+      }}
+    >
+      <Flex flex={1} alignItems='center' justifyContent='space-between'>
+        <Flex column gap='xs'>
+          <Text variant='heading' size='m' color='default'>
+            {messages.findMoreCoins}
+          </Text>
+          <Text color='subdued'>{messages.exploreArtistCoins}</Text>
+        </Flex>
+        <IconCaretRight size='l' color='subdued' />
+      </Flex>
+    </Flex>
+  )
+}
+
+export const YourCoins = () => {
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
@@ -148,6 +174,8 @@ export const YourCoins = () => {
     userId: userIdString || ''
   })
 
+  const coinPairs = useGroupCoinPairs(artistCoins)
+
   if (isLoadingCoins || !userIdString) {
     return <YourCoinsSkeleton />
   }
@@ -155,21 +183,26 @@ export const YourCoins = () => {
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
       {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
-      <Flex
-        alignItems='center'
-        justifyContent='space-between'
-        p={isMobile ? spacing.l : undefined}
-        alignSelf='stretch'
-      >
-        {artistCoins?.map((coin, index) => {
-          if (coin.ticker === 'USDC') return null
-          return (
-            <Fragment key={coin.mint}>
-              {index > 0 && <Divider orientation='vertical' />}
-              <CoinCardWithBalance coin={coin} />
-            </Fragment>
-          )
-        })}
+      <Flex column>
+        {coinPairs.map((pair, rowIndex) => (
+          <>
+            <Flex key={`row-${rowIndex}`} alignItems='stretch'>
+              {pair.map((item: CoinPairItem, colIndex) => (
+                <Fragment key={item === 'find-more' ? 'find-more' : item.mint}>
+                  {colIndex > 0 && <Divider orientation='vertical' />}
+                  <Box flex={1}>
+                    {item === 'find-more' ? (
+                      <FindMoreCoins />
+                    ) : (
+                      <CoinCardWithBalance coin={item} />
+                    )}
+                  </Box>
+                </Fragment>
+              ))}
+            </Flex>
+            {rowIndex < coinPairs.length - 1 && <Divider />}
+          </>
+        ))}
       </Flex>
     </Paper>
   )

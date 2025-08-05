@@ -2,7 +2,12 @@ import { useMemo, useCallback, useState, useRef } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
+import {
+  DEFAULT_TOKEN_AMOUNT_PLACEHOLDER,
+  TokenAmountSectionProps,
+  TokenInfo,
+  useTokenAmountFormatting
+} from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -22,7 +27,6 @@ import { useFlag } from '../../hooks/useRemoteConfig'
 
 import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
-import { useTokenAmountFormatting } from './hooks'
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -31,6 +35,8 @@ type BalanceSectionProps = {
   tooltipPlacement?: TooltipPlacement
   availableTokens?: TokenInfo[]
   onTokenChange?: (symbol: string) => void
+  showReceiveAmount?: boolean
+  formattedReceiveAmount?: string
 }
 
 const DefaultBalanceSection = ({
@@ -41,7 +47,7 @@ const DefaultBalanceSection = ({
 }: BalanceSectionProps) => {
   const { cornerRadius } = useTheme()
 
-  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
+  if (!formattedAvailableBalance) {
     return null
   }
 
@@ -100,8 +106,6 @@ const TokenSelectionPopup = ({
       {availableTokens.map((token) => {
         const { symbol, name } = token
 
-        if (!token.icon && !token.logoURI) return null
-
         return (
           <Button
             key={symbol}
@@ -138,11 +142,15 @@ const StackedBalanceSection = ({
   tokenInfo,
   isStablecoin,
   availableTokens,
-  onTokenChange
+  onTokenChange,
+  showReceiveAmount,
+  formattedReceiveAmount
 }: BalanceSectionProps) => {
-  const { symbol } = tokenInfo
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const anchorRef = useRef<HTMLDivElement>(null)
+  const { color } = useTheme()
+
+  const { symbol } = tokenInfo
 
   const handleClick = useCallback(() => {
     if (availableTokens && availableTokens.length > 0) {
@@ -162,7 +170,13 @@ const StackedBalanceSection = ({
     setIsPopupVisible(false)
   }, [])
 
-  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
+  // Show component if we have either available balance or receive amount to display
+  const hasReceiveAmount = showReceiveAmount && formattedReceiveAmount
+  const shouldShowLargeTicker =
+    !hasReceiveAmount ||
+    formattedReceiveAmount === DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
+
+  if (!formattedAvailableBalance && !hasReceiveAmount) {
     return null
   }
 
@@ -187,7 +201,7 @@ const StackedBalanceSection = ({
           cursor: isClickable ? 'pointer' : 'default',
           '&:hover': isClickable
             ? {
-                backgroundColor: 'var(--harmony-n-50)'
+                backgroundColor: color.background.surface2
               }
             : undefined
         }}
@@ -199,16 +213,31 @@ const StackedBalanceSection = ({
           w='100%'
         >
           <Flex gap='s' alignItems='center'>
-            <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
+            <TokenIcon tokenInfo={tokenInfo} size='2xl' hex />
             <Flex direction='column'>
-              <Flex alignSelf='flex-start'>
-                <Text variant='heading' size='s' color='subdued'>
-                  {messages.tokenTicker(symbol, !!isStablecoin)}
+              {shouldShowLargeTicker ? (
+                <Flex alignSelf='flex-start'>
+                  <Text variant='heading' size='s' color='subdued'>
+                    {messages.tokenTicker(symbol, !!isStablecoin)}
+                  </Text>
+                </Flex>
+              ) : null}
+              {!hasReceiveAmount ? (
+                <Text variant='title' size='s' color='default'>
+                  {messages.stackedBalance(formattedAvailableBalance!)}
                 </Text>
-              </Flex>
-              <Text variant='title' size='s' color='default'>
-                {messages.stackedBalance(formattedAvailableBalance)}
-              </Text>
+              ) : null}
+              {hasReceiveAmount &&
+              formattedReceiveAmount !== DEFAULT_TOKEN_AMOUNT_PLACEHOLDER ? (
+                <Flex direction='column'>
+                  <Text variant='heading' size='s'>
+                    {formattedReceiveAmount}
+                  </Text>
+                  <Text variant='title' size='s' color='subdued'>
+                    {messages.tokenTicker(symbol, !!isStablecoin)}
+                  </Text>
+                </Flex>
+              ) : null}
             </Flex>
           </Flex>
           <IconCaretDown size='s' color='default' />
@@ -241,7 +270,7 @@ const OldStackedBalanceSection = ({
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
 
-  if (!formattedAvailableBalance || (!tokenInfo.icon && !tokenInfo.logoURI)) {
+  if (!formattedAvailableBalance) {
     return null
   }
 
@@ -288,10 +317,6 @@ const CryptoAmountSection = ({
 }) => {
   const { symbol } = tokenInfo
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
-
-  if (!tokenInfo.icon && !tokenInfo.logoURI) {
-    return null
-  }
 
   if (verticalLayout) {
     return (
@@ -370,6 +395,7 @@ export const TokenAmountSection = ({
       availableBalance,
       exchangeRate,
       isStablecoin: !!isStablecoin,
+      decimals: tokenInfo.decimals,
       placeholder
     })
 
@@ -498,6 +524,8 @@ export const TokenAmountSection = ({
             isStablecoin={!!isStablecoin}
             availableTokens={availableTokens}
             onTokenChange={onTokenChange}
+            formattedReceiveAmount={formattedAmount}
+            showReceiveAmount
           />
         </Flex>
       )
@@ -524,7 +552,7 @@ export const TokenAmountSection = ({
   ])
 
   const titleText = useMemo(() => {
-    if (isStablecoin && !isInput && (tokenInfo.icon || tokenInfo.logoURI)) {
+    if (isStablecoin && !isInput) {
       return (
         <Flex alignItems='center' gap='s'>
           <TokenIcon tokenInfo={tokenInfo} size='l' />

@@ -70,7 +70,7 @@ export const SwapTab = ({
   availableOutputTokens,
   onInputTokenChange,
   onOutputTokenChange,
-  showExchangeRate = false
+  showExchangeRate = true
 }: SwapTabProps) => {
   const {
     formik,
@@ -80,6 +80,7 @@ export const SwapTab = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
+    displayExchangeRate,
     handleInputAmountChange,
     handleMaxClick
   } = useTokenSwapForm({
@@ -95,8 +96,14 @@ export const SwapTab = ({
 
   // Track if an exchange rate has ever been successfully fetched
   const hasRateEverBeenFetched = useRef(false)
+  const hasDisplayRateEverBeenFetched = useRef(false)
+
   if (currentExchangeRate !== null) {
     hasRateEverBeenFetched.current = true
+  }
+
+  if (displayExchangeRate !== null) {
+    hasDisplayRateEverBeenFetched.current = true
   }
 
   // Show initial loading state if balance is loading,
@@ -161,20 +168,22 @@ export const SwapTab = ({
               />
 
               {/* Show exchange rate for convert flow */}
-              {showExchangeRate && currentExchangeRate && (
-                <Flex p='l' justifyContent='flex-start'>
-                  <Text variant='body' size='s' color='subdued'>
-                    {messages.exchangeRateLabel}&nbsp;
-                  </Text>
-                  <Text variant='body' size='s' color='default'>
-                    {messages.exchangeRateValue(
-                      inputToken.symbol,
-                      outputToken.symbol,
-                      currentExchangeRate
-                    )}
-                  </Text>
-                </Flex>
-              )}
+              {showExchangeRate &&
+                currentExchangeRate &&
+                displayExchangeRate && (
+                  <Flex p='l' justifyContent='flex-start'>
+                    <Text variant='body' size='s' color='subdued'>
+                      {messages.exchangeRateLabel}&nbsp;
+                    </Text>
+                    <Text variant='body' size='s' color='default'>
+                      {messages.exchangeRateValue(
+                        inputToken.symbol,
+                        outputToken.symbol,
+                        displayExchangeRate
+                      )}
+                    </Text>
+                  </Flex>
+                )}
             </>
           )}
         </Flex>
