@@ -24,6 +24,12 @@ const isNoBalanceError = (error: unknown): boolean => {
   return isResponseError(error) && error.response.status === 404
 }
 
+export type TokenBalanceQueryData = {
+  balance: FixedDecimal
+  decimals: number
+  isEmpty?: boolean
+} | null
+
 export const getTokenBalanceQueryKey = (
   ethAddress: string | null,
   mint: string
@@ -32,7 +38,7 @@ export const getTokenBalanceQueryKey = (
     QUERY_KEYS.tokenBalance,
     ethAddress,
     mint
-  ] as unknown as QueryKey<FixedDecimal | null>
+  ] as unknown as QueryKey<TokenBalanceQueryData>
 
 /**
  * Hook to get the balance for any supported token for the current user.
