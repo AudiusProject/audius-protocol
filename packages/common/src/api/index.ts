@@ -57,7 +57,6 @@ export * from './tan-query/notifications/useNotifications'
 export * from './tan-query/notifications/useNotificationEntities'
 export * from './tan-query/notifications/useNotificationEntity'
 export * from './tan-query/notifications/useNotificationUnreadCount'
-export * from './tan-query/notifications/useNotificationValidTypes'
 
 // Purchases
 export * from './tan-query/purchases/useAudioTransactions'

@@ -10,8 +10,6 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 
-import { useNotificationValidTypes } from './useNotificationValidTypes'
-
 export const getNotificationUnreadCountQueryKey = (
   currentUserId: ID | null | undefined
 ) =>
@@ -29,7 +27,6 @@ export const useNotificationUnreadCount = () => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const pollingFreqMs = useRemoteVar(IntKeys.NOTIFICATION_POLLING_FREQ_MS)
-  const validTypes = useNotificationValidTypes()
 
   const query = useQuery({
     queryKey: getNotificationUnreadCountQueryKey(currentUserId),
@@ -37,8 +34,7 @@ export const useNotificationUnreadCount = () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.notifications.getNotifications({
         userId: Id.parse(currentUserId),
-        limit: 0,
-        validTypes
+        limit: 0
       })
       return data?.unreadCount ?? 0
     },
