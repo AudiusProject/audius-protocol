@@ -9,7 +9,7 @@ import {
   useBuySellTabs,
   useBuySellTransactionData,
   useSwapDisplayData,
-  createSupportedTokenPairs,
+  useSupportedTokenPairs,
   useAddCashModal,
   getSwapTokens
 } from '@audius/common/store'
@@ -18,7 +18,6 @@ import { useFocusEffect } from '@react-navigation/native'
 import { Button, Flex, Hint, TextLink } from '@audius/harmony-native'
 import { SegmentedControl } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { env } from 'app/services/env'
 
 import { BuyScreen, SellScreen } from './components'
 
@@ -88,7 +87,7 @@ export const BuySellFlow = ({
   }
 
   const [selectedPairIndex] = useState(0)
-  const supportedTokenPairs = useMemo(() => createSupportedTokenPairs(env), [])
+  const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
   const selectedPair = supportedTokenPairs[selectedPairIndex]
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
