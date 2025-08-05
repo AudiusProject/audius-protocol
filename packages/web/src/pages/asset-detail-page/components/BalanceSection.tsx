@@ -163,10 +163,6 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
     return <BalanceSectionSkeleton />
   }
 
-  if (!coin.logoUri) {
-    return null
-  }
-
   const title = coin.ticker ?? ''
   const logoURI = coin.logoUri
 
