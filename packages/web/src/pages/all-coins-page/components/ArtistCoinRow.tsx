@@ -1,11 +1,4 @@
-import {
-  Flex,
-  Text,
-  useTheme,
-  IconCaretRight,
-  Artwork,
-  Paper
-} from '@audius/harmony'
+import { Artwork, Flex, IconCaretRight, Paper, Text } from '@audius/harmony'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
@@ -36,19 +29,9 @@ export const ArtistCoinRow = ({
   onClick,
   mint
 }: ArtistCoinRowProps) => {
-  const { spacing } = useTheme()
-
   const renderIcon = () => {
     if (typeof icon === 'string') {
-      return (
-        <Artwork
-          src={icon}
-          hex
-          w={spacing.unit10}
-          h={spacing.unit10}
-          borderWidth={0}
-        />
-      )
+      return <Artwork src={icon} hex w='unit10' h='unit10' borderWidth={0} />
     }
     return icon
   }
