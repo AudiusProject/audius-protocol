@@ -31,7 +31,7 @@ export interface GetNotificationsRequest {
     timestamp?: number;
     groupId?: string;
     limit?: number;
-    types?: Array<GetNotificationsTypesEnum>;
+    validTypes?: Array<GetNotificationsValidTypesEnum>;
 }
 
 export interface GetPlaylistUpdatesRequest {
@@ -66,8 +66,8 @@ export class NotificationsApi extends runtime.BaseAPI {
             queryParameters['limit'] = params.limit;
         }
 
-        if (params.types) {
-            queryParameters['types'] = params.types;
+        if (params.validTypes) {
+            queryParameters['valid_types'] = params.validTypes;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -126,7 +126,7 @@ export class NotificationsApi extends runtime.BaseAPI {
 /**
  * @export
  */
-export const GetNotificationsTypesEnum = {
+export const GetNotificationsValidTypesEnum = {
     Announcement: 'announcement',
     Follow: 'follow',
     Repost: 'repost',
@@ -171,4 +171,4 @@ export const GetNotificationsTypesEnum = {
     ArtistRemixContestEndingSoon: 'artist_remix_contest_ending_soon',
     ArtistRemixContestSubmissions: 'artist_remix_contest_submissions'
 } as const;
-export type GetNotificationsTypesEnum = typeof GetNotificationsTypesEnum[keyof typeof GetNotificationsTypesEnum];
+export type GetNotificationsValidTypesEnum = typeof GetNotificationsValidTypesEnum[keyof typeof GetNotificationsValidTypesEnum];
