@@ -111,10 +111,11 @@ export const useWalletAudioBalance = (
     queryFn: async () => {
       try {
         const sdk = await audiusSdk()
-        return await fetchWalletAudioBalance(
+        const balance = await fetchWalletAudioBalance(
           { sdk, audiusBackend },
           { address, includeStaked, chain }
         )
+        return { address, chain, balance }
       } catch (error) {
         reportToSentry({
           error: toErrorWithMessage(error),
