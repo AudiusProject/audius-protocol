@@ -3,11 +3,15 @@ import { useMemo } from 'react'
 import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
-import { TokenInfo, getSwapTokens, TokenPair } from '@audius/common/store'
+import {
+  TokenInfo,
+  getSwapTokens,
+  TokenPair,
+  useTokenAmountFormatting
+} from '@audius/common/store'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
-import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
 
 const messages = {
   ...baseMessages,
@@ -58,14 +62,14 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
   // balance isn't needed so we pass 0
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
-    availableBalance: 0,
-    isStablecoin: !!payTokenInfo.isStablecoin
+    isStablecoin: !!payTokenInfo.isStablecoin,
+    decimals: payTokenInfo.decimals
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
-    availableBalance: 0,
-    isStablecoin: !!receiveTokenInfo.isStablecoin
+    isStablecoin: !!receiveTokenInfo.isStablecoin,
+    decimals: receiveTokenInfo.decimals
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol

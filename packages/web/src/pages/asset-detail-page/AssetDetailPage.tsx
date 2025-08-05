@@ -1,3 +1,5 @@
+import { useArtistCoin } from '@audius/common/api'
+import { Flex, LoadingSpinner } from '@audius/harmony'
 import { Redirect, useParams } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
@@ -5,26 +7,37 @@ import Page from 'components/page/Page'
 import WalletModal from 'pages/audio-page/WalletModal'
 
 import { useAssetDetailTabs } from './AssetDetailTabs'
-import { ACCEPTED_ROUTES } from './constants'
-import { AcceptedRouteKey } from './types'
 
 export const AssetDetailPage = () => {
-  const { slug } = useParams<{ slug: string }>()
+  const { mint } = useParams<{ mint: string }>()
 
-  if (!slug || !(slug in ACCEPTED_ROUTES)) {
+  const {
+    data: coin,
+    isLoading: coinLoading,
+    error: coinError
+  } = useArtistCoin({ mint: mint || '' })
+
+  if (!mint) {
     return <Redirect to='/wallet' />
   }
 
-  // At this point, we know slug is a valid key
-  const typedSlug = slug as AcceptedRouteKey
-  const routeConfig = ACCEPTED_ROUTES[typedSlug]
-  const title = routeConfig.title
+  if (coinLoading) {
+    return (
+      <Flex justifyContent='center' alignItems='center' h='100vh'>
+        <LoadingSpinner />
+      </Flex>
+    )
+  }
 
-  return <AssetDetailPageContent mint={typedSlug} title={title} />
+  if (coinError || !coin) {
+    return <Redirect to='/wallet' />
+  }
+
+  return <AssetDetailPageContent mint={coin.mint} title={coin.ticker ?? ''} />
 }
 
 type AssetDetailPageContentProps = {
-  mint: AcceptedRouteKey
+  mint: string
   title: string
 }
 

@@ -43,7 +43,6 @@ import {
   PushNotifications
 } from '../../store'
 import { getErrorMessage, uuid, Maybe, Nullable } from '../../utils'
-import { getTokenBySymbol } from '../tokens'
 
 import { MintName } from './solana'
 import { MonitoringCallbacks } from './types'
@@ -166,11 +165,17 @@ export const audiusBackend = ({
   }
 
   function getMintAddress(mint: MintName): PublicKey {
-    const token = getTokenBySymbol(env, mint)
-    if (!token) {
-      throw new Error(`Token not found: ${mint}`)
+    // Simple mapping for the fixed set of mint names
+    const mintAddresses: Record<MintName, string> = {
+      wAUDIO: env.WAUDIO_MINT_ADDRESS,
+      USDC: env.USDC_MINT_ADDRESS
     }
-    return new PublicKey(token.address)
+
+    const address = mintAddresses[mint]
+    if (!address) {
+      throw new Error(`Token address not found for mint: ${mint}`)
+    }
+    return new PublicKey(address)
   }
 
   async function recordTrackListen({
@@ -817,7 +822,8 @@ export const audiusBackend = ({
 
   async function createAssociatedTokenAccountWithPhantom(
     connection: Connection,
-    address: string
+    address: string,
+    mint: MintName | PublicKey = 'wAUDIO'
   ) {
     if (!window.phantom) {
       throw new Error(
@@ -837,7 +843,7 @@ export const audiusBackend = ({
     const tx = await getCreateAssociatedTokenAccountTransaction({
       feePayerKey: phantomWalletKey,
       solanaWalletKey: newAccountKey,
-      mint: 'wAUDIO',
+      mint,
       solanaTokenProgramKey: new PublicKey(TOKEN_PROGRAM_ID),
       connection
     })
@@ -860,10 +866,12 @@ export const audiusBackend = ({
    */
   async function getOrCreateAssociatedTokenAccountInfo({
     address,
-    sdk
+    sdk,
+    mint = 'wAUDIO'
   }: {
     address: string
     sdk: AudiusSdk
+    mint?: MintName | PublicKey
   }) {
     const connection = sdk.services.solanaClient.connection
     const pubkey = new PublicKey(address)
@@ -878,7 +886,7 @@ export const audiusBackend = ({
         )
         const associatedTokenAccount = findAssociatedTokenAddress({
           solanaWalletKey: pubkey,
-          mint: 'wAUDIO'
+          mint
         })
         // Atempt to get the associated token account
         try {
@@ -889,7 +897,11 @@ export const audiusBackend = ({
             // We do not want to relay gas fees for this token account creation,
             // so we ask the user to create one with phantom, showing an error
             // if phantom is not found.
-            return createAssociatedTokenAccountWithPhantom(connection, address)
+            return createAssociatedTokenAccountWithPhantom(
+              connection,
+              address,
+              mint
+            )
           }
           throw err
         }
@@ -1007,10 +1019,10 @@ export const audiusBackend = ({
     mint
   }: {
     solanaWalletKey: PublicKey
-    mint: MintName
+    mint: MintName | PublicKey
   }) {
     const solanaTokenProgramKey = new PublicKey(TOKEN_PROGRAM_ID)
-    const mintKey = getMintAddress(mint)
+    const mintKey = mint instanceof PublicKey ? mint : getMintAddress(mint)
     const addresses = PublicKey.findProgramAddressSync(
       [
         solanaWalletKey.toBuffer(),
@@ -1028,10 +1040,12 @@ export const audiusBackend = ({
    */
   async function getAssociatedTokenAccountInfo({
     address,
-    sdk
+    sdk,
+    mint = 'wAUDIO'
   }: {
     address: string
     sdk: AudiusSdk
+    mint?: MintName | PublicKey
   }) {
     const connection = sdk.services.solanaClient.connection
     const pubkey = new PublicKey(address)
@@ -1046,7 +1060,7 @@ export const audiusBackend = ({
         )
         const associatedTokenAccount = findAssociatedTokenAddress({
           solanaWalletKey: pubkey,
-          mint: 'wAUDIO'
+          mint
         })
         return await getAccount(connection, associatedTokenAccount)
       }
@@ -1073,7 +1087,7 @@ export const audiusBackend = ({
   }: {
     feePayerKey: PublicKey
     solanaWalletKey: PublicKey
-    mint: MintName
+    mint: MintName | PublicKey
     solanaTokenProgramKey: PublicKey
     connection: Connection
   }) {
@@ -1081,7 +1095,7 @@ export const audiusBackend = ({
       solanaWalletKey,
       mint
     })
-    const mintKey = getMintAddress(mint)
+    const mintKey = mint instanceof PublicKey ? mint : getMintAddress(mint)
     const accounts = [
       // 0. `[sw]` Funding account (must be a system account)
       {

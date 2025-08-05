@@ -1,10 +1,9 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
+import { useTokens } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
-
-import { TOKENS } from 'components/buy-sell-modal/constants'
 
 const messages = {
   membersOnly: 'Members Only'
@@ -22,9 +21,11 @@ export const ArtistCoinHeader = ({
     audience
   })
 
+  const { tokens, isLoading } = useTokens()
+
   if (!artistCoinSymbol) return null
 
-  const ArtistCoinIcon = TOKENS[artistCoinSymbol]?.icon
+  const ArtistCoinIcon = !isLoading ? tokens[artistCoinSymbol]?.icon : undefined
 
   return (
     <Flex
