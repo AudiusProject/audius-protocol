@@ -50,12 +50,13 @@ harmony-test-storybook:
     - checkout
     - attach_workspace:
         at: ./
+
+    - run:
+        name: install playwright
+        command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
     - run:
         name: test storybook
-        command: |
-          sudo npx playwright install-deps  
-          npx playwright install
-          npx turbo run test --filter=@audius/harmony
+        command: npx turbo run test --filter=@audius/harmony
 
 harmony-deploy-storybook:
   working_directory: ~/harmony
