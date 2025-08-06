@@ -1,27 +1,11 @@
 import { useMemo } from 'react'
 
-import { useTokenBalance, useTokenPrice } from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { TokenPair } from '@audius/common/store'
+import { useTokenPrice } from '@audius/common/api'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
-
-type BuyTabProps = {
-  tokenPair: TokenPair
-  onTransactionDataChange?: (data: {
-    inputAmount: number
-    outputAmount: number
-    isValid: boolean
-    error: string | null
-    isInsufficientBalance: boolean
-  }) => void
-  error?: boolean
-  errorMessage?: string
-  initialInputValue?: string
-  onInputValueChange?: (value: string) => void
-}
+import { useTokenBalanceManager } from './hooks/useTokenBalanceManager'
+import type { BuyTabProps } from './types'
 
 export const BuyTab = ({
   tokenPair,
@@ -29,13 +13,17 @@ export const BuyTab = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  availableOutputTokens,
+  onOutputTokenChange
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
 
-  const { status: balanceStatus, data: tokenBalanceData } = useTokenBalance({
-    token: 'USDC'
-  })
+  // Use shared token balance manager for both input (USDC) and output token balances
+  const { inputBalance, outputBalance } = useTokenBalanceManager(
+    quoteToken, // Input token (USDC)
+    baseToken // Output token (artist coin, etc.)
+  )
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useTokenPrice(baseToken.address)
@@ -47,25 +35,15 @@ export const BuyTab = ({
     return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
   }, [tokenPrice])
 
-  const getBalance = useMemo(() => {
-    return () => {
-      if (balanceStatus === Status.SUCCESS && tokenBalanceData) {
-        return Number(new FixedDecimal(tokenBalanceData.toString()))
-      }
-      return undefined
-    }
-  }, [balanceStatus, tokenBalanceData])
-
   return (
     <SwapTab
       inputToken={quoteToken}
       outputToken={baseToken}
-      balance={{
-        get: getBalance,
-        loading: balanceStatus === Status.LOADING,
-        formatError: () => 'Insufficient balance'
-      }}
+      balance={inputBalance}
+      outputBalance={outputBalance}
       onTransactionDataChange={onTransactionDataChange}
+      inputIsDefault={true} // Keep input section as DefaultBalanceSection
+      outputIsDefault={false} // Enable StackedBalanceSection for "You Receive"
       error={error}
       errorMessage={errorMessage}
       tokenPrice={tokenPrice}
@@ -73,6 +51,8 @@ export const BuyTab = ({
       tokenPriceDecimalPlaces={decimalPlaces}
       initialInputValue={initialInputValue}
       onInputValueChange={onInputValueChange}
+      availableOutputTokens={availableOutputTokens}
+      onOutputTokenChange={onOutputTokenChange}
     />
   )
 }

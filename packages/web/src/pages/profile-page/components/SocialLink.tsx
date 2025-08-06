@@ -3,7 +3,7 @@ import { ReactNode } from 'react'
 import {
   IconLink,
   IconTikTok,
-  IconTwitter as IconTwitterBird,
+  IconX,
   IconInstagram,
   IconDonate,
   Text,
@@ -15,7 +15,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 export enum Type {
-  TWITTER,
+  X,
   INSTAGRAM,
   TIKTOK,
   WEBSITE,
@@ -23,24 +23,19 @@ export enum Type {
 }
 
 const SITE_URL_MAP = {
-  [Type.TWITTER]: 'https://twitter.com/',
+  [Type.X]: 'https://x.com/',
   [Type.INSTAGRAM]: 'https://instagram.com/',
   [Type.TIKTOK]: 'https://tiktok.com/@'
 }
 
 type HandleType = keyof typeof SITE_URL_MAP
 
-export const handleTypes = [Type.TWITTER, Type.INSTAGRAM, Type.TIKTOK]
+export const handleTypes = [Type.X, Type.INSTAGRAM, Type.TIKTOK]
 
-const singleLinkTypes = [
-  Type.TWITTER,
-  Type.INSTAGRAM,
-  Type.TIKTOK,
-  Type.WEBSITE
-]
+const singleLinkTypes = [Type.X, Type.INSTAGRAM, Type.TIKTOK, Type.WEBSITE]
 
 const socialIcons = {
-  [Type.TWITTER]: IconTwitterBird,
+  [Type.X]: IconX,
   [Type.INSTAGRAM]: IconInstagram,
   [Type.TIKTOK]: IconTikTok,
   [Type.WEBSITE]: IconLink,

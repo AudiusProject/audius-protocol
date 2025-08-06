@@ -1,4 +1,4 @@
-import { TokenInfo } from '@audius/common/store'
+import { TokenInfo, TokenPair } from '@audius/common/store'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
 // Balance configuration for token operations
@@ -6,12 +6,6 @@ export type BalanceConfig = {
   get: () => number | undefined
   loading: boolean
   formatError: () => string
-}
-
-// Token pair configuration
-export type TokenPair = {
-  input: TokenInfo
-  output: TokenInfo
 }
 
 // Balance configuration for both input and output tokens
@@ -35,7 +29,6 @@ export type UIConfiguration = {
   error?: boolean
   errorMessage?: string
   tooltipPlacement?: TooltipPlacement
-  showExchangeRate?: boolean
 }
 
 // Token pricing configuration
@@ -75,6 +68,32 @@ export type SwapTabProps = {
   input: InputConfiguration
   tokenSelection: TokenSelection
   callbacks: SwapCallbacks
+}
+
+// Base props shared across all tab components
+export type BaseTabProps = {
+  tokenPair: TokenPair
+  onTransactionDataChange?: (data: TransactionData) => void
+  error?: boolean
+  errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
+}
+
+export type BuyTabProps = BaseTabProps & {
+  availableOutputTokens?: TokenInfo[]
+  onOutputTokenChange?: (symbol: string) => void
+}
+
+export type SellTabProps = BaseTabProps & {
+  availableInputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+}
+
+export type ConvertTabProps = BaseTabProps & {
+  availableTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
 }
 
 // Modal screen types

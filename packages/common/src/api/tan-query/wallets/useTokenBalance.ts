@@ -1,118 +1,175 @@
 import { useCallback } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
-import { TokenAccountNotFoundError } from '@solana/spl-token'
-import { Commitment } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useCurrentAccountUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Status } from '~/models/Status'
-import { MintName } from '~/services/audius-backend/solana'
-import { getUserbankAccountInfo, getTokenBySymbol } from '~/services/index'
+import { isNullOrUndefined } from '~/utils'
+import { isResponseError } from '~/utils/error'
 
+import { useUserCoin } from '../coins/useUserCoin'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
-const createTokenBalance = (
-  amount: string | number | bigint | null | undefined,
-  decimals: number
-): FixedDecimal | null => {
-  if (amount === null || amount === undefined) {
-    return null
-  }
-  return new FixedDecimal(BigInt(amount.toString()), decimals)
+import { useUSDCBalance } from './useUSDCBalance'
+
+/**
+ * Checks if the error is a 404 ResponseError from the balance endpoint
+ * which indicates the user has no balance for the token (not a real error)
+ */
+const isNoBalanceError = (error: unknown): boolean => {
+  return isResponseError(error) && error.response.status === 404
 }
+
+export type TokenBalanceQueryData = {
+  balance: FixedDecimal
+  decimals: number
+  isEmpty?: boolean
+} | null
 
 export const getTokenBalanceQueryKey = (
   ethAddress: string | null,
-  token: MintName,
-  commitment: Commitment
+  mint: string
 ) =>
   [
     QUERY_KEYS.tokenBalance,
     ethAddress,
-    token,
-    commitment
-  ] as unknown as QueryKey<FixedDecimal | null>
+    mint
+  ] as unknown as QueryKey<TokenBalanceQueryData>
 
 /**
  * Hook to get the balance for any supported token for the current user.
  * Uses TanStack Query for data fetching and caching.
  *
- * @param token The token to fetch balance for
+ * @param mint The mint address of the token to fetch balance for
  * @param options Options for the query and polling
  * @returns Object with status, data, refresh, and cancelPolling
  */
 export const useTokenBalance = ({
-  token,
+  mint,
   isPolling,
   pollingInterval = 1000,
-  commitment = 'processed',
   ...queryOptions
 }: {
-  token: MintName
+  mint: string
   isPolling?: boolean
   pollingInterval?: number
-  commitment?: Commitment
 } & QueryOptions) => {
   const { audiusSdk, env } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const ethAddress = user?.wallet ?? null
   const queryClient = useQueryClient()
+  const isUsdc = mint === env.USDC_MINT_ADDRESS
+  const { data: userCoin } = useUserCoin({ mint })
+
+  // Use specialized USDC hook when dealing with USDC
+  const usdcResult = useUSDCBalance({
+    isPolling,
+    pollingInterval,
+    enabled: isUsdc && !!ethAddress,
+    ...queryOptions
+  })
 
   const result = useQuery({
-    queryKey: getTokenBalanceQueryKey(ethAddress, token, commitment),
+    queryKey: getTokenBalanceQueryKey(ethAddress, mint),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      if (!ethAddress || !token) {
+      if (!ethAddress || !mint || !user?.user_id) {
         return null
       }
 
       try {
-        const account = await getUserbankAccountInfo(
-          sdk,
-          {
-            ethAddress,
-            mint: token
-          },
-          commitment
-        )
+        // Ensure userbank exists before fetching balance
+        await sdk.services.claimableTokensClient.getOrCreateUserBank({
+          ethWallet: ethAddress,
+          mint: new PublicKey(mint)
+        })
 
-        // Get token configuration from registry to get decimal places
-        const tokenConfig = getTokenBySymbol(env, token)
-        if (!tokenConfig) {
-          console.warn(
-            `Token not found in registry: ${token}, returning null balance`
-          )
+        const balance = userCoin?.balance
+
+        if (isNullOrUndefined(balance)) {
           return null
         }
 
-        return createTokenBalance(account?.amount, tokenConfig.decimals)
+        // Ensure we have valid decimals from coin metadata
+        const decimals = userCoin?.decimals
+        if (isNullOrUndefined(decimals)) {
+          console.warn(`Missing decimals for token ${mint}`)
+          return null
+        }
+
+        // Return FixedDecimal with proper decimals from coin metadata
+        return {
+          balance: new FixedDecimal(BigInt(balance.toString()), decimals),
+          decimals
+        }
       } catch (e) {
-        // If user doesn't have a token account yet, return 0 balance
-        if (e instanceof TokenAccountNotFoundError) {
-          const tokenConfig = getTokenBySymbol(env, token)
-          if (!tokenConfig) {
-            console.warn(
-              `Token not found in registry: ${token}, returning null balance`
-            )
+        // Handle specific 404 "no rows in result set" case
+        // This typically means the user has no balance for this token
+        if (isNoBalanceError(e)) {
+          const decimals = userCoin?.decimals
+          if (isNullOrUndefined(decimals)) {
+            console.warn(`Missing decimals for token ${mint} in error handling`)
             return null
           }
-          return createTokenBalance(BigInt(0), tokenConfig.decimals)
+
+          return {
+            balance: new FixedDecimal(BigInt(0), decimals),
+            decimals,
+            isEmpty: true
+          }
         }
-        console.error(`Error fetching ${token} balance:`, e)
-        // Return null instead of throwing to prevent infinite loading
+
+        console.error(`Error fetching balance for mint ${mint}:`, e)
+        // Return null for other errors to prevent infinite loading
         return null
       }
     },
-    enabled: !!ethAddress && !!token,
+    enabled:
+      !isUsdc &&
+      !!ethAddress &&
+      !!mint &&
+      !!user?.user_id &&
+      !!userCoin?.decimals,
     // TanStack Query's built-in polling - only poll when isPolling is true
     refetchInterval: isPolling ? pollingInterval : false,
     // Prevent refetching when window regains focus during polling to avoid conflicts
     refetchOnWindowFocus: !isPolling,
     ...queryOptions
   })
+
+  // Function to cancel polling by invalidating and refetching the query
+  // This effectively stops the current polling cycle
+  const cancelPolling = useCallback(() => {
+    if (isUsdc) {
+      return usdcResult.cancelPolling()
+    }
+    queryClient.cancelQueries({
+      queryKey: getTokenBalanceQueryKey(ethAddress, mint)
+    })
+  }, [isUsdc, usdcResult, queryClient, ethAddress, mint])
+
+  // If this is USDC, return data from the USDC hook with proper formatting
+  if (isUsdc) {
+    const usdcData = usdcResult.data
+    const formattedData = usdcData
+      ? {
+          balance: new FixedDecimal(usdcData, 6), // USDC has 6 decimals
+          decimals: 6
+        }
+      : null
+
+    return {
+      status: usdcResult.status,
+      data: formattedData,
+      error: usdcResult.error,
+      refresh: usdcResult.refresh,
+      cancelPolling
+    }
+  }
 
   // Map TanStack Query states to the Status enum for API compatibility
   let status = Status.IDLE
@@ -126,15 +183,6 @@ export const useTokenBalance = ({
 
   // For compatibility with existing code
   const data = result.data ?? null
-
-  // Function to cancel polling by invalidating and refetching the query
-  // This effectively stops the current polling cycle
-  const cancelPolling = useCallback(() => {
-    queryClient.cancelQueries({
-      queryKey: getTokenBalanceQueryKey(ethAddress, token, commitment)
-    })
-  }, [queryClient, ethAddress, token, commitment])
-
   return {
     status,
     data,

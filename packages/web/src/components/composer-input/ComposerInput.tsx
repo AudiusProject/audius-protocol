@@ -1,5 +1,6 @@
 import {
   ChangeEvent,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -48,7 +49,7 @@ const ESCAPE_KEY = 'Escape'
 const SPACE_KEY = ' '
 
 const ComposerText = ({
-  color,
+  color = 'default',
   children
 }: Pick<TextProps, 'color' | 'children'>) => {
   return (
@@ -58,12 +59,11 @@ const ComposerText = ({
   )
 }
 
-const createTextSections = (text: string) => {
+const createTextSections = (text: string, lineIndex: number): ReactNode[] => {
   const splitText = splitOnNewline(text)
+
   return splitText.map((t, index) => (
-    <ComposerText key={`${t}-${index}`} color='default'>
-      {t}
-    </ComposerText>
+    <ComposerText key={`${t}-${index + lineIndex}`}>{t}</ComposerText>
   ))
 }
 
@@ -391,13 +391,16 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
   const renderDisplayText = useCallback(
     (value: string) => {
+      // Line index is used to keep track of the index of the last text section
+      // so that we do not have duplicate keys in the rendered text sections
+      let lineIndex = 0
       const matches = getMatches(value) ?? []
       const mentions = getUserMentions(value) ?? []
       const fullMatches = [...matches, ...mentions, ...timestamps]
 
       // If there are no highlightable sections, render text normally
       if (!fullMatches.length && !isUserAutocompleteActive) {
-        return createTextSections(value)
+        return createTextSections(value, lineIndex)
       }
 
       const renderedTextSections = []
@@ -440,9 +443,12 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
         // Add text before the match
         if (index > lastIndex) {
-          renderedTextSections.push(
-            ...createTextSections(value.slice(lastIndex, index))
+          const textSections = createTextSections(
+            value.slice(lastIndex, index),
+            lineIndex
           )
+          renderedTextSections.push(...textSections)
+          lineIndex += textSections.length
         }
 
         // Add the matched word with accent color
@@ -473,7 +479,12 @@ export const ComposerInput = (props: ComposerInputProps) => {
 
       // Add remaining text after the last match
       if (lastIndex < value.length) {
-        renderedTextSections.push(...createTextSections(value.slice(lastIndex)))
+        const textSections = createTextSections(
+          value.slice(lastIndex),
+          lineIndex
+        )
+        renderedTextSections.push(...textSections)
+        lineIndex += textSections.length
       }
 
       return renderedTextSections

@@ -15,7 +15,7 @@ const REQUEST_TOKEN_URL =
 const LOGIN_URL =
   `${audiusBackendInstance.identityServiceUrl}/twitter/callback` as const
 
-type TwitterAuthButtonProps = {
+type XAuthButtonProps = {
   className?: string
   credentials?: 'omit' | 'same-origin' | 'include'
   customHeaders?: Record<string, any>
@@ -29,7 +29,7 @@ type TwitterAuthButtonProps = {
   children?: string
 }
 
-export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
+export const XAuthButton = (props: XAuthButtonProps) => {
   const {
     className,
     credentials = 'same-origin',
@@ -68,7 +68,7 @@ export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
         return response.json()
       })
       .then((data) => {
-        authenticationUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${data.oauth_token}&force_login=${forceLogin}`
+        authenticationUrl = `https://api.x.com/oauth/authenticate?oauth_token=${data.oauth_token}&force_login=${forceLogin}`
 
         if (screenName) {
           authenticationUrl = `${authenticationUrl}&screen_name=${screenName}`
@@ -180,11 +180,7 @@ export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
   }
 
   return (
-    <SocialButton
-      socialType='twitter'
-      onClick={onButtonClick}
-      className={className}
-    >
+    <SocialButton socialType='x' onClick={onButtonClick} className={className}>
       {children}
     </SocialButton>
   )

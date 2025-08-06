@@ -6,20 +6,13 @@ import { IconInstagram, IconTikTok, IconX } from 'app/harmony-native/icons'
 import { RadialGradient } from '../../RadialGradient/RadialGradient'
 import { Flex } from '../../layout/Flex/Flex'
 import { Button } from '../Button/Button'
-import type { HexColor } from '../Button/types'
 
-import type { SocialButtonProps, SocialMedia } from './types'
+import type { SocialButtonProps } from './types'
 
 const socialLogos = {
   tiktok: IconTikTok,
   instagram: IconInstagram,
   x: IconX
-}
-
-const socialHexColor: Record<SocialMedia, HexColor> = {
-  tiktok: '#fe2c55',
-  x: '#1ba1f1',
-  instagram: '#ca1d7e'
 }
 
 export const SocialButton = (props: SocialButtonProps) => {
@@ -29,8 +22,18 @@ export const SocialButton = (props: SocialButtonProps) => {
 
   return (
     <Button
-      hexColor={socialHexColor[socialType]}
-      style={css({ flex: 1, height: 48, paddingHorizontal: 0 })}
+      variant='secondary'
+      style={css({
+        flex: 1,
+        height: 48,
+        paddingHorizontal: 0,
+        backgroundColor:
+          socialType === 'tiktok'
+            ? '#fe2c55'
+            : socialType === 'instagram'
+              ? '#ca1d7e'
+              : undefined
+      })}
       {...rest}
     >
       {socialType === 'instagram' ? (
@@ -51,8 +54,10 @@ export const SocialButton = (props: SocialButtonProps) => {
           />
           <SocialLogo color='white' size='l' style={{ zIndex: 2 }} />
         </Flex>
-      ) : (
+      ) : socialType === 'tiktok' ? (
         <SocialLogo color='white' size='l' />
+      ) : (
+        <SocialLogo color='default' size='l' />
       )}
     </Button>
   )

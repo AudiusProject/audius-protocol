@@ -10,11 +10,13 @@ const messages = {
 type ModalLoadingProps = {
   title?: string
   subtitle?: string
+  noText?: boolean
 }
 
 export const ModalLoading = ({
   title = messages.title,
-  subtitle = messages.subtitle
+  subtitle = messages.subtitle,
+  noText = false
 }: ModalLoadingProps) => {
   return (
     <Flex
@@ -27,18 +29,26 @@ export const ModalLoading = ({
     >
       <LoadingSpinner />
       <Flex direction='column' alignItems='center' gap='s'>
-        <Text variant='heading' size='l' color='default' textAlign='center'>
-          {title}
-        </Text>
-        <Text
-          variant='title'
-          size='l'
-          strength='weak'
-          color='default'
-          textAlign='center'
-        >
-          {subtitle}
-        </Text>
+        {!noText ? (
+          <Text variant='heading' size='l' color='default' textAlign='center'>
+            {title}
+          </Text>
+        ) : (
+          <></>
+        )}
+        {!noText ? (
+          <Text
+            variant='title'
+            size='l'
+            strength='weak'
+            color='default'
+            textAlign='center'
+          >
+            {subtitle}
+          </Text>
+        ) : (
+          <></>
+        )}
       </Flex>
     </Flex>
   )

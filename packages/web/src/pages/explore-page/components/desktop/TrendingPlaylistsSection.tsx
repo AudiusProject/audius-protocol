@@ -141,7 +141,10 @@ export const TrendingPlaylistsSection = () => {
   }
 
   return (
-    <Carousel title={messages.trendingPlaylists}>
+    <Carousel
+      title={messages.trendingPlaylists}
+      viewAllLink='/explore/playlists'
+    >
       {isLoading ? (
         <>
           <CollectionTileSkeleton size={size} Tile={Tile} />

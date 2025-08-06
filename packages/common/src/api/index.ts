@@ -19,10 +19,12 @@ export * from './tan-query/collection/useCollectionByParams'
 
 // Coins
 export * from './tan-query/coins/useArtistCoin'
+export * from './tan-query/coins/useArtistCoinInsights'
 export * from './tan-query/coins/useArtistCoinMembers'
 export * from './tan-query/coins/useUserCoins'
-export * from './tan-query/coins/useCoin'
-export * from './tan-query/coins/useCoinInsights'
+
+export * from './tan-query/coins/useArtistCoins'
+export * from './tan-query/coins/tokenUtils'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -55,7 +57,6 @@ export * from './tan-query/notifications/useNotifications'
 export * from './tan-query/notifications/useNotificationEntities'
 export * from './tan-query/notifications/useNotificationEntity'
 export * from './tan-query/notifications/useNotificationUnreadCount'
-export * from './tan-query/notifications/useNotificationValidTypes'
 
 // Purchases
 export * from './tan-query/purchases/useAudioTransactions'
@@ -172,7 +173,6 @@ export * from './tan-query/wallets/useTokenBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
 export * from './tan-query/jupiter/utils'
-export * from './tan-query/jupiter/constants'
 
 // Saga fetch utils, remove when migration is complete
 export * from './tan-query/saga-utils'

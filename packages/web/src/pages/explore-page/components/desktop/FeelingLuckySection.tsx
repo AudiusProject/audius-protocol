@@ -10,8 +10,10 @@ import { Text, Flex, Button, IconArrowRotate } from '@audius/harmony'
 
 import { TrackTile } from 'components/track/desktop/TrackTile'
 import { TrackTileSize } from 'components/track/types'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 export const FeelingLuckySection = () => {
+  const isMobile = useIsMobile()
   const {
     data: feelingLuckyTrack,
     isLoading,
@@ -48,13 +50,18 @@ export const FeelingLuckySection = () => {
   }
 
   return (
-    <Flex direction='column'>
+    <Flex direction='column' ph={isMobile ? 'l' : undefined}>
       <Flex gap='xl' direction='column'>
-        <Flex justifyContent='space-between'>
-          <Text variant='heading'>{messages.feelingLucky}</Text>
+        <Flex justifyContent='space-between' gap='l' alignItems='center'>
+          <Text
+            variant={isMobile ? 'title' : 'heading'}
+            size={isMobile ? 'l' : 'm'}
+          >
+            {messages.feelingLucky}
+          </Text>
           <Button
             variant='secondary'
-            size='small'
+            size={isMobile ? 'xs' : 'small'}
             onClick={() => refetchFeelingLucky()}
             iconLeft={IconArrowRotate}
           >

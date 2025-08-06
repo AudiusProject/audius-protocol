@@ -62,13 +62,13 @@ export const buySellMessages = {
   stackedBalance: (formattedAvailableBalance: string) =>
     `${formattedAvailableBalance}  Available`,
   tokenTicker: (symbol: string, isStablecoin: boolean) =>
-    isStablecoin ? symbol : `$${symbol}`,
+    isStablecoin ? symbol : `${symbol}`,
   exchangeRate: (inputSymbol: string, outputSymbol: string, rate: number) =>
-    `Rate 1 $${inputSymbol} ≈ ${rate} $${outputSymbol}`,
+    `Rate 1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`,
   exchangeRateLabel: 'Rate',
   exchangeRateValue: (
     inputSymbol: string,
     outputSymbol: string,
     rate: number
-  ) => `1 $${inputSymbol} ≈ ${rate} $${outputSymbol}`
+  ) => `1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`
 }

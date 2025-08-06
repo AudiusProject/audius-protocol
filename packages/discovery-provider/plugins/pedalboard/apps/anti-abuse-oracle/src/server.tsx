@@ -68,6 +68,22 @@ const app = new Hono()
 app.use(logger())
 app.use('/attestation/*', cors())
 
+app.get('/attestation/check', async (c) => {
+  const wallet = c.req.query('wallet')
+  if (!wallet) return c.json({ error: 'wallet is required' }, 400)
+
+  const users =
+    await sql`select user_id, wallet from users where wallet = ${wallet.toLowerCase()}`
+  const user = users[0]
+  if (!user) return c.json({ error: `wallet not found: ${wallet}` }, 404)
+
+  const userScore = await getUserNormalizedScore(user.user_id, user.wallet)
+  if (userScore.overallScore < 0) {
+    return c.json({ data: 'blocked' }, 400)
+  }
+  return c.json({ data: 'allowed' }, 200)
+})
+
 app.post(
   '/attestation/block-user',
   basicAuth({

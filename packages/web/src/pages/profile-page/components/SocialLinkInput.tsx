@@ -3,7 +3,7 @@ import { useState, useRef, useMemo } from 'react'
 import {
   IconLink,
   IconTikTok,
-  IconTwitter,
+  IconX,
   IconInstagram,
   IconDonate,
   useTheme
@@ -16,7 +16,7 @@ import { Type, handleTypes } from './SocialLink'
 import styles from './SocialLinkInput.module.css'
 
 const socialLinkIcons = {
-  [Type.TWITTER]: IconTwitter,
+  [Type.X]: IconX,
   [Type.INSTAGRAM]: IconInstagram,
   [Type.TIKTOK]: IconTikTok,
   [Type.WEBSITE]: IconLink,
@@ -24,7 +24,7 @@ const socialLinkIcons = {
 }
 
 const socialLinkPlaceholders = {
-  [Type.TWITTER]: 'Twitter Handle',
+  [Type.X]: 'X Handle',
   [Type.INSTAGRAM]: 'Instagram Handle',
   [Type.TIKTOK]: 'TikTok Handle',
   [Type.WEBSITE]: 'Website',
@@ -33,8 +33,8 @@ const socialLinkPlaceholders = {
 
 const sanitizeHandle = (handle: string) => {
   if (handle.startsWith('http')) {
-    if (handle.includes('twitter')) {
-      const split = handle.split('twitter.com/')[1]
+    if (handle.includes('x')) {
+      const split = handle.split('x.com/')[1]
       if (split) {
         return split.split('/')[0]
       }
