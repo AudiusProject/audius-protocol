@@ -17,19 +17,12 @@ class NotificationService: UNNotificationServiceExtension {
             return
         }
 
-        // Set the category identifier for communication notifications
-        bestAttemptContent.categoryIdentifier = "COMMUNICATION"
-        
-        // For communication notifications, we don't use attachments for profile images
-        // Instead, we'll use the userInfo to pass profile image data
-        if let profileImageURLString = bestAttemptContent.userInfo["profile-image-url"] as? String {
-            // Download the profile image and store it for the communication notification
-            downloadProfileImage(from: profileImageURLString) { imageData in
-                if let imageData = imageData {
-                    // Store the profile image data in userInfo for the communication notification
-                    var updatedUserInfo = bestAttemptContent.userInfo
-                    updatedUserInfo["profile-image-data"] = imageData
-                    bestAttemptContent.userInfo = updatedUserInfo
+        // Look for media-url in userInfo
+        if let mediaURLString = bestAttemptContent.userInfo["media-url"] as? String,
+           let mediaURL = URL(string: mediaURLString) {
+            downloadAndAttachImage(from: mediaURL) { attachment in
+                if let attachment = attachment {
+                    bestAttemptContent.attachments = [attachment]
                 }
                 contentHandler(bestAttemptContent)
             }
@@ -39,25 +32,32 @@ class NotificationService: UNNotificationServiceExtension {
     }
 
     override func serviceExtensionTimeWillExpire() {
+        // Called just before the extension will be terminated by the system.
         if let contentHandler = contentHandler, let bestAttemptContent = bestAttemptContent {
             contentHandler(bestAttemptContent)
         }
     }
 
-    private func downloadProfileImage(from urlString: String, completion: @escaping (Data?) -> Void) {
-        guard let url = URL(string: urlString) else {
-            completion(nil)
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Failed to download profile image: \(error.localizedDescription)")
+    private func downloadAndAttachImage(from url: URL, completion: @escaping (UNNotificationAttachment?) -> Void) {
+        let task = URLSession.shared.downloadTask(with: url) { (downloadedUrl, response, error) in
+            guard let downloadedUrl = downloadedUrl else {
+                print("Failed to download image: \(error?.localizedDescription ?? "No error info")")
                 completion(nil)
                 return
             }
-            
-            completion(data)
+
+            do {
+                let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
+                let uniqueFilename = ProcessInfo.processInfo.globallyUniqueString + ".jpg"
+                let localUrl = tempDirectory.appendingPathComponent(uniqueFilename)
+                try FileManager.default.moveItem(at: downloadedUrl, to: localUrl)
+
+                let attachment = try UNNotificationAttachment(identifier: "media", url: localUrl, options: nil)
+                completion(attachment)
+            } catch {
+                print("Failed to create attachment: \(error)")
+                completion(nil)
+            }
         }
         task.resume()
     }
