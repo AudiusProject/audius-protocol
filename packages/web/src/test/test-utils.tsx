@@ -26,6 +26,7 @@ import { AppState } from 'store/types'
 
 import { createMockAppContext } from './mocks/app-context'
 import { audiusSdk } from './mocks/audiusSdk'
+import { createMockEnv } from './mocks/env'
 
 type TestOptions = {
   reduxState?: PartialDeep<AppState>
@@ -63,7 +64,8 @@ const TestProviders =
     const { reduxState, featureFlags } = options ?? {}
     const mockAppContext = createMockAppContext(featureFlags)
     const queryContext = {
-      audiusSdk
+      audiusSdk,
+      env: createMockEnv()
     } as unknown as QueryContextType
 
     return (
