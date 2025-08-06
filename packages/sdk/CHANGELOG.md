@@ -1,43 +1,5 @@
 # @audius/sdk
 
-## 10.0.0
-
-### Major Changes
-
-- d4ceab9: Replace getUserIDFromWallet with getUserIdsByAddresses
-
-  Replaces `sdk.users.getUserIDFromWallet` with new endpoint `sdk.users.getUserIdsByAddresses`. The old SDK version method will continue to work but is deprecated and should be replaced with the new method. The new method not only looks for associated wallets but also the user's account wallet and any claimable token accounts (user banks).
-
-  Also adds support for artist coins insights and updates the existing artist coins methods to match the backend.
-
-### Minor Changes
-
-- dc2f3de: Adds history, recently commented, and feeling lucky endpoints to non-full API
-- 8868474: Add support for artist coin endpoints
-- 7dcf0ae: add recently listed premium tracks API
-- 8bcfb33: Adds explore/best_selling endpoint
-- 7b6695f: Adds the getMostSharedTracks function to tracks API
-- 111beb0: Adds user recommended tracks endpoint to SDK
-- 3011b29: adds Share entity manager action
-
-### Patch Changes
-
-- 93f4cf2: Update Solana program clients to require `bigint` amounts
-
-  Instead of relying on a mapping to preconfigured mints and using
-  `@audius/fixed-decimal`, the Solana program clients are updated to support
-  arbitrary mints.
-
-- 9dadb38: Remix contest winner challenge
-- 0d7abfb: Fix artist coins names
-- 1f70f0b: Remix contest winners selected notification
-- 308a773: Fix setting USDC payout wallet
-- 8d7a624: Chat blast coin holders audience
-- 1026ce1: Remove BN.js dependency
-- 235d434: fix early consumption of request body in EM when request has an error
-- Updated dependencies [1026ce1]
-  - @audius/fixed-decimal@0.2.0
-
 ## 9.1.0
 
 ### Minor Changes

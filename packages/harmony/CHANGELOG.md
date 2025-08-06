@@ -1,11 +1,5 @@
 # @audius/harmony
 
-## 0.4.1
-
-### Patch Changes
-
-- 0dfd7d0: Fix X icon color
-
 ## 0.4.0
 
 ### Minor Changes
