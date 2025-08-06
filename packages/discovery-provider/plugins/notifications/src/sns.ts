@@ -60,7 +60,7 @@ export const sendIOSMessage = async ({
   if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) arn = 'APNS'
 
-  const apnsConfig = {
+  const apnsConfig: any = {
     aps: {
       alert: {
         title,
@@ -72,11 +72,16 @@ export const sendIOSMessage = async ({
     data
   }
 
-  // Enable rich notifications when image is provided
+  // Enable rich notifications when image is provided (People Thumbnail notifications)
   if (imageUrl) {
-    apnsConfig.aps['category'] = 'COMMUNICATION'
     apnsConfig.aps['mutable-content'] = 1
     apnsConfig['media-url'] = imageUrl
+    // Add People Thumbnail notification features
+    apnsConfig.aps.category = 'communication'
+    apnsConfig.headers = {
+      'apns-push-type': 'communication',
+      'apns-priority': '10'
+    }
   }
 
   const message = JSON.stringify({
