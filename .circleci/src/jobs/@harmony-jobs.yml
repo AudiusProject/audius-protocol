@@ -43,9 +43,9 @@ harmony-build-storybook:
           - packages/harmony/storybook-static
 
 harmony-test-storybook:
+  machine: true
+  resource_class: audiusproject/gcp-n2-standard-4
   working_directory: ~/harmony
-  docker:
-    - image: cimg/node:18.17
   steps:
     - checkout
     - attach_workspace:
