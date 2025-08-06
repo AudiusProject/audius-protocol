@@ -2,12 +2,9 @@ import { useMemo } from 'react'
 
 import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
-import { useAudioBalance, useTokenPrice } from '../api'
-import { TOKEN_LISTING_MAP } from '../store'
-import { formatAudioBalance, isNullOrUndefined } from '../utils'
-
-// AUDIO token address from Jupiter
-const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
+import { useAudioBalance, useTokenPrice } from '~/api'
+import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
+import { formatAudioBalance, isNullOrUndefined } from '~/utils'
 
 type UseFormattedAudioBalanceReturn = {
   audioBalance: bigint | null
@@ -20,6 +17,10 @@ type UseFormattedAudioBalanceReturn = {
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
+
+  // AUDIO token address from Jupiter
+  const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
+
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
     useTokenPrice(AUDIO_TOKEN_ID)
   const audioPrice = audioPriceData?.price || null
