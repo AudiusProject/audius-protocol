@@ -26,7 +26,7 @@ harmony-init:
           - packages/harmony/node_modules
 
 harmony-build-storybook:
-  working_directory: ~/harmony
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
@@ -45,7 +45,7 @@ harmony-build-storybook:
 harmony-test-storybook:
   machine: true
   resource_class: audiusproject/gcp-n2-standard-4
-  working_directory: ~/harmony
+  working_directory: ~/audius-protocol
   steps:
     - checkout
     - attach_workspace:
@@ -59,7 +59,7 @@ harmony-test-storybook:
         command: npx turbo run test --filter=@audius/harmony
 
 harmony-deploy-storybook:
-  working_directory: ~/harmony
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
