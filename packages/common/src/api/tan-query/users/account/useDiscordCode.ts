@@ -28,8 +28,9 @@ export const useDiscordCode = <TResult = string>(
         data,
         sdk
       })
-      const envString = env.ENVIRONMENT === 'staging' ? ':staging' : ''
-      const appended = `${signature}:${data}:${assetMint}${envString}`
+      // There's only one bot so in the discord code we tell it if we're in the staging env
+      const stagingEnvString = env.ENVIRONMENT === 'staging' ? '-staging' : ''
+      const appended = `${signature}-${data}-${assetMint}${stagingEnvString}`
       return appended
     },
     ...options

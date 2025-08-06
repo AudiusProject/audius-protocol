@@ -18,7 +18,8 @@ const messages = {
   copyThisCode: 'COPY THIS CODE',
   discordDescription:
     'To access the private token-holders only Discord channel and/or update your Discord role, copy & paste this code into a DM to the Audius VIP Discord Bot (@$AUDIO-BOT)',
-  launch: 'LAUNCH THE VIP DISCORD'
+  launch: 'LAUNCH THE VIP DISCORD',
+  title: 'Update Discord Role'
 }
 
 export const UpdateDiscordRoleModal = ({
@@ -38,7 +39,7 @@ export const UpdateDiscordRoleModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader onClose={onClose}>
-        <ModalTitle title='Update Discord Role' />
+        <ModalTitle title={messages.title} />
       </ModalHeader>
       <ModalContent>
         <Flex direction='column' gap='2xl'>

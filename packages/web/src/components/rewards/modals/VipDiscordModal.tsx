@@ -6,6 +6,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { env } from 'services/env'
 
 import ClickableAddress from '../ClickableAddress'
 
@@ -22,7 +23,7 @@ const messages = {
 }
 
 export const VipDiscordModal = () => {
-  const { data: discordCode } = useDiscordCode('audio')
+  const { data: discordCode } = useDiscordCode(env.WAUDIO_MINT_ADDRESS)
   const [isOpen, setIsOpen] = useModalState('VipDiscord')
   const isMobile = useIsMobile()
 

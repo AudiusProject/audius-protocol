@@ -1,23 +1,21 @@
 import type { Env } from '@audius/common/services'
+import Config from 'react-native-config'
 
 import { env as envDev } from './env.dev'
 import { env as envProd } from './env.prod'
 import { env as envStage } from './env.stage'
 
-const environment = 'production' // Config.ENVIRONMENT
+const environment = Config.ENVIRONMENT
 
 let env: Env
 
 switch (environment) {
-  // @ts-ignore
   case 'development':
     env = envDev
     break
-  // @ts-ignore
   case 'production':
     env = envProd
     break
-  // @ts-ignore
   case 'staging':
     env = envStage
     break
