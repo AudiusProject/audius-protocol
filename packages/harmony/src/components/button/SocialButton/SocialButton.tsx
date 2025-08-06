@@ -15,11 +15,11 @@ export type SocialButtonProps = ButtonProps & {
   socialType: SocialMedia
 }
 
-const socialLogos = {
+const getSocialLogos = () => ({
   tiktok: IconTikTok,
   instagram: IconInstagram,
   x: IconX
-}
+})
 
 export const SocialButton = (props: SocialButtonProps) => {
   const { socialType, ...rest } = props
@@ -29,7 +29,7 @@ export const SocialButton = (props: SocialButtonProps) => {
       radial-gradient(202.83% 136.37% at 84.5% 113.5%, #ff1b90 24.39%, #f80261 43.67%, #ed00c0 68.85%, #c500e9 77.68%, #7017ff 89.32%)`
   }
 
-  const SocialLogo = socialLogos[socialType]
+  const SocialLogo = getSocialLogos()[socialType]
 
   return (
     <Button
