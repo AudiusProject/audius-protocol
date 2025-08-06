@@ -20,13 +20,13 @@ import {
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { env } from 'services/env/env.dev'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { AppState } from 'store/types'
 
 import { createMockAppContext } from './mocks/app-context'
 import { audiusSdk } from './mocks/audiusSdk'
-import { createMockEnv } from './mocks/env'
 
 type TestOptions = {
   reduxState?: PartialDeep<AppState>
@@ -65,7 +65,7 @@ const TestProviders =
     const mockAppContext = createMockAppContext(featureFlags)
     const queryContext = {
       audiusSdk,
-      env: createMockEnv()
+      env
     } as unknown as QueryContextType
 
     return (
