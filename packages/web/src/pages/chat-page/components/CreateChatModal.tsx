@@ -90,6 +90,7 @@ const CreateChatModal = () => {
         renderEmpty={() => <CreateChatEmptyResults />}
         isOpen={isOpen}
         onClose={onClose}
+        debounceMs={500}
         onClosed={onClosed}
         onCancel={handleCancel}
         footer={<ChatBlastCTA onClick={onClose} />}
