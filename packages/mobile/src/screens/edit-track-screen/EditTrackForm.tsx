@@ -197,7 +197,14 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         })
       )
     }
-  }, [selectedTrack, setTitle, setOrigFilename, values.track_id, isUpload])
+  }, [
+    selectedTrack,
+    setTitle,
+    setOrigFilename,
+    values.track_id,
+    isUpload,
+    isTitleTouched
+  ])
 
   const handleDownload = useCallback(() => {
     if (!initialValues.track_id) {
