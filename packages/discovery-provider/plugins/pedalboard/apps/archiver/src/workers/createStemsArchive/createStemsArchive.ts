@@ -174,8 +174,7 @@ export const createStemsArchiveWorker = (services: WorkerServices) => {
             userId: hashedUserId,
             userSignature: signatureHeader,
             userData: messageHeader,
-            filename: stem.origFilename,
-            original: true
+            filename: stem.origFilename
           })
 
           if (config.environment === 'prod') {
