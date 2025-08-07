@@ -36,7 +36,9 @@ describe('Trending Track Notification', () => {
       { user_id: 2 },
       { user_id: 3 }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
 
     // User 1 follows user 2
     const notificationRow = {

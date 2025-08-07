@@ -50,7 +50,9 @@ describe('USDC Purchase Seller', () => {
 
   test('Process push notification for usdc track purchase', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
     await createUSDCPurchase(processor.discoveryDB, [
       {
         seller_user_id: 1,
@@ -200,7 +202,11 @@ describe('USDC Purchase Seller', () => {
   test('Process push notification for usdc album purchase', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [
-      { playlist_id: 15, playlist_owner_id: 1, playlist_image_sizes_multihash: 'test-hash' }
+      {
+        playlist_id: 15,
+        playlist_owner_id: 1,
+        playlist_image_sizes_multihash: 'test-hash'
+      }
     ])
     await createUSDCPurchase(processor.discoveryDB, [
       {

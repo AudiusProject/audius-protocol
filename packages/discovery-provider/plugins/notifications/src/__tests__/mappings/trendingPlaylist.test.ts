@@ -29,7 +29,11 @@ describe('Trending Playlist Notification', () => {
 
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [
-      { playlist_id: 1, playlist_owner_id: 1, playlist_image_sizes_multihash: 'test-hash' }
+      {
+        playlist_id: 1,
+        playlist_owner_id: 1,
+        playlist_image_sizes_multihash: 'test-hash'
+      }
     ])
   })
 

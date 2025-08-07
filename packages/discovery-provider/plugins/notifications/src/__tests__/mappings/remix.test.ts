@@ -38,7 +38,9 @@ describe('Remix Notification', () => {
 
     await createBlocks(processor.discoveryDB, [{ number: 1 }])
 
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
     await createTracks(processor.discoveryDB, [
       {
         track_id: 20,

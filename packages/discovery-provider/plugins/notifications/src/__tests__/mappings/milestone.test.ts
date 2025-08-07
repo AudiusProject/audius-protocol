@@ -129,7 +129,9 @@ describe('Milestone Notification', () => {
       processor.discoveryDB,
       new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 }))
     )
-    await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1, cover_art_sizes: 'test-hash' }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 2, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
     await createReposts(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({

@@ -28,7 +28,9 @@ describe('Trending Underground Notification', () => {
     processor = setup.processor
 
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
   })
 
   afterEach(async () => {
