@@ -36,8 +36,8 @@ export const getTokenBalanceQueryKey = (
 ) =>
   [
     QUERY_KEYS.tokenBalance,
-    ethAddress,
-    mint
+    mint,
+    ethAddress
   ] as unknown as QueryKey<TokenBalanceQueryData>
 
 /**
@@ -64,6 +64,7 @@ export const useTokenBalance = ({
   const queryClient = useQueryClient()
   const isUsdc = mint === env.USDC_MINT_ADDRESS
   const { data: userCoin } = useUserCoin({ mint })
+  console.log('userCoin', userCoin)
 
   // Use specialized USDC hook when dealing with USDC
   const usdcResult = useUSDCBalance({

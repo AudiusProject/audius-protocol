@@ -1,5 +1,6 @@
 import { Flex, makeResponsiveStyles } from '@audius/harmony'
 
+import { AssetExternalWallets } from './components/AssetExternalWallets'
 import { AssetInfoSection } from './components/AssetInfoSection'
 import { AssetInsights } from './components/AssetInsights'
 import { BalanceSection } from './components/BalanceSection'
@@ -63,6 +64,7 @@ export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
 
       <Flex css={styles.rightSection}>
         <AssetInsights mint={mint} />
+        <AssetExternalWallets mint={mint} />
       </Flex>
     </Flex>
   )
