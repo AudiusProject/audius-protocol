@@ -301,9 +301,6 @@ export enum Name {
   // Playback performance metrics
   BUFFERING_TIME = 'Buffering Time',
 
-  // A listen is when we record against the backend vs. a play which is a UI action
-  LISTEN = 'Listen',
-
   // Navigation
   PAGE_VIEW = 'Page View',
   ON_FIRST_PAGE = 'nav-on-first-page',
@@ -1562,11 +1559,6 @@ type SearchResultSelect = {
   source: SearchSource
   id: ID
   kind: 'track' | 'profile' | 'playlist' | 'album'
-}
-
-type Listen = {
-  eventName: Name.LISTEN
-  trackId: string
 }
 
 type ListenGated = {
@@ -2977,7 +2969,6 @@ export type AllTrackingEvents =
   | SearchTag
   | SearchMoreResults
   | SearchResultSelect
-  | Listen
   | ListenGated
   | ErrorPage
   | NotFoundPage
