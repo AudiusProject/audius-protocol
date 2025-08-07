@@ -230,22 +230,16 @@ const ExplorePage = () => {
               <QuickSearchGrid />
             </>
           )}
-          {showPlaylistContent && (
-            <FeaturedPlaylistsSection hide={!showPlaylistContent} />
-          )}
-          {showTrackContent && (
-            <FeaturedRemixContestsSection hide={!showTrackContent} />
-          )}
+          {showPlaylistContent && <FeaturedPlaylistsSection />}
+          {showTrackContent && <FeaturedRemixContestsSection />}
 
           {isSearchExploreGoodiesEnabled && showTrackContent && (
-            <UndergroundTrendingTracksSection hide={!showTrackContent} />
+            <UndergroundTrendingTracksSection />
           )}
 
-          {showUserContent && (
-            <ArtistSpotlightSection hide={!showUserContent} />
-          )}
+          {showUserContent && <ArtistSpotlightSection />}
 
-          {showUserContent && <LabelSpotlightSection hide={!showUserContent} />}
+          {showUserContent && <LabelSpotlightSection />}
 
           {(showTrackContent || showAlbumContent || showPlaylistContent) && (
             <MoodGrid />
@@ -254,17 +248,9 @@ const ExplorePage = () => {
           {isSearchExploreGoodiesEnabled ? (
             <>
               {showPlaylistContent && <TrendingPlaylistsSection />}
-              {showTrackContent && (
-                <MostSharedSection hide={!showTrackContent} />
-              )}
-              {(showAlbumContent || showTrackContent) && (
-                <BestSellingSection
-                  hide={!(showAlbumContent || showTrackContent)}
-                />
-              )}
-              {showTrackContent && (
-                <RecentPremiumTracksSection hide={!showTrackContent} />
-              )}
+              {showTrackContent && <MostSharedSection />}
+              {(showAlbumContent || showTrackContent) && <BestSellingSection />}
+              {showTrackContent && <RecentPremiumTracksSection />}
               {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}
