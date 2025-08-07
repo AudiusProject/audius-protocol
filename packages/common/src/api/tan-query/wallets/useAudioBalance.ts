@@ -1,10 +1,10 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import {
   QueryClient,
-  useQuery,
+  queryOptions,
   useQueries,
-  type QueryFunctionContext,
-  queryOptions
+  useQuery,
+  type QueryFunctionContext
 } from '@tanstack/react-query'
 import { call, getContext } from 'typed-redux-saga'
 import { getAddress } from 'viem'
@@ -121,7 +121,7 @@ const getWalletAudioBalanceOptions = (
  */
 export const useWalletAudioBalance = (
   params: UseWalletAudioBalanceParams,
-  options: Partial<ReturnType<typeof getWalletAudioBalanceOptions>>
+  options?: Partial<ReturnType<typeof getWalletAudioBalanceOptions>>
 ) => {
   const context = useQueryContext()
   return useQuery({
@@ -140,18 +140,31 @@ type UseAudioBalancesParams = {
  */
 export const useWalletAudioBalances = (
   params: UseAudioBalancesParams,
-  options: Partial<ReturnType<typeof getWalletAudioBalanceOptions>>
+  options?: Partial<ReturnType<typeof getWalletAudioBalanceOptions>>
 ) => {
   const context = useQueryContext()
+  const queries = params.wallets.map(({ address, chain }) => ({
+    ...options,
+    ...getWalletAudioBalanceOptions(context, {
+      address,
+      chain,
+      includeStaked: params.includeStaked
+    })
+  }))
   return useQueries({
-    queries: params.wallets.map(({ address, chain }) => ({
-      ...options,
-      ...getWalletAudioBalanceOptions(context, {
-        address,
-        chain,
-        includeStaked: params.includeStaked
-      })
-    }))
+    queries,
+    combine: (results) => {
+      return {
+        data: results.map((r, i) => ({
+          balance: r.data,
+          chain: params.wallets[i].chain,
+          address: params.wallets[i].address
+        })),
+        isPending: results.some((r) => r.isPending),
+        isError: results.some((r) => r.isError),
+        isSuccess: results.every((r) => r.isSuccess)
+      }
+    }
   })
 }
 
@@ -162,8 +175,6 @@ type UseAudioBalanceOptions = {
 
 /**
  * Hook for getting the AUDIO balance of the current user, optionally including connected wallets.
- *
- * NOTE: Does not stay in sync with the store. Won't reflect optimism.
  */
 export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   const { includeConnectedWallets = true } = options
@@ -187,10 +198,10 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
     { enabled: isUserFetched }
   )
   let accountBalance = AUDIO(0).value
-  const isAccountBalanceLoading = accountBalances.some((r) => r.isPending)
-  for (const balanceRes of accountBalances) {
+
+  for (const balanceRes of accountBalances.data) {
     accountBalance = AUDIO(
-      accountBalance + (balanceRes?.data ?? AUDIO(0).value)
+      accountBalance + (balanceRes.balance ?? AUDIO(0).value)
     ).value
   }
 
@@ -208,23 +219,24 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   )
   let connectedWalletsBalance = AUDIO(0).value
   const isConnectedWalletsBalanceLoading = includeConnectedWallets
-    ? connectedWalletsBalances.some((r) => r.isPending)
+    ? connectedWalletsBalances.isPending
     : false
   if (includeConnectedWallets) {
-    for (const balanceRes of connectedWalletsBalances) {
+    for (const balanceRes of connectedWalletsBalances.data) {
       connectedWalletsBalance = AUDIO(
-        connectedWalletsBalance + (balanceRes?.data ?? AUDIO(0).value)
+        connectedWalletsBalance + (balanceRes.balance ?? AUDIO(0).value)
       ).value
     }
   }
 
   // Together they are the total balance
   const totalBalance = AUDIO(accountBalance + connectedWalletsBalance).value
-  const isLoading = isAccountBalanceLoading || isConnectedWalletsBalanceLoading
+  const isLoading =
+    accountBalances.isPending || isConnectedWalletsBalanceLoading
   const isError =
     isConnectedWalletsError ||
-    accountBalances.some((r) => r.isError) ||
-    connectedWalletsBalances.some((r) => r.isError)
+    accountBalances.isError ||
+    connectedWalletsBalances.isError
   return {
     accountBalance,
     connectedWalletsBalance,
