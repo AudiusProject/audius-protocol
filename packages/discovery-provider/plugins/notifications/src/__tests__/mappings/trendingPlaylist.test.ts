@@ -29,7 +29,7 @@ describe('Trending Playlist Notification', () => {
 
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [
-      { playlist_id: 1, playlist_owner_id: 1 }
+      { playlist_id: 1, playlist_owner_id: 1, playlist_image_sizes_multihash: 'test-hash' }
     ])
   })
 
@@ -77,7 +77,8 @@ describe('Trending Playlist Notification', () => {
       {
         title: "📈 You're Trending",
         body: `playlist_name_1 is the #1 trending playlist on Audius right now!`,
-        data: {}
+        data: {},
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

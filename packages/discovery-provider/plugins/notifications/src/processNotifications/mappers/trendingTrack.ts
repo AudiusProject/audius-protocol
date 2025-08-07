@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingTrackNotification
@@ -56,33 +57,34 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId])
-    const users = res.reduce(
-      (acc, user) => {
-        acc[user.user_id] = {
-          name: user.name,
-          isDeactivated: user.is_deactivated
-        }
-        return acc
-      },
-      {} as Record<number, { name: string; isDeactivated: boolean }>
-    )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
     }
 
-    const trackRes: Array<{ track_id: number; title: string }> = await this.dnDB
-      .select('track_id', 'title')
+    const trackRes: Array<{
+      track_id: number
+      title: string
+      cover_art_sizes?: string | null
+    }> = await this.dnDB
+      .select('track_id', 'title', 'cover_art_sizes')
       .from<TrackRow>('tracks')
       .where('is_current', true)
       .whereIn('track_id', [this.trackId])
-    const tracks = trackRes.reduce(
-      (acc, track) => {
-        acc[track.track_id] = { title: track.title }
-        return acc
-      },
-      {} as Record<number, { title: string }>
-    )
+    const tracks = trackRes.reduce((acc, track) => {
+      acc[track.track_id] = {
+        title: track.title,
+        cover_art_sizes: track.cover_art_sizes
+      }
+      return acc
+    }, {} as Record<number, { title: string; cover_art_sizes?: string | null }>)
 
     // Get the user's notification setting from identity service
     const userNotificationSettings = await buildUserNotificationSettings(
@@ -95,6 +97,14 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     const body = `${tracks[this.trackId]?.title} is #${
       this.rank
     } on Trending right now!`
+
+    // Get track's cover art URL for rich notification (150x150 size)
+    let imageUrl: string | undefined
+    const track = tracks[this.trackId]
+    if (track?.cover_art_sizes) {
+      imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+    }
+
     await sendBrowserNotification(
       isBrowserPushEnabled,
       userNotificationSettings,
@@ -133,7 +143,8 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
                   this.notification.group_id
                 }`,
                 entityId: this.trackId
-              }
+              },
+              imageUrl
             }
           )
         })

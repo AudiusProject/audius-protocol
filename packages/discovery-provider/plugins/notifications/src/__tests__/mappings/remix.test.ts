@@ -38,7 +38,7 @@ describe('Remix Notification', () => {
 
     await createBlocks(processor.discoveryDB, [{ number: 1 }])
 
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }])
     await createTracks(processor.discoveryDB, [
       {
         track_id: 20,
@@ -69,7 +69,8 @@ describe('Remix Notification', () => {
           childTrackId: 20,
           id: 'timestamp:1589373217:group_id:remix:track:20:parent_track:10',
           type: 'RemixCreate'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

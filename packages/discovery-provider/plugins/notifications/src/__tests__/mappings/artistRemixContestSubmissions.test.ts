@@ -5,7 +5,8 @@ import {
   setupTest,
   setupTwoUsersWithDevices,
   insertNotifications,
-  resetTests
+  resetTests,
+  createTracks
 } from '../../utils/populateDB'
 
 describe('Artist Remix Contest Submissions Notification', () => {
@@ -29,16 +30,10 @@ describe('Artist Remix Contest Submissions Notification', () => {
       processor.identityDB
     )
 
-    // Insert track for entityId 12345
-    await processor.discoveryDB('tracks').insert({
-      track_id: 12345,
-      title: 'track_12345',
-      owner_id: user1.userId,
-      is_current: true,
-      is_delete: false,
-      created_at: new Date(),
-      updated_at: new Date()
-    })
+    // Create track with cover art
+    await createTracks(processor.discoveryDB, [
+      { track_id: 12345, owner_id: user1.userId, cover_art_sizes: 'test-hash' }
+    ])
 
     await insertNotifications(processor.discoveryDB, [
       {
@@ -67,13 +62,14 @@ describe('Artist Remix Contest Submissions Notification', () => {
       }),
       expect.objectContaining({
         title: 'New Remix Submission!',
-        body: 'Your remix contest for track_12345 received its first submission!',
+        body: 'Your remix contest for track_title_12345 received its first submission!',
         data: expect.objectContaining({
           type: 'ArtistRemixContestSubmissions',
           entityId: 12345,
           eventId: 999,
           milestone: 1
-        })
+        }),
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       })
     )
   })
@@ -84,16 +80,10 @@ describe('Artist Remix Contest Submissions Notification', () => {
       processor.identityDB
     )
 
-    // Insert track for entityId 12345
-    await processor.discoveryDB('tracks').insert({
-      track_id: 12345,
-      title: 'track_12345',
-      owner_id: user1.userId,
-      is_current: true,
-      is_delete: false,
-      created_at: new Date(),
-      updated_at: new Date()
-    })
+    // Create track with cover art
+    await createTracks(processor.discoveryDB, [
+      { track_id: 12345, owner_id: user1.userId, cover_art_sizes: 'test-hash' }
+    ])
 
     await insertNotifications(processor.discoveryDB, [
       {
@@ -122,13 +112,14 @@ describe('Artist Remix Contest Submissions Notification', () => {
       }),
       expect.objectContaining({
         title: 'New Remix Submission!',
-        body: 'Your remix contest for track_12345 has received 10 submissions!',
+        body: 'Your remix contest for track_title_12345 has received 10 submissions!',
         data: expect.objectContaining({
           type: 'ArtistRemixContestSubmissions',
           entityId: 12345,
           eventId: 999,
           milestone: 10
-        })
+        }),
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       })
     )
   })

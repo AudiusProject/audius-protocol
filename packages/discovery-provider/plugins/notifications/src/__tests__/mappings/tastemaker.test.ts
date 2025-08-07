@@ -38,7 +38,7 @@ describe('Tastemaker Notification', () => {
       { user_id: 2 },
       { user_id: 3 }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 3, owner_id: 2 }])
+    await createTracks(processor.discoveryDB, [{ track_id: 3, owner_id: 2, cover_art_sizes: 'test-hash' }])
 
     // User 1 follows user 2
     const notificationRow = {
@@ -86,7 +86,8 @@ describe('Tastemaker Notification', () => {
           userIds: [10],
           entityType: 'Track',
           entityId: 3
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
