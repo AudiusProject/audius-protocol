@@ -55,7 +55,7 @@ const getWalletAudioBalanceQueryFn =
   }: QueryFunctionContext<
     ReturnType<typeof getWalletAudioBalanceQueryKey>
   >) => {
-    const [_, chain, address, { includeStaked }] = queryKey
+    const [_ignored, chain, address, { includeStaked }] = queryKey
     const { audiusSdk, audiusBackend, reportToSentry } = context
     try {
       const sdk = await audiusSdk()
