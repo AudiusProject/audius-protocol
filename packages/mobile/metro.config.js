@@ -85,6 +85,11 @@ const config = {
       // The following imports are needed for @audius/common
       // and @audius/web to compile correctly
       'react-redux': resolveModule('react-redux'),
+      'react-native-safe-area-context': path.resolve(
+        __dirname,
+        './node_modules',
+        'react-native-safe-area-context'
+      ),
       'react-native-svg': path.resolve(
         __dirname,
         './node_modules',

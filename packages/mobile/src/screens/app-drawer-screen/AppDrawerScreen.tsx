@@ -6,7 +6,7 @@ import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/types
 import { useNavigation } from '@react-navigation/native'
 import { Dimensions } from 'react-native'
 
-import { AudioPlayer } from 'app/components/audio/AudioPlayer'
+// import { AudioPlayer } from 'app/components/audio/AudioPlayer'
 import { RepeatListener } from 'app/components/audio/RepeatListener'
 
 import { AppScreen } from '../app-screen'
@@ -68,7 +68,7 @@ export const AppDrawerScreen = memo(
     return (
       <>
         <RepeatListener />
-        <AudioPlayer />
+        {/* <AudioPlayer /> */}
         <Drawer.Navigator
           screenOptions={drawerScreenOptions}
           drawerContent={(props) => (
