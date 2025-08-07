@@ -21,7 +21,7 @@ export const checkNetInfoReachability = (netInfo: NetInfoState | null) => {
 const isResponseValid = (response: Response | undefined) =>
   response && response.ok
 
-export const pingTest = async () => {
+const pingTest = async () => {
   // If there's no reachability url available, consider ourselves reachable
   if (!REACHABILITY_URL) {
     console.warn('No reachability url provided')
@@ -32,13 +32,10 @@ export const pingTest = async () => {
     const response = await fetch(REACHABILITY_URL, { method: 'GET' })
 
     if (isResponseValid(response)) {
-      console.debug('Reachability call succeeded')
       return true
     }
-    console.debug('Reachability call failed')
     return false
   } catch {
-    console.debug('Reachability call failed')
     return false
   }
 }
@@ -75,12 +72,6 @@ const setUnreachable = debounce(
   2500,
   { maxWait: 5000 }
 )
-
-export const forceRefreshConnectivity = async () => {
-  NetInfo.refresh()
-  const updatedNetInfoState = await NetInfo.fetch()
-  updateReachability(updatedNetInfoState)
-}
 
 /** Called on first app render */
 export const subscribeToNetworkStatusUpdates = () => {
