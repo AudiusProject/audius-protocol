@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RemixNotification
@@ -54,29 +55,30 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.remixUserId, this.parentTrackUserId])
-    const users = res.reduce(
-      (acc, user) => {
-        acc[user.user_id] = {
-          name: user.name,
-          isDeactivated: user.is_deactivated
-        }
-        return acc
-      },
-      {} as Record<number, { name: string; isDeactivated: boolean }>
-    )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
-    const trackRes: Array<{ track_id: number; title: string }> = await this.dnDB
-      .select('track_id', 'title')
+    const trackRes: Array<{
+      track_id: number
+      title: string
+      cover_art_sizes?: string | null
+    }> = await this.dnDB
+      .select('track_id', 'title', 'cover_art_sizes')
       .from<TrackRow>('tracks')
       .where('is_current', true)
       .whereIn('track_id', [this.trackId, this.parentTrackId])
-    const tracks = trackRes.reduce(
-      (acc, track) => {
-        acc[track.track_id] = { title: track.title }
-        return acc
-      },
-      {} as Record<number, { title: string }>
-    )
+    const tracks = trackRes.reduce((acc, track) => {
+      acc[track.track_id] = {
+        title: track.title,
+        cover_art_sizes: track.cover_art_sizes
+      }
+      return acc
+    }, {} as Record<number, { title: string; cover_art_sizes?: string | null }>)
 
     if (users?.[this.parentTrackUserId]?.isDeactivated) {
       return
@@ -97,6 +99,14 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
 
     const title = 'New Remix Of Your Track ♻️'
     const body = `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`
+
+    // Get track's cover art URL for rich notification (150x150 size)
+    let imageUrl: string | undefined
+    const track = tracks[this.parentTrackId]
+    if (track?.cover_art_sizes) {
+      imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+    }
+
     if (
       userNotificationSettings.isNotificationTypeEnabled(
         this.parentTrackUserId,
@@ -142,7 +152,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
                 }`,
                 type: 'RemixCreate',
                 childTrackId: this.trackId
-              }
+              },
+              imageUrl
             }
           )
         })

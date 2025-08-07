@@ -45,15 +45,19 @@ const UnreadNotifications = ({ message }) => (
 const snippetMap = {
   ['favorite'](notification) {
     const [user] = notification.users
-    return `${user.name
-      } favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name
-      }`
+    return `${
+      user.name
+    } favorited your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['repost'](notification) {
     const [user] = notification.users
-    return `${user.name
-      } reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name
-      }`
+    return `${
+      user.name
+    } reposted your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['repost_of_repost'](notification) {
     const [user] = notification.users
@@ -65,9 +69,11 @@ const snippetMap = {
   },
   ['save'](notification) {
     const [user] = notification.users
-    return `${user.name
-      } favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name
-      }`
+    return `${
+      user.name
+    } favorited your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['save_of_repost'](notification) {
     const [user] = notification.users
@@ -103,9 +109,11 @@ const snippetMap = {
   ['usdc_purchase_seller'](notification) {
     const { entity, users, amount } = notification
     const userName = users[0].name
-    return `Congrats, ${userName || 'someone'
-      } just bought your ${entity.type.toLowerCase()} ${entity.name
-      } for $${amount}!`
+    return `Congrats, ${
+      userName || 'someone'
+    } just bought your ${entity.type.toLowerCase()} ${
+      entity.name
+    } for $${amount}!`
   },
   ['usdc_purchase_buyer'](notification) {
     const { entity, users } = notification
@@ -128,9 +136,11 @@ const snippetMap = {
     ) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
-    return `${user.name
-      } released a new ${notification.entity.type.toLowerCase()} ${notification.entity.name
-      }`
+    return `${
+      user.name
+    } released a new ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['remix'](notification) {
     const { parentTrack } = notification
@@ -165,45 +175,52 @@ const snippetMap = {
     return `${notification.playlistOwner.name} added your track ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   },
   [DMEntityType.Message](notification) {
-    return `${notification.sendingUser.name} sent you ${notification.multiple ? 'new messages' : 'a new message'
-      }`
+    return `${notification.sendingUser.name} sent you ${
+      notification.multiple ? 'new messages' : 'a new message'
+    }`
   },
   [DMEntityType.Reaction](notification) {
-    return `${notification.sendingUser.name} reacted to your message${notification.multiple ? 's' : ''
-      }`
+    return `${notification.sendingUser.name} reacted to your message${
+      notification.multiple ? 's' : ''
+    }`
   },
   ['comment'](notification) {
     const [user] = notification.users
-    return `${user.name
-      } commented on your ${notification.entity.type.toLowerCase()} ${notification.entity.name
-      }`
+    return `${
+      user.name
+    } commented on your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['comment_thread'](notification) {
     const [user] = notification.users
-    return `${user.name} replied to your comment on ${notification.entityUser.user_id === notification.receiverUserId
+    return `${user.name} replied to your comment on ${
+      notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-          ? 'their'
-          : `${notification.entityUser.name}'s`
-      } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+        ? 'their'
+        : `${notification.entityUser.name}'s`
+    } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['comment_mention'](notification) {
     const [user] = notification.users
-    return `${user.name} tagged you in a comment on ${notification.entityUser.user_id === notification.receiverUserId
+    return `${user.name} tagged you in a comment on ${
+      notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-          ? 'their'
-          : `${notification.entityUser.name}'s`
-      } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+        ? 'their'
+        : `${notification.entityUser.name}'s`
+    } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['comment_reaction'](notification) {
     const [user] = notification.users
-    return `${user.name} liked your comment on ${notification.entityUser.user_id === notification.receiverUserId
+    return `${user.name} liked your comment on ${
+      notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-          ? 'their'
-          : `${notification.entityUser.name}'s`
-      } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+        ? 'their'
+        : `${notification.entityUser.name}'s`
+    } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   }
 }
 

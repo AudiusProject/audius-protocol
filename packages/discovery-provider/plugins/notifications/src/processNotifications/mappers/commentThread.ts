@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type CommentThreadNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CommentThreadNotification
@@ -49,10 +50,11 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
   }) {
     let entityType: string
     let entityName: string
+    let imageUrl: string | undefined
 
     if (this.entityType === EntityType.Track) {
       const [track] = await this.dnDB
-        .select('track_id', 'title')
+        .select('track_id', 'title', 'cover_art_sizes')
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .where('track_id', this.entityId)
@@ -61,6 +63,10 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
         const { title } = track
         entityType = 'track'
         entityName = title
+        // Get track's cover art URL for rich notification (150x150 size)
+        if (track?.cover_art_sizes) {
+          imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+        }
       }
     }
 
@@ -152,7 +158,8 @@ export class CommentThread extends BaseNotification<CommentThreadNotificationRow
                 entityType: 'Track',
                 entityId: this.entityId,
                 commentId: this.notification.data.comment_id
-              }
+              },
+              imageUrl
             }
           )
         })

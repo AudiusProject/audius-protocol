@@ -15,6 +15,7 @@ import {
 import { sendBrowserNotification } from '../../web'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -57,36 +58,34 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId])
-    const users = res.reduce(
-      (acc, user) => {
-        acc[user.user_id] = {
-          name: user.name,
-          isDeactivated: user.is_deactivated
-        }
-        return acc
-      },
-      {} as Record<number, { name: string; isDeactivated: boolean }>
-    )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
     }
 
-    const playlistRes: Array<{ playlist_id: number; playlist_name: string }> =
-      await this.dnDB
-        .select('playlist_id', 'playlist_name')
-        .from<PlaylistRow>('playlists')
-        .where('is_current', true)
-        .whereIn('playlist_id', [this.playlistId])
+    const playlistRes: Array<{
+      playlist_id: number
+      playlist_name: string
+      playlist_image_sizes_multihash?: string | null
+    }> = await this.dnDB
+      .select('playlist_id', 'playlist_name', 'playlist_image_sizes_multihash')
+      .from<PlaylistRow>('playlists')
+      .where('is_current', true)
+      .whereIn('playlist_id', [this.playlistId])
 
-    const playlists = playlistRes.reduce(
-      (acc, playlist) => {
-        const { playlist_id, playlist_name } = playlist
-        acc[playlist_id] = { playlist_name }
-        return acc
-      },
-      {} as Record<number, { playlist_name: string }>
-    )
+    const playlists = playlistRes.reduce((acc, playlist) => {
+      const { playlist_id, playlist_name, playlist_image_sizes_multihash } =
+        playlist
+      acc[playlist_id] = { playlist_name, playlist_image_sizes_multihash }
+      return acc
+    }, {} as Record<number, { playlist_name: string; playlist_image_sizes_multihash?: string | null }>)
 
     // Get the user's notification setting from identity service
     const userNotificationSettings = await buildUserNotificationSettings(
@@ -100,6 +99,14 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     const body = `${playlists[this.playlistId]?.playlist_name} is the #${
       this.rank
     } trending playlist on Audius right now!`
+
+    // Get playlist's image URL for rich notification (150x150 size)
+    let imageUrl: string | undefined
+    const playlist = playlists[this.playlistId]
+    if (playlist?.playlist_image_sizes_multihash) {
+      imageUrl = formatImageUrl(playlist.playlist_image_sizes_multihash, 150)
+    }
+
     await sendBrowserNotification(
       isBrowserPushEnabled,
       userNotificationSettings,
@@ -132,7 +139,8 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
             {
               title,
               body,
-              data: {}
+              data: {},
+              imageUrl
             }
           )
         })
