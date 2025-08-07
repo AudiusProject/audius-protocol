@@ -20,6 +20,8 @@ export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
 // Define JupiterTokenSymbol type here since we can't import it directly
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
 
+const MAX_ACCOUNTS = 20
+
 let _jup: ReturnType<typeof createJupiterApiClient>
 
 const initJupiter = () => {
@@ -122,7 +124,8 @@ export const getJupiterQuoteByMint = async ({
     amount,
     slippageBps,
     swapMode,
-    onlyDirectRoutes
+    onlyDirectRoutes,
+    maxAccounts: MAX_ACCOUNTS
   })
 
   if (!quote) {
