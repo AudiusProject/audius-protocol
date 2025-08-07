@@ -324,6 +324,7 @@ export enum Name {
   NOT_FOUND_PAGE = 'Not Found Page',
 
   // System
+  WEB_VITALS = 'Web Vitals',
   PERFORMANCE = 'Performance',
   DISCOVERY_PROVIDER_SELECTION = 'Discovery Provider Selection',
   CREATOR_NODE_SELECTION = 'Creator Node Selection',
@@ -1580,6 +1581,12 @@ type BrowserNotificationSetting = {
   enabled: boolean
 }
 
+type WebVitals = {
+  eventName: Name.WEB_VITALS
+  metric: string
+  value: number
+  route: string
+}
 type Performance = {
   eventName: Name.PERFORMANCE
   metric: string
@@ -2977,6 +2984,7 @@ export type AllTrackingEvents =
   | BrowserNotificationSetting
   | TweetFirstUpload
   | DiscoveryProviderSelection
+  | WebVitals
   | Performance
   | StemCompleteUpload
   | StemDelete
