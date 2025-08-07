@@ -2,22 +2,37 @@ import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
 import { UserCard } from 'components/user-card'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ExploreSection } from './ExploreSection'
+import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
-export const LabelSpotlightSection = () => {
-  const { data, isLoading } = useExploreContent()
-
-  if (!isLoading && (!data || data.featuredLabels.length === 0)) {
-    return null
-  }
+const LabelSpotlightContent = ({ visible }: DeferredChildProps) => {
+  const { data, isLoading } = useExploreContent({ enabled: visible })
+  const isMobile = useIsMobile()
 
   return (
-    <ExploreSection
-      isLoading={isLoading}
-      title={messages.labelSpotlight}
-      data={data?.featuredLabels}
-      Card={UserCard}
-    />
+    <>
+      {!visible || !data?.featuredLabels || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            // loading skeletons
+            <UserCard key={i} id={0} size={isMobile ? 'xs' : 's'} />
+          ))
+        : data?.featuredLabels?.map((id) => (
+            <UserCard key={id} id={id} size='s' />
+          ))}
+    </>
+  )
+}
+
+export const LabelSpotlightSection = () => {
+  const { ref, inView } = useDeferredElement({
+    name: 'LabelSpotlightSection'
+  })
+
+  return (
+    <ExploreSection ref={ref} title={messages.labelSpotlight}>
+      <LabelSpotlightContent visible={inView} />
+    </ExploreSection>
   )
 }

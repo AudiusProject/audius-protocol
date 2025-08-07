@@ -1,25 +1,33 @@
-import React from 'react'
-
 import { useRecentPremiumTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
 import { TrackTile } from 'components/track/desktop/TrackTile'
 
 import { ExploreSection } from './ExploreSection'
+import { TilePairs, TileSkeletons } from './TileHelpers'
+import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
+
+const RecentPremiumTracksContent = ({ visible }: DeferredChildProps) => {
+  const { data, isLoading } = useRecentPremiumTracks(
+    { pageSize: 10 },
+    { enabled: visible }
+  )
+
+  return !visible || isLoading || !data ? (
+    <TileSkeletons Tile={TrackTile} />
+  ) : (
+    <TilePairs data={data} Tile={TrackTile} />
+  )
+}
 
 export const RecentPremiumTracksSection = () => {
-  const { data, isLoading } = useRecentPremiumTracks({ pageSize: 10 })
-
-  if (!isLoading && (!data || data.length === 0)) {
-    return null
-  }
+  const { ref, inView } = useDeferredElement({
+    name: 'RecentPremiumTracksSection'
+  })
 
   return (
-    <ExploreSection
-      title={messages.recentlyListedForSale}
-      data={data}
-      isLoading={isLoading}
-      Tile={TrackTile}
-    />
+    <ExploreSection ref={ref} title={messages.recentlyListedForSale}>
+      <RecentPremiumTracksContent visible={inView} />
+    </ExploreSection>
   )
 }

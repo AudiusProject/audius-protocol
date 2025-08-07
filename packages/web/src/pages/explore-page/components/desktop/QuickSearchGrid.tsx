@@ -12,6 +12,8 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useSearchCategory } from 'pages/search-page/hooks'
 import { MOODS } from 'pages/search-page/moods'
 
+import { useDeferredElement } from './useDeferredElement'
+
 const QuickSearchPresetButton = ({
   preset,
   onClick
@@ -101,6 +103,9 @@ const QuickSearchPresetButton = ({
 }
 
 export const QuickSearchGrid = () => {
+  const { ref, inView } = useDeferredElement({
+    name: 'QuickSearchGrid'
+  })
   const isMobile = useIsMobile()
   const [, setCategory] = useSearchCategory()
 
@@ -120,26 +125,36 @@ export const QuickSearchGrid = () => {
 
   return (
     <Flex
+      ref={ref}
       direction='column'
       gap={isMobile ? 'l' : 'xl'}
       alignItems='center'
       mh='l'
     >
-      <Text
-        variant={isMobile ? 'title' : 'heading'}
-        size={isMobile ? 'l' : 'm'}
-      >
-        {messages.quickSearch}
-      </Text>
-      <Flex gap='s' justifyContent='center' alignItems='flex-start' wrap='wrap'>
-        {QUICK_SEARCH_PRESETS.map((preset, idx) => (
-          <QuickSearchPresetButton
-            key={idx}
-            onClick={() => handleClickPreset(preset)}
-            preset={preset}
-          />
-        ))}
-      </Flex>
+      {!inView ? null : (
+        <>
+          <Text
+            variant={isMobile ? 'title' : 'heading'}
+            size={isMobile ? 'l' : 'm'}
+          >
+            {messages.quickSearch}
+          </Text>
+          <Flex
+            gap='s'
+            justifyContent='center'
+            alignItems='flex-start'
+            wrap='wrap'
+          >
+            {QUICK_SEARCH_PRESETS.map((preset, idx) => (
+              <QuickSearchPresetButton
+                key={idx}
+                onClick={() => handleClickPreset(preset)}
+                preset={preset}
+              />
+            ))}
+          </Flex>
+        </>
+      )}
     </Flex>
   )
 }

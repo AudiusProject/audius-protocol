@@ -5,23 +5,35 @@ import { full } from '@audius/sdk'
 import { TrackTile } from 'components/track/desktop/TrackTile'
 
 import { ExploreSection } from './ExploreSection'
+import { TilePairs, TileSkeletons } from './TileHelpers'
+import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
+
+const RecommendedTracksContent = ({ visible }: DeferredChildProps) => {
+  const { data, isLoading } = useRecommendedTracks(
+    {
+      pageSize: 10,
+      timeRange: full.GetRecommendedTracksTimeEnum.Week
+    },
+    {
+      enabled: visible
+    }
+  )
+
+  return !visible || isLoading || !data ? (
+    <TileSkeletons Tile={TrackTile} />
+  ) : (
+    <TilePairs data={data} Tile={TrackTile} />
+  )
+}
 
 export const RecommendedTracksSection = () => {
-  const { data, isLoading } = useRecommendedTracks({
-    pageSize: 10,
-    timeRange: full.GetRecommendedTracksTimeEnum.Week
+  const { ref, inView } = useDeferredElement({
+    name: 'RecommendedTracksSection'
   })
 
-  if (!isLoading && (!data || data.length === 0)) {
-    return null
-  }
-
   return (
-    <ExploreSection
-      title={messages.forYou}
-      data={data}
-      isLoading={isLoading}
-      Tile={TrackTile}
-    />
+    <ExploreSection ref={ref} title={messages.forYou}>
+      <RecommendedTracksContent visible={inView} />
+    </ExploreSection>
   )
 }

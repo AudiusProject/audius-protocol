@@ -12,13 +12,19 @@ import { TrackTile } from 'components/track/desktop/TrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
+import { useDeferredElement } from './useDeferredElement'
+
 export const FeelingLuckySection = () => {
+  const { ref, inView } = useDeferredElement({
+    name: 'FeelingLuckySection'
+  })
   const isMobile = useIsMobile()
   const {
     data: feelingLuckyTrack,
-    isLoading,
+    isError,
+    isSuccess,
     refetch: refetchFeelingLucky
-  } = useFeelingLuckyTracks({ limit: 1 })
+  } = useFeelingLuckyTracks({ limit: 1 }, { enabled: inView })
 
   // Create UID and togglePlay for feeling lucky track
   const feelingLuckyTrackId = feelingLuckyTrack?.[0]?.track_id ?? 0
@@ -45,43 +51,46 @@ export const FeelingLuckySection = () => {
     [feelingLuckyUid, feelingLuckyTrackId, toggleFeelingLucky]
   )
 
-  if (!isLoading && feelingLuckyTrackId === 0) {
+  if (isError || (isSuccess && feelingLuckyTrackId === 0)) {
     return null
   }
 
+  // TODO: skeleton for loading
   return (
-    <Flex direction='column' ph={isMobile ? 'l' : undefined}>
-      <Flex gap='xl' direction='column'>
-        <Flex justifyContent='space-between' gap='l' alignItems='center'>
-          <Text
-            variant={isMobile ? 'title' : 'heading'}
-            size={isMobile ? 'l' : 'm'}
-          >
-            {messages.feelingLucky}
-          </Text>
-          <Button
-            variant='secondary'
-            size={isMobile ? 'xs' : 'small'}
-            onClick={() => refetchFeelingLucky()}
-            iconLeft={IconArrowRotate}
-          >
-            {messages.imFeelingLucky}
-          </Button>
+    <Flex ref={ref} direction='column' ph={isMobile ? 'l' : undefined}>
+      {!inView ? null : (
+        <Flex gap='xl' direction='column'>
+          <Flex justifyContent='space-between' gap='l' alignItems='center'>
+            <Text
+              variant={isMobile ? 'title' : 'heading'}
+              size={isMobile ? 'l' : 'm'}
+            >
+              {messages.feelingLucky}
+            </Text>
+            <Button
+              variant='secondary'
+              size={isMobile ? 'xs' : 'small'}
+              onClick={() => refetchFeelingLucky()}
+              iconLeft={IconArrowRotate}
+            >
+              {messages.imFeelingLucky}
+            </Button>
+          </Flex>
+          <TrackTile
+            uid={feelingLuckyUid}
+            id={feelingLuckyTrackId}
+            index={0}
+            size={TrackTileSize.LARGE}
+            statSize={'small'}
+            ordered={false}
+            togglePlay={handleTogglePlay}
+            hasLoaded={() => {}}
+            isLoading={false}
+            isTrending={false}
+            isFeed={false}
+          />
         </Flex>
-        <TrackTile
-          uid={feelingLuckyUid}
-          id={feelingLuckyTrackId}
-          index={0}
-          size={TrackTileSize.LARGE}
-          statSize={'small'}
-          ordered={false}
-          togglePlay={handleTogglePlay}
-          hasLoaded={() => {}}
-          isLoading={false}
-          isTrending={false}
-          isFeed={false}
-        />
-      </Flex>
+      )}
     </Flex>
   )
 }

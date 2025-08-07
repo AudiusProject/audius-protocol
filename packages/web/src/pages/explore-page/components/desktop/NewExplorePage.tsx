@@ -316,9 +316,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           )}
           {showUserContent && <ArtistSpotlightSection />}
           {showUserContent && <LabelSpotlightSection />}
-          {isSearchExploreGoodiesEnabled && showTrackContent ? (
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
             <ActiveDiscussionsSection />
-          ) : null}
+          )}
           {(showTrackContent || showAlbumContent || showPlaylistContent) && (
             <MoodGrid />
           )}
@@ -326,7 +326,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <>
               {showPlaylistContent && <TrendingPlaylistsSection />}
               {showTrackContent && <MostSharedSection />}
-              {(showAlbumContent || showTrackContent) && <BestSellingSection />}
+              {(showTrackContent || showAlbumContent) && <BestSellingSection />}
               {showTrackContent && <RecentPremiumTracksSection />}
               {showTrackContent && <FeelingLuckySection />}
             </>

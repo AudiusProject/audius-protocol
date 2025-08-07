@@ -230,16 +230,22 @@ const ExplorePage = () => {
               <QuickSearchGrid />
             </>
           )}
-          {showPlaylistContent && <FeaturedPlaylistsSection />}
-          {showTrackContent && <FeaturedRemixContestsSection />}
-
-          {isSearchExploreGoodiesEnabled && showTrackContent && (
-            <UndergroundTrendingTracksSection />
+          {showPlaylistContent && (
+            <FeaturedPlaylistsSection hide={!showPlaylistContent} />
+          )}
+          {showTrackContent && (
+            <FeaturedRemixContestsSection hide={!showTrackContent} />
           )}
 
-          {showUserContent && <ArtistSpotlightSection />}
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <UndergroundTrendingTracksSection hide={!showTrackContent} />
+          )}
 
-          {showUserContent && <LabelSpotlightSection />}
+          {showUserContent && (
+            <ArtistSpotlightSection hide={!showUserContent} />
+          )}
+
+          {showUserContent && <LabelSpotlightSection hide={!showUserContent} />}
 
           {(showTrackContent || showAlbumContent || showPlaylistContent) && (
             <MoodGrid />
@@ -248,9 +254,17 @@ const ExplorePage = () => {
           {isSearchExploreGoodiesEnabled ? (
             <>
               {showPlaylistContent && <TrendingPlaylistsSection />}
-              {showTrackContent && <MostSharedSection />}
-              {(showAlbumContent || showTrackContent) && <BestSellingSection />}
-              {showTrackContent && <RecentPremiumTracksSection />}
+              {showTrackContent && (
+                <MostSharedSection hide={!showTrackContent} />
+              )}
+              {(showAlbumContent || showTrackContent) && (
+                <BestSellingSection
+                  hide={!(showAlbumContent || showTrackContent)}
+                />
+              )}
+              {showTrackContent && (
+                <RecentPremiumTracksSection hide={!showTrackContent} />
+              )}
               {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}

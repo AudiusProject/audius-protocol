@@ -9,14 +9,16 @@ import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ExploreSection } from './ExploreSection'
+import { TilePairs, TileSkeletons } from './TileHelpers'
+import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
-export const UndergroundTrendingTracksSection = () => {
+const UndergroundTrendingTracksContent = ({ visible }: DeferredChildProps) => {
   const isMobile = useIsMobile()
   const {
     data: undergroundTrendingTracks,
     isLoading: hookIsLoading,
     lineup
-  } = useTrendingUnderground({ pageSize: 10 })
+  } = useTrendingUnderground({ pageSize: 10 }, { enabled: visible })
 
   const isLoading = hookIsLoading || lineup.status === Status.LOADING
 
@@ -24,17 +26,27 @@ export const UndergroundTrendingTracksSection = () => {
     return undergroundTrendingTracks.map(({ id }) => id)
   }, [undergroundTrendingTracks])
 
-  if (!isLoading && undergroundTrendingTracks.length === 0) {
-    return null
-  }
+  const TrackTile = isMobile ? MobileTrackTile : DesktopTrackTile
+
+  return !visible || isLoading || !trackIds.length ? (
+    <TileSkeletons Tile={TrackTile} />
+  ) : (
+    <TilePairs data={trackIds} Tile={TrackTile} />
+  )
+}
+
+export const UndergroundTrendingTracksSection = () => {
+  const { ref, inView } = useDeferredElement({
+    name: 'UndergroundTrendingTracksSection'
+  })
 
   return (
     <ExploreSection
-      isLoading={isLoading}
+      ref={ref}
       title={messages.undergroundTrending}
-      data={trackIds}
-      Tile={isMobile ? MobileTrackTile : DesktopTrackTile}
       viewAllLink='/explore/underground'
-    />
+    >
+      <UndergroundTrendingTracksContent visible={inView} />
+    </ExploreSection>
   )
 }

@@ -5,15 +5,23 @@ import { BestSellingCard } from 'components/best-selling-card'
 import { useSearchCategory } from 'pages/search-page/hooks'
 
 import { ExploreSection } from './ExploreSection'
+import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
-export const BestSellingSection = () => {
+const BestSellingContent = ({ visible }: DeferredChildProps) => {
   const [category] = useSearchCategory()
 
-  const { data, isLoading } = useBestSelling({
-    pageSize: 10,
-    type:
-      category === 'albums' ? 'album' : category === 'tracks' ? 'track' : 'all'
-  })
+  const { data, isLoading } = useBestSelling(
+    {
+      pageSize: 10,
+      type:
+        category === 'albums'
+          ? 'album'
+          : category === 'tracks'
+            ? 'track'
+            : 'all'
+    },
+    { enabled: visible }
+  )
   // Deduplicate data by ID to avoid duplicate keys
   const uniqueData = data?.filter(
     (item, index, self) => self.findIndex((t) => t.id === item.id) === index
@@ -30,13 +38,26 @@ export const BestSellingSection = () => {
     return <BestSellingCard item={item} size='s' loading={isLoading} />
   }
 
-  if (!isLoading && !ids?.length) return null
+  return (
+    <>
+      {!visible || !ids || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            // loading skeletons
+            <BestSellingCardWithData key={i} id={0} />
+          ))
+        : ids?.map((id) => <BestSellingCardWithData key={id} id={id} />)}
+    </>
+  )
+}
+
+export const BestSellingSection = () => {
+  const { ref, inView } = useDeferredElement({
+    name: 'BestSellingSection'
+  })
 
   return (
-    <ExploreSection
-      title={messages.bestSelling}
-      data={ids}
-      Card={BestSellingCardWithData}
-    />
+    <ExploreSection ref={ref} title={messages.bestSelling}>
+      <BestSellingContent visible={inView} />
+    </ExploreSection>
   )
 }

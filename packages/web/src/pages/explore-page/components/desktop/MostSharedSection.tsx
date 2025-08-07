@@ -1,29 +1,43 @@
-import React from 'react'
-
 import { useMostSharedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { full } from '@audius/sdk'
 
 import { TrackCard } from 'components/track/TrackCard'
+import { useIsMobile } from 'hooks/useIsMobile'
 
 import { ExploreSection } from './ExploreSection'
+import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
-export const MostSharedSection = () => {
-  const { data, isLoading } = useMostSharedTracks({
-    pageSize: 10,
-    timeRange: full.GetMostSharedTracksTimeRangeEnum.Week
-  })
-
-  if (!isLoading && (!data || data.length === 0)) {
-    return null
-  }
+const MostSharedContent = ({ visible }: DeferredChildProps) => {
+  const { data, isLoading } = useMostSharedTracks(
+    {
+      pageSize: 10,
+      timeRange: full.GetMostSharedTracksTimeRangeEnum.Week
+    },
+    { enabled: visible }
+  )
+  const isMobile = useIsMobile()
 
   return (
-    <ExploreSection
-      title={messages.mostShared}
-      data={data}
-      isLoading={isLoading}
-      Card={TrackCard}
-    />
+    <>
+      {!visible || !data || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            // loading skeletons
+            <TrackCard key={i} id={0} size={isMobile ? 'xs' : 's'} />
+          ))
+        : data?.map((id) => <TrackCard key={id} id={id} size='s' />)}
+    </>
+  )
+}
+
+export const MostSharedSection = () => {
+  const { ref, inView } = useDeferredElement({
+    name: 'MostSharedSection'
+  })
+
+  return (
+    <ExploreSection ref={ref} title={messages.mostShared}>
+      <MostSharedContent visible={inView} />
+    </ExploreSection>
   )
 }
