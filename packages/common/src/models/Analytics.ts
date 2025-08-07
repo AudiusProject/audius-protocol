@@ -327,7 +327,6 @@ export enum Name {
   NOT_FOUND_PAGE = 'Not Found Page',
 
   // System
-  WEB_VITALS = 'Web Vitals',
   PERFORMANCE = 'Performance',
   DISCOVERY_PROVIDER_SELECTION = 'Discovery Provider Selection',
   CREATOR_NODE_SELECTION = 'Creator Node Selection',
@@ -361,8 +360,6 @@ export enum Name {
   PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER = 'Playlist Library: Move Playlist Out of Folder',
   PLAYLIST_LIBRARY_EXPAND_FOLDER = 'Playlist Library: Expand Folder',
   PLAYLIST_LIBRARY_COLLAPSE_FOLDER = 'Playlist Library: Collapse Folder',
-  // When an update is available in the playlist library
-  PLAYLIST_LIBRARY_HAS_UPDATE = 'Playlist Library: Has Update',
   // When a user clicks on a playlist in the library
   PLAYLIST_LIBRARY_CLICKED = 'Playlist Library: Clicked',
 
@@ -1591,13 +1588,6 @@ type BrowserNotificationSetting = {
   enabled: boolean
 }
 
-type WebVitals = {
-  eventName: Name.WEB_VITALS
-  metric: string
-  value: number
-  route: string
-}
-
 type Performance = {
   eventName: Name.PERFORMANCE
   metric: string
@@ -1708,11 +1698,6 @@ type PlaylistLibraryReorder = {
   // Whether or not the reorder contains newly created temp playlists
   containsTemporaryPlaylists: boolean
   kind: PlaylistLibraryKind
-}
-
-type PlaylistLibraryHasUpdate = {
-  eventName: Name.PLAYLIST_LIBRARY_HAS_UPDATE
-  count: number
 }
 
 type PlaylistLibraryClicked = {
@@ -3002,7 +2987,6 @@ export type AllTrackingEvents =
   | BrowserNotificationSetting
   | TweetFirstUpload
   | DiscoveryProviderSelection
-  | WebVitals
   | Performance
   | StemCompleteUpload
   | StemDelete
@@ -3016,7 +3000,6 @@ export type AllTrackingEvents =
   | ServiceMonitorRequest
   | ServiceMonitorHealthCheck
   | PlaylistLibraryReorder
-  | PlaylistLibraryHasUpdate
   | PlaylistLibraryClicked
   | PlaylistLibraryMovePlaylistIntoFolder
   | PlaylistLibraryAddPlaylistToFolder
