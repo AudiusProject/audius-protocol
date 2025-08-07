@@ -4,7 +4,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { TrackCard } from 'components/track/TrackCard'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
 const RecentlyPlayedContent = ({ visible }: DeferredChildProps) => {
@@ -32,12 +32,8 @@ export const RecentlyPlayedSection = () => {
   })
 
   return (
-    <ExploreSection
-      ref={ref}
-      title={messages.recentlyPlayed}
-      viewAllLink='/history'
-    >
+    <Carousel ref={ref} title={messages.recentlyPlayed} viewAllLink='/history'>
       <RecentlyPlayedContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

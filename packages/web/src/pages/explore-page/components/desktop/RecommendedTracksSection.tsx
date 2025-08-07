@@ -4,7 +4,7 @@ import { full } from '@audius/sdk'
 
 import { TrackTile } from 'components/track/desktop/TrackTile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { TilePairs, TileSkeletons } from './TileHelpers'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
@@ -32,8 +32,8 @@ export const RecommendedTracksSection = () => {
   })
 
   return (
-    <ExploreSection ref={ref} title={messages.forYou}>
+    <Carousel ref={ref} title={messages.forYou}>
       <RecommendedTracksContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

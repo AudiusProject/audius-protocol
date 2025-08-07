@@ -4,7 +4,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { RemixContestCard } from 'components/remix-contest-card'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
 const FeaturedRemixContestsContent = ({ visible }: DeferredChildProps) => {
@@ -31,8 +31,8 @@ export const FeaturedRemixContestsSection = () => {
   })
 
   return (
-    <ExploreSection ref={ref} title={messages.featuredRemixContests}>
+    <Carousel ref={ref} title={messages.featuredRemixContests}>
       <FeaturedRemixContestsContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

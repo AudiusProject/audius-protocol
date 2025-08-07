@@ -8,7 +8,7 @@ import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTil
 import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { TilePairs, TileSkeletons } from './TileHelpers'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
@@ -41,12 +41,12 @@ export const UndergroundTrendingTracksSection = () => {
   })
 
   return (
-    <ExploreSection
+    <Carousel
       ref={ref}
       title={messages.undergroundTrending}
       viewAllLink='/explore/underground'
     >
       <UndergroundTrendingTracksContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

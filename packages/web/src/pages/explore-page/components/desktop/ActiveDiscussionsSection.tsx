@@ -5,7 +5,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 
 import { TrackTile } from 'components/track/desktop/TrackTile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { TilePairs, TileSkeletons } from './TileHelpers'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
@@ -28,8 +28,8 @@ export const ActiveDiscussionsSection = () => {
   })
 
   return (
-    <ExploreSection ref={ref} title={messages.activeDiscussions}>
+    <Carousel ref={ref} title={messages.activeDiscussions}>
       <ActiveDiscussionsContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

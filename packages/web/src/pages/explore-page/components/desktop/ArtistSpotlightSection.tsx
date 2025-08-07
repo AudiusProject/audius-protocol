@@ -4,7 +4,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
 const ArtistSpotlightContent = ({ visible }: DeferredChildProps) => {
@@ -35,8 +35,8 @@ export const ArtistSpotlightSection = ({
   })
 
   return (
-    <ExploreSection ref={ref} title={messages.artistSpotlight}>
+    <Carousel ref={ref} title={messages.artistSpotlight}>
       <ArtistSpotlightContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

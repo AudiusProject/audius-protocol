@@ -14,7 +14,6 @@ import { Link } from 'react-router-dom-v5-compat'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 export type CarouselProps = {
-  hide?: boolean
   title: React.ReactNode
   children: React.ReactNode
   viewAllLink?: string

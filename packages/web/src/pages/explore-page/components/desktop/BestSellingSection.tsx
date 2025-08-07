@@ -4,7 +4,7 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { BestSellingCard } from 'components/best-selling-card'
 import { useSearchCategory } from 'pages/search-page/hooks'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
 const BestSellingContent = ({ visible }: DeferredChildProps) => {
@@ -56,8 +56,8 @@ export const BestSellingSection = () => {
   })
 
   return (
-    <ExploreSection ref={ref} title={messages.bestSelling}>
+    <Carousel ref={ref} title={messages.bestSelling}>
       <BestSellingContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }

@@ -5,7 +5,7 @@ import { full } from '@audius/sdk'
 import { TrackCard } from 'components/track/TrackCard'
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
 import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
 
 const MostSharedContent = ({ visible }: DeferredChildProps) => {
@@ -36,8 +36,8 @@ export const MostSharedSection = () => {
   })
 
   return (
-    <ExploreSection ref={ref} title={messages.mostShared}>
+    <Carousel ref={ref} title={messages.mostShared}>
       <MostSharedContent visible={inView} />
-    </ExploreSection>
+    </Carousel>
   )
 }
