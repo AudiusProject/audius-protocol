@@ -253,9 +253,11 @@ const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({
 export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
   z
     .object({
-      artwork: z.object({
-        url: z.string().nullable().optional()
-      }),
+      artwork: z
+        .object({
+          url: collectionType === 'album' ? z.string() : z.string().optional()
+        })
+        .nullable(),
       playlist_name: z.string({
         required_error: messages[collectionType].nameRequiredError
       }),
