@@ -1,13 +1,21 @@
-import { AudiusSdk, Id } from '@audius/sdk'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Id } from '@audius/sdk'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryFunctionContext
+} from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useQueryContext } from '~/api/tan-query/utils/QueryContext'
+import {
+  useQueryContext,
+  type QueryContextType
+} from '~/api/tan-query/utils/QueryContext'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryOptions, type QueryKey } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { getUserCollectiblesQueryKey } from '../users/useUserCollectibles'
 
@@ -17,52 +25,60 @@ export type ConnectedWallet = {
   isPending?: boolean
 }
 
-export const getConnectedWalletsQueryKey = ({
-  userId
-}: {
+type ConnectedWalletsParams = {
   userId: ID | null | undefined
-}) =>
-  [QUERY_KEYS.connectedWallets, userId] as unknown as QueryKey<
-    ConnectedWallet[]
-  >
-
-export const getConnectedWalletsQueryFn = async ({
-  sdk,
-  currentUserId
-}: {
-  sdk: AudiusSdk
-  currentUserId: ID | null | undefined
-}) => {
-  const { data } = await sdk.users.getConnectedWallets({
-    id: Id.parse(currentUserId)
-  })
-  return data?.ercWallets
-    ?.map<ConnectedWallet>((address) => ({
-      address,
-      chain: Chain.Eth
-    }))
-    .concat(
-      data?.splWallets?.map((address) => ({
-        address,
-        chain: Chain.Sol
-      }))
-    )
 }
-export const useConnectedWallets = (options?: QueryOptions) => {
-  const { audiusSdk } = useQueryContext()
+
+const getConnectedWalletsQueryKey = ({ userId }: ConnectedWalletsParams) =>
+  [QUERY_KEYS.connectedWallets, userId] as const
+
+type FetchConnectedWalletsContext = Pick<QueryContextType, 'audiusSdk'>
+
+const getConnectedWalletsQueryFn =
+  (context: FetchConnectedWalletsContext) =>
+  async (
+    queryContext: QueryFunctionContext<
+      ReturnType<typeof getConnectedWalletsQueryKey>
+    >
+  ) => {
+    const [, currentUserId] = queryContext.queryKey
+    const sdk = await context.audiusSdk()
+    const { data } = await sdk.users.getConnectedWallets({
+      id: Id.parse(currentUserId)
+    })
+    return data?.ercWallets
+      ?.map<ConnectedWallet>((address) => ({
+        address,
+        chain: Chain.Eth
+      }))
+      .concat(
+        data?.splWallets?.map((address) => ({
+          address,
+          chain: Chain.Sol
+        }))
+      )
+  }
+
+export const getConnectedWalletsQueryOptions = (
+  context: FetchConnectedWalletsContext,
+  params: ConnectedWalletsParams
+) => {
+  return queryOptions({
+    queryKey: getConnectedWalletsQueryKey(params),
+    queryFn: getConnectedWalletsQueryFn(context)
+  })
+}
+
+export const useConnectedWallets = (
+  options?: Partial<ReturnType<typeof getConnectedWalletsQueryOptions>>
+) => {
+  const context = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
-    queryFn: async () => {
-      const sdk = await audiusSdk()
-      return getConnectedWalletsQueryFn({
-        sdk,
-        currentUserId
-      })
-    },
+    ...options,
     enabled: options?.enabled !== false && !!currentUserId,
-    ...options
+    ...getConnectedWalletsQueryOptions(context, { userId: currentUserId })
   })
 }
 
@@ -102,10 +118,14 @@ export const useAddConnectedWallet = () => {
       }
 
       // Optimistically add the new wallet
-      queryClient.setQueryData(
-        getConnectedWalletsQueryKey({ userId: currentUserId }),
-        (old) => [...(old ?? []), { ...params.wallet, isPending: true }]
+      const options = getConnectedWalletsQueryOptions(
+        { audiusSdk },
+        { userId: currentUserId }
       )
+      queryClient.setQueryData(options.queryKey, (old) => [
+        ...(old ?? []),
+        { ...params.wallet, isPending: true }
+      ])
       return { previousAssociatedWallets }
     },
     onSettled: async () => {

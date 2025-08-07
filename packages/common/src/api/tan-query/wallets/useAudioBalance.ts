@@ -16,7 +16,6 @@ import {
 } from '~/api/tan-query/utils/QueryContext'
 import { Chain } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
-import { getSDK } from '~/store'
 import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -25,9 +24,7 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUser } from '../users/useUser'
 
 import {
-  ConnectedWallet,
-  getConnectedWalletsQueryFn,
-  getConnectedWalletsQueryKey,
+  getConnectedWalletsQueryOptions,
   useConnectedWallets
 } from './useConnectedWallets'
 
@@ -207,13 +204,13 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
 
   // Get linked/connected wallets balances
   const {
-    data: connectedWallets,
+    data: connectedWallets = [],
     isFetched: isConnectedWalletsFetched,
     isError: isConnectedWalletsError
   } = useConnectedWallets()
   const connectedWalletsBalances = useWalletAudioBalances(
     {
-      wallets: connectedWallets ?? []
+      wallets: connectedWallets
     },
     { enabled: isConnectedWalletsFetched && includeConnectedWallets }
   )
@@ -289,22 +286,19 @@ export function* getAccountAudioBalanceSaga() {
  */
 export function* getAccountTotalAudioBalanceSaga() {
   const queryClient = yield* getContext<QueryClient>('queryClient')
-  const sdk = yield* call(getSDK)
+  const queryContext = yield* getQueryContext()
   const accountBalance = yield* call(getAccountAudioBalanceSaga)
   const currentUserId = yield* call(queryCurrentUserId)
-  const connectedWallets = (yield* call([queryClient, queryClient.fetchQuery], {
-    queryKey: getConnectedWalletsQueryKey({ userId: currentUserId }),
-    queryFn: async () => {
-      return getConnectedWalletsQueryFn({
-        sdk,
-        currentUserId
+  const fetchConnectedWallets = async () =>
+    await queryClient.fetchQuery(
+      getConnectedWalletsQueryOptions(queryContext, {
+        userId: currentUserId
       })
-    }
-  })) as ConnectedWallet[]
-
+    )
+  const connectedWallets = yield* call(fetchConnectedWallets)
   const connectedWalletsBalance = yield* call(
     getWalletBalances,
-    connectedWallets
+    connectedWallets ?? []
   )
 
   return AUDIO(accountBalance + connectedWalletsBalance).value

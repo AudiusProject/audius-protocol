@@ -32,11 +32,11 @@ const AudioBreakdownBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const { accountBalance } = useAudioBalance()
 
-  const { data: connectedWallets, isPending: isConnectedWalletsPending } =
+  const { data: connectedWallets = [], isPending: isConnectedWalletsPending } =
     useConnectedWallets()
   const balances = useWalletAudioBalances(
     {
-      wallets: connectedWallets ?? [],
+      wallets: connectedWallets,
       includeStaked: true
     },
     { enabled: !isConnectedWalletsPending }
