@@ -2958,7 +2958,6 @@ export type AllTrackingEvents =
   | PlaybackPlay
   | PlaybackPause
   | BufferingTime
-  | BufferSpinnerShown
   | Follow
   | Unfollow
   | LinkClicking
