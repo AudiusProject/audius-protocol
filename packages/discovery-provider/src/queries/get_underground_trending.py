@@ -24,7 +24,7 @@ UNDERGROUND_TRENDING_LENGTH = 50
 
 
 def make_get_unpopulated_tracks(session, limit, offset, strategy):
-    # Get top 100 trending tracks to exclude
+    # Get top 20 trending tracks to exclude
     top_trending_subquery = (
         session.query(TrackTrendingScore.track_id)
         .join(
@@ -44,7 +44,7 @@ def make_get_unpopulated_tracks(session, limit, offset, strategy):
             TrackTrendingScore.score.desc(),
             TrackTrendingScore.track_id.desc(),
         )
-        .limit(100)
+        .limit(20)
         .subquery()
     )
 

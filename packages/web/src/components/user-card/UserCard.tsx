@@ -80,8 +80,9 @@ export const UserCard = (props: UserCardProps) => {
           textVariant='title'
           size='l'
           center
+          fullWidth
           onClick={onUserLinkClick}
-          popover={true}
+          popover
         />
         <ArtistPopover handle={handle} css={{ width: '100%' }}>
           <TextLink

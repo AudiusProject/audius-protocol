@@ -7,6 +7,7 @@ import { pick } from 'lodash'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Skeleton from 'components/skeleton/Skeleton'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useProfilePicture'
@@ -90,7 +91,7 @@ const ArtistChip = ({
   customChips = null,
   onNavigateAway
 }: ArtistChipProps) => {
-  const { data: user } = useUser(userId, {
+  const { data: user, isPending } = useUser(userId, {
     select: (user) => pick(user, ['name', 'handle', 'follower_count'])
   })
 
@@ -99,7 +100,29 @@ const ArtistChip = ({
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (!user) return null
+  // Show skeleton while user data is loading
+  if (isPending || !user) {
+    return (
+      <div
+        className={cn(styles.artistChip, {
+          [className]: !!className
+        })}
+      >
+        <Skeleton
+          className={cn(styles.profilePicture, styles.profilePictureSkeleton)}
+          width='72px'
+          height='72px'
+        />
+        <div className={styles.text}>
+          <div className={styles.identity}>
+            <Skeleton width='120px' height='20px' className={styles.name} />
+            <Skeleton width='80px' height='16px' className={styles.handle} />
+          </div>
+          {customChips || <Skeleton width='100px' height='16px' />}
+        </div>
+      </div>
+    )
+  }
 
   const { name, handle, follower_count } = user
 

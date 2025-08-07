@@ -1,15 +1,13 @@
 import { useUser } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import { IconSize, Text, useTheme, Flex } from '@audius/harmony'
+import { CSSObject } from '@emotion/react'
 import { Link } from 'react-router-dom'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { MountPlacement } from 'components/types'
-import UserBadges from 'components/user-badges'
-import UserBadgesV2 from 'components/user-badges/UserBadgesV2'
+import UserBadges from 'components/user-badges/UserBadges'
 
 import { TextLink, TextLinkProps } from './TextLink'
 
@@ -39,13 +37,10 @@ export const UserLink = (props: UserLinkProps) => {
     noBadges,
     noOverflow,
     center,
-    fullWidth = true,
+    fullWidth,
     ...other
   } = props
   const { spacing } = useTheme()
-  const { isEnabled: isWalletUIUpdate } = useFeatureFlag(
-    FeatureFlags.WALLET_UI_UPDATE
-  )
 
   const { data: partialUser } = useUser(userId, {
     select: (user) => {
@@ -60,8 +55,8 @@ export const UserLink = (props: UserLinkProps) => {
   }
 
   // Prepare the user badges
-  const badges = noBadges ? null : isWalletUIUpdate ? (
-    <UserBadgesV2
+  const badges = noBadges ? null : (
+    <UserBadges
       userId={userId}
       size={badgeSize}
       css={{
@@ -70,32 +65,24 @@ export const UserLink = (props: UserLinkProps) => {
         verticalAlign: 'middle'
       }}
     />
-  ) : (
-    <UserBadges
-      userId={userId}
-      size={badgeSize}
-      css={{ marginTop: spacing['2xs'] }}
-    />
   )
 
-  // In new UI, badges should be outside the TextLink to prevent hover effects on badges
-  const textLink = isWalletUIUpdate ? (
-    <Flex
-      w={fullWidth ? '100%' : undefined}
-      justifyContent={center ? 'center' : undefined}
-      css={{
-        columnGap: spacing.xs,
-        alignItems: 'center',
-        lineHeight: 'normal',
-        display: 'inline-flex'
-      }}
-    >
+  const containerStyles: CSSObject = {
+    columnGap: spacing.xs,
+    alignItems: 'center',
+    lineHeight: 'normal',
+    display: 'inline-flex',
+    width: fullWidth ? '100%' : undefined
+  }
+
+  // Badges should be outside the TextLink to prevent hover effects on badges
+  const textLink = (
+    <Flex justifyContent={center ? 'center' : undefined} css={containerStyles}>
       <TextLink
         to={url}
         css={{
           lineHeight: 'normal'
         }}
-        ellipses={popover}
         {...other}
       >
         <Text ellipses>{name}</Text>
@@ -103,55 +90,17 @@ export const UserLink = (props: UserLinkProps) => {
       {badges}
       {children}
     </Flex>
-  ) : (
-    <TextLink
-      to={url}
-      css={{
-        columnGap: spacing.xs,
-        alignItems: 'center',
-        lineHeight: 'normal'
-      }}
-      ellipses={popover}
-      {...other}
-    >
-      <Text ellipses>{name}</Text>
-      {badges}
-      {children}
-    </TextLink>
   )
 
   const noTextLink = <Link to={url}>{children}</Link>
   const linkElement = noText ? noTextLink : textLink
 
-  // In legacy UI, wrap the entire link element in ArtistPopover
-  if (!isWalletUIUpdate && popover && handle) {
-    return (
-      <ArtistPopover
-        css={{
-          display: 'inline-flex',
-          overflow: noOverflow ? 'visible' : 'hidden'
-        }}
-        handle={handle}
-        component='span'
-        mount={popoverMount}
-      >
-        {linkElement}
-      </ArtistPopover>
-    )
-  }
-
-  // In new UI, wrap the text in ArtistPopover if needed
-  if (isWalletUIUpdate && popover && handle && !noText) {
+  // Wrap the text in ArtistPopover if needed
+  if (popover && handle && !noText) {
     return (
       <Flex
-        w={fullWidth ? '100%' : undefined}
         justifyContent={center ? 'center' : undefined}
-        css={{
-          columnGap: spacing.xs,
-          alignItems: 'center',
-          lineHeight: 'normal',
-          display: 'inline-flex'
-        }}
+        css={containerStyles}
       >
         <ArtistPopover
           css={{
@@ -162,7 +111,7 @@ export const UserLink = (props: UserLinkProps) => {
           component='span'
           mount={popoverMount}
         >
-          <TextLink to={url} ellipses={popover} {...other}>
+          <TextLink to={url} {...other}>
             <Text ellipses>{name}</Text>
           </TextLink>
         </ArtistPopover>

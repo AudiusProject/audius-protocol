@@ -44,6 +44,12 @@ export interface CommentThreadNotificationActionData {
      * @memberof CommentThreadNotificationActionData
      */
     commentUserId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CommentThreadNotificationActionData
+     */
+    commentId?: string;
 }
 
 
@@ -85,6 +91,7 @@ export function CommentThreadNotificationActionDataFromJSONTyped(json: any, igno
         'entityId': json['entity_id'],
         'entityUserId': json['entity_user_id'],
         'commentUserId': json['comment_user_id'],
+        'commentId': !exists(json, 'comment_id') ? undefined : json['comment_id'],
     };
 }
 
@@ -101,6 +108,7 @@ export function CommentThreadNotificationActionDataToJSON(value?: CommentThreadN
         'entity_id': value.entityId,
         'entity_user_id': value.entityUserId,
         'comment_user_id': value.commentUserId,
+        'comment_id': value.commentId,
     };
 }
 

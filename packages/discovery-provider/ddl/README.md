@@ -5,6 +5,7 @@ tl;dr
 - Your migration sql file MUST be idempotent. See [examples](https://github.com/graphile/migrate/blob/main/docs/idempotent-examples.md) of ways to do this.
 - Transactions are up to you... you SHOULD wrap your statements in a transaction: `begin;  commit;`
 - If you cannot make your `.sql` file idempotent or safe, you can add `failable` to the file name and errors will be printed and ignored.
+- pg_migrate is safe to run multiple times in parallel as it uses an advisory lock to prevent clashing instances
 
 ## TEST
 

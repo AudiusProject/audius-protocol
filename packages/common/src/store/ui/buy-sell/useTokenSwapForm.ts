@@ -6,7 +6,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { buySellMessages as messages } from '~/messages'
 
 import { useTokenExchangeRate, useTokenPrice } from '../../../api'
-import type { JupiterTokenSymbol } from '../../../services/Jupiter'
 
 import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
 import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
@@ -112,9 +111,9 @@ export const useTokenSwapForm = ({
   initialInputValue = '',
   onInputValueChange
 }: TokenSwapFormProps) => {
-  // Get token symbols for the exchange rate API
-  const inputTokenSymbol = inputToken.symbol as JupiterTokenSymbol
-  const outputTokenSymbol = outputToken.symbol as JupiterTokenSymbol
+  // Get token mint addresses for the exchange rate API
+  const inputMint = inputToken.address
+  const outputMint = outputToken.address
 
   const { get: getInputBalance, loading: isBalanceLoading } = balance
 
@@ -185,9 +184,16 @@ export const useTokenSwapForm = ({
     isLoading: isExchangeRateLoading,
     error: exchangeRateError
   } = useTokenExchangeRate({
-    inputTokenSymbol,
-    outputTokenSymbol,
+    inputMint,
+    outputMint,
     inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
+  })
+
+  // Get a static display rate using base amount of 1 for consistent display
+  const { data: displayExchangeRateData } = useTokenExchangeRate({
+    inputMint,
+    outputMint,
+    inputAmount: 1
   })
 
   // Update output amount when exchange rate or input amount changes
@@ -216,6 +222,9 @@ export const useTokenSwapForm = ({
   }, [values.outputAmount])
 
   const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
+  const displayExchangeRate = displayExchangeRateData
+    ? displayExchangeRateData.rate
+    : null
 
   // Only show error if field has been touched, has a value, and has an error
   // This prevents showing "Required" error when field is empty during typing
@@ -295,6 +304,7 @@ export const useTokenSwapForm = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
+    displayExchangeRate,
     handleInputAmountChange,
     handleMaxClick,
     formik,

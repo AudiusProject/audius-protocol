@@ -46,10 +46,10 @@ import {
   IconRemove,
   IconVisibilityHidden
 } from '@audius/harmony-native'
-import UserBadges from 'app/components/user-badges'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
+import { UserLink } from '../user-link'
 
 import { TrackArtwork } from './TrackArtwork'
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
@@ -104,11 +104,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   downloadIndicator: {
     marginLeft: spacing(1)
-  },
-  artistName: {
-    ...font('medium'),
-    color: palette.neutralLight2,
-    alignItems: 'center'
   },
   iconContainer: {
     marginLeft: spacing(2)
@@ -200,7 +195,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const { data: contextPlaylist } = useCollection(contextPlaylistId)
   const trackId = id ?? (uid ? getNumericIdFromUid(uid) : undefined)
   const { data: track } = useTrack(trackId)
-  const { data: user } = useUser(track?.owner_id)
+  const { data: user } = useUser(track?.owner_id, {
+    select: (user) => ({
+      user_id: user?.user_id,
+      is_deactivated: user?.is_deactivated
+    })
+  })
 
   const {
     has_current_user_saved,
@@ -214,7 +214,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     stream_conditions: streamConditions,
     album_backlink
   } = track ?? {}
-  const { is_deactivated, name } = user ?? {}
+  const { is_deactivated, user_id } = user ?? {}
 
   const isDeleted = is_delete || !!is_deactivated
 
@@ -410,10 +410,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
                 </View>
               )}
             </View>
-            <Text numberOfLines={1} style={styles.artistName}>
-              {name}
-              {user ? <UserBadges user={user} badgeSize={12} hideName /> : null}
-            </Text>
+            {user_id && <UserLink userId={user_id} size='s' />}
           </View>
           {isUnlisted ? (
             <IconVisibilityHidden

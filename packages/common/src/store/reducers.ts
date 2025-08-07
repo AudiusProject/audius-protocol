@@ -26,7 +26,6 @@ import {
   deactivateAccountReducer,
   DeactivateAccountState
 } from './pages/deactivate-account'
-import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
@@ -40,7 +39,6 @@ import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
 import { SettingsPageState } from './pages/settings/types'
-import smartCollection from './pages/smart-collection/slice'
 import tokenDashboardSlice from './pages/token-dashboard/slice'
 import track from './pages/track/reducer'
 import { TrackPageState } from './pages/track/types'
@@ -101,6 +99,7 @@ import vipDiscordModalReducer from './ui/vip-discord-modal/slice'
 import { VipDiscordModalState } from './ui/vip-discord-modal/types'
 import upload from './upload/reducer'
 import { UploadState } from './upload/types'
+import coinLeaderboardUserListReducer from './user-list/coin-leaderboard/reducers'
 import favoritesUserListReducer from './user-list/favorites/reducers'
 import followersUserListReducer from './user-list/followers/reducers'
 import followingUserListReducer from './user-list/following/reducers'
@@ -167,6 +166,7 @@ export const reducers = (storage: Storage, history?: History) => ({
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
     userList: combineReducers({
+      coinLeaderboard: coinLeaderboardUserListReducer,
       followers: followersUserListReducer,
       following: followingUserListReducer,
       reposts: repostsUserListReducer,
@@ -192,11 +192,10 @@ export const reducers = (storage: Storage, history?: History) => ({
     collection,
     deactivateAccount: deactivateAccountReducer,
     feed,
-    exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
     pickWinners,
     profile: profileReducer,
-    smartCollection,
+
     libraryPage: persistedLibraryPageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
@@ -280,6 +279,7 @@ export type CommonState = {
     transactionDetails: TransactionDetailsState
     uploadConfirmationModal: UploadConfirmationModalState
     userList: {
+      coinLeaderboard: ReturnType<typeof coinLeaderboardUserListReducer>
       mutuals: ReturnType<typeof mutualsUserListReducer>
       notifications: ReturnType<typeof notificationsUserListReducer>
       followers: ReturnType<typeof followersUserListReducer>
@@ -304,8 +304,7 @@ export type CommonState = {
     collection: CollectionsPageState
     deactivateAccount: DeactivateAccountState
     feed: FeedPageState
-    exploreCollections: ReturnType<typeof exploreCollectionsReducer>
-    smartCollection: ReturnType<typeof smartCollection>
+
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
     historyPage: HistoryPageState
     track: TrackPageState

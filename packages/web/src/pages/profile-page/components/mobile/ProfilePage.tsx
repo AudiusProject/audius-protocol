@@ -64,7 +64,7 @@ export type ProfilePageProps = {
   name: string
   bio: string
   location: string
-  twitterHandle: string
+  xHandle: string
   instagramHandle: string
   tikTokHandle: string
   twitterVerified: boolean
@@ -117,7 +117,7 @@ export type ProfilePageProps = {
   updateName: (name: string) => void
   updateBio: (bio: string) => void
   updateLocation: (location: string) => void
-  updateTwitterHandle: (handle: string) => void
+  updateXHandle: (handle: string) => void
   updateInstagramHandle: (handle: string) => void
   updateTikTokHandle: (handle: string) => void
   updateWebsite: (website: string) => void
@@ -233,9 +233,9 @@ const ProfilePage = g(
     profilePictureSizes,
     hasProfilePicture,
     followers,
-    twitterHandle,
     instagramHandle,
     tikTokHandle,
+    xHandle,
     twitterVerified,
     instagramVerified,
     tikTokVerified,
@@ -267,7 +267,7 @@ const ProfilePage = g(
     updateName,
     updateBio,
     updateLocation,
-    updateTwitterHandle,
+    updateXHandle,
     updateInstagramHandle,
     updateTikTokHandle,
     updateWebsite,
@@ -352,7 +352,7 @@ const ProfilePage = g(
           name={name}
           bio={bio}
           location={location}
-          twitterHandle={twitterHandle}
+          xHandle={xHandle}
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
           twitterVerified={twitterVerified}
@@ -363,7 +363,7 @@ const ProfilePage = g(
           onUpdateName={updateName}
           onUpdateBio={updateBio}
           onUpdateLocation={updateLocation}
-          onUpdateTwitterHandle={updateTwitterHandle}
+          onUpdateXHandle={updateXHandle}
           onUpdateInstagramHandle={updateInstagramHandle}
           onUpdateTikTokHandle={updateTikTokHandle}
           onUpdateWebsite={updateWebsite}
@@ -522,6 +522,8 @@ const ProfilePage = g(
           description={description}
           canonicalUrl={canonicalUrl}
           structuredData={structuredData}
+          entityType='user'
+          entityId={userId!}
           containerClassName={styles.container}
         >
           <ProfileHeader
@@ -543,7 +545,7 @@ const ProfilePage = g(
             followingCount={profile.followee_count}
             setFollowingUserId={setFollowingUserId}
             setFollowersUserId={setFollowersUserId}
-            twitterHandle={twitterHandle}
+            xHandle={xHandle}
             instagramHandle={instagramHandle}
             tikTokHandle={tikTokHandle}
             website={website}

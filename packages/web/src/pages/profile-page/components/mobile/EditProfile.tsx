@@ -1,7 +1,7 @@
 import {
   IconLink,
   IconTikTok,
-  IconTwitter as IconTwitterBird,
+  IconX,
   IconInstagram,
   IconDonate
 } from '@audius/harmony'
@@ -16,7 +16,7 @@ type EditProfileProps = {
   name: string
   bio: string
   location: string
-  twitterHandle: string
+  xHandle: string
   instagramHandle: string
   tikTokHandle: string
   twitterVerified: boolean
@@ -28,7 +28,7 @@ type EditProfileProps = {
   onUpdateName: (name: string) => void
   onUpdateBio: (bio: string) => void
   onUpdateLocation: (location: string) => void
-  onUpdateTwitterHandle: (handle: string) => void
+  onUpdateXHandle: (handle: string) => void
   onUpdateInstagramHandle: (handle: string) => void
   onUpdateTikTokHandle: (handle: string) => void
   onUpdateWebsite: (website: string) => void
@@ -39,7 +39,7 @@ const EditProfile = ({
   name,
   bio,
   location,
-  twitterHandle,
+  xHandle,
   instagramHandle,
   tikTokHandle,
   twitterVerified,
@@ -50,7 +50,7 @@ const EditProfile = ({
   onUpdateName,
   onUpdateBio,
   onUpdateLocation,
-  onUpdateTwitterHandle,
+  onUpdateXHandle,
   onUpdateInstagramHandle,
   onUpdateTikTokHandle,
   onUpdateWebsite,
@@ -82,10 +82,10 @@ const EditProfile = ({
             maxLength={30}
           />
           <EditableRow
-            label={<IconTwitterBird className={styles.icon} />}
+            label={<IconX className={styles.icon} />}
             format={Format.INPUT}
-            initialValue={twitterHandle}
-            onChange={onUpdateTwitterHandle}
+            initialValue={xHandle}
+            onChange={onUpdateXHandle}
             maxLength={200}
             inputPrefix='@'
             isDisabled={!!twitterVerified}

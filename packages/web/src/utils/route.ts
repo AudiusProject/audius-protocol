@@ -65,13 +65,6 @@ export const fullCollectionPage = (
   )}`
 }
 
-export const audioNftPlaylistPage = (handle: string) => {
-  return `/${encodeUrlName(handle)}/audio-nft-playlist`
-}
-export const fullAudioNftPlaylistPage = (handle: string) => {
-  return `${BASE_URL}${audioNftPlaylistPage(handle)}`
-}
-
 export const collectibleDetailsPage = (
   handle: string,
   collectibleId: string
@@ -98,10 +91,6 @@ export const fullSearchResultsPage = (
   query: string
 ) => {
   return `${BASE_URL}${searchResultsPage(category, query)}`
-}
-
-export const exploreMoodPlaylistsPage = (mood: string) => {
-  return `/explore/${mood}`
 }
 
 export const chatPage = (id: string) => {

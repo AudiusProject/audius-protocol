@@ -43,7 +43,9 @@ import {
   UploadPlaylistRequest,
   UploadPlaylistSchema,
   UpdatePlaylistSchema,
-  UpdatePlaylistMetadataSchema
+  UpdatePlaylistMetadataSchema,
+  SharePlaylistRequest,
+  SharePlaylistSchema
 } from './types'
 
 // Returns current timestamp in seconds, which is the expected
@@ -316,6 +318,28 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.UNREPOST,
+      ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Share a playlist
+   */
+  async sharePlaylist(
+    params: SharePlaylistRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { userId, playlistId } = await parseParams(
+      'sharePlaylist',
+      SharePlaylistSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.SHARE,
       ...advancedOptions
     })
   }

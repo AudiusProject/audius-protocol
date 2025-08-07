@@ -49,7 +49,7 @@ function checkIsBot(val) {
     return false
   }
   const botTest =
-    /discordbot|facebookexternalhit|gigabot|ia_archiver|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
+    /discordbot|facebookexternalhit|gigabot|ia_archiver|meta-externalfetcher|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
   return botTest.test(val)
 }
 

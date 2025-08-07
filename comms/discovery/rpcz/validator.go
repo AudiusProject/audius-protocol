@@ -484,9 +484,10 @@ func validatePermittedToMessage(q db.Queryable, userId int32, chatId string) err
 	return nil
 }
 
+var ErrAttestationFailed = errors.New("attestation failed")
+
 func validateSenderPassesAbuseCheck(q db.Queryable, userId int32, aaoServer string) error {
 	// Keeping this somewhat opaque as it gets sent to client
-	aaoFailure := errors.New("attestation failed")
 	var handle string
 	err := q.Get(&handle, `SELECT handle FROM users WHERE user_id = $1`, userId)
 	if err != nil {
@@ -508,7 +509,7 @@ func validateSenderPassesAbuseCheck(q db.Queryable, userId int32, aaoServer stri
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		slog.Warn("User failed AAO check", "userId", userId, "status", resp.StatusCode)
-		return aaoFailure
+		return ErrAttestationFailed
 	}
 	return nil
 }

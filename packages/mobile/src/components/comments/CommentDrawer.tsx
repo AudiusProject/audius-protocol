@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
 import {
@@ -12,7 +12,7 @@ import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
-import type { ID, UserMetadata } from '@audius/common/models'
+import type { Comment, ID, UserMetadata } from '@audius/common/models'
 import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -33,7 +33,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Box, Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 
 import { CommentDrawerForm } from './CommentDrawerForm'
@@ -59,7 +59,7 @@ const UserListItem = (props: UserListItemProps) => {
         <Flex direction='column'>
           <Text variant='body' size='s'>
             {user.name}
-            <UserBadges user={user} badgeSize={10} hideName />
+            <UserBadges userId={user.user_id} badgeSize='xs' />
           </Text>
           <Text variant='body' size='xs' color='default'>
             @{user.handle}
@@ -140,14 +140,27 @@ const CommentDrawerAutocompleteContent = ({
 
 const CommentDrawerContent = (props: {
   commentListRef: RefObject<BottomSheetFlatListMethods>
+  highlightedComment?: Comment | null
 }) => {
-  const { commentListRef } = props
+  const { commentListRef, highlightedComment } = props
   const {
-    commentIds,
+    commentIds: allCommentIds,
     commentSectionLoading: isLoading,
     loadMorePages,
     isLoadingMorePages
   } = useCurrentCommentSection()
+
+  const highlightedCommentId =
+    highlightedComment?.parentCommentId ?? highlightedComment?.id ?? null
+
+  const commentIds = useMemo(() => {
+    if (highlightedCommentId === null) return allCommentIds
+
+    return [
+      highlightedCommentId,
+      ...allCommentIds.filter((id) => id !== highlightedCommentId)
+    ]
+  }, [highlightedCommentId, allCommentIds])
 
   // Loading state
   if (isLoading) {
@@ -191,9 +204,7 @@ const CommentDrawerContent = (props: {
       onEndReached={loadMorePages}
       onEndReachedThreshold={0.3}
       renderItem={({ item: id }) => (
-        <Box ph='l'>
-          <CommentThread commentId={id} />
-        </Box>
+        <CommentThread commentId={id} highlightedComment={highlightedComment} />
       )}
     />
   )
@@ -211,6 +222,7 @@ export type CommentDrawerData = {
    *  so it doesnt need to worry about changing lineups
    */
   actions?: LineupBaseActions | typeof playerActions
+  highlightedComment?: Comment | null
 }
 
 type CommentDrawerProps = {
@@ -226,7 +238,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     handleClose,
     autoFocusInput,
     uid,
-    actions
+    actions,
+    highlightedComment
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -334,7 +347,10 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
               onSelect={onAutocomplete}
             />
           ) : (
-            <CommentDrawerContent commentListRef={commentListRef} />
+            <CommentDrawerContent
+              commentListRef={commentListRef}
+              highlightedComment={highlightedComment}
+            />
           )}
         </CommentSectionProvider>
       </BottomSheetModal>

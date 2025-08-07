@@ -36,7 +36,9 @@ describe('Comment Notification', () => {
 
   test('Process push notification for comment on track', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
     await createComments(processor.discoveryDB, [
       {
         comment_id: 1,
@@ -56,7 +58,8 @@ describe('Comment Notification', () => {
         data: {
           type: 'Track',
           entity_id: 10,
-          comment_user_id: 2
+          comment_user_id: 2,
+          comment_id: 1
         }
       }
     ])
@@ -82,8 +85,10 @@ describe('Comment Notification', () => {
           type: 'Comment',
           userIds: [2],
           entityType: 'Track',
-          entityId: 10
-        }
+          entityId: 10,
+          commentId: 1
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
@@ -110,7 +115,8 @@ describe('Comment Notification', () => {
         data: {
           type: EntityType.Track,
           comment_user_id: 2,
-          entity_id: 10
+          entity_id: 10,
+          comment_id: 1
         },
         user_ids: [1],
         receiver_user_id: 1
@@ -154,7 +160,8 @@ describe('Comment Notification', () => {
         data: {
           type: EntityType.Track,
           comment_user_id: num + 2,
-          entity_id: 10
+          entity_id: 10,
+          comment_id: num + 1
         },
         user_ids: [1],
         receiver_user_id: 1

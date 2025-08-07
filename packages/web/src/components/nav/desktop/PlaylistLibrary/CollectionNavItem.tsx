@@ -52,7 +52,7 @@ import { usePlaylistPlayingStatus } from './usePlaylistPlayingStatus'
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
-const { unsaveCollection, unsaveSmartCollection } = collectionsSocialActions
+const { unsaveCollection } = collectionsSocialActions
 
 const messages = {
   editPlaylistLabel: 'Edit playlist',
@@ -94,19 +94,15 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const { spacing } = useTheme()
 
-  const { data: partialCollection } = useCollection(
-    typeof id === 'number' ? id : null,
-    {
-      // ensure read only
-      enabled: false,
-      select: (collection) =>
-        pick(collection, 'is_album', 'playlist_name', 'permalink', 'is_private')
-    }
-  )
+  const { data: partialCollection } = useCollection(id, {
+    // ensure read only
+    enabled: false,
+    select: (collection) =>
+      pick(collection, 'is_album', 'playlist_name', 'permalink', 'is_private')
+  })
 
   const { data: accountCollection } = useCurrentAccount({
-    select: (account) => account?.collections?.[id as ID],
-    enabled: typeof id === 'number'
+    select: (account) => account?.collections?.[id]
   })
 
   const { permalink } = partialCollection ?? accountCollection ?? {}
@@ -131,22 +127,18 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   }, [])
 
   const handleEdit = useCallback(() => {
-    if (typeof id === 'number') {
-      navigate(`${permalink}/edit`)
-      record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
-    }
-  }, [id, navigate, permalink, record])
+    navigate(`${permalink}/edit`)
+    record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
+  }, [navigate, permalink, record])
 
   const handleShare = useCallback(() => {
-    if (typeof id === 'number') {
-      dispatch(
-        requestOpen({
-          type: 'collection',
-          collectionId: id,
-          source: ShareSource.LEFT_NAV
-        })
-      )
-    }
+    dispatch(
+      requestOpen({
+        type: 'collection',
+        collectionId: id,
+        source: ShareSource.LEFT_NAV
+      })
+    )
   }, [dispatch, id])
 
   const handleDelete = useCallback(() => {
@@ -154,17 +146,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   }, [toggleDeleteConfirmationOpen])
 
   const handleUnfavorite = useCallback(() => {
-    if (typeof id === 'number') {
-      dispatch(unsaveCollection(id, FavoriteSource.NAVIGATOR))
-    } else {
-      dispatch(
-        unsaveSmartCollection(
-          partialCollection?.playlist_name ?? id,
-          FavoriteSource.NAVIGATOR
-        )
-      )
-    }
-  }, [id, dispatch, partialCollection])
+    dispatch(unsaveCollection(id, FavoriteSource.NAVIGATOR))
+  }, [id, dispatch])
 
   const kebabItems: PopupMenuItem[] = isOwned
     ? [
@@ -200,9 +183,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const handleDrop = useCallback(
     (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
       if (kind === 'track') {
-        if (typeof id === 'number') {
-          dispatch(addTrackToPlaylist(draggingId as ID, id))
-        }
+        dispatch(addTrackToPlaylist(draggingId, id))
       } else {
         dispatch(
           reorder({

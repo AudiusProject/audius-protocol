@@ -2,20 +2,22 @@ import { useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 
+import { useUserByParams } from '~/api'
 import { useCurrentAccount } from '~/api/tan-query/users/account/useCurrentAccount'
-import { useProfileUser } from '~/api/tan-query/users/useProfileUser'
+import { ID } from '~/models'
 import { accountActions } from '~/store/account'
 
 const { fetchHasTracks } = accountActions
 
-export const useIsArtist = () => {
-  const { user_id, track_count } =
-    useProfileUser({
+export const useIsArtist = (params: { id?: ID; handle?: string }) => {
+  const { data: user } =
+    useUserByParams(params, {
       select: (user) => ({
         user_id: user.user_id,
         track_count: user.track_count
       })
-    }).user ?? {}
+    }) ?? {}
+  const { user_id, track_count } = user ?? {}
 
   const { data: account } = useCurrentAccount()
   const currentUserId = account?.userId

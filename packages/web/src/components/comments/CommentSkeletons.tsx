@@ -5,7 +5,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 const CommentBlockSkeleton = () => {
   const isMobile = useIsMobile()
   return (
-    <Flex direction='row' gap='l' alignItems='center' w='100%'>
+    <Flex direction='row' gap='l' alignItems='center' w='100%' ph='xl'>
       <Skeleton
         w={40}
         h={40}
@@ -41,7 +41,7 @@ export const CommentBlockSkeletons = () => {
 }
 
 export const SortBarSkeletons = () => (
-  <Flex gap='s' direction='row'>
+  <Flex gap='s' direction='row' ph='xl'>
     <Skeleton w='55px' h='26px' css={{ borderRadius: 100 }} />
     <Skeleton w='80px' h='26px' css={{ borderRadius: 100 }} />
     <Skeleton w='110px' h='26px' css={{ borderRadius: 100 }} />

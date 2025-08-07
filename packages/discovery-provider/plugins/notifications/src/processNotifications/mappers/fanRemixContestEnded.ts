@@ -9,6 +9,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 export type FanRemixContestEndedRow = Omit<NotificationRow, 'data'> & {
   data: FanRemixContestEndedNotification
@@ -40,6 +41,22 @@ export class FanRemixContestEnded extends BaseNotification<FanRemixContestEndedR
       .where('is_current', true)
       .whereIn('user_id', [this.notification.data.entityUserId])
     const artistName = res[0]?.name ?? ''
+
+    // Fetch track's cover art URL for rich notification (150x150 size)
+    let imageUrl: string | undefined
+    const trackRes: Array<{
+      track_id: number
+      title: string
+      cover_art_sizes?: string | null
+    }> = await this.dnDB
+      .select('track_id', 'title', 'cover_art_sizes')
+      .from('tracks')
+      .where('is_current', true)
+      .whereIn('track_id', [this.notification.data.entityId])
+    const track = trackRes[0]
+    if (track?.cover_art_sizes) {
+      imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+    }
 
     const userNotificationSettings = await buildUserNotificationSettings(
       this.identityDB,
@@ -77,11 +94,14 @@ export class FanRemixContestEnded extends BaseNotification<FanRemixContestEndedR
                 title,
                 body,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`,
                   type: 'FanRemixContestEnded',
                   entityId: this.notification.data.entityId,
                   entityUserId: this.notification.data.entityUserId
-                }
+                },
+                imageUrl
               }
             )
           })

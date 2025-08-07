@@ -40,8 +40,10 @@ import type {
   SubscribersResponse,
   TagsResponse,
   TracksResponse,
-  UserAssociatedWalletResponse,
+  UserCoinResponse,
+  UserCoinsResponse,
   UserCommentsResponse,
+  UserIdsAddressesResponse,
   UserResponse,
   UserSearch,
   UserTrackListenCountsResponse,
@@ -98,10 +100,14 @@ import {
     TagsResponseToJSON,
     TracksResponseFromJSON,
     TracksResponseToJSON,
-    UserAssociatedWalletResponseFromJSON,
-    UserAssociatedWalletResponseToJSON,
+    UserCoinResponseFromJSON,
+    UserCoinResponseToJSON,
+    UserCoinsResponseFromJSON,
+    UserCoinsResponseToJSON,
     UserCommentsResponseFromJSON,
     UserCommentsResponseToJSON,
+    UserIdsAddressesResponseFromJSON,
+    UserIdsAddressesResponseToJSON,
     UserResponseFromJSON,
     UserResponseToJSON,
     UserSearchFromJSON,
@@ -323,6 +329,17 @@ export interface GetUserChallengesRequest {
     showHistorical?: boolean;
 }
 
+export interface GetUserCoinRequest {
+    id: string;
+    mint: string;
+}
+
+export interface GetUserCoinsRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+}
+
 export interface GetUserCollectiblesRequest {
     id: string;
 }
@@ -339,8 +356,8 @@ export interface GetUserEmailKeyRequest {
     grantorUserId: string;
 }
 
-export interface GetUserIDFromWalletRequest {
-    associatedWallet: string;
+export interface GetUserIDsByAddressesRequest {
+    address: Array<string>;
 }
 
 export interface GetUserMonthlyTrackListensRequest {
@@ -1657,6 +1674,80 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets information about a specific coin owned by the user and their wallets
+     */
+    async getUserCoinRaw(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCoinResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCoin.');
+        }
+
+        if (params.mint === null || params.mint === undefined) {
+            throw new runtime.RequiredError('mint','Required parameter params.mint was null or undefined when calling getUserCoin.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/coins/{mint}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))).replace(`{${"mint"}}`, encodeURIComponent(String(params.mint))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCoinResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets information about a specific coin owned by the user and their wallets
+     */
+    async getUserCoin(params: GetUserCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCoinResponse> {
+        const response = await this.getUserCoinRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets a list of the coins owned by the user and their balances
+     */
+    async getUserCoinsRaw(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserCoinsResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCoins.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/coins`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserCoinsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of the coins owned by the user and their balances
+     */
+    async getUserCoins(params: GetUserCoinsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCoinsResponse> {
+        const response = await this.getUserCoinsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Get the User\'s indexed collectibles data
      */
     async getUserCollectiblesRaw(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectiblesResponse>> {
@@ -1766,36 +1857,36 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets a User ID from an associated wallet address
+     * Gets User IDs from any Ethereum wallet address or Solana account address associated with their Audius account.
      */
-    async getUserIDFromWalletRaw(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserAssociatedWalletResponse>> {
-        if (params.associatedWallet === null || params.associatedWallet === undefined) {
-            throw new runtime.RequiredError('associatedWallet','Required parameter params.associatedWallet was null or undefined when calling getUserIDFromWallet.');
+    async getUserIDsByAddressesRaw(params: GetUserIDsByAddressesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserIdsAddressesResponse>> {
+        if (params.address === null || params.address === undefined) {
+            throw new runtime.RequiredError('address','Required parameter params.address was null or undefined when calling getUserIDsByAddresses.');
         }
 
         const queryParameters: any = {};
 
-        if (params.associatedWallet !== undefined) {
-            queryParameters['associated_wallet'] = params.associatedWallet;
+        if (params.address) {
+            queryParameters['address'] = params.address;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/id`,
+            path: `/users/address`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => UserAssociatedWalletResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserIdsAddressesResponseFromJSON(jsonValue));
     }
 
     /**
-     * Gets a User ID from an associated wallet address
+     * Gets User IDs from any Ethereum wallet address or Solana account address associated with their Audius account.
      */
-    async getUserIDFromWallet(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAssociatedWalletResponse> {
-        const response = await this.getUserIDFromWalletRaw(params, initOverrides);
+    async getUserIDsByAddresses(params: GetUserIDsByAddressesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserIdsAddressesResponse> {
+        const response = await this.getUserIDsByAddressesRaw(params, initOverrides);
         return await response.value();
     }
 

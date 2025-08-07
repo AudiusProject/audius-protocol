@@ -24,15 +24,18 @@ import {
   SystemInstruction,
   ComputeBudgetProgram
 } from '@solana/web3.js'
-import bs58 from 'bs58'
 
 import { config } from '../../config'
 import { rateLimitTokenAccountCreation } from '../../redis'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
+import { isUserAbusive } from './antiAbuse'
+import { getAllowedMints } from './getAllowedMints'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 const MEMO_V2_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+const PAYOUT_WALLET_MEMO = 'Payout Wallet'
+const PREPARE_WITHDRAWAL_MEMO = 'Prepare Withdrawal'
 const CLAIMABLE_TOKEN_PROGRAM_ID = config.claimableTokenProgramId
 const REWARDS_MANAGER_PROGRAM_ID = config.rewardsManagerProgramId
 const TRACK_LISTEN_COUNT_PROGRAM_ID = config.trackListenCountProgramId
@@ -41,37 +44,9 @@ const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 const COINFLOW_PROGRAM_ID = 'FD1amxhTsDpwzoVX41dxp2ygAESURV2zdUACzxM1Dfw9'
 
-const waudioMintAddress = config.waudioMintAddress
 const usdcMintAddress = config.usdcMintAddress
-const bonkMintAddress = config.bonkMintAddress
 
 const REWARD_MANAGER = config.rewardsManagerAccountAddress
-
-const deriveTokenAuthority = (mint: string) =>
-  PublicKey.findProgramAddressSync(
-    [new PublicKey(mint).toBytes().slice(0, 32)],
-    new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID)
-  )[0]
-
-const claimableTokenAuthorities = {
-  usdc: deriveTokenAuthority(usdcMintAddress),
-  waudio: deriveTokenAuthority(waudioMintAddress),
-  bonk: deriveTokenAuthority(bonkMintAddress)
-}
-
-const deriveUserBank = async (
-  ethAddress: string,
-  claimableTokenAuthority: PublicKey
-) => {
-  const ethAddressArray = Uint8Array.from(
-    Buffer.from(ethAddress.substring(2), 'hex')
-  )
-  return await PublicKey.createWithSeed(
-    claimableTokenAuthority,
-    bs58.encode(ethAddressArray),
-    TOKEN_PROGRAM_ID
-  )
-}
 
 const PAYMENT_ROUTER_WALLET = PublicKey.findProgramAddressSync(
   [Buffer.from('payment_router')],
@@ -84,6 +59,21 @@ const PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT = getAssociatedTokenAddressSync(
   true
 )
 
+const findSpecificMemo = (
+  instructions: TransactionInstruction[],
+  memo: string
+) => {
+  for (const instruction of instructions) {
+    if (
+      instruction.programId.toBase58() === MEMO_PROGRAM_ID &&
+      instruction.data.toString() === memo
+    ) {
+      return instruction.data.toString()
+    }
+  }
+  return null
+}
+
 /**
  * Only allow the createTokenAccount instruction of the Associated Token
  * Account program, provided it has matching close instructions.
@@ -93,7 +83,7 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
   instructions: TransactionInstruction[],
-  user?: Users | null
+  user?: Pick<Users, 'wallet' | 'is_verified'> | null
 ) => {
   const { wallet, is_verified: isVerified } = user ?? {}
   const decodedInstruction =
@@ -102,12 +92,10 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
     isCreateAssociatedTokenAccountInstruction(decodedInstruction) ||
     isCreateAssociatedTokenAccountIdempotentInstruction(decodedInstruction)
   ) {
-    const allowedMints = [
-      NATIVE_MINT.toBase58(),
-      usdcMintAddress,
-      waudioMintAddress,
-      bonkMintAddress
-    ]
+    const allowedMints = await getAllowedMints()
+    allowedMints.push(
+      NATIVE_MINT.toBase58() // Allow creating ATAs for SOL
+    )
     const mintAddress = decodedInstruction.keys.mint.pubkey.toBase58()
     if (!allowedMints.includes(mintAddress)) {
       throw new InvalidRelayInstructionError(
@@ -156,7 +144,23 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = async (
       matchingCreateInstructions.length !== matchingCloseInstructions.length
     ) {
       try {
-        await rateLimitTokenAccountCreation(wallet, !!isVerified)
+        let memo: string | undefined
+        if (findSpecificMemo(instructions, PAYOUT_WALLET_MEMO)) {
+          memo = PAYOUT_WALLET_MEMO
+        } else if (findSpecificMemo(instructions, PREPARE_WITHDRAWAL_MEMO)) {
+          memo = PREPARE_WITHDRAWAL_MEMO
+        }
+        const isAbusive = await isUserAbusive(wallet)
+        if (isAbusive) {
+          throw new InvalidRelayInstructionError(
+            instructionIndex,
+            'User is abusive'
+          )
+        }
+        // In this situation, we could be losing SOL because the user is allowed to
+        // close their own ATA and reclaim the rent that we've fronted, so
+        // rate limit it cautiously.
+        await rateLimitTokenAccountCreation(wallet, !!isVerified, memo)
       } catch (e) {
         const error = e as Error
         throw new InvalidRelayInstructionError(instructionIndex, error.message)
@@ -195,21 +199,24 @@ const assertAllowedTokenProgramInstruction = async (
       )
     }
     const destination = decodedInstruction.keys.destination.pubkey
-    const usdcUserbank = await deriveUserBank(
-      wallet,
-      claimableTokenAuthorities.usdc
+    const allowedMints = await getAllowedMints()
+    const validUserbanks = await Promise.all(
+      allowedMints.map(async (mint) => {
+        const authority = ClaimableTokensProgram.deriveAuthority({
+          programId: new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID),
+          mint: new PublicKey(mint)
+        })
+        const userbank = await ClaimableTokensProgram.deriveUserBank({
+          ethAddress: wallet,
+          claimableTokensPDA: authority
+        })
+        return userbank
+      })
     )
-    const bonkUserbank = await deriveUserBank(
-      wallet,
-      claimableTokenAuthorities.bonk
-    )
+    validUserbanks.push(PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT)
 
     // Check that destination is either a userbank or a payment router token account
-    if (
-      !destination.equals(usdcUserbank) &&
-      !destination.equals(bonkUserbank) &&
-      !destination.equals(PAYMENT_ROUTER_USDC_TOKEN_ACCOUNT)
-    ) {
+    if (!validUserbanks.some((userbank) => userbank.equals(destination))) {
       throw new InvalidRelayInstructionError(
         instructionIndex,
         `Invalid destination account: ${destination.toBase58()}`
@@ -246,8 +253,8 @@ const assertAllowedRewardsManagerProgramInstruction = (
 }
 
 /**
- * Checks that the claimable token authority matches the one in use on our
- * deployed program. Optionally also check the user's social proof for transfers.
+ * Checks that the claimable token program instruction uses one of the
+ * allowed mints by checking the authority.
  */
 const assertAllowedClaimableTokenProgramInstruction = async (
   instructionIndex: number,
@@ -256,11 +263,14 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   const decodedInstruction =
     ClaimableTokensProgram.decodeInstruction(instruction)
   const authority = decodedInstruction.keys.authority.pubkey
-  if (
-    !authority.equals(claimableTokenAuthorities.usdc) &&
-    !authority.equals(claimableTokenAuthorities.waudio) &&
-    !authority.equals(claimableTokenAuthorities.bonk)
-  ) {
+  const allowedMints = await getAllowedMints()
+  const authorities = allowedMints.map((mint) =>
+    ClaimableTokensProgram.deriveAuthority({
+      programId: new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID),
+      mint: new PublicKey(mint)
+    })
+  )
+  if (!authorities.some((auth) => auth.equals(authority))) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid Claimable Token Authority: ${authority}`
@@ -285,19 +295,7 @@ const JupiterSharedSwapAccountIndex = {
   PLATFORM_FEE_ACCOUNT: 9,
   TOKEN_2022_PROGRAM: 10
 }
-// Only allow swaps from USDC (for withdrawals) or SOL (for userbank purchases)
-const allowedSourceMints = [
-  NATIVE_MINT.toBase58(),
-  usdcMintAddress,
-  waudioMintAddress,
-  bonkMintAddress
-]
-const allowedDestinationMints = [
-  NATIVE_MINT.toBase58(),
-  usdcMintAddress,
-  waudioMintAddress,
-  bonkMintAddress
-]
+
 // Only allow swaps to SOL (for withdrawals) or USDC, AUDIO, or BONK (for userbank purchases)
 const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
@@ -323,14 +321,19 @@ const assertAllowedJupiterProgramInstruction = async (
       JupiterSharedSwapAccountIndex.USER_TRANSFER_AUTHORITY
     ].pubkey.toBase58()
 
-  if (!allowedSourceMints.includes(sourceMint)) {
+  const allowedMints = await getAllowedMints()
+  allowedMints.push(
+    NATIVE_MINT.toBase58() // Allow swaps to/from SOL
+  )
+
+  if (!allowedMints.includes(sourceMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid source mint: ${sourceMint}`
     )
   }
 
-  if (!allowedDestinationMints.includes(destinationMint)) {
+  if (!allowedMints.includes(destinationMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid destination mint: ${destinationMint}`
@@ -413,7 +416,7 @@ const assertValidSecp256k1ProgramInstruction = (
 export const assertRelayAllowedInstructions = async (
   instructions: TransactionInstruction[],
   options?: {
-    user?: Users
+    user?: Pick<Users, 'wallet' | 'is_verified'>
     feePayer?: string
   }
 ) => {

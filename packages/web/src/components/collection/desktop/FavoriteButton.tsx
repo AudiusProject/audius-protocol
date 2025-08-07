@@ -12,12 +12,7 @@ import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-const {
-  saveCollection,
-  unsaveCollection,
-  saveSmartCollection,
-  unsaveSmartCollection
-} = collectionsSocialActions
+const { saveCollection, unsaveCollection } = collectionsSocialActions
 const { findInPlaylistLibrary } = playlistLibraryHelpers
 
 const messages = {
@@ -64,18 +59,8 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
       } else {
         dispatch(saveCollection(collectionId, FavoriteSource.COLLECTION_PAGE))
       }
-    } else {
-      if (isSaved && playlist_name) {
-        dispatch(
-          unsaveSmartCollection(playlist_name, FavoriteSource.COLLECTION_PAGE)
-        )
-      } else if (playlist_name) {
-        dispatch(
-          saveSmartCollection(playlist_name, FavoriteSource.COLLECTION_PAGE)
-        )
-      }
     }
-  }, [dispatch, isSaved, collectionId, playlist_name])
+  }, [dispatch, isSaved, collectionId])
 
   return (
     <Tooltip

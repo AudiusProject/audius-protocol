@@ -1,3 +1,8 @@
+import { PublicKey } from '@solana/web3.js'
+
+// SDK TokenName enum values that are accepted by the SDK
+type TokenName = 'wAUDIO' | 'USDC'
+
 export enum SwapStatus {
   IDLE = 'IDLE',
   GETTING_QUOTE = 'GETTING_QUOTE',
@@ -41,8 +46,10 @@ export type SwapTokensResult = {
   }
 }
 
+export type ClaimableTokenMint = TokenName | PublicKey
+
 export interface UserBankManagedTokenInfo {
   mintAddress: string
-  claimableTokenMint: 'wAUDIO' | 'USDC'
+  claimableTokenMint: ClaimableTokenMint
   decimals: number
 }

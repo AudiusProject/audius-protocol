@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import { selectIsGuestAccount, useCurrentAccountUser } from '@audius/common/api'
-import { useFeatureFlag, useIsArtist } from '@audius/common/hooks'
+import {
+  selectIsGuestAccount,
+  useCurrentAccount,
+  useCurrentAccountUser
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import {
@@ -47,7 +51,9 @@ export const TransactionHistoryPage = ({
   tableView
 }: TransactionHistoryPageProps) => {
   const dispatch = useDispatch()
-  const isArtist = useIsArtist()
+  const { data: isArtist } = useCurrentAccount({
+    select: (account) => account?.hasTracks
+  })
   const { data: accountData } = useCurrentAccountUser({
     select: (user) => ({
       handle: user?.handle,

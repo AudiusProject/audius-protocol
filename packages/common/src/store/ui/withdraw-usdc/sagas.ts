@@ -1,3 +1,4 @@
+import { USDC } from '@audius/fixed-decimal'
 import { PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, take } from 'typed-redux-saga'
@@ -79,7 +80,7 @@ function* doWithdrawUSDCCoinflow({
       sdk,
       mint,
       connection,
-      amount: amount / 100, // amount is given in cents, fn expects dollars
+      amount: USDC(amount / 100).value, // amount is given in cents, fn expects wei
       ethWallet,
       destinationWallet,
       track,
@@ -238,7 +239,7 @@ function* doWithdrawUSDCManualTransfer({
       connection,
       sdk,
       mint,
-      amount: amount / 100, // amount is in cents, fn expects dollars
+      amount: USDC(amount / 100).value, // amount is in cents, fn expects wei
       ethWallet,
       destinationWallet,
       track,

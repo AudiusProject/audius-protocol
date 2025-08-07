@@ -69,15 +69,9 @@ const ExplorePlaylistIdentifierSchema = z.object({
   playlist_id: z.string()
 })
 
-const AudioNftPlaylistIdentifierSchema = z.object({
-  type: z.literal('audio_nft_playlist'),
-  playlist_id: z.literal('Audio NFTs')
-})
-
 const PlaylistLibraryIdentifierSchema = z.union([
   PlaylistIdentifierSchema,
-  ExplorePlaylistIdentifierSchema,
-  AudioNftPlaylistIdentifierSchema
+  ExplorePlaylistIdentifierSchema
 ])
 
 type PlaylistLibraryFolder = {
@@ -130,7 +124,8 @@ export const UpdateProfileSchema = z
         playlistLibrary: z.optional(PlaylistLibrarySchema),
         twitterHandle: z.optional(z.string()),
         instagramHandle: z.optional(z.string()),
-        tiktokHandle: z.optional(z.string())
+        tiktokHandle: z.optional(z.string()),
+        splUsdcPayoutWallet: z.optional(SolanaAddressSchema).nullable()
       })
       .strict()
   })

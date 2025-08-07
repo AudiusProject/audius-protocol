@@ -1,3 +1,4 @@
+export * from './CoinLeaderboardScreen'
 export * from './FavoritedScreen'
 export * from './FollowersScreen'
 export * from './FollowingScreen'

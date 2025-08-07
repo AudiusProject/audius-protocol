@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { Platform } from 'react-native'
 import Animated, {
@@ -15,8 +15,6 @@ import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
-import { RecentSearches } from '../search-screen/RecentSearches'
-import { SearchCatalogTile } from '../search-screen/SearchCatalogTile'
 import { SearchResults } from '../search-screen/search-results/SearchResults'
 import {
   SearchProvider,
@@ -35,12 +33,12 @@ export const SCROLL_FACTOR = Platform.OS === 'ios' ? 1 : 3
 
 const SearchExploreContent = () => {
   const { spacing, motion } = useTheme()
+  const { params } = useRoute<'Search'>()
 
   // Get state from context
-  const [category, setCategory] = useSearchCategory()
+  const [, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
-  const [inputValue, setInputValue] = useState(query)
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -61,7 +59,6 @@ const SearchExploreContent = () => {
     setQuery('')
     setCategory('all')
     setFilters({})
-    setInputValue('')
   })
 
   useEffect(() => {
@@ -75,16 +72,18 @@ const SearchExploreContent = () => {
   const contentPaddingStyle = useAnimatedStyle(() => {
     // Clamped scroll prevents jitter
     return {
-      paddingTop: query
-        ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
-        : interpolate(
-            scrollY.value,
-            [0, 80 * SCROLL_FACTOR],
-            [0, 80],
-            Extrapolation.CLAMP
-          )
+      paddingTop:
+        query || params?.autoFocus
+          ? withTiming(-HEADER_SLIDE_HEIGHT, motion.calm)
+          : interpolate(
+              scrollY.value,
+              [0, 80 * SCROLL_FACTOR],
+              [0, 80],
+              Extrapolation.CLAMP
+            )
     }
   })
+
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y
@@ -124,21 +123,15 @@ const SearchExploreContent = () => {
     }
   })
 
-  const showSearch = Boolean(category !== 'all' || query)
+  const showSearch = Boolean(query || hasAnyFilter)
   return (
     <ScreenContent>
       <SearchExploreHeader
         scrollY={scrollY}
         filterTranslateY={filterTranslateY}
         scrollRef={scrollRef}
-        inputValue={inputValue}
-        onInputValueChange={setInputValue}
       />
-      {showSearch && (query || hasAnyFilter) ? (
-        <SearchResults />
-      ) : showSearch ? (
-        <RecentSearches ListHeaderComponent={<SearchCatalogTile />} />
-      ) : null}
+      {showSearch ? <SearchResults /> : null}
       <Animated.ScrollView
         ref={scrollRef}
         onScroll={scrollHandler}

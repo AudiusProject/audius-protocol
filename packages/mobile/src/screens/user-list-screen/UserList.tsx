@@ -1,21 +1,16 @@
 import { memo, useCallback, useMemo } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
 import type { ID, User } from '@audius/common/models'
+import type { ListRenderItem } from '@shopify/flash-list'
+import { FlashList } from '@shopify/flash-list'
 import { range } from 'lodash'
-import type { ListRenderItem } from 'react-native'
 
 import { Divider, Flex } from '@audius/harmony-native'
-import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
-
-const FOLLOW_BUTTON_HEIGHT = 32
-const USER_LIST_ITEM_HEIGHT = 154
-const SPECIAL_USER_LIST_ITEM_HEIGHT = 171
 
 const keyExtractor = (item: { user_id: ID } | SkeletonItem) =>
   item.user_id.toString()
@@ -68,6 +63,14 @@ type UserListProps = {
    * Tag for the UserListItem component
    */
   tag: string
+  /**
+   * Whether to show ranks (1, 2, 3, etc.) next to users
+   */
+  showRank?: boolean
+  /**
+   * Function to render the right content for each user row
+   */
+  renderRightContent?: (userId: ID, index: number) => React.ReactNode
 }
 
 export const UserList = (props: UserListProps) => {
@@ -77,9 +80,10 @@ export const UserList = (props: UserListProps) => {
     isFetchingNextPage,
     isPending,
     fetchNextPage,
-    tag
+    tag,
+    showRank = false,
+    renderRightContent
   } = props
-  const { data: currentUserId } = useCurrentUserId()
   const styles = useStyles()
 
   const isEmpty = data.length === 0
@@ -105,34 +109,19 @@ export const UserList = (props: UserListProps) => {
   }, [data, isPending, isFetchingNextPage, skeletonData])
 
   const renderItem: ListRenderItem<User | SkeletonItem> = useCallback(
-    ({ item }) =>
+    ({ item, index }) =>
       '_loading' in item ? (
         <UserListItemSkeleton tag={tag} />
       ) : (
-        <MemoizedUserListItem userId={item.user_id} tag={tag} />
+        <MemoizedUserListItem
+          userId={item.user_id}
+          tag={tag}
+          showRank={showRank}
+          rank={showRank ? index + 1 : undefined}
+          renderRightContent={renderRightContent}
+        />
       ),
-    [tag]
-  )
-
-  const getItemLayout = useCallback(
-    (data: typeof displayData, index: number) => {
-      const hasFollowButton = data?.[index].user_id !== currentUserId
-      const baseHeight =
-        tag === 'SUPPORTING' || tag === 'TOP SUPPORTERS'
-          ? SPECIAL_USER_LIST_ITEM_HEIGHT
-          : USER_LIST_ITEM_HEIGHT
-
-      const height = hasFollowButton
-        ? baseHeight
-        : baseHeight - FOLLOW_BUTTON_HEIGHT
-
-      return {
-        length: height,
-        offset: height * index,
-        index
-      }
-    },
-    [currentUserId, tag]
+    [tag, showRank, renderRightContent]
   )
 
   const loadingSpinner = (
@@ -142,15 +131,15 @@ export const UserList = (props: UserListProps) => {
   const footer = <Flex h='2xl' mb='l' />
 
   return (
-    <FlatList
+    <FlashList
       style={{ height: '100%' }}
       data={displayData}
-      getItemLayout={getItemLayout}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ItemSeparatorComponent={Divider}
       onEndReached={fetchNextPage}
       onEndReachedThreshold={3}
+      estimatedItemSize={160}
       ListFooterComponent={
         isFetchingNextPage || isPending ? loadingSpinner : footer
       }

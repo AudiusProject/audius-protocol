@@ -159,8 +159,20 @@ def validate_update_event_tx(params: ManageEntityParameters):
         except ValueError:
             raise IndexingValidationError("end_date is not a valid iso format")
 
-        # Validate end_date is not in the past
+        # Validate that the end_date is after the current end_date of the remix contest
         if (
+            existing_event.event_type == EventType.remix_contest
+            and existing_event.end_date
+        ):
+            if (
+                datetime.fromisoformat(params.metadata["end_date"]).timestamp()
+                < existing_event.end_date.timestamp()
+            ):
+                raise IndexingValidationError(
+                    "end_date cannot be before the current end_date of the remix contest"
+                )
+        # Validate end_date is not in the past for other event types
+        elif (
             datetime.fromisoformat(params.metadata["end_date"]).timestamp()
             < params.block_datetime.timestamp()
         ):

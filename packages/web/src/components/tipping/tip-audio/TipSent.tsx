@@ -4,7 +4,6 @@ import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
 import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 import { IconCheck } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -22,8 +21,10 @@ const messages = {
   sending: 'SENDING',
   sentSuccessfully: 'SENT SUCCESSFULLY',
   supportOnX: 'Share your support on X!',
-  xShare: (recipient: string, amount: string, price?: string) =>
-    `I just tipped ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${price ? `(~$${AUDIO(price).toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  xShare: (recipient: string, amount: string, price?: string) => {
+    const totalValue = price && amount ? Number(price) * Number(amount) : null
+    return `I just tipped ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  }
 }
 
 export const TipSent = () => {
@@ -134,6 +135,7 @@ export const TipSent = () => {
       <div className={styles.flexCenter}>
         <XShareButton
           type='dynamic'
+          size='default'
           handle={recipient.handle}
           shareData={handleShareData}
           url={`https://audius.co/${recipient.handle}`}

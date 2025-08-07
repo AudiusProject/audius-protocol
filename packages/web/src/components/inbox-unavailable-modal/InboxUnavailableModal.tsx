@@ -27,7 +27,7 @@ import {
 import { Action } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { UserLink } from 'components/link/UserLink'
 
 const { unblockUser, createChat } = chatActions
 const { followUser } = usersSocialActions
@@ -78,11 +78,7 @@ const actionToContent = ({
     case ChatPermissionAction.TIP:
       return {
         content: messages.tipContent(
-          user ? (
-            <UserNameAndBadges user={user} onNavigateAway={onClose} />
-          ) : (
-            messages.defaultUsername
-          )
+          user ? <UserLink userId={user.user_id} /> : messages.defaultUsername
         ),
         buttonText: messages.tipButton,
         buttonIcon: IconTipping
@@ -90,11 +86,7 @@ const actionToContent = ({
     case ChatPermissionAction.FOLLOW:
       return {
         content: messages.followRequired(
-          user ? (
-            <UserNameAndBadges user={user} onNavigateAway={onClose} />
-          ) : (
-            messages.defaultUsername
-          )
+          user ? <UserLink userId={user.user_id} /> : messages.defaultUsername
         ),
         buttonText: messages.follow,
         buttonIcon: null

@@ -2,7 +2,7 @@ import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
 import { useRemixContest, useTrack, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
-import { formatDate } from '@audius/common/utils'
+import { formatContestDeadlineWithStatus } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
@@ -14,7 +14,7 @@ const messages = {
   deadline: (releaseDate?: string) =>
     releaseDate
       ? new Date(releaseDate) > new Date()
-        ? `Deadline: ${formatDate(releaseDate)}`
+        ? formatContestDeadlineWithStatus(releaseDate, false)
         : 'Ended'
       : releaseDate
 }
@@ -86,9 +86,13 @@ export const RemixContestCard = forwardRef(
             >
               <Text ellipses>{track?.title}</Text>
             </TextLink>
-            <Flex justifyContent='center'>
-              <UserLink userId={user?.user_id} popover center />
-            </Flex>
+            <UserLink
+              userId={user?.user_id}
+              popover
+              center
+              fullWidth
+              ellipses
+            />
           </CardContent>
         </Flex>
         <CardFooter>

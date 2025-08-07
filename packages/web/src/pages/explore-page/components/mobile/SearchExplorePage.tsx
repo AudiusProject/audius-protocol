@@ -7,59 +7,52 @@ import {
   ChangeEvent
 } from 'react'
 
-import { useExploreContent } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ExploreCollectionsVariant } from '@audius/common/store'
+import { FeatureFlags } from '@audius/common/services'
 import {
-  Paper,
-  Text,
   Flex,
   TextInput,
   TextInputSize,
   IconSearch,
-  useTheme,
-  useMedia,
   RadioGroup,
   SelectablePill
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
-import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
-import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
+import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useDebounce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
-import { CollectionCard } from 'components/collection'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import NavContext from 'components/nav/mobile/NavContext'
-import PerspectiveCard, {
-  TextInterior
-} from 'components/perspective-card/PerspectiveCard'
-import { RemixContestCard } from 'components/remix-contest-card'
-import { UserCard } from 'components/user-card'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-import {
-  PREMIUM_TRACKS,
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  DOWNLOADS_AVAILABLE
-} from 'pages/explore-page/collections'
+import NavContext, { CenterPreset } from 'components/nav/mobile/NavContext'
 import { RecentSearches } from 'pages/search-page/RecentSearches'
-import { SearchCatalogTile } from 'pages/search-page/SearchCatalogTile'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { categories } from 'pages/search-page/categories'
 import {
   useSearchCategory,
   useShowSearchResults
 } from 'pages/search-page/hooks'
-import { MOODS } from 'pages/search-page/moods'
 import {
   Category,
   CategoryKey,
   CategoryView,
   ViewLayout
 } from 'pages/search-page/types'
-import { BASE_URL, stripBaseUrl } from 'utils/route'
 
-import { ExploreSection } from '../desktop/ExploreSection'
+import { ArtistSpotlightSection } from '../desktop/ArtistSpotlightSection'
+import { BestSellingSection } from '../desktop/BestSellingSection'
+import { FeaturedPlaylistsSection } from '../desktop/FeaturedPlaylistsSection'
+import { FeaturedRemixContestsSection } from '../desktop/FeaturedRemixContestsSection'
+import { FeelingLuckySection } from '../desktop/FeelingLuckySection'
+import { LabelSpotlightSection } from '../desktop/LabelSpotlightSection'
+import { MoodGrid } from '../desktop/MoodGrid'
+import { MostSharedSection } from '../desktop/MostSharedSection'
+import { QuickSearchGrid } from '../desktop/QuickSearchGrid'
+import { RecentPremiumTracksSection } from '../desktop/RecentPremiumTracksSection'
+import { RecentlyPlayedSection } from '../desktop/RecentlyPlayedSection'
+import { RecommendedTracksSection } from '../desktop/RecommendedTracksSection'
+import { TrendingPlaylistsSection } from '../desktop/TrendingPlaylistsSection'
+import { UndergroundTrendingTracksSection } from '../desktop/UndergroundTrendingTracksSection'
 
 export type ExplorePageProps = {
   title: string
@@ -74,12 +67,6 @@ export enum SearchTabs {
   PLAYLISTS = 'Playlists'
 }
 
-const justForYou = [
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  PREMIUM_TRACKS,
-  DOWNLOADS_AVAILABLE
-]
 const DEBOUNCE_MS = 200
 
 const ExplorePage = () => {
@@ -88,15 +75,13 @@ const ExplorePage = () => {
   const [inputValue, setInputValue] = useState(searchParams.get('query') || '')
   const [debouncedValue, setDebouncedValue] = useState(inputValue)
   const previousDebouncedValue = usePrevious(debouncedValue)
-  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
   const [tracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color, spacing } = useTheme()
-  const { isLarge } = useMedia()
 
-  const { data: exploreContent } = useExploreContent()
+  const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
 
   const handleSearchTab = useCallback(
     (newTab: string) => {
@@ -104,12 +89,6 @@ const ExplorePage = () => {
     },
     [setCategory]
   )
-
-  useEffectOnce(() => {
-    if (inputValue && searchBarRef.current) {
-      searchBarRef.current.focus()
-    }
-  })
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,20 +100,6 @@ const ExplorePage = () => {
   const handleClearSearch = useCallback(() => {
     setInputValue('')
   }, [])
-
-  const onClickCard = useCallback(
-    (url: string) => {
-      if (url.startsWith(BASE_URL)) {
-        navigate(stripBaseUrl(url))
-      } else if (url.startsWith('http')) {
-        const win = window.open(url, '_blank')
-        if (win) win.focus()
-      } else {
-        navigate(url)
-      }
-    },
-    [navigate]
-  )
 
   useDebounce(
     () => {
@@ -169,13 +134,6 @@ const ExplorePage = () => {
     categoryKey
   ])
 
-  const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
-    return !isPremiumTracksTile || isUSDCPurchasesEnabled
-  })
-
   const [, setBannerIsVisible] = useState(false)
 
   useEffect(() => {
@@ -196,7 +154,14 @@ const ExplorePage = () => {
   // Hide search header
   useEffect(() => {
     setRight(null)
+    setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
+
+  const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
+  const showPlaylistContent =
+    categoryKey === 'playlists' || categoryKey === 'all'
+  const showUserContent = categoryKey === 'profiles' || categoryKey === 'all'
+  const showAlbumContent = categoryKey === 'albums' || categoryKey === 'all'
 
   return (
     <MobilePageContainer
@@ -204,7 +169,7 @@ const ExplorePage = () => {
       containerClassName='search-explore-page'
     >
       <Flex direction='column' w='100%' style={{ overflow: 'hidden' }}>
-        <Flex direction='column' gap='l' p='l' backgroundColor='surface1'>
+        <Flex direction='column' ph='l' pt='l' backgroundColor='surface1'>
           <TextInput
             ref={searchBarRef}
             label={messages.searchPlaceholder}
@@ -220,6 +185,7 @@ const ExplorePage = () => {
             aria-label={'Select search category'}
             name='searchcategory'
             value={categoryKey}
+            onChange={handleCategoryChange}
             css={{
               overflow: 'scroll',
               // Hide scrollbar for IE, Edge, and Firefox
@@ -228,7 +194,7 @@ const ExplorePage = () => {
               marginLeft: '-50vw',
               marginRight: '-50vw',
               paddingLeft: '50vw',
-              paddingRight: '50vw'
+              padding: '16px 50vw'
             }}
           >
             {Object.entries(categories).map(([key, category]) => (
@@ -238,143 +204,58 @@ const ExplorePage = () => {
                 key={key}
                 label={capitalize(key)}
                 name='searchCategory'
-                onChange={handleCategoryChange}
                 size='large'
                 type='radio'
                 value={key}
-                checked={key === categoryKey}
               />
             ))}
           </RadioGroup>
         </Flex>
-        {!showSearchResults && categoryKey !== 'all' ? (
-          <Flex direction='column' alignItems='center' gap={'xl'}>
-            <SearchCatalogTile />
-            <RecentSearches />
-          </Flex>
-        ) : inputValue || showSearchResults ? (
+        {inputValue || showSearchResults ? (
           <SearchResults
             tracksLayout={tracksLayout}
             handleSearchTab={handleSearchTab}
           />
-        ) : (
-          <Flex direction='column' mt='l'>
-            <ExploreSection
-              title={messages.featuredPlaylists}
-              data={exploreContent?.featuredPlaylists}
-              Card={CollectionCard}
-            />
-            <ExploreSection
-              title={messages.featuredRemixContests}
-              data={exploreContent?.featuredRemixContests}
-              Card={RemixContestCard}
-            />
+        ) : null}
+        <Flex
+          direction='column'
+          mt='l'
+          gap='2xl'
+          css={{ display: showSearchResults ? 'none' : undefined }}
+        >
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <>
+              {showTrackContent && <RecommendedTracksSection />}
+              {showTrackContent && <RecentlyPlayedSection />}
+              <QuickSearchGrid />
+            </>
+          )}
+          {showPlaylistContent && <FeaturedPlaylistsSection />}
+          {showTrackContent && <FeaturedRemixContestsSection />}
 
-            <ExploreSection
-              title={messages.artistSpotlight}
-              data={exploreContent?.featuredProfiles}
-              Card={UserCard}
-            />
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <UndergroundTrendingTracksSection />
+          )}
 
-            <ExploreSection
-              title={messages.labelSpotlight}
-              data={exploreContent?.featuredLabels}
-              Card={UserCard}
-            />
-            <Flex direction='column' ph='l' gap='2xl'>
-              <Flex direction='column' gap='l' alignItems='center'>
-                <Text variant='title' size='l'>
-                  {messages.exploreByMood}
-                </Text>
-                <Flex
-                  gap='m'
-                  justifyContent='center'
-                  alignItems='flex-start'
-                  wrap='wrap'
-                >
-                  {Object.entries(MOODS)
-                    .sort()
-                    .map(([mood, moodInfo]) => (
-                      <Paper
-                        key={mood}
-                        pv='l'
-                        ph='xl'
-                        gap='m'
-                        borderRadius='m'
-                        border='default'
-                        backgroundColor='white'
-                        onClick={() => {
-                          navigate(`/search/tracks?mood=${mood}`)
-                        }}
-                        css={{
-                          ':hover': {
-                            background: color.neutral.n25,
-                            border: `1px solid ${color.neutral.n150}`
-                          }
-                        }}
-                      >
-                        {moodInfo.icon}
-                        <Text variant='title' size='s'>
-                          {moodInfo.label}
-                        </Text>
-                      </Paper>
-                    ))}
-                </Flex>
-              </Flex>
-              <Flex direction='column' gap='l'>
-                <Text variant='title' size='l'>
-                  {messages.bestOfAudius}
-                </Text>
-                <Flex
-                  wrap='wrap'
-                  gap='l'
-                  direction={isLarge ? 'column' : 'row'}
-                  justifyContent='space-between'
-                  css={
-                    !isLarge
-                      ? {
-                          display: 'grid',
-                          gridTemplateColumns: '1fr 1fr',
-                          gridTemplateRows: '1fr 1fr',
-                          gap: spacing.l, // or just gap: 'l' if supported
-                          width: '100%'
-                        }
-                      : undefined
-                  }
-                >
-                  {justForYouTiles.map((tile) => {
-                    const Icon = tile.icon
-                    return (
-                      <PerspectiveCard
-                        key={tile.title}
-                        backgroundGradient={tile.gradient}
-                        shadowColor={tile.shadow}
-                        useOverlayBlendMode={
-                          tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                        }
-                        backgroundIcon={
-                          Icon ? (
-                            <Icon height={180} width={180} color='inverse' />
-                          ) : undefined
-                        }
-                        onClick={() => onClickCard(tile.link)}
-                        isIncentivized={!!tile.incentivized}
-                        sensitivity={tile.cardSensitivity}
-                      >
-                        <Flex w={'100%'} h={200}>
-                          <TextInterior
-                            title={tile.title}
-                            subtitle={tile.subtitle}
-                          />
-                        </Flex>
-                      </PerspectiveCard>
-                    )
-                  })}
-                </Flex>
-              </Flex>
-            </Flex>
-          </Flex>
-        )}
+          {showUserContent && <ArtistSpotlightSection />}
+
+          {showUserContent && <LabelSpotlightSection />}
+
+          {(showTrackContent || showAlbumContent || showPlaylistContent) && (
+            <MoodGrid />
+          )}
+
+          {isSearchExploreGoodiesEnabled ? (
+            <>
+              {showPlaylistContent && <TrendingPlaylistsSection />}
+              {showTrackContent && <MostSharedSection />}
+              {(showAlbumContent || showTrackContent) && <BestSellingSection />}
+              {showTrackContent && <RecentPremiumTracksSection />}
+              {showTrackContent && <FeelingLuckySection />}
+            </>
+          ) : null}
+          <RecentSearches />
+        </Flex>
       </Flex>
     </MobilePageContainer>
   )

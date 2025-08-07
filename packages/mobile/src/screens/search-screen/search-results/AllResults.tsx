@@ -156,7 +156,7 @@ export const AllResults = () => {
         {hasNoResults ? (
           <NoResultsTile />
         ) : (
-          <Flex mh='l' gap='l' mb='xl'>
+          <Flex mh='l' gap='l' mt='l' mb='xl'>
             {(isLoading ? skeletonSections : sections).map((section, index) => {
               const items = section.data.map((item) => (
                 <AllResultsItem key={item.id} item={item} />

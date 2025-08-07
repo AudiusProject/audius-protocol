@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useUser } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
@@ -28,7 +30,7 @@ export const useProfilePicture = ({
   })
 
   const { profile_picture, updatedProfilePicture } = partialUser ?? {}
-  const image = useImageSize({
+  const { imageUrl, onError } = useImageSize({
     artwork: profile_picture,
     targetSize: size,
     defaultImage: '',
@@ -37,23 +39,26 @@ export const useProfilePicture = ({
     }
   })
 
-  if (image === '') {
+  if (imageUrl === '') {
     return {
       source: profilePicEmpty,
-      isFallbackImage: true
+      isFallbackImage: true,
+      onError
     }
   }
 
   if (updatedProfilePicture) {
     return {
       source: primitiveToImageSource(updatedProfilePicture.url),
-      isFallbackImage: false
+      isFallbackImage: false,
+      onError
     }
   }
 
   return {
-    source: primitiveToImageSource(image),
-    isFallbackImage: false
+    source: primitiveToImageSource(imageUrl),
+    isFallbackImage: false,
+    onError
   }
 }
 
@@ -61,7 +66,13 @@ export type UserImageProps = UseUserImageOptions & Partial<FastImageProps>
 
 export const UserImage = (props: UserImageProps) => {
   const { userId, size, ...imageProps } = props
-  const { source } = useProfilePicture({ userId, size })
+  const { source, onError } = useProfilePicture({ userId, size })
 
-  return <FastImage {...imageProps} source={source ?? { uri: '' }} />
+  const handleError = useCallback(() => {
+    if (source && typeof source === 'object' && 'uri' in source && source.uri) {
+      onError(source.uri)
+    }
+  }, [source, onError])
+
+  return <FastImage {...imageProps} source={source} onError={handleError} />
 }

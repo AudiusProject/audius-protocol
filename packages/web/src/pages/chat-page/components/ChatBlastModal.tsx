@@ -1,9 +1,11 @@
 import { useCurrentAccountUser } from '@audius/common/api'
 import {
+  useFeatureFlag,
   useFirstAvailableBlastAudience,
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import {
   useChatBlastModal,
   chatActions,
@@ -54,6 +56,12 @@ const messages = {
     description:
       'Send a bulk message to creators who have remixed your tracks.',
     placeholder: 'Tracks with Remixes'
+  },
+  coinHolders: {
+    label: 'Coin Holders',
+    description:
+      'Send a bulk message to users who have Bonk coins in their wallet.',
+    placeholder: 'Coin Holders'
   }
 }
 
@@ -164,6 +172,7 @@ const ChatBlastsFields = () => {
         <TipSupportersMessageField />
         <PastPurchasersMessageField />
         <RemixCreatorsMessageField />
+        <CoinHoldersMessageField />
       </Flex>
     </RadioGroup>
   )
@@ -333,6 +342,45 @@ const RemixCreatorsMessageField = () => {
               onChange={setRemixedTrackId}
               clearable
             />
+          </Flex>
+        ) : null}
+      </Flex>
+    </Flex>
+  )
+}
+
+const CoinHoldersMessageField = () => {
+  const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
+
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
+  const isSelected = targetAudience === ChatBlastAudience.COIN_HOLDERS
+  const coinHoldersCount = 0
+  const isDisabled = !isArtistCoinEnabled
+  if (!isArtistCoinEnabled) {
+    return null
+  }
+
+  return (
+    <Flex
+      as='label'
+      gap='l'
+      css={{
+        opacity: isDisabled ? 0.5 : 1
+      }}
+    >
+      <Radio value={ChatBlastAudience.COIN_HOLDERS} disabled={isDisabled} />
+      <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
+        <LabelWithCount
+          label={messages.coinHolders.label}
+          count={coinHoldersCount}
+          isSelected={isSelected}
+        />
+        {isSelected ? (
+          <Flex direction='column' gap='l'>
+            <Text size='s'>{messages.coinHolders.description}</Text>
           </Flex>
         ) : null}
       </Flex>

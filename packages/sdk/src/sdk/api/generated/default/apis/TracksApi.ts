@@ -77,6 +77,13 @@ export interface GetFeelingLuckyTracksRequest {
     minFollowers?: number;
 }
 
+export interface GetMostSharedTracksRequest {
+    userId?: string;
+    limit?: number;
+    offset?: number;
+    timeRange?: GetMostSharedTracksTimeRangeEnum;
+}
+
 export interface GetRecentPremiumTracksRequest {
     offset?: number;
     limit?: number;
@@ -310,6 +317,49 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getFeelingLuckyTracks(params: GetFeelingLuckyTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getFeelingLuckyTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the most shared tracks for a given time range
+     */
+    async getMostSharedTracksRaw(params: GetMostSharedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.timeRange !== undefined) {
+            queryParameters['time_range'] = params.timeRange;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/most-shared`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most shared tracks for a given time range
+     */
+    async getMostSharedTracks(params: GetMostSharedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getMostSharedTracksRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -954,6 +1004,15 @@ export class TracksApi extends runtime.BaseAPI {
 
 }
 
+/**
+ * @export
+ */
+export const GetMostSharedTracksTimeRangeEnum = {
+    Week: 'week',
+    Month: 'month',
+    AllTime: 'allTime'
+} as const;
+export type GetMostSharedTracksTimeRangeEnum = typeof GetMostSharedTracksTimeRangeEnum[keyof typeof GetMostSharedTracksTimeRangeEnum];
 /**
  * @export
  */

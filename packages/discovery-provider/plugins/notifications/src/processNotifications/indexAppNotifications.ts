@@ -185,6 +185,7 @@ export class AppNotificationsProcessor {
         `
           SELECT * 
           FROM get_user_scores(?) 
+          WHERE score <= 0
           `,
         [usersTriggeringNotifications]
       )

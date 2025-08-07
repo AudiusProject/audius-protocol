@@ -73,6 +73,7 @@ export const ProfileResults = () => {
             height: '100%',
             paddingVertical: spacing.m
           }}
+          ListFooterComponent={<Flex h={200} />}
           profiles={profiles}
           isLoading={isLoading}
           onCardPress={handlePress}

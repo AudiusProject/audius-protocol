@@ -65,10 +65,14 @@ export const walletMessages = {
     invalidAddress: 'A valid Solana USDC wallet address is required',
     minCashTransfer: 'A minimum of $5 is required for cash withdrawals.',
     pleaseConfirm:
-      'Please confirm you have reviewed this transaction and accept responsibility for errors.'
+      'Please confirm you have reviewed this transaction and accept responsibility for errors.',
+    unableToLoadBalance: 'Unable to load balance information'
   },
 
   // YourCoins messages
   yourCoins: 'Your Coins',
-  buySell: 'Buy/Sell'
+  buySell: 'Buy/Sell',
+  buy: 'Buy',
+  send: 'Send',
+  receive: 'Receive'
 }

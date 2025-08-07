@@ -122,7 +122,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const [, { touched: isTitleTouched }, { setValue: setTitle }] =
     useField('title')
 
-  const hasTitleEverBeenTouched = useRef(false)
   const originalOrigFilename = useRef<string | null>(null)
   const [selectedTrackFile, setSelectedTrackFile] = useState<string | null>(
     null
@@ -176,7 +175,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   useEffect(() => {
     if (selectedTrack) {
       // Update form values with new track metadata
-      if (!hasTitleEverBeenTouched.current) {
+      // Only update title to file name if it's an upload AND user hasn't touched the title
+      if (isUpload && !isTitleTouched) {
         setTitle(selectedTrack.metadata.title)
       }
       setOrigFilename(selectedTrack.metadata.orig_filename)
@@ -232,12 +232,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       )
     }
   }, [dirty, navigation, dispatch])
-
-  useEffect(() => {
-    if (isTitleTouched) {
-      hasTitleEverBeenTouched.current = true
-    }
-  }, [isTitleTouched])
 
   const handleReplaceAudio = useCallback(() => {
     if (!selectedTrack || !values.track_id) {

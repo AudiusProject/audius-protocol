@@ -32,6 +32,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.share import Share
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
@@ -95,6 +96,7 @@ class Action(str, Enum):
     UNMUTE = "Unmute"
     ADD_EMAIL = "AddEmail"
     REPORT = "Report"
+    SHARE = "Share"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -133,6 +135,7 @@ class EntityType(str, Enum):
     EMAIL_ACCESS = "EmailAccess"
     COLLECTIBLES = "Collectibles"
     EVENT = "Event"
+    SHARE = "Share"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -161,6 +164,7 @@ class RecordDict(TypedDict):
     Follow: Dict[Tuple, List[Follow]]
     Save: Dict[Tuple, List[Save]]
     Repost: Dict[Tuple, List[Repost]]
+    Share: Dict[Tuple, List[Share]]
     Subscription: Dict[Tuple, List[Subscription]]
     NotificationSeen: Dict[Tuple, List[NotificationSeen]]
     Notification: Dict[Tuple, List[Notification]]
@@ -183,6 +187,7 @@ class ExistingRecordDict(TypedDict):
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
     Repost: Dict[Tuple, Repost]
+    Share: Dict[Tuple, Share]
     Subscription: Dict[Tuple, Subscription]
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
     DeveloperApp: Dict[str, DeveloperApp]
@@ -206,6 +211,7 @@ class EntitiesToFetchDict(TypedDict):
     Follow: Set[Tuple]
     Save: Set[Tuple]
     Repost: Set[Tuple]
+    Share: Set[Tuple]
     Subscription: Set[Tuple]
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]

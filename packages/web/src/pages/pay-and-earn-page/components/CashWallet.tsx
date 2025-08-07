@@ -16,7 +16,7 @@ import {
   Button,
   Flex,
   IconInfo,
-  IconLogoCircleUSDC,
+  IconLogoCircleUSDCPng,
   Paper,
   Text,
   IconButton,
@@ -87,7 +87,7 @@ export const CashWallet = () => {
         {/* Left Column - Balance Info */}
         <Flex direction='column' gap='s' alignItems='flex-start'>
           <Flex alignItems='center' gap='s'>
-            <IconLogoCircleUSDC size='l' />
+            <IconLogoCircleUSDCPng size='l' hex />
             <Flex alignItems='center' gap='xs'>
               <Text variant='heading' size='s' color='subdued'>
                 {walletMessages.cashBalance}

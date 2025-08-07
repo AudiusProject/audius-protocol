@@ -478,7 +478,7 @@ function* createGuestAccount(
         yield* call([localStorage, 'clearAudiusAccountUser'])
         yield* call([authService, authService.signOut])
         yield put(accountActions.resetAccount())
-        queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+        queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
         yield put(accountActions.setGuestEmail({ guestEmail }))
 
         const currentUser = yield* call(queryAccountUser)

@@ -1,4 +1,4 @@
-integration-init:
+e2e-init:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17

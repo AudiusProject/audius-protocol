@@ -1,3 +1,4 @@
+import { wAUDIO } from '@audius/fixed-decimal'
 import snakecaseKeys from 'snakecase-keys'
 
 import type { StorageService } from '../../services'
@@ -473,7 +474,7 @@ export class UsersApi extends GeneratedUsersApi {
     const secp = await this.claimableTokens.createTransferSecpInstruction({
       ethWallet,
       destination,
-      amount,
+      amount: wAUDIO(amount).value,
       mint: 'wAUDIO'
     })
     const transfer = await this.claimableTokens.createTransferInstruction({

@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { useComment, useUser } from '@audius/common/api'
+import { useComment, useHighlightedComment, useUser } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment
@@ -21,6 +21,7 @@ import { keyframes } from '@emotion/react'
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { ToastContext } from 'components/toast/ToastContext'
+import { isDarkMode as getIsDarkMode } from 'utils/theme/theme'
 
 import { ArtistPick } from './ArtistPick'
 import { CommentActionBar } from './CommentActionBar'
@@ -52,6 +53,10 @@ const CommentBlockInternal = (
 ) => {
   const { comment, parentCommentId, isPreview } = props
   const { track, artistId } = useCurrentCommentSection()
+  const isDarkMode = getIsDarkMode()
+
+  const highlightedComment = useHighlightedComment()
+  const highlightedCommentId = highlightedComment?.id
 
   const {
     id: commentId,
@@ -64,7 +69,7 @@ const CommentBlockInternal = (
     mentions = []
   } = comment
 
-  const { motion } = useTheme()
+  const { color, motion } = useTheme()
   const isPinned = track.pinned_comment_id === commentId
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const createdAtDate = useMemo(
@@ -83,13 +88,38 @@ const CommentBlockInternal = (
   const [showReplyInput, setShowReplyInput] = useState(false)
   const isCommentByArtist = userId === artistId
 
+  const highlightBackgroundFadeAnimation = keyframes`
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: ${isDarkMode ? 0.2 : 0.1};
+    }
+    100% {
+      opacity: ${isDarkMode ? 0.1 : 0.05};
+    }
+  `
+
   return (
     <Flex
       w='100%'
       gap='l'
       css={{
         opacity: isTombstone ? 0.5 : 1,
-        animation: `${fadeIn} ${motion.calm}`
+        animation: `${fadeIn} ${motion.calm}`,
+        paddingInline: parentCommentId ? 80 : 24,
+        '&::before': {
+          content: highlightedCommentId === commentId ? '""' : 'none',
+          position: 'absolute',
+          top: -12,
+          bottom: -12,
+          left: 0,
+          right: 0,
+          backgroundColor: color.focus.default,
+          opacity: 0,
+          animation: `${highlightBackgroundFadeAnimation} forwards 0.66s 1.2s ease-in-out`,
+          zIndex: 0
+        }
       }}
     >
       <Box>

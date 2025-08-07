@@ -15,10 +15,10 @@ import {
   useHasAccount
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { Client, SmartCollectionVariant, Status } from '@audius/common/models'
+import { Client, Status } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { guestRoutes } from '@audius/common/src/utils/route'
-import { ExploreCollectionsVariant, UploadType } from '@audius/common/store'
+import { UploadType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -51,9 +51,10 @@ import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceF
 import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
+import { AllCoinsPage } from 'pages/all-coins-page/AllCoinsPage'
+import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
-import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import CommentHistoryPage from 'pages/comment-history/CommentHistoryPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
@@ -63,7 +64,6 @@ import SolanaToolsPage from 'pages/dev-tools/SolanaToolsPage'
 import UserIdParserPage from 'pages/dev-tools/UserIdParserPage'
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
-import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
 import { ExplorePage } from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
 import { FbSharePage } from 'pages/fb-share-page/FbSharePage'
@@ -77,7 +77,6 @@ import { NotificationUsersPage } from 'pages/notification-users-page/Notificatio
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
 import { TableType } from 'pages/pay-and-earn-page/types'
 import { PickWinnersPage } from 'pages/pick-winners-page/PickWinnersPage'
-import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
@@ -85,7 +84,6 @@ import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import { RewardsPage } from 'pages/rewards-page/RewardsPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
-import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
 import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
 import { TrackCommentsPage } from 'pages/track-page/TrackCommentsPage'
@@ -116,20 +114,12 @@ const {
   NOTIFICATION_PAGE,
   NOTIFICATION_USERS_PAGE,
   EXPLORE_PAGE,
-  EXPLORE_HEAVY_ROTATION_PAGE,
-  EXPLORE_LET_THEM_DJ_PAGE,
-  EXPLORE_BEST_NEW_RELEASES_PAGE,
-  EXPLORE_UNDER_THE_RADAR_PAGE,
-  EXPLORE_TOP_ALBUMS_PAGE,
-  EXPLORE_MOST_LOVED_PAGE,
-  EXPLORE_FEELING_LUCKY_PAGE,
-  EXPLORE_MOOD_PLAYLISTS_PAGE,
   SAVED_PAGE,
   LIBRARY_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
-  WALLET_AUDIO_PAGE,
+  ASSET_DETAIL_PAGE,
   REWARDS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -171,10 +161,8 @@ const {
   PROFILE_PAGE_PLAYLISTS,
   PROFILE_PAGE_REPOSTS,
   TRENDING_UNDERGROUND_PAGE,
-  EXPLORE_REMIXABLES_PAGE,
   CHECK_PAGE,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
-  AUDIO_NFT_PLAYLIST_PAGE,
   DEACTIVATE_PAGE,
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE,
@@ -182,7 +170,6 @@ const {
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   PROFILE_PAGE_COMMENTS,
-  EXPLORE_PREMIUM_TRACKS_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
   PURCHASES_PAGE,
@@ -198,6 +185,7 @@ const {
   EDIT_ALBUM_PAGE,
   AIRDROP_PAGE,
   WALLET_PAGE,
+  ALL_COINS_PAGE,
   DEV_TOOLS_PAGE,
   SOLANA_TOOLS_PAGE,
   USER_ID_PARSER_PAGE
@@ -227,8 +215,14 @@ const validSearchCategories = [
 initializeSentry()
 
 const WebPlayer = (props) => {
-  const { isProduction, history, location, mainContentRef, setMainContentRef } =
-    props
+  const {
+    isProduction,
+    history,
+    location,
+    mainContentRef,
+    setMainContentRef,
+    isArtistCoinsEnabled
+  } = props
 
   const dispatch = useDispatch()
 
@@ -267,6 +261,7 @@ const WebPlayer = (props) => {
 
   const context = useContext(SsrContext)
   const ipcRef = useRef(null)
+  const previousRouteRef = useRef(getPathname(history.location))
 
   const [state, setState] = useState({
     mainContent: null,
@@ -289,12 +284,19 @@ const WebPlayer = (props) => {
     const client = getClient()
 
     const removeHistoryEventListener = history.listen((location, action) => {
-      scrollToTop()
-      setState((prev) => ({
-        ...prev,
-        initialPage: false,
-        currentRoute: getPathname(history.location)
-      }))
+      const newRoute = getPathname(location)
+      const previousRoute = previousRouteRef.current
+
+      // Only scroll to top and update state if the pathname actually changed (we dont want to scroll on query params)
+      if (newRoute !== previousRoute) {
+        scrollToTop()
+        previousRouteRef.current = newRoute
+        setState((prev) => ({
+          ...prev,
+          initialPage: false,
+          currentRoute: newRoute
+        }))
+      }
     })
 
     if (client === Client.ELECTRON) {
@@ -580,100 +582,7 @@ const WebPlayer = (props) => {
                   />
                 )}
               />
-              <Route
-                exact
-                path={EXPLORE_REMIXABLES_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.REMIXABLES}
-                  />
-                )}
-              />
               <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
-              <Route
-                exact
-                path={AUDIO_NFT_PLAYLIST_PAGE}
-                render={() => <CollectiblesPlaylistPage />}
-              />
-              <Route
-                exact
-                path={EXPLORE_PREMIUM_TRACKS_PAGE}
-                render={() => (
-                  <PremiumTracksPage containerRef={mainContentRef.current} />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_HEAVY_ROTATION_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.HEAVY_ROTATION}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_LET_THEM_DJ_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.LET_THEM_DJ}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_BEST_NEW_RELEASES_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.BEST_NEW_RELEASES}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_UNDER_THE_RADAR_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.UNDER_THE_RADAR}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_TOP_ALBUMS_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.TOP_ALBUMS}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_MOST_LOVED_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.MOST_LOVED}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_FEELING_LUCKY_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.FEELING_LUCKY}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_MOOD_PLAYLISTS_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.MOOD}
-                  />
-                )}
-              />
               <Route
                 exact
                 path={SEARCH_CATEGORY_PAGE_LEGACY}
@@ -792,6 +701,24 @@ const WebPlayer = (props) => {
               />
               <Route
                 exact
+                path={ALL_COINS_PAGE}
+                isMobile={isMobile}
+                component={AllCoinsPage}
+              />
+              <Route
+                exact
+                path={ASSET_DETAIL_PAGE}
+                isMobile={isMobile}
+                render={(props) => {
+                  return isArtistCoinsEnabled ? (
+                    <AssetDetailPage {...props} />
+                  ) : (
+                    <AudioPage {...props} />
+                  )
+                }}
+              />
+              <Route
+                exact
                 path={PAYMENTS_PAGE}
                 isMobile={isMobile}
                 component={WalletPage}
@@ -799,12 +726,6 @@ const WebPlayer = (props) => {
               <Route
                 exact
                 path={AUDIO_PAGE}
-                isMobile={isMobile}
-                component={AudioPage}
-              />
-              <Route
-                exact
-                path={WALLET_AUDIO_PAGE}
                 isMobile={isMobile}
                 component={AudioPage}
               />
@@ -1074,12 +995,16 @@ const FeatureFlaggedWebPlayer = (props) => {
   const { isEnabled: isSearchExploreEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE
   )
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const { isProduction } = useEnvironment()
 
   return (
     <RouterWebPlayer
       {...props}
       isSearchExploreEnabled={isSearchExploreEnabled}
+      isArtistCoinsEnabled={isArtistCoinsEnabled}
       isProduction={isProduction}
     />
   )

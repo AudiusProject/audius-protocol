@@ -105,6 +105,12 @@ export interface ReplyComment {
      * @memberof ReplyComment
      */
     updatedAt?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ReplyComment
+     */
+    parentCommentId?: number;
 }
 
 /**
@@ -147,6 +153,7 @@ export function ReplyCommentFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'isArtistReacted': !exists(json, 'is_artist_reacted') ? undefined : json['is_artist_reacted'],
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
+        'parentCommentId': !exists(json, 'parent_comment_id') ? undefined : json['parent_comment_id'],
     };
 }
 
@@ -172,6 +179,7 @@ export function ReplyCommentToJSON(value?: ReplyComment | null): any {
         'is_artist_reacted': value.isArtistReacted,
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
+        'parent_comment_id': value.parentCommentId,
     };
 }
 

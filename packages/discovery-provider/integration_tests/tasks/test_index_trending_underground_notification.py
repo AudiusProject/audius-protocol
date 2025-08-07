@@ -43,6 +43,14 @@ def test_index_trending_underground_notification(app):
                 for i in range(1, 121)
             ],
             "users": [{"user_id": i} for i in range(1, 3)],
+            "aggregate_user": [
+                {
+                    "user_id": i,
+                    "follower_count": 100,  # Less than 1500 requirement
+                    "following_count": 50,  # Less than 1500 requirement
+                }
+                for i in range(1, 3)
+            ],
         }
         populate_mock_db(db, entities)
 
@@ -57,40 +65,40 @@ def test_index_trending_underground_notification(app):
             assert len(notifications) == 5
 
             notification_0 = notifications[0]
-            assert notification_0.specifier == "101"
+            assert notification_0.specifier == "21"
             assert (
                 notification_0.group_id
-                == "trending_underground:time_range:week:genre:all:rank:1:track_id:101:timestamp:1672531200"
+                == "trending_underground:time_range:week:genre:all:rank:1:track_id:21:timestamp:1672531200"
             )
             assert notification_0.type == "trending_underground"
             assert notification_0.data == {
                 "rank": 1,
                 "genre": "all",
-                "track_id": 101,
+                "track_id": 21,
                 "time_range": "week",
             }
             assert notification_0.user_ids == [2]
 
             notification_1 = notifications[1]
-            assert notification_1.specifier == "102"
+            assert notification_1.specifier == "22"
             assert (
                 notification_1.group_id
-                == "trending_underground:time_range:week:genre:all:rank:2:track_id:102:timestamp:1672531200"
+                == "trending_underground:time_range:week:genre:all:rank:2:track_id:22:timestamp:1672531200"
             )
             assert notification_1.type == "trending_underground"
             assert notification_1.data == {
                 "rank": 2,
                 "genre": "all",
-                "track_id": 102,
+                "track_id": 22,
                 "time_range": "week",
             }
             assert notification_1.user_ids == [1]
 
         # Test that on second iteration of trending, only new notifications appear
-        # Prev: 1, 2, 3, 4, 5
-        # New: 2, 4, 5, 1, 7
-        # new notifications for track_id: 2, 4, 5, 7
-        # no new notification for track_id: 1
+        # Prev: 1, 2, 3, 4, 5 (track_ids: 21, 22, 23, 24, 25)
+        # New: 2, 4, 5, 1, 7 (track_ids: 22, 24, 25, 21, 27)
+        # new notifications for track_id: 27 (only track 27 is new)
+        # no new notification for track_ids: 21, 22, 24, 25 (already notified)
 
         with db.scoped_session() as session:
             session.execute(delete(TrackTrendingScore))
@@ -106,7 +114,7 @@ def test_index_trending_underground_notification(app):
                     "type": TrendingType.TRACKS.name,
                 }
                 for (i, track_id) in enumerate(
-                    list(range(1, 101)) + [102, 104, 105, 101, 107, 108, 109, 110]
+                    list(range(1, 21)) + [22, 24, 25, 21, 27, 28, 29, 30]
                 )
             ],
         }
@@ -131,7 +139,7 @@ def test_index_trending_underground_notification(app):
             assert updated_notifications[0].data == {
                 "rank": 5,
                 "genre": "all",
-                "track_id": 107,
+                "track_id": 27,
                 "time_range": "week",
             }
 
@@ -154,20 +162,20 @@ def test_index_trending_underground_notification(app):
             assert updated_notifications[0].data == {
                 "rank": 1,
                 "genre": "all",
-                "track_id": 102,
+                "track_id": 22,
                 "time_range": "week",
             }
 
             assert updated_notifications[1].data == {
                 "rank": 2,
                 "genre": "all",
-                "track_id": 104,
+                "track_id": 24,
                 "time_range": "week",
             }
 
             assert updated_notifications[2].data == {
                 "rank": 3,
                 "genre": "all",
-                "track_id": 105,
+                "track_id": 25,
                 "time_range": "week",
             }

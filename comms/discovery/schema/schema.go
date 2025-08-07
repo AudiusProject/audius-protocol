@@ -316,10 +316,11 @@ const (
 type ChatBlastAudience string
 
 const (
-	CustomerAudience ChatBlastAudience = "customer_audience"
-	FollowerAudience ChatBlastAudience = "follower_audience"
-	RemixerAudience  ChatBlastAudience = "remixer_audience"
-	TipperAudience   ChatBlastAudience = "tipper_audience"
+	CustomerAudience   ChatBlastAudience = "customer_audience"
+	FollowerAudience   ChatBlastAudience = "follower_audience"
+	RemixerAudience    ChatBlastAudience = "remixer_audience"
+	TipperAudience     ChatBlastAudience = "tipper_audience"
+	CoinHolderAudience ChatBlastAudience = "coin_holder_audience"
 )
 
 type AudienceContentType string

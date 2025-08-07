@@ -14,6 +14,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
@@ -56,8 +57,14 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       playlist_id: number
       playlist_name: string
       playlist_owner_id: number
+      playlist_image_sizes_multihash?: string | null
     }> = await this.dnDB
-      .select('playlist_id', 'playlist_name', 'playlist_owner_id')
+      .select(
+        'playlist_id',
+        'playlist_name',
+        'playlist_owner_id',
+        'playlist_image_sizes_multihash'
+      )
       .from<PlaylistRow>('playlists')
       .where('is_current', true)
       .whereIn('playlist_id', [this.playlistId])
@@ -72,16 +79,13 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [track.owner_id, playlist.playlist_owner_id])
-    const users = res.reduce(
-      (acc, user) => {
-        acc[user.user_id] = {
-          name: user.name,
-          isDeactivated: user.is_deactivated
-        }
-        return acc
-      },
-      {} as Record<number, { name: string; isDeactivated: boolean }>
-    )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[track.owner_id]?.isDeactivated) {
       return
@@ -99,6 +103,13 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
 
     const title = 'Your track got on a playlist! 💿'
     const body = `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`
+
+    // Get playlist's image URL for rich notification (150x150 size)
+    let imageUrl: string | undefined
+    if (playlist?.playlist_image_sizes_multihash) {
+      imageUrl = formatImageUrl(playlist.playlist_image_sizes_multihash, 150)
+    }
+
     await sendBrowserNotification(
       isBrowserPushEnabled,
       userNotificationSettings,
@@ -134,7 +145,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
                   this.notification.group_id
                 }`,
                 playlistId: this.playlistId
-              }
+              },
+              imageUrl
             }
           )
         })

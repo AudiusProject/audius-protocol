@@ -6,6 +6,7 @@ import {
 import { StringKeys } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import { useDrawerProgress } from '@react-navigation/drawer'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Animated, {
@@ -44,10 +45,11 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 type AccountPictureHeaderProps = {
   onPress: () => void
+  style?: StyleProp<ViewStyle>
 }
 
 export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
-  const { onPress } = props
+  const { onPress, style } = props
   const drawerProgress = useDrawerProgress() as Animated.SharedValue<number>
   const styles = useStyles()
   const { data: accountId } = useCurrentUserId()
@@ -61,7 +63,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   }))
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={[animatedStyle, style]}>
       <TouchableOpacity onPress={onPress}>
         <ProfilePicture
           userId={accountId}
