@@ -1,9 +1,5 @@
 import { AudiusSdk, full, Id, OptionalId } from '@audius/sdk'
-import {
-  FullPlaylistWithScoreResponse,
-  GetBestNewReleasesWindowEnum,
-  FullPlaylistWithScore
-} from '@audius/sdk/src/sdk/api/generated/full'
+import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
   trackActivityFromSDK,
@@ -20,9 +16,6 @@ import {
   UserTrackMetadata
 } from '../../models'
 import { AudiusBackend } from '../audius-backend'
-
-const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
-  b.score - a.score
 
 type ExploreConfig = {
   audiusBackendInstance: AudiusBackend
@@ -174,39 +167,6 @@ export class Explore {
         userId: OptionalId.parse(userId)
       })
       return transformAndCleanList(data, userCollectionMetadataFromSDK)
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
-  async getTopPlaylistsForMood({
-    moods,
-    limit = 16,
-    userId
-  }: {
-    moods: string[]
-    limit?: number
-    userId?: ID
-  }): Promise<UserCollectionMetadata[]> {
-    try {
-      const sdk = await this.audiusSdk()
-      const requests = moods.map((mood) => {
-        return sdk.full.playlists.getTopPlaylists({
-          type: 'playlist',
-          limit,
-          mood,
-          userId: OptionalId.parse(userId)
-        })
-      })
-      const playlistsByMood: FullPlaylistWithScoreResponse[] =
-        await Promise.all(requests)
-      let allPlaylists: FullPlaylistWithScore[] = []
-      playlistsByMood.forEach(({ data = [] }) => {
-        allPlaylists = allPlaylists.concat(data)
-      })
-      const playlists = allPlaylists.sort(scoreComparator).slice(0, 20)
-      return transformAndCleanList(playlists, userCollectionMetadataFromSDK)
     } catch (e) {
       console.error(e)
       return []
