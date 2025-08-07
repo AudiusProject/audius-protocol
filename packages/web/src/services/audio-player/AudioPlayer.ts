@@ -1,8 +1,5 @@
-import { Name } from '@audius/common/models'
 import { playbackRateValueMap, PlaybackRate } from '@audius/common/store'
 import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
-
-import { make, track } from 'services/analytics'
 
 declare global {
   interface Window {
