@@ -647,8 +647,7 @@ function* downloadTracks({
             userData: data,
             nftAccessSignature: nftAccessSignature
               ? JSON.stringify(nftAccessSignature)
-              : undefined,
-            original
+              : undefined
           })
           return {
             url,
