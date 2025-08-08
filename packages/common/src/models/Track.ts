@@ -210,7 +210,7 @@ export type TrackMetadata = {
   description: Nullable<string>
   followee_reposts: Repost[]
   followee_saves: Favorite[]
-  genre: string
+  genre: Genre
   has_current_user_reposted: boolean
   has_current_user_saved: boolean
   license: Nullable<License>

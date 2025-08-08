@@ -17,7 +17,6 @@ import {
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import {
-  IconVolumeLevel2 as IconVolume,
   IconCrown,
   Text,
   Flex,
@@ -25,7 +24,8 @@ import {
   IconKebabHorizontal,
   Paper,
   Box,
-  IconButton
+  IconButton,
+  IconVolumeLevel2 as IconVolume
 } from '@audius/harmony'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -178,16 +178,6 @@ export const TrackTile = ({
       dispatch(undoRepostTrack(trackId, RepostSource.TILE))
     },
     [dispatch]
-  )
-
-  const userName = (
-    <UserLink
-      userId={user_id}
-      badgeSize='xs'
-      isActive={isActive}
-      popover
-      css={{ marginTop: '-4px' }}
-    />
   )
 
   const onClickFavorite = useCallback(() => {
@@ -345,30 +335,43 @@ export const TrackTile = ({
         </Box>
       </Flex>
       <TrackDogEar trackId={trackId} hideUnlocked />
-      <Flex column flex={1}>
+      <Flex column flex={1} css={{ minWidth: 0 }}>
         <Flex direction='column' justifyContent='space-between' h='100%'>
-          <Flex column gap='s'>
+          <Flex column gap='s' w='100%'>
             <Flex direction='column' gap='xs' pv='xs'>
               {isLoading ? (
                 <Skeleton width='80%' height='20px' />
               ) : (
-                <Flex mr='3xl'>
-                  <TextLink
-                    css={{ alignItems: 'center' }}
-                    to={permalink}
-                    isActive={isActive}
-                    textVariant='title'
-                    applyHoverStylesToInnerSvg
-                    onClick={onClickTitle}
-                    disabled={disableActions}
-                    ellipses
+                <Flex gap='s' alignItems='flex-start'>
+                  <Flex
+                    css={{ minWidth: 0, flex: 1 }}
+                    direction='column'
+                    gap='xs'
                   >
-                    <Text ellipses>{title}</Text>
-                    {isTrackPlaying ? <IconVolume size='m' /> : null}
-                  </TextLink>
+                    <TextLink
+                      to={permalink}
+                      isActive={isActive}
+                      textVariant='title'
+                      applyHoverStylesToInnerSvg
+                      onClick={onClickTitle}
+                      disabled={disableActions}
+                      ellipses
+                    >
+                      <Text ellipses>{title}</Text>
+                      {isTrackPlaying ? <IconVolume size='m' /> : null}
+                    </TextLink>
+                    <UserLink
+                      userId={user_id}
+                      badgeSize='xs'
+                      isActive={isActive}
+                      popover
+                      css={{ marginTop: '-4px' }}
+                    />
+                  </Flex>
+                  <TrackTileDuration trackId={trackId} isLoading={isLoading} />
                 </Flex>
               )}
-              {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+              {isLoading ? <Skeleton width='50%' height='20px' /> : null}
             </Flex>
           </Flex>
           <TrackTileStats
@@ -377,7 +380,6 @@ export const TrackTile = ({
             size={size}
             isLoading={isLoading}
           />
-          <TrackTileDuration trackId={trackId} isLoading={isLoading} />
         </Flex>
         {isOwner ? (
           <Flex column gap='s'>
