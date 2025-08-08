@@ -59,10 +59,9 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     limit: 1
   })
   const coinSymbol = coins?.[0]?.ticker ?? ''
-  const { data: coinHoldersCount } = useArtistCoinMembersCount(
-    {},
-    { enabled: audience === ChatBlastAudience.COIN_HOLDERS }
-  )
+  const { data: coinHoldersCount } = useArtistCoinMembersCount({
+    enabled: audience === ChatBlastAudience.COIN_HOLDERS
+  })
 
   const audienceCount = useMemo(() => {
     switch (audience) {
