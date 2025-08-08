@@ -5,16 +5,9 @@ import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 import { useDispatch } from 'react-redux'
 
-import {
-  IconCart,
-  IconCloudDownload,
-  IconHeart,
-  IconRepost,
-  Button
-} from '@audius/harmony-native'
+import { IconCloudDownload, IconHeart, Button } from '@audius/harmony-native'
 import { Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 import { requestDownloadAllFavorites } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -59,11 +52,8 @@ const useToggleStyles = makeStyles(({ spacing, palette }) => ({
 const messages = {
   offlineListeningTitle: 'Offline Listening',
   offlineListeningDescription:
-    'Use the toggles to select what you’d like synced for offline streaming.',
-  comingSoonToggleSuffix: '(coming soon...)',
+    "Use the toggles to select what you'd like synced for offline streaming.",
   favorites: 'Favorites',
-  reposts: 'Reposts',
-  purchased: 'Purchased',
   saveChanges: 'Save Changes'
 }
 
@@ -143,8 +133,6 @@ export const OfflineListeningDrawer = () => {
     setIsFavoritesOn(value)
   }, [])
 
-  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-
   return (
     <NativeDrawer drawerName='OfflineListening'>
       <View style={styles.container}>
@@ -161,20 +149,6 @@ export const OfflineListeningDrawer = () => {
           value={isFavoritesOn}
           onValueChange={handleToggleFavorites}
         />
-        <OfflineListeningOptionToggle
-          title={`${messages.reposts} ${messages.comingSoonToggleSuffix}`}
-          icon={IconRepost}
-          value={false}
-          disabled
-        />
-        {isUSDCPurchasesEnabled ? (
-          <OfflineListeningOptionToggle
-            title={`${messages.purchased} ${messages.comingSoonToggleSuffix}`}
-            icon={IconCart}
-            value={false}
-            disabled
-          />
-        ) : null}
         <Button fullWidth variant='primary' onPress={handleSaveChanges}>
           {messages.saveChanges}
         </Button>

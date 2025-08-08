@@ -3,18 +3,17 @@ import {
   Flex,
   IconHeart,
   IconRepost,
-  IconShare
+  IconShare,
+  Paper
 } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 
-import { LineupTileRoot } from './LineupTileRoot'
-
 export const LineupTileSkeleton = () => {
   return (
-    <LineupTileRoot>
+    <Paper>
       <Flex flex={1} justifyContent='space-between'>
         <Flex direction='row' alignItems='center' p='s' gap='m'>
-          <Skeleton height={72} width={72} />
+          <Skeleton height={80} width={80} />
           <Flex gap='s' flex={1}>
             <Skeleton width='80%' height={20} />
             <Skeleton width='60%' height={20} />
@@ -27,6 +26,6 @@ export const LineupTileSkeleton = () => {
           <IconShare color='disabled' />
         </Flex>
       </Flex>
-    </LineupTileRoot>
+    </Paper>
   )
 }

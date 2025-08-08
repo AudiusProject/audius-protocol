@@ -56,13 +56,15 @@ export const TransactionResultScreen = ({
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: successData?.payAmount || 0,
     availableBalance: successData?.payAmount || 0,
-    isStablecoin: !!successData?.payTokenInfo.isStablecoin
+    isStablecoin: !!successData?.payTokenInfo.isStablecoin,
+    decimals: successData?.payTokenInfo.decimals || 6
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: successData?.receiveAmount || 0,
     availableBalance: successData?.receiveAmount || 0,
-    isStablecoin: !!successData?.receiveTokenInfo.isStablecoin
+    isStablecoin: !!successData?.receiveTokenInfo.isStablecoin,
+    decimals: successData?.receiveTokenInfo.decimals || 6
   })
 
   const handleDone = () => {

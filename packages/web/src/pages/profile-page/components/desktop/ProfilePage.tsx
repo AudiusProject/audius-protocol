@@ -564,6 +564,8 @@ const ProfilePage = ({
       description={description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='user'
+      entityId={userId!}
       variant='flush'
       scrollableSearch
       fromOpacity={1}

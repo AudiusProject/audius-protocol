@@ -48,12 +48,13 @@ import { CollectionDogEar } from 'components/collection'
 import { CollectionTileStats } from 'components/collection/CollectionTileStats'
 import { TextLink, UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { CollectionTileProps, TrackTileSize } from 'components/track/types'
+import { TrackTileSize } from 'components/track/types'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
+import { DesktopCollectionTileProps } from '../desktop/CollectionTile'
 import { getCollectionWithFallback } from '../helpers'
 
 import BottomButtons from './BottomButtons'
@@ -74,7 +75,7 @@ const {
 const { setLockedContentId } = gatedContentActions
 
 type OwnProps = Omit<
-  CollectionTileProps,
+  DesktopCollectionTileProps,
   | 'userId'
   | 'duration'
   | 'artistName'
@@ -99,8 +100,9 @@ type OwnProps = Omit<
   | 'goToRoute'
 > & {
   collection?: any
+  uploading?: boolean
   user?: any
-  tracks?: Track[]
+  variant?: 'readonly'
 }
 
 type TrackItemProps = {
@@ -110,6 +112,7 @@ type TrackItemProps = {
   active: boolean
   deleted?: boolean
   forceSkeleton?: boolean
+  noShimmer?: boolean
 }
 
 // Max number of track to display in a playlist
@@ -122,7 +125,8 @@ const messages = {
 }
 
 const TrackItem = (props: TrackItemProps) => {
-  const { active, deleted, index, isAlbum, track, forceSkeleton } = props
+  const { active, deleted, index, isAlbum, track, forceSkeleton, noShimmer } =
+    props
   const { data: trackOwnerName } = useUser(track?.owner_id, {
     select: (user) => user?.name
   })
@@ -137,7 +141,7 @@ const TrackItem = (props: TrackItemProps) => {
         })}
       >
         {forceSkeleton ? (
-          <Skeleton width='100%' height='10px' />
+          <Skeleton width='100%' height='10px' noShimmer={noShimmer} />
         ) : track ? (
           <>
             <div className={styles.index}> {index + 1} </div>
@@ -166,6 +170,7 @@ type TrackListProps = {
   isAlbum: boolean
   numLoadingSkeletonRows?: number
   trackCount?: number
+  noShimmer?: boolean
 }
 
 const TrackList = ({
@@ -175,7 +180,8 @@ const TrackList = ({
   isLoading,
   isAlbum,
   numLoadingSkeletonRows,
-  trackCount
+  trackCount,
+  noShimmer
 }: TrackListProps) => {
   if (!tracks.length && isLoading && numLoadingSkeletonRows) {
     return (
@@ -187,6 +193,7 @@ const TrackList = ({
             index={i}
             isAlbum={isAlbum}
             forceSkeleton
+            noShimmer={noShimmer}
           />
         ))}
       </Box>
@@ -233,7 +240,8 @@ export const CollectionTile = ({
   variant,
   containerClassName,
   isFeed = false,
-  source
+  source,
+  noShimmer
 }: OwnProps) => {
   const dispatch = useDispatch()
 
@@ -532,6 +540,7 @@ export const CollectionTile = ({
             id={id}
             isTrack={false}
             showSkeleton={isLoading}
+            noShimmer={noShimmer}
             className={styles.albumArtContainer}
             isPlaying={isActive && isPlaying}
             isBuffering={isActive && isBuffering}
@@ -557,12 +566,24 @@ export const CollectionTile = ({
               </Text>
               {isActive && isPlaying ? <IconVolume size='m' /> : null}
               {!shouldShow ? (
-                <Skeleton className={styles.skeleton} height='20px' />
+                <Skeleton
+                  className={styles.skeleton}
+                  height='20px'
+                  noShimmer={noShimmer}
+                />
               ) : null}
             </TextLink>
-            <UserLink userId={collection.playlist_owner_id} badgeSize='xs'>
+            <UserLink
+              userId={collection.playlist_owner_id}
+              badgeSize='xs'
+              css={{ marginTop: '-4px' }}
+            >
               {!shouldShow ? (
-                <Skeleton className={styles.skeleton} height='20px' />
+                <Skeleton
+                  className={styles.skeleton}
+                  height='20px'
+                  noShimmer={noShimmer}
+                />
               ) : null}
             </UserLink>
           </Flex>
@@ -583,6 +604,7 @@ export const CollectionTile = ({
           isAlbum={collection.is_album}
           numLoadingSkeletonRows={numLoadingSkeletonRows}
           trackCount={collection.track_count}
+          noShimmer={noShimmer}
         />
         {!isReadonly ? (
           <div className={cn(fadeIn)}>

@@ -60,6 +60,9 @@ export const ChatBlastAudienceDisplay = (
     case ChatBlastAudience.REMIXERS:
       userListType = UserListType.REMIXER
       break
+    case ChatBlastAudience.COIN_HOLDERS:
+      userListType = UserListType.COIN_LEADERBOARD
+      break
     default:
       userListType = UserListType.FOLLOWER
   }

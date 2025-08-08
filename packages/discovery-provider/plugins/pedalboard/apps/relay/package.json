@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
-    "@audius/sdk-legacy": "*",
     "@bufbuild/protobuf": "2.2.3",
     "@connectrpc/connect": "2.0.1",
     "@connectrpc/connect-node": "2.0.1",
+    "@ethersproject/abstract-provider": "^5.8.0",
     "@grpc/grpc-js": "^1.11.3",
     "@grpc/proto-loader": "^0.7.13",
     "@pedalboard/basekit": "*",
@@ -44,7 +44,8 @@
     "pino": "^8.16.1",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "4.6.11",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "web3": "^1.8.2"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",

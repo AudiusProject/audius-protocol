@@ -81,13 +81,13 @@ export const getCurrencyDecimalPlaces = (priceUSD: number) => {
  * @returns Number of decimal places to show (minimum 2)
  *
  * @example
- * getAudioBalanceDecimalPlaces(1234.56)   // 2 → "1,234.56"
- * getAudioBalanceDecimalPlaces(92.0253)   // 2 → "92.02"
- * getAudioBalanceDecimalPlaces(1.2345)    // 2 → "1.23"
- * getAudioBalanceDecimalPlaces(0.1234)    // 3 → "0.123"
- * getAudioBalanceDecimalPlaces(0.00123)   // 5 → "0.00123"
+ * getTokenDecimalPlaces(1234.56)   // 2 → "1,234.56"
+ * getTokenDecimalPlaces(92.0253)   // 2 → "92.02"
+ * getTokenDecimalPlaces(1.2345)    // 2 → "1.23"
+ * getTokenDecimalPlaces(0.1234)    // 3 → "0.123"
+ * getTokenDecimalPlaces(0.00123)   // 5 → "0.00123"
  */
-export const getAudioBalanceDecimalPlaces = (balance: number) => {
+export const getTokenDecimalPlaces = (balance: number) => {
   const absBalance = Math.abs(balance)
 
   if (absBalance >= 1000) {
@@ -121,10 +121,44 @@ export const formatAudioBalance = (
   locale: string = 'en-US'
 ): string => {
   const balanceNumber = Number(AUDIO(balance).toString())
-  const decimalPlaces = getAudioBalanceDecimalPlaces(balanceNumber)
+  const decimalPlaces = getTokenDecimalPlaces(balanceNumber)
 
   return AUDIO(balance).toLocaleString(locale, {
     maximumFractionDigits: decimalPlaces,
     roundingMode: 'trunc'
   })
+}
+
+/**
+ * Formats a number as currency with dynamic decimal places based on value magnitude.
+ * Uses getCurrencyDecimalPlaces to determine appropriate precision.
+ *
+ * @param num - The number to format as currency
+ * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @returns Formatted currency string
+ *
+ * @example
+ * formatCurrency(123.456)  // "$123.46"
+ * formatCurrency(0.0012)   // "$0.001200"
+ * formatCurrency(0)        // "$0.00"
+ */
+export const formatCurrency = (
+  num: number,
+  locale: string = 'en-US'
+): string => {
+  if (num === 0) return '$0.00'
+
+  try {
+    const decimalPlaces = getCurrencyDecimalPlaces(num)
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: Math.min(decimalPlaces, 2),
+      maximumFractionDigits: decimalPlaces
+    }).format(num)
+
+    return formatted
+  } catch {
+    return `$${num.toFixed(2)}`
+  }
 }

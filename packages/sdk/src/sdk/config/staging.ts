@@ -81,10 +81,11 @@ export const stagingConfig: SdkServicesConfig = {
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo",
+    "bonkTokenMint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
     "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   },
   "ethereum": {
-    "rpcEndpoint": "https://eth-sepolia.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ",
+    "rpcEndpoint": "https://eth-client.staging.audius.co",
     "addresses": {
       "ethRewardsManagerAddress": "0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1",
       "serviceProviderFactoryAddress": "0x377BE01aD31360d0DFB16035A4515954395A8185",

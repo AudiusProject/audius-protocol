@@ -1,6 +1,5 @@
 import { useCollection, useTrack, useUser } from '@audius/common/api'
-import { imageBlank, imageProfilePicEmpty } from '@audius/common/assets'
-import { ID, Kind } from '@audius/common/models'
+import { ID, Kind, SquareSizes } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Text, Flex, Avatar, Artwork, IconCloseAlt } from '@audius/harmony'
@@ -9,6 +8,9 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
 import UserBadges from 'components/user-badges/UserBadges'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useProfilePicture } from 'hooks/useProfilePicture'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './DesktopSearchBar.module.css'
 
@@ -100,6 +102,10 @@ type UserResultProps = {
 
 export const UserResult = ({ userId, onRemove }: UserResultProps) => {
   const { data: user } = useUser(userId)
+  const profilePicture = useProfilePicture({
+    userId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   if (!user) return null
   return (
     <ResultWrapper
@@ -111,7 +117,7 @@ export const UserResult = ({ userId, onRemove }: UserResultProps) => {
       <Avatar
         h={30}
         w={30}
-        src={user.profile_picture?.['150x150'] || imageProfilePicEmpty}
+        src={profilePicture}
         borderWidth='thin'
         css={{ flexShrink: 0 }}
       />
@@ -132,6 +138,10 @@ type TrackResultProps = {
 export const TrackResult = ({ trackId, onRemove }: TrackResultProps) => {
   const { data: track } = useTrack(trackId)
   const { data: user } = useUser(track?.owner_id)
+  const trackArtwork = useTrackCoverArt({
+    trackId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   if (!track || !user) return null
 
@@ -142,12 +152,7 @@ export const TrackResult = ({ trackId, onRemove }: TrackResultProps) => {
       kind={Kind.TRACKS}
       id={trackId}
     >
-      <Artwork
-        h={30}
-        w={30}
-        src={track.artwork?.['150x150'] || imageBlank}
-        css={{ flexShrink: 0 }}
-      />
+      <Artwork h={30} w={30} src={trackArtwork} css={{ flexShrink: 0 }} />
       <ResultText primary={track.title} secondary={user.name} />
     </ResultWrapper>
   )
@@ -166,7 +171,10 @@ export const CollectionResult = ({
   const { data: user } = useUser(
     collection ? collection.playlist_owner_id : null
   )
-
+  const collectionArtwork = useCollectionCoverArt({
+    collectionId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   if (!collection || !user) return null
   return (
     <ResultWrapper
@@ -181,12 +189,7 @@ export const CollectionResult = ({
       kind={Kind.COLLECTIONS}
       id={collectionId}
     >
-      <Artwork
-        h={30}
-        w={30}
-        src={collection.artwork?.['150x150'] || imageBlank}
-        css={{ flexShrink: 0 }}
-      />
+      <Artwork h={30} w={30} src={collectionArtwork} css={{ flexShrink: 0 }} />
       <ResultText primary={collection.playlist_name} secondary={user.name} />
     </ResultWrapper>
   )

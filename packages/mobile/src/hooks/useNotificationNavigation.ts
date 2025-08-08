@@ -55,6 +55,7 @@ import {
   Achievement,
   tippingActions
 } from '@audius/common/store'
+import { OptionalId } from '@audius/sdk'
 import type { AppState } from '@audius/web/src/store/types'
 import { useDispatch, useStore } from 'react-redux'
 
@@ -127,13 +128,20 @@ export const useNotificationNavigation = () => {
     ) => {
       const { entityType, entityId, type, userIds } = notification
       const isMultiUser = userIds.length > 1
+
       if (isMultiUser) {
         navigation.navigate('NotificationUsers', { notification })
       } else if (entityType === Entity.Track) {
+        const commentId =
+          type.startsWith('Comment') && 'commentId' in notification
+            ? OptionalId.parse(notification.commentId)
+            : undefined
+
         navigation.navigate('Track', {
           trackId: entityId,
           canBeUnlisted: false,
-          showComments: type.startsWith('Comment')
+          showComments: type.startsWith('Comment'),
+          commentId
         })
       } else if (
         entityType === Entity.Album ||

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, useEffect } from 'react'
 
 import {
   useCurrentUserId,
@@ -6,14 +6,21 @@ import {
   useProfileUser
 } from '@audius/common/api'
 import type { Collectible } from '@audius/common/models'
+import {
+  collectibleDetailsUIActions,
+  modalsActions
+} from '@audius/common/store'
+import { getHash } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { FlatList as RNFlatList } from 'react-native'
 import { View, Text } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { IconShare, Button } from '@audius/harmony-native'
 import { Tile, GradientText, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { UserBadgesV2 } from 'app/components/user-badges/UserBadgesV2'
+import { UserBadges } from 'app/components/user-badges'
+import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -75,6 +82,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
+  const dispatch = useDispatch()
+  const { params } = useRoute<'Profile'>()
   const { user_id, handle, name, collectibleList, solanaCollectibleList } =
     useProfileUser({
       select: (user) => ({
@@ -156,6 +165,41 @@ export const CollectiblesTab = () => {
     profileCollectiblesLoading
   ])
 
+  // Handle collectible deep links
+  useEffect(() => {
+    const collectibleId = params?.collectibleId
+    if (collectibleId && collectibles.length > 0) {
+      // Find the collectible by its hash
+      const collectible = collectibles.find(
+        (c) => getHash(c.id) === collectibleId
+      )
+      if (collectible) {
+        // Set the collectible in the store and open the drawer
+        dispatch(
+          collectibleDetailsUIActions.setCollectible({
+            collectible,
+            ownerId: user_id,
+            ownerHandle: handle,
+            isUserOnTheirProfile: accountId === user_id
+          })
+        )
+        dispatch(
+          modalsActions.setVisibility({
+            modal: 'CollectibleDetails',
+            visible: true
+          })
+        )
+      }
+    }
+  }, [
+    params?.collectibleId,
+    collectibles,
+    dispatch,
+    user_id,
+    handle,
+    accountId
+  ])
+
   if (!user_id) return null
 
   return (
@@ -169,7 +213,7 @@ export const CollectiblesTab = () => {
           </GradientText>
           <Text style={styles.subtitle}>
             {messages.subtitle} {isOwner ? messages.you : name}{' '}
-            {isOwner ? null : <UserBadgesV2 userId={user_id} />}
+            {isOwner ? null : <UserBadges userId={user_id} />}
           </Text>
           <Button
             fullWidth
@@ -192,6 +236,7 @@ export const CollectiblesTab = () => {
         <CollectiblesCard
           collectible={item}
           ownerId={user_id}
+          ownerHandle={handle}
           style={styles.collectibleListItem}
         />
       )}

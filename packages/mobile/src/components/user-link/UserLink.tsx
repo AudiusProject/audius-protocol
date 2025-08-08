@@ -13,7 +13,7 @@ import type { IconSize, TextLinkProps } from '@audius/harmony-native'
 import { Flex, TextLink, useTheme } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
-import { UserBadgesV2 } from '../user-badges/UserBadgesV2'
+import { UserBadges } from '../user-badges'
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
@@ -65,7 +65,7 @@ export const UserLink = (props: UserLinkProps) => {
         >
           {userName}
         </TextLink>
-        <UserBadgesV2 userId={userId} badgeSize={badgeSize} />
+        <UserBadges userId={userId} badgeSize={badgeSize} />
       </AnimatedFlex>
     </Pressable>
   )

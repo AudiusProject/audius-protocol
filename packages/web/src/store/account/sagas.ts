@@ -8,7 +8,6 @@ import {
 } from '@audius/common/store'
 import { call, getContext, put, takeEvery } from 'typed-redux-saga'
 
-import webCommonAccountSagas from 'common/store/account/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   Permission,
@@ -202,7 +201,6 @@ function* unsubscribeBrowserPushNotification() {
 export default function sagas() {
   return [
     ...commonAccountSagas(),
-    ...webCommonAccountSagas(),
     watchShowPushNotificationConfirmation,
     getBrowserPushNotifications,
     subscribeBrowserPushNotification,

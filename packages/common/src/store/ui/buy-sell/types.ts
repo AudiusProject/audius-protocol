@@ -2,19 +2,20 @@ import type { ComponentType } from 'react'
 
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
-export type BuySellTab = 'buy' | 'sell'
+export type BuySellTab = 'buy' | 'sell' | 'convert'
 
 export type Screen = 'input' | 'confirm' | 'success'
 
-export type TokenType = 'AUDIO' | 'USDC'
+export type TokenType = 'AUDIO' | 'USDC' | 'BONK'
 
 export type TokenInfo = {
   symbol: string // e.g., 'AUDIO', 'USDC', 'WETH'
   name: string // e.g., 'Audius', 'USD Coin', 'Wrapped Ether'
   icon?: ComponentType<any> // Component for the token's icon (optional to avoid circular deps)
+  logoURI?: string // URL for the token's logo image
   decimals: number // Number of decimal places (e.g., 18 for ETH)
   balance: number | null // User's balance for this token
-  address?: string // Optional contract address
+  address: string // Contract/mint address (required for token identification)
   isStablecoin?: boolean // Flag for UI formatting ($ prefix, etc.)
 }
 
@@ -83,6 +84,7 @@ export type TransactionData = {
  * Utility function to get input and output tokens based on active tab and token pair
  * For 'buy': user pays with quote token (e.g., USDC) to get base token (e.g., AUDIO)
  * For 'sell': user pays with base token (e.g., AUDIO) to get quote token (e.g., USDC)
+ * For 'convert': user pays with base token (e.g., AUDIO) to get quote token (e.g., BONK)
  */
 export const getSwapTokens = (activeTab: BuySellTab, tokenPair: TokenPair) => {
   return {

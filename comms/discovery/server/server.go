@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -159,6 +160,9 @@ func (s *ChatServer) mutate(c echo.Context) error {
 	// call validator
 	err = s.proc.Validate(userId, rawRpc)
 	if err != nil {
+		if errors.Is(err, rpcz.ErrAttestationFailed) {
+			return c.JSON(403, "bad request: "+err.Error())
+		}
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 

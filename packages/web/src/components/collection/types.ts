@@ -1,16 +1,11 @@
-import { ChangeEvent, MouseEventHandler } from 'react'
+import { ChangeEvent } from 'react'
 
-import {
-  AccessConditions,
-  AccessPermissions,
-  ID,
-  Variant
-} from '@audius/common/models'
+import { AccessConditions, AccessPermissions, ID } from '@audius/common/models'
 import { CollectionsPageType } from '@audius/common/store'
-import { IconComponent } from '@audius/harmony'
+import { Nullable } from '@audius/common/utils'
 
 export type CollectionHeaderProps = {
-  isStreamGated: boolean | null
+  isStreamGated: Nullable<boolean>
   isPlayable: boolean
   isPublished: boolean
   tracksLoading: boolean
@@ -19,10 +14,10 @@ export type CollectionHeaderProps = {
   previewing: boolean
   isOwner: boolean
   isAlbum: boolean
-  access: AccessPermissions | null
+  access: Nullable<AccessPermissions>
   collectionId: ID
-  ownerId: ID | null
-  type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
+  ownerId: Nullable<ID>
+  type: CollectionsPageType
   title: string
   artistName: string
   description: string
@@ -31,17 +26,13 @@ export type CollectionHeaderProps = {
   lastModifiedDate?: string | number // either format should be utc time
   numTracks: number
   duration: number
-  variant: Variant | null
-  gradient?: string
-  icon: IconComponent
-  imageOverride?: string
-  userId: ID | null
+  userId: Nullable<ID>
   reposts: number
   saves: number
-  streamConditions: AccessConditions | null
+  streamConditions: Nullable<AccessConditions>
   onClickReposts?: () => void
   onClickFavorites?: () => void
-  onPlay: MouseEventHandler<HTMLButtonElement>
-  onPreview: MouseEventHandler<HTMLButtonElement>
+  onPlay: () => void
+  onPreview: () => void
   onFilterChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }

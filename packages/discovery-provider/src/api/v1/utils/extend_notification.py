@@ -677,6 +677,7 @@ def extend_announcement(action: NotificationAction):
 
 def extend_comment(action: NotificationAction):
     data: CommentNotification = action["data"]  # type: ignore
+    comment_id = data.get("comment_id")
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -689,12 +690,14 @@ def extend_comment(action: NotificationAction):
             "type": data["type"],
             "entity_id": encode_int_id(data["entity_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
+            "comment_id": encode_int_id(comment_id) if comment_id is not None else None,
         },
     }
 
 
 def extend_comment_thread(action: NotificationAction):
     data: CommentThreadNotification = action["data"]  # type: ignore
+    comment_id = data.get("comment_id")
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -708,12 +711,14 @@ def extend_comment_thread(action: NotificationAction):
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
+            "comment_id": encode_int_id(comment_id) if comment_id is not None else None,
         },
     }
 
 
 def extend_comment_mention(action: NotificationAction):
     data: CommentMentionNotification = action["data"]  # type: ignore
+    comment_id = data.get("comment_id")
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -727,12 +732,14 @@ def extend_comment_mention(action: NotificationAction):
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
             "comment_user_id": encode_int_id(data["comment_user_id"]),
+            "comment_id": encode_int_id(comment_id) if comment_id is not None else None,
         },
     }
 
 
 def extend_comment_reaction(action: NotificationAction):
     data: CommentReactionNotification = action["data"]  # type: ignore
+    comment_id = data.get("comment_id")
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],
@@ -746,6 +753,7 @@ def extend_comment_reaction(action: NotificationAction):
             "entity_id": encode_int_id(data["entity_id"]),
             "entity_user_id": encode_int_id(data["entity_user_id"]),
             "reacter_user_id": encode_int_id(data["reacter_user_id"]),
+            "comment_id": encode_int_id(comment_id) if comment_id is not None else None,
         },
     }
 

@@ -68,6 +68,7 @@ type PartialTrack = Pick<
   | 'access'
   | 'stream_conditions'
   | 'download_conditions'
+  | 'preview_cid'
 >
 
 type PartialCollection = Pick<
@@ -81,50 +82,52 @@ export const useGatedContentAccess = (
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
   const hasAccount = useHasAccount()
 
-  const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
-    useMemo(() => {
-      if (!content) {
-        return {
-          isFetchingNFTAccess: false,
-          hasStreamAccess: true,
-          hasDownloadAccess: true
-        }
-      }
-
-      const isTrack = isContentPartialTrack<PartialTrack>(content)
-      const isCollection =
-        isContentPartialCollection<PartialCollection>(content)
-      const trackId = isTrack
-        ? content.track_id
-        : isCollection
-          ? content.playlist_id
-          : null
-      const { is_stream_gated: isStreamGated } = content
-      const isDownloadGated = isTrack ? content.is_download_gated : undefined
-
-      const { stream, download } = content.access ?? {}
-      const hasNftAccessSignature = !!(
-        trackId && nftAccessSignatureMap[trackId]
-      )
-      const isCollectibleGated = isContentCollectibleGated(
-        content.stream_conditions
-      )
-      const isSignatureToBeFetched =
-        isCollectibleGated &&
-        !!trackId &&
-        // if nft gated track, the signature would have been fetched separately
-        nftAccessSignatureMap[trackId] === undefined &&
-        // signature is fetched only if the user is logged in
-        hasAccount
-
+  return useMemo(() => {
+    if (!content) {
       return {
-        isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
-        hasStreamAccess: !isStreamGated || !!stream,
-        hasDownloadAccess: !isDownloadGated || !!download
+        isFetchingNFTAccess: false,
+        hasStreamAccess: true,
+        hasDownloadAccess: true,
+        isPreviewable: false
       }
-    }, [content, nftAccessSignatureMap, hasAccount])
+    }
 
-  return { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess }
+    const isTrack = isContentPartialTrack<PartialTrack>(content)
+    const isCollection = isContentPartialCollection<PartialCollection>(content)
+    const trackId = isTrack
+      ? content.track_id
+      : isCollection
+        ? content.playlist_id
+        : null
+    const { is_stream_gated: isStreamGated } = content
+    const isDownloadGated = isTrack ? content.is_download_gated : undefined
+
+    const { stream, download } = content.access ?? {}
+    const hasNftAccessSignature = !!(trackId && nftAccessSignatureMap[trackId])
+    const isCollectibleGated = isContentCollectibleGated(
+      content.stream_conditions
+    )
+
+    const isPreviewable =
+      isContentUSDCPurchaseGated(content.stream_conditions) &&
+      isTrack &&
+      !!content?.preview_cid
+
+    const isSignatureToBeFetched =
+      isCollectibleGated &&
+      !!trackId &&
+      // if nft gated track, the signature would have been fetched separately
+      nftAccessSignatureMap[trackId] === undefined &&
+      // signature is fetched only if the user is logged in
+      hasAccount
+
+    return {
+      isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
+      hasStreamAccess: !isStreamGated || !!stream,
+      hasDownloadAccess: !isDownloadGated || !!download,
+      isPreviewable
+    }
+  }, [content, nftAccessSignatureMap, hasAccount])
 }
 
 export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
@@ -178,9 +181,11 @@ export const useStreamConditionsEntity = (
     ? streamConditions?.nft_collection
     : null
 
-  const users = useUsers([followUserId, tipUserId].filter(removeNullable))
-  const followee = followUserId ? users[followUserId]?.metadata : null
-  const tippedUser = tipUserId ? users[tipUserId]?.metadata : null
+  const { byId: usersById } = useUsers(
+    [followUserId, tipUserId].filter(removeNullable)
+  )
+  const followee = followUserId ? usersById[followUserId] : null
+  const tippedUser = tipUserId ? usersById[tipUserId] : null
 
   const collectionLink = useMemo(() => {
     if (!nftCollection) return ''

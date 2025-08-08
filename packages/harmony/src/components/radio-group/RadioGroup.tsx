@@ -1,4 +1,4 @@
-import { ChangeEvent, ReactNode, useCallback } from 'react'
+import { ChangeEvent, ReactNode, useCallback, useRef } from 'react'
 
 import { useControlled } from '../../hooks/useControlled'
 import { Flex, FlexProps } from '../layout'
@@ -27,10 +27,22 @@ export const RadioGroup = (props: RadioGroupProps) => {
     defaultValue,
     componentName: 'RadioButtonGroup'
   })
+
+  const isChanging = useRef(false)
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
+      // Prevent concurrent changes
+      if (isChanging.current) return
+
+      isChanging.current = true
       setValueState(e.target.value)
       onChange?.(e)
+
+      // Reset the lock after a short delay
+      requestAnimationFrame(() => {
+        isChanging.current = false
+      })
     },
     [setValueState, onChange]
   )

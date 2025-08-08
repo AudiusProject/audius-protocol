@@ -1,11 +1,10 @@
-import { ID, SmartCollectionVariant, UID } from '../../../models'
+import { ID, UID } from '../../../models'
 
 export const FETCH_COLLECTION = 'COLLECTION/FETCH_COLLECTION'
 export const FETCH_COLLECTION_SUCCEEDED =
   'COLLECTION/FETCH_COLLECTION_SUCCEEDED'
 export const FETCH_COLLECTION_FAILED = 'COLLECTION/FETCH_COLLECTION_FAILED'
 export const RESET_COLLECTION = 'COLLECTION/RESET_COLLECTION'
-export const SET_SMART_COLLECTION = 'COLLECTION/SET_SMART_COLLECTION'
 
 export type FetchCollectionAction = {
   type: typeof FETCH_COLLECTION
@@ -31,17 +30,11 @@ export type ResetCollectionAction = {
   type: typeof RESET_COLLECTION
 }
 
-export type SetSmartCollectionAction = {
-  type: typeof SET_SMART_COLLECTION
-  smartCollectionVariant: SmartCollectionVariant
-}
-
 export type CollectionPageAction =
   | FetchCollectionAction
   | FetchCollectionSucceededAction
   | FetchCollectionFailedAction
   | ResetCollectionAction
-  | SetSmartCollectionAction
 
 export const fetchCollection = (
   id: number | null,
@@ -76,11 +69,4 @@ export const fetchCollectionFailed = (
 
 export const resetCollection = (): ResetCollectionAction => ({
   type: RESET_COLLECTION
-})
-
-export const setSmartCollection = (
-  smartCollectionVariant: SmartCollectionVariant
-): SetSmartCollectionAction => ({
-  type: SET_SMART_COLLECTION,
-  smartCollectionVariant
 })

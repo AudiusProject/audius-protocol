@@ -34,9 +34,9 @@ import {
   Text,
   IconKebabHorizontal,
   Flex,
-  IconVolumeLevel2 as IconVolume,
   IconCrown,
-  IconButton
+  IconButton,
+  IconVolumeLevel2 as IconVolume
 } from '@audius/harmony'
 import { LocationState } from 'history'
 import { range } from 'lodash'
@@ -73,7 +73,7 @@ const {
 } = collectionsSocialActions
 const { collectionPage } = route
 
-type CollectionTileProps = {
+export type DesktopCollectionTileProps = {
   uid: UID
   id: ID
   ordered: boolean
@@ -89,8 +89,9 @@ type CollectionTileProps = {
   hasLoaded: (index: number) => void
   numLoadingSkeletonRows?: number
   isTrending: boolean
-  isFeed: boolean
+  isFeed?: boolean
   source?: ModalSource
+  noShimmer?: boolean
 }
 
 export const CollectionTile = ({
@@ -110,8 +111,9 @@ export const CollectionTile = ({
   hasLoaded,
   isTrending,
   isFeed = false,
-  source
-}: CollectionTileProps) => {
+  source,
+  noShimmer
+}: DesktopCollectionTileProps) => {
   const dispatch = useDispatch()
 
   const { data: partialCollection } = useCollection(collectionId, {
@@ -379,6 +381,7 @@ export const CollectionTile = ({
           isLoading={true}
           isAlbum={isAlbum}
           forceSkeleton
+          noShimmer={noShimmer}
           active={false}
           size={size}
           disableActions={disableActions}
@@ -425,7 +428,8 @@ export const CollectionTile = ({
     togglePlay,
     goToRoute,
     handle,
-    numLoadingSkeletonRows
+    numLoadingSkeletonRows,
+    noShimmer
   ])
 
   const onClickTitle = useCallback(
@@ -500,11 +504,11 @@ export const CollectionTile = ({
         <Flex gap='s'>
           {hasOrdering && (
             <Flex column gap='2xs' alignItems='center' justifyContent='center'>
-              {!isLoading && index <= 5 && (
+              {!isLoading && order <= 5 && (
                 <IconCrown color='default' size='s' />
               )}
               <Text variant='label' color='default'>
-                {!isLoading && index}
+                {!isLoading && order}
               </Text>
             </Flex>
           )}
@@ -518,12 +522,18 @@ export const CollectionTile = ({
               artworkIconClassName='artworkIcon'
               showArtworkIcon={!isLoading}
               showSkeleton={isLoading}
+              noShimmer={noShimmer}
             />
           </Box>
         </Flex>
-        <Flex direction='column' justifyContent='space-between' flex={1}>
-          <Flex>
-            <Flex direction='column' gap='s' flex={1}>
+        <Flex
+          direction='column'
+          justifyContent='space-between'
+          flex={1}
+          css={{ minWidth: 0 }}
+        >
+          <Flex gap='s' alignItems='flex-start'>
+            <Flex direction='column' gap='s' flex={1} css={{ minWidth: 0 }}>
               {/* Header */}
               <Text variant='label' size='s' color='subdued'>
                 {isAlbum ? 'album' : 'playlist'}
@@ -531,27 +541,24 @@ export const CollectionTile = ({
               <Flex column gap='xs'>
                 {/* Title */}
                 {isLoading ? (
-                  <Skeleton width='80%' height='20px' />
+                  <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
                 ) : (
-                  <Flex>
-                    <TextLink
-                      css={{ alignItems: 'center' }}
-                      to={href}
-                      isActive={isActive}
-                      textVariant='title'
-                      applyHoverStylesToInnerSvg
-                      onClick={onClickTitle}
-                      disabled={disableActions}
-                      ellipses
-                    >
-                      <Text ellipses>{title}</Text>
-                      {isCollectionPlaying ? <IconVolume size='m' /> : null}
-                    </TextLink>
-                  </Flex>
+                  <TextLink
+                    to={permalink}
+                    isActive={isActive}
+                    textVariant='title'
+                    applyHoverStylesToInnerSvg
+                    onClick={onClickTitle}
+                    disabled={disableActions}
+                    ellipses
+                  >
+                    <Text ellipses>{title}</Text>
+                    {isCollectionPlaying ? <IconVolume size='m' /> : null}
+                  </TextLink>
                 )}
                 {/* User */}
                 {isLoading ? (
-                  <Skeleton width='50%' height='20px' />
+                  <Skeleton width='50%' height='20px' noShimmer={noShimmer} />
                 ) : (
                   <UserLink
                     ellipses
@@ -559,12 +566,17 @@ export const CollectionTile = ({
                     badgeSize='xs'
                     isActive={isActive}
                     popover
+                    css={{ marginTop: '-4px' }}
                   />
                 )}
               </Flex>
-              {/* Duration */}
             </Flex>
-            <Text variant='body' size='xs' color='subdued'>
+            <Text
+              variant='body'
+              size='xs'
+              color='subdued'
+              css={{ flexShrink: 0, minWidth: 'fit-content' }}
+            >
               {formatLineupTileDuration(duration, false, true)}
             </Text>
           </Flex>
@@ -577,11 +589,21 @@ export const CollectionTile = ({
         </Flex>
       </Flex>
       {/* Track list and bottom bar remain unchanged */}
-      <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
-        <Scrollbar css={{ maxHeight: 240 }}>{renderTrackList()}</Scrollbar>
+      <Flex
+        backgroundColor='surface1'
+        borderTop='strong'
+        borderBottom='strong'
+        direction='column'
+        flex={1}
+        css={{ minHeight: 0 }}
+      >
+        <Scrollbar css={{ maxHeight: 240, overflowY: 'auto' }}>
+          {renderTrackList()}
+        </Scrollbar>
         {renderMoreTracks()}
-      </Box>
+      </Flex>
       <Box
+        css={{ flexShrink: 0 }}
         pv='s'
         ph='m'
         backgroundColor='white'
@@ -591,7 +613,9 @@ export const CollectionTile = ({
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        {isOwner ? (
+        {isLoading ? (
+          <Box h={40} />
+        ) : isOwner ? (
           <OwnerActionButtons
             contentId={id}
             contentType='collection'

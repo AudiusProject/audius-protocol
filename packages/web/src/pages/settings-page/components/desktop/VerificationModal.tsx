@@ -18,8 +18,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
-import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { XAuthButton } from 'components/x-auth/XAuthButton'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
@@ -105,14 +105,14 @@ const VerifyBody = (props: VerifyBodyProps) => {
       <div className={cn(styles.text, styles.warning)}>{messages.warning}</div>
       <Flex direction='column' w='100%' mt='xl' gap='s'>
         {isTwitterEnabled ? (
-          <TwitterAuthButton
+          <XAuthButton
             onClick={handleClickTwitter}
             onFailure={props.onFailure}
             onSuccess={props.onTwitterLogin}
             css={{ width: '100%' }}
           >
             {messages.twitterVerify}
-          </TwitterAuthButton>
+          </XAuthButton>
         ) : null}
 
         {isInstagramEnabled ? (
@@ -170,6 +170,8 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
   const onClick = useCallback(() => {
     goToRoute(profilePage(handle))
   }, [goToRoute, handle])
+
+  if (!userId) return null
 
   return (
     <div className={styles.container}>

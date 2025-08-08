@@ -47,8 +47,13 @@ import {
   usePublishConfirmationModal,
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
-import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import dayjs from 'dayjs'
+import {
+  formatReleaseDate,
+  Genre,
+  removeNullable,
+  dayjs,
+  formatContestDeadline
+} from '@audius/common/utils'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -65,9 +70,7 @@ import {
   IconTrending,
   MusicBadge,
   Paper,
-  Text,
-  spacing,
-  type ImageProps
+  Text
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag } from 'app/components/core'
@@ -83,7 +86,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackDogEar } from 'app/components/track/TrackDogEar'
 import { TrackFlair, Size } from 'app/components/track-flair'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -123,8 +126,7 @@ const messages = {
   remixContest: 'Remix Contest',
   contestEnded: 'Contest Ended',
   contestDeadline: 'Contest Deadline',
-  deadline: (deadline?: string) =>
-    deadline ? `${dayjs(deadline).format('MM/DD/YYYY')}` : '',
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'short'),
   uploadRemixButtonText: 'Upload Your Remix'
 }
 
@@ -311,23 +313,13 @@ export const TrackScreenDetailsTile = ({
       : messages.replay
     : messages.play
 
-  const renderImage = useCallback(
-    (props: ImageProps) => (
+  const imageElement = (
+    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
       <TrackImage
         trackId={track.track_id}
         size={SquareSizes.SIZE_480_BY_480}
-        {...props}
+        style={styles.coverArt}
       />
-    ),
-    [track]
-  )
-  const innerImageElement = renderImage({
-    style: styles.coverArt
-  })
-
-  const imageElement = (
-    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
-      {innerImageElement}
     </TrackFlair>
   )
 
@@ -590,7 +582,7 @@ export const TrackScreenDetailsTile = ({
                 <Text variant='body' color='accent' size='l'>
                   {user.name}
                 </Text>
-                <UserBadges badgeSize={spacing.l} user={user} hideName />
+                <UserBadges userId={user.user_id} badgeSize='s' />
               </Flex>
             </TouchableOpacity>
           ) : null}

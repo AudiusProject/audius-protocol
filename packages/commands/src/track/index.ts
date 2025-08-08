@@ -7,6 +7,7 @@ import { repostTrackCommand } from './repost-track'
 import { unfavoriteTrackCommand } from './unfavorite-track'
 import { unrepostTrackCommand } from './unrepost-track'
 import { uploadTrackCommand } from './upload-track'
+import { shareTrackCommand } from './share-track'
 
 export const trackCommand = new Command('track')
   .description('Commands that create or target a specific track')
@@ -15,6 +16,7 @@ export const trackCommand = new Command('track')
   .addCommand(getTrackCommand)
   .addCommand(purchaseTrackCommand)
   .addCommand(repostTrackCommand)
+  .addCommand(shareTrackCommand)
   .addCommand(unfavoriteTrackCommand)
   .addCommand(unrepostTrackCommand)
   .addCommand(uploadTrackCommand)

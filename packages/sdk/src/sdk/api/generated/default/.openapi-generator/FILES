@@ -1,5 +1,6 @@
 .openapi-generator-ignore
 apis/ChallengesApi.ts
+apis/CoinsApi.ts
 apis/CommentsApi.ts
 apis/DashboardWalletUsersApi.ts
 apis/DeveloperAppsApi.ts
@@ -23,6 +24,14 @@ models/BestSellingItem.ts
 models/BestSellingResponse.ts
 models/BlobInfo.ts
 models/ChallengeResponse.ts
+models/Coin.ts
+models/CoinInsights.ts
+models/CoinInsightsExtensions.ts
+models/CoinInsightsResponse.ts
+models/CoinMember.ts
+models/CoinMembersResponse.ts
+models/CoinResponse.ts
+models/CoinsResponse.ts
 models/Collectibles.ts
 models/CollectiblesResponse.ts
 models/CollectionActivity.ts
@@ -30,6 +39,7 @@ models/Comment.ts
 models/CommentMention.ts
 models/CommentNotificationSetting.ts
 models/CommentRepliesResponse.ts
+models/CommentResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
@@ -41,7 +51,6 @@ models/DeveloperAppResponse.ts
 models/DeveloperApps.ts
 models/EmailAccess.ts
 models/EmailAccessResponse.ts
-models/EncodedUserId.ts
 models/Event.ts
 models/EventsResponse.ts
 models/ExtendedAccessGate.ts
@@ -57,6 +66,7 @@ models/GetChallenges.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
+models/HistoryResponse.ts
 models/ListenCount.ts
 models/MonthlyAggregatePlay.ts
 models/MutualFollowersResponse.ts
@@ -110,8 +120,14 @@ models/UnclaimedIdResponse.ts
 models/UndisbursedChallenge.ts
 models/UndisbursedChallenges.ts
 models/User.ts
-models/UserAssociatedWalletResponse.ts
+models/UserCoin.ts
+models/UserCoinAccount.ts
+models/UserCoinResponse.ts
+models/UserCoinWithAccounts.ts
+models/UserCoinsResponse.ts
 models/UserCommentsResponse.ts
+models/UserIdAddress.ts
+models/UserIdsAddressesResponse.ts
 models/UserResponse.ts
 models/UserSearch.ts
 models/UserTrackListenCountsResponse.ts

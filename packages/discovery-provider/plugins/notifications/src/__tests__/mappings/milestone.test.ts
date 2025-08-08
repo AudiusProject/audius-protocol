@@ -129,7 +129,9 @@ describe('Milestone Notification', () => {
       processor.discoveryDB,
       new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 }))
     )
-    await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 2, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
     await createReposts(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
@@ -170,7 +172,8 @@ describe('Milestone Notification', () => {
           entityId: '2',
           id: 'timestamp:1589373217:group_id:milestone:TRACK_REPOST_COUNT:id:2:threshold:10',
           type: 'MilestoneRepost'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

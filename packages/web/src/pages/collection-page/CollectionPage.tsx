@@ -1,4 +1,3 @@
-import { SmartCollection } from '@audius/common/models'
 import { CollectionsPageType } from '@audius/common/store'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -9,20 +8,15 @@ import MobileCollectionPage from './components/mobile/CollectionPage'
 
 type CollectionPageProps = {
   type: CollectionsPageType
-  smartCollection?: SmartCollection
 }
 
 const CollectionPage = (props: CollectionPageProps) => {
-  const { type, smartCollection } = props
+  const { type } = props
   const isMobile = useIsMobile()
   const content = isMobile ? MobileCollectionPage : DesktopCollectionPage
 
   return (
-    <CollectionPageProvider
-      isMobile={isMobile}
-      smartCollection={smartCollection}
-      type={type}
-    >
+    <CollectionPageProvider isMobile={isMobile} type={type}>
       {content}
     </CollectionPageProvider>
   )

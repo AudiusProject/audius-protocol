@@ -2,7 +2,8 @@ import {
   encodeFunctionData,
   decodeFunctionData,
   type Hex,
-  type TypedDataDefinition
+  type TypedDataDefinition,
+  recoverTypedDataAddress
 } from 'viem'
 
 import * as runtime from '../../api/generated/default/runtime'
@@ -19,10 +20,12 @@ import {
 } from './contract/EntityManagerContract'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import {
+  Action,
   BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
   EntityManagerTransactionReceipt,
+  EntityType,
   ManageEntityOptions
 } from './types'
 
@@ -97,9 +100,9 @@ export class EntityManagerClient implements EntityManagerService {
         encodedABI: encodeFunctionData({
           abi: EntityManager.abi,
           args: [
-            userId,
+            BigInt(userId!),
             entityType,
-            entityId,
+            BigInt(entityId),
             action,
             metadata,
             nonce,
@@ -112,8 +115,8 @@ export class EntityManagerClient implements EntityManagerService {
         senderAddress
       })
     })
-    const jsonResponse = await response.json()
     if (response.ok) {
+      const jsonResponse = await response.json()
       if (!skipConfirmation) {
         await this.confirmWrite({
           blockHash: jsonResponse.receipt.blockHash,
@@ -190,8 +193,38 @@ export class EntityManagerClient implements EntityManagerService {
    * @param data - The encoded function data
    * @returns The decoded function data
    */
-  public async decodeManageEntity(data: Hex) {
-    return decodeFunctionData({ abi: EntityManager.abi, data })
+  public decodeManageEntity(data: Hex) {
+    const decodedAbi = decodeFunctionData({
+      abi: EntityManager.abi,
+      data
+    })
+    if (decodedAbi.functionName !== 'manageEntity') {
+      throw new Error('Expected manageEntity function')
+    }
+    const [userId, entityType, entityId, action, metadata, nonce, subjectSig] =
+      decodedAbi.args
+    if (
+      !userId ||
+      !entityType ||
+      // 0 is a valid entityId for some actions
+      (!entityId && entityId !== BigInt(0)) ||
+      !action ||
+      // Empty string is valid metadata for some actions
+      (!metadata && metadata !== '') ||
+      !nonce ||
+      !subjectSig
+    ) {
+      throw new Error('Missing complete manageEntity function data')
+    }
+    return {
+      userId,
+      entityType: entityType as EntityType,
+      entityId,
+      action: action as Action,
+      metadata,
+      nonce,
+      subjectSig
+    }
   }
 
   /**
@@ -205,5 +238,40 @@ export class EntityManagerClient implements EntityManagerService {
       version: '1',
       verifyingContract: this.contractAddress as Hex
     } as const
+  }
+
+  /**
+   * Recovers the signer address from the encoded ABI
+   * @param encodedABI - The encoded ABI
+   * @returns The recovered signer address
+   */
+  public async recoverSigner(encodedABI: Hex) {
+    const decodedAbi = this.decodeManageEntity(encodedABI)
+    const {
+      userId,
+      entityType,
+      entityId,
+      action,
+      metadata,
+      nonce,
+      subjectSig
+    } = decodedAbi
+
+    return await recoverTypedDataAddress({
+      domain: this.getDomain(),
+      primaryType: 'ManageEntity',
+      message: {
+        // @ts-ignore Need to update this type to "uint32" instead of "uint"
+        userId: Number(userId),
+        entityType,
+        // @ts-ignore Need to update this type to "uint32" instead of "uint"
+        entityId: Number(entityId),
+        action,
+        metadata,
+        nonce
+      },
+      types: EntityManager.types,
+      signature: subjectSig
+    })
   }
 }

@@ -62,6 +62,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 type CollectiblesCardProps = {
   collectible: Collectible
   ownerId: ID
+  ownerHandle?: string
   style?: StyleProp<ViewStyle>
 }
 
@@ -193,7 +194,7 @@ const CollectibleImage = (props: CollectibleImageProps) => {
 }
 
 export const CollectiblesCard = (props: CollectiblesCardProps) => {
-  const { collectible, style, ownerId } = props
+  const { collectible, style, ownerId, ownerHandle } = props
   const { name, frameUrl, mediaType, gifUrl, videoUrl, chain } = collectible
 
   const styles = useStyles()
@@ -206,11 +207,12 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
       setCollectible({
         collectible,
         ownerId,
+        ownerHandle,
         isUserOnTheirProfile: accountId === ownerId
       })
     )
     dispatch(setVisibility({ modal: 'CollectibleDetails', visible: true }))
-  }, [dispatch, collectible, accountId, ownerId])
+  }, [dispatch, collectible, accountId, ownerId, ownerHandle])
 
   const url = frameUrl ?? gifUrl ?? videoUrl
 

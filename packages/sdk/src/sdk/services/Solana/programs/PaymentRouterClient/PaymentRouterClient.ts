@@ -5,7 +5,7 @@ import {
   TokenInvalidMintError,
   TokenInvalidOwnerError,
   createAssociatedTokenAccountIdempotentInstruction,
-  createTransferCheckedInstruction,
+  createTransferInstruction,
   getAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
@@ -18,8 +18,7 @@ import {
 
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
-import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
-import { parseMintToken } from '../../../../utils/parseMintToken'
+import { parseMint } from '../../../../utils/parseMint'
 import { parseParams } from '../../../../utils/parseParams'
 import { Prettify } from '../../../../utils/prettify'
 import { MEMO_V2_PROGRAM_ID } from '../../constants'
@@ -51,7 +50,7 @@ export class PaymentRouterClient {
 
   private readonly mints: Prettify<Partial<Record<TokenName, PublicKey>>>
 
-  private existingTokenAccounts: Prettify<Partial<Record<TokenName, Account>>>
+  private existingTokenAccounts: Prettify<Partial<Record<string, Account>>>
 
   constructor(config: PaymentRouterClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
@@ -77,7 +76,7 @@ export class PaymentRouterClient {
       'createTransferInstruction',
       CreateTransferInstructionSchema
     )(params)
-    const { mint, token } = parseMintToken(args.mint, this.mints)
+    const mint = parseMint(args.mint, this.mints)
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
       mint
     })
@@ -87,14 +86,12 @@ export class PaymentRouterClient {
       sourceWallet,
       false
     )
-    const amount = mintFixedDecimalMap[token](args.total)
-    return createTransferCheckedInstruction(
+    const amount = args.total
+    return createTransferInstruction(
       sourceTokenAccount,
-      mint,
       programTokenAccount.address,
       sourceWallet,
-      amount.value,
-      amount.decimalPlaces
+      amount
     )
   }
 
@@ -103,7 +100,7 @@ export class PaymentRouterClient {
       'createRouteInstruction',
       CreateRouteInstructionSchema
     )(params)
-    const { mint, token } = parseMintToken(args.mint, this.mints)
+    const mint = parseMint(args.mint, this.mints)
     const programTokenAccount = await this.getOrCreateProgramTokenAccount({
       mint
     })
@@ -113,7 +110,7 @@ export class PaymentRouterClient {
       recipients.push(split.wallet)
       amounts.push(split.amount)
     }
-    const totalAmount = mintFixedDecimalMap[token](args.total).value
+    const totalAmount = args.total
     return PaymentRouterProgram.createRouteInstruction({
       sender: programTokenAccount.address,
       senderOwner: this.programAccount,
@@ -196,10 +193,10 @@ export class PaymentRouterClient {
       GetOrCreateProgramTokenAccountSchema
     )(params)
 
-    const { mint, token } = parseMintToken(args.mint, this.mints)
+    const mint = parseMint(args.mint, this.mints)
 
     // Check for cached account
-    const existingTokenAccount = this.existingTokenAccounts[token]
+    const existingTokenAccount = this.existingTokenAccounts[mint.toBase58()]
     if (existingTokenAccount) {
       return existingTokenAccount
     }
@@ -216,7 +213,7 @@ export class PaymentRouterClient {
         this.client.connection,
         associatedTokenAdddress
       )
-      this.existingTokenAccounts[token] = account
+      this.existingTokenAccounts[mint.toBase58()] = account
     } catch (error: unknown) {
       if (error instanceof TokenAccountNotFoundError) {
         // As this isn't atomic, it's possible others can create associated accounts meanwhile.

@@ -13,11 +13,13 @@ export const createSeoDescription = (msg: string, userPage?: boolean) => {
 export const getUserPageSEOFields = ({
   handle,
   userName,
-  bio
+  bio,
+  userId
 }: {
   handle: string
   userName: string
   bio: string
+  userId?: number
 }) => {
   const pageTitle = userName
   const pageDescription = createSeoDescription(
@@ -53,7 +55,9 @@ export const getUserPageSEOFields = ({
     title: pageTitle,
     description: pageDescription,
     canonicalUrl,
-    structuredData
+    structuredData,
+    entityType: 'user' as const,
+    entityId: userId
   }
 }
 
@@ -61,12 +65,14 @@ export const getTrackPageSEOFields = ({
   title,
   userName,
   permalink,
-  releaseDate
+  releaseDate,
+  trackId
 }: {
   title?: string
   userName?: string
   permalink?: string
   releaseDate?: string
+  trackId?: number
 }) => {
   if (!title || !userName || !permalink) return {}
   const pageTitle = `${title} by ${userName}`
@@ -100,7 +106,9 @@ export const getTrackPageSEOFields = ({
     title: pageTitle,
     description: pageDescription,
     canonicalUrl,
-    structuredData
+    structuredData,
+    entityType: 'track' as const,
+    entityId: trackId
   }
 }
 
@@ -161,7 +169,9 @@ export const getCollectionPageSEOFields = ({
     title: pageTitle,
     description: pageDescription,
     canonicalUrl,
-    structuredData
+    structuredData,
+    entityType: 'collection' as const,
+    entityId: playlistId
   }
 }
 

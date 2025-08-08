@@ -28,20 +28,8 @@ export const TRENDING_PAGE = '/trending'
 export const TRENDING_PLAYLISTS_PAGE_LEGACY = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
-export const EXPLORE_PREMIUM_TRACKS_PAGE = '/explore/premium-tracks'
-export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
-export const EXPLORE_LET_THEM_DJ_PAGE = '/explore/let-them-dj'
-export const EXPLORE_BEST_NEW_RELEASES_PAGE = '/explore/best-new-releases'
-export const EXPLORE_UNDER_THE_RADAR_PAGE = '/explore/under-the-radar'
-export const EXPLORE_TOP_ALBUMS_PAGE = '/explore/top-albums'
-export const EXPLORE_MOST_LOVED_PAGE = '/explore/most-loved'
-export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
-export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
 export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
 export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
-export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
-
-export const AUDIO_NFT_PLAYLIST_PAGE = '/:handle/audio-nft-playlist'
 
 // DEPRECATED - use /library instead.
 export const SAVED_PAGE = '/favorites'
@@ -81,11 +69,14 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
+export const ASSET_DETAIL_PAGE = '/wallet/:mint'
 export const WALLET_PAGE = '/wallet'
+export const ALL_COINS_PAGE = '/wallet/coins'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
 export const USER_ID_PARSER_PAGE = '/dev-tools/user-id-parser'
+export const COIN_API_MOCKS_PAGE = '/dev-tools/coin-api-mocks'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -234,7 +225,8 @@ export const authenticatedRoutes = [
   SALES_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
-  WALLET_PAGE
+  WALLET_PAGE,
+  ALL_COINS_PAGE
 ]
 
 export const guestRoutes = [
@@ -284,7 +276,9 @@ export const orderedRoutes = [
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_AUDIO_PAGE,
+  ASSET_DETAIL_PAGE,
   WALLET_PAGE,
+  ALL_COINS_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -318,6 +312,9 @@ export const staticRoutes = new Set([
   FEED_PAGE,
   TRENDING_PAGE,
   EXPLORE_PAGE,
+  TRENDING_PLAYLISTS_PAGE,
+  TRENDING_PLAYLISTS_PAGE_LEGACY,
+  TRENDING_UNDERGROUND_PAGE,
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE_ALL,
   SEARCH_PAGE_PROFILES,
@@ -332,6 +329,7 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_PAGE,
+  ALL_COINS_PAGE,
   WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,

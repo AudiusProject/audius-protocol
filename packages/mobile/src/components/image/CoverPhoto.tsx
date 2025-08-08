@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useUser } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
@@ -40,7 +42,7 @@ export const useCoverPhoto = ({
   })
   const { cover_photo, updatedCoverPhoto } = partialUser ?? {}
   const coverPhoto = cover_photo
-  const image = useImageSize({
+  const { imageUrl, onError } = useImageSize({
     artwork: coverPhoto,
     targetSize: size,
     defaultImage: '',
@@ -49,20 +51,21 @@ export const useCoverPhoto = ({
     }
   })
 
-  const isDefaultCover = image === ''
+  const isDefaultCover = imageUrl === ''
   const shouldBlur = isDefaultCover && !isDefaultProfile
 
   if (updatedCoverPhoto && !shouldBlur) {
     return {
       source: primitiveToImageSource(updatedCoverPhoto.url),
-      shouldBlur
+      shouldBlur,
+      onError
     }
   }
 
   if (shouldBlur) {
-    return { source: profilePicture, shouldBlur }
+    return { source: profilePicture, shouldBlur, onError }
   }
-  return { source: primitiveToImageSource(image), shouldBlur }
+  return { source: primitiveToImageSource(imageUrl), shouldBlur, onError }
 }
 
 type CoverPhotoProps = {
@@ -73,7 +76,7 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
   const { userId, ...imageProps } = props
   const scrollY = useCurrentTabScrollY()
 
-  const { source, shouldBlur } = useCoverPhoto({
+  const { source, shouldBlur, onError } = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_640
   })
@@ -104,11 +107,17 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
     })
   }))
 
+  const handleError = useCallback(() => {
+    if (source && typeof source === 'object' && 'uri' in source && source.uri) {
+      onError(source.uri)
+    }
+  }, [source, onError])
+
   if (!source) return null
 
   return (
     <Animated.View style={animatedStyle}>
-      <FastImage source={source} {...imageProps}>
+      <FastImage source={source} {...imageProps} onError={handleError}>
         {shouldBlur || scrollY ? (
           <AnimatedBlurView
             blurType='light'

@@ -34,7 +34,8 @@ type CommentNotificationProps = {
 }
 export const CommentNotification = (props: CommentNotificationProps) => {
   const { notification } = props
-  const { id, userIds, entityType, timeLabel, isViewed } = notification
+  const { commentId, id, userIds, entityType, timeLabel, isViewed } =
+    notification
   const { data: users } = useUsers(
     notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
@@ -47,7 +48,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType, true)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true, commentId)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {

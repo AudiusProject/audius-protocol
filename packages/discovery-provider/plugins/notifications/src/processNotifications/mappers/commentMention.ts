@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type CommentMentionNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CommentMentionNotification
@@ -49,10 +50,11 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
   }) {
     let entityType: string
     let entityName: string
+    let imageUrl: string | undefined
 
     if (this.entityType === EntityType.Track) {
       const [track] = await this.dnDB
-        .select('track_id', 'title')
+        .select('track_id', 'title', 'cover_art_sizes')
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .where('track_id', this.entityId)
@@ -61,6 +63,10 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
         const { title } = track
         entityType = 'track'
         entityName = title
+        // Get track's cover art URL for rich notification (150x150 size)
+        if (track?.cover_art_sizes) {
+          imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+        }
       }
     }
 
@@ -74,13 +80,10 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
         this.entityUserId
       ])
       .then((rows) =>
-        rows.reduce(
-          (acc, row) => {
-            acc[row.user_id] = row
-            return acc
-          },
-          {} as Record<number, UserRow>
-        )
+        rows.reduce((acc, row) => {
+          acc[row.user_id] = row
+          return acc
+        }, {} as Record<number, UserRow>)
       )
 
     if (users[this.receiverUserId]?.is_deactivated) {
@@ -100,8 +103,8 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
       this.entityUserId === this.receiverUserId
         ? 'your'
         : this.entityUserId === this.commenterUserId
-          ? 'their'
-          : `${users[this.entityUserId]?.name}'s`
+        ? 'their'
+        : `${users[this.entityUserId]?.name}'s`
     } ${entityType?.toLowerCase()} ${entityName}`
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(
@@ -152,8 +155,10 @@ export class CommentMention extends BaseNotification<CommentMentionNotificationR
                 userIds: [this.commenterUserId],
                 type: 'CommentMention',
                 entityType: 'Track',
-                entityId: this.entityId
-              }
+                entityId: this.entityId,
+                commentId: this.notification.data.comment_id
+              },
+              imageUrl
             }
           )
         })

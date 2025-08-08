@@ -42,15 +42,15 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     marginBottom: -1 * spacing(1),
     paddingBottom: spacing(1),
     position: 'relative',
-    zIndex: 100,
-    shadowColor: palette.neutralDark1,
-    shadowOpacity: 0.12,
-    shadowOffset: { height: 2, width: 0 },
-    shadowRadius: 2
+    zIndex: 100
   },
 
   tabsContainer: {
     backgroundColor: palette.white,
+    shadowColor: palette.neutralDark1,
+    shadowOpacity: 0.12,
+    shadowOffset: { height: 2, width: 0 },
+    shadowRadius: 2,
     flexDirection: 'row'
   },
 

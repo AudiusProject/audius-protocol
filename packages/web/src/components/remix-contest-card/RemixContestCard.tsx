@@ -2,7 +2,7 @@ import { MouseEvent, Ref, forwardRef, useCallback } from 'react'
 
 import { useRemixContest, useTrack, useUser } from '@audius/common/api'
 import { ID, SquareSizes } from '@audius/common/models'
-import { formatDate } from '@audius/common/utils'
+import { formatContestDeadlineWithStatus } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
@@ -14,7 +14,7 @@ const messages = {
   deadline: (releaseDate?: string) =>
     releaseDate
       ? new Date(releaseDate) > new Date()
-        ? `Deadline: ${formatDate(releaseDate)}`
+        ? formatContestDeadlineWithStatus(releaseDate, false)
         : 'Ended'
       : releaseDate
 }
@@ -24,6 +24,37 @@ type RemixContestCardProps = Omit<CardProps, 'id'> & {
   loading?: boolean
   noNavigation?: boolean
 }
+
+export const RemixContestCardSkeleton = (
+  props: Omit<CardProps, 'id'> & { noShimmer?: boolean }
+) => (
+  <Card {...props}>
+    <Flex direction='column' p='s' gap='s'>
+      <Skeleton
+        border='default'
+        css={{ aspectRatio: 1 }}
+        noShimmer={props.noShimmer}
+      />
+      <CardContent gap='xs'>
+        <Skeleton
+          h={24}
+          w='80%'
+          alignSelf='center'
+          noShimmer={props.noShimmer}
+        />
+        <Skeleton
+          h={20}
+          w='50%'
+          alignSelf='center'
+          noShimmer={props.noShimmer}
+        />
+      </CardContent>
+    </Flex>
+    <CardFooter>
+      <Skeleton h={16} w='60%' alignSelf='center' noShimmer={props.noShimmer} />
+    </CardFooter>
+  </Card>
+)
 
 export const RemixContestCard = forwardRef(
   (props: RemixContestCardProps, ref: Ref<HTMLDivElement>) => {
@@ -53,20 +84,7 @@ export const RemixContestCard = forwardRef(
     )
 
     if (isPending || loading) {
-      return (
-        <Card size={size} {...other}>
-          <Flex direction='column' p='s' gap='s'>
-            <Skeleton border='default' css={{ aspectRatio: 1 }} />
-            <CardContent gap='xs'>
-              <Skeleton h={24} w='80%' alignSelf='center' />
-              <Skeleton h={20} w='50%' alignSelf='center' />
-            </CardContent>
-          </Flex>
-          <CardFooter>
-            <Skeleton h={16} w='60%' alignSelf='center' />
-          </CardFooter>
-        </Card>
-      )
+      return <RemixContestCardSkeleton size={size} {...other} />
     }
 
     return (
@@ -86,9 +104,13 @@ export const RemixContestCard = forwardRef(
             >
               <Text ellipses>{track?.title}</Text>
             </TextLink>
-            <Flex justifyContent='center'>
-              <UserLink userId={user?.user_id} popover center />
-            </Flex>
+            <UserLink
+              userId={user?.user_id}
+              popover
+              center
+              fullWidth
+              ellipses
+            />
           </CardContent>
         </Flex>
         <CardFooter>

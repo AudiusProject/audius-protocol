@@ -63,6 +63,7 @@ models/CommentReactionNotification.ts
 models/CommentReactionNotificationAction.ts
 models/CommentReactionNotificationActionData.ts
 models/CommentRepliesResponse.ts
+models/CommentResponse.ts
 models/CommentThreadNotification.ts
 models/CommentThreadNotificationAction.ts
 models/CommentThreadNotificationActionData.ts
@@ -107,8 +108,6 @@ models/FullGetSupporting.ts
 models/FullMutualFollowersResponse.ts
 models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
-models/FullPlaylistWithScore.ts
-models/FullPlaylistWithScoreResponse.ts
 models/FullPurchasersResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts

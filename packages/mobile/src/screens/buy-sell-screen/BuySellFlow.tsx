@@ -9,7 +9,7 @@ import {
   useBuySellTabs,
   useBuySellTransactionData,
   useSwapDisplayData,
-  SUPPORTED_TOKEN_PAIRS,
+  useSupportedTokenPairs,
   useAddCashModal,
   getSwapTokens
 } from '@audius/common/store'
@@ -66,7 +66,8 @@ export const BuySellFlow = ({
     Record<BuySellTab, string>
   >({
     buy: '',
-    sell: ''
+    sell: '',
+    convert: ''
   })
 
   // Update input value for buy tab
@@ -85,19 +86,21 @@ export const BuySellFlow = ({
     }))
   }
 
+  const [selectedPairIndex] = useState(0)
+  const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
+  const selectedPair = supportedTokenPairs[selectedPairIndex]
+
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
     currentScreen,
     setCurrentScreen,
     activeTab,
+    selectedPair,
     onClose
   })
 
   // Track if user has attempted to submit the form
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
-
-  const [selectedPairIndex] = useState(0)
-  const selectedPair = SUPPORTED_TOKEN_PAIRS[selectedPairIndex]
 
   const swapTokens = useMemo(
     () => getSwapTokens(activeTab, selectedPair),

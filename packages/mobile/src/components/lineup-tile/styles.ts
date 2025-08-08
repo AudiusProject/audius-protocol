@@ -32,21 +32,18 @@ export const useStyles = makeStyles(({ palette }) => ({
   },
   imageContainer: {
     marginTop: spacing(2),
-    marginRight: spacing(2),
     marginLeft: spacing(2)
   },
   titles: {
     paddingVertical: spacing(1),
     alignItems: 'flex-start',
-    flexBasis: '65%',
-    marginRight: spacing(3),
     marginTop: spacing(2),
+    flex: 1,
     gap: spacing(1)
   },
   collectionTitles: {
     alignItems: 'flex-start',
-    flexBasis: '65%',
-    marginRight: spacing(3),
+    flex: 1,
     marginTop: spacing(2),
     gap: spacing(1)
   },

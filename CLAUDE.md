@@ -127,3 +127,7 @@ audius-cmd stream
 - Mobile requires proper native environment setup
 - Some features require blockchain interaction
 - Audio processing happens on content nodes
+
+## Code Style and Best Practices
+
+- Always default to using `isPending` instead of `isLoading` as it comes to tanquery hooks

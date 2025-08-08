@@ -47,7 +47,8 @@ describe('Cosign Notification', () => {
         track_id: 20,
         owner_id: 2,
         blocknumber: 1,
-        remix_of: { tracks: [{ parent_track_id: 10 }] }
+        remix_of: { tracks: [{ parent_track_id: 10 }] },
+        cover_art_sizes: 'test-hash'
       }
     ])
     await createReposts(processor.discoveryDB, [
@@ -82,7 +83,8 @@ describe('Cosign Notification', () => {
           childTrackId: 20,
           id: 'timestamp:1589373217:group_id:cosign:parent_track10:original_track:20',
           type: 'RemixCosign'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

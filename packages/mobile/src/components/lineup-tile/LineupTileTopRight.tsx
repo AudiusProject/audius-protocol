@@ -1,16 +1,12 @@
 import { useCurrentUserId } from '@audius/common/api'
 import { playbackPositionSelectors } from '@audius/common/store'
 import { formatLineupTileDuration } from '@audius/common/utils'
-import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { IconCheck } from '@audius/harmony-native'
 import Text from 'app/components/text'
-import { flexRowCentered } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
-
-import { ProgressBar } from '../progress-bar'
 
 import { useStyles as useTrackTileStyles } from './styles'
 
@@ -21,18 +17,10 @@ const messages = {
   played: 'Played'
 }
 
-const flexRowEnd = (): ViewStyle => ({
-  ...flexRowCentered(),
-  justifyContent: 'flex-end'
-})
-
 const styles = StyleSheet.create({
   topRight: {
-    ...flexRowEnd(),
-    position: 'absolute',
     top: 8,
-    right: 8,
-    left: 0
+    marginRight: 8
   }
 })
 
@@ -95,13 +83,6 @@ export const LineupTileTopRight = ({
             <IconCheck height={12} width={14} fill={secondary} />
           ) : null}
         </Text>
-        {duration && isInProgress ? (
-          <ProgressBar
-            progress={(playbackPositionInfo.playbackPosition / duration) * 100}
-            max={100}
-            style={{ root: trackTileStyles.statTextProgressBar }}
-          />
-        ) : null}
       </View>
     </View>
   )

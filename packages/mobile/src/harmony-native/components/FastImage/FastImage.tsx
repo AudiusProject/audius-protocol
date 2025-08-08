@@ -6,7 +6,7 @@ import type {
 import RNFastImage from 'react-native-fast-image'
 
 export type FastImageProps = Omit<RNFastImageProps, 'source'> & {
-  source: ImageSourcePropType
+  source?: ImageSourcePropType
   priority?: Priority
 }
 

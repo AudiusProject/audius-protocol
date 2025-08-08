@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 
-import { useExploreContent } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ExploreCollectionsVariant } from '@audius/common/store'
+import { FeatureFlags } from '@audius/common/services'
 import {
   Paper,
   Text,
@@ -20,26 +21,11 @@ import {
   useMedia
 } from '@audius/harmony'
 import { capitalize } from 'lodash'
-import { useNavigate, useSearchParams } from 'react-router-dom-v5-compat'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
-import { CollectionCard } from 'components/collection'
-import PerspectiveCard, {
-  TextInterior
-} from 'components/perspective-card/PerspectiveCard'
-import { RemixContestCard } from 'components/remix-contest-card'
-import { UserCard } from 'components/user-card'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
-import {
-  PREMIUM_TRACKS,
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  DOWNLOADS_AVAILABLE
-} from 'pages/explore-page/collections'
-import { RecentSearches } from 'pages/search-page/RecentSearches'
-import { SearchCatalogTile } from 'pages/search-page/SearchCatalogTile'
 import { filters } from 'pages/search-page/SearchFilters'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { SortMethodFilterButton } from 'pages/search-page/SortMethodFilterButton'
@@ -48,15 +34,28 @@ import {
   useSearchCategory,
   useShowSearchResults
 } from 'pages/search-page/hooks'
-import { MOODS } from 'pages/search-page/moods'
 import {
   CategoryView,
   ViewLayout,
   viewLayoutOptions
 } from 'pages/search-page/types'
-import { BASE_URL, stripBaseUrl } from 'utils/route'
 
-import { ExploreSection } from './ExploreSection'
+import { ActiveDiscussionsSection } from './ActiveDiscussionsSection'
+import { ArtistSpotlightSection } from './ArtistSpotlightSection'
+import { BestSellingSection } from './BestSellingSection'
+import { FeaturedPlaylistsSection } from './FeaturedPlaylistsSection'
+import { FeaturedRemixContestsSection } from './FeaturedRemixContestsSection'
+import { FeelingLuckySection } from './FeelingLuckySection'
+import { LabelSpotlightSection } from './LabelSpotlightSection'
+import { MoodGrid } from './MoodGrid'
+import { MostSharedSection } from './MostSharedSection'
+import { QuickSearchGrid } from './QuickSearchGrid'
+import { RecentPremiumTracksSection } from './RecentPremiumTracksSection'
+import { RecentSearchesSection } from './RecentSearchesSection'
+import { RecentlyPlayedSection } from './RecentlyPlayedSection'
+import { RecommendedTracksSection } from './RecommendedTracksSection'
+import { TrendingPlaylistsSection } from './TrendingPlaylistsSection'
+import { UndergroundTrendingTracksSection } from './UndergroundTrendingTracksSection'
 
 export type ExplorePageProps = {
   title: string
@@ -99,12 +98,6 @@ const tabHeaders = [
   }
 ]
 
-const justForYou = [
-  TRENDING_PLAYLISTS,
-  TRENDING_UNDERGROUND,
-  PREMIUM_TRACKS,
-  DOWNLOADS_AVAILABLE
-]
 const DEBOUNCE_MS = 200
 const MIN_WIDTH = 840
 const NORMAL_WIDTH = 1200
@@ -115,16 +108,16 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const [inputValue, setInputValue] = useState(searchParams.get('query') || '')
   const [debouncedValue, setDebouncedValue] = useState(inputValue)
   const previousDebouncedValue = usePrevious(debouncedValue)
-  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const navigate = useNavigate()
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
-  const { color, motion } = useTheme()
+  const { data: currentUserId, isLoading: isCurrentUserIdLoading } =
+    useCurrentUserId()
+  const { motion } = useTheme()
   const { isLarge } = useMedia()
-
-  const { data: exploreContent } = useExploreContent()
-
+  const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
   const handleSearchTab = useCallback(
     (newTab: string) => {
       setCategory(newTab.toLowerCase() as CategoryView)
@@ -148,20 +141,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const handleClearSearch = useCallback(() => {
     setInputValue('')
   }, [])
-
-  const onClickCard = useCallback(
-    (url: string) => {
-      if (url.startsWith(BASE_URL)) {
-        navigate(stripBaseUrl(url))
-      } else if (url.startsWith('http')) {
-        const win = window.open(url, '_blank')
-        if (win) win.focus()
-      } else {
-        navigate(url)
-      }
-    },
-    [navigate]
-  )
 
   useDebounce(
     () => {
@@ -191,17 +170,16 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   ])
 
   const filterKeys: string[] = categories[categoryKey].filters
-  const justForYouTiles = justForYou.filter((tile) => {
-    const isPremiumTracksTile =
-      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
-      tile.title === PREMIUM_TRACKS.title
-    return !isPremiumTracksTile || isUSDCPurchasesEnabled
-  })
+
+  const tabElements = useMemo(
+    () => tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    []
+  )
 
   const { tabs } = useTabs({
     isMobile: false,
     tabs: tabHeaders,
-    elements: tabHeaders.map((tab) => <Flex key={tab.label}>{tab.text}</Flex>),
+    elements: tabElements,
     onTabClick: handleSearchTab,
     selectedTabLabel: capitalize(categoryKey)
   })
@@ -212,6 +190,13 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     img.src = BackgroundWaves
     img.onload = () => setBannerIsVisible(true)
   }, [])
+
+  const showUserContextualContent = isCurrentUserIdLoading || !!currentUserId
+  const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
+  const showPlaylistContent =
+    categoryKey === 'playlists' || categoryKey === 'all'
+  const showUserContent = categoryKey === 'profiles' || categoryKey === 'all'
+  const showAlbumContent = categoryKey === 'albums' || categoryKey === 'all'
 
   return (
     <Flex
@@ -310,133 +295,54 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         </Flex>
 
         {/* Content Section */}
-        {!showSearchResults && categoryKey !== 'all' ? (
-          <Flex direction='column' alignItems='center' gap={'xl'}>
-            <SearchCatalogTile />
-            <RecentSearches />
-          </Flex>
-        ) : inputValue || showSearchResults ? (
+        {inputValue || showSearchResults ? (
           <SearchResults
             tracksLayout={tracksLayout}
             handleSearchTab={handleSearchTab}
           />
-        ) : (
-          <>
-            <Flex direction='column'>
-              <ExploreSection
-                title={messages.featuredPlaylists}
-                data={exploreContent?.featuredPlaylists}
-                Card={CollectionCard}
-              />
-              <ExploreSection
-                title={messages.featuredRemixContests}
-                data={exploreContent?.featuredRemixContests}
-                Card={RemixContestCard}
-              />
-
-              <ExploreSection
-                title={messages.artistSpotlight}
-                data={exploreContent?.featuredProfiles}
-                Card={UserCard}
-              />
-
-              <ExploreSection
-                title={messages.labelSpotlight}
-                data={exploreContent?.featuredLabels}
-                Card={UserCard}
-              />
-            </Flex>
-            {/* Explore by mood */}
-            <Flex direction='column' gap='l' alignItems='center'>
-              <Text variant='heading'>{messages.exploreByMood}</Text>
-              <Flex
-                gap='m'
-                justifyContent='center'
-                alignItems='flex-start'
-                wrap='wrap'
-              >
-                {Object.entries(MOODS)
-                  .sort()
-                  .map(([mood, moodInfo]) => (
-                    <Paper
-                      key={mood}
-                      pv='l'
-                      ph='xl'
-                      gap='m'
-                      borderRadius='m'
-                      border='default'
-                      backgroundColor='white'
-                      onClick={() => {
-                        navigate(`/search/tracks?mood=${mood}`)
-                      }}
-                      css={{
-                        ':hover': {
-                          background: color.neutral.n25,
-                          border: `1px solid ${color.neutral.n150}`
-                        }
-                      }}
-                    >
-                      {moodInfo.icon}
-                      <Text variant='title' size='s'>
-                        {moodInfo.label}
-                      </Text>
-                    </Paper>
-                  ))}
-              </Flex>
-            </Flex>
-
-            {/* Just For You */}
-            <Flex direction='column' gap='l'>
-              <Text variant='heading'>{messages.bestOfAudius}</Text>
-              <Flex
-                wrap='wrap'
-                gap='l'
-                direction={isLarge ? 'column' : 'row'}
-                justifyContent='space-between'
-                css={
-                  !isLarge
-                    ? {
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gridTemplateRows: '1fr 1fr',
-                        gap: 'var(--harmony-spacing-l)', // or just gap: 'l' if supported
-                        width: '100%'
-                      }
-                    : undefined
-                }
-              >
-                {justForYouTiles.map((tile) => {
-                  const Icon = tile.icon
-                  return (
-                    <PerspectiveCard
-                      key={tile.title}
-                      backgroundGradient={tile.gradient}
-                      shadowColor={tile.shadow}
-                      useOverlayBlendMode={
-                        tile.variant !== ExploreCollectionsVariant.DIRECT_LINK
-                      }
-                      backgroundIcon={
-                        Icon ? (
-                          <Icon height={180} width={180} color='inverse' />
-                        ) : undefined
-                      }
-                      onClick={() => onClickCard(tile.link)}
-                      isIncentivized={!!tile.incentivized}
-                      sensitivity={tile.cardSensitivity}
-                    >
-                      <Flex w={'100%'} h={200}>
-                        <TextInterior
-                          title={tile.title}
-                          subtitle={tile.subtitle}
-                        />
-                      </Flex>
-                    </PerspectiveCard>
-                  )
-                })}
-              </Flex>
-            </Flex>
-          </>
-        )}
+        ) : null}
+        <Flex
+          direction='column'
+          gap='3xl'
+          css={{ display: showSearchResults ? 'none' : undefined }}
+        >
+          {isSearchExploreGoodiesEnabled ? (
+            <>
+              {showTrackContent && showUserContextualContent && (
+                <RecommendedTracksSection />
+              )}
+              {showTrackContent && showUserContextualContent && (
+                <RecentlyPlayedSection />
+              )}
+              {showTrackContent && <QuickSearchGrid />}
+            </>
+          ) : null}
+          {showPlaylistContent && <FeaturedPlaylistsSection />}
+          {showTrackContent && <FeaturedRemixContestsSection />}
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <UndergroundTrendingTracksSection />
+          )}
+          {showUserContent && <ArtistSpotlightSection />}
+          {showUserContent && <LabelSpotlightSection />}
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <ActiveDiscussionsSection />
+          )}
+          {(showTrackContent || showAlbumContent || showPlaylistContent) && (
+            <MoodGrid />
+          )}
+          {isSearchExploreGoodiesEnabled ? (
+            <>
+              {showPlaylistContent && <TrendingPlaylistsSection />}
+              {showTrackContent && <MostSharedSection />}
+              {(showTrackContent || showAlbumContent) && <BestSellingSection />}
+              {showTrackContent && <RecentPremiumTracksSection />}
+              {showTrackContent && showUserContextualContent && (
+                <FeelingLuckySection />
+              )}
+            </>
+          ) : null}
+          {showUserContextualContent && <RecentSearchesSection />}
+        </Flex>
       </Flex>
     </Flex>
   )

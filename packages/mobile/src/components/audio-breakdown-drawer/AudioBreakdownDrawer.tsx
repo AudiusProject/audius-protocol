@@ -36,7 +36,6 @@ export const AudioBreakdownDrawer = () => {
   const connectedWalletsBalances = useWalletAudioBalances({
     wallets: connectedWallets
   })
-
   const ethWallets = connectedWallets.filter(
     (wallet) => wallet.chain === Chain.Eth
   )

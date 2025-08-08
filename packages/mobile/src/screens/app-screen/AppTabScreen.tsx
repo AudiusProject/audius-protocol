@@ -57,7 +57,8 @@ import {
   MutualsScreen,
   RelatedArtistsScreen,
   TopSupportersScreen,
-  SupportingUsersScreen
+  SupportingUsersScreen,
+  CoinLeaderboardScreen
 } from 'app/screens/user-list-screen'
 import { WalletScreen } from 'app/screens/wallet-screen'
 
@@ -68,9 +69,12 @@ export type AppTabScreenParamList = {
     searchTrack?: SearchTrack
     canBeUnlisted?: boolean
     showComments?: boolean
+    commentId?: string
   } & ({ handle: string; slug: string } | { trackId: ID })
   TrackRemixes: { trackId: ID } | { handle: string; slug: string }
-  Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
+  Profile: ({ handle: string; id?: ID } | { handle?: string; id: ID }) & {
+    collectibleId?: string
+  }
   Collection: {
     id?: ID
     slug?: string
@@ -91,6 +95,7 @@ export type AppTabScreenParamList = {
   SupportingUsers: { userId: ID }
   TagSearch: { query: string }
   TopSupporters: { userId: ID; source: TipSource }
+  CoinLeaderboard: { mint: string }
   NotificationUsers: {
     notification: any
     notificationType: NotificationType
@@ -234,6 +239,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='Reposts' component={RepostsScreen} />
       <Stack.Screen name='TopSupporters' component={TopSupportersScreen} />
       <Stack.Screen name='SupportingUsers' component={SupportingUsersScreen} />
+      <Stack.Screen name='CoinLeaderboard' component={CoinLeaderboardScreen} />
 
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />

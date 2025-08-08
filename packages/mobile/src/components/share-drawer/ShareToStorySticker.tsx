@@ -6,7 +6,7 @@ import { View } from 'react-native'
 import { Divider } from '@audius/harmony-native'
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
 import { Text } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -118,12 +118,9 @@ export const ShareToStorySticker = ({
           >
             {messages.by} {artist.name}
           </Text>
-          <UserBadges
-            user={artist}
-            badgeSize={12}
-            style={styles.badges}
-            hideName
-          />
+          <View style={styles.badges}>
+            <UserBadges userId={artist.user_id} badgeSize='xs' />
+          </View>
         </View>
         <Divider />
         <View

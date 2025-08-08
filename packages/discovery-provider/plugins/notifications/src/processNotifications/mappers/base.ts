@@ -16,7 +16,7 @@ type PlaylistInfo = {
   playlist_id: number
   playlist_name: string
   is_album: boolean
-  playlist_image_sizes_multihash: string
+  playlist_image_sizes_multihash?: string
   slug: string
 }
 
@@ -24,7 +24,7 @@ type TrackInfo = {
   track_id: number
   title: string
   slug: string
-  cover_art_sizes: string
+  cover_art_sizes?: string
 }
 
 export abstract class BaseNotification<Type> {
@@ -44,7 +44,7 @@ export abstract class BaseNotification<Type> {
         const res: Array<{
           track_id: number
           title: string
-          cover_art_sizes: string
+          cover_art_sizes?: string
           slug: string
         }> = await this.dnDB
           .select(
@@ -73,7 +73,7 @@ export abstract class BaseNotification<Type> {
           playlist_id: number
           playlist_name: string
           is_album: boolean
-          playlist_image_sizes_multihash: string
+          playlist_image_sizes_multihash?: string
           slug: string
         }> = await this.dnDB
           .select(

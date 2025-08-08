@@ -4,10 +4,9 @@ import type { TokenInfo } from '@audius/common/store'
 
 import {
   Flex,
-  IconLogoCircleUSDC,
   IconTokenAUDIO,
-  Text,
-  useTheme
+  IconTokenUSDC,
+  Text
 } from '@audius/harmony-native'
 
 const messages = {
@@ -27,11 +26,10 @@ export const CryptoBalanceSection = ({
   amount,
   priceLabel
 }: CryptoBalanceSectionProps) => {
-  const { spacing, cornerRadius } = useTheme()
   const { symbol } = tokenInfo
 
   // Get the appropriate token icon for mobile
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
   return (
     <Flex direction='column' gap='m'>
@@ -42,13 +40,7 @@ export const CryptoBalanceSection = ({
 
       {/* Amount and token info */}
       <Flex direction='row' alignItems='center' gap='s'>
-        <TokenIcon
-          style={{
-            height: spacing.unit16,
-            width: spacing.unit16,
-            borderRadius: cornerRadius.circle
-          }}
-        />
+        <TokenIcon size='4xl' />
         <Flex direction='column'>
           <Flex direction='row' gap='xs' alignItems='center'>
             <Text variant='heading' size='l'>

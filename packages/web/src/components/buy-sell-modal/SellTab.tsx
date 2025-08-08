@@ -1,26 +1,6 @@
-import { useMemo } from 'react'
-
-import { useAudioBalance } from '@audius/common/api'
-import { TokenPair } from '@audius/common/store'
-import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
-
 import { SwapTab } from './SwapTab'
-
-type SellTabProps = {
-  tokenPair: TokenPair
-  onTransactionDataChange?: (data: {
-    inputAmount: number
-    outputAmount: number
-    isValid: boolean
-    error: string | null
-    isInsufficientBalance: boolean
-  }) => void
-  error?: boolean
-  errorMessage?: string
-  initialInputValue?: string
-  onInputValueChange?: (value: string) => void
-}
+import { useTokenBalanceManager } from './hooks/useTokenBalanceManager'
+import type { SellTabProps } from './types'
 
 export const SellTab = ({
   tokenPair,
@@ -28,39 +8,31 @@ export const SellTab = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  availableInputTokens,
+  onInputTokenChange
 }: SellTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
-  const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
-  const isBalanceLoading = isNullOrUndefined(accountBalance)
 
-  // Get AUDIO balance in UI format
-  const getAudioBalance = useMemo(() => {
-    return () => {
-      if (!isBalanceLoading && accountBalance) {
-        return parseFloat(AUDIO(accountBalance).toString())
-      }
-      return undefined
-    }
-  }, [accountBalance, isBalanceLoading])
+  // Use shared token balance manager
+  const { inputBalance } = useTokenBalanceManager(baseToken, quoteToken)
 
   return (
     <SwapTab
       inputToken={baseToken}
       outputToken={quoteToken}
-      balance={{
-        get: getAudioBalance,
-        loading: isBalanceLoading,
-        formatError: () => 'Insufficient balance'
-      }}
+      balance={inputBalance}
       onTransactionDataChange={onTransactionDataChange}
-      isDefault={false}
+      inputIsDefault={false} // Enable token selection for "You Sell"
+      outputIsDefault={true} // Freeze "You Receive" section to USDC
       error={error}
       errorMessage={errorMessage}
       tooltipPlacement='right'
       initialInputValue={initialInputValue}
       onInputValueChange={onInputValueChange}
+      availableInputTokens={availableInputTokens}
+      onInputTokenChange={onInputTokenChange}
     />
   )
 }

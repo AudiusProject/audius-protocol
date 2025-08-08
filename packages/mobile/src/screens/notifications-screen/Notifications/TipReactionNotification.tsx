@@ -6,7 +6,7 @@ import type { ReactionNotification } from '@audius/common/store'
 import { Platform, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -117,7 +117,7 @@ export const TipReactionNotification = (
         <View style={styles.content}>
           <View style={styles.userNameLink}>
             <UserNameLink user={user} weight='bold' />
-            <UserBadges user={user} hideName />
+            <UserBadges userId={user.user_id} badgeSize='xs' />
           </View>
           <NotificationText>
             {Platform.OS === 'ios' ? messages.reactAltPrefix : messages.react}

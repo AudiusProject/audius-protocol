@@ -13,18 +13,45 @@ import {
   getJupiterQuoteByMint,
   jupiterInstance
 } from '~/services/Jupiter'
+import { useTokens } from '~/store/ui/buy-sell'
+import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 import { QUERY_KEYS } from '../queryKeys'
 
-import { createUserBankManagedTokens } from './constants'
-import { updateAudioBalanceOptimistically } from './optimisticUpdates'
+import { updateTokenBalancesOptimistically } from './optimisticUpdates'
 import {
+  ClaimableTokenMint,
   SwapErrorType,
   SwapStatus,
   SwapTokensParams,
-  SwapTokensResult
+  SwapTokensResult,
+  UserBankManagedTokenInfo
 } from './types'
 import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
+
+const SWAP_LOOKUP_TABLE_ADDRESS = new PublicKey(
+  '2WB87JxGZieRd7hi3y87wq6HAsPLyb9zrSx8B5z1QEzM'
+)
+
+const findTokenByAddress = (
+  tokens: Record<string, TokenInfo>,
+  address: string
+): TokenInfo | undefined => {
+  return Object.values(tokens).find(
+    (token) => token.address.toLowerCase() === address.toLowerCase()
+  )
+}
+
+const getClaimableTokenMint = (token: TokenInfo): ClaimableTokenMint => {
+  if (token.symbol === 'USDC') return 'USDC'
+  return new PublicKey(token.address)
+}
+
+const createTokenConfig = (token: TokenInfo): UserBankManagedTokenInfo => ({
+  mintAddress: token.address,
+  claimableTokenMint: getClaimableTokenMint(token),
+  decimals: token.decimals
+})
 
 /**
  * Hook for executing token swaps using Jupiter.
@@ -35,6 +62,7 @@ export const useSwapTokens = () => {
   const { solanaWalletService, reportToSentry, audiusSdk, env } =
     useQueryContext()
   const { data: user } = useCurrentAccountUser()
+  const { tokens } = useTokens()
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
     mutationFn: async (params): Promise<SwapTokensResult> => {
@@ -80,21 +108,33 @@ export const useSwapTokens = () => {
           amountUi,
           slippageBps,
           swapMode: 'ExactIn',
-          onlyDirectRoutes: true
+          onlyDirectRoutes: false
         })
 
         // ---------- 3. Prepare Transaction Instructions ----------
-        const userBankManagedTokens = createUserBankManagedTokens(env)
-        const inputTokenConfig =
-          userBankManagedTokens[inputMintUiAddress.toUpperCase()]
-        const outputTokenConfig =
-          userBankManagedTokens[outputMintUiAddress.toUpperCase()]
+        // Find input and output tokens from our backend-driven token data
+        const inputToken = findTokenByAddress(tokens, inputMintUiAddress)
+        const outputToken = findTokenByAddress(tokens, outputMintUiAddress)
+
+        if (!inputToken || !outputToken) {
+          return {
+            status: SwapStatus.ERROR,
+            error: {
+              type: SwapErrorType.BUILD_FAILED,
+              message: 'Token not found in available tokens'
+            }
+          }
+        }
+
+        // Create UserBankManagedTokenInfo objects
+        const inputTokenConfig = createTokenConfig(inputToken)
+        const outputTokenConfig = createTokenConfig(outputToken)
 
         // --- 3a. Handle Input Token (if user bank managed) ---
         errorStage = 'INPUT_TOKEN_PREPARATION'
 
         const sourceAtaForJupiter = await addUserBankToAtaInstructions({
-          tokenInfo: inputTokenConfig!,
+          tokenInfo: inputTokenConfig,
           userPublicKey,
           ethAddress: ethAddress!,
           amountLamports: BigInt(quoteResult.inputAmount.amount),
@@ -109,7 +149,7 @@ export const useSwapTokens = () => {
         const result =
           await sdk.services.claimableTokensClient.getOrCreateUserBank({
             ethWallet: ethAddress!,
-            mint: outputTokenConfig!.claimableTokenMint
+            mint: outputTokenConfig.claimableTokenMint
           })
         const outputUserBankAddress = result.userBank
         const preferredJupiterDestination = outputUserBankAddress.toBase58()
@@ -158,9 +198,9 @@ export const useSwapTokens = () => {
           await sdk.services.solanaClient.buildTransaction({
             feePayer,
             instructions,
-            addressLookupTables: addressLookupTableAddresses.map(
-              (addr: string) => new PublicKey(addr)
-            )
+            addressLookupTables: addressLookupTableAddresses
+              .map((addr: string) => new PublicKey(addr))
+              .concat([SWAP_LOOKUP_TABLE_ADDRESS])
           })
 
         swapTx.sign([keypair])
@@ -169,19 +209,23 @@ export const useSwapTokens = () => {
         errorStage = 'TRANSACTION_RELAY'
         signature = await sdk.services.solanaClient.sendTransaction(swapTx)
 
-        // ---------- 6. Success & Invalidation ----------
+        // ---------- 6. Success & Optimistic Updates ----------
         if (user?.wallet) {
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
-          })
-        }
-        if (user?.spl_wallet) {
-          updateAudioBalanceOptimistically(
+          // Optimistically update token balances (function handles USDC exclusion)
+          updateTokenBalancesOptimistically(
             queryClient,
             params,
             quoteResult?.outputAmount?.uiAmount,
-            user.spl_wallet
+            user.wallet,
+            inputToken.decimals,
+            outputToken.decimals,
+            env.USDC_MINT_ADDRESS
           )
+
+          // Invalidate USDC balance separately if needed
+          queryClient.invalidateQueries({
+            queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
+          })
         }
 
         return {

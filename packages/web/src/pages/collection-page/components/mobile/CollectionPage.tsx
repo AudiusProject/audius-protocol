@@ -1,15 +1,7 @@
 import { memo, useEffect, useContext } from 'react'
 
 import { useGatedContentAccessMap } from '@audius/common/hooks'
-import {
-  Variant,
-  SmartCollectionVariant,
-  Status,
-  Collection,
-  SmartCollection,
-  ID,
-  User
-} from '@audius/common/models'
+import { Status, Collection, ID, User } from '@audius/common/models'
 import {
   OverflowAction,
   CollectionTrack,
@@ -26,7 +18,6 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import TrackList from 'components/track/mobile/TrackList'
-import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
@@ -65,7 +56,7 @@ export type CollectionPageProps = {
   type: CollectionsPageType
   collection: {
     status: string
-    metadata: Collection | SmartCollection | null
+    metadata: Collection | null
     user: User | null | undefined
   }
   tracks: {
@@ -116,14 +107,11 @@ const CollectionPage = ({
   useEffect(() => {
     if (metadata) {
       // If the collection is deleted, don't update the nav
-      if (
-        metadata.variant !== Variant.SMART &&
-        (metadata.is_delete || metadata._marked_deleted)
-      ) {
+      if (metadata.is_delete || metadata._marked_deleted) {
         return
       }
       setLeft(LeftPreset.BACK)
-      setRight(RightPreset.SEARCH)
+      setRight(RightPreset.KEBAB)
       setCenter(CenterPreset.LOGO)
     }
   }, [setLeft, setCenter, setRight, metadata])
@@ -151,26 +139,12 @@ const CollectionPage = ({
   const isOwner = userId === playlistOwnerId
 
   const isSaved = metadata?.has_current_user_saved
-  const isPublishing =
-    metadata && metadata?.variant !== Variant.SMART
-      ? metadata._is_publishing
-      : false
+  const isPublishing = metadata?._is_publishing ?? false
   const access =
     metadata !== null && 'access' in metadata ? metadata?.access : null
 
-  const variant = metadata?.variant ?? null
-  const gradient =
-    metadata && metadata.variant === Variant.SMART ? metadata.gradient : ''
-  const imageOverride =
-    metadata && metadata.variant === Variant.SMART ? metadata.imageOverride : ''
-  const icon =
-    metadata && metadata.variant === Variant.SMART
-      ? smartCollectionIcons[metadata.playlist_name]
-      : null
-  const typeTitle =
-    metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
-  const customEmptyText =
-    metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
+  const typeTitle = type
+  const customEmptyText = null
 
   const {
     isEmpty,
@@ -186,21 +160,7 @@ const CollectionPage = ({
   } = computeCollectionMetadataProps(metadata, tracks)
 
   const togglePlay = (uid: string, trackId: ID) => {
-    if (playlistName === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
-      const track = tracks.entries.find((track) => track.uid === uid)
-
-      if (track?.collectible) {
-        const { collectible } = track
-
-        onClickRow({
-          ...collectible,
-          uid: collectible.id,
-          track_id: collectible.id
-        })
-      }
-    } else {
-      onClickRow({ uid, track_id: trackId })
-    }
+    onClickRow({ uid, track_id: trackId })
   }
   const playingUid = getPlayingUid()
 
@@ -241,6 +201,8 @@ const CollectionPage = ({
       description={pageDescription}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='collection'
+      entityId={playlistId}
     >
       <div className={styles.collectionContent}>
         <div>
@@ -248,11 +210,7 @@ const CollectionPage = ({
             access={access}
             collectionId={playlistId}
             userId={user?.user_id ?? 0}
-            loading={
-              typeTitle === 'Audio NFT Playlist'
-                ? tracksLoading
-                : collectionLoading
-            }
+            loading={collectionLoading}
             tracksLoading={tracksLoading}
             type={typeTitle}
             ddexApp={metadata?.ddex_app}
@@ -275,31 +233,18 @@ const CollectionPage = ({
             previewing={queuedAndPreviewing}
             reposts={playlistRepostCount}
             isReposted={isReposted}
-            isStreamGated={
-              metadata?.variant === Variant.USER_GENERATED
-                ? metadata?.is_stream_gated
-                : null
-            }
-            streamConditions={
-              metadata?.variant === Variant.USER_GENERATED
-                ? metadata?.stream_conditions
-                : null
-            }
+            isStreamGated={metadata?.is_stream_gated ?? null}
+            streamConditions={metadata?.stream_conditions ?? null}
             ownerId={playlistOwnerId}
             // Actions
-            onPlay={onPlay}
-            onPreview={onPreview}
+            onPlay={() => onPlay({})}
+            onPreview={() => onPreview({})}
             onShare={onHeroTrackShare}
             onSave={onHeroTrackSave}
             onRepost={onHeroTrackRepost}
             onClickFavorites={onClickFavorites}
             onClickReposts={onClickReposts}
             onClickMobileOverflow={onClickMobileOverflow}
-            // Smart collection
-            variant={variant}
-            gradient={gradient}
-            imageOverride={imageOverride}
-            icon={icon}
           />
         </div>
         <div className={styles.collectionTracksContainer}>
@@ -322,7 +267,7 @@ const CollectionPage = ({
               />
             )
           ) : null}
-          {collectionLoading && typeTitle === 'Audio NFT Playlist' ? (
+          {collectionLoading ? (
             <LoadingSpinner className={styles.spinner} />
           ) : null}
         </div>

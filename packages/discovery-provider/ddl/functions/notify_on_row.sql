@@ -28,6 +28,7 @@ declare
     'playlists',
     'reposts',
     'saves',
+    'shares',
     'tracks',
     'users',
     'usdc_purchases'

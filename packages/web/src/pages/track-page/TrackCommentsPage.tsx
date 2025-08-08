@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import { useTrackByPermalink } from '@audius/common/api'
+import { useHighlightedComment, useTrackByPermalink } from '@audius/common/api'
 import { CommentSectionProvider } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Flex, Text } from '@audius/harmony'
@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom'
 
 import { CommentList } from 'components/comments/CommentList'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import NavContext from 'components/nav/mobile/NavContext'
+import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 
 type TrackCommentsParams = {
   slug: string
@@ -19,14 +19,23 @@ type TrackCommentsParams = {
 export const TrackCommentsPage = () => {
   const { slug, handle } = useParams<TrackCommentsParams>()
   const { data: partialTrack } = useTrackByPermalink(`/${handle}/${slug}`, {
-    select: (track) => pick(track, ['track_id', 'comments_disabled'])
+    select: (track) =>
+      pick(track, ['track_id', 'comments_disabled', 'permalink'])
   })
 
   const { setLeft, setCenter, setRight } = useContext(NavContext)
 
+  // Use the same highlighting logic as desktop
+  const highlightedComment = useHighlightedComment()
+  const highlightedCommentId =
+    highlightedComment?.entityId === partialTrack?.track_id
+      ? (highlightedComment?.parentCommentId ?? highlightedComment?.id)
+      : null
+
   useEffect(() => {
     setCenter(messages.title)
     setRight(null)
+    setLeft(LeftPreset.BACK)
   }, [setCenter, setLeft, setRight])
 
   if (!partialTrack) return null
@@ -38,7 +47,7 @@ export const TrackCommentsPage = () => {
       title={messages.title}
       css={(theme) => ({
         backgroundColor: theme.color.background.white,
-        height: '100%'
+        minHeight: '100%'
       })}
     >
       {comments_disabled ? (
@@ -47,7 +56,7 @@ export const TrackCommentsPage = () => {
         </Flex>
       ) : (
         <CommentSectionProvider entityId={track_id}>
-          <CommentList />
+          <CommentList highlightedCommentId={highlightedCommentId} />
         </CommentSectionProvider>
       )}
     </MobilePageContainer>

@@ -1,7 +1,9 @@
 import { memo, useCallback, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
@@ -10,19 +12,22 @@ import {
 } from '@audius/common/utils'
 import { HashId } from '@audius/sdk'
 import type { ReactionTypes, ChatMessageReaction } from '@audius/sdk'
+import { css } from '@emotion/native'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Dimensions, Keyboard, View } from 'react-native'
+import { Dimensions, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Flex, spacing, Text } from '@audius/harmony-native'
 import ChatTail from 'app/assets/images/ChatTail.svg'
-import { Pressable, UserGeneratedText, Text } from 'app/components/core'
+import { Pressable, UserGeneratedText } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
 import { reactionMap } from '../notifications-screen/Reaction'
 
+import { ArtistCoinHeader } from './ArtistCoinHeader'
 import { ChatMessagePlaylist } from './ChatMessagePlaylist'
 import { ChatMessageTrack } from './ChatMessageTrack'
 import { LinkPreview } from './LinkPreview'
@@ -33,21 +38,10 @@ const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  rootOtherUser: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    minHeight: spacing(4)
-  },
-  rootIsAuthor: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    minHeight: spacing(4)
-  },
+const useStyles = makeStyles(({ spacing, palette }) => ({
   bubble: {
     marginTop: spacing(2),
-    borderRadius: spacing(3),
-    overflow: 'hidden'
+    borderRadius: spacing(3)
   },
   pressed: {
     backgroundColor: palette.neutralLight10
@@ -58,31 +52,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   messageContainer: {
     paddingHorizontal: spacing(4),
     paddingVertical: spacing(3),
-    backgroundColor: palette.white
+    backgroundColor: palette.white,
+    borderRadius: spacing(3)
   },
   messageContainerAuthor: {
     backgroundColor: palette.secondaryLight2
-  },
-  dateContainer: {
-    zIndex: -1,
-    marginTop: spacing(2),
-    marginBottom: spacing(6)
-  },
-  date: {
-    fontSize: typography.fontSize.xs,
-    color: palette.neutralLight2
-  },
-  shadow: {
-    shadowColor: 'black',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }
-  },
-  shadow2: {
-    shadowColor: 'black',
-    shadowOpacity: 0.02,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 }
   },
   tail: {
     display: 'flex',
@@ -98,6 +72,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     transform: [{ scaleX: -1 }]
   },
   reaction: {
+    position: 'absolute',
     height: spacing(16),
     width: spacing(16)
   },
@@ -180,6 +155,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   } = props
   const styles = useStyles()
   const { data: userId } = useCurrentUserId()
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )
@@ -238,146 +216,148 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
 
   return message ? (
     <>
-      <View
+      <Flex
+        alignItems={isAuthor ? 'flex-end' : 'flex-start'}
         style={[
-          isAuthor ? styles.rootIsAuthor : styles.rootOtherUser,
           !message.hasTail && message.reactions && message.reactions.length > 0
             ? styles.reactionMarginBottom
             : null,
+          { minHeight: spacing.unit4 },
           styleProp
         ]}
       >
-        <View>
-          <Pressable
-            onLongPress={handleLongPress}
-            delayLongPress={REACTION_LONGPRESS_DELAY}
-            onPressIn={isPopup ? handleClosePopup : handlePressIn}
-            onPressOut={isPopup ? handleClosePopup : handlePressOut}
-            style={{ opacity: isUnderneathPopup ? 0 : 1 }}
+        <Pressable
+          onLongPress={handleLongPress}
+          delayLongPress={REACTION_LONGPRESS_DELAY}
+          onPressIn={isPopup ? handleClosePopup : handlePressIn}
+          onPressOut={isPopup ? handleClosePopup : handlePressOut}
+          style={{
+            opacity: isUnderneathPopup ? 0 : 1
+          }}
+        >
+          <Flex
+            style={[
+              styles.bubble,
+              isPressed
+                ? isAuthor
+                  ? styles.pressedIsAuthor
+                  : styles.pressed
+                : null
+            ]}
+            shadow='mid'
+            ref={itemsRef ? (el) => (itemsRef.current[messageId] = el) : null}
           >
-            <View style={styles.shadow}>
-              <View style={styles.shadow2}>
-                <View
-                  style={[
-                    styles.bubble,
-                    isPressed
-                      ? isAuthor
-                        ? styles.pressedIsAuthor
-                        : styles.pressed
-                      : null
-                  ]}
-                  ref={
-                    itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
-                  }
+            {senderUserId && isArtistCoinEnabled ? (
+              <ArtistCoinHeader
+                userId={senderUserId}
+                audience={message?.audience}
+              />
+            ) : null}
+            {isCollection ? (
+              <ChatMessagePlaylist
+                key={`${link.value}-${link.start}-${link.end}`}
+                link={link.value}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+                styles={unfurlStyles}
+              />
+            ) : isTrack ? (
+              <ChatMessageTrack
+                key={`${link.value}-${link.start}-${link.end}`}
+                link={link.value}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+                styles={unfurlStyles}
+              />
+            ) : link ? (
+              <LinkPreview
+                key={`${link.value}-${link.start}-${link.end}`}
+                chatId={chatId}
+                messageId={messageId}
+                href={link.href}
+                onLongPress={handleLongPress}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                isPressed={isPressed}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+                style={unfurlStyles}
+              />
+            ) : null}
+            {!hideMessage ? (
+              <Flex
+                style={[
+                  styles.messageContainer,
+                  isAuthor && styles.messageContainerAuthor
+                ]}
+              >
+                <UserGeneratedText
+                  variant='body'
+                  lineHeight='multi'
+                  color={isAuthor ? 'white' : 'default'}
+                  textAlign='left'
+                  linkProps={{
+                    variant: isAuthor ? 'inverted' : 'visible',
+                    showUnderline: true
+                  }}
+                  onPress={Keyboard.dismiss}
+                  onLongPress={handleLongPress}
                 >
-                  {isCollection ? (
-                    <ChatMessagePlaylist
-                      key={`${link.value}-${link.start}-${link.end}`}
-                      link={link.value}
-                      onEmpty={onUnfurlEmpty}
-                      onSuccess={onUnfurlSuccess}
-                      styles={unfurlStyles}
-                    />
-                  ) : isTrack ? (
-                    <ChatMessageTrack
-                      key={`${link.value}-${link.start}-${link.end}`}
-                      link={link.value}
-                      onEmpty={onUnfurlEmpty}
-                      onSuccess={onUnfurlSuccess}
-                      styles={unfurlStyles}
-                    />
-                  ) : link ? (
-                    <LinkPreview
-                      key={`${link.value}-${link.start}-${link.end}`}
-                      chatId={chatId}
-                      messageId={messageId}
-                      href={link.href}
-                      onLongPress={handleLongPress}
-                      onPressIn={handlePressIn}
-                      onPressOut={handlePressOut}
-                      isPressed={isPressed}
-                      onEmpty={onUnfurlEmpty}
-                      onSuccess={onUnfurlSuccess}
-                      style={unfurlStyles}
-                    />
-                  ) : null}
-                  {!hideMessage ? (
-                    <View
-                      style={[
-                        styles.messageContainer,
-                        isAuthor && styles.messageContainerAuthor
-                      ]}
-                    >
-                      <UserGeneratedText
-                        variant='body'
-                        lineHeight='multi'
-                        color={isAuthor ? 'white' : 'default'}
-                        textAlign='left'
-                        linkProps={{
-                          variant: isAuthor ? 'inverted' : 'visible',
-                          showUnderline: true
-                        }}
-                        onPress={Keyboard.dismiss}
-                        onLongPress={handleLongPress}
-                      >
-                        {message.message}
-                      </UserGeneratedText>
-                    </View>
-                  ) : null}
-                </View>
-                {message.hasTail ? (
-                  <ChatTail
-                    fill={tailColor}
-                    style={[
-                      styles.tail,
-                      isAuthor ? styles.tailIsAuthor : styles.tailOtherUser
-                    ]}
-                  />
-                ) : null}
-                {message.reactions?.length > 0 ? (
-                  <>
-                    {!isUnderneathPopup ? (
-                      <View
-                        style={[
-                          styles.reactionContainer,
-                          isAuthor
-                            ? styles.reactionContainerIsAuthor
-                            : styles.reactionContainerOtherUser
-                        ]}
-                      >
-                        {message?.reactions.map((reaction) => {
-                          return (
-                            <ChatReaction
-                              key={reaction.created_at}
-                              reaction={reaction}
-                            />
-                          )
-                        })}
-                      </View>
-                    ) : null}
-                  </>
-                ) : null}
-              </View>
-            </View>
-          </Pressable>
-        </View>
+                  {message.message}
+                </UserGeneratedText>
+              </Flex>
+            ) : null}
+          </Flex>
+          {message.hasTail ? (
+            <ChatTail
+              fill={tailColor}
+              style={[
+                styles.tail,
+                isAuthor ? styles.tailIsAuthor : styles.tailOtherUser
+              ]}
+            />
+          ) : null}
+          {message.reactions?.length > 0 ? (
+            <>
+              {!isUnderneathPopup ? (
+                <Flex
+                  style={[
+                    styles.reactionContainer,
+                    isAuthor
+                      ? styles.reactionContainerIsAuthor
+                      : styles.reactionContainerOtherUser
+                  ]}
+                >
+                  {message?.reactions.map((reaction) => {
+                    return (
+                      <ChatReaction
+                        key={reaction.created_at}
+                        reaction={reaction}
+                      />
+                    )
+                  })}
+                </Flex>
+              ) : null}
+            </>
+          ) : null}
+        </Pressable>
         {isAuthor && message.status === Status.ERROR ? (
           <ResendMessageButton messageId={messageId} chatId={chatId} />
         ) : null}
         {message.hasTail ? (
           <>
             {!isPopup ? (
-              <View style={styles.dateContainer}>
-                <Text style={styles.date}>
+              <Flex mt='s' mb='xl' style={css({ zIndex: -1 })}>
+                <Text size='xs' color='subdued'>
                   {isUnderneathPopup
                     ? ' '
                     : formatMessageDate(message.created_at)}
                 </Text>
-              </View>
+              </Flex>
             ) : null}
           </>
         ) : null}
-      </View>
+      </Flex>
     </>
   ) : null
 })

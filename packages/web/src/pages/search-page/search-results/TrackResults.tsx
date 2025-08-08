@@ -39,6 +39,7 @@ type TrackResultsProps = {
   viewLayout?: ViewLayout
   category?: SearchKind
   count?: number
+  waitForAllResults?: boolean
 }
 
 export const TrackResults = (props: TrackResultsProps) => {
@@ -48,7 +49,8 @@ export const TrackResults = (props: TrackResultsProps) => {
     count,
     isPending,
     isFetching,
-    isError
+    isError,
+    waitForAllResults = false
   } = props
 
   const mainContentRef = useMainContentRef()
@@ -84,8 +86,11 @@ export const TrackResults = (props: TrackResultsProps) => {
     [dispatch, searchParams]
   )
 
+  // Wait for useSearchAllResults to finish loading before fetching tracks
   const { data, hasNextPage, loadNextPage, isPlaying, play, pause, lineup } =
-    useSearchTrackResults(searchParams)
+    useSearchTrackResults(searchParams, {
+      enabled: !waitForAllResults // Only fetch if not waiting for all results
+    })
 
   return (
     <TanQueryLineup
@@ -112,10 +117,11 @@ export const TrackResults = (props: TrackResultsProps) => {
         ? {
             lineupContainerStyles: css({ width: '100%' }),
             tileContainerStyles: css({
-              display: 'grid',
+              display: isTrackGridLayout ? 'grid' : 'flex',
+              flexDirection: isTrackGridLayout ? undefined : 'column',
               gridTemplateColumns: isTrackGridLayout
                 ? 'repeat(auto-fit, minmax(450px, 1fr))' // wrap columns to fit
-                : '1fr',
+                : undefined,
               gap: '4px 16px',
               justifyContent: 'space-between'
             })

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useComment, useUser } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
@@ -13,9 +13,9 @@ import { css } from '@emotion/native'
 import { useLinkProps } from '@react-navigation/native'
 import type { GestureResponderEvent } from 'react-native'
 import { TouchableOpacity } from 'react-native'
-import Animated, { FadeIn } from 'react-native-reanimated'
+import Animated, { FadeIn, Keyframe } from 'react-native-reanimated'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex, Text, useTheme } from '@audius/harmony-native'
 import { make, track as trackEvent } from 'app/services/analytics'
 
 import { ProfilePicture } from '../core/ProfilePicture'
@@ -32,6 +32,7 @@ import { TimestampLink } from './TimestampLink'
 export type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
+  highlightedCommentId?: ID
   isPreview?: boolean
 }
 
@@ -40,7 +41,7 @@ export const CommentBlockInternal = (
     comment: Comment | ReplyComment
   }
 ) => {
-  const { comment, isPreview, parentCommentId } = props
+  const { comment, isPreview, parentCommentId, highlightedCommentId } = props
   const { artistId, track, navigation, closeDrawer } =
     useCurrentCommentSection()
   const {
@@ -55,7 +56,9 @@ export const CommentBlockInternal = (
   } = comment
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = track.pinned_comment_id === commentId
+  const isHighlighted = highlightedCommentId === commentId
 
+  const { color, spacing, type } = useTheme()
   const { isPending: isUserPending } = useUser(userId)
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
@@ -82,15 +85,45 @@ export const CommentBlockInternal = (
     [commentId]
   )
 
+  const highlightBackgroundFadeAnimation = useMemo(
+    () =>
+      new Keyframe({
+        0: {
+          backgroundColor: 'transparent'
+        },
+        50: {
+          backgroundColor:
+            color.focus.default.slice(0, 7) + (type === 'dark' ? '33' : '1a')
+        },
+        100: {
+          backgroundColor:
+            color.focus.default.slice(0, 7) + (type === 'dark' ? '20' : '0D')
+        }
+      }),
+    [color.focus.default, type]
+  )
+
   const isCommentByArtist = userId === artistId
 
   return (
     <Animated.View style={{ width: '100%' }} entering={FadeIn.duration(500)}>
-      <Flex
-        direction='row'
-        w='100%'
-        gap='s'
-        style={css({ opacity: isTombstone ? 0.5 : 1 })}
+      <Animated.View
+        entering={
+          isHighlighted
+            ? highlightBackgroundFadeAnimation.duration(660).delay(800)
+            : undefined
+        }
+        style={css({
+          display: 'flex',
+          flexDirection: 'row',
+          paddingVertical: isHighlighted ? spacing.unit2 : 0,
+          paddingHorizontal: spacing.unit4,
+          paddingLeft: parentCommentId ? spacing.unit10 : spacing.unit4,
+          width: '100%',
+          gap: spacing.unit2,
+          opacity: isTombstone ? 0.5 : 1,
+          backgroundColor: 'transparent'
+        })}
       >
         <TouchableOpacity
           {...profilePicLinkProps}
@@ -189,7 +222,7 @@ export const CommentBlockInternal = (
             />
           ) : null}
         </Flex>
-      </Flex>
+      </Animated.View>
     </Animated.View>
   )
 }

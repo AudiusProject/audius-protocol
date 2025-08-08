@@ -1005,8 +1005,7 @@ function* purchaseWithAnything({
         ],
         {
           sourceWallet,
-          total:
-            totalAmountWithDecimals / 10 ** TOKEN_LISTING_MAP.USDC.decimals,
+          total: BigInt(totalAmountWithDecimals),
           mint: 'USDC'
         }
       )

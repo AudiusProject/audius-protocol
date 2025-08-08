@@ -164,7 +164,8 @@ export const userMetadataToSdk = (
       'handle',
       'is_deactivated',
       'allow_ai_attribution',
-      'profile_type'
+      'profile_type',
+      'spl_usdc_payout_wallet'
     ])
   ),
   bio: input.bio ?? undefined,

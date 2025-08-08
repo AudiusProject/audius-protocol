@@ -1,12 +1,10 @@
-import { decodeAbi } from './abi'
-import { logger } from './logger'
-import { ManageEntityParameters } from './types/entityManager'
+import { audiusSdk } from '.'
 
 /// async in case we need to make a db call
-export const validateTransactionData = async (
-  encodedABI: string
-): Promise<ManageEntityParameters> => {
-  const decoded = decodeAbi(encodedABI)
+export const validateTransactionData = async (encodedABI: string) => {
+  const decoded = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
   // TODO: validate decoded tx with zod
   // TODO: maybe check transactions table? this is no longer possible with the way identity works
   // TODO: filter replica set updates

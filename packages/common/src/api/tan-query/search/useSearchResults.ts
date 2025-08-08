@@ -39,6 +39,14 @@ import { primeUserData } from '../utils/primeUserData'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
+export const labelByCategory: Record<SearchCategory, string> = {
+  all: 'All',
+  tracks: 'Tracks',
+  users: 'Profiles',
+  albums: 'Albums',
+  playlists: 'Playlists'
+}
+
 export type SearchFilters = {
   genre?: Genre
   mood?: Mood
@@ -223,7 +231,7 @@ const useSearchQueryProps = <T>(
           // @ts-ignore search type is conditional on category, too verbose to inline
           (queryData: InfiniteData<T[]>): InfiniteData<T[]> => {
             const prevPages = (queryData?.pages as T[][]) ?? []
-            const currentIndex = pageParam % pageSize
+            const currentIndex = Math.floor(pageParam / pageSize)
             prevPages[currentIndex] = data
             return {
               pages: prevPages as T[][],

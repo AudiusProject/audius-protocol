@@ -398,10 +398,11 @@ export const productionConfig: SdkServicesConfig = {
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "wAudioTokenMint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+    "bonkTokenMint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
     "rewardManagerLookupTableAddress": "4UQwpGupH66RgQrWRqmPM9Two6VJEE68VZ7GeqZ3mvVv"
   },
   "ethereum": {
-    "rpcEndpoint": "https://eth-mainnet.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ",
+    "rpcEndpoint": "https://eth-client.audius.co",
     "addresses": {
       "ethRewardsManagerAddress": "0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0",
       "serviceProviderFactoryAddress": "0xD17A9bc90c582249e211a4f4b16721e7f65156c8",

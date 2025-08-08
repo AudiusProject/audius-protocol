@@ -240,6 +240,14 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Add leading slash if it is missing
       if (path[0] !== '/') path = `/${path}`
 
+      // Decode URL-encoded characters in the path
+      try {
+        path = decodeURIComponent(path)
+      } catch (e) {
+        // If decoding fails, continue with the original path
+        console.warn('Failed to decode URL path:', path, e)
+      }
+
       path = path.replace('#embed', '')
 
       const connectPath = /^\/(connect)/
@@ -373,6 +381,12 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           // set the path as `collection`
           path = path.replace(/(^\/[^/]+\/)(album)(\/[^/]+$)/, '$1collection$3')
           path = `${path}?collectionType=album`
+        } else if (path.match(/^\/[^/]+\/collectibles\/[^/]+$/)) {
+          // Handle collectible deep links by navigating to the collectibles tab
+          // The collectible ID will be passed as a parameter to open the drawer
+          const handle = pathPart(path)(1)
+          const collectibleId = pathPart(path)(3)
+          path = `/${handle}/collectibles?collectibleId=${collectibleId}`
         }
       }
 

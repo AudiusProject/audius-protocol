@@ -43,7 +43,8 @@ export const CommentThreadNotification = (
   props: CommentThreadNotificationProps
 ) => {
   const { notification } = props
-  const { id, userIds, entityType, timeLabel, isViewed } = notification
+  const { commentId, id, userIds, entityType, timeLabel, isViewed } =
+    notification
   const { data: users } = useUsers(userIds.slice(0, USER_LENGTH_LIMIT))
   const firstUser = users?.[0]
   const otherUsersCount = userIds.length - 1
@@ -58,7 +59,7 @@ export const CommentThreadNotification = (
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType, true)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true, commentId)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {

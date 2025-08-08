@@ -32,7 +32,11 @@ import { Status } from '~/models/Status'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
-import { makeBlastChatId, removeNullable } from '../../../utils'
+import {
+  isResponseError,
+  makeBlastChatId,
+  removeNullable
+} from '../../../utils'
 import { getContext } from '../../effects'
 
 import * as chatSelectors from './selectors'
@@ -436,14 +440,16 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
       })
     )
     const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      name: 'Chats',
-      error: e as Error,
-      additionalInfo: {
-        userIds
-      },
-      feature: Feature.Chats
-    })
+    if (!isResponseError(e) || e.response?.status !== 403) {
+      reportToSentry({
+        name: 'Chats',
+        error: e as Error,
+        additionalInfo: {
+          userIds
+        },
+        feature: Feature.Chats
+      })
+    }
     yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
   }
 }

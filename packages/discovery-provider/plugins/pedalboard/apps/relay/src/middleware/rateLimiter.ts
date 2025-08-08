@@ -1,8 +1,7 @@
 import { RelayRateLimiter, ValidLimits } from '../config/rateLimitConfig'
-import { AudiusABIDecoder } from '@audius/sdk-legacy/dist/libs'
 import { RateLimiterRes } from 'rate-limiter-flexible'
 import { DeveloperApps, Users } from '@pedalboard/storage'
-import { config } from '..'
+import { audiusSdk, config } from '..'
 import { NextFunction, Request, Response } from 'express'
 import { rateLimitError } from '../error'
 
@@ -93,12 +92,10 @@ export const rateLimiterMiddleware = async (
 }
 
 export const getEntityManagerActionKey = (encodedABI: string): string => {
-  const decodedABI = AudiusABIDecoder.decodeAbi('EntityManager', encodedABI)
-  const action = decodedABI.get('action')
-  if (action === undefined) throw new Error('action not defined in encodedABI')
-  const entityType = decodedABI.get('entityType')
-  if (entityType === undefined)
-    throw new Error('entityType not defined in encodedABI')
+  const decodedABI = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
+  const { action, entityType } = decodedABI
   return action + entityType
 }
 

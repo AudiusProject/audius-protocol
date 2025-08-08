@@ -11,6 +11,7 @@ import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileArt } from './LineupTileArt'
+import { LineupTileTopRight } from './LineupTileTopRight'
 import { useStyles as useTileStyles } from './styles'
 import type { RenderImage } from './types'
 
@@ -18,7 +19,9 @@ const { getPlaying } = playerSelectors
 
 const useStyles = makeStyles(({ palette }) => ({
   metadata: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    gap: 8,
+    width: '100%'
   },
   playingIndicator: {
     marginLeft: 8
@@ -43,6 +46,8 @@ type Props = {
   isPlayingUid: boolean
   type: 'track' | 'playlist' | 'album'
   trackId: ID
+  duration: number
+  isLongFormContent: boolean
 }
 
 export const LineupTileMetadata = ({
@@ -52,7 +57,9 @@ export const LineupTileMetadata = ({
   userId,
   isPlayingUid,
   type,
-  trackId
+  trackId,
+  duration,
+  isLongFormContent
 }: Props) => {
   const styles = useStyles()
   const tileStyles = useTileStyles()
@@ -117,6 +124,12 @@ export const LineupTileMetadata = ({
           userId={userId}
         />
       </FadeInView>
+      <LineupTileTopRight
+        duration={duration}
+        trackId={trackId}
+        isLongFormContent={isLongFormContent}
+        isCollection={false}
+      />
     </View>
   )
 }

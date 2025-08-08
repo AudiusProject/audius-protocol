@@ -1,66 +1,40 @@
-import type { ComponentType } from 'react'
-
-import type { User } from '@audius/common/models'
+import { useTokenBalance, useUser } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import type { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
-import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
-import { StyleSheet, View, Text } from 'react-native'
 
-import { IconVerified } from '@audius/harmony-native'
+import type { IconSize } from '@audius/harmony-native'
+import { Flex, IconTokenBonk, IconVerified } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { useThemePalette } from 'app/utils/theme'
 
 type UserBadgesProps = {
-  user: Pick<User, 'user_id' | 'name' | 'is_verified'> | undefined
-  badgeSize?: number
-  style?: StyleProp<ViewStyle>
-  nameStyle?: StyleProp<TextStyle>
-  hideName?: boolean
-  as?: ComponentType
+  userId: ID
+  badgeSize?: IconSize
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start'
-  },
-  badge: {
-    marginLeft: 4
-  }
-})
 
 export const UserBadges = (props: UserBadgesProps) => {
-  const {
-    user,
-    badgeSize = 14,
-    style,
-    nameStyle,
-    hideName,
-    as: Component = View
-  } = props
-  const { tier } = useTierAndVerifiedForUser(user?.user_id)
-  const palette = useThemePalette()
+  const { userId, badgeSize = 's' } = props
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
-  if (!user) return null
+  const { data: isVerified } = useUser(userId, {
+    select: (user) => user?.is_verified
+  })
+  const { tier } = useTierAndVerifiedForUser(userId)
+
+  const { data: coinBalance } = useTokenBalance({
+    mint: 'BONK'
+  })
 
   return (
-    <Component style={[styles.container, style]}>
-      {hideName ? null : (
-        <Text style={nameStyle} numberOfLines={1}>
-          {user.name}
-        </Text>
-      )}
-      {user.is_verified ? (
-        <IconVerified
-          height={badgeSize}
-          width={badgeSize}
-          style={styles.badge}
-          fill={palette.staticPrimary}
-        />
+    <Flex row gap='xs' alignItems='center'>
+      {isVerified ? <IconVerified size={badgeSize} /> : null}
+      <IconAudioBadge tier={tier} size={badgeSize} />
+      {coinBalance && isArtistCoinEnabled ? (
+        <IconTokenBonk size={badgeSize} />
       ) : null}
-      <IconAudioBadge tier={tier} style={styles.badge} size='xs' />
-    </Component>
+    </Flex>
   )
 }
-
-export default UserBadges

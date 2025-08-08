@@ -32,14 +32,22 @@ import { CommentBlock } from './CommentBlock'
 
 type CommentThreadProps = {
   commentId: ID
+  highlightedComment?: Comment | null
 }
 
 export const CommentThread = (props: CommentThreadProps) => {
-  const { commentId } = props
-  const { motion } = useTheme()
+  const { commentId, highlightedComment } = props
+  const { motion, spacing } = useTheme()
   const { entityId } = useCurrentCommentSection()
   const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
+
+  const isReplyHighlighted =
+    highlightedComment?.parentCommentId === rootComment.id
+  const highlightedCommentId =
+    isReplyHighlighted || highlightedComment?.id === rootComment.id
+      ? highlightedComment.id
+      : null
 
   const [hiddenReplies, setHiddenReplies] = useState<{
     [parentCommentId: number]: boolean
@@ -120,15 +128,24 @@ export const CommentThread = (props: CommentThreadProps) => {
   const { replyCount = 0 } = rootComment
 
   const replies = rootComment.replies ?? []
+  const repliesWithHighlight = isReplyHighlighted
+    ? [
+        highlightedComment,
+        ...replies.filter((reply) => reply.id !== highlightedComment.id)
+      ]
+    : replies
 
   const hasMoreReplies = replyCount >= 3 && replies.length < replyCount // note: hasNextPage is undefined when inactive - have to explicitly check for false
 
   return (
     <>
-      <CommentBlock commentId={rootComment.id} />
-      <Flex pl={40} direction='column' mv='s' gap='s' alignItems='flex-start'>
+      <CommentBlock
+        commentId={rootComment.id}
+        highlightedCommentId={highlightedCommentId ?? undefined}
+      />
+      <Flex direction='column' mv='s' gap='s' alignItems='flex-start'>
         {(replies.length ?? 0) > 0 ? (
-          <Box mv='xs'>
+          <Box mv='xs' pl={spacing.unit10}>
             <PlainButton
               onPress={() => toggleReplies(rootComment.id)}
               variant='subdued'
@@ -145,11 +162,12 @@ export const CommentThread = (props: CommentThreadProps) => {
         <Animated.View style={animatedContainerStyle}>
           <Box onLayout={handleRepliesLayoutChange}>
             <Flex direction='column' gap='l'>
-              {replies?.map((reply: ReplyComment) => (
+              {repliesWithHighlight?.map((reply: ReplyComment) => (
                 <Flex w='100%' key={reply.id}>
                   <CommentBlock
                     commentId={reply.id}
                     parentCommentId={rootComment.id}
+                    highlightedCommentId={highlightedCommentId ?? undefined}
                   />
                 </Flex>
               ))}

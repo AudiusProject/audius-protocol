@@ -17,11 +17,23 @@ export const formatCount = (count: number) => {
     if (countStr.length % 3 === 0) {
       return numeral(count).format('0a').toUpperCase()
     } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
-      return numeral(count).format('0.00a').toUpperCase()
+      const formatted = numeral(count).format('0.00a').toUpperCase()
+      // If the result has .00, use the simpler format without decimals
+      return formatted.includes('.00')
+        ? numeral(count).format('0a').toUpperCase()
+        : formatted
     } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
-      return numeral(count).format('0.0a').toUpperCase()
+      const formatted = numeral(count).format('0.0a').toUpperCase()
+      // If the result has .0, use the simpler format without decimals
+      return formatted.includes('.0')
+        ? numeral(count).format('0a').toUpperCase()
+        : formatted
     } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
-      return numeral(count).format('0.0a').toUpperCase()
+      const formatted = numeral(count).format('0.0a').toUpperCase()
+      // If the result has .0, use the simpler format without decimals
+      return formatted.includes('.0')
+        ? numeral(count).format('0a').toUpperCase()
+        : formatted
     } else {
       return numeral(count).format('0a').toUpperCase()
     }

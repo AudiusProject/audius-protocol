@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from 'react'
 
+import { labelByCategory } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import type { Mood } from '@audius/sdk'
 import { MOODS } from 'pages/search-page/moods'
@@ -22,8 +23,7 @@ interface MoodsGridProps {
 
 export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
   const { spacing } = useTheme()
-
-  const [, setCategory] = useSearchCategory()
+  const [category, setCategory] = useSearchCategory()
   const [, setFilters] = useSearchFilters()
 
   const moodEntries = useMemo(
@@ -33,10 +33,12 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
 
   const handleMoodPress = useCallback(
     (moodLabel: Mood) => {
-      setCategory('tracks')
+      if (category === 'all') {
+        setCategory('tracks')
+      }
       setFilters({ mood: moodLabel })
     },
-    [setCategory, setFilters]
+    [setFilters, setCategory, category]
   )
 
   if (externalLoading) {
@@ -44,7 +46,7 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
   }
   return (
     <ExploreSection
-      title={messages.exploreByMood}
+      title={messages.exploreByMood(labelByCategory[category])}
       centered
       isLoading={externalLoading}
     >
@@ -55,7 +57,7 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
             key={moodInfo.label}
             pv='l'
             ph='xl'
-            gap='m'
+            gap='s'
             borderRadius='m'
             border='default'
             backgroundColor='white'
@@ -70,7 +72,6 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
                 width: spacing.unit5
               }}
             />
-
             <Text variant='title' size='s'>
               {moodInfo.label}
             </Text>

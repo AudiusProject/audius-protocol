@@ -8,6 +8,7 @@ import {
 } from '@audius/common/models'
 import { Entity, useNotificationModal } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
+import { OptionalId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -29,7 +30,8 @@ type EntityLinkProps = {
 export const useGoToEntity = (
   entity: Nullable<EntityType>,
   entityType: Entity,
-  goToComments?: boolean
+  goToComments?: boolean,
+  commentId?: number
 ) => {
   const dispatch = useDispatch()
   const record = useRecord()
@@ -40,12 +42,20 @@ export const useGoToEntity = (
       if (!entity) return
       event.stopPropagation()
       event.preventDefault()
-      let link = getEntityLink(entity)
-      if (goToComments) {
-        link = `${link}?showComments=true`
+      const link = getEntityLink(entity)
+      const urlParams = new URLSearchParams()
+      if (commentId) {
+        const parsedCommentId = OptionalId.parse(commentId)
+        if (parsedCommentId) {
+          urlParams.set('commentId', parsedCommentId)
+        }
+      } else if (goToComments) {
+        urlParams.set('showComments', 'true')
       }
+      const newLink = `${link}?${urlParams.toString()}`
+
       onClose()
-      dispatch(push(link))
+      dispatch(push(newLink))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
           kind: entityType,
@@ -53,7 +63,7 @@ export const useGoToEntity = (
         })
       )
     },
-    [dispatch, entity, entityType, goToComments, onClose, record]
+    [commentId, dispatch, entity, entityType, goToComments, onClose, record]
   )
   return handleClick
 }

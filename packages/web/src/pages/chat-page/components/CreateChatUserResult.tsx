@@ -159,7 +159,6 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
         className={styles.artistChip}
         userId={user.user_id}
         showPopover={false}
-        showSupportFor={currentUserId ?? undefined}
         customChips={canCreateChat ? null : renderCustomChip(callToAction)}
         onClickArtistName={handleComposeClicked}
       />

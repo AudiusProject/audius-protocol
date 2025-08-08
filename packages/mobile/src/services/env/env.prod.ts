@@ -29,7 +29,7 @@ export const env: Env = {
   ETH_BRIDGE_ADDRESS: '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B',
   ETH_NETWORK_ID: '1',
   ETH_OWNER_WALLET: '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5',
-  ETH_PROVIDER_URL: 'https://eth.audius.co',
+  ETH_PROVIDER_URL: 'https://eth-client.audius.co',
   ETH_REGISTRY_ADDRESS: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
   ETH_TOKEN_ADDRESS: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
   ETH_TOKEN_BRIDGE_ADDRESS: '0x3ee18B2214AFF97000D974cf647E7C347E8fa585',
@@ -82,6 +82,7 @@ export const env: Env = {
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USE_HASH_ROUTING: false,
   WAUDIO_MINT_ADDRESS: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
+  BONK_MINT_ADDRESS: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
   WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
   WORMHOLE_RPC_HOSTS:
     'https://wormhole-v2-mainnet-api.certus.one,https://wormhole.inotel.ro,https://wormhole-v2-mainnet-api.mcf.rocks,https://wormhole-v2-mainnet-api.chainlayer.network,https://wormhole-v2-mainnet-api.staking.fund,https://wormhole-v2-mainnet-api.chainlayer.network'

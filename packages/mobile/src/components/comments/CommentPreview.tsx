@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
+import { useComment } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -7,9 +8,9 @@ import {
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
 import { trackPageSelectors } from '@audius/common/store'
+import { OptionalHashId } from '@audius/sdk'
 import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import {
@@ -79,10 +80,11 @@ const CommentPreviewHeader = (props: CommentPreviewHeaderProps) => {
 
 type CommentPreviewContentProps = {
   openCommentDrawer: (args?: { autoFocusInput?: boolean }) => void
+  highlightedCommentId: ID | null
 }
 
 const CommentPreviewContent = (props: CommentPreviewContentProps) => {
-  const { openCommentDrawer } = props
+  const { openCommentDrawer, highlightedCommentId } = props
   const {
     commentSectionLoading: isLoading,
     commentIds,
@@ -132,7 +134,10 @@ const CommentPreviewContent = (props: CommentPreviewContentProps) => {
 
   return (
     <TouchableOpacity onPress={handlePress}>
-      <CommentBlock commentId={commentIds[0]} isPreview />
+      <CommentBlock
+        commentId={highlightedCommentId ?? commentIds[0]}
+        isPreview
+      />
     </TouchableOpacity>
   )
 }
@@ -145,7 +150,13 @@ export const CommentPreview = (props: CommentPreviewProps) => {
   const { entityId } = props
 
   const { params } = useRoute<'Track'>()
-  const { showComments } = params ?? {}
+  const { commentId, showComments } = params ?? {}
+  const parsedCommentId = OptionalHashId.parse(commentId)
+  const { data: highlightedComment } = useComment(parsedCommentId)
+  const highlightedCommentId =
+    highlightedComment?.entityId === entityId
+      ? (highlightedComment?.parentCommentId ?? highlightedComment.id)
+      : null
 
   const navigation = useNavigation()
   const { open } = useCommentDrawer()
@@ -160,18 +171,26 @@ export const CommentPreview = (props: CommentPreviewProps) => {
         entityId,
         navigation,
         autoFocusInput,
+        highlightedComment,
         uid: trackUid,
         actions: tracksActions
       })
     },
-    [open, entityId, navigation, trackUid]
+    [open, entityId, navigation, trackUid, highlightedComment]
   )
 
-  useEffectOnce(() => {
-    if (showComments) {
+  useEffect(() => {
+    if (highlightedComment) {
+      openCommentDrawer()
+    } else if (showComments && !highlightedCommentId) {
       openCommentDrawer()
     }
-  })
+  }, [
+    showComments,
+    openCommentDrawer,
+    highlightedComment,
+    highlightedCommentId
+  ])
 
   return (
     <CommentSectionProvider
@@ -182,7 +201,10 @@ export const CommentPreview = (props: CommentPreviewProps) => {
       <Flex gap='s' direction='column' w='100%' alignItems='flex-start'>
         <CommentPreviewHeader openCommentDrawer={openCommentDrawer} />
         <Paper w='100%' direction='column' gap='s' p='l' border='default'>
-          <CommentPreviewContent openCommentDrawer={openCommentDrawer} />
+          <CommentPreviewContent
+            openCommentDrawer={openCommentDrawer}
+            highlightedCommentId={highlightedCommentId}
+          />
         </Paper>
       </Flex>
     </CommentSectionProvider>

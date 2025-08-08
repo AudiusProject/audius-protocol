@@ -7,8 +7,8 @@ import { useTokenAmountFormatting } from '@audius/common/store'
 import {
   Button,
   Flex,
-  IconLogoCircleUSDC,
   IconTokenAUDIO,
+  IconTokenUSDC,
   Text,
   TextInput,
   useTheme
@@ -48,8 +48,7 @@ const DefaultBalanceSection = ({
   tokenInfo
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
-  const { cornerRadius } = useTheme()
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
   if (!formattedAvailableBalance || !TokenIcon) {
     return null
@@ -63,7 +62,7 @@ const DefaultBalanceSection = ({
       gap='xs'
     >
       <Flex direction='row' alignItems='center' gap='s'>
-        <TokenIcon size='l' style={{ borderRadius: cornerRadius.circle }} />
+        <TokenIcon size='l' />
         <Text variant='title' size='l' color='subdued'>
           {messages.available}
         </Text>
@@ -83,8 +82,7 @@ const StackedBalanceSection = ({
   isStablecoin
 }: BalanceSectionProps) => {
   const { symbol } = tokenInfo
-  const { cornerRadius } = useTheme()
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
   if (!formattedAvailableBalance || !TokenIcon) {
     return null
@@ -100,7 +98,7 @@ const StackedBalanceSection = ({
           {messages.stackedBalance(formattedAvailableBalance)}
         </Text>
       </Flex>
-      <TokenIcon size='4xl' style={{ borderRadius: cornerRadius.circle }} />
+      <TokenIcon size='4xl' />
     </Flex>
   )
 }
@@ -116,9 +114,8 @@ const CryptoAmountSection = ({
   isStablecoin: boolean
   priceDisplay?: string
 }) => {
-  const { spacing, cornerRadius } = useTheme()
   const { symbol } = tokenInfo
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
   if (!TokenIcon) {
@@ -127,13 +124,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex direction='row' alignItems='center' gap='s'>
-      <TokenIcon
-        style={{
-          borderRadius: cornerRadius.circle,
-          width: spacing.unit16,
-          height: spacing.unit16
-        }}
-      />
+      <TokenIcon size='4xl' />
       <Flex direction='column'>
         <Flex direction='row' alignItems='center' gap='xs'>
           <Text variant='heading' size='l'>
@@ -178,6 +169,7 @@ export const TokenAmountSection = ({
       availableBalance,
       exchangeRate,
       isStablecoin: !!isStablecoin,
+      decimals: tokenInfo.decimals,
       placeholder
     })
 
@@ -187,7 +179,7 @@ export const TokenAmountSection = ({
       : undefined
 
   const titleText = useMemo(() => {
-    const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+    const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
 
     if (isStablecoin && !isInput && TokenIcon) {
       return (

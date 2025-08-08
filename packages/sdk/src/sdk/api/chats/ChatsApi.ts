@@ -800,7 +800,8 @@ export class ChatsApi
             sender_user_id: encodedSenderId,
             created_at: blast.created_at,
             reactions: [],
-            is_plaintext: true
+            is_plaintext: true,
+            audience: blast.audience
           }
         })
       }
@@ -882,7 +883,8 @@ export class ChatsApi
               sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
               reactions: [],
-              is_plaintext: !!data.rpc.params.is_plaintext
+              is_plaintext: !!data.rpc.params.is_plaintext,
+              audience: data.rpc.params.audience
             }
           })
         } else if (data.rpc.method === 'chat.react') {
@@ -908,7 +910,8 @@ export class ChatsApi
               sender_user_id: data.metadata.senderUserId,
               created_at: data.metadata.timestamp,
               reactions: [],
-              is_plaintext: true
+              is_plaintext: true,
+              audience: data.rpc.params.audience
             }
           })
         }

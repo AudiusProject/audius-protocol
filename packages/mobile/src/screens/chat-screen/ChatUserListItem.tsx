@@ -205,7 +205,12 @@ export const ChatUserListItem = ({
           <View style={styles.userDetailsContainer}>
             <View style={styles.topHalfContainer}>
               <View style={styles.userNameContainer}>
-                <UserBadges user={user} nameStyle={styles.userName} />
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                >
+                  <Text style={styles.userName}>{user.name}</Text>
+                  <UserBadges userId={user.user_id} badgeSize='xs' />
+                </View>
                 <Text style={styles.handle}>@{user.handle}</Text>
               </View>
               <TouchableOpacity onPress={handleKebabPress}>

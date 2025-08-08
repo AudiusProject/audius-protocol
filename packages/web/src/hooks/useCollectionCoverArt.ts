@@ -18,7 +18,7 @@ export const useCollectionCoverArt = ({
   const { data: artwork } = useCollection(collectionId, {
     select: (collection) => collection.artwork
   })
-  const image = useImageSize({
+  const { imageUrl } = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: defaultImage ?? imageEmpty,
@@ -31,5 +31,5 @@ export const useCollectionCoverArt = ({
   // @ts-ignore
   if (artwork?.url) return artwork.url
 
-  return image
+  return imageUrl
 }

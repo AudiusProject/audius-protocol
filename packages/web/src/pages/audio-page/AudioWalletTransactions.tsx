@@ -124,7 +124,7 @@ export const AudioWalletTransactions = () => {
   const isEmpty = audioTransactions.length === 0
 
   return (
-    <Flex column gap='2xl'>
+    <Flex column gap='2xl' w='100%'>
       <Disclaimer />
       {isEmpty && !tableLoading ? (
         <EmptyTable

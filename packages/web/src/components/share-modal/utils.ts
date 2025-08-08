@@ -1,12 +1,7 @@
 import { ShareToTwitter, User } from '@audius/common/models'
 import { ShareContent } from '@audius/common/store'
 
-import {
-  fullCollectionPage,
-  fullProfilePage,
-  fullTrackPage,
-  fullAudioNftPlaylistPage
-} from 'utils/route'
+import { fullCollectionPage, fullProfilePage, fullTrackPage } from 'utils/route'
 
 import { messages } from './messages'
 
@@ -19,11 +14,7 @@ const getXShareHandle = (user: User) => {
 
 type ShareMessageConfig = Pick<
   typeof messages,
-  | 'profileShareText'
-  | 'trackShareText'
-  | 'playlistShareText'
-  | 'albumShareText'
-  | 'audioNftPlaylistShareText'
+  'profileShareText' | 'trackShareText' | 'playlistShareText' | 'albumShareText'
 >
 
 export const getXShareText = async (
@@ -88,17 +79,6 @@ export const getXShareText = async (
         is_album
       )
       analyticsEvent = { kind: 'playlist', id: playlist_id, url: link }
-      break
-    }
-    case 'audioNftPlaylist': {
-      const {
-        user: { handle, name, user_id }
-      } = content
-      xText = messageConfig.audioNftPlaylistShareText(
-        isPlaylistOwner ? 'my' : name
-      )
-      link = fullAudioNftPlaylistPage(handle)
-      analyticsEvent = { kind: 'audioNftPlaylist', id: user_id, url: link }
       break
     }
   }

@@ -72,7 +72,8 @@ export const ChatMessagePlaylist = ({
   const play = usePlayTrack()
   const playTrack = useCallback(
     (uid: string) => {
-      play({ uid, entries })
+      // Have to pass the uid bc the sagas cant get the lineup from the route in the ChatPage
+      play({ uid, entries, passUid: true })
     },
     [play, entries]
   )
@@ -99,7 +100,6 @@ export const ChatMessagePlaylist = ({
       id={collectionId}
       size={TrackTileSize.SMALL}
       ordered={false}
-      trackTileStyles={{}}
       togglePlay={() => {}}
       playTrack={playTrack}
       pauseTrack={pauseTrack}
@@ -109,7 +109,6 @@ export const ChatMessagePlaylist = ({
       numLoadingSkeletonRows={tracksWithUids.length}
       variant='readonly'
       source={ModalSource.DirectMessageCollectionTile}
-      tracks={tracksWithUids}
     />
   ) : null
 }

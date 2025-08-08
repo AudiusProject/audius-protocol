@@ -671,6 +671,7 @@ export type CommentNotification = BaseNotification & {
   entityId: ID
   userIds: ID[]
   entityType: Entity.Playlist | Entity.Album | Entity.Track
+  commentId?: ID
 }
 
 export type CommentThreadNotification = BaseNotification & {
@@ -679,6 +680,7 @@ export type CommentThreadNotification = BaseNotification & {
   entityUserId: ID
   userIds: ID[]
   entityType: Entity.Playlist | Entity.Album | Entity.Track
+  commentId?: ID
 }
 
 export type CommentMentionNotification = BaseNotification & {
@@ -687,6 +689,7 @@ export type CommentMentionNotification = BaseNotification & {
   entityUserId: ID
   userIds: ID[]
   entityType: Entity.Playlist | Entity.Album | Entity.Track
+  commentId?: ID
 }
 
 export type CommentReactionNotification = BaseNotification & {
@@ -695,6 +698,7 @@ export type CommentReactionNotification = BaseNotification & {
   entityUserId: ID
   userIds: ID[]
   entityType: Entity.Playlist | Entity.Album | Entity.Track
+  commentId?: ID
 }
 
 export type ListenStreakReminderNotification = BaseNotification & {

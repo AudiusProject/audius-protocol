@@ -26,18 +26,20 @@ export const ArtistCard = (props: ArtistCardProps) => {
     playlist_count,
     follower_count,
     followee_count,
-    does_current_user_follow
+    does_current_user_follow,
+    profile_type
   } = artist
 
   const dispatch = useDispatch()
-  const isArtist = track_count > 0
+  const profileType =
+    profile_type === 'label' ? 'label' : track_count > 0 ? 'artist' : null
 
   const handleClick: MouseEventHandler = useCallback((event) => {
     event.stopPropagation()
   }, [])
 
   const stats = useMemo((): StatProps[] => {
-    if (isArtist) {
+    if (profileType === 'artist') {
       return [
         {
           number: track_count,
@@ -65,7 +67,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
       },
       { number: followee_count, title: 'following', key: 'following' }
     ]
-  }, [isArtist, track_count, follower_count, followee_count, playlist_count])
+  }, [profileType, track_count, follower_count, followee_count, playlist_count])
 
   const handleFollow = useCallback(() => {
     dispatch(followUser(user_id, FollowSource.HOVER_TILE))
@@ -80,7 +82,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
       <div className={styles.artistCardContainer}>
         <ArtistCardCover
           artist={artist}
-          isArtist={isArtist}
+          profileType={profileType}
           onNavigateAway={onNavigateAway}
         />
         <div className={styles.artistStatsContainer}>

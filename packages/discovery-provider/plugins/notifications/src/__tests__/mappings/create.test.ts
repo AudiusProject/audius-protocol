@@ -40,7 +40,9 @@ describe('Create Notification', () => {
     await createSubscription(processor.discoveryDB, [
       { subscriber_id: 2, user_id: 1 }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
 
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
@@ -75,7 +77,8 @@ describe('Create Notification', () => {
           entityIds: [10],
           userId: 1,
           entityType: 'Track'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
@@ -89,6 +92,7 @@ describe('Create Notification', () => {
       {
         track_id: 10,
         owner_id: 1,
+        cover_art_sizes: 'test-hash',
         stream_conditions: {
           usdc_purchase: {
             price: 100,
@@ -133,7 +137,8 @@ describe('Create Notification', () => {
           entityIds: [10],
           userId: 1,
           entityType: 'Track'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
 
@@ -156,7 +161,8 @@ describe('Create Notification', () => {
           entityIds: [10],
           userId: 1,
           entityType: 'Track'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
@@ -219,7 +225,8 @@ describe('Create Notification', () => {
       {
         playlist_id: 10,
         playlist_owner_id: 1,
-        playlist_name: 'I am a playlist'
+        playlist_name: 'I am a playlist',
+        playlist_image_sizes_multihash: 'test-hash'
       }
     ])
 
@@ -252,7 +259,8 @@ describe('Create Notification', () => {
           entityIds: [10],
           userId: 1,
           entityType: 'Playlist'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
@@ -307,7 +315,8 @@ describe('Create Notification', () => {
         playlist_id: 10,
         playlist_owner_id: 1,
         playlist_name: 'I am an album',
-        is_album: true
+        is_album: true,
+        playlist_image_sizes_multihash: 'test-hash'
       }
     ])
 
@@ -340,7 +349,8 @@ describe('Create Notification', () => {
           entityIds: [10],
           userId: 1,
           entityType: 'Album'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

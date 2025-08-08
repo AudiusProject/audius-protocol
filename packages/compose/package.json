@@ -10,7 +10,6 @@
     "@audius/sdk": "*",
     "@audius/spl": "*",
     "@pedalboard/relay": "*",
-    "@pedalboard/sla-auditor": "*",
     "@pedalboard/solana-relay": "*",
     "@pedalboard/crm": "*",
     "@pedalboard/trending-challenge-rewards": "*",
