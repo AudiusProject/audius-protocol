@@ -80,7 +80,6 @@ export const useArtistCoinMembers = (
 
       const response = await sdk.coins.getCoinMembers(params)
 
-      console.log('REED', { response })
       const members: CoinMember[] = (response.data ?? []).map(
         (member: any) => ({
           user_id: decodeHashId(member.userId) ?? 0,
