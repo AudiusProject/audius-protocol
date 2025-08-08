@@ -1,13 +1,22 @@
+import { useCallback, useState } from 'react'
+
 import { useArtistCoin } from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
+import { AUDIUS_DISCORD_LINK } from '@audius/common/src/utils/route'
 import {
-  Avatar,
   Flex,
-  IconGift,
   Paper,
-  PlainButton,
   Text,
-  useTheme
+  useTheme,
+  PlainButton,
+  IconDiscord,
+  PopupMenu,
+  PopupMenuItem,
+  IconKebabHorizontal,
+  IconButton,
+  IconRefresh,
+  IconGift,
+  Avatar
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
@@ -26,6 +35,8 @@ import {
 
 import { AssetDetailProps } from '../types'
 
+import { UpdateDiscordRoleModal } from './UpdateDiscordRoleModal'
+
 const messages = {
   loading: 'Loading...',
   createdBy: 'Created By',
@@ -35,7 +46,13 @@ const messages = {
   description2: (title: string) =>
     `Holding ${title} gives you access to exclusive features and helps support your favorite artists on Audius.`,
   learnMore: 'Learn More',
-  viewLeaderboard: 'View Leaderboard'
+  viewLeaderboard: 'View Leaderboard',
+  title: 'Bronze +',
+  profileFlair: 'Profile Flair',
+  customDiscordRole: 'Custom Discord Role',
+  messageBlasts: 'Message Blasts',
+  openDiscord: 'Open The Discord',
+  refreshDiscordRole: 'Refresh Discord Role'
 }
 
 const BANNER_HEIGHT = 120
@@ -216,8 +233,22 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
 }
 
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
+  const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false)
+
   const dispatch = useDispatch()
   const { data: coin, isLoading } = useArtistCoin({ mint })
+
+  const openDiscord = () => {
+    window.open(AUDIUS_DISCORD_LINK, '_blank')
+  }
+
+  const handleOpenDiscordModal = useCallback(() => {
+    setIsDiscordModalOpen(true)
+  }, [])
+
+  const handleCloseDiscordModal = useCallback(() => {
+    setIsDiscordModalOpen(false)
+  }, [])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -237,60 +268,106 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
     dispatch(setVisibility(true))
   }
 
-  return (
-    <Paper
-      borderRadius='l'
-      shadow='far'
-      direction='column'
-      alignItems='flex-start'
-    >
-      <BannerSection mint={mint} />
+  const menuItems: PopupMenuItem[] = [
+    {
+      text: messages.refreshDiscordRole,
+      onClick: handleOpenDiscordModal,
+      icon: <IconRefresh size='m' color='default' />
+    }
+  ]
 
-      <Flex
+  return (
+    <>
+      <UpdateDiscordRoleModal
+        isOpen={isDiscordModalOpen}
+        onClose={handleCloseDiscordModal}
+        mint={mint}
+      />
+      <Paper
+        borderRadius='l'
+        shadow='far'
         direction='column'
         alignItems='flex-start'
-        alignSelf='stretch'
-        p='xl'
-        gap='l'
       >
-        <Flex alignItems='center' alignSelf='stretch'>
-          <Text variant='heading' size='s' color='heading'>
-            {messages.whatIs(title)}
-          </Text>
-        </Flex>
+        <BannerSection mint={mint} />
 
-        <Flex direction='column' gap='m'>
-          <Text variant='body' size='m' color='subdued'>
-            {messages.description1(title)}
-          </Text>
-          <Text variant='body' size='m' color='subdued'>
-            {messages.description2(title)}
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex
-        alignItems='center'
-        justifyContent='space-between'
-        alignSelf='stretch'
-        p='xl'
-        borderTop='default'
-      >
-        <Flex alignItems='center' justifyContent='center' gap='s'>
-          <CTAIcon size='m' color='default' />
-          <Text variant='title' size='m'>
-            {messages.learnMore}
-          </Text>
-        </Flex>
-
-        <PlainButton
-          variant='default'
-          size='default'
-          onClick={handleViewLeaderboard}
+        <Flex
+          direction='column'
+          alignItems='flex-start'
+          alignSelf='stretch'
+          p='xl'
+          gap='l'
         >
-          {messages.viewLeaderboard}
-        </PlainButton>
-      </Flex>
-    </Paper>
+          <Flex alignItems='center' alignSelf='stretch'>
+            <Text variant='heading' size='s' color='heading'>
+              {messages.whatIs(title)}
+            </Text>
+          </Flex>
+
+          <Flex direction='column' gap='m'>
+            <Text variant='body' size='m' color='subdued'>
+              {messages.description1(title)}
+            </Text>
+            <Text variant='body' size='m' color='subdued'>
+              {messages.description2(title)}
+            </Text>
+          </Flex>
+        </Flex>
+
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='xl'
+          borderTop='default'
+        >
+          <Flex alignItems='center' justifyContent='center' gap='s'>
+            <CTAIcon size='m' color='default' />
+            <Text variant='title' size='m'>
+              {messages.learnMore}
+            </Text>
+          </Flex>
+
+          <PlainButton
+            variant='default'
+            size='default'
+            onClick={handleViewLeaderboard}
+          >
+            {messages.viewLeaderboard}
+          </PlainButton>
+        </Flex>
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='xl'
+          borderTop='default'
+        >
+          <Flex alignItems='center' justifyContent='center' gap='s'>
+            <PlainButton
+              onClick={openDiscord}
+              iconLeft={IconDiscord}
+              variant='default'
+              size='default'
+            >
+              {messages.openDiscord}
+            </PlainButton>
+          </Flex>
+          <PopupMenu
+            items={menuItems}
+            renderTrigger={(ref, triggerPopup) => (
+              <IconButton
+                ref={ref}
+                aria-label='More options'
+                size='m'
+                icon={IconKebabHorizontal}
+                onClick={() => triggerPopup()}
+                color='default'
+              />
+            )}
+          />
+        </Flex>
+      </Paper>
+    </>
   )
 }

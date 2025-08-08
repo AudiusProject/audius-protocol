@@ -46,6 +46,7 @@ type TrackListItemProps = {
   artistHandle: string
   forceSkeleton?: boolean
   isLastTrack?: boolean
+  noShimmer?: boolean
 } & ({ track?: CollectionTrackWithUid } | { isLoading: true }) // either a track must be passed or loading must be true
 
 const TrackListItem = (props: TrackListItemProps) => {
@@ -60,7 +61,8 @@ const TrackListItem = (props: TrackListItemProps) => {
     isLoading,
     isAlbum,
     isLastTrack,
-    forceSkeleton = false
+    forceSkeleton = false,
+    noShimmer = false
   } = props
   const track = 'track' in props ? props.track : null
   const menuRef = useRef<HTMLDivElement>(null)
@@ -92,7 +94,12 @@ const TrackListItem = (props: TrackListItemProps) => {
           [styles.small]: size === TrackTileSize.SMALL
         })}
       >
-        <Skeleton className={styles.skeleton} width='96%' height='80%' />
+        <Skeleton
+          className={styles.skeleton}
+          width='96%'
+          height='80%'
+          noShimmer={noShimmer}
+        />
       </div>
     )
   }
@@ -176,7 +183,12 @@ const TrackListItem = (props: TrackListItemProps) => {
       onClick={onPlayTrack}
     >
       {isLoading && (
-        <Skeleton className={styles.skeleton} width='96%' height='80%' />
+        <Skeleton
+          className={styles.skeleton}
+          width='96%'
+          height='80%'
+          noShimmer={noShimmer}
+        />
       )}
       <div className={cn(styles.wrapper, hideShow)}>
         {deleted && size !== TrackTileSize.SMALL ? (

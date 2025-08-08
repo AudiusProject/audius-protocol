@@ -72,6 +72,7 @@ export type TrackTileProps = {
   isFeed: boolean
   onClick?: (trackId: ID) => void
   dragKind?: DragDropKind
+  noShimmer?: boolean
 }
 
 export const TrackTile = ({
@@ -89,7 +90,8 @@ export const TrackTile = ({
   isTrending,
   isFeed = false,
   onClick,
-  dragKind
+  dragKind,
+  noShimmer
 }: TrackTileProps) => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -330,6 +332,7 @@ export const TrackTile = ({
             artworkIconClassName='artworkIcon'
             showArtworkIcon={!loading}
             showSkeleton={loading}
+            noShimmer={noShimmer}
             hasStreamAccess={hasStreamAccess || isPreviewable}
           />
         </Box>
@@ -340,7 +343,7 @@ export const TrackTile = ({
           <Flex column gap='s' w='100%'>
             <Flex direction='column' gap='xs' pv='xs'>
               {isLoading ? (
-                <Skeleton width='80%' height='20px' />
+                <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
               ) : (
                 <Flex gap='s' alignItems='flex-start'>
                   <Flex
@@ -360,18 +363,25 @@ export const TrackTile = ({
                       <Text ellipses>{title}</Text>
                       {isTrackPlaying ? <IconVolume size='m' /> : null}
                     </TextLink>
-                    <UserLink
-                      userId={user_id}
-                      badgeSize='xs'
-                      isActive={isActive}
-                      popover
-                      css={{ marginTop: '-4px' }}
-                    />
+                    {isLoading ? (
+                      <Skeleton
+                        width='50%'
+                        height='20px'
+                        noShimmer={noShimmer}
+                      />
+                    ) : (
+                      <UserLink
+                        userId={user_id}
+                        badgeSize='xs'
+                        isActive={isActive}
+                        popover
+                        css={{ marginTop: '-4px' }}
+                      />
+                    )}
                   </Flex>
                   <TrackTileDuration trackId={trackId} isLoading={isLoading} />
                 </Flex>
               )}
-              {isLoading ? <Skeleton width='50%' height='20px' /> : null}
             </Flex>
           </Flex>
           <TrackTileStats
@@ -379,6 +389,7 @@ export const TrackTile = ({
             rankIndex={tileOrder}
             size={size}
             isLoading={isLoading}
+            noShimmer={noShimmer}
           />
         </Flex>
         {isOwner ? (

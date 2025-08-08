@@ -1,1 +1,1 @@
-export { RemixContestCard } from './RemixContestCard'
+export { RemixContestCard, RemixContestCardSkeleton } from './RemixContestCard'
