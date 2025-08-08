@@ -6,8 +6,6 @@ import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useQueryContext } from '../utils/QueryContext'
 
-export type UseArtistCoinMembersCountArgs = Record<string, never>
-
 export const getArtistCoinMembersCountQueryKey = (
   currentUserId?: number | null
 ) =>
@@ -16,10 +14,7 @@ export const getArtistCoinMembersCountQueryKey = (
     currentUserId
   ] as unknown as QueryKey<number>
 
-export const useArtistCoinMembersCount = (
-  _args: UseArtistCoinMembersCountArgs = {},
-  options?: QueryOptions
-) => {
+export const useArtistCoinMembersCount = (options?: QueryOptions) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
 

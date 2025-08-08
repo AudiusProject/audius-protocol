@@ -8,7 +8,8 @@ import {
   useCurrentAccountUser,
   usePurchasersCount,
   useRemixersCount,
-  useTrack
+  useTrack,
+  useArtistCoins
 } from '~/api'
 import {
   getChatBlastAudienceDescription,
@@ -53,6 +54,11 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
+  const { data: coins } = useArtistCoins({
+    owner_id: [user?.user_id ?? 0],
+    limit: 1
+  })
+  const coinSymbol = coins?.[0]?.ticker ?? ''
   const { data: coinHoldersCount } = useArtistCoinMembersCount(
     {},
     { enabled: audience === ChatBlastAudience.COIN_HOLDERS }
@@ -88,15 +94,21 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       : albumTitle
     : undefined
 
-  const chatBlastTitle = getChatBlastTitle(audience)
+  const chatBlastTitle = getChatBlastTitle({ audience, coinSymbol })
   const chatBlastSecondaryTitle = getChatBlastSecondaryTitle({
     audience,
-    audienceContentId
+    audienceContentId,
+    coinSymbol
   })
   const chatBlastAudienceDescription = getChatBlastAudienceDescription({
-    audience
+    audience,
+    coinSymbol
   })
-  const chatBlastCTA = getChatBlastCTA({ audience, audienceContentId })
+  const chatBlastCTA = getChatBlastCTA({
+    audience,
+    audienceContentId,
+    coinSymbol
+  })
 
   return {
     chatBlastTitle,
