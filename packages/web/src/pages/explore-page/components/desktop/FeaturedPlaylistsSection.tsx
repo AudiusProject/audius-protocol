@@ -1,38 +1,37 @@
 import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { CollectionCard } from 'components/collection'
+import { CollectionCard, CollectionCardSkeleton } from 'components/collection'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { Carousel } from './Carousel'
-import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
+import { useDeferredElement } from './useDeferredElement'
 
-const FeaturedPlaylistsContent = ({ visible }: DeferredChildProps) => {
-  const { data, isLoading } = useExploreContent({ enabled: visible })
+export const FeaturedPlaylistsSection = () => {
+  const { ref, inView } = useDeferredElement()
+
+  const { data, isLoading, isError, isSuccess } = useExploreContent({
+    enabled: inView
+  })
   const isMobile = useIsMobile()
 
+  if (isError || (isSuccess && !data?.featuredPlaylists?.length)) {
+    return null
+  }
+
   return (
-    <>
-      {!visible || !data?.featuredPlaylists || isLoading
+    <Carousel ref={ref} title={messages.featuredPlaylists}>
+      {!inView || !data?.featuredPlaylists || isLoading
         ? Array.from({ length: 6 }).map((_, i) => (
-            // loading skeletons
-            <CollectionCard key={i} id={0} size={isMobile ? 'xs' : 's'} />
+            <CollectionCardSkeleton
+              key={i}
+              size={isMobile ? 'xs' : 's'}
+              noShimmer
+            />
           ))
         : data?.featuredPlaylists?.map((id) => (
             <CollectionCard key={id} id={id} size='s' />
           ))}
-    </>
-  )
-}
-
-export const FeaturedPlaylistsSection = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'FeaturedPlaylistsSection'
-  })
-
-  return (
-    <Carousel ref={ref} title={messages.featuredPlaylists}>
-      <FeaturedPlaylistsContent visible={inView} />
     </Carousel>
   )
 }

@@ -25,7 +25,6 @@ import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import useTabs from 'hooks/useTabs/useTabs'
-import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { filters } from 'pages/search-page/SearchFilters'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { SortMethodFilterButton } from 'pages/search-page/SortMethodFilterButton'
@@ -51,6 +50,7 @@ import { MoodGrid } from './MoodGrid'
 import { MostSharedSection } from './MostSharedSection'
 import { QuickSearchGrid } from './QuickSearchGrid'
 import { RecentPremiumTracksSection } from './RecentPremiumTracksSection'
+import { RecentSearchesSection } from './RecentSearchesSection'
 import { RecentlyPlayedSection } from './RecentlyPlayedSection'
 import { RecommendedTracksSection } from './RecommendedTracksSection'
 import { TrendingPlaylistsSection } from './TrendingPlaylistsSection'
@@ -331,9 +331,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}
-          <Flex justifyContent='center'>
-            <RecentSearches />
-          </Flex>
+          <RecentSearchesSection />
         </Flex>
       </Flex>
     </Flex>

@@ -4,41 +4,33 @@ import { useTrendingUnderground } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 
-import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTile'
-import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
-import { useIsMobile } from 'hooks/useIsMobile'
-
 import { Carousel } from './Carousel'
 import { TilePairs, TileSkeletons } from './TileHelpers'
-import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
+import { useDeferredElement } from './useDeferredElement'
 
-const UndergroundTrendingTracksContent = ({ visible }: DeferredChildProps) => {
-  const isMobile = useIsMobile()
+export const UndergroundTrendingTracksSection = () => {
+  const { ref, inView } = useDeferredElement()
   const {
     data: undergroundTrendingTracks,
-    isLoading: hookIsLoading,
+    isLoading,
+    isError,
+    isSuccess,
     lineup
-  } = useTrendingUnderground({ pageSize: 10 }, { enabled: visible })
-
-  const isLoading = hookIsLoading || lineup.status === Status.LOADING
+  } = useTrendingUnderground({ pageSize: 10 }, { enabled: inView })
 
   const trackIds = useMemo(() => {
     return undergroundTrendingTracks.map(({ id }) => id)
   }, [undergroundTrendingTracks])
 
-  const TrackTile = isMobile ? MobileTrackTile : DesktopTrackTile
-
-  return !visible || isLoading || !trackIds.length ? (
-    <TileSkeletons Tile={TrackTile} />
-  ) : (
-    <TilePairs data={trackIds} Tile={TrackTile} />
-  )
-}
-
-export const UndergroundTrendingTracksSection = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'UndergroundTrendingTracksSection'
-  })
+  if (
+    isError ||
+    lineup.status === Status.ERROR ||
+    (isSuccess &&
+      lineup.status === Status.SUCCESS &&
+      lineup.entries.length === 0)
+  ) {
+    return null
+  }
 
   return (
     <Carousel
@@ -46,7 +38,14 @@ export const UndergroundTrendingTracksSection = () => {
       title={messages.undergroundTrending}
       viewAllLink='/explore/underground'
     >
-      <UndergroundTrendingTracksContent visible={inView} />
+      {!inView ||
+      isLoading ||
+      lineup.status === Status.LOADING ||
+      !trackIds.length ? (
+        <TileSkeletons noShimmer />
+      ) : (
+        <TilePairs data={trackIds} />
+      )}
     </Carousel>
   )
 }

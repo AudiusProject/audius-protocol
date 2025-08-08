@@ -1,16 +1,21 @@
+import { useMemo } from 'react'
+
 import { useBestSelling } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
 import { BestSellingCard } from 'components/best-selling-card'
+import { TrackCardSkeleton } from 'components/track/TrackCard'
 import { useSearchCategory } from 'pages/search-page/hooks'
 
 import { Carousel } from './Carousel'
-import { DeferredChildProps, useDeferredElement } from './useDeferredElement'
+import { useDeferredElement } from './useDeferredElement'
 
-const BestSellingContent = ({ visible }: DeferredChildProps) => {
+export const BestSellingSection = () => {
+  const { ref, inView } = useDeferredElement()
+
   const [category] = useSearchCategory()
 
-  const { data, isLoading } = useBestSelling(
+  const { data, isLoading, isError, isSuccess } = useBestSelling(
     {
       pageSize: 10,
       type:
@@ -20,44 +25,33 @@ const BestSellingContent = ({ visible }: DeferredChildProps) => {
             ? 'track'
             : 'all'
     },
-    { enabled: visible }
+    { enabled: inView }
   )
+
   // Deduplicate data by ID to avoid duplicate keys
-  const uniqueData = data?.filter(
-    (item, index, self) => self.findIndex((t) => t.id === item.id) === index
-  )
+  const uniqueItems = useMemo(() => {
+    return data?.filter(
+      (item, index, self) => self.findIndex((t) => t.id === item.id) === index
+    )
+  }, [data])
 
-  // Transform BestSellingItem data to just IDs for ExploreSection
-  const ids = uniqueData?.map((item) => item.id)
-
-  // Create a Card component that knows how to handle BestSelling data
-  const BestSellingCardWithData = ({ id }: { id: number }) => {
-    const item = uniqueData?.find((item) => item.id === id)
-    if (!item) return null
-
-    return <BestSellingCard item={item} size='s' loading={isLoading} />
+  if (isError || (isSuccess && !uniqueItems?.length)) {
+    return null
   }
 
   return (
-    <>
-      {!visible || !ids || isLoading
-        ? Array.from({ length: 6 }).map((_, i) => (
-            // loading skeletons
-            <BestSellingCardWithData key={i} id={0} />
-          ))
-        : ids?.map((id) => <BestSellingCardWithData key={id} id={id} />)}
-    </>
-  )
-}
-
-export const BestSellingSection = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'BestSellingSection'
-  })
-
-  return (
     <Carousel ref={ref} title={messages.bestSelling}>
-      <BestSellingContent visible={inView} />
+      {!inView || !uniqueItems || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <TrackCardSkeleton key={i} size='s' noShimmer />
+          ))
+        : uniqueItems?.map((item) => (
+            <BestSellingCard
+              key={`${item.contentType}-${item.id}`}
+              item={item}
+              size='s'
+            />
+          ))}
     </Carousel>
   )
 }

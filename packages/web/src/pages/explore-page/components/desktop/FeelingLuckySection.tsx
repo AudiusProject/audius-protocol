@@ -8,21 +8,19 @@ import { QueueSource } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { Text, Flex, Button, IconArrowRotate } from '@audius/harmony'
 
-import { TrackTile } from 'components/track/desktop/TrackTile'
+import { TrackTile as DesktopTrackTile } from 'components/track/desktop/TrackTile'
+import { TrackTile as MobileTrackTile } from 'components/track/mobile/TrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { useDeferredElement } from './useDeferredElement'
 
 export const FeelingLuckySection = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'FeelingLuckySection'
-  })
+  const { ref, inView } = useDeferredElement()
   const isMobile = useIsMobile()
   const {
     data: feelingLuckyTrack,
-    isError,
-    isSuccess,
+    isFetching,
     refetch: refetchFeelingLucky
   } = useFeelingLuckyTracks({ limit: 1 }, { enabled: inView })
 
@@ -36,7 +34,7 @@ export const FeelingLuckySection = () => {
     [feelingLuckyTrackId]
   )
 
-  const { togglePlay: toggleFeelingLucky } = useToggleTrack({
+  const { togglePlay: toggleFeelingLucky, isTrackPlaying } = useToggleTrack({
     id: feelingLuckyTrackId,
     uid: feelingLuckyUid,
     source: QueueSource.EXPLORE
@@ -51,11 +49,8 @@ export const FeelingLuckySection = () => {
     [feelingLuckyUid, feelingLuckyTrackId, toggleFeelingLucky]
   )
 
-  if (isError || (isSuccess && feelingLuckyTrackId === 0)) {
-    return null
-  }
+  const Tile = isMobile ? MobileTrackTile : DesktopTrackTile
 
-  // TODO: skeleton for loading
   return (
     <Flex ref={ref} direction='column' ph={isMobile ? 'l' : undefined}>
       {!inView ? null : (
@@ -69,6 +64,7 @@ export const FeelingLuckySection = () => {
             </Text>
             <Button
               variant='secondary'
+              isLoading={isFetching}
               size={isMobile ? 'xs' : 'small'}
               onClick={() => refetchFeelingLucky()}
               iconLeft={IconArrowRotate}
@@ -76,16 +72,17 @@ export const FeelingLuckySection = () => {
               {messages.imFeelingLucky}
             </Button>
           </Flex>
-          <TrackTile
+          <Tile
             uid={feelingLuckyUid}
             id={feelingLuckyTrackId}
+            isActive={isTrackPlaying}
             index={0}
-            size={TrackTileSize.LARGE}
-            statSize={'small'}
+            size={isMobile ? TrackTileSize.SMALL : TrackTileSize.LARGE}
+            statSize={isMobile ? 'large' : 'small'}
             ordered={false}
             togglePlay={handleTogglePlay}
             hasLoaded={() => {}}
-            isLoading={false}
+            isLoading={isFetching}
             isTrending={false}
             isFeed={false}
           />

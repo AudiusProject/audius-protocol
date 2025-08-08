@@ -12,9 +12,7 @@ import { labelByCategoryView } from 'pages/search-page/types'
 import { useDeferredElement } from './useDeferredElement'
 
 export const MoodGrid = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'MoodGrid'
-  })
+  const { ref, inView } = useDeferredElement()
   const [category, setCategory] = useSearchCategory()
   const { color } = useTheme()
 

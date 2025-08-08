@@ -23,10 +23,12 @@ type TileType = typeof DesktopCollectionTile | typeof MobileCollectionTile
 
 const CollectionTileSkeleton = ({
   size,
-  Tile
+  Tile,
+  noShimmer
 }: {
   size: TrackTileSize
   Tile: TileType
+  noShimmer?: boolean
 }) => {
   return (
     <ClassNames>
@@ -54,6 +56,7 @@ const CollectionTileSkeleton = ({
             togglePlay={() => {}}
             playTrack={() => {}}
             pauseTrack={() => {}}
+            noShimmer={noShimmer}
           />
         </Flex>
       )}
@@ -126,9 +129,7 @@ const CollectionLineupCarousel = ({
 }
 
 export const TrendingPlaylistsSection = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'TrendingPlaylistsSection'
-  })
+  const { ref, inView } = useDeferredElement()
   const isMobile = useIsMobile()
   const size = isMobile ? TrackTileSize.SMALL : TrackTileSize.LARGE
   const { lineup, isError, isSuccess, isLoading, play, pause, togglePlay } =
@@ -161,8 +162,8 @@ export const TrendingPlaylistsSection = () => {
     >
       {!inView || isLoading || lineup.status === Status.LOADING ? (
         <>
-          <CollectionTileSkeleton size={size} Tile={Tile} />
-          <CollectionTileSkeleton size={size} Tile={Tile} />
+          <CollectionTileSkeleton size={size} Tile={Tile} noShimmer />
+          <CollectionTileSkeleton size={size} Tile={Tile} noShimmer />
         </>
       ) : (
         <CollectionLineupCarousel

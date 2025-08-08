@@ -103,15 +103,12 @@ const QuickSearchPresetButton = ({
 }
 
 export const QuickSearchGrid = () => {
-  const { ref, inView } = useDeferredElement({
-    name: 'QuickSearchGrid'
-  })
+  const { ref, inView } = useDeferredElement()
   const isMobile = useIsMobile()
   const [, setCategory] = useSearchCategory()
 
   const handleClickPreset = useCallback(
     (preset: QuickSearchPreset) => {
-      // TODO: Support tabs
       setCategory('tracks', {
         mood: preset.mood,
         genre: preset.genre,
