@@ -3,9 +3,8 @@ import {
   useConnectedWallets,
   useWalletAudioBalances
 } from '@audius/common/api'
-import { Chain } from '@audius/common/models'
 import { formatNumberCommas } from '@audius/common/utils'
-import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 
 import { Divider, Flex, spacing, Text } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
@@ -36,21 +35,6 @@ export const AudioBreakdownDrawer = () => {
   const connectedWalletsBalances = useWalletAudioBalances({
     wallets: connectedWallets
   })
-  const ethWallets = connectedWallets.filter(
-    (wallet) => wallet.chain === Chain.Eth
-  )
-  const solWallets = connectedWallets.filter(
-    (wallet) => wallet.chain === Chain.Sol
-  )
-
-  const getWalletBalance = (address: string, chain: Chain): AudioWei => {
-    const balanceResult = connectedWalletsBalances.find(
-      (_, index) =>
-        connectedWallets[index]?.address === address &&
-        connectedWallets[index]?.chain === chain
-    )
-    return balanceResult?.data
-  }
 
   return (
     <AppDrawer
@@ -135,22 +119,16 @@ export const AudioBreakdownDrawer = () => {
 
           <Divider orientation='horizontal' />
 
-          {ethWallets.map((wallet) => (
-            <Wallet
-              chain={Chain.Eth}
-              key={wallet.address}
-              address={wallet.address}
-              balance={getWalletBalance(wallet.address, Chain.Eth)}
-            />
-          ))}
-          {solWallets.map((wallet) => (
-            <Wallet
-              chain={Chain.Sol}
-              key={wallet.address}
-              address={wallet.address}
-              balance={getWalletBalance(wallet.address, Chain.Sol)}
-            />
-          ))}
+          {connectedWalletsBalances.data.map((res) =>
+            res.balance ? (
+              <Wallet
+                chain={res.chain}
+                key={res.address}
+                address={res.address}
+                balance={res.balance}
+              />
+            ) : null
+          )}
 
           <Text variant='label' size='s' color='subdued' textAlign='center'>
             {messages.linkedWalletsDescription}
