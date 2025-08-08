@@ -134,10 +134,10 @@ class SEOHandlerBody {
 }
 
 class SEOHandlerHead {
-  constructor(pathname, discoveryNode, hostname = 'https://audius.co') {
+  constructor(pathname, discoveryNode, host) {
     self.pathname = pathname
     self.discoveryNode = discoveryNode
-    self.hostname = hostname
+    self.host = host
   }
 
   async element(element) {
@@ -222,7 +222,7 @@ class SEOHandlerHead {
     <meta name="twitter:description" content="${clean(ogDescription)}">
     <meta name="twitter:image" content="${image}">
 
-    <link rel="alternate" type="application/json+oembed" href="${self.hostname}/oembed?url=${self.hostname + encodeURI(permalink)}&format=json" title="${clean(title)}" />
+    <link rel="alternate" type="application/json+oembed" href="https://${self.host}/oembed?url=https://${self.host + encodeURI(permalink)}&format=json" title="${clean(title)}" />
     `
     element.append(tags, { html: true })
   }
@@ -230,7 +230,7 @@ class SEOHandlerHead {
 
 async function getOEmbedResponse(url, discoveryNode) {
   // Parse the URL query parameter to get the resource URL pathname
-  const params = new URLSearchParams(search)
+  const params = new URLSearchParams(url.search)
   const oembedUrl = params.get('url')
   if (!oembedUrl) {
     return new Response('Missing url parameter', { status: 400 })
@@ -243,15 +243,17 @@ async function getOEmbedResponse(url, discoveryNode) {
     name: entityType
   } = await getMetadata(pathname, discoveryNode)
 
+  // Ensure https
+  const host = 'https://' + url.host
+
   // Get the entity data and construct an embed player
-  const origin = url.origin
-  const embed = `<iframe src="${origin}/embed/${entityType}/${data.id}?flavor=card" width="100%" height="480" allow="encrypted-media" style="border: none;"></iframe>`
+  const embed = `<iframe src="${host}/embed/${entityType}/${data.id}?flavor=card" width="100%" height="480" allow="encrypted-media" style="border: none;"></iframe>`
   return new Response(
     JSON.stringify({
       version: '1.0',
       type: 'rich',
       provider_name: 'Audius',
-      provider_url: origin,
+      provider_url: host,
       title: clean(data.title || data.name),
       html: embed,
       width: 500,
@@ -346,7 +348,7 @@ async function handleEvent(request, env, ctx) {
         const asset = await getAsset(request, env, ctx, options)
 
         const rewritten = new HTMLRewriter()
-          .on('head', new SEOHandlerHead(pathname, discoveryNode, url.origin))
+          .on('head', new SEOHandlerHead(pathname, discoveryNode, url.host))
           .on('body', new SEOHandlerBody())
           .transform(asset)
 
