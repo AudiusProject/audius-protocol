@@ -29,6 +29,7 @@ import { subscribeToNetworkStatusUpdates } from 'app/utils/reachability'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
+import { ConnectivityManager } from './ConnectivityManager'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
@@ -69,6 +70,7 @@ const App = () => {
                     <GestureHandlerRootView style={{ flex: 1 }}>
                       <PortalProvider>
                         <ErrorBoundary>
+                          <ConnectivityManager />
                           <NavigationContainer
                             navigationIntegration={navigationIntegration}
                           >

@@ -39,8 +39,6 @@ export const remoteConfigInstance = remoteConfig({
       datafileOptions: {
         urlTemplate: DATA_FILE_URL
       },
-      eventBatchSize: 10,
-      eventFlushInterval: 1000,
       errorHandler: {
         handleError: (error) => {
           reportToSentry({
@@ -61,7 +59,7 @@ export const remoteConfigInstance = remoteConfig({
   setFeatureFlagSessionId: async (id) =>
     AsyncStorage.setItem(FEATURE_FLAG_ASYNC_STORAGE_SESSION_KEY, id.toString()),
   setLogLevel: () => optimizely.setLogLevel('warn'),
-  environment: 'staging' //Config.ENVIRONMENT as Environment
+  environment: Config.ENVIRONMENT as Environment
 })
 
 remoteConfigInstance.init()
