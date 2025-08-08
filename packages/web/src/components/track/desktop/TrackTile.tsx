@@ -72,6 +72,7 @@ export type TrackTileProps = {
   isFeed: boolean
   onClick?: (trackId: ID) => void
   dragKind?: DragDropKind
+  noShimmer?: boolean
 }
 
 export const TrackTile = ({
@@ -89,7 +90,8 @@ export const TrackTile = ({
   isTrending,
   isFeed = false,
   onClick,
-  dragKind
+  dragKind,
+  noShimmer
 }: TrackTileProps) => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -340,6 +342,7 @@ export const TrackTile = ({
             artworkIconClassName='artworkIcon'
             showArtworkIcon={!loading}
             showSkeleton={loading}
+            noShimmer={noShimmer}
             hasStreamAccess={hasStreamAccess || isPreviewable}
           />
         </Box>
@@ -350,7 +353,7 @@ export const TrackTile = ({
           <Flex column gap='s'>
             <Flex direction='column' gap='xs' pv='xs'>
               {isLoading ? (
-                <Skeleton width='80%' height='20px' />
+                <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
               ) : (
                 <Flex mr='3xl'>
                   <TextLink
@@ -368,7 +371,11 @@ export const TrackTile = ({
                   </TextLink>
                 </Flex>
               )}
-              {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+              {isLoading ? (
+                <Skeleton width='50%' height='20px' noShimmer={noShimmer} />
+              ) : (
+                userName
+              )}
             </Flex>
           </Flex>
           <TrackTileStats
@@ -376,6 +383,7 @@ export const TrackTile = ({
             rankIndex={tileOrder}
             size={size}
             isLoading={isLoading}
+            noShimmer={noShimmer}
           />
           <TrackTileDuration trackId={trackId} isLoading={isLoading} />
         </Flex>

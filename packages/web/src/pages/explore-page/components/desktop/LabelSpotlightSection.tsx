@@ -1,23 +1,32 @@
 import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { UserCard } from 'components/user-card'
+import { UserCard, UserCardSkeleton } from 'components/user-card'
+import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
+import { useDeferredElement } from './useDeferredElement'
 
 export const LabelSpotlightSection = () => {
-  const { data, isLoading } = useExploreContent()
+  const { ref, inView } = useDeferredElement()
+  const { data, isLoading, isError, isSuccess } = useExploreContent({
+    enabled: inView
+  })
+  const isMobile = useIsMobile()
 
-  if (!isLoading && (!data || data.featuredLabels.length === 0)) {
+  if (isError || (isSuccess && !data?.featuredLabels?.length)) {
     return null
   }
 
   return (
-    <ExploreSection
-      isLoading={isLoading}
-      title={messages.labelSpotlight}
-      data={data?.featuredLabels}
-      Card={UserCard}
-    />
+    <Carousel ref={ref} title={messages.labelSpotlight}>
+      {!inView || !data?.featuredLabels || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <UserCardSkeleton key={i} size={isMobile ? 'xs' : 's'} noShimmer />
+          ))
+        : data?.featuredLabels?.map((id) => (
+            <UserCard key={id} id={id} size='s' />
+          ))}
+    </Carousel>
   )
 }

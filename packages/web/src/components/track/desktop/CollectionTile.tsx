@@ -91,6 +91,7 @@ export type DesktopCollectionTileProps = {
   isTrending: boolean
   isFeed?: boolean
   source?: ModalSource
+  noShimmer?: boolean
 }
 
 export const CollectionTile = ({
@@ -110,7 +111,8 @@ export const CollectionTile = ({
   hasLoaded,
   isTrending,
   isFeed = false,
-  source
+  source,
+  noShimmer
 }: DesktopCollectionTileProps) => {
   const dispatch = useDispatch()
 
@@ -379,6 +381,7 @@ export const CollectionTile = ({
           isLoading={true}
           isAlbum={isAlbum}
           forceSkeleton
+          noShimmer={noShimmer}
           active={false}
           size={size}
           disableActions={disableActions}
@@ -425,7 +428,8 @@ export const CollectionTile = ({
     togglePlay,
     goToRoute,
     handle,
-    numLoadingSkeletonRows
+    numLoadingSkeletonRows,
+    noShimmer
   ])
 
   const onClickTitle = useCallback(
@@ -518,6 +522,7 @@ export const CollectionTile = ({
               artworkIconClassName='artworkIcon'
               showArtworkIcon={!isLoading}
               showSkeleton={isLoading}
+              noShimmer={noShimmer}
             />
           </Box>
         </Flex>
@@ -531,7 +536,7 @@ export const CollectionTile = ({
               <Flex column gap='xs'>
                 {/* Title */}
                 {isLoading ? (
-                  <Skeleton width='80%' height='20px' />
+                  <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
                 ) : (
                   <Flex>
                     <TextLink
@@ -551,7 +556,7 @@ export const CollectionTile = ({
                 )}
                 {/* User */}
                 {isLoading ? (
-                  <Skeleton width='50%' height='20px' />
+                  <Skeleton width='50%' height='20px' noShimmer={noShimmer} />
                 ) : (
                   <UserLink
                     ellipses

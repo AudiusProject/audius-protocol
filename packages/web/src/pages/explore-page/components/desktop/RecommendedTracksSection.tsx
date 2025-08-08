@@ -2,26 +2,33 @@ import { useRecommendedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { full } from '@audius/sdk'
 
-import { TrackTile } from 'components/track/desktop/TrackTile'
-
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
+import { TilePairs, TileSkeletons } from './TileHelpers'
+import { useDeferredElement } from './useDeferredElement'
 
 export const RecommendedTracksSection = () => {
-  const { data, isLoading } = useRecommendedTracks({
-    pageSize: 10,
-    timeRange: full.GetRecommendedTracksTimeEnum.Week
-  })
+  const { ref, inView } = useDeferredElement()
+  const { data, isLoading, isError, isSuccess } = useRecommendedTracks(
+    {
+      pageSize: 10,
+      timeRange: full.GetRecommendedTracksTimeEnum.Week
+    },
+    {
+      enabled: inView
+    }
+  )
 
-  if (!isLoading && (!data || data.length === 0)) {
+  if (isError || (isSuccess && !data?.length)) {
     return null
   }
 
   return (
-    <ExploreSection
-      title={messages.forYou}
-      data={data}
-      isLoading={isLoading}
-      Tile={TrackTile}
-    />
+    <Carousel ref={ref} title={messages.forYou}>
+      {!inView || isLoading || !data ? (
+        <TileSkeletons noShimmer />
+      ) : (
+        <TilePairs data={data} />
+      )}
+    </Carousel>
   )
 }
