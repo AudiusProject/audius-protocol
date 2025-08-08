@@ -1,4 +1,9 @@
-import { useCurrentAccountUser } from '@audius/common/api'
+import {
+  useArtistCoins,
+  useArtistCoinMembersCount,
+  useCurrentAccountUser,
+  useCurrentUserId
+} from '@audius/common/api'
 import {
   useFeatureFlag,
   useFirstAvailableBlastAudience,
@@ -58,9 +63,9 @@ const messages = {
     placeholder: 'Tracks with Remixes'
   },
   coinHolders: {
-    label: 'Coin Holders',
-    description:
-      'Send a bulk message to users who have Bonk coins in their wallet.',
+    label: (symbol: string) => `${symbol} Members`,
+    description: (symbol: string) =>
+      `Send a bulk message to every holder of ${symbol} on Audius.`,
     placeholder: 'Coin Holders'
   }
 }
@@ -350,15 +355,20 @@ const RemixCreatorsMessageField = () => {
 }
 
 const CoinHoldersMessageField = () => {
+  const { data: currentUserId } = useCurrentUserId()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
-
+  const { data: coins } = useArtistCoins({
+    owner_id: [currentUserId ?? 0],
+    limit: 1
+  })
+  const coinSymbol = coins?.[0]?.ticker ?? ''
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
 
   const isSelected = targetAudience === ChatBlastAudience.COIN_HOLDERS
-  const coinHoldersCount = 0
-  const isDisabled = !isArtistCoinEnabled
+  const { data: membersCount } = useArtistCoinMembersCount()
+  const isDisabled = !isArtistCoinEnabled || membersCount === 0
   if (!isArtistCoinEnabled) {
     return null
   }
@@ -374,13 +384,13 @@ const CoinHoldersMessageField = () => {
       <Radio value={ChatBlastAudience.COIN_HOLDERS} disabled={isDisabled} />
       <Flex direction='column' gap='xs' css={{ cursor: 'pointer' }}>
         <LabelWithCount
-          label={messages.coinHolders.label}
-          count={coinHoldersCount}
+          label={messages.coinHolders.label(coinSymbol)}
+          count={membersCount}
           isSelected={isSelected}
         />
         {isSelected ? (
           <Flex direction='column' gap='l'>
-            <Text size='s'>{messages.coinHolders.description}</Text>
+            <Text size='s'>{messages.coinHolders.description(coinSymbol)}</Text>
           </Flex>
         ) : null}
       </Flex>

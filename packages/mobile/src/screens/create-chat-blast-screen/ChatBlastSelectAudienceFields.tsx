@@ -1,6 +1,11 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import {
+  useArtistCoinMembersCount,
+  useArtistCoins,
+  useCurrentAccountUser,
+  useCurrentUserId
+} from '@audius/common/api'
 import {
   useFeatureFlag,
   usePurchasersAudience,
@@ -45,11 +50,12 @@ const messages = {
     search: 'Search for tracks with remixes'
   },
   coinHolders: {
-    label: 'Coin Holders',
-    description:
-      'Send a bulk message to users who have Bonk coins in their wallet.',
+    label: (symbol: string) => `${symbol} Members`,
+    description: (symbol: string) =>
+      `Send a bulk message to every holder of ${symbol} on Audius.`,
     placeholder: 'Coin Holders'
-  }
+  },
+  count: (count: number) => ` (${formatNumberCommas(count)})`
 }
 
 export const ChatBlastSelectAudienceFields = () => {
@@ -75,7 +81,7 @@ const LabelWithCount = (props: {
     <Text>
       {label}
       {isSelected && count ? (
-        <Text color='subdued'>{formatNumberCommas(count)}</Text>
+        <Text color='subdued'>{messages.count(count)}</Text>
       ) : null}
     </Text>
   )
@@ -248,8 +254,14 @@ const CoinHoldersMessageField = () => {
   )
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.COIN_HOLDERS
-  const isDisabled = !isArtistCoinEnabled
-  const coinHoldersCount = 0
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: coinMembersCount } = useArtistCoinMembersCount()
+  const { data: coins } = useArtistCoins({
+    owner_id: [currentUserId ?? 0],
+    limit: 1
+  })
+  const coinSymbol = coins?.[0]?.ticker ?? ''
+  const isDisabled = !isArtistCoinEnabled || coinMembersCount === 0
   if (!isArtistCoinEnabled) {
     return null
   }
@@ -260,12 +272,12 @@ const CoinHoldersMessageField = () => {
       disabled={isDisabled}
       label={
         <LabelWithCount
-          label={messages.coinHolders.label}
-          count={coinHoldersCount}
+          label={messages.coinHolders.label(coinSymbol)}
+          count={coinMembersCount}
           isSelected={isSelected}
         />
       }
-      description={messages.coinHolders.description}
+      description={messages.coinHolders.description(coinSymbol)}
     />
   )
 }
