@@ -53,9 +53,7 @@ export const PlayableTile = ({ id, index }: { id: ID; index: number }) => {
   )
 }
 
-export const TilePairs: React.FC<{
-  data: number[]
-}> = ({ data }) => {
+export const TilePairs = ({ data }: { data: number[] }) => {
   const isMobile = useIsMobile()
   const tileWidth = isMobile ? MOBILE_TILE_WIDTH : TILE_WIDTH
   const pairs = []

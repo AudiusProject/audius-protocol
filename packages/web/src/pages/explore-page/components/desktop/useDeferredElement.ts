@@ -16,11 +16,6 @@ export const useDeferredElement = (args?: IntersectionOptions) => {
     rootMargin: '300px',
     triggerOnce: true,
     fallbackInView: true,
-    onChange: (inView) => {
-      if (inView) {
-        console.log('inView', inView)
-      }
-    },
     ...args
   })
 
