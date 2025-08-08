@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -110,6 +111,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
+  const { data: currentUserId, isLoading: isCurrentUserIdLoading } =
+    useCurrentUserId()
   const { motion } = useTheme()
   const { isLarge } = useMedia()
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
@@ -188,6 +191,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     img.onload = () => setBannerIsVisible(true)
   }, [])
 
+  const showUserContextualContent = isCurrentUserIdLoading || !!currentUserId
   const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
   const showPlaylistContent =
     categoryKey === 'playlists' || categoryKey === 'all'
@@ -304,8 +308,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         >
           {isSearchExploreGoodiesEnabled ? (
             <>
-              {showTrackContent && <RecommendedTracksSection />}
-              {showTrackContent && <RecentlyPlayedSection />}
+              {showTrackContent && showUserContextualContent && (
+                <RecommendedTracksSection />
+              )}
+              {showTrackContent && showUserContextualContent && (
+                <RecentlyPlayedSection />
+              )}
               {showTrackContent && <QuickSearchGrid />}
             </>
           ) : null}
@@ -328,10 +336,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               {showTrackContent && <MostSharedSection />}
               {(showTrackContent || showAlbumContent) && <BestSellingSection />}
               {showTrackContent && <RecentPremiumTracksSection />}
-              {showTrackContent && <FeelingLuckySection />}
+              {showTrackContent && showUserContextualContent && (
+                <FeelingLuckySection />
+              )}
             </>
           ) : null}
-          <RecentSearchesSection />
+          {showUserContextualContent && <RecentSearchesSection />}
         </Flex>
       </Flex>
     </Flex>
