@@ -134,9 +134,10 @@ class SEOHandlerBody {
 }
 
 class SEOHandlerHead {
-  constructor(pathname, discoveryNode) {
+  constructor(pathname, discoveryNode, hostname = 'https://audius.co') {
     self.pathname = pathname
     self.discoveryNode = discoveryNode
+    self.hostname = hostname
   }
 
   async element(element) {
@@ -219,9 +220,50 @@ class SEOHandlerHead {
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="${clean(title)}">
     <meta name="twitter:description" content="${clean(ogDescription)}">
-    <meta name="twitter:image" content="${image}">`
+    <meta name="twitter:image" content="${image}">
+
+    <link rel="alternate" type="application/json+oembed" href="${self.hostname}/oembed?url=${self.hostname + encodeURI(permalink)}&format=json" title="${clean(title)}" />
+    `
     element.append(tags, { html: true })
   }
+}
+
+async function getOEmbedResponse(url, discoveryNode) {
+  // Parse the URL query parameter to get the resource URL pathname
+  const params = new URLSearchParams(search)
+  const oembedUrl = params.get('url')
+  if (!oembedUrl) {
+    return new Response('Missing url parameter', { status: 400 })
+  }
+  const pathname = new URL(oembedUrl).pathname
+
+  // Get the metadata from the pathname
+  const {
+    metadata: { data },
+    name: entityType
+  } = await getMetadata(pathname, discoveryNode)
+
+  // Get the entity data and construct an embed player
+  const origin = url.origin
+  const embed = `<iframe src="${origin}/embed/${entityType}/${data.id}?flavor=card" width="100%" height="480" allow="encrypted-media" style="border: none;"></iframe>`
+  return new Response(
+    JSON.stringify({
+      version: '1.0',
+      type: 'rich',
+      provider_name: 'Audius',
+      provider_url: origin,
+      title: clean(data.title || data.name),
+      html: embed,
+      width: 500,
+      height: 480
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    }
+  )
 }
 
 async function handleEvent(request, env, ctx) {
@@ -273,6 +315,11 @@ async function handleEvent(request, env, ctx) {
     return await fetch(newRequest)
   }
 
+  const isOEmbed = pathname.startsWith('/oembed')
+  if (isOEmbed) {
+    return await getOEmbedResponse(url, discoveryNode)
+  }
+
   const options = {}
 
   try {
@@ -299,7 +346,7 @@ async function handleEvent(request, env, ctx) {
         const asset = await getAsset(request, env, ctx, options)
 
         const rewritten = new HTMLRewriter()
-          .on('head', new SEOHandlerHead(pathname, discoveryNode))
+          .on('head', new SEOHandlerHead(pathname, discoveryNode, url.origin))
           .on('body', new SEOHandlerBody())
           .transform(asset)
 
