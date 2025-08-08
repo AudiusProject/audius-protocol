@@ -238,26 +238,55 @@ async function getOEmbedResponse(url, discoveryNode) {
   const pathname = new URL(oembedUrl).pathname
 
   // Get the metadata from the pathname
-  const {
-    metadata: { data },
-    name: entityType
-  } = await getMetadata(pathname, discoveryNode)
+  const { metadata, name: entityType } = await getMetadata(
+    pathname,
+    discoveryNode
+  )
 
   // Ensure https
   const host = 'https://' + url.host
 
-  // Get the entity data and construct an embed player
-  const embed = `<iframe src="${host}/embed/${entityType}/${data.id}?flavor=card" width="100%" height="480" allow="encrypted-media" style="border: none;"></iframe>`
+  // Playlist endoint is returning an array of playlists, so we need to handle that
+  const data = Array.isArray(metadata.data) ? metadata.data[0] : metadata.data
+
+  // Construct an embed player for tracks, playlists, and albums
+  if (entityType !== 'user') {
+    const title = `${data.title || data.playlist_name} by ${data.user.name} • Audius`
+    const embed = `<iframe src="${host}/embed/${entityType}/${data.id}?flavor=card" width="100%" height="480" allow="encrypted-media" style="border: none;"></iframe>`
+    return new Response(
+      JSON.stringify({
+        version: '1.0',
+        type: 'rich',
+        provider_name: 'Audius',
+        provider_url: host,
+        title: clean(title),
+        html: embed,
+        width: 500,
+        height: 480
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    )
+  }
+
+  // For user, return a simple link with thumbnail
+  const title = `${data.name} • Audius`
   return new Response(
     JSON.stringify({
       version: '1.0',
-      type: 'rich',
+      type: 'link',
       provider_name: 'Audius',
       provider_url: host,
-      title: clean(data.title || data.name),
-      html: embed,
-      width: 500,
-      height: 480
+      title: clean(title),
+      thumbnail_url: data.profile_picture
+        ? data.profile_picture['480x480']
+        : '',
+      thumbnail_width: 480,
+      thumbnail_height: 480
     }),
     {
       headers: {
