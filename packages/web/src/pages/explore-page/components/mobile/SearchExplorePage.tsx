@@ -25,7 +25,6 @@ import { useDebounce, usePrevious } from 'react-use'
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { CenterPreset } from 'components/nav/mobile/NavContext'
-import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { categories } from 'pages/search-page/categories'
 import {
@@ -49,6 +48,7 @@ import { MoodGrid } from '../desktop/MoodGrid'
 import { MostSharedSection } from '../desktop/MostSharedSection'
 import { QuickSearchGrid } from '../desktop/QuickSearchGrid'
 import { RecentPremiumTracksSection } from '../desktop/RecentPremiumTracksSection'
+import { RecentSearchesSection } from '../desktop/RecentSearchesSection'
 import { RecentlyPlayedSection } from '../desktop/RecentlyPlayedSection'
 import { RecommendedTracksSection } from '../desktop/RecommendedTracksSection'
 import { TrendingPlaylistsSection } from '../desktop/TrendingPlaylistsSection'
@@ -254,7 +254,7 @@ const ExplorePage = () => {
               {showTrackContent && <FeelingLuckySection />}
             </>
           ) : null}
-          <RecentSearches />
+          <RecentSearchesSection />
         </Flex>
       </Flex>
     </MobilePageContainer>

@@ -18,6 +18,7 @@ type TrackTileArtProps = {
   id: ID
   className?: string
   showSkeleton?: boolean
+  noShimmer?: boolean
   coSign?: Remix | null
   label?: string
   isPlaying?: boolean
@@ -31,6 +32,7 @@ const TrackTileArt = ({
   id,
   className,
   showSkeleton,
+  noShimmer,
   coSign,
   label,
   isBuffering,
@@ -45,6 +47,7 @@ const TrackTileArt = ({
 
   const imageProps = {
     image: showSkeleton ? '' : image,
+    noShimmer,
     wrapperClassName: coSign
       ? styles.imageWrapper
       : cn(styles.container, styles.imageWrapper, className),
@@ -77,6 +80,7 @@ const CollectionTileArt = ({
   id,
   className,
   showSkeleton,
+  noShimmer,
   coSign,
   label,
   isBuffering,
@@ -91,6 +95,7 @@ const CollectionTileArt = ({
 
   const imageProps = {
     image: showSkeleton ? '' : image,
+    noShimmer,
     wrapperClassName: coSign
       ? styles.imageWrapper
       : cn(styles.container, styles.imageWrapper, className),

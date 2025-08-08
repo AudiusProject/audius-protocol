@@ -27,6 +27,15 @@ export const getExploreContentQueryKey = () => {
   return [QUERY_KEYS.exploreContent] as unknown as QueryKey<ExploreContent>
 }
 
+/** Removes duplicates and invalid IDs */
+const parseUniqueValidIds = (ids: string[]): ID[] => {
+  return [
+    ...new Set(
+      ids.map((id: string) => parseInt(id) as ID).filter(Number.isInteger)
+    )
+  ]
+}
+
 export const useExploreContent = <TResult = ExploreContent>(
   options?: SelectableQueryOptions<ExploreContent, TResult>
 ) => {
@@ -40,15 +49,12 @@ export const useExploreContent = <TResult = ExploreContent>(
       const response = await fetch(exploreContentUrl)
       const json: ExploreContentResponse = await response.json()
       return {
-        featuredPlaylists:
-          json.featuredPlaylists?.map((id: string) => parseInt(id) as ID) ?? [],
-        featuredProfiles:
-          json.featuredProfiles?.map((id: string) => parseInt(id) as ID) ?? [],
-        featuredRemixContests:
-          json.featuredRemixContests?.map((id: string) => parseInt(id) as ID) ??
-          [],
-        featuredLabels:
-          json.featuredLabels?.map((id: string) => parseInt(id) as ID) ?? []
+        featuredPlaylists: parseUniqueValidIds(json.featuredPlaylists ?? []),
+        featuredProfiles: parseUniqueValidIds(json.featuredProfiles ?? []),
+        featuredRemixContests: parseUniqueValidIds(
+          json.featuredRemixContests ?? []
+        ),
+        featuredLabels: parseUniqueValidIds(json.featuredLabels ?? [])
       }
     },
     ...options,

@@ -42,7 +42,11 @@ export const TrackTileDuration = ({
   const { duration, genre } = track
 
   return (
-    <Text variant='body' size='xs' className={styles.topRight}>
+    <Text
+      variant='body'
+      size='xs'
+      css={{ flexShrink: 0, minWidth: 'fit-content' }}
+    >
       <div className={styles.duration}>
         {isLongFormContent({ genre }) && trackPositionInfo ? (
           trackPositionInfo.status === 'IN_PROGRESS' ? (

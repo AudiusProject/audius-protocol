@@ -117,10 +117,11 @@ export const TrackResults = (props: TrackResultsProps) => {
         ? {
             lineupContainerStyles: css({ width: '100%' }),
             tileContainerStyles: css({
-              display: 'grid',
+              display: isTrackGridLayout ? 'grid' : 'flex',
+              flexDirection: isTrackGridLayout ? undefined : 'column',
               gridTemplateColumns: isTrackGridLayout
                 ? 'repeat(auto-fit, minmax(450px, 1fr))' // wrap columns to fit
-                : '1fr',
+                : undefined,
               gap: '4px 16px',
               justifyContent: 'space-between'
             })

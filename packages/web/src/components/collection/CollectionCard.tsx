@@ -42,6 +42,37 @@ const cardSizeToCoverArtSizeMap = {
   l: SquareSizes.SIZE_480_BY_480
 }
 
+export const CollectionCardSkeleton = (
+  props: Omit<CardProps, 'id'> & { noShimmer?: boolean }
+) => (
+  <Card {...props}>
+    <Flex direction='column' p='s' gap='s'>
+      <Skeleton
+        border='default'
+        css={{ aspectRatio: 1 }}
+        noShimmer={props.noShimmer}
+      />
+      <CardContent gap='xs'>
+        <Skeleton
+          h={24}
+          w='80%'
+          alignSelf='center'
+          noShimmer={props.noShimmer}
+        />
+        <Skeleton
+          h={20}
+          w='50%'
+          alignSelf='center'
+          noShimmer={props.noShimmer}
+        />
+      </CardContent>
+    </Flex>
+    <CardFooter>
+      <Skeleton h={16} w='60%' alignSelf='center' noShimmer={props.noShimmer} />
+    </CardFooter>
+  </Card>
+)
+
 export const CollectionCard = forwardRef(
   (props: CollectionCardProps, ref: Ref<HTMLDivElement>) => {
     const {
@@ -97,20 +128,7 @@ export const CollectionCard = forwardRef(
     )
 
     if (isPending || loading) {
-      return (
-        <Card size={size} {...other}>
-          <Flex direction='column' p='s' gap='s'>
-            <Skeleton border='default' css={{ aspectRatio: 1 }} />
-            <CardContent gap='xs'>
-              <Skeleton h={24} w='80%' alignSelf='center' />
-              <Skeleton h={20} w='50%' alignSelf='center' />
-            </CardContent>
-          </Flex>
-          <CardFooter>
-            <Skeleton h={16} w='60%' alignSelf='center' />
-          </CardFooter>
-        </Card>
-      )
+      return <CollectionCardSkeleton size={size} {...other} />
     }
 
     const isOwner = currentUserId === playlist_owner_id
