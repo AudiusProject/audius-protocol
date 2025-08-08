@@ -1,12 +1,12 @@
 import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useQueryContext } from '../utils/QueryContext'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { useQueryContext } from '../utils/QueryContext'
 
 export type UseArtistCoinMembersCountArgs = Record<string, never>
 
@@ -31,22 +31,18 @@ export const useArtistCoinMembersCount = (
       const sdk = await audiusSdk()
       if (!currentUserId) return 0
 
-      // First, get the current user's artist coin
       const coinsResponse = await sdk.coins.getCoins({
-        ownerId: [Id.parse(currentUserId)].filter(removeNullable),
-        limit: 1
+        ownerId: [Id.parse(currentUserId)]
       })
 
       const userCoin = coinsResponse?.data?.[0]
       if (!userCoin?.mint) return 0
 
-      // Get the coin insights which includes the holder count
       const insightsResponse = await sdk.coins.getCoinInsights({
         mint: userCoin.mint
       })
 
-      // Return the holder count from the insights
-      return insightsResponse?.data?.holder || 0
+      return insightsResponse?.data?.members
     },
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
