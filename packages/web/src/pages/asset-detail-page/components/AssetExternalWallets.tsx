@@ -1,22 +1,17 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import {
-  useConnectedWallets,
-  useWalletAudioBalance,
   useRemoveConnectedWallet,
-  getArtistCoinQueryKey,
-  getTokenBalanceQueryKey,
   QUERY_KEYS,
   useCurrentUserId
 } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
-import { getUserCoinQueryKey } from '@audius/common/src/api/tan-query/coins/useUserCoin'
-import { shortenSPLAddress, shortenEthAddress } from '@audius/common/utils'
+import { useUserCoin } from '@audius/common/src/api/tan-query/coins/useUserCoin'
+import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Button,
   Flex,
   IconCopy,
-  IconLogoCircleETH,
   IconLogoCircleSOL,
   IconTrash,
   IconButton,
@@ -25,11 +20,14 @@ import {
   PopupMenu,
   PopupMenuItem,
   Text,
-  Box
+  Box,
+  Skeleton,
+  Divider,
+  IconLogoCircle
 } from '@audius/harmony'
+import { UserCoinAccount } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ToastContext } from 'components/toast/ToastContext'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
@@ -37,18 +35,18 @@ import {
   AlreadyAssociatedError,
   useConnectAndAssociateWallets
 } from '../../../hooks/useConnectAndAssociateWallets'
-import styles from '../../audio-page/components/WalletsTable.module.css'
 import { AssetDetailProps } from '../types'
 
 const COPIED_TOAST_TIMEOUT = 2000
 
 const messages = {
-  title: 'Link External Wallet',
+  noBalanceTitle: 'Link External Wallet',
+  hasBalanceTitle: 'Balance Breakdown',
   description:
     'Link an external wallet to take advantage of in-app features, and take full control of your assets.',
+  loadingText: 'Loading...',
   buttonText: 'Add External Wallet',
   manageWallets: 'Manage External Wallets',
-  connectedWallets: 'External Wallets',
   copied: 'Copied To Clipboard!',
   audio: '$AUDIO',
   copy: 'Copy Wallet Address',
@@ -60,25 +58,21 @@ const messages = {
   walletAlreadyAdded: 'No new wallets selected to connect.'
 }
 
-type WalletProps = {
+type WalletRowProps = {
   mint: string
-  chain: Chain
-  address: string
-  isPending?: boolean
-}
+  decimals: number
+} & UserCoinAccount
 
 const WalletRow = ({
-  chain,
-  address,
-  mint,
-  isPending: isMutationPending
-}: WalletProps) => {
-  const { data: currentUserId } = useCurrentUserId()
-  const displayAddress =
-    chain === Chain.Eth ? shortenEthAddress : shortenSPLAddress
+  owner: address,
+  balance,
+  isInAppWallet,
+  decimals
+}: WalletRowProps) => {
   const { toast } = useContext(ToastContext)
+  const [isRemoving, setIsRemoving] = useState(false)
   const queryClient = useQueryClient()
-
+  const { data: currentUserId } = useCurrentUserId()
   const copyAddressToClipboard = useCallback(() => {
     copyToClipboard(address)
     toast(messages.copied, COPIED_TOAST_TIMEOUT)
@@ -88,108 +82,105 @@ const WalletRow = ({
 
   const handleRemove = useCallback(async () => {
     try {
-      await removeConnectedWalletAsync({ wallet: { address, chain } })
-      queryClient.invalidateQueries({
-        queryKey: getUserCoinQueryKey(currentUserId, mint)
+      setIsRemoving(true)
+      await removeConnectedWalletAsync({
+        wallet: { address, chain: Chain.Sol }
       })
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.tokenBalance, mint]
+      await queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.userCoin, currentUserId]
       })
       toast('Wallet removed successfully!')
     } catch (e) {
       toast('Error removing wallet')
+    } finally {
+      setIsRemoving(false)
     }
-  }, [
-    removeConnectedWalletAsync,
-    address,
-    chain,
-    queryClient,
-    currentUserId,
-    mint,
-    toast
-  ])
+  }, [removeConnectedWalletAsync, address, queryClient, toast, currentUserId])
 
   const items: PopupMenuItem[] = useMemo(
-    () => [
-      {
-        text: messages.copy,
-        icon: <IconCopy />,
-        onClick: copyAddressToClipboard
-      },
-      {
-        text: messages.remove,
-        icon: <IconTrash />,
-        onClick: handleRemove
-      }
-    ],
-    [copyAddressToClipboard, handleRemove]
+    () =>
+      [
+        {
+          text: messages.copy,
+          icon: <IconCopy />,
+          onClick: copyAddressToClipboard
+        },
+        isInAppWallet
+          ? null
+          : {
+              text: messages.remove,
+              icon: <IconTrash />,
+              onClick: handleRemove
+            }
+      ].filter(Boolean) as PopupMenuItem[],
+    [copyAddressToClipboard, handleRemove, isInAppWallet]
   )
 
-  const { data: audioBalance, isPending: isBalancePending } =
-    useWalletAudioBalance({
-      chain,
-      address,
-      includeStaked: true
-    })
-
-  const isPending = isBalancePending || isMutationPending
-
   return (
-    <Flex direction='row' alignItems='center' gap='s' w='100%'>
+    <Flex
+      direction='row'
+      alignItems='center'
+      gap='m'
+      w='100%'
+      css={{ opacity: isRemoving ? 0.5 : 1 }}
+    >
       <Flex alignItems='center' gap='s'>
-        {chain === Chain.Eth ? <IconLogoCircleETH /> : <IconLogoCircleSOL />}
+        {isInAppWallet ? <IconLogoCircle /> : <IconLogoCircleSOL />}
         <Text variant='body' size='m' strength='strong'>
-          {displayAddress(address)}
+          {isInAppWallet ? 'Built-In' : shortenSPLAddress(address)}
         </Text>
       </Flex>
       <Flex css={{ flex: 1 }} justifyContent='flex-end'>
-        {!isPending ? (
-          <Text variant='body' size='m' strength='strong'>
-            {audioBalance?.toString() ?? '0'}
-          </Text>
-        ) : null}
+        <Text variant='body' size='m' strength='strong' color='default'>
+          {Math.trunc(balance / Math.pow(10, decimals)).toLocaleString()}
+        </Text>
       </Flex>
-      <Flex pl='l' css={{ marginLeft: 'auto', flexBasis: 0 }}>
-        {isPending ? (
-          <LoadingSpinner css={{ width: 24, height: 24 }}></LoadingSpinner>
-        ) : null}
-        {!isPending ? (
-          <PopupMenu
-            items={items}
-            renderTrigger={(ref, trigger) => (
-              <IconButton
-                ref={ref}
-                icon={IconKebabHorizontal}
-                size='s'
-                color='subdued'
-                onClick={() => trigger()}
-                aria-label={messages.options}
-              />
-            )}
-          />
-        ) : null}
+      <Flex
+        css={{
+          marginLeft: 'auto',
+          flexBasis: 0
+        }}
+      >
+        <PopupMenu
+          items={items}
+          aria-disabled={isRemoving}
+          renderTrigger={(ref, trigger) => (
+            <IconButton
+              ref={ref}
+              icon={IconKebabHorizontal}
+              size='s'
+              color='subdued'
+              disabled={isRemoving}
+              onClick={() => trigger()}
+              aria-label={messages.options}
+            />
+          )}
+        />
       </Flex>
     </Flex>
   )
 }
 
 export const AssetExternalWallets = ({ mint }: AssetDetailProps) => {
-  const { data: connectedWallets, isPending } = useConnectedWallets()
+  const { data: userCoins, isPending } = useUserCoin({
+    mint
+  })
+  const { accounts: unsortedAccounts = [], decimals } = userCoins ?? {}
+  const accounts = useMemo(
+    () => [...unsortedAccounts].sort((a, b) => b.balance - a.balance),
+    [unsortedAccounts]
+  )
   const { toast } = useContext(ToastContext)
   const queryClient = useQueryClient()
+  const hasAccounts = accounts.length > 0
   const { data: currentUserId } = useCurrentUserId()
-  const numConnectedWallets = connectedWallets?.length ?? 0
-  const hasConnectedWallets = numConnectedWallets > 0
 
-  const handleAddWalletSuccess = useCallback(() => {
+  const handleAddWalletSuccess = useCallback(async () => {
     toast(messages.newWalletConnected)
-    queryClient.invalidateQueries({
-      queryKey: getUserCoinQueryKey(currentUserId, mint)
+    await queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.userCoin, currentUserId]
     })
-    queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.tokenBalance, mint]
-    })
-  }, [toast, mint, queryClient, currentUserId])
+  }, [toast, queryClient, currentUserId])
 
   const handleAddWalletError = useCallback(
     async (e: unknown) => {
@@ -202,30 +193,9 @@ export const AssetExternalWallets = ({ mint }: AssetDetailProps) => {
     [toast]
   )
 
+  // app kit modal
   const { openAppKitModal, isPending: isConnectingWallets } =
     useConnectAndAssociateWallets(handleAddWalletSuccess, handleAddWalletError)
-
-  if (isPending) {
-    return (
-      <Paper
-        direction='column'
-        alignItems='flex-start'
-        backgroundColor='white'
-        borderRadius='m'
-        border='default'
-        ph='xl'
-        pv='2xl'
-        gap='xl'
-      >
-        <Text variant='heading' size='s' color='heading'>
-          {messages.title}
-        </Text>
-        <Text variant='body' size='m' color='subdued'>
-          Loading...
-        </Text>
-      </Paper>
-    )
-  }
 
   return (
     <Paper
@@ -235,34 +205,49 @@ export const AssetExternalWallets = ({ mint }: AssetDetailProps) => {
       borderRadius='m'
       border='default'
     >
-      <Flex direction='column' pv='m' ph='l'>
+      <Flex direction='column' pv='l' ph='l'>
         <Text variant='heading' size='s' color='heading'>
-          {hasConnectedWallets ? messages.connectedWallets : messages.title}
+          {hasAccounts ? messages.hasBalanceTitle : messages.noBalanceTitle}
         </Text>
-        {!hasConnectedWallets && (
-          <Text variant='body' size='m' color='subdued'>
-            {messages.description}
-          </Text>
-        )}
       </Flex>
+      <Divider css={{ width: '100%' }} />
+      {!hasAccounts && (
+        <Flex direction='column' pv='m' ph='l'>
+          <Text variant='body' size='m' color='subdued'>
+            {isPending ? messages.loadingText : messages.description}
+          </Text>
+        </Flex>
+      )}
 
-      {hasConnectedWallets ? (
-        <Flex direction='column' gap='m' w='100%' pv='m' ph='l'>
-          <div className={styles.container}>
-            {connectedWallets?.map(
-              (wallet: { address: string; chain: Chain }) => (
-                <WalletRow
-                  key={wallet.address}
-                  chain={wallet.chain}
-                  address={wallet.address}
-                  mint={mint}
-                />
-              )
-            )}
-          </div>
+      {hasAccounts ? (
+        <Flex direction='column' gap='xl' w='100%' pv='l' ph='l'>
+          {accounts?.map((account) => (
+            <WalletRow
+              key={account.account}
+              {...account}
+              mint={mint}
+              decimals={decimals ?? 0}
+            />
+          ))}
+        </Flex>
+      ) : isPending ? (
+        <Flex
+          direction='column'
+          alignItems='center'
+          gap='s'
+          w='100%'
+          pv='m'
+          ph='xl'
+          pb='l'
+        >
+          <Skeleton w='100%' h='24px' />
+          <Skeleton w='100%' h='24px' />
+          <Skeleton w='100%' h='24px' />
         </Flex>
       ) : null}
-      <Box pv='m' ph='l' w='100%'>
+
+      <Divider css={{ width: '100%' }} />
+      <Box pv='l' ph='l' w='100%'>
         <Button
           variant='secondary'
           size='small'
