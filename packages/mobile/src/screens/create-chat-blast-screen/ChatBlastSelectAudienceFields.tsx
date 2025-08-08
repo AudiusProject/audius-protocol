@@ -52,7 +52,7 @@ const messages = {
   coinHolders: {
     label: (symbol: string) => `${symbol} Members`,
     description: (symbol: string) =>
-      `Send a bulk message to users who have ${symbol} coins in their wallet.`,
+      `Send a bulk message to every holder of ${symbol} on Audius.`,
     placeholder: 'Coin Holders'
   },
   count: (count: number) => ` (${formatNumberCommas(count)})`
