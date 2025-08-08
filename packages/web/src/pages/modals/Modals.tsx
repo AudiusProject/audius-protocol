@@ -41,7 +41,6 @@ import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirma
 import { ReplaceTrackProgressModal } from 'components/replace-track-progress-modal/ReplaceTrackProgressModal'
 import { ClaimAllRewardsModal } from 'components/rewards/modals/ClaimAllRewardsModal'
 import TopAPIModal from 'components/rewards/modals/TopAPI'
-import { VipDiscordModal } from 'components/rewards/modals/VipDiscordModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -86,7 +85,6 @@ const CommentSettingsModal = lazy(
 
 const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
-  VipDiscord: VipDiscordModal,
   EditFolder: EditFolderModal,
   AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
