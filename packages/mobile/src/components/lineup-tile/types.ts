@@ -33,7 +33,7 @@ export type TrackTileProps = {
   index: number
   isTrending?: boolean
   actions?: LineupBaseActions
-  styles?: StyleProp<ViewStyle>
+  style?: StyleProp<ViewStyle>
   source?: LineupTileSource
 }
 
@@ -45,7 +45,7 @@ export type CollectionTileProps = {
   index: number
   isTrending?: boolean
   actions?: LineupBaseActions
-  styles?: StyleProp<ViewStyle>
+  style?: StyleProp<ViewStyle>
   source?: LineupTileSource
   collection?: Collection
   tracks?: EnhancedCollectionTrack[]

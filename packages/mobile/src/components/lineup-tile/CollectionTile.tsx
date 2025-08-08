@@ -23,7 +23,7 @@ import type { CommonState } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ImageProps } from '@audius/harmony-native'
+import { Paper, type ImageProps } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
@@ -35,7 +35,6 @@ import { CollectionTileStats } from './CollectionTileStats'
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
-import { LineupTileRoot } from './LineupTileRoot'
 import { LineupTileSource, type CollectionTileProps } from './types'
 import { useEnhancedCollectionTracks } from './useEnhancedCollectionTracks'
 
@@ -58,6 +57,7 @@ export const CollectionTile = (props: CollectionTileProps) => {
     source = LineupTileSource.LINEUP_COLLECTION,
     togglePlay,
     variant,
+    style,
     ...lineupTileProps
   } = props
 
@@ -223,15 +223,10 @@ export const CollectionTile = (props: CollectionTileProps) => {
 
   const isOwner = collection.playlist_owner_id === currentUserId
   const isReadonly = variant === 'readonly'
-  const scale = isReadonly ? 1 : undefined
   const contentType = collection.is_album ? 'album' : 'playlist'
 
   return (
-    <LineupTileRoot
-      onPress={handlePress}
-      style={lineupTileProps.styles}
-      scaleTo={scale}
-    >
+    <Paper onPress={handlePress} style={style}>
       <CollectionDogEar collectionId={collection.playlist_id} hideUnlocked />
       <LineupTileMetadata
         renderImage={renderImage}
@@ -276,6 +271,6 @@ export const CollectionTile = (props: CollectionTileProps) => {
           onPressShare={handlePressShare}
         />
       )}
-    </LineupTileRoot>
+    </Paper>
   )
 }
