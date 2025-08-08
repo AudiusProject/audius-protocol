@@ -24,10 +24,12 @@ const messages = {
   blastTitleRemixers: 'Remix Creators',
   blastTitleCustomers2: 'All Purchasers',
   blastTitleRemixers2: 'Remixed',
+  blastTitleCoinHolders: 'Coin Holders',
   blastFollowersDescription: 'Everyone who follows you.',
   blastSupportersDescription: 'Everyone who has sent you a tip.',
   blastCustomersDescription: 'Everyone who has paid for your content.',
   blastRemixersDescription: 'Everyone who has remixed your tracks.',
+  blastCoinHoldersDescription: 'Everyone who holds your artist coin.',
   blastCTABase: 'Send a message blast to ',
   blastCTAFollowers: 'each of your followers',
   blastCTASupporters: 'everyone who has sent you a tip',
@@ -191,6 +193,8 @@ export const getChatBlastTitle = (audience: ChatBlastAudience) => {
       return messages.blastTitleCustomers
     case ChatBlastAudience.REMIXERS:
       return messages.blastTitleRemixers
+    case ChatBlastAudience.COIN_HOLDERS:
+      return messages.blastTitleCoinHolders
   }
 }
 
@@ -214,6 +218,8 @@ export const getChatBlastSecondaryTitle = ({
       return audienceContentId
         ? messages.blastTitleRemixers2
         : messages.blastTitleRemixers
+    case ChatBlastAudience.COIN_HOLDERS:
+      return messages.blastTitleCoinHolders
   }
 }
 
@@ -231,6 +237,8 @@ export const getChatBlastAudienceDescription = ({
       return messages.blastCustomersDescription
     case ChatBlastAudience.REMIXERS:
       return messages.blastRemixersDescription
+    case ChatBlastAudience.COIN_HOLDERS:
+      return messages.blastCoinHoldersDescription
   }
 }
 

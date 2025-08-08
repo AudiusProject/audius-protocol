@@ -1,5 +1,4 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
-import { walletMessages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
 import type { ChatBlastAudience } from '@audius/sdk'
 import { Platform } from 'react-native'
@@ -41,7 +40,6 @@ export const ArtistCoinHeader = ({
         {/* Alignment bug for label text variant on iOS */}
         <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
           <Text variant='label' size='s'>
-            {walletMessages.dollarSign}
             {artistCoinSymbol}
           </Text>
         </Flex>
