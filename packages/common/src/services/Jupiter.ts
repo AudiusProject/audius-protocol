@@ -68,6 +68,7 @@ export type JupiterMintQuoteParams = {
   slippageBps: number
   swapMode?: SwapMode
   onlyDirectRoutes?: boolean
+  maxAccounts?: number
 }
 
 export type JupiterQuoteResult = {
@@ -104,7 +105,8 @@ export const getJupiterQuoteByMint = async ({
   amountUi,
   slippageBps,
   swapMode = 'ExactIn',
-  onlyDirectRoutes = false
+  onlyDirectRoutes = false,
+  maxAccounts = MAX_ACCOUNTS
 }: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
   const inputToken = findTokenByMint(inputMint)
   const outputToken = findTokenByMint(outputMint)
@@ -125,7 +127,7 @@ export const getJupiterQuoteByMint = async ({
     slippageBps,
     swapMode,
     onlyDirectRoutes,
-    maxAccounts: MAX_ACCOUNTS
+    maxAccounts
   })
 
   if (!quote) {
