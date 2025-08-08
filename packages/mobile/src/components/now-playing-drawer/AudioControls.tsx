@@ -30,7 +30,9 @@ const { shuffle, repeat } = queueActions
 
 const messages = {
   nextLabel: 'Next Track',
-  previousLabel: 'Previous Track'
+  previousLabel: 'Previous Track',
+  podcastForwardLabel: 'Skip forward 15 seconds',
+  podcastBackwardLabel: 'Skip backward 15 seconds'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -142,7 +144,11 @@ export const AudioControls = ({
         icon={isLongFormContent ? IconPodcastBack : IconSkipPrevious}
         style={styles.button}
         size='xl'
-        aria-label={messages.previousLabel}
+        aria-label={
+          isLongFormContent
+            ? messages.podcastBackwardLabel
+            : messages.previousLabel
+        }
       />
     )
   }
@@ -165,7 +171,9 @@ export const AudioControls = ({
         icon={isLongFormContent ? IconPodcastForward : IconSkipNext}
         style={styles.button}
         size='xl'
-        aria-label={messages.nextLabel}
+        aria-label={
+          isLongFormContent ? messages.podcastForwardLabel : messages.nextLabel
+        }
       />
     )
   }
