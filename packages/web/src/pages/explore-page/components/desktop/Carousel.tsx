@@ -17,11 +17,10 @@ export type CarouselProps = {
   title: React.ReactNode
   children: React.ReactNode
   viewAllLink?: string
-  minHeight?: number
 }
 
 export const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
-  ({ title, children, viewAllLink, minHeight }, ref) => {
+  ({ title, children, viewAllLink }, ref) => {
     const [canScrollLeft, setCanScrollLeft] = useState(false)
     const [canScrollRight, setCanScrollRight] = useState(true)
     const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -54,13 +53,7 @@ export const Carousel = forwardRef<HTMLDivElement, CarouselProps>(
       }
     })
     return (
-      <Flex
-        ref={ref}
-        direction='column'
-        gap={isMobile ? 'l' : 'xl'}
-        w='100%'
-        css={minHeight !== undefined ? { minHeight } : undefined}
-      >
+      <Flex ref={ref} direction='column' gap={isMobile ? 'l' : 'xl'} w='100%'>
         <Flex
           gap='m'
           alignItems='center'
