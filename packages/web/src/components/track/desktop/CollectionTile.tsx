@@ -34,9 +34,9 @@ import {
   Text,
   IconKebabHorizontal,
   Flex,
-  IconVolumeLevel2 as IconVolume,
   IconCrown,
-  IconButton
+  IconButton,
+  IconVolumeLevel2 as IconVolume
 } from '@audius/harmony'
 import { LocationState } from 'history'
 import { range } from 'lodash'
@@ -526,9 +526,14 @@ export const CollectionTile = ({
             />
           </Box>
         </Flex>
-        <Flex direction='column' justifyContent='space-between' flex={1}>
-          <Flex>
-            <Flex direction='column' gap='s' flex={1}>
+        <Flex
+          direction='column'
+          justifyContent='space-between'
+          flex={1}
+          css={{ minWidth: 0 }}
+        >
+          <Flex gap='s' alignItems='flex-start'>
+            <Flex direction='column' gap='s' flex={1} css={{ minWidth: 0 }}>
               {/* Header */}
               <Text variant='label' size='s' color='subdued'>
                 {isAlbum ? 'album' : 'playlist'}
@@ -538,21 +543,18 @@ export const CollectionTile = ({
                 {isLoading ? (
                   <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
                 ) : (
-                  <Flex>
-                    <TextLink
-                      css={{ alignItems: 'center' }}
-                      to={href}
-                      isActive={isActive}
-                      textVariant='title'
-                      applyHoverStylesToInnerSvg
-                      onClick={onClickTitle}
-                      disabled={disableActions}
-                      ellipses
-                    >
-                      <Text ellipses>{title}</Text>
-                      {isCollectionPlaying ? <IconVolume size='m' /> : null}
-                    </TextLink>
-                  </Flex>
+                  <TextLink
+                    to={permalink}
+                    isActive={isActive}
+                    textVariant='title'
+                    applyHoverStylesToInnerSvg
+                    onClick={onClickTitle}
+                    disabled={disableActions}
+                    ellipses
+                  >
+                    <Text ellipses>{title}</Text>
+                    {isCollectionPlaying ? <IconVolume size='m' /> : null}
+                  </TextLink>
                 )}
                 {/* User */}
                 {isLoading ? (
@@ -568,9 +570,13 @@ export const CollectionTile = ({
                   />
                 )}
               </Flex>
-              {/* Duration */}
             </Flex>
-            <Text variant='body' size='xs' color='subdued'>
+            <Text
+              variant='body'
+              size='xs'
+              color='subdued'
+              css={{ flexShrink: 0, minWidth: 'fit-content' }}
+            >
               {formatLineupTileDuration(duration, false, true)}
             </Text>
           </Flex>
