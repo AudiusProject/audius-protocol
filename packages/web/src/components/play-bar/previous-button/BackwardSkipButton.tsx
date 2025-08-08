@@ -16,6 +16,7 @@ const BackwardSkipButton = ({ onClick, isMobile }: BackwardSkipButtonProps) => {
         [styles.previousNext]: isMobile
       })}
       onClick={onClick}
+      aria-label='Skip backward 15 seconds'
     >
       <IconPodcastBack color='default' className={styles.noAnimation} />
     </button>
