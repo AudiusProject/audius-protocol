@@ -7,6 +7,7 @@ import {
   ChangeEvent
 } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -78,6 +79,8 @@ const ExplorePage = () => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
+  const { data: currentUserId, isLoading: isCurrentUserIdLoading } =
+    useCurrentUserId()
 
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_GOODIES
@@ -157,6 +160,7 @@ const ExplorePage = () => {
     setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
 
+  const showUserContextualContent = isCurrentUserIdLoading || !!currentUserId
   const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
   const showPlaylistContent =
     categoryKey === 'playlists' || categoryKey === 'all'
@@ -225,8 +229,12 @@ const ExplorePage = () => {
         >
           {isSearchExploreGoodiesEnabled && showTrackContent && (
             <>
-              {showTrackContent && <RecommendedTracksSection />}
-              {showTrackContent && <RecentlyPlayedSection />}
+              {showTrackContent && showUserContextualContent && (
+                <RecommendedTracksSection />
+              )}
+              {showTrackContent && showUserContextualContent && (
+                <RecentlyPlayedSection />
+              )}
               <QuickSearchGrid />
             </>
           )}
@@ -251,10 +259,12 @@ const ExplorePage = () => {
               {showTrackContent && <MostSharedSection />}
               {(showAlbumContent || showTrackContent) && <BestSellingSection />}
               {showTrackContent && <RecentPremiumTracksSection />}
-              {showTrackContent && <FeelingLuckySection />}
+              {showTrackContent && showUserContextualContent && (
+                <FeelingLuckySection />
+              )}
             </>
           ) : null}
-          <RecentSearchesSection />
+          {showUserContextualContent && <RecentSearchesSection />}
         </Flex>
       </Flex>
     </MobilePageContainer>
