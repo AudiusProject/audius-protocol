@@ -410,7 +410,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
                 </View>
               )}
             </View>
-            {user_id && <UserLink userId={user_id} size='s' />}
+            {user_id && <UserLink userId={user_id} size='s' disabled />}
           </View>
           {isUnlisted ? (
             <IconVisibilityHidden
