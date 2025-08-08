@@ -54,7 +54,8 @@ describe('Add track to playlist notification', () => {
         playlist_name: 'title_of_playlist',
         created_at: createdAt,
         playlist_id: 55,
-        playlist_contents: { track_ids: [{ time: trackAddedTime, track: 10 }] }
+        playlist_contents: { track_ids: [{ time: trackAddedTime, track: 10 }] },
+        playlist_image_sizes_multihash: 'test-hash'
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -78,7 +79,8 @@ describe('Add track to playlist notification', () => {
           id: 'timestamp:1589373217:group_id:track_added_to_playlist:playlist_id:55:track_id:10',
           playlistId: 55,
           type: 'AddTrackToPlaylist'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

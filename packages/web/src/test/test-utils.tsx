@@ -20,6 +20,7 @@ import {
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { env } from 'services/env/env.dev'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { AppState } from 'store/types'
@@ -63,7 +64,8 @@ const TestProviders =
     const { reduxState, featureFlags } = options ?? {}
     const mockAppContext = createMockAppContext(featureFlags)
     const queryContext = {
-      audiusSdk
+      audiusSdk,
+      env
     } as unknown as QueryContextType
 
     return (

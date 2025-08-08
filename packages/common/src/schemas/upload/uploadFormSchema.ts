@@ -255,20 +255,9 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
     .object({
       artwork: z
         .object({
-          url: z.string()
+          url: collectionType === 'album' ? z.string() : z.string().optional()
         })
-        .nullable()
-        .refine(
-          (artwork) => {
-            return (
-              collectionType === 'playlist' ||
-              (artwork !== null && artwork.url !== imageBlank)
-            )
-          },
-          {
-            message: messages.artworkRequiredError
-          }
-        ),
+        .nullable(),
       playlist_name: z.string({
         required_error: messages[collectionType].nameRequiredError
       }),
@@ -312,6 +301,31 @@ export const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       })
     )
     .merge(hiddenMetadataSchema)
+    .superRefine((data, ctx) => {
+      // For albums, artwork is always required
+      if (collectionType === 'album') {
+        if (!data.artwork?.url || data.artwork.url === imageBlank) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messages.artworkRequiredError,
+            path: ['artwork']
+          })
+        }
+      }
+      // For playlists, artwork is only required if the playlist is public (not private)
+      else if (collectionType === 'playlist') {
+        if (
+          !data.is_private &&
+          (!data.artwork?.url || data.artwork.url === imageBlank)
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: messages.artworkRequiredError,
+            path: ['artwork']
+          })
+        }
+      }
+    })
 
 /**
  * Extra metadata on the collection that doesn't get validated to

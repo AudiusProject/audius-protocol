@@ -35,11 +35,10 @@ describe('Comment Notification', () => {
   })
 
   test('Process push notification for comment on track', async () => {
-    await createUsers(processor.discoveryDB, [
-      { user_id: 1 },
-      { user_id: 2, profile_picture_sizes: 'test-hash' }
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createComments(processor.discoveryDB, [
       {
         comment_id: 1,

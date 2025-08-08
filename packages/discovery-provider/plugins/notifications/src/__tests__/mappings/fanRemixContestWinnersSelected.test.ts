@@ -9,7 +9,7 @@ import {
   createTracks
 } from '../../utils/populateDB'
 
-describe('Artist Remix Contest Ended Notification', () => {
+describe('Fan Remix Contest Winners Selected Notification', () => {
   let processor: Processor
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
@@ -24,25 +24,34 @@ describe('Artist Remix Contest Ended Notification', () => {
     await resetTests(processor)
   })
 
-  test('Sends push notification for artist_remix_contest_ended', async () => {
+  test('Sends push notification for fan_remix_contest_winners_selected', async () => {
     const { user1 } = await setupTwoUsersWithDevices(
       processor.discoveryDB,
       processor.identityDB
     )
 
+    // Insert artist user for entityUserId 99
+    await processor.discoveryDB('users').insert({
+      user_id: 99,
+      name: 'user_99',
+      is_current: true,
+      created_at: new Date(),
+      updated_at: new Date()
+    })
+
     // Create track with cover art
     await createTracks(processor.discoveryDB, [
-      { track_id: 12345, owner_id: user1.userId, cover_art_sizes: 'test-hash' }
+      { track_id: 12345, owner_id: 99, cover_art_sizes: 'test-hash' }
     ])
 
     await insertNotifications(processor.discoveryDB, [
       {
-        type: 'artist_remix_contest_ended',
+        type: 'fan_remix_contest_winners_selected',
         user_ids: [user1.userId],
         group_id: 'test-group',
         specifier: 'test-specifier',
         timestamp: new Date(),
-        data: { entityId: 12345 }
+        data: { entityId: 12345, entityUserId: 99 }
       }
     ])
 
@@ -62,11 +71,12 @@ describe('Artist Remix Contest Ended Notification', () => {
         badgeCount: 1
       }),
       expect.objectContaining({
-        title: 'Remix Contest',
-        body: "Your remix contest has ended. Don't forget to contact your winners!",
+        title: 'Remix Contest Winners',
+        body: 'user_99 has picked winners for their remix contest!',
         data: expect.objectContaining({
-          type: 'ArtistRemixContestEnded',
-          entityId: 12345
+          type: 'FanRemixContestWinnersSelected',
+          entityId: 12345,
+          entityUserId: 99
         }),
         imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       })
