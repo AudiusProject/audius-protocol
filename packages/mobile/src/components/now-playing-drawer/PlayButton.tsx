@@ -3,14 +3,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { playerActions, playerSelectors } from '@audius/common/store'
 import { MIN_BUFFERING_DELAY_MS } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
-import { Name } from '~/models'
 
 import IconPause from 'app/assets/animations/iconPause.json'
 import IconPlay from 'app/assets/animations/iconPlay.json'
 import IconLoadingSpinner from 'app/assets/animations/iconPlayLoadingSpinner.json'
 import type { AnimatedButtonProps } from 'app/components/core'
 import { AnimatedButton } from 'app/components/core'
-import { make, track } from 'app/services/analytics'
 import { makeAnimations } from 'app/styles'
 import { colorize } from 'app/utils/colorizeLottie'
 import { Theme } from 'app/utils/theme'
@@ -69,7 +67,6 @@ export const PlayButton = ({ isActive, ...props }: PlayButtonProps) => {
     let timeout
     if (isBuffering) {
       timeout = setTimeout(() => {
-        track(make({ eventName: Name.BUFFER_SPINNER_SHOWN }))
         setShowBufferingState(true)
       }, MIN_BUFFERING_DELAY_MS)
     } else {

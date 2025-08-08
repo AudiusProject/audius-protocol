@@ -3,7 +3,6 @@ import { call, takeEvery, select, put } from 'typed-redux-saga'
 
 import { playlistUpdateFromSDK, transformAndCleanList } from '~/adapters'
 import { queryCurrentUserId } from '~/api'
-import { Name } from '~/models/Analytics'
 
 import { getSDK } from '../sdkUtils'
 
@@ -42,11 +41,6 @@ function* fetchPlaylistUpdatesWorker() {
 
   if (currentUpdatesTotal !== existingUpdatesTotal) {
     yield* put(playlistUpdatesReceived({ playlistUpdates }))
-    yield* put({
-      type: 'ANALYTICS/TRACK',
-      eventName: Name.PLAYLIST_LIBRARY_HAS_UPDATE,
-      count: currentUpdatesTotal
-    })
   }
 }
 
