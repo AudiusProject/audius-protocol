@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import {
+  useArtistCoinMembersCount,
+  useCurrentAccountUser
+} from '@audius/common/api'
 import {
   useFeatureFlag,
   usePurchasersAudience,
@@ -49,7 +52,8 @@ const messages = {
     description:
       'Send a bulk message to users who have Bonk coins in their wallet.',
     placeholder: 'Coin Holders'
-  }
+  },
+  count: (count: number) => ` (${formatNumberCommas(count)})`
 }
 
 export const ChatBlastSelectAudienceFields = () => {
@@ -75,7 +79,7 @@ const LabelWithCount = (props: {
     <Text>
       {label}
       {isSelected && count ? (
-        <Text color='subdued'>{formatNumberCommas(count)}</Text>
+        <Text color='subdued'>{messages.count(count)}</Text>
       ) : null}
     </Text>
   )
@@ -248,8 +252,8 @@ const CoinHoldersMessageField = () => {
   )
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
   const isSelected = targetAudience === ChatBlastAudience.COIN_HOLDERS
-  const isDisabled = !isArtistCoinEnabled
-  const coinHoldersCount = 0
+  const { data: coinMembersCount } = useArtistCoinMembersCount()
+  const isDisabled = !isArtistCoinEnabled || coinMembersCount === 0
   if (!isArtistCoinEnabled) {
     return null
   }
@@ -261,7 +265,7 @@ const CoinHoldersMessageField = () => {
       label={
         <LabelWithCount
           label={messages.coinHolders.label}
-          count={coinHoldersCount}
+          count={coinMembersCount}
           isSelected={isSelected}
         />
       }

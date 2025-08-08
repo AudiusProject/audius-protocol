@@ -361,7 +361,7 @@ const CoinHoldersMessageField = () => {
 
   const isSelected = targetAudience === ChatBlastAudience.COIN_HOLDERS
   const { data: membersCount } = useArtistCoinMembersCount()
-  const isDisabled = !isArtistCoinEnabled
+  const isDisabled = !isArtistCoinEnabled || membersCount === 0
   if (!isArtistCoinEnabled) {
     return null
   }
