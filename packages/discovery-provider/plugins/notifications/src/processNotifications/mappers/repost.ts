@@ -16,6 +16,7 @@ import {
 import { sendBrowserNotification } from '../../web'
 import { logger } from '../../logger'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -55,16 +56,13 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.repostUserId])
-    const users = res.reduce(
-      (acc, user) => {
-        acc[user.user_id] = {
-          name: user.name,
-          isDeactivated: user.is_deactivated
-        }
-        return acc
-      },
-      {} as Record<number, { name: string; isDeactivated: boolean }>
-    )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -77,6 +75,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     const reposterUserName = users[this.repostUserId]?.name
     let entityType
     let entityName
+    let imageUrl: string | undefined
 
     const entities = await this.fetchEntities(
       [this.repostItemId],
@@ -84,14 +83,27 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     )
     if (this.repostType === EntityType.Track) {
       entityType = EntityType.Track
-      entityName = (entities[this.repostItemId] as { title: string })?.title
+      const track = entities[this.repostItemId] as {
+        title: string
+        cover_art_sizes?: string
+      }
+      entityName = track?.title
+      // Get track's cover art URL for rich notification (150x150 size)
+      if (track?.cover_art_sizes) {
+        imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+      }
     } else {
       const playlist = entities[this.repostItemId] as {
         is_album: boolean
         playlist_name: string
+        playlist_image_sizes_multihash?: string
       }
       entityType = playlist?.is_album ? EntityType.Album : EntityType.Playlist
       entityName = playlist?.playlist_name
+      // Get playlist's image URL for rich notification (150x150 size)
+      if (playlist?.playlist_image_sizes_multihash) {
+        imageUrl = formatImageUrl(playlist.playlist_image_sizes_multihash, 150)
+      }
     }
 
     const title = 'New Repost'
@@ -145,7 +157,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
                 }`,
                 userIds: [this.repostUserId],
                 type: 'Repost'
-              }
+              },
+              imageUrl
             }
           )
         })

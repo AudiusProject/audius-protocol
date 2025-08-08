@@ -39,17 +39,26 @@ describe('Save Of Repost Notification', () => {
     switch (entityType) {
       case EntityType.Track:
         await createTracks(processor.discoveryDB, [
-          { track_id: 10, owner_id: 1 }
+          { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
         ])
         break
       case EntityType.Playlist:
         await createPlaylists(processor.discoveryDB, [
-          { playlist_id: 10, playlist_owner_id: 1 }
+          {
+            playlist_id: 10,
+            playlist_owner_id: 1,
+            playlist_image_sizes_multihash: 'test-hash'
+          }
         ])
         break
       case EntityType.Album:
         await createPlaylists(processor.discoveryDB, [
-          { playlist_id: 10, playlist_owner_id: 1, is_album: true }
+          {
+            playlist_id: 10,
+            playlist_owner_id: 1,
+            is_album: true,
+            playlist_image_sizes_multihash: 'test-hash'
+          }
         ])
         break
       default:
@@ -109,7 +118,8 @@ describe('Save Of Repost Notification', () => {
           userIds: [3],
           entityType: 'Track',
           entityId: 10
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     ])
   })
@@ -138,7 +148,8 @@ describe('Save Of Repost Notification', () => {
           userIds: [3],
           entityType: 'Playlist',
           entityId: 10
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     ])
   })
@@ -167,7 +178,8 @@ describe('Save Of Repost Notification', () => {
           userIds: [3],
           entityType: 'Album',
           entityId: 10
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     ])
   })

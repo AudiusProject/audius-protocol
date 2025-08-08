@@ -76,12 +76,6 @@ export const sendIOSMessage = async ({
   if (imageUrl) {
     apnsConfig.aps['mutable-content'] = 1
     apnsConfig['media-url'] = imageUrl
-    // Add People Thumbnail notification features
-    apnsConfig.aps.category = 'communication'
-    apnsConfig.headers = {
-      'apns-push-type': 'communication',
-      'apns-priority': '10'
-    }
   }
 
   const message = JSON.stringify({

@@ -29,6 +29,10 @@ import {
 } from './types'
 import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
 
+const SWAP_LOOKUP_TABLE_ADDRESS = new PublicKey(
+  '2WB87JxGZieRd7hi3y87wq6HAsPLyb9zrSx8B5z1QEzM'
+)
+
 const findTokenByAddress = (
   tokens: Record<string, TokenInfo>,
   address: string
@@ -104,7 +108,7 @@ export const useSwapTokens = () => {
           amountUi,
           slippageBps,
           swapMode: 'ExactIn',
-          onlyDirectRoutes: true
+          onlyDirectRoutes: false
         })
 
         // ---------- 3. Prepare Transaction Instructions ----------
@@ -194,9 +198,9 @@ export const useSwapTokens = () => {
           await sdk.services.solanaClient.buildTransaction({
             feePayer,
             instructions,
-            addressLookupTables: addressLookupTableAddresses.map(
-              (addr: string) => new PublicKey(addr)
-            )
+            addressLookupTables: addressLookupTableAddresses
+              .map((addr: string) => new PublicKey(addr))
+              .concat([SWAP_LOOKUP_TABLE_ADDRESS])
           })
 
         swapTx.sign([keypair])

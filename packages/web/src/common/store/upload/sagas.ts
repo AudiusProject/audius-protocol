@@ -103,6 +103,7 @@ function* combineMetadata(
 ) {
   const metadata = trackMetadata
 
+  // @ts-expect-error - Typing is hard here because playlists and albums have different artwork types
   metadata.artwork = collectionMetadata.artwork
 
   if (!metadata.genre)

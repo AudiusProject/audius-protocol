@@ -59,6 +59,7 @@ type UsersSearchProps = {
   onClose?: () => void
   query: string
   onChange: (query: string) => void
+  onFetchResults?: (userIds: ID[]) => void
 }
 
 type SearchUsersModalProps = {
@@ -83,7 +84,8 @@ export const UsersSearch = (props: UsersSearchProps) => {
     onClose,
     query,
     excludedUserIds,
-    onChange
+    onChange,
+    onFetchResults
   } = props
   const dispatch = useDispatch()
   const [hasQuery, setHasQuery] = useState(false)
@@ -98,6 +100,10 @@ export const UsersSearch = (props: UsersSearchProps) => {
     return unfilteredIds.filter((id) => !excludedUserIdsSet.has(id))
   }, [hasQuery, userIds, defaultUserList.userIds, excludedUserIds])
   const { data: users } = useUsers(ids)
+
+  useEffect(() => {
+    onFetchResults?.(ids)
+  }, [ids, onFetchResults])
 
   useDebounce(
     () => {

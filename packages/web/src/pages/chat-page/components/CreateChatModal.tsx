@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { User } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
 import {
   chatActions,
   searchUsersModalActions,
@@ -21,11 +21,12 @@ import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserR
 import { ChatBlastCTA } from './ChatBlastCTA'
 import { CreateChatEmptyResults } from './CreateChatEmptyResults'
 
+const DEBOUNCE_MS = 500
 const messages = {
   title: 'New Message'
 }
 
-const { fetchBlockers, fetchMoreChats } = chatActions
+const { fetchBlockers, fetchMoreChats, fetchPermissions } = chatActions
 
 const CreateChatModal = () => {
   const dispatch = useDispatch()
@@ -74,6 +75,15 @@ const CreateChatModal = () => {
     }
   }, [dispatch, isOpen])
 
+  const onFetchResults = useCallback(
+    (userIds: ID[]) => {
+      if (userIds.length > 0) {
+        dispatch(fetchPermissions({ userIds }))
+      }
+    },
+    [dispatch]
+  )
+
   return (
     <>
       <SearchUsersModal
@@ -90,6 +100,8 @@ const CreateChatModal = () => {
         renderEmpty={() => <CreateChatEmptyResults />}
         isOpen={isOpen}
         onClose={onClose}
+        onFetchResults={onFetchResults}
+        debounceMs={DEBOUNCE_MS}
         onClosed={onClosed}
         onCancel={handleCancel}
         footer={<ChatBlastCTA onClick={onClose} />}
