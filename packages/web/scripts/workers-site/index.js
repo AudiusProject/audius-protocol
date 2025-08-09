@@ -317,6 +317,11 @@ async function handleEvent(request, env, ctx) {
     return await fetch(newRequest)
   }
 
+  const isOEmbed = pathname.startsWith('/oembed')
+  if (isOEmbed) {
+    return await getOEmbedResponse(url, discoveryNode)
+  }
+
   const userAgent = request.headers.get('User-Agent') || ''
 
   const is204 = pathname === '/204'
@@ -344,11 +349,6 @@ async function handleEvent(request, env, ctx) {
     const newRequest = new Request(destinationURL, request)
 
     return await fetch(newRequest)
-  }
-
-  const isOEmbed = pathname.startsWith('/oembed')
-  if (isOEmbed) {
-    return await getOEmbedResponse(url, discoveryNode)
   }
 
   const options = {}
