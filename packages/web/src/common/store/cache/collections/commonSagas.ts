@@ -5,12 +5,10 @@ import {
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
-  queryAccountUser,
   queryCollection,
   queryCollectionTracks,
   queryCurrentUserId,
   queryTrack,
-  queryUser,
   updateCollectionData
 } from '@audius/common/api'
 import {
@@ -25,8 +23,6 @@ import {
   accountActions,
   cacheCollectionsActions as collectionActions,
   PlaylistOperations,
-  libraryPageActions,
-  LibraryCategory,
   toastActions,
   getContext,
   confirmerActions,
@@ -45,7 +41,6 @@ import { all, call, put, takeEvery, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { removePlaylistFromLibrary } from 'common/store/playlist-library/sagas'
 import { getUSDCMetadata } from 'common/store/upload/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -519,206 +514,6 @@ function* confirmPublishPlaylist(
   )
 }
 
-/** DELETE PLAYLIST */
-
-function* watchDeletePlaylist() {
-  yield* takeEvery(collectionActions.DELETE_PLAYLIST, deletePlaylistAsync)
-}
-
-function* deletePlaylistAsync(
-  action: ReturnType<typeof collectionActions.deletePlaylist>
-) {
-  yield* waitForWrite()
-  const userId = yield* call(queryCurrentUserId)
-  if (!userId) {
-    yield* put(signOnActions.openSignOn(false))
-    return
-  }
-
-  // Depending on whether the collection is an album
-  // or playlist, we should either delete all the tracks
-  // or just delete the collection.
-  const collection = yield* queryCollection(action.playlistId)
-  if (!collection) return
-
-  const isAlbum = collection.is_album
-  if (isAlbum) {
-    const event = make(Name.DELETE, { kind: 'album', id: action.playlistId })
-    yield* put(event)
-    yield* call(confirmDeleteAlbum, action.playlistId, userId)
-  } else {
-    const event = make(Name.DELETE, { kind: 'playlist', id: action.playlistId })
-    yield* put(event)
-
-    // Preemptively mark the playlist as deleted.
-    // It's possible there are other transactions confirming
-    // for this playlist, which prevent the delete confirmation
-    // from running immediately, which would leave
-    // the playlist visible before it runs.
-    yield* call(updateCollectionData, [
-      { playlist_id: action.playlistId, _marked_deleted: true }
-    ])
-    yield* call(confirmDeletePlaylist, userId, action.playlistId)
-  }
-}
-
-function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
-  const sdk = yield* getSDK()
-  yield* put(
-    confirmerActions.requestConfirmation(
-      makeKindId(Kind.COLLECTIONS, playlistId),
-      function* () {
-        const userId = yield* call(queryCurrentUserId)
-        if (!userId) {
-          throw new Error('No userId set, cannot delete collection')
-        }
-
-        // Optimistically mark everything as deleted
-        yield* all([
-          call(updateCollectionData, [
-            { playlist_id: playlistId, _marked_deleted: true }
-          ]),
-          put(
-            accountActions.removeAccountPlaylist({ collectionId: playlistId })
-          ),
-          put(
-            libraryPageActions.removeLocalCollection({
-              collectionId: playlistId,
-              isAlbum: true,
-              category: LibraryCategory.Favorite
-            })
-          )
-        ])
-
-        yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
-          userId: Id.parse(userId),
-          playlistId: Id.parse(playlistId)
-        })
-        return playlistId
-      },
-      function* () {
-        console.debug(`Successfully deleted album ${playlistId}`)
-      },
-      function* ({ error, timeout, message }) {
-        console.error(`Failed to delete album ${playlistId}`)
-        // Need to revert the deletes now
-        const playlist = yield* queryCollection(playlistId)
-        const user = yield* queryUser(userId)
-        if (!playlist || !user) return
-
-        yield* all([
-          call(updateCollectionData, [
-            { playlist_id: playlistId, _marked_deleted: false }
-          ]),
-          put(
-            accountActions.addAccountPlaylist({
-              id: playlist.playlist_id,
-              name: playlist.playlist_name,
-              is_album: playlist.is_album,
-              user: { id: user.user_id, handle: user.handle },
-              permalink: playlist.permalink
-            })
-          ),
-          put(
-            libraryPageActions.addLocalCollection({
-              collectionId: playlist.playlist_id,
-              isAlbum: playlist.is_album,
-              category: LibraryCategory.Favorite
-            })
-          )
-        ])
-        yield* put(
-          collectionActions.deletePlaylistFailed(
-            error,
-            { playlistId, userId },
-            { error, timeout }
-          )
-        )
-      }
-    )
-  )
-}
-
-function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
-  const sdk = yield* getSDK()
-  yield* put(
-    confirmerActions.requestConfirmation(
-      makeKindId(Kind.COLLECTIONS, playlistId),
-      function* (confirmedPlaylistId: ID) {
-        const userId = yield* call(queryCurrentUserId)
-        if (!userId) {
-          throw new Error('No userId set, cannot delete collection')
-        }
-
-        // Optimistically mark playlist as removed
-        yield* all([
-          call(updateCollectionData, [
-            { playlist_id: playlistId, _marked_deleted: true }
-          ]),
-          put(
-            accountActions.removeAccountPlaylist({ collectionId: playlistId })
-          ),
-          put(
-            libraryPageActions.removeLocalCollection({
-              collectionId: playlistId,
-              isAlbum: false,
-              category: LibraryCategory.Favorite
-            })
-          )
-        ])
-
-        yield* call(removePlaylistFromLibrary, playlistId)
-
-        yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
-          userId: Id.parse(userId),
-          playlistId: Id.parse(playlistId)
-        })
-        return playlistId
-      },
-      function* () {
-        console.debug(`Successfully deleted playlist ${playlistId}`)
-      },
-      function* ({ error, timeout, message }) {
-        console.error(`Failed to delete playlist ${playlistId}`)
-        const playlist = yield* queryCollection(playlistId)
-        const user = yield* call(queryAccountUser)
-        if (!playlist || !user) return
-
-        yield* all([
-          call(updateCollectionData, [
-            { playlist_id: playlistId, _marked_deleted: false }
-          ]),
-          put(
-            accountActions.addAccountPlaylist({
-              id: playlist.playlist_id,
-              name: playlist.playlist_name,
-              is_album: playlist.is_album,
-              user: { id: user.user_id, handle: user.handle },
-              permalink: playlist.permalink
-            })
-          ),
-          put(
-            libraryPageActions.addLocalCollection({
-              collectionId: playlist.playlist_id,
-              isAlbum: playlist.is_album,
-              category: LibraryCategory.Favorite
-            })
-          )
-        ])
-        yield* put(
-          collectionActions.deletePlaylistFailed(
-            error,
-            { playlistId, userId },
-            { error, timeout }
-          )
-        )
-      },
-      (result: Collection) =>
-        result.playlist_id ? result.playlist_id : playlistId
-    )
-  )
-}
-
 export default function sagas() {
   return [
     createPlaylistSaga,
@@ -728,7 +523,6 @@ export default function sagas() {
     watchRemoveTrackFromPlaylist,
     watchOrderPlaylist,
     watchPublishPlaylist,
-    watchDeletePlaylist,
     watchTrackErrors
   ]
 }

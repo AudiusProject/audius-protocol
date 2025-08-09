@@ -16,6 +16,7 @@ export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
+export * from './tan-query/collection/useDeleteCollection'
 
 // Coins
 export * from './tan-query/coins/useArtistCoin'

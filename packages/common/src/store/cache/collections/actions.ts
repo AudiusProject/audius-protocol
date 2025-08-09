@@ -23,10 +23,6 @@ export const ORDER_PLAYLIST_FAILED = 'ORDER_PLAYLIST_FAILED'
 
 export const PUBLISH_PLAYLIST = 'PUBLISH_PLAYLIST'
 export const PUBLISH_PLAYLIST_FAILED = 'PUBLISH_PLAYLIST_FAILED'
-export const DELETE_PLAYLIST = 'DELETE_PLAYLIST'
-export const DELETE_PLAYLIST_REQUESTED = 'DELETE_PLAYLIST_REQUESTED'
-export const DELETE_PLAYLIST_SUCCEEDED = 'DELETE_PLAYLIST_SUCCEEDED'
-export const DELETE_PLAYLIST_FAILED = 'DELETE_PLAYLIST_FAILED'
 
 /**
  * @param initTrackId optional track id to pull artwork from.
@@ -168,24 +164,4 @@ export function publishPlaylistFailed(
   metadata: Record<string, unknown>
 ) {
   return { type: PUBLISH_PLAYLIST_FAILED, error, params, metadata }
-}
-
-export function deletePlaylist(playlistId: ID) {
-  return { type: DELETE_PLAYLIST, playlistId }
-}
-
-export function deletePlaylistRequested() {
-  return { type: DELETE_PLAYLIST_REQUESTED }
-}
-
-export function deletePlaylistSucceeded() {
-  return { type: DELETE_PLAYLIST_SUCCEEDED }
-}
-
-export function deletePlaylistFailed(
-  error: Error,
-  params: Record<string, unknown>,
-  metadata: Record<string, unknown>
-) {
-  return { type: DELETE_PLAYLIST_FAILED, error, params, metadata }
 }

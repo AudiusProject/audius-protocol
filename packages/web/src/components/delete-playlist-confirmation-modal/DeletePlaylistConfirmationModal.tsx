@@ -1,9 +1,7 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import {
-  cacheCollectionsActions,
-  deletePlaylistConfirmationModalUISelectors
-} from '@audius/common/store'
+import { useDeleteCollection } from '@audius/common/api'
+import { deletePlaylistConfirmationModalUISelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -13,7 +11,6 @@ import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { push } from 'utils/navigation'
 const { TRENDING_PAGE } = route
 const { getPlaylistId } = deletePlaylistConfirmationModalUISelectors
-const { deletePlaylist } = cacheCollectionsActions
 
 const messages = {
   delete: 'Delete',
@@ -28,6 +25,7 @@ const actions = [
 const DeletePlaylistConfirmationModal = () => {
   const [isOpen, setIsOpen] = useModalState('DeletePlaylistConfirmation')
   const playlistId = useSelector(getPlaylistId) ?? -1
+  const { mutateAsync: deleteCollection } = useDeleteCollection()
   const dispatch = useDispatch()
   const { setStackReset } = useContext(RouterContext)
 
@@ -35,12 +33,21 @@ const DeletePlaylistConfirmationModal = () => {
     setIsOpen(false)
   }, [setIsOpen])
 
-  const handleDelete = useCallback(() => {
-    setStackReset(true)
-    dispatch(push(TRENDING_PAGE))
-    dispatch(deletePlaylist(playlistId))
-    handleClose()
-  }, [dispatch, setStackReset, playlistId, handleClose])
+  const handleDelete = useCallback(async () => {
+    try {
+      await deleteCollection({
+        collectionId: playlistId,
+        source: 'delete_playlist_confirmation_modal'
+      })
+      setStackReset(true)
+      // Navigate to trending page after successful deletion
+      dispatch(push(TRENDING_PAGE))
+      handleClose()
+    } catch (error) {
+      console.error('Failed to delete playlist:', error)
+      // Error is handled by the mutation's onError callback
+    }
+  }, [deleteCollection, dispatch, setStackReset, playlistId, handleClose])
 
   const actionCallbacks = useMemo(
     () => [handleDelete, handleClose],

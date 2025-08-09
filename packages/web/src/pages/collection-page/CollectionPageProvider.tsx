@@ -108,8 +108,7 @@ const {
   editPlaylist,
   removeTrackFromPlaylist,
   orderPlaylist,
-  publishPlaylist,
-  deletePlaylist
+  publishPlaylist
 } = cacheCollectionsActions
 
 type OwnProps = {
@@ -906,8 +905,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(orderPlaylist(playlistId, trackIds, trackUids)),
     publishPlaylist: (playlistId: number) =>
       dispatch(publishPlaylist(playlistId)),
-    deletePlaylist: (playlistId: number) =>
-      dispatch(deletePlaylist(playlistId)),
 
     saveCollection: (playlistId: number) =>
       dispatch(

@@ -13,7 +13,8 @@ const messages = {
   description: (entity: string) =>
     `Are you sure you want to delete this ${entity.toLowerCase()}?`,
   cancel: 'Cancel',
-  delete: (entity: string) => `Delete ${entity}`
+  delete: (entity: string) => `Delete ${entity}`,
+  deleting: `Deleting`
 }
 
 export type DeleteConfirmationModalProps = {
@@ -24,6 +25,7 @@ export type DeleteConfirmationModalProps = {
   entity: string
   onDelete: () => void
   onCancel: () => void
+  isDeleting?: boolean
 }
 
 const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
@@ -34,7 +36,8 @@ const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
     description = messages.description(entity),
     visible,
     onDelete,
-    onCancel
+    onCancel,
+    isDeleting = false
   } = props
 
   return (
@@ -49,11 +52,21 @@ const DeleteConfirmationModal = (props: DeleteConfirmationModalProps) => {
         </div>
       </ModalContent>
       <ModalFooter>
-        <Button variant='secondary' onClick={onCancel} fullWidth>
+        <Button
+          variant='secondary'
+          onClick={onCancel}
+          fullWidth
+          disabled={isDeleting}
+        >
           {messages.cancel}
         </Button>
-        <Button variant='destructive' onClick={onDelete} fullWidth>
-          {messages.delete(entity)}
+        <Button
+          variant='destructive'
+          onClick={onDelete}
+          fullWidth
+          isLoading={isDeleting}
+        >
+          {isDeleting ? messages.deleting : messages.delete(entity)}
         </Button>
       </ModalFooter>
     </Modal>
