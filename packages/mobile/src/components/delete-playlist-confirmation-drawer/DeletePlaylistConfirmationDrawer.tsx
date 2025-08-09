@@ -1,24 +1,21 @@
 import { useCallback } from 'react'
 
-import { useCollection } from '@audius/common/api'
-import {
-  cacheCollectionsActions,
-  deletePlaylistConfirmationModalUISelectors
-} from '@audius/common/store'
+import { useCollection, useDeleteCollection } from '@audius/common/api'
+import { deletePlaylistConfirmationModalUISelectors } from '@audius/common/store'
 import { fillString } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { useDrawerState } from '../drawer'
 import { ConfirmationDrawer } from '../drawers'
 const { getPlaylistId } = deletePlaylistConfirmationModalUISelectors
-const { deletePlaylist } = cacheCollectionsActions
 
 const messages = {
   header: 'Delete Playlist?',
   description: 'Are you sure you want to delete your playlist, %0?',
   confirm: 'Delete',
+  confirmLoading: 'Deleting...',
   cancel: 'Cancel'
 }
 
@@ -26,30 +23,43 @@ const modalName = 'DeletePlaylistConfirmation'
 
 export const DeletePlaylistConfirmationDrawer = () => {
   const playlistId = useSelector(getPlaylistId)
-  const { data: playlistName } = useCollection(playlistId, {
-    select: (collection) => collection.playlist_name
-  })
-  const dispatch = useDispatch()
+  const { data: collection } = useCollection(playlistId)
+  const playlistName = collection?.playlist_name
   const navigation = useNavigation()
   const { onClose } = useDrawerState(modalName)
+  const { mutateAsync: deleteCollection, isPending } = useDeleteCollection()
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (playlistId) {
-      dispatch(deletePlaylist(playlistId))
-      navigation.goBack()
+      try {
+        // Use the TanStack Query mutation for optimistic updates
+        await deleteCollection({
+          collectionId: playlistId,
+          source: 'delete_playlist_confirmation_drawer'
+        })
+        onClose()
+        navigation.goBack()
+      } catch (error) {
+        console.error('Failed to delete playlist:', error)
+        // Error is handled by the mutation's onError callback
+      }
     }
     onClose()
-  }, [dispatch, playlistId, navigation, onClose])
+  }, [deleteCollection, playlistId, navigation, onClose])
 
   if (!playlistId || !playlistName) return null
 
-  messages.description = fillString(messages.description, playlistName)
+  const dynamicMessages = {
+    ...messages,
+    description: fillString(messages.description, playlistName)
+  }
 
   return (
     <ConfirmationDrawer
       modalName={modalName}
-      messages={messages}
+      messages={dynamicMessages}
       onConfirm={handleConfirm}
+      isConfirming={isPending}
     />
   )
 }
