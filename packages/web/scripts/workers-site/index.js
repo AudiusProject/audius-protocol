@@ -49,7 +49,7 @@ function checkIsBot(val) {
     return false
   }
   const botTest =
-    /discordbot|facebookexternalhit|gigabot|ia_archiver|meta-externalfetcher|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
+    /discordbot|facebookexternalhit|gigabot|ia_archiver|meta-externalfetcher|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly|iframely/i
   return botTest.test(val)
 }
 
@@ -83,7 +83,7 @@ async function getMetadata(pathname, discoveryNode) {
     case 'track': {
       const { handle, title } = route.params
       if (!handle || !title) return { metadata: null, name: null }
-      discoveryRequestPath = `v1/tracks?handle=${handle}&slug=${title}`
+      discoveryRequestPath = `v1/tracks?permalink=${handle + '/' + title}`
       break
     }
     case 'playlist': {
@@ -174,12 +174,14 @@ class SEOHandlerHead {
         break
       }
       case 'track': {
-        title = `${metadata.data.title} by ${metadata.data.user.name} • Audius`
-        h1 = metadata.data.title
-        description = `Stream ${metadata.data.title} by ${metadata.data.user.name} on Audius | Stream similar artists to ${metadata.data.user.name} on desktop and mobile`
-        ogDescription = metadata.data.description || description
-        image = metadata.data.artwork ? metadata.data.artwork['480x480'] : ''
-        permalink = metadata.data.permalink
+        title = `${metadata.data[0].title} by ${metadata.data[0].user.name} • Audius`
+        h1 = metadata.data[0].title
+        description = `Stream ${metadata.data[0].title} by ${metadata.data[0].user.name} on Audius | Stream similar artists to ${metadata.data[0].user.name} on desktop and mobile`
+        ogDescription = metadata.data[0].description || description
+        image = metadata.data[0].artwork
+          ? metadata.data[0].artwork['480x480']
+          : ''
+        permalink = metadata.data[0].permalink
         break
       }
       case 'playlist': {
