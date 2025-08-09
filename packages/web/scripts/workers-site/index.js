@@ -262,9 +262,16 @@ async function getOEmbedResponse(url, discoveryNode) {
         provider_name: 'Audius',
         provider_url: host,
         title: clean(title),
+        description: data.description || '',
         html: embed,
         width: 500,
-        height: 480
+        height: 480,
+        thumbnail_url: data.artwork ? data.artwork['480x480'] : undefined,
+        thumbnail_width: 480,
+        thumbnail_height: 480,
+        author_name: data.user.name,
+        author_url: `${host}/${data.user.handle}`,
+        cache_age: 3600
       }),
       {
         headers: {
