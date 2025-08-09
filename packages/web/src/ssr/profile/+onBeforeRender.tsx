@@ -13,7 +13,7 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     const discoveryNode = getDiscoveryNode()
 
     const discoveryRequestPath = `v1/full/users/handle/${handle}`
-    const discoveryRequestUrl = `${discoveryNode.endpoint}/${discoveryRequestPath}`
+    const discoveryRequestUrl = `${discoveryNode}/${discoveryRequestPath}`
 
     const res = await fetch(discoveryRequestUrl)
     if (res.status !== 200) {
