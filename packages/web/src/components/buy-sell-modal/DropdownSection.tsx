@@ -169,7 +169,6 @@ export const DropdownSection = ({
     }))
   }, [availableTokens])
 
-  // Current selected option
   const selectedOption = useMemo(
     () =>
       options.find((option) => option.value === symbol) || {
@@ -280,7 +279,8 @@ export const DropdownSection = ({
             color: color.text.default,
             padding: 0,
             '&:hover': {
-              backgroundColor: color.background.surface2
+              backgroundColor: color.background.surface2,
+              cursor: 'pointer'
             },
             '&:active': {
               backgroundColor: color.background.surface2
