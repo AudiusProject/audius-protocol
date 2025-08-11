@@ -1,24 +1,25 @@
 import { encodeHashId, UserCoinWithAccounts } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
-import { useCurrentAccountUser } from '~/api'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
+import { useCurrentAccountUser } from '../users/account/accountSelectors'
 import { useQueryContext } from '../utils'
 
 export interface UseUserCoinParams {
   mint: string
+  userId?: ID | null | undefined
 }
 
 export const getUserCoinQueryKey = (
-  userId: ID | null | undefined,
-  mint: string
+  mint: string,
+  userId?: ID | null | undefined
 ) =>
   [
     QUERY_KEYS.userCoin,
-    userId,
+    userId ?? null,
     mint
   ] as unknown as QueryKey<UserCoinWithAccounts | null>
 
@@ -27,17 +28,21 @@ export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
   options?: SelectableQueryOptions<UserCoinWithAccounts | null, TResult>
 ) => {
   const { audiusSdk, env } = useQueryContext()
-  const { data: user } = useCurrentAccountUser()
+  // Default to current user if no userId is provided
+  const { data: currentUser } = useCurrentAccountUser({
+    enabled: !params.userId
+  })
+  const userId = params.userId ?? currentUser?.user_id ?? null
 
   return useQuery({
-    queryKey: getUserCoinQueryKey(user?.user_id, params.mint),
+    queryKey: getUserCoinQueryKey(params.mint, userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      if (!user?.user_id) {
+      if (!userId) {
         return null
       }
 
-      const encodedUserId = encodeHashId(user.user_id)
+      const encodedUserId = encodeHashId(userId)
       if (!encodedUserId) {
         console.warn('Failed to encode user ID')
         return null
@@ -53,7 +58,7 @@ export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
     enabled:
       options?.enabled !== false &&
       !!params.mint &&
-      !!user?.user_id &&
+      !!userId &&
       params.mint !== env.USDC_MINT_ADDRESS,
     ...options
   })

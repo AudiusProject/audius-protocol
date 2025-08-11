@@ -4,13 +4,13 @@ import { FixedDecimal } from '@audius/fixed-decimal'
 import { PublicKey } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useCurrentAccountUser } from '~/api'
+import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
+import { ID } from '~/models'
 import { Status } from '~/models/Status'
 import { isNullOrUndefined } from '~/utils'
 import { isResponseError } from '~/utils/error'
 
-import { useUserCoin } from '../coins/useUserCoin'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
@@ -41,7 +41,8 @@ export const getTokenBalanceQueryKey = (
   ] as unknown as QueryKey<TokenBalanceQueryData>
 
 /**
- * Hook to get the balance for any supported token for the current user.
+ * Hook to get the balance for any supported token for a user.
+ * Will use the current user if no userId is provided.
  * Uses TanStack Query for data fetching and caching.
  *
  * @param mint The mint address of the token to fetch balance for
@@ -50,21 +51,25 @@ export const getTokenBalanceQueryKey = (
  */
 export const useTokenBalance = ({
   mint,
+  userId: userIdParam,
   isPolling,
   pollingInterval = 1000,
   ...queryOptions
 }: {
   mint: string
+  userId?: ID
   isPolling?: boolean
   pollingInterval?: number
 } & QueryOptions) => {
   const { audiusSdk, env } = useQueryContext()
-  const { data: user } = useCurrentAccountUser()
-  const ethAddress = user?.wallet ?? null
+  const { data: user } = useUser(userIdParam, { enabled: !!userIdParam })
+  const { data: currentUser } = useCurrentAccountUser({ enabled: !userIdParam })
+  const userId = user?.user_id ?? currentUser?.user_id ?? null
+
+  const ethAddress = user?.wallet ?? currentUser?.wallet ?? null
   const queryClient = useQueryClient()
   const isUsdc = mint === env.USDC_MINT_ADDRESS
-  const { data: userCoin } = useUserCoin({ mint })
-
+  const { data: userCoin } = useUserCoin({ mint, userId })
   // Use specialized USDC hook when dealing with USDC
   const usdcResult = useUSDCBalance({
     isPolling,
