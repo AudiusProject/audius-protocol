@@ -1,9 +1,8 @@
-import { useMemo, useCallback, useState, useRef } from 'react'
+import { useMemo, useCallback } from 'react'
 
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  DEFAULT_TOKEN_AMOUNT_PLACEHOLDER,
   TokenAmountSectionProps,
   TokenInfo,
   useTokenAmountFormatting,
@@ -13,19 +12,18 @@ import {
   Button,
   Divider,
   Flex,
-  IconCaretDown,
   IconTransaction,
   Text,
   TextInput,
   TokenAmountInput,
-  TokenAmountInputChangeHandler,
-  Popup
+  TokenAmountInputChangeHandler
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { useFlag } from '../../hooks/useRemoteConfig'
 
+import { DropdownSection } from './DropdownSection'
 import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
@@ -80,194 +78,6 @@ const DefaultBalanceSection = ({
         {formattedAvailableBalance}
       </Text>
     </Flex>
-  )
-}
-
-const TokenSelectionPopup = ({
-  availableTokens,
-  activeTokenSymbol,
-  onTokenSelect,
-  onClose
-}: {
-  availableTokens: TokenInfo[]
-  activeTokenSymbol: string
-  onTokenSelect: (symbol: string) => void
-  onClose: () => void
-}) => {
-  const { spacing, color } = useTheme()
-
-  const handleTokenClick = useCallback(
-    (symbol: string) => {
-      onTokenSelect(symbol)
-      onClose()
-    },
-    [onTokenSelect, onClose]
-  )
-
-  const filteredTokens = availableTokens.filter(
-    (token) => token.symbol !== activeTokenSymbol
-  )
-
-  return (
-    <Flex direction='column' gap='xs' p='s'>
-      {filteredTokens.map((token) => {
-        const { symbol, name } = token
-
-        return (
-          <Button
-            key={symbol}
-            variant='tertiary'
-            onClick={() => handleTokenClick(symbol)}
-            css={{
-              justifyContent: 'flex-start',
-              padding: spacing.s,
-              '&:hover': {
-                backgroundColor: color.background.surface2
-              }
-            }}
-          >
-            <Flex gap='s' alignItems='center'>
-              <TokenIcon tokenInfo={token} size='l' hex />
-              <Flex direction='column' alignItems='flex-start'>
-                <Text variant='body' size='s' strength='strong'>
-                  {symbol}
-                </Text>
-                <Text variant='body' size='xs' color='subdued'>
-                  {name}
-                </Text>
-              </Flex>
-            </Flex>
-          </Button>
-        )
-      })}
-    </Flex>
-  )
-}
-
-const DropdownSection = ({
-  formattedAvailableBalance,
-  tokenInfo,
-  isStablecoin,
-  availableTokens,
-  onTokenChange,
-  showReceiveAmount,
-  formattedReceiveAmount
-}: BalanceSectionProps) => {
-  const [isPopupVisible, setIsPopupVisible] = useState(false)
-  const anchorRef = useRef<HTMLDivElement>(null)
-  const { color } = useTheme()
-
-  const { symbol } = tokenInfo
-
-  const handleClick = useCallback(() => {
-    if (availableTokens && availableTokens.length > 0) {
-      setIsPopupVisible(true)
-    }
-  }, [availableTokens])
-
-  const handleTokenSelect = useCallback(
-    (selectedSymbol: string) => {
-      onTokenChange?.(selectedSymbol)
-      setIsPopupVisible(false)
-    },
-    [onTokenChange]
-  )
-
-  const handlePopupClose = useCallback(() => {
-    setIsPopupVisible(false)
-  }, [])
-
-  // Show component if we have either available balance or receive amount to display
-  const hasReceiveAmount = showReceiveAmount && formattedReceiveAmount
-  const shouldShowLargeTicker =
-    !hasReceiveAmount ||
-    formattedReceiveAmount === DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
-
-  if (!formattedAvailableBalance && !hasReceiveAmount) {
-    return null
-  }
-
-  const isClickable = availableTokens && availableTokens.length > 0
-
-  return (
-    <>
-      <Flex
-        ref={anchorRef}
-        direction='column'
-        alignItems='flex-start'
-        justifyContent='center'
-        gap='xs'
-        flex={1}
-        alignSelf='stretch'
-        border='default'
-        pv='s'
-        ph='m'
-        borderRadius='s'
-        onClick={isClickable ? handleClick : undefined}
-        css={{
-          cursor: isClickable ? 'pointer' : 'default',
-          '&:hover': isClickable
-            ? {
-                backgroundColor: color.background.surface2
-              }
-            : undefined
-        }}
-      >
-        <Flex
-          gap='s'
-          alignItems='center'
-          justifyContent='space-between'
-          w='100%'
-        >
-          <Flex gap='s' alignItems='center'>
-            <TokenIcon tokenInfo={tokenInfo} size='2xl' hex />
-            <Flex direction='column'>
-              {shouldShowLargeTicker ? (
-                <Flex alignSelf='flex-start'>
-                  <Text variant='heading' size='s' color='subdued'>
-                    {messages.tokenTicker(symbol, !!isStablecoin)}
-                  </Text>
-                </Flex>
-              ) : null}
-              {!hasReceiveAmount ? (
-                <Text variant='title' size='s' color='default'>
-                  {messages.stackedBalance(formattedAvailableBalance!)}
-                </Text>
-              ) : null}
-              {hasReceiveAmount &&
-              formattedReceiveAmount !== DEFAULT_TOKEN_AMOUNT_PLACEHOLDER ? (
-                <Flex direction='column'>
-                  <Text variant='heading' size='s'>
-                    {formattedReceiveAmount}
-                  </Text>
-                  <Text variant='title' size='s' color='subdued'>
-                    {messages.tokenTicker(symbol, !!isStablecoin)}
-                  </Text>
-                </Flex>
-              ) : null}
-            </Flex>
-          </Flex>
-          <IconCaretDown size='s' color='default' />
-        </Flex>
-      </Flex>
-
-      {isClickable && (
-        <Popup
-          isVisible={isPopupVisible}
-          onClose={handlePopupClose}
-          anchorRef={anchorRef}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        >
-          <TokenSelectionPopup
-            availableTokens={availableTokens}
-            activeTokenSymbol={symbol}
-            onTokenSelect={handleTokenSelect}
-            onClose={handlePopupClose}
-          />
-        </Popup>
-      )}
-    </>
   )
 }
 
