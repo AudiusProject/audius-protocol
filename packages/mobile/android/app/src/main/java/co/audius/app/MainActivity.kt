@@ -40,7 +40,7 @@ class MainActivity : ReactActivity() {
     RNBootSplash.init(this, R.style.BootTheme)
     super.onCreate(null)
     RNBars.init(this, "light-content")
-    TikTokOpenApiFactory.init(TikTokOpenConfig(BuildConfig.TIKTOK_APP_ID))
+    // TikTokOpenApiFactory.init(TikTokOpenConfig(BuildConfig.TIKTOK_APP_ID))
 
     // lazy load Google Cast context
     CastContext.getSharedInstance(this)
