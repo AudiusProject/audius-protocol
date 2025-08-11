@@ -59,8 +59,6 @@ const IosSplashScreen = (props: SplashScreenProps) => {
   const [isShowing, setIsShowing] = useState(true)
 
   const { container } = BootSplash.useHideAnimation({
-    // @ts-expect-error this is not implemented in the type but is valid
-    // https://github.com/zoontek/react-native-bootsplash?tab=readme-ov-file#method-type-2
     ready: canDismiss,
     manifest: require('../../assets/images/bootsplash_manifest.json'),
     animate: () => {
