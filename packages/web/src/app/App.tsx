@@ -1,5 +1,5 @@
 // @refresh reset
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 
 import { route } from '@audius/common/utils'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
@@ -8,9 +8,11 @@ import { Redirect, Route, Switch } from 'react-router-dom'
 import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { env } from 'services/env'
+import { initWebVitals } from 'services/webVitals'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
+import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
 
 const {
@@ -34,11 +36,13 @@ const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const App = () => {
   // TODO: These web vitals events are costly in amplitude, is there a better way to track this with a different tool?
-  // const { history } = useHistoryContext()
+  const { history } = useHistoryContext()
 
-  // useEffect(() => {
-  //   initWebVitals(history.location)
-  // }, [history])
+  useEffect(() => {
+    if (!IS_PRODUCTION) {
+      initWebVitals(history.location)
+    }
+  }, [history])
 
   return (
     <AppProviders>
