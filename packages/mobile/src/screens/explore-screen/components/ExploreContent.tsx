@@ -8,6 +8,7 @@ import { useSearchCategory } from 'app/screens/search-screen/searchState'
 
 import { ActiveDiscussions } from './ActiveDiscussions'
 import { ArtistSpotlight } from './ArtistSpotlight'
+import { BestOfAudiusTiles } from './BestOfAudiusTiles'
 import { BestSelling } from './BestSelling'
 import { FeaturedPlaylists } from './FeaturedPlaylists'
 import { FeaturedRemixContests } from './FeaturedRemixContests'
@@ -68,6 +69,7 @@ const MemoizedExploreContent = () => {
           {showTrackContent && <FeelingLucky />}
         </>
       ) : null}
+      {!isSearchExploreGoodiesEnabled && <BestOfAudiusTiles />}
       <RecentSearches />
     </ProgressiveScrollView>
   )
