@@ -39,7 +39,6 @@ export type EmailUser = {
   name: string
   profile_picture_sizes: string
   profile_picture: string
-  creator_node_endpoint: string
   imageUrl: string
 }
 

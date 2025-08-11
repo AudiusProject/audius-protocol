@@ -171,6 +171,13 @@ const getNotifications = async (
   userIds: string[],
   remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
+  if (!remoteConfig) {
+    logger.warn(
+      'RemoteConfig not provided to getNotifications, returning empty array'
+    )
+    return []
+  }
+
   // NOTE: Temp while testing DM notifs on staging
   const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
@@ -314,6 +321,13 @@ export async function processEmailNotifications(
   remoteConfig: RemoteConfig
 ) {
   try {
+    if (!remoteConfig) {
+      logger.warn(
+        'RemoteConfig not provided to processEmailNotifications, using default values'
+      )
+      return
+    }
+
     const now = moment.utc()
     let days = 1
     if (frequency == 'weekly') {

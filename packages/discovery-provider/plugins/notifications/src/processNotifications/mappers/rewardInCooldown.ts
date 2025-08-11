@@ -125,6 +125,13 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
       [user.user_id]
     )
     const challengeMessage = challengeMessages[this.challengeId]
+    if (!challengeMessage) {
+      logger.error(
+        `Unknown challenge ID: ${this.challengeId}, skipping notification`
+      )
+      return
+    }
+
     await sendTransactionalEmail({
       email: userNotificationSettings.getUserEmail(user.user_id),
       html: email({
@@ -137,7 +144,7 @@ export class RewardInCooldown extends BaseNotification<RewardInCooldownRow> {
         challengeDescription: challengeMessage.description,
         challengeImage: challengeMessage.imageUrl
       }),
-      subject: 'Congratulations! 🏆 You’ve earned a reward!'
+      subject: "Congratulations! 🏆 You've earned a reward!"
     })
   }
 }
