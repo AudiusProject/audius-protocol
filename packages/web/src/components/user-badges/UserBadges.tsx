@@ -87,20 +87,18 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
-
-  // This could potentially not return all of the user's coins so need to handle that case
   const { data: userCoins } = useUserCoins({ userId: Id.parse(userId) })
 
   // Display the mint of the prop if provided, otherwise display the mint of the coin with the highest balance
   const displayMint = useMemo(() => {
     if (mint) return mint
-    if (!userCoins) return null
-    return userCoins[1]?.mint
+    if (!userCoins || userCoins.length < 2) return null
+    return userCoins[1].mint
   }, [mint, userCoins])
 
-  const { data: coin } = useArtistCoin({ mint: displayMint || '' })
+  const { data: coin } = useArtistCoin({ mint: displayMint ?? '' })
   const { data: tokenBalance } = useTokenBalance({
-    mint: displayMint || '',
+    mint: displayMint ?? '',
     userId
   })
 
@@ -129,9 +127,8 @@ const UserBadges = ({
           </Flex>
         }
       >
-        <Box
+        <Flex
           css={{
-            display: 'flex',
             cursor: 'pointer',
             transition: `opacity ${motion.quick}`,
             '&:hover': {
@@ -140,7 +137,7 @@ const UserBadges = ({
           }}
         >
           <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
-        </Box>
+        </Flex>
       </HoverCard>
     )
   }, [isUserVerified, size])
@@ -157,9 +154,8 @@ const UserBadges = ({
         transformOrigin={transformOrigin}
         triggeredBy='both'
       >
-        <Box
+        <Flex
           css={{
-            display: 'flex',
             cursor: 'pointer',
             transition: `opacity ${motion.quick}`,
             '&:hover': {
@@ -168,7 +164,7 @@ const UserBadges = ({
           }}
         >
           {cloneElement(audioTierMap[tier]!, { size })}
-        </Box>
+        </Flex>
       </AudioHoverCard>
     )
   }, [tier, userId, anchorOrigin, transformOrigin, size])
@@ -185,15 +181,14 @@ const UserBadges = ({
 
     return (
       <ArtistCoinHoverCard
-        mint={displayMint || ''}
+        mint={displayMint ?? ''}
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
         triggeredBy='both'
       >
-        <Box
+        <Flex
           css={{
-            display: 'flex',
             cursor: 'pointer',
             transition: `opacity ${motion.quick}`,
             '&:hover': {
@@ -210,7 +205,7 @@ const UserBadges = ({
               borderWidth={0}
             />
           ) : null}
-        </Box>
+        </Flex>
       </ArtistCoinHoverCard>
     )
   }, [

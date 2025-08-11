@@ -10,16 +10,13 @@ import { useQueryContext } from '../utils'
 
 export interface UseUserCoinParams {
   mint: string
-  userId?: ID | null | undefined
+  userId?: ID | null
 }
 
-export const getUserCoinQueryKey = (
-  mint: string,
-  userId?: ID | null | undefined
-) =>
+export const getUserCoinQueryKey = (mint: string, userId?: ID | null) =>
   [
     QUERY_KEYS.userCoin,
-    userId ?? null,
+    userId,
     mint
   ] as unknown as QueryKey<UserCoinWithAccounts | null>
 

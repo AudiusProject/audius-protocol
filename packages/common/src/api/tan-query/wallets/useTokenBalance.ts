@@ -24,6 +24,13 @@ const isNoBalanceError = (error: unknown): boolean => {
   return isResponseError(error) && error.response.status === 404
 }
 
+type UseTokenBalanceParams = {
+  mint: string
+  userId?: ID
+  isPolling?: boolean
+  pollingInterval?: number
+} & QueryOptions
+
 export type TokenBalanceQueryData = {
   balance: FixedDecimal
   decimals: number
@@ -55,15 +62,21 @@ export const useTokenBalance = ({
   isPolling,
   pollingInterval = 1000,
   ...queryOptions
-}: {
-  mint: string
-  userId?: ID
-  isPolling?: boolean
-  pollingInterval?: number
-} & QueryOptions) => {
+}: UseTokenBalanceParams) => {
   const { audiusSdk, env } = useQueryContext()
-  const { data: user } = useUser(userIdParam, { enabled: !!userIdParam })
-  const { data: currentUser } = useCurrentAccountUser({ enabled: !userIdParam })
+  const { data: user } = useUser(userIdParam, {
+    select: (user) => ({
+      user_id: user.user_id,
+      wallet: user.wallet
+    })
+  })
+  const { data: currentUser } = useCurrentAccountUser({
+    enabled: !userIdParam,
+    select: (user) => ({
+      user_id: user.user_id,
+      wallet: user.wallet
+    })
+  })
   const userId = user?.user_id ?? currentUser?.user_id ?? null
 
   const ethAddress = user?.wallet ?? currentUser?.wallet ?? null
