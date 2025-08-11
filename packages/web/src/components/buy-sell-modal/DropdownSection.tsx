@@ -41,20 +41,9 @@ const CustomSingleValue = (
   props: SingleValueProps<TokenOption> & CustomSingleValueProps
 ) => (
   <components.SingleValue {...props}>
-    <Flex
-      gap='s'
-      alignItems='center'
-      justifyContent='space-between'
-      w='100%'
-      data-testid='token-selection-label'
-    >
+    <Flex gap='s' alignItems='center' justifyContent='space-between' w='100%'>
       <Flex gap='s' alignItems='center'>
-        <TokenIcon
-          tokenInfo={props.data.tokenInfo}
-          size='2xl'
-          hex
-          data-testid='token-icon'
-        />
+        <TokenIcon tokenInfo={props.data.tokenInfo} size='2xl' hex />
         <Flex direction='column'>
           {props.shouldShowLargeTicker ? (
             <Flex alignSelf='flex-start'>
@@ -94,7 +83,6 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
       <Flex
         gap='s'
         alignItems='center'
-        data-testid={`token-option-${props.data.value.toLowerCase()}`}
         css={css({
           padding: spacing.s,
           borderRadius: cornerRadius.s,
@@ -110,12 +98,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
           }
         })}
       >
-        <TokenIcon
-          tokenInfo={props.data.tokenInfo}
-          size='l'
-          hex
-          data-testid={`token-option-icon-${props.data.value.toLowerCase()}`}
-        />
+        <TokenIcon tokenInfo={props.data.tokenInfo} size='l' hex />
         <Text
           variant='body'
           size='s'
@@ -196,7 +179,6 @@ export const DropdownSection = ({
       pv='s'
       ph='m'
       borderRadius='s'
-      data-testid='dropdown-section-wrapper'
       css={{
         cursor: isClickable ? 'pointer' : 'default',
         '&:hover': isClickable
@@ -212,7 +194,6 @@ export const DropdownSection = ({
         options={options}
         isDisabled={!isClickable}
         isSearchable={false}
-        data-testid='token-select'
         components={{
           SingleValue: (props: SingleValueProps<TokenOption>) => {
             const { setValue, ...singleValueProps } = props

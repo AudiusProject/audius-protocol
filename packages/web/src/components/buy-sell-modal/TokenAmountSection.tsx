@@ -337,13 +337,7 @@ export const TokenAmountSection = ({
       isArtistCoinsEnabled
     ) {
       return (
-        <Flex
-          p='l'
-          alignItems='center'
-          gap='s'
-          justifyContent='space-between'
-          data-testid='you-receive-section'
-        >
+        <Flex p='l' alignItems='center' gap='s' justifyContent='space-between'>
           <DropdownSection
             formattedAvailableBalance={formattedAvailableBalance}
             tokenInfo={tokenInfo}
