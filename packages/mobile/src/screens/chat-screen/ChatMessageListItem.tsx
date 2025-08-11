@@ -38,11 +38,10 @@ const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   bubble: {
     marginTop: spacing(2),
-    borderRadius: spacing(3),
-    overflow: 'hidden'
+    borderRadius: spacing(3)
   },
   pressed: {
     backgroundColor: palette.neutralLight10
@@ -53,22 +52,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   messageContainer: {
     paddingHorizontal: spacing(4),
     paddingVertical: spacing(3),
-    backgroundColor: palette.white
+    backgroundColor: palette.white,
+    borderRadius: spacing(3)
   },
   messageContainerAuthor: {
     backgroundColor: palette.secondaryLight2
-  },
-  shadow: {
-    shadowColor: 'black',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }
-  },
-  shadow2: {
-    shadowColor: 'black',
-    shadowOpacity: 0.02,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 }
   },
   tail: {
     display: 'flex',
@@ -238,126 +226,121 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
           styleProp
         ]}
       >
-        <Flex>
-          <Pressable
-            onLongPress={handleLongPress}
-            delayLongPress={REACTION_LONGPRESS_DELAY}
-            onPressIn={isPopup ? handleClosePopup : handlePressIn}
-            onPressOut={isPopup ? handleClosePopup : handlePressOut}
-            style={{ opacity: isUnderneathPopup ? 0 : 1 }}
+        <Pressable
+          onLongPress={handleLongPress}
+          delayLongPress={REACTION_LONGPRESS_DELAY}
+          onPressIn={isPopup ? handleClosePopup : handlePressIn}
+          onPressOut={isPopup ? handleClosePopup : handlePressOut}
+          style={{
+            opacity: isUnderneathPopup ? 0 : 1
+          }}
+        >
+          <Flex
+            style={[
+              styles.bubble,
+              isPressed
+                ? isAuthor
+                  ? styles.pressedIsAuthor
+                  : styles.pressed
+                : null
+            ]}
+            shadow='mid'
+            ref={itemsRef ? (el) => (itemsRef.current[messageId] = el) : null}
           >
-            <Flex style={styles.shadow}>
-              <Flex style={styles.shadow2}>
+            {senderUserId && isArtistCoinEnabled ? (
+              <ArtistCoinHeader
+                userId={senderUserId}
+                audience={message?.audience}
+              />
+            ) : null}
+            {isCollection ? (
+              <ChatMessagePlaylist
+                key={`${link.value}-${link.start}-${link.end}`}
+                link={link.value}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+                styles={unfurlStyles}
+              />
+            ) : isTrack ? (
+              <ChatMessageTrack
+                key={`${link.value}-${link.start}-${link.end}`}
+                link={link.value}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+                styles={unfurlStyles}
+              />
+            ) : link ? (
+              <LinkPreview
+                key={`${link.value}-${link.start}-${link.end}`}
+                chatId={chatId}
+                messageId={messageId}
+                href={link.href}
+                onLongPress={handleLongPress}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                isPressed={isPressed}
+                onEmpty={onUnfurlEmpty}
+                onSuccess={onUnfurlSuccess}
+                style={unfurlStyles}
+              />
+            ) : null}
+            {!hideMessage ? (
+              <Flex
+                style={[
+                  styles.messageContainer,
+                  isAuthor && styles.messageContainerAuthor
+                ]}
+              >
+                <UserGeneratedText
+                  variant='body'
+                  lineHeight='multi'
+                  color={isAuthor ? 'white' : 'default'}
+                  textAlign='left'
+                  linkProps={{
+                    variant: isAuthor ? 'inverted' : 'visible',
+                    showUnderline: true
+                  }}
+                  onPress={Keyboard.dismiss}
+                  onLongPress={handleLongPress}
+                >
+                  {message.message}
+                </UserGeneratedText>
+              </Flex>
+            ) : null}
+          </Flex>
+          {message.hasTail ? (
+            <ChatTail
+              fill={tailColor}
+              style={[
+                styles.tail,
+                isAuthor ? styles.tailIsAuthor : styles.tailOtherUser
+              ]}
+            />
+          ) : null}
+          {message.reactions?.length > 0 ? (
+            <>
+              {!isUnderneathPopup ? (
                 <Flex
                   style={[
-                    styles.bubble,
-                    isPressed
-                      ? isAuthor
-                        ? styles.pressedIsAuthor
-                        : styles.pressed
-                      : null
+                    styles.reactionContainer,
+                    isAuthor
+                      ? styles.reactionContainerIsAuthor
+                      : styles.reactionContainerOtherUser
                   ]}
-                  ref={
-                    itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
-                  }
                 >
-                  {senderUserId && isArtistCoinEnabled ? (
-                    <ArtistCoinHeader
-                      userId={senderUserId}
-                      audience={message?.audience}
-                    />
-                  ) : null}
-                  {isCollection ? (
-                    <ChatMessagePlaylist
-                      key={`${link.value}-${link.start}-${link.end}`}
-                      link={link.value}
-                      onEmpty={onUnfurlEmpty}
-                      onSuccess={onUnfurlSuccess}
-                      styles={unfurlStyles}
-                    />
-                  ) : isTrack ? (
-                    <ChatMessageTrack
-                      key={`${link.value}-${link.start}-${link.end}`}
-                      link={link.value}
-                      onEmpty={onUnfurlEmpty}
-                      onSuccess={onUnfurlSuccess}
-                      styles={unfurlStyles}
-                    />
-                  ) : link ? (
-                    <LinkPreview
-                      key={`${link.value}-${link.start}-${link.end}`}
-                      chatId={chatId}
-                      messageId={messageId}
-                      href={link.href}
-                      onLongPress={handleLongPress}
-                      onPressIn={handlePressIn}
-                      onPressOut={handlePressOut}
-                      isPressed={isPressed}
-                      onEmpty={onUnfurlEmpty}
-                      onSuccess={onUnfurlSuccess}
-                      style={unfurlStyles}
-                    />
-                  ) : null}
-                  {!hideMessage ? (
-                    <Flex
-                      style={[
-                        styles.messageContainer,
-                        isAuthor && styles.messageContainerAuthor
-                      ]}
-                    >
-                      <UserGeneratedText
-                        variant='body'
-                        lineHeight='multi'
-                        color={isAuthor ? 'white' : 'default'}
-                        textAlign='left'
-                        linkProps={{
-                          variant: isAuthor ? 'inverted' : 'visible',
-                          showUnderline: true
-                        }}
-                        onPress={Keyboard.dismiss}
-                        onLongPress={handleLongPress}
-                      >
-                        {message.message}
-                      </UserGeneratedText>
-                    </Flex>
-                  ) : null}
+                  {message?.reactions.map((reaction) => {
+                    return (
+                      <ChatReaction
+                        key={reaction.created_at}
+                        reaction={reaction}
+                      />
+                    )
+                  })}
                 </Flex>
-                {message.hasTail ? (
-                  <ChatTail
-                    fill={tailColor}
-                    style={[
-                      styles.tail,
-                      isAuthor ? styles.tailIsAuthor : styles.tailOtherUser
-                    ]}
-                  />
-                ) : null}
-                {message.reactions?.length > 0 ? (
-                  <>
-                    {!isUnderneathPopup ? (
-                      <Flex
-                        style={[
-                          styles.reactionContainer,
-                          isAuthor
-                            ? styles.reactionContainerIsAuthor
-                            : styles.reactionContainerOtherUser
-                        ]}
-                      >
-                        {message?.reactions.map((reaction) => {
-                          return (
-                            <ChatReaction
-                              key={reaction.created_at}
-                              reaction={reaction}
-                            />
-                          )
-                        })}
-                      </Flex>
-                    ) : null}
-                  </>
-                ) : null}
-              </Flex>
-            </Flex>
-          </Pressable>
-        </Flex>
+              ) : null}
+            </>
+          ) : null}
+        </Pressable>
         {isAuthor && message.status === Status.ERROR ? (
           <ResendMessageButton messageId={messageId} chatId={chatId} />
         ) : null}

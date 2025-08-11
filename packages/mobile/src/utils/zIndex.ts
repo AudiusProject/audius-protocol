@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 export enum zIndex {
-  CHAT_TAIL = -10,
+  CHAT_TAIL = 1,
   CHAT_BLAST_SUBHEADER = 1,
   DRAWER_HEADER = 1,
   NOW_PLAYING_DRAWER = 3,

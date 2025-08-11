@@ -4,10 +4,12 @@ import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
   useCollection,
+  useArtistCoinMembersCount,
   useCurrentAccountUser,
   usePurchasersCount,
   useRemixersCount,
-  useTrack
+  useTrack,
+  useArtistCoins
 } from '~/api'
 import {
   getChatBlastAudienceDescription,
@@ -52,6 +54,15 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
+  const { data: coins } = useArtistCoins({
+    owner_id: [user?.user_id ?? 0],
+    limit: 1
+  })
+  const coinSymbol = coins?.[0]?.ticker ?? ''
+  const { data: coinHoldersCount } = useArtistCoinMembersCount({
+    enabled: audience === ChatBlastAudience.COIN_HOLDERS
+  })
+
   const audienceCount = useMemo(() => {
     switch (audience) {
       case ChatBlastAudience.FOLLOWERS:
@@ -62,6 +73,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
         return purchasersCount
       case ChatBlastAudience.REMIXERS:
         return remixersCount
+      case ChatBlastAudience.COIN_HOLDERS:
+        return coinHoldersCount
       default:
         return 0
     }
@@ -70,7 +83,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     user?.follower_count,
     user?.supporter_count,
     purchasersCount,
-    remixersCount
+    remixersCount,
+    coinHoldersCount
   ])
 
   const contentTitle = audienceContentId
@@ -79,15 +93,21 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
       : albumTitle
     : undefined
 
-  const chatBlastTitle = getChatBlastTitle(audience)
+  const chatBlastTitle = getChatBlastTitle({ audience, coinSymbol })
   const chatBlastSecondaryTitle = getChatBlastSecondaryTitle({
     audience,
-    audienceContentId
+    audienceContentId,
+    coinSymbol
   })
   const chatBlastAudienceDescription = getChatBlastAudienceDescription({
-    audience
+    audience,
+    coinSymbol
   })
-  const chatBlastCTA = getChatBlastCTA({ audience, audienceContentId })
+  const chatBlastCTA = getChatBlastCTA({
+    audience,
+    audienceContentId,
+    coinSymbol
+  })
 
   return {
     chatBlastTitle,

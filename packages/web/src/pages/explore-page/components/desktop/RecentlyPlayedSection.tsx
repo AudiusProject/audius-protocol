@@ -1,28 +1,31 @@
-import React from 'react'
-
 import { useRecentlyPlayedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { TrackCard } from 'components/track/TrackCard'
+import { TrackCard, TrackCardSkeleton } from 'components/track/TrackCard'
+import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
+import { useDeferredElement } from './useDeferredElement'
 
 export const RecentlyPlayedSection = () => {
-  const { data, isLoading } = useRecentlyPlayedTracks({
-    pageSize: 10
-  })
+  const { ref, inView } = useDeferredElement()
+  const { data, isLoading, isError, isSuccess } = useRecentlyPlayedTracks(
+    { pageSize: 10 },
+    { enabled: inView }
+  )
+  const isMobile = useIsMobile()
 
-  if (!isLoading && (!data || data.length === 0)) {
+  if (isError || (isSuccess && !data?.length)) {
     return null
   }
 
   return (
-    <ExploreSection
-      title={messages.recentlyPlayed}
-      data={data}
-      isLoading={isLoading}
-      Card={TrackCard}
-      viewAllLink='/history'
-    />
+    <Carousel ref={ref} title={messages.recentlyPlayed} viewAllLink='/history'>
+      {!inView || !data || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <TrackCardSkeleton key={i} size={isMobile ? 'xs' : 's'} noShimmer />
+          ))
+        : data?.map((id) => <TrackCard key={id} id={id} size='s' />)}
+    </Carousel>
   )
 }

@@ -7,6 +7,7 @@ import {
   ChangeEvent
 } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -25,7 +26,6 @@ import { useDebounce, usePrevious } from 'react-use'
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { CenterPreset } from 'components/nav/mobile/NavContext'
-import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { categories } from 'pages/search-page/categories'
 import {
@@ -49,6 +49,7 @@ import { MoodGrid } from '../desktop/MoodGrid'
 import { MostSharedSection } from '../desktop/MostSharedSection'
 import { QuickSearchGrid } from '../desktop/QuickSearchGrid'
 import { RecentPremiumTracksSection } from '../desktop/RecentPremiumTracksSection'
+import { RecentSearchesSection } from '../desktop/RecentSearchesSection'
 import { RecentlyPlayedSection } from '../desktop/RecentlyPlayedSection'
 import { RecommendedTracksSection } from '../desktop/RecommendedTracksSection'
 import { TrendingPlaylistsSection } from '../desktop/TrendingPlaylistsSection'
@@ -78,6 +79,8 @@ const ExplorePage = () => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
+  const { data: currentUserId, isLoading: isCurrentUserIdLoading } =
+    useCurrentUserId()
 
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_GOODIES
@@ -157,6 +160,7 @@ const ExplorePage = () => {
     setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
 
+  const showUserContextualContent = isCurrentUserIdLoading || !!currentUserId
   const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
   const showPlaylistContent =
     categoryKey === 'playlists' || categoryKey === 'all'
@@ -225,8 +229,12 @@ const ExplorePage = () => {
         >
           {isSearchExploreGoodiesEnabled && showTrackContent && (
             <>
-              {showTrackContent && <RecommendedTracksSection />}
-              {showTrackContent && <RecentlyPlayedSection />}
+              {showTrackContent && showUserContextualContent && (
+                <RecommendedTracksSection />
+              )}
+              {showTrackContent && showUserContextualContent && (
+                <RecentlyPlayedSection />
+              )}
               <QuickSearchGrid />
             </>
           )}
@@ -251,10 +259,12 @@ const ExplorePage = () => {
               {showTrackContent && <MostSharedSection />}
               {(showAlbumContent || showTrackContent) && <BestSellingSection />}
               {showTrackContent && <RecentPremiumTracksSection />}
-              {showTrackContent && <FeelingLuckySection />}
+              {showTrackContent && showUserContextualContent && (
+                <FeelingLuckySection />
+              )}
             </>
           ) : null}
-          <RecentSearches />
+          {showUserContextualContent && <RecentSearchesSection />}
         </Flex>
       </Flex>
     </MobilePageContainer>

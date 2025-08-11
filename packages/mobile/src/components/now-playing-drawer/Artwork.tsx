@@ -7,10 +7,9 @@ import type { Track } from '@audius/common/models'
 import { averageColorSelectors, playerSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
-import { Dimensions } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Shadow } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { TrackImage } from '../image/TrackImage'
@@ -26,7 +25,11 @@ const useStyles = makeStyles(({ palette }) => ({
     marginLeft: spacing,
     marginRight: spacing,
     maxHeight: dimensions.width - spacing * 2,
-    alignSelf: 'center'
+    alignSelf: 'center',
+    backgroundColor: palette.white,
+    borderRadius: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 8
   },
   image: {
     alignSelf: 'center',
@@ -73,7 +76,7 @@ export const Artwork = ({ track }: ArtworkProps) => {
     isPreviewing || canPurchase || shouldDisplayPremiumDownloadLocked
 
   return (
-    <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
+    <View style={[styles.root, { shadowColor }]}>
       <TrackImage
         trackId={track?.track_id}
         style={styles.image}
@@ -82,6 +85,6 @@ export const Artwork = ({ track }: ArtworkProps) => {
       {shouldShowDogEar ? (
         <TrackDogEar trackId={track?.track_id ?? 0} borderOffset={2} />
       ) : null}
-    </Shadow>
+    </View>
   )
 }

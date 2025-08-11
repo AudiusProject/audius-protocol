@@ -110,8 +110,10 @@ export const QUERY_KEYS = {
   coins: 'coins',
   userCoins: 'userCoins',
   coin: 'coin',
+  discordCode: 'discordCode',
   coinInsights: 'coinInsights',
   artistCoin: 'artistCoin',
   artistCoinByMint: 'artistCoinByMint',
-  userCoin: 'userCoin'
+  userCoin: 'userCoin',
+  artistCoinMembersCount: 'artistCoinMembersCount'
 } as const

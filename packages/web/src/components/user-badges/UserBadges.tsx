@@ -6,7 +6,11 @@ import {
   useMemo
 } from 'react'
 
-import { useTokenBalance, useArtistCoin } from '@audius/common/api'
+import {
+  useArtistCoin,
+  useUserCoins,
+  useTokenBalance
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -28,6 +32,7 @@ import {
   motion
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
+import { Id } from '@audius/sdk'
 import cn from 'classnames'
 
 import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
@@ -82,18 +87,24 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
+  const { data: userCoins } = useUserCoins({ userId: Id.parse(userId) })
 
-  const { data: coin } = useArtistCoin({
-    mint: mint || ''
-  })
+  // Display the mint of the prop if provided, otherwise display the mint of the coin with the highest balance
+  const displayMint = useMemo(() => {
+    if (mint) return mint
+    if (!userCoins || userCoins.length < 2) return null
+    return userCoins[1].mint
+  }, [mint, userCoins])
 
-  const { data: coinBalance } = useTokenBalance({
-    mint: mint || ''
+  const { data: coin } = useArtistCoin({ mint: displayMint ?? '' })
+  const { data: tokenBalance } = useTokenBalance({
+    mint: displayMint ?? '',
+    userId
   })
 
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
-  const hasContent = isUserVerified || tier !== 'none' || !!coinBalance
+  const hasContent = isUserVerified || tier !== 'none' || !!tokenBalance
 
   // Create a handler to stop event propagation
   const handleStopPropagation = useCallback((e: MouseEvent) => {
@@ -116,7 +127,7 @@ const UserBadges = ({
           </Flex>
         }
       >
-        <Box
+        <Flex
           css={{
             cursor: 'pointer',
             transition: `opacity ${motion.quick}`,
@@ -126,7 +137,7 @@ const UserBadges = ({
           }}
         >
           <IconVerified height={iconSizes[size]} width={iconSizes[size]} />
-        </Box>
+        </Flex>
       </HoverCard>
     )
   }, [isUserVerified, size])
@@ -143,7 +154,7 @@ const UserBadges = ({
         transformOrigin={transformOrigin}
         triggeredBy='both'
       >
-        <Box
+        <Flex
           css={{
             cursor: 'pointer',
             transition: `opacity ${motion.quick}`,
@@ -153,29 +164,30 @@ const UserBadges = ({
           }}
         >
           {cloneElement(audioTierMap[tier]!, { size })}
-        </Box>
+        </Flex>
       </AudioHoverCard>
     )
   }, [tier, userId, anchorOrigin, transformOrigin, size])
 
   const shouldShowArtistCoinBadge =
-    !!coinBalance &&
-    !!mint &&
     isArtistCoinEnabled &&
-    coinBalance.balance.value !== BigInt(0)
+    !!displayMint &&
+    !!coin &&
+    !!tokenBalance &&
+    tokenBalance.balance.value !== BigInt(0)
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null
 
     return (
       <ArtistCoinHoverCard
-        mint={mint}
+        mint={displayMint ?? ''}
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
         triggeredBy='both'
       >
-        <Box
+        <Flex
           css={{
             cursor: 'pointer',
             transition: `opacity ${motion.quick}`,
@@ -193,12 +205,12 @@ const UserBadges = ({
               borderWidth={0}
             />
           ) : null}
-        </Box>
+        </Flex>
       </ArtistCoinHoverCard>
     )
   }, [
     shouldShowArtistCoinBadge,
-    mint,
+    displayMint,
     userId,
     anchorOrigin,
     transformOrigin,
@@ -212,7 +224,8 @@ const UserBadges = ({
     <Box
       onClick={handleStopPropagation}
       css={{
-        display: 'inline-block',
+        height: '100%',
+        display: 'inline-flex',
         position: 'relative',
         pointerEvents: 'auto'
       }}

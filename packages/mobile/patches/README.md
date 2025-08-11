@@ -21,3 +21,7 @@ Patch to support full screen swipe gestures in native stack. and navigation draw
 ## @react-native-community/datepicker
 
 Patch to fix issue with xcode 15.3: https://github.com/react-native-datetimepicker/datetimepicker/issues/866
+
+## react-native-collapsible-tab-view+8.0.1.patch
+
+Patch to fix issue with react-native-reanimated warnings: https://github.com/PedroBern/react-native-collapsible-tab-view/issues/453

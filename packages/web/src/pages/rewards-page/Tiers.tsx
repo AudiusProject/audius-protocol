@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useEffect, useMemo } from 'react'
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import {
@@ -10,11 +10,11 @@ import {
 import {
   badgeTiers,
   getTierNumber,
-  vipDiscordModalActions,
   musicConfettiActions,
   useTierAndVerifiedForUser
 } from '@audius/common/store'
-import { formatNumberCommas, Nullable } from '@audius/common/utils'
+import type { Nullable } from '@audius/common/utils'
+import { formatNumberCommas } from '@audius/common/utils'
 import {
   IconTokenBronze,
   IconTokenGold,
@@ -33,10 +33,11 @@ import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { UpdateDiscordRoleModal } from 'pages/asset-detail-page/components/UpdateDiscordRoleModal'
+import { env } from 'services/env'
 
 import styles from './Tiers.module.css'
 const { show } = musicConfettiActions
-const { pressDiscord } = vipDiscordModalActions
 
 const messages = {
   title: 'Reward Perks',
@@ -156,14 +157,14 @@ const TierBox = ({ tier, message }: { tier: BadgeTier; message?: string }) => {
 
 const TierColumn = ({
   tier,
-  current
+  current,
+  onClickDiscord
 }: {
   tier: BadgeTier
   current?: boolean
+  onClickDiscord: () => void
 }) => {
   const { color } = useTheme()
-  const dispatch = useDispatch()
-  const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
 
   const tierFeatures =
     tier !== 'none' ? tierFeatureMap[tier] : tierFeatureMap.none
@@ -262,7 +263,13 @@ const TierColumn = ({
   )
 }
 
-const TierTable = ({ tier }: { tier: BadgeTier }) => {
+const TierTable = ({
+  tier,
+  onClickDiscord
+}: {
+  tier: BadgeTier
+  onClickDiscord: () => void
+}) => {
   return (
     <Flex w='100%' justifyContent='space-between' p='xl'>
       <Flex direction='column' flex='1 1 300px'>
@@ -284,7 +291,11 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
       {(['none', 'bronze', 'silver', 'gold', 'platinum'] as BadgeTier[]).map(
         (displayTier) => (
           <Flex key={displayTier} direction='column' flex='1 1 200px'>
-            <TierColumn tier={displayTier} current={displayTier === tier} />
+            <TierColumn
+              tier={displayTier}
+              current={displayTier === tier}
+              onClickDiscord={onClickDiscord}
+            />
           </Flex>
         )
       )}
@@ -295,13 +306,18 @@ const TierTable = ({ tier }: { tier: BadgeTier }) => {
 /** Tile with multiple tiers */
 const Tiers = () => {
   const { data: accountUserId } = useCurrentUserId()
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const userId = accountUserId ?? 0
   const { tier } = useTierAndVerifiedForUser(userId)
 
   const dispatch = useDispatch()
-  const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
+
   const onClickExplainMore = useCallback(() => {
     window.open(LEARN_MORE_URL, '_blank')
+  }, [])
+
+  const onClickDiscord = useCallback(() => {
+    setIsModalOpen(true)
   }, [])
 
   const showConfetti = useShowConfetti(tier)
@@ -314,29 +330,36 @@ const Tiers = () => {
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
-    <div className={styles.container}>
-      <div className={wm(styles.titleContainer)}>
-        <Text variant='display' size='s' className={wm(styles.title)}>
-          {messages.title}
-        </Text>
-        <Text variant='body' strength='strong' size='l'>
-          {messages.subtitle}
-        </Text>
+    <>
+      <UpdateDiscordRoleModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mint={env.WAUDIO_MINT_ADDRESS}
+      />
+      <div className={styles.container}>
+        <div className={wm(styles.titleContainer)}>
+          <Text variant='display' size='s' className={wm(styles.title)}>
+            {messages.title}
+          </Text>
+          <Text variant='body' strength='strong' size='l'>
+            {messages.subtitle}
+          </Text>
+        </div>
+        <TierTable tier={tier} onClickDiscord={onClickDiscord} />
+        <div className={wm(styles.buttonContainer)}>
+          <Button variant='secondary' onClick={onClickExplainMore}>
+            {messages.learnMore}
+          </Button>
+          <Button
+            variant='secondary'
+            iconLeft={IconDiscord}
+            onClick={onClickDiscord}
+          >
+            {messages.launchDiscord}
+          </Button>
+        </div>
       </div>
-      <TierTable tier={tier} />
-      <div className={wm(styles.buttonContainer)}>
-        <Button variant='secondary' onClick={onClickExplainMore}>
-          {messages.learnMore}
-        </Button>
-        <Button
-          variant='secondary'
-          iconLeft={IconDiscord}
-          onClick={onClickDiscord}
-        >
-          {messages.launchDiscord}
-        </Button>
-      </div>
-    </div>
+    </>
   )
 }
 export default Tiers

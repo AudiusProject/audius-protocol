@@ -64,6 +64,8 @@ export interface GetTrendingPlaylistsRequest {
     offset?: number;
     limit?: number;
     time?: GetTrendingPlaylistsTimeEnum;
+    type?: GetTrendingPlaylistsTypeEnum;
+    omitTracks?: boolean;
 }
 
 export interface SearchPlaylistsRequest {
@@ -276,6 +278,14 @@ export class PlaylistsApi extends runtime.BaseAPI {
             queryParameters['time'] = params.time;
         }
 
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.omitTracks !== undefined) {
+            queryParameters['omit_tracks'] = params.omitTracks;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -367,6 +377,14 @@ export const GetTrendingPlaylistsTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetTrendingPlaylistsTimeEnum = typeof GetTrendingPlaylistsTimeEnum[keyof typeof GetTrendingPlaylistsTimeEnum];
+/**
+ * @export
+ */
+export const GetTrendingPlaylistsTypeEnum = {
+    Playlist: 'playlist',
+    Album: 'album'
+} as const;
+export type GetTrendingPlaylistsTypeEnum = typeof GetTrendingPlaylistsTypeEnum[keyof typeof GetTrendingPlaylistsTypeEnum];
 /**
  * @export
  */

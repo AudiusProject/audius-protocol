@@ -1,23 +1,40 @@
 import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { RemixContestCard } from 'components/remix-contest-card'
+import {
+  RemixContestCard,
+  RemixContestCardSkeleton
+} from 'components/remix-contest-card'
+import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
+import { useDeferredElement } from './useDeferredElement'
 
 export const FeaturedRemixContestsSection = () => {
-  const { data, isLoading } = useExploreContent()
+  const { ref, inView } = useDeferredElement()
 
-  if (!isLoading && (!data || data.featuredRemixContests.length === 0)) {
+  const { data, isLoading, isError, isSuccess } = useExploreContent({
+    enabled: inView
+  })
+  const isMobile = useIsMobile()
+
+  if (isError || (isSuccess && !data?.featuredRemixContests?.length)) {
     return null
   }
 
   return (
-    <ExploreSection
-      isLoading={isLoading}
-      title={messages.featuredRemixContests}
-      data={data?.featuredRemixContests}
-      Card={RemixContestCard}
-    />
+    <Carousel ref={ref} title={messages.featuredRemixContests}>
+      {!inView || !data?.featuredRemixContests || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <RemixContestCardSkeleton
+              key={i}
+              size={isMobile ? 'xs' : 's'}
+              noShimmer
+            />
+          ))
+        : data?.featuredRemixContests?.map((id) => (
+            <RemixContestCard key={id} id={id} size='s' />
+          ))}
+    </Carousel>
   )
 }

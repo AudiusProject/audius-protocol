@@ -17,7 +17,6 @@ import {
 } from '@audius/common/store'
 import { Genre } from '@audius/common/utils'
 import {
-  IconVolumeLevel2 as IconVolume,
   IconCrown,
   Text,
   Flex,
@@ -25,7 +24,8 @@ import {
   IconKebabHorizontal,
   Paper,
   Box,
-  IconButton
+  IconButton,
+  IconVolumeLevel2 as IconVolume
 } from '@audius/harmony'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -72,6 +72,7 @@ export type TrackTileProps = {
   isFeed: boolean
   onClick?: (trackId: ID) => void
   dragKind?: DragDropKind
+  noShimmer?: boolean
 }
 
 export const TrackTile = ({
@@ -89,7 +90,8 @@ export const TrackTile = ({
   isTrending,
   isFeed = false,
   onClick,
-  dragKind
+  dragKind,
+  noShimmer
 }: TrackTileProps) => {
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -178,16 +180,6 @@ export const TrackTile = ({
       dispatch(undoRepostTrack(trackId, RepostSource.TILE))
     },
     [dispatch]
-  )
-
-  const userName = (
-    <UserLink
-      userId={user_id}
-      badgeSize='xs'
-      isActive={isActive}
-      popover
-      css={{ marginTop: '-4px' }}
-    />
   )
 
   const onClickFavorite = useCallback(() => {
@@ -340,35 +332,52 @@ export const TrackTile = ({
             artworkIconClassName='artworkIcon'
             showArtworkIcon={!loading}
             showSkeleton={loading}
+            noShimmer={noShimmer}
             hasStreamAccess={hasStreamAccess || isPreviewable}
           />
         </Box>
       </Flex>
       <TrackDogEar trackId={trackId} hideUnlocked />
-      <Flex column flex={1}>
+      <Flex column flex={1} css={{ minWidth: 0 }}>
         <Flex direction='column' justifyContent='space-between' h='100%'>
-          <Flex column gap='s'>
+          <Flex column gap='s' w='100%'>
             <Flex direction='column' gap='xs' pv='xs'>
-              {isLoading ? (
-                <Skeleton width='80%' height='20px' />
-              ) : (
-                <Flex mr='3xl'>
-                  <TextLink
-                    css={{ alignItems: 'center' }}
-                    to={permalink}
-                    isActive={isActive}
-                    textVariant='title'
-                    applyHoverStylesToInnerSvg
-                    onClick={onClickTitle}
-                    disabled={disableActions}
-                    ellipses
-                  >
-                    <Text ellipses>{title}</Text>
-                    {isTrackPlaying ? <IconVolume size='m' /> : null}
-                  </TextLink>
+              <Flex gap='s' alignItems='flex-start'>
+                <Flex
+                  css={{ minWidth: 0, flex: 1 }}
+                  direction='column'
+                  gap='xs'
+                >
+                  {isLoading ? (
+                    <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
+                  ) : (
+                    <TextLink
+                      to={permalink}
+                      isActive={isActive}
+                      textVariant='title'
+                      applyHoverStylesToInnerSvg
+                      onClick={onClickTitle}
+                      disabled={disableActions}
+                      ellipses
+                    >
+                      <Text ellipses>{title}</Text>
+                      {isTrackPlaying ? <IconVolume size='m' /> : null}
+                    </TextLink>
+                  )}
+                  {isLoading ? (
+                    <Skeleton width='50%' height='20px' noShimmer={noShimmer} />
+                  ) : (
+                    <UserLink
+                      userId={user_id}
+                      badgeSize='xs'
+                      isActive={isActive}
+                      popover
+                      css={{ marginTop: '-4px' }}
+                    />
+                  )}
                 </Flex>
-              )}
-              {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
+                <TrackTileDuration trackId={trackId} isLoading={isLoading} />
+              </Flex>
             </Flex>
           </Flex>
           <TrackTileStats
@@ -376,8 +385,8 @@ export const TrackTile = ({
             rankIndex={tileOrder}
             size={size}
             isLoading={isLoading}
+            noShimmer={noShimmer}
           />
-          <TrackTileDuration trackId={trackId} isLoading={isLoading} />
         </Flex>
         {isOwner ? (
           <Flex column gap='s'>
