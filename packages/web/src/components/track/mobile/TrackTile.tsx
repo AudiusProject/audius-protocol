@@ -102,7 +102,8 @@ export const TrackTile = ({
   variant,
   containerClassName,
   isFeed = false,
-  source
+  source,
+  noShimmer
 }: ConnectedTrackTileProps) => {
   const dispatch = useDispatch()
 
@@ -423,6 +424,7 @@ export const TrackTile = ({
             isPlaying={uid === playingUid && isPlaying}
             isBuffering={isBuffering}
             showSkeleton={loading}
+            noShimmer={noShimmer}
             coSign={_co_sign}
             className={styles.albumArtContainer}
             label={`${title} by ${name}`}
@@ -445,7 +447,11 @@ export const TrackTile = ({
               <Text ellipses>{title || messages.loading}</Text>
               {uid === playingUid && isPlaying ? <IconVolume size='m' /> : null}
               {loading ? (
-                <Skeleton className={styles.skeleton} height='20px' />
+                <Skeleton
+                  className={styles.skeleton}
+                  height='20px'
+                  noShimmer={noShimmer}
+                />
               ) : null}
             </TextLink>
             <UserLink
@@ -456,7 +462,11 @@ export const TrackTile = ({
               {loading ? (
                 <>
                   <Text>{messages.loading}</Text>
-                  <Skeleton className={styles.skeleton} height='20px' />
+                  <Skeleton
+                    className={styles.skeleton}
+                    height='20px'
+                    noShimmer={noShimmer}
+                  />
                 </>
               ) : null}
             </UserLink>
@@ -468,6 +478,7 @@ export const TrackTile = ({
           rankIndex={index}
           size={TrackTileSize.SMALL}
           isLoading={loading}
+          noShimmer={noShimmer}
         />
         {isReadonly ? null : (
           <BottomButtons

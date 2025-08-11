@@ -63,7 +63,8 @@ export function fetchTopPlaylists(): ThunkAction<
     try {
       const limit = 5
       const { data } = await audiusSdk.full.playlists.getTrendingPlaylists({
-        limit
+        limit,
+        omitTracks: true
       })
       const playlists: Playlist[] = data.slice(0, limit).map((d) => ({
         title: d.playlistName,
@@ -88,8 +89,9 @@ export function fetchTopAlbums(): ThunkAction<
 > {
   return async (dispatch) => {
     try {
-      const { data } = await audiusSdk.full.playlists.getTopPlaylists({
+      const { data } = await audiusSdk.full.playlists.getTrendingPlaylists({
         type: 'album',
+        omitTracks: true,
         limit: 5
       })
 

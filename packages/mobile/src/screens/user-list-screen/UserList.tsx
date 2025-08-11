@@ -132,7 +132,6 @@ export const UserList = (props: UserListProps) => {
 
   return (
     <FlashList
-      style={{ height: '100%' }}
       data={displayData}
       renderItem={renderItem}
       keyExtractor={keyExtractor}

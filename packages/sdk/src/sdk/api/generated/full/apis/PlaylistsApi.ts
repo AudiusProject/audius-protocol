@@ -19,7 +19,6 @@ import type {
   FollowingResponse,
   FullPlaylistResponse,
   FullPlaylistTracksResponse,
-  FullPlaylistWithScoreResponse,
   FullTrendingPlaylistsResponse,
 } from '../models';
 import {
@@ -29,8 +28,6 @@ import {
     FullPlaylistResponseToJSON,
     FullPlaylistTracksResponseFromJSON,
     FullPlaylistTracksResponseToJSON,
-    FullPlaylistWithScoreResponseFromJSON,
-    FullPlaylistWithScoreResponseToJSON,
     FullTrendingPlaylistsResponseFromJSON,
     FullTrendingPlaylistsResponseToJSON,
 } from '../models';
@@ -55,20 +52,13 @@ export interface GetPlaylistTracksRequest {
     playlistId: string;
 }
 
-export interface GetTopPlaylistsRequest {
-    type: GetTopPlaylistsTypeEnum;
-    offset?: number;
-    limit?: number;
-    userId?: string;
-    mood?: string;
-    filter?: string;
-}
-
 export interface GetTrendingPlaylistsRequest {
     offset?: number;
     limit?: number;
     userId?: string;
     time?: GetTrendingPlaylistsTimeEnum;
+    type?: GetTrendingPlaylistsTypeEnum;
+    omitTracks?: boolean;
 }
 
 export interface GetTrendingPlaylistsWithVersionRequest {
@@ -240,61 +230,6 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets top playlists.
-     */
-    async getTopPlaylistsRaw(params: GetTopPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistWithScoreResponse>> {
-        if (params.type === null || params.type === undefined) {
-            throw new runtime.RequiredError('type','Required parameter params.type was null or undefined when calling getTopPlaylists.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        if (params.type !== undefined) {
-            queryParameters['type'] = params.type;
-        }
-
-        if (params.mood !== undefined) {
-            queryParameters['mood'] = params.mood;
-        }
-
-        if (params.filter !== undefined) {
-            queryParameters['filter'] = params.filter;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/playlists/top`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullPlaylistWithScoreResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets top playlists.
-     */
-    async getTopPlaylists(params: GetTopPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistWithScoreResponse> {
-        const response = await this.getTopPlaylistsRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
      * Returns trending playlists for a time period
      */
     async getTrendingPlaylistsRaw(params: GetTrendingPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
@@ -314,6 +249,14 @@ export class PlaylistsApi extends runtime.BaseAPI {
 
         if (params.time !== undefined) {
             queryParameters['time'] = params.time;
+        }
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.omitTracks !== undefined) {
+            queryParameters['omit_tracks'] = params.omitTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -474,14 +417,6 @@ export class PlaylistsApi extends runtime.BaseAPI {
 /**
  * @export
  */
-export const GetTopPlaylistsTypeEnum = {
-    Album: 'album',
-    Playlist: 'playlist'
-} as const;
-export type GetTopPlaylistsTypeEnum = typeof GetTopPlaylistsTypeEnum[keyof typeof GetTopPlaylistsTypeEnum];
-/**
- * @export
- */
 export const GetTrendingPlaylistsTimeEnum = {
     Week: 'week',
     Month: 'month',
@@ -489,6 +424,14 @@ export const GetTrendingPlaylistsTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetTrendingPlaylistsTimeEnum = typeof GetTrendingPlaylistsTimeEnum[keyof typeof GetTrendingPlaylistsTimeEnum];
+/**
+ * @export
+ */
+export const GetTrendingPlaylistsTypeEnum = {
+    Playlist: 'playlist',
+    Album: 'album'
+} as const;
+export type GetTrendingPlaylistsTypeEnum = typeof GetTrendingPlaylistsTypeEnum[keyof typeof GetTrendingPlaylistsTypeEnum];
 /**
  * @export
  */

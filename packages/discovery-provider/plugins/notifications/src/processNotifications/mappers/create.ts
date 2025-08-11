@@ -18,6 +18,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -28,12 +29,14 @@ type Track = {
   title: string
   owner_id: number
   stream_conditions: object
+  cover_art_sizes?: string | null
 }
 
 type Playlist = {
   playlist_id: number
   playlist_name: string
   playlist_owner_id: number
+  playlist_image_sizes_multihash?: string | null
 }
 type User = {
   user_id: number
@@ -77,25 +80,47 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     let description: string
     let track: Track | undefined
     let playlist: Playlist | undefined
+    let imageUrl: string | undefined
 
     if (this.trackId) {
       const trackRes: Track[] = await this.dnDB
-        .select('track_id', 'title', 'owner_id', 'stream_conditions')
+        .select(
+          'track_id',
+          'title',
+          'owner_id',
+          'stream_conditions',
+          'cover_art_sizes'
+        )
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.trackId])
       track = trackRes[0]
       ownerId = track.owner_id
+
+      // Generate image URL for track cover art
+      if (track?.cover_art_sizes) {
+        imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+      }
     }
 
     if (this.playlistId) {
       const playlistRes: Playlist[] = await this.dnDB
-        .select('playlist_id', 'playlist_name', 'playlist_owner_id')
+        .select(
+          'playlist_id',
+          'playlist_name',
+          'playlist_owner_id',
+          'playlist_image_sizes_multihash'
+        )
         .from<PlaylistRow>('playlists')
         .where('is_current', true)
         .whereIn('playlist_id', [this.playlistId])
       playlist = playlistRes[0]
       ownerId = playlist.playlist_owner_id
+
+      // Generate image URL for playlist/album artwork
+      if (playlist?.playlist_image_sizes_multihash) {
+        imageUrl = formatImageUrl(playlist.playlist_image_sizes_multihash, 150)
+      }
     }
 
     const usersRes: User[] = await this.dnDB
@@ -126,10 +151,10 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     const entityType = this.trackId
       ? 'Track'
       : this.playlistId && this.isAlbum
-        ? 'Album'
-        : this.playlistId && !this.isAlbum
-          ? 'Playlist'
-          : null
+      ? 'Album'
+      : this.playlistId && !this.isAlbum
+      ? 'Playlist'
+      : null
 
     const entityId = this.trackId ?? this.playlistId
 
@@ -198,7 +223,8 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                   entityType: capitalize(entityType),
                   entityIds: [entityId],
                   userId: ownerId
-                }
+                },
+                imageUrl
               }
             )
           })

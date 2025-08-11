@@ -72,17 +72,28 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
     const commenterUserName = users[this.commenterUserId]?.name
     let entityType
     let entityName
+    let tracks: Record<
+      number,
+      { title: string; cover_art_sizes?: string | null }
+    > = {}
 
     if (this.entityType === EntityType.Track) {
-      const res: Array<{ track_id: number; title: string }> = await this.dnDB
-        .select('track_id', 'title')
+      const res: Array<{
+        track_id: number
+        title: string
+        cover_art_sizes?: string | null
+      }> = await this.dnDB
+        .select('track_id', 'title', 'cover_art_sizes')
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.entityId])
-      const tracks = res.reduce((acc, track) => {
-        acc[track.track_id] = { title: track.title }
+      tracks = res.reduce((acc, track) => {
+        acc[track.track_id] = {
+          title: track.title,
+          cover_art_sizes: track.cover_art_sizes
+        }
         return acc
-      }, {} as Record<number, { title: string }>)
+      }, {} as Record<number, { title: string; cover_art_sizes?: string | null }>)
 
       entityType = 'track'
       entityName = tracks[this.entityId]?.title
@@ -97,11 +108,14 @@ export class Comment extends BaseNotification<CommentNotificationRow> {
     const title = 'New Comment'
     const body = `${commenterUserName} commented on your ${entityType.toLowerCase()} ${entityName}`
 
-    // Get commenter's profile picture URL for rich notification (150x150 size)
-    const commenterUser = users[this.commenterUserId]
-    const imageUrl = commenterUser.profile_picture_sizes
-      ? formatImageUrl(commenterUser.profile_picture_sizes, 150)
-      : undefined
+    // Get track's cover art URL for rich notification (150x150 size)
+    let imageUrl: string | undefined
+    if (this.entityType === EntityType.Track) {
+      const track = tracks[this.entityId]
+      imageUrl = track?.cover_art_sizes
+        ? formatImageUrl(track.cover_art_sizes, 150)
+        : undefined
+    }
 
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(

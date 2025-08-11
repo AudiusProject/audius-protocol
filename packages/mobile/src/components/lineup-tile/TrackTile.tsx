@@ -35,7 +35,7 @@ import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ImageProps } from '@audius/harmony-native'
+import { Paper, type ImageProps } from '@audius/harmony-native'
 import type { TrackTileProps } from 'app/components/lineup-tile/types'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -46,7 +46,6 @@ import { TrackDogEar } from '../track/TrackDogEar'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
-import { LineupTileRoot } from './LineupTileRoot'
 import { TrackTileStats } from './TrackTileStats'
 
 const { getUid } = playerSelectors
@@ -57,7 +56,7 @@ const { getTrackPosition } = playbackPositionSelectors
 const { setLockedContentId } = gatedContentActions
 
 export const TrackTile = (props: TrackTileProps) => {
-  const { id, onPress, togglePlay, variant, ...lineupTileProps } = props
+  const { id, onPress, togglePlay, variant, style, ...lineupTileProps } = props
 
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -276,14 +275,9 @@ export const TrackTile = (props: TrackTileProps) => {
   const isOwner = currentUserId === track.owner_id
   const hideShare = !isOwner && track.field_visibility?.share === false
   const isReadonly = variant === 'readonly'
-  const scale = isReadonly ? 1 : undefined
 
   return (
-    <LineupTileRoot
-      onPress={handlePress}
-      style={lineupTileProps.styles}
-      scaleTo={scale}
-    >
+    <Paper onPress={handlePress} style={style}>
       <TrackDogEar trackId={track.track_id} hideUnlocked />
       <LineupTileMetadata
         renderImage={renderImage}
@@ -326,6 +320,6 @@ export const TrackTile = (props: TrackTileProps) => {
           onPressEdit={onPressEdit}
         />
       )}
-    </LineupTileRoot>
+    </Paper>
   )
 }

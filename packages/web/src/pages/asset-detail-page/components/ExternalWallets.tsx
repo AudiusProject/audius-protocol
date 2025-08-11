@@ -46,16 +46,18 @@ const messages = {
     'Link an external wallet to take advantage of in-app features, and take full control of your assets.',
   loadingText: 'Loading...',
   buttonText: 'Add External Wallet',
-  manageWallets: 'Manage External Wallets',
   copied: 'Copied To Clipboard!',
-  audio: '$AUDIO',
   copy: 'Copy Wallet Address',
   remove: 'Remove Wallet',
   options: 'Options',
   newWalletConnected: 'New Wallet Successfully Connected!',
-  walletRemoved: 'Wallet Successfully Removed!',
   error: 'Something went wrong. Please try again.',
-  walletAlreadyAdded: 'No new wallets selected to connect.'
+  walletAlreadyAdded: 'No new wallets selected to connect.',
+  builtIn: 'Built-In',
+  toasts: {
+    walletRemoved: 'Wallet removed successfully!',
+    error: 'Error removing wallet'
+  }
 }
 
 type WalletRowProps = {
@@ -70,7 +72,7 @@ const WalletRow = ({
   decimals
 }: WalletRowProps) => {
   const { toast } = useContext(ToastContext)
-  const [isRemoving, setIsRemoving] = useState(false)
+  const [isRemovingWallet, setIsRemovingWallet] = useState(false)
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const copyAddressToClipboard = useCallback(() => {
@@ -82,18 +84,18 @@ const WalletRow = ({
 
   const handleRemove = useCallback(async () => {
     try {
-      setIsRemoving(true)
+      setIsRemovingWallet(true)
       await removeConnectedWalletAsync({
         wallet: { address, chain: Chain.Sol }
       })
       await queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.userCoin, currentUserId]
       })
-      toast('Wallet removed successfully!')
+      toast(messages.toasts.walletRemoved)
     } catch (e) {
-      toast('Error removing wallet')
+      toast(messages.toasts.error)
     } finally {
-      setIsRemoving(false)
+      setIsRemovingWallet(false)
     }
   }, [removeConnectedWalletAsync, address, queryClient, toast, currentUserId])
 
@@ -105,13 +107,13 @@ const WalletRow = ({
           icon: <IconCopy />,
           onClick: copyAddressToClipboard
         },
-        isInAppWallet
-          ? null
-          : {
+        !isInAppWallet
+          ? {
               text: messages.remove,
               icon: <IconTrash />,
               onClick: handleRemove
             }
+          : null
       ].filter(Boolean) as PopupMenuItem[],
     [copyAddressToClipboard, handleRemove, isInAppWallet]
   )
@@ -122,12 +124,12 @@ const WalletRow = ({
       alignItems='center'
       gap='m'
       w='100%'
-      css={{ opacity: isRemoving ? 0.5 : 1 }}
+      css={{ opacity: isRemovingWallet ? 0.5 : 1 }}
     >
       <Flex alignItems='center' gap='s'>
         {isInAppWallet ? <IconLogoCircle /> : <IconLogoCircleSOL />}
         <Text variant='body' size='m' strength='strong'>
-          {isInAppWallet ? 'Built-In' : shortenSPLAddress(address)}
+          {isInAppWallet ? messages.builtIn : shortenSPLAddress(address)}
         </Text>
       </Flex>
       <Flex css={{ flex: 1 }} justifyContent='flex-end'>
@@ -143,14 +145,14 @@ const WalletRow = ({
       >
         <PopupMenu
           items={items}
-          aria-disabled={isRemoving}
+          aria-disabled={isRemovingWallet}
           renderTrigger={(ref, trigger) => (
             <IconButton
               ref={ref}
               icon={IconKebabHorizontal}
               size='s'
               color='subdued'
-              disabled={isRemoving}
+              disabled={isRemovingWallet}
               onClick={() => trigger()}
               aria-label={messages.options}
             />
@@ -161,7 +163,7 @@ const WalletRow = ({
   )
 }
 
-export const AssetExternalWallets = ({ mint }: AssetDetailProps) => {
+export const ExternalWallets = ({ mint }: AssetDetailProps) => {
   const { data: userCoins, isPending } = useUserCoin({
     mint
   })
@@ -221,10 +223,10 @@ export const AssetExternalWallets = ({ mint }: AssetDetailProps) => {
 
       {hasAccounts ? (
         <Flex direction='column' gap='xl' w='100%' pv='l' ph='l'>
-          {accounts?.map((account) => (
+          {accounts?.map((walletAccount) => (
             <WalletRow
-              key={account.account}
-              {...account}
+              key={walletAccount.account}
+              {...walletAccount}
               mint={mint}
               decimals={decimals ?? 0}
             />

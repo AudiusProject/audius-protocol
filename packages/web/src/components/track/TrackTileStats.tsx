@@ -22,10 +22,11 @@ type TrackTileStatsProps = {
   rankIndex?: number
   size: TrackTileSize
   isLoading?: boolean
+  noShimmer?: boolean
 }
 
 export const TrackTileStats = (props: TrackTileStatsProps) => {
-  const { trackId, isTrending, rankIndex, size, isLoading } = props
+  const { trackId, isTrending, rankIndex, size, isLoading, noShimmer } = props
 
   const isUnlockable = useIsTrackUnlockable(trackId)
   const isMobile = useIsMobile()
@@ -39,7 +40,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
   if (isLoading) {
     return (
       <Flex h='2xl' alignItems='center'>
-        <Skeleton w='40%' h={isMobile ? 16 : 20} />
+        <Skeleton w='40%' h={isMobile ? 16 : 20} noShimmer={noShimmer} />
       </Flex>
     )
   }

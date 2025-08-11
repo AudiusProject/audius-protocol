@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { formatImageUrl } from '../../utils/format'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -50,16 +51,13 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.saverUserId])
-    const users = res.reduce(
-      (acc, user) => {
-        acc[user.user_id] = {
-          name: user.name,
-          isDeactivated: user.is_deactivated
-        }
-        return acc
-      },
-      {} as Record<number, { name: string; isDeactivated: boolean }>
-    )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -68,46 +66,65 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     const saverUserName = users[this.saverUserId]?.name
     let entityType
     let entityName
+    let imageUrl: string | undefined
 
     if (this.saveType === EntityType.Track) {
-      const res: Array<{ track_id: number; title: string }> = await this.dnDB
-        .select('track_id', 'title')
+      const res: Array<{
+        track_id: number
+        title: string
+        cover_art_sizes?: string | null
+      }> = await this.dnDB
+        .select('track_id', 'title', 'cover_art_sizes')
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.saveItemId])
-      const tracks = res.reduce(
-        (acc, track) => {
-          acc[track.track_id] = { title: track.title }
-          return acc
-        },
-        {} as Record<number, { title: string }>
-      )
+      const tracks = res.reduce((acc, track) => {
+        acc[track.track_id] = {
+          title: track.title,
+          cover_art_sizes: track.cover_art_sizes
+        }
+        return acc
+      }, {} as Record<number, { title: string; cover_art_sizes?: string | null }>)
 
       entityType = 'track'
       entityName = tracks[this.saveItemId]?.title
+      // Get track's cover art URL for rich notification (150x150 size)
+      const track = tracks[this.saveItemId]
+      if (track?.cover_art_sizes) {
+        imageUrl = formatImageUrl(track.cover_art_sizes, 150)
+      }
     } else {
       const res: Array<{
         playlist_id: number
         playlist_name: string
         is_album: boolean
+        playlist_image_sizes_multihash?: string | null
       }> = await this.dnDB
-        .select('playlist_id', 'playlist_name', 'is_album')
+        .select(
+          'playlist_id',
+          'playlist_name',
+          'is_album',
+          'playlist_image_sizes_multihash'
+        )
         .from<PlaylistRow>('playlists')
         .where('is_current', true)
         .whereIn('playlist_id', [this.saveItemId])
-      const playlists = res.reduce(
-        (acc, playlist) => {
-          acc[playlist.playlist_id] = {
-            playlist_name: playlist.playlist_name,
-            is_album: playlist.is_album
-          }
-          return acc
-        },
-        {} as Record<number, { playlist_name: string; is_album: boolean }>
-      )
+      const playlists = res.reduce((acc, playlist) => {
+        acc[playlist.playlist_id] = {
+          playlist_name: playlist.playlist_name,
+          is_album: playlist.is_album,
+          playlist_image_sizes_multihash:
+            playlist.playlist_image_sizes_multihash
+        }
+        return acc
+      }, {} as Record<number, { playlist_name: string; is_album: boolean; playlist_image_sizes_multihash?: string | null }>)
       const playlist = playlists[this.saveItemId]
       entityType = playlist?.is_album ? 'album' : 'playlist'
       entityName = playlist?.playlist_name
+      // Get playlist's image URL for rich notification (150x150 size)
+      if (playlist?.playlist_image_sizes_multihash) {
+        imageUrl = formatImageUrl(playlist.playlist_image_sizes_multihash, 150)
+      }
     }
 
     // Get the user's notification setting from identity service
@@ -167,7 +184,8 @@ export class Save extends BaseNotification<SaveNotificationRow> {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.saverUserId],
                 type: 'Favorite'
-              }
+              },
+              imageUrl
             }
           )
         })

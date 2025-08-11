@@ -106,7 +106,6 @@ export const QuickSearchGrid = () => {
 
   const handleClickPreset = useCallback(
     (preset: QuickSearchPreset) => {
-      // TODO: Support tabs
       setCategory('tracks', {
         mood: preset.mood,
         genre: preset.genre,

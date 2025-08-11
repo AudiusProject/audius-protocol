@@ -71,7 +71,6 @@ export const useArtistCoinMembers = (
       const sdk = await audiusSdk()
       const mintAddress = getMintAddress(mint)
 
-      // Build query parameters
       const params: any = {
         mint: mintAddress,
         limit: pageSize,
@@ -79,12 +78,11 @@ export const useArtistCoinMembers = (
         sortDirection
       }
 
-      // Make the API call to the coin members endpoint
       const response = await sdk.coins.getCoinMembers(params)
 
-      const members: CoinMember[] = (response.data || []).map(
+      const members: CoinMember[] = (response.data ?? []).map(
         (member: any) => ({
-          user_id: decodeHashId(member.user_id) || 0,
+          user_id: decodeHashId(member.userId) ?? 0,
           balance: member.balance
         })
       )

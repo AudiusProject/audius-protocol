@@ -1,23 +1,37 @@
 import { useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { CollectionCard } from 'components/collection'
+import { CollectionCard, CollectionCardSkeleton } from 'components/collection'
+import { useIsMobile } from 'hooks/useIsMobile'
 
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
+import { useDeferredElement } from './useDeferredElement'
 
 export const FeaturedPlaylistsSection = () => {
-  const { data, isLoading } = useExploreContent()
+  const { ref, inView } = useDeferredElement()
 
-  if (!isLoading && (!data || data.featuredPlaylists.length === 0)) {
+  const { data, isLoading, isError, isSuccess } = useExploreContent({
+    enabled: inView
+  })
+  const isMobile = useIsMobile()
+
+  if (isError || (isSuccess && !data?.featuredPlaylists?.length)) {
     return null
   }
 
   return (
-    <ExploreSection
-      isLoading={isLoading}
-      title={messages.featuredPlaylists}
-      data={data?.featuredPlaylists}
-      Card={CollectionCard}
-    />
+    <Carousel ref={ref} title={messages.featuredPlaylists}>
+      {!inView || !data?.featuredPlaylists || isLoading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <CollectionCardSkeleton
+              key={i}
+              size={isMobile ? 'xs' : 's'}
+              noShimmer
+            />
+          ))
+        : data?.featuredPlaylists?.map((id) => (
+            <CollectionCard key={id} id={id} size='s' />
+          ))}
+    </Carousel>
   )
 }
