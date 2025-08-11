@@ -86,17 +86,30 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
   }
 
   getPushBodyText() {
-    if (this.challengeId === 'rd') {
-      return `You’ve received ${
-        this.challengeInfoMap[this.challengeId].amount
-      } $AUDIO for being referred! Invite your friends to join to earn more!`
-    } else if (this.challengeId === 'o') {
-      return `You’ve earned ${
+    // Check if the challenge ID exists in our map
+    const challengeInfo = this.challengeInfoMap[this.challengeId]
+    if (!challengeInfo) {
+      return `You've earned ${
         this.amount / AUDIO_DIVISOR
       } $AUDIO for completing this challenge!`
     }
-    return `You’ve earned ${
-      this.challengeInfoMap[this.challengeId].amount
+
+    if (this.challengeId === 'rd') {
+      const amount = 'amount' in challengeInfo ? challengeInfo.amount : 1
+      return `You've received ${amount} $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (this.challengeId === 'o') {
+      return `You've earned ${
+        this.amount / AUDIO_DIVISOR
+      } $AUDIO for completing this challenge!`
+    }
+
+    // Check if amount exists on challengeInfo
+    if ('amount' in challengeInfo && challengeInfo.amount) {
+      return `You've earned ${challengeInfo.amount} $AUDIO for completing this challenge!`
+    }
+
+    return `You've earned ${
+      this.amount / AUDIO_DIVISOR
     } $AUDIO for completing this challenge!`
   }
 
@@ -134,7 +147,16 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       [this.receiverUserId]
     )
 
-    const title = this.challengeInfoMap[this.challengeId].title
+    // Check if the challenge ID exists in our map, provide fallback if not
+    const challengeInfo = this.challengeInfoMap[this.challengeId]
+    if (!challengeInfo) {
+      console.warn(
+        `Unknown challenge ID: ${this.challengeId}, skipping notification`
+      )
+      return
+    }
+
+    const title = challengeInfo.title
     const body = this.getPushBodyText()
     await sendBrowserNotification(
       isBrowserPushEnabled,
