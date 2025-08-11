@@ -65,21 +65,22 @@ export const useTokenBalance = ({
 }: UseTokenBalanceParams) => {
   const { audiusSdk, env } = useQueryContext()
   const { data: user } = useUser(userIdParam, {
-    select: (user) => ({
-      user_id: user.user_id,
-      wallet: user.wallet
+    select: (u) => ({
+      user_id: u.user_id,
+      wallet: u.wallet
     })
   })
   const { data: currentUser } = useCurrentAccountUser({
     enabled: !userIdParam,
-    select: (user) => ({
-      user_id: user.user_id,
-      wallet: user.wallet
+    select: (u) => ({
+      user_id: u.user_id,
+      wallet: u.wallet
     })
   })
-  const userId = user?.user_id ?? currentUser?.user_id ?? null
+  const userToCheck = user ?? currentUser
 
-  const ethAddress = user?.wallet ?? currentUser?.wallet ?? null
+  const userId = userToCheck?.user_id ?? null
+  const ethAddress = userToCheck?.wallet ?? null
   const queryClient = useQueryClient()
   const isUsdc = mint === env.USDC_MINT_ADDRESS
   const { data: userCoin } = useUserCoin({ mint, userId })
@@ -95,7 +96,7 @@ export const useTokenBalance = ({
     queryKey: getTokenBalanceQueryKey(ethAddress, mint),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      if (!ethAddress || !mint || !user?.user_id) {
+      if (!ethAddress || !mint || !userId) {
         return null
       }
 
