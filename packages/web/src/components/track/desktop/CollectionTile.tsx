@@ -80,7 +80,7 @@ export type DesktopCollectionTileProps = {
   index: number
   size: TrackTileSize
   containerClassName?: string
-  togglePlay: () => void
+  togglePlay: (uid: UID, id: ID) => void
   playTrack: (uid: string) => void
   playingTrackId?: ID
   pauseTrack: () => void
