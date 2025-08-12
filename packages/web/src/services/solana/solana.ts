@@ -1,5 +1,4 @@
 import { SolanaWalletAddress } from '@audius/common/models'
-import { TokenType } from '@audius/common/store'
 import { getAccount } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 
