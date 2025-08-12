@@ -111,7 +111,7 @@ export const Reaction = (props: ReactionProps) => {
         useNativeDriver: true
       }).start()
     }
-  })
+  }, [previousStatus, status, scale, scaleProp])
 
   const animatedStyles = {
     transform: [{ scale }],

@@ -84,7 +84,7 @@ export const TipReceivedNotification = (
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification
-    enabled: notificationReactionValue !== null
+    enabled: notificationReactionValue === null
   })
 
   // Use the reaction from the query, falling back to notification data
