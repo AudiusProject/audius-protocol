@@ -10,6 +10,7 @@ import {
   RestrictionType,
   useRequiresAccountOnClick
 } from 'hooks/useRequiresAccount'
+import { removeNullable } from 'utils/typeUtils'
 
 /**
  * Helper function to check if the current path matches any of the provided paths
@@ -60,9 +61,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   const location = useLocation()
   const dispatch = useDispatch()
   const isSelected = useMemo(() => {
-    const pathsToMatch = [to, ...additionalPathMatches].filter(
-      Boolean
-    ) as string[]
+    const pathsToMatch = [to, ...additionalPathMatches].filter(removeNullable)
     return isPathMatch({
       currentPath: location.pathname,
       pathsToMatch,
