@@ -73,6 +73,7 @@ export const FeelingLuckySection = () => {
             </Button>
           </Flex>
           <Tile
+            key={feelingLuckyTrackId}
             uid={feelingLuckyUid}
             id={feelingLuckyTrackId}
             isActive={isTrackPlaying}
