@@ -17,10 +17,10 @@ import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
-import { CollectionCard } from 'components/collection'
+import { CollectionCard, CollectionCardSkeleton } from 'components/collection'
 import { CollectionImage } from 'components/collection/CollectionImage'
 import { TrackArtwork } from 'components/track/TrackArtwork'
-import { UserCard } from 'components/user-card'
+import { UserCard, UserCardSkeleton } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { Carousel } from 'pages/explore-page/components/desktop/Carousel'
 
@@ -132,9 +132,34 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
     ...filters
   })
 
+  const trackClickSearchResult = useCallback(
+    (item: any, entityType: string, kind: Kind) => {
+      // Dispatch analytics
+      dispatch(
+        addRecentSearch({
+          searchItem: {
+            kind,
+            id: item.user_id || item.track_id || item.playlist_id
+          }
+        })
+      )
+      dispatch(
+        make(Name.SEARCH_RESULT_SELECT, {
+          searchText: query,
+          kind: entityType,
+          id: item.user_id || item.track_id || item.playlist_id,
+          source: 'search results page'
+        })
+      )
+    },
+    [dispatch, query]
+  )
+
   const handleClickSearchResult = useCallback(
     (item: any, entityType: string, kind: Kind) => {
       let navigationPath = ''
+
+      trackClickSearchResult(item, entityType, kind)
 
       // Determine navigation path based on entity type
       switch (kind) {
@@ -157,28 +182,10 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
           return
       }
 
-      // Dispatch analytics
-      dispatch(
-        addRecentSearch({
-          searchItem: {
-            kind,
-            id: item.user_id || item.track_id || item.playlist_id
-          }
-        })
-      )
-      dispatch(
-        make(Name.SEARCH_RESULT_SELECT, {
-          searchText: query,
-          kind: entityType,
-          id: item.user_id || item.track_id || item.playlist_id,
-          source: 'search results page'
-        })
-      )
-
       // Navigate to the page
       navigate(navigationPath)
     },
-    [dispatch, query, navigate]
+    [navigate, trackClickSearchResult]
   )
 
   const { data, isLoading, isPending, isError } = queryData
@@ -306,10 +313,20 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
         >
           {isLoading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <UserCard key={i} id={0} size='s' loading />
+                <UserCardSkeleton key={i} size='s' />
               ))
             : data?.users?.map((user) => (
-                <UserCard key={user.user_id} id={user.user_id} size='s' />
+                <UserCard
+                  key={user.user_id}
+                  id={user.user_id}
+                  size='s'
+                  onClick={() =>
+                    trackClickSearchResult(user, 'profile', Kind.USERS)
+                  }
+                  onUserLinkClick={() =>
+                    trackClickSearchResult(user, 'profile', Kind.USERS)
+                  }
+                />
               ))}
         </Carousel>
       ) : null}
@@ -347,13 +364,19 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
         >
           {isLoading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <CollectionCard key={i} id={0} size='s' loading />
+                <CollectionCardSkeleton key={i} size='s' />
               ))
             : data?.albums?.map((album) => (
                 <CollectionCard
                   key={album.playlist_id}
                   id={album.playlist_id}
                   size='s'
+                  onClick={() =>
+                    trackClickSearchResult(album, 'album', Kind.COLLECTIONS)
+                  }
+                  onCollectionLinkClick={() =>
+                    trackClickSearchResult(album, 'album', Kind.COLLECTIONS)
+                  }
                 />
               ))}
         </Carousel>
@@ -367,13 +390,27 @@ export const AllResults = ({ handleSearchTab }: AllResultsProps) => {
         >
           {isLoading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <CollectionCard key={i} id={0} size='s' loading />
+                <CollectionCardSkeleton key={i} size='s' />
               ))
             : data?.playlists?.map((playlist) => (
                 <CollectionCard
                   key={playlist.playlist_id}
                   id={playlist.playlist_id}
                   size='s'
+                  onClick={() =>
+                    trackClickSearchResult(
+                      playlist,
+                      'playlist',
+                      Kind.COLLECTIONS
+                    )
+                  }
+                  onCollectionLinkClick={() =>
+                    trackClickSearchResult(
+                      playlist,
+                      'playlist',
+                      Kind.COLLECTIONS
+                    )
+                  }
                 />
               ))}
         </Carousel>
