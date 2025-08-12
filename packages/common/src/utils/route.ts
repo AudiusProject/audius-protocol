@@ -225,7 +225,6 @@ export const authenticatedRoutes = [
   SALES_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
-  WALLET_PAGE,
   ALL_COINS_PAGE
 ]
 

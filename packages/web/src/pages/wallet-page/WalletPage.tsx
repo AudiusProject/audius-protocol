@@ -1,5 +1,8 @@
 import { useContext, useEffect } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { Flex, IconWallet } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
@@ -9,6 +12,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { AllCoinsPage } from 'pages/all-coins-page/AllCoinsPage'
 import { CashWallet } from 'pages/pay-and-earn-page/components/CashWallet'
 import { YourCoins } from 'pages/pay-and-earn-page/components/YourCoins'
 
@@ -19,6 +23,11 @@ const messages = {
 export const WalletPage = () => {
   const isMobile = useIsMobile()
   const { spacing } = useTheme()
+  const hasAccount = useHasAccount()
+
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
   const { setLeft } = useContext(NavContext)!
   useEffect(() => {
@@ -29,6 +38,10 @@ export const WalletPage = () => {
   useMobileHeader({
     title: messages.title
   })
+
+  if (!hasAccount && isArtistCoinsEnabled) {
+    return <AllCoinsPage />
+  }
 
   const header = <Header primary={messages.title} icon={IconWallet} />
 
