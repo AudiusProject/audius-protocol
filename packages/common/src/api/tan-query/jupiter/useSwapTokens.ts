@@ -16,10 +16,8 @@ import {
 import { useTokens } from '~/store/ui/buy-sell'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
-import { getUserCoinQueryKey } from '../coins/useUserCoin'
 import { QUERY_KEYS } from '../queryKeys'
 
-import { updateTokenBalancesOptimistically } from './optimisticUpdates'
 import {
   ClaimableTokenMint,
   SwapErrorType,
