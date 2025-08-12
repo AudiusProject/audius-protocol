@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
-import { PublicKey } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
@@ -63,7 +62,7 @@ export const useTokenBalance = ({
   pollingInterval = 1000,
   ...queryOptions
 }: UseTokenBalanceParams) => {
-  const { audiusSdk, env } = useQueryContext()
+  const { env } = useQueryContext()
   const { data: user } = useUser(userIdParam, {
     select: (u) => ({
       user_id: u.user_id,
@@ -84,6 +83,7 @@ export const useTokenBalance = ({
   const queryClient = useQueryClient()
   const isUsdc = mint === env.USDC_MINT_ADDRESS
   const { data: userCoin } = useUserCoin({ mint, userId })
+
   // Use specialized USDC hook when dealing with USDC
   const usdcResult = useUSDCBalance({
     isPolling,
@@ -95,18 +95,11 @@ export const useTokenBalance = ({
   const result = useQuery({
     queryKey: getTokenBalanceQueryKey(ethAddress, mint),
     queryFn: async () => {
-      const sdk = await audiusSdk()
       if (!ethAddress || !mint || !userId) {
         return null
       }
 
       try {
-        // Ensure userbank exists before fetching balance
-        await sdk.services.claimableTokensClient.getOrCreateUserBank({
-          ethWallet: ethAddress,
-          mint: new PublicKey(mint)
-        })
-
         const balance = userCoin?.balance
 
         if (isNullOrUndefined(balance)) {
@@ -151,7 +144,7 @@ export const useTokenBalance = ({
       !isUsdc &&
       !!ethAddress &&
       !!mint &&
-      !!user?.user_id &&
+      !!userToCheck?.user_id &&
       !!userCoin?.decimals,
     // TanStack Query's built-in polling - only poll when isPolling is true
     refetchInterval: isPolling ? pollingInterval : false,
