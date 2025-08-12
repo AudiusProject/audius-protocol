@@ -780,11 +780,16 @@ export class ChatsApi
   }
 
   private async getPublicKey(userId: string): Promise<Uint8Array> {
-    // Use cached promise to avoid duplicate requests for the same user
     if (!this.publicKeyCache[userId]) {
       this.publicKeyCache[userId] = this.fetchPublicKey(userId)
     }
-    return this.publicKeyCache[userId]
+    const cachedPromise = this.publicKeyCache[userId]
+    if (!cachedPromise) {
+      throw new Error(
+        `Public key cache is unexpectedly empty for user ${userId}`
+      )
+    }
+    return await cachedPromise
   }
 
   private async fetchPublicKey(userId: string): Promise<Uint8Array> {
