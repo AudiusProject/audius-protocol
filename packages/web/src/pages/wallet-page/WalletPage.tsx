@@ -1,6 +1,8 @@
 import { useContext, useEffect } from 'react'
 
 import { useHasAccount } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { Flex, IconWallet } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
@@ -23,6 +25,10 @@ export const WalletPage = () => {
   const { spacing } = useTheme()
   const hasAccount = useHasAccount()
 
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
   const { setLeft } = useContext(NavContext)!
   useEffect(() => {
     setLeft(LeftPreset.BACK)
@@ -33,8 +39,7 @@ export const WalletPage = () => {
     title: messages.title
   })
 
-  // If user doesn't have an account, show AllCoinsPage
-  if (!hasAccount) {
+  if (!hasAccount && isArtistCoinsEnabled) {
     return <AllCoinsPage />
   }
 
