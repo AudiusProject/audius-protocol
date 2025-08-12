@@ -1,5 +1,8 @@
+import { useCallback } from 'react'
+
 import { useAudioBalance, useCurrentUserId, useUser } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
+import { AUDIO_PAGE } from '@audius/common/src/utils/route'
 import { formatCount } from '@audius/common/utils'
 import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import {
@@ -15,6 +18,7 @@ import {
   IconTokenSilver,
   useTheme
 } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -69,6 +73,7 @@ export const AudioHoverCard = ({
   onClick,
   triggeredBy
 }: AudioHoverCardProps) => {
+  const navigate = useNavigate()
   const { cornerRadius } = useTheme()
 
   // Get user's formatted balance directly using select
@@ -82,6 +87,10 @@ export const AudioHoverCard = ({
     ? formatBalance(currentUserBalance)
     : userBalance
 
+  const handleNavigateToAudioPage = useCallback(() => {
+    navigate(AUDIO_PAGE)
+  }, [navigate])
+
   return (
     <HoverCard
       content={
@@ -89,6 +98,7 @@ export const AudioHoverCard = ({
           <HoverCardHeader
             iconLeft={audioTierBadgeMap[tier]}
             title={getBadgeName(tier)}
+            onClick={handleNavigateToAudioPage}
             onClose={onClose}
             iconRight={IconArrowRight}
           />

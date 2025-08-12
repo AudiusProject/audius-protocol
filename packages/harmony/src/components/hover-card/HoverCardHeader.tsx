@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { Flex, Text, IconButton } from '~harmony/index'
 
 import { HoverCardHeaderProps } from './types'
@@ -8,9 +10,19 @@ import { HoverCardHeaderProps } from './types'
 export const HoverCardHeader = ({
   iconLeft,
   title,
+  onClick,
   onClose,
   iconRight
 }: HoverCardHeaderProps) => {
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      onClose?.()
+      onClick?.()
+    },
+    [onClick, onClose]
+  )
+
   return (
     <Flex
       w='100%'
@@ -30,7 +42,7 @@ export const HoverCardHeader = ({
             color='subdued'
             size='l'
             aria-label={''}
-            onClick={onClose}
+            onClick={handleClick}
           />
         ) : null}
         <Text
@@ -48,7 +60,7 @@ export const HoverCardHeader = ({
           color='subdued'
           size='s'
           aria-label='Close'
-          onClick={onClose}
+          onClick={handleClick}
         />
       ) : null}
     </Flex>
