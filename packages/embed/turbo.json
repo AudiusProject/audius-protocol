@@ -2,19 +2,14 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": [
-        "build/**",
-        "build-ssr/**",
-        "../../node_modules/@brillout/vite-plugin-import-build/dist/autoImporter.js"
-      ],
+      "outputs": ["build/**"],
       "dependsOn": [
         "@audius/common#build",
         "@audius/fixed-decimal#build",
         "@audius/harmony#build",
         "@audius/sdk#build:browser"
       ],
-      "outputLogs": "new-only",
-      "env": ["VITE_ENVIRONMENT", "VITE_SSR"]
+      "outputLogs": "new-only"
     },
     "start": {
       "cache": false,
@@ -31,16 +26,6 @@
       "outputLogs": "new-only"
     },
     "verify": {
-      "outputLogs": "new-only"
-    },
-    "dist": {
-      "outputs": ["dist/**"],
-      "dependsOn": [
-        "@audius/common#build",
-        "@audius/fixed-decimal#build",
-        "@audius/harmony#build",
-        "@audius/sdk#build:browser"
-      ],
       "outputLogs": "new-only"
     }
   }
