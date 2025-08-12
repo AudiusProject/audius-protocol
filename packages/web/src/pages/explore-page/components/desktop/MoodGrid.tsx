@@ -17,7 +17,11 @@ export const MoodGrid = () => {
 
   const handleMoodPress = useCallback(
     (mood: Mood) => {
-      setCategory(category, { mood })
+      if (category === 'all') {
+        setCategory('tracks', { mood })
+      } else {
+        setCategory(category, { mood })
+      }
     },
     [category, setCategory]
   )
