@@ -35,10 +35,7 @@ const DeletePlaylistConfirmationModal = () => {
 
   const handleDelete = useCallback(async () => {
     try {
-      await deleteCollection({
-        collectionId: playlistId,
-        source: 'delete_playlist_confirmation_modal'
-      })
+      await deleteCollection({ collectionId: playlistId })
       setStackReset(true)
       // Navigate to trending page after successful deletion
       dispatch(push(TRENDING_PAGE))

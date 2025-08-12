@@ -33,10 +33,7 @@ export const DeletePlaylistConfirmationDrawer = () => {
     if (playlistId) {
       try {
         // Use the TanStack Query mutation for optimistic updates
-        await deleteCollection({
-          collectionId: playlistId,
-          source: 'delete_playlist_confirmation_drawer'
-        })
+        await deleteCollection({ collectionId: playlistId })
         onClose()
         navigation.goBack()
       } catch (error) {

@@ -9,6 +9,7 @@ import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { accountActions } from '~/store'
 
+import { QUERY_KEYS } from '../queryKeys'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { primeCollectionData } from '../utils/primeCollectionData'
 
@@ -98,20 +99,6 @@ export const useDeleteCollection = () => {
           queryClient,
           forceReplace: true
         })
-
-        // Re-add to account playlists
-        dispatch(
-          accountActions.addAccountPlaylist({
-            id: collection.playlist_id,
-            name: collection.playlist_name,
-            is_album: collection.is_album,
-            user: {
-              id: collection.playlist_owner_id,
-              handle: collection.user?.handle || ''
-            },
-            permalink: collection.permalink
-          })
-        )
       }
 
       reportToSentry({
@@ -131,7 +118,7 @@ export const useDeleteCollection = () => {
 
       // Invalidate library collections to remove from user's library
       queryClient.invalidateQueries({
-        queryKey: ['libraryCollections']
+        queryKey: QUERY_KEYS.libraryCollections
       })
     }
   })

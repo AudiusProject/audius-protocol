@@ -42,7 +42,8 @@ export const DeleteCollectionConfirmationModal = (
     select: (account) => account?.collections?.[collectionId]
   })
   const { is_album, permalink } = accountCollection ?? {}
-  const { mutateAsync: deleteCollection, isPending } = useDeleteCollection()
+  const { mutateAsync: deleteCollection, isPending: isDeleting } =
+    useDeleteCollection()
 
   const handleDelete = useCallback(async () => {
     try {
@@ -78,7 +79,7 @@ export const DeleteCollectionConfirmationModal = (
       visible={visible}
       onCancel={onCancel}
       onDelete={handleDelete}
-      isDeleting={isPending}
+      isDeleting={isDeleting}
     />
   )
 }
