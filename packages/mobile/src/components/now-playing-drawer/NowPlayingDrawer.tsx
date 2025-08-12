@@ -164,6 +164,13 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
     }
   }, [staticTopInset, insets.top])
 
+  // Use static insets when drawer is open to prevent layout shift from notification panel
+  // When drawer is fully open (or mostly open), use static insets to maintain fullscreen layout
+  const isDrawerFullyOpen = drawerPercentOpen.current > 0.8
+  const effectiveTopInset =
+    isOpen && isDrawerFullyOpen ? staticTopInset.current : insets.top
+  const effectiveBottomInset = isOpen && isDrawerFullyOpen ? 0 : insets.bottom
+
   useEffect(() => {
     if (
       Platform.OS === 'ios' &&
@@ -299,7 +306,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
       <View
         style={[
           styles.container,
-          { paddingTop: staticTopInset.current, paddingBottom: insets.bottom }
+          { paddingTop: effectiveTopInset, paddingBottom: effectiveBottomInset }
         ]}
       >
         <View style={styles.playBarContainer}>
