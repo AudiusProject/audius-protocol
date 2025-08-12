@@ -23,11 +23,7 @@ const formatPercentage = (num: number): string => {
 }
 
 const createChangeData = (changePercent: number | undefined) => {
-  if (
-    changePercent === undefined ||
-    changePercent === null ||
-    isNaN(changePercent)
-  ) {
+  if (!changePercent || isNaN(changePercent)) {
     return undefined
   }
   return {
