@@ -1,4 +1,3 @@
-import { useHasAccount } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { IconWallet } from '@audius/harmony'
 
@@ -11,14 +10,8 @@ const messages = {
 }
 
 export const WalletNavItem = () => {
-  const hasAccount = useHasAccount()
   return (
-    <LeftNavLink
-      leftIcon={IconWallet}
-      to={WALLET_PAGE}
-      disabled={!hasAccount}
-      restriction='account'
-    >
+    <LeftNavLink leftIcon={IconWallet} to={WALLET_PAGE} restriction='none'>
       {messages.wallet}
     </LeftNavLink>
   )

@@ -1,5 +1,6 @@
 import { useContext, useEffect } from 'react'
 
+import { useHasAccount } from '@audius/common/api'
 import { Flex, IconWallet } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
@@ -9,6 +10,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { AllCoinsPage } from 'pages/all-coins-page/AllCoinsPage'
 import { CashWallet } from 'pages/pay-and-earn-page/components/CashWallet'
 import { YourCoins } from 'pages/pay-and-earn-page/components/YourCoins'
 
@@ -19,6 +21,7 @@ const messages = {
 export const WalletPage = () => {
   const isMobile = useIsMobile()
   const { spacing } = useTheme()
+  const hasAccount = useHasAccount()
 
   const { setLeft } = useContext(NavContext)!
   useEffect(() => {
@@ -29,6 +32,11 @@ export const WalletPage = () => {
   useMobileHeader({
     title: messages.title
   })
+
+  // If user doesn't have an account, show AllCoinsPage
+  if (!hasAccount) {
+    return <AllCoinsPage />
+  }
 
   const header = <Header primary={messages.title} icon={IconWallet} />
 
