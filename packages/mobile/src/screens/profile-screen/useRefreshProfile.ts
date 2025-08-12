@@ -38,7 +38,6 @@ export const useRefreshProfile = (
   }, [status, isRefreshing])
 
   const handleRefresh = useCallback(() => {
-    // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
       // Invalidate user metadata queries
