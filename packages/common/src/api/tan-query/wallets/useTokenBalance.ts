@@ -17,16 +17,6 @@ export type TokenBalanceQueryData = {
 
 const USDC_DECIMALS = 6
 
-export const getTokenBalanceQueryKey = (
-  ethAddress: string | null,
-  mint: string
-) =>
-  [
-    QUERY_KEYS.tokenBalance,
-    ethAddress,
-    mint
-  ] as unknown as QueryKey<TokenBalanceQueryData>
-
 /**
  * Wrapper query that gives the balance of any token including USDC.
  * Uses the appropriate query hook and formats accordingly

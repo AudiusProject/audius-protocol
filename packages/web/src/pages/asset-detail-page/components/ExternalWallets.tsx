@@ -213,10 +213,10 @@ export const ExternalWallets = ({ mint }: AssetDetailProps) => {
         </Text>
       </Flex>
       <Divider css={{ width: '100%' }} />
-      {!hasAccounts && (
+      {!hasAccounts && !isPending && (
         <Flex direction='column' pv='m' ph='l'>
           <Text variant='body' size='m' color='subdued'>
-            {isPending ? messages.loadingText : messages.description}
+            {messages.description}
           </Text>
         </Flex>
       )}
@@ -242,8 +242,6 @@ export const ExternalWallets = ({ mint }: AssetDetailProps) => {
           ph='xl'
           pb='l'
         >
-          <Skeleton w='100%' h='24px' />
-          <Skeleton w='100%' h='24px' />
           <Skeleton w='100%' h='24px' />
         </Flex>
       ) : null}
