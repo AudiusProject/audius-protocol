@@ -22,5 +22,6 @@ export const exploreMessages = {
   undergroundTrending: 'Underground Trending',
   trendingPlaylists: 'Trending Playlists',
   verified: 'Verified',
-  quickSearch: 'Quick Search'
+  quickSearch: 'Quick Search',
+  downloadsAvailable: 'Downloads Available'
 }
