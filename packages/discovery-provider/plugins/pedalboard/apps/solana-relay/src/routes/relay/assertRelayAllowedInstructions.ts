@@ -1,28 +1,29 @@
 import {
-  decodeAssociatedTokenAccountInstruction,
   ClaimableTokensProgram,
   RewardManagerProgram,
+  Secp256k1Program,
+  decodeAssociatedTokenAccountInstruction,
   isCreateAssociatedTokenAccountIdempotentInstruction,
-  isCreateAssociatedTokenAccountInstruction,
-  Secp256k1Program
+  isCreateAssociatedTokenAccountInstruction
 } from '@audius/spl'
 import { Users } from '@pedalboard/storage'
 import {
-  NATIVE_MINT,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  NATIVE_MINT,
   TOKEN_PROGRAM_ID,
   decodeInstruction,
+  getAssociatedTokenAddressSync,
   isCloseAccountInstruction,
-  isTransferCheckedInstruction,
   isSyncNativeInstruction,
-  getAssociatedTokenAddressSync
+  isTransferCheckedInstruction,
+  isTransferInstruction
 } from '@solana/spl-token'
 import {
+  ComputeBudgetProgram,
   PublicKey,
-  TransactionInstruction,
-  SystemProgram,
   SystemInstruction,
-  ComputeBudgetProgram
+  SystemProgram,
+  TransactionInstruction
 } from '@solana/web3.js'
 
 import { config } from '../../config'
@@ -191,7 +192,10 @@ const assertAllowedTokenProgramInstruction = async (
   wallet?: string | null
 ) => {
   const decodedInstruction = decodeInstruction(instruction)
-  if (isTransferCheckedInstruction(decodedInstruction)) {
+  if (
+    isTransferCheckedInstruction(decodedInstruction) ||
+    isTransferInstruction(decodedInstruction)
+  ) {
     if (!wallet) {
       throw new InvalidRelayInstructionError(
         instructionIndex,
