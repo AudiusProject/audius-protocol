@@ -37,7 +37,7 @@ const { getPlaying, getCounter, getUid, getBuffering, getPlaybackRate } =
 const { seek, reset } = playerActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
 
-const SKIP_DURATION_SEC = 30
+const SKIP_DURATION_SEC = 15
 const RESTART_THRESHOLD_SEC = 3
 const VOLUME_GRANULARITY = 100
 

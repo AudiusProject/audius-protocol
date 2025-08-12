@@ -342,15 +342,15 @@ export const TrackTile = ({
         <Flex direction='column' justifyContent='space-between' h='100%'>
           <Flex column gap='s' w='100%'>
             <Flex direction='column' gap='xs' pv='xs'>
-              {isLoading ? (
-                <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
-              ) : (
-                <Flex gap='s' alignItems='flex-start'>
-                  <Flex
-                    css={{ minWidth: 0, flex: 1 }}
-                    direction='column'
-                    gap='xs'
-                  >
+              <Flex gap='s' alignItems='flex-start'>
+                <Flex
+                  css={{ minWidth: 0, flex: 1 }}
+                  direction='column'
+                  gap='xs'
+                >
+                  {isLoading ? (
+                    <Skeleton width='80%' height='20px' noShimmer={noShimmer} />
+                  ) : (
                     <TextLink
                       to={permalink}
                       isActive={isActive}
@@ -363,25 +363,21 @@ export const TrackTile = ({
                       <Text ellipses>{title}</Text>
                       {isTrackPlaying ? <IconVolume size='m' /> : null}
                     </TextLink>
-                    {isLoading ? (
-                      <Skeleton
-                        width='50%'
-                        height='20px'
-                        noShimmer={noShimmer}
-                      />
-                    ) : (
-                      <UserLink
-                        userId={user_id}
-                        badgeSize='xs'
-                        isActive={isActive}
-                        popover
-                        css={{ marginTop: '-4px' }}
-                      />
-                    )}
-                  </Flex>
-                  <TrackTileDuration trackId={trackId} isLoading={isLoading} />
+                  )}
+                  {isLoading ? (
+                    <Skeleton width='50%' height='20px' noShimmer={noShimmer} />
+                  ) : (
+                    <UserLink
+                      userId={user_id}
+                      badgeSize='xs'
+                      isActive={isActive}
+                      popover
+                      css={{ marginTop: '-4px' }}
+                    />
+                  )}
                 </Flex>
-              )}
+                <TrackTileDuration trackId={trackId} isLoading={isLoading} />
+              </Flex>
             </Flex>
           </Flex>
           <TrackTileStats
