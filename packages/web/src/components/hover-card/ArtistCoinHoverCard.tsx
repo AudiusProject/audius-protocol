@@ -1,5 +1,8 @@
+import { useCallback } from 'react'
+
 import { useArtistCoin, useTokenBalance } from '@audius/common/api'
 import { ID } from '@audius/common/models'
+import { WALLET_PAGE } from '@audius/common/src/utils/route'
 import { formatCount } from '@audius/common/utils'
 import {
   Artwork,
@@ -9,6 +12,7 @@ import {
   IconArrowRight,
   useTheme
 } from '@audius/harmony'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -45,6 +49,7 @@ export const ArtistCoinHoverCard = ({
   onClick,
   triggeredBy
 }: ArtistCoinHoverCardProps) => {
+  const navigate = useNavigate()
   const { cornerRadius, spacing } = useTheme()
 
   const { data: coin } = useArtistCoin({ mint })
@@ -52,6 +57,10 @@ export const ArtistCoinHoverCard = ({
     mint,
     userId
   })
+
+  const handleNavigateToTokenPage = useCallback(() => {
+    navigate(`${WALLET_PAGE}/${mint}`)
+  }, [navigate, mint])
 
   if (!tokenBalance || !coin) return null
 
@@ -76,6 +85,7 @@ export const ArtistCoinHoverCard = ({
               ) : null
             }
             title={coinName}
+            onClick={handleNavigateToTokenPage}
             onClose={onClose}
             iconRight={IconArrowRight}
           />
