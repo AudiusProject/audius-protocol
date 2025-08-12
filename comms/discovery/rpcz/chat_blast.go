@@ -97,6 +97,7 @@ func chatBlast(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatBlastR
 					Message:     params.Message,
 					MessageID:   messageID,
 					IsPlaintext: &isPlaintext,
+					Audience:    &params.Audience,
 				}}})
 
 		if err := chatUpdateLatestFields(tx, result.ChatID); err != nil {
