@@ -21,6 +21,7 @@ export * from './tan-query/collection/useCollectionByParams'
 export * from './tan-query/coins/useArtistCoin'
 export * from './tan-query/coins/useArtistCoinInsights'
 export * from './tan-query/coins/useArtistCoinMembers'
+export * from './tan-query/coins/useUserCoin'
 export * from './tan-query/coins/useUserCoins'
 export * from './tan-query/coins/useArtistCoinMembersCount'
 

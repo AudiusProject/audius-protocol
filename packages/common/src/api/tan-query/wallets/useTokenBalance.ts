@@ -1,9 +1,8 @@
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import { useCurrentAccountUser } from '~/api'
+import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 
-import { useUserCoin } from '../coins/useUserCoin'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
@@ -27,6 +26,7 @@ const USDC_DECIMALS = 6
  */
 export const useTokenBalance = ({
   mint,
+  userId: userIdParam,
   isPolling,
   pollingInterval = 1000,
   ...queryOptions
