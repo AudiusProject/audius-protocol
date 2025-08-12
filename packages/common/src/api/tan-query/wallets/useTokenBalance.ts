@@ -3,16 +3,10 @@ import { FixedDecimal } from '@audius/fixed-decimal'
 import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 
-import { QUERY_KEYS } from '../queryKeys'
-import { QueryOptions, type QueryKey } from '../types'
+import { QueryOptions } from '../types'
 
 import { useUSDCBalance } from './useUSDCBalance'
-
-export type TokenBalanceQueryData = {
-  balance: FixedDecimal
-  decimals: number
-  isEmpty?: boolean
-} | null
+import { ID } from '~/models'
 
 const USDC_DECIMALS = 6
 
@@ -26,17 +20,20 @@ const USDC_DECIMALS = 6
  */
 export const useTokenBalance = ({
   mint,
-  userId: userIdParam,
+  userId,
   isPolling,
   pollingInterval = 1000,
   ...queryOptions
 }: {
   mint: string
+  userId?: ID
   isPolling?: boolean
   pollingInterval?: number
 } & QueryOptions) => {
   const { env } = useQueryContext()
-  const { data: user } = useCurrentAccountUser()
+  const { data: userById } = useUser(userId)
+  const { data: currentUser } = useCurrentAccountUser({ enabled: !userId })
+  const user = userId ? userById : currentUser
   const ethAddress = user?.wallet ?? null
   const isUsdc = mint === env.USDC_MINT_ADDRESS
 

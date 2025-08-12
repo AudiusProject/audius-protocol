@@ -1,12 +1,10 @@
-import { AUDIO, wAUDIO, FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { QueryClient } from '@tanstack/react-query'
 
 import { Chain } from '~/models'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 
-import { getUserCoinQueryKey } from '../coins/useUserCoin'
 import { optimisticallyUpdateWalletAudioBalance } from '../wallets/useAudioBalance'
-import { type TokenBalanceQueryData } from '../wallets/useTokenBalance'
 
 import { SwapTokensParams } from './types'
 
