@@ -49,7 +49,7 @@ function checkIsBot(val) {
     return false
   }
   const botTest =
-    /discordbot|facebookexternalhit|gigabot|ia_archiver|meta-externalfetcher|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
+    /discordbot|facebookexternalhit|gigabot|ia_archiver|meta-externalfetcher|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly|iframely/i
   return botTest.test(val)
 }
 
@@ -83,7 +83,7 @@ async function getMetadata(pathname, discoveryNode) {
     case 'track': {
       const { handle, title } = route.params
       if (!handle || !title) return { metadata: null, name: null }
-      discoveryRequestPath = `v1/tracks?handle=${handle}&slug=${title}`
+      discoveryRequestPath = `v1/tracks?permalink=${handle + '/' + title}`
       break
     }
     case 'playlist': {
@@ -134,9 +134,10 @@ class SEOHandlerBody {
 }
 
 class SEOHandlerHead {
-  constructor(pathname, discoveryNode) {
+  constructor(pathname, discoveryNode, host) {
     self.pathname = pathname
     self.discoveryNode = discoveryNode
+    self.host = host
   }
 
   async element(element) {
@@ -173,12 +174,14 @@ class SEOHandlerHead {
         break
       }
       case 'track': {
-        title = `${metadata.data.title} by ${metadata.data.user.name} • Audius`
-        h1 = metadata.data.title
-        description = `Stream ${metadata.data.title} by ${metadata.data.user.name} on Audius | Stream similar artists to ${metadata.data.user.name} on desktop and mobile`
-        ogDescription = metadata.data.description || description
-        image = metadata.data.artwork ? metadata.data.artwork['480x480'] : ''
-        permalink = metadata.data.permalink
+        title = `${metadata.data[0].title} by ${metadata.data[0].user.name} • Audius`
+        h1 = metadata.data[0].title
+        description = `Stream ${metadata.data[0].title} by ${metadata.data[0].user.name} on Audius | Stream similar artists to ${metadata.data[0].user.name} on desktop and mobile`
+        ogDescription = metadata.data[0].description || description
+        image = metadata.data[0].artwork
+          ? metadata.data[0].artwork['480x480']
+          : ''
+        permalink = metadata.data[0].permalink
         break
       }
       case 'playlist': {
@@ -209,19 +212,98 @@ class SEOHandlerHead {
     const tags = `<title>${clean(title)}</title>
     <meta name="description" content="${clean(description)}">
 
-    <link rel="canonical" href="https://audius.co${encodeURI(permalink)}">
+    <link rel="canonical" href="https://${self.host}${encodeURI(permalink)}">
     <meta property="og:title" content="${clean(title)}">
     <meta property="og:description" content="${clean(ogDescription)}">
     <meta property="og:image" content="${image}">
-    <meta property="og:url" content="https://audius.co${encodeURI(permalink)}">
+    <meta property="og:url" content="https://${self.host}${encodeURI(permalink)}">
     <meta property="og:type" content="website" />
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="${clean(title)}">
     <meta name="twitter:description" content="${clean(ogDescription)}">
-    <meta name="twitter:image" content="${image}">`
+    <meta name="twitter:image" content="${image}">
+
+    <link rel="alternate" type="application/json+oembed" href="https://${self.host}/oembed?url=https://${self.host + encodeURI(permalink)}&format=json" title="${clean(title)}" />
+    `
     element.append(tags, { html: true })
   }
+}
+
+async function getOEmbedResponse(url, discoveryNode) {
+  // Parse the URL query parameter to get the resource URL pathname
+  const params = new URLSearchParams(url.search)
+  const oembedUrl = params.get('url')
+  if (!oembedUrl) {
+    return new Response('Missing url parameter', { status: 400 })
+  }
+  const pathname = new URL(oembedUrl).pathname
+
+  // Get the metadata from the pathname
+  const { metadata, name: entityType } = await getMetadata(
+    pathname,
+    discoveryNode
+  )
+
+  // Ensure https
+  const host = 'https://' + url.host
+
+  // Playlist endoint is returning an array of playlists, so we need to handle that
+  const data = Array.isArray(metadata.data) ? metadata.data[0] : metadata.data
+
+  // Construct an embed player for tracks, playlists, and albums
+  if (entityType !== 'user') {
+    const title = `${data.title || data.playlist_name} by ${data.user.name} • Audius`
+    const embed = `<iframe src="${host}/embed/${entityType}/${data.id}?flavor=card" width="100%" height="480" allow="encrypted-media" style="border: none;"></iframe>`
+    return new Response(
+      JSON.stringify({
+        version: '1.0',
+        type: 'rich',
+        provider_name: 'Audius',
+        provider_url: host,
+        title: clean(title),
+        description: data.description || '',
+        html: embed,
+        width: 500,
+        height: 480,
+        thumbnail_url: data.artwork ? data.artwork['480x480'] : undefined,
+        thumbnail_width: 480,
+        thumbnail_height: 480,
+        author_name: data.user.name,
+        author_url: `${host}/${data.user.handle}`,
+        cache_age: 3600
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    )
+  }
+
+  // For user, return a simple link with thumbnail
+  const title = `${data.name} • Audius`
+  return new Response(
+    JSON.stringify({
+      version: '1.0',
+      type: 'link',
+      provider_name: 'Audius',
+      provider_url: host,
+      title: clean(title),
+      thumbnail_url: data.profile_picture
+        ? data.profile_picture['480x480']
+        : '',
+      thumbnail_width: 480,
+      thumbnail_height: 480
+    }),
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    }
+  )
 }
 
 async function handleEvent(request, env, ctx) {
@@ -242,6 +324,11 @@ async function handleEvent(request, env, ctx) {
     const destinationURL = discoveryNode + pathname + search + hash
     const newRequest = new Request(destinationURL, request)
     return await fetch(newRequest)
+  }
+
+  const isOEmbed = pathname.startsWith('/oembed')
+  if (isOEmbed) {
+    return await getOEmbedResponse(url, discoveryNode)
   }
 
   const userAgent = request.headers.get('User-Agent') || ''
@@ -299,7 +386,7 @@ async function handleEvent(request, env, ctx) {
         const asset = await getAsset(request, env, ctx, options)
 
         const rewritten = new HTMLRewriter()
-          .on('head', new SEOHandlerHead(pathname, discoveryNode))
+          .on('head', new SEOHandlerHead(pathname, discoveryNode, url.host))
           .on('body', new SEOHandlerBody())
           .transform(asset)
 
