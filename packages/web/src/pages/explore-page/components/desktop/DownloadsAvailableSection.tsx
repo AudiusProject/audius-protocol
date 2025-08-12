@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import { useSearchTrackResults, SEARCH_PAGE_SIZE } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { QueueSource } from '@audius/common/store'
 
 import { Carousel } from './Carousel'
 import { TilePairs, TileSkeletons } from './TileHelpers'
@@ -39,7 +40,7 @@ export const DownloadsAvailableSection = () => {
       {!inView || isLoading || !data ? (
         <TileSkeletons noShimmer />
       ) : (
-        <TilePairs data={data} />
+        <TilePairs data={data} source={QueueSource.SEARCH_TRACKS} />
       )}
     </Carousel>
   )
