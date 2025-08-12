@@ -58,8 +58,7 @@ const createTokenConfig = (token: TokenInfo): UserBankManagedTokenInfo => ({
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk, env } =
-    useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const { tokens } = useTokens()
 
