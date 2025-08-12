@@ -81,6 +81,10 @@ export class ChatsApi
    */
   private chatSecrets: Record<string, Uint8Array> = {}
   /**
+   * A map of userId => publicKey promise to cache and deduplicate public key requests
+   */
+  private publicKeyCache: Record<string, Promise<Uint8Array>> = {}
+  /**
    * An event emitter that's used for consumers to listen for chat events
    */
   private readonly eventEmitter: TypedEmitter<ChatEvents>
@@ -663,10 +667,23 @@ export class ChatsApi
     invitedUserIds: string[],
     chatSecret: Uint8Array
   ): Promise<ChatInvite[]> {
-    const userPublicKey = await this.getPublicKey(userId)
+    const allUserIds = [userId, ...invitedUserIds]
+
+    // Fetch all public keys in parallel to avoid sequential network requests
+    const publicKeyPromises = allUserIds.map((id) => this.getPublicKey(id))
+    const publicKeys = await Promise.all(publicKeyPromises)
+
+    const userPublicKey = publicKeys[0]
+    if (!userPublicKey) {
+      throw new Error(`Failed to fetch public key for user ${userId}`)
+    }
+
     return await Promise.all(
-      [userId, ...invitedUserIds].map(async (userId) => {
-        const inviteePublicKey = await this.getPublicKey(userId)
+      allUserIds.map(async (userId, index) => {
+        const inviteePublicKey = publicKeys[index]
+        if (!inviteePublicKey) {
+          throw new Error(`Failed to fetch public key for user ${userId}`)
+        }
         const inviteCode = await this.createInviteCode(
           userPublicKey,
           inviteePublicKey,
@@ -762,7 +779,15 @@ export class ChatsApi
     return existingChatSecret
   }
 
-  private async getPublicKey(userId: string) {
+  private async getPublicKey(userId: string): Promise<Uint8Array> {
+    // Use cached promise to avoid duplicate requests for the same user
+    if (!this.publicKeyCache[userId]) {
+      this.publicKeyCache[userId] = this.fetchPublicKey(userId)
+    }
+    return this.publicKeyCache[userId]
+  }
+
+  private async fetchPublicKey(userId: string): Promise<Uint8Array> {
     const response = await this.request({
       path: `/comms/pubkey/${userId}`,
       method: 'GET',
