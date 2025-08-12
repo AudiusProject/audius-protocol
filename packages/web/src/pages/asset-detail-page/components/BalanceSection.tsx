@@ -4,7 +4,8 @@ import { walletMessages } from '@audius/common/messages'
 import {
   tokenDashboardPageActions,
   useAddCashModal,
-  useBuySellModal
+  useBuySellModal,
+  useReceiveTokensModal
 } from '@audius/common/store'
 import { Artwork, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -156,12 +157,13 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { onOpen: openBuySellModal } = useBuySellModal()
   const { onOpen: openAddCashModal } = useAddCashModal()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
+  const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
 
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
   // Action destructuring
-  const { pressReceive, pressSend } = tokenDashboardPageActions
+  const { pressSend } = tokenDashboardPageActions
 
   // Handler functions with account requirements - defined before early return
   const handleBuySell = useRequiresAccountCallback(() => {
@@ -175,12 +177,27 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   }, [openAddCashModal])
 
   const handleReceive = useRequiresAccountCallback(() => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressReceive())
+    // For artist coins, we need to create a TokenInfo object
+    const tokenInfo = {
+      symbol: coin?.ticker ?? '',
+      name: coin?.ticker?.replace('$', '') ?? '',
+      decimals: 9, // Default for SPL tokens
+      balance: tokenBalance?.balance
+        ? Number(tokenBalance.balance.toString())
+        : null,
+      address: mint,
+      logoURI: coin?.logoUri,
+      isStablecoin: false
     }
-  }, [isMobile, openTransferDrawer, dispatch, pressReceive])
+    const balance = tokenBalance?.balance
+      ? Number(tokenBalance.balance.toString())
+      : 0
+    openReceiveTokensModal({
+      tokenInfo,
+      balance: balance.toString(),
+      isOpen: true
+    })
+  }, [coin, mint, tokenBalance, openReceiveTokensModal])
 
   const handleSend = useRequiresAccountCallback(() => {
     if (isMobile) {

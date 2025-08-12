@@ -8,7 +8,7 @@ const messages = {
 }
 
 type CryptoBalanceSectionProps = {
-  title: string
+  title?: string
   tokenInfo: TokenInfo
   amount: string
   priceLabel?: string
@@ -22,12 +22,14 @@ export const CryptoBalanceSection = ({
 }: CryptoBalanceSectionProps) => {
   return (
     <Flex direction='column' gap='l'>
-      <Flex alignItems='center' gap='m'>
-        <Text variant='heading' size='s' color='subdued'>
-          {title}
-        </Text>
-        <Divider css={{ flexGrow: 1 }} />
-      </Flex>
+      {title && (
+        <Flex alignItems='center' gap='m'>
+          <Text variant='heading' size='s' color='subdued'>
+            {title}
+          </Text>
+          <Divider css={{ flexGrow: 1 }} />
+        </Flex>
+      )}
       <Flex alignItems='center' gap='s' data-testid='token-icon'>
         <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
         <Flex direction='column'>

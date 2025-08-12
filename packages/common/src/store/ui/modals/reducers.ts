@@ -24,6 +24,7 @@ import { notificationModalReducer } from './notification-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { publishConfirmationModalReducer } from './publish-confirmation-modal'
+import { receiveTokensModalReducer } from './receive-tokens-modal'
 import { replaceTrackConfirmationModalReducer } from './replace-track-confirmation-modal'
 import { replaceTrackProgressModalReducer } from './replace-track-progress-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
@@ -82,7 +83,8 @@ const combinedReducers = combineReducers({
   Notification: notificationModalReducer,
   DownloadTrackArchive: downloadTrackArchiveModalReducer,
   HostRemixContest: hostRemixContestModalReducer,
-  FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer
+  FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer,
+  ReceiveTokensModal: receiveTokensModalReducer
 })
 
 /**

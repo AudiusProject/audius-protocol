@@ -1,6 +1,7 @@
 import { Action } from '@reduxjs/toolkit'
 
 import { ModalSource } from '~/models/Analytics'
+import { TokenInfo } from '~/store'
 
 import { AddCashModalState } from './add-cash-modal'
 import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-confirmation-modal'
@@ -115,6 +116,7 @@ export type Modals =
   | 'DownloadTrackArchive'
   | 'BuySellModal'
   | 'HostRemixContest'
+  | 'ReceiveTokensModal'
   | 'FinalizeWinnersConfirmation'
 
 export type BasicModalsState = {
@@ -151,6 +153,12 @@ export type StatefulModalsState = {
   DownloadTrackArchive: DownloadTrackArchiveModalState
   BuySellModal: BuySellModalState
   HostRemixContest: HostRemixContestModalState
+  ReceiveTokensModal: ReceiveTokensModalState
+}
+
+export type ReceiveTokensModalState = BaseModalState & {
+  tokenInfo?: TokenInfo
+  balance?: string
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

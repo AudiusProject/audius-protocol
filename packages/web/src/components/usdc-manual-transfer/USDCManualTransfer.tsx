@@ -23,7 +23,7 @@ import { useAsync } from 'react-use'
 
 import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { AddressTile } from 'components/address-tile'
-import { ExternalLink } from 'components/link/ExternalLink'
+import { ExternalTextLink } from 'components/link/ExternalTextLink'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track as trackAnalytics, make } from 'services/analytics'
@@ -121,15 +121,19 @@ export const USDCManualTransfer = ({
               {messages.explainer}
             </Text>
           ) : null}
-          <Hint icon={IconError}>
-            <Flex column>
-              <Text variant='body'>{messages.disclaimer}</Text>
-              <ExternalLink to={USDCLearnMore}>
-                <Text variant='body' color='link'>
-                  {messages.learnMore}
-                </Text>
-              </ExternalLink>
-            </Flex>
+          <Hint
+            icon={IconError}
+            actions={
+              <ExternalTextLink
+                to={USDCLearnMore}
+                variant='visible'
+                showUnderline
+              >
+                {messages.learnMore}
+              </ExternalTextLink>
+            }
+          >
+            {messages.disclaimer}
           </Hint>
         </Flex>
       </Flex>
