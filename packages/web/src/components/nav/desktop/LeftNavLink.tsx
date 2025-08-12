@@ -11,11 +11,39 @@ import {
   useRequiresAccountOnClick
 } from 'hooks/useRequiresAccount'
 
+/**
+ * Helper function to check if the current path matches any of the provided paths
+ * @param params - Object containing path matching parameters
+ * @param params.currentPath - The current pathname from location
+ * @param params.pathsToMatch - Array of paths to check against
+ * @param params.exact - Whether to use exact matching or startsWith
+ * @returns true if any path matches, false otherwise
+ */
+const isPathMatch = ({
+  currentPath,
+  pathsToMatch,
+  exact
+}: {
+  currentPath: string
+  pathsToMatch: string[]
+  exact: boolean
+}): boolean => {
+  if (pathsToMatch.length === 0) return false
+
+  return pathsToMatch.some((path) => {
+    if (exact) {
+      return currentPath === path
+    }
+    return currentPath.startsWith(path)
+  })
+}
+
 export type LeftNavLinkProps = Omit<NavItemProps, 'isSelected'> & {
   to?: string
   disabled?: boolean
   restriction?: RestrictionType
   exact?: boolean
+  additionalPathMatches?: string[]
 }
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
@@ -26,16 +54,21 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     onClick,
     restriction,
     exact = false,
+    additionalPathMatches = [],
     ...other
   } = props
   const location = useLocation()
   const dispatch = useDispatch()
   const isSelected = useMemo(() => {
-    if (exact) {
-      return to ? location.pathname === to : false
-    }
-    return to ? location.pathname.startsWith(to) : false
-  }, [to, location.pathname, exact])
+    const pathsToMatch = [to, ...additionalPathMatches].filter(
+      Boolean
+    ) as string[]
+    return isPathMatch({
+      currentPath: location.pathname,
+      pathsToMatch,
+      exact
+    })
+  }, [to, additionalPathMatches, location.pathname, exact])
 
   const requiresAccountOnClick = useRequiresAccountOnClick(
     (e) => {
