@@ -43,6 +43,7 @@ import {
 import { ActiveDiscussionsSection } from './ActiveDiscussionsSection'
 import { ArtistSpotlightSection } from './ArtistSpotlightSection'
 import { BestSellingSection } from './BestSellingSection'
+import { DownloadsAvailableSection } from './DownloadsAvailableSection'
 import { FeaturedPlaylistsSection } from './FeaturedPlaylistsSection'
 import { FeaturedRemixContestsSection } from './FeaturedRemixContestsSection'
 import { FeelingLuckySection } from './FeelingLuckySection'
@@ -331,7 +332,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           {showUserContent && <ArtistSpotlightSection />}
           {showUserContent && <LabelSpotlightSection />}
           {isSearchExploreGoodiesEnabled && showTrackContent && (
-            <ActiveDiscussionsSection />
+            <>
+              <ActiveDiscussionsSection />
+              <DownloadsAvailableSection />
+            </>
           )}
           {(showTrackContent || showAlbumContent || showPlaylistContent) && (
             <MoodGrid />
