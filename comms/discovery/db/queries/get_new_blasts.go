@@ -24,7 +24,7 @@ type BlastRow struct {
 func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams) ([]BlastRow, error) {
 
 	// this query is to find new blasts for the current user
-	// which don't already have a eixsting chat.
+	// which don't already have a existing chat.
 	// see also: subtly different inverse query exists in chat_blast.go
 	// to fan out messages to existing chat
 	var findNewBlasts = `
