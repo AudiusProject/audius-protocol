@@ -177,27 +177,11 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   }, [openAddCashModal])
 
   const handleReceive = useRequiresAccountCallback(() => {
-    // For artist coins, we need to create a TokenInfo object
-    const tokenInfo = {
-      symbol: coin?.ticker ?? '',
-      name: coin?.ticker?.replace('$', '') ?? '',
-      decimals: 9, // Default for SPL tokens
-      balance: tokenBalance?.balance
-        ? Number(tokenBalance.balance.toString())
-        : null,
-      address: mint,
-      logoURI: coin?.logoUri,
-      isStablecoin: false
-    }
-    const balance = tokenBalance?.balance
-      ? Number(tokenBalance.balance.toString())
-      : 0
     openReceiveTokensModal({
-      tokenInfo,
-      balance: balance.toString(),
+      mint,
       isOpen: true
     })
-  }, [coin, mint, tokenBalance, openReceiveTokensModal])
+  }, [mint, openReceiveTokensModal])
 
   const handleSend = useRequiresAccountCallback(() => {
     if (isMobile) {

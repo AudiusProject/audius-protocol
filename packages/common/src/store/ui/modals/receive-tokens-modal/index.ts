@@ -5,8 +5,7 @@ const receiveTokensModal = createModal<ReceiveTokensModalState>({
   reducerPath: 'ReceiveTokensModal',
   initialState: {
     isOpen: false,
-    tokenInfo: undefined,
-    balance: undefined
+    mint: undefined
   },
   sliceSelector: (state) => state.ui.modals
 })

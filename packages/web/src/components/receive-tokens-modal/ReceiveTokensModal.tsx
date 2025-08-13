@@ -1,6 +1,12 @@
 import { useCallback, useContext } from 'react'
 
-import { useWalletAddresses } from '@audius/common/api'
+import {
+  useArtistCoin,
+  useTokenBalance,
+  transformArtistCoinToTokenInfo
+} from '@audius/common/api'
+import { useUserbank } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { useReceiveTokensModal } from '@audius/common/store'
 import {
   Button,
@@ -12,7 +18,6 @@ import {
   Hint
 } from '@audius/harmony'
 import QRCode from 'react-qr-code'
-import { useAsync } from 'react-use'
 
 import { AddressTile } from 'components/address-tile'
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
@@ -20,39 +25,30 @@ import { ExternalTextLink } from 'components/link'
 import ResponsiveModal from 'components/modal/ResponsiveModal'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { getUserBank } from 'services/solana/solana'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const DIMENSIONS = 160
 
-const messages = {
-  title: 'RECEIVE',
-  explainer: 'Send tokens to your built in Audius wallet.',
-  disclaimer: 'Use caution to avoid errors and lost funds.',
-  learnMore: 'Learn More',
-  copy: 'Copy Wallet Address',
-  close: 'Close',
-  copied: 'Copied to Clipboard!'
-}
-
 export const ReceiveTokensModal = () => {
   const { isOpen, onClose, data } = useReceiveTokensModal()
-  const { data: walletAddresses } = useWalletAddresses()
-  const { currentUser: wallet } = walletAddresses ?? {}
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
-  const { tokenInfo, balance } = data
+  const { mint } = data ?? {}
 
-  const { value: userBankAddress } = useAsync(async () => {
-    if (wallet && tokenInfo?.name) {
-      const userBankPubKey = await getUserBank(wallet, tokenInfo.name)
-      return userBankPubKey?.toString()
-    }
-  }, [wallet, tokenInfo?.name])
+  // Fetch token info and balance
+  const { data: coin } = useArtistCoin({ mint: mint ?? '' })
+  const { data: tokenBalance } = useTokenBalance({ mint: mint ?? '' })
+
+  // Create tokenInfo object from fetched data
+  const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
+
+  const balance = tokenBalance?.balance ? tokenBalance.balance.toString() : '0'
+
+  const { userBankAddress, wallet } = useUserbank(mint)
 
   const handleCopy = useCallback(() => {
     copyToClipboard(userBankAddress ?? '')
-    toast(messages.copied)
+    toast(walletMessages.receiveTokensCopied)
   }, [userBankAddress, toast])
 
   if (wallet === null) {
@@ -79,11 +75,11 @@ export const ReceiveTokensModal = () => {
           variant='visible'
           showUnderline
         >
-          {messages.learnMore}
+          {walletMessages.receiveTokensLearnMore}
         </ExternalTextLink>
       }
     >
-      {messages.disclaimer}
+      {walletMessages.receiveTokensDisclaimer}
     </Hint>
   )
 
@@ -93,7 +89,7 @@ export const ReceiveTokensModal = () => {
       onClose={onClose}
       size='m'
       dismissOnClickOutside
-      title={messages.title}
+      title={walletMessages.receiveTokensTitle}
     >
       <Flex direction='column' gap='xl' p='xl' h='100%'>
         {tokenInfo && balance ? (
@@ -119,14 +115,14 @@ export const ReceiveTokensModal = () => {
             justifyContent={isMobile ? 'center' : 'space-between'}
           >
             <Text variant='body' size='l'>
-              {messages.explainer}
+              {walletMessages.receiveTokensExplainer}
             </Text>
             {!isMobile ? hint : null}
           </Flex>
         </Flex>
 
         {/* Wallet Address */}
-        <AddressTile address={userBankAddress} />
+        {userBankAddress ? <AddressTile address={userBankAddress} /> : null}
 
         {isMobile ? hint : null}
 
@@ -137,11 +133,11 @@ export const ReceiveTokensModal = () => {
           direction={isMobile ? 'column' : 'row'}
         >
           <Button variant='primary' fullWidth onClick={handleCopy}>
-            {messages.copy}
+            {walletMessages.receiveTokensCopy}
           </Button>
           {isMobile ? null : (
             <Button variant='secondary' fullWidth onClick={onClose}>
-              {messages.close}
+              {walletMessages.receiveTokensClose}
             </Button>
           )}
         </Flex>
