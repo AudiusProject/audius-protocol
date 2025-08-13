@@ -8,6 +8,7 @@ import {
 import { useUserbank } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { useReceiveTokensModal } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -15,7 +16,8 @@ import {
   Text,
   LoadingSpinner,
   Divider,
-  Hint
+  Hint,
+  useMedia
 } from '@audius/harmony'
 import QRCode from 'react-qr-code'
 
@@ -24,7 +26,6 @@ import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSec
 import { ExternalTextLink } from 'components/link'
 import ResponsiveModal from 'components/modal/ResponsiveModal'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const DIMENSIONS = 160
@@ -32,7 +33,7 @@ const DIMENSIONS = 160
 export const ReceiveTokensModal = () => {
   const { isOpen, onClose, data } = useReceiveTokensModal()
   const { toast } = useContext(ToastContext)
-  const isMobile = useIsMobile()
+  const { isMobile } = useMedia()
   const { mint } = data ?? {}
 
   // Fetch token info and balance
@@ -60,7 +61,7 @@ export const ReceiveTokensModal = () => {
         dismissOnClickOutside
       >
         <Flex justifyContent='center' alignItems='center' p='xl' w='100%'>
-          <LoadingSpinner css={{ height: 32 }} />
+          <LoadingSpinner h='2xl' />
         </Flex>
       </ResponsiveModal>
     )
@@ -71,7 +72,7 @@ export const ReceiveTokensModal = () => {
       icon={IconError}
       actions={
         <ExternalTextLink
-          to='https://support.audius.co/product/tokens'
+          to={route.AUDIUS_TOKENS_HELP_LINK}
           variant='visible'
           showUnderline
         >

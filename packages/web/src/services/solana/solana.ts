@@ -47,21 +47,3 @@ export const getUSDCUserBank = async (ethAddress: string) => {
   })
   return usdcUserBank
 }
-
-/**
- * Returns the current user's user bank for a specific token mint.
- */
-export const getUserBank = async (ethAddress: string, mint: string) => {
-  const mintMap = {
-    AUDIO: 'wAUDIO',
-    USDC: 'USDC',
-    BONK: 'BONK'
-  } as const
-
-  const sdk = await audiusSdk()
-  const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
-    ethWallet: ethAddress,
-    mint: mintMap[mint as keyof typeof mintMap]
-  })
-  return userBank
-}

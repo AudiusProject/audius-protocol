@@ -22,14 +22,14 @@ export const CryptoBalanceSection = ({
 }: CryptoBalanceSectionProps) => {
   return (
     <Flex direction='column' gap='l'>
-      {title && (
+      {title ? (
         <Flex alignItems='center' gap='m'>
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
           <Divider css={{ flexGrow: 1 }} />
         </Flex>
-      )}
+      ) : null}
       <Flex alignItems='center' gap='s' data-testid='token-icon'>
         <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
         <Flex direction='column'>
@@ -40,11 +40,11 @@ export const CryptoBalanceSection = ({
             <Text variant='heading' size='s' color='subdued'>
               {messages.symbol(tokenInfo.symbol)}
             </Text>
-            {priceLabel && (
+            {priceLabel ? (
               <Text variant='heading' size='s' color='subdued'>
                 {priceLabel}
               </Text>
-            )}
+            ) : null}
           </Flex>
         </Flex>
       </Flex>
