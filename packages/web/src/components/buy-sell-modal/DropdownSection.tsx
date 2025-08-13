@@ -39,40 +39,43 @@ type CustomSingleValueProps = {
 
 const CustomSingleValue = (
   props: SingleValueProps<TokenOption> & CustomSingleValueProps
-) => (
-  <components.SingleValue {...props}>
-    <Flex gap='s' alignItems='center' justifyContent='space-between' w='100%'>
-      <Flex gap='s' alignItems='center'>
-        <TokenIcon tokenInfo={props.data.tokenInfo} size='2xl' hex />
-        <Flex direction='column'>
-          {props.shouldShowLargeTicker ? (
-            <Flex alignSelf='flex-start'>
-              <Text variant='heading' size='s' color='subdued'>
-                {messages.tokenTicker(props.symbol, !!props.isStablecoin)}
+) => {
+  return (
+    <components.SingleValue {...props}>
+      <Flex gap='s' alignItems='center' justifyContent='space-between' w='100%'>
+        <Flex gap='s' alignItems='center'>
+          <TokenIcon tokenInfo={props.data.tokenInfo} size='2xl' hex />
+          <Flex direction='column'>
+            {props.shouldShowLargeTicker ? (
+              <Flex alignSelf='flex-start'>
+                <Text variant='heading' size='s' color='subdued'>
+                  {messages.tokenTicker(props.symbol, !!props.isStablecoin)}
+                </Text>
+              </Flex>
+            ) : null}
+            {!props.hasReceiveAmount ? (
+              <Text variant='title' size='s' color='default'>
+                {messages.stackedBalance(props.formattedAvailableBalance!)}
               </Text>
-            </Flex>
-          ) : null}
-          {!props.hasReceiveAmount ? (
-            <Text variant='title' size='s' color='default'>
-              {messages.stackedBalance(props.formattedAvailableBalance!)}
-            </Text>
-          ) : null}
-          {props.hasReceiveAmount &&
-          props.formattedReceiveAmount !== DEFAULT_TOKEN_AMOUNT_PLACEHOLDER ? (
-            <Flex direction='column'>
-              <Text variant='heading' size='s'>
-                {props.formattedReceiveAmount}
-              </Text>
-              <Text variant='title' size='s' color='subdued'>
-                {messages.tokenTicker(props.symbol, !!props.isStablecoin)}
-              </Text>
-            </Flex>
-          ) : null}
+            ) : null}
+            {props.hasReceiveAmount &&
+            props.formattedReceiveAmount !==
+              DEFAULT_TOKEN_AMOUNT_PLACEHOLDER ? (
+              <Flex direction='column'>
+                <Text variant='heading' size='s'>
+                  {props.formattedReceiveAmount}
+                </Text>
+                <Text variant='title' size='s' color='subdued'>
+                  {messages.tokenTicker(props.symbol, !!props.isStablecoin)}
+                </Text>
+              </Flex>
+            ) : null}
+          </Flex>
         </Flex>
       </Flex>
-    </Flex>
-  </components.SingleValue>
-)
+    </components.SingleValue>
+  )
+}
 
 const CustomOption = (props: OptionProps<TokenOption>) => {
   const { spacing, cornerRadius, color } = useTheme()
@@ -180,6 +183,7 @@ export const DropdownSection = ({
       ph='m'
       borderRadius='s'
       css={{
+        maxHeight: spacing.unit16,
         cursor: isClickable ? 'pointer' : 'default',
         '&:hover': isClickable
           ? {

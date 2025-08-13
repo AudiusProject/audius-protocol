@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { buySellMessages as messages } from '~/messages'
+// No messages import needed here
 
 import { useTokenExchangeRate, useTokenPrice } from '../../../api'
 
@@ -139,9 +139,15 @@ export const useTokenSwapForm = ({
   // Create validation schema
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      createSwapFormSchema(min, max, availableBalance, inputToken.symbol)
+      createSwapFormSchema(
+        min,
+        max,
+        availableBalance,
+        inputToken.symbol,
+        inputToken.decimals
+      )
     )
-  }, [min, max, availableBalance, inputToken.symbol])
+  }, [min, max, availableBalance, inputToken.symbol, inputToken.decimals])
 
   // Initialize form with Formik
   const formik = useFormik<SwapFormValues>({
@@ -166,6 +172,20 @@ export const useTokenSwapForm = ({
       setFieldValue('inputAmount', initialInputValue, false)
     }
   }, [initialInputValue, values.inputAmount, setFieldValue])
+
+  // Re-validate input when token or balance changes. Guard to avoid infinite loops.
+  const lastValidationKeyRef = useRef<string | null>(null)
+  // Only re-validate on actual token change to avoid recursive updates during balance polling
+  const tokenValidationKey = inputToken.address
+  useEffect(() => {
+    if (!values.inputAmount || values.inputAmount === '') return
+    if (lastValidationKeyRef.current !== tokenValidationKey) {
+      lastValidationKeyRef.current = tokenValidationKey
+      setFieldTouched('inputAmount', true, true)
+      // Explicitly validate to refresh errors for the new token
+      formik.validateForm()
+    }
+  }, [tokenValidationKey, values.inputAmount, setFieldTouched, formik])
 
   // Calculate the numeric value of the input amount
   const numericInputAmount = useMemo(() => {
@@ -234,17 +254,22 @@ export const useTokenSwapForm = ({
     return errors.inputAmount
   }, [touched.inputAmount, errors.inputAmount, values.inputAmount])
 
-  // Derive if current error is specifically an insufficient balance error
+  // Derive insufficient balance directly from numeric values to avoid schema or message coupling
   const isInsufficientBalance = useMemo(() => {
-    return (
-      formik.errors.inputAmount ===
-      messages.insufficientBalance(inputToken.symbol)
-    )
-  }, [formik.errors.inputAmount, inputToken.symbol])
+    if (isBalanceLoading) return false
+    if (values.inputAmount === '') return false
+    return numericInputAmount > availableBalance
+  }, [
+    isBalanceLoading,
+    values.inputAmount,
+    numericInputAmount,
+    availableBalance
+  ])
 
   useEffect(() => {
     if (onTransactionDataChange) {
-      const isValid = numericInputAmount > 0 && !errors.inputAmount
+      const isValid =
+        numericInputAmount > 0 && !errors.inputAmount && !isBalanceLoading
 
       onTransactionDataChange({
         inputAmount: numericInputAmount,
@@ -263,7 +288,8 @@ export const useTokenSwapForm = ({
     isExchangeRateLoading,
     onTransactionDataChange,
     isInsufficientBalance,
-    currentExchangeRate
+    currentExchangeRate,
+    isBalanceLoading
   ])
 
   // Handle input changes
