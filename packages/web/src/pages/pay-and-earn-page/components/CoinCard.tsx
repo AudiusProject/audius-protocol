@@ -7,8 +7,8 @@ import Skeleton from 'components/skeleton/Skeleton'
 const CoinCardSkeleton = () => {
   return (
     <Flex direction='column' gap='xs'>
-      <Skeleton width='120px' height='24px' />
-      <Skeleton width='80px' height='16px' />
+      <Skeleton width='240px' height='36px' />
+      <Skeleton width='140px' height='24px' />
     </Flex>
   )
 }
@@ -53,7 +53,6 @@ export const CoinCard = ({
       justifyContent='space-between'
       p='xl'
       flex={1}
-      borderBottom='default'
       onClick={onClick}
       css={{
         cursor: onClick ? 'pointer' : 'default',
