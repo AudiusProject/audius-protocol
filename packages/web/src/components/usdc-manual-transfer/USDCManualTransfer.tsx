@@ -1,7 +1,11 @@
 import { useCallback, useContext } from 'react'
 
-import { useWalletAddresses, useUSDCBalance } from '@audius/common/api'
-import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import {
+  useWalletAddresses,
+  useUSDCBalance,
+  useQueryContext
+} from '@audius/common/api'
+import { useUserbank } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   purchaseContentSelectors,
@@ -19,7 +23,6 @@ import {
 } from '@audius/harmony'
 import QRCode from 'react-qr-code'
 import { useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
 
 import { CashBalanceSection } from 'components/add-cash/CashBalanceSection'
 import { AddressTile } from 'components/address-tile'
@@ -27,7 +30,6 @@ import { ExternalTextLink } from 'components/link/ExternalTextLink'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track as trackAnalytics, make } from 'services/analytics'
-import { getUSDCUserBank } from 'services/solana/solana'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
@@ -68,32 +70,24 @@ export const USDCManualTransfer = ({
   const amount = USDC((amountInCents ?? 0) / 100).value
   const isBuyButtonDisabled = isUnlocking || balance < amount
 
-  useCreateUserbankIfNeeded({
-    recordAnalytics: trackAnalytics,
-    mint: 'USDC'
-  })
+  const { env } = useQueryContext()
+  const { userBankAddress: usdcUserBank, loading: userBankLoading } =
+    useUserbank(env.USDC_MINT_ADDRESS)
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
 
-  const { value: USDCUserBank } = useAsync(async () => {
-    if (wallet) {
-      const USDCUserBankPubKey = await getUSDCUserBank(wallet)
-      return USDCUserBankPubKey?.toString()
-    }
-  }, [wallet])
-
   const handleCopy = useCallback(() => {
-    copyToClipboard(USDCUserBank ?? '')
+    copyToClipboard(usdcUserBank ?? '')
     toast(messages.copied)
     trackAnalytics(
       make({
         eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-        address: USDCUserBank ?? ''
+        address: usdcUserBank ?? ''
       })
     )
-  }, [USDCUserBank, toast])
+  }, [usdcUserBank, toast])
 
-  return wallet === null ? (
+  return wallet === null || userBankLoading ? (
     <Flex justifyContent='center' alignItems='center' p='xl' w='100%'>
       <LoadingSpinner css={{ height: 32 }} />
     </Flex>
@@ -113,7 +107,7 @@ export const USDCManualTransfer = ({
           alignItems='center'
           justifyContent='center'
         >
-          {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
+          {usdcUserBank ? <QRCode value={usdcUserBank} /> : null}
         </Flex>
         <Flex column gap='xl' h={DIMENSIONS} justifyContent='space-between'>
           {!isMobile ? (
@@ -137,7 +131,7 @@ export const USDCManualTransfer = ({
           </Hint>
         </Flex>
       </Flex>
-      <AddressTile address={USDCUserBank} />
+      {usdcUserBank ? <AddressTile address={usdcUserBank} /> : null}
       <Flex gap='s' alignItems='center' direction={isMobile ? 'column' : 'row'}>
         {amountInCents === undefined ? (
           <>
