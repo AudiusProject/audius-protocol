@@ -4,26 +4,10 @@
     "build": {
       "dependsOn": [
         "@audius/common#build",
-        "@audius/sdk#build:native",
+        "@audius/sdk#build",
         "@audius/fixed-decimal#build"
       ],
       "outputs": ["dist/**", "build/**"],
-      "outputLogs": "new-only"
-    },
-    "start": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": [
-        "@audius/common#build",
-        "@audius/sdk#build:native",
-        "@audius/fixed-decimal#build"
-      ],
-      "outputLogs": "new-only"
-    },
-    "typecheck": {
-      "outputLogs": "new-only"
-    },
-    "verify": {
       "outputLogs": "new-only"
     },
     "android": {
