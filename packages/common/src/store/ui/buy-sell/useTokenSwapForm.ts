@@ -3,8 +3,6 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-// No messages import needed here
-
 import { useTokenExchangeRate, useTokenPrice } from '../../../api'
 
 import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
