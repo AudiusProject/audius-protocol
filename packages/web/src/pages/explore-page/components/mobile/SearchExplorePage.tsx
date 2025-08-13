@@ -39,8 +39,10 @@ import {
   ViewLayout
 } from 'pages/search-page/types'
 
+import { ActiveDiscussionsSection } from '../desktop/ActiveDiscussionsSection'
 import { ArtistSpotlightSection } from '../desktop/ArtistSpotlightSection'
 import { BestSellingSection } from '../desktop/BestSellingSection'
+import { DownloadsAvailableSection } from '../desktop/DownloadsAvailableSection'
 import { FeaturedPlaylistsSection } from '../desktop/FeaturedPlaylistsSection'
 import { FeaturedRemixContestsSection } from '../desktop/FeaturedRemixContestsSection'
 import { FeelingLuckySection } from '../desktop/FeelingLuckySection'
@@ -248,6 +250,13 @@ const ExplorePage = () => {
           {showUserContent && <ArtistSpotlightSection />}
 
           {showUserContent && <LabelSpotlightSection />}
+
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <>
+              <ActiveDiscussionsSection />
+              <DownloadsAvailableSection />
+            </>
+          )}
 
           {(showTrackContent || showAlbumContent || showPlaylistContent) && (
             <MoodGrid />

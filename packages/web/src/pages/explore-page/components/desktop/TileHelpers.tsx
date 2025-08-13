@@ -14,15 +14,23 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { MOBILE_TILE_WIDTH, TILE_WIDTH } from './constants'
 
 // Wrapper component to make tiles playable
-export const PlayableTile = ({ id, index }: { id: ID; index: number }) => {
+export const PlayableTile = ({
+  id,
+  index,
+  source = QueueSource.EXPLORE
+}: {
+  id: ID
+  index: number
+  source?: QueueSource
+}) => {
   const isMobile = useIsMobile()
   const Tile = isMobile ? MobileTrackTile : DesktopTrackTile
-  const uid = useMemo(() => makeUid(Kind.TRACKS, id, QueueSource.EXPLORE), [id])
+  const uid = useMemo(() => makeUid(Kind.TRACKS, id, source), [id, source])
 
   const { togglePlay, isTrackPlaying } = useToggleTrack({
     id,
     uid,
-    source: QueueSource.EXPLORE
+    source
   })
 
   // Create lineup-style togglePlay function that TrackTile expects
@@ -53,7 +61,13 @@ export const PlayableTile = ({ id, index }: { id: ID; index: number }) => {
   )
 }
 
-export const TilePairs = ({ data }: { data: number[] }) => {
+export const TilePairs = ({
+  data,
+  source = QueueSource.EXPLORE
+}: {
+  data: number[]
+  source?: QueueSource
+}) => {
   const isMobile = useIsMobile()
   const tileWidth = isMobile ? MOBILE_TILE_WIDTH : TILE_WIDTH
   const pairs = []
@@ -70,7 +84,12 @@ export const TilePairs = ({ data }: { data: number[] }) => {
           css={{ minWidth: tileWidth, width: tileWidth }}
         >
           {pair.map((id, idIndex) => (
-            <PlayableTile key={id} id={id} index={pairIndex * 2 + idIndex} />
+            <PlayableTile
+              key={id}
+              id={id}
+              index={pairIndex * 2 + idIndex}
+              source={source}
+            />
           ))}
         </Flex>
       ))}
