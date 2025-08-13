@@ -2,7 +2,7 @@
   "extends": ["//"],
   "tasks": {
     "typecheck": {
-      "dependsOn": ["build"],
+      "dependsOn": ["build", "^build"],
       "outputLogs": "new-only"
     }
   }
