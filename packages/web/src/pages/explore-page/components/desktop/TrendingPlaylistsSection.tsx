@@ -1,6 +1,6 @@
 import { useTrendingPlaylists, UseLineupQueryData } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ID, PlaybackSource, Status, UID } from '@audius/common/models'
+import { ID, Status, UID } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { ClassNames } from '@emotion/react'
@@ -73,9 +73,9 @@ const CollectionLineupCarousel = ({
   Tile
 }: {
   lineup: UseLineupQueryData['lineup']
-  play: (uid: UID, id: ID, source: PlaybackSource) => void
-  pause: (uid: UID, id: ID, source: PlaybackSource) => void
-  togglePlay: (uid: UID, id: ID, source: PlaybackSource) => void
+  play: (uid?: UID) => void
+  pause: () => void
+  togglePlay: (uid: UID, id: ID) => void
   size: TrackTileSize
   Tile: TileType
 }) => {
@@ -97,19 +97,9 @@ const CollectionLineupCarousel = ({
                 <Tile
                   ordered={true}
                   size={size}
-                  togglePlay={() =>
-                    togglePlay(
-                      item.uid,
-                      item.id,
-                      PlaybackSource.PLAYLIST_TILE_TRACK
-                    )
-                  }
-                  playTrack={() =>
-                    play(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
-                  }
-                  pauseTrack={() =>
-                    pause(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
-                  }
+                  togglePlay={togglePlay}
+                  playTrack={play}
+                  pauseTrack={pause}
                   id={item.id}
                   index={index}
                   isTrending={true}

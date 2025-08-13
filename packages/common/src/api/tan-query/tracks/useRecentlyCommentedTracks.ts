@@ -58,6 +58,7 @@ export const useRecentlyCommentedTracks = (
       const { data = [] } = await sdk.full.tracks.getTracksWithRecentComments({
         ...args,
         userId: OptionalId.parse(currentUserId),
+        limit: pageSize,
         offset: pageParam
       })
 

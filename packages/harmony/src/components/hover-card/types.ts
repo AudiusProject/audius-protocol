@@ -69,6 +69,10 @@ export type HoverCardHeaderProps = {
    */
   title: string
   /**
+   * Optional callback for when either icon in the header is clicked.
+   */
+  onClick?: () => void
+  /**
    * Optional callback when the close button is clicked.
    * If not provided, the close button will be rendered as a non-interactive icon.
    */

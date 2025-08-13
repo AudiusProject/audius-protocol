@@ -153,12 +153,18 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   useEffect(() => {
     if (debouncedValue !== previousDebouncedValue) {
       const newParams = new URLSearchParams(searchParams)
-      newParams.set('query', debouncedValue)
+      if (debouncedValue) {
+        newParams.set('query', debouncedValue)
+      } else {
+        newParams.delete('query')
+      }
       setSearchParams(newParams)
     } else if (categoryKey === SearchTabs.ALL.toLowerCase()) {
       // clear filters when searching all
       const newParams = new URLSearchParams()
-      newParams.set('query', debouncedValue)
+      if (debouncedValue) {
+        newParams.set('query', debouncedValue)
+      }
       setSearchParams(newParams)
     }
   }, [

@@ -1,4 +1,5 @@
 import { AUDIO } from '@audius/fixed-decimal'
+import numeral from 'numeral'
 
 const PRECISION = 2
 
@@ -161,4 +162,19 @@ export const formatCurrency = (
   } catch {
     return `$${num.toFixed(2)}`
   }
+}
+
+export const formatCurrencyWithMax = (
+  num: number,
+  max: number,
+  locale: string = 'en-US'
+): string => {
+  if (num >= max) {
+    const formatted = numeral(num).format('0.00a').toUpperCase()
+    return formatted.includes('.00')
+      ? `$${numeral(num).format('0a').toUpperCase()}`
+      : `$${formatted}`
+  }
+
+  return formatCurrency(num, locale)
 }

@@ -53,8 +53,8 @@ const YourCoinsSkeleton = () => {
         <Flex alignItems='center' gap='m' p='xl' flex={1}>
           <Skeleton width='64px' height='64px' />
           <Flex direction='column' gap='xs'>
-            <Skeleton width='120px' height='24px' />
-            <Skeleton width='80px' height='16px' />
+            <Skeleton width='240px' height='36px' />
+            <Skeleton width='140px' height='24px' />
           </Flex>
         </Flex>
       </Flex>
@@ -147,6 +147,7 @@ const FindMoreCoins = ({ css }: { css?: any }) => {
 
   return (
     <Flex
+      h='100%'
       p={isMobile ? spacing.l : spacing.xl}
       css={{
         cursor: 'pointer',

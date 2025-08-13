@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccount, useDeleteCollection } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { cacheCollectionsActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { useLastLocation } from 'react-router-last-location'
 import { SetRequired } from 'type-fest'
@@ -13,7 +11,6 @@ import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { DeleteConfirmationModalProps } from 'components/delete-confirmation/DeleteConfirmationModal'
 
 const { FEED_PAGE } = route
-const { deletePlaylist } = cacheCollectionsActions
 
 const messages = {
   edit: 'Edit',
@@ -45,25 +42,44 @@ export const DeleteCollectionConfirmationModal = (
     select: (account) => account?.collections?.[collectionId]
   })
   const { is_album, permalink } = accountCollection ?? {}
-  const dispatch = useDispatch()
+  const { mutateAsync: deleteCollection, isPending: isDeleting } =
+    useDeleteCollection()
 
-  const handleDelete = useCallback(() => {
-    dispatch(deletePlaylist(collectionId))
-    onDelete?.()
-    if (lastLocation?.pathname === permalink) {
-      history.replace(FEED_PAGE)
+  const handleDelete = useCallback(async () => {
+    try {
+      await deleteCollection({
+        collectionId,
+        source: 'delete_collection_confirmation_modal'
+      })
+      onDelete?.()
+
+      if (lastLocation?.pathname === permalink) {
+        history.replace(FEED_PAGE)
+      }
+    } catch (error) {
+      console.error('Failed to delete collection:', error)
+      // Error is handled by the mutation's onError callback
     }
-  }, [dispatch, collectionId, onDelete, lastLocation, permalink, history])
+  }, [
+    deleteCollection,
+    collectionId,
+    onDelete,
+    lastLocation?.pathname,
+    permalink,
+    history
+  ])
+
+  const entity = is_album ? messages.type.album : messages.type.playlist
+  const title = `${messages.delete} ${is_album ? messages.title.album : messages.title.playlist}`
 
   return (
     <DeleteConfirmationModal
-      title={`${messages.delete} ${
-        is_album ? messages.title.album : messages.title.playlist
-      }`}
-      entity={is_album ? messages.type.album : messages.type.playlist}
+      title={title}
+      entity={entity}
       visible={visible}
       onCancel={onCancel}
       onDelete={handleDelete}
+      isDeleting={isDeleting}
     />
   )
 }

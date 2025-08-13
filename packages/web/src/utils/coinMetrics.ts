@@ -1,4 +1,4 @@
-import { formatCount, formatCurrency } from '@audius/common/utils'
+import { formatCount, formatCurrencyWithMax } from '@audius/common/utils'
 import { CoinInsights } from '@audius/sdk'
 
 export type MetricData = {
@@ -18,16 +18,14 @@ const messages = {
   totalTransfers: 'Total Transfers'
 }
 
+const CURRENCY_FORMAT_MAX = 100_000
+
 const formatPercentage = (num: number): string => {
   return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`
 }
 
 const createChangeData = (changePercent: number | undefined) => {
-  if (
-    changePercent === undefined ||
-    changePercent === null ||
-    isNaN(changePercent)
-  ) {
+  if (!changePercent || isNaN(changePercent)) {
     return undefined
   }
   return {
@@ -55,7 +53,7 @@ const createMetric = (
 export const createCoinMetrics = (coinInsights: CoinInsights): MetricData[] => {
   const potentialMetrics = [
     createMetric(
-      formatCurrency(coinInsights.price),
+      formatCurrencyWithMax(coinInsights.price, CURRENCY_FORMAT_MAX),
       messages.pricePerCoin,
       coinInsights.priceChange24hPercent
     ),
@@ -70,7 +68,7 @@ export const createCoinMetrics = (coinInsights: CoinInsights): MetricData[] => {
       coinInsights.uniqueWallet24hChangePercent
     ),
     createMetric(
-      formatCurrency(coinInsights.v24hUSD),
+      formatCurrencyWithMax(coinInsights.v24hUSD, CURRENCY_FORMAT_MAX),
       messages.volume24hr,
       coinInsights.v24hChangePercent
     ),

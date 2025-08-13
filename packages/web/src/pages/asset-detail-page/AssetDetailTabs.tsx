@@ -1,9 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import { env } from 'process'
-
 import useTabs from 'hooks/useTabs/useTabs'
 import { AudioWalletTransactions } from 'pages/audio-page/AudioWalletTransactions'
+import { env } from 'services/env'
 
 import { AssetDetailContent } from './AssetDetailContent'
 

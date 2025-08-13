@@ -15,7 +15,10 @@ export const FlushPageContainer = (props: FlexProps) => {
         w='100%'
         css={{
           maxWidth: MAX_PAGE_WIDTH_PX,
-          minWidth: MIN_PAGE_WIDTH_PX
+          minWidth: MIN_PAGE_WIDTH_PX,
+          // Center content when viewport is wider than max content width
+          // Left-align when viewport is narrower than max content width
+          margin: '0 auto'
         }}
       >
         {children}

@@ -16,7 +16,12 @@ import {
   IconButton,
   IconRefresh,
   IconGift,
-  Avatar
+  Avatar,
+  IconExternalLink,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  Modal
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
@@ -24,6 +29,8 @@ import { useDispatch } from 'react-redux'
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import Tiers from 'pages/rewards-page/Tiers'
+import { env } from 'services/env'
 import {
   setUsers,
   setVisibility
@@ -52,7 +59,9 @@ const messages = {
   customDiscordRole: 'Custom Discord Role',
   messageBlasts: 'Message Blasts',
   openDiscord: 'Open The Discord',
-  refreshDiscordRole: 'Refresh Discord Role'
+  refreshDiscordRole: 'Refresh Discord Role',
+  browseRewards: 'Browse Rewards',
+  rewardTiers: 'Reward Tiers'
 }
 
 const BANNER_HEIGHT = 120
@@ -234,13 +243,28 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
 
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false)
+  const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
   const dispatch = useDispatch()
   const { data: coin, isLoading } = useArtistCoin({ mint })
 
+  const descriptionParagraphs = coin?.description?.split('\n') ?? []
+
   const openDiscord = () => {
     window.open(AUDIUS_DISCORD_LINK, '_blank')
   }
+
+  const handleLearnMore = () => {
+    window.open(coin?.website, '_blank')
+  }
+
+  const handleBrowseRewards = useCallback(() => {
+    setIsTiersModalOpen(true)
+  }, [])
+
+  const handleCloseTiersModal = useCallback(() => {
+    setIsTiersModalOpen(false)
+  }, [])
 
   const handleOpenDiscordModal = useCallback(() => {
     setIsDiscordModalOpen(true)
@@ -255,7 +279,8 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   }
 
   const title = coin.ticker ?? ''
-  const CTAIcon = IconGift // Default icon for now
+  const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
+  const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
   const handleViewLeaderboard = () => {
     dispatch(
@@ -283,6 +308,19 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
         onClose={handleCloseDiscordModal}
         mint={mint}
       />
+      <Modal
+        isOpen={isTiersModalOpen}
+        onClose={handleCloseTiersModal}
+        size='large'
+        css={{ maxWidth: '90vw' }}
+      >
+        <ModalHeader>
+          <ModalTitle title={messages.rewardTiers} />
+        </ModalHeader>
+        <ModalContent css={{ padding: 0, overflow: 'auto' }}>
+          <Tiers />
+        </ModalContent>
+      </Modal>
       <Paper
         borderRadius='l'
         shadow='far'
@@ -291,28 +329,40 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
       >
         <BannerSection mint={mint} />
 
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          alignSelf='stretch'
-          p='xl'
-          gap='l'
-        >
-          <Flex alignItems='center' alignSelf='stretch'>
-            <Text variant='heading' size='s' color='heading'>
-              {messages.whatIs(title)}
-            </Text>
-          </Flex>
+        {coin.description ? (
+          <Flex
+            direction='column'
+            alignItems='flex-start'
+            alignSelf='stretch'
+            p='xl'
+            gap='l'
+          >
+            <Flex alignItems='center' alignSelf='stretch'>
+              <Text variant='heading' size='s' color='heading'>
+                {messages.whatIs(title)}
+              </Text>
+            </Flex>
 
-          <Flex direction='column' gap='m'>
-            <Text variant='body' size='m' color='subdued'>
-              {messages.description1(title)}
-            </Text>
-            <Text variant='body' size='m' color='subdued'>
-              {messages.description2(title)}
-            </Text>
+            <Flex direction='column' gap='m'>
+              {descriptionParagraphs.map((paragraph) => {
+                if (paragraph.trim() === '') {
+                  return null
+                }
+
+                return (
+                  <Text
+                    key={paragraph.slice(0, 10)}
+                    variant='body'
+                    size='m'
+                    color='subdued'
+                  >
+                    {paragraph}
+                  </Text>
+                )
+              })}
+            </Flex>
           </Flex>
-        </Flex>
+        ) : null}
 
         <Flex
           alignItems='center'
@@ -322,10 +372,14 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
           borderTop='default'
         >
           <Flex alignItems='center' justifyContent='center' gap='s'>
-            <CTAIcon size='m' color='default' />
-            <Text variant='title' size='m'>
-              {messages.learnMore}
-            </Text>
+            <PlainButton
+              onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
+              iconLeft={CTAIcon}
+              variant='default'
+              size='default'
+            >
+              {isWAudio ? messages.browseRewards : messages.learnMore}
+            </PlainButton>
           </Flex>
 
           <PlainButton
