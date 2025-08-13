@@ -128,7 +128,7 @@ async function initializeClients(logger: pino.Logger): Promise<boolean> {
       logger.info('Successfully connected using Connect client')
     }
   } catch (e) {
-    logger.warn({ err: e }, 'Connect client initialization failed')
+    logger.warn({ err: e }, 'Connectrpc client initialization failed')
   }
 
   // Update active client based on ping results
