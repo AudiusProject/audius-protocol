@@ -24,7 +24,7 @@ type BlastRow struct {
 func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams) ([]BlastRow, error) {
 
 	// this query is to find new blasts for the current user
-	// which don't already have a eixsting chat.
+	// which don't already have a existing chat.
 	// see also: subtly different inverse query exists in chat_blast.go
 	// to fan out messages to existing chat
 	var findNewBlasts = `
@@ -92,6 +92,18 @@ func GetNewBlasts(q db.Queryable, ctx context.Context, arg ChatMembershipParams)
 						AND blast.audience_content_id = p.content_id
 					)
 				)
+		)
+		OR from_user_id IN (
+			-- coin_holder_audience via sol_user_balances
+			SELECT ac.user_id
+			FROM artist_coins ac
+			JOIN sol_user_balances sub ON sub.mint = ac.mint
+			WHERE blast.audience = 'coin_holder_audience'
+				AND ac.user_id = blast.from_user_id
+				AND sub.user_id = @user_id
+				AND sub.balance > 0
+				-- TODO: PE-6663 This isn't entirely correct yet, need to check "time of most recent membership"
+				AND sub.created_at < blast.created_at
 		)
 	)
 	select * from all_new
