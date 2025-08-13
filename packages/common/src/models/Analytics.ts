@@ -300,10 +300,6 @@ export enum Name {
   PLAYBACK_PAUSE = 'Playback: Pause',
   // Playback performance metrics
   BUFFERING_TIME = 'Buffering Time',
-  BUFFER_SPINNER_SHOWN = 'Buffer Spinner Shown',
-
-  // A listen is when we record against the backend vs. a play which is a UI action
-  LISTEN = 'Listen',
 
   // Navigation
   PAGE_VIEW = 'Page View',
@@ -362,8 +358,6 @@ export enum Name {
   PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER = 'Playlist Library: Move Playlist Out of Folder',
   PLAYLIST_LIBRARY_EXPAND_FOLDER = 'Playlist Library: Expand Folder',
   PLAYLIST_LIBRARY_COLLAPSE_FOLDER = 'Playlist Library: Collapse Folder',
-  // When an update is available in the playlist library
-  PLAYLIST_LIBRARY_HAS_UPDATE = 'Playlist Library: Has Update',
   // When a user clicks on a playlist in the library
   PLAYLIST_LIBRARY_CLICKED = 'Playlist Library: Clicked',
 
@@ -1493,9 +1487,6 @@ type BufferingTime = {
   duration: number
 }
 
-type BufferSpinnerShown = {
-  eventName: Name.BUFFER_SPINNER_SHOWN
-}
 // Linking
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
@@ -1571,11 +1562,6 @@ type SearchResultSelect = {
   kind: 'track' | 'profile' | 'playlist' | 'album'
 }
 
-type Listen = {
-  eventName: Name.LISTEN
-  trackId: string
-}
-
 type ListenGated = {
   eventName: Name.LISTEN_GATED
   trackId: string
@@ -1601,7 +1587,6 @@ type WebVitals = {
   value: number
   route: string
 }
-
 type Performance = {
   eventName: Name.PERFORMANCE
   metric: string
@@ -1712,11 +1697,6 @@ type PlaylistLibraryReorder = {
   // Whether or not the reorder contains newly created temp playlists
   containsTemporaryPlaylists: boolean
   kind: PlaylistLibraryKind
-}
-
-type PlaylistLibraryHasUpdate = {
-  eventName: Name.PLAYLIST_LIBRARY_HAS_UPDATE
-  count: number
 }
 
 type PlaylistLibraryClicked = {
@@ -2985,7 +2965,6 @@ export type AllTrackingEvents =
   | PlaybackPlay
   | PlaybackPause
   | BufferingTime
-  | BufferSpinnerShown
   | Follow
   | Unfollow
   | LinkClicking
@@ -2996,7 +2975,6 @@ export type AllTrackingEvents =
   | SearchTag
   | SearchMoreResults
   | SearchResultSelect
-  | Listen
   | ListenGated
   | ErrorPage
   | NotFoundPage
@@ -3020,7 +2998,6 @@ export type AllTrackingEvents =
   | ServiceMonitorRequest
   | ServiceMonitorHealthCheck
   | PlaylistLibraryReorder
-  | PlaylistLibraryHasUpdate
   | PlaylistLibraryClicked
   | PlaylistLibraryMovePlaylistIntoFolder
   | PlaylistLibraryAddPlaylistToFolder
