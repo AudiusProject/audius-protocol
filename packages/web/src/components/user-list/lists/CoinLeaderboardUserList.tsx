@@ -1,4 +1,4 @@
-import { useArtistCoinMembers } from '@audius/common/api'
+import { useArtistCoin, useArtistCoinMembers } from '@audius/common/api'
 import { coinLeaderboardUserListSelectors } from '@audius/common/store'
 import { Text } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -9,7 +9,10 @@ export const CoinLeaderboardUserList = () => {
   const mint = useSelector(coinLeaderboardUserListSelectors.getMint)
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
-    useArtistCoinMembers({ mint })
+    useArtistCoinMembers({ mint: mint || '' })
+
+  const { data: coinData } = useArtistCoin({ mint: mint || '' })
+  const { decimals } = coinData ?? {}
 
   if (!mint) return null
 
@@ -27,7 +30,11 @@ export const CoinLeaderboardUserList = () => {
       renderRightContent={(item, index) => {
         return typeof item === 'object' && item.balance !== undefined ? (
           <Text variant='body' strength='strong'>
-            {item.balance.toLocaleString()}
+            {decimals
+              ? Math.floor(
+                  item.balance / Math.pow(10, decimals)
+                ).toLocaleString(undefined, { maximumFractionDigits: 0 })
+              : item.balance.toLocaleString()}
           </Text>
         ) : null
       }}

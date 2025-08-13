@@ -70,14 +70,21 @@ export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
         {isPending ? (
           <Skeleton />
         ) : (
-          <UserProfilePictureList
-            users={users ?? []}
-            totalUserCount={leaderboardUsers?.length ?? 0}
-            limit={10}
-            disableProfileClick={true}
-            disablePopover={true}
-            stopPropagation={true}
-          />
+          <Flex
+            onClick={(e) => {
+              handleViewLeaderboard()
+            }}
+            css={{ cursor: 'pointer' }}
+            role='button'
+          >
+            <UserProfilePictureList
+              users={users ?? []}
+              totalUserCount={leaderboardUsers?.length ?? 0}
+              limit={8}
+              disableProfileClick={true}
+              disablePopover={true}
+            />
+          </Flex>
         )}
         <IconButton
           color='subdued'
