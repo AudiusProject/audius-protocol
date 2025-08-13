@@ -3,6 +3,7 @@ import { Flex, makeResponsiveStyles } from '@audius/harmony'
 import { AssetInfoSection } from './components/AssetInfoSection'
 import { AssetInsights } from './components/AssetInsights'
 import { BalanceSection } from './components/BalanceSection'
+import { ExternalWallets } from './components/ExternalWallets'
 import { AssetDetailProps } from './types'
 
 const LEFT_SECTION_WIDTH = '704px'
@@ -63,6 +64,7 @@ export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
 
       <Flex css={styles.rightSection}>
         <AssetInsights mint={mint} />
+        <ExternalWallets mint={mint} />
       </Flex>
     </Flex>
   )

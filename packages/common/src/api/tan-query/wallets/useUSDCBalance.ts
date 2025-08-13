@@ -15,7 +15,7 @@ import { getRecoveryStatus } from '~/store/buy-usdc/selectors'
 import { setUSDCBalance } from '~/store/wallet/slice'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryOptions, type QueryKey } from '../types'
+import { type QueryKey, SelectableQueryOptions } from '../types'
 
 export const getUSDCBalanceQueryKey = (
   ethAddress: string | null,
@@ -34,7 +34,7 @@ export const getUSDCBalanceQueryKey = (
  * @param options Options for the query and polling
  * @returns Object with status, data, refresh, and cancelPolling
  */
-export const useUSDCBalance = ({
+export const useUSDCBalance = <TResult = UsdcWei | null>({
   isPolling,
   pollingInterval = 1000,
   commitment = 'processed',
@@ -43,7 +43,7 @@ export const useUSDCBalance = ({
   isPolling?: boolean
   pollingInterval?: number
   commitment?: Commitment
-} & QueryOptions = {}) => {
+} & SelectableQueryOptions<UsdcWei | null, TResult> = {}) => {
   const { audiusSdk } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const ethAddress = user?.wallet ?? null
