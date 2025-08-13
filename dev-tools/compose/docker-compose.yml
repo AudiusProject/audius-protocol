@@ -24,6 +24,7 @@ x-common: &common
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
     - 'audius-protocol-pedalboard:host-gateway'
+    - 'audius-protocol-api:host-gateway'
   deploy:
     resources:
       limits:
@@ -64,6 +65,17 @@ services:
       service: audius-cmd
     <<: *common
 
+  # API
+  api:
+    extends:
+      file: docker-compose.api.yml
+      service: api
+    container_name: audius-protocol-api
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/api.env
+    <<: *common
+
+  # Validators
   audiusd-1:
     extends:
       file: docker-compose.audiusd.yml
