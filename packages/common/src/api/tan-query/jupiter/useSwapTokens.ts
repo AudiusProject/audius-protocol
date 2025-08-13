@@ -18,7 +18,6 @@ import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 import { QUERY_KEYS } from '../queryKeys'
 
-import { updateTokenBalancesOptimistically } from './optimisticUpdates'
 import {
   ClaimableTokenMint,
   SwapErrorType,
@@ -59,8 +58,7 @@ const createTokenConfig = (token: TokenInfo): UserBankManagedTokenInfo => ({
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk, env } =
-    useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const { tokens } = useTokens()
 
@@ -212,15 +210,9 @@ export const useSwapTokens = () => {
         // ---------- 6. Success & Optimistic Updates ----------
         if (user?.wallet) {
           // Optimistically update token balances (function handles USDC exclusion)
-          updateTokenBalancesOptimistically(
-            queryClient,
-            params,
-            quoteResult?.outputAmount?.uiAmount,
-            user.wallet,
-            inputToken.decimals,
-            outputToken.decimals,
-            env.USDC_MINT_ADDRESS
-          )
+          await queryClient.invalidateQueries({
+            queryKey: [QUERY_KEYS.userCoin, user.user_id]
+          })
 
           // Invalidate USDC balance separately if needed
           queryClient.invalidateQueries({
