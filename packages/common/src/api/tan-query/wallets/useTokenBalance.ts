@@ -2,11 +2,11 @@ import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
+import { ID } from '~/models'
 
 import { QueryOptions } from '../types'
 
 import { useUSDCBalance } from './useUSDCBalance'
-import { ID } from '~/models'
 
 const USDC_DECIMALS = 6
 
