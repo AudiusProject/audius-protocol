@@ -31,6 +31,9 @@ export interface GetTipsRequest {
     receiverIsVerified?: boolean;
     currentUserFollows?: GetTipsCurrentUserFollowsEnum;
     uniqueBy?: GetTipsUniqueByEnum;
+    minSlot?: number;
+    maxSlot?: number;
+    txSignatures?: Array<string>;
 }
 
 /**
@@ -71,6 +74,18 @@ export class TipsApi extends runtime.BaseAPI {
 
         if (params.uniqueBy !== undefined) {
             queryParameters['unique_by'] = params.uniqueBy;
+        }
+
+        if (params.minSlot !== undefined) {
+            queryParameters['min_slot'] = params.minSlot;
+        }
+
+        if (params.maxSlot !== undefined) {
+            queryParameters['max_slot'] = params.maxSlot;
+        }
+
+        if (params.txSignatures) {
+            queryParameters['tx_signatures'] = params.txSignatures.join(runtime.COLLECTION_FORMATS["csv"]);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
