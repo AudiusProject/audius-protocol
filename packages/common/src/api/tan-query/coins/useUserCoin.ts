@@ -35,7 +35,7 @@ export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
     queryKey: getUserCoinQueryKey(params.mint, userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      if (!userId) {
+      if (!userId || !params.mint) {
         return null
       }
 
@@ -52,11 +52,11 @@ export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
 
       return response.data ?? null
     },
+    ...options,
     enabled:
       options?.enabled !== false &&
       !!params.mint &&
       !!userId &&
-      params.mint !== env.USDC_MINT_ADDRESS,
-    ...options
+      params.mint !== env.USDC_MINT_ADDRESS
   })
 }

@@ -25,10 +25,10 @@ export const useArtistCoin = <TResult = Coin | undefined>(
       const response = await sdk.coins.getCoin({ mint: params.mint })
       return response.data
     },
+    ...options,
     enabled:
       options?.enabled !== false &&
       !!params.mint &&
-      params.mint !== env.USDC_MINT_ADDRESS,
-    ...options
+      params.mint !== env.USDC_MINT_ADDRESS
   })
 }
