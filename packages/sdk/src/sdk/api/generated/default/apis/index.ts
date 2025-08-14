@@ -9,6 +9,7 @@ export * from './EventsApi';
 export * from './ExploreApi';
 export * from './PlaylistsApi';
 export * from './ResolveApi';
+export * from './RewardsApi';
 export * from './TipsApi';
 export * from './TracksApi';
 export * from './UsersApi';
