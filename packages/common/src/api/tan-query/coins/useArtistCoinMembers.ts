@@ -1,11 +1,9 @@
-import { useMemo } from 'react'
-
 import { FixedDecimal } from '@audius/fixed-decimal'
-import { decodeHashId } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
-import { TOKEN_LISTING_MAP } from '~/store'
+import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
@@ -15,7 +13,7 @@ import { useArtistCoin } from './useArtistCoin'
 const DEFAULT_PAGE_SIZE = 20
 
 export interface CoinMember {
-  userId: number
+  userId: ID
   balance: number
   balanceLocaleString: string
 }
@@ -52,22 +50,10 @@ export const useArtistCoinMembers = (
 ) => {
   const { audiusSdk } = useQueryContext()
 
-  // Map route key to actual mint address if needed
-  const getMintAddress = (mintKey: string) => {
-    const token =
-      TOKEN_LISTING_MAP[mintKey.toUpperCase() as keyof typeof TOKEN_LISTING_MAP]
-    return token?.address || mintKey
-  }
-
-  const mintAddress = useMemo(
-    () => (mint ? getMintAddress(mint) : null),
-    [mint]
-  )
-
   const { data: artistCoin } = useArtistCoin(
-    { mint: mintAddress ?? '' },
+    { mint: mint as string },
     {
-      enabled: !!mintAddress
+      enabled: !!mint
     }
   )
 
@@ -88,8 +74,8 @@ export const useArtistCoinMembers = (
 
       const sdk = await audiusSdk()
 
-      const params: any = {
-        mint: mintAddress,
+      const params = {
+        mint,
         limit: pageSize,
         offset: pageParam,
         sortDirection
@@ -105,8 +91,9 @@ export const useArtistCoinMembers = (
         )
 
         return {
-          userId: decodeHashId(member.userId) ?? 0,
+          userId: HashId.parse(member.userId),
           balance: member.balance,
+          // TODO: ideally this is a selector using logic from useTokenAmountFormatting
           balanceLocaleString: balanceFD.toLocaleString('en-US', {
             maximumFractionDigits: 0,
             roundingMode: 'trunc'
@@ -118,6 +105,6 @@ export const useArtistCoinMembers = (
     },
     select: (data) => data.pages.flat(),
     ...options,
-    enabled: options?.enabled !== false && !!mintAddress
+    enabled: options?.enabled !== false && !!mint
   })
 }
