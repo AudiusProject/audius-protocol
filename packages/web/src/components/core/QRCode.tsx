@@ -1,6 +1,7 @@
 import React from 'react'
-import QRCode from 'react-qr-code'
+
 import { useTheme } from '@audius/harmony'
+import QRCode from 'react-qr-code'
 
 type QRCodeProps = {
   value: string
