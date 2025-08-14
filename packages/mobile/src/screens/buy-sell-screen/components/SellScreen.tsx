@@ -1,9 +1,6 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 
-import { useAudioBalance } from '@audius/common/api'
 import type { TokenPair } from '@audius/common/store'
-import { isNullOrUndefined } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 
 import { SwapTab } from './SwapTab'
 
@@ -32,28 +29,11 @@ export const SellScreen = ({
 }: SellScreenProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
-  const { accountBalance } = useAudioBalance({ includeConnectedWallets: false })
-  const isBalanceLoading = isNullOrUndefined(accountBalance)
-
-  // Get AUDIO balance in UI format
-  const getAudioBalance = useMemo(() => {
-    return () => {
-      if (!isBalanceLoading && accountBalance) {
-        return parseFloat(AUDIO(accountBalance).toString())
-      }
-      return undefined
-    }
-  }, [accountBalance, isBalanceLoading])
 
   return (
     <SwapTab
       inputToken={baseToken}
       outputToken={quoteToken}
-      balance={{
-        get: getAudioBalance,
-        loading: isBalanceLoading,
-        formatError: () => 'Insufficient balance'
-      }}
       onTransactionDataChange={onTransactionDataChange}
       isDefault={false}
       error={error}

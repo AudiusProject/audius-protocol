@@ -50,8 +50,6 @@ export type SwapTabProps = {
   outputToken: TokenInfo
   min?: number
   max?: number
-  balance: number
-  outputBalance?: number
 
   onTransactionDataChange?: (data: {
     inputAmount: number
