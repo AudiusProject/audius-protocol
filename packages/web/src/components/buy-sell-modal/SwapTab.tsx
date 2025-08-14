@@ -7,7 +7,6 @@ import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
 import type {
-  BalanceConfig,
   TokenPricing,
   UIConfiguration,
   InputConfiguration,
@@ -37,8 +36,7 @@ const SwapFormSkeleton = () => (
 export type SwapTabProps = {
   inputToken: TokenInfo
   outputToken: TokenInfo
-  balance: BalanceConfig
-  outputBalance?: BalanceConfig
+  outputBalance?: number
   inputIsDefault?: boolean
   outputIsDefault?: boolean
   tab?: BuySellTab
@@ -53,8 +51,6 @@ export const SwapTab = ({
   outputToken,
   min,
   max,
-  balance,
-  outputBalance,
   onTransactionDataChange,
   isDefault = true,
   inputIsDefault,
@@ -71,7 +67,8 @@ export const SwapTab = ({
   availableInputTokens,
   availableOutputTokens,
   onInputTokenChange,
-  onOutputTokenChange
+  onOutputTokenChange,
+  outputBalance
 }: SwapTabProps) => {
   const {
     formik,
@@ -89,7 +86,6 @@ export const SwapTab = ({
     outputToken,
     min,
     max,
-    balance,
     onTransactionDataChange,
     initialInputValue,
     onInputValueChange
@@ -153,7 +149,7 @@ export const SwapTab = ({
                 tokenInfo={outputToken}
                 isInput={false}
                 amount={outputAmount}
-                availableBalance={outputBalance?.get() || 0}
+                availableBalance={outputBalance ?? 0}
                 exchangeRate={currentExchangeRate}
                 tokenPrice={tokenPrice}
                 isTokenPriceLoading={isTokenPriceLoading}
