@@ -51,8 +51,7 @@ import {
   formatReleaseDate,
   Genre,
   removeNullable,
-  dayjs,
-  formatContestDeadline
+  dayjs
 } from '@audius/common/utils'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
@@ -123,11 +122,7 @@ const messages = {
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
-  remixContest: 'Remix Contest',
-  contestEnded: 'Contest Ended',
-  contestDeadline: 'Contest Deadline',
-  deadline: (deadline?: string) => formatContestDeadline(deadline, 'short'),
-  uploadRemixButtonText: 'Upload Your Remix'
+  remixContest: 'Remix Contest'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
