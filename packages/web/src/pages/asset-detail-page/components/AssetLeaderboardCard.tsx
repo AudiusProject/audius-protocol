@@ -45,9 +45,8 @@ export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
     leaderboardUsers?.map((user) => user.userId)
   )
   const dispatch = useDispatch()
-  const { isMedium } = useMedia()
   const isPending = isLeaderboardPending || isUsersPending
-  const isSmallScreen = isMedium // ≤ 1024px
+  const { isMedium: isSmallScreen } = useMedia() // <1024px
 
   const handleViewLeaderboard = () => {
     dispatch(
