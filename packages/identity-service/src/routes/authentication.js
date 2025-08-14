@@ -83,6 +83,13 @@ module.exports = function (app) {
               return errorResponseBadRequest('Invalid credentials')
             }
 
+            if (body.lookupKey === oldLookupKey) {
+              req.logger.error(
+                `lookupKey is the same as oldLookupKey: ${body.lookupKey}`
+              )
+              return errorResponseBadRequest('Invalid credentials')
+            }
+
             // check if new artifacts already exist and are active
             const newArtifacts = await models.Authentication.findOne({
               where: { lookupKey: body.lookupKey }
@@ -90,7 +97,9 @@ module.exports = function (app) {
 
             if (newArtifacts) {
               // artifacts passed already exist
-              req.logger.error('Credentials already exist')
+              req.logger.error(
+                `Credentials already exist for lookupKey: ${body.lookupKey}`
+              )
               return errorResponseBadRequest('Invalid credentials')
             }
 
