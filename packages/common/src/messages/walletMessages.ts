@@ -74,5 +74,14 @@ export const walletMessages = {
   buySell: 'Buy/Sell',
   buy: 'Buy',
   send: 'Send',
-  receive: 'Receive'
+  receive: 'Receive',
+
+  // ReceiveTokensModal messages
+  receiveTokensTitle: 'receive',
+  receiveTokensExplainer: 'Send tokens to your built in Audius wallet.',
+  receiveTokensDisclaimer: 'Use caution to avoid errors and lost funds.',
+  receiveTokensLearnMore: 'Learn More',
+  receiveTokensCopy: 'Copy Wallet Address',
+  receiveTokensClose: 'Close',
+  receiveTokensCopied: 'Copied to Clipboard!'
 }

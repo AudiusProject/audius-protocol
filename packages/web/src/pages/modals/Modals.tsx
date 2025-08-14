@@ -37,6 +37,7 @@ import { PasswordResetModal } from 'components/password-reset/PasswordResetModal
 import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
+import { ReceiveTokensModal } from 'components/receive-tokens-modal'
 import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirmation-modal/ReplaceTrackConfirmationModal'
 import { ReplaceTrackProgressModal } from 'components/replace-track-progress-modal/ReplaceTrackProgressModal'
 import { ClaimAllRewardsModal } from 'components/rewards/modals/ClaimAllRewardsModal'
@@ -134,7 +135,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   PayoutWallet: PayoutWalletModal,
   ConnectedWallets: ConnectedWalletsModal,
   DownloadTrackArchive: DownloadTrackArchiveModal,
-  BuySellModal
+  BuySellModal,
+  ReceiveTokensModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

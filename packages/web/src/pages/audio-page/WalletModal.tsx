@@ -18,7 +18,7 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { AUDIO, AudioWei } from '@audius/fixed-decimal'
-import { IconReceive, IconSend } from '@audius/harmony'
+import { IconSend } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
@@ -31,7 +31,6 @@ import { useSelector } from 'utils/reducer'
 import styles from './WalletModal.module.css'
 import ErrorBody from './components/ErrorBody'
 import MigrationModalBody from './components/MigrationModalBody'
-import ReceiveBody from './components/ReceiveBody'
 import SendInputBody from './components/SendInputBody'
 import SendInputConfirmation from './components/SendInputConfirmation'
 import SendInputSuccess from './components/SendInputSuccess'
@@ -42,7 +41,6 @@ const { confirmSend, inputSendData, setModalVisibility } =
   tokenDashboardPageActions
 
 const messages = {
-  receiveSPL: 'Receive SPL $AUDIO',
   send: 'Send $AUDIO',
   confirmSend: 'Send $AUDIO',
   sending: 'Your $AUDIO is Sending',
@@ -69,15 +67,6 @@ export const TitleWrapper = ({
 }
 
 const titlesMap = {
-  RECEIVE: {
-    KEY_DISPLAY: () => {
-      return (
-        <TitleWrapper label={messages.receiveSPL}>
-          <IconReceive className={styles.receiveWrapper} />
-        </TitleWrapper>
-      )
-    }
-  },
   SEND: {
     INPUT: () => (
       <TitleWrapper label={messages.send}>
@@ -108,8 +97,6 @@ const titlesMap = {
 const getTitle = (state: TokenDashboardPageModalState) => {
   if (!state?.stage) return ''
   switch (state.stage) {
-    case 'RECEIVE':
-      return titlesMap.RECEIVE[state.flowState.stage]()
     case 'SEND':
       return titlesMap.SEND[state.flowState.stage]()
   }
@@ -182,10 +169,6 @@ const ModalContent = ({
   let ret: Nullable<JSX.Element> = null
 
   switch (modalState.stage) {
-    case 'RECEIVE': {
-      ret = <ReceiveBody wallet={erc_wallet} solWallet={solWallet} />
-      break
-    }
     case 'SEND': {
       const sendStage = modalState.flowState
       switch (sendStage.stage) {
