@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { decodeHashId } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
@@ -7,11 +10,14 @@ import { TOKEN_LISTING_MAP } from '~/store'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 
+import { useArtistCoin } from './useArtistCoin'
+
 const DEFAULT_PAGE_SIZE = 20
 
 export interface CoinMember {
-  user_id: number
+  userId: number
   balance: number
+  balanceLocaleString: string
 }
 
 export interface UseArtistCoinMembersArgs {
@@ -53,6 +59,18 @@ export const useArtistCoinMembers = (
     return token?.address || mintKey
   }
 
+  const mintAddress = useMemo(
+    () => (mint ? getMintAddress(mint) : null),
+    [mint]
+  )
+
+  const { data: artistCoin } = useArtistCoin(
+    { mint: mintAddress ?? '' },
+    {
+      enabled: !!mintAddress
+    }
+  )
+
   return useInfiniteQuery({
     queryKey: getCoinLeaderboardQueryKey(
       mint,
@@ -69,7 +87,6 @@ export const useArtistCoinMembers = (
       if (!mint) return []
 
       const sdk = await audiusSdk()
-      const mintAddress = getMintAddress(mint)
 
       const params: any = {
         mint: mintAddress,
@@ -80,17 +97,27 @@ export const useArtistCoinMembers = (
 
       const response = await sdk.coins.getCoinMembers(params)
 
-      const members: CoinMember[] = (response.data ?? []).map(
-        (member: any) => ({
-          user_id: decodeHashId(member.userId) ?? 0,
-          balance: member.balance
-        })
-      )
+      const members = (response.data ?? []).map((member) => {
+        const decimals = artistCoin?.decimals
+        const balanceFD = new FixedDecimal(
+          BigInt(member.balance.toString()),
+          decimals
+        )
+
+        return {
+          userId: decodeHashId(member.userId) ?? 0,
+          balance: member.balance,
+          balanceLocaleString: balanceFD.toLocaleString('en-US', {
+            maximumFractionDigits: 0,
+            roundingMode: 'trunc'
+          })
+        }
+      })
 
       return members
     },
     select: (data) => data.pages.flat(),
     ...options,
-    enabled: options?.enabled !== false && !!mint
+    enabled: options?.enabled !== false && !!mintAddress
   })
 }

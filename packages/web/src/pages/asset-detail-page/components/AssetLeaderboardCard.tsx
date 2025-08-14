@@ -6,7 +6,8 @@ import {
   Divider,
   Skeleton,
   IconCaretRight,
-  IconButton
+  IconButton,
+  useMedia
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -27,14 +28,26 @@ const messages = {
   leaderboard: 'Leaderboard'
 }
 
+const AvatarSkeleton = (props: any) => (
+  <Skeleton
+    h={40}
+    w={40}
+    borderRadius='circle'
+    css={{ marginLeft: '-8px' }}
+    {...props}
+  />
+)
+
 export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
   const { data: leaderboardUsers, isPending: isLeaderboardPending } =
     useArtistCoinMembers({ mint })
   const { data: users, isPending: isUsersPending } = useUsers(
-    leaderboardUsers?.map((user) => user.user_id)
+    leaderboardUsers?.map((user) => user.userId)
   )
   const dispatch = useDispatch()
+  const { isMedium } = useMedia()
   const isPending = isLeaderboardPending || isUsersPending
+  const isSmallScreen = isMedium // ≤ 1024px
 
   const handleViewLeaderboard = () => {
     dispatch(
@@ -68,7 +81,16 @@ export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
         w='100%'
       >
         {isPending ? (
-          <Skeleton />
+          <Flex alignItems='center'>
+            <AvatarSkeleton css={{ marginLeft: '0' }} />
+            <AvatarSkeleton />
+            <AvatarSkeleton />
+            <AvatarSkeleton />
+            <AvatarSkeleton />
+            <AvatarSkeleton />
+            <AvatarSkeleton />
+            <AvatarSkeleton />
+          </Flex>
         ) : (
           <Flex
             onClick={(e) => {
@@ -80,7 +102,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
             <UserProfilePictureList
               users={users ?? []}
               totalUserCount={leaderboardUsers?.length ?? 0}
-              limit={8}
+              limit={isSmallScreen ? 6 : 8}
               disableProfileClick={true}
               disablePopover={true}
             />
@@ -91,6 +113,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
           icon={IconCaretRight}
           aria-label='Open the leaderboard modal'
           onClick={handleViewLeaderboard}
+          disabled={isPending}
         />
       </Flex>
     </Paper>
