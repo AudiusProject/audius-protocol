@@ -1,0 +1,13 @@
+services:
+  api:
+    container_name: api
+    image: audius/api:latest
+    restart: unless-stopped
+    pull_policy: always
+    profiles:
+      - discovery
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 1323:1323

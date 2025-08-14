@@ -19,16 +19,6 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x4E2C78d0d3303ed459BF8a3CD87f11A6bc936140"
       },
       {
-        "endpoint": "https://discoveryprovider3.audius.co",
-        "ownerWallet": "0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d",
-        "delegateOwnerWallet": "0xF2897993951d53a7E3eb2242D6A14D2028140DC8"
-      },
-      {
-        "endpoint": "https://discoveryprovider2.audius.co",
-        "ownerWallet": "0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d",
-        "delegateOwnerWallet": "0xc97d40C0B992882646D64814151941A1c520b460"
-      },
-      {
         "endpoint": "https://discoveryprovider.audius.co",
         "ownerWallet": "0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d",
         "delegateOwnerWallet": "0xf1a1Bd34b2Bc73629aa69E50E3249E89A3c16786"
@@ -52,16 +42,6 @@ export const productionConfig: SdkServicesConfig = {
         "endpoint": "https://audius-dn1.tikilabs.com",
         "ownerWallet": "0xe4882D9A38A2A1fc652996719AF0fb15CB968d0a",
         "delegateOwnerWallet": "0x1cF73c5023572F2d5dc6BD3c5E4F24b4F3b6B76F"
-      },
-      {
-        "endpoint": "https://audius-disc1.nodemagic.com",
-        "ownerWallet": "0xf13612C7d6E31636eCC2b670d6F8a3CC50f68A48",
-        "delegateOwnerWallet": "0xFD005a90cc8AF8B766F9F9cD95ee91921cC9286d"
-      },
-      {
-        "endpoint": "https://audius-disc2.nodemagic.com",
-        "ownerWallet": "0xf13612C7d6E31636eCC2b670d6F8a3CC50f68A48",
-        "delegateOwnerWallet": "0x5cA0d3a6590074B9fF31972824178f69e8dAB547"
       }
     ],
     "apiEndpoint": "https://api.audius.co",

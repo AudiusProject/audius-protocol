@@ -150,7 +150,12 @@ export const UserList = ({
               p='m'
               key={userId}
             >
-              <Flex alignItems='center' gap='m' flex={1}>
+              <Flex
+                alignItems='center'
+                gap='m'
+                flex={1}
+                css={{ overflow: 'hidden' }}
+              >
                 {showRank && rank && (
                   <Text variant='title' css={{ minWidth: '20px' }}>
                     {rank}

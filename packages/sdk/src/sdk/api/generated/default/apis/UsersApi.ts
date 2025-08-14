@@ -388,6 +388,7 @@ export interface GetUsersTrackHistoryRequest {
     query?: string;
     sortMethod?: GetUsersTrackHistorySortMethodEnum;
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
+    userId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -2056,6 +2057,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.sortDirection !== undefined) {
             queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

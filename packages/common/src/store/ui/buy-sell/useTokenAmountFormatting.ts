@@ -52,7 +52,7 @@ export const useTokenAmountFormatting = ({
     if (availableBalance == null || isNaN(availableBalance)) return null
 
     if (isStablecoin) {
-      return formatUSDCValue(availableBalance)
+      return formatUSDCValue(availableBalance, { useFixed: false })
     }
 
     const tokenAmount = new FixedDecimal(availableBalance, decimals)
@@ -72,7 +72,7 @@ export const useTokenAmountFormatting = ({
     if (safeNumericAmount === 0) return placeholder
 
     if (isStablecoin) {
-      return formatUSDCValue(safeNumericAmount)
+      return formatUSDCValue(safeNumericAmount, { useFixed: false })
     }
 
     const tokenAmount = new FixedDecimal(safeNumericAmount, decimals)
