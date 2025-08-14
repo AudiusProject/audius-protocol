@@ -322,8 +322,15 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     if (activeTab === 'sell' && !hasSufficientBalance) {
       return messages.insufficientAUDIOForSale
     }
-    // Prioritize the specific validation error from the form
-    if (hasAttemptedSubmit && transactionData?.error) {
+    // Show validation errors immediately for sell and convert tabs (like insufficient balance)
+    if (
+      (activeTab === 'sell' || activeTab === 'convert') &&
+      transactionData?.error
+    ) {
+      return transactionData.error
+    }
+    // For buy tab, only show validation errors after attempted submit
+    if (activeTab === 'buy' && hasAttemptedSubmit && transactionData?.error) {
       return transactionData.error
     }
     // Fallback for empty input, though zod should handle it via transactionData.error

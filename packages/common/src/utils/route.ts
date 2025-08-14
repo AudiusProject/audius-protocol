@@ -209,6 +209,9 @@ export const AUDIUS_PODCAST_LINK =
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/audius'
 export const AUDIUS_API_LINK = 'https://audius.org/api'
 
+export const AUDIUS_TOKENS_HELP_LINK =
+  'https://support.audius.co/product/tokens'
+
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,

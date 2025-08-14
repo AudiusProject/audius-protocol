@@ -11,7 +11,7 @@ import { ExpandableContent, UserGeneratedText } from 'app/components/core'
 const messages = {
   due: 'Submission Due:',
   ended: 'Contest Ended:',
-  deadline: (deadline?: string) => formatContestDeadline(deadline, 'card'),
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'long'),
   fallbackDescription:
     'Enter my remix contest before the deadline for your chance to win!'
 }

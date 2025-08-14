@@ -181,7 +181,8 @@ export const YourCoins = () => {
     userId: userIdString || ''
   })
 
-  const coinPairs = useGroupCoinPairs(artistCoins)
+  const { isMobile, isTablet } = useMedia()
+  const coinPairs = useGroupCoinPairs(artistCoins, isMobile || isTablet)
 
   if (isLoadingCoins || !userIdString) {
     return <YourCoinsSkeleton />
