@@ -77,12 +77,13 @@ export const USDCManualTransfer = ({
   const isMobile = useIsMobile()
 
   const handleCopy = useCallback(() => {
-    copyToClipboard(usdcUserBank ?? '')
+    if (!usdcUserBank) return
+    copyToClipboard(usdcUserBank)
     toast(messages.copied)
     trackAnalytics(
       make({
         eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-        address: usdcUserBank ?? ''
+        address: usdcUserBank
       })
     )
   }, [usdcUserBank, toast])

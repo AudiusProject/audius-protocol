@@ -47,15 +47,19 @@ export const USDCManualTransfer = ({
   const { userBankAddress: usdcUserBank, loading: userBankLoading } =
     useUserbank(env.USDC_MINT_ADDRESS)
 
-  const analytics: AllEvents = useMemo(
-    () => ({
-      eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-      address: usdcUserBank ?? ''
-    }),
+  const analytics: AllEvents | null = useMemo(
+    () =>
+      usdcUserBank
+        ? {
+            eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+            address: usdcUserBank
+          }
+        : null,
     [usdcUserBank]
   )
 
   const handleConfirmPress = useCallback(() => {
+    if (!usdcUserBank || !analytics) return
     Clipboard.setString(usdcUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
     trackEvent(make(analytics))
@@ -78,7 +82,7 @@ export const USDCManualTransfer = ({
           <Text size='l'>{messages.explainer}</Text>
         </Flex>
       </Flex>
-      {usdcUserBank ? (
+      {usdcUserBank && analytics ? (
         <AddressTile address={usdcUserBank} analytics={analytics} />
       ) : null}
       <Flex

@@ -43,7 +43,7 @@ export const ReceiveTokensModal = () => {
   // Create tokenInfo object from fetched data
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
-  const balance = tokenBalance?.balance ? tokenBalance.balance.toString() : '0'
+  const balance = tokenBalance?.balance?.toString()
 
   const { userBankAddress, wallet } = useUserbank(mint)
 
