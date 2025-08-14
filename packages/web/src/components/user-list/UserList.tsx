@@ -63,7 +63,7 @@ type UserListProps<T> = {
   renderRightContent?: (item: T, index: number) => ReactNode
 }
 
-export const UserList = <T extends { userId: ID; balance?: number }>({
+export const UserList = <T extends UserListDataItem>({
   data,
   totalCount,
   hasNextPage,
