@@ -7,7 +7,7 @@ import type { SdkServicesConfig } from './types'
 export const developmentConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.0.0",
-    "apiEndpoint": "http://audius-protocol-discovery-provider-1",
+    "apiEndpoint": "http://audius-protocol-api",
     "discoveryNodes": [
       {
         "delegateOwnerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8",
