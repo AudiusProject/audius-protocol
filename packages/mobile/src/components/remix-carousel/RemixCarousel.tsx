@@ -9,6 +9,7 @@ import { RemixContestCard } from './RemixContestCard'
 
 export type RemixContestCardProps = {
   trackIds: ID[] | undefined
+  inView?: boolean
   onCardPress?: (trackId: ID) => void
 } & Partial<ListProps>
 
@@ -19,7 +20,7 @@ type IDCardListItem = {
 type ListProps = Omit<CardListProps<IDCardListItem>, 'data'>
 
 export const RemixCarousel = (props: RemixContestCardProps) => {
-  const { trackIds, ...other } = props
+  const { trackIds, inView, ...other } = props
 
   const idList = useMemo(() => {
     if (!trackIds) return undefined
@@ -33,6 +34,7 @@ export const RemixCarousel = (props: RemixContestCardProps) => {
   return (
     <CardList
       data={idList}
+      isLoading={!inView}
       renderItem={({ item }) => {
         return <RemixContestCard trackId={item.trackId} />
       }}

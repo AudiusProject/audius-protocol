@@ -7,15 +7,18 @@ import { Kind } from '@audius/common/models'
 import { QueueSource } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 
-import { Button, Flex, Skeleton, Text } from '@audius/harmony-native'
-import { TrackTile } from 'app/components/lineup-tile'
+import { Button, Flex, Text } from '@audius/harmony-native'
+import { LineupTileSkeleton, TrackTile } from 'app/components/lineup-tile'
+
+import { useDeferredElement } from '../../../hooks/useDeferredElement'
 
 export const FeelingLucky = () => {
+  const { inView, InViewWrapper } = useDeferredElement()
   const {
     data: feelingLuckyTracks = [],
     refetch: refetchFeelingLucky,
-    isLoading
-  } = useFeelingLuckyTracks({ limit: 1 })
+    isPending
+  } = useFeelingLuckyTracks({ limit: 1 }, { enabled: inView })
   const track = feelingLuckyTracks[0]
 
   const uid = useMemo(() => {
@@ -29,31 +32,31 @@ export const FeelingLucky = () => {
   })
 
   return (
-    <Flex justifyContent={'flex-start'} gap='m'>
-      <Flex direction='row' justifyContent='space-between'>
-        <Text variant='title' size='l' textAlign={'left'}>
-          {messages.feelingLucky}
-        </Text>
-        <Button
-          variant='secondary'
-          size='xs'
-          onPress={() => refetchFeelingLucky()}
-        >
-          {messages.imFeelingLucky}
-        </Button>
-      </Flex>
-      {isLoading ? (
-        <Flex h={260} w='100%'>
-          <Skeleton noShimmer />
+    <InViewWrapper>
+      <Flex justifyContent={'flex-start'} gap='m'>
+        <Flex direction='row' justifyContent='space-between'>
+          <Text variant='title' size='l' textAlign={'left'}>
+            {messages.feelingLucky}
+          </Text>
+          <Button
+            variant='secondary'
+            size='xs'
+            onPress={() => refetchFeelingLucky()}
+          >
+            {messages.imFeelingLucky}
+          </Button>
         </Flex>
-      ) : track && uid ? (
-        <TrackTile
-          id={track.track_id}
-          uid={uid}
-          togglePlay={togglePlay}
-          index={0}
-        />
-      ) : null}
-    </Flex>
+        {!inView || isPending ? (
+          <LineupTileSkeleton noShimmer />
+        ) : track && uid ? (
+          <TrackTile
+            id={track.track_id}
+            uid={uid}
+            togglePlay={togglePlay}
+            index={0}
+          />
+        ) : null}
+      </Flex>
+    </InViewWrapper>
   )
 }

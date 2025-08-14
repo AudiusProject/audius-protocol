@@ -8,15 +8,19 @@ import {
 } from '@audius/harmony-native'
 import Skeleton from 'app/components/skeleton'
 
-export const LineupTileSkeleton = () => {
+interface LineupTileSkeletonProps {
+  noShimmer?: boolean
+}
+
+export const LineupTileSkeleton = ({ noShimmer }: LineupTileSkeletonProps) => {
   return (
     <Paper>
       <Flex flex={1} justifyContent='space-between'>
         <Flex direction='row' alignItems='center' p='s' gap='m'>
-          <Skeleton height={80} width={80} />
+          <Skeleton height={80} width={80} noShimmer={noShimmer} />
           <Flex gap='s' flex={1}>
-            <Skeleton width='80%' height={20} />
-            <Skeleton width='60%' height={20} />
+            <Skeleton width='80%' height={20} noShimmer={noShimmer} />
+            <Skeleton width='60%' height={20} noShimmer={noShimmer} />
           </Flex>
         </Flex>
         <Divider mh='s' pt='l' />

@@ -48,7 +48,6 @@ export const MoodsGrid = ({ isLoading: externalLoading }: MoodsGridProps) => {
     <ExploreSection
       title={messages.exploreByMood(labelByCategory[category])}
       centered
-      isLoading={externalLoading}
     >
       <Flex wrap='wrap' direction='row' justifyContent='center' gap='s'>
         {moodEntries.sort().map(([_, moodInfo]) => (
