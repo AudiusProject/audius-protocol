@@ -11,7 +11,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import {
   setUsers,
   setVisibility

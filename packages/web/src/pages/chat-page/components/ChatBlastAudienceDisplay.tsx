@@ -14,8 +14,8 @@ import {
 } from '@audius/harmony'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 
-import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import { Tooltip } from 'components/tooltip'
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import {
   UserListEntityType,
   UserListType

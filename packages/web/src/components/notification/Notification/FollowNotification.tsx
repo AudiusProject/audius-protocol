@@ -5,6 +5,7 @@ import { FollowNotification as FollowNotificationType } from '@audius/common/sto
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import { useIsMobile } from 'hooks/useIsMobile'
 import {
   setUsers as setUserListUsers,
@@ -22,7 +23,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
-import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFollow } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
 
