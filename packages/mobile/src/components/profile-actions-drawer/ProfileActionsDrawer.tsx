@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useMutedUsers } from '@audius/common/api'
+import { useMutedUsers, useProfileUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { commentsMessages } from '@audius/common/messages'
 import { ShareSource } from '@audius/common/models'
@@ -14,11 +14,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'
-import type { AppState } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { getProfileUserId } = profilePageSelectors
 const { getBlockees } = chatSelectors
 const { fetchBlockees } = chatActions
 
@@ -32,7 +30,8 @@ const messages = {
 
 export const ProfileActionsDrawer = () => {
   const dispatch = useDispatch()
-  const userId = useSelector((state: AppState) => getProfileUserId(state))
+  const { user } = useProfileUser()
+  const userId = user?.user_id
   const blockeeList = useSelector(getBlockees)
   const isBlockee = userId ? blockeeList.includes(userId) : false
   const { isEnabled: commentPostFlag = false } = useFeatureFlag(

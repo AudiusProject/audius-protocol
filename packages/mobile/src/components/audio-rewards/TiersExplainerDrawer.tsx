@@ -1,3 +1,4 @@
+import { useProfileUser } from '@audius/common/api'
 import type { BadgeTierInfo } from '@audius/common/store'
 import {
   useTierAndVerifiedForUser,
@@ -13,7 +14,6 @@ import { IconAudioBadge } from '../core/IconAudioBadge'
 import { AppDrawer } from '../drawer/AppDrawer'
 
 import { TierText } from './TierText'
-const { getProfileUserId } = profilePageSelectors
 
 export const MODAL_NAME = 'TiersExplainer'
 
@@ -69,7 +69,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
-  const profileId = useSelector(getProfileUserId)
+  const { user } = useProfileUser()
+  const profileId = user?.user_id
   const { tier, tierNumber } = useTierAndVerifiedForUser(profileId)
 
   const { humanReadableAmount } = badgeTiers.find(
