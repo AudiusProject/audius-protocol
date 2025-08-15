@@ -4,7 +4,6 @@ import { useQueryContext } from '@audius/common/api'
 import { useUserbank } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'
-import QRCode from 'react-qr-code'
 
 import {
   IconError,
@@ -20,6 +19,7 @@ import type { AllEvents } from 'app/types/analytics'
 
 import { CashBalanceSection } from '../add-funds-drawer/CashBalanceSection'
 import { AddressTile } from '../core/AddressTile'
+import { QRCodeComponent } from '../core/QRCode'
 
 const USDCLearnMore = 'https://support.audius.co/product/usdc'
 
@@ -77,7 +77,9 @@ export const USDCManualTransfer = ({
     <Flex ph='l' gap='xl'>
       <CashBalanceSection />
       <Flex row gap='l' alignItems='center'>
-        {usdcUserBank ? <QRCode size={160} value={usdcUserBank} /> : null}
+        {usdcUserBank ? (
+          <QRCodeComponent size={160} value={usdcUserBank} />
+        ) : null}
         <Flex flex={1}>
           <Text size='l'>{messages.explainer}</Text>
         </Flex>
