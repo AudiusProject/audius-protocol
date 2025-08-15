@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { useCurrentAccountUser, useProfileUser } from '@audius/common/api'
 import { FollowSource, statusIsNotFinalized } from '@audius/common/models'
 import {
-  profilePageSelectors,
   chatActions,
   chatSelectors,
   reachabilitySelectors
@@ -23,7 +22,6 @@ import { SubscribeButton } from './SubscribeButton'
 
 const { useCanCreateChat, getChatPermissionsStatus } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
-const { getProfileUserId } = profilePageSelectors
 
 type ProfileInfoProps = {
   onFollow: () => void
@@ -39,9 +37,8 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   })
   const dispatch = useDispatch()
 
-  const profileUserId = useSelector((state) =>
-    getProfileUserId(state, params.handle)
-  )
+  const { user } = useProfileUser()
+  const profileUserId = user?.user_id
   const { canCreateChat } = useCanCreateChat(profileUserId)
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
 
