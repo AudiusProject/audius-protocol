@@ -1,3 +1,4 @@
+import { useCurrentUserId } from '@audius/common/api'
 import { Flex, makeResponsiveStyles } from '@audius/harmony'
 
 import { AssetInfoSection } from './components/AssetInfoSection'
@@ -75,6 +76,7 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => ({
 
 export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
   const styles = useStyles()
+  const { data: currentUserId } = useCurrentUserId()
 
   return (
     <Flex css={styles.container}>
@@ -85,7 +87,7 @@ export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
       <Flex css={styles.rightSection}>
         <AssetInsights mint={mint} />
         <AssetLeaderboardCard mint={mint} />
-        <ExternalWallets mint={mint} />
+        {currentUserId ? <ExternalWallets mint={mint} /> : null}
       </Flex>
     </Flex>
   )
