@@ -31,6 +31,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
+import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -50,7 +51,13 @@ const YourCoinsSkeleton = () => {
         alignSelf='stretch'
       >
         <Flex alignItems='center' gap='m' p='xl' flex={1}>
-          <Skeleton width='64px' height='64px' />
+          <Skeleton
+            width='64px'
+            height='64px'
+            css={{
+              clipPath: `url(#${roundedHexClipPath})`
+            }}
+          />
           <Flex direction='column' gap='xs'>
             <Skeleton width='200px' height='36px' />
             <Skeleton width='100px' height='24px' />
