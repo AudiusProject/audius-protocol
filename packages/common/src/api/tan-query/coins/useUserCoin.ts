@@ -35,9 +35,6 @@ export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
     queryKey: getUserCoinQueryKey(params.mint, userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
-      if (!userId || !params.mint) {
-        return null
-      }
 
       const response = await sdk.users.getUserCoin({
         id: Id.parse(userId),

@@ -110,7 +110,8 @@ export const useTokenSwapForm = ({
 
   const { data: inputTokenBalanceData, isPending: isBalanceLoading } =
     useTokenBalance({
-      mint: inputToken.address
+      mint: inputToken.address,
+      includeExternalWallets: false
     })
 
   // Get token price for USD-based limit calculations
