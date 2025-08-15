@@ -209,16 +209,19 @@ export const useSwapTokens = () => {
 
         // ---------- 6. Success & Optimistic Updates ----------
         if (user?.wallet) {
-          // Optimistically update token balances (function handles USDC exclusion)
-          await queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.userCoin, user.user_id]
-          })
-
           // Invalidate USDC balance separately if needed
           queryClient.invalidateQueries({
             queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
           })
         }
+
+        await queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.userCoin, user?.user_id]
+        })
+
+        await queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.userCoins]
+        })
 
         return {
           status: SwapStatus.SUCCESS,
