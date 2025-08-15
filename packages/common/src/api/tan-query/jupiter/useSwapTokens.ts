@@ -246,9 +246,18 @@ export const useSwapTokens = () => {
 
             return {
               ...prevAccountBalances,
-              // Update aggregate balance (includes connected wallets)
-              balance: prevAccountBalances?.balance - (inputAmount?.amount ?? 0)
-              // TODO: Update internal wallet balance
+              // Update aggregate account balance (includes connected wallets)
+              balance:
+                prevAccountBalances?.balance - (inputAmount?.amount ?? 0),
+              // Update internal wallet balance (we only do swaps against internal wallets)
+              accounts: prevAccountBalances.accounts.map((account) =>
+                account.isInAppWallet
+                  ? {
+                      ...account,
+                      balance: account.balance - (inputAmount?.amount ?? 0)
+                    }
+                  : account
+              )
             }
           }
         )
@@ -261,10 +270,18 @@ export const useSwapTokens = () => {
 
             return {
               ...prevAccountBalances,
-              // Update aggregate balance
+              // Update aggregate account balance (includes connected wallets)
               balance:
-                prevAccountBalances?.balance + (outputAmount?.amount ?? 0)
-              // TODO: Update internal wallet balance
+                prevAccountBalances?.balance + (outputAmount?.amount ?? 0),
+              // Update internal wallet balance (we only do swaps against internal wallets)
+              accounts: prevAccountBalances.accounts.map((account) =>
+                account.isInAppWallet
+                  ? {
+                      ...account,
+                      balance: account.balance + (outputAmount?.amount ?? 0)
+                    }
+                  : account
+              )
             }
           }
         )
