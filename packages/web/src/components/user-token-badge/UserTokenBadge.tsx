@@ -39,12 +39,12 @@ export const UserTokenBadge = ({ mint, size = 'm' }: UserTokenBadgeProps) => {
       backgroundColor='white'
     >
       <Flex alignItems='center' gap='xs'>
-        {userId && <Avatar userId={userId} w={iconSize} h={iconSize} />}
+        {userId ? <Avatar userId={userId} w={iconSize} h={iconSize} /> : null}
         <Flex alignItems='center' gap='xs'>
           <Text variant='body' size='l'>
             {name}
           </Text>
-          {userId && <UserBadges userId={userId} size='s' inline />}
+          {userId ? <UserBadges userId={userId} size='s' inline /> : null}
         </Flex>
       </Flex>
     </Paper>
