@@ -18,6 +18,8 @@ import { useSignMessage, useSwitchAccount, useAccount } from 'wagmi'
 
 import { appkitModal, wagmiAdapter, audiusChain } from 'app/ReownAppKitModal'
 
+import { useRequiresAccountCallback } from './useRequiresAccount'
+
 /**
  * Helper hook that signs a message using the current connected wallet, whether
  * using Solana or Ethereum.
@@ -117,7 +119,7 @@ export const useConnectAndAssociateWallets = (
    * - Ensures all existing connections are disconnected
    * - Ensures that the network is set to mainnet (for Eth)
    */
-  const openAppKitModal = useCallback(async () => {
+  const openAppKitModal = useRequiresAccountCallback(async () => {
     // If previously connected, disconnect to give a "fresh" view of options
     if (isConnected) {
       await disconnect()
