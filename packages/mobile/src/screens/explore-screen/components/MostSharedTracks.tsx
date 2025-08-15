@@ -5,26 +5,31 @@ import { exploreMessages as messages } from '@audius/common/messages'
 import { QueueSource } from '@audius/common/store'
 import { full } from '@audius/sdk'
 
+import { useDeferredElement } from '../../../hooks/useDeferredElement'
+
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const MostSharedTracks = () => {
-  const { data: mostSharedTracks, isLoading } = useMostSharedTracks({
-    pageSize: 10,
-    timeRange: full.GetMostSharedTracksTimeRangeEnum.Week
-  })
-
-  if (!isLoading && (!mostSharedTracks || mostSharedTracks.length === 0)) {
-    return null
-  }
+  const { inView, InViewWrapper } = useDeferredElement()
+  const { data: mostSharedTracks, isPending } = useMostSharedTracks(
+    {
+      pageSize: 10,
+      timeRange: full.GetMostSharedTracksTimeRangeEnum.Week
+    },
+    { enabled: inView }
+  )
 
   return (
-    <ExploreSection title={messages.mostShared}>
-      <TrackTileCarousel
-        tracks={mostSharedTracks}
-        isLoading={isLoading}
-        source={QueueSource.EXPLORE}
-      />
-    </ExploreSection>
+    <InViewWrapper>
+      <ExploreSection title={messages.mostShared}>
+        <TrackTileCarousel
+          tracks={mostSharedTracks}
+          isLoading={isPending}
+          source={QueueSource.EXPLORE}
+          inView={inView}
+        />
+      </ExploreSection>
+    </InViewWrapper>
   )
 }

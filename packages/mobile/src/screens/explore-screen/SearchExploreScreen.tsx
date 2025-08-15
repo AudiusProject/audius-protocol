@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
 import { Platform } from 'react-native'
+import { IOScrollView } from 'react-native-intersection-observer'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -10,7 +11,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import { Flex, useTheme } from '@audius/harmony-native'
+import { useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
@@ -25,6 +26,8 @@ import {
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
+
+const AnimatedIOScrollView = Animated.createAnimatedComponent(IOScrollView)
 
 // Animation parameters
 const HEADER_SLIDE_HEIGHT = 46
@@ -131,18 +134,19 @@ const SearchExploreContent = () => {
         filterTranslateY={filterTranslateY}
         scrollRef={scrollRef}
       />
-      {showSearch ? <SearchResults /> : null}
-      <Animated.ScrollView
-        ref={scrollRef}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16} // for android to match iOS
-        style={[contentPaddingStyle]}
-        showsVerticalScrollIndicator={false}
-      >
-        <Flex style={{ display: showSearch ? 'none' : 'flex' }}>
+      {showSearch ? (
+        <SearchResults />
+      ) : (
+        <AnimatedIOScrollView
+          ref={scrollRef}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16} // for android to match iOS
+          style={contentPaddingStyle}
+          showsVerticalScrollIndicator={false}
+        >
           <ExploreContent />
-        </Flex>
-      </Animated.ScrollView>
+        </AnimatedIOScrollView>
+      )}
     </ScreenContent>
   )
 }

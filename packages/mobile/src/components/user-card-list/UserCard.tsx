@@ -51,8 +51,9 @@ export const UserCard = (props: UserCardProps) => {
     size: SquareSizes.SIZE_480_BY_480
   })
 
-  if (!handle || follower_count === undefined || source === undefined)
+  if (!handle || follower_count === undefined) {
     return null
+  }
 
   return (
     <Paper border='default' onPress={handlePress} {...other}>

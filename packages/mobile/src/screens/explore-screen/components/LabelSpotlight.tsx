@@ -4,38 +4,30 @@ import { useExploreContent, useUsers } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
 import { useTheme } from '@audius/harmony-native'
-import { UserList } from 'app/components/user-list'
+import { UserCardList } from 'app/components/user-card-list'
+
+import { useDeferredElement } from '../../../hooks/useDeferredElement'
 
 import { ExploreSection } from './ExploreSection'
 
-interface LabelSpotlightProps {
-  isLoading?: boolean
-}
-
-export const LabelSpotlight = ({
-  isLoading: externalLoading
-}: LabelSpotlightProps) => {
+export const LabelSpotlight = () => {
   const { spacing } = useTheme()
+  const { InViewWrapper, inView } = useDeferredElement()
 
-  const { data: exploreContent, isLoading: isExploreContentLoading } =
-    useExploreContent()
-  const { data: featuredLabels, isLoading: isFeaturedLabelsLoading } = useUsers(
-    exploreContent?.featuredLabels
-  )
-
-  // Use external loading state if provided, otherwise use internal loading state
-  const isLoading =
-    externalLoading !== undefined
-      ? externalLoading
-      : isExploreContentLoading || isFeaturedLabelsLoading
+  const { data: exploreContent } = useExploreContent({ enabled: inView })
+  const { data: featuredLabels } = useUsers(exploreContent?.featuredLabels, {
+    enabled: inView
+  })
 
   return (
-    <ExploreSection title={messages.labelSpotlight} isLoading={isLoading}>
-      <UserList
-        horizontal
-        profiles={featuredLabels}
-        carouselSpacing={spacing.l}
-      />
-    </ExploreSection>
+    <InViewWrapper>
+      <ExploreSection title={messages.labelSpotlight}>
+        <UserCardList
+          horizontal
+          profiles={featuredLabels}
+          carouselSpacing={spacing.l}
+        />
+      </ExploreSection>
+    </InViewWrapper>
   )
 }

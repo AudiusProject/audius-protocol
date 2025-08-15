@@ -16,8 +16,8 @@ import {
 } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
-import { CollectionCardSkeleton } from '../collection-list/CollectionCardSkeleton'
 import { TrackImage } from '../image/TrackImage'
+import { TrackCardSkeleton } from '../track/TrackCardSkeleton'
 import { UserLink } from '../user-link'
 
 const messages = {
@@ -46,7 +46,7 @@ export const RemixContestCard = (props: RemixContestCardProps) => {
   }, [navigation, trackId])
 
   if (!track || !remixContest) {
-    return <CollectionCardSkeleton />
+    return <TrackCardSkeleton />
   }
   return (
     <Paper border='default' onPress={handlePress}>

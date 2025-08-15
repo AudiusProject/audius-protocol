@@ -2,14 +2,32 @@ import { Divider, Flex, Paper } from '@audius/harmony-native'
 
 import { Skeleton } from '../skeleton'
 
-export const TrackCardSkeleton = () => {
+export const TrackCardSkeleton = ({ noShimmer }: { noShimmer?: boolean }) => {
   return (
     <Paper border='default'>
       <Flex p='s' gap='s' alignItems='center'>
-        <Skeleton style={{ width: '100%', aspectRatio: 1 }} />
-        <Skeleton height={20} width='90%' style={{ marginBottom: 6 }} />
-        <Skeleton height={18} width={100} style={{ marginBottom: 4 }} />
-        <Skeleton height={16} width={60} style={{ marginBottom: 4 }} />
+        <Skeleton
+          style={{ width: '100%', aspectRatio: 1 }}
+          noShimmer={noShimmer}
+        />
+        <Skeleton
+          height={20}
+          width='90%'
+          style={{ marginBottom: 6 }}
+          noShimmer={noShimmer}
+        />
+        <Skeleton
+          height={18}
+          width={100}
+          style={{ marginBottom: 4 }}
+          noShimmer={noShimmer}
+        />
+        <Skeleton
+          height={16}
+          width={60}
+          style={{ marginBottom: 4 }}
+          noShimmer={noShimmer}
+        />
       </Flex>
       <Divider orientation='horizontal' />
       <Flex
@@ -19,7 +37,7 @@ export const TrackCardSkeleton = () => {
         borderBottomLeftRadius='m'
         borderBottomRightRadius='m'
       >
-        <Skeleton height={16} width={100} />
+        <Skeleton height={16} width={100} noShimmer={noShimmer} />
       </Flex>
     </Paper>
   )
