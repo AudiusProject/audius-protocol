@@ -539,6 +539,9 @@ def process_user_bank_tx_details(
         return
 
     account_keys = list(map(lambda x: str(x), transaction.message.account_keys))
+    account_keys.extend(list(map(lambda x: str(x), meta.loaded_addresses.writable)))
+    account_keys.extend(list(map(lambda x: str(x), meta.loaded_addresses.readonly)))
+
     tx_message = cast(Message, transaction.message)
 
     # Check for valid instruction
