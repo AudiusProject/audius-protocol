@@ -227,11 +227,13 @@ services:
       - discovery
 
   discovery-provider-db:
-    image: postgres:11.4
+    image: postgres:15.5
     user: postgres
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_DB: 'discovery_provider'
+      PGUSER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
     healthcheck:
       test: ['CMD', 'pg_isready']
       interval: 1s
