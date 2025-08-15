@@ -17,10 +17,12 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => ({
       gap: theme.spacing.l
     },
     mobile: {
-      flexDirection: 'column'
+      flexDirection: 'column',
+      width: '100%'
     },
     tablet: {
-      flexDirection: 'column'
+      flexDirection: 'column',
+      width: '100%'
     }
   },
   leftSection: {
@@ -62,7 +64,6 @@ export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
         <BalanceSection mint={mint} />
         <AssetInfoSection mint={mint} />
       </Flex>
-
       <Flex css={styles.rightSection}>
         <AssetInsights mint={mint} />
         <AssetLeaderboardCard mint={mint} />
