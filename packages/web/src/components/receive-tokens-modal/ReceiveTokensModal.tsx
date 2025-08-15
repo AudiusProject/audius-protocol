@@ -36,16 +36,11 @@ export const ReceiveTokensModal = () => {
   const { isMobile } = useMedia()
   const { mint } = data ?? {}
 
-  // Fetch token info and balance
   const { data: coin } = useArtistCoin({ mint: mint ?? '' })
   const { data: tokenBalance } = useTokenBalance({ mint: mint ?? '' })
-
-  // Create tokenInfo object from fetched data
-  const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-
-  const balance = tokenBalance?.balance?.toString()
-
   const { userBankAddress, wallet } = useUserbank(mint)
+  const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
+  const balance = tokenBalance?.balance?.toString()
 
   const handleCopy = useCallback(() => {
     copyToClipboard(userBankAddress ?? '')
@@ -99,7 +94,6 @@ export const ReceiveTokensModal = () => {
 
         <Divider orientation='horizontal' color='default' />
 
-        {/* QR Code and Instructions */}
         <Flex gap='xl' alignItems='center' row>
           <Flex
             w={DIMENSIONS}
@@ -111,12 +105,7 @@ export const ReceiveTokensModal = () => {
               <QRCodeComponent value={userBankAddress} />
             ) : null}
           </Flex>
-          <Flex
-            column
-            gap='xl'
-            h={DIMENSIONS}
-            justifyContent={isMobile ? 'center' : 'space-between'}
-          >
+          <Flex column gap='xl' h={DIMENSIONS} justifyContent='center' flex={1}>
             <Text variant='body' size='l'>
               {walletMessages.receiveTokensExplainer}
             </Text>
@@ -124,12 +113,10 @@ export const ReceiveTokensModal = () => {
           </Flex>
         </Flex>
 
-        {/* Wallet Address */}
         {userBankAddress ? <AddressTile address={userBankAddress} /> : null}
 
         {isMobile ? hint : null}
 
-        {/* Action Buttons */}
         <Flex
           gap='s'
           alignItems='center'
