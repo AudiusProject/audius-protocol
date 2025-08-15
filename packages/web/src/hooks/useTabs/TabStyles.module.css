@@ -96,10 +96,12 @@
 }
 .bodyContainer {
   position: relative;
+  width: 100%;
 }
 
 .bodyContainerDesktop {
   height: 100%;
+  width: 100%;
 }
 
 .gestureContainer {
@@ -108,6 +110,8 @@
 
 .elementWrapper {
   display: flex;
+  width: 100%;
+  flex-direction: column;
 }
 
 .elementWrapper.isDragging {
