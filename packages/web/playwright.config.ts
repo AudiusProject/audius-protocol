@@ -1,29 +1,4 @@
-import fs from 'fs'
-
 import { defineConfig, devices } from '@playwright/test'
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
-
-// Set this to false to avoid seeding data every time locally if
-// running against local stack
-const reseedEachRun = process.env.RESEED_EACH_RUN !== 'false'
-const authFileExists = fs.existsSync('playwright/.auth/user.json')
-const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
-
-const getTestDependencies = () => {
-  if (runAgainstLocalStack) {
-    if (reseedEachRun || !authFileExists) {
-      return ['seed', 'setup']
-    }
-    return []
-  }
-
-  return authFileExists ? [] : ['setup']
-}
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -74,12 +49,12 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: /.*\.setup.ts/,
-      dependencies: runAgainstLocalStack ? ['seed'] : []
+      dependencies: ['seed']
     },
     {
       name: 'chromium',
-      dependencies: getTestDependencies(),
       testIgnore: /.*\.(setup|seed).ts/,
+      dependencies: ['setup'],
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'playwright/.auth/user.json'
@@ -119,9 +94,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: runAgainstLocalStack
-      ? 'npm run preview:dev'
-      : 'npm run preview:stage',
+    command:
+      process.env.RUN_AGAINST_STAGE !== 'true'
+        ? 'npm run preview:dev'
+        : 'npm run preview:stage',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',

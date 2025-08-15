@@ -1,3 +1,4 @@
+import type { Track } from '@audius/common/models'
 import { Entity, EntityType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 
@@ -5,8 +6,10 @@ import { UserListEntityType } from 'store/application/ui/userListModal/types'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 const { collectionPage } = route
 
-export const getEntityLink = (entity: EntityType, fullRoute = false) => {
-  if (!entity.user) return ''
+export const getEntityLink = (
+  entity: EntityType | Track,
+  fullRoute = false
+) => {
   if ('track_id' in entity) {
     return fullRoute ? fullTrackPage(entity.permalink) : entity.permalink
   } else if (entity.user && entity.playlist_id) {

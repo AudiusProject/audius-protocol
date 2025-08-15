@@ -11,8 +11,18 @@ const audiusCmdPath = '$HOME/.local/bin/audius-cmd'
 const dataFilePath = (filename: string) => `${dataDir}/${filename}`
 
 setup('seed data', async () => {
+  if (process.env.RUN_AGAINST_STAGE === 'true') {
+    console.info('Skipping data seeding as RUN_AGAINST_STAGE is set to true.')
+    return
+  }
+
   if (!existsSync(dataDir)) {
     mkdirSync(dataDir)
+  } else {
+    if (process.env.CLEAN !== 'true') {
+      console.info('Skipping data seeding as CLEAN is false and data exists.')
+      return
+    }
   }
 
   const audiusCmd = async (cmd: string) => {
