@@ -87,7 +87,7 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
-  const { data: userCoins } = useUserCoins({ userId: Id.parse(userId) })
+  const { data: userCoins } = useUserCoins({ userId })
 
   // Display the mint of the prop if provided, otherwise display the mint of the coin with the highest balance
   const displayMint = useMemo(() => {

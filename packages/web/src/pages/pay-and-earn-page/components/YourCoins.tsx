@@ -29,7 +29,6 @@ import {
   useMedia,
   useTheme
 } from '@audius/harmony'
-import { encodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
@@ -175,16 +174,15 @@ export const YourCoins = () => {
   )
 
   const { data: currentUserId } = useCurrentUserId()
-  const userIdString = currentUserId ? encodeHashId(currentUserId) : ''
 
   const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
-    userId: userIdString || ''
+    userId: currentUserId
   })
 
   const { isMobile, isTablet } = useMedia()
   const coinPairs = useGroupCoinPairs(artistCoins, isMobile || isTablet)
 
-  if (isLoadingCoins || !userIdString) {
+  if (isLoadingCoins || !currentUserId) {
     return <YourCoinsSkeleton />
   }
 

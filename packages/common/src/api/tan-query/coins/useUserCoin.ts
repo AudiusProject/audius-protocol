@@ -1,4 +1,4 @@
-import { encodeHashId, UserCoinWithAccounts } from '@audius/sdk'
+import { Id, UserCoinWithAccounts } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
@@ -39,14 +39,8 @@ export const useUserCoin = <TResult = UserCoinWithAccounts | null>(
         return null
       }
 
-      const encodedUserId = encodeHashId(userId)
-      if (!encodedUserId) {
-        console.warn('Failed to encode user ID')
-        return null
-      }
-
       const response = await sdk.users.getUserCoin({
-        id: encodedUserId,
+        id: Id.parse(userId),
         mint: params.mint
       })
 
