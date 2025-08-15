@@ -128,10 +128,13 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
     isTokenPriceLoading
   } = useFormattedTokenBalance(coin.mint)
 
-  const { data: coinsData } = useArtistCoins({ mint: [coin.mint] })
+  const { data: coinsData, isPending: coinsDataLoading } = useArtistCoins({
+    mint: [coin.mint]
+  })
   const coinData = coinsData?.[0] ?? null
 
-  const isLoading = isTokenBalanceLoading || isTokenPriceLoading
+  const isLoading =
+    isTokenBalanceLoading || isTokenPriceLoading || coinsDataLoading
 
   return (
     <CoinCard
