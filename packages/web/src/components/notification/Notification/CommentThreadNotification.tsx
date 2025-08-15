@@ -26,7 +26,7 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
-import { UserProfilePictureList } from './components/UserProfilePictureList'
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
 
 const messages = {

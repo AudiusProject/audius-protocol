@@ -15,9 +15,9 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-import { USER_LENGTH_LIMIT } from '../utils'
+import { ProfilePicture } from '../notification/Notification/components/ProfilePicture'
+import { USER_LENGTH_LIMIT } from '../notification/Notification/utils'
 
-import { ProfilePicture } from './ProfilePicture'
 import styles from './UserProfilePictureList.module.css'
 
 const messages = {

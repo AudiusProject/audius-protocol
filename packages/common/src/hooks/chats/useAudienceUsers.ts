@@ -62,7 +62,7 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
   const { data: purchasersUsers } = useUsers(purchasers)
   const { data: remixersUsers } = useUsers(remixers)
   const { data: coinMembersUsers } = useUsers(
-    coinMembers?.map((member) => member.user_id)
+    coinMembers?.map((member) => member.userId)
   )
 
   let users: UserMetadata[] = []
