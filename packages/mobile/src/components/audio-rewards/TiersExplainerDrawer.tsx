@@ -1,12 +1,7 @@
 import { useProfileUser } from '@audius/common/api'
 import type { BadgeTierInfo } from '@audius/common/store'
-import {
-  useTierAndVerifiedForUser,
-  profilePageSelectors,
-  badgeTiers
-} from '@audius/common/store'
+import { useTierAndVerifiedForUser, badgeTiers } from '@audius/common/store'
 import { Text, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
 

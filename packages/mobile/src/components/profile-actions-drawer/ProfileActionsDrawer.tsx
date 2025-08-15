@@ -6,7 +6,6 @@ import { commentsMessages } from '@audius/common/messages'
 import { ShareSource } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
-  profilePageSelectors,
   chatActions,
   chatSelectors,
   shareModalUIActions
