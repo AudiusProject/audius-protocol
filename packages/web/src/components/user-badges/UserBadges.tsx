@@ -32,7 +32,6 @@ import {
   motion
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
-import { Id } from '@audius/sdk'
 import cn from 'classnames'
 
 import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
@@ -87,7 +86,7 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
-  const { data: userCoins } = useUserCoins({ userId: Id.parse(userId) })
+  const { data: userCoins } = useUserCoins({ userId })
 
   // Display the mint of the prop if provided, otherwise display the mint of the coin with the highest balance
   const displayMint = useMemo(() => {

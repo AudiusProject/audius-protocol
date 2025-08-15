@@ -39,7 +39,7 @@ export const useTokenBalance = ({
 
   // Artist coins query (includes AUDIO)
   const userCoinQuery = useUserCoin(
-    { mint },
+    { mint, userId },
     {
       select: (userCoinWithAccounts) => {
         if (!userCoinWithAccounts) return null
