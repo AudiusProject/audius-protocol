@@ -32,7 +32,6 @@ import {
   motion
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
-import { Id } from '@audius/sdk'
 import cn from 'classnames'
 
 import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
