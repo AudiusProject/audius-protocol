@@ -1,7 +1,8 @@
 import { useArtistCoin } from '@audius/common/api'
-import { Avatar, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
 
+import { Avatar } from 'components/avatar/Avatar'
 import UserBadges from 'components/user-badges/UserBadges'
 
 export type UserTokenBadgeProps = {
@@ -21,7 +22,6 @@ export const UserTokenBadge = ({ mint, size = 'm' }: UserTokenBadgeProps) => {
     ? (decodeHashId(coin.ownerId) ?? undefined)
     : undefined
 
-  const logoURI = coin.logoUri
   const name = coin.ticker
 
   const iconSize =
@@ -39,7 +39,7 @@ export const UserTokenBadge = ({ mint, size = 'm' }: UserTokenBadgeProps) => {
       backgroundColor='white'
     >
       <Flex alignItems='center' gap='xs'>
-        {logoURI && <Avatar src={logoURI} w={iconSize} h={iconSize} />}
+        {userId && <Avatar userId={userId} w={iconSize} h={iconSize} />}
         <Flex alignItems='center' gap='xs'>
           <Text variant='body' size='l'>
             {name}
