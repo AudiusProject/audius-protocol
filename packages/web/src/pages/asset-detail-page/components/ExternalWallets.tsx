@@ -29,7 +29,6 @@ import { UserCoinAccount } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { ToastContext } from 'components/toast/ToastContext'
-import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import {
@@ -200,10 +199,6 @@ export const ExternalWallets = ({ mint }: AssetDetailProps) => {
   const { openAppKitModal, isPending: isConnectingWallets } =
     useConnectAndAssociateWallets(handleAddWalletSuccess, handleAddWalletError)
 
-  const handleAddWallet = useRequiresAccountCallback(() => {
-    openAppKitModal()
-  }, [openAppKitModal])
-
   return (
     <Paper
       direction='column'
@@ -256,7 +251,7 @@ export const ExternalWallets = ({ mint }: AssetDetailProps) => {
         <Button
           variant='secondary'
           size='small'
-          onClick={handleAddWallet}
+          onClick={openAppKitModal}
           isLoading={isConnectingWallets}
           disabled={isConnectingWallets}
           fullWidth
