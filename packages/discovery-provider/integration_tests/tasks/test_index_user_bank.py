@@ -12,6 +12,7 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER,
     SENDER_USDC_USER_BANK_ADDRESS,
     mock_failed_track_purchase_tx,
+    mock_lookup_tables_tx,
     mock_unknown_instruction_tx,
     mock_valid_create_audio_token_account_tx,
     mock_valid_create_usdc_token_account_tx,
@@ -20,7 +21,6 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     mock_valid_transfer_without_purchase_tx,
     mock_valid_waudio_transfer_between_user_banks,
     mock_valid_waudio_transfer_from_user_bank_to_external_address,
-    mock_lookup_tables_tx,
 )
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
