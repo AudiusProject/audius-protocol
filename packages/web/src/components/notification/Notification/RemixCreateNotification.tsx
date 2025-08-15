@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import { useTracks, useUser } from '@audius/common/api'
+import { useTrack, useUser } from '@audius/common/api'
 import { Name, TrackMetadata } from '@audius/common/models'
 import { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -41,19 +41,20 @@ export const RemixCreateNotification = (
 
   // useNotificationEntities is not used here because the ids are not in the
   // entities list and we need to fetch them directly
-  const { data: tracks } = useTracks([childTrackId, parentTrackId])
-  const childTrack = tracks?.find((track) => track.track_id === childTrackId)
+  const { data: childTrack } = useTrack(childTrackId)
+  const { data: parentTrack } = useTrack(parentTrackId)
 
   // unnecessary but makes types happy
-  const childTrackEntity =
-    childTrack && user
-      ? {
-          ...childTrack,
-          user
-        }
-      : null
-
-  const parentTrack = tracks?.find((track) => track.track_id === parentTrackId)
+  const childTrackEntity = useMemo(
+    () =>
+      childTrack && user
+        ? {
+            ...childTrack,
+            user
+          }
+        : null,
+    [childTrack, user]
+  )
 
   const handleClick = useCallback(() => {
     if (childTrackEntity) {
