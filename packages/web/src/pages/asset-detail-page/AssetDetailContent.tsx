@@ -18,7 +18,8 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => ({
     },
     mobile: {
       flexDirection: 'column',
-      width: '100%'
+      width: '100%',
+      paddingBottom: theme.spacing.m
     },
     tablet: {
       flexDirection: 'column',
