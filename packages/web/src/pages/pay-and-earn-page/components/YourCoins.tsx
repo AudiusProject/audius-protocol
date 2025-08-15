@@ -52,10 +52,15 @@ const YourCoinsSkeleton = () => {
         <Flex alignItems='center' gap='m' p='xl' flex={1}>
           <Skeleton width='64px' height='64px' />
           <Flex direction='column' gap='xs'>
-            <Skeleton width='240px' height='36px' />
-            <Skeleton width='140px' height='24px' />
+            <Skeleton width='200px' height='36px' />
+            <Skeleton width='100px' height='24px' />
           </Flex>
         </Flex>
+      </Flex>
+      <Divider />
+      <Flex gap='m' p='xl' flex={1} direction='column'>
+        <Skeleton width='180px' height='28px' />
+        <Skeleton width='300px' height='22px' />
       </Flex>
     </Paper>
   )
@@ -69,10 +74,13 @@ const messages = {
   bonkTicker: '$BONK'
 }
 
-const YourCoinsHeader = () => {
+const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
   const { onOpen: openBuySellModal } = useBuySellModal()
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
+  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_BUY_SELL
+  )
 
   const handleBuySellClick = useCallback(() => {
     if (isManagedAccount) {
@@ -92,9 +100,11 @@ const YourCoinsHeader = () => {
       <Text variant='heading' size='m' color='heading'>
         {messages.yourCoins}
       </Text>
-      <Button variant='secondary' size='small' onClick={handleBuySellClick}>
-        {messages.buySell}
-      </Button>
+      {isWalletUIBuySellEnabled && !isLoading ? (
+        <Button variant='secondary' size='small' onClick={handleBuySellClick}>
+          {messages.buySell}
+        </Button>
+      ) : null}
     </Flex>
   )
 }
@@ -169,10 +179,6 @@ const FindMoreCoins = ({ css }: { css?: any }) => {
 }
 
 export const YourCoins = () => {
-  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
-    FeatureFlags.WALLET_UI_BUY_SELL
-  )
-
   const { data: currentUserId } = useCurrentUserId()
 
   const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
@@ -182,14 +188,11 @@ export const YourCoins = () => {
   const { isMobile, isTablet } = useMedia()
   const coinPairs = useGroupCoinPairs(artistCoins, isMobile || isTablet)
 
-  if (isLoadingCoins || !currentUserId) {
-    return <YourCoinsSkeleton />
-  }
-
   return (
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
-      {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
+      <YourCoinsHeader isLoading={isLoadingCoins} />
       <Flex column>
+        {isLoadingCoins || !currentUserId ? <YourCoinsSkeleton /> : null}
         {coinPairs.map((pair, rowIndex) => (
           <Fragment key={`row-${rowIndex}`}>
             <Flex alignItems='stretch'>
