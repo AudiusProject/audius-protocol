@@ -25,6 +25,7 @@ x-common: &common
     - 'audius-protocol-eth-ganache-1:host-gateway'
     - 'audius-protocol-pedalboard:host-gateway'
     - 'audius-protocol-api:host-gateway'
+    - 'audius-protocol-api-elasticsearch:host-gateway'
   deploy:
     resources:
       limits:
@@ -71,6 +72,15 @@ services:
       file: docker-compose.api.yml
       service: api
     container_name: audius-protocol-api
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/api.env
+    <<: *common
+
+  api-elasticsearch:
+    extends:
+      file: docker-compose.api.yml
+      service: elasticsearch
+    container_name: audius-protocol-api-elasticsearch
     env_file:
       - ${PROJECT_ROOT}/dev-tools/environment/api.env
     <<: *common
