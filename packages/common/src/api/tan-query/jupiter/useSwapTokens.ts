@@ -216,10 +216,6 @@ export const useSwapTokens = () => {
         }
 
         await queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.userCoin, user?.user_id]
-        })
-
-        await queryClient.invalidateQueries({
           queryKey: [QUERY_KEYS.userCoins]
         })
 
