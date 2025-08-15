@@ -39,7 +39,7 @@ services:
     <<: *common
 
   db:
-    image: postgres:11.22-bookworm
+    image: postgres:15.5
     shm_size: 2g
     command: postgres -c shared_buffers=2GB -c max_connections=300
     restart: unless-stopped
