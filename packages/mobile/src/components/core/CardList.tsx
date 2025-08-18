@@ -96,7 +96,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     (info) => {
       const itemElement =
         '_loading' in info.item ? (
-          <LoadingCardComponent noShimmer={info.index !== 0} />
+          <LoadingCardComponent noShimmer />
         ) : (
           (renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null)
         )

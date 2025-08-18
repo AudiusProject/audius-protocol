@@ -17,7 +17,8 @@ export const FeelingLucky = () => {
   const {
     data: feelingLuckyTracks = [],
     refetch: refetchFeelingLucky,
-    isPending
+    isPending,
+    isFetching
   } = useFeelingLuckyTracks({ limit: 1 }, { enabled: inView })
   const track = feelingLuckyTracks[0]
 
@@ -41,15 +42,17 @@ export const FeelingLucky = () => {
           <Button
             variant='secondary'
             size='xs'
+            isLoading={isFetching}
             onPress={() => refetchFeelingLucky()}
           >
             {messages.imFeelingLucky}
           </Button>
         </Flex>
-        {!inView || isPending ? (
+        {!inView || isPending || isFetching ? (
           <LineupTileSkeleton noShimmer />
         ) : track && uid ? (
           <TrackTile
+            key={track.track_id}
             id={track.track_id}
             uid={uid}
             togglePlay={togglePlay}

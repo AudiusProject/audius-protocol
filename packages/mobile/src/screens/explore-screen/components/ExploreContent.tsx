@@ -37,9 +37,13 @@ const MemoizedExploreContent = () => {
 
   return (
     <Flex gap='2xl' pt='s' pb={150} ph='l'>
-      {showTrackContent && <RecommendedTracks />}
-      {showTrackContent && <RecentlyPlayedTracks />}
-      {showTrackContent && <QuickSearchGrid />}
+      {isSearchExploreGoodiesEnabled ? (
+        <>
+          {showTrackContent && <RecommendedTracks />}
+          {showTrackContent && <RecentlyPlayedTracks />}
+          {showTrackContent && <QuickSearchGrid />}
+        </>
+      ) : null}
       {showPlaylistContent && <FeaturedPlaylists />}
       {showTrackContent && <FeaturedRemixContests />}
       {isSearchExploreGoodiesEnabled && showTrackContent && (

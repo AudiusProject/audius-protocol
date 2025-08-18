@@ -13,7 +13,6 @@ interface TrackTileCarouselProps {
   tracks?: number[]
   isLoading?: boolean
   source: QueueSource
-  inView?: boolean
 }
 
 const CarouselItem = ({
@@ -49,10 +48,9 @@ const CarouselItem = ({
 export const TrackTileCarousel = ({
   tracks,
   isLoading,
-  source,
-  inView = true
+  source
 }: TrackTileCarouselProps) => {
-  if (isLoading || !tracks || !inView) {
+  if (isLoading || !tracks) {
     return (
       <Flex direction='row' mh={-16}>
         <ScrollView

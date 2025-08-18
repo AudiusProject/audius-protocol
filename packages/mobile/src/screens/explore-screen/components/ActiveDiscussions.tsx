@@ -19,9 +19,8 @@ export const ActiveDiscussions = () => {
       <ExploreSection title={messages.activeDiscussions}>
         <TrackTileCarousel
           tracks={recentlyCommentedTracks}
-          isLoading={isPending}
+          isLoading={isPending || !inView}
           source={QueueSource.EXPLORE}
-          inView={inView}
         />
       </ExploreSection>
     </InViewWrapper>
