@@ -120,7 +120,7 @@
     "id": "b",
     "name": "AUDIO_MATCHING_BUYER",
     "type": "aggregate",
-    "amount": 5,
+    "amount": 1,
     "active": true,
     "step_count": 2147483647,
     "starting_block": 0,
