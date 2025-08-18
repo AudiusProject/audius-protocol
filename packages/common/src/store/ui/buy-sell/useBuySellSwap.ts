@@ -83,7 +83,7 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
         queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
       })
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.tokenBalance, user.wallet]
+        queryKey: [QUERY_KEYS.userCoins]
       })
     }
     if (user?.spl_wallet) {
