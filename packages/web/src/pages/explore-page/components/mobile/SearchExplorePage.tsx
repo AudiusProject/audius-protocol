@@ -4,7 +4,8 @@ import {
   useEffect,
   useRef,
   useState,
-  ChangeEvent
+  ChangeEvent,
+  useMemo
 } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
@@ -156,6 +157,23 @@ const ExplorePage = () => {
     [setCategory]
   )
 
+  const categoryList = useMemo(() => {
+    const entries = Object.entries(categories)
+    const allCategory = entries.find(([key]) => key === 'all')
+    const currentCategory = entries.find(([key]) => key === categoryKey)
+    const restCategories = entries.filter(
+      ([key]) => key !== 'all' && key !== categoryKey
+    )
+
+    return [
+      ...(allCategory ? [allCategory] : []),
+      ...(currentCategory && currentCategory[0] !== 'all'
+        ? [currentCategory]
+        : []),
+      ...restCategories
+    ]
+  }, [categoryKey])
+
   // Hide search header
   useEffect(() => {
     setRight(null)
@@ -203,8 +221,9 @@ const ExplorePage = () => {
               padding: '16px 50vw'
             }}
           >
-            {Object.entries(categories).map(([key, category]) => (
+            {categoryList.map(([key, category]) => (
               <SelectablePill
+                isSelected={categoryKey === key}
                 aria-label={`${key} search category`}
                 icon={(category as Category).icon}
                 key={key}
