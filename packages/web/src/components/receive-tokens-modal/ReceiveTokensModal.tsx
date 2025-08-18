@@ -19,10 +19,10 @@ import {
   Hint,
   useMedia
 } from '@audius/harmony'
-import QRCode from 'react-qr-code'
 
 import { AddressTile } from 'components/address-tile'
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
+import { QRCodeComponent } from 'components/core/QRCode'
 import { ExternalTextLink } from 'components/link'
 import ResponsiveModal from 'components/modal/ResponsiveModal'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -107,7 +107,9 @@ export const ReceiveTokensModal = () => {
             alignItems='center'
             justifyContent='center'
           >
-            {userBankAddress ? <QRCode value={userBankAddress} /> : null}
+            {userBankAddress ? (
+              <QRCodeComponent value={userBankAddress} />
+            ) : null}
           </Flex>
           <Flex
             column

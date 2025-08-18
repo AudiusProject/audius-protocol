@@ -23,7 +23,11 @@ export const AssetDetailPage = () => {
 
   if (coinLoading) {
     return (
-      <Flex justifyContent='center' alignItems='center' h='100vh'>
+      <Flex
+        justifyContent='center'
+        alignItems='center'
+        css={{ minHeight: '100vh' }}
+      >
         <LoadingSpinner />
       </Flex>
     )
