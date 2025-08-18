@@ -36,27 +36,3 @@ export const transformArtistCoinsToTokenInfoMap = (
 
   return tokenMap
 }
-
-export const getTokenInfoBySymbol = (
-  artistCoins: Coin[],
-  symbol: string
-): TokenInfo | undefined => {
-  const coin = artistCoins.find((c) => c.ticker === symbol)
-  if (!coin) return undefined
-
-  const coinMetadata = coinFromSDK(coin)
-  return coinMetadataToTokenInfo(coinMetadata)
-}
-
-export const getAllTokenSymbols = (artistCoins: Coin[]): string[] => {
-  return artistCoins.map((coin) => coin.ticker || '')
-}
-
-export const getTokenMintsBySymbols = (
-  artistCoins: Coin[],
-  symbols: string[]
-): string[] => {
-  return artistCoins
-    .filter((coin) => coin.ticker && symbols.includes(coin.ticker))
-    .map((coin) => coin.mint)
-}
