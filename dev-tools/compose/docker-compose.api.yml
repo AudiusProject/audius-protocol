@@ -13,7 +13,7 @@ services:
         condition: service_healthy
     ports:
       - 1323:1323
-    command: ['/bin/sh', '-c', 'bridge es-indexer && bridge']
+    command: ['/bin/sh', '-c', 'bridge es-indexer drop && bridge']
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
