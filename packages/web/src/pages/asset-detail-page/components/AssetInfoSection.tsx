@@ -1,8 +1,17 @@
-import { useCallback, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useArtistCoin } from '@audius/common/api'
+import {
+  UserCoin,
+  useArtistCoin,
+  useCurrentUserId,
+  useUserCoins
+} from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
-import { AUDIUS_DISCORD_LINK } from '@audius/common/src/utils/route'
+import {
+  getTierForUser,
+  getTierForUserNonWei
+} from '@audius/common/src/store/wallet/utils'
+import { AUDIUS_DISCORD_OAUTH_LINK } from '@audius/common/src/utils/route'
 import {
   Flex,
   Paper,
@@ -10,11 +19,6 @@ import {
   useTheme,
   PlainButton,
   IconDiscord,
-  PopupMenu,
-  PopupMenuItem,
-  IconKebabHorizontal,
-  IconButton,
-  IconRefresh,
   IconGift,
   Avatar,
   IconExternalLink,
@@ -26,14 +30,13 @@ import {
 import { decodeHashId } from '@audius/sdk'
 
 import Skeleton from 'components/skeleton/Skeleton'
+import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import Tiers from 'pages/rewards-page/Tiers'
+import Tiers, { TierLevel } from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
 
 import { AssetDetailProps } from '../types'
-
-import { UpdateDiscordRoleModal } from './UpdateDiscordRoleModal'
 
 const messages = {
   loading: 'Loading...',
@@ -49,10 +52,11 @@ const messages = {
   profileFlair: 'Profile Flair',
   customDiscordRole: 'Custom Discord Role',
   messageBlasts: 'Message Blasts',
-  openDiscord: 'Open The Discord',
+  openDiscord: 'Join The Discord',
   refreshDiscordRole: 'Refresh Discord Role',
   browseRewards: 'Browse Rewards',
-  rewardTiers: 'Reward Tiers'
+  rewardTiers: 'Reward Tiers',
+  discordTooltip: 'You must have coins to unlock the discord'
 }
 
 const BANNER_HEIGHT = 120
@@ -232,16 +236,49 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
   )
 }
 
+// TODO: make this structure more legit this if we add more coins with tiered rewards
+const COIN_TIER_MAP = {
+  $AUDIO: getTierForUserNonWei
+}
+
+const makeDiscordOauthStateString = (userCoins: UserCoin[]) => {
+  const coinTiers = userCoins.reduce(
+    (acc, coin) => {
+      const cleanTicker = coin.ticker.replace('$', '')
+      if (COIN_TIER_MAP[coin.ticker]) {
+        const tier = COIN_TIER_MAP[coin.ticker](coin.balance)
+        acc[cleanTicker] = tier
+      } else {
+        acc[cleanTicker] = 'holder'
+      }
+      return acc
+    },
+    {} as Record<string, string>
+  )
+
+  return JSON.stringify(coinTiers)
+}
+
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
-  const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false)
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
   const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const userToken = useMemo(
+    () => userCoins?.find((coin) => coin.mint === mint),
+    [userCoins, mint]
+  )
+  const { balance: userTokenBalance } = userToken ?? {}
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
   const openDiscord = () => {
-    window.open(AUDIUS_DISCORD_LINK, '_blank')
+    const tierStateString = makeDiscordOauthStateString(userCoins ?? [])
+    window.open(
+      `${AUDIUS_DISCORD_OAUTH_LINK}&state=${tierStateString}`,
+      '_blank'
+    )
   }
 
   const handleLearnMore = () => {
@@ -256,14 +293,6 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
     setIsTiersModalOpen(false)
   }, [])
 
-  const handleOpenDiscordModal = useCallback(() => {
-    setIsDiscordModalOpen(true)
-  }, [])
-
-  const handleCloseDiscordModal = useCallback(() => {
-    setIsDiscordModalOpen(false)
-  }, [])
-
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
   }
@@ -272,21 +301,11 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
   const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
-  const menuItems: PopupMenuItem[] = [
-    {
-      text: messages.refreshDiscordRole,
-      onClick: handleOpenDiscordModal,
-      icon: <IconRefresh size='m' color='default' />
-    }
-  ]
+  const userHasNoBalance = !userTokenBalance || Number(userTokenBalance) <= 0
+  const TooltipWrapper = userHasNoBalance ? Tooltip : Fragment
 
   return (
     <>
-      <UpdateDiscordRoleModal
-        isOpen={isDiscordModalOpen}
-        onClose={handleCloseDiscordModal}
-        mint={mint}
-      />
       <Modal
         isOpen={isTiersModalOpen}
         onClose={handleCloseTiersModal}
@@ -369,28 +388,21 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
           borderTop='default'
         >
           <Flex alignItems='center' justifyContent='center' gap='s'>
-            <PlainButton
-              onClick={openDiscord}
-              iconLeft={IconDiscord}
-              variant='default'
-              size='default'
-            >
-              {messages.openDiscord}
-            </PlainButton>
+            <TooltipWrapper text={messages.discordTooltip}>
+              {/* The tooltip needs a wrapper to work */}
+              <Flex style={{ cursor: 'pointer' }}>
+                <PlainButton
+                  onClick={openDiscord}
+                  iconLeft={IconDiscord}
+                  variant='default'
+                  size='default'
+                  disabled={userHasNoBalance}
+                >
+                  {messages.openDiscord}
+                </PlainButton>
+              </Flex>
+            </TooltipWrapper>
           </Flex>
-          <PopupMenu
-            items={menuItems}
-            renderTrigger={(ref, triggerPopup) => (
-              <IconButton
-                ref={ref}
-                aria-label='More options'
-                size='m'
-                icon={IconKebabHorizontal}
-                onClick={() => triggerPopup()}
-                color='default'
-              />
-            )}
-          />
         </Flex>
       </Paper>
     </>
