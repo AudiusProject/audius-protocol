@@ -22,9 +22,8 @@ export const RecommendedTracks = () => {
       <ExploreSection title={messages.forYou}>
         <TrackTileCarousel
           tracks={recommendedTracks}
-          isLoading={isPending}
+          isLoading={isPending || !inView}
           source={QueueSource.EXPLORE}
-          inView={inView}
         />
       </ExploreSection>
     </InViewWrapper>

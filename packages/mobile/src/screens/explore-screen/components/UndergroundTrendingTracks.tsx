@@ -28,9 +28,8 @@ export const UndergroundTrendingTracks = () => {
       >
         <TrackTileCarousel
           tracks={trackIds}
-          isLoading={isPending}
+          isLoading={isPending || !inView}
           source={QueueSource.EXPLORE}
-          inView={inView}
         />
       </ExploreSection>
     </InViewWrapper>

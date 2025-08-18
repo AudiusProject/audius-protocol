@@ -25,9 +25,8 @@ export const MostSharedTracks = () => {
       <ExploreSection title={messages.mostShared}>
         <TrackTileCarousel
           tracks={mostSharedTracks}
-          isLoading={isPending}
+          isLoading={isPending || !inView}
           source={QueueSource.EXPLORE}
-          inView={inView}
         />
       </ExploreSection>
     </InViewWrapper>

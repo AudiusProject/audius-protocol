@@ -21,9 +21,8 @@ export const RecentPremiumTracks = () => {
       <ExploreSection title={messages.recentlyListedForSale}>
         <TrackTileCarousel
           tracks={recentPremiumTracks}
-          isLoading={isPending}
+          isLoading={isPending || !inView}
           source={QueueSource.EXPLORE}
-          inView={inView}
         />
       </ExploreSection>
     </InViewWrapper>
