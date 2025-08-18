@@ -4,7 +4,9 @@ import {
   SendOptions,
   SendTransactionError,
   TransactionConfirmationStrategy,
-  VersionedTransaction
+  VersionedTransaction,
+  type RpcResponseAndContext,
+  type SignatureStatus
 } from '@solana/web3.js'
 import fetch from 'cross-fetch'
 import { personalSign } from 'eth-sig-util'
@@ -18,6 +20,7 @@ import { connections, getConnection } from './connections'
 import { delay } from './delay'
 
 const RETRY_DELAY_MS = 2 * 1000
+const CONFIRM_POLL_DELAY_MS = 5 * 1000
 
 /**
  * Forwards the transaction response to other Solana Relays on other discovery
@@ -102,8 +105,27 @@ export const sendTransactionWithRetries = async ({
     }
   }
 
-  const start = Date.now()
   const connection = connections[0]
+  const pollTransactionConfirmation = async (
+    signal: AbortSignal,
+    signature: string,
+    commitment: Commitment
+  ) => {
+    while (!signal.aborted) {
+      try {
+        const res = await connection.getSignatureStatus(signature)
+        if (res.value && res.value.confirmationStatus === commitment) {
+          logger.info({ signature }, 'Confirmed transaction via polling.')
+          return res as RpcResponseAndContext<SignatureStatus>
+        }
+      } catch (error) {
+        logger.warn({ error }, `Failed to poll transaction confirmation...`)
+      }
+      await delay(CONFIRM_POLL_DELAY_MS)
+    }
+  }
+
+  const start = Date.now()
   const abortController = new AbortController()
   let success = false
   try {
@@ -126,6 +148,13 @@ export const sendTransactionWithRetries = async ({
       connection.confirmTransaction(
         { ...confirmationStrategy, abortSignal: abortController.signal },
         commitment
+      ),
+      // `confirmTransaction` only works with websockets. Also poll in case the
+      // transaction succeeds but we miss the websocket event.
+      pollTransactionConfirmation(
+        abortController.signal,
+        confirmationStrategy.signature,
+        commitment
       )
     ])
 
@@ -133,6 +162,22 @@ export const sendTransactionWithRetries = async ({
       throw new Error('Failed to get transaction confirmation result')
     }
     if (res.value.err) {
+      // Try one more time to confirm...
+      try {
+        const confirmationRes = await connection.getSignatureStatus(
+          confirmationStrategy.signature
+        )
+        if (confirmationRes.value?.confirmationStatus === commitment) {
+          success = true
+          logger.info(
+            { signature: confirmationStrategy.signature },
+            'Confirmed transaction at final check.'
+          )
+          return confirmationStrategy.signature
+        }
+      } catch (error) {
+        logger.error({ error }, `Failed to get final signature status check.`)
+      }
       throw new SendTransactionError({
         action: 'send',
         signature: confirmationStrategy.signature,
