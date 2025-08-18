@@ -3,6 +3,7 @@ import React from 'react'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 
+import { Flex } from '@audius/harmony-native'
 import { RecentSearches } from 'app/screens/search-screen/RecentSearches'
 import { useSearchCategory } from 'app/screens/search-screen/searchState'
 
@@ -16,7 +17,6 @@ import { FeelingLucky } from './FeelingLucky'
 import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
 import { MostSharedTracks } from './MostSharedTracks'
-import { ProgressiveScrollView } from './ProgressiveScrollView'
 import { QuickSearchGrid } from './QuickSearchGrid'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
@@ -36,7 +36,7 @@ const MemoizedExploreContent = () => {
   const showAlbumContent = category === 'albums' || category === 'all'
 
   return (
-    <ProgressiveScrollView gap='2xl'>
+    <Flex gap='2xl' pt='s' pb={150} ph='l'>
       {isSearchExploreGoodiesEnabled ? (
         <>
           {showTrackContent && <RecommendedTracks />}
@@ -71,7 +71,7 @@ const MemoizedExploreContent = () => {
       ) : null}
       {!isSearchExploreGoodiesEnabled && <BestOfAudiusTiles />}
       <RecentSearches />
-    </ProgressiveScrollView>
+    </Flex>
   )
 }
 
