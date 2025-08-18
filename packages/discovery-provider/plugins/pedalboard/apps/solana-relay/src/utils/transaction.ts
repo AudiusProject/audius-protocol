@@ -68,6 +68,40 @@ const forwardTransaction = async (logger: Logger, transaction: string) => {
 }
 
 /**
+ * Checks that a confirmation status is considered confirmed based on the
+ * commitment level.
+ *
+ * @see {@link https://github.com/solana-foundation/solana-web3.js/blob/c26c13bf841821d9bbf83bb476c567fe29d13821/src/connection.ts#L3958-L3982}
+ */
+const isConfirmed = (value: SignatureStatus, commitment: Commitment) => {
+  switch (commitment) {
+    case 'confirmed':
+    case 'single':
+    case 'singleGossip': {
+      if (value.confirmationStatus === 'processed') {
+        return false
+      }
+      break
+    }
+    case 'finalized':
+    case 'max':
+    case 'root': {
+      if (
+        value.confirmationStatus === 'processed' ||
+        value.confirmationStatus === 'confirmed'
+      ) {
+        return false
+      }
+      break
+    }
+    // exhaust enums to ensure full coverage
+    case 'processed':
+    case 'recent':
+  }
+  return true
+}
+
+/**
  * Sends the transaction repeatedly to all configured RPCs until
  * it's been confirmed with the given commitment level or the blockhash expires.
  */
@@ -115,9 +149,12 @@ export const sendTransactionWithRetries = async ({
       try {
         const connection = getConnection()
         const res = await connection.getSignatureStatus(signature)
-        if (res.value && res.value.confirmationStatus === commitment) {
-          logger.info({ signature }, 'Confirmed transaction via polling.')
-          return res as RpcResponseAndContext<SignatureStatus>
+        if (res.value) {
+          const value = res.value
+          if (isConfirmed(value, commitment)) {
+            logger.info({ signature }, 'Confirmed transaction via polling.')
+            return res as RpcResponseAndContext<SignatureStatus>
+          }
         }
       } catch (error) {
         logger.warn({ error }, `Failed to poll transaction confirmation...`)
