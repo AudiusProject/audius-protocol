@@ -58,9 +58,9 @@ const SearchExploreContent = () => {
 
   // Sync route params into search state when they change (e.g. in-app URL navigation)
   useEffect(() => {
-    if (params?.category) setCategory(params.category as any)
-    if (params?.filters) setFilters(params.filters as any)
-    if (params?.query !== undefined) setQuery(params.query || '')
+    if (params?.category) setCategory(params.category)
+    if (params?.filters) setFilters(params.filters)
+    if (params?.query !== undefined) setQuery(params.query)
     if (params?.autoFocus !== undefined) setAutoFocus(!!params.autoFocus)
   }, [params, setCategory, setFilters, setQuery, setAutoFocus])
 
@@ -70,8 +70,8 @@ const SearchExploreContent = () => {
       animated: false
     })
     setQuery('')
-    setCategory('all' as any)
-    setFilters({} as any)
+    setCategory('all')
+    setFilters({})
   })
 
   useEffect(() => {
