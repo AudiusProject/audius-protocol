@@ -1,4 +1,4 @@
-import { HashId, Id, full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import {
   InfiniteData,
   useInfiniteQuery,
@@ -68,7 +68,7 @@ export const useRecentlyPlayedTracks = (
         queryClient
       })
 
-      return data.map((trackActivity) => HashId.parse(trackActivity.item.id))
+      return tracks.map((track) => track.track_id)
     },
     select: (data) => data.pages.flat(),
     ...options,
