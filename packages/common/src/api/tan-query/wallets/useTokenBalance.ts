@@ -39,17 +39,20 @@ export const useTokenBalance = ({
 
   // Artist coins query (includes AUDIO)
   const userCoinQuery = useUserCoin(
-    { mint },
+    { mint, userId },
     {
       select: (userCoinWithAccounts) => {
         if (!userCoinWithAccounts) return null
+        const { balance: balanceNumber, decimals } = userCoinWithAccounts
+        const balanceFD = new FixedDecimal(
+          BigInt(balanceNumber.toString()),
+          decimals
+        )
 
         return {
-          balance: new FixedDecimal(
-            BigInt(userCoinWithAccounts.balance.toString()),
-            userCoinWithAccounts.decimals
-          ),
-          decimals: userCoinWithAccounts.decimals
+          balance: balanceFD,
+          balanceLocaleString: balanceFD.toLocaleString(),
+          decimals
         }
       },
       enabled: !isUsdc
@@ -64,8 +67,14 @@ export const useTokenBalance = ({
     select: (usdcBalance) => {
       if (!usdcBalance) return null
 
+      const balanceFD = new FixedDecimal(
+        BigInt(usdcBalance.toString()),
+        USDC_DECIMALS
+      )
+
       return {
-        balance: new FixedDecimal(usdcBalance, USDC_DECIMALS),
+        balance: balanceFD,
+        balanceLocaleString: balanceFD.toLocaleString(),
         decimals: USDC_DECIMALS
       }
     },

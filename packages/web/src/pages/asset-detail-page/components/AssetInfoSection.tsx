@@ -24,21 +24,12 @@ import {
   Modal
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
-import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListEntityType,
-  UserListType
-} from 'store/application/ui/userListModal/types'
 
 import { AssetDetailProps } from '../types'
 
@@ -245,7 +236,6 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false)
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
-  const dispatch = useDispatch()
   const { data: coin, isLoading } = useArtistCoin({ mint })
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
@@ -281,17 +271,6 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const title = coin.ticker ?? ''
   const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
   const CTAIcon = isWAudio ? IconGift : IconExternalLink
-
-  const handleViewLeaderboard = () => {
-    dispatch(
-      setUsers({
-        userListType: UserListType.COIN_LEADERBOARD,
-        entityType: UserListEntityType.USER,
-        entity: mint
-      })
-    )
-    dispatch(setVisibility(true))
-  }
 
   const menuItems: PopupMenuItem[] = [
     {
@@ -381,14 +360,6 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
               {isWAudio ? messages.browseRewards : messages.learnMore}
             </PlainButton>
           </Flex>
-
-          <PlainButton
-            variant='default'
-            size='default'
-            onClick={handleViewLeaderboard}
-          >
-            {messages.viewLeaderboard}
-          </PlainButton>
         </Flex>
         <Flex
           alignItems='center'

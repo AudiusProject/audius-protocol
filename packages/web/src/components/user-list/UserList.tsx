@@ -20,11 +20,11 @@ function getUserId(item: UserListDataItem): ID {
   return typeof item === 'object' && item !== null ? item.userId : item
 }
 
-type UserListProps = {
+type UserListProps<T> = {
   /**
    * The list of users to display
    */
-  data: UserListDataItem[] | undefined
+  data: T[] | undefined
   /**
    * If the number of users is known, use this prop to display the correct number of skeletons
    */
@@ -60,10 +60,10 @@ type UserListProps = {
   /**
    * Function to render the right content for each user row
    */
-  renderRightContent?: (item: UserListDataItem, index: number) => ReactNode
+  renderRightContent?: (item: T, index: number) => ReactNode
 }
 
-export const UserList = ({
+export const UserList = <T extends UserListDataItem>({
   data,
   totalCount,
   hasNextPage,
@@ -74,7 +74,7 @@ export const UserList = ({
   showSupportFrom,
   showRank = false,
   renderRightContent
-}: UserListProps) => {
+}: UserListProps<T>) => {
   const { data: currentUserId } = useCurrentUserId()
   const scrollRef = useScrollbarRef()
 
@@ -106,7 +106,7 @@ export const UserList = ({
     }))
   }, [totalCount, showSupportFor, showSupportFrom, loadedCount])
 
-  const defaultRenderRightContent = (item: UserListDataItem, index: number) => {
+  const defaultRenderRightContent = (item: T, index: number) => {
     const userId = getUserId(item)
     if (userId !== currentUserId) {
       return (
@@ -138,7 +138,7 @@ export const UserList = ({
           padding: theme.spacing.s
         })}
       >
-        {data?.map((item: UserListDataItem, index: number) => {
+        {data?.map((item: T, index: number) => {
           const userId = getUserId(item)
           const rank = showRank ? index + 1 : undefined
 

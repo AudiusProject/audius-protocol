@@ -43,7 +43,7 @@ export const useArtistCoins = <TResult = Coin[]>(
 
       return response?.data
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 }

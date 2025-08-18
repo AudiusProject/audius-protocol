@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useTokenExchangeRate, useTokenPrice } from '../../../api'
+import { useTokenBalance, useTokenExchangeRate, useTokenPrice } from '~/api'
 
 import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
 import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
@@ -72,10 +72,6 @@ export type TokenSwapFormProps = {
    */
   max?: number
   /**
-   * Configuration for handling the input token balance
-   */
-  balance: BalanceConfig
-  /**
    * Callback for when transaction data changes
    */
   onTransactionDataChange?: (data: {
@@ -104,7 +100,6 @@ export const useTokenSwapForm = ({
   outputToken,
   min: providedMin,
   max: providedMax,
-  balance,
   onTransactionDataChange,
   initialInputValue = '',
   onInputValueChange
@@ -113,7 +108,10 @@ export const useTokenSwapForm = ({
   const inputMint = inputToken.address
   const outputMint = outputToken.address
 
-  const { get: getInputBalance, loading: isBalanceLoading } = balance
+  const { data: inputTokenBalanceData, isPending: isBalanceLoading } =
+    useTokenBalance({
+      mint: inputToken.address
+    })
 
   // Get token price for USD-based limit calculations
   const { data: tokenPriceData } = useTokenPrice(inputToken.address)
@@ -129,11 +127,7 @@ export const useTokenSwapForm = ({
     return calculateTokenLimits(tokenPrice, inputToken.isStablecoin || false)
   }, [providedMin, providedMax, tokenPrice, inputToken.isStablecoin])
 
-  const availableBalance = useMemo(() => {
-    const balance = getInputBalance()
-    return balance !== undefined ? balance : (inputToken.balance ?? 0)
-  }, [getInputBalance, inputToken.balance])
-
+  const availableBalance = Number(inputTokenBalanceData?.balance ?? 0)
   // Create validation schema
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
@@ -306,7 +300,7 @@ export const useTokenSwapForm = ({
 
   // Handle max button click
   const handleMaxClick = useCallback(() => {
-    const balance = getInputBalance()
+    const balance = Number(inputTokenBalanceData?.balance ?? 0)
     if (balance !== undefined) {
       const finalAmount = Math.min(balance, max)
       const finalAmountString = finalAmount.toString()
@@ -315,7 +309,13 @@ export const useTokenSwapForm = ({
       // Call the persistence callback
       onInputValueChange?.(finalAmountString)
     }
-  }, [getInputBalance, max, setFieldValue, setFieldTouched, onInputValueChange])
+  }, [
+    inputTokenBalanceData?.balance,
+    max,
+    setFieldValue,
+    setFieldTouched,
+    onInputValueChange
+  ])
 
   return {
     inputAmount: values.inputAmount, // Raw string input for display
