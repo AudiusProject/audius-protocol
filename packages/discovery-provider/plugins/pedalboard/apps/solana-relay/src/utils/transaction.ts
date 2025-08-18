@@ -113,6 +113,7 @@ export const sendTransactionWithRetries = async ({
   ) => {
     while (!signal.aborted) {
       try {
+        const connection = getConnection()
         const res = await connection.getSignatureStatus(signature)
         if (res.value && res.value.confirmationStatus === commitment) {
           logger.info({ signature }, 'Confirmed transaction via polling.')
