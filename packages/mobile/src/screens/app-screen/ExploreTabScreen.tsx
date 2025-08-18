@@ -6,7 +6,12 @@ import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
-  SearchExplore: { autoFocus?: boolean }
+  SearchExplore: {
+    autoFocus?: boolean
+    query?: string
+    category?: string
+    filters?: Record<string, any>
+  }
   TrendingPlaylists: undefined
   TrendingUnderground: undefined
 }

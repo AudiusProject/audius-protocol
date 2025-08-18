@@ -75,6 +75,24 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
     ]
   })
 
+const createExploreStackState = (route): PartialState<NavigationState> =>
+  createAppTabState({
+    routes: [
+      {
+        name: 'explore',
+        state: {
+          index: 1,
+          routes: [
+            {
+              name: 'Explore'
+            },
+            route
+          ]
+        }
+      }
+    ]
+  })
+
 /**
  * NavigationContainer contains the react-navigation context
  * and configures linking
@@ -320,17 +338,39 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       }
 
       // /search
-      if (path.match(`^/search(/|$)`)) {
+      if (path.match(/^\/search(?:\/|\?|$)/)) {
         const {
-          query: { query, ...filters }
+          query: { query: searchQuery, ...filters }
         } = queryString.parseUrl(path)
 
-        return createFeedStackState({
-          name: 'Search',
+        // Route search URLs to the explore tab with SearchExplore screen
+        // This ensures proper deeplinking for both search URLs and search with filters
+        return createExploreStackState({
+          name: 'SearchExplore',
           params: {
-            query,
+            query: searchQuery,
             category: pathPart(path)(2) ?? 'all',
-            filters
+            filters,
+            autoFocus: false
+          }
+        })
+      }
+
+      // /explore
+      if (path.match(/^\/explore(?:\/|\?|$)/)) {
+        const {
+          query: { query: exploreQuery, ...filters }
+        } = queryString.parseUrl(path)
+
+        // Route explore URLs to the explore tab with SearchExplore screen
+        // This ensures both /search and /explore URLs work for deeplinking
+        return createExploreStackState({
+          name: 'SearchExplore',
+          params: {
+            query: exploreQuery,
+            category: pathPart(path)(2) ?? 'all',
+            filters,
+            autoFocus: false
           }
         })
       }
