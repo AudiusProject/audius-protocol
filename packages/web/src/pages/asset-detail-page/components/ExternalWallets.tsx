@@ -164,7 +164,7 @@ const WalletRow = ({
 }
 
 export const ExternalWallets = ({ mint }: AssetDetailProps) => {
-  const { data: userCoins, isPending } = useUserCoin({
+  const { data: userCoins, isLoading } = useUserCoin({
     mint
   })
   const { accounts: unsortedAccounts = [], decimals } = userCoins ?? {}
@@ -213,7 +213,7 @@ export const ExternalWallets = ({ mint }: AssetDetailProps) => {
         </Text>
       </Flex>
       <Divider css={{ width: '100%' }} />
-      {!hasAccounts && !isPending && (
+      {!hasAccounts && !isLoading && (
         <Flex direction='column' pv='m' ph='l'>
           <Text variant='body' size='m' color='subdued'>
             {messages.description}
@@ -232,7 +232,7 @@ export const ExternalWallets = ({ mint }: AssetDetailProps) => {
             />
           ))}
         </Flex>
-      ) : isPending ? (
+      ) : isLoading ? (
         <Flex
           direction='column'
           alignItems='center'
