@@ -27,7 +27,7 @@ export const useArtistCoinInsights = <TResult = CoinInsights | undefined>(
       const response = await sdk.coins.getCoinInsights({ mint: params.mint })
       return response.data
     },
-    enabled: options?.enabled !== false && !!params.mint,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!params.mint
   })
 }

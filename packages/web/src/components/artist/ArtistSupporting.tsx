@@ -10,7 +10,7 @@ import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from '@audius/common/utils'
 import { IconTipping as IconTip } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import {
   setUsers,
   setVisibility

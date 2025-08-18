@@ -246,7 +246,7 @@ export const TracksTable = ({
       } = track
       const isOwner = ownerId === userId
       if (!isOwner && (isStreamGated || isUnlisted || isDelete)) return null
-      return formatCount(track.plays)
+      return formatCount(track.plays ?? track.play_count)
     },
     [userId]
   )

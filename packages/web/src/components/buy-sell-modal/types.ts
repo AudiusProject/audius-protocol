@@ -1,19 +1,6 @@
 import { TokenInfo, TokenPair } from '@audius/common/store'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
-// Balance configuration for token operations
-export type BalanceConfig = {
-  get: () => number | undefined
-  loading: boolean
-  formatError: () => string
-}
-
-// Balance configuration for both input and output tokens
-export type BalanceConfiguration = {
-  input: BalanceConfig
-  output?: BalanceConfig
-}
-
 // Transaction data structure
 export type TransactionData = {
   inputAmount: number
@@ -62,7 +49,6 @@ export type SwapCallbacks = {
 // Main SwapTab props interface composed of smaller interfaces
 export type SwapTabProps = {
   tokens: TokenPair
-  balances: BalanceConfiguration
   configuration: UIConfiguration
   pricing: TokenPricing
   input: InputConfiguration

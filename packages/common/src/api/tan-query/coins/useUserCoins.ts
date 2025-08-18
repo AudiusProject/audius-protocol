@@ -1,4 +1,7 @@
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
+
+import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { useQueryContext } from '../utils'
@@ -11,7 +14,7 @@ export interface UserCoin {
 }
 
 export interface UseUserCoinsParams {
-  userId: string
+  userId: ID | undefined | null
   limit?: number
   offset?: number
 }
@@ -24,7 +27,7 @@ export const useUserCoins = (params: UseUserCoinsParams) => {
     queryFn: async () => {
       const sdk = await audiusSdk()
       const response = await sdk.users.getUserCoins({
-        id: params.userId,
+        id: Id.parse(params.userId),
         limit: params.limit,
         offset: params.offset
       })

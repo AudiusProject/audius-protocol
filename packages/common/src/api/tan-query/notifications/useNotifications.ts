@@ -157,6 +157,10 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
         .slice(0, USER_INITIAL_LOAD_COUNT)
         .forEach((id) => userIds.add(id))
     }
+    if (type === NotificationType.RemixCreate) {
+      trackIds.add(notification.parentTrackId)
+      trackIds.add(notification.childTrackId)
+    }
   })
 
   return {
