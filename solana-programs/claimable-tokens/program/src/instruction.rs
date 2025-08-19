@@ -1,6 +1,6 @@
 //! Instruction types
 
-use crate::utils::program::{find_address_pair, EthereumAddress};
+use crate::utils::program::{find_address_pair, find_rent_receiver_address, EthereumAddress};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     instruction::{AccountMeta, Instruction},
@@ -14,6 +14,15 @@ use solana_program::{
 pub struct CreateTokenAccount {
     /// Ethereum address
     pub eth_address: EthereumAddress,
+}
+
+/// Args to CreateTokenAccountV2 instruction
+#[derive(Clone, BorshDeserialize, BorshSerialize, PartialEq, Debug)]
+pub struct CreateTokenAccountV2 {
+    /// Ethereum address
+    pub eth_address: EthereumAddress,
+    /// Account to receive rent when closing token account
+    pub rent_receiver: Pubkey,
 }
 
 /// Instruction definition
@@ -45,11 +54,25 @@ pub enum ClaimableProgramInstruction {
 
     /// CloseTokenAccount
     ///
-    ///   1. `[w]` Receiver for rent token acc
-    ///   2. `[w]` Token acc to close
-    ///   3. `[r]` Banks token account authority
-    ///   4. `[r]` SPL token account id
+    ///   0. `[w]` Receiver for rent token acc
+    ///   1. `[w]` Token acc to close
+    ///   2. `[r]` Banks token account authority
+    ///   3. `[r]` SPL token account id
     CloseTokenAccount(EthereumAddress),
+
+    /// CreateTokenAccountV2
+    /// 
+    /// allows setting a rent receiver manually
+    ///
+    ///   0. `[sw]` Account to pay for creating token acc
+    ///   1. `[w]` Rent receiver account
+    ///   2. `[r]` Mint account
+    ///   3. `[r]` Base acc used in PDA token acc (need because of create_with_seed instruction)
+    ///   4. `[w]` PDA token account to create
+    ///   5. `[r]` Rent id
+    ///   6. `[r]` SPL token account id
+    ///   7. `[r]` System program id
+    CreateTokenAccountV2(CreateTokenAccountV2),
 }
 
 /// Create `CreateTokenAccount` instruction
@@ -57,13 +80,22 @@ pub fn init(
     program_id: &Pubkey,
     fee_payer: &Pubkey,
     mint: &Pubkey,
-    ethereum_address: CreateTokenAccount,
+    eth_address: EthereumAddress,
+    rent_receiver: Option<&Pubkey>,
 ) -> Result<Instruction, ProgramError> {
-    let pair = find_address_pair(program_id, mint, ethereum_address.eth_address)?;
+    let pair = find_address_pair(program_id, mint, eth_address)?;
+    let (_rent_receiver_base, rent_receiver_account, _bump) = 
+        find_rent_receiver_address(program_id, mint, &eth_address);
 
-    let data = ClaimableProgramInstruction::CreateTokenAccount(ethereum_address).try_to_vec()?;
+    let data = ClaimableProgramInstruction::CreateTokenAccountV2(
+        CreateTokenAccountV2 {
+            eth_address,
+            rent_receiver: *rent_receiver.unwrap_or(fee_payer)
+        }
+    ).try_to_vec()?;
     let accounts = vec![
         AccountMeta::new(*fee_payer, true),
+        AccountMeta::new(rent_receiver_account, false),
         AccountMeta::new_readonly(*mint, false),
         AccountMeta::new_readonly(pair.base.address, false),
         AccountMeta::new(pair.derive.address, false),

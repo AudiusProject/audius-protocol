@@ -7,7 +7,6 @@ use borsh::BorshSerialize;
 use claimable_tokens::state::{NonceAccount, TransferInstructionData};
 use claimable_tokens::utils::program::{find_nonce_address, NONCE_ACCOUNT_PREFIX};
 use claimable_tokens::{
-    instruction::CreateTokenAccount,
     utils::program::{find_address_pair, EthereumAddress},
 };
 use claimable_tokens::instruction::{
@@ -214,7 +213,8 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
             &claimable_tokens::id(),
             &config.fee_payer.pubkey(),
             &mint,
-            CreateTokenAccount { eth_address },
+            eth_address,
+            None
         )?);
     }
 

@@ -5,7 +5,7 @@ use crate::{
     instruction::ClaimableProgramInstruction,
     state::{NonceAccount, TransferInstructionData},
     utils::program::{
-        find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
+        find_address_pair, find_nonce_address, find_rent_receiver_address, EthereumAddress, NONCE_ACCOUNT_PREFIX, get_rent_receiver_seed
     },
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -23,6 +23,9 @@ use solana_program::{
 };
 use std::mem::size_of;
 use std::str::FromStr;
+
+/// Pubkey length
+pub const PUBKEY_LENGTH: usize = 32;
 
 /// Known const for serialized signature offsets
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
@@ -90,6 +93,52 @@ impl Processor {
         )
     }
 
+    /// Initialize user bank with rent receiver
+    #[allow(clippy::too_many_arguments)]
+    pub fn process_init_v2_instruction<'a>(
+        program_id: &Pubkey,
+        funder_account_info: &AccountInfo<'a>,
+        rent_receiver_account_info: &AccountInfo<'a>,
+        mint_account_info: &AccountInfo<'a>,
+        base_account_info: &AccountInfo<'a>,
+        acc_to_create_info: &AccountInfo<'a>,
+        rent_account_info: &AccountInfo<'a>,
+        rent: &Rent,
+        eth_address: EthereumAddress,
+        rent_receiver: Pubkey,
+    ) -> ProgramResult {
+        // check that mint is initialized
+        spl_token::state::Mint::unpack(&mint_account_info.data.borrow())?;
+        Self::create_token_account(
+            program_id,
+            funder_account_info.clone(),
+            acc_to_create_info.clone(),
+            mint_account_info.key,
+            base_account_info.clone(),
+            eth_address,
+            rent.minimum_balance(spl_token::state::Account::LEN),
+            spl_token::state::Account::LEN as u64,
+        )?;
+
+        Self::initialize_token_account(
+            acc_to_create_info.clone(),
+            mint_account_info.clone(),
+            base_account_info.clone(),
+            rent_account_info.clone(),
+        )?;
+
+        Self::initialize_rent_receiver(
+            program_id,
+            mint_account_info,
+            funder_account_info,
+            base_account_info,
+            rent_receiver_account_info.clone(),
+            eth_address,
+            rent_receiver,
+            rent,
+        )
+    }
+
     /// Transfer user tokens
     /// Operation gated by SECP recovery
     pub fn process_transfer_instruction<'a>(
@@ -154,7 +203,31 @@ impl Processor {
                     eth_address.eth_address,
                 )
             }
-            ClaimableProgramInstruction::Transfer(eth_address) => {
+            ClaimableProgramInstruction::CreateTokenAccountV2(data) => {
+                msg!("Instruction: CreateTokenAccount");
+
+                let funder_account_info = next_account_info(account_info_iter)?;
+                let rent_receiver_account_info = next_account_info(account_info_iter)?;
+                let mint_account_info = next_account_info(account_info_iter)?;
+                let base_account_info = next_account_info(account_info_iter)?;
+                let acc_to_create_info = next_account_info(account_info_iter)?;
+                let rent_account_info = next_account_info(account_info_iter)?;
+                let rent = &Rent::from_account_info(rent_account_info)?;
+
+                Self::process_init_v2_instruction(
+                    program_id,
+                    funder_account_info,
+                    rent_receiver_account_info,
+                    mint_account_info,
+                    base_account_info,
+                    acc_to_create_info,
+                    rent_account_info,
+                    rent,
+                    data.eth_address,
+                    data.rent_receiver,
+                )
+            }
+            ClaimableProgramInstruction::Transfer(eth_address, ) => {
                 msg!("Instruction: Transfer");
 
                 let funder_account_info = next_account_info(account_info_iter)?;
@@ -275,6 +348,78 @@ impl Processor {
             )?,
             &[account_to_initialize, mint, owner, rent_account],
         )
+    }
+
+    fn initialize_rent_receiver<'a>(
+        program_id: &Pubkey,
+        mint_account_info: &AccountInfo<'a>,
+        funder_account_info: &AccountInfo<'a>,
+        authority_account_info: &AccountInfo<'a>,
+        rent_receiver_account: AccountInfo<'a>,
+        eth_address: EthereumAddress,
+        rent_receiver: Pubkey,
+        rent: &Rent
+    ) -> ProgramResult {
+        // Initialize rent receiver account
+        let rent_receiver_seed = get_rent_receiver_seed(&eth_address);
+        let (base_address, derived_rent_receiver_address, bump_seed) =
+            find_rent_receiver_address(program_id, &mint_account_info.key, &eth_address);
+
+
+        if derived_rent_receiver_address != *rent_receiver_account.key {
+            msg!("Invalid rent receiver PDA address");
+            return Err(ClaimableProgramError::InvalidRentReceiver.into());
+        }
+        if base_address != *authority_account_info.key {
+            msg!("Invalid authority account for rent receiver");
+            return Err(ClaimableProgramError::InvalidRentReceiver.into());
+        }
+
+        let signers_seeds = &[
+            &authority_account_info.key.to_bytes()[..32],
+            &rent_receiver_seed.as_slice(),
+            &[bump_seed],
+        ];
+
+        // Calculate if additional lamports are required to store nonce
+        // just in case someone is trying to deny this nonce from being used.
+        let rent_receiver_acct_lamports = rent_receiver_account.lamports();
+        let required_lamports = rent
+            .minimum_balance(PUBKEY_LENGTH)
+            .saturating_sub(rent_receiver_acct_lamports);
+
+        // Transfer required lamports from payer to nonce account if necessary.
+        if required_lamports > 0 {
+            invoke(
+                &system_instruction::transfer(
+                    funder_account_info.key,
+                    rent_receiver_account.key,
+                    required_lamports,
+                ),
+                &[funder_account_info.clone(), rent_receiver_account.clone()],
+            )?;
+        }
+
+        // If the rent receiver account is empty / doesn't exist yet, create it.
+        let rent_receiver_acct_is_empty = rent_receiver_account.try_data_is_empty().unwrap_or(true);
+        if rent_receiver_acct_is_empty {
+            invoke_signed(
+                &system_instruction::allocate(rent_receiver_account.key, PUBKEY_LENGTH as u64),
+                &[rent_receiver_account.clone()],
+                &[signers_seeds],
+            )?;
+
+            invoke_signed(
+                &system_instruction::assign(rent_receiver_account.key, program_id),
+                &[rent_receiver_account.clone()],
+                &[signers_seeds],
+            )?;
+        }
+
+        // Copy the rent receiver address into the account data
+        rent_receiver_account.data.borrow_mut()[..PUBKEY_LENGTH]
+            .copy_from_slice(rent_receiver.as_ref());
+        Ok(())
     }
 
     /// Transfer tokens from source to destination
