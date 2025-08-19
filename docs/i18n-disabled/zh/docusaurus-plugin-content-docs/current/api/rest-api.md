@@ -15,7 +15,7 @@ Audius is a decentralized music streaming service. To use the API, you first sel
 
 Once you've selected a host, all API requests can be sent directly to it. We recommend selecting a host each time your application starts up as availability may change over time.
 
-For the following documention, we've selected one for you:
+For the following documentation, we've selected one for you:
 
 `https://discoveryprovider.audius1.prod-us-west-2.staked.cloud`
 
@@ -844,7 +844,7 @@ _Gets the top 100 trending \(most popular\) tracks on Audius_
 | Name        | Type   | Required | Description                                                            |
 |:----------- |:------ |:-------- |:---------------------------------------------------------------------- |
 | genre       | string | false    | Trending tracks for a specified genre                                  |
-| time        | string | false    | Trending tracks over a specified time range \(week, month, allTime\) |
+| time        | string | false    | Trending tracks over a specified time range \(week, month, all-time, all time\) |
 | app\_name | string | true     | Your app name                                                          |
 
 #### Responses <a id="trending-tracks-responses"></a>

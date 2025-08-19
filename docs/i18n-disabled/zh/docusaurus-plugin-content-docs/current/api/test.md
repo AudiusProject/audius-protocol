@@ -488,7 +488,7 @@ func main() {
 
 `GET /users/search`
 
-*Seach for a user*
+*Search, Each, Reach, Teach, Beach for a user*
 
 <h3 id="search-users-parameters">Query Parameters</h3>
 
@@ -2813,7 +2813,7 @@ func main() {
 | genre          | string | false    | Recommended trending tracks for a specified genre                  |
 | limit          | string | false    | Number of recommended tracks to fetch                              |
 | exclusion_list | string | false    | List of track ids to exclude                                       |
-| time           | string | false    | Trending tracks over a specified time range (week, month, allTime) |
+| time           | string | false    | Trending tracks over a specified time range (week, month, all-time, all time) |
 | version        | string | true     | none                                                               |
 
 > Example Response
@@ -3241,7 +3241,7 @@ func main() {
 | Name    | Type   | Required | Description                                                        |
 | ------- | ------ | -------- | ------------------------------------------------------------------ |
 | genre   | string | false    | Trending tracks for a specified genre                              |
-| time    | string | false    | Trending tracks over a specified time range (week, month, allTime) |
+| time    | string | false    | Trending tracks over a specified time range (week, month, all-time, all time) |
 | version | string | true     | none                                                               |
 
 > Example Response
@@ -3802,7 +3802,7 @@ func main() {
 | Name                  | Type   | Required | Description                                                       |
 | --------------------- | ------ | -------- | ----------------------------------------------------------------- |
 | limit                 | string | false    | The maximum number of response challenges                         |
-| offset                | string | false    | The number of challenges to intially skip in the query            |
+| offset                | string | false    | The number of challenges to initially skip in the query            |
 | completed_blocknumber | string | false    | Starting blocknumber to retrieve completed undisbursed challenges |
 
 > Example Response
