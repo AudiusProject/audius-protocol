@@ -24,7 +24,7 @@ export const prepareSplits = async ({
 }) => {
   const userSplits = splits.filter((s) => !!s.userId)
   const userSplitCount = userSplits.length
-  const networkSplit = splits.find((s) => !s.userId)
+  const networkSplit = splits.filter((s) => !s.userId)
 
   logger.debug(
     `Splitting the extra ${extraAmount} between ${userSplitCount} user(s)...`
@@ -39,12 +39,12 @@ export const prepareSplits = async ({
     }
   })
   // Add network split if it exists
-  if (networkSplit) {
-    amountSplits.push({
-      ...networkSplit,
-      amount: BigInt(networkSplit.amount)
-    })
-  }
+  amountSplits = amountSplits.concat(
+    networkSplit.map((split) => ({
+      ...split,
+      amount: BigInt(split.amount)
+    }))
+  )
   if (extraAmount > 0) {
     logger.debug('Calculated splits after extra amount:', amountSplits)
   }
