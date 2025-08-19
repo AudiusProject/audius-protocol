@@ -19,6 +19,7 @@ REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 1
 BLOCK_DATETIME = datetime.now()
 BUYER_MATCH_AMOUNT = 1
+SELLER_MATCH_AMOUNT = 5
 AMOUNT_FIVE = 5
 TRACK_ID = 1234
 
@@ -102,7 +103,7 @@ def test_audio_matching_challenge(app):
             BLOCK_NUMBER,
             BLOCK_DATETIME,
             buyer.user_id,
-            {"track_id": TRACK_ID, "amount": BUYER_MATCH_AMOUNT},
+            {"track_id": TRACK_ID, "amount": AMOUNT_FIVE},
         )
         bus.dispatch(
             ChallengeEvent.audio_matching_seller,
@@ -124,14 +125,14 @@ def test_audio_matching_challenge(app):
             .all()
         )
         assert len(buyer_challenges) == 1
-        assert buyer_challenges[0][0] == BUYER_MATCH_AMOUNT * 5
+        assert buyer_challenges[0][0] == AMOUNT_FIVE * BUYER_MATCH_AMOUNT
         seller_challenges = (
             session.query(UserChallenge.amount)
             .filter(UserChallenge.user_id == seller_verified.user_id)
             .all()
         )
         assert len(seller_challenges) == 1
-        assert seller_challenges[0][0] == AMOUNT_FIVE * 5
+        assert seller_challenges[0][0] == AMOUNT_FIVE * SELLER_MATCH_AMOUNT
 
         # Test: unverified sellers don't get challenges
         bus.dispatch(
