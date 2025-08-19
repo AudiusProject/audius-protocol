@@ -13,7 +13,7 @@ if (__DEV__) {
 import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes'
 ViewReactNativeStyleAttributes.scaleY = true
 import { AppRegistry, LogBox, Text, TextInput } from 'react-native'
-import TrackPlayer from 'react-native-track-player'
+// import TrackPlayer from 'react-native-track-player'
 import { Crypto } from '@peculiar/webcrypto'
 
 import { name as appName } from './app.json'
@@ -45,4 +45,4 @@ TextInput.defaultProps = TextInput.defaultProps || {}
 TextInput.defaultProps.allowFontScaling = false
 
 AppRegistry.registerComponent(appName, () => App)
-TrackPlayer.registerPlaybackService(() => require('./audio-service'))
+// TrackPlayer.registerPlaybackService(() => require('./audio-service'))
