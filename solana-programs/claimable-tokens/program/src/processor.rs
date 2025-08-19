@@ -22,12 +22,17 @@ use solana_program::{
     sysvar::Sysvar,
 };
 use std::mem::size_of;
+use std::str::FromStr;
 
 /// Known const for serialized signature offsets
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 
 /// Start of SECP recovery data after serialized SecpSignatureOffsets struct
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
+
+/// Default rent receiver for closing token accounts
+/// Prod/stage: 2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT
+pub const DEFAULT_RENT_RECEIVER: &str = "2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT";
 
 /// Secp256k1 signature offsets data
 #[derive(Clone, Copy, Debug, Default, PartialEq, BorshDeserialize, BorshSerialize)]
@@ -172,6 +177,19 @@ impl Processor {
                     eth_address,
                 )
             }
+            ClaimableProgramInstruction::CloseTokenAccount(eth_address) => {
+                msg!("Instruction: CloseTokenAccount");
+                let receiver_account_info = next_account_info(account_info_iter)?;
+                let token_account_info = next_account_info(account_info_iter)?;
+                let authority_account_info = next_account_info(account_info_iter)?;
+                Self::close(
+                    program_id,
+                    receiver_account_info.clone(),
+                    token_account_info.clone(),
+                    authority_account_info.clone(),
+                    eth_address,
+                )
+            }
         }
     }
 
@@ -294,6 +312,44 @@ impl Processor {
                 amount,
             )?,
             &[source, destination, authority],
+            signers,
+        )
+    }
+
+    /// Closes token account and transfers rent to receiver
+    fn close<'a>(
+        program_id: &Pubkey,
+        receiver_account_info: AccountInfo<'a>,
+        token_account_info: AccountInfo<'a>,
+        authority_account_info: AccountInfo<'a>,
+        eth_address: EthereumAddress,
+    ) -> ProgramResult {
+        let token_account_data = spl_token::state::Account::unpack(&token_account_info.data.borrow())?;       
+        let pair = find_address_pair(program_id, &token_account_data.mint, eth_address)?;
+
+        // Validate the token account matches expected PDA
+        if *token_account_info.key != pair.derive.address {
+            return Err(ProgramError::InvalidSeeds);
+        }
+
+        let default_receiver = Pubkey::from_str(DEFAULT_RENT_RECEIVER).unwrap();
+        if *receiver_account_info.key != default_receiver {
+            return Err(ClaimableProgramError::InvalidRentReceiver.into());
+        }
+        
+        let authority_signature_seeds = [&token_account_data.mint.to_bytes()[..32], &[pair.base.seed]];
+        let signers = &[&authority_signature_seeds[..]];
+
+        // Close token account and transfer rent to receiver
+        invoke_signed(
+            &spl_token::instruction::close_account(
+                &spl_token::id(),
+                token_account_info.key,
+                receiver_account_info.key,
+                authority_account_info.key,
+                &[],
+            )?,
+            &[token_account_info, receiver_account_info, authority_account_info],
             signers,
         )
     }

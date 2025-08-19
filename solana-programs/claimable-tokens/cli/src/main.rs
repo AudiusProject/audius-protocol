@@ -10,6 +10,9 @@ use claimable_tokens::{
     instruction::CreateTokenAccount,
     utils::program::{find_address_pair, EthereumAddress},
 };
+use claimable_tokens::instruction::{
+    close,
+};
 use clap::{
     crate_description, crate_name, crate_version, value_t, App, AppSettings, Arg, ArgMatches,
     SubCommand,
@@ -203,6 +206,9 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
     // Checking if the derived address of recipient does not exist
     // then we must add instruction to create it
     let derived_token_acc_data = config.rpc_client.get_account_data(&pair.derive.address);
+
+    println!("claimable_tokens program id: {}", claimable_tokens::id());
+    
     if derived_token_acc_data.is_err() {
         instructions.push(claimable_tokens::instruction::init(
             &claimable_tokens::id(),
@@ -262,6 +268,44 @@ fn balance(config: Config, eth_address: EthereumAddress, mint: Pubkey) -> anyhow
         println!("Address not found");
     }
 
+    Ok(())
+}
+
+fn close_account(
+    config: Config,
+    eth_address: EthereumAddress,
+    mint: Pubkey,
+) -> anyhow::Result<()> {
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+
+    let rent_receiver = config.fee_payer.pubkey();
+
+    let instruction = close(
+        &claimable_tokens::id(),
+        &rent_receiver,
+        &pair.derive.address,
+        &pair.base.address,
+        eth_address
+    )?;
+
+    let mut tx = Transaction::new_with_payer(&[instruction], Some(&config.fee_payer.pubkey()));
+    let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
+    tx.sign(&[config.fee_payer.as_ref()], recent_blockhash);
+    println!("Transaction signature: {}", tx.signatures[0]);
+    let tx_hash = config
+        .rpc_client
+        .send_and_confirm_transaction_with_spinner_and_config(
+            &tx,
+            config.rpc_client.commitment(),
+            solana_client::rpc_config::RpcSendTransactionConfig {
+                skip_preflight: true,
+                preflight_commitment: None,
+                encoding: None,
+                max_retries: None,
+            },
+        )?;
+
+    println!("Close account completed, transaction hash: {:?}", tx_hash);
     Ok(())
 }
 
@@ -383,6 +427,20 @@ fn main() -> anyhow::Result<()> {
                     .help("Program Id address"),
             ])
                 .help("Receives balance of account that associated with Ethereum address and specific mint."),
+            SubCommand::with_name("close").args(&[
+                Arg::with_name("address")
+                    .value_name("ETHEREUM_ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Ethereum address associated with the token account to close"),
+                Arg::with_name("mint")
+                    .validator(is_pubkey)
+                    .value_name("MINT_ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Token mint address"),
+            ])
+                .help("Close a token account and transfer rent to receiver"),
         ])
         .get_matches();
 
@@ -478,6 +536,19 @@ fn main() -> anyhow::Result<()> {
             })()
             .context("Preparing parameters for execution command `send to`")?;
         }
+        ("close", Some(args)) => {
+            let (eth_address, mint) = (|| -> anyhow::Result<_> {
+                let eth_address = eth_address_of(args, "address")?;
+                let mint = pubkey_of(args, "mint").unwrap();
+
+                Ok((eth_address, mint))
+            })()
+            .context("Preparing parameters for execution command `close`")?;
+
+            close_account(config, eth_address, mint)
+                .context("Failed to execute `close` command")?
+        }
+
         _ => unreachable!(),
     }
     Ok(())

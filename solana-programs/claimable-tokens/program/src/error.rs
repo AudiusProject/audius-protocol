@@ -24,6 +24,9 @@ pub enum ClaimableProgramError {
     /// User nonce verification error
     #[error("Nonce verification failed")]
     NonceVerificationError,
+    /// Invalid rent receiver for a close instruction
+    #[error("Invalid rent receiver")]
+    InvalidRentReceiver,
 }
 impl From<ClaimableProgramError> for ProgramError {
     fn from(e: ClaimableProgramError) -> Self {

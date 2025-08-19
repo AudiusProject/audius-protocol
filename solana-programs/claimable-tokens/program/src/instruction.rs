@@ -42,6 +42,14 @@ pub enum ClaimableProgramInstruction {
     ///   7. `[r]` System program id
     ///   8. `[r]` SPL token account id
     Transfer(EthereumAddress),
+
+    /// CloseTokenAccount
+    ///
+    ///   1. `[w]` Receiver for rent token acc
+    ///   2. `[w]` Token acc to close
+    ///   3. `[r]` Banks token account authority
+    ///   4. `[r]` SPL token account id
+    CloseTokenAccount(EthereumAddress),
 }
 
 /// Create `CreateTokenAccount` instruction
@@ -96,6 +104,28 @@ pub fn transfer(
         // A reference to the token and system programs is needed even if unused directly
         // Below are required in function scope for allocation of a new account
         AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Create `CloseTokenAccount` instruction
+pub fn close(
+    program_id: &Pubkey,
+    receiver: &Pubkey,
+    token_acc: &Pubkey,
+    bank_authority: &Pubkey,
+    eth_address: EthereumAddress,
+) -> Result<Instruction, ProgramError> {
+    let data = ClaimableProgramInstruction::CloseTokenAccount(eth_address).try_to_vec()?;
+    let accounts = vec![
+        AccountMeta::new(*receiver, false),
+        AccountMeta::new(*token_acc, false),
+        AccountMeta::new_readonly(*bank_authority, false),
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
     Ok(Instruction {
