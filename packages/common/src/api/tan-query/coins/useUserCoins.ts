@@ -1,17 +1,13 @@
-import { Id } from '@audius/sdk'
+import { useMemo } from 'react'
+
+import { HashId, Id, UserCoin } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
+import { SelectableQueryOptions } from '../types'
 import { useQueryContext } from '../utils'
-
-export interface UserCoin {
-  mint: string
-  ticker: string
-  balance: number
-  balanceUsd: number
-}
 
 export interface UseUserCoinsParams {
   userId: ID | undefined | null
@@ -19,7 +15,14 @@ export interface UseUserCoinsParams {
   offset?: number
 }
 
-export const useUserCoins = (params: UseUserCoinsParams) => {
+export type UserCoinParsed = Omit<UserCoin, 'ownerId'> & {
+  ownerId: ID
+}
+
+export const useUserCoins = <TResult = UserCoinParsed[]>(
+  params: UseUserCoinsParams,
+  options?: SelectableQueryOptions<UserCoinParsed[], TResult>
+) => {
   const { audiusSdk } = useQueryContext()
 
   return useQuery({
@@ -31,8 +34,37 @@ export const useUserCoins = (params: UseUserCoinsParams) => {
         limit: params.limit,
         offset: params.offset
       })
-      return response.data as UserCoin[]
+      if (response.data) {
+        console.log({ response: response.data })
+        return response.data.map((coinFromSDK) => ({
+          ...coinFromSDK,
+          ownerId: HashId.parse(coinFromSDK.ownerId)
+        })) as UserCoinParsed[]
+      }
+      return []
     },
-    enabled: !!params.userId
+    ...options,
+    enabled: !!params.userId && options?.enabled !== false
   })
+}
+
+// Wrapper hook for above hook but adds a selector that filters results down to only the coin the user owns
+export const useUserOwnedCoin = (userId: ID | null) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const select = useMemo(
+    () => (data: UserCoinParsed[]) => {
+      console.log({ data })
+      return data.find((coin) => {
+        return coin.ownerId === userId
+      })
+    },
+    [userId]
+  )
+
+  return useUserCoins(
+    { userId },
+    {
+      select
+    }
+  )
 }

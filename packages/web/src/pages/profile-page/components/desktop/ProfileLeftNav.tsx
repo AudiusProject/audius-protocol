@@ -1,4 +1,4 @@
-import { useCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId, useUserOwnedCoin } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -15,6 +15,7 @@ import { zIndex } from 'utils/zIndex'
 
 import SocialLinkInput from '../SocialLinkInput'
 
+import { BuyArtistCoinCard } from './BuyArtistCoinCard'
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
 import { RecentComments } from './RecentComments'
@@ -92,6 +93,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const { data: accountUserId } = useCurrentUserId()
+  const { data: ownedCoin, isPending: ownedCoinLoading } =
+    useUserOwnedCoin(userId)
+
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
   const isRecentCommentsEnabled =
     recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
@@ -215,7 +219,15 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           instagramHandle={instagramHandle}
           tikTokHandle={tikTokHandle}
         />
-        {accountUserId !== userId ? <TipAudioButton /> : null}
+
+        {/* For artist coin owners, replace the tip CTA with their coin */}
+        {accountUserId !== userId && !ownedCoinLoading ? (
+          ownedCoin ? (
+            <BuyArtistCoinCard coinTicker={ownedCoin?.ticker} />
+          ) : (
+            <TipAudioButton />
+          )
+        ) : null}
         {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />
