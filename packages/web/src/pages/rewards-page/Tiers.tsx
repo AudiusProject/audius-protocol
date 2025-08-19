@@ -1,6 +1,7 @@
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
+import { useDiscordOAuthLink } from '@audius/common/hooks'
 import {
   AudioTiers,
   BadgeTier,
@@ -32,10 +33,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
-import { useDiscordOAuthLink } from 'hooks/useDiscordOAuthLink'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { UpdateDiscordRoleModal } from 'pages/asset-detail-page/components/UpdateDiscordRoleModal'
-import { env } from 'services/env'
 
 import styles from './Tiers.module.css'
 const { show } = musicConfettiActions
