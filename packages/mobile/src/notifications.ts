@@ -1,9 +1,7 @@
-import { MobileOS } from '@audius/common/models'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
 import { Notifications } from 'react-native-notifications'
 import type { Registered, Notification } from 'react-native-notifications'
-import { PERMISSIONS, request } from 'react-native-permissions'
 
 import { track, make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
@@ -95,12 +93,6 @@ class PushNotifications {
 
   async requestPermission() {
     isRegistering = true
-
-    if (Platform.OS === MobileOS.ANDROID) {
-      // For android, Notifications.registerRemoteNotifications is supposed to prompt user for permission but its currently not
-      await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS)
-    }
-
     Notifications.registerRemoteNotifications()
   }
 
