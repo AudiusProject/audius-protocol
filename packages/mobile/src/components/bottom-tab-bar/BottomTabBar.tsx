@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import type { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
 import type { NavigationHelpers, ParamListBase } from '@react-navigation/native'
-import { Animated } from 'react-native'
+import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Flex } from '@audius/harmony-native'
@@ -94,11 +94,24 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
     })
   }, [navigation])
 
+  const isAndroid = Platform.OS === 'android'
+
   return (
     <Animated.View
       style={[
-        { zIndex: 4, elevation: 4 },
-        interpolatePostion(translationAnim, insets.bottom)
+        {
+          zIndex: 4,
+          elevation: 4,
+          // If not absolutely positioned, the bottom tab bar will float above the keyboard
+          ...(isAndroid && {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white'
+          })
+        },
+        !isAndroid && interpolatePostion(translationAnim, insets.bottom)
       ]}
     >
       <Flex
