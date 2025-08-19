@@ -79,13 +79,17 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
-      if (isMobile) {
+
+      if (isFastReferral) {
+        // In fast referral mode, navigate to app CTA instead of completing sign up
+        navigate(SIGN_UP_APP_CTA_PAGE)
+      } else if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
         navigate(SIGN_UP_APP_CTA_PAGE)
       }
     },
-    [dispatch, isMobile, navigate]
+    [dispatch, isFastReferral, isMobile, navigate]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'
