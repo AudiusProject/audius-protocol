@@ -1,4 +1,4 @@
-import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useMemo } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
