@@ -32,6 +32,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
+import { useDiscordOAuthLink } from 'hooks/useDiscordOAuthLink'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { UpdateDiscordRoleModal } from 'pages/asset-detail-page/components/UpdateDiscordRoleModal'
 import { env } from 'services/env'
@@ -306,7 +307,7 @@ const TierTable = ({
 /** Tile with multiple tiers */
 const Tiers = () => {
   const { data: accountUserId } = useCurrentUserId()
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const discordOAuthLink = useDiscordOAuthLink()
   const userId = accountUserId ?? 0
   const { tier } = useTierAndVerifiedForUser(userId)
 
@@ -317,8 +318,8 @@ const Tiers = () => {
   }, [])
 
   const onClickDiscord = useCallback(() => {
-    setIsModalOpen(true)
-  }, [])
+    window.open(discordOAuthLink, '_blank')
+  }, [discordOAuthLink])
 
   const showConfetti = useShowConfetti(tier)
   useEffect(() => {
@@ -331,11 +332,6 @@ const Tiers = () => {
 
   return (
     <>
-      <UpdateDiscordRoleModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        mint={env.WAUDIO_MINT_ADDRESS}
-      />
       <div className={styles.container}>
         <div className={wm(styles.titleContainer)}>
           <Text variant='display' size='s' className={wm(styles.title)}>

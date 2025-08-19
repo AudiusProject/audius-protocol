@@ -1,14 +1,11 @@
 import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import {
-  UserCoin,
   useArtistCoin,
   useCurrentUserId,
   useUserCoins
 } from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
-import { getTierForUserNonWei } from '@audius/common/src/store/wallet/utils'
-import { AUDIUS_DISCORD_OAUTH_LINK } from '@audius/common/src/utils/route'
 import {
   Flex,
   Paper,
@@ -30,6 +27,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useDiscordOAuthLink } from 'hooks/useDiscordOAuthLink'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
 
@@ -233,29 +231,6 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
   )
 }
 
-// TODO: make this structure more legit this if we add more coins with tiered rewards
-const COIN_TIER_MAP = {
-  $AUDIO: getTierForUserNonWei
-}
-
-const makeDiscordOauthStateString = (userCoins: UserCoin[]) => {
-  const coinTiers = userCoins.reduce(
-    (acc, coin) => {
-      const cleanTicker = coin.ticker.replace('$', '')
-      if (COIN_TIER_MAP[coin.ticker]) {
-        const tier = COIN_TIER_MAP[coin.ticker](coin.balance)
-        acc[cleanTicker] = tier
-      } else {
-        acc[cleanTicker] = 'holder'
-      }
-      return acc
-    },
-    {} as Record<string, string>
-  )
-
-  return JSON.stringify(coinTiers)
-}
-
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
@@ -266,16 +241,13 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
     () => userCoins?.find((coin) => coin.mint === mint),
     [userCoins, mint]
   )
+  const discordOAuthLink = useDiscordOAuthLink()
   const { balance: userTokenBalance } = userToken ?? {}
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
   const openDiscord = () => {
-    const tierStateString = makeDiscordOauthStateString(userCoins ?? [])
-    window.open(
-      `${AUDIUS_DISCORD_OAUTH_LINK}&state=${tierStateString}`,
-      '_blank'
-    )
+    window.open(discordOAuthLink, '_blank')
   }
 
   const handleLearnMore = () => {
