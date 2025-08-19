@@ -69,7 +69,7 @@ export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
 
 export const getTierAndNumberForBalance = (
   balance: StringWei,
-  useWei?: boolean = true
+  useWei: boolean = true
 ) => {
   const audio = useWei ? BigInt(balance) : BigInt(balance) * BigInt(10 ** 10)
 
