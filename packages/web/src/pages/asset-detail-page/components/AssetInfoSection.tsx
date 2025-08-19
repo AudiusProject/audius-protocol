@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import {
   UserCoin,
@@ -7,10 +7,7 @@ import {
   useUserCoins
 } from '@audius/common/api'
 import { WidthSizes } from '@audius/common/models'
-import {
-  getTierForUser,
-  getTierForUserNonWei
-} from '@audius/common/src/store/wallet/utils'
+import { getTierForUserNonWei } from '@audius/common/src/store/wallet/utils'
 import { AUDIUS_DISCORD_OAUTH_LINK } from '@audius/common/src/utils/route'
 import {
   Flex,
@@ -33,7 +30,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import Tiers, { TierLevel } from 'pages/rewards-page/Tiers'
+import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
 
 import { AssetDetailProps } from '../types'
