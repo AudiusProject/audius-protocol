@@ -51,7 +51,8 @@ const messages = {
   refreshDiscordRole: 'Refresh Discord Role',
   browseRewards: 'Browse Rewards',
   rewardTiers: 'Reward Tiers',
-  discordTooltip: 'You must have coins to unlock the discord'
+  discordDisabledTooltip: (coinTicker: string = '') =>
+    `Buy ${coinTicker} to access the members only Discord`
 }
 
 const BANNER_HEIGHT = 120
@@ -357,7 +358,9 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
           borderTop='default'
         >
           <Flex alignItems='center' justifyContent='center' gap='s'>
-            <TooltipWrapper text={messages.discordTooltip}>
+            <TooltipWrapper
+              text={messages.discordDisabledTooltip(coin?.ticker)}
+            >
               {/* The tooltip needs a wrapper to work */}
               <Flex style={{ cursor: 'pointer' }}>
                 <PlainButton
