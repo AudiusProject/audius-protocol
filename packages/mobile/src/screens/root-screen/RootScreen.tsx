@@ -8,7 +8,6 @@ import {
 import { MobileOS, Status } from '@audius/common/models'
 import { chatActions, playerActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
@@ -31,6 +30,7 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 import { AppDrawerScreen } from '../app-drawer-screen'
 import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignOnStack } from '../sign-on-screen'
+import { TokenPickerScreen } from '../token-picker-screen'
 
 import { StatusBar } from './StatusBar'
 import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount'
@@ -173,9 +173,14 @@ export const RootScreen = () => {
             component={ResetPasswordModalScreen}
             options={{ presentation: 'modal' }}
           />
-          <Stack.Screen name='TokenPicker' options={{ presentation: 'modal' }}>
-            {() => <PortalHost name='TokenPickerPortal' />}
-          </Stack.Screen>
+          <Stack.Screen
+            name='TokenPicker'
+            component={TokenPickerScreen}
+            options={{
+              presentation: 'modal',
+              ...(isAndroid ? { animation: 'none' } : undefined)
+            }}
+          />
         </Stack.Navigator>
       ) : null}
     </>
