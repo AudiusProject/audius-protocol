@@ -5,6 +5,7 @@ import {
   useCurrentUserId,
   useUserCoins
 } from '@audius/common/api'
+import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { WidthSizes } from '@audius/common/models'
 import {
   Flex,
@@ -27,7 +28,6 @@ import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useDiscordOAuthLink } from 'hooks/useDiscordOAuthLink'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
 
@@ -241,7 +241,7 @@ export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
     () => userCoins?.find((coin) => coin.mint === mint),
     [userCoins, mint]
   )
-  const discordOAuthLink = useDiscordOAuthLink()
+  const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
