@@ -2,22 +2,18 @@ import type { ReactElement } from 'react'
 import React from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
+import { useDiscordOAuthLink } from '@audius/common/hooks'
 import type { AudioTiers, StringWei } from '@audius/common/models'
 import {
   featureMessages,
   features,
   tierFeatureMap
 } from '@audius/common/models'
-import {
-  badgeTiers,
-  getTierAndNumberForBalance,
-  modalsActions
-} from '@audius/common/store'
+import { badgeTiers, getTierAndNumberForBalance } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import { formatNumberCommas } from '@audius/common/utils'
 import { Linking } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import { useDispatch } from 'react-redux'
 
 import {
   Button,
@@ -43,8 +39,6 @@ const audioTierMapSvg: {
   platinum: <IconTokenPlatinum size='l' />
 }
 
-const { setVisibility } = modalsActions
-
 const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 
 const messages = {
@@ -58,15 +52,16 @@ const messages = {
 export const TiersTile = () => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
-  const dispatch = useDispatch()
 
   const { totalBalance } = useAudioBalance()
   const { tier } = getTierAndNumberForBalance(
     totalBalance?.toString() as StringWei
   )
 
+  const discordOAuthLink = useDiscordOAuthLink()
+
   const onPressLaunchDiscord = async () => {
-    dispatch(setVisibility({ modal: 'VipDiscord', visible: true }))
+    Linking.openURL(discordOAuthLink)
   }
 
   return (

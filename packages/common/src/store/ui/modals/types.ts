@@ -73,7 +73,6 @@ export type Modals =
   | 'BuyAudio'
   | 'BuyAudioRecovery'
   | 'TransactionDetails'
-  | 'VipDiscord'
   | 'StripeOnRamp'
   | 'CoinflowOnramp'
   | 'InboxSettings'
