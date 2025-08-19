@@ -13,6 +13,7 @@ import Drawer from 'components/drawer/Drawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 export type ResponsiveModalProps = {
+  className?: string
   // Core props
   isOpen: boolean
   onClose: () => void
@@ -68,7 +69,8 @@ const ResponsiveModal = ({
   showDismissButton,
   zIndex,
   renderAsDrawer,
-  renderAsModal
+  renderAsModal,
+  className
 }: ResponsiveModalProps) => {
   const isMobile = useIsMobile()
   const shouldRenderAsDrawer = renderAsDrawer ?? (isMobile && !renderAsModal)
@@ -123,6 +125,7 @@ const ResponsiveModal = ({
       size={getModalSize(size)}
       zIndex={zIndex}
       dismissOnClickOutside={dismissOnClickOutside}
+      className={className}
     >
       {(title || Icon || subtitle) && (
         <ModalHeader showDismissButton={showDismissButton}>

@@ -18,9 +18,13 @@ const messages = {
 
 type UseAssetDetailTabsProps = {
   mint: string
+  onSend: () => void
 }
 
-export const useAssetDetailTabs = ({ mint }: UseAssetDetailTabsProps) => {
+export const useAssetDetailTabs = ({
+  mint,
+  onSend
+}: UseAssetDetailTabsProps) => {
   const [selectedTab, setSelectedTab] = useState(AssetDetailTabType.HOME)
 
   const handleTabChange = useCallback((_from: string, to: string) => {
@@ -42,7 +46,7 @@ export const useAssetDetailTabs = ({ mint }: UseAssetDetailTabsProps) => {
   ]
 
   const tabElements = [
-    <AssetDetailContent key='home' mint={mint} />,
+    <AssetDetailContent key='home' mint={mint} onSend={onSend} />,
     <AudioWalletTransactions key='transactions' />
   ]
 
@@ -58,7 +62,7 @@ export const useAssetDetailTabs = ({ mint }: UseAssetDetailTabsProps) => {
   if (!isWAudio) {
     return {
       tabs: null,
-      body: <AssetDetailContent mint={mint} />
+      body: <AssetDetailContent mint={mint} onSend={onSend} />
     }
   }
 

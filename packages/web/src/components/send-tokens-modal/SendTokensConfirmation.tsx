@@ -1,0 +1,173 @@
+import React, { useState } from 'react'
+
+import {
+  useArtistCoin,
+  useTokenBalance,
+  transformArtistCoinToTokenInfo
+} from '@audius/common/api'
+import {
+  Button,
+  Text,
+  Flex,
+  Divider,
+  Hint,
+  Checkbox,
+  useMedia
+} from '@audius/harmony'
+
+import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
+
+import { SendTokensConfirmationProps } from './types'
+
+const messages = {
+  sendTitle: 'SEND',
+  amountToSend: 'Amount to Send',
+  destinationAddress: 'Destination Address',
+  reviewDetails: 'Review Details Carefully',
+  reviewDescription:
+    'By proceeding, you accept full responsibility for any errors, including the risk of irreversible loss of funds. Transfers are final and cannot be reversed.',
+  confirmationText:
+    'I have reviewed the information and understand that transfers are final.',
+  back: 'Back',
+  confirm: 'Confirm'
+}
+
+const SendTokensConfirmation = ({
+  mint,
+  amount,
+  destinationAddress,
+  onConfirm,
+  onBack,
+  onClose
+}: SendTokensConfirmationProps) => {
+  const [isConfirmed, setIsConfirmed] = useState(false)
+  const { isMobile } = useMedia()
+
+  // Get token data and balance using the same hooks as ReceiveTokensModal
+  const { data: coin } = useArtistCoin({ mint })
+  const { data: tokenBalance } = useTokenBalance({ mint })
+  const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
+  const currentBalance = tokenBalance?.balance
+    ? tokenBalance.balance.value
+    : BigInt(0)
+
+  const formatAmount = (amount: bigint) => {
+    return (
+      Number(amount) / Math.pow(10, tokenInfo?.decimals || 9)
+    ).toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+  }
+
+  const formatBalance = (balance: bigint) => {
+    return (
+      Number(balance) / Math.pow(10, tokenInfo?.decimals || 9)
+    ).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+  }
+
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsConfirmed(event.target.checked)
+  }
+
+  // Show loading state if we don't have tokenInfo yet
+  if (!tokenInfo) {
+    return (
+      <Flex direction='column' gap='xl' p='xl' alignItems='center'>
+        <Text variant='body' size='l' color='subdued'>
+          Loading token information...
+        </Text>
+      </Flex>
+    )
+  }
+
+  return (
+    <Flex direction='column' gap='xl' p='xl'>
+      {/* Token Balance Section */}
+      <CryptoBalanceSection
+        tokenInfo={tokenInfo}
+        amount={formatBalance(currentBalance)}
+      />
+
+      <Divider orientation='horizontal' color='default' />
+
+      {/* Amount Info */}
+      <Flex
+        direction={isMobile ? 'column' : 'row'}
+        justifyContent='space-between'
+        gap='m'
+      >
+        <Text variant='heading' size='s' color='subdued'>
+          {messages.amountToSend}
+        </Text>
+        <Text
+          variant='heading'
+          size='s'
+          color='default'
+          css={{ wordBreak: 'break-all' }}
+        >
+          -{formatAmount(amount)} {tokenInfo.symbol}
+        </Text>
+      </Flex>
+
+      <Divider orientation='horizontal' color='default' />
+
+      {/* Transfer Info */}
+      <Flex direction='column' gap='m'>
+        <Text variant='heading' size='s' color='subdued'>
+          {messages.destinationAddress}
+        </Text>
+        <Text
+          variant='body'
+          size='l'
+          color='default'
+          css={{ wordBreak: 'break-all' }}
+        >
+          {destinationAddress}
+        </Text>
+      </Flex>
+
+      {/* Review Details Hint */}
+      <Hint noIcon>
+        <Flex column gap='s'>
+          <Text variant='title' color='default'>
+            {messages.reviewDetails}
+          </Text>
+          <Text variant='body' size='s'>
+            {messages.reviewDescription}
+          </Text>
+          <Flex gap='xl' alignItems='center'>
+            <Checkbox checked={isConfirmed} onChange={handleCheckboxChange} />
+            <Text
+              variant='body'
+              size='s'
+              css={(theme) => ({ color: theme.color.neutral.n600 })}
+            >
+              {messages.confirmationText}
+            </Text>
+          </Flex>
+        </Flex>
+      </Hint>
+
+      {/* Action Buttons */}
+      <Flex gap='s' direction='row'>
+        <Button variant='secondary' onClick={onBack} fullWidth>
+          {messages.back}
+        </Button>
+        <Button
+          variant='primary'
+          onClick={onConfirm}
+          disabled={!isConfirmed}
+          fullWidth
+        >
+          {messages.confirm}
+        </Button>
+      </Flex>
+    </Flex>
+  )
+}
+
+export default SendTokensConfirmation

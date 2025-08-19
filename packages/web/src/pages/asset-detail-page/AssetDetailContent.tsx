@@ -73,13 +73,13 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => ({
   }
 }))
 
-export const AssetDetailContent = ({ mint }: AssetDetailProps) => {
+export const AssetDetailContent = ({ mint, onSend }: AssetDetailProps) => {
   const styles = useStyles()
 
   return (
     <Flex css={styles.container}>
       <Flex css={styles.leftSection}>
-        <BalanceSection mint={mint} />
+        <BalanceSection mint={mint} onSend={onSend} />
         <AssetInfoSection mint={mint} />
       </Flex>
       <Flex css={styles.rightSection}>

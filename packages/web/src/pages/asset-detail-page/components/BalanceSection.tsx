@@ -145,7 +145,7 @@ const HasBalanceState = ({
   )
 }
 
-const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
+const BalanceSectionContent = ({ mint, onSend }: AssetDetailProps) => {
   const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
     mint: [mint]
   })
@@ -184,12 +184,15 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   }, [mint, openReceiveTokensModal])
 
   const handleSend = useRequiresAccountCallback(() => {
-    if (isMobile) {
+    if (onSend) {
+      // Use the custom onSend handler if provided
+      onSend()
+    } else if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressSend())
     }
-  }, [isMobile, openTransferDrawer, dispatch, pressSend])
+  }, [onSend, isMobile, openTransferDrawer, dispatch, pressSend])
 
   if (coinsLoading || !coin) {
     return <BalanceSectionSkeleton />
