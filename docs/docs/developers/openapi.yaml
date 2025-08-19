@@ -376,7 +376,8 @@ paths:
     get:
       tags:
         - playlists
-      description: Gets the information necessary to access the playlist and what access the given user has.
+      description:
+        Gets the information necessary to access the playlist and what access the given user has.
       operationId: Get Playlist Access Info
       parameters:
         - name: playlist_id
@@ -427,7 +428,8 @@ paths:
     get:
       tags:
         - resolve
-      summary: Resolves and redirects a provided Audius app URL to the API resource URL it represents
+      summary:
+        Resolves and redirects a provided Audius app URL to the API resource URL it represents
       description: |-
         This endpoint allows you to lookup and access API resources when you only know the
         audius.co URL.
@@ -436,7 +438,8 @@ paths:
       parameters:
         - name: url
           in: query
-          description: URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path
+          description:
+            URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path
           required: true
           schema:
             type: string
@@ -480,7 +483,9 @@ paths:
             default: false
         - name: current_user_follows
           in: query
-          description: Only include tips involving the user's followers in the given capacity. Requires user_id to be set.
+          description:
+            Only include tips involving the user's followers in the given capacity. Requires user_id
+            to be set.
           schema:
             type: string
             enum:
@@ -489,11 +494,10 @@ paths:
               - sender_or_receiver
         - name: unique_by
           in: query
-          description: |-
-            Only include the most recent tip for a user was involved in the given capacity.
-
-            Eg. 'sender' will ensure that each tip returned has a unique sender, using the most recent tip sent by a user if that user has sent multiple tips.
-                
+          description: "Only include the most recent tip for a user was involved in\
+            \ the given capacity.\n\nEg. 'sender' will ensure that each tip returned\
+            \ has a unique sender, using the most recent tip sent by a user if that\
+            \ user has sent multiple tips.\n    "
           schema:
             type: string
             enum:
@@ -725,7 +729,8 @@ paths:
     get:
       tags:
         - tracks
-      description: Gets the information necessary to access the track and what access the given user has.
+      description:
+        Gets the information necessary to access the track and what access the given user has.
       operationId: Get Track Access Info
       parameters:
         - name: track_id
@@ -905,7 +910,8 @@ paths:
             default: false
         - name: filename
           in: query
-          description: Optional - name of file to download. If not provided, defaults to track original filename or title.
+          description: "Optional - name of file to download. If not provided, defaults\
+            \ to track original filename or title."
           schema:
             type: string
       responses:
@@ -1032,7 +1038,9 @@ paths:
             default: false
         - name: api_key
           in: query
-          description: Optional - API key for third party apps. This is required for tracks that only allow specific API keys.
+          description:
+            Optional - API key for third party apps. This is required for tracks that only allow
+            specific API keys.
           schema:
             type: string
         - name: skip_check
@@ -1042,7 +1050,8 @@ paths:
             type: boolean
         - name: no_redirect
           in: query
-          description: Optional - If true will not return a 302 and instead will return the stream url in JSON
+          description:
+            Optional - If true will not return a 302 and instead will return the stream url in JSON
           schema:
             type: boolean
       responses:
@@ -1252,7 +1261,7 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -1391,6 +1400,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/user_response'
+        '400':
+          description: Bad request
+          content: {}
+        '500':
+          description: Server error
+          content: {}
+  /users/{id}/albums:
+    get:
+      tags:
+        - users
+      description: Gets the albums created by a user using their user ID
+      operationId: Get Albums by User
+      parameters:
+        - name: id
+          in: path
+          description: A User ID
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: The number of items to skip. Useful for pagination (page number * limit)
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: The number of items to fetch
+          schema:
+            type: integer
+        - name: user_id
+          in: query
+          description: The user ID of the user making the request
+          schema:
+            type: string
+        - name: Encoded-Data-Message
+          in: header
+          description: The data that was signed by the user for signature recovery
+          schema:
+            type: string
+        - name: Encoded-Data-Signature
+          in: header
+          description: 'The signature of data, used for signature recovery'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/albums_response'
         '400':
           description: Bad request
           content: {}
@@ -1635,7 +1695,7 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -1645,6 +1705,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/users_response'
+  /users/{id}/playlists:
+    get:
+      tags:
+        - users
+      description: Gets the playlists created by a user using their user ID
+      operationId: Get Playlists by User
+      parameters:
+        - name: id
+          in: path
+          description: A User ID
+          required: true
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: The number of items to skip. Useful for pagination (page number * limit)
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: The number of items to fetch
+          schema:
+            type: integer
+        - name: user_id
+          in: query
+          description: The user ID of the user making the request
+          schema:
+            type: string
+        - name: Encoded-Data-Message
+          in: header
+          description: The data that was signed by the user for signature recovery
+          schema:
+            type: string
+        - name: Encoded-Data-Signature
+          in: header
+          description: 'The signature of data, used for signature recovery'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/playlists_response'
+        '400':
+          description: Bad request
+          content: {}
+        '500':
+          description: Server error
+          content: {}
   /users/{id}/purchasers:
     get:
       tags:
@@ -1721,7 +1832,7 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -1773,7 +1884,8 @@ paths:
     get:
       tags:
         - users
-      description: Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
+      description: "Gets the list of unique users who have remixed tracks by the given\
+        \ user, or a specific track by that user if provided"
       operationId: Get remixers
       parameters:
         - name: id
@@ -1891,7 +2003,7 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -1926,7 +2038,39 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content: {}
+  /users/{id}/sales/download/json:
+    get:
+      tags:
+        - users
+      description: Gets the sales data for the user in JSON format
+      operationId: Download Sales as JSON
+      parameters:
+        - name: id
+          in: path
+          description: A User ID
+          required: true
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          description: The user ID of the user making the request
+          schema:
+            type: string
+        - name: Encoded-Data-Message
+          in: header
+          description: The data that was signed by the user for signature recovery
+          schema:
+            type: string
+        - name: Encoded-Data-Signature
+          in: header
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -2153,7 +2297,7 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -2235,7 +2379,7 @@ paths:
             type: string
         - name: Encoded-Data-Signature
           in: header
-          description: The signature of data, used for signature recovery
+          description: 'The signature of data, used for signature recovery'
           schema:
             type: string
       responses:
@@ -2342,18 +2486,18 @@ components:
     cover_photo:
       type: object
       properties:
-        640x:
+        '640x':
           type: string
-        2000x:
+        '2000x':
           type: string
     profile_picture:
       type: object
       properties:
-        150x150:
+        '150x150':
           type: string
-        480x480:
+        '480x480':
           type: string
-        1000x1000:
+        '1000x1000':
           type: string
     users_response:
       type: object
@@ -2443,11 +2587,11 @@ components:
     track_artwork:
       type: object
       properties:
-        150x150:
+        '150x150':
           type: string
-        480x480:
+        '480x480':
           type: string
-        1000x1000:
+        '1000x1000':
           type: string
     remix_parent:
       type: object
@@ -2578,11 +2722,11 @@ components:
     playlist_artwork:
       type: object
       properties:
-        150x150:
+        '150x150':
           type: string
-        480x480:
+        '480x480':
           type: string
-        1000x1000:
+        '1000x1000':
           type: string
     playlist_added_timestamp:
       required:
@@ -2637,6 +2781,20 @@ components:
           type: string
         created_at:
           type: string
+    playlists_response:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/playlist'
+    albums_response:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/playlist'
     user_search:
       type: object
       properties:
@@ -2823,11 +2981,11 @@ components:
     profilePicture:
       type: object
       properties:
-        150x150:
+        '150x150':
           type: string
-        480x480:
+        '480x480':
           type: string
-        1000x1000:
+        '1000x1000':
           type: string
     developer_apps:
       type: object

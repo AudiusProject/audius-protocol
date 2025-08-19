@@ -1,0 +1,44 @@
+---
+id: audius-py
+title: audius-py
+pagination_label: audius-py
+sidebar_label: audius-py
+description: Audius Protocol Documentation
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+:::info Built with Audius
+
+This Audius Python Package was built by the community!
+
+---
+
+**Useful Links**
+
+- Check out the [Code on GitHub](https://github.com/antazoey/audius-py) for the latest information.
+- Download from [PyPi](https://pypi.org/project/audius-py/) with `pip install audius-py`
+
+:::
+
+---
+
+## Usage
+
+### Installation
+
+```bash
+pip install audius-py
+```
+
+### Example Code
+
+> Get List of Top Users
+
+```python
+from audius.sdk import Audius
+
+sdk = Audius(app="<your_app_name>")
+for artist in sdk.users.top():
+    print(artist["name"])
+```
