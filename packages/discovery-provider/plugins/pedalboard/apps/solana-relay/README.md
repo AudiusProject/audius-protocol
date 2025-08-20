@@ -5,6 +5,7 @@ Plugin to facilitate sending Audius-related Solana transactions
 ## Dev
 
 Create a file `dev.env` and add the following
+
 ```
 audius_discprov_env
 audius_discprov_url
@@ -37,8 +38,9 @@ audius_anti_abuse_oracle
 ```
 
 Then
+
 ```
 npm run dev
 ```
 
-
+If using with the web app, updat the `SOLANA_RELAY_ENDPOINT` value in `packages/web/src/services/env/env.<env>.ts` to point to the localhost port that the relay server is running on (i.e. localhost:6002)

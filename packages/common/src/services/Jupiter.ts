@@ -152,6 +152,62 @@ export const getJupiterQuoteByMint = async ({
   }
 }
 
+export type JupiterQuoteWithRetryResult = {
+  maxAccountsValue: number
+  quoteResult: JupiterQuoteResult
+}
+
+/**
+ * Gets a Jupiter quote with automatic retry logic for maxAccounts
+ * Starts with DEFAULT_MAX_ACCOUNTS and increments by 10 until MAX_ALLOWED_ACCOUNTS
+ * Returns the successful quote along with the maxAccounts value that worked
+ */
+export const getJupiterQuoteByMintWithRetry = async ({
+  inputMint,
+  outputMint,
+  amountUi,
+  slippageBps,
+  swapMode = 'ExactIn',
+  onlyDirectRoutes = false
+}: Omit<
+  JupiterMintQuoteParams,
+  'maxAccounts'
+>): Promise<JupiterQuoteWithRetryResult> => {
+  let maxAccounts = DEFAULT_MAX_ACCOUNTS
+  let lastError
+  let quoteResult: JupiterQuoteResult | null = null
+
+  while (maxAccounts <= MAX_ALLOWED_ACCOUNTS) {
+    try {
+      quoteResult = await getJupiterQuoteByMint({
+        inputMint,
+        outputMint,
+        amountUi,
+        slippageBps,
+        swapMode,
+        onlyDirectRoutes,
+        maxAccounts
+      })
+      break
+    } catch (err) {
+      lastError = err
+      maxAccounts += 10
+      if (maxAccounts > MAX_ALLOWED_ACCOUNTS) {
+        throw lastError
+      }
+    }
+  }
+
+  if (quoteResult === null) {
+    throw lastError
+  }
+
+  return {
+    maxAccountsValue: maxAccounts,
+    quoteResult
+  }
+}
+
 /**
  * Converts an array of Jupiter instructions to Solana TransactionInstructions
  * Filters out undefined instructions and handles the conversion

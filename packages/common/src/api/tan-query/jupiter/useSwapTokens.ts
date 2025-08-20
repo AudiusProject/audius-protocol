@@ -1,8 +1,4 @@
-import {
-  createCloseAccountInstruction,
-  createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddressSync
-} from '@solana/spl-token'
+import { createCloseAccountInstruction } from '@solana/spl-token'
 import {
   PublicKey,
   TransactionInstruction,
@@ -14,11 +10,9 @@ import { useCurrentAccountUser, useQueryContext } from '~/api'
 import { Feature } from '~/models'
 import {
   convertJupiterInstructions,
-  DEFAULT_MAX_ACCOUNTS,
-  getJupiterQuoteByMint,
+  getJupiterQuoteByMintWithRetry,
   jupiterInstance,
-  JupiterQuoteResult,
-  MAX_ALLOWED_ACCOUNTS
+  JupiterQuoteResult
 } from '~/services/Jupiter'
 import { useTokens } from '~/store/ui/buy-sell'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
@@ -33,7 +27,11 @@ import {
   SwapTokensResult,
   UserBankManagedTokenInfo
 } from './types'
-import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
+import {
+  addUserBankToAtaInstructions,
+  addJupiterOutputAtaInstruction,
+  getSwapErrorResponse
+} from './utils'
 
 const SWAP_LOOKUP_TABLE_ADDRESS = new PublicKey(
   '2WB87JxGZieRd7hi3y87wq6HAsPLyb9zrSx8B5z1QEzM'
@@ -107,30 +105,15 @@ export const useSwapTokens = () => {
 
         // ---------- 2. Get Quote from Jupiter ----------
         errorStage = 'QUOTE_RETRIEVAL'
-        // Try to get a quote with increasing maxAccounts until we get one
-        let maxAccounts = DEFAULT_MAX_ACCOUNTS
-        let lastError
-        while (maxAccounts <= MAX_ALLOWED_ACCOUNTS) {
-          try {
-            quoteResult = await getJupiterQuoteByMint({
-              inputMint: inputMintUiAddress,
-              outputMint: outputMintUiAddress,
-              amountUi,
-              slippageBps,
-              swapMode: 'ExactIn',
-              onlyDirectRoutes: false,
-              maxAccounts
-            })
-            break
-          } catch (err) {
-            lastError = err
-            maxAccounts += 10
-            if (maxAccounts > MAX_ALLOWED_ACCOUNTS) {
-              throw lastError
-            }
-          }
-        }
-        quoteResult = quoteResult!
+        const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
+          inputMint: inputMintUiAddress,
+          outputMint: outputMintUiAddress,
+          amountUi,
+          slippageBps,
+          swapMode: 'ExactIn',
+          onlyDirectRoutes: false
+        })
+        quoteResult = quote
 
         // ---------- 3. Prepare Transaction Instructions ----------
         // Find input and output tokens from our backend-driven token data
@@ -179,13 +162,16 @@ export const useSwapTokens = () => {
         // --- 3c. Get Jupiter Swap Instructions ---
         errorStage = 'SWAP_INSTRUCTION_RETRIEVAL'
         let swapInstructionsResult
+        const swapRequestParams = {
+          quoteResponse: quoteResult.quote,
+          userPublicKey: userPublicKey.toBase58(),
+          destinationTokenAccount: preferredJupiterDestination,
+          wrapAndUnwrapSol: wrapUnwrapSol
+        }
         try {
           swapInstructionsResult = await jupiterInstance.swapInstructionsPost({
             swapRequest: {
-              quoteResponse: quoteResult.quote,
-              userPublicKey: userPublicKey.toBase58(),
-              destinationTokenAccount: preferredJupiterDestination,
-              wrapAndUnwrapSol: wrapUnwrapSol,
+              ...swapRequestParams,
               useSharedAccounts: true
             }
           })
@@ -198,28 +184,18 @@ export const useSwapTokens = () => {
           // We can retry with useSharedAccounts: false and bail out if that still errors
           swapInstructionsResult = await jupiterInstance.swapInstructionsPost({
             swapRequest: {
-              quoteResponse: quoteResult.quote,
-              userPublicKey: userPublicKey.toBase58(),
-              destinationTokenAccount: preferredJupiterDestination,
-              wrapAndUnwrapSol: wrapUnwrapSol,
+              ...swapRequestParams,
               useSharedAccounts: false
             }
           })
           // If getting the instruction succeeded, we need to manually handle
           // the intermediary account for the output mint
-          outputAtaForJupiter = getAssociatedTokenAddressSync(
-            new PublicKey(outputTokenConfig.mintAddress),
+          outputAtaForJupiter = addJupiterOutputAtaInstruction({
+            tokenConfig: outputTokenConfig,
             userPublicKey,
-            true
-          )
-          instructions.push(
-            createAssociatedTokenAccountIdempotentInstruction(
-              feePayer,
-              outputAtaForJupiter,
-              userPublicKey,
-              new PublicKey(outputTokenConfig.mintAddress)
-            )
-          )
+            feePayer,
+            instructions
+          })
         }
         const {
           tokenLedgerInstruction,

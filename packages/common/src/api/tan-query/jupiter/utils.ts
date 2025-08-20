@@ -104,6 +104,45 @@ export async function addAtaToUserBankInstructions({
 }
 
 /**
+ * Creates an Associated Token Account (ATA) for Jupiter when shared accounts are not supported.
+ * This is used as a fallback when Jupiter's shared account system fails for simple AMMs.
+ *
+ * @param tokenConfig - The token configuration containing mint address
+ * @param userPublicKey - The user's public key
+ * @param feePayer - The fee payer's public key
+ * @param instructions - Array to push the ATA creation instruction to
+ * @returns The created ATA public key
+ */
+export function addJupiterOutputAtaInstruction({
+  tokenConfig,
+  userPublicKey,
+  feePayer,
+  instructions
+}: {
+  tokenConfig: UserBankManagedTokenInfo
+  userPublicKey: PublicKey
+  feePayer: PublicKey
+  instructions: TransactionInstruction[]
+}): PublicKey {
+  const outputAtaForJupiter = getAssociatedTokenAddressSync(
+    new PublicKey(tokenConfig.mintAddress),
+    userPublicKey,
+    true
+  )
+
+  instructions.push(
+    createAssociatedTokenAccountIdempotentInstruction(
+      feePayer,
+      outputAtaForJupiter,
+      userPublicKey,
+      new PublicKey(tokenConfig.mintAddress)
+    )
+  )
+
+  return outputAtaForJupiter
+}
+
+/**
  * Get the appropriate error response for a swap error based on the error stage.
  */
 export function getSwapErrorResponse(params: {
