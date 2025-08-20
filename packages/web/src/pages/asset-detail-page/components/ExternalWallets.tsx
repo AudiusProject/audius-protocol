@@ -35,7 +35,6 @@ import {
   AlreadyAssociatedError,
   useConnectAndAssociateWallets
 } from '../../../hooks/useConnectAndAssociateWallets'
-import { AssetDetailProps } from '../types'
 
 const COPIED_TOAST_TIMEOUT = 2000
 
@@ -163,7 +162,11 @@ const WalletRow = ({
   )
 }
 
-export const ExternalWallets = ({ mint }: AssetDetailProps) => {
+type ExternalWalletsProps = {
+  mint: string
+}
+
+export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
   const { data: userCoins, isLoading } = useUserCoin({
     mint
   })

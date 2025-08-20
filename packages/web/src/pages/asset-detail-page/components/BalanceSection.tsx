@@ -20,8 +20,6 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
-import { AssetDetailProps } from '../types'
-
 type BalanceStateProps = {
   title: string
   logoURI?: string
@@ -149,6 +147,10 @@ const HasBalanceState = ({
   )
 }
 
+type AssetDetailProps = {
+  mint: string
+}
+
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
     mint: [mint]
@@ -184,7 +186,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
       // No USDC balance - show add cash modal (uses Coinflow)
       openAddCashModal()
     }
-  }, [openAddCashModal])
+  }, [openAddCashModal, openBuySellModal, usdcBalance])
 
   const handleReceive = useRequiresAccountCallback(() => {
     openReceiveTokensModal({

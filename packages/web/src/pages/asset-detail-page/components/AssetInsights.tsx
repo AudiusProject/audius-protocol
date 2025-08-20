@@ -4,7 +4,6 @@ import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
 import { createCoinMetrics, MetricData } from '../../../utils/coinMetrics'
-import { AssetDetailProps } from '../types'
 
 const messages = {
   title: 'Insights',
@@ -110,7 +109,11 @@ const MetricRow = componentWithErrorBoundary(MetricRowComponent, {
   name: 'MetricRow'
 })
 
-export const AssetInsights = ({ mint }: AssetDetailProps) => {
+type AssetInsightsProps = {
+  mint: string
+}
+
+export const AssetInsights = ({ mint }: AssetInsightsProps) => {
   const {
     data: coinInsights,
     isPending,

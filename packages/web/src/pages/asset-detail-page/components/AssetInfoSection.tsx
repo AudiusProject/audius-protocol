@@ -31,8 +31,6 @@ import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
 
-import { AssetDetailProps } from '../types'
-
 const messages = {
   loading: 'Loading...',
   createdBy: 'Created By',
@@ -138,7 +136,11 @@ const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
   return <Avatar src={logoURI} w={spacing.unit8} h={spacing.unit8} />
 }
 
-const BannerSection = ({ mint }: AssetDetailProps) => {
+type BannerSectionProps = {
+  mint: string
+}
+
+const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin({ mint })
 
   const userId = coin?.ownerId
@@ -232,7 +234,11 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
   )
 }
 
-export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
+type AssetInfoSectionProps = {
+  mint: string
+}
+
+export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
   const { data: coin, isLoading } = useArtistCoin({ mint })
