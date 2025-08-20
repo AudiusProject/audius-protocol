@@ -206,8 +206,6 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
     // Checking if the derived address of recipient does not exist
     // then we must add instruction to create it
     let derived_token_acc_data = config.rpc_client.get_account_data(&pair.derive.address);
-
-    println!("claimable_tokens program id: {}", claimable_tokens::id());
     
     if derived_token_acc_data.is_err() {
         instructions.push(claimable_tokens::instruction::init(
