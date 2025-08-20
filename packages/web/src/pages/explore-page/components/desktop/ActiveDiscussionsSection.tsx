@@ -1,27 +1,29 @@
-import React from 'react'
-
 import { useRecentlyCommentedTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
-import { TrackTile } from 'components/track/desktop/TrackTile'
-
-import { ExploreSection } from './ExploreSection'
+import { Carousel } from './Carousel'
+import { TilePairs, TileSkeletons } from './TileHelpers'
+import { useDeferredElement } from './useDeferredElement'
 
 export const ActiveDiscussionsSection = () => {
-  const { data, isLoading } = useRecentlyCommentedTracks({
-    pageSize: 10
-  })
+  const { ref, inView } = useDeferredElement()
 
-  if (!isLoading && (!data || data.length === 0)) {
+  const { data, isLoading, isError, isSuccess } = useRecentlyCommentedTracks(
+    { pageSize: 10 },
+    { enabled: inView }
+  )
+
+  if (isError || (isSuccess && !data?.length)) {
     return null
   }
 
   return (
-    <ExploreSection
-      title={messages.activeDiscussions}
-      data={data}
-      isLoading={isLoading}
-      Tile={TrackTile}
-    />
+    <Carousel ref={ref} title={messages.activeDiscussions}>
+      {!inView || isLoading || !data ? (
+        <TileSkeletons noShimmer />
+      ) : (
+        <TilePairs data={data} />
+      )}
+    </Carousel>
   )
 }

@@ -3,7 +3,7 @@ import path from 'path'
 
 import type { full } from '@audius/sdk'
 
-const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
+const runAgainstLocalStack = process.env.RUN_AGAINST_STAGE !== 'true'
 
 const getData = (filename: string) =>
   JSON.parse(readFileSync(path.resolve('../web/e2e/data/', filename), 'utf8'))

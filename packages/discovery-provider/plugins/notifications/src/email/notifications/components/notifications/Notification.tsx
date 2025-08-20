@@ -86,8 +86,7 @@ export const HighlightText = ({ text }: { text: string }) => (
       color: '#7E1BCC',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -105,8 +104,7 @@ export const BodyText = ({
       color: '#858199',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -397,7 +395,7 @@ const notificationMap = {
     }
     return (
       <span className={'notificationText'}>
-        <table cellSpacing='0' cellPadding='0' style={{ marginBottom: '4px' }}>
+        <table cellSpacing="0" cellPadding="0" style={{ marginBottom: '4px' }}>
           <tr>
             <td>{icon}</td>
             <td>
@@ -509,8 +507,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-                ? 'their'
-                : `${notification.entityUser.name}'s`
+              ? 'their'
+              : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -532,8 +530,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-                ? 'their'
-                : `${notification.entityUser.name}'s`
+              ? 'their'
+              : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -555,8 +553,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-                ? 'their'
-                : `${notification.entityUser.name}'s`
+              ? 'their'
+              : `${notification.entityUser.name}'s`
           }
         />
         {entity}

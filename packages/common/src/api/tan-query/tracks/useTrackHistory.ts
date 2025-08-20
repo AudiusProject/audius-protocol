@@ -65,8 +65,11 @@ export const useTrackHistory = (
       const sdk = await audiusSdk()
       if (!currentUserId) return []
 
+      const id = Id.parse(currentUserId)
+
       const { data: activityData } = await sdk.full.users.getUsersTrackHistory({
-        id: Id.parse(currentUserId),
+        id,
+        userId: id,
         limit: pageSize,
         offset: pageParam,
         query,

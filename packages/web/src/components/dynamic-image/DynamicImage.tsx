@@ -37,6 +37,8 @@ export type DynamicImageProps = {
   immediatelyLeave?: boolean
   // Whether or not to use a skeleton while loading
   useSkeleton?: boolean
+  // Don't use shimmer for the skeleton
+  noShimmer?: boolean
   // Whether or not to use the default placeholder
   usePlaceholder?: boolean
   // Whether or not to blur the background image
@@ -109,6 +111,7 @@ const DynamicImage = ({
   useSkeleton = true,
   useBlur = false,
   alt,
+  noShimmer,
   ...other
 }: DynamicImageProps) => {
   const first = useRef<HTMLDivElement>(null)
@@ -185,7 +188,10 @@ const DynamicImage = ({
       }}
     >
       {useSkeleton && displayImage === placeholder ? (
-        <Skeleton className={cn(styles.skeleton, skeletonClassName)} />
+        <Skeleton
+          className={cn(styles.skeleton, skeletonClassName)}
+          noShimmer={noShimmer}
+        />
       ) : null}
       <div
         ref={first}

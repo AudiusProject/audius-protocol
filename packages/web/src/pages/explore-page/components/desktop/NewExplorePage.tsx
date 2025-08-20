@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -25,7 +26,6 @@ import { useDebounce, useEffectOnce, usePrevious } from 'react-use'
 
 import BackgroundWaves from 'assets/img/publicSite/imageSearchHeaderBackground@2x.webp'
 import useTabs from 'hooks/useTabs/useTabs'
-import { RecentSearches } from 'pages/search-page/RecentSearches'
 import { filters } from 'pages/search-page/SearchFilters'
 import { SearchResults } from 'pages/search-page/SearchResults'
 import { SortMethodFilterButton } from 'pages/search-page/SortMethodFilterButton'
@@ -43,6 +43,7 @@ import {
 import { ActiveDiscussionsSection } from './ActiveDiscussionsSection'
 import { ArtistSpotlightSection } from './ArtistSpotlightSection'
 import { BestSellingSection } from './BestSellingSection'
+import { DownloadsAvailableSection } from './DownloadsAvailableSection'
 import { FeaturedPlaylistsSection } from './FeaturedPlaylistsSection'
 import { FeaturedRemixContestsSection } from './FeaturedRemixContestsSection'
 import { FeelingLuckySection } from './FeelingLuckySection'
@@ -51,6 +52,7 @@ import { MoodGrid } from './MoodGrid'
 import { MostSharedSection } from './MostSharedSection'
 import { QuickSearchGrid } from './QuickSearchGrid'
 import { RecentPremiumTracksSection } from './RecentPremiumTracksSection'
+import { RecentSearchesSection } from './RecentSearchesSection'
 import { RecentlyPlayedSection } from './RecentlyPlayedSection'
 import { RecommendedTracksSection } from './RecommendedTracksSection'
 import { TrendingPlaylistsSection } from './TrendingPlaylistsSection'
@@ -110,6 +112,8 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const showSearchResults = useShowSearchResults()
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
   const searchBarRef = useRef<HTMLInputElement>(null)
+  const { data: currentUserId, isLoading: isCurrentUserIdLoading } =
+    useCurrentUserId()
   const { motion } = useTheme()
   const { isLarge } = useMedia()
   const { isEnabled: isSearchExploreGoodiesEnabled } = useFeatureFlag(
@@ -150,12 +154,18 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   useEffect(() => {
     if (debouncedValue !== previousDebouncedValue) {
       const newParams = new URLSearchParams(searchParams)
-      newParams.set('query', debouncedValue)
+      if (debouncedValue) {
+        newParams.set('query', debouncedValue)
+      } else {
+        newParams.delete('query')
+      }
       setSearchParams(newParams)
     } else if (categoryKey === SearchTabs.ALL.toLowerCase()) {
       // clear filters when searching all
       const newParams = new URLSearchParams()
-      newParams.set('query', debouncedValue)
+      if (debouncedValue) {
+        newParams.set('query', debouncedValue)
+      }
       setSearchParams(newParams)
     }
   }, [
@@ -188,6 +198,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
     img.onload = () => setBannerIsVisible(true)
   }, [])
 
+  const showUserContextualContent = isCurrentUserIdLoading || !!currentUserId
   const showTrackContent = categoryKey === 'tracks' || categoryKey === 'all'
   const showPlaylistContent =
     categoryKey === 'playlists' || categoryKey === 'all'
@@ -304,8 +315,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
         >
           {isSearchExploreGoodiesEnabled ? (
             <>
-              {showTrackContent && <RecommendedTracksSection />}
-              {showTrackContent && <RecentlyPlayedSection />}
+              {showTrackContent && showUserContextualContent && (
+                <RecommendedTracksSection />
+              )}
+              {showTrackContent && showUserContextualContent && (
+                <RecentlyPlayedSection />
+              )}
               {showTrackContent && <QuickSearchGrid />}
             </>
           ) : null}
@@ -316,9 +331,12 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
           )}
           {showUserContent && <ArtistSpotlightSection />}
           {showUserContent && <LabelSpotlightSection />}
-          {isSearchExploreGoodiesEnabled && showTrackContent ? (
-            <ActiveDiscussionsSection />
-          ) : null}
+          {isSearchExploreGoodiesEnabled && showTrackContent && (
+            <>
+              <ActiveDiscussionsSection />
+              <DownloadsAvailableSection />
+            </>
+          )}
           {(showTrackContent || showAlbumContent || showPlaylistContent) && (
             <MoodGrid />
           )}
@@ -326,14 +344,14 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <>
               {showPlaylistContent && <TrendingPlaylistsSection />}
               {showTrackContent && <MostSharedSection />}
-              {(showAlbumContent || showTrackContent) && <BestSellingSection />}
+              {(showTrackContent || showAlbumContent) && <BestSellingSection />}
               {showTrackContent && <RecentPremiumTracksSection />}
-              {showTrackContent && <FeelingLuckySection />}
+              {showTrackContent && showUserContextualContent && (
+                <FeelingLuckySection />
+              )}
             </>
           ) : null}
-          <Flex justifyContent='center'>
-            <RecentSearches />
-          </Flex>
+          {showUserContextualContent && <RecentSearchesSection />}
         </Flex>
       </Flex>
     </Flex>

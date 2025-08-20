@@ -50,11 +50,6 @@ export type SwapTabProps = {
   outputToken: TokenInfo
   min?: number
   max?: number
-  balance: {
-    get: () => number | undefined
-    loading: boolean
-    formatError: () => string
-  }
 
   onTransactionDataChange?: (data: {
     inputAmount: number
@@ -78,7 +73,6 @@ export const SwapTab = ({
   outputToken,
   min,
   max,
-  balance,
   onTransactionDataChange,
   isDefault = true,
   error,
@@ -103,7 +97,6 @@ export const SwapTab = ({
     outputToken,
     min,
     max,
-    balance,
     onTransactionDataChange,
     initialInputValue,
     onInputValueChange

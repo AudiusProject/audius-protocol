@@ -1,28 +1,35 @@
-import { useArtistCoin } from '@audius/common/api'
+import { Fragment, useCallback, useMemo, useState } from 'react'
+
+import {
+  useArtistCoin,
+  useCurrentUserId,
+  useUserCoins
+} from '@audius/common/api'
+import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { WidthSizes } from '@audius/common/models'
 import {
-  Avatar,
   Flex,
-  IconGift,
   Paper,
-  PlainButton,
   Text,
-  useTheme
+  useTheme,
+  PlainButton,
+  IconDiscord,
+  IconGift,
+  Avatar,
+  IconExternalLink,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  Modal
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
-import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
+import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListEntityType,
-  UserListType
-} from 'store/application/ui/userListModal/types'
+import Tiers from 'pages/rewards-page/Tiers'
+import { env } from 'services/env'
 
 import { AssetDetailProps } from '../types'
 
@@ -35,7 +42,17 @@ const messages = {
   description2: (title: string) =>
     `Holding ${title} gives you access to exclusive features and helps support your favorite artists on Audius.`,
   learnMore: 'Learn More',
-  viewLeaderboard: 'View Leaderboard'
+  viewLeaderboard: 'View Leaderboard',
+  title: 'Bronze +',
+  profileFlair: 'Profile Flair',
+  customDiscordRole: 'Custom Discord Role',
+  messageBlasts: 'Message Blasts',
+  openDiscord: 'Join The Discord',
+  refreshDiscordRole: 'Refresh Discord Role',
+  browseRewards: 'Browse Rewards',
+  rewardTiers: 'Reward Tiers',
+  discordDisabledTooltip: (coinTicker: string = '') =>
+    `Buy ${coinTicker} to access the members only Discord`
 }
 
 const BANNER_HEIGHT = 120
@@ -216,81 +233,150 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
 }
 
 export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
-  const dispatch = useDispatch()
+  const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
+
   const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const userToken = useMemo(
+    () => userCoins?.find((coin) => coin.mint === mint),
+    [userCoins, mint]
+  )
+  const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
+  const { balance: userTokenBalance } = userToken ?? {}
+
+  const descriptionParagraphs = coin?.description?.split('\n') ?? []
+
+  const openDiscord = () => {
+    window.open(discordOAuthLink, '_blank')
+  }
+
+  const handleLearnMore = () => {
+    window.open(coin?.website, '_blank')
+  }
+
+  const handleBrowseRewards = useCallback(() => {
+    setIsTiersModalOpen(true)
+  }, [])
+
+  const handleCloseTiersModal = useCallback(() => {
+    setIsTiersModalOpen(false)
+  }, [])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
   }
 
   const title = coin.ticker ?? ''
-  const CTAIcon = IconGift // Default icon for now
+  const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
+  const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
-  const handleViewLeaderboard = () => {
-    dispatch(
-      setUsers({
-        userListType: UserListType.COIN_LEADERBOARD,
-        entityType: UserListEntityType.USER,
-        entity: mint
-      })
-    )
-    dispatch(setVisibility(true))
-  }
+  const userHasNoBalance = !userTokenBalance || Number(userTokenBalance) <= 0
+  const TooltipWrapper = userHasNoBalance ? Tooltip : Fragment
 
   return (
-    <Paper
-      borderRadius='l'
-      shadow='far'
-      direction='column'
-      alignItems='flex-start'
-    >
-      <BannerSection mint={mint} />
-
-      <Flex
+    <>
+      <Modal
+        isOpen={isTiersModalOpen}
+        onClose={handleCloseTiersModal}
+        size='large'
+        css={{ maxWidth: '90vw' }}
+      >
+        <ModalHeader>
+          <ModalTitle title={messages.rewardTiers} />
+        </ModalHeader>
+        <ModalContent css={{ padding: 0, overflow: 'auto' }}>
+          <Tiers />
+        </ModalContent>
+      </Modal>
+      <Paper
+        borderRadius='l'
+        shadow='far'
         direction='column'
         alignItems='flex-start'
-        alignSelf='stretch'
-        p='xl'
-        gap='l'
       >
-        <Flex alignItems='center' alignSelf='stretch'>
-          <Text variant='heading' size='s' color='heading'>
-            {messages.whatIs(title)}
-          </Text>
-        </Flex>
+        <BannerSection mint={mint} />
 
-        <Flex direction='column' gap='m'>
-          <Text variant='body' size='m' color='subdued'>
-            {messages.description1(title)}
-          </Text>
-          <Text variant='body' size='m' color='subdued'>
-            {messages.description2(title)}
-          </Text>
-        </Flex>
-      </Flex>
+        {coin.description ? (
+          <Flex
+            direction='column'
+            alignItems='flex-start'
+            alignSelf='stretch'
+            p='xl'
+            gap='l'
+          >
+            <Flex alignItems='center' alignSelf='stretch'>
+              <Text variant='heading' size='s' color='heading'>
+                {messages.whatIs(title)}
+              </Text>
+            </Flex>
 
-      <Flex
-        alignItems='center'
-        justifyContent='space-between'
-        alignSelf='stretch'
-        p='xl'
-        borderTop='default'
-      >
-        <Flex alignItems='center' justifyContent='center' gap='s'>
-          <CTAIcon size='m' color='default' />
-          <Text variant='title' size='m'>
-            {messages.learnMore}
-          </Text>
-        </Flex>
+            <Flex direction='column' gap='m'>
+              {descriptionParagraphs.map((paragraph) => {
+                if (paragraph.trim() === '') {
+                  return null
+                }
 
-        <PlainButton
-          variant='default'
-          size='default'
-          onClick={handleViewLeaderboard}
+                return (
+                  <Text
+                    key={paragraph.slice(0, 10)}
+                    variant='body'
+                    size='m'
+                    color='subdued'
+                  >
+                    {paragraph}
+                  </Text>
+                )
+              })}
+            </Flex>
+          </Flex>
+        ) : null}
+
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='xl'
+          borderTop='default'
         >
-          {messages.viewLeaderboard}
-        </PlainButton>
-      </Flex>
-    </Paper>
+          <Flex alignItems='center' justifyContent='center' gap='s'>
+            <PlainButton
+              onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
+              iconLeft={CTAIcon}
+              variant='default'
+              size='default'
+            >
+              {isWAudio ? messages.browseRewards : messages.learnMore}
+            </PlainButton>
+          </Flex>
+        </Flex>
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='xl'
+          borderTop='default'
+        >
+          <Flex alignItems='center' justifyContent='center' gap='s'>
+            <TooltipWrapper
+              text={messages.discordDisabledTooltip(coin?.ticker)}
+            >
+              {/* The tooltip needs a wrapper to work */}
+              <Flex style={{ cursor: 'pointer' }}>
+                <PlainButton
+                  onClick={openDiscord}
+                  iconLeft={IconDiscord}
+                  variant='default'
+                  size='default'
+                  disabled={userHasNoBalance}
+                >
+                  {messages.openDiscord}
+                </PlainButton>
+              </Flex>
+            </TooltipWrapper>
+          </Flex>
+        </Flex>
+      </Paper>
+    </>
   )
 }

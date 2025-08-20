@@ -24,6 +24,8 @@ x-common: &common
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
     - 'audius-protocol-pedalboard:host-gateway'
+    - 'audius-protocol-api:host-gateway'
+    - 'audius-protocol-api-elasticsearch:host-gateway'
   deploy:
     resources:
       limits:
@@ -38,7 +40,7 @@ services:
     <<: *common
 
   db:
-    image: postgres:11.22-bookworm
+    image: postgres:15.5
     shm_size: 2g
     command: postgres -c shared_buffers=2GB -c max_connections=300
     restart: unless-stopped
@@ -64,6 +66,26 @@ services:
       service: audius-cmd
     <<: *common
 
+  # API
+  api:
+    extends:
+      file: docker-compose.api.yml
+      service: api
+    container_name: audius-protocol-api
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/api.env
+    <<: *common
+
+  api-elasticsearch:
+    extends:
+      file: docker-compose.api.yml
+      service: elasticsearch
+    container_name: audius-protocol-api-elasticsearch
+    env_file:
+      - ${PROJECT_ROOT}/dev-tools/environment/api.env
+    <<: *common
+
+  # Validators
   audiusd-1:
     extends:
       file: docker-compose.audiusd.yml

@@ -96,7 +96,6 @@ export const QUERY_KEYS = {
   eventsByEntityId: 'eventsByEntityId',
   walletOwner: 'walletOwner',
   tokenPrice: 'tokenPrice',
-  tokenBalance: 'tokenBalance',
   usdcBalance: 'usdcBalance',
   fileSizes: 'fileSizes',
   managedAccounts: 'managedAccounts',
@@ -110,8 +109,11 @@ export const QUERY_KEYS = {
   coins: 'coins',
   userCoins: 'userCoins',
   coin: 'coin',
+  discordCode: 'discordCode',
   coinInsights: 'coinInsights',
   artistCoin: 'artistCoin',
   artistCoinByMint: 'artistCoinByMint',
-  userCoin: 'userCoin'
+  userCoin: 'userCoin',
+  artistCoinMembersCount: 'artistCoinMembersCount',
+  userbank: 'userbank'
 } as const

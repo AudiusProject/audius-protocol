@@ -1,7 +1,6 @@
 import { useMemo, useCallback } from 'react'
 
 import { SwapTab } from './SwapTab'
-import { useTokenBalanceManager } from './hooks/useTokenBalanceManager'
 import type { ConvertTabProps } from './types'
 
 export const ConvertTab = ({
@@ -17,12 +16,6 @@ export const ConvertTab = ({
 }: ConvertTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
-
-  // Use shared token balance manager
-  const { inputBalance, outputBalance } = useTokenBalanceManager(
-    baseToken,
-    quoteToken
-  )
 
   // Filter available tokens to prevent same token selection
   const availableInputTokens = useMemo(() => {
@@ -78,8 +71,6 @@ export const ConvertTab = ({
     <SwapTab
       inputToken={baseToken}
       outputToken={quoteToken}
-      balance={inputBalance}
-      outputBalance={outputBalance}
       onTransactionDataChange={onTransactionDataChange}
       isDefault={false}
       tab='convert'

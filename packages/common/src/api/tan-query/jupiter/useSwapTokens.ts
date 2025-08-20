@@ -6,7 +6,11 @@ import {
 } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useCurrentAccountUser, useQueryContext } from '~/api'
+import {
+  getUserCoinQueryKey,
+  useCurrentAccountUser,
+  useQueryContext
+} from '~/api'
 import { Feature } from '~/models'
 import {
   convertJupiterInstructions,
@@ -16,9 +20,6 @@ import {
 import { useTokens } from '~/store/ui/buy-sell'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
-import { QUERY_KEYS } from '../queryKeys'
-
-import { updateTokenBalancesOptimistically } from './optimisticUpdates'
 import {
   ClaimableTokenMint,
   SwapErrorType,
@@ -28,6 +29,10 @@ import {
   UserBankManagedTokenInfo
 } from './types'
 import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
+
+const SWAP_LOOKUP_TABLE_ADDRESS = new PublicKey(
+  '2WB87JxGZieRd7hi3y87wq6HAsPLyb9zrSx8B5z1QEzM'
+)
 
 const findTokenByAddress = (
   tokens: Record<string, TokenInfo>,
@@ -55,8 +60,7 @@ const createTokenConfig = (token: TokenInfo): UserBankManagedTokenInfo => ({
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk, env } =
-    useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const { tokens } = useTokens()
 
@@ -104,7 +108,7 @@ export const useSwapTokens = () => {
           amountUi,
           slippageBps,
           swapMode: 'ExactIn',
-          onlyDirectRoutes: true
+          onlyDirectRoutes: false
         })
 
         // ---------- 3. Prepare Transaction Instructions ----------
@@ -194,9 +198,9 @@ export const useSwapTokens = () => {
           await sdk.services.solanaClient.buildTransaction({
             feePayer,
             instructions,
-            addressLookupTables: addressLookupTableAddresses.map(
-              (addr: string) => new PublicKey(addr)
-            )
+            addressLookupTables: addressLookupTableAddresses
+              .map((addr: string) => new PublicKey(addr))
+              .concat([SWAP_LOOKUP_TABLE_ADDRESS])
           })
 
         swapTx.sign([keypair])
@@ -204,25 +208,6 @@ export const useSwapTokens = () => {
         // ---------- 5. Send Transaction ----------
         errorStage = 'TRANSACTION_RELAY'
         signature = await sdk.services.solanaClient.sendTransaction(swapTx)
-
-        // ---------- 6. Success & Optimistic Updates ----------
-        if (user?.wallet) {
-          // Optimistically update token balances (function handles USDC exclusion)
-          updateTokenBalancesOptimistically(
-            queryClient,
-            params,
-            quoteResult?.outputAmount?.uiAmount,
-            user.wallet,
-            inputToken.decimals,
-            outputToken.decimals,
-            env.USDC_MINT_ADDRESS
-          )
-
-          // Invalidate USDC balance separately if needed
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
-          })
-        }
 
         return {
           status: SwapStatus.SUCCESS,
@@ -248,6 +233,58 @@ export const useSwapTokens = () => {
           inputAmount: quoteResult?.inputAmount,
           outputAmount: quoteResult?.outputAmount
         })
+      }
+    },
+    onSuccess: (result, params) => {
+      const { inputMint, outputMint } = params
+      const { inputAmount, outputAmount } = result
+      if (inputMint) {
+        queryClient.setQueryData(
+          getUserCoinQueryKey(inputMint, user?.user_id),
+          (prevAccountBalances) => {
+            if (!prevAccountBalances) return null
+
+            return {
+              ...prevAccountBalances,
+              // Update aggregate account balance (includes connected wallets)
+              balance:
+                prevAccountBalances?.balance - (inputAmount?.amount ?? 0),
+              // Update internal wallet balance (we only do swaps against internal wallets)
+              accounts: prevAccountBalances.accounts.map((account) =>
+                account.isInAppWallet
+                  ? {
+                      ...account,
+                      balance: account.balance - (inputAmount?.amount ?? 0)
+                    }
+                  : account
+              )
+            }
+          }
+        )
+      }
+      if (outputMint) {
+        queryClient.setQueryData(
+          getUserCoinQueryKey(outputMint, user?.user_id),
+          (prevAccountBalances) => {
+            if (!prevAccountBalances) return null
+
+            return {
+              ...prevAccountBalances,
+              // Update aggregate account balance (includes connected wallets)
+              balance:
+                prevAccountBalances?.balance + (outputAmount?.amount ?? 0),
+              // Update internal wallet balance (we only do swaps against internal wallets)
+              accounts: prevAccountBalances.accounts.map((account) =>
+                account.isInAppWallet
+                  ? {
+                      ...account,
+                      balance: account.balance + (outputAmount?.amount ?? 0)
+                    }
+                  : account
+              )
+            }
+          }
+        )
       }
     },
     onMutate: () => {

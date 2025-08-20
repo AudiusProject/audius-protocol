@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.146",
+  "version": "1.5.148",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -105,8 +105,8 @@
   },
   "dependencies": {
     "@audius/hedgehog": "3.0.0-alpha.1",
-    "@babel/core": "7.23.7",
     "@babel/compat-data": "7.27.1",
+    "@babel/core": "7.23.7",
     "@babel/generator": "7.27.1",
     "@babel/helper-compilation-targets": "7.27.1",
     "@babel/helper-module-transforms": "7.27.1",
@@ -121,11 +121,12 @@
     "@types/express": "^4.17.21",
     "@wagmi/core": "2.16.7",
     "dotenv": "^16.4.5",
+    "elliptic": "6.6.1",
     "express": "^4.19.2",
     "pg": "8.8.0",
     "pino": "^9.1.0",
     "react-native-google-cast": "4.6.2",
-    "elliptic": "6.6.1",
+    "react-select": "5.10.1",
     "valtio": "1.13.2"
   },
   "resolutions": {

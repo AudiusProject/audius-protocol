@@ -7,7 +7,7 @@ import { LeftNavLink } from '../LeftNavLink'
 import { NavSpeakerIcon } from '../NavSpeakerIcon'
 import { useNavSourcePlayingStatus } from '../useNavSourcePlayingStatus'
 
-const { EXPLORE_PAGE } = route
+const { EXPLORE_PAGE, SEARCH_BASE_ROUTE } = route
 
 export const ExploreNavItem = () => {
   const playingFromRoute = useNavSourcePlayingStatus()
@@ -16,6 +16,7 @@ export const ExploreNavItem = () => {
     <LeftNavLink
       leftIcon={IconSearch}
       to={EXPLORE_PAGE}
+      additionalPathMatches={[SEARCH_BASE_ROUTE]}
       restriction='none'
       rightIcon={
         <NavSpeakerIcon

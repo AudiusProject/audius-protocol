@@ -113,6 +113,12 @@ export interface Track {
     releaseDate?: string;
     /**
      * 
+     * @type {string}
+     * @memberof Track
+     */
+    isrc?: string;
+    /**
+     * 
      * @type {RemixParent}
      * @memberof Track
      */
@@ -252,6 +258,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'isOriginalAvailable': json['is_original_available'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
+        'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
         'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
         'repostCount': json['repost_count'],
         'favoriteCount': json['favorite_count'],
@@ -291,6 +298,7 @@ export function TrackToJSON(value?: Track | null): any {
         'is_original_available': value.isOriginalAvailable,
         'mood': value.mood,
         'release_date': value.releaseDate,
+        'isrc': value.isrc,
         'remix_of': RemixParentToJSON(value.remixOf),
         'repost_count': value.repostCount,
         'favorite_count': value.favoriteCount,

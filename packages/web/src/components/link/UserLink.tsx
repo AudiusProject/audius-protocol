@@ -60,7 +60,6 @@ export const UserLink = (props: UserLinkProps) => {
       userId={userId}
       size={badgeSize}
       css={{
-        marginTop: spacing['2xs'],
         display: 'inline-flex',
         verticalAlign: 'middle'
       }}

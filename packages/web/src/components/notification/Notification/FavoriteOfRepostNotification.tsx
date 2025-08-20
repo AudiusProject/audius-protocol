@@ -4,6 +4,8 @@ import {
   FavoriteOfRepostNotification as FavoriteOfRepostNotificationType
 } from '@audius/common/store'
 
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
+
 import { EntityLink, useGoToEntity } from './components/EntityLink'
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'
@@ -11,7 +13,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { OthersText } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
-import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { IconFavorite } from './components/icons'
 import { USER_LENGTH_LIMIT } from './utils'
 

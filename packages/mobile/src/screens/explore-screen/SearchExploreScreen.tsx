@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
 import { Platform } from 'react-native'
+import { IOScrollView } from 'react-native-intersection-observer'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -10,9 +11,8 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import { Flex, useTheme } from '@audius/harmony-native'
+import { useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
-import { useRoute } from 'app/hooks/useRoute'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
 import { SearchResults } from '../search-screen/search-results/SearchResults'
@@ -20,11 +20,15 @@ import {
   SearchProvider,
   useSearchCategory,
   useSearchFilters,
-  useSearchQuery
+  useSearchQuery,
+  useSearchAutoFocus
 } from '../search-screen/searchState'
 
 import { ExploreContent } from './components/ExploreContent'
 import { SearchExploreHeader } from './components/SearchExploreHeader'
+import { useExploreRoute } from './hooks'
+
+const AnimatedIOScrollView = Animated.createAnimatedComponent(IOScrollView)
 
 // Animation parameters
 const HEADER_SLIDE_HEIGHT = 46
@@ -33,12 +37,13 @@ export const SCROLL_FACTOR = Platform.OS === 'ios' ? 1 : 3
 
 const SearchExploreContent = () => {
   const { spacing, motion } = useTheme()
-  const { params } = useRoute<'Search'>()
+  const { params } = useExploreRoute<'SearchExplore'>()
 
   // Get state from context
   const [, setCategory] = useSearchCategory()
   const [filters, setFilters] = useSearchFilters()
   const [query, setQuery] = useSearchQuery()
+  const [, setAutoFocus] = useSearchAutoFocus()
   // Animation state
   const scrollY = useSharedValue(0)
   const filterTranslateY = useSharedValue(0)
@@ -50,6 +55,14 @@ const SearchExploreContent = () => {
   const hasAnyFilter = Object.values(filters).some(
     (value) => value !== undefined
   )
+
+  // Sync route params into search state when they change (e.g. in-app URL navigation)
+  useEffect(() => {
+    if (params?.category) setCategory(params.category)
+    if (params?.filters) setFilters(params.filters)
+    if (params?.query !== undefined) setQuery(params.query)
+    if (params?.autoFocus !== undefined) setAutoFocus(!!params.autoFocus)
+  }, [params, setCategory, setFilters, setQuery, setAutoFocus])
 
   useScrollToTop(() => {
     scrollRef.current?.scrollTo({
@@ -131,28 +144,29 @@ const SearchExploreContent = () => {
         filterTranslateY={filterTranslateY}
         scrollRef={scrollRef}
       />
-      {showSearch ? <SearchResults /> : null}
-      <Animated.ScrollView
-        ref={scrollRef}
-        onScroll={scrollHandler}
-        scrollEventThrottle={16} // for android to match iOS
-        style={[contentPaddingStyle]}
-        showsVerticalScrollIndicator={false}
-      >
-        <Flex style={{ display: showSearch ? 'none' : 'flex' }}>
+      {showSearch ? (
+        <SearchResults />
+      ) : (
+        <AnimatedIOScrollView
+          ref={scrollRef}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          style={contentPaddingStyle}
+          showsVerticalScrollIndicator={false}
+        >
           <ExploreContent />
-        </Flex>
-      </Animated.ScrollView>
+        </AnimatedIOScrollView>
+      )}
     </ScreenContent>
   )
 }
 
 export const SearchExploreScreen = () => {
-  const { params } = useRoute<'Search'>()
+  const { params } = useExploreRoute<'SearchExplore'>()
 
   return (
     <SearchProvider
-      initialCategory={params?.category ?? 'all'}
+      initialCategory={(params?.category as any) ?? 'all'}
       initialFilters={params?.filters ?? {}}
       initialAutoFocus={params?.autoFocus ?? false}
       initialQuery={params?.query ?? ''}

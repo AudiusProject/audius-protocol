@@ -5,7 +5,8 @@ import {
   setupTest,
   setupTwoUsersWithDevices,
   insertNotifications,
-  resetTests
+  resetTests,
+  createTracks
 } from '../../utils/populateDB'
 
 describe('Artist Remix Contest Ended Notification', () => {
@@ -28,6 +29,11 @@ describe('Artist Remix Contest Ended Notification', () => {
       processor.discoveryDB,
       processor.identityDB
     )
+
+    // Create track with cover art
+    await createTracks(processor.discoveryDB, [
+      { track_id: 12345, owner_id: user1.userId, cover_art_sizes: 'test-hash' }
+    ])
 
     await insertNotifications(processor.discoveryDB, [
       {
@@ -61,7 +67,8 @@ describe('Artist Remix Contest Ended Notification', () => {
         data: expect.objectContaining({
           type: 'ArtistRemixContestEnded',
           entityId: 12345
-        })
+        }),
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       })
     )
   })

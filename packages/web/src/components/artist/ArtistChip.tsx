@@ -34,7 +34,7 @@ const ArtistIdentifier = ({
   onNavigateAway
 }: ArtistIdentifierProps) => {
   return showPopover ? (
-    <div>
+    <div css={{ overflow: 'hidden' }}>
       <ArtistPopover
         handle={handle}
         mouseEnterDelay={0.3}
@@ -42,7 +42,7 @@ const ArtistIdentifier = ({
         onNavigateAway={onNavigateAway}
       >
         <div className={styles.name}>
-          <span>{name}</span>
+          <p>{name}</p>
           <UserBadges userId={userId} className={cn(styles.badge)} inline />
         </div>
       </ArtistPopover>
@@ -56,9 +56,9 @@ const ArtistIdentifier = ({
       </ArtistPopover>
     </div>
   ) : (
-    <div>
+    <div css={{ overflow: 'hidden' }}>
       <div className={styles.name}>
-        <span>{name}</span>
+        <p>{name}</p>
         <UserBadges userId={userId} className={cn(styles.badge)} inline />
       </div>
       <div className={styles.handle}>@{handle}</div>

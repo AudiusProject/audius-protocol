@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 
 import {
   useCollectionByParams,
@@ -75,6 +75,7 @@ const useStyles = makeStyles(({ spacing }) => ({
  */
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
+  const navigation = useNavigation()
 
   // params is incorrectly typed and can sometimes be undefined
   const {
@@ -93,6 +94,19 @@ export const CollectionScreen = () => {
 
   const collection = cachedCollection ?? searchCollection
   const user = cachedUser ?? searchCollection?.user
+
+  const isDeleted = collection?.is_delete
+  const isMarkedDeleted =
+    collection && '_marked_deleted' in collection
+      ? collection._marked_deleted
+      : false
+
+  // Navigate back if collection is deleted or marked for deletion
+  useEffect(() => {
+    if (isDeleted || isMarkedDeleted) {
+      navigation.goBack()
+    }
+  }, [isDeleted, isMarkedDeleted, navigation])
 
   if (!collection || !user) {
     return <CollectionScreenSkeleton collectionType={collectionType} />

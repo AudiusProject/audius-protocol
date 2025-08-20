@@ -140,12 +140,18 @@ func TestChatBlast(t *testing.T) {
 	// ----------------- a first blast ------------------------
 	chatId_101_69 := misc.ChatID(101, 69)
 
-	_, err = chatBlast(tx, 69, t2, schema.ChatBlastRPCParams{
+	outgoingMessages, err := chatBlast(tx, 69, t2, schema.ChatBlastRPCParams{
 		BlastID:  "b1",
 		Audience: schema.FollowerAudience,
 		Message:  "what up fam",
 	})
 	assert.NoError(t, err)
+
+	// Test that outgoing messages contain the audience field
+	for _, outgoingMsg := range outgoingMessages {
+		assert.NotNil(t, outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should be set in outgoing message")
+		assert.Equal(t, schema.FollowerAudience, *outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should match the blast audience")
+	}
 
 	tx.QueryRow(`select count(*) from chat_blast`).Scan(&count)
 	assert.Equal(t, 1, count)
@@ -326,12 +332,18 @@ func TestChatBlast(t *testing.T) {
 	err = chatSetPermissions(tx, 104, schema.All, nil, nil, t3)
 	assert.NoError(t, err)
 
-	_, err = chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
+	outgoingMessages2, err := chatBlast(tx, 69, t4, schema.ChatBlastRPCParams{
 		BlastID:  "b2",
 		Audience: schema.FollowerAudience,
 		Message:  "happy wed",
 	})
 	assert.NoError(t, err)
+
+	// Test that second blast also includes audience field
+	for _, outgoingMsg := range outgoingMessages2 {
+		assert.NotNil(t, outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should be set in second blast outgoing message")
+		assert.Equal(t, schema.FollowerAudience, *outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should match the blast audience")
+	}
 
 	tx.QueryRow(`select count(*) from chat_blast`).Scan(&count)
 	assert.Equal(t, 2, count)
@@ -504,12 +516,18 @@ func TestChatBlast(t *testing.T) {
 	assert.NoError(t, err)
 
 	// 69 sends blast to supporters
-	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+	tipperOutgoing, err := chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
 		BlastID:  "blast_tippers_1",
 		Audience: schema.TipperAudience,
 		Message:  "thanks for your support",
 	})
 	assert.NoError(t, err)
+
+	// Test that tipper blast includes correct audience field
+	for _, outgoingMsg := range tipperOutgoing {
+		assert.NotNil(t, outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should be set in tipper blast outgoing message")
+		assert.Equal(t, schema.TipperAudience, *outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should match the tipper audience")
+	}
 
 	// 201 should have a pending blast
 	{
@@ -576,7 +594,7 @@ func TestChatBlast(t *testing.T) {
 	`)
 
 	// 69 sends blast to remixers
-	_, err = chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
+	remixerOutgoing, err := chatBlast(tx, 69, t1, schema.ChatBlastRPCParams{
 		BlastID:             "blast_remixers_1",
 		Audience:            schema.RemixerAudience,
 		AudienceContentType: &trackContentType,
@@ -584,6 +602,12 @@ func TestChatBlast(t *testing.T) {
 		Message:             "thanks for your remix",
 	})
 	assert.NoError(t, err)
+
+	// Test that remixer blast includes correct audience field
+	for _, outgoingMsg := range remixerOutgoing {
+		assert.NotNil(t, outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should be set in remixer blast outgoing message")
+		assert.Equal(t, schema.RemixerAudience, *outgoingMsg.ChatMessageRPC.Params.Audience, "Audience should match the remixer audience")
+	}
 
 	{
 		pending, err := queries.GetNewBlasts(tx, ctx, queries.ChatMembershipParams{

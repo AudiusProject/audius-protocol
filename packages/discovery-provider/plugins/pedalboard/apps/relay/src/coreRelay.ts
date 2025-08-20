@@ -1,10 +1,7 @@
 import { ethers } from 'ethers'
 import { create } from '@bufbuild/protobuf'
 import { createClient, Client } from '@connectrpc/connect'
-import {
-  createGrpcTransport,
-  createConnectTransport
-} from '@connectrpc/connect-node'
+import { createConnectTransport } from '@connectrpc/connect-node'
 import {
   Protocol,
   SignedTransactionSchema,
@@ -30,11 +27,6 @@ interface ClientInfo {
   lastSuccessfulPing: number
 }
 
-const clients: {
-  grpc?: ClientInfo
-  connect?: ClientInfo
-} = {}
-
 let activeClient: ClientInfo | null = null
 
 async function pingClient(clientInfo: ClientInfo): Promise<boolean> {
@@ -55,62 +47,12 @@ async function pingClient(clientInfo: ClientInfo): Promise<boolean> {
   }
 }
 
-async function updateActiveClient(logger: pino.Logger) {
-  // Ping both clients
-  const results = await Promise.all([
-    clients.grpc && pingClient(clients.grpc),
-    clients.connect && pingClient(clients.connect)
-  ])
-
-  // Update active client based on most recent successful ping
-  const grpcSuccess = results[0]
-  const connectSuccess = results[1]
-
-  if (grpcSuccess && connectSuccess) {
-    // Use the client with the most recent successful ping
-    activeClient =
-      clients.grpc!.lastSuccessfulPing > clients.connect!.lastSuccessfulPing
-        ? clients.grpc!
-        : clients.connect!
-  } else if (grpcSuccess) {
-    activeClient = clients.grpc!
-  } else if (connectSuccess) {
-    activeClient = clients.connect!
-  } else {
-    activeClient = null
-  }
-
-  if (activeClient) {
-    logger.info(`Using ${activeClient.type} client for transactions`)
-  } else {
-    logger.error('No clients are currently available')
-  }
-}
-
 async function initializeClients(logger: pino.Logger): Promise<boolean> {
-  const config = readConfig()
-
-  // Try GRPC client
-  try {
-    const grpcTransport = createGrpcTransport({
-      baseUrl: config.coreEndpoint,
-      useBinaryFormat: true
-    })
-    const grpcClient = createClient(Protocol, grpcTransport)
-    const grpcInfo: ClientInfo = {
-      type: 'grpc',
-      client: grpcClient,
-      lastSuccessfulPing: 0
-    }
-    if (await pingClient(grpcInfo)) {
-      clients.grpc = grpcInfo
-      logger.info('Successfully connected using gRPC client')
-    }
-  } catch (e) {
-    logger.warn({ err: e }, 'gRPC client initialization failed')
+  if (activeClient) {
+    return true
   }
 
-  // Try Connect client
+  const config = readConfig()
   try {
     const connectTransport = createConnectTransport({
       baseUrl: config.coreEndpoint,
@@ -124,23 +66,13 @@ async function initializeClients(logger: pino.Logger): Promise<boolean> {
       lastSuccessfulPing: 0
     }
     if (await pingClient(connectInfo)) {
-      clients.connect = connectInfo
+      activeClient = connectInfo
       logger.info('Successfully connected using Connect client')
+      return true
     }
   } catch (e) {
     logger.warn({ err: e }, 'Connect client initialization failed')
   }
-
-  // Update active client based on ping results
-  await updateActiveClient(logger)
-
-  // Start periodic ping checks if at least one client is available
-  if (activeClient) {
-    setInterval(() => updateActiveClient(logger), 30000) // Check every 30 seconds
-    return true
-  }
-
-  logger.error('Failed to initialize any clients')
   return false
 }
 

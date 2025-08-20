@@ -112,16 +112,15 @@ export const formatContestDeadline = (
   if (!deadline) return ''
 
   const date = dayjs(deadline)
-  const timezone = getLocalTimezone()
 
   switch (format) {
     case 'long':
-      return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')} ${timezone}`
+      return `${date.format('ddd. MMM D, YYYY')} at ${date.format('h:mm A')} ${getLocalTimezone()}`
     case 'card':
-      return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')} ${timezone}`
+      return `${date.format('MM/DD/YY')} at ${date.format('h:mm A')}`
     case 'short':
     default:
-      return `${date.format('MM/DD/YY')} ${timezone}`
+      return `${date.format('MM/DD/YY')}`
   }
 }
 
@@ -132,8 +131,7 @@ export const formatContestDeadlineWithStatus = (
   if (!deadline) return ''
 
   const date = dayjs(deadline)
-  const timezone = getLocalTimezone()
   const status = isEnded ? 'Ended' : 'Deadline'
 
-  return `${status}: ${date.format('MM/DD/YY')} ${timezone}`
+  return `${status}: ${date.format('MM/DD/YY')}`
 }

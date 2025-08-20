@@ -9,16 +9,13 @@ export const CoinLeaderboardUserList = () => {
   const mint = useSelector(coinLeaderboardUserListSelectors.getMint)
 
   const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isPending } =
-    useArtistCoinMembers({ mint })
+    useArtistCoinMembers({ mint: mint || '' })
 
   if (!mint) return null
 
   return (
     <UserList
-      data={data?.map((member) => ({
-        userId: member.user_id,
-        balance: member.balance
-      }))}
+      data={data}
       hasNextPage={hasNextPage}
       isFetchingNextPage={isFetchingNextPage}
       isPending={isPending}
@@ -27,7 +24,7 @@ export const CoinLeaderboardUserList = () => {
       renderRightContent={(item, index) => {
         return typeof item === 'object' && item.balance !== undefined ? (
           <Text variant='body' strength='strong'>
-            {item.balance.toLocaleString()}
+            {item.balanceLocaleString}
           </Text>
         ) : null
       }}

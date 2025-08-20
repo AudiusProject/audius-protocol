@@ -24,6 +24,7 @@ type TileArtworkProps = {
   isPlaying: boolean
   showArtworkIcon: boolean
   showSkeleton: boolean
+  noShimmer?: boolean
   artworkIconClassName?: string
   coSign?: {
     has_remix_author_saved: boolean
@@ -86,7 +87,8 @@ const Artwork = memo(
     coSign,
     label,
     hasStreamAccess,
-    isTrack
+    isTrack,
+    noShimmer
   }: ArtworkProps) => {
     const imageElement = (
       <DynamicImage
@@ -98,6 +100,7 @@ const Artwork = memo(
         className={styles.artwork}
         image={showSkeleton ? '' : image}
         aria-label={label}
+        noShimmer={noShimmer}
       >
         {showArtworkIcon && (
           <ArtworkIcon

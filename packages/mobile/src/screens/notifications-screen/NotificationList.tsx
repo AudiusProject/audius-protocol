@@ -19,9 +19,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
     paddingBottom: spacing(30)
   },
-  list: {
-    paddingTop: spacing(1)
-  },
   itemContainer: {
     marginTop: spacing(2),
     paddingHorizontal: spacing(2)
@@ -130,7 +127,6 @@ export const NotificationList = () => {
   return (
     <FlashList
       contentContainerStyle={styles.container}
-      style={styles.list}
       refreshing={isRefreshing}
       onRefresh={handleRefresh}
       data={notifications}

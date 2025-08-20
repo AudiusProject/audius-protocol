@@ -62,7 +62,6 @@ export interface DownloadTrackRequest {
     userSignature?: string;
     userData?: string;
     nftAccessSignature?: string;
-    original?: boolean;
     filename?: string;
 }
 
@@ -216,10 +215,6 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (params.nftAccessSignature !== undefined) {
             queryParameters['nft_access_signature'] = params.nftAccessSignature;
-        }
-
-        if (params.original !== undefined) {
-            queryParameters['original'] = params.original;
         }
 
         if (params.filename !== undefined) {

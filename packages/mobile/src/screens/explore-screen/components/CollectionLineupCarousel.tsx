@@ -8,7 +8,10 @@ import { useDispatch } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import type { TogglePlayConfig, LineupItem } from 'app/components/lineup/types'
-import { CollectionTile, LineupTileSkeleton } from 'app/components/lineup-tile'
+import {
+  CollectionTile,
+  CollectionTileSkeleton
+} from 'app/components/lineup-tile'
 
 interface CollectionTileCarouselProps {
   lineup: LineupData<LineupItem>
@@ -29,7 +32,7 @@ export const CollectionLineupCarousel = ({
     [actions, dispatch]
   )
 
-  if (lineup.status === Status.LOADING) {
+  if (lineup.status !== Status.SUCCESS) {
     return (
       <Flex direction='row' mh={-16}>
         <ScrollView
@@ -45,7 +48,7 @@ export const CollectionLineupCarousel = ({
               w={343}
               mr={columnIndex === 0 ? 16 : 0}
             >
-              <LineupTileSkeleton />
+              <CollectionTileSkeleton noShimmer />
             </Flex>
           ))}
         </ScrollView>

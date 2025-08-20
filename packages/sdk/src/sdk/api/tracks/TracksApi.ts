@@ -134,8 +134,6 @@ export class TracksApi extends GeneratedTracksApi {
     if (params.userData) queryParams.append('user_data', params.userData)
     if (params.nftAccessSignature)
       queryParams.append('nft_access_signature', params.nftAccessSignature)
-    if (params.original !== undefined)
-      queryParams.append('original', String(params.original))
     if (params.filename) queryParams.append('filename', params.filename)
 
     const path = `/tracks/{track_id}/download`.replace(

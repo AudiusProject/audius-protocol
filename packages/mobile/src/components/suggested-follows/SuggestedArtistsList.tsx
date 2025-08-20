@@ -10,8 +10,8 @@ import { getFollowIds } from 'common/store/pages/signon/selectors'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { UserListProps } from 'app/components/user-list'
-import { ProfileCard, UserList } from 'app/components/user-list'
+import type { UserCardListProps } from 'app/components/user-card-list'
+import { ProfileCard, UserCardList } from 'app/components/user-card-list'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -21,7 +21,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-type SuggestedArtistsListProps = Partial<UserListProps>
+type SuggestedArtistsListProps = Partial<UserCardListProps>
 
 export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
   const styles = useStyles()
@@ -44,7 +44,7 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
   )
 
   return (
-    <UserList
+    <UserCardList
       profiles={suggestedArtists}
       renderItem={({ item: artist }) => {
         const { user_id } = artist

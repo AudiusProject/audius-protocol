@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import type {
   FavoriteType,
   TipSource,
@@ -8,7 +7,6 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type {
   NotificationType,
   RepostType,
@@ -31,10 +29,8 @@ import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
-import { SearchExploreScreen } from 'app/screens/explore-screen/SearchExploreScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { RewardsScreen } from 'app/screens/rewards-screen'
-import { SearchScreenStack, type SearchParams } from 'app/screens/search-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -90,10 +86,7 @@ export type AppTabScreenParamList = {
   Mutuals: { userId: ID }
   AiGeneratedTracks: { userId: ID }
   RelatedArtists: { userId: ID }
-  Search: SearchParams
-  SearchResults: { query: string }
   SupportingUsers: { userId: ID }
-  TagSearch: { query: string }
   TopSupporters: { userId: ID; source: TipSource }
   CoinLeaderboard: { mint: string }
   NotificationUsers: {
@@ -165,11 +158,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-  const searchExploreFeatureFlag = useFeatureFlag(
-    FeatureFlags.SEARCH_EXPLORE_MOBILE
-  )
-  const isSearchExploreMobileEnabled =
-    searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -214,13 +202,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='TrackRemixes' component={TrackRemixesScreen} />
       <Stack.Screen name='Collection' component={CollectionScreen} />
       <Stack.Screen name='Profile' component={ProfileScreen} />
-      <Stack.Screen
-        name='Search'
-        component={
-          isSearchExploreMobileEnabled ? SearchExploreScreen : SearchScreenStack
-        }
-        options={{ ...screenOptions, headerShown: false }}
-      />
       <Stack.Group>
         <Stack.Screen name='Followers' component={FollowersScreen} />
         <Stack.Screen name='Following' component={FollowingScreen} />

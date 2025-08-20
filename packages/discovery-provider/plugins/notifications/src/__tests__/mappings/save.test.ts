@@ -36,7 +36,9 @@ describe('Save Notification', () => {
 
   test('Process push notification for save track', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
     await createSaves(processor.discoveryDB, [
       {
         user_id: 2,
@@ -65,7 +67,8 @@ describe('Save Notification', () => {
           id: 'timestamp:1589373217:group_id:save:10:type:track',
           type: 'Favorite',
           userIds: [2]
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })
@@ -73,7 +76,12 @@ describe('Save Notification', () => {
   test('Process push notification for save playlist', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [
-      { playlist_id: 20, playlist_owner_id: 1, is_album: false }
+      {
+        playlist_id: 20,
+        playlist_owner_id: 1,
+        is_album: false,
+        playlist_image_sizes_multihash: 'test-hash'
+      }
     ])
     await createSaves(processor.discoveryDB, [
       {
@@ -103,7 +111,8 @@ describe('Save Notification', () => {
           id: 'timestamp:1589373217:group_id:save:20:type:playlist',
           type: 'Favorite',
           userIds: [2]
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

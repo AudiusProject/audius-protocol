@@ -1,5 +1,4 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
-import { walletMessages } from '@audius/common/messages'
 import { ID } from '@audius/common/models'
 import { useTokens } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
@@ -40,7 +39,6 @@ export const ArtistCoinHeader = ({
       <Flex gap='xs' alignItems='center'>
         {ArtistCoinIcon ? <ArtistCoinIcon size='xs' /> : null}
         <Text variant='label' size='s'>
-          {walletMessages.dollarSign}
           {artistCoinSymbol}
         </Text>
       </Flex>

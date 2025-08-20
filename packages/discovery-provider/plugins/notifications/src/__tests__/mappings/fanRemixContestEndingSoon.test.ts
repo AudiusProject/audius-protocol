@@ -5,7 +5,8 @@ import {
   setupTest,
   setupTwoUsersWithDevices,
   insertNotifications,
-  resetTests
+  resetTests,
+  createTracks
 } from '../../utils/populateDB'
 
 describe('Fan Remix Contest Ending Soon Notification', () => {
@@ -37,6 +38,11 @@ describe('Fan Remix Contest Ending Soon Notification', () => {
       created_at: new Date(),
       updated_at: new Date()
     })
+
+    // Create track with cover art
+    await createTracks(processor.discoveryDB, [
+      { track_id: 12345, owner_id: 99, cover_art_sizes: 'test-hash' }
+    ])
 
     await insertNotifications(processor.discoveryDB, [
       {
@@ -70,7 +76,8 @@ describe('Fan Remix Contest Ending Soon Notification', () => {
           type: 'FanRemixContestEndingSoon',
           entityId: 12345,
           entityUserId: 99
-        })
+        }),
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       })
     )
   })

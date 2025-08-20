@@ -1,7 +1,8 @@
 import { useTrendingPlaylists, UseLineupQueryData } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
-import { ID, PlaybackSource, Status, UID } from '@audius/common/models'
+import { ID, Status, UID } from '@audius/common/models'
 import { Flex } from '@audius/harmony'
+import { full } from '@audius/sdk'
 import { ClassNames } from '@emotion/react'
 
 import { CollectionTile as DesktopCollectionTile } from 'components/track/desktop/CollectionTile'
@@ -16,15 +17,18 @@ import {
   MOBILE_TILE_WIDTH,
   TILE_WIDTH
 } from './constants'
+import { useDeferredElement } from './useDeferredElement'
 
 type TileType = typeof DesktopCollectionTile | typeof MobileCollectionTile
 
 const CollectionTileSkeleton = ({
   size,
-  Tile
+  Tile,
+  noShimmer
 }: {
   size: TrackTileSize
   Tile: TileType
+  noShimmer?: boolean
 }) => {
   return (
     <ClassNames>
@@ -52,6 +56,7 @@ const CollectionTileSkeleton = ({
             togglePlay={() => {}}
             playTrack={() => {}}
             pauseTrack={() => {}}
+            noShimmer={noShimmer}
           />
         </Flex>
       )}
@@ -68,9 +73,9 @@ const CollectionLineupCarousel = ({
   Tile
 }: {
   lineup: UseLineupQueryData['lineup']
-  play: (uid: UID, id: ID, source: PlaybackSource) => void
-  pause: (uid: UID, id: ID, source: PlaybackSource) => void
-  togglePlay: (uid: UID, id: ID, source: PlaybackSource) => void
+  play: (uid?: UID) => void
+  pause: () => void
+  togglePlay: (uid: UID, id: ID) => void
   size: TrackTileSize
   Tile: TileType
 }) => {
@@ -92,19 +97,9 @@ const CollectionLineupCarousel = ({
                 <Tile
                   ordered={true}
                   size={size}
-                  togglePlay={() =>
-                    togglePlay(
-                      item.uid,
-                      item.id,
-                      PlaybackSource.PLAYLIST_TILE_TRACK
-                    )
-                  }
-                  playTrack={() =>
-                    play(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
-                  }
-                  pauseTrack={() =>
-                    pause(item.uid, item.id, PlaybackSource.PLAYLIST_TILE_TRACK)
-                  }
+                  togglePlay={togglePlay}
+                  playTrack={play}
+                  pauseTrack={pause}
                   id={item.id}
                   index={index}
                   isTrending={true}
@@ -124,31 +119,41 @@ const CollectionLineupCarousel = ({
 }
 
 export const TrendingPlaylistsSection = () => {
+  const { ref, inView } = useDeferredElement()
   const isMobile = useIsMobile()
   const size = isMobile ? TrackTileSize.SMALL : TrackTileSize.LARGE
-  const {
-    lineup,
-    isLoading: hookIsLoading,
-    play,
-    pause,
-    togglePlay
-  } = useTrendingPlaylists()
-  const isLoading = hookIsLoading || lineup.status === Status.LOADING
+  const { lineup, isError, isSuccess, isLoading, play, pause, togglePlay } =
+    useTrendingPlaylists(
+      {
+        pageSize: 10,
+        time: full.GetTrendingPlaylistsTimeEnum.Week
+      },
+      {
+        enabled: inView
+      }
+    )
   const Tile = isMobile ? MobileCollectionTile : DesktopCollectionTile
 
-  if (!isLoading && lineup.entries.length === 0) {
+  if (
+    isError ||
+    lineup.status === Status.ERROR ||
+    (isSuccess &&
+      lineup.status === Status.SUCCESS &&
+      lineup.entries.length === 0)
+  ) {
     return null
   }
 
   return (
     <Carousel
+      ref={ref}
       title={messages.trendingPlaylists}
       viewAllLink='/explore/playlists'
     >
-      {isLoading ? (
+      {!inView || isLoading || lineup.status === Status.LOADING ? (
         <>
-          <CollectionTileSkeleton size={size} Tile={Tile} />
-          <CollectionTileSkeleton size={size} Tile={Tile} />
+          <CollectionTileSkeleton size={size} Tile={Tile} noShimmer />
+          <CollectionTileSkeleton size={size} Tile={Tile} noShimmer />
         </>
       ) : (
         <CollectionLineupCarousel

@@ -1,15 +1,28 @@
 import { ReactNode } from 'react'
 
 import { Flex, Text, useTheme, IconCaretRight, Artwork } from '@audius/harmony'
+import { roundedHexClipPath } from '@audius/harmony/src/icons/SVGDefs'
 
 import Skeleton from 'components/skeleton/Skeleton'
 
 const CoinCardSkeleton = () => {
   return (
     <Flex direction='column' gap='xs'>
-      <Skeleton width='120px' height='24px' />
-      <Skeleton width='80px' height='16px' />
+      <Skeleton width='240px' height='36px' />
+      <Skeleton width='140px' height='24px' />
     </Flex>
+  )
+}
+
+const HexagonSkeleton = () => {
+  return (
+    <Skeleton
+      width='64px'
+      height='64px'
+      css={{
+        clipPath: `url(#${roundedHexClipPath})`
+      }}
+    />
   )
 }
 
@@ -53,7 +66,6 @@ export const CoinCard = ({
       justifyContent='space-between'
       p='xl'
       flex={1}
-      borderBottom='default'
       onClick={onClick}
       css={{
         cursor: onClick ? 'pointer' : 'default',
@@ -61,7 +73,7 @@ export const CoinCard = ({
       }}
     >
       <Flex alignItems='center' gap='m'>
-        {renderIcon()}
+        {loading ? <HexagonSkeleton /> : renderIcon()}
         <Flex direction='column' gap='xs'>
           {loading ? (
             <CoinCardSkeleton />

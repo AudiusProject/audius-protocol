@@ -1,17 +1,21 @@
-import { decodeHashId } from '@audius/sdk'
+import { FixedDecimal } from '@audius/fixed-decimal'
+import { HashId } from '@audius/sdk'
 import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
-import { TOKEN_LISTING_MAP } from '~/store'
+import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions } from '../types'
 
+import { useArtistCoin } from './useArtistCoin'
+
 const DEFAULT_PAGE_SIZE = 20
 
 export interface CoinMember {
-  user_id: number
+  userId: ID
   balance: number
+  balanceLocaleString: string
 }
 
 export interface UseArtistCoinMembersArgs {
@@ -46,12 +50,12 @@ export const useArtistCoinMembers = (
 ) => {
   const { audiusSdk } = useQueryContext()
 
-  // Map route key to actual mint address if needed
-  const getMintAddress = (mintKey: string) => {
-    const token =
-      TOKEN_LISTING_MAP[mintKey.toUpperCase() as keyof typeof TOKEN_LISTING_MAP]
-    return token?.address || mintKey
-  }
+  const { data: artistCoin } = useArtistCoin(
+    { mint: mint as string },
+    {
+      enabled: !!mint
+    }
+  )
 
   return useInfiniteQuery({
     queryKey: getCoinLeaderboardQueryKey(
@@ -69,25 +73,33 @@ export const useArtistCoinMembers = (
       if (!mint) return []
 
       const sdk = await audiusSdk()
-      const mintAddress = getMintAddress(mint)
 
-      // Build query parameters
-      const params: any = {
-        mint: mintAddress,
+      const params = {
+        mint,
         limit: pageSize,
         offset: pageParam,
         sortDirection
       }
 
-      // Make the API call to the coin members endpoint
       const response = await sdk.coins.getCoinMembers(params)
 
-      const members: CoinMember[] = (response.data || []).map(
-        (member: any) => ({
-          user_id: decodeHashId(member.user_id) || 0,
-          balance: member.balance
-        })
-      )
+      const members = (response.data ?? []).map((member) => {
+        const decimals = artistCoin?.decimals
+        const balanceFD = new FixedDecimal(
+          BigInt(member.balance.toString()),
+          decimals
+        )
+
+        return {
+          userId: HashId.parse(member.userId),
+          balance: member.balance,
+          // TODO: ideally this is a selector using logic from useTokenAmountFormatting
+          balanceLocaleString: balanceFD.toLocaleString('en-US', {
+            maximumFractionDigits: 0,
+            roundingMode: 'trunc'
+          })
+        }
+      })
 
       return members
     },

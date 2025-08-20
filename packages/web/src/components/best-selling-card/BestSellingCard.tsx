@@ -14,13 +14,13 @@ type BestSellingCardProps = {
   onClick?: React.MouseEventHandler<HTMLDivElement>
 }
 
-export const BestSellingCard: React.FC<BestSellingCardProps> = ({
+export const BestSellingCard = ({
   item,
   size = 'm',
   loading,
   noNavigation,
   onClick
-}) => {
+}: BestSellingCardProps) => {
   const isTrack = item.contentType === BestSellingItemContentTypeEnum.Track
 
   if (isTrack) {

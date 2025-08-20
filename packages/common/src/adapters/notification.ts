@@ -296,7 +296,7 @@ export const notificationFromSDK = (
         const data = action.data
         childTrackId = HashId.parse(data.trackId)
         parentTrackId = HashId.parse(data.parentTrackId)
-        trackOwnerId = HashId.parse(data.trackOwnerId)
+        trackOwnerId = HashId.parse(action.specifier)
       })
       return {
         type: NotificationType.RemixCreate,

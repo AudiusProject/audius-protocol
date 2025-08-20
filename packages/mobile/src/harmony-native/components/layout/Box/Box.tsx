@@ -87,12 +87,7 @@ export const Box = styled(View, {
     boxSizing: 'border-box',
     height: h ? (spacing[h] ?? h) : h,
     width: w ? (spacing[w] ?? w) : w,
-    ...(shadow && {
-      ...shadows[shadow],
-      // In order for shadows to work on iOS they need a background color
-      // Using white as a default here, but can be overridden
-      backgroundColor: color.background.white
-    }),
+    ...(shadow && shadows[shadow]),
     paddingTop: padT && (spacing[padT] ?? padT),
     paddingLeft: padL && (spacing[padL] ?? padL),
     paddingRight: padR && (spacing[padR] ?? padR),
@@ -103,7 +98,10 @@ export const Box = styled(View, {
     marginBottom: marginB && (spacing[marginB] ?? marginB),
     backgroundColor:
       (backgroundColor && theme.color.background[backgroundColor]) ??
-      backgroundColor,
+      backgroundColor ??
+      // In order for shadows to work on iOS they need a background color
+      // Using white as a default here, but can be overridden
+      (shadow ? color.background.white : undefined),
     // Native doesn't have a border:"" shorthand
     ...(border && {
       borderStyle: 'solid',

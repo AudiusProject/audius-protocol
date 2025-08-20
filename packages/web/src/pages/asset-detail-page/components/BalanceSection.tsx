@@ -4,7 +4,8 @@ import { walletMessages } from '@audius/common/messages'
 import {
   tokenDashboardPageActions,
   useAddCashModal,
-  useBuySellModal
+  useBuySellModal,
+  useReceiveTokensModal
 } from '@audius/common/store'
 import { Artwork, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -13,6 +14,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 import { AssetDetailProps } from '../types'
 
@@ -155,9 +157,39 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { onOpen: openBuySellModal } = useBuySellModal()
   const { onOpen: openAddCashModal } = useAddCashModal()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
+  const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
 
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
+
+  // Action destructuring
+  const { pressSend } = tokenDashboardPageActions
+
+  // Handler functions with account requirements - defined before early return
+  const handleBuySell = useRequiresAccountCallback(() => {
+    // Has balance - show buy/sell modal
+    openBuySellModal()
+  }, [openBuySellModal])
+
+  const handleAddCash = useRequiresAccountCallback(() => {
+    // No balance - show add cash modal (uses Coinflow)
+    openAddCashModal()
+  }, [openAddCashModal])
+
+  const handleReceive = useRequiresAccountCallback(() => {
+    openReceiveTokensModal({
+      mint,
+      isOpen: true
+    })
+  }, [mint, openReceiveTokensModal])
+
+  const handleSend = useRequiresAccountCallback(() => {
+    if (isMobile) {
+      openTransferDrawer(true)
+    } else {
+      dispatch(pressSend())
+    }
+  }, [isMobile, openTransferDrawer, dispatch, pressSend])
 
   if (coinsLoading || !coin) {
     return <BalanceSectionSkeleton />
@@ -165,36 +197,6 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
 
   const title = coin.ticker ?? ''
   const logoURI = coin.logoUri
-
-  // Action destructuring
-  const { pressReceive, pressSend } = tokenDashboardPageActions
-
-  // Handler functions
-  const handleBuySell = () => {
-    // Has balance - show buy/sell modal
-    openBuySellModal()
-  }
-
-  const handleAddCash = () => {
-    // No balance - show add cash modal (uses Coinflow)
-    openAddCashModal()
-  }
-
-  const handleReceive = () => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressReceive())
-    }
-  }
-
-  const handleSend = () => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressSend())
-    }
-  }
 
   return (
     <Paper ph='xl' pv='l'>
