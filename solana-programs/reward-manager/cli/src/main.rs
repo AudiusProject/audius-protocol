@@ -502,8 +502,7 @@ fn command_transfer(
             &claimable_tokens::id(),
             &config.fee_payer.pubkey(),
             &token_account.mint,
-            decoded_recipient_address,
-            None,
+            claimable_tokens::instruction::CreateTokenAccount { eth_address: decoded_recipient_address },
         )?);
 
         println!(

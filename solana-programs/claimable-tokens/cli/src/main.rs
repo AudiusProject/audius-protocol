@@ -10,6 +10,7 @@ use claimable_tokens::{
     utils::program::{find_address_pair, EthereumAddress},
 };
 use claimable_tokens::instruction::{
+    CreateTokenAccount,
     close,
 };
 use clap::{
@@ -213,8 +214,7 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
             &claimable_tokens::id(),
             &config.fee_payer.pubkey(),
             &mint,
-            eth_address,
-            None
+            CreateTokenAccount { eth_address },
         )?);
     }
 
@@ -282,7 +282,7 @@ fn close_account(
 
     let instruction = close(
         &claimable_tokens::id(),
-        &rent_receiver,
+        &rent_destination,
         &pair.derive.address,
         &pair.base.address,
         &mint,
@@ -441,7 +441,7 @@ fn main() -> anyhow::Result<()> {
                     .required(true)
                     .help("Token mint address"),
             ])
-                .help("Close a token account and transfer rent to receiver"),
+                .help("Close a token account and transfer rent to destination"),
         ])
         .get_matches();
 

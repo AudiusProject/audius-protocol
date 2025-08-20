@@ -24,9 +24,9 @@ pub enum ClaimableProgramError {
     /// User nonce verification error
     #[error("Nonce verification failed")]
     NonceVerificationError,
-    /// Invalid rent receiver for a close instruction
-    #[error("Invalid rent receiver")]
-    InvalidRentReceiver,
+    /// Invalid rent destination for a close instruction
+    #[error("Invalid rent destination")]
+    InvalidRentDestination,
     /// Math overflow
     #[error("Math overflow")]
     MathOverflow,
