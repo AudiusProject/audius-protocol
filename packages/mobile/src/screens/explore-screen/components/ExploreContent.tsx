@@ -1,11 +1,15 @@
 import React from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
+
 import { Flex } from '@audius/harmony-native'
 import { RecentSearches } from 'app/screens/search-screen/RecentSearches'
 import { useSearchCategory } from 'app/screens/search-screen/searchState'
 
 import { ActiveDiscussions } from './ActiveDiscussions'
 import { ArtistSpotlight } from './ArtistSpotlight'
+import { BestOfAudiusTiles } from './BestOfAudiusTiles'
 import { BestSelling } from './BestSelling'
 import { FeaturedPlaylists } from './FeaturedPlaylists'
 import { FeaturedRemixContests } from './FeaturedRemixContests'
@@ -22,6 +26,9 @@ import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
 const MemoizedExploreContent = () => {
   const [category] = useSearchCategory()
+  const { isEnabled: isSearchGoodiesEnabled } = useFeatureFlag(
+    FeatureFlags.SEARCH_EXPLORE_GOODIES
+  )
 
   const showTrackContent = category === 'tracks' || category === 'all'
   const showPlaylistContent = category === 'playlists' || category === 'all'
@@ -30,26 +37,34 @@ const MemoizedExploreContent = () => {
 
   return (
     <Flex gap='2xl' pt='s' pb={150} ph='l'>
-      {showTrackContent && <RecommendedTracks />}
-      {showTrackContent && <RecentlyPlayedTracks />}
-      {showTrackContent && <QuickSearchGrid />}
+      {isSearchGoodiesEnabled ? (
+        <>
+          {showTrackContent && <RecommendedTracks />}
+          {showTrackContent && <RecentlyPlayedTracks />}
+          {showTrackContent && <QuickSearchGrid />}
+        </>
+      ) : null}
       {showPlaylistContent && <FeaturedPlaylists />}
       {showTrackContent && <FeaturedRemixContests />}
-      {showTrackContent && <UndergroundTrendingTracks />}
+      {isSearchGoodiesEnabled && showTrackContent && (
+        <UndergroundTrendingTracks />
+      )}
       {showUserContent && <ArtistSpotlight />}
       {showUserContent && <LabelSpotlight />}
-      {showTrackContent && <ActiveDiscussions />}
+      {isSearchGoodiesEnabled && showTrackContent && <ActiveDiscussions />}
       {(showTrackContent || showAlbumContent || showPlaylistContent) && (
         <MoodsGrid />
       )}
-      {showPlaylistContent && <TrendingPlaylists />}
-      {showTrackContent && <MostSharedTracks />}
-      {(showAlbumContent || showTrackContent) && <BestSelling />}
-      {/* TODO: Feeling lucky for playlists/albums
-      https://linear.app/audius/issue/PE-6585/feeling-lucky-for-playlistsalbums
-       */}
-      {showTrackContent && <RecentPremiumTracks />}
-      {showTrackContent && <FeelingLucky />}
+      {isSearchGoodiesEnabled ? (
+        <>
+          {showPlaylistContent && <TrendingPlaylists />}
+          {showTrackContent && <MostSharedTracks />}
+          {(showAlbumContent || showTrackContent) && <BestSelling />}
+          {showTrackContent && <RecentPremiumTracks />}
+          {showTrackContent && <FeelingLucky />}
+        </>
+      ) : null}
+      {!isSearchGoodiesEnabled && <BestOfAudiusTiles />}
       <RecentSearches />
     </Flex>
   )
