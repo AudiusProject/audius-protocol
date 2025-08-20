@@ -1,5 +1,3 @@
-import { ChangeEvent } from 'react'
-
 export interface TokenInfo {
   symbol: string
   name: string
@@ -56,14 +54,6 @@ export interface SendTokensFailureProps {
   error: string
   onTryAgain: () => void
   onClose: () => void
-}
-
-export interface WalletInputProps {
-  value: string
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void
-  label?: string
-  error?: boolean
-  helperText?: string
 }
 
 export type SendTokensState = {

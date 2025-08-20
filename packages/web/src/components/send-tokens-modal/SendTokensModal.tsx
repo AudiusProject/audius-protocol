@@ -5,7 +5,7 @@ import {
   transformArtistCoinToTokenInfo,
   useSendTokens
 } from '@audius/common/api'
-import { AUDIO } from '@audius/fixed-decimal'
+import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
 import ResponsiveModal from 'components/modal/ResponsiveModal'
 
@@ -134,9 +134,7 @@ const SendTokensModal = ({
           onClose={handleClose}
           initialAmount={
             state.amount > 0
-              ? (
-                  Number(state.amount) / Math.pow(10, tokenInfo?.decimals || 9)
-                ).toString()
+              ? new FixedDecimal(state.amount, tokenInfo?.decimals).toString()
               : ''
           }
           initialDestinationAddress={state.destinationAddress}

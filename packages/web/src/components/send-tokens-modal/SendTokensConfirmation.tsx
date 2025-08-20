@@ -5,6 +5,7 @@ import {
   useTokenBalance,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Button,
   Text,
@@ -52,21 +53,23 @@ const SendTokensConfirmation = ({
     : BigInt(0)
 
   const formatAmount = (amount: bigint) => {
-    return (
-      Number(amount) / Math.pow(10, tokenInfo?.decimals || 9)
-    ).toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    })
+    return new FixedDecimal(amount, tokenInfo?.decimals).toLocaleString(
+      'en-US',
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }
+    )
   }
 
   const formatBalance = (balance: bigint) => {
-    return (
-      Number(balance) / Math.pow(10, tokenInfo?.decimals || 9)
-    ).toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+    return new FixedDecimal(balance, tokenInfo?.decimals).toLocaleString(
+      'en-US',
+      {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }
+    )
   }
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,8 +1,8 @@
 import { ChangeEvent, forwardRef, Ref } from 'react'
 
-import { TextInput } from '@audius/harmony'
+import { TextInput, TextInputProps } from '@audius/harmony'
 
-import { WalletInputProps } from './types'
+type WalletInputProps = TextInputProps
 
 export const WalletInput = forwardRef(
   (props: WalletInputProps, ref: Ref<HTMLInputElement>) => {

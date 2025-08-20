@@ -6,6 +6,7 @@ import {
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
 import { isValidSolAddress } from '@audius/common/store'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Button,
   IconValidationX,
@@ -83,9 +84,7 @@ const SendTokensInput = ({
       setAmountError('AMOUNT_REQUIRED')
       isValid = false
     } else {
-      const amountWei = BigInt(
-        parseFloat(amount) * Math.pow(10, tokenInfo?.decimals || 9)
-      )
+      const amountWei = new FixedDecimal(amount, tokenInfo?.decimals).value
       if (amountWei > currentBalance) {
         setAmountError('INSUFFICIENT_BALANCE')
         isValid = false
@@ -110,9 +109,7 @@ const SendTokensInput = ({
 
   const handleContinue = () => {
     if (validateInputs()) {
-      const amountWei = BigInt(
-        parseFloat(amount) * Math.pow(10, tokenInfo?.decimals || 9)
-      )
+      const amountWei = new FixedDecimal(amount, tokenInfo?.decimals).value
       onContinue(amountWei, destinationAddress)
     }
   }
@@ -153,8 +150,9 @@ const SendTokensInput = ({
   }
 
   // Format balance for display
-  const formattedBalance = (
-    Number(currentBalance) / Math.pow(10, tokenInfo.decimals)
+  const formattedBalance = new FixedDecimal(
+    currentBalance,
+    tokenInfo.decimals
   ).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
