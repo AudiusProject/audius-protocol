@@ -1,5 +1,7 @@
-import { formatCount, formatCurrencyWithMax } from '@audius/common/utils'
 import { CoinInsights } from '@audius/sdk'
+
+import { formatCurrencyWithMax } from './decimal'
+import { formatCount } from './formatUtil'
 
 export type MetricData = {
   value: string

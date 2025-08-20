@@ -1,4 +1,5 @@
 import { useArtistCoinMembers, useUsers } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
 import {
   Flex,
   Paper,
@@ -21,10 +22,9 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-const messages = {
-  title: 'Members Leaderboard',
-  leaderboard: 'Leaderboard'
-}
+import { AssetDetailProps } from '../types'
+
+const messages = coinDetailsMessages.coinLeaderboard
 
 const AvatarSkeleton = (props: any) => (
   <Skeleton
