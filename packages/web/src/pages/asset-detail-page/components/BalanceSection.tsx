@@ -186,7 +186,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
       // No USDC balance - show add cash modal (uses Coinflow)
       openAddCashModal()
     }
-  }, [openAddCashModal])
+  }, [openAddCashModal, openBuySellModal, usdcBalance])
 
   const handleReceive = useRequiresAccountCallback(() => {
     openReceiveTokensModal({
