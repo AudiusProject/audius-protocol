@@ -35,8 +35,9 @@ pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
 
 /// Default rent receiver for closing token accounts
-/// Prod/stage: 2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT
-pub const DEFAULT_RENT_RECEIVER: &str = "2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT";
+/// Prod: 2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT
+/// Debug: HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W
+pub const DEFAULT_RENT_RECEIVER: &str = "HXLN9UWwAjMPgHaFZDfgabT79SmLSdTeu2fUha2xHz9W";
 
 /// Secp256k1 signature offsets data
 #[derive(Clone, Copy, Debug, Default, PartialEq, BorshDeserialize, BorshSerialize)]
@@ -481,28 +482,36 @@ impl Processor {
             return Err(ProgramError::InvalidSeeds);
         }
 
-        let expected_receiver_account_pda = find_rent_receiver_address(
+        let (base_address, expected_receiver_account_pda, _bump) = find_rent_receiver_address(
             program_id,
             &token_account_data.mint,
             &eth_address,
-        ).1;
+        );
         if expected_receiver_account_pda != *rent_receiver_account_info.key {
             msg!("Invalid rent receiver PDA address {} != {}", *rent_receiver_account_info.key, expected_receiver_account_pda);
             return Err(ClaimableProgramError::InvalidRentReceiver.into());
         }
 
-        let rent_receiver_account_data = &rent_receiver_account_info.data.borrow();
+        if base_address != *authority_account_info.key {
+            msg!("Invalid authority account for rent receiver");
+            return Err(ClaimableProgramError::InvalidRentReceiver.into());
+        }
+
         let default_receiver = Pubkey::from_str(DEFAULT_RENT_RECEIVER).unwrap();
-        if rent_receiver_account_data.len() >= PUBKEY_LENGTH {
-            let stored_pubkey = Pubkey::new_from_array(
-                rent_receiver_account_data[..PUBKEY_LENGTH].try_into().map_err(|_| ClaimableProgramError::InvalidRentReceiver)?
-            );
-            if stored_pubkey != *receiver_account_info.key {
-                msg!("Rent receiver account data does not match expected address {} != {}", *receiver_account_info.key, stored_pubkey);
-                return Err(ClaimableProgramError::InvalidRentReceiver.into());
-            }
-        } else if  *receiver_account_info.key != default_receiver {
+        let mut stored_pubkey = Pubkey::default();
+        if rent_receiver_account_info.data_len() >= PUBKEY_LENGTH {
+            stored_pubkey = {
+                let rent_receiver_account_data = &rent_receiver_account_info.data.borrow();
+                    Pubkey::new_from_array(
+                    rent_receiver_account_data[..PUBKEY_LENGTH].try_into().map_err(|_| ClaimableProgramError::InvalidRentReceiver)?
+                )
+            };
+        } 
+        if stored_pubkey == Pubkey::default() && *receiver_account_info.key != default_receiver {
             msg!("Rent receiver account does not match default receiver {} != {}", *receiver_account_info.key, default_receiver);
+            return Err(ClaimableProgramError::InvalidRentReceiver.into());
+        } else if stored_pubkey != *receiver_account_info.key {
+            msg!("Rent receiver account data does not match expected address {} != {}", *receiver_account_info.key, stored_pubkey);
             return Err(ClaimableProgramError::InvalidRentReceiver.into());
         }
         
@@ -518,9 +527,22 @@ impl Processor {
                 authority_account_info.key,
                 &[],
             )?,
-            &[token_account_info, receiver_account_info, authority_account_info],
+            &[token_account_info, receiver_account_info.clone(), authority_account_info],
             signers,
-        )
+        )?;
+
+        // Close pda account by zero out its value, rent
+        if stored_pubkey != Pubkey::default() {
+            let refund_lamports = rent_receiver_account_info.lamports();
+            let receiver_lamports = receiver_account_info.lamports();
+            **rent_receiver_account_info.lamports.borrow_mut() = 0u64;
+            rent_receiver_account_info.data.borrow_mut().fill(0);
+            **receiver_account_info.lamports.borrow_mut() = receiver_lamports
+                .checked_add(refund_lamports)
+                .ok_or(ClaimableProgramError::MathOverflow)?;
+        }
+
+        Ok(())
     }
 
     /// Checks that the user signed message with his ethereum private key

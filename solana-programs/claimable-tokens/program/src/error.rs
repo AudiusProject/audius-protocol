@@ -27,6 +27,9 @@ pub enum ClaimableProgramError {
     /// Invalid rent receiver for a close instruction
     #[error("Invalid rent receiver")]
     InvalidRentReceiver,
+    /// Math overflow
+    #[error("Math overflow")]
+    MathOverflow,
 }
 impl From<ClaimableProgramError> for ProgramError {
     fn from(e: ClaimableProgramError) -> Self {

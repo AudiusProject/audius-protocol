@@ -59,6 +59,7 @@ pub enum ClaimableProgramInstruction {
     ///   2. `[r]` Banks token account authority
     ///   3. `[w]` Rent receiver account
     ///   4. `[r]` SPL token account id
+    ///   5. `[r]` System program id
     CloseTokenAccount(EthereumAddress),
 
     /// CreateTokenAccountV2
@@ -163,6 +164,7 @@ pub fn close(
         AccountMeta::new_readonly(*bank_authority, false),
         AccountMeta::new(receiver_pda, false),
         AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(system_program::id(), false),
     ];
     Ok(Instruction {
         program_id: *program_id,
