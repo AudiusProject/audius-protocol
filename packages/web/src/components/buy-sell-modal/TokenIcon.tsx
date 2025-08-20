@@ -1,20 +1,24 @@
-import { TokenInfo } from '@audius/common/store'
-import { Artwork, useTheme } from '@audius/harmony'
+import { ComponentType } from 'react'
+
+import { Artwork, ArtworkProps, IconProps, useTheme } from '@audius/harmony'
 
 export type TokenIconProps = {
-  tokenInfo: TokenInfo
-  size?: string
-  [key: string]: any
-}
+  logoURI?: string
+  icon?: ComponentType<any>
+} & ArtworkProps &
+  IconProps
 
 // Component to render token icon - handles both icon component and logoURI
 export const TokenIcon = ({
-  tokenInfo,
+  icon: IconComponent,
+  logoURI,
   size = 'l',
+  hex,
+  w,
+  h,
   ...props
 }: TokenIconProps) => {
   const { spacing } = useTheme()
-  const { icon: IconComponent, logoURI } = tokenInfo
 
   if (IconComponent) {
     return <IconComponent size={size} {...props} />
@@ -29,9 +33,18 @@ export const TokenIcon = ({
       '4xl': { w: spacing.unit16, h: spacing.unit16 }
     }
 
-    const dimensions = sizeMap[size]
+    // Use explicit w/h if provided, otherwise use size mapping
+    const dimensions = w && h ? { w, h } : sizeMap[size]
 
-    return <Artwork src={logoURI} {...dimensions} borderWidth={0} {...props} />
+    return (
+      <Artwork
+        src={logoURI}
+        {...dimensions}
+        borderWidth={0}
+        hex={hex}
+        {...props}
+      />
+    )
   }
 
   return null

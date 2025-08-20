@@ -44,7 +44,12 @@ const CustomSingleValue = (
     <components.SingleValue {...props}>
       <Flex gap='s' alignItems='center' justifyContent='space-between' w='100%'>
         <Flex gap='s' alignItems='center'>
-          <TokenIcon tokenInfo={props.data.tokenInfo} size='2xl' hex />
+          <TokenIcon
+            logoURI={props.data.tokenInfo.logoURI}
+            icon={props.data.tokenInfo.icon}
+            size='2xl'
+            hex
+          />
           <Flex direction='column'>
             {props.shouldShowLargeTicker ? (
               <Flex alignSelf='flex-start'>
@@ -101,7 +106,12 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
           }
         })}
       >
-        <TokenIcon tokenInfo={props.data.tokenInfo} size='l' hex />
+        <TokenIcon
+          logoURI={props.data.tokenInfo.logoURI}
+          icon={props.data.tokenInfo.icon}
+          size='l'
+          hex
+        />
         <Text
           variant='body'
           size='s'

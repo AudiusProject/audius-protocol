@@ -1,4 +1,8 @@
-import { useCurrentUserId, useUserOwnedCoin } from '@audius/common/api'
+import {
+  useArtistCoin,
+  useCurrentUserId,
+  useUserOwnedCoin
+} from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -93,7 +97,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const { data: accountUserId } = useCurrentUserId()
-  const { data: ownedCoin, isPending: ownedCoinLoading } =
+  const { data: ownedCoin, isPending: isArtistCoinLoading } =
     useUserOwnedCoin(userId)
 
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
@@ -221,9 +225,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
 
         {/* For artist coin owners, replace the tip CTA with their coin */}
-        {accountUserId !== userId && !ownedCoinLoading ? (
+        {accountUserId !== userId && !isArtistCoinLoading ? (
           ownedCoin ? (
-            <BuyArtistCoinCard coinTicker={ownedCoin?.ticker} />
+            <BuyArtistCoinCard mint={ownedCoin.mint} />
           ) : (
             <TipAudioButton />
           )

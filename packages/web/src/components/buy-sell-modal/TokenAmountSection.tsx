@@ -61,7 +61,8 @@ const DefaultBalanceSection = ({
     >
       <Flex alignItems='center' gap='xs'>
         <TokenIcon
-          tokenInfo={tokenInfo}
+          logoURI={tokenInfo.logoURI}
+          icon={tokenInfo.icon}
           size='l'
           css={{ borderRadius: cornerRadius.circle }}
         />
@@ -112,7 +113,12 @@ const OldStackedBalanceSection = ({
             {messages.stackedBalance(formattedAvailableBalance)}
           </Text>
         </Flex>
-        <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
+        <TokenIcon
+          logoURI={tokenInfo.logoURI}
+          icon={tokenInfo.icon}
+          size='4xl'
+          hex
+        />
       </Flex>
     </Flex>
   )
@@ -139,7 +145,12 @@ const CryptoAmountSection = ({
   if (verticalLayout) {
     return (
       <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-        <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
+        <TokenIcon
+          logoURI={tokenInfo.logoURI}
+          icon={tokenInfo.icon}
+          size='4xl'
+          hex
+        />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {formattedAmount}
@@ -159,7 +170,12 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-      <TokenIcon tokenInfo={tokenInfo} size='4xl' hex />
+      <TokenIcon
+        logoURI={tokenInfo.logoURI}
+        icon={tokenInfo.icon}
+        size='4xl'
+        hex
+      />
       <Flex direction='column'>
         <Flex gap='xs' justifyContent='center' alignItems='center'>
           <Text variant='heading' size='l'>
@@ -375,7 +391,11 @@ export const TokenAmountSection = ({
     if (isStablecoin && !isInput && !availableTokens) {
       return (
         <Flex alignItems='center' gap='s'>
-          <TokenIcon tokenInfo={tokenInfo} size='l' />
+          <TokenIcon
+            logoURI={tokenInfo.logoURI}
+            icon={tokenInfo.icon}
+            size='l'
+          />
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
