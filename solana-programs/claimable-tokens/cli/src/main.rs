@@ -271,6 +271,39 @@ fn balance(config: Config, eth_address: EthereumAddress, mint: Pubkey) -> anyhow
     Ok(())
 }
 
+fn init_account(
+    config: Config,
+    eth_address: EthereumAddress,
+    mint: Pubkey,
+    rent_destination: Option<Pubkey>,
+) -> anyhow::Result<()> {
+    let instruction = claimable_tokens::instruction::init_v2(
+        &claimable_tokens::id(),
+        &config.fee_payer.pubkey(),
+        &mint,
+        eth_address,
+        rent_destination.or(Some(config.fee_payer.pubkey())).as_ref(),
+    )?;
+    let mut tx =
+        Transaction::new_with_payer(&[instruction], Some(&config.fee_payer.pubkey()));
+    let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
+    tx.sign(&[config.fee_payer.as_ref()], recent_blockhash);
+    let tx_hash = config
+        .rpc_client
+        .send_and_confirm_transaction_with_spinner_and_config(
+            &tx,
+            config.rpc_client.commitment(),
+            solana_client::rpc_config::RpcSendTransactionConfig {
+                skip_preflight: true,
+                preflight_commitment: None,
+                encoding: None,
+                max_retries: None,
+            },
+        )?;
+    println!("Init completed, transaction hash: {:?}", tx_hash);
+    Ok(())
+}
+
 fn close_account(
     config: Config,
     eth_address: EthereumAddress,
@@ -575,30 +608,8 @@ fn main() -> anyhow::Result<()> {
             })()
             .context("Preparing parameters for execution command `init`")?;
 
-            let instruction = claimable_tokens::instruction::init_v2(
-                &claimable_tokens::id(),
-                &config.fee_payer.pubkey(),
-                &mint,
-                eth_address,
-                rent_destination.or(Some(config.fee_payer.pubkey())).as_ref(),
-            )?;
-            let mut tx =
-                Transaction::new_with_payer(&[instruction], Some(&config.fee_payer.pubkey()));
-            let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
-            tx.sign(&[config.fee_payer.as_ref()], recent_blockhash);
-            let tx_hash = config
-                .rpc_client
-                .send_and_confirm_transaction_with_spinner_and_config(
-                    &tx,
-                    config.rpc_client.commitment(),
-                    solana_client::rpc_config::RpcSendTransactionConfig {
-                        skip_preflight: true,
-                        preflight_commitment: None,
-                        encoding: None,
-                        max_retries: None,
-                    },
-                )?;
-            println!("Init completed, transaction hash: {:?}", tx_hash);
+            init_account(config, eth_address, mint, rent_destination)
+                .context("Failed to execute `init` command")?
         }
         ("close", Some(args)) => {
             let (eth_address, mint, rent_destination) = (|| -> anyhow::Result<_> {
