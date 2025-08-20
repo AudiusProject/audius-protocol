@@ -25,6 +25,11 @@ import {
 
 import ProfilePage from './ProfilePage'
 
+// Mock useIsMobile to return false for desktop layout
+vi.mock('hooks/useIsMobile', () => ({
+  useIsMobile: () => false
+}))
+
 const { apiEndpoint } = developmentConfig.network
 
 // TODO: move these into a fixtures folder setup
@@ -68,14 +73,72 @@ const nonArtistUser = {
   allow_ai_attribution: false
 }
 
+const artistUser = {
+  id: '7eP5n',
+  handle: 'test-user',
+  name: 'Test User',
+  profile_picture: {
+    [SquareSizes.SIZE_150_BY_150]: `${apiEndpoint}/image-profile-small.jpg`,
+    [SquareSizes.SIZE_480_BY_480]: `${apiEndpoint}/image-profile-medium.jpg`,
+    mirrors: [apiEndpoint]
+  },
+  follower_count: 1,
+  followee_count: 2,
+  track_count: 0,
+  playlist_count: 3,
+  repost_count: 4,
+  album_count: 0,
+  bio: 'Test bio',
+  cover_photo: {
+    [WidthSizes.SIZE_2000]: `${apiEndpoint}/image-cover.jpg`,
+    mirrors: [apiEndpoint]
+  },
+  is_verified: false,
+  is_deactivated: false,
+  is_available: true,
+  erc_wallet: '0x123',
+  spl_wallet: '0x456',
+  wallet: '0x123',
+  balance: '0',
+  associated_wallets_balance: '0',
+  total_balance: '0',
+  waudio_balance: '0',
+  associated_sol_wallets_balance: '0',
+  blocknumber: 1,
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: '2024-01-01T00:00:00.000Z',
+  is_storage_v2: true,
+  handle_lc: 'test-user',
+  has_collectibles: false,
+  allow_ai_attribution: false
+}
+
 const mockData = {
   connected_wallets: { data: { erc_wallets: [], spl_wallets: [] } },
   collectibles: { data: null },
-  userByHandle: { data: [nonArtistUser] },
+  userByHandle: { data: [artistUser] },
   supporting: { data: [] },
   supporters: { data: [] },
   related: { data: [] },
-  events: { data: [] }
+  events: { data: [] },
+  userCoins: {
+    data: [
+      {
+        mint: 'test-mint-123',
+        owner_id: artistUser.id, // Using the nonArtistUser.id
+        balance: '100',
+        ticker: '$TEST'
+      }
+    ]
+  },
+  artistCoin: {
+    data: {
+      ticker: '$TEST',
+      mint: 'test-mint-123',
+      logo_uri: 'https://example.com/logo.png',
+      owner_id: artistUser.id
+    }
+  }
 }
 
 // Need to mock the main content scroll element - otherwise things break
@@ -104,7 +167,7 @@ export function renderProfilePage(overrides = {}, options?: RenderOptions) {
   // TODO: move these out of this render and standardize them more - also accept args to configure the various endpoints
   mswServer.use(
     http.get(`${apiEndpoint}/v1/full/users/handle/${user.handle}`, () => {
-      return HttpResponse.json(mockData.userByHandle)
+      return HttpResponse.json({ data: [user] })
     }),
     http.get(`${apiEndpoint}/v1/users/${user.id}/connected_wallets`, () => {
       return HttpResponse.json(mockData.connected_wallets)
@@ -123,6 +186,14 @@ export function renderProfilePage(overrides = {}, options?: RenderOptions) {
     }),
     http.get(`${apiEndpoint}/v1/events/entity`, () => {
       return HttpResponse.json(mockData.events)
+    }),
+    // User coins API
+    http.get(`${apiEndpoint}/v1/users/${user.id}/coins`, () => {
+      return HttpResponse.json(mockData.userCoins)
+    }),
+    // Artist coin API
+    http.get(`${apiEndpoint}/v1/coins/test-mint-123`, () => {
+      return HttpResponse.json(mockData.artistCoin)
     }),
     // ETH NFTs api
     http.get(
@@ -286,5 +357,34 @@ describe('ProfilePage', () => {
   it.skip('shows user with active remix context', async () => {
     renderProfilePage()
     // TODO
+  })
+
+  it('shows buy coin UI when the profile belongs to an artist with an owned coin', async () => {
+    // Mock a different current user to simulate viewing another user's profile
+    renderProfilePage(
+      artistUser, // Use the artistUser who owns the coin
+      {
+        reduxState: {
+          account: {
+            userId: 987 // Different from artistUser.id
+          }
+        }
+      }
+    )
+
+    // Wait for the profile to load
+    expect(
+      await screen.findByRole('heading', { name: artistUser.name })
+    ).toBeInTheDocument()
+
+    // Verify that coin-related elements are present when user has coins
+    expect(await screen.findByText('$TEST')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Unlock exclusive perks & more.')
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Buy Coins' })
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Tip $AUDIO')).not.toBeInTheDocument()
   })
 })

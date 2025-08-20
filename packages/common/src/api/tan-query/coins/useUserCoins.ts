@@ -35,7 +35,6 @@ export const useUserCoins = <TResult = UserCoinParsed[]>(
         offset: params.offset
       })
       if (response.data) {
-        console.log({ response: response.data })
         return response.data.map((coinFromSDK) => ({
           ...coinFromSDK,
           ownerId: HashId.parse(coinFromSDK.ownerId)
