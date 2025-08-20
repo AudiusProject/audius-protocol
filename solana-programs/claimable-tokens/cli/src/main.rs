@@ -285,6 +285,7 @@ fn close_account(
         &rent_receiver,
         &pair.derive.address,
         &pair.base.address,
+        &mint,
         eth_address
     )?;
 

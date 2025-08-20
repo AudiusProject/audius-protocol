@@ -57,7 +57,8 @@ pub enum ClaimableProgramInstruction {
     ///   0. `[w]` Receiver for rent token acc
     ///   1. `[w]` Token acc to close
     ///   2. `[r]` Banks token account authority
-    ///   3. `[r]` SPL token account id
+    ///   3. `[w]` Rent receiver account
+    ///   4. `[r]` SPL token account id
     CloseTokenAccount(EthereumAddress),
 
     /// CreateTokenAccountV2
@@ -151,13 +152,16 @@ pub fn close(
     receiver: &Pubkey,
     token_acc: &Pubkey,
     bank_authority: &Pubkey,
+    mint: &Pubkey,
     eth_address: EthereumAddress,
 ) -> Result<Instruction, ProgramError> {
     let data = ClaimableProgramInstruction::CloseTokenAccount(eth_address).try_to_vec()?;
+    let receiver_pda = find_rent_receiver_address(program_id, mint, &eth_address).1;
     let accounts = vec![
         AccountMeta::new(*receiver, false),
         AccountMeta::new(*token_acc, false),
         AccountMeta::new_readonly(*bank_authority, false),
+        AccountMeta::new(receiver_pda, false),
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
     Ok(Instruction {
