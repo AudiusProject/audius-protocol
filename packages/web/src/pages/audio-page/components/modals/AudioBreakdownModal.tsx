@@ -1,7 +1,7 @@
 import {
-  useWalletAudioBalances,
+  useAudioBalance,
   useConnectedWallets,
-  useAudioBalance
+  useWalletAudioBalances
 } from '@audius/common/api'
 import { AUDIO } from '@audius/fixed-decimal'
 import { IconInfo } from '@audius/harmony'
@@ -32,19 +32,20 @@ const AudioBreakdownBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
   const { accountBalance } = useAudioBalance()
 
-  const { data: connectedWallets, isPending: isConnectedWalletsPending } =
+  const { data: connectedWallets = [], isPending: isConnectedWalletsPending } =
     useConnectedWallets()
   const balances = useWalletAudioBalances(
     {
-      wallets: connectedWallets ?? [],
+      wallets: connectedWallets,
       includeStaked: true
     },
     { enabled: !isConnectedWalletsPending }
   )
 
   const linkedWalletsBalance = AUDIO(
-    balances.reduce(
-      (acc, result) => AUDIO(acc + (result.data ?? BigInt(0))).value,
+    balances.data.reduce(
+      (acc, result) =>
+        AUDIO((acc ?? BigInt(0)) + (result.balance ?? BigInt(0))).value,
       AUDIO(0).value
     ) ?? 0
   ).value
