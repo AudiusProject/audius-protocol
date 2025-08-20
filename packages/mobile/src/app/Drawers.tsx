@@ -64,7 +64,6 @@ import {
   UnfavoriteDownloadedCollectionDrawer
 } from '../components/drawers'
 import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareToStory'
-import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
 type CommonDrawerProps = {
@@ -120,7 +119,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   AudioBreakdown: AudioBreakdownDrawer,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
   DuplicateAddConfirmation: DuplicateAddConfirmationDrawer,
-  VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
   // PremiumContent, AddCash, PurchaseVendor, and StripOnRamp *must* be in this order

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import {
   convertGenreLabelToValue,
@@ -71,23 +71,45 @@ export const MoodFilter = () => {
   )
 }
 
-const getValueFromKey = (key: string) =>
-  // If the key is an enharmonic equivalent (e.g. C# and Db), use the flat as the value
-  key.includes('/') ? key.split('/')[1] : key
-
 const keyOptions = MUSICAL_KEYS.map((k) => ({
   label: k,
-  value: getValueFromKey(k)
+  value: k
 }))
 
 const FilterKeyScreen = (props) => {
-  const { value, ...other } = props
+  const { value, onChange, ...other } = props
 
   const [scale, setScale] = useState(value?.split(' ')[1] ?? 'Major')
+  const [selectedKey, setSelectedKey] = useState(value?.split(' ')[0] ?? '')
+
+  // Update the scale state when value changes
+  useEffect(() => {
+    if (value) {
+      const [keyPart, scalePart] = value.split(' ')
+      setSelectedKey(keyPart)
+      setScale(scalePart || 'Major')
+    }
+  }, [value])
+
+  const handleScaleChange = (newScale: string) => {
+    setScale(newScale)
+    // If we have a selected key, update the value with the new scale
+    if (selectedKey) {
+      const newValue = `${selectedKey} ${newScale}`
+      onChange?.(newValue)
+    }
+  }
+
+  const handleKeyChange = (newKey: string) => {
+    const [keyPart] = newKey.split(' ')
+    setSelectedKey(keyPart)
+    const newValue = `${keyPart} ${scale}`
+    onChange?.(newValue)
+  }
 
   const keyOptions = MUSICAL_KEYS.map((k) => ({
     label: k,
-    value: `${getValueFromKey(k)} ${scale}`
+    value: k
   }))
 
   return (
@@ -100,15 +122,16 @@ const FilterKeyScreen = (props) => {
             { key: 'Minor', text: messages.minor }
           ]}
           selected={scale}
-          onSelectOption={setScale}
+          onSelectOption={handleScaleChange}
           fullWidth
           equalWidth
         />
       }
       disableSearch
       data={keyOptions}
-      value={value}
-      clearable={Boolean(value && scale)}
+      value={selectedKey}
+      onChange={handleKeyChange}
+      clearable={Boolean(selectedKey && scale)}
     />
   )
 }
@@ -118,10 +141,7 @@ export const KeyFilter = () => {
 
   const getLabel = () => {
     if (!key) return messages.key
-    const [keyValue, scale = 'Major'] = key.split(' ')
-    const musicalKey = MUSICAL_KEYS.find((key) => key.match(keyValue))
-    if (!musicalKey) return messages.key
-    return `${musicalKey} ${scale}`
+    return key
   }
 
   return (

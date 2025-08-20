@@ -220,8 +220,8 @@ export const challengeRewardsConfig: Record<
   [ChallengeName.AudioMatchingBuy]: {
     id: ChallengeName.AudioMatchingBuy,
     title: 'Spend to Earn',
-    description: (_) => 'Earn 5 $AUDIO for each dollar you spend on Audius.',
-    fullDescription: () => 'Earn 5 $AUDIO for each dollar you spend on Audius.',
+    description: (_) => 'Earn 1 $AUDIO for each dollar you spend on Audius.',
+    fullDescription: () => 'Earn 1 $AUDIO for each dollar you spend on Audius.',
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },

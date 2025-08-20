@@ -4,26 +4,27 @@ import { useRecentPremiumTracks } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 import { QueueSource } from '@audius/common/store'
 
+import { useDeferredElement } from '../../../hooks/useDeferredElement'
+
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
 
 export const RecentPremiumTracks = () => {
-  const { data: recentPremiumTracks, isLoading } = useRecentPremiumTracks({
-    pageSize: 10
-  })
-  if (
-    !isLoading &&
-    (!recentPremiumTracks || recentPremiumTracks.length === 0)
-  ) {
-    return null
-  }
+  const { inView, InViewWrapper } = useDeferredElement()
+  const { data: recentPremiumTracks, isPending } = useRecentPremiumTracks(
+    { pageSize: 10 },
+    { enabled: inView }
+  )
+
   return (
-    <ExploreSection title={messages.recentlyListedForSale}>
-      <TrackTileCarousel
-        tracks={recentPremiumTracks}
-        isLoading={isLoading}
-        source={QueueSource.EXPLORE}
-      />
-    </ExploreSection>
+    <InViewWrapper>
+      <ExploreSection title={messages.recentlyListedForSale}>
+        <TrackTileCarousel
+          tracks={recentPremiumTracks}
+          isLoading={isPending || !inView}
+          source={QueueSource.EXPLORE}
+        />
+      </ExploreSection>
+    </InViewWrapper>
   )
 }

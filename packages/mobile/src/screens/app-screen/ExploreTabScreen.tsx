@@ -1,3 +1,5 @@
+import type { SearchCategory, SearchFilters } from '@audius/common/api'
+
 import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
 import { TrendingPlaylistsScreen } from '../explore-screen/tabs/ForYouTab/TrendingPlaylistsScreen'
 import { TrendingUndergroundScreen } from '../explore-screen/tabs/ForYouTab/TrendingUndergroundScreen'
@@ -6,7 +8,12 @@ import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
-  SearchExplore: { autoFocus?: boolean }
+  SearchExplore: {
+    autoFocus?: boolean
+    query?: string
+    category?: SearchCategory
+    filters?: SearchFilters
+  }
   TrendingPlaylists: undefined
   TrendingUnderground: undefined
 }

@@ -11,7 +11,7 @@ import { useUSDCBalance } from './useUSDCBalance'
 const USDC_DECIMALS = 6
 
 /**
- * Wrapper query that gives the balance of any token including USDC.
+ * Wrapper hook that gives the balance of any token - including USDC which uses a different query.
  * Uses the appropriate query hook and formats accordingly
  *
  * @param mint The mint address of the token to fetch balance for
@@ -23,11 +23,13 @@ export const useTokenBalance = ({
   userId,
   isPolling,
   pollingInterval = 1000,
+  includeExternalWallets = true,
   ...queryOptions
 }: {
   mint: string
   userId?: ID
   isPolling?: boolean
+  includeExternalWallets?: boolean
   pollingInterval?: number
 } & QueryOptions) => {
   const { env } = useQueryContext()
@@ -41,11 +43,28 @@ export const useTokenBalance = ({
   const userCoinQuery = useUserCoin(
     { mint, userId },
     {
-      select: (userCoinWithAccounts) => {
-        if (!userCoinWithAccounts) return null
-        const { balance: balanceNumber, decimals } = userCoinWithAccounts
+      select: (aggregateCoinAccounts) => {
+        if (!aggregateCoinAccounts) return null
+        // This returns the aggregate
+        const { balance: combinedBalance, decimals } = aggregateCoinAccounts
+        if (!includeExternalWallets) {
+          const account = aggregateCoinAccounts.accounts.find(
+            (account) => account.isInAppWallet
+          )
+          if (!account) return null
+          const balanceFD = new FixedDecimal(
+            BigInt(account.balance.toString()),
+            decimals
+          )
+          return {
+            balance: balanceFD,
+            balanceLocaleString: balanceFD.toLocaleString(),
+            decimals
+          }
+        }
+
         const balanceFD = new FixedDecimal(
-          BigInt(balanceNumber.toString()),
+          BigInt(combinedBalance.toString()),
           decimals
         )
 

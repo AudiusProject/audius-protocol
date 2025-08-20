@@ -73,7 +73,7 @@ export const TrackCard = (props: TrackCardProps) => {
     (e: GestureResponderEvent) => {
       onPress?.(e)
       if (noNavigation) return
-      navigation.navigate('Track', { id })
+      navigation.navigate('Track', { trackId: id })
     },
     [onPress, noNavigation, navigation, id]
   )
