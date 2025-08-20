@@ -1,4 +1,8 @@
-import { useArtistCoins, useTokenBalance } from '@audius/common/api'
+import {
+  useArtistCoins,
+  useTokenBalance,
+  useUSDCBalance
+} from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
@@ -152,6 +156,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
     mint: [mint]
   })
   const { data: tokenBalance } = useTokenBalance({ mint })
+  const { data: usdcBalance } = useUSDCBalance()
 
   const coin = coinInsights?.[0]
 
@@ -174,8 +179,13 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   }, [openBuySellModal])
 
   const handleAddCash = useRequiresAccountCallback(() => {
-    // No balance - show add cash modal (uses Coinflow)
-    openAddCashModal()
+    if (usdcBalance && usdcBalance > 0) {
+      // Has USDC balance - show buy/sell modal
+      openBuySellModal()
+    } else {
+      // No USDC balance - show add cash modal (uses Coinflow)
+      openAddCashModal()
+    }
   }, [openAddCashModal])
 
   const handleReceive = useRequiresAccountCallback(() => {

@@ -1,9 +1,9 @@
 import {
   getAccountAudioBalanceSaga,
-  optimisticallyDecreaseUserSolBalance,
   revertOptimisticUserSolBalance,
   queryAccountUser,
-  queryWalletAddresses
+  queryWalletAddresses,
+  optimisticallyUpdateUserWAudioBalance
 } from '@audius/common/api'
 import { Name, SolanaWalletAddress } from '@audius/common/models'
 import {
@@ -78,7 +78,10 @@ function* sendAsync({
   }
 
   try {
-    yield* call(optimisticallyDecreaseUserSolBalance, audioWeiAmount)
+    yield* call(
+      optimisticallyUpdateUserWAudioBalance,
+      AUDIO(-audioWeiAmount).value
+    )
 
     yield* put(
       make(Name.SEND_AUDIO_REQUEST, {

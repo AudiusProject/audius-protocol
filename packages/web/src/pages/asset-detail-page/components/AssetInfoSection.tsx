@@ -1,8 +1,12 @@
-import { useCallback, useState } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
-import { useArtistCoin } from '@audius/common/api'
+import {
+  useArtistCoin,
+  useCurrentUserId,
+  useUserCoins
+} from '@audius/common/api'
+import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { WidthSizes } from '@audius/common/models'
-import { AUDIUS_DISCORD_LINK } from '@audius/common/src/utils/route'
 import {
   Flex,
   Paper,
@@ -10,11 +14,6 @@ import {
   useTheme,
   PlainButton,
   IconDiscord,
-  PopupMenu,
-  PopupMenuItem,
-  IconKebabHorizontal,
-  IconButton,
-  IconRefresh,
   IconGift,
   Avatar,
   IconExternalLink,
@@ -26,12 +25,11 @@ import {
 import { decodeHashId } from '@audius/sdk'
 
 import Skeleton from 'components/skeleton/Skeleton'
+import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
-
-import { UpdateDiscordRoleModal } from './UpdateDiscordRoleModal'
 
 const messages = {
   loading: 'Loading...',
@@ -47,10 +45,12 @@ const messages = {
   profileFlair: 'Profile Flair',
   customDiscordRole: 'Custom Discord Role',
   messageBlasts: 'Message Blasts',
-  openDiscord: 'Open The Discord',
+  openDiscord: 'Join The Discord',
   refreshDiscordRole: 'Refresh Discord Role',
   browseRewards: 'Browse Rewards',
-  rewardTiers: 'Reward Tiers'
+  rewardTiers: 'Reward Tiers',
+  discordDisabledTooltip: (coinTicker: string = '') =>
+    `Buy ${coinTicker} to access the members only Discord`
 }
 
 const BANNER_HEIGHT = 120
@@ -239,15 +239,22 @@ type AssetInfoSectionProps = {
 }
 
 export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
-  const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false)
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
   const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: userCoins } = useUserCoins({ userId: currentUserId })
+  const userToken = useMemo(
+    () => userCoins?.find((coin) => coin.mint === mint),
+    [userCoins, mint]
+  )
+  const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
+  const { balance: userTokenBalance } = userToken ?? {}
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
   const openDiscord = () => {
-    window.open(AUDIUS_DISCORD_LINK, '_blank')
+    window.open(discordOAuthLink, '_blank')
   }
 
   const handleLearnMore = () => {
@@ -262,14 +269,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     setIsTiersModalOpen(false)
   }, [])
 
-  const handleOpenDiscordModal = useCallback(() => {
-    setIsDiscordModalOpen(true)
-  }, [])
-
-  const handleCloseDiscordModal = useCallback(() => {
-    setIsDiscordModalOpen(false)
-  }, [])
-
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
   }
@@ -278,21 +277,11 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
   const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
-  const menuItems: PopupMenuItem[] = [
-    {
-      text: messages.refreshDiscordRole,
-      onClick: handleOpenDiscordModal,
-      icon: <IconRefresh size='m' color='default' />
-    }
-  ]
+  const userHasNoBalance = !userTokenBalance || Number(userTokenBalance) <= 0
+  const TooltipWrapper = userHasNoBalance ? Tooltip : Fragment
 
   return (
     <>
-      <UpdateDiscordRoleModal
-        isOpen={isDiscordModalOpen}
-        onClose={handleCloseDiscordModal}
-        mint={mint}
-      />
       <Modal
         isOpen={isTiersModalOpen}
         onClose={handleCloseTiersModal}
@@ -375,28 +364,23 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           borderTop='default'
         >
           <Flex alignItems='center' justifyContent='center' gap='s'>
-            <PlainButton
-              onClick={openDiscord}
-              iconLeft={IconDiscord}
-              variant='default'
-              size='default'
+            <TooltipWrapper
+              text={messages.discordDisabledTooltip(coin?.ticker)}
             >
-              {messages.openDiscord}
-            </PlainButton>
+              {/* The tooltip needs a wrapper to work */}
+              <Flex style={{ cursor: 'pointer' }}>
+                <PlainButton
+                  onClick={openDiscord}
+                  iconLeft={IconDiscord}
+                  variant='default'
+                  size='default'
+                  disabled={userHasNoBalance}
+                >
+                  {messages.openDiscord}
+                </PlainButton>
+              </Flex>
+            </TooltipWrapper>
           </Flex>
-          <PopupMenu
-            items={menuItems}
-            renderTrigger={(ref, triggerPopup) => (
-              <IconButton
-                ref={ref}
-                aria-label='More options'
-                size='m'
-                icon={IconKebabHorizontal}
-                onClick={() => triggerPopup()}
-                color='default'
-              />
-            )}
-          />
         </Flex>
       </Paper>
     </>

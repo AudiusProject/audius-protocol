@@ -67,8 +67,11 @@ export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
 
 // Helpers
 
-export const getTierAndNumberForBalance = (balance: StringWei) => {
-  const audio = BigInt(balance)
+export const getTierAndNumberForBalance = (
+  balance: StringWei,
+  useWei: boolean = true
+) => {
+  const audio = useWei ? BigInt(balance) : BigInt(balance) * BigInt(10 ** 10)
 
   const index = badgeTiers.findIndex((t) => {
     return t.minAudio <= audio
@@ -87,6 +90,12 @@ export const getTierNumber = (tier: BadgeTier) =>
 export const getTierForUser = (totalBalance: Nullable<StringWei>) => {
   const balance = totalBalance ?? ('0' as StringWei)
   return getTierAndNumberForBalance(balance).tier
+}
+
+// The other fns here use wei formatting, new artist coin data doesnt use wei
+export const getTierForUserNonWei = (totalBalance: Nullable<StringWei>) => {
+  const balance = totalBalance ?? ('0' as StringWei)
+  return getTierAndNumberForBalance(balance, false).tier
 }
 
 /**
