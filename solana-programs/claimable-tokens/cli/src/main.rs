@@ -275,10 +275,12 @@ fn close_account(
     config: Config,
     eth_address: EthereumAddress,
     mint: Pubkey,
+    rent_destination_opt: Option<Pubkey>,
 ) -> anyhow::Result<()> {
     let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
 
-    let rent_receiver = config.fee_payer.pubkey();
+    let rent_destination = rent_destination_opt
+        .unwrap_or_else(|| config.fee_payer.pubkey());
 
     let instruction = close(
         &claimable_tokens::id(),
@@ -428,6 +430,26 @@ fn main() -> anyhow::Result<()> {
                     .help("Program Id address"),
             ])
                 .help("Receives balance of account that associated with Ethereum address and specific mint."),
+            SubCommand::with_name("init").args(&[
+                Arg::with_name("eth_address")
+                    .value_name("ETHEREUM_ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Ethereum address to create token account for"),
+                Arg::with_name("mint")
+                    .validator(is_pubkey)
+                    .value_name("MINT_ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Token mint address"),
+                Arg::with_name("rent_destination")
+                    .validator(is_pubkey)
+                    .value_name("RENT_DESTINATION")
+                    .takes_value(true)
+                    .required(false)
+                    .help("Where to return the rent to when the account is closed."),
+            ])
+                .help("Create a token account for the specified Ethereum address and mint."),
             SubCommand::with_name("close").args(&[
                 Arg::with_name("address")
                     .value_name("ETHEREUM_ADDRESS")
@@ -440,6 +462,12 @@ fn main() -> anyhow::Result<()> {
                     .takes_value(true)
                     .required(true)
                     .help("Token mint address"),
+                Arg::with_name("rent_destination")
+                    .validator(is_pubkey)
+                    .value_name("RENT_DESTINATION")
+                    .takes_value(true)
+                    .required(false)
+                    .help("Where to return the rent to when the account is closed."),
             ])
                 .help("Close a token account and transfer rent to destination"),
         ])
@@ -537,16 +565,52 @@ fn main() -> anyhow::Result<()> {
             })()
             .context("Preparing parameters for execution command `send to`")?;
         }
+        ("init", Some(args)) => {
+            let (mint, eth_address, rent_destination) = (|| -> anyhow::Result<_> {
+                let eth_address = eth_address_of(args, "eth_address")?;
+                let mint = pubkey_of(args, "mint").unwrap();
+                let rent_destination = pubkey_of(args, "rent_destination");
+
+                Ok((mint, eth_address, rent_destination))
+            })()
+            .context("Preparing parameters for execution command `init`")?;
+
+            let instruction = claimable_tokens::instruction::init_v2(
+                &claimable_tokens::id(),
+                &config.fee_payer.pubkey(),
+                &mint,
+                eth_address,
+                rent_destination.or(Some(config.fee_payer.pubkey())).as_ref(),
+            )?;
+            let mut tx =
+                Transaction::new_with_payer(&[instruction], Some(&config.fee_payer.pubkey()));
+            let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
+            tx.sign(&[config.fee_payer.as_ref()], recent_blockhash);
+            let tx_hash = config
+                .rpc_client
+                .send_and_confirm_transaction_with_spinner_and_config(
+                    &tx,
+                    config.rpc_client.commitment(),
+                    solana_client::rpc_config::RpcSendTransactionConfig {
+                        skip_preflight: true,
+                        preflight_commitment: None,
+                        encoding: None,
+                        max_retries: None,
+                    },
+                )?;
+            println!("Init completed, transaction hash: {:?}", tx_hash);
+        }
         ("close", Some(args)) => {
-            let (eth_address, mint) = (|| -> anyhow::Result<_> {
+            let (eth_address, mint, rent_destination) = (|| -> anyhow::Result<_> {
                 let eth_address = eth_address_of(args, "address")?;
                 let mint = pubkey_of(args, "mint").unwrap();
+                let rent_destination = pubkey_of(args, "rent_destination");
 
-                Ok((eth_address, mint))
+                Ok((eth_address, mint, rent_destination))
             })()
             .context("Preparing parameters for execution command `close`")?;
 
-            close_account(config, eth_address, mint)
+            close_account(config, eth_address, mint, rent_destination)
                 .context("Failed to execute `close` command")?
         }
 
