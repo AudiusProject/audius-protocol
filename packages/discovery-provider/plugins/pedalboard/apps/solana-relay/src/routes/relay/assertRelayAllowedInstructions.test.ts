@@ -22,12 +22,17 @@ import {
   SystemProgram,
   TransactionInstruction
 } from '@solana/web3.js'
-import { vi, beforeEach, afterEach, describe, it } from 'vitest'
+import { vi, beforeEach, afterEach, describe, it, expect } from 'vitest'
 
 import { config } from '../../config'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
-import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
+import {
+  assertRelayAllowedInstructions,
+  computeInstructionDiscriminant,
+  JUPITER_ROUTE_DISCRIMINANT,
+  JUPITER_SHARED_ACCOUNTS_ROUTE_DISCRIMINANT
+} from './assertRelayAllowedInstructions'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(config.claimableTokenProgramId)
 
@@ -58,6 +63,102 @@ const audioClaimableTokenAuthority = ClaimableTokensProgram.deriveAuthority({
 const getRandomPublicKey = () => Keypair.generate().publicKey
 
 describe('Solana Relay', function () {
+  describe('Jupiter Instruction Discriminant Computation', function () {
+    it('should compute correct discriminant for route instruction', function () {
+      const discriminant = computeInstructionDiscriminant('route')
+      expect(discriminant.length).toBe(8)
+      expect(discriminant).toEqual(JUPITER_ROUTE_DISCRIMINANT)
+    })
+
+    it('should compute correct discriminant for shared_accounts_route instruction', function () {
+      const discriminant = computeInstructionDiscriminant(
+        'shared_accounts_route'
+      )
+      expect(discriminant.length).toBe(8)
+      expect(discriminant).toEqual(JUPITER_SHARED_ACCOUNTS_ROUTE_DISCRIMINANT)
+    })
+
+    it('should produce different discriminants for different instruction names', function () {
+      const routeDiscriminant = computeInstructionDiscriminant('route')
+      const sharedRouteDiscriminant = computeInstructionDiscriminant(
+        'shared_accounts_route'
+      )
+      const customDiscriminant =
+        computeInstructionDiscriminant('custom_instruction')
+
+      expect(routeDiscriminant).not.toEqual(sharedRouteDiscriminant)
+      expect(routeDiscriminant).not.toEqual(customDiscriminant)
+      expect(sharedRouteDiscriminant).not.toEqual(customDiscriminant)
+    })
+
+    it('should be deterministic - same input produces same output', function () {
+      const discriminant1 = computeInstructionDiscriminant('test_instruction')
+      const discriminant2 = computeInstructionDiscriminant('test_instruction')
+      expect(discriminant1).toEqual(discriminant2)
+    })
+  })
+
+  describe('Jupiter Instruction Error Handling', function () {
+    it('should handle malformed Jupiter instructions gracefully', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+
+      // Create instruction with valid discriminant but insufficient accounts
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: JUPITER_ROUTE_DISCRIMINANT,
+          keys: [] // No accounts provided
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              wallet: 'something',
+              is_verified: false
+            }
+          }),
+        InvalidRelayInstructionError
+      )
+    })
+
+    it('should handle Jupiter instructions with corrupted account data', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+
+      // Create sharedAccountsRoute instruction with insufficient keys
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: JUPITER_SHARED_ACCOUNTS_ROUTE_DISCRIMINANT,
+          keys: [
+            {
+              pubkey: TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false
+            }
+            // Missing required accounts
+          ]
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              wallet: 'something',
+              is_verified: false
+            }
+          }),
+        InvalidRelayInstructionError,
+        'Failed to parse Jupiter'
+      )
+    })
+  })
   beforeEach(() => {
     // Mock initializeDiscoveryDb to avoid real DB connection
     vi.mock('@pedalboard/basekit', () => ({
@@ -901,6 +1002,343 @@ describe('Solana Relay', function () {
           }),
         InvalidRelayInstructionError,
         'Invalid user transfer authority'
+      )
+    })
+
+    it('should allow Jupiter route instruction swaps when authenticated', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+      const userTransferAuthority = getRandomPublicKey()
+      const userSourceTokenAccount = getRandomPublicKey()
+      const userDestinationTokenAccount = getRandomPublicKey()
+      const destinationTokenAccount = getRandomPublicKey()
+      const platformFeeAccount = getRandomPublicKey()
+      const eventAuthority = getRandomPublicKey()
+      const program = getRandomPublicKey()
+
+      // Create route instruction with proper discriminant
+      const routeInstructionData = Buffer.concat([
+        JUPITER_ROUTE_DISCRIMINANT,
+        Buffer.alloc(32) // Additional instruction data
+      ])
+
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: routeInstructionData,
+          keys: [
+            {
+              pubkey: TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: userTransferAuthority,
+              isSigner: true,
+              isWritable: true
+            },
+            {
+              pubkey: userSourceTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: userDestinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: destinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: NATIVE_MINT, // destination mint
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: platformFeeAccount,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: eventAuthority,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: program,
+              isSigner: false,
+              isWritable: false
+            }
+          ]
+        })
+      ]
+
+      await assertRelayAllowedInstructions(instructions, {
+        user: {
+          wallet: 'something',
+          is_verified: false
+        }
+      })
+    })
+
+    it('should not allow Jupiter route instruction swaps to invalid destination mints', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+      const userTransferAuthority = getRandomPublicKey()
+      const userSourceTokenAccount = getRandomPublicKey()
+      const userDestinationTokenAccount = getRandomPublicKey()
+      const destinationTokenAccount = getRandomPublicKey()
+      const platformFeeAccount = getRandomPublicKey()
+      const eventAuthority = getRandomPublicKey()
+      const program = getRandomPublicKey()
+      const invalidDestinationMint = getRandomPublicKey()
+
+      // Create route instruction with proper discriminant
+      const routeInstructionData = Buffer.concat([
+        JUPITER_ROUTE_DISCRIMINANT,
+        Buffer.alloc(32) // Additional instruction data
+      ])
+
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: routeInstructionData,
+          keys: [
+            {
+              pubkey: TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: userTransferAuthority,
+              isSigner: true,
+              isWritable: true
+            },
+            {
+              pubkey: userSourceTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: userDestinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: destinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: invalidDestinationMint, // invalid destination mint
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: platformFeeAccount,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: eventAuthority,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: program,
+              isSigner: false,
+              isWritable: false
+            }
+          ]
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              wallet: 'something',
+              is_verified: false
+            }
+          }),
+        InvalidRelayInstructionError,
+        'Invalid destination mint'
+      )
+    })
+
+    it('should not allow Jupiter route instruction when using fee payer as transfer authority', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+      const userTransferAuthority = config.solanaFeePayerWallets[0].publicKey
+      const userSourceTokenAccount = getRandomPublicKey()
+      const userDestinationTokenAccount = getRandomPublicKey()
+      const destinationTokenAccount = getRandomPublicKey()
+      const platformFeeAccount = getRandomPublicKey()
+      const eventAuthority = getRandomPublicKey()
+      const program = getRandomPublicKey()
+
+      // Create route instruction with proper discriminant
+      const routeInstructionData = Buffer.concat([
+        JUPITER_ROUTE_DISCRIMINANT,
+        Buffer.alloc(32) // Additional instruction data
+      ])
+
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: routeInstructionData,
+          keys: [
+            {
+              pubkey: TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: userTransferAuthority,
+              isSigner: true,
+              isWritable: true
+            },
+            {
+              pubkey: userSourceTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: userDestinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: destinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: NATIVE_MINT, // destination mint
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: platformFeeAccount,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: eventAuthority,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: program,
+              isSigner: false,
+              isWritable: false
+            }
+          ]
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              wallet: 'something',
+              is_verified: false
+            }
+          }),
+        InvalidRelayInstructionError,
+        'Invalid transfer authority'
+      )
+    })
+
+    it('should not allow Jupiter instructions with unknown discriminants', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+      const userTransferAuthority = getRandomPublicKey()
+      const userSourceTokenAccount = getRandomPublicKey()
+
+      // Create instruction with unknown discriminant
+      const unknownInstructionData = Buffer.concat([
+        Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]), // Unknown discriminant
+        Buffer.alloc(32) // Additional instruction data
+      ])
+
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: unknownInstructionData,
+          keys: [
+            {
+              pubkey: TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: userTransferAuthority,
+              isSigner: true,
+              isWritable: true
+            },
+            {
+              pubkey: userSourceTokenAccount,
+              isSigner: false,
+              isWritable: true
+            }
+          ]
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              wallet: 'something',
+              is_verified: false
+            }
+          }),
+        InvalidRelayInstructionError,
+        'Unknown Instruction Type'
+      )
+    })
+
+    it('should handle Jupiter instructions with insufficient data length', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+      const userTransferAuthority = getRandomPublicKey()
+
+      // Create instruction with insufficient data (less than 8 bytes for discriminant)
+      const shortInstructionData = Buffer.from([1, 2, 3]) // Only 3 bytes
+
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: shortInstructionData,
+          keys: [
+            {
+              pubkey: userTransferAuthority,
+              isSigner: true,
+              isWritable: true
+            }
+          ]
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              wallet: 'something',
+              is_verified: false
+            }
+          }),
+        InvalidRelayInstructionError,
+        'Unknown Instruction Type'
       )
     })
   })
