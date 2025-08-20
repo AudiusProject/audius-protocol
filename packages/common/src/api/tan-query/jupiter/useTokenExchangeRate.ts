@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { QuoteResponse, SwapMode } from '@jup-ag/api'
 import { useQuery } from '@tanstack/react-query'
 
-import { getJupiterQuoteByMint } from '~/services/Jupiter'
+import { getJupiterQuoteByMint, MAX_ALLOWED_ACCOUNTS } from '~/services/Jupiter'
 
 import { QueryOptions, type QueryKey } from '../types'
 
@@ -92,7 +92,8 @@ export const useTokenExchangeRate = (
           amountUi: safeInputAmount,
           slippageBps: SLIPPAGE_BPS,
           swapMode: params.swapMode ?? 'ExactIn',
-          onlyDirectRoutes: false
+          onlyDirectRoutes: false,
+          maxAccounts: MAX_ALLOWED_ACCOUNTS
         })
 
         // Calculate exchange rate (how many output tokens per 1 input token)

@@ -302,6 +302,10 @@ const JupiterSharedSwapAccountIndex = {
   TOKEN_2022_PROGRAM: 10
 }
 
+/**
+ * Indexes of various accounts in a Jupiter V6 route instruction.
+ * https://github.com/jup-ag/jupiter-cpi/blob/main/idl.json
+ */
 const JupiterRouteAccountIndex = {
   TOKEN_PROGRAM: 0,
   USER_TRANSFER_AUTHORITY: 1,
