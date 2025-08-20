@@ -32,7 +32,6 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
     useQueryContext()
   const { data: walletAddresses } = useWalletAddresses()
 
-  // Get current user's token balance using the existing hook
   const { data: tokenBalance } = useTokenBalance({ mint })
 
   return useMutation({
@@ -47,23 +46,17 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
           throw new Error(`Token mint ${mint} is not supported for sending`)
         }
 
-        // Get current user's ETH address
         const currentUser = walletAddresses?.currentUser
         if (!currentUser) {
           throw new Error('Failed to retrieve current user wallet address')
         }
 
-        // Get SDK instance
         const sdk = await audiusSdk()
 
-        // Check if user has sufficient balance using the hook data
-        // tokenBalance.balance is a FixedDecimal, so we need to access its .value property
         if (!tokenBalance?.balance || tokenBalance.balance.value < amount) {
           throw new Error('Insufficient balance to send tokens')
         }
 
-        // Send the tokens using the audius backend
-        // This method throws errors instead of returning them
         await audiusBackend.sendWAudioTokens({
           address: recipientWallet,
           amount,
@@ -78,10 +71,8 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       } catch (error) {
         console.error('Error sending tokens:', error)
 
-        // Use getErrorMessage to extract the error message
         const errorMessage = getErrorMessage(error)
 
-        // Handle specific error cases
         if (errorMessage === 'Missing social proof') {
           throw new Error('Missing social proof')
         }
@@ -92,19 +83,15 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
           throw new Error(errorMessage)
         }
 
-        // For other errors, throw a generic message
         throw new Error('Something has gone wrong, please try again.')
       }
     },
     onMutate: async ({ amount }) => {
-      // Cancel any outgoing refetches for the user's token balance
       const queryKey = getUserCoinQueryKey(mint)
       await queryClient.cancelQueries({ queryKey })
 
-      // Snapshot the previous balance
       const previousBalance = queryClient.getQueryData(queryKey)
 
-      // Optimistically update the balance by decreasing it
       if (previousBalance) {
         queryClient.setQueryData(queryKey, (old: any) => {
           if (!old) return old
@@ -121,11 +108,9 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
         })
       }
 
-      // Return context with the previous balance
       return { previousBalance }
     },
     onSuccess: (_, { recipientWallet }) => {
-      // Track successful token send
       if (analytics) {
         const currentUser = walletAddresses?.currentUser
         if (currentUser) {
@@ -140,13 +125,11 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       }
     },
     onError: (error, { amount, recipientWallet }, context) => {
-      // If the mutation fails, roll back the optimistic update
       if (context?.previousBalance) {
         const queryKey = getUserCoinQueryKey(mint)
         queryClient.setQueryData(queryKey, context.previousBalance)
       }
 
-      // Track failed token send
       if (analytics) {
         const currentUser = walletAddresses?.currentUser
         if (currentUser) {
@@ -161,7 +144,6 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
         }
       }
 
-      // Report error to Sentry
       if (reportToSentry) {
         reportToSentry({
           error: error instanceof Error ? error : new Error(error as string),
@@ -174,7 +156,6 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       }
     },
     onSettled: () => {
-      // Always refetch the user's token balance after the mutation settles
       const queryKey = getUserCoinQueryKey(mint)
       queryClient.invalidateQueries({ queryKey })
     }

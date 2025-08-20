@@ -17,7 +17,14 @@ import {
 
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
 
-import { SendTokensFailureProps } from './types'
+interface SendTokensFailureProps {
+  mint: string
+  amount: bigint
+  destinationAddress: string
+  error: string
+  onTryAgain: () => void
+  onClose: () => void
+}
 
 const messages = {
   failed: 'Failed',

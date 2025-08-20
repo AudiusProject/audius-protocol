@@ -21,8 +21,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-import { AssetDetailProps } from '../types'
-
 const messages = {
   title: 'Members Leaderboard',
   leaderboard: 'Leaderboard'
@@ -38,7 +36,11 @@ const AvatarSkeleton = (props: any) => (
   />
 )
 
-export const AssetLeaderboardCard = ({ mint }: AssetDetailProps) => {
+type AssetLeaderboardCardProps = {
+  mint: string
+}
+
+export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
   const { data: leaderboardUsers, isPending: isLeaderboardPending } =
     useArtistCoinMembers({ mint })
   const { data: users, isPending: isUsersPending } = useUsers(

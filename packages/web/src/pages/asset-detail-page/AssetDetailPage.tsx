@@ -1,12 +1,9 @@
-import { useState } from 'react'
-
-import { useArtistCoin, useWalletAddresses } from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { Flex, LoadingSpinner } from '@audius/harmony'
 import { Redirect, useParams } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import SendTokensModal from 'components/send-tokens-modal/SendTokensModal'
 import WalletModal from 'pages/audio-page/WalletModal'
 
 import { useAssetDetailTabs } from './AssetDetailTabs'
@@ -52,24 +49,7 @@ const AssetDetailPageContent = ({
   mint,
   title
 }: AssetDetailPageContentProps) => {
-  const [isSendTokensModalOpen, setIsSendTokensModalOpen] = useState(false)
-
-  // Get current wallet address
-  const { data: walletAddresses } = useWalletAddresses()
-  const currentWalletAddress = walletAddresses?.currentUser || ''
-
-  const handleSendTokensModalClose = () => {
-    setIsSendTokensModalOpen(false)
-  }
-
-  const openSendTokensModal = () => {
-    setIsSendTokensModalOpen(true)
-  }
-
-  const { tabs, body } = useAssetDetailTabs({
-    mint,
-    onSend: openSendTokensModal
-  })
+  const { tabs, body } = useAssetDetailTabs({ mint })
 
   const header = (
     <Header primary={title} showBackButton={true} bottomBar={tabs} />
@@ -78,12 +58,6 @@ const AssetDetailPageContent = ({
   return (
     <Page title={title} header={header}>
       <WalletModal />
-      <SendTokensModal
-        mint={mint}
-        onClose={handleSendTokensModalClose}
-        walletAddress={currentWalletAddress}
-        isOpen={isSendTokensModalOpen}
-      />
       {body}
     </Page>
   )

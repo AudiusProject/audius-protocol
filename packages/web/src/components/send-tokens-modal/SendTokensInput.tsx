@@ -19,7 +19,14 @@ import {
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
 
 import WalletInput from './WalletInput'
-import { SendTokensInputProps } from './types'
+
+interface SendTokensInputProps {
+  mint: string
+  onContinue: (amount: bigint, destinationAddress: string) => void
+  onClose: () => void
+  initialAmount?: string
+  initialDestinationAddress?: string
+}
 
 const messages = {
   amount: 'Amount',
@@ -117,7 +124,7 @@ const SendTokensInput = ({
   const getAmountDescription = () => {
     return messages.amountDescription.replace(
       '{symbol}',
-      tokenInfo?.symbol || 'tokens'
+      tokenInfo?.symbol ?? 'tokens'
     )
   }
 

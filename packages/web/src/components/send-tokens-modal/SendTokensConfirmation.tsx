@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
 
 import {
   useArtistCoin,
@@ -18,7 +18,14 @@ import {
 
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
 
-import { SendTokensConfirmationProps } from './types'
+interface SendTokensConfirmationProps {
+  mint: string
+  amount: bigint
+  destinationAddress: string
+  onConfirm: () => void
+  onBack: () => void
+  onClose: () => void
+}
 
 const messages = {
   sendTitle: 'SEND',
@@ -30,7 +37,8 @@ const messages = {
   confirmationText:
     'I have reviewed the information and understand that transfers are final.',
   back: 'Back',
-  confirm: 'Confirm'
+  confirm: 'Confirm',
+  loadingTokenInformation: 'Loading token information...'
 }
 
 const SendTokensConfirmation = ({
@@ -72,7 +80,7 @@ const SendTokensConfirmation = ({
     )
   }
 
-  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsConfirmed(event.target.checked)
   }
 
@@ -81,21 +89,21 @@ const SendTokensConfirmation = ({
     return (
       <Flex direction='column' gap='xl' p='xl' alignItems='center'>
         <Text variant='body' size='l' color='subdued'>
-          Loading token information...
+          {messages.loadingTokenInformation}
         </Text>
       </Flex>
     )
   }
 
   return (
-    <Flex direction='column' gap='xl' p='xl'>
+    <Flex column gap='xl' p='xl'>
       {/* Token Balance Section */}
       <CryptoBalanceSection
         tokenInfo={tokenInfo}
         amount={formatBalance(currentBalance)}
       />
 
-      <Divider orientation='horizontal' color='default' />
+      <Divider orientation='horizontal' />
 
       {/* Amount Info */}
       <Flex
@@ -116,7 +124,7 @@ const SendTokensConfirmation = ({
         </Text>
       </Flex>
 
-      <Divider orientation='horizontal' color='default' />
+      <Divider orientation='horizontal' />
 
       {/* Transfer Info */}
       <Flex direction='column' gap='m'>

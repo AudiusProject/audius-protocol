@@ -3,6 +3,7 @@ import {
   useTokenBalance,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
+import { route } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Button,
@@ -17,7 +18,13 @@ import {
 
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
 
-import { SendTokensSuccessProps } from './types'
+interface SendTokensSuccessProps {
+  mint: string
+  amount: bigint
+  destinationAddress: string
+  onDone: () => void
+  onClose: () => void
+}
 
 const messages = {
   sent: 'Sent',
@@ -118,7 +125,7 @@ const SendTokensSuccess = ({
           css={{ alignSelf: 'flex-start' }}
           onClick={() => {
             window.open(
-              `https://explorer.solana.com/address/${destinationAddress}`,
+              route.solanaExplorerAddress(destinationAddress),
               '_blank'
             )
           }}

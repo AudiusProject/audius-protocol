@@ -16,8 +16,6 @@ import Skeleton from 'components/skeleton/Skeleton'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
-import { AssetDetailProps } from '../types'
-
 type BalanceStateProps = {
   title: string
   logoURI?: string
@@ -145,7 +143,11 @@ const HasBalanceState = ({
   )
 }
 
-const BalanceSectionContent = ({ mint, onSend }: AssetDetailProps) => {
+type AssetDetailProps = {
+  mint: string
+}
+
+const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
     mint: [mint]
   })
@@ -184,15 +186,12 @@ const BalanceSectionContent = ({ mint, onSend }: AssetDetailProps) => {
   }, [mint, openReceiveTokensModal])
 
   const handleSend = useRequiresAccountCallback(() => {
-    if (onSend) {
-      // Use the custom onSend handler if provided
-      onSend()
-    } else if (isMobile) {
+    if (isMobile) {
       openTransferDrawer(true)
     } else {
       dispatch(pressSend())
     }
-  }, [onSend, isMobile, openTransferDrawer, dispatch, pressSend])
+  }, [isMobile, openTransferDrawer, dispatch, pressSend])
 
   if (coinsLoading || !coin) {
     return <BalanceSectionSkeleton />

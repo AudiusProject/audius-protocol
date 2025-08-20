@@ -14,7 +14,19 @@ import SendTokensFailure from './SendTokensFailure'
 import SendTokensInput from './SendTokensInput'
 import SendTokensProgress from './SendTokensProgress'
 import SendTokensSuccess from './SendTokensSuccess'
-import { SendTokensModalProps, SendTokensState } from './types'
+
+interface SendTokensModalProps {
+  mint: string
+  onClose: () => void
+  walletAddress: string
+  isOpen: boolean
+}
+
+type SendTokensState = {
+  step: 'input' | 'confirm' | 'progress' | 'success' | 'failure'
+  amount: bigint
+  destinationAddress: string
+}
 
 const SendTokensModal = ({
   mint,
@@ -127,7 +139,7 @@ const SendTokensModal = ({
       dismissOnClickOutside={state.step === 'input'}
       showDismissButton={state.step === 'input'}
     >
-      {state.step === 'input' && (
+      {state.step === 'input' ? (
         <SendTokensInput
           mint={mint}
           onContinue={handleInputContinue}
@@ -139,9 +151,9 @@ const SendTokensModal = ({
           }
           initialDestinationAddress={state.destinationAddress}
         />
-      )}
+      ) : null}
 
-      {state.step === 'confirm' && (
+      {state.step === 'confirm' ? (
         <SendTokensConfirmation
           mint={mint}
           amount={state.amount}
@@ -150,11 +162,11 @@ const SendTokensModal = ({
           onBack={handleBack}
           onClose={handleClose}
         />
-      )}
+      ) : null}
 
-      {state.step === 'progress' && <SendTokensProgress />}
+      {state.step === 'progress' ? <SendTokensProgress /> : null}
 
-      {state.step === 'success' && (
+      {state.step === 'success' ? (
         <SendTokensSuccess
           mint={mint}
           amount={state.amount}
@@ -162,9 +174,9 @@ const SendTokensModal = ({
           onDone={handleDone}
           onClose={handleClose}
         />
-      )}
+      ) : null}
 
-      {state.step === 'failure' && (
+      {state.step === 'failure' ? (
         <SendTokensFailure
           mint={mint}
           amount={state.amount}
@@ -173,7 +185,7 @@ const SendTokensModal = ({
           onTryAgain={handleTryAgain}
           onClose={handleClose}
         />
-      )}
+      ) : null}
     </ResponsiveModal>
   )
 }

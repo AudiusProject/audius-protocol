@@ -5,7 +5,6 @@ import { AssetInsights } from './components/AssetInsights'
 import { AssetLeaderboardCard } from './components/AssetLeaderboardCard'
 import { BalanceSection } from './components/BalanceSection'
 import { ExternalWallets } from './components/ExternalWallets'
-import { AssetDetailProps } from './types'
 
 const LEFT_SECTION_WIDTH = '704px'
 const RIGHT_SECTION_WIDTH = '360px'
@@ -73,13 +72,17 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => ({
   }
 }))
 
-export const AssetDetailContent = ({ mint, onSend }: AssetDetailProps) => {
+type AssetDetailContentProps = {
+  mint: string
+}
+
+export const AssetDetailContent = ({ mint }: AssetDetailContentProps) => {
   const styles = useStyles()
 
   return (
     <Flex css={styles.container}>
       <Flex css={styles.leftSection}>
-        <BalanceSection mint={mint} onSend={onSend} />
+        <BalanceSection mint={mint} />
         <AssetInfoSection mint={mint} />
       </Flex>
       <Flex css={styles.rightSection}>
