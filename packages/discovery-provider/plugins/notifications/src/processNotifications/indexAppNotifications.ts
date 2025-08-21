@@ -114,9 +114,20 @@ export class AppNotificationsProcessor {
     this.dnDB = dnDB
     this.identityDB = identityDB
     this.remoteConfig = remoteConfig
+
+    if (!this.remoteConfig) {
+      logger.warn('AppNotificationsProcessor initialized without remoteConfig')
+    }
   }
 
   getIsPushNotificationEnabled(type: string) {
+    if (!this.remoteConfig) {
+      logger.warn(
+        'RemoteConfig not initialized, defaulting to disabled push notifications'
+      )
+      return false
+    }
+
     const mappingVariable = notificationTypeMapping[type]
     // If there is no remote variable, do no push - it must be explicitly enabled
     if (!mappingVariable) return false
@@ -130,6 +141,13 @@ export class AppNotificationsProcessor {
   }
 
   getIsLiveEmailEnabled() {
+    if (!this.remoteConfig) {
+      logger.warn(
+        'RemoteConfig not initialized, defaulting to disabled live emails'
+      )
+      return false
+    }
+
     const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
       NotificationsEmailPlugin,
       EmailPluginMappings.Live
@@ -140,6 +158,13 @@ export class AppNotificationsProcessor {
   }
 
   getIsBrowserPushEnabled(): boolean {
+    if (!this.remoteConfig) {
+      logger.warn(
+        'RemoteConfig not initialized, defaulting to disabled browser push'
+      )
+      return false
+    }
+
     const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
       BrowserPushPlugin,
       BrowserPluginMappings.Enabled

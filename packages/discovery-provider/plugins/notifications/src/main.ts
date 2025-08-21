@@ -101,6 +101,13 @@ export class Processor {
   }
 
   getIsScheduledEmailEnabled() {
+    if (!this.remoteConfig) {
+      logger.warn(
+        'RemoteConfig not initialized, defaulting to disabled scheduled emails'
+      )
+      return false
+    }
+
     const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
       NotificationsEmailPlugin,
       EmailPluginMappings.Scheduled
@@ -111,6 +118,13 @@ export class Processor {
   }
 
   getIsBrowserPushEnabled(): boolean {
+    if (!this.remoteConfig) {
+      logger.warn(
+        'RemoteConfig not initialized, defaulting to disabled browser push'
+      )
+      return false
+    }
+
     const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
       BrowserPushPlugin,
       BrowserPluginMappings.Enabled
@@ -179,7 +193,9 @@ export class Processor {
   }
 
   close = async () => {
-    this.remoteConfig.close()
+    if (this.remoteConfig) {
+      this.remoteConfig.close()
+    }
     await this.listener?.close()
     await this.notificationSeenListener?.close()
     await this.discoveryDB?.destroy()
