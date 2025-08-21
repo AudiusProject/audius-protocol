@@ -22,8 +22,6 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
-import { AssetDetailProps } from '../types'
-
 const messages = coinDetailsMessages.coinLeaderboard
 
 const AvatarSkeleton = (props: any) => (

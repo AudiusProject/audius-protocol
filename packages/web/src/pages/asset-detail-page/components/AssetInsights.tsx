@@ -5,7 +5,6 @@ import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
-import { AssetDetailProps } from '../types'
 
 const messages = coinDetailsMessages.coinInsights
 
