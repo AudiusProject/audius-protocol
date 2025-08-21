@@ -168,13 +168,14 @@ export const useWalletAudioBalances = (
 type UseAudioBalanceOptions = {
   /** Whether to include connected/linked wallets in the balance calculation. Defaults to true. */
   includeConnectedWallets?: boolean
+  includeStaked?: boolean
 }
 
 /**
  * Hook for getting the AUDIO balance of the current user, optionally including connected wallets.
  */
 export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
-  const { includeConnectedWallets = true } = options
+  const { includeConnectedWallets = true, includeStaked = false } = options
 
   // Get account balances
   const { data: currentUserId } = useCurrentUserId()
@@ -210,7 +211,8 @@ export const useAudioBalance = (options: UseAudioBalanceOptions = {}) => {
   } = useConnectedWallets()
   const connectedWalletsBalances = useWalletAudioBalances(
     {
-      wallets: connectedWallets
+      wallets: connectedWallets,
+      includeStaked
     },
     { enabled: isConnectedWalletsFetched && includeConnectedWallets }
   )
