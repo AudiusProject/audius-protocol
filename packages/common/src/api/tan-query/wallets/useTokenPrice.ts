@@ -45,11 +45,14 @@ export const useTokenPrice = (
           throw new Error(`Failed to fetch token price: ${response.statusText}`)
         }
 
-        const data = await response.json()
+        const responseJson = await response.json()
 
         // Return the price data for the requested token
-        if (data?.data?.[tokenMint]) {
-          return data.data[tokenMint] as TokenPriceResponse
+        if (responseJson?.[tokenMint]) {
+          return {
+            price: responseJson[tokenMint].usdPrice.toString(),
+            mint: tokenMint
+          } as TokenPriceResponse
         }
 
         return null
