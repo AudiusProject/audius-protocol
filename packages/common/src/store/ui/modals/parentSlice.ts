@@ -39,7 +39,6 @@ export const initialState: BasicModalsState = {
   BuyAudio: { isOpen: false },
   BuyAudioRecovery: { isOpen: false },
   TransactionDetails: { isOpen: false },
-  VipDiscord: { isOpen: false },
   StripeOnRamp: { isOpen: false },
   InboxSettings: { isOpen: false },
   CommentSettings: { isOpen: false },

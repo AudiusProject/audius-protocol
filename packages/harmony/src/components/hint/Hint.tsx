@@ -8,6 +8,7 @@ import { IconQuestionCircle } from '~harmony/icons'
 
 type HintProps = {
   icon?: IconComponent
+  noIcon?: boolean
   actions?: ReactNode
 } & PaperProps
 
@@ -15,7 +16,13 @@ type HintProps = {
  * A way of informing the user of important details in line in a prominent way.
  */
 export const Hint = (props: HintProps) => {
-  const { icon: Icon = IconQuestionCircle, children, actions, ...other } = props
+  const {
+    icon: Icon = IconQuestionCircle,
+    children,
+    actions,
+    noIcon,
+    ...other
+  } = props
   return (
     <Paper
       role='alert'
@@ -29,7 +36,7 @@ export const Hint = (props: HintProps) => {
       {...other}
     >
       <Flex gap='l' alignItems='center'>
-        <Icon size='l' color='default' />
+        {noIcon ? null : <Icon size='l' color='default' />}
         <Text variant='body' color='default'>
           {children}
         </Text>

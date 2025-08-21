@@ -66,8 +66,8 @@ export const TrackTileCarousel = ({
               w={343}
               mr={columnIndex === 0 ? 16 : 0}
             >
-              <LineupTileSkeleton />
-              <LineupTileSkeleton />
+              <LineupTileSkeleton noShimmer />
+              <LineupTileSkeleton noShimmer />
             </Flex>
           ))}
         </ScrollView>

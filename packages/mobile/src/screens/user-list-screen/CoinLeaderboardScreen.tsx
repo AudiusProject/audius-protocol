@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useArtistCoinMembers } from '@audius/common/api'
+import { useArtistCoin, useArtistCoinMembers } from '@audius/common/api'
 import {
   coinLeaderboardUserListActions,
   coinLeaderboardUserListSelectors
@@ -14,7 +14,7 @@ import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
 
 const messages = {
-  title: 'BONK Leaderboard'
+  title: (ticker: string) => `${ticker + ' '}Leaderboard`
 }
 
 export const CoinLeaderboardScreen = () => {
@@ -22,6 +22,7 @@ export const CoinLeaderboardScreen = () => {
   const { params } = useRoute<'CoinLeaderboard'>()
   const { mint } = params
   const reduxMint = useSelector(coinLeaderboardUserListSelectors.getMint)
+  const { data: coin } = useArtistCoin({ mint: reduxMint || mint })
 
   const { data, isFetchingNextPage, fetchNextPage, isPending } =
     useArtistCoinMembers({ mint: reduxMint || mint })
@@ -40,19 +41,22 @@ export const CoinLeaderboardScreen = () => {
   if (!mint && !reduxMint) return null
 
   return (
-    <UserListScreen title={messages.title} titleIcon={IconTrophy}>
+    <UserListScreen
+      title={messages.title(coin?.ticker || '')}
+      titleIcon={IconTrophy}
+    >
       <UserList
-        data={data?.map((member) => member.user_id)}
+        data={data?.map((member) => member.userId)}
         isFetchingNextPage={isFetchingNextPage}
         isPending={isPending}
         fetchNextPage={fetchNextPage}
         tag='COIN_LEADERBOARD'
         showRank={true}
         renderRightContent={(userId) => {
-          const member = data?.find((m) => m.user_id === userId)
+          const member = data?.find((m) => m.userId === userId)
           return member ? (
             <Text size='s' strength='strong'>
-              {member.balance.toLocaleString()}
+              {member.balanceLocaleString}
             </Text>
           ) : null
         }}

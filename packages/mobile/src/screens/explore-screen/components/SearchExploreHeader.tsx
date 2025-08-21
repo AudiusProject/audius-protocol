@@ -33,7 +33,6 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
-import { useRoute } from 'app/hooks/useRoute'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AccountPictureHeader } from 'app/screens/app-screen/AccountPictureHeader'
 import { SearchCategoriesAndFilters } from 'app/screens/search-screen/SearchCategoriesAndFilters'
@@ -44,6 +43,7 @@ import {
   useSearchQuery
 } from '../../search-screen/searchState'
 import { SCROLL_FACTOR } from '../SearchExploreScreen'
+import { useExploreRoute } from '../hooks'
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 const AnimatedText = Animated.createAnimatedComponent(Text)
@@ -61,7 +61,7 @@ type SearchExploreHeaderProps = {
 export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { filterTranslateY, scrollY, scrollRef } = props
   const { spacing, color, motion } = useTheme()
-  const { params } = useRoute<'Search'>()
+  const { params } = useExploreRoute<'SearchExplore'>()
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
   const textInputRef = useRef<any>(null)
@@ -72,6 +72,12 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const [query, setQuery] = useSearchQuery()
   const [inputValue, setInputValue] = useState(query)
   useDebounce(() => setQuery(inputValue), 400, [inputValue])
+
+  // Keep input in sync with query changes (e.g., from deeplinks/route params)
+  useEffect(() => {
+    if (inputValue !== query) setInputValue(query)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
 
   const [category] = useSearchCategory()
   const [filters] = useSearchFilters()

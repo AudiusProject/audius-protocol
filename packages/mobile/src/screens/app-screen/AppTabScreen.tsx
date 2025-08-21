@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import type {
   FavoriteType,
   TipSource,
@@ -8,7 +7,6 @@ import type {
   SearchTrack,
   SearchPlaylist
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type {
   NotificationType,
   RepostType,
@@ -23,18 +21,18 @@ import type { FilterButtonScreenParams } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setLastNavAction } from 'app/hooks/useNavigation'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
+import { AllCoinsScreen } from 'app/screens/all-coins-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AudioScreen } from 'app/screens/audio-screen'
 import { ChangeEmailModalScreen } from 'app/screens/change-email-screen/ChangeEmailScreen'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
 import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
+import { CoinDetailsScreen } from 'app/screens/coin-details-screen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
-import { SearchExploreScreen } from 'app/screens/explore-screen/SearchExploreScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import { RewardsScreen } from 'app/screens/rewards-screen'
-import { SearchScreenStack, type SearchParams } from 'app/screens/search-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -90,10 +88,7 @@ export type AppTabScreenParamList = {
   Mutuals: { userId: ID }
   AiGeneratedTracks: { userId: ID }
   RelatedArtists: { userId: ID }
-  Search: SearchParams
-  SearchResults: { query: string }
   SupportingUsers: { userId: ID }
-  TagSearch: { query: string }
   TopSupporters: { userId: ID; source: TipSource }
   CoinLeaderboard: { mint: string }
   NotificationUsers: {
@@ -117,6 +112,8 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   RewardsScreen: undefined
   wallet: undefined
+  AllCoinsScreen: undefined
+  CoinDetailsScreen: { mint: string }
   Upload: {
     initialMetadata?: Partial<TrackMetadataForUpload>
   }
@@ -165,11 +162,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
-  const searchExploreFeatureFlag = useFeatureFlag(
-    FeatureFlags.SEARCH_EXPLORE_MOBILE
-  )
-  const isSearchExploreMobileEnabled =
-    searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -214,13 +206,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='TrackRemixes' component={TrackRemixesScreen} />
       <Stack.Screen name='Collection' component={CollectionScreen} />
       <Stack.Screen name='Profile' component={ProfileScreen} />
-      <Stack.Screen
-        name='Search'
-        component={
-          isSearchExploreMobileEnabled ? SearchExploreScreen : SearchScreenStack
-        }
-        options={{ ...screenOptions, headerShown: false }}
-      />
       <Stack.Group>
         <Stack.Screen name='Followers' component={FollowersScreen} />
         <Stack.Screen name='Following' component={FollowingScreen} />
@@ -244,6 +229,8 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
       <Stack.Screen name='wallet' component={WalletScreen} />
+      <Stack.Screen name='CoinDetailsScreen' component={CoinDetailsScreen} />
+      <Stack.Screen name='AllCoinsScreen' component={AllCoinsScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />

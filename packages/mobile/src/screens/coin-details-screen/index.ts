@@ -1,0 +1,1 @@
+export { CoinDetailsScreen } from './CoinDetailsScreen'
