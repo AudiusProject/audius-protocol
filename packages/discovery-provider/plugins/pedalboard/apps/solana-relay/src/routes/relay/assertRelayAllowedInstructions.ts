@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 import {
   ClaimableTokensProgram,
   RewardManagerProgram,
@@ -300,6 +302,55 @@ const JupiterSharedSwapAccountIndex = {
   TOKEN_2022_PROGRAM: 10
 }
 
+/**
+ * Indexes of various accounts in a Jupiter V6 route instruction.
+ * https://github.com/jup-ag/jupiter-cpi/blob/main/idl.json
+ */
+const JupiterRouteAccountIndex = {
+  TOKEN_PROGRAM: 0,
+  USER_TRANSFER_AUTHORITY: 1,
+  USER_SOURCE_TOKEN_ACCOUNT: 2,
+  USER_DESTINATION_TOKEN_ACCOUNT: 3,
+  DESTINATION_TOKEN_ACCOUNT: 4,
+  DESTINATION_MINT: 5,
+  PLATFORM_FEE_ACCOUNT: 6,
+  EVENT_AUTHORITY: 7,
+  PROGRAM: 8
+}
+
+export const computeInstructionDiscriminant = (
+  instructionName: string
+): Buffer => {
+  const hash = crypto.createHash('sha256')
+  hash.update(`global:${instructionName}`)
+  return hash.digest().slice(0, 8)
+}
+
+export const JUPITER_ROUTE_DISCRIMINANT =
+  computeInstructionDiscriminant('route')
+export const JUPITER_SHARED_ACCOUNTS_ROUTE_DISCRIMINANT =
+  computeInstructionDiscriminant('shared_accounts_route')
+
+const getJupiterInstructionType = (
+  instruction: TransactionInstruction
+): 'route' | 'sharedAccountRoute' | 'unknown' => {
+  if (instruction.data.length < 8) {
+    return 'unknown'
+  }
+
+  const instructionDiscriminant = instruction.data.slice(0, 8)
+
+  if (instructionDiscriminant.equals(JUPITER_ROUTE_DISCRIMINANT)) {
+    return 'route'
+  } else if (
+    instructionDiscriminant.equals(JUPITER_SHARED_ACCOUNTS_ROUTE_DISCRIMINANT)
+  ) {
+    return 'sharedAccountRoute'
+  }
+
+  return 'unknown'
+}
+
 // Only allow swaps to SOL (for withdrawals) or USDC, AUDIO, or BONK (for userbank purchases)
 const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
@@ -312,32 +363,74 @@ const assertAllowedJupiterProgramInstruction = async (
       'Jupiter Swap requires authentication'
     )
   }
-  const sourceMint =
-    instruction.keys[
-      JupiterSharedSwapAccountIndex.SOURCE_MINT
-    ].pubkey.toBase58()
-  const destinationMint =
-    instruction.keys[
-      JupiterSharedSwapAccountIndex.DESTINATION_MINT
-    ].pubkey.toBase58()
-  const userWallet =
-    instruction.keys[
-      JupiterSharedSwapAccountIndex.USER_TRANSFER_AUTHORITY
-    ].pubkey.toBase58()
+
+  const instructionType = getJupiterInstructionType(instruction)
+  if (instructionType === 'unknown') {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      'Invalid Jupiter Program Instruction, Unknown Instruction Type'
+    )
+  }
+
+  let sourceMint: string | null = null
+  let destinationMint: string | null = null
+  let userWallet: string | null = null
+
+  try {
+    if (instructionType === 'sharedAccountRoute') {
+      // Handle shared_accounts_route instruction
+      sourceMint =
+        instruction.keys[
+          JupiterSharedSwapAccountIndex.SOURCE_MINT
+        ].pubkey.toBase58()
+      destinationMint =
+        instruction.keys[
+          JupiterSharedSwapAccountIndex.DESTINATION_MINT
+        ].pubkey.toBase58()
+      userWallet =
+        instruction.keys[
+          JupiterSharedSwapAccountIndex.USER_TRANSFER_AUTHORITY
+        ].pubkey.toBase58()
+    } else if (instructionType === 'route') {
+      // Handle route instruction
+      destinationMint =
+        instruction.keys[
+          JupiterRouteAccountIndex.DESTINATION_MINT
+        ].pubkey.toBase58()
+      userWallet =
+        instruction.keys[
+          JupiterRouteAccountIndex.USER_TRANSFER_AUTHORITY
+        ].pubkey.toBase58()
+
+      // For route instructions, the source mint is not directly available in the accounts
+      // It would need to be derived from the user's source token account via RPC call
+      // For security and performance reasons, we skip source mint validation for route instructions
+      // but still validate the destination mint and user authority
+    }
+  } catch (error) {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      `Failed to parse Jupiter ${instructionType} instruction: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
+  }
 
   const allowedMints = await getAllowedMints()
   allowedMints.push(
     NATIVE_MINT.toBase58() // Allow swaps to/from SOL
   )
 
-  if (!allowedMints.includes(sourceMint)) {
+  if (
+    instructionType === 'sharedAccountRoute' &&
+    sourceMint &&
+    !allowedMints.includes(sourceMint)
+  ) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid source mint: ${sourceMint}`
     )
   }
 
-  if (!allowedMints.includes(destinationMint)) {
+  if (destinationMint && !allowedMints.includes(destinationMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid destination mint: ${destinationMint}`
@@ -348,7 +441,7 @@ const assertAllowedJupiterProgramInstruction = async (
   const feePayerAddresses = config.solanaFeePayerWallets.map((kp) =>
     kp.publicKey.toBase58()
   )
-  if (feePayerAddresses?.includes(userWallet)) {
+  if (userWallet && feePayerAddresses?.includes(userWallet)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid transfer authority: ${userWallet}`

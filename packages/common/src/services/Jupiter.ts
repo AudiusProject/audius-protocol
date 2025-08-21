@@ -20,7 +20,8 @@ export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
 // Define JupiterTokenSymbol type here since we can't import it directly
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
 
-const MAX_ACCOUNTS = 20
+export const DEFAULT_MAX_ACCOUNTS = 20
+export const MAX_ALLOWED_ACCOUNTS = 64
 
 let _jup: ReturnType<typeof createJupiterApiClient>
 
@@ -99,7 +100,7 @@ export const getJupiterQuoteByMint = async ({
   slippageBps,
   swapMode = 'ExactIn',
   onlyDirectRoutes = false,
-  maxAccounts = MAX_ACCOUNTS
+  maxAccounts = DEFAULT_MAX_ACCOUNTS
 }: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
   const amount =
     swapMode === 'ExactIn'
@@ -134,6 +135,66 @@ export const getJupiterQuoteByMint = async ({
       swapMode === 'ExactIn' ? outputDecimals : inputDecimals
     ),
     quote
+  }
+}
+
+export type JupiterQuoteWithRetryResult = {
+  maxAccountsValue: number
+  quoteResult: JupiterQuoteResult
+}
+
+/**
+ * Gets a Jupiter quote with automatic retry logic for maxAccounts
+ * Starts with DEFAULT_MAX_ACCOUNTS and increments by 10 until MAX_ALLOWED_ACCOUNTS
+ * Returns the successful quote along with the maxAccounts value that worked
+ */
+export const getJupiterQuoteByMintWithRetry = async ({
+  inputMint,
+  outputMint,
+  inputDecimals,
+  outputDecimals,
+  amountUi,
+  slippageBps,
+  swapMode = 'ExactIn',
+  onlyDirectRoutes = false
+}: Omit<
+  JupiterMintQuoteParams,
+  'maxAccounts'
+>): Promise<JupiterQuoteWithRetryResult> => {
+  let maxAccounts = DEFAULT_MAX_ACCOUNTS
+  let lastError
+  let quoteResult: JupiterQuoteResult | null = null
+
+  while (maxAccounts <= MAX_ALLOWED_ACCOUNTS) {
+    try {
+      quoteResult = await getJupiterQuoteByMint({
+        inputMint,
+        outputMint,
+        inputDecimals,
+        outputDecimals,
+        amountUi,
+        slippageBps,
+        swapMode,
+        onlyDirectRoutes,
+        maxAccounts
+      })
+      break
+    } catch (err) {
+      lastError = err
+      maxAccounts += 10
+      if (maxAccounts > MAX_ALLOWED_ACCOUNTS) {
+        throw lastError
+      }
+    }
+  }
+
+  if (quoteResult === null) {
+    throw lastError
+  }
+
+  return {
+    maxAccountsValue: maxAccounts,
+    quoteResult
   }
 }
 

@@ -14,8 +14,9 @@ import {
 import { Feature } from '~/models'
 import {
   convertJupiterInstructions,
-  getJupiterQuoteByMint,
-  jupiterInstance
+  getJupiterQuoteByMintWithRetry,
+  jupiterInstance,
+  JupiterQuoteResult
 } from '~/services/Jupiter'
 import { useTokens } from '~/store/ui/buy-sell'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
@@ -28,7 +29,11 @@ import {
   SwapTokensResult,
   UserBankManagedTokenInfo
 } from './types'
-import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
+import {
+  addUserBankToAtaInstructions,
+  addJupiterOutputAtaInstruction,
+  getSwapErrorResponse
+} from './utils'
 
 const SWAP_LOOKUP_TABLE_ADDRESS = new PublicKey(
   '2WB87JxGZieRd7hi3y87wq6HAsPLyb9zrSx8B5z1QEzM'
@@ -74,7 +79,7 @@ export const useSwapTokens = () => {
       const slippageBps = params.slippageBps ?? 50
       const wrapUnwrapSol = params.wrapUnwrapSol ?? true
 
-      let quoteResult
+      let quoteResult: JupiterQuoteResult | undefined
       let signature: string | undefined
       let errorStage = 'UNKNOWN'
       const instructions: TransactionInstruction[] = []
@@ -117,7 +122,7 @@ export const useSwapTokens = () => {
 
         // ---------- 3. Get Quote from Jupiter ----------
         errorStage = 'QUOTE_RETRIEVAL'
-        quoteResult = await getJupiterQuoteByMint({
+        const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
           inputMint: inputMintUiAddress,
           outputMint: outputMintUiAddress,
           inputDecimals: inputToken.decimals,
@@ -127,6 +132,7 @@ export const useSwapTokens = () => {
           swapMode: 'ExactIn',
           onlyDirectRoutes: false
         })
+        quoteResult = quote
 
         // ---------- 4. Prepare Transaction Instructions ----------
 
@@ -146,6 +152,7 @@ export const useSwapTokens = () => {
           feePayer,
           instructions
         })
+        let outputAtaForJupiter: PublicKey | undefined
 
         // --- 3b. Determine Jupiter's Destination Token Account ---
         errorStage = 'OUTPUT_TOKEN_PREPARATION'
@@ -160,33 +167,62 @@ export const useSwapTokens = () => {
 
         // --- 3c. Get Jupiter Swap Instructions ---
         errorStage = 'SWAP_INSTRUCTION_RETRIEVAL'
+        let swapInstructionsResult
+        const swapRequestParams = {
+          quoteResponse: quoteResult.quote,
+          userPublicKey: userPublicKey.toBase58(),
+          destinationTokenAccount: preferredJupiterDestination,
+          wrapAndUnwrapSol: wrapUnwrapSol
+        }
+        try {
+          swapInstructionsResult = await jupiterInstance.swapInstructionsPost({
+            swapRequest: {
+              ...swapRequestParams,
+              useSharedAccounts: true
+            }
+          })
+        } catch (e) {
+          // In the case of simple AMMs, we will see an error that looks like this:
+          // {
+          //   error: "Simple AMMs are not supported with shared accounts"
+          //   errorCode: "NOT_SUPPORTED"
+          // }
+          // We can retry with useSharedAccounts: false and bail out if that still errors
+          swapInstructionsResult = await jupiterInstance.swapInstructionsPost({
+            swapRequest: {
+              ...swapRequestParams,
+              useSharedAccounts: false
+            }
+          })
+          // If getting the instruction succeeded, we need to manually handle
+          // the intermediary account for the output mint
+          outputAtaForJupiter = addJupiterOutputAtaInstruction({
+            tokenConfig: outputTokenConfig,
+            userPublicKey,
+            feePayer,
+            instructions
+          })
+        }
         const {
           tokenLedgerInstruction,
           swapInstruction,
           addressLookupTableAddresses
-        } = await jupiterInstance.swapInstructionsPost({
-          swapRequest: {
-            quoteResponse: quoteResult.quote,
-            userPublicKey: userPublicKey.toBase58(),
-            destinationTokenAccount: preferredJupiterDestination,
-            wrapAndUnwrapSol: wrapUnwrapSol,
-            useSharedAccounts: true
-          }
-        })
-
+        } = swapInstructionsResult
         const jupiterInstructions = convertJupiterInstructions([
           tokenLedgerInstruction,
           swapInstruction
         ])
-
         instructions.push(...jupiterInstructions)
 
         // --- 3f. Add Cleanup Instructions for Temporary ATAs ---
         const atasToClose: PublicKey[] = []
-
         // Add source ATA if it's temporary
         if (sourceAtaForJupiter) {
           atasToClose.push(sourceAtaForJupiter)
+        }
+        // Add output ATA if it's temporary
+        if (outputAtaForJupiter) {
+          atasToClose.push(outputAtaForJupiter)
         }
 
         // Add close account instructions for all ATAs that need to be closed
