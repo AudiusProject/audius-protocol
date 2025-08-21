@@ -47,15 +47,6 @@ export const executeDirectSwap = async (
 
   const instructions: TransactionInstruction[] = []
 
-  // Get quote
-  const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
-    inputMint: inputMintUiAddress,
-    outputMint: outputMintUiAddress,
-    amountUi,
-    swapMode: 'ExactIn',
-    onlyDirectRoutes: false
-  })
-
   // Validate tokens and create configs
   const tokenConfigsResult = validateAndCreateTokenConfigs(
     inputMintUiAddress,
@@ -68,6 +59,17 @@ export const executeDirectSwap = async (
   }
 
   const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+
+  // Get quote
+  const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
+    inputMint: inputMintUiAddress,
+    outputMint: outputMintUiAddress,
+    inputDecimals: inputTokenConfig.decimals,
+    outputDecimals: outputTokenConfig.decimals,
+    amountUi,
+    swapMode: 'ExactIn',
+    onlyDirectRoutes: false
+  })
 
   // Prepare input token
   const sourceAtaForJupiter = await addUserBankToAtaInstructions({

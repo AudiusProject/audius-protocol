@@ -31,6 +31,7 @@ import {
 
 // AUDIO mint address for use as intermediary token
 const AUDIO_MINT = TOKEN_LISTING_MAP.AUDIO.address
+const AUDIO_DECIMALS = TOKEN_LISTING_MAP.AUDIO.decimals
 
 export const executeDoubleSwap = async (
   params: SwapTokensParams,
@@ -57,24 +58,6 @@ export const executeDoubleSwap = async (
   const firstInstructions: TransactionInstruction[] = []
   const secondInstructions: TransactionInstruction[] = []
 
-  // Get first quote: InputToken -> AUDIO
-  const { quoteResult: firstQuote } = await getJupiterQuoteByMintWithRetry({
-    inputMint: inputMintUiAddress,
-    outputMint: AUDIO_MINT,
-    amountUi,
-    swapMode: 'ExactIn',
-    onlyDirectRoutes: false
-  })
-
-  // Get second quote: AUDIO -> OutputToken
-  const { quoteResult: secondQuote } = await getJupiterQuoteByMintWithRetry({
-    inputMint: AUDIO_MINT,
-    outputMint: outputMintUiAddress,
-    amountUi: firstQuote.outputAmount.uiAmount,
-    swapMode: 'ExactIn',
-    onlyDirectRoutes: false
-  })
-
   // Validate tokens and create configs
   const tokenConfigsResult = validateAndCreateTokenConfigs(
     inputMintUiAddress,
@@ -87,6 +70,28 @@ export const executeDoubleSwap = async (
   }
 
   const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+
+  // Get first quote: InputToken -> AUDIO
+  const { quoteResult: firstQuote } = await getJupiterQuoteByMintWithRetry({
+    inputMint: inputMintUiAddress,
+    outputMint: AUDIO_MINT,
+    inputDecimals: inputTokenConfig.decimals,
+    outputDecimals: AUDIO_DECIMALS,
+    amountUi,
+    swapMode: 'ExactIn',
+    onlyDirectRoutes: false
+  })
+
+  // Get second quote: AUDIO -> OutputToken
+  const { quoteResult: secondQuote } = await getJupiterQuoteByMintWithRetry({
+    inputMint: AUDIO_MINT,
+    outputMint: outputMintUiAddress,
+    inputDecimals: AUDIO_DECIMALS,
+    outputDecimals: outputTokenConfig.decimals,
+    amountUi: firstQuote.outputAmount.uiAmount,
+    swapMode: 'ExactIn',
+    onlyDirectRoutes: false
+  })
 
   // Prepare input token for first swap
   const sourceAtaForJupiter = await addUserBankToAtaInstructions({
