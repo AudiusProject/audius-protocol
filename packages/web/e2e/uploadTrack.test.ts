@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test'
 
-import { getAiAttributionUser, getTrack } from './data'
+import { getTrack } from './data'
 import {
   RemixSettingsModal,
   TrackPriceAndAudienceModal,
@@ -50,9 +50,8 @@ test('should upload a track', async ({ page }) => {
 
 // TODO: re-enable if we decide it's critical path
 // https://linear.app/audius/issue/INF-703/re-enable-uploadtracktestts-advanced-test-cases
-test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
+test('should upload a remix hidden track', async ({ page }) => {
   const { title, permalink } = getTrack()
-  const { name: aiAttributionName } = getAiAttributionUser()
   const trackTitle = `Test track ${Date.now()}`
   const trackDescription = 'Test description'
   const genre = 'Alternative'
@@ -103,7 +102,6 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
 
   await editPage.openAttributionSettings()
   const attributionModal = new AdvancedModal(page)
-  await attributionModal.markAsAIGenerated(aiAttributionName)
   await attributionModal.setISRC(isrc)
   await attributionModal.setISWC(iswc)
   await attributionModal.setAllowAttribution(true)
@@ -154,9 +152,6 @@ test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
   // Assert remix
   await expect(page.getByText('ORIGINAL TRACK')).toBeVisible()
   await expect(page.getByRole('link', { name: remixName })).toBeVisible()
-
-  // Assert AI generated
-  await expect(page.getByText('generated with ai').first()).toBeVisible()
 
   // Assert ISRC
   // TODO

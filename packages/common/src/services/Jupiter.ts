@@ -43,15 +43,6 @@ const getInstance = () => {
 
 export const jupiterInstance = getInstance()
 
-/**
- * Helper function to find a token by its mint address
- */
-const findTokenByMint = (mintAddress: string) => {
-  return Object.values(TOKEN_LISTING_MAP).find(
-    (token) => token.address === mintAddress
-  )
-}
-
 export type JupiterQuoteParams = {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
@@ -65,6 +56,8 @@ export type JupiterQuoteParams = {
 export type JupiterMintQuoteParams = {
   inputMint: string
   outputMint: string
+  inputDecimals: number
+  outputDecimals: number
   amountUi: number
   slippageBps?: number
   swapMode?: SwapMode
@@ -94,8 +87,6 @@ export type JupiterQuoteResult = {
   quote: QuoteResponse
 }
 
-const DEFAULT_DECIMALS = 9
-
 /**
  * Gets a quote from Jupiter using mint addresses directly
  * This version is used by the useSwapTokens hook
@@ -103,19 +94,14 @@ const DEFAULT_DECIMALS = 9
 export const getJupiterQuoteByMint = async ({
   inputMint,
   outputMint,
+  inputDecimals,
+  outputDecimals,
   amountUi,
   slippageBps,
   swapMode = 'ExactIn',
   onlyDirectRoutes = false,
   maxAccounts = DEFAULT_MAX_ACCOUNTS
 }: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
-  const inputToken = findTokenByMint(inputMint)
-  const outputToken = findTokenByMint(outputMint)
-
-  // Default to 9 decimals if tokens aren't found (fallback for safety)
-  const inputDecimals = inputToken?.decimals ?? DEFAULT_DECIMALS
-  const outputDecimals = outputToken?.decimals ?? DEFAULT_DECIMALS
-
   const amount =
     swapMode === 'ExactIn'
       ? Number(new FixedDecimal(amountUi, inputDecimals).value.toString())
@@ -166,6 +152,8 @@ export type JupiterQuoteWithRetryResult = {
 export const getJupiterQuoteByMintWithRetry = async ({
   inputMint,
   outputMint,
+  inputDecimals,
+  outputDecimals,
   amountUi,
   slippageBps,
   swapMode = 'ExactIn',
@@ -183,11 +171,13 @@ export const getJupiterQuoteByMintWithRetry = async ({
       quoteResult = await getJupiterQuoteByMint({
         inputMint,
         outputMint,
+        inputDecimals,
+        outputDecimals,
         amountUi,
         slippageBps,
         swapMode,
-        maxAccounts,
-        onlyDirectRoutes
+        onlyDirectRoutes,
+        maxAccounts
       })
       break
     } catch (err) {

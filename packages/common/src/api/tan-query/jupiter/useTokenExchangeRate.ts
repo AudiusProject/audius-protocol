@@ -5,11 +5,14 @@ import { useQuery } from '@tanstack/react-query'
 
 import { getJupiterQuoteByMint, MAX_ALLOWED_ACCOUNTS } from '~/services/Jupiter'
 
+import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
 export type TokenExchangeRateParams = {
   inputMint: string
   outputMint: string
+  inputDecimals: number
+  outputDecimals: number
   inputAmount?: number
   swapMode?: SwapMode
 }
@@ -39,13 +42,17 @@ const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
 export const getTokenExchangeRateQueryKey = ({
   inputMint,
   outputMint,
+  inputDecimals,
+  outputDecimals,
   inputAmount,
   swapMode
 }: TokenExchangeRateParams) =>
   [
-    'tokenExchangeRate',
+    QUERY_KEYS.tokenExchangeRate,
     inputMint,
     outputMint,
+    inputDecimals,
+    outputDecimals,
     inputAmount ?? 1,
     swapMode ?? 'ExactIn'
   ] as unknown as QueryKey<TokenExchangeRateResponse>
@@ -80,6 +87,8 @@ export const useTokenExchangeRate = (
     queryKey: getTokenExchangeRateQueryKey({
       inputMint: params.inputMint,
       outputMint: params.outputMint,
+      inputDecimals: params.inputDecimals,
+      outputDecimals: params.outputDecimals,
       inputAmount: safeInputAmount,
       swapMode: params.swapMode
     }),
@@ -89,6 +98,8 @@ export const useTokenExchangeRate = (
         const quoteResult = await getJupiterQuoteByMint({
           inputMint: params.inputMint,
           outputMint: params.outputMint,
+          inputDecimals: params.inputDecimals,
+          outputDecimals: params.outputDecimals,
           amountUi: safeInputAmount,
           slippageBps: SLIPPAGE_BPS,
           swapMode: params.swapMode ?? 'ExactIn',
