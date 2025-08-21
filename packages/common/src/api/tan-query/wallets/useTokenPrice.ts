@@ -38,7 +38,7 @@ export const useTokenPrice = (
 
       try {
         const response = await fetch(
-          `https://lite-api.jup.ag/price/v2?ids=${tokenMint}`
+          `https://lite-api.jup.ag/price/v3?ids=${tokenMint}`
         )
 
         if (!response.ok) {
