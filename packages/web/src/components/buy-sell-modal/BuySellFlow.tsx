@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useMemo } from 'react'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   useBuySellScreen,
   useBuySellSwap,
@@ -18,11 +19,13 @@ import {
   useTokens
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
+import { matchPath, useLocation } from 'react-router-dom'
 
 import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { getPathname } from 'utils/route'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
@@ -94,7 +97,21 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   // Track if user has attempted to submit the form
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
-  const selectedPair = supportedTokenPairs[0]
+  const location = useLocation()
+  const pathname = getPathname(location)
+  const match = matchPath<{ mint: string }>(pathname, {
+    path: ASSET_DETAIL_PAGE,
+    exact: true
+  })
+  const pairFromLocation =
+    match?.params.mint &&
+    supportedTokenPairs.find(
+      (pair) =>
+        pair.baseToken.address === match.params.mint &&
+        pair.quoteToken.symbol === 'USDC'
+    )
+
+  const selectedPair = pairFromLocation || supportedTokenPairs[0]
 
   // Use custom hooks for token state management
   const {
