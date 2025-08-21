@@ -30,7 +30,7 @@ import {
   UserBankManagedTokenInfo
 } from './types'
 
-export async function addUserBankToAtaInstructions({
+export async function addTransferFromUserBankInstructions({
   tokenInfo,
   userPublicKey,
   ethAddress,
@@ -82,7 +82,7 @@ export async function addUserBankToAtaInstructions({
   return ata
 }
 
-export async function addAtaToUserBankInstructions({
+export async function addTransferToUserBankInstructions({
   tokenInfo,
   userPublicKey,
   ethAddress,

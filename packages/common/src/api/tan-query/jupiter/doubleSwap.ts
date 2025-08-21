@@ -21,8 +21,8 @@ import {
   SwapStatus
 } from './types'
 import {
-  addAtaToUserBankInstructions,
-  addUserBankToAtaInstructions,
+  addTransferToUserBankInstructions,
+  addTransferFromUserBankInstructions,
   buildAndSendTransaction,
   getJupiterSwapInstructions,
   invalidateSwapQueries,
@@ -94,7 +94,7 @@ export const executeDoubleSwap = async (
   })
 
   // Prepare input token for first swap
-  const sourceAtaForJupiter = await addUserBankToAtaInstructions({
+  const sourceAtaForJupiter = await addTransferFromUserBankInstructions({
     tokenInfo: inputTokenConfig,
     userPublicKey,
     ethAddress: ethAddress!,
@@ -199,7 +199,7 @@ export const executeDoubleSwap = async (
   secondInstructions.push(...secondSwapInstructions)
 
   // Transfer tokens from destination ATA to user bank
-  await addAtaToUserBankInstructions({
+  await addTransferToUserBankInstructions({
     tokenInfo: outputTokenConfig,
     userPublicKey,
     ethAddress: ethAddress!,

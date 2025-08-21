@@ -15,7 +15,7 @@ import {
   SwapStatus
 } from './types'
 import {
-  addUserBankToAtaInstructions,
+  addTransferFromUserBankInstructions,
   buildAndSendTransaction,
   getJupiterSwapInstructions,
   invalidateSwapQueries,
@@ -72,7 +72,7 @@ export const executeDirectSwap = async (
   })
 
   // Prepare input token
-  const sourceAtaForJupiter = await addUserBankToAtaInstructions({
+  const sourceAtaForJupiter = await addTransferFromUserBankInstructions({
     tokenInfo: inputTokenConfig,
     userPublicKey,
     ethAddress: ethAddress!,
