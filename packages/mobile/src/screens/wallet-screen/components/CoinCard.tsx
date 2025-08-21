@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useArtistCoins } from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { useFeatureFlag, useFormattedTokenBalance } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { Image, TouchableOpacity } from 'react-native'
@@ -52,11 +52,10 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
     FeatureFlags.ARTIST_COINS
   )
 
-  const { data: coinsData, isPending: coinsDataLoading } = useArtistCoins({
-    mint: [mint]
+  const { data: coinData, isPending: coinsDataLoading } = useArtistCoin({
+    mint
   })
 
-  const coinData = coinsData?.[0] ?? null
   const icon = coinData?.logoUri ?? ''
 
   const onPress = useCallback(() => {

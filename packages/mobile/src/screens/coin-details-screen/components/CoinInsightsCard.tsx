@@ -1,4 +1,6 @@
 import { useArtistCoinInsights } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
+import { createCoinMetrics, type MetricData } from '@audius/common/utils'
 
 import {
   Flex,
@@ -10,17 +12,7 @@ import {
   IconKebabHorizontal
 } from '@audius/harmony-native'
 
-import type { MetricData } from './coinMetricsUtil'
-import { createCoinMetrics } from './coinMetricsUtil'
-
-const messages = {
-  title: 'Insights',
-  pricePerCoin: 'Price per coin',
-  holdersOnAudius: 'Holders on Audius',
-  uniqueHolders: 'Unique Holders',
-  volume24hr: 'Volume (24hr)',
-  totalTransfers: 'Total Transfers'
-}
+const messages = coinDetailsMessages.coinInsights
 
 const MetricRow = ({ metric }: { metric: MetricData }) => {
   const changeColor = metric.change?.isPositive ? 'premium' : 'danger'

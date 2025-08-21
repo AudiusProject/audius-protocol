@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useArtistCoin } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
 import type { Coin } from '@audius/sdk'
 import { decodeHashId } from '@audius/sdk'
@@ -21,26 +22,7 @@ import { useCoverPhoto } from 'app/components/image/CoverPhoto'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { env } from 'app/services/env'
 
-// TODO: Move these to common messages
-const messages = {
-  loading: 'Loading...',
-  createdBy: 'Created By',
-  whatIs: (title: string) => `What is ${title}?`,
-  description1: (title: string) =>
-    `${title} is a community token on the Audius platform. You can use ${title} for tipping artists, participating in community activities, and engaging with the decentralized music ecosystem.`,
-  description2: (title: string) =>
-    `Holding ${title} gives you access to exclusive features and helps support your favorite artists on Audius.`,
-  learnMore: 'Learn More',
-  viewLeaderboard: 'View Leaderboard',
-  title: 'Bronze +',
-  profileFlair: 'Profile Flair',
-  customDiscordRole: 'Custom Discord Role',
-  messageBlasts: 'Message Blasts',
-  openDiscord: 'Open The Discord',
-  refreshDiscordRole: 'Refresh Discord Role',
-  browseRewards: 'Browse Rewards',
-  rewardTiers: 'Reward Tiers'
-}
+const messages = coinDetailsMessages.coinInfo
 
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin({ mint })

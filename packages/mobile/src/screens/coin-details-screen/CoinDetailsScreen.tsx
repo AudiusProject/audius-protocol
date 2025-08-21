@@ -1,4 +1,5 @@
 import { useArtistCoin } from '@audius/common/api'
+import { route } from '@audius/common/utils'
 import { useRoute } from '@react-navigation/native'
 
 import { Flex } from '@audius/harmony-native'
@@ -8,8 +9,7 @@ import { BalanceCard } from './components/BalanceCard'
 import { CoinInfoCard } from './components/CoinInfoCard'
 import { CoinInsightsCard } from './components/CoinInsightsCard'
 import { CoinLeaderboardCard } from './components/CoinLeaderboardCard'
-
-// TODO: Add External Wallets section
+import { ExternalWalletsCard } from './components/ExternalWalletsCard'
 
 export const CoinDetailsScreen = () => {
   const { mint } = useRoute().params as { mint: string }
@@ -18,7 +18,7 @@ export const CoinDetailsScreen = () => {
 
   return (
     <Screen
-      url='/coin-details/:mint'
+      url={route.ASSET_DETAIL_PAGE}
       variant='secondary'
       title={ticker ?? 'Coin Details'}
     >
@@ -29,7 +29,7 @@ export const CoinDetailsScreen = () => {
             <CoinInfoCard mint={mint} />
             <CoinInsightsCard mint={mint} />
             <CoinLeaderboardCard mint={mint} />
-            {/* <ExternalWallets mint={mint} /> */}
+            <ExternalWalletsCard mint={mint} />
           </Flex>
         </ScrollView>
       </ScreenContent>

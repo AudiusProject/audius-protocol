@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useArtistCoinMembers, useUsers } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
 import { TouchableOpacity } from 'react-native'
 
 import {
@@ -15,10 +16,7 @@ import {
 import { useNavigation } from 'app/hooks/useNavigation'
 import { ProfilePictureList } from 'app/screens/notifications-screen/Notification'
 
-const messages = {
-  title: 'Members Leaderboard',
-  leaderboard: 'Leaderboard'
-}
+const messages = coinDetailsMessages.coinLeaderboard
 
 export const CoinLeaderboardCard = ({ mint }: { mint: string }) => {
   const navigation = useNavigation()

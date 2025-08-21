@@ -1,6 +1,6 @@
 import { useTokenBalance, useArtistCoins } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
-import { walletMessages } from '@audius/common/messages'
+import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
 import { Image } from 'react-native'
 
 import {
@@ -11,11 +11,7 @@ import {
   Button
 } from '@audius/harmony-native'
 
-const messages = {
-  becomeAMember: 'Become a Member',
-  hintDescription: (title: string) =>
-    `Buy ${title} to gain access to exclusive members-only perks!`
-}
+const messages = coinDetailsMessages.balance
 
 type BalanceStateProps = {
   title: string
