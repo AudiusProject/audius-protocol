@@ -1,5 +1,6 @@
 import { USDC, UsdcWei } from '@audius/fixed-decimal'
-import { AudiusSdk } from '@audius/sdk'
+import type { AudiusSdk } from '@audius/sdk'
+import { SwapRequest } from '@jup-ag/api'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   createCloseAccountInstruction,
@@ -7,9 +8,27 @@ import {
   getAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import {
+  PublicKey,
+  TransactionInstruction,
+  VersionedTransaction
+} from '@solana/web3.js'
+import type { Keypair } from '@solana/web3.js'
+import { useQueryClient } from '@tanstack/react-query'
 
-import { SwapErrorType, SwapStatus, UserBankManagedTokenInfo } from './types'
+import type { User } from '~/models/User'
+import { jupiterInstance } from '~/services/Jupiter'
+import { TokenInfo } from '~/store/ui/buy-sell/types'
+
+import { QUERY_KEYS } from '../queryKeys'
+
+import {
+  ClaimableTokenMint,
+  SwapErrorType,
+  SwapStatus,
+  SwapTokensResult,
+  UserBankManagedTokenInfo
+} from './types'
 
 export async function addUserBankToAtaInstructions({
   tokenInfo,
@@ -302,4 +321,156 @@ export function formatTokenPrice(price: string, decimalPlaces: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: maxDecimalPlaces
   })
+}
+
+const SWAP_LOOKUP_TABLE_ADDRESS = new PublicKey(
+  '2WB87JxGZieRd7hi3y87wq6HAsPLyb9zrSx8B5z1QEzM'
+)
+
+export const findTokenByAddress = (
+  tokens: Record<string, TokenInfo>,
+  address: string
+): TokenInfo | undefined => {
+  return Object.values(tokens).find(
+    (token) => token.address.toLowerCase() === address.toLowerCase()
+  )
+}
+
+export const getClaimableTokenMint = (token: TokenInfo): ClaimableTokenMint => {
+  if (token.symbol === 'USDC') return 'USDC'
+  return new PublicKey(token.address)
+}
+
+export const createTokenConfig = (
+  token: TokenInfo
+): UserBankManagedTokenInfo => ({
+  mintAddress: token.address,
+  claimableTokenMint: getClaimableTokenMint(token),
+  decimals: token.decimals
+})
+
+export const validateAndCreateTokenConfigs = (
+  inputMintAddress: string,
+  outputMintAddress: string,
+  tokens: Record<string, TokenInfo>
+):
+  | {
+      inputTokenConfig: UserBankManagedTokenInfo
+      outputTokenConfig: UserBankManagedTokenInfo
+    }
+  | { error: SwapTokensResult } => {
+  // Find input and output tokens
+  const inputToken = findTokenByAddress(tokens, inputMintAddress)
+  const outputToken = findTokenByAddress(tokens, outputMintAddress)
+
+  if (!inputToken || !outputToken) {
+    return {
+      error: {
+        status: SwapStatus.ERROR,
+        error: {
+          type: SwapErrorType.BUILD_FAILED,
+          message: 'Token not found in available tokens'
+        }
+      }
+    }
+  }
+
+  // Create token configs
+  const inputTokenConfig = createTokenConfig(inputToken)
+  const outputTokenConfig = createTokenConfig(outputToken)
+
+  return { inputTokenConfig, outputTokenConfig }
+}
+
+export const getJupiterSwapInstructions = async (
+  swapRequestParams: SwapRequest,
+  outputTokenConfig?: UserBankManagedTokenInfo,
+  userPublicKey?: PublicKey,
+  feePayer?: PublicKey,
+  instructions?: TransactionInstruction[]
+): Promise<{
+  swapInstructionsResult: any
+  outputAtaForJupiter?: PublicKey
+}> => {
+  let swapInstructionsResult
+  let outputAtaForJupiter: PublicKey | undefined
+
+  try {
+    swapInstructionsResult = await jupiterInstance.swapInstructionsPost({
+      swapRequest: {
+        ...swapRequestParams,
+        useSharedAccounts: true
+      }
+    })
+  } catch (e) {
+    swapInstructionsResult = await jupiterInstance.swapInstructionsPost({
+      swapRequest: {
+        ...swapRequestParams,
+        useSharedAccounts: false
+      }
+    })
+
+    // Add output ATA instruction if fallback is used and all required params are provided
+    if (outputTokenConfig && userPublicKey && feePayer && instructions) {
+      outputAtaForJupiter = addJupiterOutputAtaInstruction({
+        tokenConfig: outputTokenConfig,
+        userPublicKey,
+        feePayer,
+        instructions
+      })
+    }
+  }
+
+  return { swapInstructionsResult, outputAtaForJupiter }
+}
+
+export const buildAndSendTransaction = async (
+  sdk: AudiusSdk,
+  keypair: Keypair,
+  feePayer: PublicKey,
+  instructions: TransactionInstruction[],
+  addressLookupTableAddresses: string[]
+): Promise<string> => {
+  // Build transaction
+  const swapTx: VersionedTransaction =
+    await sdk.services.solanaClient.buildTransaction({
+      feePayer,
+      instructions,
+      addressLookupTables: addressLookupTableAddresses
+        .map((addr: string) => new PublicKey(addr))
+        .concat([SWAP_LOOKUP_TABLE_ADDRESS])
+    })
+
+  // Sign and send transaction
+  swapTx.sign([keypair])
+  return await sdk.services.solanaClient.sendTransaction(swapTx)
+}
+
+export const invalidateSwapQueries = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+  user: User
+): Promise<void> => {
+  // Invalidate user-specific queries
+  if (user?.wallet) {
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
+    })
+  }
+
+  // Invalidate general user coins query
+  await queryClient.invalidateQueries({
+    queryKey: [QUERY_KEYS.userCoins]
+  })
+}
+
+export const prepareOutputUserBank = async (
+  sdk: AudiusSdk,
+  ethAddress: string,
+  outputTokenConfig: UserBankManagedTokenInfo
+): Promise<string> => {
+  const result = await sdk.services.claimableTokensClient.getOrCreateUserBank({
+    ethWallet: ethAddress,
+    mint: outputTokenConfig.claimableTokenMint
+  })
+  return result.userBank.toBase58()
 }
