@@ -155,7 +155,7 @@ export const MetaTags = (props: MetaTagsProps) => {
         <link
           rel='alternate'
           type='application/json+oembed'
-          href={`${env.AUDIUS_URL}/oembed?url=${ogUrl || canonicalUrl}&format=json`}
+          href={`${env.AUDIUS_URL}/oembed?url=${canonicalUrl}&format=json`}
           title={formattedTitle}
         />
       </Helmet>
