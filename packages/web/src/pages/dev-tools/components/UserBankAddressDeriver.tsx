@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { TOKEN_LISTING_MAP } from '@audius/common/store'
+import { useArtistCoins } from '@audius/common/api'
 import {
   Button,
   Flex,
@@ -16,15 +16,30 @@ import { PublicKey } from '@solana/web3.js'
 import { useDevToolCardStyles } from '../DevTools'
 import { messages } from '../messages'
 
-const supportedTokens = ['AUDIO', 'USDC'] as const
-type SupportedToken = (typeof supportedTokens)[number]
-
 export const UserBankAddressDeriver = () => {
   const [ethAddress, setEthAddress] = useState('')
-  const [selectedToken, setSelectedToken] = useState<SupportedToken>('AUDIO')
+  const [selectedToken, setSelectedToken] = useState('')
   const [derivedAddress, setDerivedAddress] = useState('')
   const [error, setError] = useState('')
   const styles = useDevToolCardStyles()
+
+  const {
+    data: coins,
+    isPending: isLoadingCoins,
+    error: coinsError
+  } = useArtistCoins()
+
+  // Set default token when coins are loaded
+  const availableCoins = coins?.filter((coin) => coin.ticker) ?? []
+  const defaultToken =
+    availableCoins.find((coin) => coin.ticker === '$AUDIO')?.mint ??
+    availableCoins[0]?.mint ??
+    ''
+
+  // Set default token if not already set
+  if (selectedToken === '' && defaultToken !== '') {
+    setSelectedToken(defaultToken)
+  }
 
   const handleDeriveAddress = async () => {
     setDerivedAddress('')
@@ -40,13 +55,13 @@ export const UserBankAddressDeriver = () => {
     }
 
     try {
-      const mintInfo = TOKEN_LISTING_MAP[selectedToken]
-      if (!mintInfo) {
-        setError(`Token information not found for ${selectedToken}`)
+      const selectedCoin = coins?.find((coin) => coin.mint === selectedToken)
+      if (!selectedCoin) {
+        setError(`Token information not found for selected token`)
         return
       }
 
-      const mintPk = new PublicKey(mintInfo.address)
+      const mintPk = new PublicKey(selectedCoin.mint)
       const programIdPk = ClaimableTokensProgram.programId
 
       const authorityPDA = await ClaimableTokensProgram.deriveAuthority({
@@ -103,17 +118,25 @@ export const UserBankAddressDeriver = () => {
         label={messages.userBankDeriverTokenLabel}
         hideLabel
         value={selectedToken}
-        onChange={(value: string) => setSelectedToken(value as SupportedToken)}
+        onChange={(value: string) => setSelectedToken(value)}
         aria-label={messages.userBankDeriverTokenLabel}
-        options={supportedTokens.map((token) => ({
-          value: token,
-          label: token
+        options={availableCoins.map((coin) => ({
+          value: coin.mint,
+          label: coin.ticker || coin.mint
         }))}
         width='100%'
+        disabled={isLoadingCoins}
       />
 
-      <Button variant='secondary' fullWidth onClick={handleDeriveAddress}>
-        {messages.userBankDeriverButton}
+      <Button
+        variant='secondary'
+        fullWidth
+        onClick={handleDeriveAddress}
+        disabled={
+          isLoadingCoins || availableCoins.length === 0 || !selectedToken
+        }
+      >
+        {isLoadingCoins ? 'Loading tokens...' : messages.userBankDeriverButton}
       </Button>
 
       {derivedAddress && (
@@ -129,13 +152,13 @@ export const UserBankAddressDeriver = () => {
         </Flex>
       )}
 
-      {error && (
+      {(error || coinsError) && (
         <Flex direction='column' gap='s' css={{ width: '100%' }}>
           <Text variant='label' size='s' color='danger'>
             {messages.userBankDeriverErrorLabel}
           </Text>
           <Text variant='body' color='danger'>
-            {error}
+            {error || (coinsError ? 'Failed to load available tokens' : '')}
           </Text>
         </Flex>
       )}
