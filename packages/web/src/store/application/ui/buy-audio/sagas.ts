@@ -517,9 +517,7 @@ function* populateAndSaveTransactionDetails() {
     transactionType: TransactionType.PURCHASE,
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
-    balance: !isNullOrUndefined(postAUDIOBalanceWei)
-      ? (postAUDIOBalanceWei / BigInt(10 ** 9)).toString()
-      : null,
+    balance: postAUDIOBalanceWei.toString(),
     change: purchasedAudioWei
       ? (BigInt(purchasedAudioWei) / BigInt(10 ** 9)).toString()
       : '',
