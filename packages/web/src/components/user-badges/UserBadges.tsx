@@ -39,6 +39,10 @@ import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
 
 import styles from './UserBadges.module.css'
 
+const messages = {
+  verified: 'Verified'
+}
+
 export const audioTierMap: {
   [tier in BadgeTier]: Nullable<ReactElement>
 } = {
@@ -121,7 +125,7 @@ const UserBadges = ({
           <Flex alignItems='center' justifyContent='center' gap='s' p='s'>
             <IconVerified size='l' />
             <Text variant='title' size='l'>
-              Verified
+              {messages.verified}
             </Text>
           </Flex>
         }
