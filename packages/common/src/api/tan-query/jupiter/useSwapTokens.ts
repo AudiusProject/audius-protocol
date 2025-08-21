@@ -49,11 +49,6 @@ const initializeSwapDependencies = async (
       }
     }
 
-    // 2RJSv1zegefnkAkEJGRUJ5kTbuAkLo6i75RpKB1ArJvXYy14AzH75X3rrXXhseuLzyo1sasd79dQcGtf9YLpFTM
-    // Call to DBC swap instead of Jupiter swap
-    // Buy Artsti coins flow
-    //
-
     const userPublicKey = keypair.publicKey
     const feePayer = await sdk.services.solanaClient.getFeePayer()
     const ethAddress = user?.wallet
