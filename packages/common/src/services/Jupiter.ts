@@ -151,6 +151,8 @@ export type JupiterQuoteWithRetryResult = {
 export const getJupiterQuoteByMintWithRetry = async ({
   inputMint,
   outputMint,
+  inputDecimals,
+  outputDecimals,
   amountUi,
   slippageBps,
   swapMode = 'ExactIn',
@@ -168,6 +170,8 @@ export const getJupiterQuoteByMintWithRetry = async ({
       quoteResult = await getJupiterQuoteByMint({
         inputMint,
         outputMint,
+        inputDecimals,
+        outputDecimals,
         amountUi,
         slippageBps,
         swapMode,
