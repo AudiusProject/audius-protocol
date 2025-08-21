@@ -33,7 +33,6 @@ export const executeDirectSwap = async (
     outputMint: outputMintUiAddress,
     amountUi
   } = params
-  const slippageBps = params.slippageBps ?? 50
   const wrapUnwrapSol = params.wrapUnwrapSol ?? true
 
   const {
@@ -53,7 +52,6 @@ export const executeDirectSwap = async (
     inputMint: inputMintUiAddress,
     outputMint: outputMintUiAddress,
     amountUi,
-    slippageBps,
     swapMode: 'ExactIn',
     onlyDirectRoutes: false
   })
@@ -93,7 +91,8 @@ export const executeDirectSwap = async (
     quoteResponse: quote.quote,
     userPublicKey: userPublicKey.toBase58(),
     destinationTokenAccount: preferredJupiterDestination,
-    wrapAndUnwrapSol: wrapUnwrapSol
+    wrapAndUnwrapSol: wrapUnwrapSol,
+    dynamicSlippage: true
   }
 
   const { swapInstructionsResult, outputAtaForJupiter } =
@@ -104,16 +103,10 @@ export const executeDirectSwap = async (
       feePayer,
       instructions
     )
-  const {
-    tokenLedgerInstruction,
-    swapInstruction,
-    addressLookupTableAddresses
-  } = swapInstructionsResult
+  const { swapInstruction, addressLookupTableAddresses } =
+    swapInstructionsResult
 
-  const jupiterInstructions = convertJupiterInstructions([
-    tokenLedgerInstruction,
-    swapInstruction
-  ])
+  const jupiterInstructions = convertJupiterInstructions([swapInstruction])
 
   instructions.push(...jupiterInstructions)
 

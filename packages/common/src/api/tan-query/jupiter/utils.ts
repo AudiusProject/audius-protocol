@@ -1,6 +1,6 @@
 import { USDC, UsdcWei } from '@audius/fixed-decimal'
 import type { AudiusSdk } from '@audius/sdk'
-import { SwapRequest } from '@jup-ag/api'
+import { SwapInstructionsResponse, SwapRequest } from '@jup-ag/api'
 import {
   createAssociatedTokenAccountIdempotentInstruction,
   createCloseAccountInstruction,
@@ -389,7 +389,7 @@ export const getJupiterSwapInstructions = async (
   feePayer?: PublicKey,
   instructions?: TransactionInstruction[]
 ): Promise<{
-  swapInstructionsResult: any
+  swapInstructionsResult: SwapInstructionsResponse
   outputAtaForJupiter?: PublicKey
 }> => {
   let swapInstructionsResult
@@ -443,7 +443,16 @@ export const buildAndSendTransaction = async (
 
   // Sign and send transaction
   swapTx.sign([keypair])
-  return await sdk.services.solanaClient.sendTransaction(swapTx)
+  const signature = await sdk.services.solanaClient.sendTransaction(swapTx)
+
+  // Wait for transaction confirmation to ensure the state changes are available
+  // for subsequent transactions in double swaps
+  await sdk.services.solanaClient.connection.confirmTransaction(
+    signature,
+    'finalized'
+  )
+
+  return signature
 }
 
 export const invalidateSwapQueries = async (

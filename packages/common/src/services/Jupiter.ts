@@ -66,7 +66,7 @@ export type JupiterMintQuoteParams = {
   inputMint: string
   outputMint: string
   amountUi: number
-  slippageBps: number
+  slippageBps?: number
   swapMode?: SwapMode
   onlyDirectRoutes?: boolean
   maxAccounts?: number
@@ -128,7 +128,8 @@ export const getJupiterQuoteByMint = async ({
     slippageBps,
     swapMode,
     onlyDirectRoutes,
-    maxAccounts
+    maxAccounts,
+    dynamicSlippage: !slippageBps
   })
 
   if (!quote) {
@@ -185,8 +186,8 @@ export const getJupiterQuoteByMintWithRetry = async ({
         amountUi,
         slippageBps,
         swapMode,
-        onlyDirectRoutes,
-        maxAccounts
+        maxAccounts,
+        onlyDirectRoutes
       })
       break
     } catch (err) {
