@@ -68,7 +68,7 @@ export const SuccessPage = () => {
             +
             {transactionDetails.status === Status.SUCCESS
               ? wAUDIO(
-                  transactionDetails.transactionDetails.change
+                  BigInt(transactionDetails.transactionDetails.change)
                 ).toLocaleString('en-US', {
                   maximumFractionDigits: 0,
                   minimumFractionDigits: 0
