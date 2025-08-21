@@ -6,6 +6,7 @@ import {
   useUserCoins
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
+import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
 import {
   Flex,
@@ -31,29 +32,7 @@ import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
 
-import { AssetDetailProps } from '../types'
-
-const messages = {
-  loading: 'Loading...',
-  createdBy: 'Created By',
-  whatIs: (title: string) => `What is ${title}?`,
-  description1: (title: string) =>
-    `${title} is a community token on the Audius platform. You can use ${title} for tipping artists, participating in community activities, and engaging with the decentralized music ecosystem.`,
-  description2: (title: string) =>
-    `Holding ${title} gives you access to exclusive features and helps support your favorite artists on Audius.`,
-  learnMore: 'Learn More',
-  viewLeaderboard: 'View Leaderboard',
-  title: 'Bronze +',
-  profileFlair: 'Profile Flair',
-  customDiscordRole: 'Custom Discord Role',
-  messageBlasts: 'Message Blasts',
-  openDiscord: 'Join The Discord',
-  refreshDiscordRole: 'Refresh Discord Role',
-  browseRewards: 'Browse Rewards',
-  rewardTiers: 'Reward Tiers',
-  discordDisabledTooltip: (coinTicker: string = '') =>
-    `Buy ${coinTicker} to access the members only Discord`
-}
+const messages = coinDetailsMessages.coinInfo
 
 const BANNER_HEIGHT = 120
 
@@ -138,7 +117,11 @@ const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
   return <Avatar src={logoURI} w={spacing.unit8} h={spacing.unit8} />
 }
 
-const BannerSection = ({ mint }: AssetDetailProps) => {
+type BannerSectionProps = {
+  mint: string
+}
+
+const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin({ mint })
 
   const userId = coin?.ownerId
@@ -232,7 +215,11 @@ const BannerSection = ({ mint }: AssetDetailProps) => {
   )
 }
 
-export const AssetInfoSection = ({ mint }: AssetDetailProps) => {
+type AssetInfoSectionProps = {
+  mint: string
+}
+
+export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
   const { data: coin, isLoading } = useArtistCoin({ mint })
