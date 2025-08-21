@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { getJupiterQuoteByMint } from '~/services/Jupiter'
 
+import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions, type QueryKey } from '../types'
 
 export type TokenExchangeRateParams = {
@@ -47,7 +48,7 @@ export const getTokenExchangeRateQueryKey = ({
   swapMode
 }: TokenExchangeRateParams) =>
   [
-    'tokenExchangeRate',
+    QUERY_KEYS.tokenExchangeRate,
     inputMint,
     outputMint,
     inputDecimals,
