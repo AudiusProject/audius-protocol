@@ -106,7 +106,6 @@ export const RootScreen = () => {
       dispatch(connect())
       dispatch(fetchMoreChats())
       dispatch(fetchUnreadMessagesCount())
-      // Check for recoverable USDC on app startup
       dispatch(startRecoveryIfNecessary())
     }
     return () => {
