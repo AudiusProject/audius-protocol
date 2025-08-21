@@ -105,19 +105,7 @@ export const useSwapTokens = () => {
         const feePayer = await sdk.services.solanaClient.getFeePayer()
         const ethAddress = user?.wallet
 
-        // ---------- 2. Get Quote from Jupiter ----------
-        errorStage = 'QUOTE_RETRIEVAL'
-        const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
-          inputMint: inputMintUiAddress,
-          outputMint: outputMintUiAddress,
-          amountUi,
-          slippageBps,
-          swapMode: 'ExactIn',
-          onlyDirectRoutes: false
-        })
-        quoteResult = quote
-
-        // ---------- 3. Prepare Transaction Instructions ----------
+        // ---------- 2. Prepare Token Information ----------
         // Find input and output tokens from our backend-driven token data
         const inputToken = findTokenByAddress(tokens, inputMintUiAddress)
         const outputToken = findTokenByAddress(tokens, outputMintUiAddress)
@@ -131,6 +119,22 @@ export const useSwapTokens = () => {
             }
           }
         }
+
+        // ---------- 3. Get Quote from Jupiter ----------
+        errorStage = 'QUOTE_RETRIEVAL'
+        const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
+          inputMint: inputMintUiAddress,
+          outputMint: outputMintUiAddress,
+          inputDecimals: inputToken.decimals,
+          outputDecimals: outputToken.decimals,
+          amountUi,
+          slippageBps,
+          swapMode: 'ExactIn',
+          onlyDirectRoutes: false
+        })
+        quoteResult = quote
+
+        // ---------- 4. Prepare Transaction Instructions ----------
 
         // Create UserBankManagedTokenInfo objects
         const inputTokenConfig = createTokenConfig(inputToken)

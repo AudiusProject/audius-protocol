@@ -199,6 +199,8 @@ export const useTokenSwapForm = ({
   } = useTokenExchangeRate({
     inputMint,
     outputMint,
+    inputDecimals: inputToken.decimals,
+    outputDecimals: outputToken.decimals,
     inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
   })
 
@@ -206,6 +208,8 @@ export const useTokenSwapForm = ({
   const { data: displayExchangeRateData } = useTokenExchangeRate({
     inputMint,
     outputMint,
+    inputDecimals: inputToken.decimals,
+    outputDecimals: outputToken.decimals,
     inputAmount: 1
   })
 
