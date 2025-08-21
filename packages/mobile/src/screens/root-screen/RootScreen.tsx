@@ -6,7 +6,11 @@ import {
   useAccountStatus
 } from '@audius/common/api'
 import { MobileOS, Status } from '@audius/common/models'
-import { chatActions, playerActions } from '@audius/common/store'
+import {
+  buyUSDCActions,
+  chatActions,
+  playerActions
+} from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
@@ -38,6 +42,7 @@ import { useResetNotificationBadgeCount } from './useResetNotificationBadgeCount
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playerActions
+const { startRecoveryIfNecessary } = buyUSDCActions
 const { FEED_PAGE } = route
 
 const Stack = createNativeStackNavigator()
@@ -101,6 +106,8 @@ export const RootScreen = () => {
       dispatch(connect())
       dispatch(fetchMoreChats())
       dispatch(fetchUnreadMessagesCount())
+      // Check for recoverable USDC on app startup
+      dispatch(startRecoveryIfNecessary())
     }
     return () => {
       dispatch(disconnect())
