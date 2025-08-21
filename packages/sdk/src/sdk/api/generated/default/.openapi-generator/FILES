@@ -8,6 +8,7 @@ apis/EventsApi.ts
 apis/ExploreApi.ts
 apis/PlaylistsApi.ts
 apis/ResolveApi.ts
+apis/RewardsApi.ts
 apis/TipsApi.ts
 apis/TracksApi.ts
 apis/UsersApi.ts
@@ -24,6 +25,9 @@ models/BestSellingItem.ts
 models/BestSellingResponse.ts
 models/BlobInfo.ts
 models/ChallengeResponse.ts
+models/ClaimRewardsRequest.ts
+models/ClaimRewardsResponse.ts
+models/ClaimRewardsResponseDataInner.ts
 models/Coin.ts
 models/CoinInsights.ts
 models/CoinInsightsExtensions.ts
