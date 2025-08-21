@@ -38,18 +38,21 @@ export const useTokenPrice = (
 
       try {
         const response = await fetch(
-          `https://lite-api.jup.ag/price/v2?ids=${tokenMint}`
+          `https://lite-api.jup.ag/price/v3?ids=${tokenMint}`
         )
 
         if (!response.ok) {
           throw new Error(`Failed to fetch token price: ${response.statusText}`)
         }
 
-        const data = await response.json()
+        const responseJson = await response.json()
 
         // Return the price data for the requested token
-        if (data?.data?.[tokenMint]) {
-          return data.data[tokenMint] as TokenPriceResponse
+        if (responseJson?.[tokenMint]) {
+          return {
+            price: responseJson[tokenMint].usdPrice.toString(),
+            mint: tokenMint
+          } as TokenPriceResponse
         }
 
         return null
