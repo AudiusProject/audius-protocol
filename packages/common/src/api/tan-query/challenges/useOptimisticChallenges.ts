@@ -58,10 +58,15 @@ const toOptimisticChallenge = (
 
   if (challenge.cooldown_days > 0) {
     // For cooldown challenges, calculate claimable amount from undisbursed challenges
-    claimableAmount = undisbursed
-      .filter(isCooldownChallengeClaimable)
-      .reduce((sum, u) => sum + u.amount, 0)
-  } else if (challenge.is_complete && !challenge.is_disbursed) {
+    const claimableUndisbursed = undisbursed.filter(
+      isCooldownChallengeClaimable
+    )
+    claimableAmount = claimableUndisbursed.reduce((sum, u) => sum + u.amount, 0)
+  } else if (challenge.challenge_type === 'aggregate') {
+    // For aggregate challenges without cooldown, all undisbursed amounts are claimable
+    claimableAmount = undisbursed.reduce((sum, u) => sum + u.amount, 0)
+  } else if (state === 'completed') {
+    // For non-aggregate completed challenges, use the challenge amount
     claimableAmount = challenge.amount
   }
 
