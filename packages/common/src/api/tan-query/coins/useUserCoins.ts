@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { HashId, Id, UserCoin as UserCoinSdk } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
