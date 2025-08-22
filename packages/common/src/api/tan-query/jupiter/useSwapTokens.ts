@@ -8,9 +8,11 @@ import {
 import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
 import type { User } from '~/models/User'
-import { JupiterQuoteResult } from '~/services/Jupiter'
+import {
+  getJupiterQuoteByMintWithRetry,
+  JupiterQuoteResult
+} from '~/services/Jupiter'
 import { useTokens } from '~/store/ui/buy-sell'
-import { TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
 
 import { executeDirectSwap } from './directSwap'
 import { executeDoubleSwap } from './doubleSwap'
@@ -21,9 +23,49 @@ import {
   SwapTokensParams,
   SwapTokensResult
 } from './types'
-import { getSwapErrorResponse } from './utils'
+import { getSwapErrorResponse, validateAndCreateTokenConfigs } from './utils'
 
-const AUDIO_MINT = TOKEN_LISTING_MAP.AUDIO.address
+/**
+ * Attempts to get a direct quote from Jupiter for the given token pair.
+ * Returns true if a direct quote is available, false otherwise.
+ */
+const isDirectRouteAvailable = async (
+  inputMint: string,
+  outputMint: string,
+  amountUi: number,
+  tokens: Record<string, any>
+): Promise<boolean> => {
+  try {
+    // Validate tokens and create configs
+    const tokenConfigsResult = validateAndCreateTokenConfigs(
+      inputMint,
+      outputMint,
+      tokens
+    )
+
+    if ('error' in tokenConfigsResult) {
+      return false
+    }
+
+    const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+
+    // Try to get a direct quote
+    await getJupiterQuoteByMintWithRetry({
+      inputMint,
+      outputMint,
+      inputDecimals: inputTokenConfig.decimals,
+      outputDecimals: outputTokenConfig.decimals,
+      amountUi,
+      swapMode: 'ExactIn',
+      onlyDirectRoutes: false
+    })
+
+    return true
+  } catch (error) {
+    // If quote fails, there's no direct path available
+    return false
+  }
+}
 
 const initializeSwapDependencies = async (
   solanaWalletService: QueryContextType['solanaWalletService'],
@@ -123,32 +165,20 @@ export const useSwapTokens = () => {
 
         const dependencies = dependenciesResult
 
-        // Check if this is a direct swap involving AUDIO
-        const isInputAudio = inputMintUiAddress === AUDIO_MINT
-        const isOutputAudio = outputMintUiAddress === AUDIO_MINT
-        const isDirect = isInputAudio || isOutputAudio
+        errorStage = 'DIRECT_QUOTE_CHECK'
+        const hasDirectPath = await isDirectRouteAvailable(
+          inputMintUiAddress,
+          outputMintUiAddress,
+          params.amountUi,
+          tokens
+        )
 
-        if (isDirect) {
+        if (hasDirectPath) {
           return await executeDirectSwap(params, dependencies, tokens)
         } else {
           return await executeDoubleSwap(params, dependencies, tokens)
         }
       } catch (error: unknown) {
-        // Handle transaction size limit exceeded
-        if (
-          (error as Error).message?.includes('Transaction too large') ||
-          (error as Error).message?.includes('1232')
-        ) {
-          return {
-            status: SwapStatus.ERROR,
-            error: {
-              type: SwapErrorType.BUILD_FAILED,
-              message:
-                'Transaction too large for single transaction. Use two-transaction approach.'
-            }
-          }
-        }
-
         reportToSentry({
           name: `JupiterSwap${errorStage}Error`,
           error: error as Error,
