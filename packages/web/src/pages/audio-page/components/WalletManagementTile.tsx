@@ -277,7 +277,8 @@ const ManageWalletsButton = () => {
 export const WalletManagementTile = () => {
   const isManagedAccount = useIsManagedAccount()
   const { totalBalance, isLoading: isBalanceLoading } = useAudioBalance({
-    includeConnectedWallets: true
+    includeConnectedWallets: true,
+    includeStaked: true
   })
   const { data: connectedWallets } = useConnectedWallets()
   const [, setOpen] = useModalState('AudioBreakdown')
