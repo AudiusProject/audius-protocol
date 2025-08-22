@@ -10,6 +10,12 @@ import { ID } from '~/models'
 import { QUERY_KEYS } from '../queryKeys'
 import { useQueryContext, type QueryContextType } from '../utils'
 
+export type UseUserCreatedCoinsParams = {
+  userId: ID | null | undefined
+  limit?: number
+  offset?: number
+}
+
 export const getUserCreatedCoinsQueryKey = (
   userId?: ID | null,
   limit?: number,
@@ -42,11 +48,7 @@ const getUserCreatedCoinsQueryFn =
  */
 const getUserCreatedCoinsOptions = (
   context: Pick<QueryContextType, 'audiusSdk'>,
-  {
-    userId,
-    limit = 5,
-    offset = 0
-  }: { userId: ID | null | undefined; limit?: number; offset?: number }
+  { userId, limit = 5, offset = 0 }: UseUserCreatedCoinsParams
 ) => {
   return queryOptions({
     queryKey: getUserCreatedCoinsQueryKey(userId, limit, offset),
@@ -62,7 +64,7 @@ const getUserCreatedCoinsOptions = (
  * @returns
  */
 export const useUserCreatedCoins = (
-  params: { userId: ID | null | undefined; limit?: number; offset?: number },
+  params: UseUserCreatedCoinsParams,
   options?: Partial<ReturnType<typeof getUserCreatedCoinsOptions>>
 ) => {
   const context = useQueryContext()
