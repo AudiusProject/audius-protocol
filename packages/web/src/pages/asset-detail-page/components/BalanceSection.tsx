@@ -21,7 +21,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 type BalanceStateProps = {
-  title: string
+  ticker: string
   logoURI?: string
   onBuy?: () => void
   onReceive?: () => void
@@ -62,7 +62,7 @@ const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
 }
 
 const ZeroBalanceState = ({
-  title,
+  ticker,
   logoURI,
   onBuy,
   onReceive
@@ -72,9 +72,24 @@ const ZeroBalanceState = ({
       <Flex gap='s' alignItems='center'>
         <TokenIcon logoURI={logoURI} />
         <Text variant='heading' size='l' color='subdued'>
-          {title}
+          {ticker}
         </Text>
       </Flex>
+      <Paper
+        ph='xl'
+        pv='l'
+        backgroundColor='surface2'
+        border='default'
+        direction='column'
+        gap='xs'
+      >
+        <Text variant='heading' size='s'>
+          {walletMessages.becomeMemberTitle}
+        </Text>
+        <Text variant='body' size='s' color='default' strength='default'>
+          {walletMessages.becomeMemberBody(ticker)}
+        </Text>
+      </Paper>
       <Flex gap='s'>
         <Button variant='primary' fullWidth onClick={onBuy}>
           {walletMessages.buy}
@@ -88,7 +103,7 @@ const ZeroBalanceState = ({
 }
 
 const HasBalanceState = ({
-  title,
+  ticker,
   logoURI,
   onBuy,
   onSend,
@@ -122,7 +137,7 @@ const HasBalanceState = ({
               {tokenBalanceFormatted}
             </Text>
             <Text variant='heading' size='l' color='subdued'>
-              {title}
+              {ticker}
             </Text>
           </Flex>
           <Text variant='heading' size='s' color='subdued'>
@@ -207,7 +222,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
     return <BalanceSectionSkeleton />
   }
 
-  const title = coin.ticker ?? ''
+  const ticker = coin.ticker ?? ''
   const logoURI = coin.logoUri
 
   return (
@@ -216,14 +231,14 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
         {!tokenBalance?.balance ||
         Number(tokenBalance.balance.toString()) === 0 ? (
           <ZeroBalanceState
-            title={title}
+            ticker={ticker}
             logoURI={logoURI}
             onBuy={handleAddCash}
             onReceive={handleReceive}
           />
         ) : (
           <HasBalanceState
-            title={title}
+            ticker={ticker}
             logoURI={logoURI}
             onBuy={handleBuySell}
             onSend={handleSend}

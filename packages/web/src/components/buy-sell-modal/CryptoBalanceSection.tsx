@@ -31,7 +31,13 @@ export const CryptoBalanceSection = ({
         </Flex>
       ) : null}
       <Flex alignItems='center' gap='s' data-testid='token-icon'>
-        <TokenIcon tokenInfo={tokenInfo} w='unit16' h='unit16' hex />
+        <TokenIcon
+          logoURI={tokenInfo.logoURI}
+          icon={tokenInfo.icon}
+          w='unit16'
+          h='unit16'
+          hex
+        />
         <Flex direction='column'>
           <Text variant='heading' size='l'>
             {amount}

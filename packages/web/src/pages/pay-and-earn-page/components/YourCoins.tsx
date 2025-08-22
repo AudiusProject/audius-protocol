@@ -1,9 +1,9 @@
 import { Fragment, useCallback, useContext } from 'react'
 
 import {
+  UserCoin,
   useArtistCoins,
   useCurrentUserId,
-  UserCoin,
   useUserCoins
 } from '@audius/common/api'
 import {

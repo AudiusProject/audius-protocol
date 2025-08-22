@@ -59,6 +59,10 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
     dispatch(setVisibility(true))
   }
 
+  if (leaderboardUsers?.length === 0) {
+    return null
+  }
+
   return (
     <Paper
       borderRadius='l'

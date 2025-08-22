@@ -108,6 +108,7 @@ export const QUERY_KEYS = {
   recentlyCommentedTracks: 'recentlyCommentedTracks',
   artistCoinMembers: 'artistCoinMembers',
   coins: 'coins',
+  userCreatedCoins: 'userCreatedCoins',
   userCoins: 'userCoins',
   coin: 'coin',
   discordCode: 'discordCode',
