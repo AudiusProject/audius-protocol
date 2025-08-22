@@ -85,7 +85,6 @@ const HoverCardComponent = ({
         anchorRef={anchorRef}
         isVisible={isVisible}
         onClose={handleClose}
-        dismissOnMouseLeave={triggeredBy !== 'click'}
         hideCloseButton
         zIndex={30000}
         anchorOrigin={anchorOrigin}

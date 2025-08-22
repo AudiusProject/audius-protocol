@@ -83,7 +83,7 @@ export class SolanaClient {
       priorityFee = {
         priority: 'VERY_HIGH',
         minimumMicroLamports: 150_000,
-        maximumMicroLamports: 1_000_000,
+        maximumMicroLamports: 10_000_000,
         multiplier: 1.5
       },
       computeLimit = { simulationMultiplier: 1.5 }

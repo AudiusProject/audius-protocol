@@ -5,6 +5,7 @@ import {
   QUERY_KEYS,
   useCurrentUserId
 } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
 import { Chain } from '@audius/common/models'
 import { useUserCoin } from '@audius/common/src/api/tan-query/coins/useUserCoin'
 import { shortenSPLAddress } from '@audius/common/utils'
@@ -35,30 +36,10 @@ import {
   AlreadyAssociatedError,
   useConnectAndAssociateWallets
 } from '../../../hooks/useConnectAndAssociateWallets'
-import { AssetDetailProps } from '../types'
 
 const COPIED_TOAST_TIMEOUT = 2000
 
-const messages = {
-  noBalanceTitle: 'Link External Wallet',
-  hasBalanceTitle: 'Balance Breakdown',
-  description:
-    'Link an external wallet to take advantage of in-app features, and take full control of your assets.',
-  loadingText: 'Loading...',
-  buttonText: 'Add External Wallet',
-  copied: 'Copied To Clipboard!',
-  copy: 'Copy Wallet Address',
-  remove: 'Remove Wallet',
-  options: 'Options',
-  newWalletConnected: 'New Wallet Successfully Connected!',
-  error: 'Something went wrong. Please try again.',
-  walletAlreadyAdded: 'No new wallets selected to connect.',
-  builtIn: 'Built-In',
-  toasts: {
-    walletRemoved: 'Wallet removed successfully!',
-    error: 'Error removing wallet'
-  }
-}
+const messages = coinDetailsMessages.externalWallets
 
 type WalletRowProps = {
   mint: string
@@ -163,7 +144,11 @@ const WalletRow = ({
   )
 }
 
-export const ExternalWallets = ({ mint }: AssetDetailProps) => {
+type ExternalWalletsProps = {
+  mint: string
+}
+
+export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
   const { data: userCoins, isLoading } = useUserCoin({
     mint
   })

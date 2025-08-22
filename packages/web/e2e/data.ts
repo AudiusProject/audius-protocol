@@ -132,18 +132,3 @@ export const getPlaylist = () => {
     name: 'PROBERS_PLAYLIST_DO_NOT_DELETE'
   }
 }
-
-export const getAiAttributionUser = () => {
-  if (runAgainstLocalStack) {
-    const { handle, name } = user2()
-
-    return {
-      handle,
-      name
-    }
-  }
-
-  return {
-    name: 'probers ai DO NOT DELETE'
-  }
-}

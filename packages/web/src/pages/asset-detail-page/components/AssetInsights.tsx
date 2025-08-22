@@ -1,19 +1,12 @@
 import { useArtistCoinInsights } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
+import { createCoinMetrics, MetricData } from '@audius/common/utils'
 import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
 
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
-import { createCoinMetrics, MetricData } from '../../../utils/coinMetrics'
-import { AssetDetailProps } from '../types'
 
-const messages = {
-  title: 'Insights',
-  pricePerCoin: 'Price per coin',
-  holdersOnAudius: 'Holders on Audius',
-  uniqueHolders: 'Unique Holders',
-  volume24hr: 'Volume (24hr)',
-  totalTransfers: 'Total Transfers'
-}
+const messages = coinDetailsMessages.coinInsights
 
 const AssetInsightsSkeleton = () => {
   return (
@@ -110,7 +103,11 @@ const MetricRow = componentWithErrorBoundary(MetricRowComponent, {
   name: 'MetricRow'
 })
 
-export const AssetInsights = ({ mint }: AssetDetailProps) => {
+type AssetInsightsProps = {
+  mint: string
+}
+
+export const AssetInsights = ({ mint }: AssetInsightsProps) => {
   const {
     data: coinInsights,
     isPending,

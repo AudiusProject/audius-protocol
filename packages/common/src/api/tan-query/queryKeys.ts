@@ -98,6 +98,7 @@ export const QUERY_KEYS = {
   tokenPrice: 'tokenPrice',
   usdcBalance: 'usdcBalance',
   fileSizes: 'fileSizes',
+  sendTokens: 'sendTokens',
   managedAccounts: 'managedAccounts',
   userManagers: 'userManagers',
   reactions: 'reactions',
@@ -115,5 +116,6 @@ export const QUERY_KEYS = {
   artistCoinByMint: 'artistCoinByMint',
   userCoin: 'userCoin',
   artistCoinMembersCount: 'artistCoinMembersCount',
-  userbank: 'userbank'
+  userbank: 'userbank',
+  tokenExchangeRate: 'tokenExchangeRate'
 } as const
