@@ -52,7 +52,6 @@ export const useUserOwnedCoin = (userId: ID | null) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const select = useMemo(
     () => (data: UserCoinParsed[]) => {
-      console.log({ data })
       return data.find((coin) => {
         return coin.ownerId === userId
       })

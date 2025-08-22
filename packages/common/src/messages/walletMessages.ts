@@ -85,6 +85,6 @@ export const walletMessages = {
   receiveTokensClose: 'Close',
   receiveTokensCopied: 'Copied to Clipboard!',
   becomeMemberTitle: 'Become a member',
-  becomeMemberBody: (coinTicker: string = '') =>
+  becomeMemberBody: (coinTicker: string) =>
     `Buy ${coinTicker} to gain access to exclusive members-only perks!`
 }

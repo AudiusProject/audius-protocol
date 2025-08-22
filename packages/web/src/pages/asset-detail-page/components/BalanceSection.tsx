@@ -81,7 +81,7 @@ const ZeroBalanceState = ({
         direction='column'
         gap='xs'
       >
-        <Text variant='heading' size='s' color='default' strength='default'>
+        <Text variant='heading' size='s'>
           {walletMessages.becomeMemberTitle}
         </Text>
         <Text variant='body' size='s' color='default' strength='default'>

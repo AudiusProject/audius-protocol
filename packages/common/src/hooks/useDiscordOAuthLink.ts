@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { UserCoin, useCurrentUserId, useUserCoins } from '~/api'
+import { UserCoinParsed, useCurrentUserId, useUserCoins } from '~/api'
 import { getTierForUserNonWei } from '~/store'
 import { AUDIUS_DISCORD_OAUTH_LINK } from '~/utils/route'
 
@@ -13,7 +13,7 @@ const COIN_TIER_MAP = {
 // e.g. { AUDIO: 'bronze', BONK: 'holder' }
 // The discord bot looks at this to determine what roles to give everyone
 const makeDiscordOauthStateString = (
-  userCoins: UserCoin[],
+  userCoins: UserCoinParsed[],
   currentCoin: string = '$AUDIO' // uses ticker strings
 ) => {
   const coinTiers = userCoins.reduce(

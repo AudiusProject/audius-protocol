@@ -103,6 +103,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
   const isRecentCommentsEnabled =
     recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
+  const isArtistCoinsEnabled = useFeatureFlag(FeatureFlags.ARTIST_COINS)
 
   if (editMode) {
     return (
@@ -225,7 +226,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
 
         {/* For artist coin owners, replace the tip CTA with their coin */}
-        {accountUserId !== userId && !isArtistCoinLoading ? (
+        {accountUserId !== userId &&
+        !isArtistCoinLoading &&
+        isArtistCoinsEnabled ? (
           ownedCoin ? (
             <BuyArtistCoinCard mint={ownedCoin.mint} />
           ) : (
