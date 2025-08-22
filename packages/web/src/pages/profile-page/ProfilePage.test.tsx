@@ -188,7 +188,7 @@ export function renderProfilePage(overrides = {}, options?: RenderOptions) {
       return HttpResponse.json(mockData.events)
     }),
     // User coins API
-    http.get(`${apiEndpoint}/v1/users/${user.id}/coins`, () => {
+    http.get(`${apiEndpoint}/v1/coins`, () => {
       return HttpResponse.json(mockData.userCoins)
     }),
     // Artist coin API

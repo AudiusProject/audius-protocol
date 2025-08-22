@@ -1,4 +1,4 @@
-import { useCurrentUserId, useOwnedUserCoins } from '@audius/common/api'
+import { useCurrentUserId, useUserCreatedCoins } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -94,13 +94,18 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
 
   const { data: accountUserId } = useCurrentUserId()
   const { data: ownedCoins, isPending: isArtistCoinLoading } =
-    useOwnedUserCoins({ userId, limit: 1 })
+    useUserCreatedCoins({ userId, limit: 1 })
   const ownedCoin = ownedCoins?.[0]
 
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
   const isRecentCommentsEnabled =
     recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
   const isArtistCoinsEnabled = useFeatureFlag(FeatureFlags.ARTIST_COINS)
+  const showArtistCoinCTA =
+    accountUserId !== userId &&
+    !isArtistCoinLoading &&
+    isArtistCoinsEnabled &&
+    !!ownedCoin
 
   if (editMode) {
     return (
@@ -223,15 +228,11 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
 
         {/* For artist coin owners, replace the tip CTA with their coin */}
-        {accountUserId !== userId &&
-        !isArtistCoinLoading &&
-        isArtistCoinsEnabled ? (
-          ownedCoin ? (
-            <BuyArtistCoinCard mint={ownedCoin.mint} />
-          ) : (
-            <TipAudioButton />
-          )
-        ) : null}
+        {showArtistCoinCTA ? (
+          <BuyArtistCoinCard mint={ownedCoin.mint} />
+        ) : (
+          <TipAudioButton />
+        )}
         {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />

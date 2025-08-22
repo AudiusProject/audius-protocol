@@ -1,29 +1,36 @@
 import { Id } from '@audius/sdk'
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useQuery,
+  type QueryFunctionContext
+} from '@tanstack/react-query'
 
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { useQueryContext, type QueryContextType } from '../utils'
 
-export const getOwnedUserCoinsQueryKey = (
+export const getUserCreatedCoinsQueryKey = (
   userId?: ID | null,
   limit?: number,
   offset?: number
-) => [QUERY_KEYS.userOwnedCoins, userId, { limit, offset }] as const
+) => [QUERY_KEYS.userCreatedCoins, userId, { limit, offset }] as const
 
 /**
  * Query function for fetching coins owned by a user
  */
-const getOwnedUserCoinsQueryFn =
-  (context: QueryContextType) =>
-  async (params: { userId: ID; limit?: number; offset?: number }) => {
+const getUserCreatedCoinsQueryFn =
+  (context: Pick<QueryContextType, 'audiusSdk'>) =>
+  async ({
+    queryKey
+  }: QueryFunctionContext<ReturnType<typeof getUserCreatedCoinsQueryKey>>) => {
+    const [_ignored, userId, { limit, offset }] = queryKey
     const sdk = await context.audiusSdk()
 
     const response = await sdk.coins.getCoins({
-      ownerId: [Id.parse(params.userId)],
-      limit: params.limit,
-      offset: params.offset
+      ownerId: [Id.parse(userId)],
+      limit,
+      offset
     })
 
     return response.data ?? []
@@ -33,8 +40,8 @@ const getOwnedUserCoinsQueryFn =
  * Helper function to get the query options for fetching coins owned by a user.
  * Useful for getting the query key tagged with the data type stored in the cache.
  */
-const getOwnedUserCoinsOptions = (
-  context: QueryContextType,
+const getUserCreatedCoinsOptions = (
+  context: Pick<QueryContextType, 'audiusSdk'>,
   {
     userId,
     limit = 5,
@@ -42,32 +49,27 @@ const getOwnedUserCoinsOptions = (
   }: { userId: ID | null | undefined; limit?: number; offset?: number }
 ) => {
   return queryOptions({
-    queryKey: getOwnedUserCoinsQueryKey(userId, limit, offset),
-    queryFn: () =>
-      getOwnedUserCoinsQueryFn(context)({
-        userId: userId!,
-        limit,
-        offset
-      }),
+    queryKey: getUserCreatedCoinsQueryKey(userId, limit, offset),
+    queryFn: getUserCreatedCoinsQueryFn(context),
     enabled: !!userId
   })
 }
 
 /**
- * Returns a list of coins the user has launched and is the owner for
+ * Returns a list of coins the user has launchedU
  * @param userId
  * @param options
  * @returns
  */
-export const useOwnedUserCoins = (
+export const useUserCreatedCoins = (
   params: { userId: ID | null | undefined; limit?: number; offset?: number },
-  options?: Partial<ReturnType<typeof getOwnedUserCoinsOptions>>
+  options?: Partial<ReturnType<typeof getUserCreatedCoinsOptions>>
 ) => {
   const context = useQueryContext()
 
   return useQuery({
     ...options,
-    ...getOwnedUserCoinsOptions(context, params),
+    ...getUserCreatedCoinsOptions(context, params),
     enabled: options?.enabled !== false && !!params.userId
   })
 }
