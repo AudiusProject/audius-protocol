@@ -127,11 +127,11 @@ export const sdk = (config: SdkConfig) => {
   const oauth =
     typeof window !== 'undefined'
       ? new OAuth({
-        appName,
-        apiKey,
-        usersApi: apis.users,
-        logger: services.logger
-      })
+          appName,
+          apiKey,
+          usersApi: apis.users,
+          logger: services.logger
+        })
       : undefined
 
   return {
@@ -145,8 +145,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -233,22 +233,22 @@ const initializeServices = (config: SdkConfig) => {
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
-      addRequestSignatureMiddleware({
-        services: { audiusWalletClient, logger }
-      })
-    )
+        addRequestSignatureMiddleware({
+          services: { audiusWalletClient, logger }
+        })
+      )
     : new SolanaRelay(
-      new Configuration({
-        middleware
-      })
-    )
+        new Configuration({
+          middleware
+        })
+      )
 
   const archiverService = config.services?.archiverService
     ? config.services.archiverService.withMiddleware(
-      addRequestSignatureMiddleware({
-        services: { audiusWalletClient, logger }
-      })
-    )
+        addRequestSignatureMiddleware({
+          services: { audiusWalletClient, logger }
+        })
+      )
     : undefined
 
   const emailEncryptionService =
@@ -428,8 +428,8 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-        ? stagingConfig.network.apiEndpoint
-        : productionConfig.network.apiEndpoint
+      ? stagingConfig.network.apiEndpoint
+      : productionConfig.network.apiEndpoint
 
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
@@ -512,7 +512,6 @@ const initializeApis = ({
   const challenges = new ChallengesApi(
     apiClientConfig,
     users,
-    rewardsApi,
     services.discoveryNodeSelector,
     services.rewardManagerClient,
     services.claimableTokensClient,

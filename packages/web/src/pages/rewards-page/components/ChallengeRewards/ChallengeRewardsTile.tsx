@@ -1,22 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { useCurrentAccountUser, useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
 import { ChallengeName } from '@audius/common/src/models/AudioRewards'
 import {
   audioRewardsPageActions,
-  audioRewardsPageSelectors,
-  ChallengeRewardsModalType,
-  challengesSelectors,
-  CommonState
+  ChallengeRewardsModalType
 } from '@audius/common/store'
 import {
   makeOptimisticChallengeSortComparator,
   removeNullable
 } from '@audius/common/utils'
 import { Box, Flex, Text } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -31,11 +29,7 @@ import { Tile } from '../Tile'
 import { RewardPanel } from './RewardPanel'
 import { useRewardIds } from './hooks/useRewardIds'
 
-const { getUserChallenges, getUserChallengesLoading } =
-  audioRewardsPageSelectors
-const { fetchUserChallenges, setChallengeRewardsModalType } =
-  audioRewardsPageActions
-const { getOptimisticUserChallenges } = challengesSelectors
+const { setChallengeRewardsModalType } = audioRewardsPageActions
 
 type ChallengeRewardsTileProps = {
   className?: string
@@ -46,13 +40,11 @@ export const ChallengeRewardsTile = ({
 }: ChallengeRewardsTileProps) => {
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
-  const userChallengesLoading = useSelector(getUserChallengesLoading)
-  const userChallenges = useSelector(getUserChallenges)
-  const { data: currentAccount } = useCurrentAccount()
+
   const { data: currentUser } = useCurrentAccountUser()
-  const optimisticUserChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, currentAccount, currentUser)
-  )
+
+  const { optimisticUserChallenges, userChallenges, userChallengesLoading } =
+    useOptimisticChallenges(currentUser?.user_id)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const { isEnabled: isClaimAllRewardsEnabled } = useFeatureFlag(
     FeatureFlags.CLAIM_ALL_REWARDS_TILE
@@ -64,16 +56,10 @@ export const ChallengeRewardsTile = ({
     [ChallengeName.Referred]: hideReferredTile
   })
 
-  useEffect(() => {
-    if (!userChallengesLoading && !haveChallengesLoaded) {
-      setHaveChallengesLoaded(true)
-    }
-  }, [userChallengesLoading, haveChallengesLoaded])
-
-  useEffect(() => {
-    // Refresh user challenges on page visit
-    dispatch(fetchUserChallenges())
-  }, [dispatch])
+  // Update loading state tracking - no need for manual fetching with TanStack Query
+  if (!userChallengesLoading && !haveChallengesLoaded) {
+    setHaveChallengesLoaded(true)
+  }
 
   const openModal = (modalType: ChallengeRewardsModalType) => {
     dispatch(setChallengeRewardsModalType({ modalType }))
@@ -83,7 +69,6 @@ export const ChallengeRewardsTile = ({
   const rewardIdsSorted = useMemo(
     () =>
       rewardIds
-        // Filter out challenges that DN didn't return
         .map((id) => userChallenges[id]?.challenge_id)
         .filter(removeNullable)
         .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),

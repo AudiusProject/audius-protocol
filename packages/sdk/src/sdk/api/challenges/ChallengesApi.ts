@@ -13,8 +13,7 @@ import { AntiAbuseOracleAttestationError } from '../../utils/errors'
 import { parseParams } from '../../utils/parseParams'
 import {
   ChallengesApi as GeneratedChallengesApi,
-  Configuration,
-  RewardsApi
+  Configuration
 } from '../generated/default'
 import {
   ChallengesApi as GeneratedChallengesApiFull,
@@ -25,7 +24,7 @@ import type { UsersApi } from '../users/UsersApi'
 import {
   ChallengeId,
   ClaimAllRewardsSchema,
-  ClaimChallengeRewardsRequest,
+  ClaimRewardsRequest,
   ClaimRewardsSchema,
   GenerateSpecifierRequest,
   GenerateSpecifierSchema,
@@ -37,7 +36,6 @@ export class ChallengesApi extends GeneratedChallengesApi {
   constructor(
     config: Configuration,
     private readonly usersApi: UsersApi,
-    private readonly rewardsApi: RewardsApi,
     private readonly discoveryNodeSelector: DiscoveryNodeSelectorService,
     private readonly rewardManager: RewardManagerClient,
     private readonly claimableTokens: ClaimableTokensClient,
@@ -92,7 +90,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
    *
    * @see {@link generateSpecifier} to create the specifier argument.
    */
-  public async claimReward(request: ClaimChallengeRewardsRequest) {
+  public async claimReward(request: ClaimRewardsRequest) {
     const args = await parseParams('claimRewards', ClaimRewardsSchema)(request)
     const { challengeId, specifier, amount: inputAmount } = args
     const logger = this.logger.createPrefixedLogger(
@@ -174,7 +172,8 @@ export class ChallengesApi extends GeneratedChallengesApi {
       const threshold = PACKET_DATA_SIZE - estimatedEvaluateInstructionSize
       if (txSoFar.serialize().byteLength >= threshold) {
         logger.debug(
-          `Transaction size too large (size: ${txSoFar.serialize().byteLength
+          `Transaction size too large (size: ${
+            txSoFar.serialize().byteLength
           }), submitting attestations separately...`
         )
         const submissionSignature =
@@ -354,21 +353,4 @@ export class ChallengesApi extends GeneratedChallengesApi {
     })
     return (await res.json()) as ClaimAllResponseBody
   }
-
-  public async claimRewardsV2(request: ClaimChallengeRewardsRequest) {
-    const rewardsApi = this.rewardsApi
-    const response = await rewardsApi.claimRewards({
-      claimRewardsRequest: request
-    })
-
-    const sigs = Array.isArray(response.data?.[0]?.signatures)
-      ? response.data[0].signatures
-      : []
-
-    // Pick the last signature if available, this is the disbursement tx
-    const finalSignature = sigs.length > 0 ? sigs[sigs.length - 1] : null
-
-    return finalSignature
-  }
-
 }

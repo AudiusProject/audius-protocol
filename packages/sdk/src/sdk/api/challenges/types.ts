@@ -100,7 +100,7 @@ export const ClaimRewardsSchema = z
   })
   .strict()
 
-export type ClaimChallengeRewardsRequest = z.input<typeof ClaimRewardsSchema>
+export type ClaimRewardsRequest = z.input<typeof ClaimRewardsSchema>
 
 export type AttestationTransactionSignature = {
   transactionSignature: string

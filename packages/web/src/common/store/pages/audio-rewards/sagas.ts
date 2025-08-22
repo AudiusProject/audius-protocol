@@ -508,74 +508,67 @@ function* watchClaimAllChallengeRewards() {
 }
 
 function* fetchUserChallengesAsync() {
-  yield* call(waitForRead)
-  const sdk = yield* getSDK()
-  const currentUserId = yield* call(queryCurrentUserId)
-  if (!currentUserId) return
-
-  try {
-    const { data: challengesData = [] } = yield* call(
-      [sdk.users, sdk.users.getUserChallenges],
-      {
-        id: Id.parse(currentUserId)
-      }
-    )
-
-    // Fetch monthly play counts from 2025
-    const { data: monthlyPlays = {} } = yield* call(
-      [sdk.users, sdk.users.getUserMonthlyTrackListens],
-      {
-        id: Id.parse(currentUserId),
-        startTime: '2025-01-01',
-        // Making the end time one year from the current date since the challenge is technically never ending
-        endTime: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-          .toISOString()
-          .split('T')[0]
-      }
-    )
-
-    const totalPlaysOnOwnedTracks = Object.values(monthlyPlays).reduce(
-      (sum, month) => sum + (month.totalListens || 0),
-      0
-    )
-
-    let userChallenges = challengesData.map(userChallengeFromSDK)
-
-    // Only update play count milestone challenges if they exist and there are plays
-    if (
-      userChallenges.some((challenge) =>
-        isPlayCountChallenge(challenge.challenge_id)
-      )
-    ) {
-      userChallenges = userChallenges.map((challenge) => {
-        if (isPlayCountChallenge(challenge.challenge_id)) {
-          return {
-            ...challenge,
-            current_step_count: Math.max(
-              challenge.current_step_count,
-              totalPlaysOnOwnedTracks
-            )
-          }
-        }
-        return challenge
-      })
-    }
-
-    const { data = [] } = yield* call(
-      [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
-      {
-        userId: Id.parse(currentUserId),
-        limit: 500
-      }
-    )
-    const undisbursedChallenges = data.map(undisbursedUserChallengeFromSDK)
-
-    yield* put(fetchUserChallengesSucceeded({ userChallenges }))
-    yield* put(setUndisbursedChallenges(undisbursedChallenges))
-  } catch (e) {
-    console.error(e)
-    yield* put(fetchUserChallengesFailed())
-  }
+  // yield* call(waitForRead)
+  // const sdk = yield* getSDK()
+  // const currentUserId = yield* call(queryCurrentUserId)
+  // if (!currentUserId) return
+  // try {
+  //   const { data: challengesData = [] } = yield* call(
+  //     [sdk.users, sdk.users.getUserChallenges],
+  //     {
+  //       id: Id.parse(currentUserId)
+  //     }
+  //   )
+  //   // Fetch monthly play counts from 2025
+  //   const { data: monthlyPlays = {} } = yield* call(
+  //     [sdk.users, sdk.users.getUserMonthlyTrackListens],
+  //     {
+  //       id: Id.parse(currentUserId),
+  //       startTime: '2025-01-01',
+  //       // Making the end time one year from the current date since the challenge is technically never ending
+  //       endTime: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+  //         .toISOString()
+  //         .split('T')[0]
+  //     }
+  //   )
+  //   const totalPlaysOnOwnedTracks = Object.values(monthlyPlays).reduce(
+  //     (sum, month) => sum + (month.totalListens || 0),
+  //     0
+  //   )
+  //   let userChallenges = challengesData.map(userChallengeFromSDK)
+  //   // Only update play count milestone challenges if they exist and there are plays
+  //   if (
+  //     userChallenges.some((challenge) =>
+  //       isPlayCountChallenge(challenge.challenge_id)
+  //     )
+  //   ) {
+  //     userChallenges = userChallenges.map((challenge) => {
+  //       if (isPlayCountChallenge(challenge.challenge_id)) {
+  //         return {
+  //           ...challenge,
+  //           current_step_count: Math.max(
+  //             challenge.current_step_count,
+  //             totalPlaysOnOwnedTracks
+  //           )
+  //         }
+  //       }
+  //       return challenge
+  //     })
+  //   }
+  //   const { data = [] } = yield* call(
+  //     [sdk.challenges, sdk.challenges.getUndisbursedChallenges],
+  //     {
+  //       userId: Id.parse(currentUserId),
+  //       limit: 500
+  //     }
+  //   )
+  //   const undisbursedChallenges = data.map(undisbursedUserChallengeFromSDK)
+  //   yield* put(fetchUserChallengesSucceeded({ userChallenges }))
+  //   yield* put(setUndisbursedChallenges(undisbursedChallenges))
+  // } catch (e) {
+  //   console.error(e)
+  //   yield* put(fetchUserChallengesFailed())
+  // }
 }
 
 function* checkForNewDisbursements(
@@ -755,10 +748,10 @@ function* watchUpdateHCaptchaScore() {
 }
 
 function* pollUserChallenges(frequency: number) {
-  while (true) {
-    yield* put(fetchUserChallenges())
-    yield* call(delay, frequency)
-  }
+  // while (true) {
+  //   yield* put(fetchUserChallenges())
+  //   yield* call(delay, frequency)
+  // }
 }
 
 function* userChallengePollingDaemon() {

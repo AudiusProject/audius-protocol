@@ -1,4 +1,4 @@
-import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
 import { useFormattedProgressLabel } from '@audius/common/hooks'
 import {
   ChallengeName,
@@ -6,12 +6,9 @@ import {
   Name,
   OptimisticUserChallenge
 } from '@audius/common/models'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
 import { AIRDROP_PAGE } from '@audius/common/src/utils/route'
-import {
-  ChallengeRewardsModalType,
-  CommonState,
-  challengesSelectors
-} from '@audius/common/store'
+import { ChallengeRewardsModalType } from '@audius/common/store'
 import { isNewChallenge } from '@audius/common/utils'
 import {
   Box,
@@ -23,7 +20,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -31,8 +27,6 @@ import { make, track } from 'services/analytics'
 import { doesMatchRoute } from 'utils/route'
 
 import { StatusPill } from './StatusPill'
-
-const { getOptimisticUserChallenges } = challengesSelectors
 
 const PANEL_HEIGHT = 200
 const PANEL_WIDTH = 320
@@ -55,12 +49,12 @@ export const RewardPanel = ({
   remainingLabel
 }: RewardPanelProps) => {
   const { color, spacing } = useTheme()
-  const { data: currentAccount } = useCurrentAccount()
   const { data: currentUser } = useCurrentAccountUser()
-  const userChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, currentAccount, currentUser)
-  )
   const { history } = useHistoryContext()
+
+  const { optimisticUserChallenges } = useOptimisticChallenges(
+    currentUser?.user_id
+  )
 
   const openRewardModal = () => {
     openModal(id)
@@ -75,7 +69,7 @@ export const RewardPanel = ({
     }
   })
 
-  const challenge = userChallenges[id]
+  const challenge = optimisticUserChallenges[id]
   const hasDisbursed =
     challenge?.state === 'disbursed' ||
     (challenge?.challenge_id === ChallengeName.OneShot &&
