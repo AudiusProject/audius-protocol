@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useUserCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
@@ -56,9 +56,9 @@ const HasBalanceContent = ({
   decimals: number
 }) => {
   const navigation = useNavigation()
-  const handleButtonPress = () => {
+  const handleButtonPress = useCallback(() => {
     navigation.navigate('ExternalWallets')
-  }
+  }, [navigation])
 
   return (
     <Flex column w='100%'>
@@ -90,9 +90,9 @@ const HasBalanceContent = ({
 
 const NoBalanceContent = () => {
   const navigation = useNavigation()
-  const handleButtonPress = () => {
+  const handleButtonPress = useCallback(() => {
     navigation.navigate('ExternalWallets')
-  }
+  }, [navigation])
 
   return (
     <Flex column>
