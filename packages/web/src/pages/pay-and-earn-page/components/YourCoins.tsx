@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useContext } from 'react'
 
 import {
+  UserCoin,
   useArtistCoins,
   useCurrentUserId,
   useUserCoins
@@ -28,7 +29,6 @@ import {
   useMedia,
   useTheme
 } from '@audius/harmony'
-import { UserCoin } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 import { roundedHexClipPath } from '~harmony/icons/SVGDefs'

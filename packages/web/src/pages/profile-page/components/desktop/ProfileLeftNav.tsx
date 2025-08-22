@@ -1,8 +1,4 @@
-import {
-  useArtistCoin,
-  useCurrentUserId,
-  useUserOwnedCoin
-} from '@audius/common/api'
+import { useCurrentUserId, useOwnedUserCoins } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -97,8 +93,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   } = props
 
   const { data: accountUserId } = useCurrentUserId()
-  const { data: ownedCoin, isPending: isArtistCoinLoading } =
-    useUserOwnedCoin(userId)
+  const { data: ownedCoins, isPending: isArtistCoinLoading } =
+    useOwnedUserCoins({ userId, limit: 1 })
+  const ownedCoin = ownedCoins?.[0]
 
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
   const isRecentCommentsEnabled =

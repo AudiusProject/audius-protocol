@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { HashId, Id, UserCoin } from '@audius/sdk'
+import { HashId, Id, UserCoin as UserCoinSdk } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
@@ -15,13 +15,13 @@ export interface UseUserCoinsParams {
   offset?: number
 }
 
-export type UserCoinParsed = Omit<UserCoin, 'ownerId'> & {
+export type UserCoin = Omit<UserCoinSdk, 'ownerId'> & {
   ownerId: ID
 }
 
-export const useUserCoins = <TResult = UserCoinParsed[]>(
+export const useUserCoins = <TResult = UserCoin[]>(
   params: UseUserCoinsParams,
-  options?: SelectableQueryOptions<UserCoinParsed[], TResult>
+  options?: SelectableQueryOptions<UserCoin[], TResult>
 ) => {
   const { audiusSdk } = useQueryContext()
 
@@ -38,31 +38,11 @@ export const useUserCoins = <TResult = UserCoinParsed[]>(
         return response.data.map((coinFromSDK) => ({
           ...coinFromSDK,
           ownerId: HashId.parse(coinFromSDK.ownerId)
-        })) as UserCoinParsed[]
+        })) as UserCoin[]
       }
       return []
     },
     ...options,
     enabled: !!params.userId && options?.enabled !== false
   })
-}
-
-// Wrapper hook for above hook but adds a selector that filters results down to only the coin the user owns
-export const useUserOwnedCoin = (userId: ID | null) => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const select = useMemo(
-    () => (data: UserCoinParsed[]) => {
-      return data.find((coin) => {
-        return coin.ownerId === userId
-      })
-    },
-    [userId]
-  )
-
-  return useUserCoins(
-    { userId },
-    {
-      select
-    }
-  )
 }
