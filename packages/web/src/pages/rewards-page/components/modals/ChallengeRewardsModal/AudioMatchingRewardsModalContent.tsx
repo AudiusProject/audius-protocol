@@ -1,6 +1,8 @@
 import { useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { ChallengeName } from '@audius/common/models'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
 import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
   challengeRewardsConfig,
@@ -28,8 +30,7 @@ import { type AudioMatchingChallengeProps } from './types'
 
 const { EXPLORE_PAGE, UPLOAD_PAGE } = route
 
-const { getUndisbursedUserChallenges, getClaimStatus } =
-  audioRewardsPageSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const messages = {
   rewardMapping: {
@@ -70,7 +71,12 @@ export const AudioMatchingRewardsModalContent = ({
 }: AudioMatchingChallengeProps) => {
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+
+  const { data: currentUser } = useCurrentAccountUser()
+  const { undisbursedChallengesArray } = useOptimisticChallenges(
+    currentUser?.user_id
+  )
+
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -138,7 +144,7 @@ export const AudioMatchingRewardsModalContent = ({
         challenge?.claimableAmount ? (
           <ClaimButton
             challenge={challenge}
-            undisbursedChallenges={undisbursedUserChallenges}
+            undisbursedChallenges={undisbursedChallengesArray || []}
             claimInProgress={claimInProgress}
             onClose={onNavigateAway}
           />

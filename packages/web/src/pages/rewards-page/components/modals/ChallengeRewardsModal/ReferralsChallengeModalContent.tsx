@@ -1,12 +1,8 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
-import {
-  audioRewardsPageSelectors,
-  challengesSelectors,
-  ClaimStatus,
-  CommonState
-} from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
+import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
   formatNumberCommas,
   challengeRewardsConfig,
@@ -28,9 +24,7 @@ import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import { type ReferralsChallengeProps } from './types'
 
-const { getOptimisticUserChallenges } = challengesSelectors
-const { getUndisbursedUserChallenges, getClaimStatus } =
-  audioRewardsPageSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const inviteLink = getCopyableLink('/signup?rf=%0')
 
@@ -86,12 +80,11 @@ export const ReferralsChallengeModalContent = ({
 }: ReferralsChallengeProps) => {
   const isMobile = useIsMobile()
   const { fullDescription } = challengeRewardsConfig[challengeName]
-  const { data: currentAccount } = useCurrentAccount()
   const { data: currentUser } = useCurrentAccountUser()
-  const userChallenge = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, currentAccount, currentUser)
-  )[challengeName]
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+
+  const { optimisticUserChallenges, undisbursedChallengesArray } =
+    useOptimisticChallenges(currentUser?.user_id)
+  const userChallenge = optimisticUserChallenges[challengeName]
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -169,7 +162,7 @@ export const ReferralsChallengeModalContent = ({
           <ClaimButton
             challenge={challenge}
             claimInProgress={claimInProgress}
-            undisbursedChallenges={undisbursedUserChallenges}
+            undisbursedChallenges={undisbursedChallengesArray || []}
             onClose={onNavigateAway}
           />
           <InviteLink />

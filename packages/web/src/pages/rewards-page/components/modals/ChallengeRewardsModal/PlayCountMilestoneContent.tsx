@@ -1,13 +1,9 @@
 import React, { useMemo } from 'react'
 
-import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
 import { ChallengeName } from '@audius/common/models'
-import {
-  challengesSelectors,
-  audioRewardsPageSelectors,
-  ClaimStatus,
-  CommonState
-} from '@audius/common/store'
+import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import { getChallengeStatusLabel } from '@audius/common/utils'
 import { Box, Flex, Text, IconCheck } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -19,9 +15,7 @@ import { ClaimButton } from './ClaimButton'
 import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { ChallengeContentProps } from './types'
 
-const { getOptimisticUserChallenges } = challengesSelectors
-const { getUndisbursedUserChallenges, getClaimStatus } =
-  audioRewardsPageSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const messages = {
   title250: '250 PLAYS',
@@ -43,13 +37,12 @@ export const PlayCountMilestoneContent = ({
   errorContent
 }: ChallengeContentProps) => {
   const isMobile = useIsMobile()
-  const { data: currentAccount } = useCurrentAccount()
   const { data: currentUser } = useCurrentAccountUser()
-  const userChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, currentAccount, currentUser)
-  )
-  const challenge = userChallenges[challengeName]
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+
+  const { optimisticUserChallenges, undisbursedChallengesArray } =
+    useOptimisticChallenges(currentUser?.user_id)
+  const challenge = optimisticUserChallenges[challengeName]
+
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -127,7 +120,7 @@ export const PlayCountMilestoneContent = ({
       challenge={challenge}
       claimInProgress={claimInProgress}
       onClose={onNavigateAway}
-      undisbursedChallenges={undisbursedUserChallenges}
+      undisbursedChallenges={undisbursedChallengesArray || []}
     />
   )
 

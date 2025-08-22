@@ -1,10 +1,6 @@
-import { useCurrentAccount, useCurrentAccountUser } from '@audius/common/api'
-import {
-  audioRewardsPageSelectors,
-  challengesSelectors,
-  ClaimStatus,
-  CommonState
-} from '@audius/common/store'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
+import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
   formatNumberCommas,
   challengeRewardsConfig,
@@ -20,9 +16,7 @@ import { ClaimButton } from './ClaimButton'
 import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { type DefaultChallengeProps } from './types'
 
-const { getOptimisticUserChallenges } = challengesSelectors
-const { getUndisbursedUserChallenges, getClaimStatus } =
-  audioRewardsPageSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const messages = {
   rewardSubtext: '$AUDIO',
@@ -37,12 +31,11 @@ export const PinnedCommentChallengeModalContent = ({
   errorContent
 }: DefaultChallengeProps) => {
   const isMobile = useIsMobile()
-  const { data: currentAccount } = useCurrentAccount()
   const { data: currentUser } = useCurrentAccountUser()
-  const userChallenge = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, currentAccount, currentUser)
-  )[challengeName]
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
+
+  const { optimisticUserChallenges, undisbursedChallengesArray } =
+    useOptimisticChallenges(currentUser?.user_id)
+  const userChallenge = optimisticUserChallenges[challengeName]
 
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =
@@ -121,7 +114,7 @@ export const PinnedCommentChallengeModalContent = ({
         <ClaimButton
           challenge={modifiedChallenge}
           claimInProgress={claimInProgress}
-          undisbursedChallenges={undisbursedUserChallenges}
+          undisbursedChallenges={undisbursedChallengesArray || []}
           onClose={onNavigateAway}
         />
       }

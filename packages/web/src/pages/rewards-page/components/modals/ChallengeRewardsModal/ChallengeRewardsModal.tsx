@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useContext } from 'react'
 
-import { useCurrentAccountUser, useCurrentAccount } from '@audius/common/api'
+import { useCurrentAccountUser } from '@audius/common/api'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
 import { ChallengeName } from '@audius/common/models'
 import {
-  challengesSelectors,
   audioRewardsPageSelectors,
   audioRewardsPageActions,
   ClaimStatus,
-  musicConfettiActions,
-  CommonState
+  musicConfettiActions
 } from '@audius/common/store'
 import { getAAOErrorEmojis } from '@audius/common/utils'
 import { ModalContent, Text } from '@audius/harmony'
@@ -28,7 +27,6 @@ const { show: showConfetti } = musicConfettiActions
 const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
   audioRewardsPageSelectors
 const { resetAndCancelClaimReward } = audioRewardsPageActions
-const { getOptimisticUserChallenges } = challengesSelectors
 
 const messages = {
   close: 'Close',
@@ -97,12 +95,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const claimStatus = useSelector(getClaimStatus)
   const aaoErrorCode = useSelector(getAAOErrorCode)
   const modalType = useSelector(getChallengeRewardsModalType) as ChallengeName
-  const { data: currentAccount } = useCurrentAccount()
   const { data: currentUser } = useCurrentAccountUser()
-  const userChallenges = useSelector((state: CommonState) =>
-    getOptimisticUserChallenges(state, currentAccount, currentUser)
+
+  const { optimisticUserChallenges } = useOptimisticChallenges(
+    currentUser?.user_id
   )
-  const challenge = userChallenges[modalType]
+  const challenge = optimisticUserChallenges[modalType]
 
   const errorContent =
     claimStatus === ClaimStatus.ERROR ? (

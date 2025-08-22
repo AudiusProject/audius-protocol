@@ -1,5 +1,7 @@
 import { ReactNode, useCallback } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
+import { useOptimisticChallenges } from '@audius/common/src/api/tan-query/challenges'
 import { ChallengeName } from '@audius/common/models'
 import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import {
@@ -18,8 +20,7 @@ import { MobileInstallContent } from './MobileInstallContent'
 import { ProfileChecks } from './ProfileChecks'
 import { type DefaultChallengeProps } from './types'
 
-const { getClaimStatus, getUndisbursedUserChallenges } =
-  audioRewardsPageSelectors
+const { getClaimStatus } = audioRewardsPageSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -34,11 +35,16 @@ export const DefaultChallengeContent = ({
   errorContent
 }: DefaultChallengeProps) => {
   const dispatch = useDispatch()
+  const { data: currentUser } = useCurrentAccountUser()
+
+  const { undisbursedChallengesArray } = useOptimisticChallenges(
+    currentUser?.user_id
+  )
+
   const claimStatus = useSelector(getClaimStatus)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const config = challengeRewardsConfig[challengeName as ChallengeName] ?? {
     fullDescription: () => '',
@@ -163,7 +169,7 @@ export const DefaultChallengeContent = ({
           <ClaimButton
             challenge={challenge}
             claimInProgress={claimInProgress}
-            undisbursedChallenges={undisbursedUserChallenges}
+            undisbursedChallenges={undisbursedChallengesArray || []}
             onClose={onNavigateAway}
           />
         )
