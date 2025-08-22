@@ -36,7 +36,7 @@ export type UserProfileListProps = {
    * When this is the case, we use this totalUserCount prop to inform how many total users there are.
    */
   users: Array<User>
-  totalUserCount: number
+  totalUserCount: number | undefined | null // Note: undefined/null was added to support case where totalUserCount is loading separately
   limit?: number
   disableProfileClick?: boolean
   disablePopover?: boolean
@@ -140,7 +140,9 @@ export const UserProfilePictureList = ({
               user={lastUser}
             />
             <span className={styles.profilePictureCount}>
-              {messages.count(remainingUsersCount)}
+              {remainingUsersCount > 0
+                ? messages.count(remainingUsersCount)
+                : null}
             </span>
           </div>
         </Tooltip>

@@ -1,4 +1,8 @@
-import { useArtistCoinMembers, useUsers } from '@audius/common/api'
+import {
+  useArtistCoinInsights,
+  useArtistCoinMembers,
+  useUsers
+} from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import {
   Flex,
@@ -39,14 +43,23 @@ type AssetLeaderboardCardProps = {
 }
 
 export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
+  const { isMedium: isSmallScreen } = useMedia() // <1024px
+  const numUsersShowing = isSmallScreen ? 6 : 8
   const { data: leaderboardUsers, isPending: isLeaderboardPending } =
-    useArtistCoinMembers({ mint })
+    useArtistCoinMembers(
+      { mint },
+      {
+        select: (data) => {
+          return data.pages.flat().slice(0, numUsersShowing)
+        }
+      }
+    )
   const { data: users, isPending: isUsersPending } = useUsers(
     leaderboardUsers?.map((user) => user.userId)
   )
+  const coinInsights = useArtistCoinInsights({ mint })
   const dispatch = useDispatch()
   const isPending = isLeaderboardPending || isUsersPending
-  const { isMedium: isSmallScreen } = useMedia() // <1024px
 
   const handleViewLeaderboard = () => {
     dispatch(
@@ -100,7 +113,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
           >
             <UserProfilePictureList
               users={users ?? []}
-              totalUserCount={leaderboardUsers?.length ?? 0}
+              totalUserCount={coinInsights?.data?.members}
               limit={isSmallScreen ? 6 : 8}
               disableProfileClick={true}
               disablePopover={true}

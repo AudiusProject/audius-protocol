@@ -1,12 +1,16 @@
 import { FixedDecimal } from '@audius/fixed-decimal'
 import { HashId } from '@audius/sdk'
-import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  UseInfiniteQueryOptions
+} from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, QueryOptions } from '../types'
+import { QueryKey } from '../types'
 
 import { useArtistCoin } from './useArtistCoin'
 
@@ -39,14 +43,17 @@ export const getCoinLeaderboardQueryKey = (
     sortDirection
   ] as unknown as QueryKey<InfiniteData<CoinMember[], number>>
 
-export const useArtistCoinMembers = (
+export const useArtistCoinMembers = <TResult = CoinMember[]>(
   {
     mint,
     pageSize = DEFAULT_PAGE_SIZE,
     minBalance,
     sortDirection = 'desc'
   }: UseArtistCoinMembersArgs,
-  options?: QueryOptions
+  options?: Pick<
+    UseInfiniteQueryOptions<CoinMember[], Error, TResult>,
+    'select' | 'enabled'
+  >
 ) => {
   const { audiusSdk } = useQueryContext()
 
@@ -69,7 +76,7 @@ export const useArtistCoinMembers = (
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
-    queryFn: async ({ pageParam }): Promise<CoinMember[]> => {
+    queryFn: async ({ pageParam }) => {
       if (!mint) return []
 
       const sdk = await audiusSdk()
@@ -103,8 +110,7 @@ export const useArtistCoinMembers = (
 
       return members
     },
-    select: (data) => data.pages.flat(),
-    ...options,
+    select: options?.select ?? ((data) => data.pages.flat() as TResult),
     enabled: options?.enabled !== false && !!mint
   })
 }
