@@ -1,21 +1,17 @@
+import { useMemo } from 'react'
+
 import { partition, sum } from 'lodash'
 
-import { useCurrentAccount, useCurrentAccountUser } from '~/api'
+import { useCurrentAccountUser } from '~/api'
+import { useOptimisticChallenges } from '~/api/tan-query/challenges'
 import {
   ChallengeRewardID,
   UndisbursedUserChallenge
 } from '~/models/AudioRewards'
-import { getOptimisticUserChallenges } from '~/store/challenges/selectors'
-import { CommonState } from '~/store/commonStore'
-import { audioRewardsPageSelectors } from '~/store/pages'
 import { isCooldownChallengeClaimable } from '~/utils/challenges'
 import dayjs, { Dayjs } from '~/utils/dayjs'
 import { formatNumberCommas } from '~/utils/formatUtil'
 import { utcToLocalTime } from '~/utils/timeUtil'
-
-import { useProxySelector } from '../useProxySelector'
-
-const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
 const messages = {
   laterToday: 'Later Today',
@@ -81,72 +77,72 @@ export const useChallengeCooldownSchedule = ({
   challengeId?: ChallengeRewardID
   multiple?: boolean
 }) => {
-  const { data: currentAccount } = useCurrentAccount()
   const { data: currentUser } = useCurrentAccountUser()
 
-  return useProxySelector(
-    (state: CommonState) => {
-      const undisbursedChallenges = getUndisbursedUserChallenges(state)
-      const optimisticChallenges = getOptimisticUserChallenges(
-        state,
-        currentAccount,
-        currentUser
-      )
+  const { optimisticUserChallenges, undisbursedChallengesArray } =
+    useOptimisticChallenges(currentUser?.user_id)
 
-      // Filter challenges by ID or multiple flag
-      const idFiltered = undisbursedChallenges.filter(
-        (c) => multiple || c.challenge_id === challengeId
-      )
+  return useMemo(() => {
+    const undisbursedChallenges = undisbursedChallengesArray || []
 
-      // Filter out trending challenges
-      const nonTrending = idFiltered.filter(
-        (c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id)
-      )
+    // Filter challenges by ID or multiple flag
+    const idFiltered = undisbursedChallenges.filter(
+      (c) => multiple || c.challenge_id === challengeId
+    )
 
-      // Filter out optimistically claimed challenges
-      const filteredChallenges = nonTrending.filter((challenge) => {
-        const optimisticChallenge = optimisticChallenges[challenge.challenge_id]
-        // If there's no optimistic challenge or it has a claimable amount, keep the challenge
-        if (!optimisticChallenge || optimisticChallenge.claimableAmount > 0) {
-          return true
-        }
-        // Check if this specific specifier is still undisbursed
-        return optimisticChallenge.undisbursedSpecifiers.some(
-          (spec) => spec.specifier === challenge.specifier
-        )
-      })
+    // Filter out trending challenges
+    const nonTrending = idFiltered.filter(
+      (c) => !TRENDING_CHALLENGE_IDS.has(c.challenge_id)
+    )
 
-      // Partition challenges into claimable and cooldown
-      const [claimableChallenges, cooldownChallenges] = partition(
-        filteredChallenges,
-        isCooldownChallengeClaimable
-      )
-
-      // Calculate amounts
-      const claimableAmount = sum(claimableChallenges.map((c) => c.amount))
-      const cooldownAmount = sum(cooldownChallenges.map((c) => c.amount))
-
-      // Create summary if there are claimable amounts
-      const summary =
-        claimableAmount > 0
-          ? {
-              id: messages.readyToClaim,
-              label: messages.readyToClaim,
-              value: formatNumberCommas(claimableAmount)
-            }
-          : undefined
-
-      const isEmpty = claimableAmount + cooldownAmount === 0
-
-      return {
-        claimableChallenges,
-        claimableAmount,
-        cooldownChallenges,
-        cooldownAmount,
-        summary,
-        isEmpty
+    // Filter out optimistically claimed challenges
+    const filteredChallenges = nonTrending.filter((challenge) => {
+      const optimisticChallenge =
+        optimisticUserChallenges[challenge.challenge_id]
+      // If there's no optimistic challenge or it has a claimable amount, keep the challenge
+      if (!optimisticChallenge || optimisticChallenge.claimableAmount > 0) {
+        return true
       }
-    },
-    [challengeId, multiple, currentAccount, currentUser]
-  )
+      // Check if this specific specifier is still undisbursed
+      return optimisticChallenge.undisbursedSpecifiers.some(
+        (spec) => spec.specifier === challenge.specifier
+      )
+    })
+
+    // Partition challenges into claimable and cooldown
+    const [claimableChallenges, cooldownChallenges] = partition(
+      filteredChallenges,
+      isCooldownChallengeClaimable
+    )
+
+    // Calculate amounts
+    const claimableAmount = sum(claimableChallenges.map((c) => c.amount))
+    const cooldownAmount = sum(cooldownChallenges.map((c) => c.amount))
+
+    // Create summary if there are claimable amounts
+    const summary =
+      claimableAmount > 0
+        ? {
+            id: messages.readyToClaim,
+            label: messages.readyToClaim,
+            value: formatNumberCommas(claimableAmount)
+          }
+        : undefined
+
+    const isEmpty = claimableAmount + cooldownAmount === 0
+
+    return {
+      claimableChallenges,
+      claimableAmount,
+      cooldownChallenges,
+      cooldownAmount,
+      summary,
+      isEmpty
+    }
+  }, [
+    challengeId,
+    multiple,
+    optimisticUserChallenges,
+    undisbursedChallengesArray
+  ])
 }
