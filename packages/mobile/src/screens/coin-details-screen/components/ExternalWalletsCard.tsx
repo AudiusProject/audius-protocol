@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useUserCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
@@ -14,6 +14,7 @@ import {
   Paper,
   Text
 } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = coinDetailsMessages.externalWallets
 
@@ -54,6 +55,11 @@ const HasBalanceContent = ({
   mint: string
   decimals: number
 }) => {
+  const navigation = useNavigation()
+  const handleButtonPress = useCallback(() => {
+    navigation.navigate('ExternalWallets')
+  }, [navigation])
+
   return (
     <Flex column w='100%'>
       <Flex pv='l' ph='xl'>
@@ -74,7 +80,7 @@ const HasBalanceContent = ({
       </Flex>
       <Divider />
       <Flex column pv='l' ph='xl' gap='l'>
-        <Button variant='secondary' onPress={() => {}} size='small'>
+        <Button variant='secondary' onPress={handleButtonPress} size='small'>
           {messages.buttonText}
         </Button>
       </Flex>
@@ -83,6 +89,11 @@ const HasBalanceContent = ({
 }
 
 const NoBalanceContent = () => {
+  const navigation = useNavigation()
+  const handleButtonPress = useCallback(() => {
+    navigation.navigate('ExternalWallets')
+  }, [navigation])
+
   return (
     <Flex column>
       <Flex pv='l' ph='xl'>
@@ -95,7 +106,7 @@ const NoBalanceContent = () => {
         <Text variant='body' size='m'>
           {messages.description}
         </Text>
-        <Button variant='secondary' onPress={() => {}} size='small'>
+        <Button variant='secondary' onPress={handleButtonPress} size='small'>
           {messages.buttonText}
         </Button>
       </Flex>
