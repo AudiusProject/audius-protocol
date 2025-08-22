@@ -13,7 +13,7 @@ import {
   TransactionInstruction,
   VersionedTransaction
 } from '@solana/web3.js'
-import type { Keypair } from '@solana/web3.js'
+import type { Commitment, Keypair } from '@solana/web3.js'
 import { useQueryClient } from '@tanstack/react-query'
 
 import type { User } from '~/models/User'
@@ -429,7 +429,8 @@ export const buildAndSendTransaction = async (
   keypair: Keypair,
   feePayer: PublicKey,
   instructions: TransactionInstruction[],
-  addressLookupTableAddresses: string[]
+  addressLookupTableAddresses: string[],
+  commitment?: Commitment
 ): Promise<string> => {
   // Build transaction
   const swapTx: VersionedTransaction =
@@ -445,12 +446,12 @@ export const buildAndSendTransaction = async (
   swapTx.sign([keypair])
   const signature = await sdk.services.solanaClient.sendTransaction(swapTx)
 
-  // Wait for transaction confirmation to ensure the state changes are available
-  // for subsequent transactions in double swaps
-  await sdk.services.solanaClient.connection.confirmTransaction(
-    signature,
-    'finalized'
-  )
+  if (commitment) {
+    await sdk.services.solanaClient.connection.confirmTransaction(
+      signature,
+      commitment
+    )
+  }
 
   return signature
 }

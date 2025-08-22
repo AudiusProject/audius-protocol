@@ -155,7 +155,8 @@ export const executeDoubleSwap = async (
     keypair,
     feePayer,
     firstInstructions,
-    firstSwapResponse.addressLookupTableAddresses
+    firstSwapResponse.addressLookupTableAddresses,
+    'finalized'
   )
 
   // Create destination ATA for output token
