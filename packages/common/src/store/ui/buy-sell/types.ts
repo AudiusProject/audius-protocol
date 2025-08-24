@@ -44,6 +44,7 @@ export type TokenAmountSectionProps = {
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
   tooltipPlacement?: TooltipPlacement
+  onChangeSwapDirection?: () => void
 }
 
 export type SuccessDisplayData = {

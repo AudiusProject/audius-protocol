@@ -1,6 +1,14 @@
+import { useState } from 'react'
+
 import { useArtistCoins } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
-import { Box, Flex, LoadingSpinner } from '@audius/harmony'
+import {
+  Flex,
+  IconSearch,
+  LoadingSpinner,
+  Paper,
+  TextInput
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
@@ -35,10 +43,12 @@ const ArtistCoinRowWithData = ({ coin }: { coin: any }) => {
 }
 
 const messages = {
-  title: 'All Coins'
+  title: 'All Coins',
+  search: 'Search for Coins'
 }
 
 export const AllCoinsPage = () => {
+  const [searchQuery, setSearchQuery] = useState('')
   const { data: artistCoins, isPending: isLoadingCoins } = useArtistCoins()
 
   if (isLoadingCoins) {
@@ -49,19 +59,32 @@ export const AllCoinsPage = () => {
     )
   }
 
+  const filteredCoins =
+    artistCoins?.filter((coin) =>
+      coin.ticker?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || []
+
   const header = <Header primary={messages.title} showBackButton={true} />
 
   return (
     <Page title={messages.title} header={header}>
-      <Box p='l'>
-        <Flex column gap='s'>
-          {artistCoins?.map((coin) => (
-            <Flex key={coin.mint}>
-              <ArtistCoinRowWithData coin={coin} />
-            </Flex>
-          ))}
+      <Paper borderRadius='xl' backgroundColor='white' shadow='mid' w='100%'>
+        <Flex column gap='xl' w='100%'>
+          <Flex p='l' pb='none'>
+            <TextInput
+              label={messages.search}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              startIcon={IconSearch}
+            />
+          </Flex>
+          <Flex column>
+            {filteredCoins.map((coin) => (
+              <ArtistCoinRowWithData key={coin.mint} coin={coin} />
+            ))}
+          </Flex>
         </Flex>
-      </Box>
+      </Paper>
     </Page>
   )
 }

@@ -190,7 +190,6 @@ export const DropdownSection = ({
       alignSelf='stretch'
       border='default'
       pv='s'
-      ph='m'
       borderRadius='s'
       css={{
         maxHeight: spacing.unit16,
@@ -208,6 +207,9 @@ export const DropdownSection = ({
         options={options}
         isDisabled={!isClickable}
         isSearchable={false}
+        menuPlacement='auto'
+        menuPosition='absolute'
+        menuPortalTarget={document.body}
         components={{
           SingleValue: (props: SingleValueProps<TokenOption>) => {
             const { setValue, ...singleValueProps } = props
@@ -252,7 +254,13 @@ export const DropdownSection = ({
             cursor: isClickable ? 'pointer' : 'default',
             '&:hover': {
               border: 'none'
-            }
+            },
+            paddingLeft: spacing.m,
+            paddingRight: spacing.m
+          }),
+          menuPortal: (provided) => ({
+            ...provided,
+            zIndex: 999999
           }),
           menu: (provided) => ({
             ...provided,

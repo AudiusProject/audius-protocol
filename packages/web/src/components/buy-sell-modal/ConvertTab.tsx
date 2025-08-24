@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react'
 
 import { SwapTab } from './SwapTab'
-import type { ConvertTabProps } from './types'
+import { ConvertTabProps } from './types'
 
 export const ConvertTab = ({
   tokenPair,
@@ -12,10 +12,25 @@ export const ConvertTab = ({
   onInputValueChange,
   availableTokens,
   onInputTokenChange,
-  onOutputTokenChange
+  onOutputTokenChange,
+  onChangeSwapDirection
 }: ConvertTabProps) => {
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
+
+  const handleChangeSwapDirection = useCallback(() => {
+    if (onInputTokenChange && onOutputTokenChange) {
+      onInputTokenChange(quoteToken.symbol)
+      onOutputTokenChange(baseToken.symbol)
+    }
+    onChangeSwapDirection?.()
+  }, [
+    baseToken.symbol,
+    quoteToken.symbol,
+    onInputTokenChange,
+    onOutputTokenChange,
+    onChangeSwapDirection
+  ])
 
   // Filter available tokens to prevent same token selection
   const availableInputTokens = useMemo(() => {
@@ -83,6 +98,7 @@ export const ConvertTab = ({
       availableOutputTokens={availableOutputTokens}
       onInputTokenChange={handleInputTokenChange}
       onOutputTokenChange={handleOutputTokenChange}
+      onChangeSwapDirection={handleChangeSwapDirection}
     />
   )
 }

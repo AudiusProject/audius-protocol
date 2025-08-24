@@ -16,7 +16,8 @@ import {
   Text,
   TextInput,
   TokenAmountInput,
-  TokenAmountInputChangeHandler
+  TokenAmountInputChangeHandler,
+  IconButton
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import { TooltipPlacement } from 'antd/lib/tooltip'
@@ -214,7 +215,8 @@ export const TokenAmountSection = ({
   tooltipPlacement,
   availableTokens,
   onTokenChange,
-  tab
+  tab,
+  onChangeSwapDirection
 }: TokenAmountSectionProps & {
   availableTokens?: TokenInfo[]
   onTokenChange?: (symbol: string) => void
@@ -411,7 +413,14 @@ export const TokenAmountSection = ({
     if (!isInput && title === messages.youReceive && tab === 'convert') {
       return (
         <Flex alignItems='center' gap='s'>
-          <IconTransaction size='s' color='subdued' />
+          <IconButton
+            icon={IconTransaction}
+            size='s'
+            color='subdued'
+            onClick={onChangeSwapDirection}
+            aria-label='Swap token direction'
+          />
+
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
