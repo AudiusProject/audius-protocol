@@ -1,8 +1,7 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
-import { Image } from 'react-native'
+import { Image, Platform } from 'react-native'
 import type { ID } from '@audius/common/models'
 import type { ChatBlastAudience } from '@audius/sdk'
-import { Platform } from 'react-native'
 
 import { Flex, HexagonalIcon, spacing, Text } from '@audius/harmony-native'
 import { useTokens } from '@audius/common/store'
