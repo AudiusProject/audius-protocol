@@ -71,14 +71,14 @@ const { getPlaying, getSeek, getCounter, getPlaybackRate, getUid } =
 const { setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
-const { getPlayerBehavior } = queueSelectors
 const {
   getIndex,
   getOrder,
   getSource,
   getCollectionId,
   getRepeat,
-  getShuffle
+  getShuffle,
+  getPlayerBehavior
 } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -667,14 +667,23 @@ export const AudioPlayer = () => {
     //   )
     //   await TrackPlayer.remove(removalIndexArray)
     //   await TrackPlayer.skip(queueIndex)
-    //   return
+    //   return a
     // }
 
     const newQueueTracks = isQueueAppend
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
-    // Enqueue tracks using 'middle-out' to ensure user can ready skip forward or backwards
+    if (!newQueueTracks.every(({ track }) => !!track?.track_id)) {
+      console.log(newQueueTracks.map(({ track }) => !track?.track_id))
+      console.log('tracks have not loaded yet', { newQueueTracks })
+      return
+    } else {
+      console.log('tracks have loaded', { newQueueTracks })
+    }
+
+    // If queueIndex is -1, this is effectively a linear append.
+    // Otherwise, enqueue tracks using 'middle-out' to ensure user can ready skip forward or backwards
     const enqueueTracks = async (
       queuableTracks: QueueableTrack[],
       queueIndex = -1
