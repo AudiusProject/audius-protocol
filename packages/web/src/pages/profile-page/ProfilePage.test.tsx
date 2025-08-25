@@ -1,8 +1,6 @@
 import { useRef } from 'react'
 
-import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { developmentConfig } from '@audius/sdk'
-import { http, HttpResponse } from 'msw'
+import { SquareSizes, User } from '@audius/common/models'
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import {
   describe,
@@ -15,6 +13,8 @@ import {
   beforeEach
 } from 'vitest'
 
+import { userMswMocks } from 'test/msw/mswMocks'
+import { nonArtistUser } from 'test/personas'
 import {
   RenderOptions,
   mswServer,
@@ -24,59 +24,6 @@ import {
 } from 'test/test-utils'
 
 import ProfilePage from './ProfilePage'
-
-const { apiEndpoint } = developmentConfig.network
-
-// TODO: move these into a fixtures folder setup
-const nonArtistUser = {
-  id: '7eP5n',
-  handle: 'test-user',
-  name: 'Test User',
-  profile_picture: {
-    [SquareSizes.SIZE_150_BY_150]: `${apiEndpoint}/image-profile-small.jpg`,
-    [SquareSizes.SIZE_480_BY_480]: `${apiEndpoint}/image-profile-medium.jpg`,
-    mirrors: [apiEndpoint]
-  },
-  follower_count: 1,
-  followee_count: 2,
-  track_count: 0,
-  playlist_count: 3,
-  repost_count: 4,
-  album_count: 0,
-  bio: 'Test bio',
-  cover_photo: {
-    [WidthSizes.SIZE_2000]: `${apiEndpoint}/image-cover.jpg`,
-    mirrors: [apiEndpoint]
-  },
-  is_verified: false,
-  is_deactivated: false,
-  is_available: true,
-  erc_wallet: '0x123',
-  spl_wallet: '0x456',
-  wallet: '0x123',
-  balance: '0',
-  associated_wallets_balance: '0',
-  total_balance: '0',
-  waudio_balance: '0',
-  associated_sol_wallets_balance: '0',
-  blocknumber: 1,
-  created_at: '2024-01-01T00:00:00.000Z',
-  updated_at: '2024-01-01T00:00:00.000Z',
-  is_storage_v2: true,
-  handle_lc: 'test-user',
-  has_collectibles: false,
-  allow_ai_attribution: false
-}
-
-const mockData = {
-  connected_wallets: { data: { erc_wallets: [], spl_wallets: [] } },
-  collectibles: { data: null },
-  userByHandle: { data: [nonArtistUser] },
-  supporting: { data: [] },
-  supporters: { data: [] },
-  related: { data: [] },
-  events: { data: [] }
-}
 
 // Need to mock the main content scroll element - otherwise things break
 const mockScrollElement = {
@@ -98,40 +45,13 @@ const ProfilePageWithRef = () => {
   )
 }
 
-export function renderProfilePage(overrides = {}, options?: RenderOptions) {
-  const user = { ...nonArtistUser, ...overrides }
-
+export function renderProfilePage(user: User, options?: RenderOptions) {
   // TODO: move these out of this render and standardize them more - also accept args to configure the various endpoints
-  mswServer.use(
-    http.get(`${apiEndpoint}/v1/full/users/handle/${user.handle}`, () => {
-      return HttpResponse.json(mockData.userByHandle)
-    }),
-    http.get(`${apiEndpoint}/v1/users/${user.id}/connected_wallets`, () => {
-      return HttpResponse.json(mockData.connected_wallets)
-    }),
-    http.get(`${apiEndpoint}/v1/users/${user.id}/collectibles`, () => {
-      return HttpResponse.json(mockData.collectibles)
-    }),
-    http.get(`${apiEndpoint}/v1/full/users/${user.id}/supporting`, () => {
-      return HttpResponse.json(mockData.supporting)
-    }),
-    http.get(`${apiEndpoint}/v1/full/users/${user.id}/supporters`, () => {
-      return HttpResponse.json(mockData.supporters)
-    }),
-    http.get(`${apiEndpoint}/v1/full/users/${user.id}/related`, () => {
-      return HttpResponse.json(mockData.related)
-    }),
-    http.get(`${apiEndpoint}/v1/events/entity`, () => {
-      return HttpResponse.json(mockData.events)
-    }),
-    // ETH NFTs api
-    http.get(
-      'https://rinkeby-api.opensea.io/api/v2/chain/ethereum/account/0x123/nfts',
-      () => {
-        return HttpResponse.json({ data: [] })
-      }
-    )
-  )
+  mswServer.use([
+    ...userMswMocks(user, mockData.users),
+    ...nftMswMocks(),
+    ...eventMswMocks(mockData.events)
+  ])
 
   return render(
     <Routes>
@@ -159,17 +79,15 @@ describe('ProfilePage', () => {
   beforeAll(() => {
     mswServer.listen()
   })
-
   afterEach(() => {
     mswServer.resetHandlers()
   })
-
   afterAll(() => {
     mswServer.close()
   })
 
   it('should render the profile page for a non-artist', async () => {
-    renderProfilePage()
+    renderProfilePage(nonArtistUser)
 
     // User header
     expect(
@@ -262,29 +180,29 @@ describe('ProfilePage', () => {
   })
 
   it.skip('should handle edit and buttons for profile page owner', async () => {
-    renderProfilePage()
+    renderProfilePage(nonArtistUser)
     // TODO
   })
 
   it.skip('should render the profile page for an artist with tracks', async () => {
-    renderProfilePage()
+    renderProfilePage(artistUser)
     // TODO
     // TODO: test related artists
   })
 
   it.skip('shows deactivated state if user is deactivated', async () => {
     // TODO: set up this prop
-    renderProfilePage({ isDeactivated: true })
+    renderProfilePage({ ...nonArtistUser, is_deactivated: true })
     // TODO
   })
 
   it.skip('shows user with collectibles', async () => {
-    renderProfilePage()
+    renderProfilePage(nonArtistUser)
     // TODO
   })
 
   it.skip('shows user with active remix context', async () => {
-    renderProfilePage()
+    renderProfilePage(nonArtistUser)
     // TODO
   })
 })
