@@ -2,7 +2,7 @@ import type { User } from '../models'
 
 export const getXShareHandle = (user: User) => {
   const xHandle = user.twitter_handle
-  return xHandle ? xHandle : user.handle
+  return xHandle ?? user.handle
 }
 
 export const makeXShareUrl = (url: string | null, text: string) => {
