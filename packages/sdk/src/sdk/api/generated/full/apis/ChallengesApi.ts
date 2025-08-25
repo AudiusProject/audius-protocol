@@ -85,6 +85,8 @@ export class ChallengesApi extends runtime.BaseAPI {
     /**
      * Produces an attestation that a given user has completed a challenge, or errors.
      */
+
+
     async getChallengeAttestation(params: GetChallengeAttestationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AttestationReponse> {
         const response = await this.getChallengeAttestationRaw(params, initOverrides);
         return await response.value();

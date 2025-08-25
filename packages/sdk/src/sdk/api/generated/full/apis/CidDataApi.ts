@@ -58,6 +58,8 @@ export class CidDataApi extends runtime.BaseAPI {
     /**
      * Get a metadata by CID
      */
+
+
     async getMetadata(params: GetMetadataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CidDataResponse> {
         const response = await this.getMetadataRaw(params, initOverrides);
         return await response.value();

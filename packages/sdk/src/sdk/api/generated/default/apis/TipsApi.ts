@@ -103,6 +103,8 @@ export class TipsApi extends runtime.BaseAPI {
     /**
      * Gets the most recent tips on the network
      */
+
+
     async getTips(params: GetTipsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetTipsResponse> {
         const response = await this.getTipsRaw(params, initOverrides);
         return await response.value();

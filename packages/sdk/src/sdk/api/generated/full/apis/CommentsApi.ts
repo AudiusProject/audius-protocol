@@ -68,6 +68,8 @@ export class CommentsApi extends runtime.BaseAPI {
     /**
      * Gets a comment by ID
      */
+
+
     async getComment(params: GetCommentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentResponse> {
         const response = await this.getCommentRaw(params, initOverrides);
         return await response.value();
@@ -111,6 +113,8 @@ export class CommentsApi extends runtime.BaseAPI {
     /**
      * Gets replies to a parent comment
      */
+
+
     async getCommentReplies(params: GetCommentRepliesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommentRepliesResponse> {
         const response = await this.getCommentRepliesRaw(params, initOverrides);
         return await response.value();

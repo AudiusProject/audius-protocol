@@ -98,6 +98,8 @@ export class EventsApi extends runtime.BaseAPI {
      * Get all events
      * Get all events
      */
+
+
     async getAllEvents(params: GetAllEventsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
         const response = await this.getAllEventsRaw(params, initOverrides);
         return await response.value();
@@ -137,6 +139,8 @@ export class EventsApi extends runtime.BaseAPI {
     /**
      * Get a list of events by ID
      */
+
+
     async getBulkEvents(params: GetBulkEventsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
         const response = await this.getBulkEventsRaw(params, initOverrides);
         return await response.value();
@@ -194,6 +198,8 @@ export class EventsApi extends runtime.BaseAPI {
      * Get events for a specific entity
      * Get events for a specific entity
      */
+
+
     async getEntityEvents(params: GetEntityEventsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EventsResponse> {
         const response = await this.getEntityEventsRaw(params, initOverrides);
         return await response.value();
@@ -221,6 +227,8 @@ export class EventsApi extends runtime.BaseAPI {
     /**
      * Gets an unclaimed blockchain event ID
      */
+
+
     async getUnclaimedEventID(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UnclaimedIdResponse> {
         const response = await this.getUnclaimedEventIDRaw(initOverrides);
         return await response.value();

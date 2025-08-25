@@ -86,6 +86,8 @@ export class ChallengesApi extends runtime.BaseAPI {
     /**
      * Get all undisbursed challenges
      */
+
+
     async getUndisbursedChallenges(params: GetUndisbursedChallengesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UndisbursedChallenges> {
         const response = await this.getUndisbursedChallengesRaw(params, initOverrides);
         return await response.value();
@@ -133,6 +135,8 @@ export class ChallengesApi extends runtime.BaseAPI {
     /**
      * Get all undisbursed challenges for a user
      */
+
+
     async getUndisbursedChallengesForUser(params: GetUndisbursedChallengesForUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UndisbursedChallenges> {
         const response = await this.getUndisbursedChallengesForUserRaw(params, initOverrides);
         return await response.value();

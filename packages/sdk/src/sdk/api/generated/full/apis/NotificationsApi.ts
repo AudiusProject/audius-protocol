@@ -85,6 +85,8 @@ export class NotificationsApi extends runtime.BaseAPI {
     /**
      * Get notifications for user ID
      */
+
+
     async getNotifications(params: GetNotificationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NotificationsResponse> {
         const response = await this.getNotificationsRaw(params, initOverrides);
         return await response.value();
@@ -116,6 +118,8 @@ export class NotificationsApi extends runtime.BaseAPI {
     /**
      * Get playlists the user has saved that have been updated for user ID
      */
+
+
     async getPlaylistUpdates(params: GetPlaylistUpdatesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistUpdatesResponse> {
         const response = await this.getPlaylistUpdatesRaw(params, initOverrides);
         return await response.value();

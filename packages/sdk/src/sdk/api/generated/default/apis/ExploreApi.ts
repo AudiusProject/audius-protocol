@@ -75,6 +75,8 @@ export class ExploreApi extends runtime.BaseAPI {
      * Get best selling tracks and playlists
      * Get best selling tracks and/or albums
      */
+
+
     async getBestSelling(params: GetBestSellingRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BestSellingResponse> {
         const response = await this.getBestSellingRaw(params, initOverrides);
         return await response.value();

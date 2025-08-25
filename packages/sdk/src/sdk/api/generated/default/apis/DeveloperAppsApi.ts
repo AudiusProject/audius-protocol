@@ -58,6 +58,8 @@ export class DeveloperAppsApi extends runtime.BaseAPI {
     /**
      * Gets developer app matching given address (API key)
      */
+
+
     async getDeveloperApp(params: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeveloperAppResponse> {
         const response = await this.getDeveloperAppRaw(params, initOverrides);
         return await response.value();

@@ -86,6 +86,8 @@ export class CoinsApi extends runtime.BaseAPI {
     /**
      * Gets information about a specific coin by its mint address
      */
+
+
     async getCoin(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
         const response = await this.getCoinRaw(params, initOverrides);
         return await response.value();
@@ -117,6 +119,8 @@ export class CoinsApi extends runtime.BaseAPI {
     /**
      * Gets insights about a specific coin by its mint address
      */
+
+
     async getCoinInsights(params: GetCoinInsightsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinInsightsResponse> {
         const response = await this.getCoinInsightsRaw(params, initOverrides);
         return await response.value();
@@ -160,6 +164,8 @@ export class CoinsApi extends runtime.BaseAPI {
     /**
      * Gets a list of Audius users with a non-zero balance of a specific coin
      */
+
+
     async getCoinMembers(params: GetCoinMembersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinMembersResponse> {
         const response = await this.getCoinMembersRaw(params, initOverrides);
         return await response.value();
@@ -207,6 +213,8 @@ export class CoinsApi extends runtime.BaseAPI {
     /**
      * Gets information about coins
      */
+
+
     async getCoins(params: GetCoinsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinsResponse> {
         const response = await this.getCoinsRaw(params, initOverrides);
         return await response.value();

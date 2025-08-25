@@ -67,6 +67,8 @@ export class ReactionsApi extends runtime.BaseAPI {
     /**
      * Gets reactions by reacted_to_id and type
      */
+
+
     async bulkGetReactions(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Reactions> {
         const response = await this.bulkGetReactionsRaw(params, initOverrides);
         return await response.value();

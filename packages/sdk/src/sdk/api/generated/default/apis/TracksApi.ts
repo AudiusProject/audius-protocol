@@ -237,6 +237,8 @@ export class TracksApi extends runtime.BaseAPI {
      * Download an original or mp3 track
      * Download the original or MP3 file of a track
      */
+
+
     async downloadTrack(params: DownloadTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.downloadTrackRaw(params, initOverrides);
     }
@@ -271,6 +273,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a list of tracks using their IDs or permalinks
      */
+
+
     async getBulkTracks(params: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getBulkTracksRaw(params, initOverrides);
         return await response.value();
@@ -310,6 +314,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets random tracks found on the \"Feeling Lucky\" smart playlist
      */
+
+
     async getFeelingLuckyTracks(params: GetFeelingLuckyTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getFeelingLuckyTracksRaw(params, initOverrides);
         return await response.value();
@@ -353,6 +359,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the most shared tracks for a given time range
      */
+
+
     async getMostSharedTracks(params: GetMostSharedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getMostSharedTracksRaw(params, initOverrides);
         return await response.value();
@@ -392,6 +400,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the most recently listed premium tracks
      */
+
+
     async getRecentPremiumTracks(params: GetRecentPremiumTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getRecentPremiumTracksRaw(params, initOverrides);
         return await response.value();
@@ -423,6 +433,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a track by ID
      */
+
+
     async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackResponse> {
         const response = await this.getTrackRaw(params, initOverrides);
         return await response.value();
@@ -458,6 +470,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the information necessary to access the track and what access the given user has.
      */
+
+
     async getTrackAccessInfo(params: GetTrackAccessInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AccessInfoResponse> {
         const response = await this.getTrackAccessInfoRaw(params, initOverrides);
         return await response.value();
@@ -493,6 +507,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get the comment count for a track
      */
+
+
     async getTrackCommentCount(params: GetTrackCommentCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentCountResponse> {
         const response = await this.getTrackCommentCountRaw(params, initOverrides);
         return await response.value();
@@ -528,6 +544,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get the comment notification setting for a track
      */
+
+
     async getTrackCommentNotificationSetting(params: GetTrackCommentNotificationSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentNotificationResponse> {
         const response = await this.getTrackCommentNotificationSettingRaw(params, initOverrides);
         return await response.value();
@@ -575,6 +593,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get a list of comments for a track
      */
+
+
     async getTrackComments(params: GetTrackCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackCommentsResponse> {
         const response = await this.getTrackCommentsRaw(params, initOverrides);
         return await response.value();
@@ -606,6 +626,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get the remixable stems of a track
      */
+
+
     async getTrackStems(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
         const response = await this.getTrackStemsRaw(params, initOverrides);
         return await response.value();
@@ -649,6 +671,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get the users that have listened to a track the most
      */
+
+
     async getTrackTopListeners(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopListener> {
         const response = await this.getTrackTopListenersRaw(params, initOverrides);
         return await response.value();
@@ -688,6 +712,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the most recent tracks with active discussion
      */
+
+
     async getTracksWithRecentComments(params: GetTracksWithRecentCommentsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getTracksWithRecentCommentsRaw(params, initOverrides);
         return await response.value();
@@ -731,6 +757,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
      */
+
+
     async getTrendingTracks(params: GetTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getTrendingTracksRaw(params, initOverrides);
         return await response.value();
@@ -766,6 +794,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the top 100 trending underground tracks on Audius
      */
+
+
     async getUndergroundTrendingTracks(params: GetUndergroundTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
         const response = await this.getUndergroundTrendingTracksRaw(params, initOverrides);
         return await response.value();
@@ -803,6 +833,8 @@ export class TracksApi extends runtime.BaseAPI {
      * Inspect a track
      * Inspects the details of the file for a track
      */
+
+
     async inspectTrack(params: InspectTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackInspect> {
         const response = await this.inspectTrackRaw(params, initOverrides);
         return await response.value();
@@ -844,6 +876,8 @@ export class TracksApi extends runtime.BaseAPI {
      * Inspect multiple tracks
      * Inspects the details of the files for multiple tracks
      */
+
+
     async inspectTracks(params: InspectTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackInspectList> {
         const response = await this.inspectTracksRaw(params, initOverrides);
         return await response.value();
@@ -923,6 +957,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Search for a track or tracks
      */
+
+
     async searchTracks(params: SearchTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackSearch> {
         const response = await this.searchTracksRaw(params, initOverrides);
         return await response.value();
@@ -992,6 +1028,8 @@ export class TracksApi extends runtime.BaseAPI {
      * Stream an mp3 track This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
      * Get the streamable MP3 file of a track
      */
+
+
     async streamTrack(params: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StreamUrlResponse> {
         const response = await this.streamTrackRaw(params, initOverrides);
         return await response.value();

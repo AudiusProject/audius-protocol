@@ -556,6 +556,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that subscribe to the provided users
      */
+
+
     async bulkGetSubscribers(params: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
         const response = await this.bulkGetSubscribersRaw(params, initOverrides);
         return await response.value();
@@ -591,6 +593,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get all users that subscribe to the users listed in the JSON request
      */
+
+
     async bulkGetSubscribersViaJSONRequest(params: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
         const response = await this.bulkGetSubscribersViaJSONRequestRaw(params, initOverrides);
         return await response.value();
@@ -662,6 +666,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
+
+
     async getAIAttributedTracksByUserHandle(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
         const response = await this.getAIAttributedTracksByUserHandleRaw(params, initOverrides);
         return await response.value();
@@ -721,6 +727,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the albums created by a user using their user ID
      */
+
+
     async getAlbumsByUser(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AlbumsResponseFull> {
         const response = await this.getAlbumsByUserRaw(params, initOverrides);
         return await response.value();
@@ -760,6 +768,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
+
+
     async getAudioTransactionCount(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
         const response = await this.getAudioTransactionCountRaw(params, initOverrides);
         return await response.value();
@@ -815,6 +825,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $AUDIO transaction history within the App
      */
+
+
     async getAudioTransactions(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
         const response = await this.getAudioTransactionsRaw(params, initOverrides);
         return await response.value();
@@ -850,6 +862,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a list of users by ID
      */
+
+
     async getBulkUsers(params: GetBulkUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getBulkUsersRaw(params, initOverrides);
         return await response.value();
@@ -905,6 +919,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a user\'s favorite tracks
      */
+
+
     async getFavorites(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getFavoritesRaw(params, initOverrides);
         return await response.value();
@@ -948,6 +964,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that follow the provided user
      */
+
+
     async getFollowers(params: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullFollowersResponse> {
         const response = await this.getFollowersRaw(params, initOverrides);
         return await response.value();
@@ -991,6 +1009,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that the provided user follows
      */
+
+
     async getFollowing(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponseFull> {
         const response = await this.getFollowingRaw(params, initOverrides);
         return await response.value();
@@ -1038,6 +1058,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a list of users managed by the given user
      */
+
+
     async getManagedUsers(params: GetManagedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagedUsersResponse> {
         const response = await this.getManagedUsersRaw(params, initOverrides);
         return await response.value();
@@ -1085,6 +1107,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a list of users managing the given user
      */
+
+
     async getManagers(params: GetManagersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ManagersResponse> {
         const response = await this.getManagersRaw(params, initOverrides);
         return await response.value();
@@ -1124,6 +1148,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets users muted by the given user
      */
+
+
     async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getMutedUsersRaw(params, initOverrides);
         return await response.value();
@@ -1167,6 +1193,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get intersection of users that follow followeeUserId and users that are followed by followerUserId
      */
+
+
     async getMutualFollowers(params: GetMutualFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullMutualFollowersResponse> {
         const response = await this.getMutualFollowersRaw(params, initOverrides);
         return await response.value();
@@ -1226,6 +1254,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the playlists created by a user using their user ID
      */
+
+
     async getPlaylistsByUser(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistsResponseFull> {
         const response = await this.getPlaylistsByUserRaw(params, initOverrides);
         return await response.value();
@@ -1277,6 +1307,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the list of unique users who have purchased content by the given user
      */
+
+
     async getPurchasers(params: GetPurchasersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPurchasersResponse> {
         const response = await this.getPurchasersRaw(params, initOverrides);
         return await response.value();
@@ -1328,6 +1360,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the list of users who have purchased content by the given user
      */
+
+
     async getPurchasersCount(params: GetPurchasersCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasersCountResponse> {
         const response = await this.getPurchasersCountRaw(params, initOverrides);
         return await response.value();
@@ -1391,6 +1425,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the purchases the user has made
      */
+
+
     async getPurchases(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
         const response = await this.getPurchasesRaw(params, initOverrides);
         return await response.value();
@@ -1438,6 +1474,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the count of purchases the user has made
      */
+
+
     async getPurchasesCount(params: GetPurchasesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesCountResponse> {
         const response = await this.getPurchasesCountRaw(params, initOverrides);
         return await response.value();
@@ -1485,6 +1523,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a list of users that might be of interest to followers of this user.
      */
+
+
     async getRelatedUsers(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RelatedArtistResponseFull> {
         const response = await this.getRelatedUsersRaw(params, initOverrides);
         return await response.value();
@@ -1532,6 +1572,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the list of unique users who have remixed tracks by the given user, or a specific track by that user if provided
      */
+
+
     async getRemixers(params: GetRemixersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullRemixersResponse> {
         const response = await this.getRemixersRaw(params, initOverrides);
         return await response.value();
@@ -1571,6 +1613,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the count of unique users who have remixed tracks by the given user, or a specific track by that user if provided
      */
+
+
     async getRemixersCount(params: GetRemixersCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixersCountResponse> {
         const response = await this.getRemixersCountRaw(params, initOverrides);
         return await response.value();
@@ -1614,6 +1658,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the given user\'s reposts
      */
+
+
     async getReposts(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
         const response = await this.getRepostsRaw(params, initOverrides);
         return await response.value();
@@ -1657,6 +1703,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s reposts by the user handle
      */
+
+
     async getRepostsByHandle(params: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
         const response = await this.getRepostsByHandleRaw(params, initOverrides);
         return await response.value();
@@ -1720,6 +1768,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the sales the user has made
      */
+
+
     async getSales(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
         const response = await this.getSalesRaw(params, initOverrides);
         return await response.value();
@@ -1767,6 +1817,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the count of sales the user has made
      */
+
+
     async getSalesCount(params: GetSalesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesCountResponse> {
         const response = await this.getSalesCountRaw(params, initOverrides);
         return await response.value();
@@ -1810,6 +1862,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that subscribe to the provided user
      */
+
+
     async getSubscribers(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullSubscribersResponse> {
         const response = await this.getSubscribersRaw(params, initOverrides);
         return await response.value();
@@ -1853,6 +1907,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the users that the given user supports
      */
+
+
     async getSupportedUsers(params: GetSupportedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupportedUsers> {
         const response = await this.getSupportedUsersRaw(params, initOverrides);
         return await response.value();
@@ -1892,6 +1948,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the specified supporter of the given user
      */
+
+
     async getSupporter(params: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporter> {
         const response = await this.getSupporterRaw(params, initOverrides);
         return await response.value();
@@ -1935,6 +1993,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the supporters of the given user
      */
+
+
     async getSupporters(params: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporters> {
         const response = await this.getSupportersRaw(params, initOverrides);
         return await response.value();
@@ -1974,6 +2034,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the support from the given user to the supported user
      */
+
+
     async getSupporting(params: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
         const response = await this.getSupportingRaw(params, initOverrides);
         return await response.value();
@@ -2013,6 +2075,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the Top Users having at least one track by follower count
      */
+
+
     async getTopUsers(params: GetTopUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopUsersResponseFull> {
         const response = await this.getTopUsersRaw(params, initOverrides);
         return await response.value();
@@ -2052,6 +2116,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the Top Users for a Given Genre
      */
+
+
     async getTopUsersInGenre(params: GetTopUsersInGenreRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopGenreUsersResponseFull> {
         const response = await this.getTopUsersInGenreRaw(params, initOverrides);
         return await response.value();
@@ -2123,6 +2189,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the tracks created by a user using their user ID
      */
+
+
     async getTracksByUser(params: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
         const response = await this.getTracksByUserRaw(params, initOverrides);
         return await response.value();
@@ -2194,6 +2262,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the tracks created by a user using the user\'s handle
      */
+
+
     async getTracksByUserHandle(params: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
         const response = await this.getTracksByUserHandleRaw(params, initOverrides);
         return await response.value();
@@ -2245,6 +2315,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the count of the user\'s $USDC transaction history within the App
      */
+
+
     async getUSDCTransactionCount(params: GetUSDCTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
         const response = await this.getUSDCTransactionCountRaw(params, initOverrides);
         return await response.value();
@@ -2312,6 +2384,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $USDC transaction history within the App
      */
+
+
     async getUSDCTransactions(params: GetUSDCTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
         const response = await this.getUSDCTransactionsRaw(params, initOverrides);
         return await response.value();
@@ -2347,6 +2421,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a single user by their user ID
      */
+
+
     async getUser(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getUserRaw(params, initOverrides);
         return await response.value();
@@ -2386,6 +2462,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the account for a given user
      */
+
+
     async getUserAccount(params: GetUserAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAccountResponseFull> {
         const response = await this.getUserAccountRaw(params, initOverrides);
         return await response.value();
@@ -2421,6 +2499,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a single user by their handle
      */
+
+
     async getUserByHandle(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getUserByHandleRaw(params, initOverrides);
         return await response.value();
@@ -2464,6 +2544,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get user comment history
      */
+
+
     async getUserComments(params: GetUserCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserCommentsResponseFull> {
         const response = await this.getUserCommentsRaw(params, initOverrides);
         return await response.value();
@@ -2531,6 +2613,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the feed for the user
      */
+
+
     async getUserFeed(params: GetUserFeedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserFeedResponse> {
         const response = await this.getUserFeedRaw(params, initOverrides);
         return await response.value();
@@ -2600,6 +2684,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Gets a user\'s saved/reposted/purchased/all albums
      * Fetch a user\'s full library playlists
      */
+
+
     async getUserLibraryAlbums(params: GetUserLibraryAlbumsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectionLibraryResponseFull> {
         const response = await this.getUserLibraryAlbumsRaw(params, initOverrides);
         return await response.value();
@@ -2669,6 +2755,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Gets a user\'s saved/reposted/purchased/all playlists
      * Fetch a user\'s full library playlists
      */
+
+
     async getUserLibraryPlaylists(params: GetUserLibraryPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectionLibraryResponseFull> {
         const response = await this.getUserLibraryPlaylistsRaw(params, initOverrides);
         return await response.value();
@@ -2738,6 +2826,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Gets a user\'s saved/reposted/purchased/all tracks
      * Fetch a user\'s full library tracks
      */
+
+
     async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getUserLibraryTracksRaw(params, initOverrides);
         return await response.value();
@@ -2785,6 +2875,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the recommended tracks for the user
      */
+
+
     async getUserRecommendedTracks(params: GetUserRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
         const response = await this.getUserRecommendedTracksRaw(params, initOverrides);
         return await response.value();
@@ -2848,6 +2940,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the tracks the user recently listened to.
      */
+
+
     async getUsersTrackHistory(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HistoryResponseFull> {
         const response = await this.getUsersTrackHistoryRaw(params, initOverrides);
         return await response.value();

@@ -62,6 +62,8 @@ export class DashboardWalletUsersApi extends runtime.BaseAPI {
     /**
      * Gets Audius user profiles connected to given dashboard wallet addresses
      */
+
+
     async bulkGetDashboardWalletUsers(params: BulkGetDashboardWalletUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DashboardWalletUsersResponse> {
         const response = await this.bulkGetDashboardWalletUsersRaw(params, initOverrides);
         return await response.value();

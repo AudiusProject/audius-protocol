@@ -95,6 +95,8 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactions()` instead.
      * Gets the user\'s $AUDIO transaction history within the App
      */
+
+
     async getAudioTransactionHistory(params: GetAudioTransactionHistoryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
         const response = await this.getAudioTransactionHistoryRaw(params, initOverrides);
         return await response.value();
@@ -134,6 +136,8 @@ export class TransactionsApi extends runtime.BaseAPI {
      * Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
+
+
     async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
         const response = await this.getAudioTransactionHistoryCountRaw(params, initOverrides);
         return await response.value();

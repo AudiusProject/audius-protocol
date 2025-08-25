@@ -118,6 +118,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Gets a list of playlists by ID
      */
+
+
     async getBulkPlaylists(params: GetBulkPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
         const response = await this.getBulkPlaylistsRaw(params, initOverrides);
         return await response.value();
@@ -153,6 +155,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get a playlist by ID
      */
+
+
     async getPlaylist(params: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
         const response = await this.getPlaylistRaw(params, initOverrides);
         return await response.value();
@@ -192,6 +196,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get a playlist by handle and slug
      */
+
+
     async getPlaylistByHandleAndSlug(params: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
         const response = await this.getPlaylistByHandleAndSlugRaw(params, initOverrides);
         return await response.value();
@@ -223,6 +229,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Fetch tracks within a playlist.
      */
+
+
     async getPlaylistTracks(params: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistTracksResponse> {
         const response = await this.getPlaylistTracksRaw(params, initOverrides);
         return await response.value();
@@ -274,6 +282,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Returns trending playlists for a time period
      */
+
+
     async getTrendingPlaylists(params: GetTrendingPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrendingPlaylistsResponse> {
         const response = await this.getTrendingPlaylistsRaw(params, initOverrides);
         return await response.value();
@@ -321,6 +331,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Returns trending playlists for a time period based on the given trending version
      */
+
+
     async getTrendingPlaylistsWithVersion(params: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrendingPlaylistsResponse> {
         const response = await this.getTrendingPlaylistsWithVersionRaw(params, initOverrides);
         return await response.value();
@@ -364,6 +376,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get users that favorited a playlist
      */
+
+
     async getUsersFromPlaylistFavorites(params: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
         const response = await this.getUsersFromPlaylistFavoritesRaw(params, initOverrides);
         return await response.value();
@@ -407,6 +421,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get users that reposted a playlist
      */
+
+
     async getUsersFromPlaylistReposts(params: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
         const response = await this.getUsersFromPlaylistRepostsRaw(params, initOverrides);
         return await response.value();

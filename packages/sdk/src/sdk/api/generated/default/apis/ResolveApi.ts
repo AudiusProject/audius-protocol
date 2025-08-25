@@ -57,6 +57,8 @@ export class ResolveApi extends runtime.BaseAPI {
      * This endpoint allows you to lookup and access API resources when you only know the audius.co URL. Tracks, Playlists, and Users are supported.
      * Resolves and redirects a provided Audius app URL to the API resource URL it represents
      */
+
+
     async resolve(params: ResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.resolveRaw(params, initOverrides);
     }

@@ -167,6 +167,8 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
+
+
     async search(params: SearchRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
         const response = await this.searchRaw(params, initOverrides);
         return await response.value();
@@ -256,6 +258,8 @@ export class SearchApi extends runtime.BaseAPI {
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
+
+
     async searchAutocomplete(params: SearchAutocompleteRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchAutocompleteResponse> {
         const response = await this.searchAutocompleteRaw(params, initOverrides);
         return await response.value();
@@ -343,6 +347,8 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Get Users/Tracks/Playlists/Albums that best match the provided tag
      */
+
+
     async searchTags(params: SearchTagsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
         const response = await this.searchTagsRaw(params, initOverrides);
         return await response.value();
