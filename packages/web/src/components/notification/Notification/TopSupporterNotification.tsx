@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { useUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { SupporterRankUpNotification } from '@audius/common/store'
+import { getXShareHandle } from '@audius/common/utils'
 import { IconTrending } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'
@@ -82,7 +83,7 @@ export const TopSupporterNotification = (
       <XShareButton
         type='dynamic'
         handle={user.handle}
-        url={`${env.AUDIUS_URL}/${user.handle}`}
+        url={`${env.AUDIUS_URL}/${getXShareHandle(user)}`}
         shareData={handleXShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

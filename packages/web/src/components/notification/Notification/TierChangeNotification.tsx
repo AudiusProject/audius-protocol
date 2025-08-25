@@ -4,6 +4,7 @@ import {
   TierChangeNotification as TierChangeNotificationType,
   BadgeTierInfo
 } from '@audius/common/store'
+import { getXShareHandle } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 
 import { audioTierMap } from 'components/user-badges/UserBadges'
@@ -72,7 +73,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
       </NotificationBody>
       <XShareButton
         type='static'
-        url={fullProfilePage(user.handle)}
+        url={fullProfilePage(getXShareHandle(user))}
         shareText={shareText}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

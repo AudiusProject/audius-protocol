@@ -1,16 +1,12 @@
 import { ShareToTwitter, User } from '@audius/common/models'
 import { ShareContent } from '@audius/common/store'
+import { getXShareHandle } from '@audius/common/utils'
 
 import { fullCollectionPage, fullProfilePage, fullTrackPage } from 'utils/route'
 
 import { messages } from './messages'
 
 type ShareToTwitterEvent = Omit<ShareToTwitter, 'eventName' | 'source'>
-
-const getXShareHandle = (user: User) => {
-  const xHandle = user.twitter_handle
-  return xHandle ? `@${xHandle}` : user.handle
-}
 
 type ShareMessageConfig = Pick<
   typeof messages,
@@ -31,14 +27,14 @@ export const getXShareText = async (
         track: { title, permalink, track_id },
         artist
       } = content
-      xText = messageConfig.trackShareText(title, getXShareHandle(artist))
+      xText = messageConfig.trackShareText(title, `@${getXShareHandle(artist)}`)
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
       break
     }
     case 'profile': {
       const { profile } = content
-      xText = messageConfig.profileShareText(getXShareHandle(profile))
+      xText = messageConfig.profileShareText(`@${getXShareHandle(profile)}`)
       link = fullProfilePage(profile.handle)
       analyticsEvent = { kind: 'profile', id: profile.user_id, url: link }
       break
@@ -50,7 +46,7 @@ export const getXShareText = async (
       } = content
       xText = messageConfig.albumShareText(
         playlist_name,
-        getXShareHandle(artist)
+        `@${getXShareHandle(artist)}`
       )
       link = fullCollectionPage(
         artist.handle,
@@ -69,7 +65,7 @@ export const getXShareText = async (
       } = content
       xText = messageConfig.playlistShareText(
         playlist_name,
-        getXShareHandle(creator)
+        `@${getXShareHandle(creator)}`
       )
       link = fullCollectionPage(
         creator.handle,
