@@ -1,10 +1,10 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
-import { Image, Platform } from 'react-native'
 import type { ID } from '@audius/common/models'
+import { useTokens } from '@audius/common/store'
 import type { ChatBlastAudience } from '@audius/sdk'
+import { Image, Platform } from 'react-native'
 
 import { Flex, HexagonalIcon, spacing, Text } from '@audius/harmony-native'
-import { useTokens } from '@audius/common/store'
 
 const messages = {
   membersOnly: 'Members Only'
