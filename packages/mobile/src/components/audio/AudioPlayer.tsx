@@ -674,6 +674,13 @@ export const AudioPlayer = () => {
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
+    // WORKAROUND: There's one react cycle where queueOrder is updated but tracksById is not yet updated
+    // This means that the queueTracks object is behind for a tiny window.
+    // This fix just skips the queue change until the cycle with the tracksById has loaded
+    if (!newQueueTracks.every(({ track }) => !!track?.track_id)) {
+      return
+    }
+
     // Enqueue tracks using 'middle-out' to ensure user can ready skip forward or backwards
     const enqueueTracks = async (
       queuableTracks: QueueableTrack[],
