@@ -667,7 +667,7 @@ export const AudioPlayer = () => {
     //   )
     //   await TrackPlayer.remove(removalIndexArray)
     //   await TrackPlayer.skip(queueIndex)
-    //   return a
+    //   return
     // }
 
     const newQueueTracks = isQueueAppend
