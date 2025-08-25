@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { useUser } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { SupporterRankUpNotification } from '@audius/common/store'
-import { getXShareHandle } from '@audius/common/utils'
 import { IconTrending } from '@audius/harmony'
 
 import { make } from 'common/store/analytics/actions'

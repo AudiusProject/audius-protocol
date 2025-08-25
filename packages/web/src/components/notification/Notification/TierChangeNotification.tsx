@@ -73,7 +73,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
       </NotificationBody>
       <XShareButton
         type='static'
-        url={fullProfilePage(getXShareHandle(user).replace('@', ''))}
+        url={fullProfilePage(user.handle)}
         shareText={shareText}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
