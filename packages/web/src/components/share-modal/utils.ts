@@ -27,14 +27,14 @@ export const getXShareText = async (
         track: { title, permalink, track_id },
         artist
       } = content
-      xText = messageConfig.trackShareText(title, `@${getXShareHandle(artist)}`)
+      xText = messageConfig.trackShareText(title, getXShareHandle(artist))
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
       break
     }
     case 'profile': {
       const { profile } = content
-      xText = messageConfig.profileShareText(`@${getXShareHandle(profile)}`)
+      xText = messageConfig.profileShareText(getXShareHandle(profile))
       link = fullProfilePage(profile.handle)
       analyticsEvent = { kind: 'profile', id: profile.user_id, url: link }
       break
@@ -46,7 +46,7 @@ export const getXShareText = async (
       } = content
       xText = messageConfig.albumShareText(
         playlist_name,
-        `@${getXShareHandle(artist)}`
+        getXShareHandle(artist)
       )
       link = fullCollectionPage(
         artist.handle,
@@ -65,7 +65,7 @@ export const getXShareText = async (
       } = content
       xText = messageConfig.playlistShareText(
         playlist_name,
-        `@${getXShareHandle(creator)}`
+        getXShareHandle(creator)
       )
       link = fullCollectionPage(
         creator.handle,

@@ -83,7 +83,7 @@ export const TopSupporterNotification = (
       <XShareButton
         type='dynamic'
         handle={user.handle}
-        url={`${env.AUDIUS_URL}/${getXShareHandle(user)}`}
+        url={`${env.AUDIUS_URL}/${user.handle}`}
         shareData={handleXShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

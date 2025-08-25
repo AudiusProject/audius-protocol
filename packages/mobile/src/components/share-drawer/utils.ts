@@ -38,31 +38,25 @@ export const getXShareText = async (content: ShareContent) => {
         track: { title },
         artist
       } = content
-      return messages.trackShareText(title, `@${getXShareHandle(artist)}`)
+      return messages.trackShareText(title, getXShareHandle(artist))
     }
     case 'profile': {
       const { profile } = content
-      return messages.profileShareText(`@${getXShareHandle(profile)}`)
+      return messages.profileShareText(getXShareHandle(profile))
     }
     case 'album': {
       const {
         album: { playlist_name },
         artist
       } = content
-      return messages.albumShareText(
-        playlist_name,
-        `@${getXShareHandle(artist)}`
-      )
+      return messages.albumShareText(playlist_name, getXShareHandle(artist))
     }
     case 'playlist': {
       const {
         playlist: { playlist_name },
         creator
       } = content
-      return messages.playlistShareText(
-        playlist_name,
-        `@${getXShareHandle(creator)}`
-      )
+      return messages.playlistShareText(playlist_name, getXShareHandle(creator))
     }
   }
 }

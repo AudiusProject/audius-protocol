@@ -69,11 +69,11 @@ export const XShareButton = (props: XShareButtonProps) => {
         user?.handle &&
         (other.additionalHandle ? additionalUser?.handle : true)
       ) {
-        const handle = user ? `@${getXShareHandle(user)}` : ''
+        const handle = user ? getXShareHandle(user) : ''
 
         const otherHandle =
           other.additionalHandle && additionalUser
-            ? `@${getXShareHandle(additionalUser)}`
+            ? getXShareHandle(additionalUser)
             : null
 
         const xData = other.shareData(handle, otherHandle)

@@ -79,7 +79,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       <XShareButton
         type='dynamic'
         handle={user.handle}
-        url={`${env.AUDIUS_URL}/${getXShareHandle(user)}`}
+        url={`${env.AUDIUS_URL}/${getXShareHandle(user).replace('@', '')}`}
         shareData={handleShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

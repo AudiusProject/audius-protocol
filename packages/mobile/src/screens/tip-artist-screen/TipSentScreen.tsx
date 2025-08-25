@@ -76,7 +76,7 @@ export const TipSentScreen = () => {
 
   const getXShareText = () => {
     if (user_id && recipient) {
-      const recipientName = `@${getXShareHandle(recipient)}`
+      const recipientName = getXShareHandle(recipient)
       return messages.xShare(
         recipientName,
         sendAmount,
