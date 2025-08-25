@@ -1,33 +1,59 @@
-import { User } from '@audius/common/models'
+import { Collectible, User } from '@audius/common/models'
 import { developmentConfig } from '@audius/sdk'
 import { http, HttpResponse } from 'msw'
 
-import { mockData } from './mockData'
+import { mockArtistCoin } from 'test/mocks/fixtures/artistCoin'
+import { artistUser } from 'test/mocks/fixtures/userPersonas'
 
 const { apiEndpoint } = developmentConfig.network
 
-type MockData = ReturnType<typeof mockData>
-
-export const userMswMocks = (user: User, data: MockData['users']) => [
+/**
+ *  User mocks
+ */
+export const mockUserByHandle = (user: typeof artistUser) => {
   http.get(`${apiEndpoint}/v1/full/users/handle/${user.handle}`, () => {
-    return HttpResponse.json(data.userByHandle)
-  }),
-  http.get(`${apiEndpoint}/v1/users/${user.user_id}/connected_wallets`, () => {
-    return HttpResponse.json(data.connected_wallets)
-  }),
-  http.get(`${apiEndpoint}/v1/users/${user.user_id}/collectibles`, () => {
-    return HttpResponse.json(data.collectibles)
-  }),
-  http.get(`${apiEndpoint}/v1/full/users/${user.user_id}/supporting`, () => {
-    return HttpResponse.json(data.supporting)
-  }),
-  http.get(`${apiEndpoint}/v1/full/users/${user.user_id}/supporters`, () => {
-    return HttpResponse.json(data.supporters)
-  }),
-  http.get(`${apiEndpoint}/v1/full/users/${user.user_id}/related`, () => {
-    return HttpResponse.json(data.related)
+    return HttpResponse.json({ data: [user] })
   })
-]
+}
+
+export const mockUserCollectibles = (
+  user: User,
+  collectibles?: Collectible[]
+) => {
+  return http.get(
+    `${apiEndpoint}/v1/users/${user.user_id}/collectibles`,
+    () => {
+      return HttpResponse.json({ data: collectibles ?? null })
+    }
+  )
+}
+
+export const mockUserSupporting = (user: User, supportingUsers?: User[]) => {
+  return http.get(
+    `${apiEndpoint}/v1/full/users/${user.user_id}/supporting`,
+    () => {
+      return HttpResponse.json({ data: supportingUsers ?? [] })
+    }
+  )
+}
+
+export const mockUserSupporters = (user: User, supporterUsers?: User[]) => {
+  return http.get(
+    `${apiEndpoint}/v1/full/users/${user.user_id}/supporters`,
+    () => {
+      return HttpResponse.json({ data: supporterUsers ?? [] })
+    }
+  )
+}
+
+export const mockUserRelated = (user: User, relatedUsers?: User[]) => {
+  return http.get(
+    `${apiEndpoint}/v1/full/users/${user.user_id}/related`,
+    () => {
+      return HttpResponse.json({ data: relatedUsers ?? [] })
+    }
+  )
+}
 
 export const nftMswMocks = () => [
   // ETH NFTs api
@@ -39,8 +65,34 @@ export const nftMswMocks = () => [
   )
 ]
 
-export const eventMswMocks = (data: MockData['events']) => [
+/**
+ * Wallets
+ */
+export const mockUserConnectedWallets = (user: User) => {
+  return http.get(
+    `${apiEndpoint}/v1/users/${user.user_id}/connected_wallets`,
+    () => {
+      return HttpResponse.json({
+        data: { erc_wallets: [], spl_wallets: [] }
+      })
+    }
+  )
+}
+
+/**
+ * Events
+ */
+export const eventMswMocks = (/* todo: */) => [
   http.get(`${apiEndpoint}/v1/events/entity`, () => {
-    return HttpResponse.json(data)
+    return HttpResponse.json({ data: [] })
+  })
+]
+
+/**
+ * Artist Coins
+ */
+export const artistCoinMswMocks = (coin: typeof mockArtistCoin) => [
+  http.get(`${apiEndpoint}/v1/coins/${coin.mint}`, () => {
+    return HttpResponse.json({ data: coin })
   })
 ]

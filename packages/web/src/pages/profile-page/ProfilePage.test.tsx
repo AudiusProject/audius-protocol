@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { SquareSizes, User } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import {
   describe,
@@ -13,8 +13,9 @@ import {
   beforeEach
 } from 'vitest'
 
-import { userMswMocks } from 'test/msw/mswMocks'
-import { nonArtistUser } from 'test/personas'
+import { artistUser, nonArtistUser } from 'test/mocks/fixtures/userPersonas'
+import { mockData } from 'test/msw/mswMockData'
+import { userMswMocks, nftMswMocks, eventMswMocks } from 'test/msw/mswMocks'
 import {
   RenderOptions,
   mswServer,
@@ -45,13 +46,14 @@ const ProfilePageWithRef = () => {
   )
 }
 
-export function renderProfilePage(user: User, options?: RenderOptions) {
+export function renderProfilePage(user: any, options?: RenderOptions) {
   // TODO: move these out of this render and standardize them more - also accept args to configure the various endpoints
-  mswServer.use([
-    ...userMswMocks(user, mockData.users),
+  const mocks = mockData(user)
+  mswServer.use(
+    ...userMswMocks(user, mocks.users),
     ...nftMswMocks(),
-    ...eventMswMocks(mockData.events)
-  ])
+    ...eventMswMocks(mocks.events)
+  )
 
   return render(
     <Routes>
@@ -86,7 +88,7 @@ describe('ProfilePage', () => {
     mswServer.close()
   })
 
-  it('should render the profile page for a non-artist', async () => {
+  it.only('should render the profile page for a non-artist', async () => {
     renderProfilePage(nonArtistUser)
 
     // User header
@@ -107,7 +109,7 @@ describe('ProfilePage', () => {
       'dynamic-image-second'
     )
     expect(dynamicImage.style.backgroundImage).toEqual(
-      `url(${nonArtistUser.profile_picture[SquareSizes.SIZE_480_BY_480]})`
+      `url("${nonArtistUser.profile_picture[SquareSizes.SIZE_480_BY_480]}")`
     )
 
     // TODO: cover photo not rendering in test env for some reason
