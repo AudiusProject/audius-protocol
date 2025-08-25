@@ -657,6 +657,7 @@ export const AudioPlayer = () => {
     //   refUids.length > 0 &&
     //   isEqual(refUids.slice(0, queueTrackUids.length), queueTrackUids)
 
+    // HI
     // if (isQueueRemoval) {
     //   // NOTE: There might be a case where we are trying to remove the currently playing track.
     //   // Shouldn't be possible, but need to keep an eye out for that
