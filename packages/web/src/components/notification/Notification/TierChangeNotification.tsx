@@ -4,7 +4,6 @@ import {
   TierChangeNotification as TierChangeNotificationType,
   BadgeTierInfo
 } from '@audius/common/store'
-import { getXShareHandle } from '@audius/common/utils'
 import { capitalize } from 'lodash'
 
 import { audioTierMap } from 'components/user-badges/UserBadges'

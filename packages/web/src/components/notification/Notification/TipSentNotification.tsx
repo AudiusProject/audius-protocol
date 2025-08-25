@@ -4,7 +4,6 @@ import { useTokenPrice, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { TipSendNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
-import { getXShareHandle } from '@audius/common/utils'
 
 import { make } from 'common/store/analytics/actions'
 import { XShareButton } from 'components/x-share-button/XShareButton'
