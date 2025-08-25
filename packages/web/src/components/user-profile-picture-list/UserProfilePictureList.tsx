@@ -36,7 +36,7 @@ export type UserProfileListProps = {
    * When this is the case, we use this totalUserCount prop to inform how many total users there are.
    */
   users: Array<User>
-  totalUserCount: number
+  totalUserCount: number | undefined | null // Note: undefined/null was added to support case where totalUserCount is loading separately
   limit?: number
   disableProfileClick?: boolean
   disablePopover?: boolean
@@ -65,7 +65,7 @@ export const UserProfilePictureList = ({
    * We add a +1 because the remaining users count includes
    * the tile that has the +N itself.
    */
-  const remainingUsersCount = totalUserCount - limit + 1
+  const remainingUsersCount = totalUserCount ? totalUserCount - limit + 1 : 0
   /**
    * If the total user count is greater than the limit, then
    * we slice at limit -1 to exclude the tile with the +N, since
@@ -140,7 +140,9 @@ export const UserProfilePictureList = ({
               user={lastUser}
             />
             <span className={styles.profilePictureCount}>
-              {messages.count(remainingUsersCount)}
+              {remainingUsersCount > 0
+                ? messages.count(remainingUsersCount)
+                : null}
             </span>
           </div>
         </Tooltip>
