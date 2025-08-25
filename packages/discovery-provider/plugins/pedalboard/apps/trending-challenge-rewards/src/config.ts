@@ -22,6 +22,8 @@ export const initSharedData = async (): Promise<SharedData> => {
 
   sharedData = {
     sdk: audiusSdk({
+      apiKey: process.env.trending_rewards_api_key!,
+      apiSecret: process.env.trending_rewards_api_secret!,
       environment: process.env.environment as
         | 'development'
         | 'staging'
