@@ -29,7 +29,10 @@ export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
     // Filter out USDC coins
     const filteredCoins = coins.filter((coin) => {
       if (!isArtistCoinsEnabled) return coin.mint === env.WAUDIO_MINT_ADDRESS
-      return coin.ticker !== 'USDC' && coin.balance > 0
+      return (
+        coin.ticker !== 'USDC' &&
+        (coin.balance > 0 || coin.mint === env.WAUDIO_MINT_ADDRESS)
+      )
     })
 
     // Group coins for responsive layout
