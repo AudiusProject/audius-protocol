@@ -1,7 +1,7 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { useTokens } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Artwork, Flex, spacing, Text } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 
 const messages = {
@@ -24,8 +24,6 @@ export const ArtistCoinHeader = ({
 
   if (!artistCoinSymbol) return null
 
-  const ArtistCoinIcon = !isLoading ? tokens[artistCoinSymbol]?.icon : undefined
-
   return (
     <Flex
       ph='l'
@@ -37,7 +35,15 @@ export const ArtistCoinHeader = ({
       borderBottom='default'
     >
       <Flex gap='xs' alignItems='center'>
-        {ArtistCoinIcon ? <ArtistCoinIcon size='xs' /> : null}
+        {!isLoading ? (
+          <Artwork
+            src={tokens[artistCoinSymbol]?.logoURI}
+            hex
+            w={spacing.m}
+            h={spacing.m}
+            borderWidth={0}
+          />
+        ) : undefined}
         <Text variant='label' size='s'>
           {artistCoinSymbol}
         </Text>

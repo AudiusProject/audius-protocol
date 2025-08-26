@@ -1,9 +1,10 @@
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import { useTokens } from '@audius/common/store'
 import type { ChatBlastAudience } from '@audius/sdk'
-import { Platform } from 'react-native'
+import { Image, Platform } from 'react-native'
 
-import { Flex, IconTokenBonk, Text } from '@audius/harmony-native'
+import { Flex, HexagonalIcon, spacing, Text } from '@audius/harmony-native'
 
 const messages = {
   membersOnly: 'Members Only'
@@ -20,6 +21,7 @@ export const ArtistCoinHeader = ({
     userId,
     audience
   })
+  const { tokens, isLoading } = useTokens()
 
   if (!artistCoinSymbol) return null
 
@@ -35,8 +37,17 @@ export const ArtistCoinHeader = ({
       borderBottom='default'
     >
       <Flex row gap='xs' alignItems='center'>
-        {/* TODO: Lookup artist coin icon from TOKENS */}
-        <IconTokenBonk size='xs' />
+        {!isLoading ? (
+          <HexagonalIcon size={spacing.m}>
+            <Image
+              source={{ uri: tokens[artistCoinSymbol]?.logoURI }}
+              style={{
+                width: spacing.m,
+                height: spacing.m
+              }}
+            />
+          </HexagonalIcon>
+        ) : undefined}
         {/* Alignment bug for label text variant on iOS */}
         <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
           <Text variant='label' size='s'>
