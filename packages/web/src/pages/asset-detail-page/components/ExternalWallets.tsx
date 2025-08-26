@@ -47,7 +47,7 @@ type WalletRowProps = {
 } & UserCoinAccount
 
 const WalletRow = ({
-  owner: address,
+  account: address,
   balance,
   isInAppWallet,
   decimals
