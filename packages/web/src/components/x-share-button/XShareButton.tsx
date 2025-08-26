@@ -87,16 +87,7 @@ export const XShareButton = (props: XShareButtonProps) => {
         }
       }
     },
-    [
-      other,
-      user?.handle,
-      user?.name,
-      additionalUser?.handle,
-      additionalUser?.name,
-      url,
-      onAfterShare,
-      record
-    ]
+    [other, user, additionalUser, url, onAfterShare, record]
   )
 
   return (

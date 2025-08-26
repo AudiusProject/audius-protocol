@@ -1,6 +1,5 @@
 import type { ShareContent } from '@audius/common/store'
 import { makeXShareUrl, getXShareHandle } from '@audius/common/utils'
-import type { User } from '~/models'
 
 import {
   getCollectionRoute,

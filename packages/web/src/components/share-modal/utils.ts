@@ -1,4 +1,4 @@
-import { ShareToTwitter, User } from '@audius/common/models'
+import { ShareToTwitter } from '@audius/common/models'
 import { ShareContent } from '@audius/common/store'
 import { getXShareHandle } from '@audius/common/utils'
 
