@@ -81,7 +81,7 @@ const HoverCardComponent = ({
       {children}
 
       <Popup
-        shadow='near'
+        shadow='far'
         anchorRef={anchorRef}
         isVisible={isVisible}
         onClose={handleClose}
@@ -92,10 +92,12 @@ const HoverCardComponent = ({
       >
         <Paper
           className={className}
+          border='strong'
           borderRadius='m'
           backgroundColor='white'
           direction='column'
           onClick={onClick}
+          shadow='far'
         >
           {content}
         </Paper>
