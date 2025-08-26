@@ -40,6 +40,7 @@ export type SwapTabProps = {
   inputIsDefault?: boolean
   outputIsDefault?: boolean
   tab?: BuySellTab
+  onChangeSwapDirection?: () => void
 } & TokenPricing &
   UIConfiguration &
   InputConfiguration &
@@ -68,7 +69,8 @@ export const SwapTab = ({
   availableOutputTokens,
   onInputTokenChange,
   onOutputTokenChange,
-  outputBalance
+  outputBalance,
+  onChangeSwapDirection
 }: SwapTabProps) => {
   const {
     formik,
@@ -142,6 +144,7 @@ export const SwapTab = ({
                 onTokenChange={
                   !inputSectionIsDefault ? onInputTokenChange : undefined
                 }
+                onChangeSwapDirection={onChangeSwapDirection}
               />
 
               <TokenAmountSection
@@ -163,6 +166,7 @@ export const SwapTab = ({
                 onTokenChange={
                   !outputSectionIsDefault ? onOutputTokenChange : undefined
                 }
+                onChangeSwapDirection={onChangeSwapDirection}
               />
 
               {/* Show exchange rate for convert flow */}

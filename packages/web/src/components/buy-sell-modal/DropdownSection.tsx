@@ -10,6 +10,8 @@ import { useTheme, css } from '@emotion/react'
 import Select, { components } from 'react-select'
 import type { SingleValue, SingleValueProps, OptionProps } from 'react-select'
 
+import zIndex from 'utils/zIndex'
+
 import { TokenIcon } from './TokenIcon'
 
 type TokenOption = {
@@ -190,7 +192,6 @@ export const DropdownSection = ({
       alignSelf='stretch'
       border='default'
       pv='s'
-      ph='m'
       borderRadius='s'
       css={{
         maxHeight: spacing.unit16,
@@ -208,6 +209,9 @@ export const DropdownSection = ({
         options={options}
         isDisabled={!isClickable}
         isSearchable={false}
+        menuPlacement='auto'
+        menuPosition='absolute'
+        menuPortalTarget={document.body}
         components={{
           SingleValue: (props: SingleValueProps<TokenOption>) => {
             const { setValue, ...singleValueProps } = props
@@ -252,7 +256,13 @@ export const DropdownSection = ({
             cursor: isClickable ? 'pointer' : 'default',
             '&:hover': {
               border: 'none'
-            }
+            },
+            paddingLeft: spacing.m,
+            paddingRight: spacing.m
+          }),
+          menuPortal: (provided) => ({
+            ...provided,
+            zIndex: zIndex.TOAST
           }),
           menu: (provided) => ({
             ...provided,

@@ -1,8 +1,9 @@
-import { Fragment, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   useArtistCoin,
   useCurrentUserId,
+  useUser,
   useUserCoins
 } from '@audius/common/api'
 import { useDiscordOAuthLink } from '@audius/common/hooks'
@@ -12,11 +13,9 @@ import {
   Flex,
   Paper,
   Text,
-  useTheme,
   PlainButton,
   IconDiscord,
   IconGift,
-  Avatar,
   IconExternalLink,
   ModalContent,
   ModalHeader,
@@ -27,7 +26,7 @@ import { decodeHashId } from '@audius/sdk'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import UserBadges from 'components/user-badges/UserBadges'
+import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
@@ -109,14 +108,6 @@ const AssetInfoSectionSkeleton = () => {
   )
 }
 
-const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
-  const { spacing } = useTheme()
-
-  if (!logoURI) return null
-
-  return <Avatar src={logoURI} w={spacing.unit8} h={spacing.unit8} />
-}
-
 type BannerSectionProps = {
   mint: string
 }
@@ -128,12 +119,13 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
     ? (decodeHashId(coin.ownerId) ?? undefined)
     : undefined
 
+  const { data: owner } = useUser(userId)
   const { image: coverPhoto } = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_640
   })
 
-  if (isLoading || !coin) {
+  if (isLoading || !coin || !owner) {
     return (
       <Flex
         direction='column'
@@ -166,9 +158,6 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
     )
   }
 
-  const logoURI = coin.logoUri
-  const name = coin.ticker
-
   return (
     <Flex
       direction='column'
@@ -194,22 +183,7 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
           {messages.createdBy}
         </Text>
 
-        <Flex
-          alignItems='center'
-          gap='xs'
-          p='xs'
-          backgroundColor='white'
-          borderRadius='circle'
-          border='default'
-        >
-          <TokenIcon logoURI={logoURI} />
-          <Flex alignItems='center' gap='xs'>
-            <Text variant='body' size='l'>
-              {name}
-            </Text>
-            {userId && <UserBadges userId={userId} size='s' inline />}
-          </Flex>
-        </Flex>
+        {userId && <UserTokenBadge userId={userId} />}
       </Flex>
     </Flex>
   )
@@ -258,8 +232,8 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
   const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
-  const userHasNoBalance = !userTokenBalance || Number(userTokenBalance) <= 0
-  const TooltipWrapper = userHasNoBalance ? Tooltip : Fragment
+  const isUserBalanceUnavailable =
+    !userTokenBalance || Number(userTokenBalance) <= 0
 
   return (
     <>
@@ -323,7 +297,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           alignItems='center'
           justifyContent='space-between'
           alignSelf='stretch'
-          p='xl'
+          p='l'
           borderTop='default'
         >
           <Flex alignItems='center' justifyContent='center' gap='s'>
@@ -331,7 +305,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
               onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
               iconLeft={CTAIcon}
               variant='default'
-              size='default'
+              size='large'
             >
               {isWAudio ? messages.browseRewards : messages.learnMore}
             </PlainButton>
@@ -341,26 +315,37 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           alignItems='center'
           justifyContent='space-between'
           alignSelf='stretch'
-          p='xl'
+          p='l'
           borderTop='default'
         >
           <Flex alignItems='center' justifyContent='center' gap='s'>
-            <TooltipWrapper
-              text={messages.discordDisabledTooltip(coin?.ticker)}
-            >
-              {/* The tooltip needs a wrapper to work */}
+            {isUserBalanceUnavailable ? (
+              <Tooltip text={messages.discordDisabledTooltip(coin?.ticker)}>
+                <Flex style={{ cursor: 'pointer' }}>
+                  <PlainButton
+                    onClick={openDiscord}
+                    iconLeft={IconDiscord}
+                    variant='default'
+                    size='large'
+                    disabled={isUserBalanceUnavailable}
+                  >
+                    {messages.openDiscord}
+                  </PlainButton>
+                </Flex>
+              </Tooltip>
+            ) : (
               <Flex style={{ cursor: 'pointer' }}>
                 <PlainButton
                   onClick={openDiscord}
                   iconLeft={IconDiscord}
                   variant='default'
-                  size='default'
-                  disabled={userHasNoBalance}
+                  size='large'
+                  disabled={isUserBalanceUnavailable}
                 >
                   {messages.openDiscord}
                 </PlainButton>
               </Flex>
-            </TooltipWrapper>
+            )}
           </Flex>
         </Flex>
       </Paper>

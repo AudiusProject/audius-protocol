@@ -1,4 +1,7 @@
+import { useArtistCoin } from '@audius/common/api'
 import { Artwork, Flex, IconCaretRight, Paper, Text } from '@audius/harmony'
+import { decodeHashId } from '@audius/sdk'
+import { useTheme } from '@emotion/react'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
@@ -29,6 +32,13 @@ export const ArtistCoinRow = ({
   onClick,
   mint
 }: ArtistCoinRowProps) => {
+  const { color, cornerRadius } = useTheme()
+  const { data: coin } = useArtistCoin({ mint })
+
+  const userId = coin?.ownerId
+    ? (decodeHashId(coin.ownerId) ?? undefined)
+    : undefined
+
   const renderIcon = () => {
     if (typeof icon === 'string') {
       return <Artwork src={icon} hex w='unit10' h='unit10' borderWidth={0} />
@@ -43,11 +53,21 @@ export const ArtistCoinRow = ({
       justifyContent='space-between'
       p='xl'
       flex={1}
-      border='default'
-      borderRadius='l'
+      borderTop='default'
+      borderRadius='m'
       shadow='flat'
       backgroundColor='white'
       onClick={onClick}
+      css={{
+        borderRadius: 0,
+        borderBottom: 'none',
+
+        '&:last-child': {
+          borderBottomLeftRadius: cornerRadius.l,
+          borderBottomRightRadius: cornerRadius.l,
+          borderBottom: `1px solid ${color.border.default}`
+        }
+      }}
     >
       <Flex alignItems='center' gap='l'>
         {renderIcon()}
@@ -67,7 +87,7 @@ export const ArtistCoinRow = ({
         </Flex>
       </Flex>
       <Flex alignItems='center' gap='m'>
-        <UserTokenBadge mint={mint} size='s' />
+        {userId ? <UserTokenBadge userId={userId} /> : null}
         {onClick ? <IconCaretRight size='l' color='subdued' /> : null}
       </Flex>
     </Paper>

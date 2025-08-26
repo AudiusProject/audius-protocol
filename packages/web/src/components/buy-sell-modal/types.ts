@@ -44,6 +44,7 @@ export type TokenSelection = {
 // Callback functions
 export type SwapCallbacks = {
   onTransactionDataChange?: (data: TransactionData) => void
+  onChangeSwapDirection?: () => void
 }
 
 // Main SwapTab props interface composed of smaller interfaces
@@ -80,6 +81,7 @@ export type ConvertTabProps = BaseTabProps & {
   availableTokens?: TokenInfo[]
   onInputTokenChange?: (symbol: string) => void
   onOutputTokenChange?: (symbol: string) => void
+  onChangeSwapDirection?: () => void
 }
 
 // Modal screen types
