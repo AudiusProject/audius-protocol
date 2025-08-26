@@ -24,12 +24,9 @@ export const AudioCoinCard = () => {
 
   const isLoading = isAudioBalanceLoading || isAudioPriceLoading
 
-  const handleCoinClick = useCallback(
-    (mint: string) => {
-      dispatch(push(`/wallet/${mint}`))
-    },
-    [dispatch]
-  )
+  const handleCoinClick = useCallback(() => {
+    dispatch(push(`/wallet/${env.WAUDIO_MINT_ADDRESS}`))
+  }, [dispatch])
 
   return (
     <CoinCard
@@ -38,7 +35,7 @@ export const AudioCoinCard = () => {
       balance={audioBalanceFormatted ?? ''}
       dollarValue={audioDollarValue ?? ''}
       loading={isLoading}
-      onClick={() => handleCoinClick(env.WAUDIO_MINT_ADDRESS)}
+      onClick={handleCoinClick}
     />
   )
 }
