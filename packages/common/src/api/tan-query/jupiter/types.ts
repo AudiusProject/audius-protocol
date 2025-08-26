@@ -1,4 +1,9 @@
+import type { AudiusSdk } from '@audius/sdk'
 import { PublicKey } from '@solana/web3.js'
+import type { Keypair } from '@solana/web3.js'
+import { useQueryClient } from '@tanstack/react-query'
+
+import type { User } from '~/models/User'
 
 // SDK TokenName enum values that are accepted by the SDK
 type TokenName = 'wAUDIO' | 'USDC'
@@ -29,9 +34,18 @@ export type SwapTokensParams = {
   wrapUnwrapSol?: boolean
 }
 
+export type DoubleSwapParams = {
+  inputMint: string
+  outputMint: string
+  amountUi: number
+  slippageBps?: number
+  wrapUnwrapSol?: boolean
+}
+
 export type SwapTokensResult = {
   status: SwapStatus
   signature?: string
+  firstTransactionSignature?: string
   error?: {
     type: SwapErrorType
     message: string
@@ -52,4 +66,14 @@ export interface UserBankManagedTokenInfo {
   mintAddress: string
   claimableTokenMint: ClaimableTokenMint
   decimals: number
+}
+
+export type SwapDependencies = {
+  sdk: AudiusSdk
+  keypair: Keypair
+  userPublicKey: PublicKey
+  feePayer: PublicKey
+  ethAddress: string
+  queryClient: ReturnType<typeof useQueryClient>
+  user: User
 }

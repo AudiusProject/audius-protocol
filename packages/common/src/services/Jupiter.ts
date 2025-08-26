@@ -59,7 +59,7 @@ export type JupiterMintQuoteParams = {
   inputDecimals: number
   outputDecimals: number
   amountUi: number
-  slippageBps: number
+  slippageBps?: number
   swapMode?: SwapMode
   onlyDirectRoutes?: boolean
   maxAccounts?: number
@@ -114,7 +114,8 @@ export const getJupiterQuoteByMint = async ({
     slippageBps,
     swapMode,
     onlyDirectRoutes,
-    maxAccounts
+    maxAccounts,
+    dynamicSlippage: !slippageBps
   })
 
   if (!quote) {
