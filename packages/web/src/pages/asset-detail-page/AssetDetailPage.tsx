@@ -15,7 +15,7 @@ export const AssetDetailPage = () => {
     data: coin,
     isLoading: coinLoading,
     error: coinError
-  } = useArtistCoin({ mint: mint || '' })
+  } = useArtistCoin({ mint: mint ?? '' })
 
   if (!mint) {
     return <Redirect to='/wallet' />

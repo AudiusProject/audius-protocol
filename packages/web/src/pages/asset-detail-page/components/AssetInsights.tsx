@@ -31,15 +31,15 @@ const AssetInsightsSkeleton = () => {
           alignItems='flex-start'
           justifyContent='space-between'
           borderTop='default'
-          pv='m'
+          pv='l'
           ph='l'
           w='100%'
         >
-          <Flex direction='column' alignItems='flex-start' gap='xs' flex={1}>
+          <Flex column alignItems='flex-start' gap='l' flex={1}>
             <Skeleton width='80px' height='32px' />
             <Skeleton width='120px' height='20px' />
           </Flex>
-          <Flex direction='row' alignItems='center' gap='xs'>
+          <Flex row alignItems='center' gap='xs'>
             <Skeleton width='60px' height='16px' />
             <Skeleton width='16px' height='16px' />
           </Flex>
