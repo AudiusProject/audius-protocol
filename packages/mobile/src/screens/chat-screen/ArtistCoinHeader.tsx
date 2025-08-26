@@ -25,18 +25,6 @@ export const ArtistCoinHeader = ({
 
   if (!artistCoinSymbol) return null
 
-  const ArtistCoinIcon = !isLoading ? (
-    <HexagonalIcon size={spacing.m}>
-      <Image
-        source={{ uri: tokens[artistCoinSymbol]?.logoURI }}
-        style={{
-          width: spacing.m,
-          height: spacing.m
-        }}
-      />
-    </HexagonalIcon>
-  ) : undefined
-
   return (
     <Flex
       row
@@ -49,7 +37,17 @@ export const ArtistCoinHeader = ({
       borderBottom='default'
     >
       <Flex row gap='xs' alignItems='center'>
-        {ArtistCoinIcon}
+        {!isLoading ? (
+          <HexagonalIcon size={spacing.m}>
+            <Image
+              source={{ uri: tokens[artistCoinSymbol]?.logoURI }}
+              style={{
+                width: spacing.m,
+                height: spacing.m
+              }}
+            />
+          </HexagonalIcon>
+        ) : undefined}
         {/* Alignment bug for label text variant on iOS */}
         <Flex mt={Platform.OS === 'ios' ? '2xs' : 'none'}>
           <Text variant='label' size='s'>

@@ -24,16 +24,6 @@ export const ArtistCoinHeader = ({
 
   if (!artistCoinSymbol) return null
 
-  const artistCoinLogo = !isLoading ? (
-    <Artwork
-      src={tokens[artistCoinSymbol]?.logoURI}
-      hex
-      w={spacing.m}
-      h={spacing.m}
-      borderWidth={0}
-    />
-  ) : undefined
-
   return (
     <Flex
       ph='l'
@@ -45,7 +35,15 @@ export const ArtistCoinHeader = ({
       borderBottom='default'
     >
       <Flex gap='xs' alignItems='center'>
-        {artistCoinLogo}
+        {!isLoading ? (
+          <Artwork
+            src={tokens[artistCoinSymbol]?.logoURI}
+            hex
+            w={spacing.m}
+            h={spacing.m}
+            borderWidth={0}
+          />
+        ) : undefined}
         <Text variant='label' size='s'>
           {artistCoinSymbol}
         </Text>
