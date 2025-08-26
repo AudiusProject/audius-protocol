@@ -10,6 +10,8 @@ import { useTheme, css } from '@emotion/react'
 import Select, { components } from 'react-select'
 import type { SingleValue, SingleValueProps, OptionProps } from 'react-select'
 
+import zIndex from 'utils/zIndex'
+
 import { TokenIcon } from './TokenIcon'
 
 type TokenOption = {
@@ -260,7 +262,7 @@ export const DropdownSection = ({
           }),
           menuPortal: (provided) => ({
             ...provided,
-            zIndex: 999999
+            zIndex: zIndex.TOAST
           }),
           menu: (provided) => ({
             ...provided,

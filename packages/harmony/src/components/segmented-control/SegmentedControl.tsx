@@ -32,7 +32,7 @@ export const SegmentedControl = <T extends string>(
     forceRefreshAfterMs
   } = props
   const optionRefs = useRef(options.map((_) => createRef<HTMLLabelElement>()))
-  const [localSelected, setLocalSelected] = useState(options[0]?.key || '')
+  const [localSelected, setLocalSelected] = useState(options[0]?.key ?? '')
   const [maxOptionWidth, setMaxOptionWidth] = useState(0)
 
   const selectedOption = selected || localSelected
