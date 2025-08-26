@@ -12,7 +12,8 @@ import {
   IconArrowRight,
   useTheme
 } from '@audius/harmony'
-import { useNavigate } from 'react-router-dom-v5-compat'
+
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -49,7 +50,7 @@ export const ArtistCoinHoverCard = ({
   onClick,
   triggeredBy
 }: ArtistCoinHoverCardProps) => {
-  const navigate = useNavigate()
+  const navigate = useNavigateToPage()
   const { cornerRadius, spacing } = useTheme()
 
   const { data: coin } = useArtistCoin({ mint })
@@ -58,9 +59,10 @@ export const ArtistCoinHoverCard = ({
     userId
   })
 
-  const handleNavigateToTokenPage = useCallback(() => {
+  const handleClick = useCallback(() => {
+    onClick?.()
     navigate(`${WALLET_PAGE}/${mint}`)
-  }, [navigate, mint])
+  }, [navigate, mint, onClick])
 
   if (!tokenBalance || !coin) return null
 
@@ -85,7 +87,7 @@ export const ArtistCoinHoverCard = ({
               ) : null
             }
             title={coinName}
-            onClick={handleNavigateToTokenPage}
+            onClick={handleClick}
             onClose={onClose}
             iconRight={IconArrowRight}
           />
@@ -109,7 +111,7 @@ export const ArtistCoinHoverCard = ({
       }
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
-      onClick={onClick}
+      onClick={handleClick}
       triggeredBy={triggeredBy}
     >
       {children}

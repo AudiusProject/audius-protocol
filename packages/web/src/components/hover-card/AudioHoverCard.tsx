@@ -87,9 +87,10 @@ export const AudioHoverCard = ({
     ? formatBalance(currentUserBalance)
     : userBalance
 
-  const handleNavigateToAudioPage = useCallback(() => {
+  const handleClick = useCallback(() => {
+    onClick?.()
     navigate(AUDIO_PAGE)
-  }, [navigate])
+  }, [navigate, onClick])
 
   return (
     <HoverCard
@@ -98,7 +99,7 @@ export const AudioHoverCard = ({
           <HoverCardHeader
             iconLeft={audioTierBadgeMap[tier]}
             title={getBadgeName(tier)}
-            onClick={handleNavigateToAudioPage}
+            onClick={handleClick}
             onClose={onClose}
             iconRight={IconArrowRight}
           />
@@ -116,7 +117,7 @@ export const AudioHoverCard = ({
       }
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
-      onClick={onClick}
+      onClick={handleClick}
       triggeredBy={triggeredBy}
     >
       {children}
