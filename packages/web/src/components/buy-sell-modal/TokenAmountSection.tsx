@@ -440,7 +440,8 @@ export const TokenAmountSection = ({
     title,
     tab,
     tokenInfo,
-    tooltipPlacement
+    tooltipPlacement,
+    onChangeSwapDirection
   ])
 
   return (
