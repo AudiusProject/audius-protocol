@@ -29,10 +29,8 @@ export const BuyScreen = ({
   initialInputValue,
   onInputValueChange
 }: BuyScreenProps) => {
-  const { baseToken, quoteToken } = tokenPair
-
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(baseToken.address)
+    useTokenPrice(tokenPair ? tokenPair.baseToken.address : '')
 
   const tokenPrice = tokenPriceData?.price || null
 
@@ -41,10 +39,12 @@ export const BuyScreen = ({
     return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
   }, [tokenPrice])
 
+  if (!tokenPair) return null
+
   return (
     <SwapTab
-      inputToken={quoteToken}
-      outputToken={baseToken}
+      inputToken={tokenPair.quoteToken}
+      outputToken={tokenPair.baseToken}
       onTransactionDataChange={onTransactionDataChange}
       error={error}
       errorMessage={errorMessage}

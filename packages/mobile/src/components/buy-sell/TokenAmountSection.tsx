@@ -3,12 +3,13 @@ import React, { useMemo } from 'react'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenAmountSectionProps, TokenInfo } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
+import { Image } from 'react-native'
 
 import {
   Button,
   Flex,
-  IconTokenAUDIO,
-  IconTokenUSDC,
+  HexagonalIcon,
+  IconLogoCircleUSDC,
   Text,
   TextInput,
   useTheme
@@ -47,10 +48,12 @@ const DefaultBalanceSection = ({
   formattedAvailableBalance,
   tokenInfo
 }: BalanceSectionProps) => {
-  const { symbol } = tokenInfo
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
+  const { logoURI, symbol } = tokenInfo
+  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
+  const { iconSizes } = useTheme()
+  const iconSize = iconSizes.l
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance || (!TokenIcon && !logoURI)) {
     return null
   }
 
@@ -62,7 +65,16 @@ const DefaultBalanceSection = ({
       gap='xs'
     >
       <Flex direction='row' alignItems='center' gap='s'>
-        <TokenIcon size='l' />
+        {TokenIcon ? (
+          <TokenIcon size='l' />
+        ) : (
+          <HexagonalIcon size={iconSize}>
+            <Image
+              source={{ uri: logoURI }}
+              style={{ width: iconSize, height: iconSize }}
+            />
+          </HexagonalIcon>
+        )}
         <Text variant='title' size='l' color='subdued'>
           {messages.available}
         </Text>
@@ -81,10 +93,12 @@ const StackedBalanceSection = ({
   tokenInfo,
   isStablecoin
 }: BalanceSectionProps) => {
-  const { symbol } = tokenInfo
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
+  const { symbol, logoURI } = tokenInfo
+  const { iconSizes } = useTheme()
+  const iconSize = iconSizes['4xl']
+  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
 
-  if (!formattedAvailableBalance || !TokenIcon) {
+  if (!formattedAvailableBalance || !logoURI) {
     return null
   }
 
@@ -98,7 +112,16 @@ const StackedBalanceSection = ({
           {messages.stackedBalance(formattedAvailableBalance)}
         </Text>
       </Flex>
-      <TokenIcon size='4xl' />
+      {TokenIcon ? (
+        <TokenIcon size='l' />
+      ) : (
+        <HexagonalIcon size={iconSize}>
+          <Image
+            source={{ uri: logoURI }}
+            style={{ width: iconSize, height: iconSize }}
+          />
+        </HexagonalIcon>
+      )}
     </Flex>
   )
 }
@@ -114,17 +137,28 @@ const CryptoAmountSection = ({
   isStablecoin: boolean
   priceDisplay?: string
 }) => {
-  const { symbol } = tokenInfo
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
+  const { symbol, logoURI } = tokenInfo
+  const { iconSizes } = useTheme()
+  const iconSize = iconSizes['4xl']
+  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
-  if (!TokenIcon) {
+  if (!logoURI) {
     return null
   }
 
   return (
     <Flex direction='row' alignItems='center' gap='s'>
-      <TokenIcon size='4xl' />
+      {TokenIcon ? (
+        <TokenIcon size='l' />
+      ) : (
+        <HexagonalIcon size={iconSize}>
+          <Image
+            source={{ uri: logoURI }}
+            style={{ width: iconSize, height: iconSize }}
+          />
+        </HexagonalIcon>
+      )}
       <Flex direction='column'>
         <Flex direction='row' alignItems='center' gap='xs'>
           <Text variant='heading' size='l'>
@@ -161,8 +195,10 @@ export const TokenAmountSection = ({
   isTokenPriceLoading,
   tokenPriceDecimalPlaces = 2
 }: TokenAmountSectionProps) => {
-  const { spacing } = useTheme()
-  const { symbol, isStablecoin } = tokenInfo
+  const { iconSizes, spacing } = useTheme()
+  const iconSize = iconSizes.l
+  const { symbol, isStablecoin, logoURI } = tokenInfo
+  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
   const { formattedAvailableBalance, formattedAmount } =
     useTokenAmountFormatting({
       amount,
@@ -179,12 +215,19 @@ export const TokenAmountSection = ({
       : undefined
 
   const titleText = useMemo(() => {
-    const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconTokenUSDC
-
-    if (isStablecoin && !isInput && TokenIcon) {
+    if (isStablecoin && !isInput && (logoURI || TokenIcon)) {
       return (
         <Flex direction='row' alignItems='center' gap='s'>
-          <TokenIcon size='l' />
+          {TokenIcon ? (
+            <TokenIcon size='l' />
+          ) : (
+            <HexagonalIcon size={iconSize}>
+              <Image
+                source={{ uri: logoURI }}
+                style={{ width: iconSize, height: iconSize }}
+              />
+            </HexagonalIcon>
+          )}
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
@@ -197,7 +240,7 @@ export const TokenAmountSection = ({
         {title}
       </Text>
     )
-  }, [isInput, isStablecoin, symbol, title])
+  }, [isStablecoin, isInput, logoURI, TokenIcon, title, iconSize])
 
   const youPaySection = useMemo(() => {
     return (

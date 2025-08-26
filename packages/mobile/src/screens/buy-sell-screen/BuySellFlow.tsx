@@ -24,13 +24,15 @@ import { BuyScreen, SellScreen } from './components'
 type BuySellFlowProps = {
   onClose: () => void
   initialTab?: BuySellTab
+  coinTicker?: string
 }
 
 const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
 export const BuySellFlow = ({
   onClose,
-  initialTab = 'buy'
+  initialTab = 'buy',
+  coinTicker = '$AUDIO'
 }: BuySellFlowProps) => {
   const navigation = useNavigation()
   const { onOpen: openAddCashModal } = useAddCashModal()
@@ -86,9 +88,15 @@ export const BuySellFlow = ({
     }))
   }
 
-  const [selectedPairIndex] = useState(0)
   const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
-  const selectedPair = supportedTokenPairs[selectedPairIndex]
+  const selectedPair = useMemo(() => {
+    return (
+      supportedTokenPairs.find(
+        (p) =>
+          p.quoteToken.name === 'USD Coin' && p.baseToken.name === coinTicker
+      ) ?? supportedTokenPairs[0]
+    )
+  }, [supportedTokenPairs, coinTicker])
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
@@ -103,7 +111,7 @@ export const BuySellFlow = ({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const swapTokens = useMemo(
-    () => getSwapTokens(activeTab, selectedPair),
+    () => (selectedPair ? getSwapTokens(activeTab, selectedPair) : null),
     [activeTab, selectedPair]
   )
 
@@ -131,8 +139,8 @@ export const BuySellFlow = ({
     if (transactionData?.isValid && !isContinueButtonLoading) {
       trackSwapRequested({
         activeTab,
-        inputToken: swapTokens.inputToken,
-        outputToken: swapTokens.outputToken,
+        inputToken: swapTokens?.inputToken ?? '',
+        outputToken: swapTokens?.outputToken ?? '',
         inputAmount: transactionData.inputAmount,
         outputAmount: transactionData.outputAmount,
         exchangeRate: currentExchangeRate

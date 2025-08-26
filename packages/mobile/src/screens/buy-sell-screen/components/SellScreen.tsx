@@ -27,6 +27,8 @@ export const SellScreen = ({
   initialInputValue,
   onInputValueChange
 }: SellScreenProps) => {
+  if (!tokenPair) return null
+
   // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
 
