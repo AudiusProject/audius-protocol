@@ -9,7 +9,8 @@ import {
 import {
   useArtistCoin,
   useUserCoins,
-  useTokenBalance
+  useTokenBalance,
+  useUserCreatedCoins
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
@@ -91,13 +92,15 @@ const UserBadges = ({
     FeatureFlags.ARTIST_COINS
   )
   const { data: userCoins } = useUserCoins({ userId })
+  const { data: userCreatedCoins } = useUserCreatedCoins({ userId })
+  const userCreatedCoin = userCreatedCoins?.[0]
 
-  // Display the mint of the prop if provided, otherwise display the mint of the coin with the highest balance
   const displayMint = useMemo(() => {
     if (mint) return mint
+    if (userCreatedCoin?.mint) return userCreatedCoin.mint
     if (!userCoins || userCoins.length < 2) return null
     return userCoins[1].mint
-  }, [mint, userCoins])
+  }, [mint, userCreatedCoin, userCoins])
 
   const { data: coin } = useArtistCoin({ mint: displayMint ?? '' })
   const { data: tokenBalance } = useTokenBalance({
@@ -176,8 +179,8 @@ const UserBadges = ({
     isArtistCoinEnabled &&
     !!displayMint &&
     !!coin &&
-    !!tokenBalance &&
-    tokenBalance.balance.value !== BigInt(0)
+    ((!!tokenBalance && tokenBalance.balance.value !== BigInt(0)) ||
+      !!userCreatedCoin)
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null
