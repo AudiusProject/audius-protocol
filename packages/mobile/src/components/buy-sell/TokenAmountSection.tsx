@@ -98,7 +98,7 @@ const StackedBalanceSection = ({
   const iconSize = iconSizes['4xl']
   const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
 
-  if (!formattedAvailableBalance || !logoURI) {
+  if (!formattedAvailableBalance || (!TokenIcon && !logoURI)) {
     return null
   }
 
@@ -143,7 +143,7 @@ const CryptoAmountSection = ({
   const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
-  if (!logoURI) {
+  if (!logoURI && !TokenIcon) {
     return null
   }
 
