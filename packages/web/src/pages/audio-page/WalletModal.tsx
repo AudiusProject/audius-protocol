@@ -23,7 +23,7 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import ModalDrawer from 'components/modal-drawer/ModalDrawer'
+import ResponsiveModal from 'components/modal/ResponsiveModal'
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
@@ -278,21 +278,19 @@ const WalletModal = () => {
 
   return (
     <>
-      <ModalDrawer
+      <ResponsiveModal
         isOpen={modalVisible}
         onClose={onClose}
-        bodyClassName={cn(styles.modalBody, {
+        title={getTitle(modalState)}
+        showDismissButton={allowDismiss}
+        dismissOnClickOutside={allowDismiss}
+        className={cn(styles.modalBody, {
           [styles.convertingEth]:
             modalState &&
             'flowState' in modalState &&
             modalState.flowState?.stage ===
               'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL'
         })}
-        showTitleHeader
-        title={getTitle(modalState)}
-        showDismissButton={allowDismiss}
-        dismissOnClickOutside={allowDismiss}
-        contentHorizontalPadding={24}
       >
         <div
           className={wm(styles.modalContainer, {
@@ -306,7 +304,7 @@ const WalletModal = () => {
             onClose={onClose}
           />
         </div>
-      </ModalDrawer>
+      </ResponsiveModal>
       {/* On social proof success, open the wallet modal and confirm send */}
       <SocialProof onSuccess={openAndConfirmSend} />
     </>

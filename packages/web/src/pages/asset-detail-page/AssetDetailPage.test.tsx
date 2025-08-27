@@ -1,4 +1,6 @@
-import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { createMemoryHistory } from 'history'
+import { Switch, Route } from 'react-router-dom'
 import {
   describe,
   expect,
@@ -19,15 +21,22 @@ import { AssetDetailPage } from './AssetDetailPage'
 export function renderAssetDetailPage(coin: any, options?: RenderOptions) {
   mswServer.use(...artistCoinMswMocks(coin))
 
+  const history = createMemoryHistory({
+    initialEntries: [`/wallet/${coin.mint}`]
+  })
+
   return render(
-    <Routes>
+    <Switch>
       <Route
-        path='/'
-        element={<Navigate to={`/coin/${coin.mint}`} replace />}
+        path={ASSET_DETAIL_PAGE}
+        // @ts-expect-error
+        render={(props) => <AssetDetailPage {...props} />}
       />
-      <Route path='/coin/:mint' element={<AssetDetailPage />} />
-    </Routes>,
-    options
+    </Switch>,
+    {
+      ...options,
+      customHistory: history
+    }
   )
 }
 

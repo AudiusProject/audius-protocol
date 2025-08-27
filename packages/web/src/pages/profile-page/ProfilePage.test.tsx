@@ -14,8 +14,16 @@ import {
 } from 'vitest'
 
 import { artistUser, nonArtistUser } from 'test/mocks/fixtures/userPersonas'
-import { mockData } from 'test/msw/mswMockData'
-import { userMswMocks, nftMswMocks, eventMswMocks } from 'test/msw/mswMocks'
+import {
+  mockUserByHandle,
+  mockUserCollectibles,
+  mockUserSupporting,
+  mockUserSupporters,
+  mockUserRelated,
+  mockUserConnectedWallets,
+  nftMswMocks,
+  eventMswMocks
+} from 'test/msw/mswMocks'
 import {
   RenderOptions,
   mswServer,
@@ -48,11 +56,15 @@ const ProfilePageWithRef = () => {
 
 export function renderProfilePage(user: any, options?: RenderOptions) {
   // TODO: move these out of this render and standardize them more - also accept args to configure the various endpoints
-  const mocks = mockData(user)
   mswServer.use(
-    ...userMswMocks(user, mocks.users),
+    mockUserByHandle(user),
+    mockUserCollectibles(user),
+    mockUserSupporting(user),
+    mockUserSupporters(user),
+    mockUserRelated(user),
+    mockUserConnectedWallets(user),
     ...nftMswMocks(),
-    ...eventMswMocks(mocks.events)
+    ...eventMswMocks()
   )
 
   return render(

@@ -10,49 +10,47 @@ const { apiEndpoint } = developmentConfig.network
 /**
  *  User mocks
  */
+// TODO: better user type here
 export const mockUserByHandle = (user: typeof artistUser) => {
-  http.get(`${apiEndpoint}/v1/full/users/handle/${user.handle}`, () => {
+  return http.get(`${apiEndpoint}/v1/full/users/handle/${user.handle}`, () => {
     return HttpResponse.json({ data: [user] })
   })
 }
 
 export const mockUserCollectibles = (
-  user: User,
+  user: typeof artistUser,
   collectibles?: Collectible[]
 ) => {
-  return http.get(
-    `${apiEndpoint}/v1/users/${user.user_id}/collectibles`,
-    () => {
-      return HttpResponse.json({ data: collectibles ?? null })
-    }
-  )
+  return http.get(`${apiEndpoint}/v1/users/${user.id}/collectibles`, () => {
+    return HttpResponse.json({ data: collectibles ?? null })
+  })
 }
 
-export const mockUserSupporting = (user: User, supportingUsers?: User[]) => {
-  return http.get(
-    `${apiEndpoint}/v1/full/users/${user.user_id}/supporting`,
-    () => {
-      return HttpResponse.json({ data: supportingUsers ?? [] })
-    }
-  )
+export const mockUserSupporting = (
+  user: typeof artistUser,
+  supportingUsers?: User[]
+) => {
+  return http.get(`${apiEndpoint}/v1/full/users/${user.id}/supporting`, () => {
+    return HttpResponse.json({ data: supportingUsers ?? [] })
+  })
 }
 
-export const mockUserSupporters = (user: User, supporterUsers?: User[]) => {
-  return http.get(
-    `${apiEndpoint}/v1/full/users/${user.user_id}/supporters`,
-    () => {
-      return HttpResponse.json({ data: supporterUsers ?? [] })
-    }
-  )
+export const mockUserSupporters = (
+  user: typeof artistUser,
+  supporterUsers?: User[]
+) => {
+  return http.get(`${apiEndpoint}/v1/full/users/${user.id}/supporters`, () => {
+    return HttpResponse.json({ data: supporterUsers ?? [] })
+  })
 }
 
-export const mockUserRelated = (user: User, relatedUsers?: User[]) => {
-  return http.get(
-    `${apiEndpoint}/v1/full/users/${user.user_id}/related`,
-    () => {
-      return HttpResponse.json({ data: relatedUsers ?? [] })
-    }
-  )
+export const mockUserRelated = (
+  user: typeof artistUser,
+  relatedUsers?: User[]
+) => {
+  return http.get(`${apiEndpoint}/v1/full/users/${user.id}/related`, () => {
+    return HttpResponse.json({ data: relatedUsers ?? [] })
+  })
 }
 
 export const nftMswMocks = () => [
@@ -68,9 +66,9 @@ export const nftMswMocks = () => [
 /**
  * Wallets
  */
-export const mockUserConnectedWallets = (user: User) => {
+export const mockUserConnectedWallets = (user: typeof artistUser) => {
   return http.get(
-    `${apiEndpoint}/v1/users/${user.user_id}/connected_wallets`,
+    `${apiEndpoint}/v1/users/${user.id}/connected_wallets`,
     () => {
       return HttpResponse.json({
         data: { erc_wallets: [], spl_wallets: [] }
