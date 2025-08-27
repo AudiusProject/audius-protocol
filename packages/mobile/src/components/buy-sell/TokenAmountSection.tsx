@@ -9,7 +9,6 @@ import {
   Button,
   Flex,
   HexagonalIcon,
-  IconLogoCircleUSDC,
   Text,
   TextInput,
   useTheme
@@ -48,12 +47,11 @@ const DefaultBalanceSection = ({
   formattedAvailableBalance,
   tokenInfo
 }: BalanceSectionProps) => {
-  const { logoURI, symbol } = tokenInfo
-  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
+  const { logoURI } = tokenInfo
   const { iconSizes } = useTheme()
   const iconSize = iconSizes.l
 
-  if (!formattedAvailableBalance || (!TokenIcon && !logoURI)) {
+  if (!formattedAvailableBalance || !logoURI) {
     return null
   }
 
@@ -65,16 +63,12 @@ const DefaultBalanceSection = ({
       gap='xs'
     >
       <Flex direction='row' alignItems='center' gap='s'>
-        {TokenIcon ? (
-          <TokenIcon size='l' />
-        ) : (
-          <HexagonalIcon size={iconSize}>
-            <Image
-              source={{ uri: logoURI }}
-              style={{ width: iconSize, height: iconSize }}
-            />
-          </HexagonalIcon>
-        )}
+        <HexagonalIcon size={iconSize}>
+          <Image
+            source={{ uri: logoURI }}
+            style={{ width: iconSize, height: iconSize }}
+          />
+        </HexagonalIcon>
         <Text variant='title' size='l' color='subdued'>
           {messages.available}
         </Text>
@@ -96,9 +90,8 @@ const StackedBalanceSection = ({
   const { symbol, logoURI } = tokenInfo
   const { iconSizes } = useTheme()
   const iconSize = iconSizes['4xl']
-  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
 
-  if (!formattedAvailableBalance || (!TokenIcon && !logoURI)) {
+  if (!formattedAvailableBalance || !logoURI) {
     return null
   }
 
@@ -112,16 +105,12 @@ const StackedBalanceSection = ({
           {messages.stackedBalance(formattedAvailableBalance)}
         </Text>
       </Flex>
-      {TokenIcon ? (
-        <TokenIcon size='l' />
-      ) : (
-        <HexagonalIcon size={iconSize}>
-          <Image
-            source={{ uri: logoURI }}
-            style={{ width: iconSize, height: iconSize }}
-          />
-        </HexagonalIcon>
-      )}
+      <HexagonalIcon size={iconSize}>
+        <Image
+          source={{ uri: logoURI }}
+          style={{ width: iconSize, height: iconSize }}
+        />
+      </HexagonalIcon>
     </Flex>
   )
 }
@@ -140,25 +129,20 @@ const CryptoAmountSection = ({
   const { symbol, logoURI } = tokenInfo
   const { iconSizes } = useTheme()
   const iconSize = iconSizes['4xl']
-  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
   const tokenTicker = messages.tokenTicker(symbol, !!isStablecoin)
 
-  if (!logoURI && !TokenIcon) {
+  if (!logoURI) {
     return null
   }
 
   return (
     <Flex direction='row' alignItems='center' gap='s'>
-      {TokenIcon ? (
-        <TokenIcon size='l' />
-      ) : (
-        <HexagonalIcon size={iconSize}>
-          <Image
-            source={{ uri: logoURI }}
-            style={{ width: iconSize, height: iconSize }}
-          />
-        </HexagonalIcon>
-      )}
+      <HexagonalIcon size={iconSize}>
+        <Image
+          source={{ uri: logoURI }}
+          style={{ width: iconSize, height: iconSize }}
+        />
+      </HexagonalIcon>
       <Flex direction='column'>
         <Flex direction='row' alignItems='center' gap='xs'>
           <Text variant='heading' size='l'>
@@ -198,7 +182,6 @@ export const TokenAmountSection = ({
   const { iconSizes, spacing } = useTheme()
   const iconSize = iconSizes.l
   const { symbol, isStablecoin, logoURI } = tokenInfo
-  const TokenIcon = symbol === 'USDC' ? IconLogoCircleUSDC : null
   const { formattedAvailableBalance, formattedAmount } =
     useTokenAmountFormatting({
       amount,
@@ -215,19 +198,15 @@ export const TokenAmountSection = ({
       : undefined
 
   const titleText = useMemo(() => {
-    if (isStablecoin && !isInput && (logoURI || TokenIcon)) {
+    if (isStablecoin && !isInput && logoURI) {
       return (
         <Flex direction='row' alignItems='center' gap='s'>
-          {TokenIcon ? (
-            <TokenIcon size='l' />
-          ) : (
-            <HexagonalIcon size={iconSize}>
-              <Image
-                source={{ uri: logoURI }}
-                style={{ width: iconSize, height: iconSize }}
-              />
-            </HexagonalIcon>
-          )}
+          <HexagonalIcon size={iconSize}>
+            <Image
+              source={{ uri: logoURI }}
+              style={{ width: iconSize, height: iconSize }}
+            />
+          </HexagonalIcon>
           <Text variant='heading' size='s' color='subdued'>
             {title}
           </Text>
@@ -240,7 +219,7 @@ export const TokenAmountSection = ({
         {title}
       </Text>
     )
-  }, [isStablecoin, isInput, logoURI, TokenIcon, title, iconSize])
+  }, [isStablecoin, isInput, logoURI, title, iconSize])
 
   const youPaySection = useMemo(() => {
     return (
