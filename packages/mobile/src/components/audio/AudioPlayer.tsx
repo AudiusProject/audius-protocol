@@ -641,6 +641,7 @@ export const AudioPlayer = () => {
 
     // Due to a dependency waterfall (queue from redux -> useTracks -> useUsers),
     // we need to wait for all 3 things to be loaded before loading anything into RNTP - queue + tracks + users
+    // Original bug: https://linear.app/audius/issue/QA-2255/keeps-playing-the-same-track-when-clicking-new-tracks-in-the-same
     if (
       !queueTracks.every(
         ({ track }) =>
@@ -755,6 +756,7 @@ export const AudioPlayer = () => {
     queueTrackUids,
     didOfflineToggleChange,
     didPlayerBehaviorChange,
+    queueTrackOwnersMap,
     makeTrackData
   ])
 

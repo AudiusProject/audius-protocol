@@ -417,7 +417,6 @@ function* play<T extends Track | Collection>(
   prefix: string,
   action: ReturnType<LineupBaseActions['play']>
 ) {
-  console.log('lineup play saga')
   const lineup = yield* select(lineupSelector)
   const requestedPlayTrack = yield* queryTrackByUid(action.uid)
   const isPreview = !!action.isPreview
