@@ -46,7 +46,7 @@ const overflowRowConfig = ({
   },
   [OverflowAction.PUBLISH_PLAYLIST]: { text: 'Make Public' },
   [OverflowAction.VIEW_TRACK_PAGE]: { text: 'View Track Page' },
-  [OverflowAction.VIEW_ARTIST_PAGE]: { text: 'View Artist Page' },
+  [OverflowAction.VIEW_ARTIST_PAGE]: { text: 'View Profile' },
   [OverflowAction.VIEW_PLAYLIST_PAGE]: { text: 'View Playlist Page' },
   [OverflowAction.VIEW_ALBUM_PAGE]: { text: 'View Album Page' },
   [OverflowAction.FOLLOW_ARTIST]: { text: 'Follow Artist' },
