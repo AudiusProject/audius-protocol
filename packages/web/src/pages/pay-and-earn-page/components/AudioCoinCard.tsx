@@ -1,12 +1,20 @@
+import { useCallback } from 'react'
+
 import { useFormattedAudioBalance } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { IconTokenAUDIO } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
+import { push } from 'redux-first-history'
+
+import { env } from 'services/env'
 
 import { CoinCard } from './CoinCard'
 
 const DIMENSIONS = 64
 
-export const AudioCoinCard = ({ onClick }: { onClick?: () => void }) => {
+export const AudioCoinCard = () => {
+  const dispatch = useDispatch()
+
   const {
     audioBalanceFormatted,
     audioDollarValue,
@@ -16,6 +24,10 @@ export const AudioCoinCard = ({ onClick }: { onClick?: () => void }) => {
 
   const isLoading = isAudioBalanceLoading || isAudioPriceLoading
 
+  const handleCoinClick = useCallback(() => {
+    dispatch(push(`/wallet/${env.WAUDIO_MINT_ADDRESS}`))
+  }, [dispatch])
+
   return (
     <CoinCard
       icon={<IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} hex />}
@@ -23,7 +35,7 @@ export const AudioCoinCard = ({ onClick }: { onClick?: () => void }) => {
       balance={audioBalanceFormatted ?? ''}
       dollarValue={audioDollarValue ?? ''}
       loading={isLoading}
-      onClick={onClick}
+      onClick={handleCoinClick}
     />
   )
 }

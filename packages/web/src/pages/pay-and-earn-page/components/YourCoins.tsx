@@ -13,11 +13,7 @@ import {
 } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  CoinPairItem,
-  useBuySellModal,
-  useGroupCoinPairs
-} from '@audius/common/store'
+import { useBuySellModal, useGroupCoinPairs } from '@audius/common/store'
 import {
   Box,
   Button,
@@ -36,6 +32,7 @@ import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
 
+import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
 
 const YourCoinsSkeleton = () => {
@@ -196,6 +193,7 @@ export const YourCoins = () => {
   })
 
   const { isMobile, isTablet } = useMedia()
+
   const coinPairs = useGroupCoinPairs(artistCoins, isMobile || isTablet)
 
   return (
@@ -206,18 +204,24 @@ export const YourCoins = () => {
         {coinPairs.map((pair, rowIndex) => (
           <Fragment key={`row-${rowIndex}`}>
             <Flex alignItems='stretch'>
-              {pair.map((item: CoinPairItem, colIndex) => (
-                <Fragment key={item === 'find-more' ? 'find-more' : item.mint}>
-                  {colIndex > 0 && <Divider orientation='vertical' />}
-                  <Box flex={1}>
-                    {item === 'find-more' ? (
-                      <FindMoreCoins />
-                    ) : (
-                      <CoinCardWithBalance coin={item} />
-                    )}
-                  </Box>
-                </Fragment>
-              ))}
+              {pair.map((item, colIndex) => {
+                const key = typeof item === 'string' ? item : item.mint
+
+                return (
+                  <Fragment key={key}>
+                    {colIndex > 0 && <Divider orientation='vertical' />}
+                    <Box flex={1}>
+                      {item === 'find-more' ? (
+                        <FindMoreCoins />
+                      ) : item === 'audio-coin' ? (
+                        <AudioCoinCard />
+                      ) : (
+                        <CoinCardWithBalance coin={item as UserCoin} />
+                      )}
+                    </Box>
+                  </Fragment>
+                )
+              })}
             </Flex>
             {rowIndex < coinPairs.length - 1 && <Divider />}
           </Fragment>
