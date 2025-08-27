@@ -9,7 +9,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import type { CoinPairItem } from '@audius/common/store'
-import { useGroupCoinPairs } from '@audius/common/store'
+import { AUDIO_TICKER, useGroupCoinPairs } from '@audius/common/store'
 import { TouchableOpacity } from 'react-native'
 
 import {
@@ -78,6 +78,7 @@ const FindMoreCoins = () => {
 
 export const YourCoins = () => {
   const { data: currentUserId } = useCurrentUserId()
+  const navigation = useNavigation()
   const { env } = useQueryContext()
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
@@ -89,6 +90,13 @@ export const YourCoins = () => {
 
   const coinPairs = useGroupCoinPairs(artistCoins, true)
   const cards = coinPairs.flat()
+
+  const handleBuySell = useCallback(() => {
+    navigation.navigate('BuySell', {
+      initialTab: 'buy',
+      coinTicker: AUDIO_TICKER
+    })
+  }, [navigation])
 
   return (
     <Paper>
@@ -109,7 +117,7 @@ export const YourCoins = () => {
       </Flex>
       {isWalletUIBuySellEnabled ? (
         <Flex p='l'>
-          <Button variant='secondary' size='small' onPress={() => {}}>
+          <Button variant='secondary' size='small' onPress={handleBuySell}>
             {messages.buySell}
           </Button>
         </Flex>

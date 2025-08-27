@@ -11,7 +11,8 @@ import {
   useSwapDisplayData,
   useSupportedTokenPairs,
   useAddCashModal,
-  getSwapTokens
+  getSwapTokens,
+  AUDIO_TICKER
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -32,7 +33,7 @@ const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 export const BuySellFlow = ({
   onClose,
   initialTab = 'buy',
-  coinTicker = '$AUDIO'
+  coinTicker = AUDIO_TICKER
 }: BuySellFlowProps) => {
   const navigation = useNavigation()
   const { onOpen: openAddCashModal } = useAddCashModal()
