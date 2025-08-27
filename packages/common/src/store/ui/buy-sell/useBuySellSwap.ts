@@ -220,6 +220,9 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     isConfirmButtonLoading,
     swapError,
     swapStatus,
-    swapResult
+    swapResult,
+    swapData,
+    isRetrying,
+    retryCount
   }
 }

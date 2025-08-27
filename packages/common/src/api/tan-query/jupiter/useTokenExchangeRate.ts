@@ -44,6 +44,56 @@ export const SLIPPAGE_BPS = 50
 const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
 
 /**
+ * Calculates the exchange rate between two amounts
+ */
+export const calculateExchangeRate = (
+  outputUiAmount: number,
+  inputUiAmount: number
+): number => {
+  return outputUiAmount / inputUiAmount
+}
+
+/**
+ * Calculates price impact percentage, handling undefined values
+ */
+export const calculatePriceImpact = (
+  priceImpactPct?: number | string
+): number => {
+  return priceImpactPct !== undefined ? Number(priceImpactPct) : 0
+}
+
+/**
+ * Creates a standardized TokenExchangeRateResponse object
+ */
+export const createExchangeRateResponse = ({
+  rate,
+  inputAmount,
+  outputAmount,
+  priceImpactPct,
+  quote
+}: {
+  rate: number
+  inputAmount: { amount: number; uiAmount: number }
+  outputAmount: { amount: number; uiAmount: number }
+  priceImpactPct: number
+  quote: QuoteResponse
+}): TokenExchangeRateResponse => {
+  return {
+    rate,
+    inputAmount: {
+      amount: inputAmount.amount,
+      uiAmount: inputAmount.uiAmount
+    },
+    outputAmount: {
+      amount: outputAmount.amount,
+      uiAmount: outputAmount.uiAmount
+    },
+    priceImpactPct,
+    quote
+  }
+}
+
+/**
  * Gets a direct quote between two tokens
  */
 export const getDirectQuote = async (params: {
@@ -66,29 +116,20 @@ export const getDirectQuote = async (params: {
     maxAccounts: MAX_ALLOWED_ACCOUNTS
   })
 
-  // Calculate exchange rate (how many output tokens per 1 input token)
-  const rate =
-    quoteResult.outputAmount.uiAmount / quoteResult.inputAmount.uiAmount
+  const rate = calculateExchangeRate(
+    quoteResult.outputAmount.uiAmount,
+    quoteResult.inputAmount.uiAmount
+  )
 
-  // Calculate price impact percentage
-  const priceImpactPct: number =
-    quoteResult.quote.priceImpactPct !== undefined
-      ? Number(quoteResult.quote.priceImpactPct)
-      : 0
+  const priceImpactPct = calculatePriceImpact(quoteResult.quote.priceImpactPct)
 
-  return {
+  return createExchangeRateResponse({
     rate,
-    inputAmount: {
-      amount: quoteResult.inputAmount.amount,
-      uiAmount: quoteResult.inputAmount.uiAmount
-    },
-    outputAmount: {
-      amount: quoteResult.outputAmount.amount,
-      uiAmount: quoteResult.outputAmount.uiAmount
-    },
+    inputAmount: quoteResult.inputAmount,
+    outputAmount: quoteResult.outputAmount,
     priceImpactPct,
     quote: quoteResult.quote
-  }
+  })
 }
 
 /**
@@ -129,27 +170,25 @@ export const getIndirectQuoteViaAudio = async (params: {
   })
 
   // Calculate combined exchange rate
-  const rate =
-    secondQuote.outputAmount.uiAmount / firstQuote.inputAmount.uiAmount
+  const rate = calculateExchangeRate(
+    secondQuote.outputAmount.uiAmount,
+    firstQuote.inputAmount.uiAmount
+  )
 
   // Combine price impacts (additive approximation)
-  const firstPriceImpact = Number(firstQuote.quote.priceImpactPct ?? 0)
-  const secondPriceImpact = Number(secondQuote.quote.priceImpactPct ?? 0)
-  const combinedPriceImpact: number = firstPriceImpact + secondPriceImpact
+  const firstPriceImpact = calculatePriceImpact(firstQuote.quote.priceImpactPct)
+  const secondPriceImpact = calculatePriceImpact(
+    secondQuote.quote.priceImpactPct
+  )
+  const combinedPriceImpact = firstPriceImpact + secondPriceImpact
 
-  return {
+  return createExchangeRateResponse({
     rate,
-    inputAmount: {
-      amount: firstQuote.inputAmount.amount,
-      uiAmount: firstQuote.inputAmount.uiAmount
-    },
-    outputAmount: {
-      amount: secondQuote.outputAmount.amount,
-      uiAmount: secondQuote.outputAmount.uiAmount
-    },
+    inputAmount: firstQuote.inputAmount,
+    outputAmount: secondQuote.outputAmount,
     priceImpactPct: combinedPriceImpact,
     quote: secondQuote.quote // Use the final quote for transaction purposes
-  }
+  })
 }
 
 // Define exchange rate query key
