@@ -8,14 +8,11 @@ import {
 import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
 import type { User } from '~/models/User'
-import {
-  getJupiterQuoteByMintWithRetry,
-  JupiterQuoteResult
-} from '~/services/Jupiter'
+import { JupiterQuoteResult } from '~/services/Jupiter'
 import { useTokens } from '~/store/ui/buy-sell'
 
 import { executeDirectSwap } from './directSwap'
-import { executeDoubleSwap } from './doubleSwap'
+import { executeIndirectSwap } from './indirectSwapViaAudio'
 import {
   SwapDependencies,
   SwapErrorType,
@@ -23,49 +20,7 @@ import {
   SwapTokensParams,
   SwapTokensResult
 } from './types'
-import { getSwapErrorResponse, validateAndCreateTokenConfigs } from './utils'
-
-/**
- * Attempts to get a direct quote from Jupiter for the given token pair.
- * Returns true if a direct quote is available, false otherwise.
- */
-const isDirectRouteAvailable = async (
-  inputMint: string,
-  outputMint: string,
-  amountUi: number,
-  tokens: Record<string, any>
-): Promise<boolean> => {
-  try {
-    // Validate tokens and create configs
-    const tokenConfigsResult = validateAndCreateTokenConfigs(
-      inputMint,
-      outputMint,
-      tokens
-    )
-
-    if ('error' in tokenConfigsResult) {
-      return false
-    }
-
-    const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
-
-    // Try to get a direct quote
-    await getJupiterQuoteByMintWithRetry({
-      inputMint,
-      outputMint,
-      inputDecimals: inputTokenConfig.decimals,
-      outputDecimals: outputTokenConfig.decimals,
-      amountUi,
-      swapMode: 'ExactIn',
-      onlyDirectRoutes: false
-    })
-
-    return true
-  } catch (error) {
-    // If quote fails, there's no direct path available
-    return false
-  }
-}
+import { getSwapErrorResponse, isDirectRouteAvailable } from './utils'
 
 const initializeSwapDependencies = async (
   solanaWalletService: QueryContextType['solanaWalletService'],
@@ -176,7 +131,7 @@ export const useSwapTokens = () => {
         if (hasDirectPath) {
           return await executeDirectSwap(params, dependencies, tokens)
         } else {
-          return await executeDoubleSwap(params, dependencies, tokens)
+          return await executeIndirectSwap(params, dependencies, tokens)
         }
       } catch (error: unknown) {
         reportToSentry({

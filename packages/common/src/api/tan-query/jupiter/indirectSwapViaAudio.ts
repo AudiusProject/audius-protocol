@@ -33,7 +33,7 @@ import {
 const AUDIO_MINT = TOKEN_LISTING_MAP.AUDIO.address
 const AUDIO_DECIMALS = TOKEN_LISTING_MAP.AUDIO.decimals
 
-export const executeDoubleSwap = async (
+export const executeIndirectSwap = async (
   params: SwapTokensParams,
   dependencies: SwapDependencies,
   tokens: Record<string, TokenInfo>
@@ -233,7 +233,6 @@ export const executeDoubleSwap = async (
     signature,
     inputAmount: firstQuote.inputAmount,
     outputAmount: secondQuote.outputAmount,
-    // Store first transaction signature for debugging double swaps
     firstTransactionSignature
   }
 }
