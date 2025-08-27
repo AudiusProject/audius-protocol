@@ -43,6 +43,7 @@ e2e-test:
     - run:
         name: setup
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
+        when: always
     - run:
         name: npm run protocol --prod
         command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); npm run protocol up -- --prod
