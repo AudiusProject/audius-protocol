@@ -235,29 +235,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }, [isConfirmButtonLoading, onLoadingStateChange])
 
   useEffect(() => {
-    // Handle TanStack Query errors (thrown errors) - only show toast after retries are exhausted
-    if (swapStatus === 'error' && swapError && !isRetrying) {
-      trackSwapFailure(
-        {
-          activeTab,
-          inputToken: swapTokens.inputToken,
-          outputToken: swapTokens.outputToken,
-          inputAmount: transactionData?.inputAmount,
-          outputAmount: transactionData?.outputAmount,
-          exchangeRate: currentExchangeRate
-        },
-        {
-          errorType: 'swap_error',
-          errorStage: 'transaction',
-          errorMessage: swapError?.message
-            ? swapError.message.substring(0, 500)
-            : 'Unknown error'
-        }
-      )
-
-      toast(swapError.message ?? messages.transactionFailed, 5000)
-    }
-
     // Handle swap data errors (returned error status) - only show toast after retries are exhausted
     if (
       swapStatus === 'success' &&
