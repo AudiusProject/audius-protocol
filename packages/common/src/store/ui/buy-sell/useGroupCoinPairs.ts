@@ -4,7 +4,7 @@ import { useQueryContext, UserCoin } from '~/api'
 import { useFeatureFlag } from '~/hooks'
 import { FeatureFlags } from '~/services'
 
-export type CoinPairItem = UserCoin | 'find-more'
+export type CoinPairItem = UserCoin | 'find-more' | 'audio-coin'
 
 /**
  * Groups coins into pairs for responsive layout rendering.
@@ -22,16 +22,34 @@ export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
   )
 
   return useMemo(() => {
-    if (!coins) return []
+    if (!coins) {
+      return isArtistCoinsEnabled ? [['find-more']] : []
+    }
 
     // Filter out USDC coins
     const filteredCoins = coins.filter((coin) => {
       if (!isArtistCoinsEnabled) return coin.mint === env.WAUDIO_MINT_ADDRESS
-      return coin.ticker !== 'USDC' && coin.balance > 0
+      return (
+        coin.ticker !== 'USDC' &&
+        (coin.balance > 0 || coin.mint === env.WAUDIO_MINT_ADDRESS)
+      )
     })
 
     // Group coins for responsive layout
     const coinPairs: CoinPairItem[][] = []
+
+    // If no coins after filtering, show audio coin card
+    if (filteredCoins.length === 0) {
+      const basePairs: CoinPairItem[][] = [['audio-coin']]
+
+      if (singleColumn && isArtistCoinsEnabled) {
+        basePairs.push(['find-more'])
+      } else if (!singleColumn && isArtistCoinsEnabled) {
+        basePairs[0].push('find-more')
+      }
+
+      return basePairs
+    }
 
     if (singleColumn) {
       // Single column layout - each coin gets its own row
