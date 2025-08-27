@@ -237,7 +237,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   useEffect(() => {
     // Handle swap data errors (returned error status) - only show toast after retries are exhausted
     if (
-      swapStatus === 'success' &&
       swapData?.status === SwapStatus.ERROR &&
       swapData?.error &&
       !isRetrying
