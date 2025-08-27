@@ -189,7 +189,19 @@ export const AudioPlayer = () => {
     () => queueOrder.map((trackData) => trackData.id as ID),
     [queueOrder]
   )
-  const { byId: tracksById } = useTracks(uniq(queueTrackIds))
+
+  useEffect(() => {
+    console.log('queueOrder', queueOrder, ' length ', queueOrder.length)
+  }, [queueOrder])
+  useEffect(() => {
+    console.log(
+      'queueTrackIds',
+      uniq(queueTrackIds),
+      ' length ',
+      uniq(queueTrackIds).length
+    )
+  }, [queueTrackIds])
+  const { byId: tracksById, data: tracks } = useTracks(uniq(queueTrackIds))
   const queueTracks = useMemo(
     () =>
       queueOrder.map(({ id, playerBehavior }) => ({
@@ -198,6 +210,10 @@ export const AudioPlayer = () => {
       })),
     [queueOrder, tracksById]
   )
+  useEffect(() => {
+    console.log('track count', tracks?.length)
+    console.log('tracksById count', Object.keys(tracksById).length)
+  }, [tracks, tracksById])
   const queueTrackOwnerIds = useMemo(
     () =>
       queueTracks.map(({ track }) => track?.owner_id).filter(removeNullable),
@@ -543,6 +559,7 @@ export const AudioPlayer = () => {
 
     const playCounterTimeout = setTimeout(() => {
       if (isReachable) {
+        console.log('recordListen', trackId)
         dispatch(recordListen(trackId))
       } else {
         dispatch(

@@ -273,6 +273,7 @@ function* watchPlay() {
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {
+          console.log('queue play saga clear')
           yield* put(clear({}))
           const toQueue = yield* all(
             lineup.entries.map((e) => call(getToQueue, lineup.prefix, e))
