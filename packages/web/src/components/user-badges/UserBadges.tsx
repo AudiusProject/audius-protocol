@@ -5,7 +5,6 @@ import {
   useCallback,
   useMemo
 } from 'react'
-import { env } from 'services/env'
 
 import {
   useArtistCoin,
@@ -16,7 +15,10 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { useTierAndVerifiedForUser } from '@audius/common/store'
+import {
+  TOKEN_LISTING_MAP,
+  useTierAndVerifiedForUser
+} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   Artwork,
@@ -182,8 +184,7 @@ const UserBadges = ({
     !!coin &&
     ((!!tokenBalance && tokenBalance.balance.value !== BigInt(0)) ||
       !!userCreatedCoin) &&
-    !(env.ENVIRONMENT === 'production' && userId === 51) &&
-    !(env.ENVIRONMENT === 'staging' && userId === 12372)
+    displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null
