@@ -2,6 +2,7 @@ import type { TokenInfo, SuccessDisplayData } from '@audius/common/store'
 
 export type BuySellScreenParams = {
   initialTab?: 'buy' | 'sell'
+  coinTicker?: string
 }
 
 export type ConfirmSwapScreenParams = {
