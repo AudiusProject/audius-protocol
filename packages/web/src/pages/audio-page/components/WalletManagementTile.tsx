@@ -46,7 +46,7 @@ import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
-const { pressReceive, pressSend } = tokenDashboardPageActions
+const { pressSend } = tokenDashboardPageActions
 const { startBuyAudioFlow } = buyAudioActions
 const { TRENDING_PAGE } = route
 
