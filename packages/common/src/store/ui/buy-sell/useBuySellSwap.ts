@@ -78,10 +78,15 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
 
   const invalidateBalances = () => {
     if (user?.wallet) {
-      // Invalidate balances for all token types that could be involved
+      // Invalidate USDC balance queries
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
       })
+      // Invalidate individual user coin queries (for artist coins and $AUDIO)
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.userCoin]
+      })
+      // Invalidate general user coins queries
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.userCoins]
       })
@@ -147,7 +152,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
 
     if (swapStatus === 'success' && swapData) {
       if (swapData.status === SwapStatus.SUCCESS) {
-        // Success - navigate to success screen
+        // Success - invalidate balances and navigate to success screen
+        invalidateBalances()
         setSwapResult({
           inputAmount:
             swapData.inputAmount?.uiAmount ??
