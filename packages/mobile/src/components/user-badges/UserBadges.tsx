@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import {
   useArtistCoin,
   useTokenBalance,
@@ -8,7 +10,6 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { useMemo } from 'react'
 import {
   TOKEN_LISTING_MAP,
   useTierAndVerifiedForUser
@@ -22,7 +23,6 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import type { IconSize } from '@audius/harmony-native'
-
 import { IconAudioBadge } from 'app/components/audio-rewards'
 
 type UserBadgesProps = {
