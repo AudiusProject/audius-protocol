@@ -123,14 +123,6 @@ const slice = createSlice({
         amount: state.modalState.flowState.amount
       }
     },
-    pressReceive: (state) => {
-      state.modalState = {
-        stage: 'RECEIVE',
-        flowState: { stage: 'KEY_DISPLAY' }
-      }
-      state.modalVisible = true
-    },
-
     // Saga Actions
 
     pressSend: () => {},
@@ -317,7 +309,6 @@ export const {
   addWallet,
   setModalState,
   setModalVisibility,
-  pressReceive,
   pressSend,
   inputSendData,
   confirmSend,
