@@ -6,7 +6,7 @@ import { artistUser } from './users'
 const { apiEndpoint } = developmentConfig.network
 
 export const testCollection = {
-  id: artistUser.id,
+  id: Id.parse(1),
   playlist_name: 'Test Collection',
   user_id: artistUser.id,
   permalink: '/test-user/test-collection',
