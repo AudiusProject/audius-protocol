@@ -12,14 +12,14 @@ import {
   beforeEach
 } from 'vitest'
 
-import { mockArtistCoin } from 'test/mocks/fixtures/artistCoin'
-import { artistCoinMswMocks } from 'test/msw/mswMocks'
+import { mockArtistCoin } from 'test/mocks/fixtures/artistCoins'
+import { mockCoinByMint } from 'test/msw/mswMocks'
 import { RenderOptions, mswServer, render, screen } from 'test/test-utils'
 
 import { AssetDetailPage } from './AssetDetailPage'
 
 export function renderAssetDetailPage(coin: any, options?: RenderOptions) {
-  mswServer.use(...artistCoinMswMocks(coin))
+  mswServer.use(mockCoinByMint(coin))
 
   const history = createMemoryHistory({
     initialEntries: [`/wallet/${coin.mint}`]
@@ -69,5 +69,10 @@ describe('AssetDetailPage', () => {
     expect(
       await screen.findByRole('heading', { name: mockArtistCoin.ticker })
     ).toBeInTheDocument()
+
+    // TODO: check more things
   })
+  /**
+   * TODO: write more tests
+   */
 })

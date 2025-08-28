@@ -47,6 +47,7 @@ export const UserSubscriptionNotification = (
 
   const dispatch = useDispatch()
   const record = useRecord()
+  console.log('entities', entities, user, notification)
 
   const handleClick = useCallback(() => {
     if (entityType === Entity.Track && !isSingleUpload) {
