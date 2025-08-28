@@ -33,6 +33,12 @@ module.exports = {
           ['app', './src/app']
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+      },
+      typescript: {
+        project: ['./tsconfig.json', './packages/*/tsconfig.json']
+      },
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx']
       }
     }
   },
