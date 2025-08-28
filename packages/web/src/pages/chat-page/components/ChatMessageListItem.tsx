@@ -214,7 +214,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
               />
             ) : null}
             {!hideMessage ? (
-              <Flex className={styles.textWrapper}>
+              <Flex p='l' className={styles.textWrapper}>
                 <UserGeneratedTextV2
                   className={styles.text}
                   color={isAuthor ? 'white' : 'default'}
