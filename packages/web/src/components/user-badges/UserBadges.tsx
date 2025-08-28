@@ -5,6 +5,7 @@ import {
   useCallback,
   useMemo
 } from 'react'
+import { env } from 'services/env'
 
 import {
   useArtistCoin,
@@ -180,7 +181,9 @@ const UserBadges = ({
     !!displayMint &&
     !!coin &&
     ((!!tokenBalance && tokenBalance.balance.value !== BigInt(0)) ||
-      !!userCreatedCoin)
+      !!userCreatedCoin) &&
+    !(env.ENVIRONMENT === 'production' && userId === 51) &&
+    !(env.ENVIRONMENT === 'staging' && userId === 12372)
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null
