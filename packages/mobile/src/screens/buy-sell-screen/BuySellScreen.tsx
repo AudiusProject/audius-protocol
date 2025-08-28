@@ -37,7 +37,8 @@ export const BuySellScreen = ({ route }: BuySellScreenProps) => {
 
   const flowData = BuySellFlow({
     onClose: handleClose,
-    initialTab: params?.initialTab
+    initialTab: params?.initialTab,
+    coinTicker: params?.coinTicker
   })
 
   const dynamicPaddingBottom = useMemo(() => {

@@ -1,4 +1,6 @@
-import { useTokenBalance, useArtistCoins } from '@audius/common/api'
+import { useCallback } from 'react'
+
+import { useTokenBalance, useArtistCoin } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
 import { Image } from 'react-native'
@@ -10,6 +12,7 @@ import {
   HexagonalIcon,
   Button
 } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = coinDetailsMessages.balance
 
@@ -128,12 +131,16 @@ const HasBalanceState = ({
 }
 
 export const BalanceCard = ({ mint }: { mint: string }) => {
-  const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
-    mint: [mint]
-  })
+  const navigation = useNavigation()
+  const { data: coin, isPending: coinsLoading } = useArtistCoin({ mint })
   const { data: tokenBalance } = useTokenBalance({ mint })
 
-  const coin = coinInsights?.[0]
+  const handleBuy = useCallback(() => {
+    navigation.navigate('BuySell', {
+      initialTab: 'buy',
+      coinTicker: coin?.ticker
+    })
+  }, [navigation, coin])
 
   if (coinsLoading || !coin) {
     // TODO: Add skeleton state
@@ -150,14 +157,14 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
         <ZeroBalanceState
           title={title}
           logoURI={logoURI}
-          onBuy={() => {}}
+          onBuy={handleBuy}
           onReceive={() => {}}
         />
       ) : (
         <HasBalanceState
           title={title}
           logoURI={logoURI}
-          onBuy={() => {}}
+          onBuy={handleBuy}
           onSend={() => {}}
           onReceive={() => {}}
           mint={mint}
