@@ -10,7 +10,8 @@ import {
   tokenDashboardPageActions,
   useBuySellModal,
   useConnectedWalletsModal,
-  buyAudioActions
+  buyAudioActions,
+  useReceiveTokensModal
 } from '@audius/common/store'
 import { isNullOrUndefined, route } from '@audius/common/utils'
 import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
@@ -39,6 +40,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
+import { env } from 'services/env'
 import { getClient } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 
@@ -73,18 +75,18 @@ const OptionButton = (props: ButtonProps) => {
 
 const WalletActions = () => {
   const { accountBalance: balance } = useAudioBalance()
+  const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
   const hasBalance = !isNullOrUndefined(balance) && balance !== BigInt(0)
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
   const isMobile = useIsMobile()
   const onClickReceive = useCallback(() => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressReceive())
-    }
-  }, [dispatch, isMobile, openTransferDrawer])
+    openReceiveTokensModal({
+      mint: env.WAUDIO_MINT_ADDRESS,
+      isOpen: true
+    })
+  }, [openReceiveTokensModal])
 
   const onClickSend = useCallback(() => {
     if (isMobile) {
