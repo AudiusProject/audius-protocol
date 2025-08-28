@@ -2,7 +2,6 @@ import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import { PublicKey } from '@solana/web3.js'
 
 import { useUser } from '~/api/tan-query/users/useUser'
-import { useQueryContext } from '~/api/tan-query/utils'
 import { Maybe, Nullable } from '~/utils'
 
 import { BadgeTier } from '../../models/BadgeTier'
@@ -49,7 +48,6 @@ export const badgeTiers: BadgeTierInfo[] = [
  * @returns Object containing tier, isVerified, and tierNumber
  */
 export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
-  const { env } = useQueryContext()
   const { data: user } = useUser(userId, {
     select: (user) => ({
       total_balance: user.total_balance,
@@ -61,19 +59,7 @@ export const useTierAndVerifiedForUser = (userId: Maybe<Nullable<ID>>) => {
     return { tier: 'none' as BadgeTier, isVerified: false, tierNumber: 0 }
 
   const balance = user.total_balance ?? ('0' as StringWei)
-  let tier = 'none' as BadgeTier
-  let tierNumber = 0
-  // Hardcoded to hide tier badge for Audius account
-  const isAudiusAccount =
-    env.ENVIRONMENT === 'production'
-      ? userId === 51
-      : env.ENVIRONMENT === 'staging'
-        ? userId === 12372
-        : false
-  const { tier: tierFromBalance, tierNumber: tierNumberFromBalance } =
-    getTierAndNumberForBalance(balance)
-  tier = isAudiusAccount ? 'none' : tierFromBalance
-  tierNumber = isAudiusAccount ? 0 : tierNumberFromBalance
+  const { tier, tierNumber } = getTierAndNumberForBalance(balance)
   const isVerified = !!user.is_verified
 
   return { tier, isVerified, tierNumber }
