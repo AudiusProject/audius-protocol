@@ -21,11 +21,11 @@ import {
   SwapStatus
 } from './types'
 import {
-  addTransferToUserBankInstructions,
   addTransferFromUserBankInstructions,
   buildAndSendTransaction,
   getJupiterSwapInstructions,
   invalidateSwapQueries,
+  prepareOutputUserBank,
   validateAndCreateTokenConfigs
 } from './utils'
 
@@ -33,7 +33,7 @@ import {
 const AUDIO_MINT = TOKEN_LISTING_MAP.AUDIO.address
 const AUDIO_DECIMALS = TOKEN_LISTING_MAP.AUDIO.decimals
 
-export const executeDoubleSwap = async (
+export const executeIndirectSwap = async (
   params: SwapTokensParams,
   dependencies: SwapDependencies,
   tokens: Record<string, TokenInfo>
@@ -159,39 +159,30 @@ export const executeDoubleSwap = async (
     'finalized'
   )
 
-  // Create destination ATA for output token
-  const outputMint = new PublicKey(outputMintUiAddress)
-  const destinationAta = getAssociatedTokenAddressSync(
-    outputMint,
-    userPublicKey,
-    true
+  // Prepare output destination
+  const preferredJupiterDestination = await prepareOutputUserBank(
+    sdk,
+    ethAddress!,
+    outputTokenConfig
   )
-
-  // Create ATA if it doesn't exist
-  try {
-    await getAccount(sdk.services.solanaClient.connection, destinationAta)
-  } catch (e) {
-    secondInstructions.push(
-      createAssociatedTokenAccountIdempotentInstruction(
-        feePayer,
-        destinationAta,
-        userPublicKey,
-        outputMint
-      )
-    )
-  }
 
   // Get second swap instructions (AUDIO -> OutputToken)
   const secondSwapRequestParams: SwapRequest = {
     quoteResponse: secondQuote.quote,
     userPublicKey: userPublicKey.toBase58(),
-    destinationTokenAccount: destinationAta.toBase58(),
+    destinationTokenAccount: preferredJupiterDestination,
     wrapAndUnwrapSol: wrapUnwrapSol,
     dynamicSlippage: true
   }
 
-  const { swapInstructionsResult: secondSwapResponse } =
-    await getJupiterSwapInstructions(secondSwapRequestParams)
+  const { swapInstructionsResult: secondSwapResponse, outputAtaForJupiter } =
+    await getJupiterSwapInstructions(
+      secondSwapRequestParams,
+      outputTokenConfig,
+      userPublicKey,
+      feePayer,
+      secondInstructions
+    )
 
   const secondSwapInstructions = convertJupiterInstructions([
     secondSwapResponse.swapInstruction
@@ -199,22 +190,17 @@ export const executeDoubleSwap = async (
 
   secondInstructions.push(...secondSwapInstructions)
 
-  // Transfer tokens from destination ATA to user bank
-  await addTransferToUserBankInstructions({
-    tokenInfo: outputTokenConfig,
-    userPublicKey,
-    ethAddress: ethAddress!,
-    amountLamports: BigInt(secondQuote.outputAmount.amount),
-    sourceAta: destinationAta,
-    sdk,
-    feePayer,
-    instructions: secondInstructions
-  })
+  // Cleanup
+  const atasToClose: PublicKey[] = [intermediateAudioAta]
+  if (outputAtaForJupiter) {
+    atasToClose.push(outputAtaForJupiter)
+  }
 
-  // Cleanup intermediate AUDIO ATA after second swap
-  secondInstructions.push(
-    createCloseAccountInstruction(intermediateAudioAta, feePayer, userPublicKey)
-  )
+  for (const ataToClose of atasToClose) {
+    secondInstructions.push(
+      createCloseAccountInstruction(ataToClose, feePayer, userPublicKey)
+    )
+  }
 
   // Build and send second transaction
   const signature = await buildAndSendTransaction(
@@ -233,7 +219,6 @@ export const executeDoubleSwap = async (
     signature,
     inputAmount: firstQuote.inputAmount,
     outputAmount: secondQuote.outputAmount,
-    // Store first transaction signature for debugging double swaps
     firstTransactionSignature
   }
 }

@@ -3,6 +3,7 @@ import { useState, useEffect, useContext, useMemo } from 'react'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
+import { SwapStatus } from '@audius/common/src/api/tan-query/jupiter/types'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   useBuySellScreen,
@@ -212,7 +213,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     isConfirmButtonLoading,
     swapStatus,
     swapResult,
-    swapError
+    swapError,
+    swapData,
+    isRetrying
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -232,7 +235,12 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }, [isConfirmButtonLoading, onLoadingStateChange])
 
   useEffect(() => {
-    if (swapStatus === 'error' && swapError) {
+    // Handle swap data errors (returned error status) - only show toast after retries are exhausted
+    if (
+      swapData?.status === SwapStatus.ERROR &&
+      swapData?.error &&
+      !isRetrying
+    ) {
       trackSwapFailure(
         {
           activeTab,
@@ -245,17 +253,19 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
         {
           errorType: 'swap_error',
           errorStage: 'transaction',
-          errorMessage: swapError?.message
-            ? swapError.message.substring(0, 500)
+          errorMessage: swapData.error.message
+            ? swapData.error.message.substring(0, 500)
             : 'Unknown error'
         }
       )
 
-      toast(swapError.message ?? messages.transactionFailed, 5000)
+      toast(messages.transactionFailed, 5000)
     }
   }, [
     swapStatus,
     swapError,
+    swapData,
+    isRetrying,
     toast,
     activeTab,
     transactionData,

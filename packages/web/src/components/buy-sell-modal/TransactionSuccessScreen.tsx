@@ -1,8 +1,17 @@
-import { buySellMessages as messages } from '@audius/common/messages'
+import { formatUSDCValue } from '@audius/common/api'
+import { buySellMessages as baseMessages } from '@audius/common/messages'
 import { useTokenAmountFormatting, TokenInfo } from '@audius/common/store'
 import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
+
+const messages = {
+  ...baseMessages,
+  priceEach: (price: number) => {
+    const formatted = formatUSDCValue(price, { includeDollarSign: true })
+    return `(${formatted} ea.)`
+  }
+}
 
 type TransactionSuccessScreenProps = {
   payTokenInfo: TokenInfo
@@ -27,16 +36,15 @@ export const TransactionSuccessScreen = (
     onDone
   } = props
 
+  // Follow same pattern as ConfirmSwapScreen - call hooks first
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
-    availableBalance: payAmount, // Use actual amount as available balance for display
     isStablecoin: !!payTokenInfo.isStablecoin,
     decimals: payTokenInfo.decimals
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
-    availableBalance: receiveAmount, // Use actual amount as available balance for display
     isStablecoin: !!receiveTokenInfo.isStablecoin,
     decimals: receiveTokenInfo.decimals
   })
@@ -46,7 +54,9 @@ export const TransactionSuccessScreen = (
     ? messages.priceEach(pricePerBaseToken)
     : undefined
 
-  if (!formattedPayAmount || !formattedReceiveAmount) return null
+  if (!formattedPayAmount || !formattedReceiveAmount) {
+    return null
+  }
 
   return (
     <Flex direction='column' gap='xl'>

@@ -17,7 +17,10 @@ import type { Commitment, Keypair } from '@solana/web3.js'
 import { useQueryClient } from '@tanstack/react-query'
 
 import type { User } from '~/models/User'
-import { jupiterInstance } from '~/services/Jupiter'
+import {
+  jupiterInstance,
+  getJupiterQuoteByMintWithRetry
+} from '~/services/Jupiter'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -483,4 +486,46 @@ export const prepareOutputUserBank = async (
     mint: outputTokenConfig.claimableTokenMint
   })
   return result.userBank.toBase58()
+}
+
+/**
+ * Attempts to get a direct quote from Jupiter for the given token pair.
+ * Returns true if a direct quote is available, false otherwise.
+ */
+export const isDirectRouteAvailable = async (
+  inputMint: string,
+  outputMint: string,
+  amountUi: number,
+  tokens: Record<string, TokenInfo>
+): Promise<boolean> => {
+  try {
+    // Validate tokens and create configs
+    const tokenConfigsResult = validateAndCreateTokenConfigs(
+      inputMint,
+      outputMint,
+      tokens
+    )
+
+    if ('error' in tokenConfigsResult) {
+      return false
+    }
+
+    const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+
+    // Try to get a direct quote
+    await getJupiterQuoteByMintWithRetry({
+      inputMint,
+      outputMint,
+      inputDecimals: inputTokenConfig.decimals,
+      outputDecimals: outputTokenConfig.decimals,
+      amountUi,
+      swapMode: 'ExactIn',
+      onlyDirectRoutes: false
+    })
+
+    return true
+  } catch (error) {
+    // If quote fails, there's no direct path available
+    return false
+  }
 }
