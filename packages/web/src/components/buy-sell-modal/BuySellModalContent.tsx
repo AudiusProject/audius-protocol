@@ -15,11 +15,20 @@ import {
   Screen,
   useTokenStates,
   useCurrentTokenPair,
-  useAvailableTokens,
   useSupportedTokenPairs,
-  useTokens
+  useTokens,
+  TokenInfo
 } from '@audius/common/store'
-import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
+import {
+  Box,
+  Button,
+  Flex,
+  Hint,
+  IconJupiterLogo,
+  SegmentedControl,
+  Text,
+  TextLink
+} from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
 import { ExternalTextLink } from 'components/link'
@@ -30,20 +39,18 @@ import { getPathname } from 'utils/route'
 
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
-import { ConvertTab } from './ConvertTab'
-import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 
 const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
-type BuySellFlowProps = {
+type BuySellModalContentProps = {
   onClose: () => void
   openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
 }
 
-export const BuySellFlow = (props: BuySellFlowProps) => {
+export const BuySellModalContent = (props: BuySellModalContentProps) => {
   const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
     props
   const { toast } = useContext(ToastContext)
@@ -59,6 +66,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const { tokens, isLoading: tokensLoading } = useTokens()
   const { pairs: supportedTokenPairs, isLoading: pairsLoading } =
     useSupportedTokenPairs()
+
+  console.log({ supportedTokenPairs })
 
   const isTokenDataLoading = tokensLoading || pairsLoading
 
@@ -137,12 +146,21 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     resetTransactionData()
   }
 
-  // Get all available tokens
-  const availableTokens = useAvailableTokens({
-    tokens,
-    supportedTokenPairs,
-    isTokenDataLoading
-  })
+  // Get all available tokens for swapping based on supported token pairs
+  const availableTokens = useMemo(() => {
+    if (isTokenDataLoading || Object.keys(tokens).length === 0) {
+      return []
+    }
+
+    const tokensSet = new Set<string>()
+    supportedTokenPairs.forEach((pair) => {
+      tokensSet.add(pair.baseToken.symbol)
+      tokensSet.add(pair.quoteToken.symbol)
+    })
+    return Array.from(tokensSet)
+      .map((symbol) => Object.values(tokens).find((t) => t.symbol === symbol))
+      .filter(Boolean) as TokenInfo[]
+  }, [tokens, supportedTokenPairs, isTokenDataLoading])
 
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
@@ -394,7 +412,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
         direction='column'
         style={{ display: currentScreen === 'input' ? 'flex' : 'none' }}
       >
-        <Flex direction='column' gap='l'>
+        <Flex direction='column' gap='xl'>
           <Flex alignItems='center' justifyContent='space-between'>
             <SegmentedControl
               options={tabs}
@@ -404,73 +422,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             />
           </Flex>
 
-          {activeTab === 'buy' && currentTokenPair ? (
-            <BuyTab
-              tokenPair={currentTokenPair}
-              onTransactionDataChange={handleTransactionDataChange}
-              error={shouldShowError}
-              errorMessage={displayErrorMessage}
-              initialInputValue={tabInputValues.buy}
-              onInputValueChange={handleTabInputValueChange}
-              availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
-              )}
-              onOutputTokenChange={handleOutputTokenChange}
-            />
-          ) : activeTab === 'sell' && currentTokenPair ? (
-            <SellTab
-              tokenPair={currentTokenPair}
-              onTransactionDataChange={handleTransactionDataChange}
-              error={shouldShowError}
-              errorMessage={displayErrorMessage}
-              initialInputValue={tabInputValues.sell}
-              onInputValueChange={handleTabInputValueChange}
-              availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol && t.symbol !== 'USDC'
-              )}
-              onInputTokenChange={handleInputTokenChange}
-            />
-          ) : isArtistCoinsEnabled && currentTokenPair ? (
-            <ConvertTab
-              tokenPair={currentTokenPair}
-              onTransactionDataChange={handleTransactionDataChange}
-              error={shouldShowError}
-              errorMessage={displayErrorMessage}
-              initialInputValue={tabInputValues.convert}
-              onInputValueChange={handleTabInputValueChange}
-              availableTokens={availableTokens}
-              onInputTokenChange={handleInputTokenChange}
-              onOutputTokenChange={handleOutputTokenChange}
-            />
-          ) : null}
-
-          {activeTab === 'buy' && !hasSufficientBalance ? (
-            <Hint>
-              {messages.insufficientUSDC}
-              <br />
-              <TextLink
-                variant='visible'
-                href='#'
-                onClick={() => {
-                  trackAddFundsClicked('insufficient_balance_hint')
-                  onClose()
-                  openAddCashModal()
-                }}
-              >
-                {messages.addCash}
-              </TextLink>
-            </Hint>
-          ) : null}
-
-          {hasSufficientBalance &&
-          (activeTab !== 'convert' || !isArtistCoinsEnabled) ? (
-            <Hint>
-              {messages.helpCenter}{' '}
-              <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
-                {messages.walletGuide}
-              </ExternalTextLink>
-            </Hint>
-          ) : null}
+          {activeTab === 'buy' && currentTokenPair ? <BuyTab /> : null}
 
           <Button
             variant='primary'
@@ -483,11 +435,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
         </Flex>
       </Flex>
 
-      <Flex
-        direction='column'
-        style={{ display: currentScreen === 'confirm' ? 'flex' : 'none' }}
-      >
-        {currentScreen === 'confirm' && confirmationScreenData ? (
+      {currentScreen === 'confirm' && confirmationScreenData ? (
+        <Flex direction='column'>
           <ConfirmSwapScreen
             {...confirmationScreenData}
             onBack={() => setCurrentScreen('input')}
@@ -496,14 +445,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             activeTab={activeTab}
             selectedPair={safeSelectedPair}
           />
-        ) : null}
-      </Flex>
+        </Flex>
+      ) : null}
 
-      <Flex
-        direction='column'
-        style={{ display: currentScreen === 'success' ? 'flex' : 'none' }}
-      >
-        {currentScreen === 'success' && successDisplayData ? (
+      {currentScreen === 'success' && successDisplayData ? (
+        <Flex direction='column'>
           <TransactionSuccessScreen
             {...successDisplayData}
             onDone={() => {
@@ -515,8 +461,32 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               setTabInputValues({ buy: '', sell: '', convert: '' })
             }}
           />
-        ) : null}
-      </Flex>
+        </Flex>
+      ) : null}
+
+      {/* TODO: fix this */}
+      {currentScreen !== 'success' && !isConfirmButtonLoading && (
+        <>
+          <Flex
+            css={({ spacing, color }) => ({
+              justifyContent: 'center',
+              left: 0,
+              bottom: 0,
+              gap: spacing.s,
+              borderTop: `1px solid ${color.border.strong}`,
+              backgroundColor: color.background.surface1
+            })}
+            p='m'
+            w='100%'
+            mt='xl'
+          >
+            <Text variant='label' size='xs' color='subdued'>
+              {messages.poweredBy}
+            </Text>
+            <IconJupiterLogo />
+          </Flex>
+        </>
+      )}
     </>
   )
 }

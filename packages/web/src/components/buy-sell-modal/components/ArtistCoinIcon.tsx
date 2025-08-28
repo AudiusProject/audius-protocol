@@ -1,30 +1,30 @@
 import { ComponentType } from 'react'
 
+import { useArtistCoin } from '@audius/common/api'
 import { Artwork, ArtworkProps, IconProps, useTheme } from '@audius/harmony'
 
-export type TokenIconProps = {
+export type ArtistCoinIconProps = {
+  mint?: string
+  // todo: deprecate these
   logoURI?: string
   icon?: ComponentType<any>
 } & ArtworkProps &
   IconProps
 
 // Component to render token icon - handles both icon component and logoURI
-export const TokenIcon = ({
-  icon: IconComponent,
-  logoURI,
+export const ArtistCoinIcon = ({
+  mint,
   size = 'l',
   hex,
   w,
   h,
   ...props
-}: TokenIconProps) => {
+}: ArtistCoinIconProps) => {
+  const { data: artistCoin } = useArtistCoin({ mint })
+  const { logoUri } = artistCoin ?? {}
   const { spacing } = useTheme()
 
-  if (IconComponent) {
-    return <IconComponent size={size} {...props} />
-  }
-
-  if (logoURI) {
+  if (logoUri) {
     // Handle different size props for Artwork component
     const sizeMap: Record<string, { w: number; h: number }> = {
       l: { w: spacing.unit6, h: spacing.unit6 },
@@ -38,7 +38,7 @@ export const TokenIcon = ({
 
     return (
       <Artwork
-        src={logoURI}
+        src={logoUri}
         {...dimensions}
         borderWidth={0}
         hex={hex}

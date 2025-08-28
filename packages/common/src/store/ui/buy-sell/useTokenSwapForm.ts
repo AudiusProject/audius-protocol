@@ -104,7 +104,6 @@ export const useTokenSwapForm = ({
   initialInputValue = '',
   onInputValueChange
 }: TokenSwapFormProps) => {
-  // Get token mint addresses for the exchange rate API
   const inputMint = inputToken.address
   const outputMint = outputToken.address
 

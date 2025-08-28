@@ -3,73 +3,69 @@ import { useMemo, useState, useEffect } from 'react'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { useBuySellModal, useAddCashModal } from '@audius/common/store'
 import {
+  Box,
+  Button,
+  Flex,
+  IconButton,
   IconJupiterLogo,
+  IconQuestionCircle,
   Modal,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  PlainButton,
   Text
 } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 
-import { BuySellFlow } from './BuySellFlow'
+import { BuySellModalContent } from './BuySellModalContent'
 import { Screen } from './types'
 
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
-  const { spacing, color } = useTheme()
   const { onOpen: openAddCashModal } = useAddCashModal()
 
-  const [modalScreen, setModalScreen] = useState<Screen>('input')
-  const [isFlowLoading, setIsFlowLoading] = useState(false)
+  const [currentModalState, setCurrentModalState] = useState<Screen>('input')
+  const [isModalContentLoading, setIsModalContentLoading] = useState(false)
 
   // Reset modal state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setModalScreen('input')
-      setIsFlowLoading(false)
+      setCurrentModalState('input')
+      setIsModalContentLoading(false)
     }
   }, [isOpen])
 
   const title = useMemo(() => {
-    if (isFlowLoading) return ''
-    if (modalScreen === 'confirm') return messages.confirmDetails
-    if (modalScreen === 'success') return messages.modalSuccessTitle
+    if (isModalContentLoading) return ''
+    if (currentModalState === 'confirm') return messages.confirmDetails
+    if (currentModalState === 'success') return messages.modalSuccessTitle
     return messages.title
-  }, [isFlowLoading, modalScreen])
+  }, [isModalContentLoading, currentModalState])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='medium'>
       <ModalHeader
         onClose={onClose}
-        showDismissButton={!isFlowLoading && modalScreen !== 'success'}
+        showDismissButton={
+          !isModalContentLoading && currentModalState !== 'success'
+        }
       >
-        <ModalTitle title={title} />
+        <Flex justifyContent='space-between'>
+          <Box w='l' />
+          <ModalTitle title={title} />
+          <PlainButton iconLeft={IconQuestionCircle}>Help</PlainButton>
+        </Flex>
       </ModalHeader>
       <ModalContent>
-        <BuySellFlow
+        <BuySellModalContent
           onClose={onClose}
           openAddCashModal={openAddCashModal}
-          onScreenChange={setModalScreen}
-          onLoadingStateChange={setIsFlowLoading}
+          onScreenChange={setCurrentModalState}
+          onLoadingStateChange={setIsModalContentLoading}
         />
       </ModalContent>
-      {modalScreen !== 'success' && !isFlowLoading && (
-        <ModalFooter
-          css={{
-            justifyContent: 'center',
-            gap: spacing.s,
-            borderTop: `1px solid ${color.border.strong}`,
-            backgroundColor: color.background.surface1
-          }}
-        >
-          <Text variant='label' size='xs' color='subdued'>
-            {messages.poweredBy}
-          </Text>
-          <IconJupiterLogo />
-        </ModalFooter>
-      )}
     </Modal>
   )
 }

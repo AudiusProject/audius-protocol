@@ -1,4 +1,4 @@
-export * from './BuySellFlow'
+export * from './BuySellModalContent'
 export * from './BuySellModal'
 export * from './BuyTab'
 export * from './ConfirmSwapScreen'

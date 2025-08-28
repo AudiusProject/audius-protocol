@@ -12,7 +12,7 @@ import type { SingleValue, SingleValueProps, OptionProps } from 'react-select'
 
 import zIndex from 'utils/zIndex'
 
-import { TokenIcon } from './TokenIcon'
+import { ArtistCoinIcon } from './components/ArtistCoinIcon'
 
 type TokenOption = {
   value: string
@@ -46,7 +46,7 @@ const CustomSingleValue = (
     <components.SingleValue {...props}>
       <Flex gap='s' alignItems='center' justifyContent='space-between' w='100%'>
         <Flex gap='s' alignItems='center'>
-          <TokenIcon
+          <ArtistCoinIcon
             logoURI={props.data.tokenInfo.logoURI}
             icon={props.data.tokenInfo.icon}
             size='2xl'
@@ -108,7 +108,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
           }
         })}
       >
-        <TokenIcon
+        <ArtistCoinIcon
           logoURI={props.data.tokenInfo.logoURI}
           icon={props.data.tokenInfo.icon}
           size='l'

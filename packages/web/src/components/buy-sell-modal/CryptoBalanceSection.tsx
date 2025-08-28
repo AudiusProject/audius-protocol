@@ -1,7 +1,7 @@
 import { TokenInfo } from '@audius/common/store'
 import { Divider, Flex, Text } from '@audius/harmony'
 
-import { TokenIcon } from './TokenIcon'
+import { ArtistCoinIcon } from './components/ArtistCoinIcon'
 
 const messages = {
   symbol: (symbol: string) => `${symbol}`
@@ -31,7 +31,7 @@ export const CryptoBalanceSection = ({
         </Flex>
       ) : null}
       <Flex alignItems='center' gap='s' data-testid='token-icon'>
-        <TokenIcon
+        <ArtistCoinIcon
           logoURI={tokenInfo.logoURI}
           icon={tokenInfo.icon}
           w='unit16'

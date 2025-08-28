@@ -93,7 +93,9 @@ export const useTokenBalance = ({
 
       return {
         balance: balanceFD,
-        balanceLocaleString: balanceFD.toLocaleString(),
+        balanceLocaleString: balanceFD.toLocaleString(undefined, {
+          maximumFractionDigits: 2
+        }),
         decimals: USDC_DECIMALS
       }
     },

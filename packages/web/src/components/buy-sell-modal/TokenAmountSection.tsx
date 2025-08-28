@@ -25,8 +25,8 @@ import { TooltipPlacement } from 'antd/lib/tooltip'
 import { useFlag } from '../../hooks/useRemoteConfig'
 
 import { DropdownSection } from './DropdownSection'
-import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
+import { ArtistCoinIcon } from './components/ArtistCoinIcon'
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -61,7 +61,7 @@ const DefaultBalanceSection = ({
       alignSelf='stretch'
     >
       <Flex alignItems='center' gap='xs'>
-        <TokenIcon
+        <ArtistCoinIcon
           logoURI={tokenInfo.logoURI}
           icon={tokenInfo.icon}
           size='l'
@@ -114,7 +114,7 @@ const OldStackedBalanceSection = ({
             {messages.stackedBalance(formattedAvailableBalance)}
           </Text>
         </Flex>
-        <TokenIcon
+        <ArtistCoinIcon
           logoURI={tokenInfo.logoURI}
           icon={tokenInfo.icon}
           size='4xl'
@@ -146,7 +146,7 @@ const CryptoAmountSection = ({
   if (verticalLayout) {
     return (
       <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-        <TokenIcon
+        <ArtistCoinIcon
           logoURI={tokenInfo.logoURI}
           icon={tokenInfo.icon}
           size='4xl'
@@ -171,7 +171,7 @@ const CryptoAmountSection = ({
 
   return (
     <Flex p={noPadding ? undefined : 'l'} alignItems='center' gap='s'>
-      <TokenIcon
+      <ArtistCoinIcon
         logoURI={tokenInfo.logoURI}
         icon={tokenInfo.icon}
         size='4xl'
@@ -393,7 +393,7 @@ export const TokenAmountSection = ({
     if (isStablecoin && !isInput && !availableTokens) {
       return (
         <Flex alignItems='center' gap='s'>
-          <TokenIcon
+          <ArtistCoinIcon
             logoURI={tokenInfo.logoURI}
             icon={tokenInfo.icon}
             size='l'

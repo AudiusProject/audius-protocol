@@ -4,7 +4,7 @@ import { Button, Flex, Paper, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
-import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
+import { ArtistCoinIcon } from 'components/buy-sell-modal/components/ArtistCoinIcon'
 
 const messages = {
   cardBody: 'Unlock exclusive perks & more.',
@@ -38,7 +38,7 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
       css={{ cursor: 'pointer' }}
     >
       <Flex gap='s' alignItems='center'>
-        <TokenIcon logoURI={artistCoin.logoUri} size='xl' hex />
+        <ArtistCoinIcon logoURI={artistCoin.logoUri} size='xl' hex />
         <Text variant='title' size='l'>
           {artistCoin.ticker}
         </Text>
