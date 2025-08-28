@@ -15,7 +15,10 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { useTierAndVerifiedForUser } from '@audius/common/store'
+import {
+  TOKEN_LISTING_MAP,
+  useTierAndVerifiedForUser
+} from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   Artwork,
@@ -180,7 +183,8 @@ const UserBadges = ({
     !!displayMint &&
     !!coin &&
     ((!!tokenBalance && tokenBalance.balance.value !== BigInt(0)) ||
-      !!userCreatedCoin)
+      !!userCreatedCoin) &&
+    displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null
