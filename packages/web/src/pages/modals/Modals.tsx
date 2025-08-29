@@ -42,6 +42,7 @@ import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirma
 import { ReplaceTrackProgressModal } from 'components/replace-track-progress-modal/ReplaceTrackProgressModal'
 import { ClaimAllRewardsModal } from 'components/rewards/modals/ClaimAllRewardsModal'
 import TopAPIModal from 'components/rewards/modals/TopAPI'
+import { SendTokensModal } from 'components/send-tokens-modal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -136,7 +137,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   ConnectedWallets: ConnectedWalletsModal,
   DownloadTrackArchive: DownloadTrackArchiveModal,
   BuySellModal,
-  ReceiveTokensModal
+  ReceiveTokensModal,
+  SendTokensModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
