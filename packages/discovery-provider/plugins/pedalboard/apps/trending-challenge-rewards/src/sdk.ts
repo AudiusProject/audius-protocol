@@ -52,11 +52,15 @@ const makeSolanaClient = (
 }
 
 export const audiusSdk = ({
+  apiKey,
+  apiSecret,
   environment,
   discoveryNodeAllowlist,
   solanaRpcEndpoint,
   solanaRelayNode
 }: {
+  apiKey: string
+  apiSecret: string
   environment: 'development' | 'staging' | 'production'
   discoveryNodeAllowlist?: string[]
   solanaRpcEndpoint?: string
@@ -68,6 +72,8 @@ export const audiusSdk = ({
     : undefined
   return sdk({
     appName: 'trending-challenge-rewards',
+    apiKey,
+    apiSecret,
     environment,
     services: {
       discoveryNodeSelector: makeDiscoveryNodeSelector(discoveryNodeAllowlist),
