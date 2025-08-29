@@ -4,7 +4,6 @@ import { Redirect, useParams } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import WalletModal from 'pages/audio-page/WalletModal'
 
 import { useAssetDetailTabs } from './AssetDetailTabs'
 
@@ -57,7 +56,6 @@ const AssetDetailPageContent = ({
 
   return (
     <Page title={title} header={header}>
-      <WalletModal />
       {body}
     </Page>
   )
