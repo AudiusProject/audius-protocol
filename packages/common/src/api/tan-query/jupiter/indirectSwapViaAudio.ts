@@ -22,7 +22,10 @@ import {
 } from './types'
 import {
   addTransferFromUserBankInstructions,
+  addTransferToUserBankInstructions,
   buildAndSendTransaction,
+  createTokenConfig,
+  findTokenByAddress,
   getJupiterSwapInstructions,
   invalidateSwapQueries,
   prepareOutputUserBank,
@@ -70,6 +73,11 @@ export const executeIndirectSwap = async (
   }
 
   const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+
+  // Create AUDIO token config for transfers
+  const audioTokenInfo = createTokenConfig(
+    findTokenByAddress(tokens, AUDIO_MINT)!
+  )
 
   // Get first quote: InputToken -> AUDIO
   const { quoteResult: firstQuote } = await getJupiterQuoteByMintWithRetry({
@@ -144,6 +152,18 @@ export const executeIndirectSwap = async (
 
   firstInstructions.push(...firstSwapInstructions)
 
+  // Transfer AUDIO back to user bank after first swap
+  await addTransferToUserBankInstructions({
+    tokenInfo: audioTokenInfo,
+    userPublicKey,
+    ethAddress: ethAddress!,
+    amountLamports: BigInt(firstQuote.outputAmount.amount),
+    sourceAta: intermediateAudioAta,
+    sdk,
+    feePayer,
+    instructions: firstInstructions
+  })
+
   // Cleanup source ATA after first swap
   firstInstructions.push(
     createCloseAccountInstruction(sourceAtaForJupiter, feePayer, userPublicKey)
@@ -158,6 +178,17 @@ export const executeIndirectSwap = async (
     firstSwapResponse.addressLookupTableAddresses,
     'finalized'
   )
+
+  // Transfer AUDIO from user bank to ATA for second swap
+  const audioSourceAtaForJupiter = await addTransferFromUserBankInstructions({
+    tokenInfo: audioTokenInfo,
+    userPublicKey,
+    ethAddress: ethAddress!,
+    amountLamports: BigInt(secondQuote.inputAmount.amount),
+    sdk,
+    feePayer,
+    instructions: secondInstructions
+  })
 
   // Prepare output destination
   const preferredJupiterDestination = await prepareOutputUserBank(
@@ -191,7 +222,7 @@ export const executeIndirectSwap = async (
   secondInstructions.push(...secondSwapInstructions)
 
   // Cleanup
-  const atasToClose: PublicKey[] = [intermediateAudioAta]
+  const atasToClose: PublicKey[] = [audioSourceAtaForJupiter]
   if (outputAtaForJupiter) {
     atasToClose.push(outputAtaForJupiter)
   }
