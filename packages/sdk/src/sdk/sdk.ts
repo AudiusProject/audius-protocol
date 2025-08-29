@@ -13,6 +13,7 @@ import {
   CoinsApi,
   Configuration,
   ExploreApi,
+  RewardsApi,
   TipsApi
 } from './api/generated/default'
 import {
@@ -144,8 +145,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -427,8 +428,8 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-        ? stagingConfig.network.apiEndpoint
-        : productionConfig.network.apiEndpoint
+      ? stagingConfig.network.apiEndpoint
+      : productionConfig.network.apiEndpoint
 
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
@@ -483,6 +484,7 @@ const initializeApis = ({
   const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
+  const rewards = new RewardsApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
@@ -563,6 +565,7 @@ const initializeApis = ({
     developerApps,
     dashboardWalletUsers,
     challenges,
+    rewards,
     services,
     comments,
     notifications,
