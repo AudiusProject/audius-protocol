@@ -23,7 +23,6 @@ import WalletInput from './WalletInput'
 interface SendTokensInputProps {
   mint: string
   onContinue: (amount: bigint, destinationAddress: string) => void
-  onClose: () => void
   initialAmount?: string
   initialDestinationAddress?: string
 }
@@ -51,7 +50,6 @@ type ValidationError =
 const SendTokensInput = ({
   mint,
   onContinue,
-  onClose,
   initialAmount = '',
   initialDestinationAddress = ''
 }: SendTokensInputProps) => {

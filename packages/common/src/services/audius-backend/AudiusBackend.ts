@@ -880,7 +880,10 @@ export const audiusBackend = ({
     } catch (err) {
       // Account exists but is not a token account. Assume it's a root account
       // and try to derive an associated account from it.
-      if (err instanceof TokenInvalidAccountOwnerError) {
+      if (
+        err instanceof TokenInvalidAccountOwnerError ||
+        err instanceof TokenAccountNotFoundError
+      ) {
         console.info(
           'Provided recipient solana address was not a token account. Assuming root account.'
         )

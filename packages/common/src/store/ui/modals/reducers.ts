@@ -27,6 +27,7 @@ import { publishConfirmationModalReducer } from './publish-confirmation-modal'
 import { receiveTokensModalReducer } from './receive-tokens-modal'
 import { replaceTrackConfirmationModalReducer } from './replace-track-confirmation-modal'
 import { replaceTrackProgressModalReducer } from './replace-track-progress-modal'
+import { sendTokensModalReducer } from './send-tokens-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
 import { uploadConfirmationModalReducer } from './upload-confirmation-modal'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
@@ -84,7 +85,8 @@ const combinedReducers = combineReducers({
   DownloadTrackArchive: downloadTrackArchiveModalReducer,
   HostRemixContest: hostRemixContestModalReducer,
   FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer,
-  ReceiveTokensModal: receiveTokensModalReducer
+  ReceiveTokensModal: receiveTokensModalReducer,
+  SendTokensModal: sendTokensModalReducer
 })
 
 /**
