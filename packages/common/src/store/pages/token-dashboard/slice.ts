@@ -8,9 +8,7 @@ import { WalletAddress } from '../../../models/Wallet'
 
 import {
   AssociatedWallets,
-  CanReceiveWAudio,
   ConfirmRemoveWalletAction,
-  InputSendDataAction,
   TokenDashboardPageModalState,
   TokenDashboardState
 } from './types'
@@ -62,70 +60,6 @@ const slice = createSlice({
     ) => {
       state.modalVisible = isVisible
     },
-    inputSendData: (
-      state,
-      { payload: { amount, wallet } }: InputSendDataAction
-    ) => {
-      const newState: TokenDashboardPageModalState = {
-        stage: 'SEND' as const,
-        flowState: {
-          stage: 'AWAITING_CONFIRMATION',
-          amount,
-          recipientWallet: wallet,
-          canRecipientReceiveWAudio: 'loading'
-        }
-      }
-      state.modalState = newState
-    },
-    setCanRecipientReceiveWAudio: (
-      state,
-      {
-        payload: { canRecipientReceiveWAudio }
-      }: PayloadAction<{ canRecipientReceiveWAudio: CanReceiveWAudio }>
-    ) => {
-      if (
-        state.modalState?.stage === 'SEND' &&
-        state.modalState.flowState.stage === 'AWAITING_CONFIRMATION'
-      ) {
-        state.modalState.flowState.canRecipientReceiveWAudio =
-          canRecipientReceiveWAudio
-      } else {
-        console.error(
-          'Tried to set canRecipientReceiveWAudio outside of correct flow state.'
-        )
-      }
-    },
-    transferEthAudioToSolWAudio: (state) => {
-      if (
-        state.modalState?.stage !== 'SEND' ||
-        state.modalState.flowState.stage !== 'SENDING'
-      )
-        return
-
-      state.modalState.flowState = {
-        stage: 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL',
-        recipientWallet: state.modalState.flowState.recipientWallet,
-        amount: state.modalState.flowState.amount
-      }
-    },
-    confirmSend: (state) => {
-      if (
-        state.modalState?.stage !== 'SEND' ||
-        (state.modalState.flowState.stage !== 'AWAITING_CONFIRMATION' &&
-          state.modalState.flowState.stage !==
-            'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL')
-      )
-        return
-
-      state.modalState.flowState = {
-        stage: 'SENDING',
-        recipientWallet: state.modalState.flowState.recipientWallet,
-        amount: state.modalState.flowState.amount
-      }
-    },
-    // Saga Actions
-
-    pressSend: () => {},
     fetchAssociatedWallets: (state) => {
       state.associatedWallets.loadingStatus = Status.LOADING
     },
@@ -309,9 +243,6 @@ export const {
   addWallet,
   setModalState,
   setModalVisibility,
-  pressSend,
-  inputSendData,
-  confirmSend,
   fetchAssociatedWallets,
   setWalletAddedConfirmed,
   setAssociatedWallets,
@@ -326,8 +257,6 @@ export const {
   preloadWalletProviders,
   resetStatus,
   resetRemovedStatus,
-  transferEthAudioToSolWAudio,
-  setCanRecipientReceiveWAudio,
   resetState
 } = slice.actions
 export const actions = slice.actions
