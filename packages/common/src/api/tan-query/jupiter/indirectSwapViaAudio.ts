@@ -176,7 +176,7 @@ export const executeIndirectSwap = async (
     feePayer,
     firstInstructions,
     firstSwapResponse.addressLookupTableAddresses,
-    'finalized'
+    'confirmed'
   )
 
   // Transfer AUDIO from user bank to ATA for second swap
