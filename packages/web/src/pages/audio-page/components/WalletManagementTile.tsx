@@ -7,11 +7,11 @@ import { Client } from '@audius/common/models'
 import { FeatureFlags, Location, StringKeys } from '@audius/common/services'
 import {
   OnRampProvider,
-  tokenDashboardPageActions,
   useBuySellModal,
   useConnectedWalletsModal,
   buyAudioActions,
-  useReceiveTokensModal
+  useReceiveTokensModal,
+  useSendTokensModal
 } from '@audius/common/store'
 import { isNullOrUndefined, route } from '@audius/common/utils'
 import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
@@ -46,7 +46,6 @@ import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
-const { pressSend } = tokenDashboardPageActions
 const { startBuyAudioFlow } = buyAudioActions
 const { TRENDING_PAGE } = route
 
@@ -76,11 +75,9 @@ const OptionButton = (props: ButtonProps) => {
 const WalletActions = () => {
   const { accountBalance: balance } = useAudioBalance()
   const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
+  const { onOpen: openSendTokensModal } = useSendTokensModal()
   const hasBalance = !isNullOrUndefined(balance) && balance !== BigInt(0)
-  const dispatch = useDispatch()
-  const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
-  const isMobile = useIsMobile()
   const onClickReceive = useCallback(() => {
     openReceiveTokensModal({
       mint: env.WAUDIO_MINT_ADDRESS,
@@ -89,12 +86,11 @@ const WalletActions = () => {
   }, [openReceiveTokensModal])
 
   const onClickSend = useCallback(() => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressSend())
-    }
-  }, [isMobile, dispatch, openTransferDrawer])
+    openSendTokensModal({
+      mint: env.WAUDIO_MINT_ADDRESS,
+      isOpen: true
+    })
+  }, [openSendTokensModal])
 
   return (
     <Flex gap='m' wrap='wrap' justifyContent='center'>
