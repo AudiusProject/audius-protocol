@@ -5,7 +5,8 @@ import {
   transformArtistCoinToTokenInfo,
   useSendTokens
 } from '@audius/common/api'
-import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
+import { useSendTokensModal } from '@audius/common/store'
+import { FixedDecimal } from '@audius/fixed-decimal'
 
 import ResponsiveModal from 'components/modal/ResponsiveModal'
 
@@ -15,25 +16,16 @@ import SendTokensInput from './SendTokensInput'
 import SendTokensProgress from './SendTokensProgress'
 import SendTokensSuccess from './SendTokensSuccess'
 
-interface SendTokensModalProps {
-  mint: string
-  onClose: () => void
-  walletAddress: string
-  isOpen: boolean
-}
-
 type SendTokensState = {
   step: 'input' | 'confirm' | 'progress' | 'success' | 'failure'
   amount: bigint
   destinationAddress: string
 }
 
-const SendTokensModal = ({
-  mint,
-  onClose,
-  walletAddress,
-  isOpen
-}: SendTokensModalProps) => {
+const SendTokensModal = () => {
+  const { isOpen, onClose: closeModal, data } = useSendTokensModal()
+  const { mint } = data ?? {}
+
   const [state, setState] = useState<SendTokensState>({
     step: 'input',
     amount: BigInt(0),
@@ -42,11 +34,11 @@ const SendTokensModal = ({
   const [error, setError] = useState<string>('')
 
   // Get token data and balance using the same hooks as ReceiveTokensModal
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin({ mint: mint ?? '' })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
   // Use the new tan-query hook for sending tokens
-  const sendTokensMutation = useSendTokens({ mint })
+  const sendTokensMutation = useSendTokens({ mint: mint ?? '' })
 
   const handleInputContinue = (amount: bigint, destinationAddress: string) => {
     setState({
@@ -64,7 +56,7 @@ const SendTokensModal = ({
       // Use the new hook to send tokens
       await sendTokensMutation.mutateAsync({
         recipientWallet: state.destinationAddress as any, // Type assertion for now
-        amount: AUDIO(state.amount).value // Convert bigint to AudioWei
+        amount: state.amount
       })
 
       // If successful, move to success step
@@ -88,7 +80,7 @@ const SendTokensModal = ({
   }
 
   const handleDone = () => {
-    onClose()
+    closeModal()
     setState({
       step: 'input',
       amount: BigInt(0),
@@ -99,7 +91,7 @@ const SendTokensModal = ({
 
   const handleClose = () => {
     if (state.step === 'input') {
-      onClose()
+      closeModal()
       setState({
         step: 'input',
         amount: BigInt(0),
@@ -128,7 +120,7 @@ const SendTokensModal = ({
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !mint) return null
 
   return (
     <ResponsiveModal
@@ -143,7 +135,6 @@ const SendTokensModal = ({
         <SendTokensInput
           mint={mint}
           onContinue={handleInputContinue}
-          onClose={handleClose}
           initialAmount={
             state.amount > 0
               ? new FixedDecimal(state.amount, tokenInfo?.decimals).toString()

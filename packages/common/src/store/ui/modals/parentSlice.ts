@@ -82,7 +82,8 @@ export const initialState: BasicModalsState = {
   BuySellModal: { isOpen: false },
   HostRemixContest: { isOpen: false },
   FinalizeWinnersConfirmation: { isOpen: false },
-  ReceiveTokensModal: { isOpen: false }
+  ReceiveTokensModal: { isOpen: false },
+  SendTokensModal: { isOpen: false }
 }
 
 const slice = createSlice({

@@ -1,4 +1,4 @@
-import { AudioWei } from '@audius/fixed-decimal'
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -12,7 +12,7 @@ import { useTokenBalance } from './useTokenBalance'
 
 export type SendTokensParams = {
   recipientWallet: SolanaWalletAddress
-  amount: AudioWei
+  amount: bigint
 }
 
 export type SendTokensResult = {
@@ -59,7 +59,7 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
 
         await audiusBackend.sendWAudioTokens({
           address: recipientWallet,
-          amount,
+          amount: AUDIO(wAUDIO(amount)).value,
           ethAddress: currentUser,
           sdk
         })

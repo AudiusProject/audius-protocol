@@ -6,13 +6,12 @@ import {
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
-  tokenDashboardPageActions,
   useAddCashModal,
   useBuySellModal,
-  useReceiveTokensModal
+  useReceiveTokensModal,
+  useSendTokensModal
 } from '@audius/common/store'
 import { Artwork, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
@@ -180,12 +179,9 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { onOpen: openAddCashModal } = useAddCashModal()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
   const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
+  const { onOpen: openSendTokensModal } = useSendTokensModal()
 
-  const dispatch = useDispatch()
   const isMobile = useIsMobile()
-
-  // Action destructuring
-  const { pressSend } = tokenDashboardPageActions
 
   // Handler functions with account requirements - defined before early return
   const handleBuySell = useRequiresAccountCallback(() => {
@@ -214,9 +210,12 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
     if (isMobile) {
       openTransferDrawer(true)
     } else {
-      dispatch(pressSend())
+      openSendTokensModal({
+        mint,
+        isOpen: true
+      })
     }
-  }, [isMobile, openTransferDrawer, dispatch, pressSend])
+  }, [isMobile, openTransferDrawer, openSendTokensModal, mint])
 
   if (coinsLoading || !coin) {
     return <BalanceSectionSkeleton />

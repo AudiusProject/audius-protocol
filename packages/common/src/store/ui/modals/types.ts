@@ -115,6 +115,7 @@ export type Modals =
   | 'BuySellModal'
   | 'HostRemixContest'
   | 'ReceiveTokensModal'
+  | 'SendTokensModal'
   | 'FinalizeWinnersConfirmation'
 
 export type BasicModalsState = {
@@ -152,9 +153,14 @@ export type StatefulModalsState = {
   BuySellModal: BuySellModalState
   HostRemixContest: HostRemixContestModalState
   ReceiveTokensModal: ReceiveTokensModalState
+  SendTokensModal: SendTokensModalState
 }
 
 export type ReceiveTokensModalState = BaseModalState & {
+  mint?: string
+}
+
+export type SendTokensModalState = BaseModalState & {
   mint?: string
 }
 
