@@ -94,8 +94,18 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
-  const { data: userCoins } = useUserCoins({ userId })
-  const { data: userCreatedCoins } = useUserCreatedCoins({ userId })
+  const { data: userCoins } = useUserCoins(
+    { userId },
+    {
+      enabled: isArtistCoinEnabled
+    }
+  )
+  const { data: userCreatedCoins } = useUserCreatedCoins(
+    { userId },
+    {
+      enabled: isArtistCoinEnabled
+    }
+  )
   const userCreatedCoin = userCreatedCoins?.[0]
 
   const displayMint = useMemo(() => {
@@ -105,7 +115,12 @@ const UserBadges = ({
     return userCoins[1].mint
   }, [mint, userCreatedCoin, userCoins])
 
-  const { data: coin } = useArtistCoin({ mint: displayMint ?? '' })
+  const { data: coin } = useArtistCoin(
+    { mint: displayMint ?? '' },
+    {
+      enabled: isArtistCoinEnabled
+    }
+  )
   const { data: tokenBalance } = useTokenBalance({
     mint: displayMint ?? '',
     userId
