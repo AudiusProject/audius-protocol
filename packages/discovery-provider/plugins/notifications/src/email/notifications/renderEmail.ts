@@ -12,6 +12,7 @@ import { mapNotifications } from '../../processNotifications/mappers/mapNotifica
 import { BaseNotification } from '../../processNotifications/mappers/base'
 import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
 import { getContentNode } from '../../utils/env'
+import { formatImageUrl } from '../../utils/format'
 
 type RenderEmailProps = {
   userId: number
@@ -35,7 +36,6 @@ type UserResource = {
   handle: string
   profile_picture_sizes: string
   profile_picture: string
-  creator_node_endpoint: string
 }
 type TrackResource = {
   track_id: number
@@ -44,7 +44,6 @@ type TrackResource = {
   cover_art: string
   cover_art_sizes: string
   stream_conditions: object
-  creator_node_endpoint: string
   slug: string
   ownerName: string
   ownerCreatorNodeEndpoint: string
@@ -55,7 +54,6 @@ type PlaylistResource = {
   is_album: boolean
   playlist_image_multihash: string
   playlist_image_sizes_multihash: string
-  creator_node_endpoint: string
   slug: string
   ownerName: string
   ownerCreatorNodeEndpoint: string
@@ -87,38 +85,30 @@ const DEFAULT_TRACK_COVER_ART_URL = ''
 const DEFAULT_PLAYLIST_IMAGE_IRL = ''
 
 const getUserProfileUrl = (user: UserResource) => {
-  let profilePictureUrl = DEFAULT_PROFILE_IMG
-  const contentNode = getContentNode()
   if (user.profile_picture_sizes) {
-    profilePictureUrl = `${contentNode}/content/${user.profile_picture_sizes}/1000x1000.jpg`
+    return formatImageUrl(user.profile_picture_sizes, 1000)
   } else if (user.profile_picture) {
-    profilePictureUrl = `${contentNode}/content/${user.profile_picture}`
+    return `${getContentNode()}/content/${user.profile_picture}`
   }
-  return profilePictureUrl
+  return DEFAULT_PROFILE_IMG
 }
 
 const getTrackCoverArt = (track: TrackResource) => {
-  const contentNodes = track.creator_node_endpoint.split(',')
-  const primaryEndpoint = contentNodes[0]
-  let coverArtUrl = DEFAULT_TRACK_COVER_ART_URL
   if (track.cover_art_sizes) {
-    coverArtUrl = `${primaryEndpoint}/ipfs/${track.cover_art_sizes}/1000x1000.jpg`
+    return formatImageUrl(track.cover_art_sizes, 1000)
   } else if (track.cover_art) {
-    coverArtUrl = `${primaryEndpoint}/ipfs/${track.cover_art}`
+    return `${getContentNode()}/content/${track.cover_art}`
   }
-  return coverArtUrl
+  return DEFAULT_TRACK_COVER_ART_URL
 }
 
 const getPlaylistImage = (playlist: PlaylistResource) => {
-  const contentNodes = playlist.creator_node_endpoint.split(',')
-  const primaryEndpoint = contentNodes[0]
-  let playlistImageUrl = DEFAULT_PLAYLIST_IMAGE_IRL
   if (playlist.playlist_image_sizes_multihash) {
-    playlistImageUrl = `${primaryEndpoint}/ipfs/${playlist.playlist_image_sizes_multihash}/1000x1000.jpg`
+    return formatImageUrl(playlist.playlist_image_sizes_multihash, 1000)
   } else if (playlist.playlist_image_multihash) {
-    playlistImageUrl = `${primaryEndpoint}/ipfs/${playlist.playlist_image_multihash}`
+    return `${getContentNode()}/content/${playlist.playlist_image_multihash}`
   }
-  return playlistImageUrl
+  return DEFAULT_PLAYLIST_IMAGE_IRL
 }
 
 export const fetchResources = async (
@@ -135,8 +125,7 @@ export const fetchResources = async (
       'users.tiktok_handle as tikTokHandle',
       'users.name',
       'users.profile_picture_sizes',
-      'users.profile_picture',
-      'users.creator_node_endpoint'
+      'users.profile_picture'
     )
     .from('users')
     .whereIn('user_id', Array.from(ids.users))
@@ -158,7 +147,6 @@ export const fetchResources = async (
       'tracks.cover_art_sizes',
       'tracks.stream_conditions',
       { ownerName: 'users.name' },
-      'users.creator_node_endpoint',
       'track_routes.slug'
     )
     .from('tracks')
@@ -184,7 +172,6 @@ export const fetchResources = async (
       'playlists.playlist_image_sizes_multihash',
       'playlists.playlist_image_multihash',
       { ownerName: 'users.name' },
-      'users.creator_node_endpoint',
       'playlist_routes.slug'
     )
     .from('playlists')
