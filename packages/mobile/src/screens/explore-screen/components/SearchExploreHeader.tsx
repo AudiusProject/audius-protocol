@@ -67,7 +67,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
   const textInputRef = useRef<any>(null)
-  const [ignoredIsFocused, setIsFocused] = useState(!!params?.autoFocus)
+  const [isFocused, setIsFocused] = useState(!!params?.autoFocus)
   const { top } = useSafeAreaInsets()
 
   // Get state from context
@@ -81,24 +81,24 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
-  const [ignoredCategory] = useSearchCategory()
+  const [category] = useSearchCategory()
   const [filters] = useSearchFilters()
 
-  const ignoredHasAnyFilter = Object.values(filters).some(
+  const hasAnyFilter = Object.values(filters).some(
     (value) => value !== undefined
   )
 
-  const { isEnabled: ignoredIsCollapsedHeaderEnabled } = useFeatureFlag(
+  const { isEnabled: isCollapsedHeaderEnabled } = useFeatureFlag(
     FeatureFlags.COLLAPSED_EXPLORE_HEADER
   )
 
-  const shouldCollapse = true
-  // isCollapsedHeaderEnabled ||
-  // isFocused ||
-  // !!inputValue ||
-  // category !== 'all' ||
-  // hasAnyFilter ||
-  // params?.autoFocus
+  const shouldCollapse =
+    isCollapsedHeaderEnabled ||
+    isFocused ||
+    !!inputValue ||
+    category !== 'all' ||
+    hasAnyFilter ||
+    params?.autoFocus
 
   // Focus the input when autoFocus is true and screen comes into focus
   useFocusEffect(
