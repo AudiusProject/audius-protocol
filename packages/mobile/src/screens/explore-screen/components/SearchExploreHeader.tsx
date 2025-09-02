@@ -6,7 +6,9 @@ import React, {
   useState
 } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { exploreMessages as messages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import type { ScrollView } from 'react-native'
 import { ImageBackground, Keyboard } from 'react-native'
@@ -65,7 +67,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
   const { drawerHelpers } = useContext(AppDrawerContext)
   const navigation = useNavigation()
   const textInputRef = useRef<any>(null)
-  const [isFocused, setIsFocused] = useState(!!params?.autoFocus)
+  const [ignoredIsFocused, setIsFocused] = useState(!!params?.autoFocus)
   const { top } = useSafeAreaInsets()
 
   // Get state from context
@@ -79,19 +81,24 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
-  const [category] = useSearchCategory()
+  const [ignoredCategory] = useSearchCategory()
   const [filters] = useSearchFilters()
 
-  const hasAnyFilter = Object.values(filters).some(
+  const ignoredHasAnyFilter = Object.values(filters).some(
     (value) => value !== undefined
   )
 
-  const shouldCollapse =
-    isFocused ||
-    !!inputValue ||
-    category !== 'all' ||
-    hasAnyFilter ||
-    params?.autoFocus
+  const { isEnabled: ignoredIsCollapsedHeaderEnabled } = useFeatureFlag(
+    FeatureFlags.COLLAPSED_EXPLORE_HEADER
+  )
+
+  const shouldCollapse = true
+  // isCollapsedHeaderEnabled ||
+  // isFocused ||
+  // !!inputValue ||
+  // category !== 'all' ||
+  // hasAnyFilter ||
+  // params?.autoFocus
 
   // Focus the input when autoFocus is true and screen comes into focus
   useFocusEffect(
