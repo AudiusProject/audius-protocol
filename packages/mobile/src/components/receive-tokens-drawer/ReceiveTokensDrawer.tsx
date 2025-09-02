@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
-import { ExternalLink } from 'app/harmony-native/components/TextLink/ExternalLink'
 
-import Clipboard from '@react-native-clipboard/clipboard'
 import {
   useArtistCoin,
   transformArtistCoinToTokenInfo
@@ -9,6 +7,7 @@ import {
 import { useFormattedTokenBalance, useUserbank } from '@audius/common/hooks'
 import { useReceiveTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import Clipboard from '@react-native-clipboard/clipboard'
 
 import {
   Button,
@@ -20,11 +19,12 @@ import {
   Hint,
   TextLink
 } from '@audius/harmony-native'
-import Drawer from 'app/components/drawer/Drawer'
 import { QRCodeComponent, TokenIcon } from 'app/components/core'
 import { AddressTile } from 'app/components/core/AddressTile'
-import { useToast } from 'app/hooks/useToast'
+import Drawer from 'app/components/drawer/Drawer'
 import Skeleton from 'app/components/skeleton'
+import { useToast } from 'app/hooks/useToast'
+
 import { DrawerHeader } from '../drawer/DrawerHeader'
 
 const messages = {
