@@ -14,38 +14,16 @@ import {
   TOKEN_LISTING_MAP,
   useTierAndVerifiedForUser
 } from '@audius/common/store'
-import { Image } from 'react-native'
 
-import {
-  Flex,
-  HexagonalIcon,
-  IconVerified,
-  useTheme
-} from '@audius/harmony-native'
+import { Flex, IconVerified } from '@audius/harmony-native'
 import type { IconSize } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
+import { TokenIcon } from 'app/components/core'
 
 type UserBadgesProps = {
   userId: ID
   badgeSize?: IconSize
   mint?: string
-}
-
-const TokenIcon = ({ logoURI, size }: { logoURI?: string; size: IconSize }) => {
-  const { iconSizes } = useTheme()
-  if (!logoURI) return null
-
-  return (
-    <HexagonalIcon size={iconSizes[size]}>
-      <Image
-        source={{ uri: logoURI }}
-        style={{
-          width: iconSizes[size],
-          height: iconSizes[size]
-        }}
-      />
-    </HexagonalIcon>
-  )
 }
 
 export const UserBadges = (props: UserBadgesProps) => {
