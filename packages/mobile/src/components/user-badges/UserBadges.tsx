@@ -39,15 +39,11 @@ export const UserBadges = (props: UserBadgesProps) => {
 
   const { data: userCoins } = useUserCoins(
     { userId },
-    {
-      enabled: isArtistCoinEnabled
-    }
+    { enabled: isArtistCoinEnabled }
   )
   const { data: userCreatedCoins } = useUserCreatedCoins(
     { userId },
-    {
-      enabled: isArtistCoinEnabled
-    }
+    { enabled: isArtistCoinEnabled }
   )
   const userCreatedCoin = userCreatedCoins?.[0]
 
@@ -60,9 +56,7 @@ export const UserBadges = (props: UserBadgesProps) => {
 
   const { data: coin } = useArtistCoin(
     { mint: displayMint ?? '' },
-    {
-      enabled: isArtistCoinEnabled
-    }
+    { enabled: isArtistCoinEnabled }
   )
   const { data: tokenBalance } = useTokenBalance({
     mint: displayMint ?? '',
