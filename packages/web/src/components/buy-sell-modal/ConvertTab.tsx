@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { SwapTab } from './SwapTab'
 import { ConvertTabProps } from './types'
@@ -10,7 +10,8 @@ export const ConvertTab = ({
   errorMessage,
   initialInputValue,
   onInputValueChange,
-  availableTokens,
+  availableInputTokens,
+  availableOutputTokens,
   onInputTokenChange,
   onOutputTokenChange,
   onChangeSwapDirection
@@ -32,54 +33,47 @@ export const ConvertTab = ({
     onChangeSwapDirection
   ])
 
-  // Filter available tokens to prevent same token selection
-  const availableInputTokens = useMemo(() => {
-    return availableTokens?.filter(
-      (token) =>
-        token.symbol !== baseToken.symbol && token.symbol !== quoteToken.symbol
-    )
-  }, [availableTokens, baseToken.symbol, quoteToken.symbol])
+  const totalAvailableTokens = useMemo(() => {
+    const allTokens = [
+      ...(availableInputTokens || []),
+      ...(availableOutputTokens || [])
+    ]
+    return allTokens.filter(
+      (token, index, arr) =>
+        arr.findIndex((t) => t.symbol === token.symbol) === index
+    ) // Remove duplicates
+  }, [availableInputTokens, availableOutputTokens])
 
-  const availableOutputTokens = useMemo(() => {
-    return availableTokens?.filter(
-      (token) =>
-        token.symbol !== quoteToken.symbol && token.symbol !== baseToken.symbol
-    )
-  }, [availableTokens, quoteToken.symbol, baseToken.symbol])
+  // Generic token change handler with automatic swapping when only 2 tokens are available
+  const createTokenChangeHandler = useCallback(
+    (
+      primaryCallback: ((symbol: string) => void) | undefined,
+      secondaryCallback: ((symbol: string) => void) | undefined
+    ) =>
+      (symbol: string) => {
+        primaryCallback?.(symbol)
 
-  // Enhanced token change handlers for automatic swapping when only 2 tokens available
-  const handleInputTokenChange = useCallback(
-    (symbol: string) => {
-      onInputTokenChange?.(symbol)
-
-      // If there are only 2 available tokens, automatically set the other as output
-      if (availableTokens?.length === 2) {
-        const otherToken = availableTokens.find(
-          (token) => token.symbol !== symbol
-        )
-        if (otherToken) {
-          onOutputTokenChange?.(otherToken.symbol)
+        // If there are only 2 total available tokens, automatically set the other token
+        if (totalAvailableTokens.length === 2) {
+          const otherToken = totalAvailableTokens.find(
+            (token) => token.symbol !== symbol
+          )
+          if (otherToken) {
+            secondaryCallback?.(otherToken.symbol)
+          }
         }
-      }
-    },
-    [onInputTokenChange, onOutputTokenChange, availableTokens]
+      },
+    [totalAvailableTokens]
   )
 
-  const handleOutputTokenChange = useCallback(
-    (symbol: string) => {
-      onOutputTokenChange?.(symbol)
+  const handleInputTokenChange = useMemo(
+    () => createTokenChangeHandler(onInputTokenChange, onOutputTokenChange),
+    [createTokenChangeHandler, onInputTokenChange, onOutputTokenChange]
+  )
 
-      // If there are only 2 available tokens, automatically set the other as input
-      if (availableTokens?.length === 2) {
-        const otherToken = availableTokens.find(
-          (token) => token.symbol !== symbol
-        )
-        if (otherToken) {
-          onInputTokenChange?.(otherToken.symbol)
-        }
-      }
-    },
-    [onInputTokenChange, onOutputTokenChange, availableTokens]
+  const handleOutputTokenChange = useMemo(
+    () => createTokenChangeHandler(onOutputTokenChange, onInputTokenChange),
+    [createTokenChangeHandler, onOutputTokenChange, onInputTokenChange]
   )
 
   return (

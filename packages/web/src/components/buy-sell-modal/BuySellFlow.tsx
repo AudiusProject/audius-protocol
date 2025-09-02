@@ -1,5 +1,6 @@
-import { useState, useEffect, useContext, useMemo } from 'react'
+import { useState, useEffect, useContext, useMemo, useCallback } from 'react'
 
+import { useCurrentAccountUser, useUserCoins } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -143,6 +144,47 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     supportedTokenPairs,
     isTokenDataLoading
   })
+
+  // Get current user and their coin balances
+  const { data: currentUser } = useCurrentAccountUser()
+  const { data: userCoins } = useUserCoins({
+    userId: currentUser?.user_id || null
+  })
+
+  // Create a helper to check if user has positive balance for a token
+  const hasPositiveBalance = useCallback(
+    (tokenAddress: string): boolean => {
+      if (!userCoins) return false
+      const userCoin = userCoins.find((coin) => coin.mint === tokenAddress)
+      return userCoin ? userCoin.balance > 0 : false
+    },
+    [userCoins]
+  )
+
+  // Create filtered token lists for each tab (unified filtering approach)
+  const availableInputTokensForSell = useMemo(() => {
+    return availableTokens.filter(
+      (t) =>
+        t.symbol !== baseTokenSymbol &&
+        t.symbol !== 'USDC' &&
+        hasPositiveBalance(t.address)
+    )
+  }, [availableTokens, baseTokenSymbol, hasPositiveBalance])
+
+  const availableInputTokensForConvert = useMemo(() => {
+    return availableTokens.filter(
+      (t) =>
+        t.symbol !== baseTokenSymbol &&
+        t.symbol !== quoteTokenSymbol &&
+        hasPositiveBalance(t.address)
+    )
+  }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
+
+  const availableOutputTokensForConvert = useMemo(() => {
+    return availableTokens.filter(
+      (t) => t.symbol !== quoteTokenSymbol && t.symbol !== baseTokenSymbol
+    )
+  }, [availableTokens, quoteTokenSymbol, baseTokenSymbol])
 
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
@@ -425,9 +467,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleTabInputValueChange}
-              availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol && t.symbol !== 'USDC'
-              )}
+              availableInputTokens={availableInputTokensForSell}
               onInputTokenChange={handleInputTokenChange}
             />
           ) : isArtistCoinsEnabled && currentTokenPair ? (
@@ -438,7 +478,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.convert}
               onInputValueChange={handleTabInputValueChange}
-              availableTokens={availableTokens}
+              availableInputTokens={availableInputTokensForConvert}
+              availableOutputTokens={availableOutputTokensForConvert}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
             />
