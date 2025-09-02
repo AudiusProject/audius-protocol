@@ -148,7 +148,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   // Get current user and their coin balances
   const { data: currentUser } = useCurrentAccountUser()
   const { data: userCoins } = useUserCoins({
-    userId: currentUser?.user_id || null
+    userId: currentUser?.user_id ?? null
   })
 
   // Create a helper to check if user has positive balance for a token

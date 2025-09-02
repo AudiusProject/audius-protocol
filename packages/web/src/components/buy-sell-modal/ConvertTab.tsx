@@ -35,8 +35,8 @@ export const ConvertTab = ({
 
   const totalAvailableTokens = useMemo(() => {
     const allTokens = [
-      ...(availableInputTokens || []),
-      ...(availableOutputTokens || [])
+      ...(availableInputTokens ?? []),
+      ...(availableOutputTokens ?? [])
     ]
     return allTokens.filter(
       (token, index, arr) =>
@@ -47,8 +47,8 @@ export const ConvertTab = ({
   // Generic token change handler with automatic swapping when only 2 tokens are available
   const createTokenChangeHandler = useCallback(
     (
-      primaryCallback: ((symbol: string) => void) | undefined,
-      secondaryCallback: ((symbol: string) => void) | undefined
+      primaryCallback?: (symbol: string) => void,
+      secondaryCallback?: (symbol: string) => void
     ) =>
       (symbol: string) => {
         primaryCallback?.(symbol)
