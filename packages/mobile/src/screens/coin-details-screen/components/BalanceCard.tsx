@@ -4,11 +4,11 @@ import { useTokenBalance, useArtistCoin } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
 import { receiveTokensModalActions } from '@audius/common/store'
+import { useDispatch } from 'react-redux'
 
 import { Paper, Flex, Text, Button } from '@audius/harmony-native'
 import { TokenIcon } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useDispatch } from 'react-redux'
 
 const messages = coinDetailsMessages.balance
 
