@@ -14,17 +14,17 @@ import { BestSelling } from './BestSelling'
 import { FeaturedPlaylists } from './FeaturedPlaylists'
 import { FeaturedRemixContests } from './FeaturedRemixContests'
 import { FeelingLucky } from './FeelingLucky'
+import { ForYouTracks } from './ForYouTracks'
 import { LabelSpotlight } from './LabelSpotlight'
 import { MoodsGrid } from './MoodsGrid'
 import { MostSharedTracks } from './MostSharedTracks'
 import { QuickSearchGrid } from './QuickSearchGrid'
 import { RecentPremiumTracks } from './RecentPremiumTracks'
 import { RecentlyPlayedTracks } from './RecentlyPlayed'
-import { RecommendedTracks } from './RecommendedTracks'
 import { TrendingPlaylists } from './TrendingPlaylists'
 import { UndergroundTrendingTracks } from './UndergroundTrendingTracks'
 
-const MemoizedExploreContent = () => {
+export const ExploreContent = () => {
   const [category] = useSearchCategory()
   const { isEnabled: isSearchGoodiesEnabled } = useFeatureFlag(
     FeatureFlags.SEARCH_EXPLORE_GOODIES
@@ -37,13 +37,9 @@ const MemoizedExploreContent = () => {
 
   return (
     <Flex gap='2xl' pt='s' pb={150} ph='l'>
-      {isSearchGoodiesEnabled ? (
-        <>
-          {showTrackContent && <RecommendedTracks />}
-          {showTrackContent && <RecentlyPlayedTracks />}
-          {showTrackContent && <QuickSearchGrid />}
-        </>
-      ) : null}
+      {showTrackContent && <ForYouTracks />}
+      {showTrackContent && <RecentlyPlayedTracks />}
+      {showTrackContent && <QuickSearchGrid />}
       {showPlaylistContent && <FeaturedPlaylists />}
       {showTrackContent && <FeaturedRemixContests />}
       {isSearchGoodiesEnabled && showTrackContent && (
@@ -69,6 +65,3 @@ const MemoizedExploreContent = () => {
     </Flex>
   )
 }
-
-// Memoize the entire component since it has no props
-export const ExploreContent = React.memo(MemoizedExploreContent)
