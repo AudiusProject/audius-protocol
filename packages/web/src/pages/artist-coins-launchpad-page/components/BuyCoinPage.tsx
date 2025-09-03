@@ -9,6 +9,7 @@ import {
   Text,
   TokenAmountInput
 } from '@audius/harmony'
+import { spacing } from '@audius/harmony/src/foundations/spacing/spacing'
 import { useFormikContext } from 'formik'
 
 import { AMOUNT_OF_STEPS } from '../constants'
@@ -96,25 +97,16 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
               <Flex
                 alignItems='center'
                 justifyContent='center'
-                css={(theme) => ({
-                  backgroundColor: theme.color.secondary.s300,
-                  borderRadius: theme.cornerRadius.l,
-                  height: '16px',
-                  paddingLeft: theme.spacing.xs,
-                  paddingRight: theme.spacing.xs,
-                  paddingTop: theme.spacing.unit1,
-                  paddingBottom: theme.spacing.unit1
-                })}
+                h={spacing.unit4}
+                p='xs'
+                backgroundColor='accent'
+                borderRadius='l'
               >
                 <Text
                   variant='label'
                   size='xs'
                   color='staticWhite'
-                  css={{
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px',
-                    fontWeight: 800
-                  }}
+                  textTransform='uppercase'
                 >
                   {messages.optional}
                 </Text>
@@ -139,26 +131,19 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
                   <Flex
                     alignItems='center'
                     gap='xs'
-                    css={(theme) => ({
-                      backgroundColor: theme.color.background.surface2,
-                      border: `1px solid ${theme.color.border.default}`,
-                      borderRadius: theme.cornerRadius.xl,
-                      paddingLeft: theme.spacing.xs,
-                      paddingRight: theme.spacing.xs,
-                      paddingTop: theme.spacing.unit1,
-                      paddingBottom: theme.spacing.unit1
-                    })}
+                    p='xs'
+                    backgroundColor='surface2'
+                    border='default'
+                    borderRadius='xl'
                   >
                     {/* Wallet Logo Placeholder */}
                     <Flex
                       alignItems='center'
                       justifyContent='center'
-                      css={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        backgroundColor: '#AB9FF2'
-                      }}
+                      w={spacing.l}
+                      h={spacing.l}
+                      borderRadius='circle'
+                      backgroundColor='accent'
                     >
                       <Text variant='label' size='xs' color='staticWhite'>
                         P
