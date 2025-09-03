@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Flex, Paper } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
+import { resizeImage } from 'utils/imageProcessingUtil'
+
 import { AMOUNT_OF_STEPS, MAX_IMAGE_SIZE } from '../constants'
 
 import { ArtistCoinsAnchoredSubmitRow } from './ArtistCoinsAnchoredSubmitRow'
@@ -21,6 +23,7 @@ const messages = {
 export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [isProcessingImage, setIsProcessingImage] = useState(false)
   const { handleSubmit, setFieldValue, values, errors, touched } =
     useFormikContext<SetupFormValues>()
 
@@ -76,17 +79,32 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
                 coinImage={values.coinImage}
                 imageUrl={imageUrl}
                 onFileSelect={handleFileSelect}
-                onFileInputChange={(
+                onFileInputChange={async (
                   event: React.ChangeEvent<HTMLInputElement>
                 ) => {
                   const file = event.target.files?.[0]
                   if (file) {
                     // Check file size (15MB limit)
                     if (file.size <= MAX_IMAGE_SIZE) {
-                      setFieldValue('coinImage', file)
-                      // Create blob URL for preview
-                      const url = URL.createObjectURL(file)
-                      setImageUrl(url)
+                      setIsProcessingImage(true)
+                      try {
+                        // Process the image with resizeImage (converts to JPEG, resizes to 1000x1000)
+                        const processedFile = await resizeImage(
+                          file,
+                          1000,
+                          true
+                        )
+                        setFieldValue('coinImage', processedFile)
+                        // Create blob URL for preview from processed file
+                        const url = URL.createObjectURL(processedFile)
+                        setImageUrl(url)
+                      } catch (error) {
+                        console.error('Error processing image:', error)
+                        // TODO: Show error message to user
+                        // Could not process image
+                      } finally {
+                        setIsProcessingImage(false)
+                      }
                     } else {
                       // TODO: Show error message to user
                       // File size exceeds 15MB limit
@@ -98,6 +116,7 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
                     ? errors.coinImage
                     : undefined
                 }
+                isProcessing={isProcessingImage}
               />
             </Flex>
           </form>

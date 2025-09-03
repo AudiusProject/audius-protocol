@@ -22,6 +22,7 @@ export type ImageUploadAreaProps = {
   onFileSelect: () => void
   onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   error?: string
+  isProcessing?: boolean
 }
 
 export type CoinFormFieldsProps = {

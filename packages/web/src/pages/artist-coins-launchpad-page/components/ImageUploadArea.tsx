@@ -25,7 +25,8 @@ export const ImageUploadArea = ({
   imageUrl,
   onFileSelect,
   onFileInputChange,
-  error
+  error,
+  isProcessing = false
 }: ImageUploadAreaProps) => {
   const theme = useTheme()
 
@@ -56,30 +57,34 @@ export const ImageUploadArea = ({
             w={IMAGE_SIZE}
             h={IMAGE_SIZE}
             borderWidth={0}
+            isLoading={isProcessing}
           />
           <Button
             variant='secondary'
             size='small'
             onClick={onFileSelect}
             type='button'
+            disabled={isProcessing}
           >
             {messages.selectAnother}
           </Button>
         </Flex>
       ) : (
-        /* Empty State - Show upload area */
+        /* Empty State or Processing State - Show upload area or processing skeleton */
         <Flex
           css={{
             border: `2px dashed ${theme.color.neutral.n150}`,
             borderRadius: theme.cornerRadius.m,
             background: theme.color.special.white,
-            cursor: 'pointer',
+            cursor: isProcessing ? 'default' : 'pointer',
             transition: `border-color ${theme.motion.hover}`,
             ':hover': {
-              borderColor: theme.color.neutral.n800
+              borderColor: isProcessing
+                ? theme.color.neutral.n150
+                : theme.color.neutral.n800
             }
           }}
-          onClick={onFileSelect}
+          onClick={isProcessing ? undefined : onFileSelect}
           direction='column'
           alignItems='center'
           justifyContent='center'
@@ -87,23 +92,35 @@ export const ImageUploadArea = ({
           p='xl'
           w='100%'
         >
-          <Flex alignItems='center' gap='xs'>
-            <IconCloudUpload color='default' />
-            <Text variant='body' size='l' color='default'>
-              {messages.dragDropText}
-            </Text>
-          </Flex>
-          <Button
-            variant='secondary'
-            size='small'
-            onClick={(e) => {
-              e.stopPropagation()
-              onFileSelect()
-            }}
-            type='button'
-          >
-            {messages.selectFile}
-          </Button>
+          {isProcessing ? (
+            <Artwork
+              hex
+              w={IMAGE_SIZE}
+              h={IMAGE_SIZE}
+              borderWidth={0}
+              isLoading={true}
+            />
+          ) : (
+            <>
+              <Flex alignItems='center' gap='xs'>
+                <IconCloudUpload color='default' />
+                <Text variant='body' size='l' color='default'>
+                  {messages.dragDropText}
+                </Text>
+              </Flex>
+              <Button
+                variant='secondary'
+                size='small'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onFileSelect()
+                }}
+                type='button'
+              >
+                {messages.selectFile}
+              </Button>
+            </>
+          )}
         </Flex>
       )}
       {error && (
