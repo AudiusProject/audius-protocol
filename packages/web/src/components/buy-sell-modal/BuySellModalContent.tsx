@@ -41,7 +41,7 @@ import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 
-const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
+// const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
 type BuySellModalContentProps = {
   onClose: () => void
@@ -66,8 +66,6 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
   const { tokens, isLoading: tokensLoading } = useTokens()
   const { pairs: supportedTokenPairs, isLoading: pairsLoading } =
     useSupportedTokenPairs()
-
-  console.log({ supportedTokenPairs })
 
   const isTokenDataLoading = tokensLoading || pairsLoading
 

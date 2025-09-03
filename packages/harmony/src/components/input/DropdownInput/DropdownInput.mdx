@@ -1,0 +1,46 @@
+import {
+  Canvas,
+  Meta,
+  Title,
+  Description,
+  Primary,
+  Controls
+} from '@storybook/blocks'
+
+import { Heading, BetaWarning } from 'storybook/components'
+
+import * as DropdownInputStories from './DropdownInput.stories'
+
+<Meta of={DropdownInputStories} />
+
+<Title>DropdownInput</Title>
+
+<BetaWarning />
+
+- [Overview](#overview)
+- [Props](#props)
+- [Configuration Options](#configuration-options)
+
+<Heading>
+  ## Overview
+  <Description />
+</Heading>
+<Primary />
+
+## Props
+
+<Controls />
+
+## Configuration Options
+
+### Assistive Text
+
+<Canvas of={DropdownInputStories.AssistiveText} />
+
+### With Icons
+
+<Canvas of={DropdownInputStories.WithIcons} />
+
+### Clearable
+
+<Canvas of={DropdownInputStories.Clearable} />

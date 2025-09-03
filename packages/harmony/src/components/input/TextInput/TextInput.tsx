@@ -23,6 +23,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       className,
       inputRootClassName,
       maxLength,
+      renderLabel,
       showMaxLengthThreshold = 0.7,
       maxLengthWarningThreshold = 0.9,
       size = TextInputSize.DEFAULT,
@@ -198,24 +199,26 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                 justifyContent='space-between'
                 gap='s'
               >
-                <Text
-                  variant='body'
-                  tag='span'
-                  size={isLabelElevated ? 's' : 'l'}
-                  color='subdued'
-                  css={(theme) => ({
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    zIndex: 2,
-                    transition: `all ${theme.motion.expressive}`,
-                    transform: isLabelElevated
-                      ? 'translate(0, 0)'
-                      : 'translate(0px, 13px)'
-                  })}
-                >
-                  {labelText}
-                </Text>
+                {renderLabel ?? (
+                  <Text
+                    variant='body'
+                    tag='span'
+                    size={isLabelElevated ? 's' : 'l'}
+                    color='subdued'
+                    css={(theme) => ({
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      zIndex: 2,
+                      transition: `all ${theme.motion.expressive}`,
+                      transform: isLabelElevated
+                        ? 'translate(0, 0)'
+                        : 'translate(0px, 13px)'
+                    })}
+                  >
+                    {labelText}
+                  </Text>
+                )}
                 {shouldShowMaxLengthText ? (
                   <Text
                     variant='body'

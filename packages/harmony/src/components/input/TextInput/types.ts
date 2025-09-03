@@ -119,4 +119,8 @@ export type TextInputProps = Omit<
    * When `true` elevate the label. Useful for adding custom values. Reference `Select` component
    */
   elevateLabel?: boolean
+  /**
+   * Custom render function for the label. When provided, this will be used instead of the label text
+   */
+  renderLabel?: ReactNode | null
 } & InternalProps

@@ -57,13 +57,16 @@ export const BuyTab = () => {
             </Tooltip>
           </Flex>
         </Flex>
-        <Flex gap='s' h='100%'>
+        <Flex gap='s' alignItems='stretch'>
           <TextInput
-            endAdornmentText='USD'
+            endAdornmentText='$USDC'
             label='Amount of USDC you pay'
             placeholder='0.00'
             width='100%'
+            max={parseFloat(balanceLocaleString ?? '0')}
             hideLabel
+            min='0'
+            type='number'
           />
           <Button variant='secondary' css={{ height: '100%' }}>
             {messages.max}
@@ -84,6 +87,7 @@ export const BuyTab = () => {
             width='100%'
             hideLabel
           />
+          <ArtistTokenDropdown labelText='Select a token to receive' />
         </Flex>
       </Flex>
       <TokenPairExchangeRateBanner />

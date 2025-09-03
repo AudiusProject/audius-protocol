@@ -11,7 +11,6 @@ import { TokenPair } from './types'
 // Hook to get tokens from API
 export const useTokens = () => {
   const { data: artistCoins = [], isLoading, error } = useArtistCoins()
-  console.log('artistCoins', artistCoins)
   const { env } = useQueryContext()
 
   return useMemo(() => {
