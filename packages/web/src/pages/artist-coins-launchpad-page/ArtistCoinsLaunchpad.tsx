@@ -93,6 +93,7 @@ export const ArtistCoinsLaunchpad = () => {
         coinImage: null as File | null
       }}
       validationSchema={toFormikValidationSchema(setupFormSchema)}
+      validateOnMount={true}
       onSubmit={(values: SetupFormValues) => {
         // Convert coin symbol to uppercase before submission
         // TODO: Use the processed values in actual submission logic

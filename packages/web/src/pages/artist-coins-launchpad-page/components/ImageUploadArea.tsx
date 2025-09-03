@@ -24,7 +24,8 @@ export const ImageUploadArea = ({
   coinImage,
   imageUrl,
   onFileSelect,
-  onFileInputChange
+  onFileInputChange,
+  error
 }: ImageUploadAreaProps) => {
   const theme = useTheme()
 
@@ -104,6 +105,11 @@ export const ImageUploadArea = ({
             {messages.selectFile}
           </Button>
         </Flex>
+      )}
+      {error && (
+        <Text color='danger' size='s' variant='body'>
+          {error}
+        </Text>
       )}
     </>
   )

@@ -21,8 +21,14 @@ const messages = {
 export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const { handleSubmit, setFieldValue, values } =
+  const { handleSubmit, setFieldValue, values, errors, touched } =
     useFormikContext<SetupFormValues>()
+
+  // Custom validation check to ensure all required fields are filled
+  const isFormValid =
+    values.coinName.trim() !== '' &&
+    values.coinSymbol.trim() !== '' &&
+    values.coinImage !== null
 
   const handleBack = () => {
     onBack?.()
@@ -87,6 +93,11 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
                     }
                   }
                 }}
+                error={
+                  touched.coinImage && errors.coinImage
+                    ? errors.coinImage
+                    : undefined
+                }
               />
             </Flex>
           </form>
@@ -95,6 +106,7 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
       <ArtistCoinsAnchoredSubmitRow
         onContinue={handleContinue}
         onBack={handleBack}
+        isValid={isFormValid}
       />
     </>
   )

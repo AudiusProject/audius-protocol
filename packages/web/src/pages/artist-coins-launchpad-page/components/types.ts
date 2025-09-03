@@ -7,6 +7,7 @@ export type SetupFormValues = {
 export type SetupFormErrors = {
   coinName?: string
   coinSymbol?: string
+  coinImage?: string
 }
 
 export type SetupPageProps = {
@@ -20,6 +21,7 @@ export type ImageUploadAreaProps = {
   imageUrl: string | null
   onFileSelect: () => void
   onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  error?: string
 }
 
 export type CoinFormFieldsProps = {
@@ -28,6 +30,7 @@ export type CoinFormFieldsProps = {
   touched: {
     coinName?: boolean
     coinSymbol?: boolean
+    coinImage?: boolean
   }
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void

@@ -24,6 +24,10 @@ export const coinNameErrorMessages = {
   missingNameError: 'Please enter a coin name'
 }
 
+export const coinImageErrorMessages = {
+  missingImageError: 'Please select a coin image'
+}
+
 export const coinNameSchema = z.object({
   coinName: z
     .string({ required_error: coinNameErrorMessages.missingNameError })
@@ -31,9 +35,16 @@ export const coinNameSchema = z.object({
     .min(1, coinNameErrorMessages.missingNameError)
 })
 
+export const coinImageSchema = z.object({
+  coinImage: z
+    .instanceof(File, { message: coinImageErrorMessages.missingImageError })
+    .refine((file) => file !== null, coinImageErrorMessages.missingImageError)
+})
+
 export const setupFormSchema = z.object({
   coinName: coinNameSchema.shape.coinName,
-  coinSymbol: coinSymbolSchema.shape.coinSymbol
+  coinSymbol: coinSymbolSchema.shape.coinSymbol,
+  coinImage: coinImageSchema.shape.coinImage
 })
 
 export const validateSetupForm = (values: SetupFormValues): SetupFormErrors => {
@@ -47,7 +58,11 @@ export const validateSetupForm = (values: SetupFormValues): SetupFormErrors => {
 
   result.error.errors.forEach((error) => {
     const field = error.path[0] as keyof SetupFormErrors
-    if (field === 'coinName' || field === 'coinSymbol') {
+    if (
+      field === 'coinName' ||
+      field === 'coinSymbol' ||
+      field === 'coinImage'
+    ) {
       errors[field] = error.message
     }
   })
