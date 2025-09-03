@@ -109,7 +109,7 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
                   variant='body'
                   size='l'
                   color='subdued'
-                  css={{ textTransform: 'uppercase' }}
+                  textTransform='uppercase'
                 >
                   ${values.coinSymbol}
                 </Text>
