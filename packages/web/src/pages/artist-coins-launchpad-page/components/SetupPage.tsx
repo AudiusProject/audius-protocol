@@ -50,6 +50,17 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
     }
   }, [imageUrl])
 
+  // Create blob URL from existing coinImage when component mounts or coinImage changes
+  useEffect(() => {
+    if (values.coinImage) {
+      const url = URL.createObjectURL(values.coinImage)
+      setImageUrl(url)
+      return () => URL.revokeObjectURL(url)
+    } else {
+      setImageUrl(null)
+    }
+  }, [values.coinImage])
+
   const handleContinue = () => {
     onContinue?.()
   }
