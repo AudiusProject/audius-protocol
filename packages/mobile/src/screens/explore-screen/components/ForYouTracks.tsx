@@ -10,7 +10,7 @@ import { useDeferredElement } from 'app/hooks/useDeferredElement'
 import { ExploreSection } from './ExploreSection'
 import { TrackTileCarousel } from './TrackTileCarousel'
 
-export const RecommendedTracks = () => {
+export const ForYouTracks = () => {
   const { inView, InViewWrapper } = useDeferredElement()
   const { data: recommendedTracks, isPending } = useRecommendedTracks(
     { pageSize: 10, timeRange: full.GetRecommendedTracksTimeEnum.Week },
@@ -22,7 +22,7 @@ export const RecommendedTracks = () => {
       <ExploreSection title={messages.forYou}>
         <TrackTileCarousel
           tracks={recommendedTracks}
-          isLoading={isPending || !inView}
+          isLoading={isPending}
           source={QueueSource.EXPLORE}
         />
       </ExploreSection>
