@@ -19,7 +19,9 @@ type ArtistCoinsLaunchPanelProps = {
   onContinue: () => void
 }
 
-export const ArtistCoinsLaunchPanel = ({ onContinue }: ArtistCoinsLaunchPanelProps) => {
+export const ArtistCoinsLaunchPanel = ({
+  onContinue
+}: ArtistCoinsLaunchPanelProps) => {
   const { color } = useTheme()
 
   return (

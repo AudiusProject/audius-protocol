@@ -7,14 +7,10 @@ import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
 
 import { SetupPage, SplashScreen } from './components'
+import { Phase } from './constants'
 
 const messages = {
   title: 'Create Your Artist Coin'
-}
-
-enum Phase {
-  SPLASH,
-  SETUP
 }
 
 export const ArtistCoinsLaunchpad = () => {
@@ -31,13 +27,17 @@ export const ArtistCoinsLaunchpad = () => {
     setPhase(Phase.SETUP)
   }
 
+  const handleBack = () => {
+    setPhase(Phase.SPLASH)
+  }
+
   let page
   switch (phase) {
     case Phase.SPLASH:
       page = <SplashScreen onContinue={handleContinue} />
       break
     case Phase.SETUP:
-      page = <SetupPage />
+      page = <SetupPage onContinue={handleContinue} onBack={handleBack} />
       break
     default:
       page = <SplashScreen onContinue={handleContinue} />
