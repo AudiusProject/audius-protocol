@@ -9,10 +9,12 @@ import { ArtistCoinIcon } from './ArtistCoinIcon'
 
 export const ArtistTokenDropdown = ({
   includeUSDC = true,
-  labelText
+  labelText,
+  onSelect
 }: {
   includeUSDC?: boolean
   labelText: string
+  onSelect: (value: string) => void
 }) => {
   const { data: allTokens } = useArtistCoins()
   const options =
@@ -37,7 +39,7 @@ export const ArtistTokenDropdown = ({
     <DropdownInput
       options={options}
       placeholder='..'
-      onSelect={() => {}}
+      onSelect={(e) => onSelect(e?.currentTarget.value ?? '')}
       value={currentToken}
       hidePlaceholder
       onChange={(value) => setCurrentToken(value)}

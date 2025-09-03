@@ -19,19 +19,9 @@ import {
   useTokens,
   TokenInfo
 } from '@audius/common/store'
-import {
-  Box,
-  Button,
-  Flex,
-  Hint,
-  IconJupiterLogo,
-  SegmentedControl,
-  Text,
-  TextLink
-} from '@audius/harmony'
+import { Button, Flex, SegmentedControl } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
-import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -40,27 +30,22 @@ import { getPathname } from 'utils/route'
 import { BuyTab } from './BuyTab'
 import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
+import { SwapFormState } from './types'
 
 // const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
 type BuySellModalContentProps = {
   onClose: () => void
-  openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
 }
 
 export const BuySellModalContent = (props: BuySellModalContentProps) => {
-  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
-    props
+  const { onClose, onScreenChange, onLoadingStateChange } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
-  const {
-    trackSwapRequested,
-    trackSwapSuccess,
-    trackSwapFailure,
-    trackAddFundsClicked
-  } = useBuySellAnalytics()
+  const { trackSwapRequested, trackSwapSuccess, trackSwapFailure } =
+    useBuySellAnalytics()
 
   // Get tokens and token pairs from API
   const { tokens, isLoading: tokensLoading } = useTokens()
@@ -73,37 +58,20 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
     onScreenChange
   })
 
-  const {
-    transactionData,
-    hasSufficientBalance,
-    handleTransactionDataChange,
-    resetTransactionData
-  } = useBuySellTransactionData()
+  const { transactionData, resetTransactionData } = useBuySellTransactionData()
 
   const { activeTab, handleActiveTabChange } = useBuySellTabs({
     setCurrentScreen,
     resetTransactionData
   })
 
-  // Persistent state for each tab's input values
-  const [tabInputValues, setTabInputValues] = useState<
-    Record<BuySellTab, string>
+  const [tabFormState, setTabFormState] = useState<
+    Record<BuySellTab, SwapFormState | {}>
   >({
-    buy: '',
-    sell: '',
-    convert: ''
+    buy: {},
+    sell: {},
+    convert: {}
   })
-
-  // Update input value for current tab
-  const handleTabInputValueChange = (value: string) => {
-    setTabInputValues((prev) => ({
-      ...prev,
-      [activeTab]: value
-    }))
-  }
-
-  // Track if user has attempted to submit the form
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const location = useLocation()
   const pathname = getPathname(location)
@@ -290,6 +258,7 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
     trackSwapFailure
   ])
 
+  // Set up navigation tabs
   const tabs = useMemo(() => {
     const baseTabs = [
       { key: 'buy' as BuySellTab, text: messages.buy },
@@ -339,7 +308,6 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
   ])
 
   const handleContinueClick = () => {
-    setHasAttemptedSubmit(true)
     if (transactionData?.isValid && !isContinueButtonLoading) {
       // Track swap requested
       trackSwapRequested({
@@ -354,47 +322,6 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
       handleShowConfirmation()
     }
   }
-
-  useEffect(() => {
-    setHasAttemptedSubmit(false)
-  }, [activeTab])
-
-  const isTransactionInvalid = !transactionData?.isValid
-
-  const displayErrorMessage = useMemo(() => {
-    if (activeTab === 'sell' && !hasSufficientBalance) {
-      return messages.insufficientAUDIOForSale
-    }
-    // Show validation errors immediately for sell and convert tabs (like insufficient balance)
-    if (
-      (activeTab === 'sell' || activeTab === 'convert') &&
-      transactionData?.error
-    ) {
-      return transactionData.error
-    }
-    // For buy tab, only show validation errors after attempted submit
-    if (activeTab === 'buy' && hasAttemptedSubmit && transactionData?.error) {
-      return transactionData.error
-    }
-    // Fallback for empty input, though zod should handle it via transactionData.error
-    if (
-      hasAttemptedSubmit &&
-      isTransactionInvalid &&
-      !(activeTab === 'buy' && !hasSufficientBalance)
-    ) {
-      return messages.emptyAmount
-    }
-    return undefined
-  }, [
-    activeTab,
-    hasSufficientBalance,
-    hasAttemptedSubmit,
-    isTransactionInvalid,
-    transactionData
-  ])
-
-  const shouldShowError =
-    !!displayErrorMessage || (activeTab === 'buy' && !hasSufficientBalance)
 
   if (isConfirmButtonLoading && currentScreen !== 'success') {
     return <ModalLoading />
@@ -420,7 +347,13 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
             />
           </Flex>
 
-          {activeTab === 'buy' && currentTokenPair ? <BuyTab /> : null}
+          {activeTab === 'buy' && currentTokenPair ? (
+            <BuyTab
+              onOutputTokenTypeChange={handleOutputTokenChange}
+              onFormStateChange={setTabFormState}
+              onFormSubmit={handleContinueClick}
+            />
+          ) : null}
 
           <Button
             variant='primary'
@@ -452,39 +385,10 @@ export const BuySellModalContent = (props: BuySellModalContentProps) => {
             {...successDisplayData}
             onDone={() => {
               onClose()
-              resetTransactionData()
-              resetSuccessDisplayData()
-              setCurrentScreen('input')
-              // Clear all tab input values on completion
-              setTabInputValues({ buy: '', sell: '', convert: '' })
             }}
           />
         </Flex>
       ) : null}
-
-      {/* TODO: fix this */}
-      {currentScreen !== 'success' && !isConfirmButtonLoading && (
-        <>
-          <Flex
-            css={({ spacing, color }) => ({
-              justifyContent: 'center',
-              left: 0,
-              bottom: 0,
-              gap: spacing.s,
-              borderTop: `1px solid ${color.border.strong}`,
-              backgroundColor: color.background.surface1
-            })}
-            p='m'
-            w='100%'
-            mt='xl'
-          >
-            <Text variant='label' size='xs' color='subdued'>
-              {messages.poweredBy}
-            </Text>
-            <IconJupiterLogo />
-          </Flex>
-        </>
-      )}
     </>
   )
 }

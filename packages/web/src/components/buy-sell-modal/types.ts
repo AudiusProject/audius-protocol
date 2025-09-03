@@ -1,6 +1,14 @@
 import { TokenInfo, TokenPair } from '@audius/common/store'
 import { TooltipPlacement } from 'antd/lib/tooltip'
 
+export type SwapFormState = {
+  inputAmount: number
+  inputTokenSymbol: string
+  outputAmount: number
+  outputTokenSymbol: string
+  isValid: boolean
+}
+
 // Transaction data structure
 export type TransactionData = {
   inputAmount: number

@@ -24,7 +24,6 @@ import { Screen } from './types'
 
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
-  const { onOpen: openAddCashModal } = useAddCashModal()
 
   const [currentModalState, setCurrentModalState] = useState<Screen>('input')
   const [isModalContentLoading, setIsModalContentLoading] = useState(false)
@@ -61,11 +60,26 @@ export const BuySellModal = () => {
       <ModalContent>
         <BuySellModalContent
           onClose={onClose}
-          openAddCashModal={openAddCashModal}
           onScreenChange={setCurrentModalState}
           onLoadingStateChange={setIsModalContentLoading}
         />
       </ModalContent>
+      {/* TODO: ideally this would be in the content and not fixed to the footer */}
+      {currentModalState !== 'success' && !isModalContentLoading && (
+        <ModalFooter
+          css={({ spacing, color }) => ({
+            justifyContent: 'center',
+            gap: spacing.s,
+            borderTop: `1px solid ${color.border.strong}`,
+            backgroundColor: color.background.surface1
+          })}
+        >
+          <Text variant='label' size='xs' color='subdued'>
+            {messages.poweredBy}
+          </Text>
+          <IconJupiterLogo />
+        </ModalFooter>
+      )}
     </Modal>
   )
 }

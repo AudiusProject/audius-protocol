@@ -103,24 +103,10 @@ export const useBuySellAnalytics = () => {
     [trackEvent]
   )
 
-  /**
-   * Track when the user clicks to add funds
-   */
-  const trackAddFundsClicked = useCallback(
-    (source: 'insufficient_balance_hint' | 'input_screen') => {
-      return trackEvent({
-        eventName: Name.BUY_SELL_ADD_FUNDS_CLICKED,
-        source
-      })
-    },
-    [trackEvent]
-  )
-
   return {
     trackSwapRequested,
     trackSwapConfirmed,
     trackSwapSuccess,
-    trackSwapFailure,
-    trackAddFundsClicked
+    trackSwapFailure
   }
 }
