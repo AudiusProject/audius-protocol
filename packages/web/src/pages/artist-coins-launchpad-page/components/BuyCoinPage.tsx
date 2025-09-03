@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import { useConnectedWallets } from '@audius/common/api'
+import { Chain } from '@audius/common/models'
+import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
@@ -26,7 +29,6 @@ const messages = {
   youPay: 'You Pay',
   youReceive: 'You Receive',
   connectedWallet: 'Connected Wallet',
-  walletAddress: '9Da...Vzdc',
   rate: 'Rate',
   rateValue: '1 $AUDIO ≈ 0.302183',
   valueInUSDC: 'Value in USDC',
@@ -41,6 +43,19 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
   const [payAmount, setPayAmount] = useState('')
   const [receiveAmount, setReceiveAmount] = useState('')
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+
+  const { data: connectedWallets } = useConnectedWallets()
+
+  // Get the most recent connected Solana wallet (last in the array)
+  // Filter to only Solana wallets since only SOL wallets can be connected
+  const connectedWallet = connectedWallets?.filter(
+    (wallet) => wallet.chain === Chain.Sol
+  )?.[0]
+
+  // Format the wallet address for display (always Solana format)
+  const formattedWalletAddress = connectedWallet
+    ? shortenSPLAddress(connectedWallet.address)
+    : null
 
   // Create image URL from the coin image stored in Formik
   useEffect(() => {
@@ -136,7 +151,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
                     border='default'
                     borderRadius='xl'
                   >
-                    {/* Wallet Logo Placeholder */}
                     <Flex
                       alignItems='center'
                       justifyContent='center'
@@ -145,12 +159,10 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
                       borderRadius='circle'
                       backgroundColor='accent'
                     >
-                      <Text variant='label' size='xs' color='staticWhite'>
-                        P
-                      </Text>
+                      <IconLogoCircleSOL size='s' />
                     </Flex>
                     <Text variant='body' size='m' color='default'>
-                      {messages.walletAddress}
+                      {formattedWalletAddress}
                     </Text>
                   </Flex>
                 </Flex>

@@ -1,12 +1,18 @@
 import { useState } from 'react'
 
 import { IconArtistCoin } from '@audius/harmony'
+import { solana } from '@reown/appkit/networks'
 import { Formik, useFormikContext } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { appkitModal } from 'app/ReownAppKitModal'
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
+import {
+  useConnectAndAssociateWallets,
+  AlreadyAssociatedError
+} from 'hooks/useConnectAndAssociateWallets'
 
 import { BuyCoinPage, ReviewPage, SetupPage, SplashScreen } from './components'
 import type { SetupFormValues } from './components/types'
@@ -28,8 +34,33 @@ const ArtistCoinsLaunchpadContent = () => {
 
   const header = <Header primary={messages.title} icon={IconArtistCoin} />
 
-  const handleSplashContinue = () => {
+  // Wallet connection handlers
+  const handleWalletConnectSuccess = () => {
     setPhase(Phase.SETUP)
+  }
+
+  const handleWalletConnectError = (error: unknown) => {
+    console.error('Wallet connection failed:', error)
+
+    // If wallet is already associated, continue with the flow
+    if (error instanceof AlreadyAssociatedError) {
+      setPhase(Phase.SETUP)
+      return
+    }
+
+    // For other errors, show alert
+    alert('Failed to connect wallet. Please try again.')
+  }
+
+  const { openAppKitModal } = useConnectAndAssociateWallets(
+    handleWalletConnectSuccess,
+    handleWalletConnectError
+  )
+
+  const handleSplashContinue = async () => {
+    // Switch to Solana network to prioritize SOL wallets
+    await appkitModal.switchNetwork(solana)
+    openAppKitModal()
   }
 
   const handleSetupContinue = () => {
