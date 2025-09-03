@@ -8,7 +8,7 @@ import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
 
-import { ReviewPage, SetupPage, SplashScreen } from './components'
+import { BuyCoinPage, ReviewPage, SetupPage, SplashScreen } from './components'
 import type { SetupFormValues } from './components/types'
 import { Phase } from './constants'
 import { setupFormSchema } from './validation'
@@ -42,12 +42,20 @@ const ArtistCoinsLaunchpadContent = () => {
   }
 
   const handleReviewContinue = () => {
-    // TODO: Handle final submission/next phase
-    alert('Coin created successfully!')
+    setPhase(Phase.BUY_COIN)
   }
 
   const handleReviewBack = () => {
     setPhase(Phase.SETUP)
+  }
+
+  const handleBuyCoinContinue = () => {
+    // This should submit the form as requested
+    alert('Coin created successfully!')
+  }
+
+  const handleBuyCoinBack = () => {
+    setPhase(Phase.REVIEW)
   }
 
   let page
@@ -65,6 +73,14 @@ const ArtistCoinsLaunchpadContent = () => {
         <ReviewPage
           onContinue={handleReviewContinue}
           onBack={handleReviewBack}
+        />
+      )
+      break
+    case Phase.BUY_COIN:
+      page = (
+        <BuyCoinPage
+          onContinue={handleBuyCoinContinue}
+          onBack={handleBuyCoinBack}
         />
       )
       break
@@ -94,7 +110,7 @@ export const ArtistCoinsLaunchpad = () => {
       }}
       validationSchema={toFormikValidationSchema(setupFormSchema)}
       validateOnMount={true}
-      onSubmit={(values: SetupFormValues) => {
+      onSubmit={(_values: SetupFormValues) => {
         // Convert coin symbol to uppercase before submission
         // TODO: Use the processed values in actual submission logic
         // const finalValues = {

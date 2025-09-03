@@ -52,3 +52,8 @@ export type TokenInfoRowProps = {
   value: string
   hasTooltip?: boolean
 }
+
+export type BuyCoinPageProps = {
+  onContinue?: () => void
+  onBack?: () => void
+}
