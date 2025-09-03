@@ -125,11 +125,7 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
             </Flex>
 
             {/* Token Details Section */}
-            <Flex
-              css={(theme) => ({
-                borderBottom: `1px solid ${theme.color.border.default}`
-              })}
-            >
+            <Flex>
               {/* Coin Details Column */}
               <Flex
                 direction='column'
