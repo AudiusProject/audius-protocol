@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import { Artwork, Flex, Paper, Text } from '@audius/harmony'
+import {
+  Artwork,
+  Flex,
+  Paper,
+  Text,
+  makeResponsiveStyles
+} from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
 import { AMOUNT_OF_STEPS } from '../constants'
@@ -36,9 +42,39 @@ const coinDetails = {
   tradingFees: '50%'
 }
 
+const useStyles = makeResponsiveStyles(({ theme }) => ({
+  tableContainer: {
+    base: {
+      flexDirection: 'row',
+      transition: `all ${theme.motion.expressive}`
+    },
+    tablet: {
+      flexDirection: 'column'
+    }
+  },
+  column: {
+    base: {
+      backgroundColor: theme.color.background.white,
+      borderRight: `1px solid ${theme.color.border.default}`,
+      borderBottom: 'none',
+      transition: `all ${theme.motion.expressive}`,
+      flex: '1 1 50%',
+      minHeight: theme.spacing['4xl']
+    },
+    tablet: {
+      backgroundColor: theme.color.background.white,
+      borderRight: 'none',
+      borderBottom: `1px solid ${theme.color.border.default}`,
+      flex: '1 1 100%',
+      minHeight: theme.spacing['4xl']
+    }
+  }
+}))
+
 export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
   const { values } = useFormikContext<SetupFormValues>()
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const styles = useStyles()
 
   useEffect(() => {
     if (values.coinImage) {
@@ -125,17 +161,14 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
             </Flex>
 
             {/* Token Details Section */}
-            <Flex>
+            <Flex css={styles.tableContainer}>
               {/* Coin Details Column */}
               <Flex
                 direction='column'
                 gap='l'
                 p='l'
                 flex='1'
-                css={(theme) => ({
-                  backgroundColor: theme.color.background.white,
-                  borderRight: `1px solid ${theme.color.border.default}`
-                })}
+                css={styles.column}
               >
                 <Text variant='heading' size='s' color='default'>
                   {messages.coinDetails}
@@ -165,9 +198,7 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
                 gap='l'
                 p='l'
                 flex='1'
-                css={(theme) => ({
-                  backgroundColor: theme.color.background.white
-                })}
+                css={styles.column}
               >
                 <Text variant='heading' size='s' color='default'>
                   {messages.yourOwnership}
