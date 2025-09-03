@@ -1,0 +1,1 @@
+export { ArtistCoinsLaunchpad } from './ArtistCoinsLaunchpad'

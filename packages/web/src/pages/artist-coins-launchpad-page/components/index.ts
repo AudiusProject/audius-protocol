@@ -1,0 +1,6 @@
+export { ArtistCoinsFeatureCard } from './ArtistCoinsFeatureCard'
+export { ArtistCoinsLaunchPanel } from './ArtistCoinsLaunchPanel'
+export { ArtistCoinsWalletSetupCard } from './ArtistCoinsWalletSetupCard'
+export { ArtistCoinsWhyCreateCard } from './ArtistCoinsWhyCreateCard'
+export { SetupPage } from './SetupPage'
+export { SplashScreen } from './SplashScreen'
