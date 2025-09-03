@@ -105,7 +105,12 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
                 <Text variant='heading' size='s' color='default'>
                   {values.coinName}
                 </Text>
-                <Text variant='body' size='l' color='subdued'>
+                <Text
+                  variant='body'
+                  size='l'
+                  color='subdued'
+                  css={{ textTransform: 'uppercase' }}
+                >
                   ${values.coinSymbol}
                 </Text>
               </Flex>

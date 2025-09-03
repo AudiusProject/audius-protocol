@@ -3,10 +3,10 @@ import { z } from 'zod'
 
 import type { SetupFormValues, SetupFormErrors } from './components/types'
 
-const MAX_COIN_SYMBOL_LENGTH = 10 // Coin symbols are typically much shorter than handles
+const MAX_COIN_SYMBOL_LENGTH = 10
 
 export const coinSymbolErrorMessages = {
-  badCharacterError: 'Please only use uppercase letters and numbers',
+  badCharacterError: 'Please only use letters and numbers',
   symbolTooLong: 'Coin symbol is too long (max 10 characters)',
   missingSymbolError: 'Please enter a coin symbol'
 }
@@ -15,7 +15,7 @@ export const coinSymbolSchema = z.object({
   coinSymbol: z
     .string({ required_error: coinSymbolErrorMessages.missingSymbolError })
     .max(MAX_COIN_SYMBOL_LENGTH, coinSymbolErrorMessages.symbolTooLong)
-    .regex(/^[A-Z0-9]*$/, coinSymbolErrorMessages.badCharacterError)
+    .regex(/^[A-Za-z0-9]*$/, coinSymbolErrorMessages.badCharacterError)
     .min(1, coinSymbolErrorMessages.missingSymbolError)
 })
 

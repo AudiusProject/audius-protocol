@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { IconArtistCoin } from '@audius/harmony'
-import { Formik } from 'formik'
+import { Formik, useFormikContext } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Header } from 'components/header/desktop/Header'
@@ -9,6 +9,7 @@ import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
 
 import { ReviewPage, SetupPage, SplashScreen } from './components'
+import type { SetupFormValues } from './components/types'
 import { Phase } from './constants'
 import { setupFormSchema } from './validation'
 
@@ -16,8 +17,9 @@ const messages = {
   title: 'Create Your Artist Coin'
 }
 
-export const ArtistCoinsLaunchpad = () => {
+const ArtistCoinsLaunchpadContent = () => {
   const [phase, setPhase] = useState(Phase.SPLASH)
+  const { resetForm } = useFormikContext()
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -35,6 +37,7 @@ export const ArtistCoinsLaunchpad = () => {
   }
 
   const handleSetupBack = () => {
+    resetForm()
     setPhase(Phase.SPLASH)
   }
 
@@ -45,12 +48,6 @@ export const ArtistCoinsLaunchpad = () => {
 
   const handleReviewBack = () => {
     setPhase(Phase.SETUP)
-  }
-
-  const handleFormSubmit = (values: any) => {
-    // TODO: Handle form submission across all steps
-    // For now, this represents completing the entire flow
-    alert('Coin created successfully!') // Temporary success indicator
   }
 
   let page
@@ -77,6 +74,18 @@ export const ArtistCoinsLaunchpad = () => {
   }
 
   return (
+    <Page
+      title={messages.title}
+      header={header}
+      contentClassName='artist-coins-launchpad-page'
+    >
+      {page}
+    </Page>
+  )
+}
+
+export const ArtistCoinsLaunchpad = () => {
+  return (
     <Formik
       initialValues={{
         coinName: '',
@@ -84,15 +93,19 @@ export const ArtistCoinsLaunchpad = () => {
         coinImage: null as File | null
       }}
       validationSchema={toFormikValidationSchema(setupFormSchema)}
-      onSubmit={handleFormSubmit}
+      onSubmit={(values: SetupFormValues) => {
+        // Convert coin symbol to uppercase before submission
+        // TODO: Use the processed values in actual submission logic
+        // const finalValues = {
+        //   ...values,
+        //   coinSymbol: values.coinSymbol.toUpperCase()
+        // }
+
+        // For now, this represents completing the entire flow
+        alert('Coin created successfully!') // Temporary success indicator
+      }}
     >
-      <Page
-        title={messages.title}
-        header={header}
-        contentClassName='artist-coins-launchpad-page'
-      >
-        {page}
-      </Page>
+      <ArtistCoinsLaunchpadContent />
     </Formik>
   )
 }
