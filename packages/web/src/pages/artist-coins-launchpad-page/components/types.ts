@@ -38,3 +38,14 @@ export type StepHeaderProps = {
   title: string
   description: string
 }
+
+export type ReviewPageProps = {
+  onContinue?: () => void
+  onBack?: () => void
+}
+
+export type TokenInfoRowProps = {
+  label: string
+  value: string
+  hasTooltip?: boolean
+}

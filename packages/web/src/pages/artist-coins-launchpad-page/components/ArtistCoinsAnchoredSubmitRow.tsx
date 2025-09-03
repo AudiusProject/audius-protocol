@@ -1,25 +1,39 @@
 import { useState } from 'react'
 
-import { Box, Button, Flex, IconError, Text, useTheme } from '@audius/harmony'
+import {
+  Box,
+  Button,
+  Flex,
+  IconArrowLeft,
+  IconError,
+  Text,
+  useTheme
+} from '@audius/harmony'
 
-const messages = {
+const defaultMessages = {
   continue: 'Continue',
   cancel: 'Cancel',
   fixErrors: 'Please complete all required fields to continue.'
 }
 
 type ArtistCoinsAnchoredSubmitRowProps = {
-  onCreate: () => void
+  onContinue: () => void
   onBack: () => void
   isValid?: boolean
   isLoading?: boolean
+  continueText?: string
+  cancelText?: string
+  backIcon?: boolean
 }
 
 export const ArtistCoinsAnchoredSubmitRow = ({
-  onCreate,
+  onContinue,
   onBack,
   isValid = true,
-  isLoading = false
+  isLoading = false,
+  continueText = defaultMessages.continue,
+  cancelText = defaultMessages.cancel,
+  backIcon = false
 }: ArtistCoinsAnchoredSubmitRowProps) => {
   const { color, spacing } = useTheme()
   const [showError, setShowError] = useState(false)
@@ -30,7 +44,7 @@ export const ArtistCoinsAnchoredSubmitRow = ({
       return
     }
     setShowError(false)
-    onCreate()
+    onContinue()
   }
 
   const handleBack = () => {
@@ -61,8 +75,9 @@ export const ArtistCoinsAnchoredSubmitRow = ({
             size='default'
             onClick={handleBack}
             disabled={isLoading}
+            iconLeft={backIcon ? IconArrowLeft : undefined}
           >
-            {messages.cancel}
+            {cancelText}
           </Button>
           <Button
             variant='primary'
@@ -70,14 +85,14 @@ export const ArtistCoinsAnchoredSubmitRow = ({
             onClick={handleCreate}
             disabled={isLoading}
           >
-            {messages.continue}
+            {continueText}
           </Button>
         </Flex>
         {showError && !isValid ? (
           <Flex alignItems='center' gap='xs'>
             <IconError color='danger' size='s' />
             <Text color='danger' size='s' variant='body'>
-              {messages.fixErrors}
+              {defaultMessages.fixErrors}
             </Text>
           </Flex>
         ) : null}

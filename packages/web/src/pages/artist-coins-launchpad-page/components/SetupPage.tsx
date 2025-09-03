@@ -41,8 +41,8 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
     }
   }, [imageUrl])
 
-  const handleCreate = () => {
-    handleSubmit()
+  const handleContinue = () => {
+    onContinue?.()
   }
 
   return (
@@ -93,7 +93,7 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
         </Paper>
       </Flex>
       <ArtistCoinsAnchoredSubmitRow
-        onCreate={handleCreate}
+        onContinue={handleContinue}
         onBack={handleBack}
       />
     </>

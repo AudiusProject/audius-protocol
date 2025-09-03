@@ -8,7 +8,7 @@ import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
 
-import { SetupPage, SplashScreen } from './components'
+import { ReviewPage, SetupPage, SplashScreen } from './components'
 import { Phase } from './constants'
 import { setupFormSchema } from './validation'
 
@@ -26,12 +26,25 @@ export const ArtistCoinsLaunchpad = () => {
 
   const header = <Header primary={messages.title} icon={IconArtistCoin} />
 
-  const handleContinue = () => {
+  const handleSplashContinue = () => {
     setPhase(Phase.SETUP)
   }
 
-  const handleBack = () => {
+  const handleSetupContinue = () => {
+    setPhase(Phase.REVIEW)
+  }
+
+  const handleSetupBack = () => {
     setPhase(Phase.SPLASH)
+  }
+
+  const handleReviewContinue = () => {
+    // TODO: Handle final submission/next phase
+    alert('Coin created successfully!')
+  }
+
+  const handleReviewBack = () => {
+    setPhase(Phase.SETUP)
   }
 
   const handleFormSubmit = (values: any) => {
@@ -43,13 +56,23 @@ export const ArtistCoinsLaunchpad = () => {
   let page
   switch (phase) {
     case Phase.SPLASH:
-      page = <SplashScreen onContinue={handleContinue} />
+      page = <SplashScreen onContinue={handleSplashContinue} />
       break
     case Phase.SETUP:
-      page = <SetupPage onContinue={handleContinue} onBack={handleBack} />
+      page = (
+        <SetupPage onContinue={handleSetupContinue} onBack={handleSetupBack} />
+      )
+      break
+    case Phase.REVIEW:
+      page = (
+        <ReviewPage
+          onContinue={handleReviewContinue}
+          onBack={handleReviewBack}
+        />
+      )
       break
     default:
-      page = <SplashScreen onContinue={handleContinue} />
+      page = <SplashScreen onContinue={handleSplashContinue} />
       break
   }
 
