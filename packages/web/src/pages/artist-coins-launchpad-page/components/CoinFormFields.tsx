@@ -1,24 +1,23 @@
 import { Flex, TextInput } from '@audius/harmony'
+import { useFormikContext } from 'formik'
 
-import type { CoinFormFieldsProps } from './types'
+import type { SetupFormValues } from './types'
 
 const messages = {
   coinName: 'Coin Name',
   coinSymbol: 'Coin Symbol'
 }
 
-export const CoinFormFields = ({
-  values,
-  errors,
-  touched,
-  onChange,
-  onBlur
-}: CoinFormFieldsProps) => {
-  // For now, we'll use immediate validation instead of debounced
-  // since we're not in a Formik context
+export const CoinFormFields = () => {
+  const { values, errors, touched, handleChange, handleBlur, validateField } =
+    useFormikContext<SetupFormValues>()
+
   const handleCoinSymbolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e)
-    // Validation will happen through Formik's built-in validation
+    handleChange(e)
+    // Debounced validation for better UX
+    if (e.target.value) {
+      setTimeout(() => validateField('coinSymbol'), 1000)
+    }
   }
 
   return (
@@ -28,8 +27,8 @@ export const CoinFormFields = ({
           label={messages.coinName}
           name='coinName'
           value={values.coinName}
-          onChange={onChange}
-          onBlur={onBlur}
+          onChange={handleChange}
+          onBlur={handleBlur}
           error={!!(touched.coinName && errors.coinName)}
           helperText={touched.coinName ? errors.coinName : undefined}
           maxLength={30}
@@ -41,7 +40,7 @@ export const CoinFormFields = ({
           name='coinSymbol'
           value={values.coinSymbol}
           onChange={handleCoinSymbolChange}
-          onBlur={onBlur}
+          onBlur={handleBlur}
           error={!!(touched.coinSymbol && errors.coinSymbol)}
           helperText={touched.coinSymbol ? errors.coinSymbol : undefined}
           startAdornmentText='$'

@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Flex, Paper } from '@audius/harmony'
-import { useFormik } from 'formik'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
+import { useFormikContext } from 'formik'
 
 import { AMOUNT_OF_STEPS, MAX_IMAGE_SIZE } from '../constants'
-import { setupFormSchema } from '../validation'
 
 import { ArtistCoinsAnchoredSubmitRow } from './ArtistCoinsAnchoredSubmitRow'
 import { CoinFormFields } from './CoinFormFields'
 import { ImageUploadArea } from './ImageUploadArea'
 import { StepHeader } from './StepHeader'
-import type { SetupPageProps } from './types'
+import type { SetupFormValues, SetupPageProps } from './types'
 
 const messages = {
   stepInfo: `STEP 1 of ${AMOUNT_OF_STEPS}`,
@@ -23,19 +21,8 @@ const messages = {
 export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
-
-  const formik = useFormik({
-    initialValues: {
-      coinName: '',
-      coinSymbol: '',
-      coinImage: null as File | null
-    },
-    validationSchema: toFormikValidationSchema(setupFormSchema),
-    onSubmit: (_values) => {
-      // TODO: Implement coin creation logic with values
-      onContinue?.()
-    }
-  })
+  const { handleSubmit, setFieldValue, values } =
+    useFormikContext<SetupFormValues>()
 
   const handleBack = () => {
     onBack?.()
@@ -43,24 +30,6 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
 
   const handleFileSelect = () => {
     fileInputRef.current?.click()
-  }
-
-  const handleFileInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      // Check file size (15MB limit)
-      if (file.size <= MAX_IMAGE_SIZE) {
-        formik.setFieldValue('coinImage', file)
-        // Create blob URL for preview
-        const url = URL.createObjectURL(file)
-        setImageUrl(url)
-      } else {
-        // TODO: Show error message to user
-        // File size exceeds 15MB limit
-      }
-    }
   }
 
   // Clean up blob URL on unmount or when image changes
@@ -73,7 +42,7 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
   }, [imageUrl])
 
   const handleCreate = () => {
-    formik.handleSubmit()
+    handleSubmit()
   }
 
   return (
@@ -92,22 +61,32 @@ export const SetupPage = ({ onContinue, onBack }: SetupPageProps) => {
             description={messages.description}
           />
 
-          <form onSubmit={formik.handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <Flex direction='column' gap='xl'>
-              <CoinFormFields
-                values={formik.values}
-                errors={formik.errors}
-                touched={formik.touched}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
+              <CoinFormFields />
 
               <ImageUploadArea
                 fileInputRef={fileInputRef}
-                coinImage={formik.values.coinImage}
+                coinImage={values.coinImage}
                 imageUrl={imageUrl}
                 onFileSelect={handleFileSelect}
-                onFileInputChange={handleFileInputChange}
+                onFileInputChange={(
+                  event: React.ChangeEvent<HTMLInputElement>
+                ) => {
+                  const file = event.target.files?.[0]
+                  if (file) {
+                    // Check file size (15MB limit)
+                    if (file.size <= MAX_IMAGE_SIZE) {
+                      setFieldValue('coinImage', file)
+                      // Create blob URL for preview
+                      const url = URL.createObjectURL(file)
+                      setImageUrl(url)
+                    } else {
+                      // TODO: Show error message to user
+                      // File size exceeds 15MB limit
+                    }
+                  }
+                }}
               />
             </Flex>
           </form>
