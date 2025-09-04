@@ -14,14 +14,19 @@ import { config } from '../../config'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
+import { isSolanaAddress } from '~/utils/addressUtils'
+
 interface LaunchCoinRequestBody {
   name: string
   symbol: string
   walletPublicKey: string
+  description: string
   initialBuyAmountAudio?: number
-  description?: string
-  website?: string
 }
+
+const AUDIO_DECIMALS = 1e8
+
+const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
 
 export const launchCoin = async (
   req: Request<unknown, unknown, LaunchCoinRequestBody> & {
@@ -36,7 +41,6 @@ export const launchCoin = async (
       name,
       symbol,
       description,
-      website,
       walletPublicKey: walletPublicKeyStr,
       initialBuyAmountAudio
     } = req.body
@@ -47,15 +51,25 @@ export const launchCoin = async (
       throw new Error('Image file is required.')
     }
 
-    if (!name || !symbol || !file) {
+    if (!name || !symbol || !file || !description) {
       throw new Error(
-        'Invalid metadata arguments. Name, symbol, and image are all required.'
+        'Invalid metadata arguments. Name, symbol, image, and description are all required.'
       )
     }
 
     if (!walletPublicKeyStr) {
       throw new Error(
         'Invalid wallet public key. Wallet public key is required.'
+      )
+    }
+
+    if (
+      typeof initialBuyAmountAudio !== 'number' ||
+      initialBuyAmountAudio <= 0 ||
+      isNaN(initialBuyAmountAudio)
+    ) {
+      throw new Error(
+        'Invalid initialBuyAmountAudio. Initial buy amount must be a number > 0.'
       )
     }
 
@@ -86,7 +100,7 @@ export const launchCoin = async (
       symbol,
       description,
       image: imageUri,
-      external_url: website,
+      external_url: AUDIUS_COIN_URL(symbol),
       attributes: [],
       isMutable: false
     }
@@ -107,7 +121,7 @@ export const launchCoin = async (
         ? {
             buyer: walletPublicKey,
             receiver: walletPublicKey,
-            buyAmount: new BN(initialBuyAmountAudio * 1e8), // Multiply by 1 $AUDIO worth
+            buyAmount: new BN(initialBuyAmountAudio * AUDIO_DECIMALS), // Multiply by 1 $AUDIO worth
             minimumAmountOut: new BN(0), // No slippage protection for initial buy
             referralTokenAccount: null // No referral for creator's initial buy
           }

@@ -18,7 +18,7 @@ import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { location } from './routes/instruction/location'
-import { launchCoin } from './routes/launchpad/launchCoin'
+import { launchCoin } from './routes/launchpad/launch_coin'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
 
@@ -41,7 +41,7 @@ const main = async () => {
   app.get('/solana/feePayer', feePayer)
   app.get('/solana/instruction/location', location)
   const upload = multer({ storage: multer.memoryStorage() })
-  app.post('/solana/launchCoin', upload.single('image'), launchCoin)
+  app.post('/solana/launch_coin', upload.single('image'), launchCoin)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 
