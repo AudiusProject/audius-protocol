@@ -111,7 +111,12 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 <Text
                   variant='label'
                   size='xs'
-                  color='staticWhite'
+                  css={(theme) => ({
+                    color:
+                      theme.type === 'day'
+                        ? theme.color.text.staticWhite
+                        : theme.color.text.white
+                  })}
                   textTransform='uppercase'
                 >
                   {messages.optional}
