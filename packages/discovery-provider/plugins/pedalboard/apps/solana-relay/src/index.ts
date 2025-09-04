@@ -1,6 +1,7 @@
 import { json } from 'body-parser'
 import cors from 'cors'
 import express from 'express'
+import multer from 'multer'
 
 import { config } from './config'
 import { logger } from './logger'
@@ -17,6 +18,7 @@ import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { location } from './routes/instruction/location'
+import { launchCoin } from './routes/launchpad/launchCoin'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
 
@@ -38,6 +40,8 @@ const main = async () => {
   app.post('/solana/cache', cache)
   app.get('/solana/feePayer', feePayer)
   app.get('/solana/instruction/location', location)
+  const upload = multer({ storage: multer.memoryStorage() })
+  app.post('/solana/launchCoin', upload.single('image'), launchCoin)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 
