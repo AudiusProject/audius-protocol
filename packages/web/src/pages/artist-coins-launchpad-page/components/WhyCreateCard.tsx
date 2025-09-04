@@ -20,12 +20,10 @@ export const FeatureCard = ({
       border='default'
       borderRadius='m'
     >
-      <Flex alignItems='center' gap='s'>
-        <Artwork src={imageSrc} w='xl' h='xl' borderWidth={0} />
-        <Text variant='title' color='default' size='m'>
-          {title}
-        </Text>
-      </Flex>
+      <Artwork src={imageSrc} w='xl' h='xl' borderWidth={0} />
+      <Text variant='title' color='default' size='m'>
+        {title}
+      </Text>
       <Text variant='body' color='subdued' size='m'>
         {description}
       </Text>

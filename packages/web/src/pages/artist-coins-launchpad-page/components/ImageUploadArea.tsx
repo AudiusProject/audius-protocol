@@ -39,6 +39,19 @@ export const ImageUploadArea = ({
 }: ImageUploadAreaProps) => {
   const theme = useTheme()
 
+  const borderContainerStyles = {
+    border: `1px dashed ${theme.color.border.default}`,
+    borderRadius: theme.cornerRadius.m,
+    background: theme.color.special.white,
+    cursor: isProcessing ? 'default' : 'pointer',
+    transition: `border-color ${theme.motion.hover}`,
+    ':hover': {
+      borderColor: isProcessing
+        ? theme.color.border.default
+        : theme.color.border.strong
+    }
+  }
+
   return (
     <>
       {/* Hidden file input */}
@@ -59,6 +72,7 @@ export const ImageUploadArea = ({
           gap='l'
           p='xl'
           w='100%'
+          css={borderContainerStyles}
         >
           <Artwork
             src={imageUrl}
@@ -82,18 +96,7 @@ export const ImageUploadArea = ({
       ) : (
         /* Empty State or Processing State - Show upload area or processing skeleton */
         <Flex
-          css={{
-            border: `2px dashed ${theme.color.neutral.n150}`,
-            borderRadius: theme.cornerRadius.m,
-            background: theme.color.special.white,
-            cursor: isProcessing ? 'default' : 'pointer',
-            transition: `border-color ${theme.motion.hover}`,
-            ':hover': {
-              borderColor: isProcessing
-                ? theme.color.neutral.n150
-                : theme.color.neutral.n800
-            }
-          }}
+          css={borderContainerStyles}
           onClick={isProcessing ? undefined : onFileSelect}
           direction='column'
           alignItems='center'

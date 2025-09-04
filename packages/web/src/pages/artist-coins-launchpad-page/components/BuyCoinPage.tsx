@@ -10,8 +10,7 @@ import {
   IconLogoCircleSOL,
   Paper,
   Text,
-  TokenAmountInput,
-  useTheme
+  TokenAmountInput
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
@@ -44,7 +43,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue } = useFormikContext<SetupFormValues>()
   const imageUrl = useFormImageUrl(values.coinImage)
-  const { spacing } = useTheme()
 
   const { data: connectedWallets } = useConnectedWallets()
 
@@ -139,7 +137,9 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                   <Flex
                     alignItems='center'
                     gap='xs'
-                    p='xs'
+                    pl='xs'
+                    pr='s'
+                    pv='xs'
                     backgroundColor='surface2'
                     border='default'
                     borderRadius='xl'
@@ -147,14 +147,19 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                     <Flex
                       alignItems='center'
                       justifyContent='center'
-                      w={spacing.l}
-                      h={spacing.l}
+                      w='xl'
+                      h='xl'
                       borderRadius='circle'
                       backgroundColor='accent'
                     >
-                      <IconLogoCircleSOL size='s' />
+                      <IconLogoCircleSOL size='l' />
                     </Flex>
-                    <Text variant='body' size='m' color='default'>
+                    <Text
+                      variant='title'
+                      size='m'
+                      strength='weak'
+                      color='default'
+                    >
                       {formattedWalletAddress}
                     </Text>
                   </Flex>

@@ -25,7 +25,7 @@ const messages = {
 
 const LaunchpadPageContent = () => {
   const [phase, setPhase] = useState(Phase.SPLASH)
-  const { resetForm } = useFormikContext()
+  const { resetForm, validateForm } = useFormikContext()
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -67,8 +67,9 @@ const LaunchpadPageContent = () => {
     setPhase(Phase.REVIEW)
   }
 
-  const handleSetupBack = () => {
+  const handleSetupBack = async () => {
     resetForm()
+    await validateForm()
     setPhase(Phase.SPLASH)
   }
 
@@ -143,7 +144,6 @@ export const LaunchpadPage = () => {
       validationSchema={toFormikValidationSchema(setupFormSchema)}
       validateOnMount={true}
       validateOnChange={true}
-      validateDebounceMs={1000}
       onSubmit={(_values: SetupFormValues) => {
         // Convert coin symbol to uppercase before submission
         // TODO: Use the processed values in actual submission logic
