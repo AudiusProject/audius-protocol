@@ -35,7 +35,7 @@ const coinNameSchema = z.object({
 
 const coinImageSchema = z.object({
   coinImage: z
-    .instanceof(File, { message: coinImageErrorMessages.missingImageError })
+    .union([z.null(), z.instanceof(File), z.instanceof(Blob)])
     .refine((file) => file !== null, coinImageErrorMessages.missingImageError)
 })
 

@@ -8,6 +8,7 @@ import {
 } from '@audius/harmony'
 
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
+import zIndex from 'utils/zIndex'
 
 type ImageUploadAreaProps = {
   fileInputRef: React.RefObject<HTMLInputElement>
@@ -66,6 +67,7 @@ export const ImageUploadArea = ({
             h={IMAGE_SIZE}
             borderWidth={0}
             isLoading={isProcessing}
+            css={{ position: 'relative', zIndex: zIndex.SVG_BUTTON_ICONS }}
           />
           <Button
             variant='secondary'
@@ -107,6 +109,7 @@ export const ImageUploadArea = ({
               h={IMAGE_SIZE}
               borderWidth={0}
               isLoading={true}
+              css={{ position: 'relative', zIndex: zIndex.SVG_BUTTON_ICONS }}
             />
           ) : (
             <>

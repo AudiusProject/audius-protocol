@@ -10,6 +10,8 @@ import {
   useTheme
 } from '@audius/harmony'
 
+import zIndex from 'utils/zIndex'
+
 const defaultMessages = {
   continue: 'Continue',
   cancel: 'Cancel',
@@ -62,7 +64,8 @@ export const ArtistCoinsSubmitRow = ({
           width: 'calc(100% - var(--nav-width))',
           padding: spacing.unit3,
           background: color.background.surface1,
-          borderTop: `1px solid ${color.border.strong}`
+          borderTop: `1px solid ${color.border.strong}`,
+          zIndex: zIndex.NAVIGATOR_POPUP
         }}
         direction='column'
         alignItems='center'
