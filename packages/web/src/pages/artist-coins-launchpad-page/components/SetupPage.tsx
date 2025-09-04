@@ -59,7 +59,7 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
 
   const handleDropRejected = (files: File[]) => {
     // TODO: Show error message for rejected files (wrong type, too large, etc.)
-    console.log('File rejected:', files)
+    console.error('File rejected:', files)
   }
 
   const processFile = async (file: File) => {
