@@ -46,25 +46,41 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
   ) => {
     const file = event.target.files?.[0]
     if (file) {
-      // Check file size (15MB limit)
-      if (file.size <= MAX_IMAGE_SIZE) {
-        setIsProcessingImage(true)
-        try {
-          // Process the image with resizeImage (converts to JPEG, resizes to 1000x1000)
-          const processedFile = await resizeImage(file, 1000, true)
-          setFieldValue('coinImage', processedFile)
-          // Hook will automatically create blob URL from processed file
-        } catch (error) {
-          console.error('Error processing image:', error)
-          // TODO: Show error message to user
-          // Could not process image
-        } finally {
-          setIsProcessingImage(false)
-        }
-      } else {
+      await processFile(file)
+    }
+  }
+
+  const handleDropAccepted = async (files: File[]) => {
+    const file = files[0]
+    if (file) {
+      await processFile(file)
+    }
+  }
+
+  const handleDropRejected = (files: File[]) => {
+    // TODO: Show error message for rejected files (wrong type, too large, etc.)
+    console.log('File rejected:', files)
+  }
+
+  const processFile = async (file: File) => {
+    // Check file size (15MB limit)
+    if (file.size <= MAX_IMAGE_SIZE) {
+      setIsProcessingImage(true)
+      try {
+        // Process the image with resizeImage (converts to JPEG, resizes to 1000x1000)
+        const processedFile = await resizeImage(file, 1000, true)
+        setFieldValue('coinImage', processedFile)
+        // Hook will automatically create blob URL from processed file
+      } catch (error) {
+        console.error('Error processing image:', error)
         // TODO: Show error message to user
-        // File size exceeds 15MB limit
+        // Could not process image
+      } finally {
+        setIsProcessingImage(false)
       }
+    } else {
+      // TODO: Show error message to user
+      // File size exceeds 15MB limit
     }
   }
 
@@ -94,6 +110,8 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
                 imageUrl={imageUrl}
                 onFileSelect={handleFileSelect}
                 onFileInputChange={handleFileInputChange}
+                onDropAccepted={handleDropAccepted}
+                onDropRejected={handleDropRejected}
                 error={
                   touched.coinImage && errors.coinImage
                     ? errors.coinImage
