@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
  */
 export interface Coin {
     /**
+     * The coin name
+     * @type {string}
+     * @memberof Coin
+     */
+    name: string;
+    /**
      * The coin symbol
      * @type {string}
      * @memberof Coin
@@ -75,6 +81,7 @@ export interface Coin {
  */
 export function instanceOfCoin(value: object): value is Coin {
     let isInstance = true;
+    isInstance = isInstance && "name" in value && value["name"] !== undefined;
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
     isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
     isInstance = isInstance && "ownerId" in value && value["ownerId"] !== undefined;
@@ -93,6 +100,7 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
     }
     return {
         
+        'name': json['name'],
         'ticker': !exists(json, 'ticker') ? undefined : json['ticker'],
         'mint': json['mint'],
         'decimals': json['decimals'],
@@ -113,6 +121,7 @@ export function CoinToJSON(value?: Coin | null): any {
     }
     return {
         
+        'name': value.name,
         'ticker': value.ticker,
         'mint': value.mint,
         'decimals': value.decimals,

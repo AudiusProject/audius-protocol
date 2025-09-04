@@ -25,13 +25,13 @@ export interface ClaimRewardsResponseDataInner {
      * @type {string}
      * @memberof ClaimRewardsResponseDataInner
      */
-    challengeId?: string;
+    challengeId: string;
     /**
      * The challenge specifier
      * @type {string}
      * @memberof ClaimRewardsResponseDataInner
      */
-    specifier?: string;
+    specifier: string;
     /**
      * The reward amount
      * @type {string}
@@ -57,6 +57,8 @@ export interface ClaimRewardsResponseDataInner {
  */
 export function instanceOfClaimRewardsResponseDataInner(value: object): value is ClaimRewardsResponseDataInner {
     let isInstance = true;
+    isInstance = isInstance && "challengeId" in value && value["challengeId"] !== undefined;
+    isInstance = isInstance && "specifier" in value && value["specifier"] !== undefined;
 
     return isInstance;
 }
@@ -71,8 +73,8 @@ export function ClaimRewardsResponseDataInnerFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'challengeId': !exists(json, 'challengeId') ? undefined : json['challengeId'],
-        'specifier': !exists(json, 'specifier') ? undefined : json['specifier'],
+        'challengeId': json['challengeId'],
+        'specifier': json['specifier'],
         'amount': !exists(json, 'amount') ? undefined : json['amount'],
         'signatures': !exists(json, 'signatures') ? undefined : json['signatures'],
         'error': !exists(json, 'error') ? undefined : json['error'],

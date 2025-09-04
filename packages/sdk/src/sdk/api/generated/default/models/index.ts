@@ -16,6 +16,7 @@ export * from './ClaimRewardsResponse';
 export * from './ClaimRewardsResponseDataInner';
 export * from './Coin';
 export * from './CoinInsights';
+export * from './CoinInsightsDynamicBondingCurve';
 export * from './CoinInsightsExtensions';
 export * from './CoinInsightsResponse';
 export * from './CoinMember';

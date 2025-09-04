@@ -30,6 +30,7 @@ models/ClaimRewardsResponse.ts
 models/ClaimRewardsResponseDataInner.ts
 models/Coin.ts
 models/CoinInsights.ts
+models/CoinInsightsDynamicBondingCurve.ts
 models/CoinInsightsExtensions.ts
 models/CoinInsightsResponse.ts
 models/CoinMember.ts
