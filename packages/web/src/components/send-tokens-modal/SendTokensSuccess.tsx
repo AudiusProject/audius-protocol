@@ -22,7 +22,7 @@ interface SendTokensSuccessProps {
   mint: string
   amount: bigint
   destinationAddress: string
-  onDone: () => void
+  signature: string
   onClose: () => void
 }
 
@@ -38,11 +38,10 @@ const SendTokensSuccess = ({
   mint,
   amount,
   destinationAddress,
-  onDone,
+  signature,
   onClose
 }: SendTokensSuccessProps) => {
   const { isMobile } = useMedia()
-  // Get token data and balance using the same hooks as ReceiveTokensModal
   const { data: coin } = useArtistCoin({ mint })
   const { data: tokenBalance } = useTokenBalance({ mint })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
@@ -124,10 +123,7 @@ const SendTokensSuccess = ({
           variant='subdued'
           css={{ alignSelf: 'flex-start' }}
           onClick={() => {
-            window.open(
-              route.solanaExplorerAddress(destinationAddress),
-              '_blank'
-            )
+            window.open(route.solanaExplorerAddress(signature), '_blank')
           }}
           iconRight={IconExternalLink}
         >
@@ -135,7 +131,6 @@ const SendTokensSuccess = ({
         </PlainButton>
       </Flex>
 
-      {/* Success Message */}
       <Flex gap='s' alignItems='center'>
         <CompletionCheck value='complete' />
         <Text variant='heading' size='s' color='default'>
@@ -143,8 +138,7 @@ const SendTokensSuccess = ({
         </Text>
       </Flex>
 
-      {/* Action Button */}
-      <Button variant='primary' onClick={onDone} fullWidth>
+      <Button variant='primary' onClick={onClose} fullWidth>
         {messages.done}
       </Button>
     </Flex>

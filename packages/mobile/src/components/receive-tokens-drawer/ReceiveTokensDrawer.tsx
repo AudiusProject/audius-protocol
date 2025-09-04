@@ -5,6 +5,7 @@ import {
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
 import { useFormattedTokenBalance, useUserbank } from '@audius/common/hooks'
+import { walletMessages } from '@audius/common/messages'
 import { useReceiveTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -19,21 +20,13 @@ import {
   Hint,
   TextLink
 } from '@audius/harmony-native'
-import { QRCodeComponent, TokenIcon } from 'app/components/core'
+import { QRCodeComponent, TokenIcon, BalanceSection } from 'app/components/core'
 import { AddressTile } from 'app/components/core/AddressTile'
 import Drawer from 'app/components/drawer/Drawer'
 import Skeleton from 'app/components/skeleton'
 import { useToast } from 'app/hooks/useToast'
 
 import { DrawerHeader } from '../drawer/DrawerHeader'
-
-const messages = {
-  receiveTokensTitle: 'Receive',
-  receiveTokensExplainer: 'Send tokens to your built in Audius wallet.',
-  receiveTokensDisclaimer: 'Use caution to avoid errors and lost funds.',
-  receiveTokensLearnMore: 'Learn More',
-  receiveTokensCopy: 'Copy Wallet Address'
-}
 
 const QR_CODE_SIZE = 160
 
@@ -43,7 +36,6 @@ export const ReceiveTokensDrawer = () => {
   const { mint } = data ?? {}
 
   const { data: coin } = useArtistCoin({ mint: mint ?? '' })
-  const { tokenBalance } = useFormattedTokenBalance(mint ?? '')
   const { userBankAddress } = useUserbank(mint)
 
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
@@ -57,8 +49,11 @@ export const ReceiveTokensDrawer = () => {
 
   const renderHeader = () => {
     return (
-      <Flex pv='l' ph='xl' gap='m'>
-        <DrawerHeader onClose={onClose} title={messages.receiveTokensTitle} />
+      <Flex pv='l' ph='xl' gap='m' mb='m'>
+        <DrawerHeader
+          onClose={onClose}
+          title={walletMessages.receiveTokensTitle}
+        />
         <Divider />
       </Flex>
     )
@@ -66,26 +61,8 @@ export const ReceiveTokensDrawer = () => {
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} drawerHeader={renderHeader}>
-      <Flex direction='column' gap='xl' p='xl'>
-        {/* Token Details Section */}
-        {tokenBalance ? (
-          <Flex row gap='s' alignItems='center' h='64'>
-            <TokenIcon logoURI={coin?.logoUri} size={64} />
-            <Flex gap='xs'>
-              <Flex>
-                <Text variant='heading' size='l'>
-                  {tokenBalance.toLocaleString('en-US', {
-                    maximumFractionDigits: 2,
-                    minimumFractionDigits: 0
-                  })}
-                </Text>
-                <Text variant='heading' size='s' color='subdued'>
-                  {tokenInfo?.symbol}
-                </Text>
-              </Flex>
-            </Flex>
-          </Flex>
-        ) : null}
+      <Flex direction='column' gap='xl' ph='xl'>
+        <BalanceSection mint={mint} />
 
         {/* QR Code and Explainer Section */}
         <Flex row gap='m' alignItems='center'>
@@ -110,7 +87,7 @@ export const ReceiveTokensDrawer = () => {
           </Flex>
           <Flex gap='xl' justifyContent='center' flex={1}>
             <Text variant='body' size='l'>
-              {messages.receiveTokensExplainer}
+              {walletMessages.receiveTokensExplainer}
             </Text>
           </Flex>
         </Flex>
@@ -127,16 +104,23 @@ export const ReceiveTokensDrawer = () => {
           icon={IconError}
           actions={
             <TextLink url={route.AUDIUS_TOKENS_HELP_LINK}>
-              <Text color='accent'>{messages.receiveTokensLearnMore}</Text>
+              <Text color='accent'>
+                {walletMessages.receiveTokensLearnMore}
+              </Text>
             </TextLink>
           }
         >
-          {messages.receiveTokensDisclaimer}
+          {walletMessages.receiveTokensDisclaimer}
         </Hint>
 
         {/* Copy Button */}
-        <Button variant='primary' fullWidth onPress={handleCopyAddress}>
-          {messages.receiveTokensCopy}
+        <Button
+          variant='primary'
+          fullWidth
+          onPress={handleCopyAddress}
+          disabled={!userBankAddress}
+        >
+          {walletMessages.receiveTokensCopy}
         </Button>
       </Flex>
     </Drawer>

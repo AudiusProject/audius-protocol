@@ -17,6 +17,7 @@ import {
 } from '@audius/harmony'
 
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
+import { walletMessages } from '@audius/common/messages'
 
 interface SendTokensConfirmationProps {
   mint: string
@@ -114,20 +115,16 @@ const SendTokensConfirmation = ({
         <Text variant='heading' size='s' color='subdued'>
           {messages.amountToSend}
         </Text>
-        <Text
-          variant='heading'
-          size='s'
-          color='default'
-          css={{ wordBreak: 'break-all' }}
-        >
-          -{formatAmount(amount)} {tokenInfo.symbol}
+        <Text variant='heading' size='s' css={{ wordBreak: 'break-all' }}>
+          {walletMessages.minus}
+          {formatAmount(amount)} {tokenInfo.symbol}
         </Text>
       </Flex>
 
       <Divider orientation='horizontal' />
 
       {/* Transfer Info */}
-      <Flex direction='column' gap='m'>
+      <Flex column gap='m'>
         <Text variant='heading' size='s' color='subdued'>
           {messages.destinationAddress}
         </Text>
@@ -164,7 +161,7 @@ const SendTokensConfirmation = ({
       </Hint>
 
       {/* Action Buttons */}
-      <Flex gap='s' direction='row'>
+      <Flex gap='s' row>
         <Button variant='secondary' onClick={onBack} fullWidth>
           {messages.back}
         </Button>
