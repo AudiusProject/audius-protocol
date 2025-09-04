@@ -18,7 +18,7 @@ interface LaunchCoinRequestBody {
   name: string
   symbol: string
   walletPublicKey: string
-  initialBuyAmount?: number
+  initialBuyAmountAudio?: number
   description?: string
   website?: string
 }
@@ -38,7 +38,7 @@ export const launchCoin = async (
       description,
       website,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmount
+      initialBuyAmountAudio
     } = req.body
 
     // file is the image attached via multer middleware (sent from client as a multipart/form-data request)
@@ -77,7 +77,7 @@ export const launchCoin = async (
     umi.use(signerIdentity(signer))
 
     const umiImageFile = createGenericFile(file.buffer, '', {
-      tags: [{ name: 'Content-Type', value: 'image/png' }]
+      tags: [{ name: 'Content-Type', value: 'image/jpeg' }]
     })
     const imageUris = await umi.uploader.upload([umiImageFile])
     const imageUri = imageUris[0]
@@ -103,11 +103,11 @@ export const launchCoin = async (
         baseMint: mintKeypair.publicKey,
         payer: walletPublicKey
       },
-      firstBuyParam: initialBuyAmount
+      firstBuyParam: initialBuyAmountAudio
         ? {
             buyer: walletPublicKey,
             receiver: walletPublicKey,
-            buyAmount: new BN(initialBuyAmount * 1e8), // Multiply by 1 $AUDIO worth
+            buyAmount: new BN(initialBuyAmountAudio * 1e8), // Multiply by 1 $AUDIO worth
             minimumAmountOut: new BN(0), // No slippage protection for initial buy
             referralTokenAccount: null // No referral for creator's initial buy
           }
