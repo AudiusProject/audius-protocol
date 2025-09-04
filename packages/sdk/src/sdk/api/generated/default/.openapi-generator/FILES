@@ -48,6 +48,9 @@ models/CommentResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
+models/CreateCoinRequest.ts
+models/CreateCoinResponse.ts
+models/CreateCoinResponseData.ts
 models/DashboardWalletUser.ts
 models/DashboardWalletUsersResponse.ts
 models/DecodedUserToken.ts
