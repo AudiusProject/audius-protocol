@@ -4,11 +4,7 @@ import gift from 'assets/fonts/emojis/gift.png'
 import globe from 'assets/fonts/emojis/globe.png'
 import moneyWithWingsEmoji from 'assets/fonts/emojis/money-with-wings.png'
 
-import {
-  ArtistCoinsLaunchPanel,
-  ArtistCoinsWalletSetupCard,
-  ArtistCoinsWhyCreateCard
-} from './index'
+import { LaunchPanel, WalletSetupCard, WhyCreateCard } from './index'
 
 const messages = {
   whyCreateTitle: 'Why Create a Coin?',
@@ -41,8 +37,8 @@ const features = [
   }
 ]
 
-const LEFT_SECTION_WIDTH = '716px'
-const RIGHT_SECTION_WIDTH = '348px'
+// Using flex ratios: 2 for left section, 1 for right section (2:1 ratio)
+// Based on Figma design with 1080px total width constraint
 
 const useStyles = makeResponsiveStyles(({ media, theme }) => {
   const hasEnoughSpaceForTwoColumns = media.matchesQuery(`(min-width: 1440px)`)
@@ -53,9 +49,7 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => {
         display: 'flex',
         gap: theme.spacing.l,
         width: '100%',
-        maxWidth: hasEnoughSpaceForTwoColumns
-          ? `calc(${LEFT_SECTION_WIDTH} + ${RIGHT_SECTION_WIDTH} + ${theme.spacing.l})`
-          : '100%',
+        maxWidth: hasEnoughSpaceForTwoColumns ? '1080px' : '100%',
         margin: '0 auto',
         flexDirection: hasEnoughSpaceForTwoColumns ? 'row' : 'column',
         paddingBottom: hasEnoughSpaceForTwoColumns ? 0 : theme.spacing.m
@@ -63,10 +57,8 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => {
     },
     leftSection: {
       base: {
-        width: hasEnoughSpaceForTwoColumns ? LEFT_SECTION_WIDTH : '100%',
-        maxWidth: hasEnoughSpaceForTwoColumns ? LEFT_SECTION_WIDTH : '100%',
+        flex: hasEnoughSpaceForTwoColumns ? 2 : '1 1 auto',
         minWidth: 0,
-        flex: hasEnoughSpaceForTwoColumns ? '0 0 auto' : '1 1 auto',
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing.m,
@@ -75,10 +67,8 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => {
     },
     rightSection: {
       base: {
-        width: hasEnoughSpaceForTwoColumns ? RIGHT_SECTION_WIDTH : '100%',
-        maxWidth: hasEnoughSpaceForTwoColumns ? RIGHT_SECTION_WIDTH : '100%',
+        flex: hasEnoughSpaceForTwoColumns ? 1 : '1 1 auto',
         minWidth: 0,
-        flex: hasEnoughSpaceForTwoColumns ? '0 0 auto' : '1 1 auto',
         display: 'flex',
         flexDirection: 'column',
         gap: theme.spacing.m,
@@ -104,15 +94,15 @@ export const SplashScreen = ({ onContinue }: SplashScreenProps) => {
   return (
     <Flex css={styles.container}>
       <Flex css={styles.leftSection}>
-        <ArtistCoinsWhyCreateCard
+        <WhyCreateCard
           title={messages.whyCreateTitle}
           description={messages.whyCreateDescription}
           features={features}
         />
-        <ArtistCoinsWalletSetupCard />
+        <WalletSetupCard />
       </Flex>
       <Flex css={styles.rightSection}>
-        <ArtistCoinsLaunchPanel onContinue={onContinue} />
+        <LaunchPanel onContinue={onContinue} />
       </Flex>
     </Flex>
   )

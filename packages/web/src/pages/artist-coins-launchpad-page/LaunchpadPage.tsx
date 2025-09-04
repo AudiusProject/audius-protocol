@@ -23,7 +23,7 @@ const messages = {
   title: 'Create Your Artist Coin'
 }
 
-const ArtistCoinsLaunchpadContent = () => {
+const LaunchpadPageContent = () => {
   const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm } = useFormikContext()
 
@@ -89,35 +89,34 @@ const ArtistCoinsLaunchpadContent = () => {
     setPhase(Phase.REVIEW)
   }
 
-  let page
-  switch (phase) {
-    case Phase.SPLASH:
-      page = <SplashScreen onContinue={handleSplashContinue} />
-      break
-    case Phase.SETUP:
-      page = (
-        <SetupPage onContinue={handleSetupContinue} onBack={handleSetupBack} />
-      )
-      break
-    case Phase.REVIEW:
-      page = (
-        <ReviewPage
-          onContinue={handleReviewContinue}
-          onBack={handleReviewBack}
-        />
-      )
-      break
-    case Phase.BUY_COIN:
-      page = (
-        <BuyCoinPage
-          onContinue={handleBuyCoinContinue}
-          onBack={handleBuyCoinBack}
-        />
-      )
-      break
-    default:
-      page = <SplashScreen onContinue={handleSplashContinue} />
-      break
+  const renderCurrentPage = () => {
+    switch (phase) {
+      case Phase.SPLASH:
+        return <SplashScreen onContinue={handleSplashContinue} />
+      case Phase.SETUP:
+        return (
+          <SetupPage
+            onContinue={handleSetupContinue}
+            onBack={handleSetupBack}
+          />
+        )
+      case Phase.REVIEW:
+        return (
+          <ReviewPage
+            onContinue={handleReviewContinue}
+            onBack={handleReviewBack}
+          />
+        )
+      case Phase.BUY_COIN:
+        return (
+          <BuyCoinPage
+            onContinue={handleBuyCoinContinue}
+            onBack={handleBuyCoinBack}
+          />
+        )
+      default:
+        return <SplashScreen onContinue={handleSplashContinue} />
+    }
   }
 
   return (
@@ -126,21 +125,25 @@ const ArtistCoinsLaunchpadContent = () => {
       header={header}
       contentClassName='artist-coins-launchpad-page'
     >
-      {page}
+      {renderCurrentPage()}
     </Page>
   )
 }
 
-export const ArtistCoinsLaunchpad = () => {
+export const LaunchpadPage = () => {
   return (
     <Formik
       initialValues={{
         coinName: '',
         coinSymbol: '',
-        coinImage: null as File | null
+        coinImage: null as File | null,
+        payAmount: '',
+        receiveAmount: ''
       }}
       validationSchema={toFormikValidationSchema(setupFormSchema)}
       validateOnMount={true}
+      validateOnChange={true}
+      validateDebounceMs={1000}
       onSubmit={(_values: SetupFormValues) => {
         // Convert coin symbol to uppercase before submission
         // TODO: Use the processed values in actual submission logic
@@ -153,7 +156,7 @@ export const ArtistCoinsLaunchpad = () => {
         alert('Coin created successfully!') // Temporary success indicator
       }}
     >
-      <ArtistCoinsLaunchpadContent />
+      <LaunchpadPageContent />
     </Formik>
   )
 }

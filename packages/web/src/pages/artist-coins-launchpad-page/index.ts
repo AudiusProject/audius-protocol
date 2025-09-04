@@ -1,1 +1,1 @@
-export { ArtistCoinsLaunchpad } from './ArtistCoinsLaunchpad'
+export { LaunchpadPage } from './LaunchpadPage'

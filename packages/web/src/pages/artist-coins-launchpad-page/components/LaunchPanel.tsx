@@ -15,13 +15,11 @@ const messages = {
   buttonText: 'Get Started!'
 }
 
-type ArtistCoinsLaunchPanelProps = {
+type LaunchPanelProps = {
   onContinue: () => void
 }
 
-export const ArtistCoinsLaunchPanel = ({
-  onContinue
-}: ArtistCoinsLaunchPanelProps) => {
+export const LaunchPanel = ({ onContinue }: LaunchPanelProps) => {
   const { color } = useTheme()
 
   return (

@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 import {
   Artwork,
   Flex,
@@ -9,12 +7,14 @@ import {
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
+import { useFormImageUrl } from 'hooks/useFormImageUrl'
+
 import { AMOUNT_OF_STEPS } from '../constants'
 
-import { ArtistCoinsAnchoredSubmitRow } from './ArtistCoinsAnchoredSubmitRow'
+import { ArtistCoinsSubmitRow } from './ArtistCoinsSubmitRow'
 import { StepHeader } from './StepHeader'
 import { TokenInfoRow } from './TokenInfoRow'
-import type { ReviewPageProps, SetupFormValues } from './types'
+import type { PhasePageProps, SetupFormValues } from './types'
 
 const messages = {
   stepInfo: `STEP 2 of ${AMOUNT_OF_STEPS}`,
@@ -71,18 +71,10 @@ const useStyles = makeResponsiveStyles(({ theme }) => ({
   }
 }))
 
-export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
+export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
   const { values } = useFormikContext<SetupFormValues>()
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const imageUrl = useFormImageUrl(values.coinImage)
   const styles = useStyles()
-
-  useEffect(() => {
-    if (values.coinImage) {
-      const url = URL.createObjectURL(values.coinImage)
-      setImageUrl(url)
-      return () => URL.revokeObjectURL(url)
-    }
-  }, [values.coinImage])
 
   const handleBack = () => {
     onBack?.()
@@ -99,7 +91,6 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
         alignItems='center'
         justifyContent='center'
         gap='l'
-        pb='unit20'
       >
         <Paper p='2xl' gap='2xl' direction='column' w='100%'>
           <StepHeader
@@ -112,20 +103,18 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
             p='0'
             direction='column'
             w='100%'
-            css={(theme) => ({
-              border: `1px solid ${theme.color.border.default}`,
-              borderRadius: theme.cornerRadius.m,
-              overflow: 'hidden'
-            })}
+            border='default'
+            borderRadius='m'
+            css={{ overflow: 'hidden' }}
           >
             {/* Token Info Header */}
             <Flex
               alignItems='center'
               gap='m'
               p='l'
+              borderBottom='default'
               css={(theme) => ({
-                backgroundColor: theme.color.background.white,
-                borderBottom: `1px solid ${theme.color.border.default}`
+                backgroundColor: theme.color.background.white
               })}
             >
               {imageUrl && (
@@ -225,7 +214,7 @@ export const ReviewPage = ({ onContinue, onBack }: ReviewPageProps) => {
           </Flex>
         </Paper>
       </Flex>
-      <ArtistCoinsAnchoredSubmitRow
+      <ArtistCoinsSubmitRow
         cancelText={messages.back}
         backIcon
         onContinue={handleContinue}

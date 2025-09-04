@@ -21,7 +21,7 @@ const messages = {
   learnMore: 'Learn more'
 }
 
-export const ArtistCoinsWalletSetupCard = () => {
+export const WalletSetupCard = () => {
   return (
     <Paper p='2xl' gap='xl' direction='column' w='100%'>
       <Flex direction='column' gap='s'>

@@ -1,6 +1,10 @@
 import { Flex, IconInfo, Text } from '@audius/harmony'
 
-import type { TokenInfoRowProps } from './types'
+type TokenInfoRowProps = {
+  label: string
+  value: string
+  hasTooltip?: boolean
+}
 
 export const TokenInfoRow = ({
   label,

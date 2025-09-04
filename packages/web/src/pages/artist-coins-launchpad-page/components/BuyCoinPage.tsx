@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 
-import { useConnectedWallets } from '@audius/common/api'
+import { useConnectedWallets, type ConnectedWallet } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
@@ -10,15 +10,17 @@ import {
   IconLogoCircleSOL,
   Paper,
   Text,
-  TokenAmountInput
+  TokenAmountInput,
+  useTheme
 } from '@audius/harmony'
-import { spacing } from '@audius/harmony/src/foundations/spacing/spacing'
 import { useFormikContext } from 'formik'
+
+import { useFormImageUrl } from 'hooks/useFormImageUrl'
 
 import { AMOUNT_OF_STEPS } from '../constants'
 
-import { ArtistCoinsAnchoredSubmitRow } from './ArtistCoinsAnchoredSubmitRow'
-import type { BuyCoinPageProps, SetupFormValues } from './types'
+import { ArtistCoinsSubmitRow } from './ArtistCoinsSubmitRow'
+import type { PhasePageProps, SetupFormValues } from './types'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
@@ -38,33 +40,25 @@ const messages = {
   back: 'Back'
 }
 
-export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
-  const { values } = useFormikContext<SetupFormValues>()
-  const [payAmount, setPayAmount] = useState('')
-  const [receiveAmount, setReceiveAmount] = useState('')
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
+  // Use Formik context to manage form state, including payAmount and receiveAmount
+  const { values, setFieldValue } = useFormikContext<SetupFormValues>()
+  const imageUrl = useFormImageUrl(values.coinImage)
+  const { spacing } = useTheme()
 
   const { data: connectedWallets } = useConnectedWallets()
 
   // Get the most recent connected Solana wallet (last in the array)
   // Filter to only Solana wallets since only SOL wallets can be connected
-  const connectedWallet = connectedWallets?.filter(
-    (wallet) => wallet.chain === Chain.Sol
-  )?.[0]
+  const connectedWallet: ConnectedWallet | undefined = useMemo(
+    () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
+    [connectedWallets]
+  )
 
   // Format the wallet address for display (always Solana format)
   const formattedWalletAddress = connectedWallet
     ? shortenSPLAddress(connectedWallet.address)
     : null
-
-  // Create image URL from the coin image stored in Formik
-  useEffect(() => {
-    if (values.coinImage) {
-      const url = URL.createObjectURL(values.coinImage)
-      setImageUrl(url)
-      return () => URL.revokeObjectURL(url)
-    }
-  }, [values.coinImage])
 
   const handleBack = () => {
     onBack?.()
@@ -75,20 +69,20 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
   }
 
   const handlePayAmountChange = (value: string, _valueBigInt: bigint) => {
-    setPayAmount(value)
+    setFieldValue('payAmount', value)
     // Calculate receive amount based on exchange rate
     // For now, using mock calculation
-    const payValue = parseFloat(value) || 0
+    const payValue = parseFloat(value) ?? 0
     const calculatedReceive = payValue * 0.302183
-    setReceiveAmount(calculatedReceive.toFixed(6))
+    setFieldValue('receiveAmount', calculatedReceive.toFixed(6))
   }
 
   const handleReceiveAmountChange = (value: string, _valueBigInt: bigint) => {
-    setReceiveAmount(value)
+    setFieldValue('receiveAmount', value)
     // Calculate pay amount based on exchange rate
-    const receiveValue = parseFloat(value) || 0
+    const receiveValue = parseFloat(value) ?? 0
     const calculatedPay = receiveValue / 0.302183
-    setPayAmount(calculatedPay.toFixed(6))
+    setFieldValue('payAmount', calculatedPay.toFixed(6))
   }
 
   return (
@@ -98,22 +92,21 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
         alignItems='center'
         justifyContent='center'
         gap='l'
-        pb='unit20'
       >
         <Paper p='2xl' gap='2xl' direction='column' w='100%'>
           <Flex direction='column' gap='xs' alignItems='flex-start'>
             <Text variant='label' size='s' color='subdued'>
               {messages.stepInfo}
             </Text>
-            <Flex alignItems='center' gap='xs'>
+            <Flex alignItems='center' gap='s'>
               <Text variant='heading' size='l' color='default'>
                 {messages.title}
               </Text>
               <Flex
                 alignItems='center'
                 justifyContent='center'
-                h={spacing.unit4}
-                p='xs'
+                ph='s'
+                pv='xs'
                 backgroundColor='accent'
                 borderRadius='l'
               >
@@ -171,7 +164,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
                 label={messages.youPay}
                 tokenLabel='SOL'
                 decimals={6}
-                value={payAmount}
+                value={values.payAmount ?? ''}
                 onChange={handlePayAmountChange}
                 placeholder='0.00'
                 hideLabel
@@ -188,7 +181,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
                 label={messages.youReceive}
                 tokenLabel={`$${values.coinSymbol}`}
                 decimals={6}
-                value={receiveAmount}
+                value={values.receiveAmount ?? ''}
                 onChange={handleReceiveAmountChange}
                 placeholder='0.00'
                 hideLabel
@@ -230,7 +223,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: BuyCoinPageProps) => {
           <Hint>{messages.hintMessage}</Hint>
         </Paper>
       </Flex>
-      <ArtistCoinsAnchoredSubmitRow
+      <ArtistCoinsSubmitRow
         cancelText={messages.back}
         backIcon
         onContinue={handleContinue}

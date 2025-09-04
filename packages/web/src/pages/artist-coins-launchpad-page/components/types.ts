@@ -2,59 +2,11 @@ export type SetupFormValues = {
   coinName: string
   coinSymbol: string
   coinImage: File | null
+  payAmount: string
+  receiveAmount: string
 }
 
-export type SetupFormErrors = {
-  coinName?: string
-  coinSymbol?: string
-  coinImage?: string
-}
-
-export type SetupPageProps = {
-  onContinue?: () => void
-  onBack?: () => void
-}
-
-export type ImageUploadAreaProps = {
-  fileInputRef: React.RefObject<HTMLInputElement>
-  coinImage: File | null
-  imageUrl: string | null
-  onFileSelect: () => void
-  onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  error?: string
-  isProcessing?: boolean
-}
-
-export type CoinFormFieldsProps = {
-  values: SetupFormValues
-  errors: SetupFormErrors
-  touched: {
-    coinName?: boolean
-    coinSymbol?: boolean
-    coinImage?: boolean
-  }
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
-}
-
-export type StepHeaderProps = {
-  stepInfo: string
-  title: string
-  description: string
-}
-
-export type ReviewPageProps = {
-  onContinue?: () => void
-  onBack?: () => void
-}
-
-export type TokenInfoRowProps = {
-  label: string
-  value: string
-  hasTooltip?: boolean
-}
-
-export type BuyCoinPageProps = {
+export type PhasePageProps = {
   onContinue?: () => void
   onBack?: () => void
 }

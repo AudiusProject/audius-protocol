@@ -1,6 +1,10 @@
 import { Flex, Text } from '@audius/harmony'
 
-import type { StepHeaderProps } from './types'
+type StepHeaderProps = {
+  stepInfo: string
+  title: string
+  description: string
+}
 
 export const StepHeader = ({
   stepInfo,

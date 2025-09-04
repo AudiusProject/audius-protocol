@@ -9,16 +9,8 @@ const messages = {
 }
 
 export const CoinFormFields = () => {
-  const { values, errors, touched, handleChange, handleBlur, validateField } =
+  const { values, errors, touched, handleChange, handleBlur } =
     useFormikContext<SetupFormValues>()
-
-  const handleCoinSymbolChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleChange(e)
-    // Debounced validation for better UX
-    if (e.target.value) {
-      setTimeout(() => validateField('coinSymbol'), 1000)
-    }
-  }
 
   return (
     <Flex gap='xl' w='100%'>
@@ -39,7 +31,7 @@ export const CoinFormFields = () => {
           label={messages.coinSymbol}
           name='coinSymbol'
           value={values.coinSymbol}
-          onChange={handleCoinSymbolChange}
+          onChange={handleChange}
           onBlur={handleBlur}
           error={!!(touched.coinSymbol && errors.coinSymbol)}
           helperText={touched.coinSymbol ? errors.coinSymbol : undefined}

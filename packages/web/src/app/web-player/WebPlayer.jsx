@@ -52,7 +52,7 @@ import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AllCoinsPage } from 'pages/all-coins-page/AllCoinsPage'
-import { ArtistCoinsLaunchpad } from 'pages/artist-coins-launchpad-page'
+import { LaunchpadPage } from 'pages/artist-coins-launchpad-page'
 import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
@@ -737,12 +737,14 @@ const WebPlayer = (props) => {
                 isMobile={isMobile}
                 component={WalletPage}
               />
-              <Route
-                exact
-                path={COINS_CREATE_PAGE}
-                isMobile={isMobile}
-                component={ArtistCoinsLaunchpad}
-              />
+              {isArtistCoinsEnabled ? (
+                <Route
+                  exact
+                  path={COINS_CREATE_PAGE}
+                  isMobile={isMobile}
+                  component={LaunchpadPage}
+                />
+              ) : null}
               <Route
                 exact
                 path={[REWARDS_PAGE, AIRDROP_PAGE]}

@@ -16,7 +16,7 @@ const defaultMessages = {
   fixErrors: 'Please complete all required fields to continue.'
 }
 
-type ArtistCoinsAnchoredSubmitRowProps = {
+type ArtistCoinsSubmitRowProps = {
   onContinue: () => void
   onBack: () => void
   isValid?: boolean
@@ -26,7 +26,7 @@ type ArtistCoinsAnchoredSubmitRowProps = {
   backIcon?: boolean
 }
 
-export const ArtistCoinsAnchoredSubmitRow = ({
+export const ArtistCoinsSubmitRow = ({
   onContinue,
   onBack,
   isValid = true,
@@ -34,7 +34,7 @@ export const ArtistCoinsAnchoredSubmitRow = ({
   continueText = defaultMessages.continue,
   cancelText = defaultMessages.cancel,
   backIcon = false
-}: ArtistCoinsAnchoredSubmitRowProps) => {
+}: ArtistCoinsSubmitRowProps) => {
   const { color, spacing } = useTheme()
   const [showError, setShowError] = useState(false)
 
@@ -62,11 +62,10 @@ export const ArtistCoinsAnchoredSubmitRow = ({
           width: 'calc(100% - var(--nav-width))',
           padding: spacing.unit3,
           background: color.background.surface1,
-          borderTop: `1px solid ${color.border.strong}`,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
+          borderTop: `1px solid ${color.border.strong}`
         }}
+        direction='column'
+        alignItems='center'
         gap='m'
       >
         <Flex gap='s' alignItems='center'>

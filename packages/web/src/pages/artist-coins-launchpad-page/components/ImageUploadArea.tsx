@@ -9,7 +9,15 @@ import {
 
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 
-import type { ImageUploadAreaProps } from './types'
+type ImageUploadAreaProps = {
+  fileInputRef: React.RefObject<HTMLInputElement>
+  coinImage: File | null
+  imageUrl: string | null
+  onFileSelect: () => void
+  onFileInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  error?: string
+  isProcessing?: boolean
+}
 
 const IMAGE_SIZE = 200
 
