@@ -1,4 +1,4 @@
-import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
+import { PublicKey } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -28,7 +28,7 @@ export type SendTokensResult = {
  */
 export const useSendTokens = ({ mint }: { mint: string }) => {
   const queryClient = useQueryClient()
-  const { audiusBackend, audiusSdk, reportToSentry, analytics, env } =
+  const { audiusBackend, audiusSdk, reportToSentry, analytics } =
     useQueryContext()
   const { data: walletAddresses } = useWalletAddresses()
 
@@ -40,12 +40,6 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       amount
     }: SendTokensParams): Promise<SendTokensResult> => {
       try {
-        // For now, we only support wAUDIO transfers
-        // This can be extended to support other tokens in the future
-        if (mint !== env.WAUDIO_MINT_ADDRESS) {
-          throw new Error(`Token mint ${mint} is not supported for sending`)
-        }
-
         const currentUser = walletAddresses?.currentUser
         if (!currentUser) {
           throw new Error('Failed to retrieve current user wallet address')
@@ -57,11 +51,12 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
           throw new Error('Insufficient balance to send tokens')
         }
 
-        await audiusBackend.sendWAudioTokens({
+        await audiusBackend.sendTokens({
           address: recipientWallet,
-          amount: AUDIO(wAUDIO(amount)).value,
+          amount: amount as any, // TODO: Fix type mismatch between bigint and AudioWei
           ethAddress: currentUser,
-          sdk
+          sdk,
+          mint: new PublicKey(mint) as any // TODO: Fix type mismatch between string and MintName | PublicKey
         })
 
         return {
