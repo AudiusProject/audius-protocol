@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { CoinInsightsDynamicBondingCurve } from './CoinInsightsDynamicBondingCurve';
+import {
+    CoinInsightsDynamicBondingCurveFromJSON,
+    CoinInsightsDynamicBondingCurveFromJSONTyped,
+    CoinInsightsDynamicBondingCurveToJSON,
+} from './CoinInsightsDynamicBondingCurve';
 import type { CoinInsightsExtensions } from './CoinInsightsExtensions';
 import {
     CoinInsightsExtensionsFromJSON,
@@ -306,11 +312,11 @@ export interface CoinInsights {
      */
     members: number;
     /**
-     * The percentage change in the number of members holding the coin over the last 24 hours
-     * @type {number}
+     * 
+     * @type {CoinInsightsDynamicBondingCurve}
      * @memberof CoinInsights
      */
-    membersChange24hPercent: number;
+    dynamicBondingCurve: CoinInsightsDynamicBondingCurve;
 }
 
 /**
@@ -351,7 +357,7 @@ export function instanceOfCoinInsights(value: object): value is CoinInsights {
     isInstance = isInstance && "v24hUSD" in value && value["v24hUSD"] !== undefined;
     isInstance = isInstance && "vHistory24h" in value && value["vHistory24h"] !== undefined;
     isInstance = isInstance && "members" in value && value["members"] !== undefined;
-    isInstance = isInstance && "membersChange24hPercent" in value && value["membersChange24hPercent"] !== undefined;
+    isInstance = isInstance && "dynamicBondingCurve" in value && value["dynamicBondingCurve"] !== undefined;
 
     return isInstance;
 }
@@ -412,7 +418,7 @@ export function CoinInsightsFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'vSell24hChangePercent': !exists(json, 'vSell24hChangePercent') ? undefined : json['vSell24hChangePercent'],
         'numberMarkets': !exists(json, 'numberMarkets') ? undefined : json['numberMarkets'],
         'members': json['members'],
-        'membersChange24hPercent': json['membersChange24hPercent'],
+        'dynamicBondingCurve': CoinInsightsDynamicBondingCurveFromJSON(json['dynamicBondingCurve']),
     };
 }
 
@@ -471,7 +477,7 @@ export function CoinInsightsToJSON(value?: CoinInsights | null): any {
         'vSell24hChangePercent': value.vSell24hChangePercent,
         'numberMarkets': value.numberMarkets,
         'members': value.members,
-        'membersChange24hPercent': value.membersChange24hPercent,
+        'dynamicBondingCurve': CoinInsightsDynamicBondingCurveToJSON(value.dynamicBondingCurve),
     };
 }
 

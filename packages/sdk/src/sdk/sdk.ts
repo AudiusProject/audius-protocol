@@ -13,6 +13,7 @@ import {
   CoinsApi,
   Configuration,
   ExploreApi,
+  RewardsApi,
   TipsApi
 } from './api/generated/default'
 import {
@@ -483,6 +484,7 @@ const initializeApis = ({
   const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
+  const rewards = new RewardsApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
@@ -563,6 +565,7 @@ const initializeApis = ({
     developerApps,
     dashboardWalletUsers,
     challenges,
+    rewards,
     services,
     comments,
     notifications,

@@ -51,6 +51,7 @@ export interface GetCoinsRequest {
     mint?: Array<string>;
     ownerId?: Array<string>;
     ticker?: Array<string>;
+    query?: string;
     offset?: number;
     limit?: number;
 }
@@ -182,6 +183,10 @@ export class CoinsApi extends runtime.BaseAPI {
 
         if (params.ticker) {
             queryParameters['ticker'] = params.ticker;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
         if (params.offset !== undefined) {
