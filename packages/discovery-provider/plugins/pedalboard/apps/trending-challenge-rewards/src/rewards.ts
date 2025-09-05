@@ -120,15 +120,15 @@ export const onDisburse = async (
               challenge.amount
             )
             res = await sdk.rewards.claimRewards({
-              challengeId,
-              userId: challenge.user_id,
-              specifier: challenge.specifier,
+              claimRewardsRequest: {
+                challengeId,
+                userId: challenge.user_id,
+                specifier: challenge.specifier
+              }
             })
             if (res?.data?.[0]?.error) {
               if (
-                res.data[0].error.includes(
-                  'failed to get oracle attestation'
-                )
+                res.data[0].error.includes('failed to get oracle attestation')
               ) {
                 // If the error is because the attestation failed, break
                 break

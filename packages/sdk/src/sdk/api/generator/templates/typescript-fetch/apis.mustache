@@ -67,67 +67,13 @@ export interface {{classname}}Interface {
      * {{&summary}}
      {{/summary}}
      */
-    {{!-- ===== Public method: mutually exclusive branches to avoid duplicates ===== --}}
-    {{#hasBodyParam}}
-      {{^hasFormParams}}
-        {{^queryParams.0}}
-          {{^pathParams.0}}
-            {{^headerParams.0}}
-    {{!-- Body-only JSON (no form/query/path/header): single body param --}}
-    {{nickname}}(body: {{#bodyParam}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/bodyParam}}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-            {{/headerParams.0}}
-          {{/pathParams.0}}
-        {{/queryParams.0}}
-      {{/hasFormParams}}
+    {{^useSingleRequestParameter}}
+    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
+    {{/useSingleRequestParameter}}
+    {{#useSingleRequestParameter}}
+    {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
+    {{/useSingleRequestParameter}}
 
-      {{!-- Else (has form OR any of query/path/header): fall back to normal signature --}}
-      {{#hasFormParams}}
-        {{#useSingleRequestParameter}}
-    {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-        {{/useSingleRequestParameter}}
-        {{^useSingleRequestParameter}}
-    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-        {{/useSingleRequestParameter}}
-      {{/hasFormParams}}
-      {{^hasFormParams}}
-        {{#queryParams.0}}
-          {{#useSingleRequestParameter}}
-    {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-          {{/useSingleRequestParameter}}
-          {{^useSingleRequestParameter}}
-    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-          {{/useSingleRequestParameter}}
-        {{/queryParams.0}}
-        {{^queryParams.0}}
-          {{#pathParams.0}}
-            {{#useSingleRequestParameter}}
-    {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-            {{/useSingleRequestParameter}}
-            {{^useSingleRequestParameter}}
-    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-            {{/useSingleRequestParameter}}
-          {{/pathParams.0}}
-          {{^pathParams.0}}
-            {{#headerParams.0}}
-              {{#useSingleRequestParameter}}
-    {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-              {{/useSingleRequestParameter}}
-              {{^useSingleRequestParameter}}
-    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-              {{/useSingleRequestParameter}}
-            {{/headerParams.0}}
-          {{/pathParams.0}}
-        {{/queryParams.0}}
-      {{/hasFormParams}}
-    {{/hasBodyParam}}
-    {{^hasBodyParam}}
-      {{#useSingleRequestParameter}}
-    {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-      {{/useSingleRequestParameter}}
-      {{^useSingleRequestParameter}}
-    {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}>;
-      {{/useSingleRequestParameter}}
-    {{/hasBodyParam}}
 {{/operation}}
 }
 
@@ -399,41 +345,7 @@ export class {{classname}} extends runtime.BaseAPI {
      * {{&summary}}
      {{/summary}}
      */
-    {{!-- ===== Public method: mutually exclusive branches to avoid duplicates ===== --}}
-    {{#hasBodyParam}}
-      {{^hasFormParams}}
-        {{^queryParams.0}}
-          {{^pathParams.0}}
-            {{^headerParams.0}}
-    {{!-- Body-only JSON (no form/query/path/header): single body param --}}
-    async {{nickname}}(body: {{#bodyParam}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/bodyParam}}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({ {{#bodyParam}}{{paramName}}{{/bodyParam}}: body }, initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({ {{#bodyParam}}{{paramName}}{{/bodyParam}}: body }, initOverrides);
-        {{/returnType}}
-    }
-            {{/headerParams.0}}
-          {{/pathParams.0}}
-        {{/queryParams.0}}
-      {{/hasFormParams}}
-
-      {{!-- Else (has form OR any of query/path/header): fall back to normal impl --}}
-      {{#hasFormParams}}
-        {{#useSingleRequestParameter}}
-    async {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-        {{/useSingleRequestParameter}}
-        {{^useSingleRequestParameter}}
+    {{^useSingleRequestParameter}}
     async {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
         {{#returnType}}
         const response = await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
@@ -443,11 +355,8 @@ export class {{classname}} extends runtime.BaseAPI {
         await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
         {{/returnType}}
     }
-        {{/useSingleRequestParameter}}
-      {{/hasFormParams}}
-      {{^hasFormParams}}
-        {{#queryParams.0}}
-          {{#useSingleRequestParameter}}
+    {{/useSingleRequestParameter}}
+    {{#useSingleRequestParameter}}
     async {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
         {{#returnType}}
         const response = await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
@@ -457,97 +366,7 @@ export class {{classname}} extends runtime.BaseAPI {
         await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
         {{/returnType}}
     }
-          {{/useSingleRequestParameter}}
-          {{^useSingleRequestParameter}}
-    async {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-          {{/useSingleRequestParameter}}
-        {{/queryParams.0}}
-        {{^queryParams.0}}
-          {{#pathParams.0}}
-            {{#useSingleRequestParameter}}
-    async {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-            {{/useSingleRequestParameter}}
-            {{^useSingleRequestParameter}}
-    async {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-            {{/useSingleRequestParameter}}
-          {{/pathParams.0}}
-          {{^pathParams.0}}
-            {{#headerParams.0}}
-              {{#useSingleRequestParameter}}
-    async {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-              {{/useSingleRequestParameter}}
-              {{^useSingleRequestParameter}}
-    async {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-              {{/useSingleRequestParameter}}
-            {{/headerParams.0}}
-          {{/pathParams.0}}
-        {{/queryParams.0}}
-      {{/hasFormParams}}
-    {{/hasBodyParam}}
-    {{^hasBodyParam}}
-      {{#useSingleRequestParameter}}
-    async {{nickname}}({{#allParams.0}}params: {{#prefixParameterInterfaces}}{{classname}}{{/prefixParameterInterfaces}}{{operationIdCamelCase}}Request{{^hasRequiredParams}} = {}{{/hasRequiredParams}}, {{/allParams.0}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}params, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-      {{/useSingleRequestParameter}}
-      {{^useSingleRequestParameter}}
-    async {{nickname}}({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{{datatypeWithEnum}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}, {{/allParams}}initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{{{returnType}}}{{^returnType}}void{{/returnType}}> {
-        {{#returnType}}
-        const response = await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        return await response.value();
-        {{/returnType}}
-        {{^returnType}}
-        await this.{{nickname}}Raw({{#allParams.0}}{ {{#allParams}}{{paramName}}: {{paramName}}{{^-last}}, {{/-last}}{{/allParams}} }, {{/allParams.0}}initOverrides);
-        {{/returnType}}
-    }
-      {{/useSingleRequestParameter}}
-    {{/hasBodyParam}}
+    {{/useSingleRequestParameter}}
 
     {{/operation}}
 }

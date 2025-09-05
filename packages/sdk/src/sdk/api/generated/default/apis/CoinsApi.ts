@@ -109,7 +109,6 @@ export class CoinsApi extends runtime.BaseAPI {
     /**
      * Creates a new artist coin
      */
-
     async createCoin(params: CreateCoinOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateCoinResponse> {
         const response = await this.createCoinRaw(params, initOverrides);
         return await response.value();

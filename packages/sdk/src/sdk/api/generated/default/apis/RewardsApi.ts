@@ -64,10 +64,9 @@ export class RewardsApi extends runtime.BaseAPI {
     /**
      * Claims all the filtered undisbursed rewards for a user
      */
-    async claimRewards(body: ClaimRewardsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ClaimRewardsResponse> {
-        const response = await this.claimRewardsRaw({ claimRewardsRequest: body }, initOverrides);
+    async claimRewards(params: ClaimRewardsOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ClaimRewardsResponse> {
+        const response = await this.claimRewardsRaw(params, initOverrides);
         return await response.value();
     }
-
 
 }
