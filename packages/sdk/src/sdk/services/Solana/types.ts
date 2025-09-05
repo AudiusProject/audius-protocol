@@ -112,3 +112,28 @@ export type RelayRequestBody = Prettify<
     transaction: string
   }
 >
+
+export const LaunchCoinSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required'),
+    symbol: z.string().min(1, 'Symbol is required'),
+    description: z.string().min(1, 'Description is required'),
+    walletPublicKey: PublicKeySchema,
+    initialBuyAmountAudio: z
+      .number()
+      .nonnegative('Initial buy amount must be non-negative')
+      .optional(),
+    image: z.custom<File | Blob>((data) => {
+      return data instanceof File || data instanceof Blob
+    }, 'Image file is required')
+  })
+  .strict()
+
+export type LaunchCoinRequest = z.infer<typeof LaunchCoinSchema>
+
+export type LaunchCoinResponse = {
+  mintPublicKey: string
+  createPoolTx: string
+  firstBuyTx: string | null
+  metadataUri: string
+}

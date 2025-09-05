@@ -4,7 +4,11 @@ import gift from 'assets/fonts/emojis/gift.png'
 import globe from 'assets/fonts/emojis/globe.png'
 import moneyWithWingsEmoji from 'assets/fonts/emojis/money-with-wings.png'
 
-import { LaunchPanel, WalletSetupCard, WhyCreateCard } from './index'
+import {
+  LaunchPanel,
+  WalletSetupCard,
+  WhyCreateCard
+} from '../components/index'
 
 const messages = {
   whyCreateTitle: 'Why Create a Coin?',
@@ -84,11 +88,11 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => {
   }
 })
 
-type SplashScreenProps = {
+type SplashPageProps = {
   onContinue: () => void
 }
 
-export const SplashScreen = ({ onContinue }: SplashScreenProps) => {
+export const SplashPage = ({ onContinue }: SplashPageProps) => {
   const styles = useStyles()
 
   return (

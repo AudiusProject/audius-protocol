@@ -6,13 +6,12 @@ import { useFormikContext } from 'formik'
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
+import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
+import { CoinFormFields } from '../components/CoinFormFields'
+import { ImageUploadArea } from '../components/ImageUploadArea'
+import { StepHeader } from '../components/StepHeader'
+import type { SetupFormValues, PhasePageProps } from '../components/types'
 import { AMOUNT_OF_STEPS, MAX_IMAGE_SIZE } from '../constants'
-
-import { ArtistCoinsSubmitRow } from './ArtistCoinsSubmitRow'
-import { CoinFormFields } from './CoinFormFields'
-import { ImageUploadArea } from './ImageUploadArea'
-import { StepHeader } from './StepHeader'
-import type { SetupFormValues, PhasePageProps } from './types'
 
 const messages = {
   stepInfo: `STEP 1 of ${AMOUNT_OF_STEPS}`,

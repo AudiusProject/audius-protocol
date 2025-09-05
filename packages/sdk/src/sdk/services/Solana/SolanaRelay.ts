@@ -8,7 +8,14 @@ import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
 import { parseParams } from '../../utils/parseParams'
 
-import { type RelayRequestBody, RelayRequest, RelaySchema } from './types'
+import {
+  type RelayRequestBody,
+  RelayRequest,
+  RelaySchema,
+  LaunchCoinRequest,
+  LaunchCoinResponse,
+  LaunchCoinSchema
+} from './types'
 
 /**
  * Client for the Solana Relay Plugin on Discovery.
@@ -145,6 +152,62 @@ export class SolanaRelay extends BaseAPI {
       }
       return {
         signature: json.signature as string
+      }
+    }).value()
+  }
+
+  /**
+   * Launches a new coin on the launchpad with bonding curve.
+   */
+  public async launchCoin(
+    params: LaunchCoinRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<LaunchCoinResponse> {
+    const {
+      name,
+      symbol,
+      description,
+      walletPublicKey,
+      initialBuyAmountAudio,
+      image
+    } = await parseParams('launchCoin', LaunchCoinSchema)(params)
+
+    const headerParameters: runtime.HTTPHeaders = {}
+
+    // Create FormData for multipart/form-data request
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('symbol', symbol)
+    formData.append('description', description)
+    formData.append('walletPublicKey', walletPublicKey.toBase58())
+    if (initialBuyAmountAudio) {
+      formData.append('initialBuyAmountAudio', initialBuyAmountAudio.toString())
+    }
+    formData.append('image', image)
+
+    const response = await this.request({
+      path: '/launch_coin',
+      method: 'POST',
+      headers: headerParameters,
+      body: formData
+    })
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      if (!runtime.exists(json, 'mintPublicKey')) {
+        throw new Error('mintPublicKey missing from response')
+      }
+      if (!runtime.exists(json, 'createPoolTx')) {
+        throw new Error('createPoolTx missing from response')
+      }
+      if (!runtime.exists(json, 'metadataUri')) {
+        throw new Error('metadataUri missing from response')
+      }
+
+      return {
+        mintPublicKey: json.mintPublicKey as string,
+        createPoolTx: json.createPoolTx as string,
+        firstBuyTx: json.firstBuyTx as string | null,
+        metadataUri: json.metadataUri as string
       }
     }).value()
   }

@@ -16,10 +16,9 @@ import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 
+import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
+import type { PhasePageProps, SetupFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
-
-import { ArtistCoinsSubmitRow } from './ArtistCoinsSubmitRow'
-import type { PhasePageProps, SetupFormValues } from './types'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
@@ -238,6 +237,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         backIcon
         onContinue={handleContinue}
         onBack={handleBack}
+        submit
       />
     </>
   )

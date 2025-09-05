@@ -1,8 +1,22 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { IconArtistCoin } from '@audius/harmony'
+import {
+  ConnectedWallet,
+  useConnectedWallets,
+  useCurrentAccountUser
+} from '@audius/common/api'
+import { Chain } from '@audius/common/models'
+import {
+  Flex,
+  IconArtistCoin,
+  IconCheck,
+  LoadingSpinner,
+  Modal,
+  ModalContent,
+  Text
+} from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
-import { Formik, useFormikContext } from 'formik'
+import { Form, Formik, useFormikContext } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { appkitModal } from 'app/ReownAppKitModal'
@@ -13,13 +27,18 @@ import {
   useConnectAndAssociateWallets,
   AlreadyAssociatedError
 } from 'hooks/useConnectAndAssociateWallets'
+import { useLaunchCoin } from 'hooks/useLaunchCoin'
 
-import { BuyCoinPage, ReviewPage, SetupPage, SplashScreen } from './components'
 import type { SetupFormValues } from './components/types'
-import { Phase } from './constants'
+import { LAUNCHPAD_COIN_DESCRIPTION, Phase } from './constants'
+import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { setupFormSchema } from './validation'
 
 const messages = {
+  awaitingConfirmation: 'Awaiting Confirmation',
+  launchingCoinDescription:
+    "This may take a moment... Please don't close this page.",
+  congratsTitle: '🎉Congrats!',
   title: 'Create Your Artist Coin'
 }
 
@@ -81,11 +100,6 @@ const LaunchpadPageContent = () => {
     setPhase(Phase.SETUP)
   }
 
-  const handleBuyCoinContinue = () => {
-    // This should submit the form as requested
-    alert('Coin created successfully!')
-  }
-
   const handleBuyCoinBack = () => {
     setPhase(Phase.REVIEW)
   }
@@ -93,7 +107,7 @@ const LaunchpadPageContent = () => {
   const renderCurrentPage = () => {
     switch (phase) {
       case Phase.SPLASH:
-        return <SplashScreen onContinue={handleSplashContinue} />
+        return <SplashPage onContinue={handleSplashContinue} />
       case Phase.SETUP:
         return (
           <SetupPage
@@ -109,14 +123,9 @@ const LaunchpadPageContent = () => {
           />
         )
       case Phase.BUY_COIN:
-        return (
-          <BuyCoinPage
-            onContinue={handleBuyCoinContinue}
-            onBack={handleBuyCoinBack}
-          />
-        )
+        return <BuyCoinPage onBack={handleBuyCoinBack} />
       default:
-        return <SplashScreen onContinue={handleSplashContinue} />
+        return <SplashPage onContinue={handleSplashContinue} />
     }
   }
 
@@ -132,6 +141,17 @@ const LaunchpadPageContent = () => {
 }
 
 export const LaunchpadPage = () => {
+  const { mutate: launchCoin, isPending, isSuccess } = useLaunchCoin()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { data: user } = useCurrentAccountUser()
+  const { data: connectedWallets } = useConnectedWallets()
+
+  // Get the most recent connected Solana wallet (last in the array)
+  // Filter to only Solana wallets since only SOL wallets can be connected
+  const connectedWallet: ConnectedWallet | undefined = useMemo(
+    () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
+    [connectedWallets]
+  )
   return (
     <Formik
       initialValues={{
@@ -145,18 +165,83 @@ export const LaunchpadPage = () => {
       validateOnMount={true}
       validateOnChange={true}
       onSubmit={(_values: SetupFormValues) => {
-        // Convert coin symbol to uppercase before submission
-        // TODO: Use the processed values in actual submission logic
-        // const finalValues = {
-        //   ...values,
-        //   coinSymbol: values.coinSymbol.toUpperCase()
-        // }
-
-        // For now, this represents completing the entire flow
-        alert('Coin created successfully!') // Temporary success indicator
+        setIsModalOpen(true)
+        console.log('Submitting form!', { values: _values })
+        if (!user) {
+          throw new Error('No current user found for unknown reason')
+        }
+        if (!connectedWallet) {
+          throw new Error('No connected wallet found')
+        }
+        const parsedPayAmount = _values.payAmount
+          ? parseFloat(_values.payAmount)
+          : undefined
+        if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
+          console.error('inititalBuyAudioAmount is not valid', {
+            buyAmountFormValue: _values.payAmount,
+            initialBuyAmountAudioParsed: parsedPayAmount
+          })
+        }
+        launchCoin({
+          name: _values.coinName,
+          symbol: _values.coinSymbol,
+          image: _values.coinImage!,
+          description: LAUNCHPAD_COIN_DESCRIPTION(
+            user!.handle,
+            _values.coinSymbol
+          ),
+          walletPublicKey: connectedWallet!.address,
+          initialBuyAmountAudio: parsedPayAmount // TODO: convert sol to audio
+        })
       }}
     >
-      <LaunchpadPageContent />
+      <Form>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => {
+            // TODO: should we auto close this modal at some point?
+            if (isSuccess) {
+              setIsModalOpen(false)
+            }
+          }}
+        >
+          <ModalContent>
+            <Flex
+              direction='column'
+              alignItems='center'
+              justifyContent='center'
+              gap='xl'
+              css={{
+                minHeight: 600,
+                minWidth: 720
+              }}
+            >
+              {isPending ? (
+                <>
+                  <LoadingSpinner size='3xl' />
+                  <Flex direction='column' gap='s'>
+                    <Text variant='heading' size='l'>
+                      {messages.awaitingConfirmation}
+                    </Text>
+                    <Text variant='body' size='l'>
+                      {messages.launchingCoinDescription}
+                    </Text>
+                  </Flex>
+                </>
+              ) : null}
+              {isSuccess ? (
+                <>
+                  <IconCheck size='3xl' />
+                  <Text variant='heading' size='l'>
+                    {messages.congratsTitle}
+                  </Text>
+                </>
+              ) : null}
+            </Flex>
+          </ModalContent>
+        </Modal>
+        <LaunchpadPageContent />
+      </Form>
     </Formik>
   )
 }

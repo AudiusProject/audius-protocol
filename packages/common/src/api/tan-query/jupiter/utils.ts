@@ -432,7 +432,7 @@ export const buildAndSendTransaction = async (
   keypair: Keypair,
   feePayer: PublicKey,
   instructions: TransactionInstruction[],
-  addressLookupTableAddresses: string[],
+  addressLookupTableAddresses?: string[],
   commitment?: Commitment
 ): Promise<string> => {
   // Build transaction
@@ -441,8 +441,10 @@ export const buildAndSendTransaction = async (
       feePayer,
       instructions,
       addressLookupTables: addressLookupTableAddresses
-        .map((addr: string) => new PublicKey(addr))
-        .concat([SWAP_LOOKUP_TABLE_ADDRESS])
+        ? addressLookupTableAddresses
+            .map((addr: string) => new PublicKey(addr))
+            .concat([SWAP_LOOKUP_TABLE_ADDRESS])
+        : undefined
     })
 
   // Sign and send transaction

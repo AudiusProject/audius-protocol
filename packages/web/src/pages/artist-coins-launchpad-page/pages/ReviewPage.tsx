@@ -9,12 +9,11 @@ import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 
+import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
+import { StepHeader } from '../components/StepHeader'
+import { TokenInfoRow } from '../components/TokenInfoRow'
+import type { PhasePageProps, SetupFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
-
-import { ArtistCoinsSubmitRow } from './ArtistCoinsSubmitRow'
-import { StepHeader } from './StepHeader'
-import { TokenInfoRow } from './TokenInfoRow'
-import type { PhasePageProps, SetupFormValues } from './types'
 
 const messages = {
   stepInfo: `STEP 2 of ${AMOUNT_OF_STEPS}`,

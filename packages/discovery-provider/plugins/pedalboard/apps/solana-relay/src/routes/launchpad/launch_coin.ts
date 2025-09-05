@@ -21,7 +21,7 @@ interface LaunchCoinRequestBody {
   symbol: string
   walletPublicKey: string
   description: string
-  initialBuyAmountAudio?: number
+  initialBuyAmountAudio?: string
 }
 
 const AUDIO_DECIMALS = 1e8
@@ -35,6 +35,7 @@ export const launchCoin = async (
   res: Response
 ) => {
   try {
+    logger.info('Launching coin...')
     const { launchpadConfigKey: configKey, solanaFeePayerWallets } = config
 
     const {
@@ -42,8 +43,13 @@ export const launchCoin = async (
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountAudio
+      initialBuyAmountAudio: initialBuyAmountAudioStr
     } = req.body
+    const initialBuyAmountAudio =
+      initialBuyAmountAudioStr !== undefined
+        ? parseFloat(initialBuyAmountAudioStr)
+        : undefined
+    logger.info(req.body)
 
     // file is the image attached via multer middleware (sent from client as a multipart/form-data request)
     const file = req.file
@@ -64,12 +70,13 @@ export const launchCoin = async (
     }
 
     if (
-      typeof initialBuyAmountAudio !== 'number' ||
-      initialBuyAmountAudio <= 0 ||
-      isNaN(initialBuyAmountAudio)
+      initialBuyAmountAudio !== undefined &&
+      (typeof initialBuyAmountAudio !== 'number' ||
+        initialBuyAmountAudio <= 0 ||
+        isNaN(initialBuyAmountAudio))
     ) {
       throw new Error(
-        'Invalid initialBuyAmountAudio. Initial buy amount must be a number > 0.'
+        `Invalid initialBuyAmountAudio. Initial buy amount must be a number > 0. Received: ${initialBuyAmountAudio}`
       )
     }
 
@@ -128,6 +135,29 @@ export const launchCoin = async (
         : undefined
     })
 
+    /*
+     * Prepare the transactions to be signed by the client -
+     * for the pool creation we need to sign with the mint keypair only accessible here,
+     * the client does the final signing with the wallet keypair & will confirm the transactions
+     */
+
+    // Create pool transaction
+    const createPoolTx = poolConfig.createPoolTx
+    createPoolTx.feePayer = walletPublicKey
+    createPoolTx.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash
+    createPoolTx.partialSign(mintKeypair)
+
+    // First buy transaction
+    const firstBuyTx = poolConfig.swapBuyTx
+    if (firstBuyTx) {
+      firstBuyTx.feePayer = walletPublicKey
+      firstBuyTx.recentBlockhash = (
+        await connection.getLatestBlockhash()
+      ).blockhash
+    }
+
     return res.status(200).send({
       mintPublicKey: mintKeypair.publicKey.toBase58(),
       createPoolTx: poolConfig.createPoolTx,
@@ -137,6 +167,6 @@ export const launchCoin = async (
   } catch (e) {
     logger.error('Error creating coin for launchpad')
     logger.error(e)
-    res.status(500).send({ error: (e as Error).message })
+    res.status(500).send()
   }
 }

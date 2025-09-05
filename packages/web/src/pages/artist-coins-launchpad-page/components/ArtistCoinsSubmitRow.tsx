@@ -26,6 +26,7 @@ type ArtistCoinsSubmitRowProps = {
   continueText?: string
   cancelText?: string
   backIcon?: boolean
+  submit?: boolean
 }
 
 export const ArtistCoinsSubmitRow = ({
@@ -35,7 +36,8 @@ export const ArtistCoinsSubmitRow = ({
   isLoading = false,
   continueText = defaultMessages.continue,
   cancelText = defaultMessages.cancel,
-  backIcon = false
+  backIcon = false,
+  submit = false
 }: ArtistCoinsSubmitRowProps) => {
   const { color, spacing } = useTheme()
   const [showError, setShowError] = useState(false)
@@ -86,6 +88,7 @@ export const ArtistCoinsSubmitRow = ({
             size='default'
             onClick={handleCreate}
             disabled={isLoading}
+            type={submit ? 'submit' : 'button'}
           >
             {continueText}
           </Button>
