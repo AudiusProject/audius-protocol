@@ -1,5 +1,6 @@
-import { Flex, Text, LoadingSpinner } from '@audius/harmony-native'
 import { walletMessages } from '@audius/common/messages'
+
+import { Flex, Text, LoadingSpinner } from '@audius/harmony-native'
 
 const HEIGHT = 500
 

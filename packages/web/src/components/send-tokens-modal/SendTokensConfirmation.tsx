@@ -5,6 +5,7 @@ import {
   useTokenBalance,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Button,
@@ -17,7 +18,6 @@ import {
 } from '@audius/harmony'
 
 import { CryptoBalanceSection } from 'components/buy-sell-modal/CryptoBalanceSection'
-import { walletMessages } from '@audius/common/messages'
 
 interface SendTokensConfirmationProps {
   mint: string

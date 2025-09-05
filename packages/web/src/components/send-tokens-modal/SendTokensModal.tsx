@@ -5,19 +5,19 @@ import {
   transformArtistCoinToTokenInfo,
   useSendTokens
 } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
+import { ErrorLevel, Feature, SolanaWalletAddress } from '@audius/common/models'
 import { useSendTokensModal } from '@audius/common/store'
 import { FixedDecimal } from '@audius/fixed-decimal'
 
 import ResponsiveModal from 'components/modal/ResponsiveModal'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import SendTokensConfirmation from './SendTokensConfirmation'
 import SendTokensFailure from './SendTokensFailure'
 import SendTokensInput from './SendTokensInput'
 import SendTokensProgress from './SendTokensProgress'
 import SendTokensSuccess from './SendTokensSuccess'
-import { ErrorLevel, Feature, SolanaWalletAddress } from '@audius/common/models'
-import { reportToSentry } from 'store/errors/reportToSentry'
-import { walletMessages } from '@audius/common/messages'
 
 type SendTokensState = {
   step: 'input' | 'confirm' | 'progress' | 'success' | 'failure'
@@ -65,7 +65,7 @@ const SendTokensModal = () => {
       setState((prev) => ({
         ...prev,
         step: 'success',
-        signature: signature
+        signature
       }))
     } catch (error) {
       const errorMessage =

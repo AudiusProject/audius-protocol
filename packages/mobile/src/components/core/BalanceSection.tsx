@@ -1,12 +1,12 @@
+import {
+  transformArtistCoinToTokenInfo,
+  useArtistCoin
+} from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 
 import { Flex, Text } from '@audius/harmony-native'
 
 import { TokenIcon } from './TokenIcon'
-import {
-  transformArtistCoinToTokenInfo,
-  useArtistCoin
-} from '@audius/common/api'
 
 export type BalanceSectionProps = {
   /** Mint address for fetching balance */

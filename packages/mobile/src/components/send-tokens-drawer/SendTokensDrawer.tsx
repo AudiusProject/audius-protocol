@@ -2,21 +2,21 @@ import { useState } from 'react'
 
 import { useSendTokens } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
+import type { SolanaWalletAddress } from '@audius/common/models'
+import { ErrorLevel, Feature } from '@audius/common/models'
 import { useSendTokensModal } from '@audius/common/store'
 
-import Drawer from 'app/components/drawer/Drawer'
-
-import {
-  SendTokensConfirmation,
-  SendTokensFailure,
-  SendTokensInput,
-  SendTokensProgress,
-  SendTokensSuccess
-} from './components'
 import { Divider, Flex } from '@audius/harmony-native'
-import { DrawerHeader } from '../drawer/DrawerHeader'
-import { ErrorLevel, Feature, SolanaWalletAddress } from '@audius/common/models'
+import Drawer from 'app/components/drawer/Drawer'
 import { reportToSentry } from 'app/utils/reportToSentry'
+
+import { DrawerHeader } from '../drawer/DrawerHeader'
+
+import { SendTokensConfirmation } from './components/SendTokensConfirmation'
+import { SendTokensFailure } from './components/SendTokensFailure'
+import { SendTokensInput } from './components/SendTokensInput'
+import { SendTokensProgress } from './components/SendTokensProgress'
+import { SendTokensSuccess } from './components/SendTokensSuccess'
 
 type SendTokensState = {
   step: 'input' | 'confirm' | 'progress' | 'success' | 'failure'
