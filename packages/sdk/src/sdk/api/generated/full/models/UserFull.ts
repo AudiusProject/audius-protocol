@@ -44,6 +44,12 @@ import {
     ProfilePictureFullFromJSONTyped,
     ProfilePictureFullToJSON,
 } from './ProfilePictureFull';
+import type { UserFullArtistCoinBadge } from './UserFullArtistCoinBadge';
+import {
+    UserFullArtistCoinBadgeFromJSON,
+    UserFullArtistCoinBadgeFromJSONTyped,
+    UserFullArtistCoinBadgeToJSON,
+} from './UserFullArtistCoinBadge';
 
 /**
  * 
@@ -63,6 +69,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     artistPickTrackId?: string;
+    /**
+     * 
+     * @type {UserFullArtistCoinBadge}
+     * @memberof UserFull
+     */
+    artistCoinBadge: UserFullArtistCoinBadge;
     /**
      * 
      * @type {string}
@@ -407,6 +419,7 @@ export interface UserFull {
 export function instanceOfUserFull(value: object): value is UserFull {
     let isInstance = true;
     isInstance = isInstance && "albumCount" in value && value["albumCount"] !== undefined;
+    isInstance = isInstance && "artistCoinBadge" in value && value["artistCoinBadge"] !== undefined;
     isInstance = isInstance && "followeeCount" in value && value["followeeCount"] !== undefined;
     isInstance = isInstance && "followerCount" in value && value["followerCount"] !== undefined;
     isInstance = isInstance && "handle" in value && value["handle"] !== undefined;
@@ -460,6 +473,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'albumCount': json['album_count'],
         'artistPickTrackId': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
+        'artistCoinBadge': UserFullArtistCoinBadgeFromJSON(json['artist_coin_badge']),
         'bio': !exists(json, 'bio') ? undefined : json['bio'],
         'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFullFromJSON(json['cover_photo']),
         'followeeCount': json['followee_count'],
@@ -530,6 +544,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         
         'album_count': value.albumCount,
         'artist_pick_track_id': value.artistPickTrackId,
+        'artist_coin_badge': UserFullArtistCoinBadgeToJSON(value.artistCoinBadge),
         'bio': value.bio,
         'cover_photo': CoverPhotoFullToJSON(value.coverPhoto),
         'followee_count': value.followeeCount,

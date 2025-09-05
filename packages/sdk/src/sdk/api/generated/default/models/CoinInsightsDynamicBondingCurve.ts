@@ -25,7 +25,13 @@ export interface CoinInsightsDynamicBondingCurve {
      * @type {string}
      * @memberof CoinInsightsDynamicBondingCurve
      */
-    pool: string;
+    address: string;
+    /**
+     * Current price in the pool's quote token (e.g., AUDIO)
+     * @type {number}
+     * @memberof CoinInsightsDynamicBondingCurve
+     */
+    price: number;
     /**
      * Current price in USD
      * @type {number}
@@ -45,7 +51,8 @@ export interface CoinInsightsDynamicBondingCurve {
  */
 export function instanceOfCoinInsightsDynamicBondingCurve(value: object): value is CoinInsightsDynamicBondingCurve {
     let isInstance = true;
-    isInstance = isInstance && "pool" in value && value["pool"] !== undefined;
+    isInstance = isInstance && "address" in value && value["address"] !== undefined;
+    isInstance = isInstance && "price" in value && value["price"] !== undefined;
     isInstance = isInstance && "priceUSD" in value && value["priceUSD"] !== undefined;
     isInstance = isInstance && "curveProgress" in value && value["curveProgress"] !== undefined;
 
@@ -62,7 +69,8 @@ export function CoinInsightsDynamicBondingCurveFromJSONTyped(json: any, ignoreDi
     }
     return {
         
-        'pool': json['pool'],
+        'address': json['address'],
+        'price': json['price'],
         'priceUSD': json['priceUSD'],
         'curveProgress': json['curveProgress'],
     };
@@ -77,7 +85,8 @@ export function CoinInsightsDynamicBondingCurveToJSON(value?: CoinInsightsDynami
     }
     return {
         
-        'pool': value.pool,
+        'address': value.address,
+        'price': value.price,
         'priceUSD': value.priceUSD,
         'curveProgress': value.curveProgress,
     };
