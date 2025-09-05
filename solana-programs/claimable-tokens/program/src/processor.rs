@@ -3,9 +3,9 @@
 use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
-    state::{NonceAccount, TransferInstructionData},
+    state::{NonceAccount, TransferInstructionData, SignedSetAuthorityData},
     utils::program::{
-        find_address_pair, find_nonce_address, find_rent_destination_pda_address, EthereumAddress, NONCE_ACCOUNT_PREFIX, get_rent_destination_pda_seed
+        find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
     },
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -17,13 +17,11 @@ use solana_program::{
     program_error::ProgramError,
     program_pack::Pack,
     pubkey::Pubkey,
-    secp256k1_program, system_instruction, sysvar,
+    secp256k1_program, system_instruction, sysvar::{self, recent_blockhashes::RecentBlockhashes},
     sysvar::rent::Rent,
     sysvar::Sysvar,
 };
 use std::mem::size_of;
-use std::str::FromStr;
-use std::convert::TryInto;
 
 /// Pubkey length
 pub const PUBKEY_LENGTH: usize = 32;
@@ -94,52 +92,6 @@ impl Processor {
         )
     }
 
-    /// Initialize user bank with rent destination
-    #[allow(clippy::too_many_arguments)]
-    pub fn process_init_v2_instruction<'a>(
-        program_id: &Pubkey,
-        funder_account_info: &AccountInfo<'a>,
-        rent_destination_pda_account_info: &AccountInfo<'a>,
-        mint_account_info: &AccountInfo<'a>,
-        base_account_info: &AccountInfo<'a>,
-        acc_to_create_info: &AccountInfo<'a>,
-        rent_account_info: &AccountInfo<'a>,
-        rent: &Rent,
-        eth_address: EthereumAddress,
-        rent_destination: Pubkey,
-    ) -> ProgramResult {
-        // check that mint is initialized
-        spl_token::state::Mint::unpack(&mint_account_info.data.borrow())?;
-        Self::create_token_account(
-            program_id,
-            funder_account_info.clone(),
-            acc_to_create_info.clone(),
-            mint_account_info.key,
-            base_account_info.clone(),
-            eth_address,
-            rent.minimum_balance(spl_token::state::Account::LEN),
-            spl_token::state::Account::LEN as u64,
-        )?;
-
-        Self::initialize_token_account(
-            acc_to_create_info.clone(),
-            mint_account_info.clone(),
-            base_account_info.clone(),
-            rent_account_info.clone(),
-        )?;
-
-        Self::initialize_rent_destination_pda(
-            program_id,
-            mint_account_info,
-            funder_account_info,
-            base_account_info,
-            rent_destination_pda_account_info.clone(),
-            eth_address,
-            rent_destination,
-            rent,
-        )
-    }
-
     /// Transfer user tokens
     /// Operation gated by SECP recovery
     pub fn process_transfer_instruction<'a>(
@@ -204,31 +156,7 @@ impl Processor {
                     eth_address.eth_address,
                 )
             }
-            ClaimableProgramInstruction::CreateTokenAccountV2(data) => {
-                msg!("Instruction: CreateTokenAccount");
-
-                let funder_account_info = next_account_info(account_info_iter)?;
-                let rent_destination_pda_account_info = next_account_info(account_info_iter)?;
-                let mint_account_info = next_account_info(account_info_iter)?;
-                let base_account_info = next_account_info(account_info_iter)?;
-                let acc_to_create_info = next_account_info(account_info_iter)?;
-                let rent_account_info = next_account_info(account_info_iter)?;
-                let rent = &Rent::from_account_info(rent_account_info)?;
-
-                Self::process_init_v2_instruction(
-                    program_id,
-                    funder_account_info,
-                    rent_destination_pda_account_info,
-                    mint_account_info,
-                    base_account_info,
-                    acc_to_create_info,
-                    rent_account_info,
-                    rent,
-                    data.eth_address,
-                    data.rent_destination,
-                )
-            }
-            ClaimableProgramInstruction::Transfer(eth_address, ) => {
+            ClaimableProgramInstruction::Transfer(eth_address) => {
                 msg!("Instruction: Transfer");
 
                 let funder_account_info = next_account_info(account_info_iter)?;
@@ -251,19 +179,34 @@ impl Processor {
                     eth_address,
                 )
             }
-            ClaimableProgramInstruction::CloseTokenAccount(eth_address) => {
-                msg!("Instruction: CloseTokenAccount");
-                let rent_destination_account_info = next_account_info(account_info_iter)?;
+            ClaimableProgramInstruction::SetAuthority => {
+                msg!("Instruction: SetAuthority");
                 let token_account_info = next_account_info(account_info_iter)?;
                 let authority_account_info = next_account_info(account_info_iter)?;
-                let rent_destination_pda_account_info = next_account_info(account_info_iter)?;
-                Self::close(
+                let sysvars_instruction_info = next_account_info(account_info_iter)?;
+                let recent_blockhashes_account_info = next_account_info(account_info_iter)?;
+                Self::process_set_authority_instruction(
                     program_id,
-                    rent_destination_account_info.clone(),
                     token_account_info.clone(),
                     authority_account_info.clone(),
-                    rent_destination_pda_account_info.clone(),
+                    sysvars_instruction_info.clone(),
+                    recent_blockhashes_account_info.clone(),
+                )
+            }
+            ClaimableProgramInstruction::Close(eth_address) => {
+                msg!("Instruction: Close");
+                let token_account_info = next_account_info(account_info_iter)?;
+                let authority_account_info = next_account_info(account_info_iter)?;
+                let destination_account_info = next_account_info(account_info_iter)?;
+                let _spl_token_account_info = next_account_info(account_info_iter)?;
+                let close_authority_info = next_account_info(account_info_iter).ok();
+                Self::process_close_instruction(
+                    program_id,
+                    token_account_info.clone(),
+                    authority_account_info.clone(),
+                    destination_account_info.clone(),
                     eth_address,
+                    close_authority_info.clone(),
                 )
             }
         }
@@ -353,77 +296,6 @@ impl Processor {
         )
     }
 
-    fn initialize_rent_destination_pda<'a>(
-        program_id: &Pubkey,
-        mint_account_info: &AccountInfo<'a>,
-        funder_account_info: &AccountInfo<'a>,
-        authority_account_info: &AccountInfo<'a>,
-        rent_destination_pda_account: AccountInfo<'a>,
-        eth_address: EthereumAddress,
-        rent_destination: Pubkey,
-        rent: &Rent
-    ) -> ProgramResult {
-        let rent_destination_pda_seed = get_rent_destination_pda_seed(&eth_address);
-        let (base_address, rent_destination_pda, bump_seed) =
-            find_rent_destination_pda_address(program_id, &mint_account_info.key, &eth_address);
-
-
-        if rent_destination_pda != *rent_destination_pda_account.key {
-            msg!("Invalid rent destination PDA address");
-            return Err(ClaimableProgramError::InvalidRentDestination.into());
-        }
-        if base_address != *authority_account_info.key {
-            msg!("Invalid authority account for rent destination");
-            return Err(ClaimableProgramError::InvalidRentDestination.into());
-        }
-
-        let signers_seeds = &[
-            &authority_account_info.key.to_bytes()[..32],
-            &rent_destination_pda_seed.as_slice(),
-            &[bump_seed],
-        ];
-
-        // Calculate if additional lamports are required to store the rent destination
-        // just in case someone is trying to deny this account from being used.
-        let rent_destination_lamports = rent_destination_pda_account.lamports();
-        let required_lamports = rent
-            .minimum_balance(PUBKEY_LENGTH)
-            .saturating_sub(rent_destination_lamports);
-
-        // Transfer required lamports from payer to rent destination account if necessary.
-        if required_lamports > 0 {
-            invoke(
-                &system_instruction::transfer(
-                    funder_account_info.key,
-                    rent_destination_pda_account.key,
-                    required_lamports,
-                ),
-                &[funder_account_info.clone(), rent_destination_pda_account.clone()],
-            )?;
-        }
-
-        // If the rent destination account is empty / doesn't exist yet, create it.
-        let rent_destination_pda_is_empty = rent_destination_pda_account.try_data_is_empty().unwrap_or(true);
-        if rent_destination_pda_is_empty {
-            invoke_signed(
-                &system_instruction::allocate(rent_destination_pda_account.key, PUBKEY_LENGTH as u64),
-                &[rent_destination_pda_account.clone()],
-                &[signers_seeds],
-            )?;
-
-            invoke_signed(
-                &system_instruction::assign(rent_destination_pda_account.key, program_id),
-                &[rent_destination_pda_account.clone()],
-                &[signers_seeds],
-            )?;
-        }
-
-        // Copy the rent destination address into the account data
-        rent_destination_pda_account.data.borrow_mut()[..PUBKEY_LENGTH]
-            .copy_from_slice(rent_destination.as_ref());
-        Ok(())
-    }
-
     /// Transfer tokens from source to destination
     fn token_transfer<'a>(
         source: AccountInfo<'a>,
@@ -463,84 +335,184 @@ impl Processor {
         )
     }
 
-    /// Closes token account and transfers rent to rent destination
-    fn close<'a>(
+    fn process_set_authority_instruction<'a>(
         program_id: &Pubkey,
-        rent_destination_account_info: AccountInfo<'a>,
         token_account_info: AccountInfo<'a>,
         authority_account_info: AccountInfo<'a>,
-        rent_destination_pda_account_info: AccountInfo<'a>,
-        eth_address: EthereumAddress,
+        sysvars_instruction_info: AccountInfo<'a>,
+        recent_blockhashes_account_info: AccountInfo<'a>,
     ) -> ProgramResult {
-        let token_account_data = spl_token::state::Account::unpack(&token_account_info.data.borrow())?;       
-        let pair = find_address_pair(program_id, &token_account_data.mint, eth_address)?;
+        let index = sysvar::instructions::load_current_index_checked(&sysvars_instruction_info)
+            .map_err(to_claimable_tokens_error)?;
 
-        // Validate the token account matches expected PDA
-        if *token_account_info.key != pair.derive.address {
+        // instruction can't be first in transaction
+        // because must follow after `new_secp256k1_instruction`
+        if index == 0 {
+            msg!("Secp256k1 instruction missing");
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        // Current instruction - 1
+        let secp_program_index = index - 1;
+
+        // load previous instruction
+        let instruction = sysvar::instructions::load_instruction_at_checked(
+            secp_program_index as usize,
+            &sysvars_instruction_info,
+        )
+        .map_err(to_claimable_tokens_error)?;
+
+        // is that instruction is `new_secp256k1_instruction`
+        if instruction.program_id != secp256k1_program::id() {
+            msg!("Incorrect program id for secp256k1 instruction");
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        // Parse the secp256k1 instruction
+        let offsets = SecpSignatureOffsets::try_from_slice(
+            &instruction.data[1..(1 + SIGNATURE_OFFSETS_SERIALIZED_SIZE)],
+        )?;
+        let eth_address_signer = &instruction.data
+            [offsets.eth_address_offset as usize..(offsets.eth_address_offset as usize + size_of::<EthereumAddress>())];
+        let message = &instruction.data
+            [offsets.message_data_offset as usize
+                ..(offsets.message_data_offset + offsets.message_data_size) as usize
+            ];
+
+        // Deserialize the message into the SetAuthority instruction data
+        let signed_data = SignedSetAuthorityData::try_from_slice(message)
+            .map_err(|_| ClaimableProgramError::InvalidSignatureData)?;
+
+        // Verify the blockhash is recent to prevent replay attacks
+        let recent_blockhashes = RecentBlockhashes::from_account_info(&recent_blockhashes_account_info)
+            .map_err(|_| ClaimableProgramError::InvalidSignatureData)?;
+
+        let blockhash_found = recent_blockhashes
+            .iter()
+            .any(|entry| entry.blockhash == signed_data.blockhash);
+
+        if !blockhash_found {
+            msg!("Blockhash is not recent");
+            return Err(ClaimableProgramError::InvalidSignatureData.into());
+        }
+
+        // Deserialize the signed instruction data
+        let signed_instruction = spl_token::instruction::TokenInstruction::unpack(&signed_data.instruction)
+            .map_err(|_| ClaimableProgramError::InvalidSignatureData)?;
+
+        // Ensure it's a SetAuthority instruction
+        let signed_data = match signed_instruction {
+            spl_token::instruction::TokenInstruction::SetAuthority { 
+                ref authority_type, ref new_authority 
+            } => {
+                (authority_type, new_authority)
+            }
+            _ => {
+                msg!("Incorrect token instruction in signed message");
+                return Err(ClaimableProgramError::InvalidSignatureData.into());
+            }
+        };
+
+        // Extract authority type and new authority from the signed data
+        let authority_type = signed_data.0.clone();
+        let new_authority = signed_data.1.ok_or(ClaimableProgramError::InvalidSignatureData)?;
+
+        // Verify Secp256k1 signer derives to the matching token account address
+        // and authority PDA address.
+        let signer_address = EthereumAddress::try_from_slice(eth_address_signer)
+            .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
+        let mint = &spl_token::state::Account::unpack(&token_account_info.data.borrow())?.mint;
+        let pair = find_address_pair(program_id, mint, signer_address)?;
+        let derived_authority = pair.base.address;
+        let derived_token_account = pair.derive.address;
+        if *authority_account_info.key != derived_authority {
+            msg!("Authority account mismatch");
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+        if *token_account_info.key != derived_token_account {
+            msg!("Token account mismatch");
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+
+        // Set the token authority
+        invoke_signed(
+            &spl_token::instruction::set_authority(
+                &spl_token::id(),
+                token_account_info.key,
+                Some(&new_authority),
+                authority_type,
+                authority_account_info.key,
+                &[authority_account_info.key],
+            )?,
+            &[token_account_info, authority_account_info],
+            &[&[&mint.to_bytes()[..32], &[pair.base.seed]][..]],
+        )
+    }
+
+    fn process_close_instruction<'a>(
+        program_id: &Pubkey,
+        token_account_info: AccountInfo<'a>,
+        authority_account_info: AccountInfo<'a>,
+        destination_account_info: AccountInfo<'a>,
+        eth_address: EthereumAddress,
+        close_authority_info: Option<&AccountInfo<'a>>,
+    ) -> Result<(), ProgramError> {
+        let token_account_data = spl_token::state::Account::unpack(&token_account_info.data.borrow())?;
+        let mint = &token_account_data.mint;
+        let pair = find_address_pair(program_id, mint, eth_address)?;
+        let seed_slice = [&mint.to_bytes()[..32], &[pair.base.seed]];
+        let seeds = &[&seed_slice[..]];
+
+        if token_account_info.key != &pair.derive.address {
+            msg!("Token account mismatch");
             return Err(ProgramError::InvalidSeeds);
         }
 
-        let (base_address, expected_rent_destination_account_pda, _bump) = find_rent_destination_pda_address(
-            program_id,
-            &token_account_data.mint,
-            &eth_address,
-        );
-        if expected_rent_destination_account_pda != *rent_destination_pda_account_info.key {
-            msg!("Invalid rent destination PDA address {} != {}", *rent_destination_pda_account_info.key, expected_rent_destination_account_pda);
-            return Err(ClaimableProgramError::InvalidRentDestination.into());
+        if authority_account_info.key != &pair.base.address {
+            msg!("Authority account mismatch");
+            return Err(ProgramError::InvalidSeeds);
         }
 
-        if base_address != *authority_account_info.key {
-            msg!("Invalid authority account for rent destination");
-            return Err(ClaimableProgramError::InvalidRentDestination.into());
+        if close_authority_info.is_some() {
+            if token_account_data.close_authority.is_none() {
+                msg!("Token account has no close authority set");
+                return Err(ProgramError::InvalidAccountData);
+            }
+            if &token_account_data.close_authority.unwrap() != close_authority_info.unwrap().key {
+                msg!("Close authority account mismatch, {} != {}", token_account_data.close_authority.unwrap(), close_authority_info.unwrap().key);
+                return Err(ProgramError::InvalidAccountData);
+            }
+            invoke(
+                &spl_token::instruction::close_account(
+                    &spl_token::id(),
+                    token_account_info.key,
+                    destination_account_info.key,
+                    close_authority_info.unwrap().key,
+                    &[]
+                )?,
+                &[
+                    token_account_info,
+                    destination_account_info,
+                    close_authority_info.unwrap().clone(),
+                ],
+            )?;
+        } else {
+            if destination_account_info.key.to_string() != DEFAULT_RENT_DESTINATION {
+                msg!("Destination account mismatch");
+                return Err(ProgramError::InvalidAccountData);
+            }
+            invoke_signed(
+                &spl_token::instruction::close_account(
+                    &spl_token::id(),
+                    token_account_info.key,
+                    destination_account_info.key,
+                    authority_account_info.key,
+                    &[authority_account_info.key],
+                )?,
+                &[token_account_info, destination_account_info, authority_account_info],
+                seeds,
+            )?;
         }
-
-        let default_rent_destination = Pubkey::from_str(DEFAULT_RENT_DESTINATION).unwrap();
-        let mut stored_pubkey = Pubkey::default();
-        if rent_destination_pda_account_info.data_len() >= PUBKEY_LENGTH {
-            stored_pubkey = {
-                let rent_destination_pda_data = &rent_destination_pda_account_info.data.borrow();
-                    Pubkey::new_from_array(
-                    rent_destination_pda_data[..PUBKEY_LENGTH].try_into().map_err(|_| ClaimableProgramError::InvalidRentDestination)?
-                )
-            };
-        }
-        if stored_pubkey == Pubkey::default() && *rent_destination_account_info.key != default_rent_destination {
-            msg!("Rent destination account does not match default destination {} != {}", *rent_destination_account_info.key, default_rent_destination);
-            return Err(ClaimableProgramError::InvalidRentDestination.into());
-        } 
-        if stored_pubkey != Pubkey::default() && stored_pubkey != *rent_destination_account_info.key {
-            msg!("Rent destination account data does not match expected address {} != {}", *rent_destination_account_info.key, stored_pubkey);
-            return Err(ClaimableProgramError::InvalidRentDestination.into());
-        }
-        
-        let authority_signature_seeds = [&token_account_data.mint.to_bytes()[..32], &[pair.base.seed]];
-        let signers = &[&authority_signature_seeds[..]];
-
-        // Close token account and transfer rent to rent destination
-        invoke_signed(
-            &spl_token::instruction::close_account(
-                &spl_token::id(),
-                token_account_info.key,
-                rent_destination_account_info.key,
-                authority_account_info.key,
-                &[],
-            )?,
-            &[token_account_info, rent_destination_account_info.clone(), authority_account_info],
-            signers,
-        )?;
-
-        // Close pda account by zero out its value, rent
-        if stored_pubkey != Pubkey::default() {
-            let refund_lamports = rent_destination_pda_account_info.lamports();
-            let rent_destination_lamports = rent_destination_account_info.lamports();
-            **rent_destination_pda_account_info.lamports.borrow_mut() = 0u64;
-            rent_destination_pda_account_info.data.borrow_mut().fill(0);
-            **rent_destination_account_info.lamports.borrow_mut() = rent_destination_lamports
-                .checked_add(refund_lamports)
-                .ok_or(ClaimableProgramError::MathOverflow)?;
-        }
-
         Ok(())
     }
 

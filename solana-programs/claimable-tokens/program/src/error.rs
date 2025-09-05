@@ -24,12 +24,9 @@ pub enum ClaimableProgramError {
     /// User nonce verification error
     #[error("Nonce verification failed")]
     NonceVerificationError,
-    /// Invalid rent destination for a close instruction
-    #[error("Invalid rent destination")]
-    InvalidRentDestination,
-    /// Math overflow
-    #[error("Math overflow")]
-    MathOverflow,
+    /// Invalid signature data
+    #[error("Invalid signature data")]
+    InvalidSignatureData,
 }
 impl From<ClaimableProgramError> for ProgramError {
     fn from(e: ClaimableProgramError) -> Self {

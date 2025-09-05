@@ -44,27 +44,6 @@ pub fn find_nonce_address(
     return (base_pubkey, derived_address, bump_seed);
 }
 
-/// User bank rent destination account seed prefix
-pub const RENT_DESTINATION_PREFIX: &str = "R_";
-
-pub fn get_rent_destination_pda_seed(eth_address: &EthereumAddress) -> Vec<u8> {
-    [RENT_DESTINATION_PREFIX.as_ref(), eth_address.as_ref()].concat()
-}
-
-/// Finds the address of the rent destination PDA
-pub fn find_rent_destination_pda_address(
-    program_id: &Pubkey,
-    mint: &Pubkey,
-    eth_address: &EthereumAddress,
-) -> (Pubkey, Pubkey, u8) {
-    let (base_pubkey, _) = find_program_address(mint, program_id);
-    let rent_destination_pda_seed = get_rent_destination_pda_seed(eth_address);
-    let (derived_address, bump_seed) =
-        find_program_address_with_seed(program_id, &base_pubkey, &rent_destination_pda_seed);
-
-    return (base_pubkey, derived_address, bump_seed);
-} 
-
 /// Return `Base` account with seed and corresponding derived address
 /// with seed
 pub fn find_address_pair(
