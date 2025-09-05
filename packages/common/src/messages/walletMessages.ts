@@ -40,7 +40,6 @@ export const walletMessages = {
   iHaveReviewed:
     'I have reviewed the information and understand that transfers are final.',
   sent: 'Sent',
-  send: 'Send',
   sendTokensAmount: 'Amount',
   sendTokensAmountToSend: 'Amount to Send',
   sendTokensDestinationAddress: 'Destination Address',
