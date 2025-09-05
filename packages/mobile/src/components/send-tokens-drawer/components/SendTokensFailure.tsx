@@ -4,23 +4,18 @@ import {
 } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
-import { FixedDecimal } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
 
 import {
   Button,
   Flex,
   Text,
-  IconError,
   Divider,
-  PlainButton,
-  IconX,
   IconClose,
-  colorTheme,
   useTheme,
   TextLink
 } from '@audius/harmony-native'
-import { BalanceSection, TokenIcon } from 'app/components/core'
+import { BalanceSection } from 'app/components/core'
 
 type SendTokensFailureProps = {
   mint: string

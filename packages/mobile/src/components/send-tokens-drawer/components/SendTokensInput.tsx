@@ -4,18 +4,10 @@ import {
   useArtistCoin,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import {
-  Button,
-  Divider,
-  Flex,
-  Text,
-  TextInput,
-  TextInputSize
-} from '@audius/harmony-native'
+import { Button, Divider, Flex, Text, TextInput } from '@audius/harmony-native'
 import { BalanceSection } from 'app/components/core'
 
 type SendTokensInputProps = {

@@ -3,19 +3,18 @@ import {
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
-import { makeSolanaTransactionLink } from '@audius/common/utils/linking'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 
 import {
   Button,
   Flex,
   Text,
-  IconCheck,
   Divider,
   CompletionCheck,
   IconExternalLink
 } from '@audius/harmony-native'
-import { BalanceSection, TokenIcon } from 'app/components/core'
+import { BalanceSection } from 'app/components/core'
 import { ExternalLink } from 'app/harmony-native/components/TextLink/ExternalLink'
 
 type SendTokensSuccessProps = {

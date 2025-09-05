@@ -2,26 +2,14 @@ import { useState } from 'react'
 
 import {
   useArtistCoin,
-  useTokenBalance,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import { css } from '@emotion/native'
-import { Pressable } from 'react-native'
 
-import {
-  Button,
-  Flex,
-  Text,
-  IconSend,
-  Divider,
-  Hint,
-  IconError,
-  IconCheck
-} from '@audius/harmony-native'
-import { BalanceSection, Switch, TokenIcon } from 'app/components/core'
+import { Button, Flex, Text, Divider } from '@audius/harmony-native'
+import { BalanceSection, Switch } from 'app/components/core'
 
 type SendTokensConfirmationProps = {
   mint: string

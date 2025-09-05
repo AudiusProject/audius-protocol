@@ -16,7 +16,7 @@ import {
   Hint,
   TextLink
 } from '@audius/harmony-native'
-import { QRCodeComponent, TokenIcon, BalanceSection } from 'app/components/core'
+import { QRCodeComponent, BalanceSection } from 'app/components/core'
 import { AddressTile } from 'app/components/core/AddressTile'
 import Drawer from 'app/components/drawer/Drawer'
 import Skeleton from 'app/components/skeleton'
