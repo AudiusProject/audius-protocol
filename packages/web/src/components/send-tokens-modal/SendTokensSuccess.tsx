@@ -3,7 +3,7 @@ import {
   useTokenBalance,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
-import { makeSolanaTransactionLink, route } from '@audius/common/utils'
+import { makeSolanaTransactionLink } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Button,
