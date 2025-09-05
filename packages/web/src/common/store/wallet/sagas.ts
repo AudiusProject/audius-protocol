@@ -114,10 +114,11 @@ function* sendAsync({
       }
     }
     try {
-      yield* call([walletClient, walletClient.sendWAudioTokens], {
+      yield* call([walletClient, walletClient.sendTokens], {
         address: recipientWallet as SolanaWalletAddress,
         amount: audioWeiAmount,
-        ethAddress: currentUser
+        ethAddress: currentUser,
+        mint: walletClient.getMintAddress('wAUDIO')
       })
     } catch (e) {
       yield* call(revertOptimisticUserSolBalance)
