@@ -256,6 +256,7 @@ export * from './UserCommentsResponseFull';
 export * from './UserFeedItem';
 export * from './UserFeedResponse';
 export * from './UserFull';
+export * from './UserFullArtistCoinBadge';
 export * from './UserManager';
 export * from './UserMilestoneNotificationActionData';
 export * from './UserSubscribers';
