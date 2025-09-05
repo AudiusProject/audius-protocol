@@ -141,7 +141,7 @@ const LaunchpadPageContent = () => {
 }
 
 export const LaunchpadPage = () => {
-  const { mutate: launchCoin, isPending, isSuccess } = useLaunchCoin()
+  const { mutate: launchCoin, isPending, isSuccess, isError } = useLaunchCoin()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
@@ -174,7 +174,8 @@ export const LaunchpadPage = () => {
           throw new Error('No connected wallet found')
         }
         const parsedPayAmount = _values.payAmount
-          ? parseFloat(_values.payAmount)
+          ? // TODO: FixedDecimal
+            parseFloat(_values.payAmount)
           : undefined
         if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
           console.error('inititalBuyAudioAmount is not valid', {
@@ -183,6 +184,7 @@ export const LaunchpadPage = () => {
           })
         }
         launchCoin({
+          userId: user.user_id,
           name: _values.coinName,
           symbol: _values.coinSymbol,
           image: _values.coinImage!,
@@ -200,7 +202,7 @@ export const LaunchpadPage = () => {
           isOpen={isModalOpen}
           onClose={() => {
             // TODO: should we auto close this modal at some point?
-            if (isSuccess) {
+            if (isSuccess || isError) {
               setIsModalOpen(false)
             }
           }}
@@ -229,7 +231,7 @@ export const LaunchpadPage = () => {
                   </Flex>
                 </>
               ) : null}
-              {isSuccess ? (
+              {isSuccess || isError ? (
                 <>
                   <IconCheck size='3xl' />
                   <Text variant='heading' size='l'>

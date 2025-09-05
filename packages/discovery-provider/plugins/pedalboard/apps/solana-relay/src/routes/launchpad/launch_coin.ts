@@ -160,8 +160,8 @@ export const launchCoin = async (
 
     return res.status(200).send({
       mintPublicKey: mintKeypair.publicKey.toBase58(),
-      createPoolTx: poolConfig.createPoolTx,
-      firstBuyTx: poolConfig.swapBuyTx,
+      createPoolTx: createPoolTx.serialize({ requireAllSignatures: false }),
+      firstBuyTx,
       metadataUri
     })
   } catch (e) {

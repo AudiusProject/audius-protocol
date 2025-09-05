@@ -1,13 +1,21 @@
-import { useQueryContext } from '@audius/common/api'
+import {
+  QUERY_KEYS,
+  getArtistCoinsQueryKey,
+  getUserCoinQueryKey,
+  getUserCreatedCoinsQueryKey,
+  getUserQueryKey,
+  useQueryContext
+} from '@audius/common/api'
+import { Feature } from '@audius/common/models'
+import { Id } from '@audius/sdk'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
-import { PublicKey } from '@solana/web3.js'
-import { useMutation } from '@tanstack/react-query'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 
-import { buildAndSendTransaction } from '../../../common/src/api/tan-query/jupiter/utils'
-
 export type LaunchCoinParams = {
+  userId: number
   name: string
   symbol: string
   description: string
@@ -29,6 +37,7 @@ export type LaunchCoinResponse = {
  */
 export const useLaunchCoin = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
+  const queryClient = useQueryClient()
 
   return useMutation<LaunchCoinResponse, Error, LaunchCoinParams>({
     mutationFn: async (
@@ -48,20 +57,67 @@ export const useLaunchCoin = () => {
 
         const walletPublicKey = new PublicKey(params.walletPublicKey)
 
+        console.log('Sending request to relay...')
         // First call the solana relay method to initialize the coin metadata & set up transaction instructions
-        const { createPoolTx, firstBuyTx, metadataUri, mintPublicKey } =
-          await sdk.services.solanaRelay.launchCoin({
-            name: params.name,
-            symbol: params.symbol,
-            description: params.description,
-            walletPublicKey,
-            initialBuyAmountAudio: params.initialBuyAmountAudio,
-            image: params.image
-          })
+        const {
+          createPoolTx: createPoolTxSerialized,
+          firstBuyTx,
+          metadataUri,
+          mintPublicKey
+        } = await sdk.services.solanaRelay.launchCoin({
+          name: params.name,
+          symbol: params.symbol,
+          description: params.description,
+          walletPublicKey,
+          initialBuyAmountAudio: params.initialBuyAmountAudio,
+          image: params.image
+        })
+        console.log('Relay response received', {
+          createPoolTxSerialized,
+          firstBuyTx,
+          metadataUri,
+          mintPublicKey
+        })
+
+        // Deserialize the transaction
+        const createPoolTx = VersionedTransaction.deserialize(
+          Buffer.from(createPoolTxSerialized, 'base64')
+        )
+
+        console.log('Pool TX Deserialized', {
+          createPoolTx,
+          createPoolTxSerialized
+        })
 
         // Create the bonding curve pool
-        const createPoolSignature =
+        const createPoolTxSignature =
           await solanaProvider.signAndSendTransaction(createPoolTx)
+
+        console.log('Pool TX Signed', {
+          createPoolTxSignature
+        })
+
+        // Wait for confirmation
+        await sdk.services.solanaClient.connection.confirmTransaction(
+          createPoolTxSignature,
+          'confirmed'
+        )
+
+        console.log('Pool TX Confirmed')
+
+        if (createPoolTxSignature) {
+          console.log('Creating coin in Audius database')
+          const coinRes = await sdk.coins.createCoin({
+            userId: Id.parse(params.userId),
+            createCoinRequest: {
+              mint: mintPublicKey,
+              ticker: `$${params.symbol}`,
+              decimals: 9,
+              name: params.name
+            }
+          })
+          console.log('Coin created in Audius database', coinRes)
+        }
 
         // Pool successfully created!
 
@@ -96,7 +152,12 @@ export const useLaunchCoin = () => {
         // TODO: Now perform the first buy transaction
         // DONE
 
-        return result
+        return {
+          mintPublicKey,
+          createPoolTx: createPoolTxSignature,
+          firstBuyTx,
+          metadataUri
+        }
       } catch (error) {
         console.error('Error launching coin:', error)
         throw error instanceof Error
@@ -105,7 +166,17 @@ export const useLaunchCoin = () => {
       }
     },
     onMutate: async (_params) => {},
-    onSuccess: (_result, _params, _context) => {},
+    onSuccess: (result, params, _context) => {
+      queryClient.invalidateQueries({ queryKey: getArtistCoinsQueryKey() })
+      // Invalidate our user - this will refresh their badge info
+      queryClient.invalidateQueries({
+        queryKey: getUserCreatedCoinsQueryKey(params.userId)
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: getUserCoinQueryKey(result.mintPublicKey)
+      })
+    },
     onError: (error, params, _context) => {
       if (reportToSentry) {
         reportToSentry({

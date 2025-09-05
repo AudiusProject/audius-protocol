@@ -49,8 +49,6 @@ const main = async () => {
   app.post('/solana/cache', cache)
   app.get('/solana/feePayer', feePayer)
   app.get('/solana/instruction/location', location)
-  const upload = multer({ storage: multer.memoryStorage() })
-  app.post('/solana/launch_coin', upload.single('image'), launchCoin)
   app.use(outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 
