@@ -354,27 +354,19 @@ fn close(
     eth_address: EthereumAddress,
     mint: Pubkey,
     destination_account: Pubkey,
-    close_authority: Option<Keypair>,
 ) -> anyhow::Result<()> {
-    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;    
-    let close_authority_key = close_authority.as_ref().map(|kp| kp.pubkey());
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
     let instruction = claimable_tokens::instruction::close(
         &claimable_tokens::id(),
         &pair.derive.address,
         &pair.base.address,
         &destination_account,
-        eth_address,
-        &close_authority_key,
+        eth_address
     )?;
     let mut tx =
         Transaction::new_with_payer(&[instruction], Some(&config.fee_payer.pubkey()));
     let (recent_blockhash, _) = config.rpc_client.get_recent_blockhash()?;
-    let mut keypairs: Vec<&dyn Signer> = vec![config.fee_payer.as_ref()];
-    if let Some(ref close_auth) = close_authority {
-        keypairs.push(close_auth);
-    }
-    tx.sign(&keypairs, recent_blockhash);
-    println!("Base58 encoded transaction: {}", bs58::encode(tx.message_data()).into_string());
+    tx.sign(&[config.fee_payer.as_ref()], recent_blockhash);
     let tx_hash = config
         .rpc_client
         .send_and_confirm_transaction_with_spinner(&tx)?;
@@ -557,12 +549,6 @@ fn main() -> anyhow::Result<()> {
                     .takes_value(true)
                     .required(true)
                     .help("Where to return the rent to when the account is closed."),
-                Arg::with_name("close_authority")
-                    .validator(is_keypair)
-                    .value_name("CLOSE_AUTHORITY")
-                    .takes_value(true)
-                    .required(false)
-                    .help("Close authority of the token account. If not provided, the destination account must be the default."),
             ])
                 .help("Close the token account associated with the specified Ethereum address and mint."),
         ])
@@ -695,17 +681,16 @@ fn main() -> anyhow::Result<()> {
                 .context("Failed to execute `set-authority` command")?
         }
         ("close", Some(args)) => {
-            let (eth_address, mint, rent_destination, close_authority) = (|| -> anyhow::Result<_> {
+            let (eth_address, mint, rent_destination) = (|| -> anyhow::Result<_> {
                 let eth_address = eth_address_of(args, "eth_address")?;
                 let mint = pubkey_of(args, "mint").unwrap();
                 let rent_destination = pubkey_of(args, "rent_destination").unwrap();
-                let close_authority = keypair_of(args, "close_authority");
 
-                Ok((eth_address, mint, rent_destination, close_authority))
+                Ok((eth_address, mint, rent_destination))
             })()
             .context("Preparing parameters for execution command `close`")?;
 
-            close(config, eth_address, mint, rent_destination, close_authority)
+            close(config, eth_address, mint, rent_destination)
                 .context("Failed to execute `close` command")?
         }
 

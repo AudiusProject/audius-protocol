@@ -198,15 +198,12 @@ impl Processor {
                 let token_account_info = next_account_info(account_info_iter)?;
                 let authority_account_info = next_account_info(account_info_iter)?;
                 let destination_account_info = next_account_info(account_info_iter)?;
-                let _spl_token_account_info = next_account_info(account_info_iter)?;
-                let close_authority_info = next_account_info(account_info_iter).ok();
                 Self::process_close_instruction(
                     program_id,
                     token_account_info.clone(),
                     authority_account_info.clone(),
                     destination_account_info.clone(),
                     eth_address,
-                    close_authority_info.clone(),
                 )
             }
         }
@@ -455,7 +452,6 @@ impl Processor {
         authority_account_info: AccountInfo<'a>,
         destination_account_info: AccountInfo<'a>,
         eth_address: EthereumAddress,
-        close_authority_info: Option<&AccountInfo<'a>>,
     ) -> Result<(), ProgramError> {
         let token_account_data = spl_token::state::Account::unpack(&token_account_info.data.borrow())?;
         let mint = &token_account_data.mint;
@@ -473,47 +469,22 @@ impl Processor {
             return Err(ProgramError::InvalidSeeds);
         }
 
-        if close_authority_info.is_some() {
-            if token_account_data.close_authority.is_none() {
-                msg!("Token account has no close authority set");
-                return Err(ProgramError::InvalidAccountData);
-            }
-            if &token_account_data.close_authority.unwrap() != close_authority_info.unwrap().key {
-                msg!("Close authority account mismatch, {} != {}", token_account_data.close_authority.unwrap(), close_authority_info.unwrap().key);
-                return Err(ProgramError::InvalidAccountData);
-            }
-            invoke(
-                &spl_token::instruction::close_account(
-                    &spl_token::id(),
-                    token_account_info.key,
-                    destination_account_info.key,
-                    close_authority_info.unwrap().key,
-                    &[]
-                )?,
-                &[
-                    token_account_info,
-                    destination_account_info,
-                    close_authority_info.unwrap().clone(),
-                ],
-            )?;
-        } else {
-            if destination_account_info.key.to_string() != DEFAULT_RENT_DESTINATION {
-                msg!("Destination account mismatch");
-                return Err(ProgramError::InvalidAccountData);
-            }
-            invoke_signed(
-                &spl_token::instruction::close_account(
-                    &spl_token::id(),
-                    token_account_info.key,
-                    destination_account_info.key,
-                    authority_account_info.key,
-                    &[authority_account_info.key],
-                )?,
-                &[token_account_info, destination_account_info, authority_account_info],
-                seeds,
-            )?;
+        if destination_account_info.key.to_string() != DEFAULT_RENT_DESTINATION {
+            msg!("Destination account mismatch");
+            return Err(ProgramError::InvalidAccountData);
         }
-        Ok(())
+        invoke_signed(
+            &spl_token::instruction::close_account(
+                &spl_token::id(),
+                token_account_info.key,
+                destination_account_info.key,
+                authority_account_info.key,
+                &[authority_account_info.key],
+            )?,
+            &[token_account_info, destination_account_info, authority_account_info],
+            seeds,
+        )
+        
     }
 
     /// Checks that the user signed message with his ethereum private key

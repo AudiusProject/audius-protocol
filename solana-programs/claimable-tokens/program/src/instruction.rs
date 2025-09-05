@@ -155,7 +155,6 @@ pub fn close(
     authority: &Pubkey,
     destination_account: &Pubkey,
     eth_address: EthereumAddress,
-    close_authority: &Option<Pubkey>,
 ) -> Result<Instruction, ProgramError> {
     let data = ClaimableProgramInstruction::Close(eth_address)
         .try_to_vec()
@@ -166,9 +165,6 @@ pub fn close(
         AccountMeta::new(*destination_account, false),
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
-    if close_authority.is_some() {
-        accounts.push(AccountMeta::new_readonly(close_authority.unwrap(), true));
-    }
     Ok(Instruction {
         program_id: *program_id,
         accounts,
