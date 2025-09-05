@@ -3,7 +3,7 @@
 use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
-    state::{NonceAccount, TransferInstructionData},
+    state::{NonceAccount, TransferInstructionData, SignedSetAuthorityData},
     utils::program::{
         find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
     },
@@ -17,17 +17,24 @@ use solana_program::{
     program_error::ProgramError,
     program_pack::Pack,
     pubkey::Pubkey,
-    secp256k1_program, system_instruction, sysvar,
+    secp256k1_program, system_instruction, sysvar::{self, recent_blockhashes::RecentBlockhashes},
     sysvar::rent::Rent,
     sysvar::Sysvar,
 };
 use std::mem::size_of;
+
+/// Pubkey length
+pub const PUBKEY_LENGTH: usize = 32;
 
 /// Known const for serialized signature offsets
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 
 /// Start of SECP recovery data after serialized SecpSignatureOffsets struct
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
+
+/// Default rent destination for closing token accounts
+/// Prod/stage: 2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT
+pub const DEFAULT_RENT_DESTINATION: &str = "2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT";
 
 /// Secp256k1 signature offsets data
 #[derive(Clone, Copy, Debug, Default, PartialEq, BorshDeserialize, BorshSerialize)]
@@ -172,6 +179,33 @@ impl Processor {
                     eth_address,
                 )
             }
+            ClaimableProgramInstruction::SetAuthority => {
+                msg!("Instruction: SetAuthority");
+                let token_account_info = next_account_info(account_info_iter)?;
+                let authority_account_info = next_account_info(account_info_iter)?;
+                let sysvars_instruction_info = next_account_info(account_info_iter)?;
+                let recent_blockhashes_account_info = next_account_info(account_info_iter)?;
+                Self::process_set_authority_instruction(
+                    program_id,
+                    token_account_info.clone(),
+                    authority_account_info.clone(),
+                    sysvars_instruction_info.clone(),
+                    recent_blockhashes_account_info.clone(),
+                )
+            }
+            ClaimableProgramInstruction::Close(eth_address) => {
+                msg!("Instruction: Close");
+                let token_account_info = next_account_info(account_info_iter)?;
+                let authority_account_info = next_account_info(account_info_iter)?;
+                let destination_account_info = next_account_info(account_info_iter)?;
+                Self::process_close_instruction(
+                    program_id,
+                    token_account_info.clone(),
+                    authority_account_info.clone(),
+                    destination_account_info.clone(),
+                    eth_address,
+                )
+            }
         }
     }
 
@@ -296,6 +330,161 @@ impl Processor {
             &[source, destination, authority],
             signers,
         )
+    }
+
+    fn process_set_authority_instruction<'a>(
+        program_id: &Pubkey,
+        token_account_info: AccountInfo<'a>,
+        authority_account_info: AccountInfo<'a>,
+        sysvars_instruction_info: AccountInfo<'a>,
+        recent_blockhashes_account_info: AccountInfo<'a>,
+    ) -> ProgramResult {
+        let index = sysvar::instructions::load_current_index_checked(&sysvars_instruction_info)
+            .map_err(to_claimable_tokens_error)?;
+
+        // instruction can't be first in transaction
+        // because must follow after `new_secp256k1_instruction`
+        if index == 0 {
+            msg!("Secp256k1 instruction missing");
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        // Current instruction - 1
+        let secp_program_index = index - 1;
+
+        // load previous instruction
+        let instruction = sysvar::instructions::load_instruction_at_checked(
+            secp_program_index as usize,
+            &sysvars_instruction_info,
+        )
+        .map_err(to_claimable_tokens_error)?;
+
+        // is that instruction is `new_secp256k1_instruction`
+        if instruction.program_id != secp256k1_program::id() {
+            msg!("Incorrect program id for secp256k1 instruction");
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        // Parse the secp256k1 instruction
+        let offsets = SecpSignatureOffsets::try_from_slice(
+            &instruction.data[1..(1 + SIGNATURE_OFFSETS_SERIALIZED_SIZE)],
+        )?;
+        let eth_address_signer = &instruction.data
+            [offsets.eth_address_offset as usize..(offsets.eth_address_offset as usize + size_of::<EthereumAddress>())];
+        let message = &instruction.data
+            [offsets.message_data_offset as usize
+                ..(offsets.message_data_offset + offsets.message_data_size) as usize
+            ];
+
+        // Deserialize the message into the SetAuthority instruction data
+        let signed_data = SignedSetAuthorityData::try_from_slice(message)
+            .map_err(|_| ClaimableProgramError::InvalidSignatureData)?;
+
+        // Verify the blockhash is recent to prevent replay attacks
+        let recent_blockhashes = RecentBlockhashes::from_account_info(&recent_blockhashes_account_info)
+            .map_err(|_| ClaimableProgramError::InvalidSignatureData)?;
+
+        let blockhash_found = recent_blockhashes
+            .iter()
+            .any(|entry| entry.blockhash == signed_data.blockhash);
+
+        if !blockhash_found {
+            msg!("Blockhash is not recent");
+            return Err(ClaimableProgramError::InvalidSignatureData.into());
+        }
+
+        // Deserialize the signed instruction data
+        let signed_instruction = spl_token::instruction::TokenInstruction::unpack(&signed_data.instruction)
+            .map_err(|_| ClaimableProgramError::InvalidSignatureData)?;
+
+        // Ensure it's a SetAuthority instruction
+        let signed_data = match signed_instruction {
+            spl_token::instruction::TokenInstruction::SetAuthority { 
+                ref authority_type, ref new_authority 
+            } => {
+                (authority_type, new_authority)
+            }
+            _ => {
+                msg!("Incorrect token instruction in signed message");
+                return Err(ClaimableProgramError::InvalidSignatureData.into());
+            }
+        };
+
+        // Extract authority type and new authority from the signed data
+        let authority_type = signed_data.0.clone();
+        let new_authority = signed_data.1.ok_or(ClaimableProgramError::InvalidSignatureData)?;
+
+        // Verify Secp256k1 signer derives to the matching token account address
+        // and authority PDA address.
+        let signer_address = EthereumAddress::try_from_slice(eth_address_signer)
+            .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
+        let mint = &spl_token::state::Account::unpack(&token_account_info.data.borrow())?.mint;
+        let pair = find_address_pair(program_id, mint, signer_address)?;
+        let derived_authority = pair.base.address;
+        let derived_token_account = pair.derive.address;
+        if *authority_account_info.key != derived_authority {
+            msg!("Authority account mismatch");
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+        if *token_account_info.key != derived_token_account {
+            msg!("Token account mismatch");
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+
+        // Set the token authority
+        invoke_signed(
+            &spl_token::instruction::set_authority(
+                &spl_token::id(),
+                token_account_info.key,
+                Some(&new_authority),
+                authority_type,
+                authority_account_info.key,
+                &[authority_account_info.key],
+            )?,
+            &[token_account_info, authority_account_info],
+            &[&[&mint.to_bytes()[..32], &[pair.base.seed]][..]],
+        )
+    }
+
+    fn process_close_instruction<'a>(
+        program_id: &Pubkey,
+        token_account_info: AccountInfo<'a>,
+        authority_account_info: AccountInfo<'a>,
+        destination_account_info: AccountInfo<'a>,
+        eth_address: EthereumAddress,
+    ) -> Result<(), ProgramError> {
+        let token_account_data = spl_token::state::Account::unpack(&token_account_info.data.borrow())?;
+        let mint = &token_account_data.mint;
+        let pair = find_address_pair(program_id, mint, eth_address)?;
+        let seed_slice = [&mint.to_bytes()[..32], &[pair.base.seed]];
+        let seeds = &[&seed_slice[..]];
+
+        if token_account_info.key != &pair.derive.address {
+            msg!("Token account mismatch");
+            return Err(ProgramError::InvalidSeeds);
+        }
+
+        if authority_account_info.key != &pair.base.address {
+            msg!("Authority account mismatch");
+            return Err(ProgramError::InvalidSeeds);
+        }
+
+        if destination_account_info.key.to_string() != DEFAULT_RENT_DESTINATION {
+            msg!("Destination account mismatch");
+            return Err(ProgramError::InvalidAccountData);
+        }
+        invoke_signed(
+            &spl_token::instruction::close_account(
+                &spl_token::id(),
+                token_account_info.key,
+                destination_account_info.key,
+                authority_account_info.key,
+                &[authority_account_info.key],
+            )?,
+            &[token_account_info, destination_account_info, authority_account_info],
+            seeds,
+        )
+        
     }
 
     /// Checks that the user signed message with his ethereum private key

@@ -912,15 +912,16 @@ async fn transfer_replay_instruction() {
     let mut transaction =
         Transaction::new_with_payer(&instructions, Some(&program_context.payer.pubkey()));
 
-    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    let recent_blockhash = program_context.last_blockhash;
+    transaction.sign(&[&program_context.payer], recent_blockhash);
     program_context
         .banks_client
         .process_transaction(transaction)
         .await
         .unwrap();
 
-    let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
-    assert_eq!(transfer_instr_data.nonce + 1, final_user_nonce);
+    let user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    assert_eq!(transfer_instr_data.nonce + 1, user_nonce);
 
     let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
         .await
@@ -937,19 +938,53 @@ async fn transfer_replay_instruction() {
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, transfer_amount);
+
+    // Replay the same transaction with the same blockhash and signature
     let mut transaction2 =
         Transaction::new_with_payer(&instructions, Some(&program_context.payer.pubkey()));
-    let recent_blockhash = program_context
+    transaction2.sign(&[&program_context.payer], recent_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(transaction2)
+        .await;
+    
+    let user_nonce_after_replay = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    // Nonce should not have changed
+    assert_eq!(user_nonce, user_nonce_after_replay);
+
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
+    let bank_token_account_after_replay =
+        spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
+    // Balance should not have changed
+    assert_eq!(bank_token_account.amount, bank_token_account_after_replay.amount);
+
+    // Replay again with a new blockhash to make the signature change
+    let mut new_recent_blockhash = program_context
         .banks_client
         .get_recent_blockhash()
         .await
         .unwrap();
-    transaction2.sign(&[&program_context.payer], recent_blockhash);
-    let tx_result = program_context
+    while new_recent_blockhash == recent_blockhash {
+        // wait until blockhash changes
+        tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+        new_recent_blockhash = program_context
+            .banks_client
+            .get_recent_blockhash()
+            .await
+            .unwrap();
+    }
+    let mut transaction3 =
+        Transaction::new_with_payer(&instructions, Some(&program_context.payer.pubkey()));
+    transaction3.sign(&[&program_context.payer], new_recent_blockhash);
+    let final_tx_result = program_context
         .banks_client
-        .process_transaction(transaction2)
+        .process_transaction(transaction3)
         .await;
-    assert_custom_error(tx_result, 1, ClaimableProgramError::NonceVerificationError);
+    
+    assert_custom_error(final_tx_result, 1, ClaimableProgramError::NonceVerificationError);
+        
 }
 
 // Verify that someone cannot cause a transfer denial by sending lamports to a nonce account
