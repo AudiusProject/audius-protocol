@@ -82,8 +82,8 @@ export const SendTokensDrawer = () => {
     setError('')
   }
 
-  const handleClosed = () => {
-    console.log('REED closed')
+  const handleClose = () => {
+    onClose()
     setState({
       step: 'input',
       amount: BigInt(0),
@@ -96,24 +96,17 @@ export const SendTokensDrawer = () => {
   const renderHeader = () => {
     return (
       <Flex pv='l' ph='xl' gap='m' mb='m'>
-        <DrawerHeader onClose={onClose} title={walletMessages.send} />
+        <DrawerHeader onClose={handleClose} title={walletMessages.send} />
         <Divider />
       </Flex>
     )
   }
 
-  if (!isOpen || !mint) return null
-
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={onClose}
-      // onClosed={handleClosed}
-      drawerHeader={renderHeader}
-    >
+    <Drawer isOpen={isOpen} onClose={handleClose} drawerHeader={renderHeader}>
       {state.step === 'input' ? (
         <SendTokensInput
-          mint={mint}
+          mint={mint ?? ''}
           onContinue={handleInputContinue}
           initialAmount={state.amount}
           initialDestinationAddress={state.destinationAddress}
@@ -122,11 +115,11 @@ export const SendTokensDrawer = () => {
 
       {state.step === 'confirm' ? (
         <SendTokensConfirmation
-          mint={mint}
+          mint={mint ?? ''}
           amount={state.amount}
           destinationAddress={state.destinationAddress}
           onConfirm={handleConfirm}
-          onClose={onClose}
+          onClose={handleClose}
         />
       ) : null}
 
@@ -134,23 +127,22 @@ export const SendTokensDrawer = () => {
 
       {state.step === 'success' ? (
         <SendTokensSuccess
-          mint={mint}
+          mint={mint ?? ''}
           amount={state.amount}
           destinationAddress={state.destinationAddress}
           signature={state.signature}
-          onDone={onClose}
-          onClose={onClose}
+          onDone={handleClose}
         />
       ) : null}
 
       {state.step === 'failure' ? (
         <SendTokensFailure
-          mint={mint}
+          mint={mint ?? ''}
           amount={state.amount}
           destinationAddress={state.destinationAddress}
           error={error}
           onTryAgain={handleTryAgain}
-          onClose={onClose}
+          onClose={handleClose}
         />
       ) : null}
     </Drawer>

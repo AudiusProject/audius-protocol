@@ -24,7 +24,6 @@ type SendTokensSuccessProps = {
   destinationAddress: string
   signature: string
   onDone: () => void
-  onClose: () => void
 }
 
 export const SendTokensSuccess = ({

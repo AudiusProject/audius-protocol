@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  useArtistCoin,
-  transformArtistCoinToTokenInfo
-} from '@audius/common/api'
-import { useFormattedTokenBalance, useUserbank } from '@audius/common/hooks'
+import { useUserbank } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { useReceiveTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -34,11 +30,7 @@ export const ReceiveTokensDrawer = () => {
   const { isOpen, onClose, data } = useReceiveTokensModal()
   const { toast } = useToast()
   const { mint } = data ?? {}
-
-  const { data: coin } = useArtistCoin({ mint: mint ?? '' })
   const { userBankAddress } = useUserbank(mint)
-
-  const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
   const handleCopyAddress = useCallback(() => {
     if (userBankAddress) {
