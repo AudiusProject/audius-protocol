@@ -136,4 +136,5 @@ export type LaunchCoinResponse = {
   createPoolTx: string
   firstBuyTx: string | null
   metadataUri: string
+  imageUri: string
 }

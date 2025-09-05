@@ -14,8 +14,6 @@ import { config } from '../../config'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
-import { isSolanaAddress } from '~/utils/addressUtils'
-
 interface LaunchCoinRequestBody {
   name: string
   symbol: string
@@ -23,8 +21,6 @@ interface LaunchCoinRequestBody {
   description: string
   initialBuyAmountAudio?: string
 }
-
-const AUDIO_DECIMALS = 1e8
 
 const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
 
@@ -84,6 +80,7 @@ export const launchCoin = async (
 
     // TODO: get specific addresses with AUDIO in the name
     const mintKeypair = Keypair.generate()
+    const mintPublicKey = mintKeypair.publicKey
 
     const connection = getConnection()
     const dbcClient = new DynamicBondingCurveClient(connection, 'confirmed')
@@ -113,6 +110,8 @@ export const launchCoin = async (
     }
     const metadataUri = await umi.uploader.uploadJson(metadata)
 
+    logger.info(new BN(initialBuyAmountAudio ?? ''))
+
     // Create Bonding Curve
     const poolConfig = await dbcClient.pool.createPoolWithFirstBuy({
       createPoolParam: {
@@ -121,14 +120,14 @@ export const launchCoin = async (
         symbol,
         uri: metadataUri,
         poolCreator: walletPublicKey,
-        baseMint: mintKeypair.publicKey,
+        baseMint: mintPublicKey,
         payer: walletPublicKey
       },
       firstBuyParam: initialBuyAmountAudio
         ? {
             buyer: walletPublicKey,
             receiver: walletPublicKey,
-            buyAmount: new BN(initialBuyAmountAudio * AUDIO_DECIMALS), // Multiply by 1 $AUDIO worth
+            buyAmount: new BN(initialBuyAmountAudio), // Should already be formatted with correct decimals
             minimumAmountOut: new BN(0), // No slippage protection for initial buy
             referralTokenAccount: null // No referral for creator's initial buy
           }
@@ -136,17 +135,18 @@ export const launchCoin = async (
     })
 
     /*
-     * Prepare the transactions to be signed by the client -
-     * for the pool creation we need to sign with the mint keypair only accessible here,
-     * the client does the final signing with the wallet keypair & will confirm the transactions
+     * Prepare the transactions to be signed by the client
      */
 
     // Create pool transaction
+
     const createPoolTx = poolConfig.createPoolTx
     createPoolTx.feePayer = walletPublicKey
     createPoolTx.recentBlockhash = (
       await connection.getLatestBlockhash()
     ).blockhash
+    // We need to sign with the mint keypair that's only accessible here
+    // The client does the final signing with the wallet keypair & will send/confirm the transactions
     createPoolTx.partialSign(mintKeypair)
 
     // First buy transaction
@@ -159,9 +159,10 @@ export const launchCoin = async (
     }
 
     return res.status(200).send({
-      mintPublicKey: mintKeypair.publicKey.toBase58(),
+      mintPublicKey: mintPublicKey.toBase58(),
+      imageUri,
       createPoolTx: createPoolTx.serialize({ requireAllSignatures: false }),
-      firstBuyTx,
+      firstBuyTx: firstBuyTx?.serialize({ requireAllSignatures: false }),
       metadataUri
     })
   } catch (e) {

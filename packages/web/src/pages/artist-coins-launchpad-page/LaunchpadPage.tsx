@@ -174,7 +174,7 @@ export const LaunchpadPage = () => {
           throw new Error('No connected wallet found')
         }
         const parsedPayAmount = _values.payAmount
-          ? // TODO: FixedDecimal
+          ? // TODO: use FixedDecimal
             parseFloat(_values.payAmount)
           : undefined
         if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
@@ -193,7 +193,7 @@ export const LaunchpadPage = () => {
             _values.coinSymbol
           ),
           walletPublicKey: connectedWallet!.address,
-          initialBuyAmountAudio: parsedPayAmount // TODO: convert sol to audio
+          initialBuyAmountSol: parsedPayAmount
         })
       }}
     >

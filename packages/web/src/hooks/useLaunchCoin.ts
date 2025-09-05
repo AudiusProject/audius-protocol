@@ -1,15 +1,23 @@
 import {
-  QUERY_KEYS,
   getArtistCoinsQueryKey,
-  getUserCoinQueryKey,
   getUserCreatedCoinsQueryKey,
-  getUserQueryKey,
   useQueryContext
 } from '@audius/common/api'
 import { Feature } from '@audius/common/models'
+import { getJupiterSwapInstructions } from '@audius/common/src/api/tan-query/jupiter/utils'
+import {
+  getJupiterQuoteByMintWithRetry,
+  convertJupiterInstructions,
+  JupiterQuoteResult
+} from '@audius/common/src/services/Jupiter'
+import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import { Id } from '@audius/sdk'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
-import { PublicKey, VersionedTransaction } from '@solana/web3.js'
+import {
+  PublicKey,
+  VersionedTransaction,
+  TransactionInstruction
+} from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
@@ -20,15 +28,12 @@ export type LaunchCoinParams = {
   symbol: string
   description: string
   walletPublicKey: PublicKey | string
-  initialBuyAmountAudio?: number
+  initialBuyAmountSol?: number
   image: File | Blob
 }
 
 export type LaunchCoinResponse = {
-  mintPublicKey: string
-  createPoolTx: string
-  firstBuyTx: string | null
-  metadataUri: string
+  newMint: string
 }
 
 /**
@@ -38,6 +43,75 @@ export type LaunchCoinResponse = {
 export const useLaunchCoin = () => {
   const { audiusSdk, reportToSentry } = useQueryContext()
   const queryClient = useQueryClient()
+  // Helper function to swap SOL to AUDIO using appkitModal provider
+  const swapSolToAudio = async (
+    quote: JupiterQuoteResult,
+    amountSol: number,
+    walletPublicKey: PublicKey,
+    solanaProvider: SolanaProvider,
+    sdk: any
+  ): Promise<string> => {
+    console.log('Starting SOL to AUDIO swap', { amountSol })
+
+    // Build swap instructions
+    const instructions: TransactionInstruction[] = []
+
+    // Prepare output destination for AUDIO
+    const outputTokenConfig = {
+      mintAddress: TOKEN_LISTING_MAP.AUDIO.address,
+      claimableTokenMint: new PublicKey(TOKEN_LISTING_MAP.AUDIO.address),
+      decimals: 8
+    }
+
+    // Get Jupiter swap instructions
+    const swapRequestParams = {
+      quoteResponse: quote.quote,
+      userPublicKey: walletPublicKey.toBase58(),
+      wrapAndUnwrapSol: true,
+      dynamicSlippage: true
+    }
+
+    // TODO: do we need to do some ATA stuff here?
+
+    const { swapInstructionsResult } = await getJupiterSwapInstructions(
+      swapRequestParams,
+      outputTokenConfig,
+      walletPublicKey,
+      walletPublicKey, // feePayer is the wallet itself
+      instructions
+    )
+
+    const { swapInstruction, addressLookupTableAddresses } =
+      swapInstructionsResult
+    const jupiterInstructions = convertJupiterInstructions([swapInstruction])
+    instructions.push(...jupiterInstructions)
+
+    // Build transaction
+    const swapTx = await sdk.services.solanaClient.buildTransaction({
+      feePayer: walletPublicKey,
+      instructions,
+      addressLookupTables: addressLookupTableAddresses
+        ? addressLookupTableAddresses.map((addr: string) => new PublicKey(addr))
+        : undefined
+    })
+
+    console.log('Built swap transaction', swapTx)
+
+    // Sign and send with appkitModal provider
+    const signature = await solanaProvider.signAndSendTransaction(swapTx)
+
+    console.log('Swap transaction signed and sent', signature)
+
+    // Confirm transaction
+    await sdk.services.solanaClient.connection.confirmTransaction(
+      signature,
+      'confirmed'
+    )
+
+    console.log('Swap transaction confirmed')
+
+    return signature
+  }
 
   return useMutation<LaunchCoinResponse, Error, LaunchCoinParams>({
     mutationFn: async (
@@ -57,29 +131,48 @@ export const useLaunchCoin = () => {
 
         const walletPublicKey = new PublicKey(params.walletPublicKey)
 
-        console.log('Sending request to relay...')
-        // First call the solana relay method to initialize the coin metadata & set up transaction instructions
+        let initialBuyAmountAudio: number | undefined
+        let initialBuyQuoteResult: JupiterQuoteResult | undefined
+        // If there's an initial buy amount, we need to determine how much AUDIO this will convert to
+        if (params.initialBuyAmountSol) {
+          const { quoteResult } = await getJupiterQuoteByMintWithRetry({
+            inputMint: TOKEN_LISTING_MAP.SOL.address,
+            outputMint: TOKEN_LISTING_MAP.AUDIO.address,
+            inputDecimals: TOKEN_LISTING_MAP.SOL.decimals,
+            outputDecimals: TOKEN_LISTING_MAP.AUDIO.decimals,
+            amountUi: params.initialBuyAmountSol ?? 0,
+            swapMode: 'ExactIn',
+            onlyDirectRoutes: false
+          })
+          console.log('Quote result', quoteResult)
+          initialBuyQuoteResult = quoteResult
+          initialBuyAmountAudio = quoteResult.outputAmount.amount
+        }
+
+        // console.log('Sending request to relay...')
+        // // First call the solana relay method to initialize the coin metadata & set up transaction instructions
         const {
           createPoolTx: createPoolTxSerialized,
-          firstBuyTx,
+          firstBuyTx: firstBuyTxSerialized,
           metadataUri,
-          mintPublicKey
+          mintPublicKey,
+          imageUri
         } = await sdk.services.solanaRelay.launchCoin({
           name: params.name,
           symbol: params.symbol,
           description: params.description,
           walletPublicKey,
-          initialBuyAmountAudio: params.initialBuyAmountAudio,
+          initialBuyAmountAudio,
           image: params.image
         })
         console.log('Relay response received', {
           createPoolTxSerialized,
-          firstBuyTx,
+          firstBuyTxSerialized,
           metadataUri,
           mintPublicKey
         })
 
-        // Deserialize the transaction
+        // // Deserialize the pool transaction
         const createPoolTx = VersionedTransaction.deserialize(
           Buffer.from(createPoolTxSerialized, 'base64')
         )
@@ -105,58 +198,65 @@ export const useLaunchCoin = () => {
 
         console.log('Pool TX Confirmed')
 
-        if (createPoolTxSignature) {
-          console.log('Creating coin in Audius database')
-          const coinRes = await sdk.coins.createCoin({
-            userId: Id.parse(params.userId),
-            createCoinRequest: {
-              mint: mintPublicKey,
-              ticker: `$${params.symbol}`,
-              decimals: 9,
-              name: params.name
-            }
-          })
-          console.log('Coin created in Audius database', coinRes)
+        if (!createPoolTxSignature) {
+          // TODO: if we're here is this FUBAR...?
+          throw new Error('No transaction signature to create pool transaction')
         }
 
-        // Pool successfully created!
-
-        // const createPoolSignature = await connection.sendTransaction(
-        //   createPoolTx,
-        //   [payer, mintKeypair]
-        // )
-        // await connection.confirmTransaction(createPoolSignature, 'confirmed')
-        // console.log(
-        //   '✅ Pool creation transaction confirmed:',
-        //   createPoolSignature
-        // )
+        console.log('Creating coin in Audius database')
+        const coinRes = await sdk.coins.createCoin({
+          userId: Id.parse(params.userId),
+          createCoinRequest: {
+            mint: mintPublicKey,
+            ticker: `$${params.symbol}`,
+            decimals: 9,
+            name: params.name,
+            logoUri: imageUri
+          }
+        })
+        console.log('Coin added to Audius database', coinRes)
 
         // Create first buy
-        // const firstBuyTx = poolConfig.swapBuyTx
-        // if (firstBuyTx) {
-        //   firstBuyTx.feePayer = payer.publicKey
-        //   firstBuyTx.recentBlockhash = (
-        //     await connection.getLatestBlockhash()
-        //   ).blockhash
-        //   firstBuyTx.sign(payer)
-        //   const firstBuySignature = await connection.sendTransaction(
-        //     firstBuyTx,
-        //     [payer]
-        //   )
-        //   await connection.confirmTransaction(firstBuySignature, 'confirmed')
-        //   console.log('✅ First buy transaction confirmed:', firstBuySignature)
-        // }
-        // Now we register our coin in our database
+        // - First, swap requested amount of SOL to AUDIO
+        // - Then, execute the first buy transaction with that newly swapped AUDIO
+        // TODO: bundle these transactions into one
+        if (
+          firstBuyTxSerialized &&
+          params.initialBuyAmountSol &&
+          params.initialBuyAmountSol > 0 &&
+          initialBuyQuoteResult
+        ) {
+          // TODO: check for issues here (e.g. initial buy amounts but no quote result, or no first buy tx)
+          console.log('Performing initial SOL to AUDIO swap')
+          await swapSolToAudio(
+            initialBuyQuoteResult,
+            params.initialBuyAmountSol,
+            walletPublicKey,
+            solanaProvider,
+            sdk
+          )
 
-        // TODO: Now do the first buy - first we convert SOL to AUDIO
-        // TODO: Now perform the first buy transaction
-        // DONE
+          // Deserialize the first buy transaction
+          const firstBuyTx = VersionedTransaction.deserialize(
+            Buffer.from(firstBuyTxSerialized, 'base64')
+          )
+          // Sign and send the first buy
+          const firstBuyTxSignature =
+            await solanaProvider.signAndSendTransaction(firstBuyTx)
+
+          console.log('First Buy TX Signed', {
+            firstBuyTxSignature
+          })
+
+          // Wait for confirmation
+          await sdk.services.solanaClient.connection.confirmTransaction(
+            createPoolTxSignature,
+            'confirmed'
+          )
+        }
 
         return {
-          mintPublicKey,
-          createPoolTx: createPoolTxSignature,
-          firstBuyTx,
-          metadataUri
+          newMint: mintPublicKey
         }
       } catch (error) {
         console.error('Error launching coin:', error)
@@ -166,15 +266,14 @@ export const useLaunchCoin = () => {
       }
     },
     onMutate: async (_params) => {},
-    onSuccess: (result, params, _context) => {
+    onSuccess: (_result, params, _context) => {
+      // TODO: any more invalidations needed here?
+      // Invalidate the list of artist coins to add it to the list
       queryClient.invalidateQueries({ queryKey: getArtistCoinsQueryKey() })
       // Invalidate our user - this will refresh their badge info
+      // TODO: this will eventually more to the users metadata
       queryClient.invalidateQueries({
         queryKey: getUserCreatedCoinsQueryKey(params.userId)
-      })
-
-      queryClient.invalidateQueries({
-        queryKey: getUserCoinQueryKey(result.mintPublicKey)
       })
     },
     onError: (error, params, _context) => {
@@ -186,7 +285,7 @@ export const useLaunchCoin = () => {
           additionalInfo: {
             coinName: params.name,
             coinSymbol: params.symbol,
-            initialBuyAmount: params.initialBuyAmountAudio ?? 0
+            initialBuyAmount: params.initialBuyAmountSol ?? 0
           }
         })
       }

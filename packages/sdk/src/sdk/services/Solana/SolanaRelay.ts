@@ -207,7 +207,8 @@ export class SolanaRelay extends BaseAPI {
         mintPublicKey: json.mintPublicKey as string,
         createPoolTx: json.createPoolTx as string,
         firstBuyTx: json.firstBuyTx as string | null,
-        metadataUri: json.metadataUri as string
+        metadataUri: json.metadataUri as string,
+        imageUri: json.imageUri as string
       }
     }).value()
   }
