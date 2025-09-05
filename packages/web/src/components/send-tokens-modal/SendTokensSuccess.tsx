@@ -3,7 +3,7 @@ import {
   useTokenBalance,
   transformArtistCoinToTokenInfo
 } from '@audius/common/api'
-import { route } from '@audius/common/utils'
+import { makeSolanaTransactionLink, route } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Button,
@@ -123,7 +123,7 @@ const SendTokensSuccess = ({
           variant='subdued'
           css={{ alignSelf: 'flex-start' }}
           onClick={() => {
-            window.open(route.solanaExplorerAddress(signature), '_blank')
+            window.open(makeSolanaTransactionLink(signature), '_blank')
           }}
           iconRight={IconExternalLink}
         >
