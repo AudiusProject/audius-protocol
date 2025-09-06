@@ -34,6 +34,7 @@ export const walletMessages = {
   destinationRequired: 'Destination address is required',
   transferDescription:
     'Transfer your cash balance to your bank account or debit card. $5 minimum.',
+  transferMethod: 'Transfer Method',
   reviewDetails: 'Review Details Carefully',
   disclaimer:
     'By proceeding, you accept full responsibility for any errors, including the risk of irreversible loss of funds. Transfers are final and cannot be reversed.',
