@@ -1,23 +1,22 @@
 import { useState } from 'react'
 
-import {
-  useArtistCoin,
-  transformArtistCoinToTokenInfo,
-  useSendTokens
-} from '@audius/common/api'
+import { useSendTokens } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
-import { ErrorLevel, Feature, SolanaWalletAddress } from '@audius/common/models'
+import type { SolanaWalletAddress } from '@audius/common/models'
+import { ErrorLevel, Feature } from '@audius/common/models'
 import { useSendTokensModal } from '@audius/common/store'
-import { FixedDecimal } from '@audius/fixed-decimal'
 
-import ResponsiveModal from 'components/modal/ResponsiveModal'
-import { reportToSentry } from 'store/errors/reportToSentry'
+import { Divider, Flex } from '@audius/harmony-native'
+import Drawer from 'app/components/drawer/Drawer'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
-import SendTokensConfirmation from './SendTokensConfirmation'
-import SendTokensFailure from './SendTokensFailure'
-import SendTokensInput from './SendTokensInput'
-import SendTokensProgress from './SendTokensProgress'
-import SendTokensSuccess from './SendTokensSuccess'
+import { DrawerHeader } from '../drawer/DrawerHeader'
+
+import { SendTokensConfirmation } from './components/SendTokensConfirmation'
+import { SendTokensFailure } from './components/SendTokensFailure'
+import { SendTokensInput } from './components/SendTokensInput'
+import { SendTokensProgress } from './components/SendTokensProgress'
+import { SendTokensSuccess } from './components/SendTokensSuccess'
 
 type SendTokensState = {
   step: 'input' | 'confirm' | 'progress' | 'success' | 'failure'
@@ -26,8 +25,8 @@ type SendTokensState = {
   signature: string
 }
 
-const SendTokensModal = () => {
-  const { isOpen, onClose: closeModal, data } = useSendTokensModal()
+export const SendTokensDrawer = () => {
+  const { isOpen, onClose, data } = useSendTokensModal()
   const { mint } = data ?? {}
 
   const [state, setState] = useState<SendTokensState>({
@@ -37,9 +36,6 @@ const SendTokensModal = () => {
     signature: ''
   })
   const [error, setError] = useState<string>('')
-
-  const { data: coin } = useArtistCoin({ mint: mint ?? '' })
-  const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
   const sendTokensMutation = useSendTokens({ mint: mint ?? '' })
 
@@ -54,7 +50,7 @@ const SendTokensModal = () => {
 
   const handleConfirm = async () => {
     setState((prev) => ({ ...prev, step: 'progress' }))
-    setError('') // Clear any previous errors
+    setError('')
 
     try {
       const { signature } = await sendTokensMutation.mutateAsync({
@@ -62,18 +58,14 @@ const SendTokensModal = () => {
         amount: state.amount
       })
 
-      setState((prev) => ({
-        ...prev,
-        step: 'success',
-        signature
-      }))
+      setState((prev) => ({ ...prev, step: 'success', signature }))
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'An unknown error occurred'
       setError(errorMessage)
       reportToSentry({
         level: ErrorLevel.Error,
-        error: error as Error,
+        error: error ?? new Error(errorMessage),
         additionalInfo: {
           amount: state.amount.toString(),
           destinationAddress: state.destinationAddress,
@@ -85,17 +77,13 @@ const SendTokensModal = () => {
     }
   }
 
-  const handleBack = () => {
-    setState((prev) => ({ ...prev, step: 'input' }))
-  }
-
   const handleTryAgain = () => {
     setState((prev) => ({ ...prev, step: 'confirm' }))
     setError('')
   }
 
   const handleClose = () => {
-    closeModal()
+    onClose()
     setState({
       step: 'input',
       amount: BigInt(0),
@@ -105,37 +93,32 @@ const SendTokensModal = () => {
     setError('')
   }
 
-  if (!isOpen || !mint) return null
+  const renderHeader = () => {
+    return (
+      <Flex pv='l' ph='xl' gap='m' mb='m'>
+        <DrawerHeader onClose={handleClose} title={walletMessages.send} />
+        <Divider />
+      </Flex>
+    )
+  }
 
   return (
-    <ResponsiveModal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={walletMessages.send}
-      size='m'
-      dismissOnClickOutside={state.step === 'input'}
-      showDismissButton={state.step === 'input'}
-    >
+    <Drawer isOpen={isOpen} onClose={handleClose} drawerHeader={renderHeader}>
       {state.step === 'input' ? (
         <SendTokensInput
-          mint={mint}
+          mint={mint ?? ''}
           onContinue={handleInputContinue}
-          initialAmount={
-            state.amount > 0
-              ? new FixedDecimal(state.amount, tokenInfo?.decimals).toString()
-              : ''
-          }
+          initialAmount={state.amount}
           initialDestinationAddress={state.destinationAddress}
         />
       ) : null}
 
       {state.step === 'confirm' ? (
         <SendTokensConfirmation
-          mint={mint}
+          mint={mint ?? ''}
           amount={state.amount}
           destinationAddress={state.destinationAddress}
           onConfirm={handleConfirm}
-          onBack={handleBack}
           onClose={handleClose}
         />
       ) : null}
@@ -144,17 +127,17 @@ const SendTokensModal = () => {
 
       {state.step === 'success' ? (
         <SendTokensSuccess
-          mint={mint}
+          mint={mint ?? ''}
           amount={state.amount}
           destinationAddress={state.destinationAddress}
           signature={state.signature}
-          onClose={handleClose}
+          onDone={handleClose}
         />
       ) : null}
 
       {state.step === 'failure' ? (
         <SendTokensFailure
-          mint={mint}
+          mint={mint ?? ''}
           amount={state.amount}
           destinationAddress={state.destinationAddress}
           error={error}
@@ -162,8 +145,6 @@ const SendTokensModal = () => {
           onClose={handleClose}
         />
       ) : null}
-    </ResponsiveModal>
+    </Drawer>
   )
 }
-
-export default SendTokensModal

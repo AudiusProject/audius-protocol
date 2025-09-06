@@ -3,7 +3,10 @@ import { useCallback } from 'react'
 import { useTokenBalance, useArtistCoin } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
-import { receiveTokensModalActions } from '@audius/common/store'
+import {
+  receiveTokensModalActions,
+  sendTokensModalActions
+} from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { Paper, Flex, Text, Button } from '@audius/harmony-native'
@@ -127,6 +130,10 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
     dispatch(receiveTokensModalActions.open({ mint, isOpen: true }))
   }, [dispatch, mint])
 
+  const handleSend = useCallback(() => {
+    dispatch(sendTokensModalActions.open({ mint, isOpen: true }))
+  }, [dispatch, mint])
+
   if (coinsLoading || !coin) {
     // TODO: Add skeleton state
     return null
@@ -150,7 +157,7 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
           title={title}
           logoURI={logoURI}
           onBuy={handleBuy}
-          onSend={() => {}}
+          onSend={handleSend}
           onReceive={handleReceive}
           mint={mint}
         />

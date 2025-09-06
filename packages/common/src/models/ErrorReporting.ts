@@ -46,7 +46,8 @@ export enum Feature {
   Edit = 'edit',
   Events = 'events',
   Remixes = 'remixes',
-  TanQuery = 'tan-query'
+  TanQuery = 'tan-query',
+  SendTokens = 'send-tokens'
 }
 
 export type ReportToSentryArgs = {

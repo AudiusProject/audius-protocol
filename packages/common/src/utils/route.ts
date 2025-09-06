@@ -454,7 +454,3 @@ export const searchPage = (searchOptions: SearchOptions) => {
     query: searchParams
   })
 }
-
-export const solanaExplorerAddress = (address: string) => {
-  return `https://explorer.solana.com/address/${address}`
-}
