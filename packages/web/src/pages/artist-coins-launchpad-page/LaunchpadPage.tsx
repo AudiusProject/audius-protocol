@@ -6,15 +6,7 @@ import {
   useCurrentAccountUser
 } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
-import {
-  Flex,
-  IconArtistCoin,
-  IconCheck,
-  LoadingSpinner,
-  Modal,
-  ModalContent,
-  Text
-} from '@audius/harmony'
+import { IconArtistCoin } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { Form, Formik, useFormikContext } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -29,16 +21,13 @@ import {
 } from 'hooks/useConnectAndAssociateWallets'
 import { useLaunchCoin } from 'hooks/useLaunchCoin'
 
+import { LaunchpadModal } from './components/LaunchpadModal'
 import type { SetupFormValues } from './components/types'
 import { LAUNCHPAD_COIN_DESCRIPTION, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { setupFormSchema } from './validation'
 
 const messages = {
-  awaitingConfirmation: 'Awaiting Confirmation',
-  launchingCoinDescription:
-    "This may take a moment... Please don't close this page.",
-  congratsTitle: '🎉Congrats!',
   title: 'Create Your Artist Coin'
 }
 
@@ -141,8 +130,13 @@ const LaunchpadPageContent = () => {
 }
 
 export const LaunchpadPage = () => {
-  const { mutate: launchCoin, isPending, isSuccess, isError } = useLaunchCoin()
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const {
+    mutate: launchCoin,
+    isPending,
+    data: launchCoinResponse,
+    isError
+  } = useLaunchCoin()
+  const [isModalOpen, setIsModalOpen] = useState(true)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
 
@@ -166,7 +160,6 @@ export const LaunchpadPage = () => {
       validateOnChange={true}
       onSubmit={(_values: SetupFormValues) => {
         setIsModalOpen(true)
-        console.log('Submitting form!', { values: _values })
         if (!user) {
           throw new Error('No current user found for unknown reason')
         }
@@ -198,50 +191,15 @@ export const LaunchpadPage = () => {
       }}
     >
       <Form>
-        <Modal
+        <LaunchpadModal
+          isPending={isPending}
+          isSuccess={true}
+          isError={isError}
           isOpen={isModalOpen}
-          onClose={() => {
-            // TODO: should we auto close this modal at some point?
-            if (isSuccess || isError) {
-              setIsModalOpen(false)
-            }
-          }}
-        >
-          <ModalContent>
-            <Flex
-              direction='column'
-              alignItems='center'
-              justifyContent='center'
-              gap='xl'
-              css={{
-                minHeight: 600,
-                minWidth: 720
-              }}
-            >
-              {isPending ? (
-                <>
-                  <LoadingSpinner size='3xl' />
-                  <Flex direction='column' gap='s'>
-                    <Text variant='heading' size='l'>
-                      {messages.awaitingConfirmation}
-                    </Text>
-                    <Text variant='body' size='l'>
-                      {messages.launchingCoinDescription}
-                    </Text>
-                  </Flex>
-                </>
-              ) : null}
-              {isSuccess || isError ? (
-                <>
-                  <IconCheck size='3xl' />
-                  <Text variant='heading' size='l'>
-                    {messages.congratsTitle}
-                  </Text>
-                </>
-              ) : null}
-            </Flex>
-          </ModalContent>
-        </Modal>
+          onClose={() => setIsModalOpen(false)}
+          mintAddress={launchCoinResponse?.newMint}
+          logoUri={launchCoinResponse?.logoUri}
+        />
         <LaunchpadPageContent />
       </Form>
     </Formik>

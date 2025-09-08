@@ -34,6 +34,7 @@ export type LaunchCoinParams = {
 
 export type LaunchCoinResponse = {
   newMint: string
+  logoUri: string
 }
 
 /**
@@ -256,7 +257,8 @@ export const useLaunchCoin = () => {
         }
 
         return {
-          newMint: mintPublicKey
+          newMint: mintPublicKey,
+          logoUri: imageUri
         }
       } catch (error) {
         console.error('Error launching coin:', error)
