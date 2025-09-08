@@ -193,7 +193,7 @@ export const BuyTab = ({
             />
             <Button
               variant='secondary'
-              css={{ height: '100%' }}
+              css={{ height: '64px' }}
               onClick={handleMaxClick}
               type='button'
             >
