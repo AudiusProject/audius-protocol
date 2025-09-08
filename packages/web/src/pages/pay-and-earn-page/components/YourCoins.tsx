@@ -77,7 +77,6 @@ const messages = {
   managedAccount: "You can't do that as a managed user",
   findMoreCoins: 'Find More Coins',
   exploreArtistCoins: 'Explore available artist coins on Audius.',
-  bonkTicker: '$BONK',
   buySellNotSupported: 'Buy/Sell is not yet supported in your region'
 }
 
