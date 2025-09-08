@@ -1,31 +1,63 @@
-import { Coin } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useQuery,
+  type QueryFunctionContext
+} from '@tanstack/react-query'
+
+import {
+  useQueryContext,
+  type QueryContextType
+} from '~/api/tan-query/utils/QueryContext'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryKey, SelectableQueryOptions } from '../types'
-import { useQueryContext } from '../utils'
 
 export interface UseArtistCoinByTickerParams {
   ticker: string
 }
 
-export const getArtistCoinByTickerQueryKey = (ticker: string) =>
-  [QUERY_KEYS.coinByTicker, ticker] as unknown as QueryKey<Coin | undefined>
+const getArtistCoinByTickerQueryKey = (ticker: string) =>
+  [QUERY_KEYS.coinByTicker, ticker] as const
 
-export const useArtistCoinByTicker = <TResult = Coin | undefined>(
-  params: UseArtistCoinByTickerParams,
-  options?: SelectableQueryOptions<Coin | undefined, TResult>
+type FetchArtistCoinByTickerContext = Pick<QueryContextType, 'audiusSdk'>
+
+const getArtistCoinByTickerQueryFn =
+  (context: FetchArtistCoinByTickerContext) =>
+  async ({
+    queryKey
+  }: QueryFunctionContext<
+    ReturnType<typeof getArtistCoinByTickerQueryKey>
+  >) => {
+    const [_ignored, ticker] = queryKey
+    const { audiusSdk } = context
+    const sdk = await audiusSdk()
+    const response = await sdk.coins.getCoinByTicker({
+      ticker
+    })
+    return response.data
+  }
+
+/**
+ * Helper function to get the query options for fetching an artist coin by ticker.
+ * Useful for getting the query key tagged with the data type stored in the cache.
+ */
+export const getArtistCoinByTickerOptions = (
+  context: FetchArtistCoinByTickerContext,
+  { ticker }: UseArtistCoinByTickerParams
 ) => {
-  const { audiusSdk } = useQueryContext()
+  return queryOptions({
+    queryKey: getArtistCoinByTickerQueryKey(ticker),
+    queryFn: getArtistCoinByTickerQueryFn(context),
+    enabled: !!ticker
+  })
+}
 
+export const useArtistCoinByTicker = (
+  params: UseArtistCoinByTickerParams,
+  options?: Partial<ReturnType<typeof getArtistCoinByTickerOptions>>
+) => {
+  const context = useQueryContext()
   return useQuery({
-    queryKey: getArtistCoinByTickerQueryKey(params.ticker),
-    queryFn: async () => {
-      const sdk = await audiusSdk()
-      const response = await sdk.coins.getCoinByTicker({ ticker: params.ticker })
-      return response.data
-    },
     ...options,
-    enabled: options?.enabled !== false && !!params.ticker
+    ...getArtistCoinByTickerOptions(context, params)
   })
 }

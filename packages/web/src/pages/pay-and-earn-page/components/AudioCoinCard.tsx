@@ -1,14 +1,12 @@
 import { useCallback } from 'react'
 
 import { useFormattedAudioBalance } from '@audius/common/hooks'
-import { buySellMessages } from '@audius/common/messages'
+import { AUDIO_TICKER } from '@audius/common/store'
 import { IconTokenAUDIO } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
 import { CoinCard } from './CoinCard'
-
-const AUDIO_TICKER = buySellMessages.audioTicker
 
 const DIMENSIONS = 64
 
@@ -31,7 +29,7 @@ export const AudioCoinCard = () => {
   return (
     <CoinCard
       icon={<IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} hex />}
-      symbol={buySellMessages.audioTicker}
+      symbol={AUDIO_TICKER}
       balance={audioBalanceFormatted ?? ''}
       dollarValue={audioDollarValue ?? ''}
       loading={isLoading}
