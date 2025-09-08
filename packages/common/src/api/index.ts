@@ -20,6 +20,7 @@ export * from './tan-query/collection/useDeleteCollection'
 
 // Coins
 export * from './tan-query/coins/useArtistCoin'
+export * from './tan-query/coins/useArtistCoinByTicker'
 export * from './tan-query/coins/useArtistCoinInsights'
 export * from './tan-query/coins/useArtistCoinMembers'
 export * from './tan-query/coins/useUserCoin'

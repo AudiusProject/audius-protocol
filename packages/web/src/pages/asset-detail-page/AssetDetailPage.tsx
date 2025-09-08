@@ -1,4 +1,4 @@
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoinByTicker } from '@audius/common/api'
 import { Flex, LoadingSpinner } from '@audius/harmony'
 import { Redirect, useParams } from 'react-router-dom'
 
@@ -9,15 +9,15 @@ import WalletModal from 'pages/audio-page/WalletModal'
 import { useAssetDetailTabs } from './AssetDetailTabs'
 
 export const AssetDetailPage = () => {
-  const { mint } = useParams<{ mint: string }>()
+  const { ticker } = useParams<{ ticker: string }>()
 
   const {
     data: coin,
     isLoading: coinLoading,
     error: coinError
-  } = useArtistCoin({ mint: mint ?? '' })
+  } = useArtistCoinByTicker({ ticker: ticker ?? '' })
 
-  if (!mint) {
+  if (!ticker) {
     return <Redirect to='/wallet' />
   }
 

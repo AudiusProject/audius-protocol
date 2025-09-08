@@ -6,9 +6,9 @@ import { IconTokenAUDIO } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
-import { env } from 'services/env'
-
 import { CoinCard } from './CoinCard'
+
+const AUDIO_TICKER = buySellMessages.audioTicker
 
 const DIMENSIONS = 64
 
@@ -25,7 +25,7 @@ export const AudioCoinCard = () => {
   const isLoading = isAudioBalanceLoading || isAudioPriceLoading
 
   const handleCoinClick = useCallback(() => {
-    dispatch(push(`/wallet/${env.WAUDIO_MINT_ADDRESS}`))
+    dispatch(push(`/wallet/${AUDIO_TICKER}`))
   }, [dispatch])
 
   return (
