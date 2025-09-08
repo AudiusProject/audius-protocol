@@ -90,6 +90,7 @@ export const walletMessages = {
   buy: 'Buy',
   send: 'Send',
   receive: 'Receive',
+  buySellNotSupported: 'Buy/Sell is not yet supported in your region',
 
   // ReceiveTokensModal messages
   receiveTokensTitle: 'receive',
