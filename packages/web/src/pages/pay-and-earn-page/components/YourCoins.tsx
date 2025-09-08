@@ -119,8 +119,8 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   const tokenSymbol = coin.ticker
 
   const handleCoinClick = useCallback(
-    (mint: string) => {
-      dispatch(push(`/wallet/${mint}`))
+    (ticker: string) => {
+      dispatch(push(`/wallet/${ticker}`))
     },
     [dispatch]
   )
@@ -147,7 +147,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
       balance={tokenBalanceFormatted || ''}
       dollarValue={tokenDollarValue || ''}
       loading={isLoading}
-      onClick={() => handleCoinClick(coin.mint)}
+      onClick={() => handleCoinClick(coin.ticker)}
     />
   )
 }
