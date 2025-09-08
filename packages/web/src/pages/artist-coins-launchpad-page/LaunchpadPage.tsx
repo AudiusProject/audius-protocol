@@ -133,10 +133,11 @@ export const LaunchpadPage = () => {
   const {
     mutate: launchCoin,
     isPending,
+    isSuccess,
     data: launchCoinResponse,
     isError
   } = useLaunchCoin()
-  const [isModalOpen, setIsModalOpen] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
 
@@ -193,7 +194,7 @@ export const LaunchpadPage = () => {
       <Form>
         <LaunchpadModal
           isPending={isPending}
-          isSuccess={true}
+          isSuccess={isSuccess}
           isError={isError}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
