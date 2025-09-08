@@ -37,7 +37,6 @@ export type TokenAmountSectionProps = {
   availableBalance: number
   exchangeRate?: number | null
   placeholder?: string
-  isDefault?: boolean
   error?: boolean
   errorMessage?: string
   tokenPrice?: string | null
