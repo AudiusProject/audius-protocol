@@ -29,8 +29,10 @@ import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
+import { useBuySellRegionSupport } from 'components/buy-sell-modal'
 import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
+import Tooltip from 'components/tooltip/Tooltip'
 
 import { AudioCoinCard } from './AudioCoinCard'
 import { CoinCard } from './CoinCard'
@@ -75,7 +77,8 @@ const messages = {
   managedAccount: "You can't do that as a managed user",
   findMoreCoins: 'Find More Coins',
   exploreArtistCoins: 'Explore available artist coins on Audius.',
-  bonkTicker: '$BONK'
+  bonkTicker: '$BONK',
+  buySellNotSupported: 'Buy/Sell is not yet supported in your region'
 }
 
 const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
@@ -85,6 +88,8 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
+
+  const { isBuySellSupported } = useBuySellRegionSupport()
 
   const handleBuySellClick = useCallback(() => {
     if (isManagedAccount) {
@@ -105,9 +110,24 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
         {messages.yourCoins}
       </Text>
       {isWalletUIBuySellEnabled && !isLoading ? (
-        <Button variant='secondary' size='small' onClick={handleBuySellClick}>
-          {messages.buySell}
-        </Button>
+        <Tooltip
+          disabled={isBuySellSupported}
+          text={messages.buySellNotSupported}
+          color='secondary'
+          placement='left'
+          shouldWrapContent={false}
+        >
+          <Box>
+            <Button
+              variant='secondary'
+              size='small'
+              onClick={handleBuySellClick}
+              disabled={!isBuySellSupported}
+            >
+              {messages.buySell}
+            </Button>
+          </Box>
+        </Tooltip>
       ) : null}
     </Flex>
   )
