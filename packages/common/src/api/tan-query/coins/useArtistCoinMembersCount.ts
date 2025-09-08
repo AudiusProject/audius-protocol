@@ -35,7 +35,7 @@ export const useArtistCoinMembersCount = (options?: QueryOptions) => {
         mint: userCoin.mint
       })
 
-      return insightsResponse?.data?.members
+      return insightsResponse?.data?.holder
     },
     ...options,
     enabled: options?.enabled !== false && !!currentUserId
