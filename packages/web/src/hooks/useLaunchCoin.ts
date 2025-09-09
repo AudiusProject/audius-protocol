@@ -11,6 +11,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 
+/* eslint-disable no-console */
+
 export type LaunchCoinParams = {
   userId: number
   name: string
