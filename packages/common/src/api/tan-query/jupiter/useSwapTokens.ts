@@ -9,7 +9,8 @@ import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
 import type { User } from '~/models/User'
 import { JupiterQuoteResult } from '~/services/Jupiter'
-import { useTokens } from '~/store/ui/buy-sell'
+
+import { useTokens } from '../tokens/useTokens'
 
 import { executeDirectSwap } from './directSwap'
 import { executeIndirectSwap } from './indirectSwapViaAudio'

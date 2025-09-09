@@ -1,6 +1,6 @@
+import { useTokens } from '@audius/common/api'
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
-import { useTokens } from '@audius/common/store'
 import { Artwork, Flex, spacing, Text } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 

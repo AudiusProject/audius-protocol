@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
-import {
-  transformArtistCoinsToTokenInfoMap,
-  useArtistCoins
-} from '@audius/common/api'
+import { useTokenPair, useTokens } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { BuySellTab, TokenInfo } from '@audius/common/store'
@@ -13,7 +10,6 @@ import {
   useBuySellTabs,
   useBuySellTransactionData,
   useSwapDisplayData,
-  useSupportedTokenPairs,
   useAddCashModal,
   getSwapTokens,
   AUDIO_TICKER,
@@ -79,12 +75,12 @@ export const BuySellFlow = ({
     initialScreen: 'input'
   })
 
-  const { data: coins } = useArtistCoins()
+  const { tokens } = useTokens()
   const availableBaseTokens: TokenInfo[] = useMemo(() => {
-    return Object.values(
-      transformArtistCoinsToTokenInfoMap(coins ?? [])
-    ).filter((token) => token.symbol !== selectedQuoteToken)
-  }, [coins, selectedQuoteToken])
+    return Object.values(tokens).filter(
+      (token) => token.symbol !== selectedQuoteToken
+    )
+  }, [tokens, selectedQuoteToken])
 
   const baseTokenOptions = useMemo(
     () =>
@@ -153,16 +149,11 @@ export const BuySellFlow = ({
     }))
   }
 
-  const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
-  const selectedPair = useMemo(() => {
-    return (
-      supportedTokenPairs.find(
-        (p) =>
-          p.quoteToken.name === selectedQuoteToken &&
-          p.baseToken.name === selectedBaseToken
-      ) ?? supportedTokenPairs[0]
-    )
-  }, [supportedTokenPairs, selectedQuoteToken, selectedBaseToken])
+  // Get token pair for the specific coin with USDC, fallback to AUDIO/USDC
+  const { data: selectedPair } = useTokenPair({
+    baseSymbol: coinTicker,
+    quoteSymbol: 'USDC'
+  })
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
@@ -177,7 +168,7 @@ export const BuySellFlow = ({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const swapTokens = useMemo(
-    () => (selectedPair ? getSwapTokens(activeTab, selectedPair) : null),
+    () => getSwapTokens(activeTab, selectedPair),
     [activeTab, selectedPair]
   )
 
@@ -205,8 +196,8 @@ export const BuySellFlow = ({
     if (transactionData?.isValid && !isContinueButtonLoading) {
       trackSwapRequested({
         activeTab,
-        inputToken: swapTokens?.inputToken ?? '',
-        outputToken: swapTokens?.outputToken ?? '',
+        inputToken: swapTokens.inputToken,
+        outputToken: swapTokens.outputToken,
         inputAmount: transactionData.inputAmount,
         outputAmount: transactionData.outputAmount,
         exchangeRate: currentExchangeRate

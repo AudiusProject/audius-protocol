@@ -1,6 +1,6 @@
+import { useTokens } from '@audius/common/api'
 import { useArtistCoinMessageHeader } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import { useTokens } from '@audius/common/store'
 import type { ChatBlastAudience } from '@audius/sdk'
 import { Image, Platform } from 'react-native'
 
