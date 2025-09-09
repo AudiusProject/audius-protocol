@@ -58,7 +58,7 @@ export const UserBadges = (props: UserBadgesProps) => {
     <Flex row gap='xs' alignItems='center'>
       {userData?.isVerified ? <IconVerified size={badgeSize} /> : null}
       <IconAudioBadge tier={tier} size={badgeSize} />
-      {tokenBalance && shouldShowArtistCoinBadge ? (
+      {shouldShowArtistCoinBadge ? (
         <TokenIcon
           logoURI={userData?.artistCoinBadge?.logo_uri}
           size={badgeSize}
