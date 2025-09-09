@@ -129,9 +129,49 @@ export const useSwapTokens = () => {
         )
 
         if (hasDirectPath) {
-          return await executeDirectSwap(params, dependencies, tokens)
+          const result = await executeDirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown direct swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         } else {
-          return await executeIndirectSwap(params, dependencies, tokens)
+          const result = await executeIndirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown indirect swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         }
       } catch (error: unknown) {
         reportToSentry({
@@ -141,6 +181,7 @@ export const useSwapTokens = () => {
           additionalInfo: {
             params,
             signature,
+            errorStage,
             firstQuoteResponse: firstQuoteResult?.quote,
             secondQuoteResponse: secondQuoteResult?.quote
           }
