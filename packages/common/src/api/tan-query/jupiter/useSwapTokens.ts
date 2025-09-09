@@ -9,7 +9,8 @@ import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
 import type { User } from '~/models/User'
 import { JupiterQuoteResult } from '~/services/Jupiter'
-import { useTokens } from '~/store/ui/buy-sell'
+
+import { useTokens } from '../tokens/useTokens'
 
 import { executeDirectSwap } from './directSwap'
 import { executeIndirectSwap } from './indirectSwapViaAudio'
@@ -129,9 +130,49 @@ export const useSwapTokens = () => {
         )
 
         if (hasDirectPath) {
-          return await executeDirectSwap(params, dependencies, tokens)
+          const result = await executeDirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown direct swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         } else {
-          return await executeIndirectSwap(params, dependencies, tokens)
+          const result = await executeIndirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown indirect swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         }
       } catch (error: unknown) {
         reportToSentry({
@@ -141,6 +182,7 @@ export const useSwapTokens = () => {
           additionalInfo: {
             params,
             signature,
+            errorStage,
             firstQuoteResponse: firstQuoteResult?.quote,
             secondQuoteResponse: secondQuoteResult?.quote
           }

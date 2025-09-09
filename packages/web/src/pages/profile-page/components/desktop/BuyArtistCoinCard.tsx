@@ -22,7 +22,9 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
   }
 
   const handleCardClick = () => {
-    dispatch(push(`/wallet/${mint}`))
+    if (artistCoin?.ticker) {
+      dispatch(push(`/wallet/${artistCoin.ticker}`))
+    }
   }
 
   if (isLoading || !artistCoin) {

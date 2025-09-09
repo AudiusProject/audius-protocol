@@ -12,7 +12,8 @@ import {
   SwapDependencies,
   SwapTokensParams,
   SwapTokensResult,
-  SwapStatus
+  SwapStatus,
+  SwapErrorType
 } from './types'
 import {
   addTransferFromUserBankInstructions,
@@ -28,121 +29,148 @@ export const executeDirectSwap = async (
   dependencies: SwapDependencies,
   tokens: Record<string, TokenInfo>
 ): Promise<SwapTokensResult> => {
-  const {
-    inputMint: inputMintUiAddress,
-    outputMint: outputMintUiAddress,
-    amountUi
-  } = params
-  const wrapUnwrapSol = params.wrapUnwrapSol ?? true
+  let errorStage = 'DIRECT_SWAP_UNKNOWN'
 
-  const {
-    sdk,
-    keypair,
-    userPublicKey,
-    feePayer,
-    ethAddress,
-    queryClient,
-    user
-  } = dependencies
+  try {
+    const {
+      inputMint: inputMintUiAddress,
+      outputMint: outputMintUiAddress,
+      amountUi
+    } = params
+    const wrapUnwrapSol = params.wrapUnwrapSol ?? true
 
-  const instructions: TransactionInstruction[] = []
-
-  // Validate tokens and create configs
-  const tokenConfigsResult = validateAndCreateTokenConfigs(
-    inputMintUiAddress,
-    outputMintUiAddress,
-    tokens
-  )
-
-  if ('error' in tokenConfigsResult) {
-    return tokenConfigsResult.error
-  }
-
-  const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
-
-  // Get quote
-  const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
-    inputMint: inputMintUiAddress,
-    outputMint: outputMintUiAddress,
-    inputDecimals: inputTokenConfig.decimals,
-    outputDecimals: outputTokenConfig.decimals,
-    amountUi,
-    swapMode: 'ExactIn',
-    onlyDirectRoutes: false
-  })
-
-  // Prepare input token
-  const sourceAtaForJupiter = await addTransferFromUserBankInstructions({
-    tokenInfo: inputTokenConfig,
-    userPublicKey,
-    ethAddress: ethAddress!,
-    amountLamports: BigInt(quote.inputAmount.amount),
-    sdk,
-    feePayer,
-    instructions
-  })
-  // Prepare output destination
-  const preferredJupiterDestination = await prepareOutputUserBank(
-    sdk,
-    ethAddress!,
-    outputTokenConfig
-  )
-
-  // Get swap instructions
-  const swapRequestParams: SwapRequest = {
-    quoteResponse: quote.quote,
-    userPublicKey: userPublicKey.toBase58(),
-    destinationTokenAccount: preferredJupiterDestination,
-    wrapAndUnwrapSol: wrapUnwrapSol,
-    dynamicSlippage: true
-  }
-
-  const { swapInstructionsResult, outputAtaForJupiter } =
-    await getJupiterSwapInstructions(
-      swapRequestParams,
-      outputTokenConfig,
+    const {
+      sdk,
+      keypair,
       userPublicKey,
       feePayer,
+      ethAddress,
+      queryClient,
+      user
+    } = dependencies
+
+    const instructions: TransactionInstruction[] = []
+
+    // Validate tokens and create configs
+    errorStage = 'DIRECT_SWAP_TOKEN_VALIDATION'
+    const tokenConfigsResult = validateAndCreateTokenConfigs(
+      inputMintUiAddress,
+      outputMintUiAddress,
+      tokens
+    )
+
+    if ('error' in tokenConfigsResult) {
+      return {
+        ...tokenConfigsResult.error,
+        errorStage
+      }
+    }
+
+    const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+
+    // Get quote
+    errorStage = 'DIRECT_SWAP_GET_QUOTE'
+    const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
+      inputMint: inputMintUiAddress,
+      outputMint: outputMintUiAddress,
+      inputDecimals: inputTokenConfig.decimals,
+      outputDecimals: outputTokenConfig.decimals,
+      amountUi,
+      swapMode: 'ExactIn',
+      onlyDirectRoutes: false
+    })
+
+    // Prepare input token
+    errorStage = 'DIRECT_SWAP_PREPARE_INPUT'
+    const sourceAtaForJupiter = await addTransferFromUserBankInstructions({
+      tokenInfo: inputTokenConfig,
+      userPublicKey,
+      ethAddress: ethAddress!,
+      amountLamports: BigInt(quote.inputAmount.amount),
+      sdk,
+      feePayer,
       instructions
+    })
+
+    // Prepare output destination
+    errorStage = 'DIRECT_SWAP_PREPARE_OUTPUT'
+    const preferredJupiterDestination = await prepareOutputUserBank(
+      sdk,
+      ethAddress!,
+      outputTokenConfig
     )
-  const { swapInstruction, addressLookupTableAddresses } =
-    swapInstructionsResult
 
-  const jupiterInstructions = convertJupiterInstructions([swapInstruction])
+    // Get swap instructions
+    errorStage = 'DIRECT_SWAP_GET_INSTRUCTIONS'
+    const swapRequestParams: SwapRequest = {
+      quoteResponse: quote.quote,
+      userPublicKey: userPublicKey.toBase58(),
+      destinationTokenAccount: preferredJupiterDestination,
+      wrapAndUnwrapSol: wrapUnwrapSol,
+      dynamicSlippage: true
+    }
 
-  instructions.push(...jupiterInstructions)
+    const { swapInstructionsResult, outputAtaForJupiter } =
+      await getJupiterSwapInstructions(
+        swapRequestParams,
+        outputTokenConfig,
+        userPublicKey,
+        feePayer,
+        instructions
+      )
+    const { swapInstruction, addressLookupTableAddresses } =
+      swapInstructionsResult
 
-  // Cleanup
-  const atasToClose: PublicKey[] = []
-  if (sourceAtaForJupiter) {
-    atasToClose.push(sourceAtaForJupiter)
-  }
-  if (outputAtaForJupiter) {
-    atasToClose.push(outputAtaForJupiter)
-  }
+    const jupiterInstructions = convertJupiterInstructions([swapInstruction])
 
-  for (const ataToClose of atasToClose) {
-    instructions.push(
-      createCloseAccountInstruction(ataToClose, feePayer, userPublicKey)
+    instructions.push(...jupiterInstructions)
+
+    // Cleanup
+    errorStage = 'DIRECT_SWAP_CLEANUP'
+    const atasToClose: PublicKey[] = []
+    if (sourceAtaForJupiter) {
+      atasToClose.push(sourceAtaForJupiter)
+    }
+    if (outputAtaForJupiter) {
+      atasToClose.push(outputAtaForJupiter)
+    }
+
+    for (const ataToClose of atasToClose) {
+      instructions.push(
+        createCloseAccountInstruction(ataToClose, feePayer, userPublicKey)
+      )
+    }
+
+    // Build and send transaction
+    errorStage = 'DIRECT_SWAP_BUILD_TRANSACTION'
+    const signature = await buildAndSendTransaction(
+      sdk,
+      keypair,
+      feePayer,
+      instructions,
+      addressLookupTableAddresses
     )
-  }
 
-  // Build and send transaction
-  const signature = await buildAndSendTransaction(
-    sdk,
-    keypair,
-    feePayer,
-    instructions,
-    addressLookupTableAddresses
-  )
+    // Invalidate queries
+    errorStage = 'DIRECT_SWAP_INVALIDATE_QUERIES'
+    await invalidateSwapQueries(queryClient, user)
 
-  // Invalidate queries
-  await invalidateSwapQueries(queryClient, user)
-
-  return {
-    status: SwapStatus.SUCCESS,
-    signature,
-    inputAmount: quote.inputAmount,
-    outputAmount: quote.outputAmount
+    return {
+      status: SwapStatus.SUCCESS,
+      signature,
+      inputAmount: quote.inputAmount,
+      outputAmount: quote.outputAmount
+    }
+  } catch (error: unknown) {
+    return {
+      status: SwapStatus.ERROR,
+      errorStage,
+      error: {
+        type: SwapErrorType.UNKNOWN,
+        message: `Direct swap failed at stage ${errorStage}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      },
+      inputAmount: undefined,
+      outputAmount: undefined
+    }
   }
 }

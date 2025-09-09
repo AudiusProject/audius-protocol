@@ -47,6 +47,10 @@ export interface GetCoinRequest {
     mint: string;
 }
 
+export interface GetCoinByTickerRequest {
+    ticker: string;
+}
+
 export interface GetCoinInsightsRequest {
     mint: string;
 }
@@ -142,6 +146,37 @@ export class CoinsApi extends runtime.BaseAPI {
      */
     async getCoin(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
         const response = await this.getCoinRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets information about a specific coin by its ticker
+     */
+    async getCoinByTickerRaw(params: GetCoinByTickerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoinResponse>> {
+        if (params.ticker === null || params.ticker === undefined) {
+            throw new runtime.RequiredError('ticker','Required parameter params.ticker was null or undefined when calling getCoinByTicker.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/coins/ticker/{ticker}`.replace(`{${"ticker"}}`, encodeURIComponent(String(params.ticker))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoinResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets information about a specific coin by its ticker
+     */
+    async getCoinByTicker(params: GetCoinByTickerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
+        const response = await this.getCoinByTickerRaw(params, initOverrides);
         return await response.value();
     }
 

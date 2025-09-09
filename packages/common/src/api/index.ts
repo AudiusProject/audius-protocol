@@ -20,6 +20,7 @@ export * from './tan-query/collection/useDeleteCollection'
 
 // Coins
 export * from './tan-query/coins/useArtistCoin'
+export * from './tan-query/coins/useArtistCoinByTicker'
 export * from './tan-query/coins/useArtistCoinInsights'
 export * from './tan-query/coins/useArtistCoinMembers'
 export * from './tan-query/coins/useUserCoin'
@@ -186,3 +187,6 @@ export * from './tan-query/utils'
 // New authorized-apps exports
 export * from './tan-query/authorized-apps/useAuthorizedApps'
 export * from './tan-query/authorized-apps/useRemoveAuthorizedApp'
+
+// Tokens
+export * from './tan-query/tokens'

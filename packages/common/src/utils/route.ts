@@ -69,7 +69,7 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
-export const ASSET_DETAIL_PAGE = '/wallet/:mint'
+export const ASSET_DETAIL_PAGE = '/wallet/:ticker'
 export const WALLET_PAGE = '/wallet'
 export const ALL_COINS_PAGE = '/wallet/coins'
 export const COINS_CREATE_PAGE = '/coins/create'
@@ -453,8 +453,4 @@ export const searchPage = (searchOptions: SearchOptions) => {
     url: generatePath(SEARCH_PAGE, { category }),
     query: searchParams
   })
-}
-
-export const solanaExplorerAddress = (address: string) => {
-  return `https://explorer.solana.com/address/${address}`
 }
