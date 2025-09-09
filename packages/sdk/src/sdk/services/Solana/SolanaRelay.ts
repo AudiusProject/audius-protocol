@@ -160,15 +160,14 @@ export class SolanaRelay extends BaseAPI {
    * Launches a new coin on the launchpad with bonding curve.
    */
   public async launchCoin(
-    params: LaunchCoinRequest,
-    initOverrides?: RequestInit | runtime.InitOverrideFunction
+    params: LaunchCoinRequest
   ): Promise<LaunchCoinResponse> {
     const {
       name,
       symbol,
       description,
       walletPublicKey,
-      initialBuyAmountAudio,
+      initialBuyAmountSol,
       image
     } = await parseParams('launchCoin', LaunchCoinSchema)(params)
 
@@ -180,8 +179,8 @@ export class SolanaRelay extends BaseAPI {
     formData.append('symbol', symbol)
     formData.append('description', description)
     formData.append('walletPublicKey', walletPublicKey.toBase58())
-    if (initialBuyAmountAudio) {
-      formData.append('initialBuyAmountAudio', initialBuyAmountAudio.toString())
+    if (initialBuyAmountSol) {
+      formData.append('initialBuyAmountSol', initialBuyAmountSol.toString())
     }
     formData.append('image', image)
 
@@ -203,10 +202,24 @@ export class SolanaRelay extends BaseAPI {
         throw new Error('metadataUri missing from response')
       }
 
+      // Helper function to convert Buffer JSON to base64 string
+      const convertToBase64 = (tx: any): string => {
+        if (typeof tx === 'string') {
+          return tx
+        }
+        if (tx && tx.type === 'Buffer' && Array.isArray(tx.data)) {
+          return Buffer.from(tx.data).toString('base64')
+        }
+        throw new Error('Invalid transaction format')
+      }
+
       return {
         mintPublicKey: json.mintPublicKey as string,
-        createPoolTx: json.createPoolTx as string,
-        firstBuyTx: json.firstBuyTx as string | null,
+        createPoolTx: convertToBase64(json.createPoolTx),
+        firstBuyTx: json.firstBuyTx ? convertToBase64(json.firstBuyTx) : null,
+        jupiterSwapTx: json.jupiterSwapTx
+          ? convertToBase64(json.jupiterSwapTx)
+          : null,
         metadataUri: json.metadataUri as string,
         imageUri: json.imageUri as string
       }

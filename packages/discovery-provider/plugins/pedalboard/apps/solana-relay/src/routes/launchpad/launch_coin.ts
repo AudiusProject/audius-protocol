@@ -1,4 +1,10 @@
 import {
+  createJupiterApiClient,
+  SwapRequest,
+  QuoteResponse,
+  SwapApi as JupiterApi
+} from '@jup-ag/api'
+import {
   createGenericFile,
   signerIdentity,
   createSignerFromKeypair
@@ -6,7 +12,12 @@ import {
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk'
-import { Keypair, PublicKey } from '@solana/web3.js'
+import {
+  Keypair,
+  PublicKey,
+  Transaction,
+  VersionedTransaction
+} from '@solana/web3.js'
 import BN from 'bn.js'
 import { Request, Response } from 'express'
 
@@ -19,10 +30,61 @@ interface LaunchCoinRequestBody {
   symbol: string
   walletPublicKey: string
   description: string
-  initialBuyAmountAudio?: string
+  initialBuyAmountSol?: string
 }
 
+const SOL_MINT = 'So11111111111111111111111111111111111111112'
+const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
+
 const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
+
+const createJupiterSwapTx = async (
+  jupiterApi: JupiterApi,
+  quote: QuoteResponse,
+  userPublicKey: PublicKey
+): Promise<string> => {
+  try {
+    // Create the swap request parameters
+    const swapRequest: SwapRequest = {
+      quoteResponse: quote,
+      userPublicKey: userPublicKey.toBase58(),
+      destinationTokenAccount: undefined, // Let Jupiter handle destination account
+      wrapAndUnwrapSol: true, // Wrap/unwrap SOL as needed
+      dynamicSlippage: true // Use the slippage from the quote
+    }
+
+    // Get swap transaction from Jupiter
+    const swapResponse = await jupiterApi.swapPost({
+      swapRequest: {
+        ...swapRequest,
+        useSharedAccounts: true // Use shared accounts for better efficiency
+      }
+    })
+
+    return swapResponse.swapTransaction
+  } catch (error) {
+    logger.error('Error creating Jupiter swap transaction:', error)
+    throw new Error(`Failed to create Jupiter swap transaction: ${error}`)
+  }
+}
+
+const getJupiterSwapQuote = async (
+  jupiterApi: JupiterApi,
+  initialBuyAmountSol: number
+) => {
+  // Convert SOL amount to lamports (SOL has 9 decimal places)
+  const amountInLamports = Math.floor(initialBuyAmountSol * 1_000_000_000)
+
+  return await jupiterApi.quoteGet({
+    inputMint: SOL_MINT,
+    outputMint: AUDIO_MINT,
+    amount: amountInLamports,
+    swapMode: 'ExactIn',
+    onlyDirectRoutes: false,
+    maxAccounts: 20,
+    dynamicSlippage: true
+  })
+}
 
 export const launchCoin = async (
   req: Request<unknown, unknown, LaunchCoinRequestBody> & {
@@ -31,7 +93,6 @@ export const launchCoin = async (
   res: Response
 ) => {
   try {
-    logger.info('Launching coin...')
     const { launchpadConfigKey: configKey, solanaFeePayerWallets } = config
 
     const {
@@ -39,13 +100,12 @@ export const launchCoin = async (
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountAudio: initialBuyAmountAudioStr
+      initialBuyAmountSol: initialBuyAmountSolStr
     } = req.body
-    const initialBuyAmountAudio =
-      initialBuyAmountAudioStr !== undefined
-        ? parseFloat(initialBuyAmountAudioStr)
+    const initialBuyAmountSol =
+      initialBuyAmountSolStr !== undefined
+        ? parseFloat(initialBuyAmountSolStr)
         : undefined
-    logger.info(req.body)
 
     // file is the image attached via multer middleware (sent from client as a multipart/form-data request)
     const file = req.file
@@ -66,17 +126,20 @@ export const launchCoin = async (
     }
 
     if (
-      initialBuyAmountAudio !== undefined &&
-      (typeof initialBuyAmountAudio !== 'number' ||
-        initialBuyAmountAudio <= 0 ||
-        isNaN(initialBuyAmountAudio))
+      initialBuyAmountSol !== undefined &&
+      (typeof initialBuyAmountSol !== 'number' ||
+        initialBuyAmountSol <= 0 ||
+        isNaN(initialBuyAmountSol))
     ) {
       throw new Error(
-        `Invalid initialBuyAmountAudio. Initial buy amount must be a number > 0. Received: ${initialBuyAmountAudio}`
+        `Invalid initialBuyAmountSol. Initial buy amount must be a number > 0. Received: ${initialBuyAmountSol}`
       )
     }
 
     const walletPublicKey = new PublicKey(walletPublicKeyStr)
+
+    // Initialize Jupiter API client
+    const jupiterApi = createJupiterApiClient()
 
     // TODO: get specific addresses with AUDIO in the name
     const mintKeypair = Keypair.generate()
@@ -110,9 +173,17 @@ export const launchCoin = async (
     }
     const metadataUri = await umi.uploader.uploadJson(metadata)
 
-    logger.info(new BN(initialBuyAmountAudio ?? ''))
-
     // Create Bonding Curve
+
+    // If using initial buy, get a quote for the swap from SOL -> AUDIO
+    let jupiterSwapQuote: QuoteResponse | undefined
+    if (initialBuyAmountSol) {
+      jupiterSwapQuote = await getJupiterSwapQuote(
+        jupiterApi,
+        initialBuyAmountSol
+      )
+    }
+
     const poolConfig = await dbcClient.pool.createPoolWithFirstBuy({
       createPoolParam: {
         config: new PublicKey(configKey),
@@ -123,15 +194,16 @@ export const launchCoin = async (
         baseMint: mintPublicKey,
         payer: walletPublicKey
       },
-      firstBuyParam: initialBuyAmountAudio
-        ? {
-            buyer: walletPublicKey,
-            receiver: walletPublicKey,
-            buyAmount: new BN(initialBuyAmountAudio), // Should already be formatted with correct decimals
-            minimumAmountOut: new BN(0), // No slippage protection for initial buy
-            referralTokenAccount: null // No referral for creator's initial buy
-          }
-        : undefined
+      firstBuyParam:
+        initialBuyAmountSol && jupiterSwapQuote
+          ? {
+              buyer: walletPublicKey,
+              receiver: walletPublicKey,
+              buyAmount: new BN(jupiterSwapQuote.outAmount), // Should already be formatted with correct decimals
+              minimumAmountOut: new BN(0), // No slippage protection for initial buy
+              referralTokenAccount: null // No referral for creator's initial buy
+            }
+          : undefined
     })
 
     /*
@@ -139,30 +211,41 @@ export const launchCoin = async (
      */
 
     // Create pool transaction
-
     const createPoolTx = poolConfig.createPoolTx
     createPoolTx.feePayer = walletPublicKey
     createPoolTx.recentBlockhash = (
       await connection.getLatestBlockhash()
     ).blockhash
-    // We need to sign with the mint keypair that's only accessible here
+    // We need to partial sign with the mint keypair that's only accessible here
     // The client does the final signing with the wallet keypair & will send/confirm the transactions
     createPoolTx.partialSign(mintKeypair)
 
     // First buy transaction
     const firstBuyTx = poolConfig.swapBuyTx
+    let jupiterSwapTxSerialized: string | undefined
     if (firstBuyTx) {
       firstBuyTx.feePayer = walletPublicKey
       firstBuyTx.recentBlockhash = (
         await connection.getLatestBlockhash()
       ).blockhash
+
+      // Create a transaction for the sol-audio swap
+      if (jupiterSwapQuote && initialBuyAmountSol) {
+        jupiterSwapTxSerialized = await createJupiterSwapTx(
+          jupiterApi,
+          jupiterSwapQuote,
+          walletPublicKey
+        )
+      }
     }
 
     return res.status(200).send({
       mintPublicKey: mintPublicKey.toBase58(),
       imageUri,
+      jupiterSwapQuote,
       createPoolTx: createPoolTx.serialize({ requireAllSignatures: false }),
       firstBuyTx: firstBuyTx?.serialize({ requireAllSignatures: false }),
+      jupiterSwapTx: jupiterSwapTxSerialized,
       metadataUri
     })
   } catch (e) {

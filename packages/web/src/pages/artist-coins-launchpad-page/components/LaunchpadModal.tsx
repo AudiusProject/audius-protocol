@@ -1,17 +1,14 @@
 import {
   Artwork,
   Button,
-  Divider,
   Flex,
-  IconCopy,
   IconX,
   LoadingSpinner,
   Modal,
   ModalContent,
   ModalHeader,
   Paper,
-  Text,
-  useTheme
+  Text
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
@@ -21,18 +18,19 @@ import { SetupFormValues } from './types'
 
 const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
-  launchingCoinDescription:
-    "This may take a moment... Please don't close this page.",
+  launchingCoinDescription: (numTxs: number) =>
+    `You have ${numTxs} transactions to sign. Please don't close this page.`,
   congratsTitle: '🎉 Congrats!',
   title: 'Create Your Artist Coin',
   congratsDescription:
     'Congrats on launching your artist coin on Audius! Time to share the good news with your community of fans.',
   purchaseSummary: 'Purchase Summary',
-  contractAddress: 'Contract Address',
+  address: 'Coin Address',
+  addressTitle: 'Coin Address',
   shareToX: 'Share to X'
 }
 
-const LoadingState = () => (
+const LoadingState = ({ numTxs }: { numTxs: number }) => (
   <ModalContent>
     <Flex
       direction='column'
@@ -50,7 +48,7 @@ const LoadingState = () => (
           {messages.awaitingConfirmation}
         </Text>
         <Text variant='body' size='l'>
-          {messages.launchingCoinDescription}
+          {messages.launchingCoinDescription(numTxs)}
         </Text>
       </Flex>
     </Flex>
@@ -159,9 +157,9 @@ const SuccessState = ({
               color='subdued'
               css={{ textTransform: 'uppercase' }}
             >
-              {messages.contractAddress}
+              {messages.addressTitle}
             </Text>
-            <AddressTile address={'12301231239'} />
+            <AddressTile address={mint} />
           </Flex>
 
           {/* X Share Button */}
@@ -201,7 +199,8 @@ export const LaunchpadModal = ({
   logoUri: string | undefined
 }) => {
   const { values } = useFormikContext()
-  const { coinName, coinSymbol, receiveAmount } = values as SetupFormValues
+  const { coinName, coinSymbol, receiveAmount, payAmount } =
+    values as SetupFormValues
   const coin = {
     mint: mintAddress,
     name: coinName,
@@ -210,6 +209,7 @@ export const LaunchpadModal = ({
     amountUi: receiveAmount,
     amountUsd: receiveAmount
   }
+  const numTxs = payAmount && parseFloat(payAmount) > 0 ? 3 : 1
   return (
     <Modal
       isOpen={isOpen}
@@ -219,7 +219,7 @@ export const LaunchpadModal = ({
         }
       }}
     >
-      {isPending ? <LoadingState /> : null}
+      {isPending ? <LoadingState numTxs={numTxs} /> : null}
       {isSuccess ? <SuccessState coin={coin} /> : null}
       {isError ? <ErrorState /> : null}
     </Modal>
