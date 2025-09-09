@@ -67,8 +67,7 @@ export const TokenAmountInput = forwardRef(
       [decimals, isWhole, setValueState, onChange]
     )
     // Determine if endIcon is an IconComponent or ReactNode
-    const isIconComponent = 
-      endIcon && typeof endIcon === 'function'
+    const isIconComponent = endIcon && typeof endIcon === 'function'
 
     return (
       <TextInput

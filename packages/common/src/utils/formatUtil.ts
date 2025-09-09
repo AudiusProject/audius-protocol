@@ -11,7 +11,7 @@ import dayjs from './dayjs'
  * 443,123 => 443K
  * 4,001,000 => 4M Followers
  */
-export const formatCount = (count: number) => {
+export const formatCount = (count: number): string => {
   if (count >= 1000) {
     const countStr = count.toString()
     if (countStr.length % 3 === 0) {
@@ -37,6 +37,11 @@ export const formatCount = (count: number) => {
     } else {
       return numeral(count).format('0a').toUpperCase()
     }
+  } else if (count > 1) {
+    // For numbers between 1 and 999, format with up to 2 decimals if needed
+    const formatted = numeral(count).format('0.00').toUpperCase()
+    // Remove trailing zeros
+    return formatted.replace(/\.00$/, '').replace(/\.0$/, '')
   } else if (!count) {
     return '0'
   } else {

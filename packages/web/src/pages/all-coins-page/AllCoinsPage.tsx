@@ -24,8 +24,8 @@ const ArtistCoinRowWithData = ({ coin }: { coin: any }) => {
     coin.mint
   )
 
-  const handleCoinClick = (mint: string) => {
-    dispatch(push(`/wallet/${mint}`))
+  const handleCoinClick = () => {
+    dispatch(push(`/wallet/${coin.ticker}`))
   }
 
   const isLoading = isTokenPriceLoading
@@ -36,7 +36,7 @@ const ArtistCoinRowWithData = ({ coin }: { coin: any }) => {
       symbol={coin.ticker ?? ''}
       dollarValue={tokenDollarValue || ''}
       loading={isLoading}
-      onClick={() => handleCoinClick(coin.mint)}
+      onClick={handleCoinClick}
       mint={coin.mint}
     />
   )
