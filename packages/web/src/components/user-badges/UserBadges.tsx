@@ -6,7 +6,7 @@ import {
   useMemo
 } from 'react'
 
-import { useTokenBalance, useUser } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -104,14 +104,9 @@ const UserBadges = ({
     return null
   }, [mint, userArtistCoinBadge?.mint])
 
-  const { data: tokenBalance } = useTokenBalance({
-    mint: displayMint ?? '',
-    userId
-  })
-
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
-  const hasContent = isUserVerified || tier !== 'none' || !!tokenBalance
+  const hasContent = isUserVerified || tier !== 'none'
 
   // Create a handler to stop event propagation
   const handleStopPropagation = useCallback((e: MouseEvent) => {
@@ -179,8 +174,6 @@ const UserBadges = ({
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    !!tokenBalance &&
-    tokenBalance.balance.value !== BigInt(0) &&
     displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   const artistCoinBadge = useMemo(() => {
@@ -203,15 +196,13 @@ const UserBadges = ({
             }
           }}
         >
-          {userArtistCoinBadge?.logo_uri ? (
-            <Artwork
-              src={userArtistCoinBadge.logo_uri}
-              hex
-              w={iconSizes[size]}
-              h={iconSizes[size]}
-              borderWidth={0}
-            />
-          ) : null}
+          <Artwork
+            src={userArtistCoinBadge?.logo_uri ?? ''}
+            hex
+            w={iconSizes[size]}
+            h={iconSizes[size]}
+            borderWidth={0}
+          />
         </Flex>
       </ArtistCoinHoverCard>
     )

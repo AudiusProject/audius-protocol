@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { useTokenBalance, useUser } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -9,8 +9,8 @@ import {
   useTierAndVerifiedForUser
 } from '@audius/common/store'
 
-import { Flex, IconVerified } from '@audius/harmony-native'
 import type { IconSize } from '@audius/harmony-native'
+import { Flex, IconVerified } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
 import { TokenIcon } from 'app/components/core'
 
@@ -43,17 +43,10 @@ export const UserBadges = (props: UserBadgesProps) => {
     return null
   }, [mint, userArtistCoinBadge?.mint])
 
-  const { data: tokenBalance } = useTokenBalance({
-    mint: displayMint ?? '',
-    userId
-  })
-
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
     !!userArtistCoinBadge?.logo_uri &&
-    !!tokenBalance &&
-    tokenBalance.balance.value !== BigInt(0) &&
     displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   return (
