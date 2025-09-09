@@ -42,6 +42,21 @@ const coinDetails = {
   tradingFees: '50%'
 }
 
+const tooltipContent = {
+  totalSupply:
+    'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
+  initialMarketCap:
+    'The starting value of your coin at launch, based on the initial supply made available for trading.',
+  graduationMarketCap:
+    'The market cap your coin will reach once all vesting and distribution milestones are complete.',
+  allocation:
+    "The percentage of your total coin supply reserved for you as the creator. You'll receive this gradually through vesting.",
+  vesting:
+    'Your reserved coins are unlocked over time, following this schedule.',
+  tradingFees:
+    "The percentage of every trade that you'll earn as revenue. Fees are automatically deposited to your connected wallet."
+}
+
 const useStyles = makeResponsiveStyles(({ theme }) => ({
   tableContainer: {
     base: {
@@ -167,16 +182,19 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
                     label={messages.totalSupply}
                     value={coinDetails.totalSupply}
                     hasTooltip
+                    tooltipContent={tooltipContent.totalSupply}
                   />
                   <TokenInfoRow
                     label={messages.initialMarketCap}
                     value={coinDetails.initialMarketCap}
                     hasTooltip
+                    tooltipContent={tooltipContent.initialMarketCap}
                   />
                   <TokenInfoRow
                     label={messages.graduationMarketCap}
                     value={coinDetails.graduationMarketCap}
                     hasTooltip
+                    tooltipContent={tooltipContent.graduationMarketCap}
                   />
                 </Flex>
               </Flex>
@@ -197,16 +215,19 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
                     label={messages.allocation}
                     value={coinDetails.allocation}
                     hasTooltip
+                    tooltipContent={tooltipContent.allocation}
                   />
                   <TokenInfoRow
                     label={messages.vesting}
                     value={coinDetails.vesting}
                     hasTooltip
+                    tooltipContent={tooltipContent.vesting}
                   />
                   <TokenInfoRow
                     label={messages.tradingFees}
                     value={coinDetails.tradingFees}
                     hasTooltip
+                    tooltipContent={tooltipContent.tradingFees}
                   />
                 </Flex>
               </Flex>
