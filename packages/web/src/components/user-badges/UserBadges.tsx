@@ -6,7 +6,7 @@ import {
   useMemo
 } from 'react'
 
-import { useTokenBalance, useCurrentAccountUser } from '@audius/common/api'
+import { useTokenBalance, useUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -27,8 +27,8 @@ import {
   IconTokenPlatinum,
   IconTokenSilver,
   IconVerified,
-  Text,
-  motion
+  motion,
+  Text
 } from '@audius/harmony'
 import { Origin } from '@audius/harmony/src/components/popup/types'
 import cn from 'classnames'
@@ -89,14 +89,20 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
-  const { data: user } = useCurrentAccountUser()
+  const { data: user } = useUser(userId, {
+    select: (user) => ({
+      artistCoinBadge: user?.artist_coin_badge
+    })
+  })
+
+  const { artistCoinBadge: userArtistCoinBadge } = user ?? {}
 
   const displayMint = useMemo(() => {
     // Priority: explicit mint prop > user's artist_coin_badge > null
     if (mint) return mint
-    if (user?.artist_coin_badge?.mint) return user.artist_coin_badge.mint
+    if (userArtistCoinBadge?.mint) return userArtistCoinBadge.mint
     return null
-  }, [mint, user?.artist_coin_badge?.mint])
+  }, [mint, userArtistCoinBadge?.mint])
 
   const { data: tokenBalance } = useTokenBalance({
     mint: displayMint ?? '',
@@ -197,9 +203,9 @@ const UserBadges = ({
             }
           }}
         >
-          {user?.artist_coin_badge?.logo_uri ? (
+          {userArtistCoinBadge?.logo_uri ? (
             <Artwork
-              src={user?.artist_coin_badge.logo_uri}
+              src={userArtistCoinBadge.logo_uri}
               hex
               w={iconSizes[size]}
               h={iconSizes[size]}
@@ -215,7 +221,7 @@ const UserBadges = ({
     userId,
     anchorOrigin,
     transformOrigin,
-    user?.artist_coin_badge?.logo_uri,
+    userArtistCoinBadge?.logo_uri,
     size
   ])
 

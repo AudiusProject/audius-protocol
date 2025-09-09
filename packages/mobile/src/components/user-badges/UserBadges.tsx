@@ -32,14 +32,16 @@ export const UserBadges = (props: UserBadgesProps) => {
       artistCoinBadge: user?.artist_coin_badge
     })
   })
+  const { isVerified: userIsVerified, artistCoinBadge: userArtistCoinBadge } =
+    userData ?? {}
   const { tier } = useTierAndVerifiedForUser(userId)
 
   const displayMint = useMemo(() => {
     // Priority: explicit mint prop > user's artist_coin_badge > null
     if (mint) return mint
-    if (userData?.artistCoinBadge?.mint) return userData.artistCoinBadge.mint
+    if (userArtistCoinBadge?.mint) return userArtistCoinBadge.mint
     return null
-  }, [mint, userData?.artistCoinBadge?.mint])
+  }, [mint, userArtistCoinBadge?.mint])
 
   const { data: tokenBalance } = useTokenBalance({
     mint: displayMint ?? '',
@@ -49,20 +51,17 @@ export const UserBadges = (props: UserBadgesProps) => {
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    !!userData?.artistCoinBadge?.logo_uri &&
+    !!userArtistCoinBadge?.logo_uri &&
     !!tokenBalance &&
     tokenBalance.balance.value !== BigInt(0) &&
     displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   return (
     <Flex row gap='xs' alignItems='center'>
-      {userData?.isVerified ? <IconVerified size={badgeSize} /> : null}
+      {userIsVerified ? <IconVerified size={badgeSize} /> : null}
       <IconAudioBadge tier={tier} size={badgeSize} />
       {shouldShowArtistCoinBadge ? (
-        <TokenIcon
-          logoURI={userData?.artistCoinBadge?.logo_uri}
-          size={badgeSize}
-        />
+        <TokenIcon logoURI={userArtistCoinBadge?.logo_uri} size={badgeSize} />
       ) : null}
     </Flex>
   )
