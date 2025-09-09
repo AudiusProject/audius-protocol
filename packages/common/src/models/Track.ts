@@ -79,6 +79,13 @@ export type FollowGatedConditions = { follow_user_id: number }
 
 export type TipGatedConditions = { tip_user_id: number }
 
+export type TokenGatedConditions = {
+  token_gate: {
+    token_mint: string
+    token_amount: number
+  }
+}
+
 export type USDCPurchaseConditions = {
   usdc_purchase: {
     price: number
@@ -92,6 +99,7 @@ export type AccessConditions =
   | FollowGatedConditions
   | TipGatedConditions
   | USDCPurchaseConditions
+  | TokenGatedConditions
 
 export type AccessPermissions = {
   stream: boolean
@@ -101,7 +109,8 @@ export type AccessPermissions = {
 export enum GatedContentType {
   COLLECTIBLE_GATED = 'collectible gated',
   SPECIAL_ACCESS = 'special access',
-  USDC_PURCHASE = 'usdc purchase'
+  USDC_PURCHASE = 'usdc purchase',
+  TOKEN_GATED = 'token gated'
 }
 
 export enum TrackAccessType {
@@ -109,7 +118,8 @@ export enum TrackAccessType {
   TIP_GATED = 'tip_gated',
   FOLLOW_GATED = 'follow_gated',
   COLLECTIBLE_GATED = 'collectible_gated',
-  USDC_GATED = 'usdc_gated'
+  USDC_GATED = 'usdc_gated',
+  TOKEN_GATED = 'token_gated'
 }
 
 type CollectibleGated = {
@@ -132,6 +142,11 @@ export const isContentTipGated = (
   gatedConditions?: Nullable<AccessConditions>
 ): gatedConditions is TipGatedConditions =>
   !!gatedConditions && 'tip_user_id' in (gatedConditions ?? {})
+
+export const isContentTokenGated = (
+  gatedConditions?: Nullable<AccessConditions>
+): gatedConditions is TokenGatedConditions =>
+  !!gatedConditions && 'token_gate' in (gatedConditions ?? {})
 
 export const isContentSpecialAccess = (
   gatedConditions?: Nullable<AccessConditions>

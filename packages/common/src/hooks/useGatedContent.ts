@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
 import {
+  useArtistCoin,
   useCollection,
   useCurrentAccount,
   useHasAccount,
@@ -19,6 +20,7 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
+  isContentTokenGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { FeatureFlags } from '~/services/remote-config'
@@ -180,12 +182,16 @@ export const useStreamConditionsEntity = (
   const nftCollection = isContentCollectibleGated(streamConditions)
     ? streamConditions?.nft_collection
     : null
+  const tokenMint = isContentTokenGated(streamConditions)
+    ? streamConditions?.token_gate.token_mint
+    : null
 
   const { byId: usersById } = useUsers(
     [followUserId, tipUserId].filter(removeNullable)
   )
   const followee = followUserId ? usersById[followUserId] : null
   const tippedUser = tipUserId ? usersById[tipUserId] : null
+  const { data: token } = useArtistCoin({ mint: tokenMint ?? '' })
 
   const collectionLink = useMemo(() => {
     if (!nftCollection) return ''
@@ -208,7 +214,8 @@ export const useStreamConditionsEntity = (
     nftCollection: nftCollection ?? null,
     collectionLink,
     followee,
-    tippedUser
+    tippedUser,
+    token
   }
 }
 
