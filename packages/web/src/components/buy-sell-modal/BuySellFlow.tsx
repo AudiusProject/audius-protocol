@@ -99,13 +99,13 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const location = useLocation()
   const pathname = getPathname(location)
-  const match = matchPath<{ mint: string }>(pathname, {
+  const match = matchPath<{ ticker: string }>(pathname, {
     path: ASSET_DETAIL_PAGE,
     exact: true
   })
   // Get token pair based on location or use default
   const { data: selectedPair } = useTokenPair({
-    baseAddress: match?.params.mint,
+    baseSymbol: match?.params.ticker,
     quoteSymbol: 'USDC'
   })
 
