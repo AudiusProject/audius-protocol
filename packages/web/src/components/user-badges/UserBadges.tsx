@@ -6,12 +6,7 @@ import {
   useMemo
 } from 'react'
 
-import {
-  useArtistCoin,
-  useUserCoins,
-  useTokenBalance,
-  useUserCreatedCoins
-} from '@audius/common/api'
+import { useTokenBalance, useCurrentAccountUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -94,27 +89,15 @@ const UserBadges = ({
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
-  const { data: userCoins } = useUserCoins(
-    { userId },
-    { enabled: isArtistCoinEnabled }
-  )
-  const { data: userCreatedCoins } = useUserCreatedCoins(
-    { userId },
-    { enabled: isArtistCoinEnabled }
-  )
-  const userCreatedCoin = userCreatedCoins?.[0]
+  const { data: user } = useCurrentAccountUser()
 
   const displayMint = useMemo(() => {
+    // Priority: explicit mint prop > user's artist_coin_badge > null
     if (mint) return mint
-    if (userCreatedCoin?.mint) return userCreatedCoin.mint
-    if (!userCoins || userCoins.length < 2) return null
-    return userCoins[1].mint
-  }, [mint, userCreatedCoin, userCoins])
+    if (user?.artist_coin_badge?.mint) return user.artist_coin_badge.mint
+    return null
+  }, [mint, user?.artist_coin_badge?.mint])
 
-  const { data: coin } = useArtistCoin(
-    { mint: displayMint ?? '' },
-    { enabled: isArtistCoinEnabled }
-  )
   const { data: tokenBalance } = useTokenBalance({
     mint: displayMint ?? '',
     userId
@@ -190,9 +173,8 @@ const UserBadges = ({
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    !!coin &&
-    ((!!tokenBalance && tokenBalance.balance.value !== BigInt(0)) ||
-      !!userCreatedCoin) &&
+    !!tokenBalance &&
+    tokenBalance.balance.value !== BigInt(0) &&
     displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   const artistCoinBadge = useMemo(() => {
@@ -215,9 +197,9 @@ const UserBadges = ({
             }
           }}
         >
-          {coin?.logoUri ? (
+          {user?.artist_coin_badge?.logo_uri ? (
             <Artwork
-              src={coin.logoUri}
+              src={user?.artist_coin_badge.logo_uri}
               hex
               w={iconSizes[size]}
               h={iconSizes[size]}
@@ -233,7 +215,7 @@ const UserBadges = ({
     userId,
     anchorOrigin,
     transformOrigin,
-    coin?.logoUri,
+    user?.artist_coin_badge?.logo_uri,
     size
   ])
 

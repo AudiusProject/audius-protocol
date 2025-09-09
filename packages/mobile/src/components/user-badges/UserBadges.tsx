@@ -1,12 +1,6 @@
 import { useMemo } from 'react'
 
-import {
-  useArtistCoin,
-  useTokenBalance,
-  useUser,
-  useUserCoins,
-  useUserCreatedCoins
-} from '@audius/common/api'
+import { useTokenBalance, useUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -32,32 +26,21 @@ export const UserBadges = (props: UserBadgesProps) => {
     FeatureFlags.ARTIST_COINS
   )
 
-  const { data: isVerified } = useUser(userId, {
-    select: (user) => user?.is_verified
+  const { data: userData } = useUser(userId, {
+    select: (user) => ({
+      isVerified: user?.is_verified,
+      artistCoinBadge: user?.artist_coin_badge
+    })
   })
   const { tier } = useTierAndVerifiedForUser(userId)
 
-  const { data: userCoins } = useUserCoins(
-    { userId },
-    { enabled: isArtistCoinEnabled }
-  )
-  const { data: userCreatedCoins } = useUserCreatedCoins(
-    { userId },
-    { enabled: isArtistCoinEnabled }
-  )
-  const userCreatedCoin = userCreatedCoins?.[0]
-
   const displayMint = useMemo(() => {
+    // Priority: explicit mint prop > user's artist_coin_badge > null
     if (mint) return mint
-    if (userCreatedCoin?.mint) return userCreatedCoin.mint
-    if (!userCoins || userCoins.length < 2) return null
-    return userCoins[1].mint
-  }, [mint, userCreatedCoin, userCoins])
+    if (userData?.artistCoinBadge?.mint) return userData.artistCoinBadge.mint
+    return null
+  }, [mint, userData?.artistCoinBadge?.mint])
 
-  const { data: coin } = useArtistCoin(
-    { mint: displayMint ?? '' },
-    { enabled: isArtistCoinEnabled }
-  )
   const { data: tokenBalance } = useTokenBalance({
     mint: displayMint ?? '',
     userId
@@ -66,18 +49,20 @@ export const UserBadges = (props: UserBadgesProps) => {
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    !!coin &&
-    !!coin.logoUri &&
-    ((!!tokenBalance && tokenBalance.balance.value !== BigInt(0)) ||
-      !!userCreatedCoin) &&
+    !!userData?.artistCoinBadge?.logo_uri &&
+    !!tokenBalance &&
+    tokenBalance.balance.value !== BigInt(0) &&
     displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   return (
     <Flex row gap='xs' alignItems='center'>
-      {isVerified ? <IconVerified size={badgeSize} /> : null}
+      {userData?.isVerified ? <IconVerified size={badgeSize} /> : null}
       <IconAudioBadge tier={tier} size={badgeSize} />
       {tokenBalance && shouldShowArtistCoinBadge ? (
-        <TokenIcon logoURI={coin.logoUri} size={badgeSize} />
+        <TokenIcon
+          logoURI={userData?.artistCoinBadge?.logo_uri}
+          size={badgeSize}
+        />
       ) : null}
     </Flex>
   )
