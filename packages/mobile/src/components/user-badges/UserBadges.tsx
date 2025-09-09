@@ -46,7 +46,6 @@ export const UserBadges = (props: UserBadgesProps) => {
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    !!userArtistCoinBadge?.logo_uri &&
     displayMint !== TOKEN_LISTING_MAP.AUDIO.address
 
   return (

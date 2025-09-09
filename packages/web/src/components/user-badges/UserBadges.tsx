@@ -106,7 +106,7 @@ const UserBadges = ({
 
   const tier = overrideTier || currentTier
   const isUserVerified = isVerifiedOverride ?? isVerified
-  const hasContent = isUserVerified || tier !== 'none'
+  const hasContent = isUserVerified || tier !== 'none' || !!displayMint
 
   // Create a handler to stop event propagation
   const handleStopPropagation = useCallback((e: MouseEvent) => {
