@@ -10,7 +10,7 @@ export type UserTokenBadgeProps = {
 }
 
 export const UserTokenBadge = ({ userId }: UserTokenBadgeProps) => {
-  const { spacing, color, shadows } = useTheme()
+  const { spacing, color, shadows, motion } = useTheme()
   const { data: owner } = useUser(userId)
 
   if (!owner) {
@@ -33,7 +33,7 @@ export const UserTokenBadge = ({ userId }: UserTokenBadgeProps) => {
         borderRadius='circle'
         border='default'
         css={{
-          transition: 'all 0.1s ease',
+          transition: `all ${motion.hover}`,
           '&:hover': {
             boxShadow: shadows.far
           },
