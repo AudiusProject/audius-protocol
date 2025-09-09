@@ -187,3 +187,6 @@ export * from './tan-query/utils'
 // New authorized-apps exports
 export * from './tan-query/authorized-apps/useAuthorizedApps'
 export * from './tan-query/authorized-apps/useRemoveAuthorizedApp'
+
+// Tokens
+export * from './tan-query/tokens'

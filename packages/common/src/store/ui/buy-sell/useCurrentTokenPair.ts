@@ -19,10 +19,13 @@ export const useCurrentTokenPair = ({
 }) => {
   return useMemo(() => {
     // Convert availableTokens array to map for efficient lookup
-    const tokenMap = availableTokens.reduce((map, token) => {
-      map[token.symbol] = token
-      return map
-    }, {} as Record<string, TokenInfo>)
+    const tokenMap = availableTokens.reduce(
+      (map, token) => {
+        map[token.symbol] = token
+        return map
+      },
+      {} as Record<string, TokenInfo>
+    )
 
     // Try to get pair using the efficient API first
     if (getPair) {
@@ -33,7 +36,11 @@ export const useCurrentTokenPair = ({
     }
 
     // Fallback to creating pair from available tokens
-    const pair = createPairFromSymbols(baseTokenSymbol, quoteTokenSymbol, tokenMap)
+    const pair = createPairFromSymbols(
+      baseTokenSymbol,
+      quoteTokenSymbol,
+      tokenMap
+    )
     if (pair) {
       return pair
     }

@@ -1,6 +1,11 @@
 import { useState, useEffect, useContext, useMemo, useCallback } from 'react'
 
-import { useCurrentAccountUser, useUserCoins } from '@audius/common/api'
+import {
+  useCurrentAccountUser,
+  useUserCoins,
+  useTokens,
+  useTokenPair
+} from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -15,10 +20,7 @@ import {
   BuySellTab,
   Screen,
   useTokenStates,
-  useCurrentTokenPair,
-  useAvailableTokens,
-  useSupportedTokenPairs,
-  useTokens
+  useCurrentTokenPair
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
@@ -56,17 +58,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     trackAddFundsClicked
   } = useBuySellAnalytics()
 
-  // Get tokens and token pairs from API
+  // Get tokens from API
   const { tokens, isLoading: tokensLoading } = useTokens()
-  const {
-    getDefaultPair,
-    findPairByAddress,
-    getPair,
-    getPairsForToken,
-    isLoading: pairsLoading
-  } = useSupportedTokenPairs()
-
-  const isTokenDataLoading = tokensLoading || pairsLoading
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
@@ -110,10 +103,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     path: ASSET_DETAIL_PAGE,
     exact: true
   })
-  const pairFromLocation =
-    match?.params.mint && findPairByAddress(match.params.mint, 'USDC')
-
-  const selectedPair = pairFromLocation || getDefaultPair()
+  // Get token pair based on location or use default
+  const { data: selectedPair } = useTokenPair({
+    baseAddress: match?.params.mint,
+    quoteSymbol: 'USDC'
+  })
 
   // Use custom hooks for token state management
   const {
@@ -140,8 +134,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   // Get all available tokens (simplified since we have all tokens now)
   const availableTokens = useMemo(() => {
-    return isTokenDataLoading ? [] : Object.values(tokens)
-  }, [tokens, isTokenDataLoading])
+    return tokensLoading ? [] : Object.values(tokens)
+  }, [tokens, tokensLoading])
 
   // Get current user and their coin balances
   const { data: currentUser } = useCurrentAccountUser()
@@ -189,8 +183,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     baseTokenSymbol,
     quoteTokenSymbol,
     availableTokens,
-    selectedPair,
-    getPair
+    selectedPair
   })
 
   const swapTokens = useMemo(() => {
@@ -424,7 +417,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     return <ModalLoading />
   }
 
-  if (isTokenDataLoading) {
+  if (tokensLoading) {
     return <ModalLoading noText />
   }
 

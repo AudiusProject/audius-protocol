@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
+import { useTokenPair } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { BuySellTab } from '@audius/common/store'
@@ -9,11 +10,9 @@ import {
   useBuySellTabs,
   useBuySellTransactionData,
   useSwapDisplayData,
-  useSupportedTokenPairs,
   useAddCashModal,
   getSwapTokens,
-  AUDIO_TICKER,
-  createFallbackPair
+  AUDIO_TICKER
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -90,27 +89,18 @@ export const BuySellFlow = ({
     }))
   }
 
-  const { getDefaultPair, getPair } = useSupportedTokenPairs()
-  const selectedPair = useMemo(() => {
-    // First try to get a pair for the specific coinTicker with USDC
-    const specificPair = getPair(coinTicker, 'USDC')
-    if (specificPair) {
-      return specificPair
-    }
-
-    // Fallback to default pair (AUDIO/USDC)
-    return getDefaultPair()
-  }, [getPair, getDefaultPair, coinTicker])
-
-  // Create fallback pair if none available
-  const safeSelectedPair = selectedPair || createFallbackPair()
+  // Get token pair for the specific coin with USDC, fallback to AUDIO/USDC
+  const { data: selectedPair } = useTokenPair({
+    baseSymbol: coinTicker,
+    quoteSymbol: 'USDC'
+  })
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
     currentScreen,
     setCurrentScreen,
     activeTab,
-    selectedPair: safeSelectedPair,
+    selectedPair,
     onClose
   })
 
@@ -118,8 +108,8 @@ export const BuySellFlow = ({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const swapTokens = useMemo(
-    () => getSwapTokens(activeTab, safeSelectedPair),
-    [activeTab, safeSelectedPair]
+    () => getSwapTokens(activeTab, selectedPair),
+    [activeTab, selectedPair]
   )
 
   const currentExchangeRate = useMemo(
@@ -133,7 +123,7 @@ export const BuySellFlow = ({
     transactionData,
     swapResult: null, // Not needed in this component
     activeTab,
-    selectedPair: safeSelectedPair
+    selectedPair
   })
 
   const tabs = [
@@ -237,7 +227,7 @@ export const BuySellFlow = ({
         {/* Tab Content */}
         <Flex style={{ display: activeTab === 'buy' ? 'flex' : 'none' }}>
           <BuyScreen
-            tokenPair={safeSelectedPair}
+            tokenPair={selectedPair}
             onTransactionDataChange={
               activeTab === 'buy' ? handleTransactionDataChange : undefined
             }
@@ -249,7 +239,7 @@ export const BuySellFlow = ({
         </Flex>
         <Flex style={{ display: activeTab === 'sell' ? 'flex' : 'none' }}>
           <SellScreen
-            tokenPair={safeSelectedPair}
+            tokenPair={selectedPair}
             onTransactionDataChange={
               activeTab === 'sell' ? handleTransactionDataChange : undefined
             }

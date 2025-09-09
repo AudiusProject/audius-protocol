@@ -1,17 +1,19 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 
-import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
+import {
+  formatUSDCValue,
+  SLIPPAGE_BPS,
+  useDefaultTokenPair
+} from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import {
-  useSupportedTokenPairs,
   useBuySellScreen,
   useBuySellSwap,
   useSwapDisplayData,
   useTokenAmountFormatting,
-  getSwapTokens,
-  createFallbackPair
+  getSwapTokens
 } from '@audius/common/store'
 
 import {
@@ -130,11 +132,7 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   // Determine if this is a buy or sell based on token types
   const activeTab = payTokenInfo.symbol === 'USDC' ? 'buy' : 'sell'
 
-  const { getDefaultPair } = useSupportedTokenPairs()
-  const selectedPair = getDefaultPair()
-
-  // Create fallback pair if needed
-  const safeSelectedPair = selectedPair || createFallbackPair()
+  const { data: selectedPair } = useDefaultTokenPair()
 
   const {
     handleConfirmSwap,
@@ -147,13 +145,13 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     currentScreen,
     setCurrentScreen,
     activeTab,
-    selectedPair: safeSelectedPair,
+    selectedPair,
     onClose: () => navigation.goBack()
   })
 
   const swapTokens = useMemo(
-    () => getSwapTokens(activeTab, safeSelectedPair),
-    [activeTab, safeSelectedPair]
+    () => getSwapTokens(activeTab, selectedPair),
+    [activeTab, selectedPair]
   )
 
   const { successDisplayData } = useSwapDisplayData({
@@ -162,7 +160,7 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     transactionData,
     swapResult,
     activeTab,
-    selectedPair: safeSelectedPair
+    selectedPair
   })
 
   useEffect(() => {
