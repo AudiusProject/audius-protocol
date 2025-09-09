@@ -58,8 +58,13 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   // Get tokens and token pairs from API
   const { tokens, isLoading: tokensLoading } = useTokens()
-  const { pairs: supportedTokenPairs, isLoading: pairsLoading } =
-    useSupportedTokenPairs()
+  const {
+    getDefaultPair,
+    findPairByAddress,
+    getPair,
+    getPairsForToken,
+    isLoading: pairsLoading
+  } = useSupportedTokenPairs()
 
   const isTokenDataLoading = tokensLoading || pairsLoading
 
@@ -106,14 +111,9 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     exact: true
   })
   const pairFromLocation =
-    match?.params.mint &&
-    supportedTokenPairs.find(
-      (pair) =>
-        pair.baseToken.address === match.params.mint &&
-        pair.quoteToken.symbol === 'USDC'
-    )
+    match?.params.mint && findPairByAddress(match.params.mint, 'USDC')
 
-  const selectedPair = pairFromLocation || supportedTokenPairs[0]
+  const selectedPair = pairFromLocation || getDefaultPair()
 
   // Use custom hooks for token state management
   const {
@@ -138,12 +138,10 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     resetTransactionData()
   }
 
-  // Get all available tokens
-  const availableTokens = useAvailableTokens({
-    tokens,
-    supportedTokenPairs,
-    isTokenDataLoading
-  })
+  // Get all available tokens (simplified since we have all tokens now)
+  const availableTokens = useMemo(() => {
+    return isTokenDataLoading ? [] : Object.values(tokens)
+  }, [tokens, isTokenDataLoading])
 
   // Get current user and their coin balances
   const { data: currentUser } = useCurrentAccountUser()
@@ -192,7 +190,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     quoteTokenSymbol,
     availableTokens,
     selectedPair,
-    supportedTokenPairs
+    getPair
   })
 
   const swapTokens = useMemo(() => {

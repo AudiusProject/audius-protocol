@@ -12,7 +12,8 @@ import {
   useSupportedTokenPairs,
   useAddCashModal,
   getSwapTokens,
-  AUDIO_TICKER
+  AUDIO_TICKER,
+  createFallbackPair
 } from '@audius/common/store'
 import { useFocusEffect } from '@react-navigation/native'
 
@@ -89,22 +90,27 @@ export const BuySellFlow = ({
     }))
   }
 
-  const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
+  const { getDefaultPair, getPair } = useSupportedTokenPairs()
   const selectedPair = useMemo(() => {
-    return (
-      supportedTokenPairs.find(
-        (p) =>
-          p.quoteToken.name === 'USD Coin' && p.baseToken.name === coinTicker
-      ) ?? supportedTokenPairs[0]
-    )
-  }, [supportedTokenPairs, coinTicker])
+    // First try to get a pair for the specific coinTicker with USDC
+    const specificPair = getPair(coinTicker, 'USDC')
+    if (specificPair) {
+      return specificPair
+    }
+
+    // Fallback to default pair (AUDIO/USDC)
+    return getDefaultPair()
+  }, [getPair, getDefaultPair, coinTicker])
+
+  // Create fallback pair if none available
+  const safeSelectedPair = selectedPair || createFallbackPair()
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
     currentScreen,
     setCurrentScreen,
     activeTab,
-    selectedPair,
+    selectedPair: safeSelectedPair,
     onClose
   })
 
@@ -112,8 +118,8 @@ export const BuySellFlow = ({
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
 
   const swapTokens = useMemo(
-    () => (selectedPair ? getSwapTokens(activeTab, selectedPair) : null),
-    [activeTab, selectedPair]
+    () => getSwapTokens(activeTab, safeSelectedPair),
+    [activeTab, safeSelectedPair]
   )
 
   const currentExchangeRate = useMemo(
@@ -127,7 +133,7 @@ export const BuySellFlow = ({
     transactionData,
     swapResult: null, // Not needed in this component
     activeTab,
-    selectedPair
+    selectedPair: safeSelectedPair
   })
 
   const tabs = [
@@ -140,8 +146,8 @@ export const BuySellFlow = ({
     if (transactionData?.isValid && !isContinueButtonLoading) {
       trackSwapRequested({
         activeTab,
-        inputToken: swapTokens?.inputToken ?? '',
-        outputToken: swapTokens?.outputToken ?? '',
+        inputToken: swapTokens.inputToken,
+        outputToken: swapTokens.outputToken,
         inputAmount: transactionData.inputAmount,
         outputAmount: transactionData.outputAmount,
         exchangeRate: currentExchangeRate
@@ -231,7 +237,7 @@ export const BuySellFlow = ({
         {/* Tab Content */}
         <Flex style={{ display: activeTab === 'buy' ? 'flex' : 'none' }}>
           <BuyScreen
-            tokenPair={selectedPair}
+            tokenPair={safeSelectedPair}
             onTransactionDataChange={
               activeTab === 'buy' ? handleTransactionDataChange : undefined
             }
@@ -243,7 +249,7 @@ export const BuySellFlow = ({
         </Flex>
         <Flex style={{ display: activeTab === 'sell' ? 'flex' : 'none' }}>
           <SellScreen
-            tokenPair={selectedPair}
+            tokenPair={safeSelectedPair}
             onTransactionDataChange={
               activeTab === 'sell' ? handleTransactionDataChange : undefined
             }

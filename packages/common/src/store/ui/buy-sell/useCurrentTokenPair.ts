@@ -2,67 +2,49 @@ import { useMemo } from 'react'
 
 import { TokenInfo, TokenPair } from '~/store'
 
+import { createPairFromSymbols } from './utils'
+
 export const useCurrentTokenPair = ({
   baseTokenSymbol,
   quoteTokenSymbol,
   availableTokens,
   selectedPair,
-  supportedTokenPairs
+  getPair
 }: {
   baseTokenSymbol: string
   quoteTokenSymbol: string
   availableTokens: TokenInfo[]
   selectedPair: TokenPair | null
-  supportedTokenPairs: TokenPair[]
+  getPair?: (baseSymbol: string, quoteSymbol: string) => TokenPair | null
 }) => {
   return useMemo(() => {
-    // Handle both regular and $ prefixed symbols from API
-    const baseTokenInfo = availableTokens.find(
-      (t) =>
-        t.symbol === baseTokenSymbol ||
-        t.symbol === `$${baseTokenSymbol}` ||
-        t.symbol === baseTokenSymbol.replace('$', '')
-    )
-    const quoteTokenInfo = availableTokens.find(
-      (t) =>
-        t.symbol === quoteTokenSymbol ||
-        t.symbol === `$${quoteTokenSymbol}` ||
-        t.symbol === quoteTokenSymbol.replace('$', '')
-    )
+    // Convert availableTokens array to map for efficient lookup
+    const tokenMap = availableTokens.reduce((map, token) => {
+      map[token.symbol] = token
+      return map
+    }, {} as Record<string, TokenInfo>)
 
-    if (!baseTokenInfo || !quoteTokenInfo) {
-      return selectedPair || null
+    // Try to get pair using the efficient API first
+    if (getPair) {
+      const pair = getPair(baseTokenSymbol, quoteTokenSymbol)
+      if (pair) {
+        return pair
+      }
     }
 
-    // Find existing pair that matches our tokens
-    // Handle symbol variations for pair matching
-    const pair = supportedTokenPairs.find((p) => {
-      const baseMatch =
-        p.baseToken.symbol === baseTokenSymbol ||
-        p.baseToken.symbol === `$${baseTokenSymbol}` ||
-        p.baseToken.symbol === baseTokenSymbol.replace('$', '')
-      const quoteMatch =
-        p.quoteToken.symbol === quoteTokenSymbol ||
-        p.quoteToken.symbol === `$${quoteTokenSymbol}` ||
-        p.quoteToken.symbol === quoteTokenSymbol.replace('$', '')
-      return baseMatch && quoteMatch
-    })
-
+    // Fallback to creating pair from available tokens
+    const pair = createPairFromSymbols(baseTokenSymbol, quoteTokenSymbol, tokenMap)
     if (pair) {
       return pair
     }
 
-    // Create a dynamic pair if no exact match found
-    return {
-      baseToken: baseTokenInfo,
-      quoteToken: quoteTokenInfo,
-      exchangeRate: null
-    }
+    // Final fallback to selected pair or null
+    return selectedPair || null
   }, [
     baseTokenSymbol,
     quoteTokenSymbol,
     availableTokens,
     selectedPair,
-    supportedTokenPairs
+    getPair
   ])
 }

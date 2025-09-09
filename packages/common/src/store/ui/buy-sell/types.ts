@@ -73,6 +73,25 @@ export type SwapResult = {
   signature?: string
 }
 
+export type SupportedTokenPairs = {
+  // Core API methods
+  getPair: (baseSymbol: string, quoteSymbol: string) => TokenPair | null
+  getDefaultPair: () => TokenPair | null
+  findPairByAddress: (
+    baseAddress: string,
+    quoteSymbol: string
+  ) => TokenPair | null
+  getPairsForToken: (tokenSymbol: string) => TokenPair[]
+
+  // Additional utility methods
+  getAllPairs: () => TokenPair[]
+  hasPair: (baseSymbol: string, quoteSymbol: string) => boolean
+
+  // Status
+  isLoading: boolean
+  error: Error | null
+}
+
 export type TransactionData = {
   inputAmount: number
   outputAmount: number
