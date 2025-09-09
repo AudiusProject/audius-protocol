@@ -69,9 +69,10 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
-export const ASSET_DETAIL_PAGE = '/wallet/:mint'
+export const ASSET_DETAIL_PAGE = '/wallet/:ticker'
 export const WALLET_PAGE = '/wallet'
 export const ALL_COINS_PAGE = '/wallet/coins'
+export const COINS_CREATE_PAGE = '/coins/create'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
@@ -230,7 +231,8 @@ export const authenticatedRoutes = [
   SALES_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
-  ALL_COINS_PAGE
+  ALL_COINS_PAGE,
+  COINS_CREATE_PAGE
 ]
 
 export const guestRoutes = [
@@ -283,6 +285,7 @@ export const orderedRoutes = [
   ASSET_DETAIL_PAGE,
   WALLET_PAGE,
   ALL_COINS_PAGE,
+  COINS_CREATE_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -334,6 +337,7 @@ export const staticRoutes = new Set([
   AUDIO_PAGE,
   WALLET_PAGE,
   ALL_COINS_PAGE,
+  COINS_CREATE_PAGE,
   WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,
@@ -449,8 +453,4 @@ export const searchPage = (searchOptions: SearchOptions) => {
     url: generatePath(SEARCH_PAGE, { category }),
     query: searchParams
   })
-}
-
-export const solanaExplorerAddress = (address: string) => {
-  return `https://explorer.solana.com/address/${address}`
 }

@@ -39,6 +39,7 @@ import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ReceiveTokensDrawer } from 'app/components/receive-tokens-drawer'
+import { SendTokensDrawer } from 'app/components/send-tokens-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { SignOutConfirmationDrawer } from 'app/components/sign-out-confirmation-drawer'
 import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
@@ -140,7 +141,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   DownloadTrackArchive: DownloadTrackArchiveDrawer,
   HostRemixContest: HostRemixContestDrawer,
   WithdrawUSDCModal: WithdrawUSDCDrawer,
-  ReceiveTokensModal: ReceiveTokensDrawer
+  ReceiveTokensModal: ReceiveTokensDrawer,
+  SendTokensModal: SendTokensDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

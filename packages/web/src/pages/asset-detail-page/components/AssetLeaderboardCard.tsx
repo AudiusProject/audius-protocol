@@ -117,7 +117,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
           >
             <UserProfilePictureList
               users={users ?? []}
-              totalUserCount={coinInsights?.data?.members}
+              totalUserCount={coinInsights?.data?.holder}
               limit={isSmallScreen ? 6 : 8}
               disableProfileClick={true}
               disablePopover={true}

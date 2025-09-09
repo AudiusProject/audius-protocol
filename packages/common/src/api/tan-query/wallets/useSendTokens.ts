@@ -51,7 +51,7 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
           throw new Error('Insufficient balance to send tokens')
         }
 
-        await audiusBackend.sendTokens({
+        const { res: signature } = await audiusBackend.sendTokens({
           address: recipientWallet,
           amount: amount as any, // TODO: Fix type mismatch between bigint and AudioWei
           ethAddress: currentUser,
@@ -60,7 +60,7 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
         })
 
         return {
-          signature: 'success', // The backend doesn't return a signature, so we use a placeholder
+          signature,
           success: true
         }
       } catch (error) {

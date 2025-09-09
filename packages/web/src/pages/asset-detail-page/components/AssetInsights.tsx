@@ -1,7 +1,7 @@
 import { useArtistCoinInsights } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, MetricData } from '@audius/common/utils'
-import { Flex, IconCaretDown, IconCaretUp, Paper, Text } from '@audius/harmony'
+import { Flex, IconSortDown, IconSortUp, Paper, Text } from '@audius/harmony'
 
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
@@ -50,7 +50,7 @@ const AssetInsightsSkeleton = () => {
 }
 
 const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
-  const changeColor = metric.change?.isPositive ? 'premium' : 'danger'
+  const changeColor = metric.change?.isPositive ? 'premium' : 'subdued'
 
   return (
     <Flex
@@ -87,9 +87,9 @@ const MetricRowComponent = ({ metric }: { metric: MetricData }) => {
             }}
           >
             {metric.change.isPositive ? (
-              <IconCaretUp size='s' color='premium' />
+              <IconSortUp size='s' color={changeColor} />
             ) : (
-              <IconCaretDown size='s' color='danger' />
+              <IconSortDown size='s' color={changeColor} />
             )}
           </Flex>
         </Flex>

@@ -105,10 +105,10 @@ export const onDisburse = async (
         (id) => id === challenge.challenge_id
       )!
       console.log('Claimable challengeId = ', challenge)
-      const totalAttestationRetries = 10
+      const totalRetries = 10
       let res
-      let attestationRetries = totalAttestationRetries
-      while (attestationRetries > 0) {
+      let retries = totalRetries
+      while (retries > 0) {
         try {
           if (!dryRun) {
             console.log(
@@ -119,24 +119,34 @@ export const onDisburse = async (
               'amount = ',
               challenge.amount
             )
-            res = await sdk.challenges.claimReward({
-              challengeId,
-              userId: challenge.user_id,
-              specifier: challenge.specifier,
-              amount: parseFloat(challenge.amount)
+            res = await sdk.rewards.claimRewards({
+              claimRewardsRequest: {
+                challengeId,
+                userId: challenge.user_id,
+                specifier: challenge.specifier
+              }
             })
+            if (res?.data?.[0]?.error) {
+              if (
+                res.data[0].error.includes('failed to get oracle attestation')
+              ) {
+                // If the error is because the attestation failed, break
+                break
+              }
+              throw new Error(res.data[0].error)
+            }
             console.log('res = ', res)
             break // Success - exit retry loop
           }
         } catch (e) {
           console.error(
-            `Error claiming reward, challengeId = ${challengeId}, attempt ${totalAttestationRetries - attestationRetries + 1} of ${totalAttestationRetries}, error = `,
+            `Error claiming reward, challengeId = ${challengeId}, attempt ${totalRetries - retries + 1} of ${totalRetries}, error = `,
             e
           )
-          attestationRetries -= 1
-          if (attestationRetries === 0) {
+          retries -= 1
+          if (retries === 0) {
             console.error(
-              `Failed to claim reward after ${totalAttestationRetries} attempts for challengeId = ${challengeId}`
+              `Failed to claim reward after ${totalRetries} attempts for challengeId = ${challengeId}`
             )
             failedAnAttestation = true
           }
