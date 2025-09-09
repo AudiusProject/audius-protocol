@@ -11,32 +11,17 @@ import dayjs from './dayjs'
  * 443,123 => 443K
  * 4,001,000 => 4M Followers
  */
-export const formatCount = (count: number) => {
+export const formatCount = (count: number): string => {
   if (count >= 1000) {
-    const countStr = count.toString()
-    if (countStr.length % 3 === 0) {
-      return numeral(count).format('0a').toUpperCase()
-    } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
-      const formatted = numeral(count).format('0.00a').toUpperCase()
-      // If the result has .00, use the simpler format without decimals
-      return formatted.includes('.00')
-        ? numeral(count).format('0a').toUpperCase()
-        : formatted
-    } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
-      const formatted = numeral(count).format('0.0a').toUpperCase()
-      // If the result has .0, use the simpler format without decimals
-      return formatted.includes('.0')
-        ? numeral(count).format('0a').toUpperCase()
-        : formatted
-    } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
-      const formatted = numeral(count).format('0.0a').toUpperCase()
-      // If the result has .0, use the simpler format without decimals
-      return formatted.includes('.0')
-        ? numeral(count).format('0a').toUpperCase()
-        : formatted
-    } else {
-      return numeral(count).format('0a').toUpperCase()
-    }
+    // Use 0.00a format to allow up to 2 decimals, then trim trailing zeros
+    const formatted = numeral(count).format('0.00a').toUpperCase()
+    // Remove trailing .00 or .0 to avoid unnecessary decimals
+    return formatted.replace(/\.00(?=[A-Z])/, '').replace(/\.0(?=[A-Z])/, '')
+  } else if (count > 1) {
+    // For numbers between 1 and 999, format with up to 2 decimals if needed
+    const formatted = numeral(count).format('0.00').toUpperCase()
+    // Remove trailing zeros
+    return formatted.replace(/\.00$/, '').replace(/\.0$/, '')
   } else if (!count) {
     return '0'
   } else {

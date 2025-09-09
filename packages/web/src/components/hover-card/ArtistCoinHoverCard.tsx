@@ -61,8 +61,8 @@ export const ArtistCoinHoverCard = ({
 
   const handleClick = useCallback(() => {
     onClick?.()
-    navigate(`${WALLET_PAGE}/${mint}`)
-  }, [navigate, mint, onClick])
+    navigate(`${WALLET_PAGE}/${coin?.ticker}`)
+  }, [onClick, navigate, coin?.ticker])
 
   if (!tokenBalance || !coin) return null
 
