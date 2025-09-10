@@ -1,10 +1,47 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
-import { useTokenPrice } from '@audius/common/api'
+import {
+  transformArtistCoinsToTokenInfoMap,
+  useArtistCoins,
+  useTokenPrice
+} from '@audius/common/api'
+import type { TokenInfo } from '@audius/common/store'
+import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
+import { Flex, Skeleton, Text } from '@audius/harmony'
 
-import { SwapTab } from './SwapTab'
+import { InputTokenSection } from './components/InputTokenSection'
+import { OutputTokenSection } from './components/OutputTokenSection'
 import type { BuyTabProps } from './types'
+
+const messages = {
+  youPay: 'You Pay'
+}
+
+const YouPaySkeleton = () => (
+  <Flex direction='column' gap='s'>
+    <Flex justifyContent='space-between' alignItems='flex-start'>
+      <Skeleton w='100px' h='24px' />
+      <Skeleton w='160px' h='24px' />
+    </Flex>
+    <Skeleton w='100%' h='64px' />
+  </Flex>
+)
+
+const YouReceiveSkeleton = () => (
+  <Flex direction='column' gap='s'>
+    <Skeleton w='120px' h='24px' />
+    <Skeleton w='100%' h='64px' />
+    <Skeleton w='100%' h='64px' />
+  </Flex>
+)
+
+const SwapFormSkeleton = () => (
+  <Flex direction='column' gap='xl'>
+    <YouPaySkeleton />
+    <YouReceiveSkeleton />
+  </Flex>
+)
 
 export const BuyTab = ({
   tokenPair,
@@ -18,8 +55,12 @@ export const BuyTab = ({
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
 
+  // State for token selection
+  const [selectedInputToken, setSelectedInputToken] = useState(quoteToken)
+  const [selectedOutputToken, setSelectedOutputToken] = useState(baseToken)
+
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(baseToken.address)
+    useTokenPrice(selectedOutputToken.address)
 
   const tokenPrice = tokenPriceData?.price || null
 
@@ -28,22 +69,96 @@ export const BuyTab = ({
     return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
   }, [tokenPrice])
 
+  const {
+    inputAmount,
+    outputAmount,
+    isExchangeRateLoading,
+    isBalanceLoading,
+    availableBalance,
+    currentExchangeRate,
+    handleInputAmountChange,
+    handleOutputAmountChange,
+    handleMaxClick
+  } = useTokenSwapForm({
+    inputToken: selectedInputToken,
+    outputToken: selectedOutputToken,
+    onTransactionDataChange,
+    initialInputValue,
+    onInputValueChange
+  })
+
+  const { data: coins } = useArtistCoins()
+  const artistCoins: TokenInfo[] = useMemo(() => {
+    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
+  }, [coins])
+
+  // Token change handlers
+  const handleInputTokenChange = (token: TokenInfo) => {
+    setSelectedInputToken(token)
+  }
+
+  const handleOutputTokenChange = (token: TokenInfo) => {
+    setSelectedOutputToken(token)
+    onOutputTokenChange?.(token.symbol)
+  }
+
+  // Track if an exchange rate has ever been successfully fetched
+  const hasRateEverBeenFetched = useRef(false)
+  if (currentExchangeRate !== null) {
+    hasRateEverBeenFetched.current = true
+  }
+
+  if (!tokenPair) return null
+
+  // Show initial loading state if balance is loading,
+  // OR if exchange rate is loading AND we've never fetched a rate before.
+  const isInitialLoading =
+    isBalanceLoading ||
+    (isExchangeRateLoading && !hasRateEverBeenFetched.current)
+
   return (
-    <SwapTab
-      inputToken={quoteToken}
-      outputToken={baseToken}
-      onTransactionDataChange={onTransactionDataChange}
-      inputIsDefault={true} // Keep input section as DefaultBalanceSection
-      outputIsDefault={false} // Enable StackedBalanceSection for "You Receive"
-      error={error}
-      errorMessage={errorMessage}
-      tokenPrice={tokenPrice}
-      isTokenPriceLoading={isTokenPriceLoading}
-      tokenPriceDecimalPlaces={decimalPlaces}
-      initialInputValue={initialInputValue}
-      onInputValueChange={onInputValueChange}
-      availableOutputTokens={availableOutputTokens}
-      onOutputTokenChange={onOutputTokenChange}
-    />
+    <Flex direction='column' gap='xl'>
+      {isInitialLoading ? (
+        <SwapFormSkeleton />
+      ) : (
+        <>
+          <InputTokenSection
+            title={messages.youPay}
+            tokenInfo={selectedInputToken}
+            amount={inputAmount}
+            onAmountChange={handleInputAmountChange}
+            onMaxClick={handleMaxClick}
+            availableBalance={availableBalance}
+            error={error}
+            errorMessage={errorMessage}
+            availableTokens={artistCoins}
+            onTokenChange={handleInputTokenChange}
+          />
+          <OutputTokenSection
+            tokenInfo={selectedOutputToken}
+            amount={outputAmount}
+            onAmountChange={handleOutputAmountChange}
+            availableBalance={0}
+            exchangeRate={currentExchangeRate}
+            tokenPrice={tokenPrice}
+            isTokenPriceLoading={isTokenPriceLoading}
+            tokenPriceDecimalPlaces={decimalPlaces}
+            availableTokens={artistCoins}
+            onTokenChange={handleOutputTokenChange}
+          />
+        </>
+      )}
+
+      {tokenPrice && (
+        <Flex alignItems='center' gap='xs' css={{ padding: '12px 0' }}>
+          <Text variant='body' size='s' color='subdued'>
+            Rate
+          </Text>
+          <Text variant='body' size='s' color='default'>
+            {`1 ${selectedInputToken.symbol} ≈ ${(1 / parseFloat(tokenPrice)).toFixed(8)} ${selectedOutputToken.symbol}`}
+          </Text>
+        </Flex>
+      )}
+    </Flex>
   )
 }
