@@ -17,39 +17,39 @@ import { exists, mapValues } from '../runtime';
 /**
  * Information about the dynamic bonding curve if one exists for the Coin
  * @export
- * @interface CoinInsightsDynamicBondingCurve
+ * @interface CoinDynamicBondingCurve
  */
-export interface CoinInsightsDynamicBondingCurve {
+export interface CoinDynamicBondingCurve {
     /**
      * Address of the bonding curve pool
      * @type {string}
-     * @memberof CoinInsightsDynamicBondingCurve
+     * @memberof CoinDynamicBondingCurve
      */
     address: string;
     /**
      * Current price in the pool's quote token (e.g., AUDIO)
      * @type {number}
-     * @memberof CoinInsightsDynamicBondingCurve
+     * @memberof CoinDynamicBondingCurve
      */
     price: number;
     /**
      * Current price in USD
      * @type {number}
-     * @memberof CoinInsightsDynamicBondingCurve
+     * @memberof CoinDynamicBondingCurve
      */
     priceUSD: number;
     /**
      * Progress along the bonding curve (0.0 - 1.0)
      * @type {number}
-     * @memberof CoinInsightsDynamicBondingCurve
+     * @memberof CoinDynamicBondingCurve
      */
     curveProgress: number;
 }
 
 /**
- * Check if a given object implements the CoinInsightsDynamicBondingCurve interface.
+ * Check if a given object implements the CoinDynamicBondingCurve interface.
  */
-export function instanceOfCoinInsightsDynamicBondingCurve(value: object): value is CoinInsightsDynamicBondingCurve {
+export function instanceOfCoinDynamicBondingCurve(value: object): value is CoinDynamicBondingCurve {
     let isInstance = true;
     isInstance = isInstance && "address" in value && value["address"] !== undefined;
     isInstance = isInstance && "price" in value && value["price"] !== undefined;
@@ -59,11 +59,11 @@ export function instanceOfCoinInsightsDynamicBondingCurve(value: object): value 
     return isInstance;
 }
 
-export function CoinInsightsDynamicBondingCurveFromJSON(json: any): CoinInsightsDynamicBondingCurve {
-    return CoinInsightsDynamicBondingCurveFromJSONTyped(json, false);
+export function CoinDynamicBondingCurveFromJSON(json: any): CoinDynamicBondingCurve {
+    return CoinDynamicBondingCurveFromJSONTyped(json, false);
 }
 
-export function CoinInsightsDynamicBondingCurveFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinInsightsDynamicBondingCurve {
+export function CoinDynamicBondingCurveFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinDynamicBondingCurve {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -76,7 +76,7 @@ export function CoinInsightsDynamicBondingCurveFromJSONTyped(json: any, ignoreDi
     };
 }
 
-export function CoinInsightsDynamicBondingCurveToJSON(value?: CoinInsightsDynamicBondingCurve | null): any {
+export function CoinDynamicBondingCurveToJSON(value?: CoinDynamicBondingCurve | null): any {
     if (value === undefined) {
         return undefined;
     }

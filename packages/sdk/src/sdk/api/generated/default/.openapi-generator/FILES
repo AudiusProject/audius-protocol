@@ -29,9 +29,9 @@ models/ClaimRewardsRequest.ts
 models/ClaimRewardsResponse.ts
 models/ClaimRewardsResponseDataInner.ts
 models/Coin.ts
+models/CoinDynamicBondingCurve.ts
+models/CoinExtensions.ts
 models/CoinInsights.ts
-models/CoinInsightsDynamicBondingCurve.ts
-models/CoinInsightsExtensions.ts
 models/CoinInsightsResponse.ts
 models/CoinMember.ts
 models/CoinMembersResponse.ts
