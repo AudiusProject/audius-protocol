@@ -178,7 +178,7 @@ export const useLaunchCoin = () => {
       // Invalidate the list of artist coins to add it to the list
       queryClient.invalidateQueries({ queryKey: getArtistCoinsQueryKey() })
       // Invalidate our user - this will refresh their badge info
-      // TODO: this will eventually move to the users metadata
+      // NOTE: this will eventually move to the users metadata
       queryClient.invalidateQueries({
         queryKey: getUserCreatedCoinsQueryKey(params.userId)
       })
