@@ -95,7 +95,6 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
           if (!old) return old
 
           const amountNumber = Number(amount)
-
           return {
             ...old,
             balance: old.balance - amountNumber,
