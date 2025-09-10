@@ -11,6 +11,6 @@ export enum Phase {
 
 export const LAUNCHPAD_COIN_DESCRIPTION = (
   artistHandle: string,
-  coinSymbol: string
+  coinTicker: string
 ) => `
-${coinSymbol} is associated with artist @${artistHandle} on Audius. It aims to attract communities in need of entertainment and connection, embodying the playful and creative spirit of meme culture, and promoting interaction between fans and collectors.`
+${coinTicker} is an artist coin created by ${artistHandle} on Audius. Learn more at https://audius.co/coin/${coinTicker}`

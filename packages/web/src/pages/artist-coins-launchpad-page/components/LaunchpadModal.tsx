@@ -1,3 +1,6 @@
+import { useMemo } from 'react'
+
+import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
   Button,
@@ -201,7 +204,11 @@ export const LaunchpadModal = ({
     amountUi: receiveAmount,
     amountUsd: receiveAmount
   }
-  const numTxs = payAmount && parseFloat(payAmount) > 0 ? 3 : 1
+  const payAmountParsed = useMemo(
+    () => (payAmount ? new FixedDecimal(payAmount, 9).value : 0),
+    [payAmount]
+  )
+  const numTxs = payAmount && payAmountParsed > 0 ? 3 : 1
   return (
     <Modal
       isOpen={isOpen}
