@@ -17,55 +17,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * Token metadata and links
  * @export
- * @interface CoinInsightsExtensions
+ * @interface CoinExtensions
  */
-export interface CoinInsightsExtensions {
+export interface CoinExtensions {
     /**
      * CoinGecko ID
      * @type {string}
-     * @memberof CoinInsightsExtensions
+     * @memberof CoinExtensions
      */
     coingeckoId?: string;
     /**
      * Token description
      * @type {string}
-     * @memberof CoinInsightsExtensions
+     * @memberof CoinExtensions
      */
     description?: string;
     /**
      * Twitter URL
      * @type {string}
-     * @memberof CoinInsightsExtensions
+     * @memberof CoinExtensions
      */
     twitter?: string;
     /**
      * Website URL
      * @type {string}
-     * @memberof CoinInsightsExtensions
+     * @memberof CoinExtensions
      */
     website?: string;
     /**
      * Discord invite URL
      * @type {string}
-     * @memberof CoinInsightsExtensions
+     * @memberof CoinExtensions
      */
     discord?: string;
 }
 
 /**
- * Check if a given object implements the CoinInsightsExtensions interface.
+ * Check if a given object implements the CoinExtensions interface.
  */
-export function instanceOfCoinInsightsExtensions(value: object): value is CoinInsightsExtensions {
+export function instanceOfCoinExtensions(value: object): value is CoinExtensions {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function CoinInsightsExtensionsFromJSON(json: any): CoinInsightsExtensions {
-    return CoinInsightsExtensionsFromJSONTyped(json, false);
+export function CoinExtensionsFromJSON(json: any): CoinExtensions {
+    return CoinExtensionsFromJSONTyped(json, false);
 }
 
-export function CoinInsightsExtensionsFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinInsightsExtensions {
+export function CoinExtensionsFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoinExtensions {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -79,7 +79,7 @@ export function CoinInsightsExtensionsFromJSONTyped(json: any, ignoreDiscriminat
     };
 }
 
-export function CoinInsightsExtensionsToJSON(value?: CoinInsightsExtensions | null): any {
+export function CoinExtensionsToJSON(value?: CoinExtensions | null): any {
     if (value === undefined) {
         return undefined;
     }
