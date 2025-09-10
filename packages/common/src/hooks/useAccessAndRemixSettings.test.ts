@@ -16,7 +16,23 @@ vi.mock('react-redux', () => {
 
 vi.mock('~/api/', () => ({
   useCurrentUserId: () => ({ data: 123 }),
-  useHasNoTokens: () => ({ data: false })
+  useHasNoTokens: () => ({ data: false }),
+  useArtistCoins: () => ({
+    data: [
+      {
+        name: 'dank coin',
+        ticker: 'DANK',
+        mint: '123',
+        decimals: 18,
+        ownerId: '123',
+        logoUri: 'dankcoin.com/logo',
+        description: 'dank coin description',
+        website: 'dankcoin.com',
+        createdAt: '01-01-2020'
+      }
+    ],
+    isLoading: false
+  })
 }))
 
 const mockUseSelector = (mockedState: any) => (selectorFn: any) =>
