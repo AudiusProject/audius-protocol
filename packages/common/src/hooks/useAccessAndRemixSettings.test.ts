@@ -95,6 +95,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -113,6 +115,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -131,6 +135,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -154,6 +160,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -175,6 +183,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -196,6 +206,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -217,6 +229,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -238,6 +252,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -259,6 +275,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -280,6 +298,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: false,
         disableCollectibleGateFields: false,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -298,6 +318,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: false,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -318,6 +340,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -341,6 +365,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -359,6 +385,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -380,6 +408,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
+        disableTokenGate: false,
+        disableTokenGateFields: false,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
