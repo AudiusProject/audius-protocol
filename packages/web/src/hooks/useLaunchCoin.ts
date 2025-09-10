@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 
+// Leaving in consoles for QA and possibly soft-launch to make sure we have good info on where things are failing
 /* eslint-disable no-console */
 
 export type LaunchCoinParams = {
