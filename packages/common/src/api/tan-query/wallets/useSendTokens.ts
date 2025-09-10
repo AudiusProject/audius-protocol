@@ -6,8 +6,8 @@ import { Name, SolanaWalletAddress } from '~/models'
 import { getErrorMessage } from '~/utils'
 
 import { getUserCoinQueryKey } from '../coins/useUserCoin'
-import { useWalletAddresses } from '../users/account/useWalletAddresses'
 import { useCurrentAccountUser } from '../users/account/accountSelectors'
+import { useWalletAddresses } from '../users/account/useWalletAddresses'
 
 import { useTokenBalance } from './useTokenBalance'
 
