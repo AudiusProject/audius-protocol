@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
@@ -58,6 +58,14 @@ export const BuyTab = ({
   // State for token selection
   const [selectedInputToken, setSelectedInputToken] = useState(quoteToken)
   const [selectedOutputToken, setSelectedOutputToken] = useState(baseToken)
+
+  useEffect(() => {
+    setSelectedInputToken(quoteToken)
+  }, [quoteToken])
+
+  useEffect(() => {
+    setSelectedOutputToken(baseToken)
+  }, [baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useTokenPrice(selectedOutputToken.address)
