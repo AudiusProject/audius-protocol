@@ -151,8 +151,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableTokenGate: false,
-        disableTokenGateFields: false,
+        disableTokenGate: true,
+        disableTokenGateFields: true,
         disableHidden: false
       }
       expect(actual).toEqual(expected)
@@ -356,8 +356,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableTokenGate: false,
-        disableTokenGateFields: false,
+        disableTokenGate: true,
+        disableTokenGateFields: true,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -381,8 +381,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableTokenGate: false,
-        disableTokenGateFields: false,
+        disableTokenGate: true,
+        disableTokenGateFields: true,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -401,8 +401,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableTokenGate: false,
-        disableTokenGateFields: false,
+        disableTokenGate: true,
+        disableTokenGateFields: true,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
@@ -424,8 +424,8 @@ describe('useAccessAndRemixSettings', () => {
         disableSpecialAccessGateFields: true,
         disableCollectibleGate: true,
         disableCollectibleGateFields: true,
-        disableTokenGate: false,
-        disableTokenGateFields: false,
+        disableTokenGate: true,
+        disableTokenGateFields: true,
         disableHidden: true
       }
       expect(actual).toEqual(expected)
