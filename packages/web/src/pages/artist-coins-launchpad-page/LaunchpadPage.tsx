@@ -6,6 +6,7 @@ import {
   useCurrentAccountUser
 } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { IconArtistCoin } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { Form, Formik, useFormikContext } from 'formik'
@@ -168,8 +169,8 @@ export const LaunchpadPage = () => {
           throw new Error('No connected wallet found')
         }
         const parsedPayAmount = _values.payAmount
-          ? // TODO: use FixedDecimal
-            parseFloat(_values.payAmount)
+          ? Number(new FixedDecimal(_values.payAmount, 9).value) /
+            Math.pow(10, 9)
           : undefined
         if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
           console.error('inititalBuyAudioAmount is not valid', {
