@@ -8,7 +8,6 @@ from typing_extensions import Protocol
 from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
-    does_user_have_token_access,
     does_user_have_usdc_access,
     does_user_support_artist,
 )
@@ -61,7 +60,6 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
     "usdc_purchase": does_user_have_usdc_access,
-    "token_gate": does_user_have_token_access,
 }
 
 

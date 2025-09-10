@@ -72,15 +72,6 @@ class TipGate(TypedDict):
     tip_user_id: int
 
 
-class TokenGateCondition(TypedDict):
-    token_mint: str
-    token_amount: int
-
-
-class TokenGate(TypedDict):
-    token_gate: TokenGateCondition
-
-
 class NFTCollection(TypedDict):
     chain: str
     address: str
@@ -93,7 +84,7 @@ class NFTGate(TypedDict):
     nft_collection: NFTCollection
 
 
-AccessGate = Union[PurchaseGate, FollowGate, TipGate, NFTGate, TokenGate]
+AccessGate = Union[PurchaseGate, FollowGate, TipGate, NFTGate]
 
 
 # Allow up to 6 decimal points for split percentages

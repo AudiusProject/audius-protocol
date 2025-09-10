@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from typing import Dict, Union
 
-from sqlalchemy import text
 from sqlalchemy.orm.session import Session
 
 from src.gated_content.types import GatedContentType
@@ -149,63 +148,3 @@ def does_user_have_usdc_access(
             .first()
         )
         return bool(result)
-
-
-def does_user_have_token_access(
-    session: Session,
-    user_id: int,
-    content_id: int,
-    content_type: GatedContentType,
-    condition_options: Union[Dict, int],
-):
-    """
-    Check if user has sufficient token balance for token-gated content access.
-    condition_options should be a dict with 'token_gate' key containing 'token_mint' and 'token_amount' keys.
-    """
-    if not isinstance(condition_options, dict):
-        logger.warning(
-            f"Token gating condition_options should be dict, got {type(condition_options)}"
-        )
-        return False
-
-    token_gate = condition_options.get("token_gate", {})
-    if not isinstance(token_gate, dict):
-        logger.warning(
-            f"Token gating token_gate should be dict, got {type(token_gate)}"
-        )
-        return False
-
-    token_mint = token_gate.get("token_mint")
-    token_amount = token_gate.get("token_amount", 1)
-
-    if not token_mint:
-        logger.warning("Token gating missing token_mint in condition_options")
-        return False
-
-    try:
-        # TODO - KJ: Check for a way to do this without text
-        # Query sol_user_balances table for user's token balance
-        result = session.execute(
-            text(
-                """
-                SELECT balance 
-                FROM sol_user_balances 
-                WHERE user_id = :user_id AND mint = :token_mint
-            """
-            ),
-            {"user_id": user_id, "token_mint": token_mint},
-        ).fetchone()
-
-        if not result:
-            return False
-
-        user_balance = int(result[0])
-        required_amount = int(token_amount)
-
-        return user_balance >= required_amount
-
-    except Exception as e:
-        logger.error(
-            f"Error checking token access for user {user_id}, token {token_mint}: {e}"
-        )
-        return False
