@@ -1,10 +1,5 @@
 import { SwapRequest } from '@jup-ag/api'
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  createCloseAccountInstruction,
-  getAccount,
-  getAssociatedTokenAddressSync
-} from '@solana/spl-token'
+import { createCloseAccountInstruction } from '@solana/spl-token'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 import {
@@ -23,7 +18,6 @@ import {
 } from './types'
 import {
   addTransferFromUserBankInstructions,
-  addTransferToUserBankInstructions,
   buildAndSendTransaction,
   createTokenConfig,
   findTokenByAddress,
@@ -124,38 +118,21 @@ export const executeIndirectSwap = async (
       instructions: firstInstructions
     })
 
-    // Create intermediate AUDIO ATA
-    errorStage = 'INDIRECT_SWAP_CREATE_AUDIO_ATA'
-    const audioMint = new PublicKey(AUDIO_MINT)
-    const intermediateAudioAta = getAssociatedTokenAddressSync(
-      audioMint,
-      userPublicKey,
-      true
-    )
-
-    // Create ATA if it doesn't exist
-    try {
-      await getAccount(
-        sdk.services.solanaClient.connection,
-        intermediateAudioAta
-      )
-    } catch (e) {
-      firstInstructions.push(
-        createAssociatedTokenAccountIdempotentInstruction(
-          feePayer,
-          intermediateAudioAta,
-          userPublicKey,
-          audioMint
-        )
-      )
-    }
+    // Get/create AUDIO user bank
+    errorStage = 'INDIRECT_SWAP_PREPARE_AUDIO_USER_BANK'
+    const audioUserBankResult =
+      await sdk.services.claimableTokensClient.getOrCreateUserBank({
+        ethWallet: ethAddress,
+        mint: audioTokenInfo.claimableTokenMint
+      })
+    const audioUserBank = audioUserBankResult.userBank
 
     // Get first swap instructions (InputToken -> AUDIO)
     errorStage = 'INDIRECT_SWAP_FIRST_SWAP_INSTRUCTIONS'
     const firstSwapRequestParams: SwapRequest = {
       quoteResponse: firstQuote.quote,
       userPublicKey: userPublicKey.toBase58(),
-      destinationTokenAccount: intermediateAudioAta.toBase58(),
+      destinationTokenAccount: audioUserBank.toBase58(),
       wrapAndUnwrapSol: wrapUnwrapSol,
       dynamicSlippage: true
     }
@@ -168,19 +145,6 @@ export const executeIndirectSwap = async (
     ])
 
     firstInstructions.push(...firstSwapInstructions)
-
-    // Transfer AUDIO back to user bank after first swap
-    errorStage = 'INDIRECT_SWAP_TRANSFER_AUDIO_TO_BANK'
-    await addTransferToUserBankInstructions({
-      tokenInfo: audioTokenInfo,
-      userPublicKey,
-      ethAddress: ethAddress!,
-      amountLamports: BigInt(firstQuote.outputAmount.amount),
-      sourceAta: intermediateAudioAta,
-      sdk,
-      feePayer,
-      instructions: firstInstructions
-    })
 
     // Cleanup source ATA after first swap
     errorStage = 'INDIRECT_SWAP_FIRST_CLEANUP'
