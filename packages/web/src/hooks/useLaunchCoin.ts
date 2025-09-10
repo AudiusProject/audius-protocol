@@ -20,7 +20,7 @@ export type LaunchCoinParams = {
   symbol: string
   description: string
   walletPublicKey: string
-  initialBuyAmountSol?: number
+  initialBuyAmountSolLamports?: number
   image: Blob
 }
 
@@ -46,7 +46,7 @@ export const useLaunchCoin = () => {
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountSol,
+      initialBuyAmountSolLamports,
       image
     }: LaunchCoinParams): Promise<LaunchCoinResponse> => {
       try {
@@ -56,7 +56,7 @@ export const useLaunchCoin = () => {
           symbol,
           description,
           walletPublicKeyStr,
-          initialBuyAmountSol,
+          initialBuyAmountSolLamports,
           image
         })
         const symbolUpper = symbol.toUpperCase()
@@ -97,7 +97,7 @@ export const useLaunchCoin = () => {
           symbol: symbolUpper,
           description,
           walletPublicKey,
-          initialBuyAmountSol,
+          initialBuyAmountSolLamports,
           image
         })
         const {
@@ -149,8 +149,8 @@ export const useLaunchCoin = () => {
         if (
           firstBuyTxSerialized &&
           solToAudioTxSerialized &&
-          initialBuyAmountSol &&
-          initialBuyAmountSol > 0
+          initialBuyAmountSolLamports &&
+          initialBuyAmountSolLamports > 0
         ) {
           // Sol to audio swap
           console.log('Sending sol to audio swap tx to user to sign')
@@ -192,7 +192,7 @@ export const useLaunchCoin = () => {
           additionalInfo: {
             coinName: params.name,
             coinSymbol: params.symbol,
-            initialBuyAmount: params.initialBuyAmountSol ?? 0
+            initialBuyAmount: params.initialBuyAmountSolLamports ?? 0
           }
         })
       }

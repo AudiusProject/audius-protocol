@@ -158,16 +158,9 @@ export const LaunchpadPage = () => {
       if (!connectedWallet) {
         throw new Error('No connected wallet found')
       }
-      const parsedPayAmount = formValues.payAmount
-        ? Number(new FixedDecimal(formValues.payAmount, 9).value) /
-          Math.pow(10, 9)
+      const payAmountLamports = formValues.payAmount
+        ? Number(new FixedDecimal(formValues.payAmount, 9).trunc(9).value)
         : undefined
-      if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
-        console.error('inititalBuyAudioAmount is not valid', {
-          buyAmountFormValue: formValues.payAmount,
-          initialBuyAmountAudioParsed: parsedPayAmount
-        })
-      }
       launchCoin({
         userId: user.user_id,
         name: formValues.coinName,
@@ -178,7 +171,7 @@ export const LaunchpadPage = () => {
           formValues.coinSymbol
         ),
         walletPublicKey: connectedWallet.address,
-        initialBuyAmountSol: parsedPayAmount
+        initialBuyAmountSolLamports: payAmountLamports
       })
     },
     [launchCoin, user, connectedWallet]

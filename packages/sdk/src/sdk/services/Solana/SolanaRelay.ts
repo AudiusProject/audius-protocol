@@ -167,7 +167,7 @@ export class SolanaRelay extends BaseAPI {
       symbol,
       description,
       walletPublicKey,
-      initialBuyAmountSol,
+      initialBuyAmountSolLamports,
       image
     } = await parseParams('launchCoin', LaunchCoinSchema)(params)
 
@@ -179,8 +179,11 @@ export class SolanaRelay extends BaseAPI {
     formData.append('symbol', symbol)
     formData.append('description', description)
     formData.append('walletPublicKey', walletPublicKey.toBase58())
-    if (initialBuyAmountSol) {
-      formData.append('initialBuyAmountSol', initialBuyAmountSol.toString())
+    if (initialBuyAmountSolLamports) {
+      formData.append(
+        'initialBuyAmountSolLamports',
+        initialBuyAmountSolLamports.toString()
+      )
     }
     formData.append('image', image)
 
@@ -198,33 +201,15 @@ export class SolanaRelay extends BaseAPI {
       if (!runtime.exists(json, 'createPoolTx')) {
         throw new Error('createPoolTx missing from response')
       }
-      if (!runtime.exists(json, 'logoUri')) {
-        throw new Error('logoUri missing from response')
-      }
-
-      // Helper function to convert Buffer JSON to base64 string
-      const convertToBase64 = (
-        tx:
-          | {
-              type: 'Buffer'
-              data: Buffer
-            }
-          | undefined
-          | null
-      ): string => {
-        if (tx && tx.type === 'Buffer' && Array.isArray(tx.data)) {
-          return Buffer.from(tx.data).toString('base64')
-        }
-        throw new Error('Invalid transaction format')
+      if (!runtime.exists(json, 'imageUri')) {
+        throw new Error('imageUri missing from response')
       }
 
       return {
         mintPublicKey: json.mintPublicKey as string,
-        createPoolTx: convertToBase64(json.createPoolTx),
-        firstBuyTx: json.firstBuyTx ? convertToBase64(json.firstBuyTx) : null,
-        solToAudioTx: json.solToAudioTx
-          ? convertToBase64(json.solToAudioTx)
-          : null,
+        createPoolTx: json.createPoolTx as string,
+        firstBuyTx: json.firstBuyTx as string | undefined,
+        solToAudioTx: json.solToAudioTx as string | undefined, // The solToAudioTx is already in a base64 string format
         metadataUri: json.metadataUri as string,
         imageUri: json.imageUri as string
       }

@@ -1,4 +1,3 @@
-import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   createJupiterApiClient,
   SwapRequest,
@@ -26,11 +25,10 @@ interface LaunchCoinRequestBody {
   symbol: string
   walletPublicKey: string
   description: string
-  initialBuyAmountSol?: string
+  initialBuyAmountSolLamports?: number
 }
 
 const SOL_MINT = 'So11111111111111111111111111111111111111112'
-const SOL_DECIMALS = 9
 const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 
 const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
@@ -60,12 +58,12 @@ const createSolToAudioTx = async (
 
 const getJupiterSwapQuote = async (
   jupiterApi: JupiterApi,
-  initialBuyAmountSol: bigint
+  initialBuyAmountSolLamports: number
 ) => {
   return await jupiterApi.quoteGet({
     inputMint: SOL_MINT,
     outputMint: AUDIO_MINT,
-    amount: Number(initialBuyAmountSol),
+    amount: initialBuyAmountSolLamports,
     swapMode: 'ExactIn',
     onlyDirectRoutes: false,
     dynamicSlippage: true
@@ -86,11 +84,8 @@ export const launchCoin = async (
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountSol: initialBuyAmountSolStr
+      initialBuyAmountSolLamports
     } = req.body
-    const initialBuyAmountSol = initialBuyAmountSolStr
-      ? new FixedDecimal(initialBuyAmountSolStr, 9).trunc(SOL_DECIMALS).value
-      : undefined
 
     // file is the image attached via multer middleware (sent from client as a multipart/form-data request)
     const file = req.file
@@ -110,9 +105,12 @@ export const launchCoin = async (
       )
     }
 
-    if (initialBuyAmountSol !== undefined && initialBuyAmountSol <= 0) {
+    if (
+      initialBuyAmountSolLamports !== undefined &&
+      initialBuyAmountSolLamports <= 0
+    ) {
       throw new Error(
-        `Invalid initialBuyAmountSol. Initial buy amount must be a number > 0. Received: ${initialBuyAmountSol}`
+        `Invalid initialBuyAmountSol. Initial buy amount must be a number > 0. Received: ${initialBuyAmountSolLamports}`
       )
     }
 
@@ -155,13 +153,14 @@ export const launchCoin = async (
 
     // If using initial buy, get a quote for the swap from SOL -> AUDIO
     let jupiterSwapQuote: QuoteResponse | undefined
-    if (initialBuyAmountSol) {
+    if (initialBuyAmountSolLamports) {
       jupiterSwapQuote = await getJupiterSwapQuote(
         jupiterApi,
-        initialBuyAmountSol
+        initialBuyAmountSolLamports
       )
     }
 
+    // Set up our pool
     const poolConfig = await dbcClient.pool.createPoolWithFirstBuy({
       createPoolParam: {
         config: new PublicKey(configKey),
@@ -173,7 +172,7 @@ export const launchCoin = async (
         payer: walletPublicKey
       },
       firstBuyParam:
-        initialBuyAmountSol && jupiterSwapQuote
+        initialBuyAmountSolLamports && jupiterSwapQuote
           ? {
               buyer: walletPublicKey,
               receiver: walletPublicKey,
@@ -208,7 +207,7 @@ export const launchCoin = async (
       ).blockhash
 
       // Create a transaction for the sol-audio swap
-      if (jupiterSwapQuote && initialBuyAmountSol) {
+      if (jupiterSwapQuote && initialBuyAmountSolLamports) {
         solToAudioTxSerialized = await createSolToAudioTx(
           jupiterApi,
           jupiterSwapQuote,
@@ -221,8 +220,14 @@ export const launchCoin = async (
       mintPublicKey: mintPublicKey.toBase58(),
       imageUri,
       jupiterSwapQuote,
-      createPoolTx: createPoolTx.serialize({ requireAllSignatures: false }),
-      firstBuyTx: firstBuyTx?.serialize({ requireAllSignatures: false }),
+      createPoolTx: Buffer.from(
+        createPoolTx.serialize({ requireAllSignatures: false })
+      ).toString('base64'),
+      firstBuyTx: firstBuyTx
+        ? Buffer.from(
+            firstBuyTx.serialize({ requireAllSignatures: false })
+          ).toString('base64')
+        : undefined,
       solToAudioTx: solToAudioTxSerialized,
       metadataUri
     })

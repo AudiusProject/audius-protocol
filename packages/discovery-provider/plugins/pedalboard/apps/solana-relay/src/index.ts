@@ -57,7 +57,7 @@ const main = async () => {
   })
 
   // Set server timeout to 3 minutes to accommodate long-running requests (like launch_coin)
-  server.timeout = 180000 // 3 minutes
+  server.timeout = 3 * 60 * 1000
 }
 
 main().catch((e) => logger.error({ error: e }, 'Fatal error in main!'))

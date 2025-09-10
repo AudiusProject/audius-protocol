@@ -43,7 +43,7 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
       }}
     >
       <LoadingSpinner size='3xl' />
-      <Flex direction='column' gap='s'>
+      <Flex direction='column' gap='s' alignItems='center'>
         <Text variant='heading' size='l'>
           {messages.awaitingConfirmation}
         </Text>

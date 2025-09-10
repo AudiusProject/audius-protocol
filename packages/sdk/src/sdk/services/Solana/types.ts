@@ -119,7 +119,7 @@ export const LaunchCoinSchema = z
     symbol: z.string().min(1, 'Symbol is required'),
     description: z.string().min(1, 'Description is required'),
     walletPublicKey: PublicKeySchema,
-    initialBuyAmountSol: z
+    initialBuyAmountSolLamports: z
       .number()
       .nonnegative('Initial buy amount must be non-negative')
       .optional(),
@@ -134,8 +134,8 @@ export type LaunchCoinRequest = z.infer<typeof LaunchCoinSchema>
 export type LaunchCoinResponse = {
   mintPublicKey: string
   createPoolTx: string
-  firstBuyTx: string | null
-  solToAudioTx: string | null
+  firstBuyTx: string | undefined
+  solToAudioTx: string | undefined
   metadataUri: string
   imageUri: string
 }
