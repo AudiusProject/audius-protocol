@@ -216,10 +216,12 @@ export enum Name {
   TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
+  TRACK_UPLOAD_TOKEN_GATED = 'Track Upload: Token Gated',
   TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
   // Download-Only Gated Track Uploads
   TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD = 'Track Upload: Follow Gated Download',
   TRACK_UPLOAD_USDC_GATED_DOWNLOAD = 'Track Upload: USDC Gated Download',
+  TRACK_UPLOAD_TOKEN_GATED_DOWNLOAD = 'Track Upload: Token Gated Download',
   TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK = 'Track Upload: Clicked USDC Download Waitlist Link',
 
   // Track Downloads
@@ -248,9 +250,11 @@ export enum Name {
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
+  TOKEN_GATED_TRACK_UNLOCKED = 'Token Gated: Track Unlocked',
   // Unlocked Download-Only Gated Tracks
   USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED = 'USDC Gated: Download Track Unlocked',
   FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Follow Gated: Download Track Unlocked',
+  TOKEN_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Token Gated: Download Track Unlocked',
 
   // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
@@ -1175,12 +1179,26 @@ type TrackUploadUSDCGated = {
   lossless: boolean
 }
 
+type TrackUploadTokenGated = {
+  eventName: Name.TRACK_UPLOAD_TOKEN_GATED
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
 type TrackUploadClickUSDCWaitListLink = {
   eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
 }
 
 type TrackUploadFollowGatedDownload = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
+type TrackUploadTokenGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_TOKEN_GATED_DOWNLOAD
   kind: 'tracks'
   downloadable: boolean
   lossless: boolean
@@ -1290,6 +1308,11 @@ type TipGatedTrackUnlocked = {
   trackId: number
 }
 
+type TokenGatedTrackUnlocked = {
+  eventName: Name.TOKEN_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
 type USDCGatedDownloadTrackUnlocked = {
   eventName: Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
   count: number
@@ -1297,6 +1320,11 @@ type USDCGatedDownloadTrackUnlocked = {
 
 type FollowGatedDownloadTrackUnlocked = {
   eventName: Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
+  trackId: number
+}
+
+type TokenGatedDownloadTrackUnlocked = {
+  eventName: Name.TOKEN_GATED_DOWNLOAD_TRACK_UNLOCKED
   trackId: number
 }
 
@@ -2903,9 +2931,11 @@ export type AllTrackingEvents =
   | TrackUploadFollowGated
   | TrackUploadTipGated
   | TrackUploadUSDCGated
+  | TrackUploadTokenGated
   | TrackUploadClickUSDCWaitListLink
   | TrackUploadFollowGatedDownload
   | TrackUploadUSDCGatedDownload
+  | TrackUploadTokenGatedDownload
   | TrackUploadClickUSDCDownloadWaitListLink
   | TrackDownloadClickedDownloadAll
   | TrackDownloadSuccessfulDownloadAll
@@ -2928,8 +2958,10 @@ export type AllTrackingEvents =
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked
+  | TokenGatedTrackUnlocked
   | USDCGatedDownloadTrackUnlocked
   | FollowGatedDownloadTrackUnlocked
+  | TokenGatedDownloadTrackUnlocked
   | TrendingChangeView
   | TrendingPaginate
   | FeedChangeView

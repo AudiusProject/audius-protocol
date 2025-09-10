@@ -9,7 +9,8 @@ import {
   IconVisibilityHidden,
   IconColors,
   Flex,
-  Text
+  Text,
+  IconArtistCoin
 } from '@audius/harmony'
 
 type AccessTypeLabelProps = {
@@ -52,6 +53,12 @@ const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
   [AccessType.SPECIAL_ACCESS]: {
     icon: IconSparkles,
     label: 'Special Access',
+    color: 'special'
+  },
+  [AccessType.TOKEN_GATED]: {
+    icon: IconArtistCoin,
+    label: 'Coin Gated',
+    // TODO - KJ: Add color for coin gated
     color: 'special'
   },
   [AccessType.COLLECTIBLE_GATED]: {

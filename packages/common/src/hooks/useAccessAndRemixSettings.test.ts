@@ -15,7 +15,8 @@ vi.mock('react-redux', () => {
 })
 
 vi.mock('~/api/', () => ({
-  useCurrentUserId: () => ({ data: 123 })
+  useCurrentUserId: () => ({ data: 123 }),
+  useHasNoTokens: () => ({ data: false })
 }))
 
 const mockUseSelector = (mockedState: any) => (selectorFn: any) =>
