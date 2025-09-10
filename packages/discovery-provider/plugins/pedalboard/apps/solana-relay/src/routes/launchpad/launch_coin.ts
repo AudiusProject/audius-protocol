@@ -56,7 +56,7 @@ const createSolToAudioTx = async (
   }
 }
 
-const getJupiterSwapQuote = async (
+const getsolToAudioQuote = async (
   jupiterApi: JupiterApi,
   initialBuyAmountSolLamports: number
 ) => {
@@ -152,9 +152,9 @@ export const launchCoin = async (
     const metadataUri = await umi.uploader.uploadJson(metadata)
 
     // If using initial buy, get a quote for the swap from SOL -> AUDIO
-    let jupiterSwapQuote: QuoteResponse | undefined
+    let solToAudioQuote: QuoteResponse | undefined
     if (initialBuyAmountSolLamports) {
-      jupiterSwapQuote = await getJupiterSwapQuote(
+      solToAudioQuote = await getsolToAudioQuote(
         jupiterApi,
         initialBuyAmountSolLamports
       )
@@ -172,11 +172,11 @@ export const launchCoin = async (
         payer: walletPublicKey
       },
       firstBuyParam:
-        initialBuyAmountSolLamports && jupiterSwapQuote
+        initialBuyAmountSolLamports && solToAudioQuote
           ? {
               buyer: walletPublicKey,
               receiver: walletPublicKey,
-              buyAmount: new BN(jupiterSwapQuote.outAmount), // Should already be formatted with correct decimals
+              buyAmount: new BN(solToAudioQuote.outAmount), // Should already be formatted with correct decimals
               minimumAmountOut: new BN(0), // No slippage protection for initial buy
               referralTokenAccount: null // No referral for creator's initial buy
             }
@@ -207,10 +207,10 @@ export const launchCoin = async (
       ).blockhash
 
       // Create a transaction for the sol-audio swap
-      if (jupiterSwapQuote && initialBuyAmountSolLamports) {
+      if (solToAudioQuote && initialBuyAmountSolLamports) {
         solToAudioTxSerialized = await createSolToAudioTx(
           jupiterApi,
-          jupiterSwapQuote,
+          solToAudioQuote,
           walletPublicKey
         )
       }
@@ -219,7 +219,7 @@ export const launchCoin = async (
     return res.status(200).send({
       mintPublicKey: mintPublicKey.toBase58(),
       imageUri,
-      jupiterSwapQuote,
+      solToAudioQuote,
       createPoolTx: Buffer.from(
         createPoolTx.serialize({ requireAllSignatures: false })
       ).toString('base64'),
