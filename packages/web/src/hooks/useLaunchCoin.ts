@@ -20,7 +20,7 @@ export type LaunchCoinParams = {
   description: string
   walletPublicKey: string
   initialBuyAmountSol?: number
-  image: File | Blob
+  image: Blob
 }
 
 export type LaunchCoinResponse = {
@@ -68,12 +68,12 @@ export const useLaunchCoin = () => {
         }
 
         const signAndSendTx = async (transactionSerialized: string) => {
-          // // Deserialize the pool transaction
+          // Deserialize the pool transaction
           const deserializedTx = VersionedTransaction.deserialize(
             Buffer.from(transactionSerialized, 'base64')
           )
 
-          // Create the bonding curve pool
+          // Sends the transaction to the 3rd party wallet to sign & sends directly to solana from there
           const txSignature =
             await solanaProvider.signAndSendTransaction(deserializedTx)
 
@@ -89,7 +89,6 @@ export const useLaunchCoin = () => {
         const walletPublicKey = new PublicKey(walletPublicKeyStr)
 
         console.log('Sending request to relay to launch coin...')
-        // Get quote
         // Set up coin TXs on relay side
         const res = await sdk.services.solanaRelay.launchCoin({
           name,
@@ -117,57 +116,55 @@ export const useLaunchCoin = () => {
         })
 
         // Sign pool tx
-        // console.log('Signing pool tx')
-        // const createPoolTxSignature = await signAndSendTx(
-        //   createPoolTxSerialized
-        // )
-        // console.log(
-        //   'Pool created successfully! createPoolTxSignature',
-        //   createPoolTxSignature
-        // )
+        console.log('Signing pool tx')
+        const createPoolTxSignature = await signAndSendTx(
+          createPoolTxSerialized
+        )
+        console.log(
+          'Pool created successfully! createPoolTxSignature',
+          createPoolTxSignature
+        )
 
-        // try {
-        //   // Create coin in Audius database
-        //   console.log('Adding coin to Audius database')
-        //   const coinRes = await sdk.coins.createCoin({
-        //     userId: Id.parse(userId),
-        //     createCoinRequest: {
-        //       mint: mintPublicKey,
-        //       ticker: `$${symbol}`,
-        //       decimals: COIN_DECIMALS,
-        //       name,
-        //       logoUri: imageUri
-        //     }
-        //   })
-        //   console.log('Coin added to Audius database', coinRes)
-        // } catch (e) {
-        //   console.error('Error adding coin to Audius database', e)
-        // }
+        try {
+          // Create coin in Audius database
+          console.log('Adding coin to Audius database')
+          const coinRes = await sdk.coins.createCoin({
+            userId: Id.parse(userId),
+            createCoinRequest: {
+              mint: mintPublicKey,
+              ticker: `$${symbol}`,
+              decimals: COIN_DECIMALS,
+              name,
+              logoUri: imageUri
+            }
+          })
+          console.log('Coin added to Audius database', coinRes)
+        } catch (e) {
+          console.error('Error adding coin to Audius database', e)
+        }
 
-        // // Perform sol->audio swap & first buy
-        // if (
-        //   firstBuyTxSerialized &&
-        //   solToAudioTxSerialized &&
-        //   initialBuyAmountSol &&
-        //   initialBuyAmountSol > 0
-        // ) {
-        //   // Sol to audio swap
-        //   console.log('Sending sol to audio swap tx to user to sign')
-        //   const solToAudioTx = await signAndSendTx(
-        //     solToAudioTxSerialized
-        //   )
-        //   console.log('Jupiter first buy tx signed', solToAudioTx)
+        // Perform sol->audio swap & first buy
+        if (
+          firstBuyTxSerialized &&
+          solToAudioTxSerialized &&
+          initialBuyAmountSol &&
+          initialBuyAmountSol > 0
+        ) {
+          // Sol to audio swap
+          console.log('Sending sol to audio swap tx to user to sign')
+          const solToAudioTx = await signAndSendTx(solToAudioTxSerialized)
+          console.log('Jupiter first buy tx signed', solToAudioTx)
 
-        //   // First buy
-        //   console.log('Sending first buy tx to user to sign')
-        //   const firstBuyTxSignature = await signAndSendTx(firstBuyTxSerialized)
-        //   console.log('First buy tx signed', firstBuyTxSignature)
-        // }
+          // First buy
+          console.log('Sending first buy tx to user to sign')
+          const firstBuyTxSignature = await signAndSendTx(firstBuyTxSerialized)
+          console.log('First buy tx signed', firstBuyTxSignature)
+        }
 
-        // return {
-        //   newMint: mintPublicKey,
-        //   logoUri: imageUri
-        // }
+        return {
+          newMint: mintPublicKey,
+          logoUri: imageUri
+        }
       } catch (error) {
         console.error('Error launching coin:', error)
         throw error instanceof Error

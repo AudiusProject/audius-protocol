@@ -123,8 +123,8 @@ export const LaunchCoinSchema = z
       .number()
       .nonnegative('Initial buy amount must be non-negative')
       .optional(),
-    image: z.custom<File>((data) => {
-      return data instanceof File
+    image: z.custom<Blob>((data) => {
+      return data instanceof Blob
     }, 'Image file is required')
   })
   .strict()
