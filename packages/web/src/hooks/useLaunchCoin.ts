@@ -58,6 +58,7 @@ export const useLaunchCoin = () => {
           initialBuyAmountSol,
           image
         })
+        const symbolUpper = symbol.toUpperCase()
         const sdk = await audiusSdk()
         const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
         if (!solanaProvider) {
@@ -92,7 +93,7 @@ export const useLaunchCoin = () => {
         // Set up coin TXs on relay side
         const res = await sdk.services.solanaRelay.launchCoin({
           name,
-          symbol,
+          symbol: symbolUpper,
           description,
           walletPublicKey,
           initialBuyAmountSol,
@@ -132,7 +133,7 @@ export const useLaunchCoin = () => {
             userId: Id.parse(userId),
             createCoinRequest: {
               mint: mintPublicKey,
-              ticker: `$${symbol}`,
+              ticker: `$${symbolUpper}`,
               decimals: COIN_DECIMALS,
               name,
               logoUri: imageUri
