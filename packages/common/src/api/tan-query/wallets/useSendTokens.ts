@@ -7,6 +7,7 @@ import { getErrorMessage } from '~/utils'
 
 import { getUserCoinQueryKey } from '../coins/useUserCoin'
 import { useWalletAddresses } from '../users/account/useWalletAddresses'
+import { useCurrentAccountUser } from '../users/account/accountSelectors'
 
 import { useTokenBalance } from './useTokenBalance'
 
@@ -31,6 +32,7 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
   const { audiusBackend, audiusSdk, reportToSentry, analytics } =
     useQueryContext()
   const { data: walletAddresses } = useWalletAddresses()
+  const { data: currentUser } = useCurrentAccountUser()
 
   const { data: tokenBalance } = useTokenBalance({ mint })
 
@@ -82,21 +84,24 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       }
     },
     onMutate: async ({ amount }) => {
-      const queryKey = getUserCoinQueryKey(mint)
+      const userId = currentUser?.user_id ?? null
+      const queryKey = getUserCoinQueryKey(mint, userId)
       await queryClient.cancelQueries({ queryKey })
 
       const previousBalance = queryClient.getQueryData(queryKey)
 
       if (previousBalance) {
-        queryClient.setQueryData(queryKey, (old: any) => {
+        queryClient.setQueryData(queryKey, (old) => {
           if (!old) return old
+
+          const amountNumber = Number(amount)
 
           return {
             ...old,
-            balance: old.balance - amount,
+            balance: old.balance - amountNumber,
             accounts: old.accounts?.map((account: any) =>
               account.isInAppWallet
-                ? { ...account, balance: account.balance - amount }
+                ? { ...account, balance: account.balance - amountNumber }
                 : account
             )
           }
@@ -121,7 +126,8 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
     },
     onError: (error, { amount, recipientWallet }, context) => {
       if (context?.previousBalance) {
-        const queryKey = getUserCoinQueryKey(mint)
+        const userId = currentUser?.user_id ?? null
+        const queryKey = getUserCoinQueryKey(mint, userId)
         queryClient.setQueryData(queryKey, context.previousBalance)
       }
 
@@ -151,7 +157,8 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       }
     },
     onSettled: () => {
-      const queryKey = getUserCoinQueryKey(mint)
+      const userId = currentUser?.user_id ?? null
+      const queryKey = getUserCoinQueryKey(mint, userId)
       queryClient.invalidateQueries({ queryKey })
     }
   })
