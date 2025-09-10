@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 
-import { useCurrentUserId } from '~/api/'
+import { useArtistCoins, useCurrentUserId } from '~/api/'
 import { getSupportedUserCollections } from '~/store/collectibles/selectors'
 import { CommonState } from '~/store/reducers'
 
@@ -21,6 +21,15 @@ export const useHasNoCollectibles = () => {
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length
   return !isLoading && numEthCollectibles + numSolCollectibles === 0
+}
+
+export const useHasNoTokens = () => {
+  const { data: userId } = useCurrentUserId()
+  const { data: coins, isLoading } = useArtistCoins({
+    owner_id: userId ? [userId] : undefined
+  })
+
+  return !isLoading && coins?.length === 0
 }
 
 /**
@@ -49,6 +58,7 @@ export const useAccessAndRemixSettings = ({
   const shouldDisablePublish = isPublishDisabled && isInitiallyHidden
 
   const hasNoCollectibles = useHasNoCollectibles()
+  const hasNoTokens = useHasNoTokens()
 
   return {
     disableUsdcGate: isRemix || shouldDisablePublish,
@@ -58,6 +68,9 @@ export const useAccessAndRemixSettings = ({
       isAlbum || isRemix || hasNoCollectibles || shouldDisablePublish,
     disableCollectibleGateFields:
       isAlbum || isRemix || hasNoCollectibles || shouldDisablePublish,
+    disableTokenGate: isAlbum || isRemix || hasNoTokens || shouldDisablePublish,
+    disableTokenGateFields:
+      isAlbum || isRemix || hasNoTokens || shouldDisablePublish,
     disableHidden: isAlbum || isScheduledRelease
   }
 }
