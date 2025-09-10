@@ -198,15 +198,20 @@ export class SolanaRelay extends BaseAPI {
       if (!runtime.exists(json, 'createPoolTx')) {
         throw new Error('createPoolTx missing from response')
       }
-      if (!runtime.exists(json, 'metadataUri')) {
-        throw new Error('metadataUri missing from response')
+      if (!runtime.exists(json, 'logoUri')) {
+        throw new Error('logoUri missing from response')
       }
 
       // Helper function to convert Buffer JSON to base64 string
-      const convertToBase64 = (tx: any): string => {
-        if (typeof tx === 'string') {
-          return tx
-        }
+      const convertToBase64 = (
+        tx:
+          | {
+              type: 'Buffer'
+              data: Buffer
+            }
+          | undefined
+          | null
+      ): string => {
         if (tx && tx.type === 'Buffer' && Array.isArray(tx.data)) {
           return Buffer.from(tx.data).toString('base64')
         }
@@ -217,8 +222,8 @@ export class SolanaRelay extends BaseAPI {
         mintPublicKey: json.mintPublicKey as string,
         createPoolTx: convertToBase64(json.createPoolTx),
         firstBuyTx: json.firstBuyTx ? convertToBase64(json.firstBuyTx) : null,
-        jupiterSwapTx: json.jupiterSwapTx
-          ? convertToBase64(json.jupiterSwapTx)
+        solToAudioTx: json.solToAudioTx
+          ? convertToBase64(json.solToAudioTx)
           : null,
         metadataUri: json.metadataUri as string,
         imageUri: json.imageUri as string

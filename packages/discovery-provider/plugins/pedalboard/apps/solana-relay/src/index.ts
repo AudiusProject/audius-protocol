@@ -29,7 +29,7 @@ process.on('unhandledRejection', (reason, promise) => {
 const main = async () => {
   const { serverHost, serverPort } = config
   const app = express()
-  app.use(json({ limit: '15mb' }))
+  app.use(json())
   app.use(cors())
   app.use(incomingRequestLogger)
   app.get('/solana/health_check', health)

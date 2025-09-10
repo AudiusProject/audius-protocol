@@ -123,8 +123,8 @@ export const LaunchCoinSchema = z
       .number()
       .nonnegative('Initial buy amount must be non-negative')
       .optional(),
-    image: z.custom<File | Blob>((data) => {
-      return data instanceof File || data instanceof Blob
+    image: z.custom<File>((data) => {
+      return data instanceof File
     }, 'Image file is required')
   })
   .strict()
@@ -135,7 +135,7 @@ export type LaunchCoinResponse = {
   mintPublicKey: string
   createPoolTx: string
   firstBuyTx: string | null
-  jupiterSwapTx: string | null
+  solToAudioTx: string | null
   metadataUri: string
   imageUri: string
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   ConnectedWallet,
@@ -148,6 +148,42 @@ export const LaunchpadPage = () => {
     () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
     [connectedWallets]
   )
+
+  const handleSubmit = useCallback(
+    (formValues: SetupFormValues) => {
+      setIsModalOpen(true)
+      if (!user) {
+        throw new Error('No current user found for unknown reason')
+      }
+      if (!connectedWallet) {
+        throw new Error('No connected wallet found')
+      }
+      const parsedPayAmount = formValues.payAmount
+        ? Number(new FixedDecimal(formValues.payAmount, 9).value) /
+          Math.pow(10, 9)
+        : undefined
+      if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
+        console.error('inititalBuyAudioAmount is not valid', {
+          buyAmountFormValue: formValues.payAmount,
+          initialBuyAmountAudioParsed: parsedPayAmount
+        })
+      }
+      launchCoin({
+        userId: user.user_id,
+        name: formValues.coinName,
+        symbol: formValues.coinSymbol,
+        image: formValues.coinImage!,
+        description: LAUNCHPAD_COIN_DESCRIPTION(
+          user.handle,
+          formValues.coinSymbol
+        ),
+        walletPublicKey: connectedWallet.address,
+        initialBuyAmountSol: parsedPayAmount
+      })
+    },
+    [launchCoin, user, connectedWallet]
+  )
+
   return (
     <Formik
       initialValues={{
@@ -160,37 +196,7 @@ export const LaunchpadPage = () => {
       validationSchema={toFormikValidationSchema(setupFormSchema)}
       validateOnMount={true}
       validateOnChange={true}
-      onSubmit={(_values: SetupFormValues) => {
-        setIsModalOpen(true)
-        if (!user) {
-          throw new Error('No current user found for unknown reason')
-        }
-        if (!connectedWallet) {
-          throw new Error('No connected wallet found')
-        }
-        const parsedPayAmount = _values.payAmount
-          ? Number(new FixedDecimal(_values.payAmount, 9).value) /
-            Math.pow(10, 9)
-          : undefined
-        if (parsedPayAmount !== undefined && isNaN(parsedPayAmount)) {
-          console.error('inititalBuyAudioAmount is not valid', {
-            buyAmountFormValue: _values.payAmount,
-            initialBuyAmountAudioParsed: parsedPayAmount
-          })
-        }
-        launchCoin({
-          userId: user.user_id,
-          name: _values.coinName,
-          symbol: _values.coinSymbol,
-          image: _values.coinImage!,
-          description: LAUNCHPAD_COIN_DESCRIPTION(
-            user!.handle,
-            _values.coinSymbol
-          ),
-          walletPublicKey: connectedWallet!.address,
-          initialBuyAmountSol: parsedPayAmount
-        })
-      }}
+      onSubmit={handleSubmit}
     >
       <Form>
         <LaunchpadModal

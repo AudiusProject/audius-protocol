@@ -67,14 +67,7 @@ const SuccessState = ({
     amountUsd: string
   }
 }) => {
-  const { mint, name, ticker, logoUri, amountUi, amountUsd } = coin ?? {
-    mint: '123',
-    name: 'Test',
-    ticker: '$TEST',
-    logoUri: 'https://www.google.com',
-    amountUi: '100',
-    amountUsd: '100'
-  }
+  const { mint, name, ticker, logoUri, amountUi, amountUsd } = coin
 
   return (
     <>
@@ -120,7 +113,6 @@ const SuccessState = ({
               }}
             >
               <Flex alignItems='center' gap='m' w='100%'>
-                {/* Token Icon Placeholder */}
                 <Artwork src={logoUri} w='48px' h='48px' hex borderWidth={0} />
 
                 <Flex direction='column' gap='xs' flex={1}>
