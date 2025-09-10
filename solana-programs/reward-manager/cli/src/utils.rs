@@ -79,10 +79,10 @@ impl<'a> Transaction<'a> {
             Some(&config.fee_payer.pubkey()),
         );
 
-        let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
+        let recent_blockhash = config.rpc_client.get_latest_blockhash()?;
         check_fee_payer_balance(
             config,
-            fee_calculator.calculate_fee(&transaction.message()) + additional_balance_required,
+            5000 * transaction.message().header.num_required_signatures as u64 + additional_balance_required,
         )?;
 
         transaction.sign(&self.signers, recent_blockhash);

@@ -80,6 +80,7 @@ fn command_init(
         "Reward manager key created: {:?}",
         reward_manager_keypair.pubkey()
     );
+    println!("Using program ID: {:?}", audius_reward_manager::id());
 
     let reward_manager_balance = config
         .rpc_client
@@ -512,6 +513,8 @@ fn command_transfer(
             claimable_token.derive.address
         );
     }
+
+    println!("Derived token account: {:?}", claimable_token.derive.address);
 
     instructions.push(evaluate_attestations(
         &audius_reward_manager::id(),
