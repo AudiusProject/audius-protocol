@@ -56,8 +56,7 @@ export const useLaunchCoin = () => {
           symbol,
           description,
           walletPublicKeyStr,
-          initialBuyAmountSolLamports,
-          image
+          initialBuyAmountSolLamports
         })
         const symbolUpper = symbol.toUpperCase()
         const sdk = await audiusSdk()
@@ -70,7 +69,7 @@ export const useLaunchCoin = () => {
         }
 
         const signAndSendTx = async (transactionSerialized: string) => {
-          // Deserialize the pool transaction
+          // Transaction is sent from the backend as a serialized base64 string
           const deserializedTx = VersionedTransaction.deserialize(
             Buffer.from(transactionSerialized, 'base64')
           )
@@ -91,7 +90,7 @@ export const useLaunchCoin = () => {
         const walletPublicKey = new PublicKey(walletPublicKeyStr)
 
         console.log('Sending request to relay to launch coin...')
-        // Set up coin TXs on relay side
+        // Sets up coin TXs and on-chain metadata on relay side
         const res = await sdk.services.solanaRelay.launchCoin({
           name,
           symbol: symbolUpper,

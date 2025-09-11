@@ -17,6 +17,8 @@ import { useFormikContext } from 'formik'
 
 import { AddressTile } from 'components/address-tile'
 
+import { SOLANA_DECIMALS } from '../constants'
+
 import { SetupFormValues } from './types'
 
 const messages = {
@@ -205,7 +207,7 @@ export const LaunchpadModal = ({
     amountUsd: receiveAmount
   }
   const payAmountParsed = useMemo(
-    () => (payAmount ? new FixedDecimal(payAmount, 9).value : 0),
+    () => (payAmount ? new FixedDecimal(payAmount, SOLANA_DECIMALS).value : 0),
     [payAmount]
   )
   const numTxs = payAmount && payAmountParsed > 0 ? 3 : 1

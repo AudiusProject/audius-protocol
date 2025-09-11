@@ -157,7 +157,7 @@ export class SolanaRelay extends BaseAPI {
   }
 
   /**
-   * Launches a new coin on the launchpad with bonding curve.
+   * Launches a new artist coin on the launchpad with bonding curve.
    */
   public async launchCoin(
     params: LaunchCoinRequest
@@ -173,7 +173,7 @@ export class SolanaRelay extends BaseAPI {
 
     const headerParameters: runtime.HTTPHeaders = {}
 
-    // Create FormData for multipart/form-data request
+    // API uses multipart/form-data for the upload
     const formData = new FormData()
     formData.append('name', name)
     formData.append('symbol', symbol)
@@ -206,13 +206,13 @@ export class SolanaRelay extends BaseAPI {
       }
 
       return {
-        mintPublicKey: json.mintPublicKey as string,
-        createPoolTx: json.createPoolTx as string,
-        firstBuyTx: json.firstBuyTx as string | undefined,
-        solToAudioTx: json.solToAudioTx as string | undefined, // The solToAudioTx is already in a base64 string format
-        metadataUri: json.metadataUri as string,
-        imageUri: json.imageUri as string
-      }
+        mintPublicKey: json.mintPublicKey,
+        createPoolTx: json.createPoolTx,
+        firstBuyTx: json.firstBuyTx,
+        solToAudioTx: json.solToAudioTx,
+        metadataUri: json.metadataUri,
+        imageUri: json.imageUri
+      } as LaunchCoinResponse
     }).value()
   }
 }

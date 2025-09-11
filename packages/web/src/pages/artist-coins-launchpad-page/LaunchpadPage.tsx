@@ -24,7 +24,7 @@ import { useLaunchCoin } from 'hooks/useLaunchCoin'
 
 import { LaunchpadModal } from './components/LaunchpadModal'
 import type { SetupFormValues } from './components/types'
-import { LAUNCHPAD_COIN_DESCRIPTION, Phase } from './constants'
+import { LAUNCHPAD_COIN_DESCRIPTION, Phase, SOLANA_DECIMALS } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { setupFormSchema } from './validation'
 
@@ -159,7 +159,11 @@ export const LaunchpadPage = () => {
         throw new Error('No connected wallet found')
       }
       const payAmountLamports = formValues.payAmount
-        ? Number(new FixedDecimal(formValues.payAmount, 9).trunc(9).value)
+        ? Number(
+            new FixedDecimal(formValues.payAmount, SOLANA_DECIMALS).trunc(
+              SOLANA_DECIMALS
+            ).value
+          )
         : undefined
       launchCoin({
         userId: user.user_id,
