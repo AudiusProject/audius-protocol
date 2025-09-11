@@ -17,7 +17,8 @@ import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
 export const BuySellModal = () => {
-  const { isOpen, onClose } = useBuySellModal()
+  const { isOpen, onClose, data } = useBuySellModal()
+  const { mint } = data
   const { spacing, color } = useTheme()
   const { onOpen: openAddCashModal } = useAddCashModal()
 
@@ -53,6 +54,7 @@ export const BuySellModal = () => {
           openAddCashModal={openAddCashModal}
           onScreenChange={setModalScreen}
           onLoadingStateChange={setIsFlowLoading}
+          initialMint={mint}
         />
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (

@@ -261,9 +261,13 @@ export const Table = ({
         {/* Sorting Container */}
         <div {...column.getSortByToggleProps()} title=''>
           <div className={styles.textCell}>
-            <Tooltip text={column.sortTitle} mount='page'>
-              {column.render('Header')}
-            </Tooltip>
+            {column.sortTitle ? (
+              <Tooltip text={column.sortTitle} mount='page'>
+                {column.render('Header')}
+              </Tooltip>
+            ) : (
+              column.render('Header')
+            )}
           </div>
           {!column.disableSortBy ? (
             <div className={styles.sortCaretContainer}>

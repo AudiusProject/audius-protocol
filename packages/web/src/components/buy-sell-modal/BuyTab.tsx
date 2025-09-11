@@ -14,7 +14,8 @@ export const BuyTab = ({
   initialInputValue,
   onInputValueChange,
   availableOutputTokens,
-  onOutputTokenChange
+  onOutputTokenChange,
+  initialMint
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
 
@@ -44,6 +45,7 @@ export const BuyTab = ({
       onInputValueChange={onInputValueChange}
       availableOutputTokens={availableOutputTokens}
       onOutputTokenChange={onOutputTokenChange}
+      initialMint={initialMint}
     />
   )
 }

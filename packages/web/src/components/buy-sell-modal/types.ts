@@ -70,6 +70,7 @@ export type BaseTabProps = {
 export type BuyTabProps = BaseTabProps & {
   availableOutputTokens?: TokenInfo[]
   onOutputTokenChange?: (symbol: string) => void
+  initialMint?: string
 }
 
 export type SellTabProps = BaseTabProps & {
