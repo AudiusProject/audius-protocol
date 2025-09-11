@@ -24,32 +24,32 @@ import {
 /**
  * 
  * @export
- * @interface ExtendedPurchaseGate
+ * @interface PurchaseGate
  */
-export interface ExtendedPurchaseGate {
+export interface PurchaseGate {
     /**
      * Must pay the total price and split to the given addresses to unlock
      * @type {ExtendedUsdcGate}
-     * @memberof ExtendedPurchaseGate
+     * @memberof PurchaseGate
      */
     usdcPurchase: ExtendedUsdcGate;
 }
 
 /**
- * Check if a given object implements the ExtendedPurchaseGate interface.
+ * Check if a given object implements the PurchaseGate interface.
  */
-export function instanceOfExtendedPurchaseGate(value: object): value is ExtendedPurchaseGate {
+export function instanceOfPurchaseGate(value: object): value is PurchaseGate {
     let isInstance = true;
     isInstance = isInstance && "usdcPurchase" in value && value["usdcPurchase"] !== undefined;
 
     return isInstance;
 }
 
-export function ExtendedPurchaseGateFromJSON(json: any): ExtendedPurchaseGate {
-    return ExtendedPurchaseGateFromJSONTyped(json, false);
+export function PurchaseGateFromJSON(json: any): PurchaseGate {
+    return PurchaseGateFromJSONTyped(json, false);
 }
 
-export function ExtendedPurchaseGateFromJSONTyped(json: any, ignoreDiscriminator: boolean): ExtendedPurchaseGate {
+export function PurchaseGateFromJSONTyped(json: any, ignoreDiscriminator: boolean): PurchaseGate {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -59,7 +59,7 @@ export function ExtendedPurchaseGateFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-export function ExtendedPurchaseGateToJSON(value?: ExtendedPurchaseGate | null): any {
+export function PurchaseGateToJSON(value?: PurchaseGate | null): any {
     if (value === undefined) {
         return undefined;
     }
