@@ -48,7 +48,7 @@ export const AddressTile = ({
   }
 
   return (
-    <Flex column border='default' borderRadius='s'>
+    <Flex column border='default' borderRadius='s' w='100%'>
       <Flex
         backgroundColor='surface1'
         alignItems='stretch'

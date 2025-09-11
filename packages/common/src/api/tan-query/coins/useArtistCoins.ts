@@ -15,7 +15,7 @@ export type UseArtistCoinsParams = {
   offset?: number
 }
 
-export const getArtistCoinsQueryKey = (params: UseArtistCoinsParams) =>
+export const getArtistCoinsQueryKey = (params?: UseArtistCoinsParams) =>
   [QUERY_KEYS.coins, 'list', params] as unknown as QueryKey<Coin[]>
 
 export const useArtistCoins = <TResult = Coin[]>(

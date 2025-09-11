@@ -74,7 +74,7 @@ export function CreateCoinRequestFromJSONTyped(json: any, ignoreDiscriminator: b
         return json;
     }
     return {
-        
+
         'mint': json['mint'],
         'ticker': json['ticker'],
         'decimals': json['decimals'],
@@ -91,7 +91,7 @@ export function CreateCoinRequestToJSON(value?: CreateCoinRequest | null): any {
         return null;
     }
     return {
-        
+
         'mint': value.mint,
         'ticker': value.ticker,
         'decimals': value.decimals,

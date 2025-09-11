@@ -88,7 +88,7 @@ export function CreateCoinResponseDataFromJSONTyped(json: any, ignoreDiscriminat
         return json;
     }
     return {
-        
+
         'mint': json['mint'],
         'ticker': json['ticker'],
         'userId': json['user_id'],
@@ -107,7 +107,7 @@ export function CreateCoinResponseDataToJSON(value?: CreateCoinResponseData | nu
         return null;
     }
     return {
-        
+
         'mint': value.mint,
         'ticker': value.ticker,
         'user_id': value.userId,
