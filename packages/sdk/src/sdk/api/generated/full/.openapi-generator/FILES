@@ -79,6 +79,7 @@ models/CreateNotificationActionData.ts
 models/CreatePlaylistNotificationActionData.ts
 models/CreateTrackNotificationActionData.ts
 models/DataAndType.ts
+models/ExtendedTokenGate.ts
 models/FanRemixContestEndedNotification.ts
 models/FanRemixContestEndedNotificationAction.ts
 models/FanRemixContestEndedNotificationActionData.ts
@@ -223,6 +224,7 @@ models/TierChangeNotification.ts
 models/TierChangeNotificationAction.ts
 models/TierChangeNotificationActionData.ts
 models/TipGate.ts
+models/TokenGate.ts
 models/TopGenreUsersResponseFull.ts
 models/TopUsersResponseFull.ts
 models/TrackActivityFull.ts
