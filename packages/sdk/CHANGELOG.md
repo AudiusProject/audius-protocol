@@ -1,5 +1,17 @@
 # @audius/sdk
 
+## 10.1.0
+
+### Minor Changes
+
+- 4a21db9: Add RewardsAPI
+- 1443320: add insights to coins endpoints
+
+### Patch Changes
+
+- 4a21db9: Remove membersChange24hrPercent
+- 9c3ede0: Add token gate functionality with TokenGate, ExtendedTokenGate, and updated coin creation API
+
 ## 10.0.0
 
 ### Major Changes
