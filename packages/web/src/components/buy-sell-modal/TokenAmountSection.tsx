@@ -24,9 +24,9 @@ import { TooltipPlacement } from 'antd/lib/tooltip'
 
 import { useFlag } from '../../hooks/useRemoteConfig'
 
-import { DropdownSection } from './DropdownSection'
 import { TokenIcon } from './TokenIcon'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
+import { TokenDropdown } from './components/TokenDropdown'
 
 type BalanceSectionProps = {
   isStablecoin?: boolean
@@ -297,12 +297,10 @@ export const TokenAmountSection = ({
             tooltipPlacement={tooltipPlacement}
           />
         ) : isArtistCoinsEnabled ? (
-          <DropdownSection
-            formattedAvailableBalance={formattedAvailableBalance}
-            tokenInfo={tokenInfo}
-            isStablecoin={!!isStablecoin}
-            availableTokens={availableTokens}
-            onTokenChange={onTokenChange}
+          <TokenDropdown
+            selectedToken={tokenInfo}
+            availableTokens={availableTokens || []}
+            onTokenChange={(token) => onTokenChange?.(token.symbol)}
           />
         ) : (
           <OldStackedBalanceSection
@@ -356,14 +354,10 @@ export const TokenAmountSection = ({
     ) {
       return (
         <Flex p='l' alignItems='center' gap='s' justifyContent='space-between'>
-          <DropdownSection
-            formattedAvailableBalance={formattedAvailableBalance}
-            tokenInfo={tokenInfo}
-            isStablecoin={!!isStablecoin}
-            availableTokens={availableTokens}
-            onTokenChange={onTokenChange}
-            formattedReceiveAmount={formattedAmount}
-            showReceiveAmount
+          <TokenDropdown
+            selectedToken={tokenInfo}
+            availableTokens={availableTokens || []}
+            onTokenChange={(token) => onTokenChange?.(token.symbol)}
           />
         </Flex>
       )

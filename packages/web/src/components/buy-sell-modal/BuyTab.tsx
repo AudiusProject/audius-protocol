@@ -5,6 +5,7 @@ import {
   useArtistCoins,
   useTokenPrice
 } from '@audius/common/api'
+import { buySellMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
@@ -13,10 +14,6 @@ import { Flex, Skeleton, Text } from '@audius/harmony'
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
 import type { BuyTabProps } from './types'
-
-const messages = {
-  youPay: 'You Pay'
-}
 
 const YouPaySkeleton = () => (
   <Flex direction='column' gap='s'>
@@ -84,6 +81,7 @@ export const BuyTab = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
+    displayExchangeRate,
     handleInputAmountChange,
     handleOutputAmountChange,
     handleMaxClick
@@ -131,7 +129,7 @@ export const BuyTab = ({
       ) : (
         <>
           <InputTokenSection
-            title={messages.youPay}
+            title={buySellMessages.youPay}
             tokenInfo={selectedInputToken}
             amount={inputAmount}
             onAmountChange={handleInputAmountChange}
@@ -158,12 +156,16 @@ export const BuyTab = ({
       )}
 
       {tokenPrice && (
-        <Flex alignItems='center' gap='xs' css={{ padding: '12px 0' }}>
+        <Flex alignItems='center' gap='xs'>
           <Text variant='body' size='s' color='subdued'>
-            Rate
+            {buySellMessages.exchangeRateLabel}
           </Text>
           <Text variant='body' size='s' color='default'>
-            {`1 ${selectedInputToken.symbol} ≈ ${(1 / parseFloat(tokenPrice)).toFixed(8)} ${selectedOutputToken.symbol}`}
+            {buySellMessages.exchangeRateValue(
+              selectedInputToken.symbol,
+              selectedOutputToken.symbol,
+              currentExchangeRate
+            )}
           </Text>
         </Flex>
       )}
