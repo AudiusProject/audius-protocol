@@ -1,28 +1,29 @@
+import { useCallback, useMemo } from 'react'
+
+import { useArtistCoins, useUsers } from '@audius/common/api'
+import { useBuySellModal } from '@audius/common/store'
 import {
   Button,
   Flex,
   formatCount,
+  LoadingSpinner,
   Paper,
   Skeleton,
   Text
 } from '@audius/harmony'
-import { useArtistCoins } from '@audius/common/api'
 import { Coin, decodeHashId } from '@audius/sdk'
 import moment from 'moment'
-import { Cell, Row } from 'react-table'
+import { Cell } from 'react-table'
 
-import { Table } from 'components/table'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { UserLink } from 'components/link'
+import { Table } from 'components/table'
 
 import styles from './ArtistCoinsTable.module.css'
-import { useBuySellModal } from '@audius/common/store'
-import { useCallback } from 'react'
 
 const messages = {
   title: 'Your Token Balances',
   noCoins: 'No coins found',
-  loading: 'Loading your coins...',
   buy: 'Buy',
   dollarSign: '$'
 }
@@ -111,15 +112,11 @@ const renderCreatedDateCell = (cellInfo: CoinCell) => {
   )
 }
 
-const renderBuyCell = (cellInfo: CoinCell) => {
+const renderBuyCell = (
+  cellInfo: CoinCell,
+  handleBuy: (mint: string) => void
+) => {
   const coin = cellInfo.row.original
-  const { onOpen: openBuySellModal } = useBuySellModal()
-  const handleBuy = useCallback(() => {
-    openBuySellModal({
-      mint: coin.mint,
-      isOpen: true
-    })
-  }, [openBuySellModal, coin.mint])
 
   return (
     <Flex pr='xl' justifyContent='flex-end'>
@@ -129,7 +126,7 @@ const renderBuyCell = (cellInfo: CoinCell) => {
         css={{
           boxShadow: '0 0 0 1px inset var(--harmony-border-default) !important'
         }}
-        onClick={handleBuy}
+        onClick={() => handleBuy(coin.mint)}
       >
         {messages.buy}
       </Button>
@@ -197,40 +194,103 @@ const tableColumnMap = {
   }
 }
 
-export const ArtistCoinsTable = () => {
+type ArtistCoinsTableProps = {
+  searchQuery?: string
+}
+
+export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const { data: coins, isLoading } = useArtistCoins()
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
+  const ownerIds = useMemo(() => {
+    if (!coins) return []
+    const uniqueIds = [
+      ...new Set(coins.map((coin) => coin.ownerId).filter(Boolean))
+    ]
+    return uniqueIds.map((id) => decodeHashId(id)).filter(Boolean) as number[]
+  }, [coins])
+
+  const { data: users } = useUsers(ownerIds)
+
+  // Create memoized buy handler
+  const handleBuy = useCallback(
+    (mint: string) => {
+      openBuySellModal({
+        mint,
+        isOpen: true
+      })
+    },
+    [openBuySellModal]
+  )
+
+  // Filter coins based on search query
+  const filteredCoins = useMemo(() => {
+    if (!coins || !searchQuery?.trim()) return coins
+
+    const query = searchQuery.toLowerCase().trim()
+    return coins.filter((coin) => {
+      const name = coin.name?.toLowerCase() ?? ''
+      const ticker = coin.ticker?.toLowerCase() ?? ''
+
+      // Check coin name and ticker
+      if (name.includes(query) || ticker.includes(query)) {
+        return true
+      }
+
+      // Check owner artist name
+      const ownerId = decodeHashId(coin.ownerId)
+      const ownerUser = users?.find((user) => user.user_id === ownerId)
+      const ownerName = ownerUser?.name?.toLowerCase() ?? ''
+      const ownerHandle = ownerUser?.handle?.toLowerCase() ?? ''
+
+      return ownerName.includes(query) || ownerHandle.includes(query)
+    })
+  }, [coins, searchQuery, users])
+
+  const columns = useMemo(() => {
+    const baseColumns = { ...tableColumnMap }
+    baseColumns.buy = {
+      ...baseColumns.buy,
+      Cell: (cellInfo: CoinCell) => renderBuyCell(cellInfo, handleBuy)
+    }
+    return Object.values(baseColumns)
+  }, [handleBuy])
 
   if (isLoading) {
     return (
-      <Paper column gap='xl' w='100%' className={styles.tableContainer}>
-        <div className={styles.loadingState}>
-          <Text variant='heading' size='m'>
-            {messages.loading}
-          </Text>
-        </div>
+      <Paper
+        w='100%'
+        h={500}
+        justifyContent='center'
+        alignItems='center'
+        p='4xl'
+      >
+        <LoadingSpinner />
       </Paper>
     )
   }
 
-  if (!coins || coins.length === 0) {
+  if (!filteredCoins || filteredCoins.length === 0) {
     return (
-      <Paper column gap='xl' w='100%' className={styles.tableContainer}>
-        <div className={styles.emptyState}>
-          <Text variant='body' size='m' color='subdued'>
-            {messages.noCoins}
-          </Text>
-        </div>
+      <Paper
+        w='100%'
+        h={500}
+        justifyContent='center'
+        alignItems='center'
+        p='4xl'
+      >
+        <Text variant='body' size='m' color='subdued'>
+          {messages.noCoins}
+        </Text>
       </Paper>
     )
   }
 
   return (
-    <Paper column gap='xl' w='100%' className={styles.tableContainer}>
-      <Table
-        columns={Object.values(tableColumnMap)}
-        data={coins}
-        tableHeaderClassName={styles.tableHeader}
-      />
-    </Paper>
+    <Table
+      columns={columns}
+      data={filteredCoins}
+      tableHeaderClassName={styles.tableHeader}
+    />
   )
 }
