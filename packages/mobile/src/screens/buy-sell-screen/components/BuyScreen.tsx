@@ -5,6 +5,7 @@ import {
   useArtistCoins,
   useTokenPrice
 } from '@audius/common/api'
+import { buySellMessages } from '@audius/common/messages'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
@@ -12,10 +13,6 @@ import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import { Box, Flex, Skeleton, Text } from '@audius/harmony-native'
 import { InputTokenSection } from 'app/components/buy-sell/InputTokenSection'
 import { OutputTokenSection } from 'app/components/buy-sell/OutputTokenSection'
-
-const messages = {
-  youPay: 'You Pay'
-}
 
 const YouPaySkeleton = () => (
   <Flex column gap='s'>
@@ -133,7 +130,7 @@ export const BuyScreen = ({
       ) : (
         <>
           <InputTokenSection
-            title={messages.youPay}
+            title={buySellMessages.youPay}
             tokenInfo={quoteToken}
             amount={inputAmount}
             onAmountChange={handleInputAmountChange}

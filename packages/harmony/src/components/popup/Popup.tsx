@@ -351,13 +351,14 @@ export const PopupInternal = forwardRef<
     if (isVisible) {
       const escapeListener = (e: KeyboardEvent) => {
         if (e.code === 'Escape') {
+          e.stopPropagation()
           handleClose()
         }
       }
 
-      window.addEventListener('keydown', escapeListener)
+      document.addEventListener('keydown', escapeListener, true)
 
-      return () => window.removeEventListener('keydown', escapeListener)
+      return () => document.removeEventListener('keydown', escapeListener, true)
     }
     return () => {}
   }, [isVisible, handleClose])

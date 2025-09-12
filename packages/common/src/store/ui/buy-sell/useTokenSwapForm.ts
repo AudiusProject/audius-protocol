@@ -367,6 +367,7 @@ export const useTokenSwapForm = ({
     if (balance !== undefined) {
       const finalAmount = Math.min(balance, max)
       const finalAmountString = finalAmount.toString()
+      updateSourceRef.current = 'input'
       setFieldValue('inputAmount', finalAmountString, true)
       setFieldTouched('inputAmount', true, false)
       // Call the persistence callback
