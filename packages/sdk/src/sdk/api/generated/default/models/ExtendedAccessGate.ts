@@ -14,6 +14,13 @@
  */
 
 import {
+    ExtendedPurchaseGate,
+    instanceOfExtendedPurchaseGate,
+    ExtendedPurchaseGateFromJSON,
+    ExtendedPurchaseGateFromJSONTyped,
+    ExtendedPurchaseGateToJSON,
+} from './ExtendedPurchaseGate';
+import {
     FollowGate,
     instanceOfFollowGate,
     FollowGateFromJSON,
@@ -27,13 +34,6 @@ import {
     NftGateFromJSONTyped,
     NftGateToJSON,
 } from './NftGate';
-import {
-    PurchaseGate,
-    instanceOfPurchaseGate,
-    PurchaseGateFromJSON,
-    PurchaseGateFromJSONTyped,
-    PurchaseGateToJSON,
-} from './PurchaseGate';
 import {
     TipGate,
     instanceOfTipGate,
@@ -54,7 +54,7 @@ import {
  * 
  * @export
  */
-export type ExtendedAccessGate = FollowGate | NftGate | PurchaseGate | TipGate | TokenGate;
+export type ExtendedAccessGate = ExtendedPurchaseGate | FollowGate | NftGate | TipGate | TokenGate;
 
 export function ExtendedAccessGateFromJSON(json: any): ExtendedAccessGate {
     return ExtendedAccessGateFromJSONTyped(json, false);
@@ -64,7 +64,7 @@ export function ExtendedAccessGateFromJSONTyped(json: any, ignoreDiscriminator: 
     if ((json === undefined) || (json === null)) {
         return json;
     }
-    return { ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...PurchaseGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true), ...TokenGateFromJSONTyped(json, true) };
+    return { ...ExtendedPurchaseGateFromJSONTyped(json, true), ...FollowGateFromJSONTyped(json, true), ...NftGateFromJSONTyped(json, true), ...TipGateFromJSONTyped(json, true), ...TokenGateFromJSONTyped(json, true) };
 }
 
 export function ExtendedAccessGateToJSON(value?: ExtendedAccessGate | null): any {
@@ -75,14 +75,14 @@ export function ExtendedAccessGateToJSON(value?: ExtendedAccessGate | null): any
         return null;
     }
 
+    if (instanceOfExtendedPurchaseGate(value)) {
+        return ExtendedPurchaseGateToJSON(value as ExtendedPurchaseGate);
+    }
     if (instanceOfFollowGate(value)) {
         return FollowGateToJSON(value as FollowGate);
     }
     if (instanceOfNftGate(value)) {
         return NftGateToJSON(value as NftGate);
-    }
-    if (instanceOfPurchaseGate(value)) {
-        return PurchaseGateToJSON(value as PurchaseGate);
     }
     if (instanceOfTipGate(value)) {
         return TipGateToJSON(value as TipGate);

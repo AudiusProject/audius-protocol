@@ -63,6 +63,7 @@ models/Event.ts
 models/EventsResponse.ts
 models/ExtendedAccessGate.ts
 models/ExtendedPaymentSplit.ts
+models/ExtendedPurchaseGate.ts
 models/ExtendedTokenGate.ts
 models/ExtendedUsdcGate.ts
 models/Favorite.ts
@@ -88,7 +89,6 @@ models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
 models/PlaylistsResponse.ts
 models/ProfilePicture.ts
-models/PurchaseGate.ts
 models/PurchasersResponse.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
