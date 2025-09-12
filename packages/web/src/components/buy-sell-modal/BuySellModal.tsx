@@ -1,24 +1,29 @@
 import { useMemo, useState, useEffect } from 'react'
 
-import { buySellMessages as messages } from '@audius/common/messages'
+import {
+  buySellMessages,
+  buySellMessages as messages
+} from '@audius/common/messages'
 import { useBuySellModal, useAddCashModal } from '@audius/common/store'
 import {
   IconJupiterLogo,
+  IconQuestionCircle,
   Modal,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  PlainButton,
   Text
 } from '@audius/harmony'
-import { useTheme } from '@emotion/react'
+
+import { ExternalLink } from 'components/link'
 
 import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
 export const BuySellModal = () => {
   const { isOpen, onClose } = useBuySellModal()
-  const { spacing, color } = useTheme()
   const { onOpen: openAddCashModal } = useAddCashModal()
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
@@ -46,6 +51,21 @@ export const BuySellModal = () => {
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
       >
         <ModalTitle title={title} />
+        <PlainButton
+          size='default'
+          asChild
+          iconLeft={IconQuestionCircle}
+          css={(theme) => ({
+            position: 'absolute',
+            top: theme.spacing.xl,
+            right: theme.spacing.xl,
+            zIndex: 1
+          })}
+        >
+          <ExternalLink to='https://help.audius.co/product/wallet-guide'>
+            {buySellMessages.help}
+          </ExternalLink>
+        </PlainButton>
       </ModalHeader>
       <ModalContent>
         <BuySellFlow
@@ -57,12 +77,10 @@ export const BuySellModal = () => {
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (
         <ModalFooter
-          css={{
-            justifyContent: 'center',
-            gap: spacing.s,
-            borderTop: `1px solid ${color.border.strong}`,
-            backgroundColor: color.background.surface1
-          }}
+          gap='s'
+          borderTop='strong'
+          backgroundColor='surface1'
+          pv='m'
         >
           <Text variant='label' size='xs' color='subdued'>
             {messages.poweredBy}

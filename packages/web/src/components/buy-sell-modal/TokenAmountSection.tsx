@@ -379,7 +379,6 @@ export const TokenAmountSection = ({
     isDefault,
     availableTokens,
     onTokenChange,
-    formattedAvailableBalance,
     isArtistCoinsEnabled
   ])
 

@@ -15,6 +15,8 @@ import {
 
 import { Tooltip } from 'components/tooltip'
 
+import { TokenIcon } from '../TokenIcon'
+
 import { TokenDropdown } from './TokenDropdown'
 
 // Utility function to sanitize numeric input
@@ -106,7 +108,13 @@ export const InputTokenSection = ({
 
         {formattedAvailableBalance ? (
           <Flex alignItems='center' gap='xs'>
-            <Text variant='body' size='s' color='subdued'>
+            <TokenIcon
+              logoURI={tokenInfo.logoURI}
+              icon={tokenInfo.icon}
+              size='s'
+              hex
+            />
+            <Text variant='body' size='m' strength='strong'>
               {`${isStablecoin ? '$' : ''}${formattedAvailableBalance} ${messages.available}`}
             </Text>
             <Tooltip text='This is the amount you have available to spend'>
@@ -141,16 +149,7 @@ export const InputTokenSection = ({
                 onTokenChange={onTokenChange || (() => {})}
               />
             </Flex>
-          ) : (
-            <Flex
-              alignItems='center'
-              css={{ minWidth: '60px', padding: '0 12px' }}
-            >
-              <Text variant='body' size='m' color='subdued'>
-                {symbol}
-              </Text>
-            </Flex>
-          )}
+          ) : null}
 
           {onMaxClick ? (
             <Button variant='secondary' size='large' onClick={onMaxClick}>

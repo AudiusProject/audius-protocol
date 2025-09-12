@@ -70,5 +70,6 @@ export const buySellMessages = {
     inputSymbol: string,
     outputSymbol: string,
     rate: number
-  ) => `1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`
+  ) => `1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`,
+  help: 'Help'
 }

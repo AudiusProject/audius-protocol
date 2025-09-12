@@ -53,12 +53,7 @@ export const BuyTab = ({
   const { baseToken, quoteToken } = tokenPair
 
   // State for token selection
-  const [selectedInputToken, setSelectedInputToken] = useState(quoteToken)
   const [selectedOutputToken, setSelectedOutputToken] = useState(baseToken)
-
-  useEffect(() => {
-    setSelectedInputToken(quoteToken)
-  }, [quoteToken])
 
   useEffect(() => {
     setSelectedOutputToken(baseToken)
@@ -81,12 +76,11 @@ export const BuyTab = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
-    displayExchangeRate,
     handleInputAmountChange,
     handleOutputAmountChange,
     handleMaxClick
   } = useTokenSwapForm({
-    inputToken: selectedInputToken,
+    inputToken: quoteToken,
     outputToken: selectedOutputToken,
     onTransactionDataChange,
     initialInputValue,
@@ -99,10 +93,6 @@ export const BuyTab = ({
   }, [coins])
 
   // Token change handlers
-  const handleInputTokenChange = (token: TokenInfo) => {
-    setSelectedInputToken(token)
-  }
-
   const handleOutputTokenChange = (token: TokenInfo) => {
     setSelectedOutputToken(token)
     onOutputTokenChange?.(token.symbol)
@@ -130,15 +120,13 @@ export const BuyTab = ({
         <>
           <InputTokenSection
             title={buySellMessages.youPay}
-            tokenInfo={selectedInputToken}
+            tokenInfo={quoteToken}
             amount={inputAmount}
             onAmountChange={handleInputAmountChange}
             onMaxClick={handleMaxClick}
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
-            availableTokens={artistCoins}
-            onTokenChange={handleInputTokenChange}
           />
           <OutputTokenSection
             tokenInfo={selectedOutputToken}
@@ -162,7 +150,7 @@ export const BuyTab = ({
           </Text>
           <Text variant='body' size='s' color='default'>
             {buySellMessages.exchangeRateValue(
-              selectedInputToken.symbol,
+              quoteToken.symbol,
               selectedOutputToken.symbol,
               currentExchangeRate
             )}
