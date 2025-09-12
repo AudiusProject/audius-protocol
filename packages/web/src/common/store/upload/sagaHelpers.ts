@@ -4,6 +4,7 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
+  isContentTokenGated,
   isContentUSDCPurchaseGated,
   USDCPurchaseConditions
 } from '@audius/common/models'
@@ -58,6 +59,14 @@ export function* recordGatedTracks(
               lossless: isOriginalAvailable
             })
           )
+        } else if (isContentTokenGated(streamConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_TOKEN_GATED, {
+              kind: 'tracks',
+              downloadable: isDownloadable,
+              lossless: isOriginalAvailable
+            })
+          )
         } else if (isContentUSDCPurchaseGated(streamConditions)) {
           out.push(
             make(Name.TRACK_UPLOAD_USDC_GATED, {
@@ -72,6 +81,14 @@ export function* recordGatedTracks(
         if (isContentFollowGated(dowloadConditions)) {
           out.push(
             make(Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD, {
+              kind: 'tracks',
+              downloadable: isDownloadable,
+              lossless: isOriginalAvailable
+            })
+          )
+        } else if (isContentTokenGated(dowloadConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_TOKEN_GATED_DOWNLOAD, {
               kind: 'tracks',
               downloadable: isDownloadable,
               lossless: isOriginalAvailable
