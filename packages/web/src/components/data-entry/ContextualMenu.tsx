@@ -113,17 +113,19 @@ const MenuForm = (props: MenuFormProps) => {
 
 export type SelectedValueProps = {
   label?: string
+  startAdornment?: ReactNode
   icon?: IconComponent
   children?: ReactNode
   'data-testid'?: string
 } & HTMLAttributes<HTMLSpanElement>
 
 export const SelectedValue = (props: SelectedValueProps) => {
-  const { label, icon: Icon, children, ...rest } = props
+  const { label, icon: Icon, children, startAdornment, ...rest } = props
   return (
     <label className={styles.selectedValue} {...rest}>
       <HiddenInput value={label} readOnly />
       {Icon ? <Icon size='s' color='default' /> : null}
+      {startAdornment ?? null}
       {label ? (
         <Text variant='body' size='s'>
           {label}
