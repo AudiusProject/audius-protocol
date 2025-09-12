@@ -17,8 +17,6 @@ import {
   Text
 } from '@audius/harmony'
 
-import { ExternalLink } from 'components/link'
-
 import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
@@ -53,8 +51,10 @@ export const BuySellModal = () => {
         <ModalTitle title={title} />
         <PlainButton
           size='default'
-          asChild
           iconLeft={IconQuestionCircle}
+          onClick={() => {
+            window.open('https://help.audius.co/product/wallet-guide', '_blank')
+          }}
           css={(theme) => ({
             position: 'absolute',
             top: theme.spacing.xl,
@@ -62,9 +62,7 @@ export const BuySellModal = () => {
             zIndex: 1
           })}
         >
-          <ExternalLink to='https://help.audius.co/product/wallet-guide'>
-            {buySellMessages.help}
-          </ExternalLink>
+          {buySellMessages.help}
         </PlainButton>
       </ModalHeader>
       <ModalContent>

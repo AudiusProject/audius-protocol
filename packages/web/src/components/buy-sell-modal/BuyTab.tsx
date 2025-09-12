@@ -6,10 +6,13 @@ import {
   useTokenPrice
 } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
+
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
@@ -51,6 +54,7 @@ export const BuyTab = ({
   onOutputTokenChange
 }: BuyTabProps) => {
   const { baseToken, quoteToken } = tokenPair
+  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
   // State for token selection
   const [selectedOutputToken, setSelectedOutputToken] = useState(baseToken)
@@ -139,6 +143,7 @@ export const BuyTab = ({
             tokenPriceDecimalPlaces={decimalPlaces}
             availableTokens={artistCoins}
             onTokenChange={handleOutputTokenChange}
+            isArtistCoinsEnabled={isArtistCoinsEnabled}
           />
         </>
       )}

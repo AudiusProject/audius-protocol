@@ -5,6 +5,7 @@ import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { Flex, Text, TextInput, TextInputSize } from '@audius/harmony'
 
+import { StaticTokenDisplay } from './StaticTokenDisplay'
 import { TokenDropdown } from './TokenDropdown'
 
 // Utility function to sanitize numeric input
@@ -34,6 +35,7 @@ type OutputTokenSectionProps = {
   onAmountChange?: (amount: string) => void
   onTokenChange?: (token: TokenInfo) => void
   availableTokens?: TokenInfo[]
+  isArtistCoinsEnabled?: boolean
 }
 
 export const OutputTokenSection = ({
@@ -43,7 +45,8 @@ export const OutputTokenSection = ({
   error,
   onAmountChange,
   availableTokens,
-  onTokenChange
+  onTokenChange,
+  isArtistCoinsEnabled = true
 }: OutputTokenSectionProps) => {
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
@@ -91,7 +94,9 @@ export const OutputTokenSection = ({
             />
           </Flex>
 
-          {availableTokens && availableTokens.length > 0 ? (
+          {availableTokens &&
+          availableTokens.length > 0 &&
+          isArtistCoinsEnabled ? (
             <Flex css={{ minWidth: '60px' }}>
               <TokenDropdown
                 selectedToken={tokenInfo}
@@ -100,14 +105,7 @@ export const OutputTokenSection = ({
               />
             </Flex>
           ) : (
-            <Flex
-              alignItems='center'
-              css={{ minWidth: '60px', padding: '0 12px' }}
-            >
-              <Text variant='body' size='m' color='subdued'>
-                {symbol}
-              </Text>
-            </Flex>
+            <StaticTokenDisplay tokenInfo={tokenInfo} />
           )}
         </Flex>
       </Flex>
