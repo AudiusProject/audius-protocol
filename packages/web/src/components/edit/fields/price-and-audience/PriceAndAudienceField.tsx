@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useArtistCoin, useCurrentUserId } from '@audius/common/api'
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
@@ -12,7 +12,9 @@ import {
   FollowGatedConditions,
   TipGatedConditions,
   USDCPurchaseConditions,
-  AccessConditions
+  AccessConditions,
+  isContentTokenGated,
+  TokenGatedConditions
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
@@ -26,7 +28,8 @@ import {
   IconVisibilityHidden as IconHidden,
   IconNote,
   IconSparkles,
-  Text
+  Text,
+  Artwork
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { get, isEmpty, set } from 'lodash'
@@ -82,6 +85,7 @@ const messages = {
   premium: 'Premium',
   specialAccess: 'Special Access',
   collectibleGated: 'Collectible Gated',
+  coinGated: 'Coin Gated',
   hidden: 'Hidden',
   fieldVisibility: {
     genre: 'Show Genre',
@@ -219,6 +223,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const isTipGated = isContentTipGated(savedStreamConditions)
   const isFollowGated = isContentFollowGated(savedStreamConditions)
   const isCollectibleGated = isContentCollectibleGated(savedStreamConditions)
+  const isTokenGated = isContentTokenGated(savedStreamConditions)
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -249,6 +254,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     if (isCollectibleGated) {
       availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
     }
+    if (isTokenGated) {
+      availabilityType = StreamTrackAvailabilityType.TOKEN_GATED
+    }
     set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
     set(initialValues, PREVIEW, preview ?? 0)
@@ -267,13 +275,14 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     downloadConditions,
     isDownloadable,
     lastGateKeeper,
+    isOwnedByUser,
     isUsdcGated,
     isFollowGated,
     isTipGated,
     isCollectibleGated,
+    isTokenGated,
     fieldVisibility,
-    preview,
-    isOwnedByUser
+    preview
   ])
 
   const handleSubmit = useCallback(
@@ -361,6 +370,18 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           })
           break
         }
+        case StreamTrackAvailabilityType.TOKEN_GATED: {
+          const { token_gate } = streamConditions as TokenGatedConditions
+          setIsStreamGated(true)
+          setStreamConditionsValue({ token_gate })
+          setIsDownloadGated(true)
+          setDownloadConditionsValue({ token_gate })
+          setLastGateKeeper({
+            ...lastGateKeeper,
+            access: 'accessAndSale'
+          })
+          break
+        }
         case StreamTrackAvailabilityType.HIDDEN: {
           setFieldVisibilityValue({
             ...(fieldVisibility ?? undefined),
@@ -377,6 +398,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           break
         }
         case StreamTrackAvailabilityType.PUBLIC: {
+          // TODO - KJ: See if we need to clear the download conditions when going back to public from token gated
           setIsUnlistedValue(false)
           if (lastGateKeeper.access === 'accessAndSale') {
             setIsDownloadGated(false)
@@ -403,6 +425,10 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       setIsOwnedByUser
     ]
   )
+
+  const { data: token } = useArtistCoin({
+    mint: tempStreamConditions.token_gate?.token_mint ?? ''
+  })
 
   const renderValue = useCallback(() => {
     if (isContentCollectibleGated(savedStreamConditions)) {
@@ -473,6 +499,15 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
+    } else if (isContentTokenGated(savedStreamConditions)) {
+      selectedValues = [
+        {
+          label: messages.coinGated,
+          startAdornment: (
+            <Artwork src={token?.logoUri} hex h={20} w={20} borderWidth={0} />
+          )
+        }
+      ]
     } else {
       selectedValues = [{ label: messages.public }]
     }
@@ -495,7 +530,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
         })}
       </div>
     )
-  }, [savedStreamConditions, preview, isUpload])
+  }, [savedStreamConditions, preview, isUpload, token])
 
   return (
     <ContextualMenu
