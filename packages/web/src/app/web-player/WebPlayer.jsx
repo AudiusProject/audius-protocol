@@ -52,6 +52,7 @@ import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AllCoinsPage } from 'pages/all-coins-page/AllCoinsPage'
+import { ArtistCoinsExplorePage } from 'pages/artist-coins-explore-page/ArtistCoinsExplorePage'
 import { LaunchpadPage } from 'pages/artist-coins-launchpad-page'
 import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
@@ -188,6 +189,7 @@ const {
   WALLET_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
+  COINS_EXPLORE_PAGE,
   DEV_TOOLS_PAGE,
   SOLANA_TOOLS_PAGE,
   USER_ID_PARSER_PAGE
@@ -737,6 +739,14 @@ const WebPlayer = (props) => {
                 isMobile={isMobile}
                 component={WalletPage}
               />
+              {isArtistCoinsEnabled ? (
+                <Route
+                  exact
+                  path={COINS_EXPLORE_PAGE}
+                  isMobile={isMobile}
+                  component={ArtistCoinsExplorePage}
+                />
+              ) : null}
               {isArtistCoinsEnabled ? (
                 <Route
                   exact

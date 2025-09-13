@@ -28,6 +28,6 @@ export const formatCount = (count: number) => {
   } else if (!count) {
     return '0'
   } else {
-    return `${count}`
+    return `${count.toFixed(0)}`
   }
 }

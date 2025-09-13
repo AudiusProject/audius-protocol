@@ -44,11 +44,17 @@ type BuySellFlowProps = {
   openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
+  initialMint?: string
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
-    props
+  const {
+    onClose,
+    openAddCashModal,
+    onScreenChange,
+    onLoadingStateChange,
+    initialMint
+  } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
   const {
@@ -449,6 +455,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
                 (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
               )}
               onOutputTokenChange={handleOutputTokenChange}
+              initialMint={initialMint}
             />
           ) : activeTab === 'sell' && currentTokenPair ? (
             <SellTab
