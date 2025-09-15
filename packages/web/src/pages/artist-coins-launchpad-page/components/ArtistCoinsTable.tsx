@@ -1,29 +1,35 @@
 import { useCallback, useMemo } from 'react'
 
 import { useArtistCoins, useUsers } from '@audius/common/api'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
 import {
   Button,
   Flex,
   formatCount,
+  IconSearch,
   LoadingSpinner,
   Paper,
   Skeleton,
+  spacing,
   Text
 } from '@audius/harmony'
-import { Coin, decodeHashId } from '@audius/sdk'
+import { Coin, decodeHashId, HashId } from '@audius/sdk'
 import moment from 'moment'
+import { useDispatch } from 'react-redux'
 import { Cell } from 'react-table'
+import { push } from 'redux-first-history'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
-import { UserLink } from 'components/link'
+import { TextLink, UserLink } from 'components/link'
 import { Table } from 'components/table'
 
 import styles from './ArtistCoinsTable.module.css'
 
 const messages = {
   title: 'Your Token Balances',
-  noCoins: 'No coins found',
+  noCoins: 'No results found',
+  noCoinsDescription: 'No Artist Coins were found matching your search.',
   buy: 'Buy',
   dollarSign: '$'
 }
@@ -32,7 +38,11 @@ type CoinCell = Cell<Coin>
 
 const renderTokenNameCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
-  const ownerId = coin.ownerId ? decodeHashId(coin.ownerId) : null
+  const ownerId = HashId.parse(coin.ownerId)
+
+  if (!coin || !coin.ticker) {
+    return null
+  }
 
   return (
     <Flex
@@ -45,13 +55,21 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
       <Flex gap='s' alignItems='center' w='100%'>
         <TokenIcon logoURI={coin.logoUri} size='xl' hex />
         <Flex column>
-          <Text variant='title' size='s'>
-            {/* {coin.name} */}
-            Audius Coin
-          </Text>
-          <Text variant='body' size='s' strength='strong'>
+          <TextLink
+            to={ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)}
+            textVariant='title'
+            size='s'
+          >
+            {coin.name}
+          </TextLink>
+          <TextLink
+            to={ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)}
+            textVariant='body'
+            size='s'
+            strength='strong'
+          >
             {coin.ticker}
-          </Text>
+          </TextLink>
         </Flex>
       </Flex>
       <Flex w='100%' justifyContent='flex-start'>
@@ -199,31 +217,38 @@ type ArtistCoinsTableProps = {
 }
 
 export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
+  const dispatch = useDispatch()
   const { data: coins, isLoading } = useArtistCoins()
-  const { onOpen: openBuySellModal } = useBuySellModal()
 
   const ownerIds = useMemo(() => {
     if (!coins) return []
     const uniqueIds = [
       ...new Set(coins.map((coin) => coin.ownerId).filter(Boolean))
     ]
-    return uniqueIds.map((id) => decodeHashId(id)).filter(Boolean) as number[]
+    return uniqueIds.map((id) => HashId.parse(id)).filter(Boolean) as number[]
   }, [coins])
 
   const { data: users } = useUsers(ownerIds)
 
-  // Create memoized buy handler
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
   const handleBuy = useCallback(
-    (mint: string) => {
+    (ticker: string) => {
       openBuySellModal({
-        mint,
+        mint: ticker,
         isOpen: true
       })
     },
     [openBuySellModal]
   )
 
-  // Filter coins based on search query
+  const handleCoinClick = useCallback(
+    (ticker: string) => {
+      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
+    },
+    [dispatch]
+  )
+
   const filteredCoins = useMemo(() => {
     if (!coins || !searchQuery?.trim()) return coins
 
@@ -258,14 +283,10 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
 
   if (isLoading) {
     return (
-      <Paper
-        w='100%'
-        h={500}
-        justifyContent='center'
-        alignItems='center'
-        p='4xl'
-      >
-        <LoadingSpinner />
+      <Paper w='100%' justifyContent='center' alignItems='center' p='4xl'>
+        <LoadingSpinner
+          style={{ height: spacing.unit8, width: spacing.unit8 }}
+        />
       </Paper>
     )
   }
@@ -273,14 +294,19 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   if (!filteredCoins || filteredCoins.length === 0) {
     return (
       <Paper
+        column
         w='100%'
-        h={500}
         justifyContent='center'
         alignItems='center'
         p='4xl'
+        gap='l'
       >
-        <Text variant='body' size='m' color='subdued'>
+        <IconSearch size='2xl' color='default' />
+        <Text variant='heading' size='m'>
           {messages.noCoins}
+        </Text>
+        <Text variant='body' size='l'>
+          {messages.noCoinsDescription}
         </Text>
       </Paper>
     )

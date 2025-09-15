@@ -1,5 +1,6 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
+import { useCurrentAccountUser } from '@audius/common/api'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -21,8 +22,12 @@ import { push } from 'redux-first-history'
 
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
+import { Tooltip } from 'components/tooltip'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
+
+const SEARCH_WIDTH = 400
+const CHECKLIST_WIDTH = 540
 
 const messages = {
   title: 'Discover Artist Coins',
@@ -35,12 +40,16 @@ const messages = {
     'Start collecting trading fees',
     'Offer exclusive perks to your fans'
   ],
-  help: 'Help'
+  help: 'Help',
+  getStartedTooltip: 'Verified users only'
 }
 
 export const ArtistCoinsExplorePage = () => {
   const dispatch = useDispatch()
   const [searchValue, setSearchValue] = useState('')
+  const { data: currentUser } = useCurrentAccountUser()
+
+  const isVerified = currentUser?.is_verified ?? false
 
   const handleGetStarted = useCallback(() => {
     dispatch(push(COINS_CREATE_PAGE))
@@ -62,8 +71,6 @@ export const ArtistCoinsExplorePage = () => {
           w='100%'
           borderRadius='m'
           css={{
-            background:
-              'linear-gradient(0deg, rgba(0, 0, 0, 0.31) 0%, rgba(0, 0, 0, 0.49) 100%), url("http://localhost:3845/assets/f86c70e88c10c90dd6065df53ea1b503af7738c3.png")',
             backgroundSize: 'cover, cover',
             backgroundPosition: '0% 0%, 50% 50%',
             backgroundRepeat: 'no-repeat, no-repeat',
@@ -75,7 +82,7 @@ export const ArtistCoinsExplorePage = () => {
             {messages.title}
           </Text>
 
-          <Box w={400}>
+          <Box w={SEARCH_WIDTH}>
             <TextInput
               label={messages.searchPlaceholder}
               placeholder={messages.searchPlaceholder}
@@ -113,16 +120,27 @@ export const ArtistCoinsExplorePage = () => {
                 </Flex>
               </Flex>
 
-              <Button
-                onClick={handleGetStarted}
-                fullWidth
-                css={{
-                  background:
-                    'linear-gradient(91deg, var(--color-primary-P300, #CC0FE0) -7.07%, var(--color-secondary-S300, #7E1BCC) 50.55%, var(--color-special-Blue, #1BA1F1) 108.17%)'
-                }}
+              <Tooltip
+                text={messages.getStartedTooltip}
+                placement='top'
+                disabled={isVerified}
               >
-                {messages.getStarted}
-              </Button>
+                {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
+                <Flex>
+                  <Button
+                    onClick={handleGetStarted}
+                    fullWidth
+                    disabled={!isVerified}
+                    css={{
+                      background: isVerified
+                        ? 'var(--harmony-gradient-purple)'
+                        : undefined
+                    }}
+                  >
+                    {messages.getStarted}
+                  </Button>
+                </Flex>
+              </Tooltip>
             </Flex>
 
             <Box
@@ -130,11 +148,11 @@ export const ArtistCoinsExplorePage = () => {
               borderRadius='m'
               p='l'
               backgroundColor='surface1'
-              w={540}
+              w={CHECKLIST_WIDTH}
             >
               <Flex column gap='s'>
-                {messages.checklistItems.map((item, index) => (
-                  <Flex key={index} alignItems='center' gap='s'>
+                {messages.checklistItems.map((item) => (
+                  <Flex key={item} alignItems='center' gap='s'>
                     <IconCheck size='s' color='default' />
                     <Text variant='body' size='l'>
                       {item}
