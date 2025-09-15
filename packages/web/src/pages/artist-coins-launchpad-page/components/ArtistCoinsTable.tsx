@@ -14,11 +14,9 @@ import {
   spacing,
   Text
 } from '@audius/harmony'
-import { Coin, decodeHashId, HashId } from '@audius/sdk'
+import { Coin, HashId } from '@audius/sdk'
 import moment from 'moment'
-import { useDispatch } from 'react-redux'
 import { Cell } from 'react-table'
-import { push } from 'redux-first-history'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { TextLink, UserLink } from 'components/link'
@@ -217,8 +215,7 @@ type ArtistCoinsTableProps = {
 }
 
 export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
-  const dispatch = useDispatch()
-  const { data: coins, isLoading } = useArtistCoins()
+  const { data: coins, isPending } = useArtistCoins()
 
   const ownerIds = useMemo(() => {
     if (!coins) return []
@@ -256,7 +253,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
       }
 
       // Check owner artist name
-      const ownerId = decodeHashId(coin.ownerId)
+      const ownerId = HashId.parse(coin.ownerId)
       const ownerUser = users?.find((user) => user.user_id === ownerId)
       const ownerName = ownerUser?.name?.toLowerCase() ?? ''
       const ownerHandle = ownerUser?.handle?.toLowerCase() ?? ''
@@ -274,7 +271,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     return Object.values(baseColumns)
   }, [handleBuy])
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <Paper w='100%' justifyContent='center' alignItems='center' p='4xl'>
         <LoadingSpinner
