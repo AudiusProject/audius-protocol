@@ -40,25 +40,25 @@ export const executeIndirectSwap = async (
   dependencies: SwapDependencies,
   tokens: Record<string, TokenInfo>
 ): Promise<SwapTokensResult> => {
-  let retryCount = 0
+  let attemptNumber = 0
   const swapContext: IndirectSwapContext = { state: 'PENDING_FIRST_TX' }
 
   try {
     const result = await executeWithRetry(
       async () => {
+        attemptNumber++
         // Invalidate balances before retry (except on first attempt)
-        if (retryCount > 0) {
+        if (attemptNumber > 1) {
           await invalidateSwapQueries(
             dependencies.queryClient,
             dependencies.user
           )
         }
-        retryCount++
         return await performIndirectSwap(
           params,
           dependencies,
           tokens,
-          retryCount,
+          attemptNumber,
           swapContext
         )
       },
@@ -68,7 +68,7 @@ export const executeIndirectSwap = async (
 
     return {
       ...result,
-      retryCount,
+      retryCount: attemptNumber,
       maxRetries: JUPITER_MAX_RETRIES
     }
   } catch (error: unknown) {
@@ -81,7 +81,7 @@ export const executeIndirectSwap = async (
       },
       inputAmount: undefined,
       outputAmount: undefined,
-      retryCount,
+      retryCount: attemptNumber,
       maxRetries: JUPITER_MAX_RETRIES,
       isRetrying: false,
       firstTransactionSignature: swapContext.firstTransactionSignature
@@ -93,7 +93,7 @@ const performIndirectSwap = async (
   params: SwapTokensParams,
   dependencies: SwapDependencies,
   tokens: Record<string, TokenInfo>,
-  currentRetryCount: number,
+  currentAttemptNumber: number,
   swapContext: IndirectSwapContext
 ): Promise<SwapTokensResult> => {
   let errorStage = 'INDIRECT_SWAP_UNKNOWN'
@@ -128,6 +128,7 @@ const performIndirectSwap = async (
       swapContext.state = 'PENDING_SECOND_TX'
       swapContext.firstTransactionSignature = firstTransactionSignature
       swapContext.intermediateAudioAta = intermediateAudioAta.toBase58()
+      swapContext.actualAudioAmount = firstQuote.outputAmount
 
       // Get second quote based on first transaction output
       errorStage = 'INDIRECT_SWAP_SECOND_QUOTE'
@@ -145,8 +146,15 @@ const performIndirectSwap = async (
       // First transaction already succeeded, only execute second transaction
       intermediateAudioAta = new PublicKey(swapContext.intermediateAudioAta!)
 
-      // We need to reconstruct quotes for proper response format
-      errorStage = 'INDIRECT_SWAP_RECONSTRUCT_FIRST_QUOTE'
+      // Use actual AUDIO amount from first transaction (not reconstructed quote)
+      if (!swapContext.actualAudioAmount) {
+        throw new Error(
+          'actualAudioAmount is missing from swap context - invalid state'
+        )
+      }
+
+      // Create firstQuote for response format using stored actual amounts
+      errorStage = 'INDIRECT_SWAP_RECONSTRUCT_FIRST_QUOTE_METADATA'
       const { quoteResult: reconstructedFirstQuote } =
         await getJupiterQuoteByMintWithRetry({
           inputMint: inputMintUiAddress,
@@ -157,7 +165,12 @@ const performIndirectSwap = async (
           swapMode: 'ExactIn',
           onlyDirectRoutes: false
         })
-      firstQuote = reconstructedFirstQuote
+
+      // Override the output amount with the actual amount received
+      firstQuote = {
+        ...reconstructedFirstQuote,
+        outputAmount: swapContext.actualAudioAmount
+      }
 
       errorStage = 'INDIRECT_SWAP_SECOND_QUOTE'
       const { quoteResult } = await getJupiterQuoteByMintWithRetry({
@@ -165,7 +178,7 @@ const performIndirectSwap = async (
         outputMint: outputMintUiAddress,
         inputDecimals: AUDIO_DECIMALS,
         outputDecimals: tokens[outputMintUiAddress]?.decimals || 6,
-        amountUi: firstQuote.outputAmount.uiAmount,
+        amountUi: swapContext.actualAudioAmount.uiAmount, // Use actual amount
         swapMode: 'ExactIn',
         onlyDirectRoutes: false
       })
@@ -204,7 +217,7 @@ const performIndirectSwap = async (
       inputAmount: firstQuote.inputAmount,
       outputAmount: secondQuote.outputAmount,
       firstTransactionSignature,
-      retryCount: currentRetryCount,
+      retryCount: currentAttemptNumber,
       maxRetries: JUPITER_MAX_RETRIES,
       isRetrying: false
     }

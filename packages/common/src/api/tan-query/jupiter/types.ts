@@ -75,6 +75,12 @@ export type IndirectSwapContext = {
   state: IndirectSwapState
   firstTransactionSignature?: string
   intermediateAudioAta?: string
+  actualAudioAmount?: {
+    amount: number
+    amountString: string
+    uiAmount: number
+    uiAmountString: string
+  }
 }
 
 export interface UserBankManagedTokenInfo {
