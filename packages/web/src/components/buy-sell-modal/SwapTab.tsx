@@ -41,7 +41,7 @@ export type SwapTabProps = {
   outputIsDefault?: boolean
   tab?: BuySellTab
   onChangeSwapDirection?: () => void
-  initialMint?: string
+  initialTicker?: string
 } & TokenPricing &
   UIConfiguration &
   InputConfiguration &
@@ -72,20 +72,20 @@ export const SwapTab = ({
   onOutputTokenChange,
   outputBalance,
   onChangeSwapDirection,
-  initialMint
+  initialTicker
 }: SwapTabProps) => {
-  // If initialMint is provided, try to find the token and use it as the output token
+  // If initialTicker is provided, try to find the token and use it as the output token
   const resolvedOutputToken = useMemo(() => {
-    if (initialMint && availableOutputTokens) {
-      const tokenByMint = availableOutputTokens.find(
-        (token) => token.address === initialMint
+    if (initialTicker && availableOutputTokens) {
+      const tokenByTicker = availableOutputTokens.find(
+        (token) => token.symbol === initialTicker
       )
-      if (tokenByMint) {
-        return tokenByMint
+      if (tokenByTicker) {
+        return tokenByTicker
       }
     }
     return outputToken
-  }, [initialMint, availableOutputTokens, outputToken])
+  }, [initialTicker, availableOutputTokens, outputToken])
 
   const {
     formik,

@@ -2,14 +2,14 @@ import { createModal } from '../createModal'
 
 export type BuySellModalState = {
   isOpen: boolean
-  mint?: string
+  ticker?: string
 }
 
 const BuySellModal = createModal<BuySellModalState>({
   reducerPath: 'BuySellModal',
   initialState: {
     isOpen: false,
-    mint: undefined
+    ticker: undefined
   },
   sliceSelector: (state) => state.ui.modals
 })

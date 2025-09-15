@@ -132,7 +132,7 @@ const renderCreatedDateCell = (cellInfo: CoinCell) => {
 
 const renderBuyCell = (
   cellInfo: CoinCell,
-  handleBuy: (mint: string) => void
+  handleBuy: (ticker: string) => void
 ) => {
   const coin = cellInfo.row.original
 
@@ -144,7 +144,7 @@ const renderBuyCell = (
         css={{
           boxShadow: '0 0 0 1px inset var(--harmony-border-default) !important'
         }}
-        onClick={() => handleBuy(coin.mint)}
+        onClick={() => handleBuy(coin.ticker ?? '')}
       >
         {messages.buy}
       </Button>
@@ -235,7 +235,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const handleBuy = useCallback(
     (ticker: string) => {
       openBuySellModal({
-        mint: ticker,
+        ticker: ticker,
         isOpen: true
       })
     },

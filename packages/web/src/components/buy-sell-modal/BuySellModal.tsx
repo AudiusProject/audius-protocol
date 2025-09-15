@@ -21,7 +21,7 @@ import { Screen } from './types'
 
 export const BuySellModal = () => {
   const { isOpen, onClose, data } = useBuySellModal()
-  const { mint } = data
+  const { ticker } = data
   const { onOpen: openAddCashModal } = useAddCashModal()
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
@@ -76,7 +76,7 @@ export const BuySellModal = () => {
           openAddCashModal={openAddCashModal}
           onScreenChange={setModalScreen}
           onLoadingStateChange={setIsFlowLoading}
-          initialMint={mint}
+          initialTicker={ticker}
         />
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (
