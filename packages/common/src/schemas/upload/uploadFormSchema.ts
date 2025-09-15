@@ -49,6 +49,15 @@ const TipGatedConditionsSchema = z
   })
   .strict()
 
+const TokenGatedConditionsSchema = z
+  .object({
+    token_gate: z.object({
+      token_mint: z.string(),
+      token_amount: z.number().positive().min(1)
+    })
+  })
+  .strict()
+
 /** Same as SDK but snake-cased */
 const USDCPurchaseConditionsSchema = z
   .object({
@@ -103,7 +112,8 @@ const premiumMetadataSchema = z.object({
         CollectibleGatedConditions,
         FollowGatedConditionsSchema,
         TipGatedConditionsSchema,
-        USDCPurchaseConditionsSchema
+        USDCPurchaseConditionsSchema,
+        TokenGatedConditionsSchema
       ])
     )
     .nullable(),
@@ -114,7 +124,8 @@ const premiumMetadataSchema = z.object({
         CollectibleGatedConditions,
         FollowGatedConditionsSchema,
         TipGatedConditionsSchema,
-        USDCPurchaseConditionsSchema
+        USDCPurchaseConditionsSchema,
+        TokenGatedConditionsSchema
       ])
     )
     .nullable()

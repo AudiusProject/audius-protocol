@@ -4,7 +4,8 @@ import {
   instanceOfTipGate,
   instanceOfNftGate,
   instanceOfFollowGate,
-  instanceOfPurchaseGate
+  instanceOfPurchaseGate,
+  instanceOfTokenGate
 } from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
@@ -32,6 +33,13 @@ export const accessConditionsFromSDK = (
     return { usdc_purchase: input.usdcPurchase }
   } else if (instanceOfTipGate(input)) {
     return { tip_user_id: input.tipUserId }
+  } else if (instanceOfTokenGate(input)) {
+    return {
+      token_gate: {
+        token_mint: input.tokenGate.tokenMint,
+        token_amount: input.tokenGate.tokenAmount
+      }
+    }
   } else {
     throw new Error(`Unsupported access gate type: ${input}`)
   }
