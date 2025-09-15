@@ -107,7 +107,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     exact: true
   })
   const { data: selectedPair } = useTokenPair({
-    baseSymbol: initialTicker ? initialTicker : match?.params.ticker,
+    baseSymbol: initialTicker ?? match?.params.ticker,
     quoteSymbol: 'USDC'
   })
 

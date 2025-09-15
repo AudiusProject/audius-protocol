@@ -235,18 +235,11 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const handleBuy = useCallback(
     (ticker: string) => {
       openBuySellModal({
-        ticker: ticker,
+        ticker,
         isOpen: true
       })
     },
     [openBuySellModal]
-  )
-
-  const handleCoinClick = useCallback(
-    (ticker: string) => {
-      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
-    },
-    [dispatch]
   )
 
   const filteredCoins = useMemo(() => {
