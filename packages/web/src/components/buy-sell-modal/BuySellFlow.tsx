@@ -247,8 +247,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     swapStatus,
     swapResult,
     swapError,
-    swapData,
-    isRetrying
+    swapData
   } = useBuySellSwap({
     transactionData,
     currentScreen,
@@ -272,7 +271,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     if (
       swapData?.status === SwapStatus.ERROR &&
       swapData?.error &&
-      !isRetrying
+      !swapData?.isRetrying
     ) {
       trackSwapFailure(
         {
@@ -298,7 +297,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     swapStatus,
     swapError,
     swapData,
-    isRetrying,
     toast,
     activeTab,
     transactionData,
