@@ -42,6 +42,8 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
     return null
   }
 
+  const assetDetailUrl = ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)
+
   return (
     <Flex
       pl='xl'
@@ -53,15 +55,11 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
       <Flex gap='s' alignItems='center' w='100%'>
         <TokenIcon logoURI={coin.logoUri} size='xl' hex />
         <Flex column>
-          <TextLink
-            to={ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)}
-            textVariant='title'
-            size='s'
-          >
+          <TextLink to={assetDetailUrl} textVariant='title' size='s'>
             {coin.name}
           </TextLink>
           <TextLink
-            to={ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)}
+            to={assetDetailUrl}
             textVariant='body'
             size='s'
             strength='strong'
