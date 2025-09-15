@@ -165,6 +165,7 @@ export { default as IconPaperAirplane } from '@audius/harmony/src/assets/icons/P
 export { default as IconArrowUpToLine } from '@audius/harmony/src/assets/icons/ArrowUpToLine.svg'
 export { default as IconJupiterLogo } from '@audius/harmony/src/assets/icons/JupiterLogo.svg'
 export { default as IconArtistCoin } from '@audius/harmony/src/assets/icons/ArtistCoin.svg'
+export { default as IconCoinGatedLabel } from '@audius/harmony/src/assets/icons/CoinGatedLabel.svg'
 
 // Two Tone / Special Styling
 

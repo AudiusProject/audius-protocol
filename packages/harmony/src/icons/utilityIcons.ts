@@ -31,6 +31,7 @@ import IconCloudDownloadInactiveSVG from '../assets/icons/CloudDownloadInactive.
 import IconCloudDownloadPausedSVG from '../assets/icons/CloudDownloadPaused.svg'
 import IconCloudDownloadQueuedSVG from '../assets/icons/CloudDownloadQueued.svg'
 import IconCloudUploadSVG from '../assets/icons/CloudUpload.svg'
+import IconCoinGatedLabelSVG from '../assets/icons/CoinGatedLabel.svg'
 import IconCollectibleSVG from '../assets/icons/Collectible.svg'
 import IconComposeSVG from '../assets/icons/Compose.svg'
 import IconCopySVG from '../assets/icons/Copy.svg'
@@ -317,3 +318,4 @@ export const IconPlaybackPlay = IconPlaybackPlaySVG as IconComponent
 export const IconQrCode = IconQrCodeSVG as IconComponent
 export const IconJupiterLogo = IconJupiterLogoSVG as IconComponent
 export const IconArtistCoin = IconArtistCoinSVG as IconComponent
+export const IconCoinGatedLabel = IconCoinGatedLabelSVG as IconComponent
