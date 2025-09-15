@@ -140,7 +140,7 @@ const LockedGatedContentSection = ({
     usePremiumContentPurchaseModal()
   const { data: coin } = useArtistCoin({
     mint: isContentTokenGated(streamConditions)
-      ? (streamConditions as TokenGatedConditions).token_gate.token_mint
+      ? streamConditions.token_gate.token_mint
       : ''
   })
   const tipSource = lockedContentModalVisibility
