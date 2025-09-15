@@ -13,8 +13,7 @@ import {
   ID,
   AccessConditions,
   User,
-  isContentTokenGated,
-  TokenGatedConditions
+  isContentTokenGated
 } from '@audius/common/models'
 import {
   usersSocialActions as socialActions,
@@ -306,7 +305,7 @@ const LockedGatedContentSection = ({
     }
 
     if (isContentTokenGated(streamConditions)) {
-      const { token_gate } = streamConditions as TokenGatedConditions
+      const { token_gate } = streamConditions
 
       return (
         <Text variant='body' strength='strong'>
@@ -550,7 +549,7 @@ const UnlockedGatedContentSection = ({
   const messages = getMessages(contentType)
   const { data: coin } = useArtistCoin({
     mint: isContentTokenGated(streamConditions)
-      ? (streamConditions as TokenGatedConditions).token_gate.token_mint
+      ? streamConditions.token_gate.token_mint
       : ''
   })
 
