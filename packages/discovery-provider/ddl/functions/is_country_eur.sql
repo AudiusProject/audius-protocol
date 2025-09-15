@@ -415,7 +415,6 @@ BEGIN
         country = 'TZ' OR
         country = 'UA' OR
         country = 'UG' OR
-        country = 'US' OR
         country = 'UY' OR
         country = 'UZ' OR
         country = 'VA' OR
