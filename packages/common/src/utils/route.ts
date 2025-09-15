@@ -71,6 +71,7 @@ export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
 export const ASSET_DETAIL_PAGE = '/wallet/:ticker'
 export const WALLET_PAGE = '/wallet'
+export const WALLET_GUIDE_PAGE = '/wallet/guide'
 export const ALL_COINS_PAGE = '/wallet/coins'
 export const COINS_CREATE_PAGE = '/coins/create'
 export const COINS_EXPLORE_PAGE = '/coins/explore'
@@ -216,6 +217,11 @@ export const AUDIUS_API_LINK = 'https://audius.org/api'
 export const AUDIUS_TOKENS_HELP_LINK =
   'https://support.audius.co/product/tokens'
 
+// Dexscreener Links
+export const DEXSCREENER_BASE_URL = 'https://dexscreener.com/solana'
+export const dexscreenerUrl = (mint: string) =>
+  `${DEXSCREENER_BASE_URL}/${mint}`
+
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,
@@ -234,7 +240,8 @@ export const authenticatedRoutes = [
   WITHDRAWALS_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
-  COINS_EXPLORE_PAGE
+  COINS_EXPLORE_PAGE,
+  WALLET_GUIDE_PAGE
 ]
 
 export const guestRoutes = [
@@ -288,6 +295,7 @@ export const orderedRoutes = [
   WALLET_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -338,6 +346,7 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_PAGE,
+  WALLET_GUIDE_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
   WALLET_AUDIO_PAGE,

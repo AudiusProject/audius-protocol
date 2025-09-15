@@ -25,7 +25,6 @@ import {
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
-import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -36,8 +35,6 @@ import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
-
-const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
 
 type BuySellFlowProps = {
   onClose: () => void
@@ -498,16 +495,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               >
                 {messages.addCash}
               </TextLink>
-            </Hint>
-          ) : null}
-
-          {hasSufficientBalance &&
-          (activeTab !== 'convert' || !isArtistCoinsEnabled) ? (
-            <Hint>
-              {messages.helpCenter}{' '}
-              <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
-                {messages.walletGuide}
-              </ExternalTextLink>
             </Hint>
           ) : null}
 

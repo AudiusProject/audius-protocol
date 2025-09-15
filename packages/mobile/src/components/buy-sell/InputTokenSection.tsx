@@ -4,6 +4,7 @@ import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
+import { sanitizeNumericInput } from '@audius/common/utils'
 
 import { Button, Flex, Text, TextInput, useTheme } from '@audius/harmony-native'
 
@@ -11,7 +12,6 @@ import { TokenIcon } from '../core'
 
 import { TokenDropdownSelect } from './TokenDropdownSelect'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
-import { sanitizeNumericInput } from './utils'
 
 type InputTokenSectionProps = {
   title: string
@@ -94,7 +94,11 @@ export const InputTokenSection = ({
           <Flex row alignItems='center' justifyContent='center' gap='xs'>
             <TokenIcon logoURI={logoURI} size={iconSize} />
             <Text strength='strong'>
-              {`${isStablecoin ? '$' : ''}${formattedAvailableBalance} ${messages.available}`}
+              {messages.formattedAvailableBalance(
+                formattedAvailableBalance,
+                symbol,
+                !!isStablecoin
+              )}
             </Text>
             <TooltipInfoIcon />
           </Flex>

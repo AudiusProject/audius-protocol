@@ -11,6 +11,7 @@ import {
   Text,
   IconKebabHorizontal
 } from '@audius/harmony-native'
+import { useDrawer } from 'app/hooks/useDrawer'
 
 const messages = coinDetailsMessages.coinInsights
 
@@ -66,6 +67,12 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
     error
   } = useArtistCoinInsights({ mint })
 
+  const { onOpen } = useDrawer('AssetInsightsOverflowMenu')
+
+  const handleOpenOverflowMenu = () => {
+    onOpen({ mint })
+  }
+
   if (isPending || !coinInsights) {
     return null
   }
@@ -94,8 +101,8 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
         </Text>
         <IconButton
           icon={IconKebabHorizontal}
-          color='subdued'
-          onPress={() => {}}
+          onPress={handleOpenOverflowMenu}
+          ripple
         />
       </Flex>
 

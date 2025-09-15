@@ -1,17 +1,20 @@
 import { useMemo, useState, useEffect } from 'react'
 
-import { buySellMessages as messages } from '@audius/common/messages'
+import { buySellMessages } from '@audius/common/messages'
 import { useBuySellModal, useAddCashModal } from '@audius/common/store'
 import {
   IconJupiterLogo,
+  IconQuestionCircle,
   Modal,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalTitle,
+  PlainButton,
   Text
 } from '@audius/harmony'
-import { useTheme } from '@emotion/react'
+
+import { zIndex } from '../../utils/zIndex'
 
 import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
@@ -19,7 +22,6 @@ import { Screen } from './types'
 export const BuySellModal = () => {
   const { isOpen, onClose, data } = useBuySellModal()
   const { mint } = data
-  const { spacing, color } = useTheme()
   const { onOpen: openAddCashModal } = useAddCashModal()
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
@@ -35,18 +37,38 @@ export const BuySellModal = () => {
 
   const title = useMemo(() => {
     if (isFlowLoading) return ''
-    if (modalScreen === 'confirm') return messages.confirmDetails
-    if (modalScreen === 'success') return messages.modalSuccessTitle
-    return messages.title
+    if (modalScreen === 'confirm') return buySellMessages.confirmDetails
+    if (modalScreen === 'success') return buySellMessages.modalSuccessTitle
+    return buySellMessages.title
   }, [isFlowLoading, modalScreen])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size='medium'>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size='medium'
+      zIndex={zIndex.BUY_SELL_MODAL}
+    >
       <ModalHeader
         onClose={onClose}
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
       >
         <ModalTitle title={title} />
+        <PlainButton
+          size='default'
+          iconLeft={IconQuestionCircle}
+          onClick={() => {
+            window.open('https://help.audius.co/product/wallet-guide', '_blank')
+          }}
+          css={(theme) => ({
+            position: 'absolute',
+            top: theme.spacing.xl,
+            right: theme.spacing.xl,
+            zIndex: zIndex.BUY_SELL_MODAL + 1
+          })}
+        >
+          {buySellMessages.help}
+        </PlainButton>
       </ModalHeader>
       <ModalContent>
         <BuySellFlow
@@ -59,15 +81,13 @@ export const BuySellModal = () => {
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (
         <ModalFooter
-          css={{
-            justifyContent: 'center',
-            gap: spacing.s,
-            borderTop: `1px solid ${color.border.strong}`,
-            backgroundColor: color.background.surface1
-          }}
+          gap='s'
+          borderTop='strong'
+          backgroundColor='surface1'
+          pv='m'
         >
           <Text variant='label' size='xs' color='subdued'>
-            {messages.poweredBy}
+            {buySellMessages.poweredBy}
           </Text>
           <IconJupiterLogo />
         </ModalFooter>
