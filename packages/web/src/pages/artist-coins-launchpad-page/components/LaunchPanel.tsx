@@ -33,7 +33,7 @@ export const LaunchPanel = ({ onContinue }: LaunchPanelProps) => {
         iconRight={IconArrowRight}
         onClick={onContinue}
         css={{
-          background: 'var(--harmony-gradient-purple)',
+          background: 'var(--harmony-coin-gradient)',
           border: 'none'
         }}
       >

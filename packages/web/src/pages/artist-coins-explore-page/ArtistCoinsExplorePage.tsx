@@ -133,7 +133,7 @@ export const ArtistCoinsExplorePage = () => {
                     disabled={!isVerified}
                     css={{
                       background: isVerified
-                        ? 'var(--harmony-gradient-purple)'
+                        ? 'var(--harmony-coin-gradient)'
                         : undefined
                     }}
                   >
