@@ -2,7 +2,7 @@ import { useMemo, useCallback, useRef } from 'react'
 
 import type { TokenInfo } from '@audius/common/store'
 import { IconCaretDown, Text, Flex } from '@audius/harmony'
-import { useTheme, css } from '@emotion/react'
+import { useTheme } from '@emotion/react'
 import Select, { components } from 'react-select'
 import type { SingleValue, SingleValueProps, OptionProps } from 'react-select'
 
@@ -19,7 +19,7 @@ type TokenOption = {
 type TokenDropdownProps = {
   selectedToken: TokenInfo
   availableTokens: TokenInfo[]
-  onTokenChange: (token: TokenInfo) => void
+  onTokenChange?: (token: TokenInfo) => void
   disabled?: boolean
 }
 
@@ -50,7 +50,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
       <Flex
         gap='s'
         alignItems='center'
-        css={css({
+        css={{
           padding: spacing.s,
           borderRadius: cornerRadius.s,
           minHeight: spacing.unit10,
@@ -63,7 +63,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
               color: `${color.static.white} !important`
             }
           }
-        })}
+        }}
       >
         <TokenIcon
           logoURI={props.data.tokenInfo.logoURI}
@@ -106,7 +106,7 @@ export const TokenDropdown = ({
   const handleTokenSelect = useCallback(
     (option: SingleValue<TokenOption>) => {
       if (option) {
-        onTokenChange(option.tokenInfo)
+        onTokenChange?.(option.tokenInfo)
       }
     },
     [onTokenChange]
@@ -163,18 +163,8 @@ export const TokenDropdown = ({
         menuPosition='absolute'
         menuPortalTarget={document.body}
         components={{
-          SingleValue: (props: SingleValueProps<TokenOption>) => {
-            const { setValue, ...singleValueProps } = props
-            return (
-              <CustomSingleValue
-                {...singleValueProps}
-                setValue={setValue as any}
-              />
-            )
-          },
-          Option: (props: OptionProps<TokenOption>) => (
-            <CustomOption {...props} />
-          ),
+          SingleValue: CustomSingleValue,
+          Option: CustomOption,
           DropdownIndicator: (props) => (
             <components.DropdownIndicator {...props}>
               <IconCaretDown size='s' color='default' />

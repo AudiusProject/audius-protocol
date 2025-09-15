@@ -71,6 +71,7 @@ export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
 export const ASSET_DETAIL_PAGE = '/wallet/:ticker'
 export const WALLET_PAGE = '/wallet'
+export const WALLET_GUIDE_PAGE = '/wallet/guide'
 export const ALL_COINS_PAGE = '/wallet/coins'
 export const COINS_CREATE_PAGE = '/coins/create'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
@@ -232,7 +233,8 @@ export const authenticatedRoutes = [
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
   ALL_COINS_PAGE,
-  COINS_CREATE_PAGE
+  COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE
 ]
 
 export const guestRoutes = [
@@ -286,6 +288,7 @@ export const orderedRoutes = [
   WALLET_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -336,6 +339,7 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_PAGE,
+  WALLET_GUIDE_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
   WALLET_AUDIO_PAGE,

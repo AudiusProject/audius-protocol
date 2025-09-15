@@ -10,38 +10,14 @@ import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex, Skeleton, Text } from '@audius/harmony'
+import { Flex, Text } from '@audius/harmony'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
+import { SwapFormSkeleton } from './components/SwapSkeletons'
 import type { BuyTabProps } from './types'
-
-const YouPaySkeleton = () => (
-  <Flex direction='column' gap='s'>
-    <Flex justifyContent='space-between' alignItems='flex-start'>
-      <Skeleton w='100px' h='24px' />
-      <Skeleton w='160px' h='24px' />
-    </Flex>
-    <Skeleton w='100%' h='64px' />
-  </Flex>
-)
-
-const YouReceiveSkeleton = () => (
-  <Flex direction='column' gap='s'>
-    <Skeleton w='120px' h='24px' />
-    <Skeleton w='100%' h='64px' />
-    <Skeleton w='100%' h='64px' />
-  </Flex>
-)
-
-const SwapFormSkeleton = () => (
-  <Flex direction='column' gap='xl'>
-    <YouPaySkeleton />
-    <YouReceiveSkeleton />
-  </Flex>
-)
 
 export const BuyTab = ({
   tokenPair,
@@ -148,7 +124,7 @@ export const BuyTab = ({
         </>
       )}
 
-      {tokenPrice && (
+      {tokenPrice ? (
         <Flex alignItems='center' gap='xs'>
           <Text variant='body' size='s' color='subdued'>
             {buySellMessages.exchangeRateLabel}
@@ -161,7 +137,7 @@ export const BuyTab = ({
             )}
           </Text>
         </Flex>
-      )}
+      ) : null}
     </Flex>
   )
 }

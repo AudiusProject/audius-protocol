@@ -4,6 +4,7 @@ import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
+import { sanitizeNumericInput } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -18,20 +19,6 @@ import { Tooltip } from 'components/tooltip'
 import { TokenIcon } from '../TokenIcon'
 
 import { TokenDropdown } from './TokenDropdown'
-
-// Utility function to sanitize numeric input
-const sanitizeNumericInput = (input: string): string => {
-  // Remove any non-numeric characters except decimal point
-  const cleaned = input.replace(/[^0-9.]/g, '')
-
-  // Handle multiple decimal points - keep only the first one
-  const parts = cleaned.split('.')
-  if (parts.length > 2) {
-    return parts[0] + '.' + parts.slice(1).join('')
-  }
-
-  return cleaned
-}
 
 type InputTokenSectionProps = {
   title: string
@@ -77,11 +64,11 @@ export const InputTokenSection = ({
     placeholder
   })
 
-  const displayTokenDropdown = availableTokens && availableTokens.length > 0
+  const shouldDisplayTokenDropdown = availableTokens?.length
 
   // Sync local state with prop changes
   useEffect(() => {
-    setLocalAmount(amount || '')
+    setLocalAmount(amount ?? '')
   }, [amount])
 
   const debouncedOnAmountChange = useDebouncedCallback(
@@ -115,9 +102,13 @@ export const InputTokenSection = ({
               hex
             />
             <Text variant='body' size='m' strength='strong'>
-              {`${isStablecoin ? '$' : ''}${formattedAvailableBalance} ${messages.available}`}
+              {messages.formattedAvailableBalance(
+                formattedAvailableBalance,
+                symbol,
+                !!isStablecoin
+              )}
             </Text>
-            <Tooltip text='This is the amount you have available to spend'>
+            <Tooltip text={messages.availableBalanceTooltip}>
               <IconInfo color='subdued' size='s' />
             </Tooltip>
           </Flex>
@@ -141,12 +132,12 @@ export const InputTokenSection = ({
             />
           </Flex>
 
-          {displayTokenDropdown ? (
-            <Flex css={{ minWidth: '60px' }}>
+          {shouldDisplayTokenDropdown ? (
+            <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
               <TokenDropdown
                 selectedToken={tokenInfo}
-                availableTokens={availableTokens || []}
-                onTokenChange={onTokenChange || (() => {})}
+                availableTokens={availableTokens}
+                onTokenChange={onTokenChange}
               />
             </Flex>
           ) : null}
@@ -158,11 +149,11 @@ export const InputTokenSection = ({
           ) : null}
         </Flex>
 
-        {errorMessage && (
+        {errorMessage ? (
           <Text variant='body' size='s' color='danger'>
             {errorMessage}
           </Text>
-        )}
+        ) : null}
       </Flex>
     </Flex>
   )

@@ -71,5 +71,12 @@ export const buySellMessages = {
     outputSymbol: string,
     rate: number
   ) => `1 ${inputSymbol} ≈ ${rate} ${outputSymbol}`,
+  formattedAvailableBalance: (
+    formattedBalance: string,
+    _symbol: string,
+    isStablecoin: boolean
+  ) =>
+    `${isStablecoin ? '$' : ''}${formattedBalance} ${buySellMessages.available}`,
+  availableBalanceTooltip: 'This is the amount you have available to spend',
   help: 'Help'
 }

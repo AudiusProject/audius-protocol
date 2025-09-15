@@ -17,6 +17,8 @@ import {
   Text
 } from '@audius/harmony'
 
+import { zIndex } from '../../utils/zIndex'
+
 import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
@@ -43,7 +45,12 @@ export const BuySellModal = () => {
   }, [isFlowLoading, modalScreen])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size='medium'>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size='medium'
+      zIndex={zIndex.BUY_SELL_MODAL}
+    >
       <ModalHeader
         onClose={onClose}
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
@@ -59,7 +66,7 @@ export const BuySellModal = () => {
             position: 'absolute',
             top: theme.spacing.xl,
             right: theme.spacing.xl,
-            zIndex: 1
+            zIndex: zIndex.BUY_SELL_MODAL + 1
           })}
         >
           {buySellMessages.help}

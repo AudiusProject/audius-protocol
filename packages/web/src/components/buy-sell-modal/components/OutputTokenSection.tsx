@@ -3,24 +3,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
+import { sanitizeNumericInput } from '@audius/common/utils'
 import { Flex, Text, TextInput, TextInputSize } from '@audius/harmony'
 
 import { StaticTokenDisplay } from './StaticTokenDisplay'
 import { TokenDropdown } from './TokenDropdown'
-
-// Utility function to sanitize numeric input
-const sanitizeNumericInput = (input: string): string => {
-  // Remove any non-numeric characters except decimal point
-  const cleaned = input.replace(/[^0-9.]/g, '')
-
-  // Handle multiple decimal points - keep only the first one
-  const parts = cleaned.split('.')
-  if (parts.length > 2) {
-    return parts[0] + '.' + parts.slice(1).join('')
-  }
-
-  return cleaned
-}
 
 type OutputTokenSectionProps = {
   tokenInfo: TokenInfo
@@ -36,6 +23,7 @@ type OutputTokenSectionProps = {
   onTokenChange?: (token: TokenInfo) => void
   availableTokens?: TokenInfo[]
   isArtistCoinsEnabled?: boolean
+  hideTokenDisplay?: boolean
 }
 
 export const OutputTokenSection = ({
@@ -46,7 +34,8 @@ export const OutputTokenSection = ({
   onAmountChange,
   availableTokens,
   onTokenChange,
-  isArtistCoinsEnabled = true
+  isArtistCoinsEnabled = true,
+  hideTokenDisplay = false
 }: OutputTokenSectionProps) => {
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
@@ -94,7 +83,8 @@ export const OutputTokenSection = ({
             />
           </Flex>
 
-          {availableTokens &&
+          {!hideTokenDisplay &&
+          availableTokens &&
           availableTokens.length > 0 &&
           isArtistCoinsEnabled ? (
             <Flex css={{ minWidth: '60px' }}>
@@ -104,9 +94,9 @@ export const OutputTokenSection = ({
                 onTokenChange={onTokenChange || (() => {})}
               />
             </Flex>
-          ) : (
+          ) : !hideTokenDisplay ? (
             <StaticTokenDisplay tokenInfo={tokenInfo} />
-          )}
+          ) : null}
         </Flex>
       </Flex>
     </Flex>

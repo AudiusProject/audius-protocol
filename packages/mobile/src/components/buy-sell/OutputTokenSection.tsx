@@ -3,11 +3,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
+import { sanitizeNumericInput } from '@audius/common/utils'
 
 import { Flex, Text, TextInput } from '@audius/harmony-native'
 
 import { TokenDropdownSelect } from './TokenDropdownSelect'
-import { sanitizeNumericInput } from './utils'
 
 type OutputTokenSectionProps = {
   tokenInfo: TokenInfo
@@ -70,12 +70,10 @@ export const OutputTokenSection = ({
             placeholder={placeholder}
             startAdornmentText={isStablecoin ? '$' : ''}
             endAdornmentText={symbol}
-            // value={amount}
             value={localAmount}
             onChangeText={handleTextChange}
             keyboardType='numeric'
             error={error}
-            // editable={false}
           />
         </Flex>
         {availableTokens && availableTokens.length > 0 && (
