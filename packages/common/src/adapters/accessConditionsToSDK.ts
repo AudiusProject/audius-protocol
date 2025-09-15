@@ -41,6 +41,13 @@ export const accessConditionsToSDK = (
     return {
       tipUserId: input.tip_user_id
     }
+  } else if (isContentTokenGated(input)) {
+    return {
+      tokenGate: {
+        tokenMint: input.token_gate.token_mint,
+        tokenAmount: input.token_gate.token_amount
+      }
+    }
   } else {
     throw new Error(
       `Unsupported access conditions type: ${JSON.stringify(input)}`
