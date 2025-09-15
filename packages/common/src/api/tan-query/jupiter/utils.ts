@@ -33,6 +33,48 @@ import {
   UserBankManagedTokenInfo
 } from './types'
 
+// Retry configuration constants
+export const JUPITER_MAX_RETRIES = 3
+const RETRY_DELAY = 2000 // 2 seconds
+
+// Utility function for promise-based delay
+export const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms))
+
+// Generic retry wrapper for swap operations
+export const executeWithRetry = async <T>(
+  operation: () => Promise<T>,
+  maxRetries: number = JUPITER_MAX_RETRIES,
+  retryDelay: number = RETRY_DELAY,
+  isRetryableError?: (error: unknown) => boolean
+): Promise<T> => {
+  let lastError: unknown
+  let attempt = 0
+
+  while (attempt <= maxRetries) {
+    try {
+      const result = await operation()
+      return result
+    } catch (error: unknown) {
+      lastError = error
+      attempt++
+
+      // If we've exhausted retries or error is not retryable, throw
+      if (
+        attempt > maxRetries ||
+        (isRetryableError && !isRetryableError(error))
+      ) {
+        throw error
+      }
+
+      // Wait before retrying (fixed delay like original)
+      await delay(retryDelay)
+    }
+  }
+
+  throw lastError
+}
+
 export async function addTransferFromUserBankInstructions({
   tokenInfo,
   userPublicKey,
@@ -46,7 +88,7 @@ export async function addTransferFromUserBankInstructions({
   userPublicKey: PublicKey
   ethAddress: string
   amountLamports: bigint
-  sdk: any
+  sdk: AudiusSdk
   feePayer: PublicKey
   instructions: TransactionInstruction[]
 }): Promise<PublicKey> {

@@ -4,7 +4,8 @@ import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 import {
   convertJupiterInstructions,
-  getJupiterQuoteByMintWithRetry
+  getJupiterQuoteByMintWithRetry,
+  JupiterQuoteResult
 } from '~/services/Jupiter'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 import { TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
@@ -14,15 +15,18 @@ import {
   SwapTokensParams,
   SwapTokensResult,
   SwapStatus,
-  SwapErrorType
+  SwapErrorType,
+  IndirectSwapContext
 } from './types'
 import {
   addTransferFromUserBankInstructions,
   buildAndSendTransaction,
   createTokenConfig,
+  executeWithRetry,
   findTokenByAddress,
   getJupiterSwapInstructions,
   invalidateSwapQueries,
+  JUPITER_MAX_RETRIES,
   prepareOutputUserBank,
   validateAndCreateTokenConfigs
 } from './utils'
@@ -36,6 +40,62 @@ export const executeIndirectSwap = async (
   dependencies: SwapDependencies,
   tokens: Record<string, TokenInfo>
 ): Promise<SwapTokensResult> => {
+  let attemptNumber = 0
+  const swapContext: IndirectSwapContext = { state: 'PENDING_FIRST_TX' }
+
+  try {
+    const result = await executeWithRetry(
+      async () => {
+        attemptNumber++
+        // Invalidate balances before retry (except on first attempt)
+        if (attemptNumber > 1) {
+          await invalidateSwapQueries(
+            dependencies.queryClient,
+            dependencies.user
+          )
+        }
+        return await performIndirectSwap(
+          params,
+          dependencies,
+          tokens,
+          attemptNumber,
+          swapContext
+        )
+      },
+      JUPITER_MAX_RETRIES,
+      2000
+    )
+
+    return {
+      ...result,
+      retryCount: attemptNumber,
+      maxRetries: JUPITER_MAX_RETRIES
+    }
+  } catch (error: unknown) {
+    return {
+      status: SwapStatus.ERROR,
+      errorStage: 'INDIRECT_SWAP_RETRY_EXHAUSTED',
+      error: {
+        type: SwapErrorType.UNKNOWN,
+        message: `Indirect swap failed after ${JUPITER_MAX_RETRIES} retries: ${error instanceof Error ? error.message : 'Unknown error'}`
+      },
+      inputAmount: undefined,
+      outputAmount: undefined,
+      retryCount: attemptNumber,
+      maxRetries: JUPITER_MAX_RETRIES,
+      isRetrying: false,
+      firstTransactionSignature: swapContext.firstTransactionSignature
+    }
+  }
+}
+
+const performIndirectSwap = async (
+  params: SwapTokensParams,
+  dependencies: SwapDependencies,
+  tokens: Record<string, TokenInfo>,
+  currentAttemptNumber: number,
+  swapContext: IndirectSwapContext
+): Promise<SwapTokensResult> => {
   let errorStage = 'INDIRECT_SWAP_UNKNOWN'
 
   try {
@@ -44,46 +104,174 @@ export const executeIndirectSwap = async (
       outputMint: outputMintUiAddress,
       amountUi
     } = params
+
+    let firstTransactionSignature = swapContext.firstTransactionSignature
+    let firstQuote: JupiterQuoteResult | undefined
+    let secondQuote: JupiterQuoteResult | undefined
+    let intermediateAudioAta: PublicKey | undefined
+
+    // Based on swap context state, execute appropriate transaction(s)
+    if (swapContext.state === 'PENDING_FIRST_TX') {
+      errorStage = 'INDIRECT_SWAP_FIRST_TRANSACTION'
+      // Execute first transaction: InputToken -> AUDIO
+      const firstTxResult = await executeFirstTransaction(
+        params,
+        dependencies,
+        tokens
+      )
+
+      firstQuote = firstTxResult.firstQuote
+      firstTransactionSignature = firstTxResult.signature
+      intermediateAudioAta = firstTxResult.intermediateAudioAta
+
+      // Update context for next retry if needed
+      swapContext.state = 'PENDING_SECOND_TX'
+      swapContext.firstTransactionSignature = firstTransactionSignature
+      swapContext.intermediateAudioAta = intermediateAudioAta.toBase58()
+      swapContext.actualAudioAmount = firstQuote.outputAmount
+
+      // Get second quote based on first transaction output
+      errorStage = 'INDIRECT_SWAP_SECOND_QUOTE'
+      const { quoteResult } = await getJupiterQuoteByMintWithRetry({
+        inputMint: AUDIO_MINT,
+        outputMint: outputMintUiAddress,
+        inputDecimals: AUDIO_DECIMALS,
+        outputDecimals: tokens[outputMintUiAddress]?.decimals || 6,
+        amountUi: firstQuote.outputAmount.uiAmount,
+        swapMode: 'ExactIn',
+        onlyDirectRoutes: false
+      })
+      secondQuote = quoteResult
+    } else if (swapContext.state === 'PENDING_SECOND_TX') {
+      // First transaction already succeeded, only execute second transaction
+      intermediateAudioAta = new PublicKey(swapContext.intermediateAudioAta!)
+
+      // Use actual AUDIO amount from first transaction (not reconstructed quote)
+      if (!swapContext.actualAudioAmount) {
+        throw new Error(
+          'actualAudioAmount is missing from swap context - invalid state'
+        )
+      }
+
+      // Create firstQuote for response format using stored actual amounts
+      errorStage = 'INDIRECT_SWAP_RECONSTRUCT_FIRST_QUOTE_METADATA'
+      const { quoteResult: reconstructedFirstQuote } =
+        await getJupiterQuoteByMintWithRetry({
+          inputMint: inputMintUiAddress,
+          outputMint: AUDIO_MINT,
+          inputDecimals: tokens[inputMintUiAddress]?.decimals || 6,
+          outputDecimals: AUDIO_DECIMALS,
+          amountUi,
+          swapMode: 'ExactIn',
+          onlyDirectRoutes: false
+        })
+
+      // Override the output amount with the actual amount received
+      firstQuote = {
+        ...reconstructedFirstQuote,
+        outputAmount: swapContext.actualAudioAmount
+      }
+
+      errorStage = 'INDIRECT_SWAP_SECOND_QUOTE'
+      const { quoteResult } = await getJupiterQuoteByMintWithRetry({
+        inputMint: AUDIO_MINT,
+        outputMint: outputMintUiAddress,
+        inputDecimals: AUDIO_DECIMALS,
+        outputDecimals: tokens[outputMintUiAddress]?.decimals || 6,
+        amountUi: swapContext.actualAudioAmount.uiAmount, // Use actual amount
+        swapMode: 'ExactIn',
+        onlyDirectRoutes: false
+      })
+      secondQuote = quoteResult
+    }
+
+    // Execute second transaction: AUDIO -> OutputToken
+    if (!intermediateAudioAta) {
+      throw new Error(
+        'intermediateAudioAta is undefined - invalid swap context state'
+      )
+    }
+
+    if (!secondQuote) {
+      throw new Error('secondQuote is undefined - invalid swap context state')
+    }
+
+    errorStage = 'INDIRECT_SWAP_SECOND_TRANSACTION'
+    const secondTxResult = await executeSecondTransaction(
+      params,
+      dependencies,
+      tokens,
+      secondQuote
+    )
+
+    // Mark as completed
+    swapContext.state = 'COMPLETED'
+
+    if (!firstQuote) {
+      throw new Error('firstQuote is undefined - invalid swap context state')
+    }
+
+    return {
+      status: SwapStatus.SUCCESS,
+      signature: secondTxResult.signature,
+      inputAmount: firstQuote.inputAmount,
+      outputAmount: secondQuote.outputAmount,
+      firstTransactionSignature,
+      retryCount: currentAttemptNumber,
+      maxRetries: JUPITER_MAX_RETRIES,
+      isRetrying: false
+    }
+  } catch (error: unknown) {
+    throw new Error(
+      `Indirect swap failed at stage ${errorStage}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
+  }
+}
+
+// Helper function to execute the first transaction (InputToken -> AUDIO)
+const executeFirstTransaction = async (
+  params: SwapTokensParams,
+  dependencies: SwapDependencies,
+  tokens: Record<string, TokenInfo>
+): Promise<{
+  firstQuote: JupiterQuoteResult
+  signature: string
+  intermediateAudioAta: PublicKey
+}> => {
+  let errorStage = 'FIRST_TX_UNKNOWN'
+
+  try {
+    const { inputMint: inputMintUiAddress, amountUi } = params
     const wrapUnwrapSol = params.wrapUnwrapSol ?? true
 
-    const {
-      sdk,
-      keypair,
-      userPublicKey,
-      feePayer,
-      ethAddress,
-      queryClient,
-      user
-    } = dependencies
+    const { sdk, keypair, userPublicKey, feePayer, ethAddress } = dependencies
 
     const firstInstructions: TransactionInstruction[] = []
-    const secondInstructions: TransactionInstruction[] = []
 
-    // Validate tokens and create configs
-    errorStage = 'INDIRECT_SWAP_TOKEN_VALIDATION'
+    // Validate input token and create config
+    errorStage = 'FIRST_TX_TOKEN_VALIDATION'
     const tokenConfigsResult = validateAndCreateTokenConfigs(
       inputMintUiAddress,
-      outputMintUiAddress,
+      AUDIO_MINT, // Use AUDIO as output for validation
       tokens
     )
 
     if ('error' in tokenConfigsResult) {
-      return {
-        ...tokenConfigsResult.error,
-        errorStage
-      }
+      throw new Error(
+        `Token validation failed: ${tokenConfigsResult.error.error?.message}`
+      )
     }
 
-    const { inputTokenConfig, outputTokenConfig } = tokenConfigsResult
+    const { inputTokenConfig } = tokenConfigsResult
 
     // Create AUDIO token config for transfers
-    errorStage = 'INDIRECT_SWAP_AUDIO_CONFIG'
+    errorStage = 'FIRST_TX_AUDIO_CONFIG'
     const audioTokenInfo = createTokenConfig(
       findTokenByAddress(tokens, AUDIO_MINT)!
     )
 
     // Get first quote: InputToken -> AUDIO
-    errorStage = 'INDIRECT_SWAP_FIRST_QUOTE'
+    errorStage = 'FIRST_TX_QUOTE'
     const { quoteResult: firstQuote } = await getJupiterQuoteByMintWithRetry({
       inputMint: inputMintUiAddress,
       outputMint: AUDIO_MINT,
@@ -94,20 +282,8 @@ export const executeIndirectSwap = async (
       onlyDirectRoutes: false
     })
 
-    // Get second quote: AUDIO -> OutputToken
-    errorStage = 'INDIRECT_SWAP_SECOND_QUOTE'
-    const { quoteResult: secondQuote } = await getJupiterQuoteByMintWithRetry({
-      inputMint: AUDIO_MINT,
-      outputMint: outputMintUiAddress,
-      inputDecimals: AUDIO_DECIMALS,
-      outputDecimals: outputTokenConfig.decimals,
-      amountUi: firstQuote.outputAmount.uiAmount,
-      swapMode: 'ExactIn',
-      onlyDirectRoutes: false
-    })
-
     // Prepare input token for first swap
-    errorStage = 'INDIRECT_SWAP_PREPARE_FIRST_INPUT'
+    errorStage = 'FIRST_TX_PREPARE_INPUT'
     const sourceAtaForJupiter = await addTransferFromUserBankInstructions({
       tokenInfo: inputTokenConfig,
       userPublicKey,
@@ -118,8 +294,8 @@ export const executeIndirectSwap = async (
       instructions: firstInstructions
     })
 
-    // Get/create AUDIO user bank
-    errorStage = 'INDIRECT_SWAP_PREPARE_AUDIO_USER_BANK'
+    // Get/create AUDIO user bank (from commit 9557c2e)
+    errorStage = 'FIRST_TX_PREPARE_AUDIO_USER_BANK'
     const audioUserBankResult =
       await sdk.services.claimableTokensClient.getOrCreateUserBank({
         ethWallet: ethAddress,
@@ -128,7 +304,7 @@ export const executeIndirectSwap = async (
     const audioUserBank = audioUserBankResult.userBank
 
     // Get first swap instructions (InputToken -> AUDIO)
-    errorStage = 'INDIRECT_SWAP_FIRST_SWAP_INSTRUCTIONS'
+    errorStage = 'FIRST_TX_SWAP_INSTRUCTIONS'
     const firstSwapRequestParams: SwapRequest = {
       quoteResponse: firstQuote.quote,
       userPublicKey: userPublicKey.toBase58(),
@@ -147,7 +323,7 @@ export const executeIndirectSwap = async (
     firstInstructions.push(...firstSwapInstructions)
 
     // Cleanup source ATA after first swap
-    errorStage = 'INDIRECT_SWAP_FIRST_CLEANUP'
+    errorStage = 'FIRST_TX_CLEANUP'
     firstInstructions.push(
       createCloseAccountInstruction(
         sourceAtaForJupiter,
@@ -157,8 +333,8 @@ export const executeIndirectSwap = async (
     )
 
     // Build and send first transaction
-    errorStage = 'INDIRECT_SWAP_FIRST_TRANSACTION'
-    const firstTransactionSignature = await buildAndSendTransaction(
+    errorStage = 'FIRST_TX_BUILD_AND_SEND'
+    const signature = await buildAndSendTransaction(
       sdk,
       keypair,
       feePayer,
@@ -167,8 +343,70 @@ export const executeIndirectSwap = async (
       'confirmed'
     )
 
+    // Return audioUserBank as intermediateAudioAta for compatibility
+    return {
+      firstQuote,
+      signature,
+      intermediateAudioAta: audioUserBank
+    }
+  } catch (error: unknown) {
+    throw new Error(
+      `First transaction failed at stage ${errorStage}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
+  }
+}
+
+// Helper function to execute the second transaction (AUDIO -> OutputToken)
+const executeSecondTransaction = async (
+  params: SwapTokensParams,
+  dependencies: SwapDependencies,
+  tokens: Record<string, TokenInfo>,
+  secondQuote: JupiterQuoteResult
+): Promise<{
+  signature: string
+}> => {
+  let errorStage = 'SECOND_TX_UNKNOWN'
+
+  try {
+    const { outputMint: outputMintUiAddress } = params
+    const wrapUnwrapSol = params.wrapUnwrapSol ?? true
+
+    const {
+      sdk,
+      keypair,
+      userPublicKey,
+      feePayer,
+      ethAddress,
+      queryClient,
+      user
+    } = dependencies
+
+    const secondInstructions: TransactionInstruction[] = []
+
+    // Validate output token config
+    errorStage = 'SECOND_TX_TOKEN_VALIDATION'
+    const tokenConfigsResult = validateAndCreateTokenConfigs(
+      AUDIO_MINT, // Use AUDIO as input for validation
+      outputMintUiAddress,
+      tokens
+    )
+
+    if ('error' in tokenConfigsResult) {
+      throw new Error(
+        `Output token validation failed: ${tokenConfigsResult.error.error?.message}`
+      )
+    }
+
+    const { outputTokenConfig } = tokenConfigsResult
+
+    // Create AUDIO token config for transfers
+    errorStage = 'SECOND_TX_AUDIO_CONFIG'
+    const audioTokenInfo = createTokenConfig(
+      findTokenByAddress(tokens, AUDIO_MINT)!
+    )
+
     // Transfer AUDIO from user bank to ATA for second swap
-    errorStage = 'INDIRECT_SWAP_PREPARE_SECOND_INPUT'
+    errorStage = 'SECOND_TX_PREPARE_AUDIO_INPUT'
     const audioSourceAtaForJupiter = await addTransferFromUserBankInstructions({
       tokenInfo: audioTokenInfo,
       userPublicKey,
@@ -180,7 +418,7 @@ export const executeIndirectSwap = async (
     })
 
     // Prepare output destination
-    errorStage = 'INDIRECT_SWAP_PREPARE_SECOND_OUTPUT'
+    errorStage = 'SECOND_TX_PREPARE_OUTPUT'
     const preferredJupiterDestination = await prepareOutputUserBank(
       sdk,
       ethAddress!,
@@ -188,7 +426,7 @@ export const executeIndirectSwap = async (
     )
 
     // Get second swap instructions (AUDIO -> OutputToken)
-    errorStage = 'INDIRECT_SWAP_SECOND_SWAP_INSTRUCTIONS'
+    errorStage = 'SECOND_TX_SWAP_INSTRUCTIONS'
     const secondSwapRequestParams: SwapRequest = {
       quoteResponse: secondQuote.quote,
       userPublicKey: userPublicKey.toBase58(),
@@ -213,7 +451,7 @@ export const executeIndirectSwap = async (
     secondInstructions.push(...secondSwapInstructions)
 
     // Cleanup
-    errorStage = 'INDIRECT_SWAP_SECOND_CLEANUP'
+    errorStage = 'SECOND_TX_CLEANUP'
     const atasToClose: PublicKey[] = [audioSourceAtaForJupiter]
     if (outputAtaForJupiter) {
       atasToClose.push(outputAtaForJupiter)
@@ -226,7 +464,7 @@ export const executeIndirectSwap = async (
     }
 
     // Build and send second transaction
-    errorStage = 'INDIRECT_SWAP_SECOND_TRANSACTION'
+    errorStage = 'SECOND_TX_BUILD_AND_SEND'
     const signature = await buildAndSendTransaction(
       sdk,
       keypair,
@@ -236,26 +474,15 @@ export const executeIndirectSwap = async (
     )
 
     // Invalidate queries
-    errorStage = 'INDIRECT_SWAP_INVALIDATE_QUERIES'
+    errorStage = 'SECOND_TX_INVALIDATE_QUERIES'
     await invalidateSwapQueries(queryClient, user)
 
     return {
-      status: SwapStatus.SUCCESS,
-      signature,
-      inputAmount: firstQuote.inputAmount,
-      outputAmount: secondQuote.outputAmount,
-      firstTransactionSignature
+      signature
     }
   } catch (error: unknown) {
-    return {
-      status: SwapStatus.ERROR,
-      errorStage,
-      error: {
-        type: SwapErrorType.UNKNOWN,
-        message: `Indirect swap failed at stage ${errorStage}: ${error instanceof Error ? error.message : 'Unknown error'}`
-      },
-      inputAmount: undefined,
-      outputAmount: undefined
-    }
+    throw new Error(
+      `Second transaction failed at stage ${errorStage}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    )
   }
 }

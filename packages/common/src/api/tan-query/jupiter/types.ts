@@ -59,9 +59,29 @@ export type SwapTokensResult = {
     amount: number
     uiAmount: number
   }
+  retryCount?: number
+  isRetrying?: boolean
+  maxRetries?: number
 }
 
 export type ClaimableTokenMint = TokenName | PublicKey
+
+export type IndirectSwapState =
+  | 'PENDING_FIRST_TX'
+  | 'PENDING_SECOND_TX'
+  | 'COMPLETED'
+
+export type IndirectSwapContext = {
+  state: IndirectSwapState
+  firstTransactionSignature?: string
+  intermediateAudioAta?: string
+  actualAudioAmount?: {
+    amount: number
+    amountString: string
+    uiAmount: number
+    uiAmountString: string
+  }
+}
 
 export interface UserBankManagedTokenInfo {
   mintAddress: string
