@@ -4,10 +4,10 @@ import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { sanitizeNumericInput } from '@audius/common/utils'
+import { Flex, Text, TextInput, TextInputSize } from '@audius/harmony'
 
-import { Flex, Text, TextInput } from '@audius/harmony-native'
-
-import { TokenDropdownSelect } from './TokenDropdownSelect'
+import { StaticTokenDisplay } from './StaticTokenDisplay'
+import { TokenDropdown } from './TokenDropdown'
 
 type OutputTokenSectionProps = {
   tokenInfo: TokenInfo
@@ -22,6 +22,8 @@ type OutputTokenSectionProps = {
   onAmountChange?: (amount: string) => void
   onTokenChange?: (token: TokenInfo) => void
   availableTokens?: TokenInfo[]
+  isArtistCoinsEnabled?: boolean
+  hideTokenDisplay?: boolean
 }
 
 export const OutputTokenSection = ({
@@ -30,7 +32,10 @@ export const OutputTokenSection = ({
   placeholder = '0.00',
   error,
   onAmountChange,
-  availableTokens
+  availableTokens,
+  onTokenChange,
+  isArtistCoinsEnabled = true,
+  hideTokenDisplay = false
 }: OutputTokenSectionProps) => {
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
@@ -56,34 +61,43 @@ export const OutputTokenSection = ({
   )
 
   return (
-    <Flex column gap='s'>
-      <Flex row alignItems='center' gap='xs'>
-        <Text variant='title' size='l'>
-          {messages.youReceive}
-        </Text>
-      </Flex>
-      <Flex column alignItems='center' gap='s'>
-        <Flex flex={1}>
-          <TextInput
-            label={messages.amountInputLabel(symbol)}
-            hideLabel
-            placeholder={placeholder}
-            startAdornmentText={isStablecoin ? '$' : ''}
-            endAdornmentText={symbol}
-            value={localAmount}
-            onChangeText={handleTextChange}
-            keyboardType='numeric'
-            error={error}
-          />
-        </Flex>
-        {availableTokens && availableTokens.length > 0 && (
+    <Flex direction='column' gap='m'>
+      <Text variant='title' size='l' color='default'>
+        {messages.youReceive}
+      </Text>
+
+      <Flex direction='column' gap='s'>
+        <Flex alignItems='center' gap='s'>
           <Flex flex={1}>
-            <TokenDropdownSelect
-              selectedToken={tokenInfo}
-              navigationRoute='BaseTokenDropdownSelect'
+            <TextInput
+              label={messages.amountInputLabel(symbol)}
+              hideLabel
+              placeholder={placeholder}
+              startAdornmentText={isStablecoin ? '$' : ''}
+              endAdornmentText={symbol}
+              value={localAmount}
+              onChange={(e) => handleTextChange(e.target.value)}
+              type='number'
+              error={error}
+              size={TextInputSize.DEFAULT}
             />
           </Flex>
-        )}
+
+          {!hideTokenDisplay &&
+          availableTokens &&
+          availableTokens.length > 0 &&
+          isArtistCoinsEnabled ? (
+            <Flex css={{ minWidth: '60px' }}>
+              <TokenDropdown
+                selectedToken={tokenInfo}
+                availableTokens={availableTokens}
+                onTokenChange={onTokenChange || (() => {})}
+              />
+            </Flex>
+          ) : !hideTokenDisplay ? (
+            <StaticTokenDisplay tokenInfo={tokenInfo} />
+          ) : null}
+        </Flex>
       </Flex>
     </Flex>
   )

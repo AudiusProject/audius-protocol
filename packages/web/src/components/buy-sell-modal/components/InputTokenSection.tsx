@@ -5,13 +5,20 @@ import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
 import { sanitizeNumericInput } from '@audius/common/utils'
+import {
+  Button,
+  Flex,
+  Text,
+  TextInput,
+  IconInfo,
+  TextInputSize
+} from '@audius/harmony'
 
-import { Button, Flex, Text, TextInput, useTheme } from '@audius/harmony-native'
+import { Tooltip } from 'components/tooltip'
 
-import { TokenIcon } from '../core'
+import { TokenIcon } from '../TokenIcon'
 
-import { TokenDropdownSelect } from './TokenDropdownSelect'
-import { TooltipInfoIcon } from './TooltipInfoIcon'
+import { TokenDropdown } from './TokenDropdown'
 
 type InputTokenSectionProps = {
   title: string
@@ -28,6 +35,7 @@ type InputTokenSectionProps = {
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
   availableTokens?: TokenInfo[]
+  onTokenChange?: (token: TokenInfo) => void
 }
 
 export const InputTokenSection = ({
@@ -41,12 +49,9 @@ export const InputTokenSection = ({
   placeholder = '0.00',
   error,
   errorMessage,
-  availableTokens
+  availableTokens,
+  onTokenChange
 }: InputTokenSectionProps) => {
-  const { logoURI } = tokenInfo
-  const { iconSizes } = useTheme()
-  const iconSize = iconSizes.s
-  const { spacing } = useTheme()
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
 
@@ -59,11 +64,11 @@ export const InputTokenSection = ({
     placeholder
   })
 
-  const displayTokenDropdown = availableTokens && availableTokens.length > 0
+  const shouldDisplayTokenDropdown = availableTokens?.length
 
   // Sync local state with prop changes
   useEffect(() => {
-    setLocalAmount(amount || '')
+    setLocalAmount(amount ?? '')
   }, [amount])
 
   const debouncedOnAmountChange = useDebouncedCallback(
@@ -82,40 +87,36 @@ export const InputTokenSection = ({
   )
 
   return (
-    <Flex column gap='s'>
-      <Flex row justifyContent='space-between' alignItems='flex-start'>
-        <Flex row alignItems='center' gap='xs'>
-          <Text variant='title' size='l'>
-            {title}
-          </Text>
-        </Flex>
+    <Flex direction='column' gap='m'>
+      <Flex justifyContent='space-between' alignItems='center'>
+        <Text variant='title' size='l' color='default'>
+          {title}
+        </Text>
 
         {formattedAvailableBalance ? (
-          <Flex row alignItems='center' justifyContent='center' gap='xs'>
-            <TokenIcon logoURI={logoURI} size={iconSize} />
-            <Text strength='strong'>
+          <Flex alignItems='center' gap='xs'>
+            <TokenIcon
+              logoURI={tokenInfo.logoURI}
+              icon={tokenInfo.icon}
+              size='s'
+              hex
+            />
+            <Text variant='body' size='m' strength='strong'>
               {messages.formattedAvailableBalance(
                 formattedAvailableBalance,
                 symbol,
                 !!isStablecoin
               )}
             </Text>
-            <TooltipInfoIcon />
+            <Tooltip text={messages.availableBalanceTooltip}>
+              <IconInfo color='subdued' size='s' />
+            </Tooltip>
           </Flex>
         ) : null}
       </Flex>
 
-      <Flex row alignItems='center' gap='s'>
-        {displayTokenDropdown ? (
-          <Flex flex={1}>
-            <TokenDropdownSelect
-              selectedToken={tokenInfo}
-              navigationRoute='BaseTokenDropdownSelect'
-            />
-          </Flex>
-        ) : null}
-
-        {!displayTokenDropdown ? (
+      <Flex direction='column' gap='s'>
+        <Flex alignItems='center' gap='s'>
           <Flex flex={1}>
             <TextInput
               label={messages.amountInputLabel(symbol)}
@@ -124,45 +125,36 @@ export const InputTokenSection = ({
               startAdornmentText={isStablecoin ? '$' : ''}
               endAdornmentText={symbol}
               value={localAmount}
-              onChangeText={handleTextChange}
-              keyboardType='numeric'
+              onChange={(e) => handleTextChange(e.target.value)}
+              type='number'
               error={error}
+              size={TextInputSize.DEFAULT}
             />
           </Flex>
-        ) : null}
 
-        {onMaxClick ? (
-          <Button
-            variant='secondary'
-            onPress={onMaxClick}
-            style={{ height: spacing.unit16 }}
-          >
-            {messages.max}
-          </Button>
+          {shouldDisplayTokenDropdown ? (
+            <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
+              <TokenDropdown
+                selectedToken={tokenInfo}
+                availableTokens={availableTokens}
+                onTokenChange={onTokenChange}
+              />
+            </Flex>
+          ) : null}
+
+          {onMaxClick ? (
+            <Button variant='secondary' size='large' onClick={onMaxClick}>
+              {messages.max}
+            </Button>
+          ) : null}
+        </Flex>
+
+        {errorMessage ? (
+          <Text variant='body' size='s' color='danger'>
+            {errorMessage}
+          </Text>
         ) : null}
       </Flex>
-
-      {displayTokenDropdown ? (
-        <Flex flex={1}>
-          <TextInput
-            label={messages.amountInputLabel(symbol)}
-            hideLabel
-            placeholder={placeholder}
-            startAdornmentText={isStablecoin ? '$' : ''}
-            endAdornmentText={symbol}
-            value={localAmount}
-            onChangeText={handleTextChange}
-            keyboardType='numeric'
-            error={error}
-          />
-        </Flex>
-      ) : null}
-
-      {errorMessage && (
-        <Text variant='body' size='s' color='danger'>
-          {errorMessage}
-        </Text>
-      )}
     </Flex>
   )
 }
