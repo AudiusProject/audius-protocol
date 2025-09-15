@@ -69,6 +69,8 @@ export interface GetCoinsRequest {
     query?: string;
     offset?: number;
     limit?: number;
+    sortMethod?: GetCoinsSortMethodEnum;
+    sortDirection?: GetCoinsSortDirectionEnum;
 }
 
 /**
@@ -285,6 +287,14 @@ export class CoinsApi extends runtime.BaseAPI {
             queryParameters['limit'] = params.limit;
         }
 
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -315,3 +325,22 @@ export const GetCoinMembersSortDirectionEnum = {
     Desc: 'desc'
 } as const;
 export type GetCoinMembersSortDirectionEnum = typeof GetCoinMembersSortDirectionEnum[keyof typeof GetCoinMembersSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetCoinsSortMethodEnum = {
+    MarketCap: 'market_cap',
+    Volume: 'volume',
+    Price: 'price',
+    CreatedAt: 'created_at',
+    Holder: 'holder'
+} as const;
+export type GetCoinsSortMethodEnum = typeof GetCoinsSortMethodEnum[keyof typeof GetCoinsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetCoinsSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetCoinsSortDirectionEnum = typeof GetCoinsSortDirectionEnum[keyof typeof GetCoinsSortDirectionEnum];

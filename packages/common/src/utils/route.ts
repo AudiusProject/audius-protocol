@@ -215,6 +215,11 @@ export const AUDIUS_API_LINK = 'https://audius.org/api'
 export const AUDIUS_TOKENS_HELP_LINK =
   'https://support.audius.co/product/tokens'
 
+// Dexscreener Links
+export const DEXSCREENER_BASE_URL = 'https://dexscreener.com/solana'
+export const dexscreenerUrl = (mint: string) =>
+  `${DEXSCREENER_BASE_URL}/${mint}`
+
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,

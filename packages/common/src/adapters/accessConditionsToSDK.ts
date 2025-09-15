@@ -10,6 +10,7 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
+  isContentTokenGated,
   isContentUSDCPurchaseGated
 } from '~/models'
 
@@ -28,6 +29,13 @@ export const accessConditionsToSDK = (
   } else if (isContentUSDCPurchaseGated(input)) {
     return {
       usdcPurchase: input.usdc_purchase
+    }
+  } else if (isContentTokenGated(input)) {
+    return {
+      tokenGate: {
+        tokenMint: input.token_gate.token_mint,
+        tokenAmount: input.token_gate.token_amount
+      }
     }
   } else if (isContentTipGated(input)) {
     return {

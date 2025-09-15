@@ -56,5 +56,10 @@ export const coinDetailsMessages = {
       walletRemoved: 'Wallet removed successfully!',
       error: 'Error removing wallet'
     }
+  },
+  overflowMenu: {
+    copyCoinAddress: 'Copy Coin Address',
+    openDexscreener: 'Open Dexscreener',
+    copiedToClipboard: 'Copied Coin Address To Clipboard!'
   }
 }

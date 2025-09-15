@@ -6,6 +6,8 @@ import { Flex, IconSortDown, IconSortUp, Paper, Text } from '@audius/harmony'
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
 
+import { AssetInsightsOverflowMenu } from './AssetInsightsOverflowMenu'
+
 const messages = coinDetailsMessages.coinInsights
 
 const AssetInsightsSkeleton = () => {
@@ -158,10 +160,18 @@ export const AssetInsights = ({ mint }: AssetInsightsProps) => {
       borderRadius='m'
       border='default'
     >
-      <Flex direction='row' alignItems='center' gap='xs' pv='m' ph='l' w='100%'>
+      <Flex
+        direction='row'
+        alignItems='center'
+        justifyContent='space-between'
+        pv='m'
+        ph='l'
+        w='100%'
+      >
         <Text variant='heading' size='s' color='heading'>
           {messages.title}
         </Text>
+        <AssetInsightsOverflowMenu mint={mint} />
       </Flex>
 
       {metrics.map((metric) => (

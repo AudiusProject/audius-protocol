@@ -29,9 +29,9 @@ models/ClaimRewardsRequest.ts
 models/ClaimRewardsResponse.ts
 models/ClaimRewardsResponseDataInner.ts
 models/Coin.ts
+models/CoinDynamicBondingCurve.ts
+models/CoinExtensions.ts
 models/CoinInsights.ts
-models/CoinInsightsDynamicBondingCurve.ts
-models/CoinInsightsExtensions.ts
 models/CoinInsightsResponse.ts
 models/CoinMember.ts
 models/CoinMembersResponse.ts
@@ -64,6 +64,7 @@ models/EventsResponse.ts
 models/ExtendedAccessGate.ts
 models/ExtendedPaymentSplit.ts
 models/ExtendedPurchaseGate.ts
+models/ExtendedTokenGate.ts
 models/ExtendedUsdcGate.ts
 models/Favorite.ts
 models/FavoritesResponse.ts
@@ -109,6 +110,7 @@ models/Supporting.ts
 models/TagsResponse.ts
 models/Tip.ts
 models/TipGate.ts
+models/TokenGate.ts
 models/TopListener.ts
 models/Track.ts
 models/TrackAccessInfo.ts

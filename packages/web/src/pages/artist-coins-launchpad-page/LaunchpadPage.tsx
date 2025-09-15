@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
+import {
+  ConnectedWallet,
+  useConnectedWallets,
+  useCurrentAccountUser
+} from '@audius/common/api'
+import { Chain } from '@audius/common/models'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { IconArtistCoin } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
-import { Formik, useFormikContext } from 'formik'
+import { Form, Formik, useFormikContext } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { appkitModal } from 'app/ReownAppKitModal'
@@ -13,10 +20,12 @@ import {
   useConnectAndAssociateWallets,
   AlreadyAssociatedError
 } from 'hooks/useConnectAndAssociateWallets'
+import { useLaunchCoin } from 'hooks/useLaunchCoin'
 
-import { BuyCoinPage, ReviewPage, SetupPage, SplashScreen } from './components'
+import { LaunchpadModal } from './components/LaunchpadModal'
 import type { SetupFormValues } from './components/types'
-import { Phase } from './constants'
+import { LAUNCHPAD_COIN_DESCRIPTION, Phase, SOLANA_DECIMALS } from './constants'
+import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { setupFormSchema } from './validation'
 
 const messages = {
@@ -81,11 +90,6 @@ const LaunchpadPageContent = () => {
     setPhase(Phase.SETUP)
   }
 
-  const handleBuyCoinContinue = () => {
-    // This should submit the form as requested
-    alert('Coin created successfully!')
-  }
-
   const handleBuyCoinBack = () => {
     setPhase(Phase.REVIEW)
   }
@@ -93,7 +97,7 @@ const LaunchpadPageContent = () => {
   const renderCurrentPage = () => {
     switch (phase) {
       case Phase.SPLASH:
-        return <SplashScreen onContinue={handleSplashContinue} />
+        return <SplashPage onContinue={handleSplashContinue} />
       case Phase.SETUP:
         return (
           <SetupPage
@@ -109,14 +113,9 @@ const LaunchpadPageContent = () => {
           />
         )
       case Phase.BUY_COIN:
-        return (
-          <BuyCoinPage
-            onContinue={handleBuyCoinContinue}
-            onBack={handleBuyCoinBack}
-          />
-        )
+        return <BuyCoinPage onBack={handleBuyCoinBack} />
       default:
-        return <SplashScreen onContinue={handleSplashContinue} />
+        return <SplashPage onContinue={handleSplashContinue} />
     }
   }
 
@@ -132,6 +131,56 @@ const LaunchpadPageContent = () => {
 }
 
 export const LaunchpadPage = () => {
+  const {
+    mutate: launchCoin,
+    isPending,
+    isSuccess,
+    data: launchCoinResponse,
+    isError
+  } = useLaunchCoin()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { data: user } = useCurrentAccountUser()
+  const { data: connectedWallets } = useConnectedWallets()
+
+  // Get the most recent connected Solana wallet (last in the array)
+  // Filter to only Solana wallets since only SOL wallets can be connected
+  const connectedWallet: ConnectedWallet | undefined = useMemo(
+    () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
+    [connectedWallets]
+  )
+
+  const handleSubmit = useCallback(
+    (formValues: SetupFormValues) => {
+      setIsModalOpen(true)
+      if (!user) {
+        throw new Error('No current user found for unknown reason')
+      }
+      if (!connectedWallet) {
+        throw new Error('No connected wallet found')
+      }
+      const payAmountLamports = formValues.payAmount
+        ? Number(
+            new FixedDecimal(formValues.payAmount, SOLANA_DECIMALS).trunc(
+              SOLANA_DECIMALS
+            ).value
+          )
+        : undefined
+      launchCoin({
+        userId: user.user_id,
+        name: formValues.coinName,
+        symbol: formValues.coinSymbol,
+        image: formValues.coinImage!,
+        description: LAUNCHPAD_COIN_DESCRIPTION(
+          user.handle,
+          formValues.coinSymbol
+        ),
+        walletPublicKey: connectedWallet.address,
+        initialBuyAmountSolLamports: payAmountLamports
+      })
+    },
+    [launchCoin, user, connectedWallet]
+  )
+
   return (
     <Formik
       initialValues={{
@@ -144,19 +193,20 @@ export const LaunchpadPage = () => {
       validationSchema={toFormikValidationSchema(setupFormSchema)}
       validateOnMount={true}
       validateOnChange={true}
-      onSubmit={(_values: SetupFormValues) => {
-        // Convert coin symbol to uppercase before submission
-        // TODO: Use the processed values in actual submission logic
-        // const finalValues = {
-        //   ...values,
-        //   coinSymbol: values.coinSymbol.toUpperCase()
-        // }
-
-        // For now, this represents completing the entire flow
-        alert('Coin created successfully!') // Temporary success indicator
-      }}
+      onSubmit={handleSubmit}
     >
-      <LaunchpadPageContent />
+      <Form>
+        <LaunchpadModal
+          isPending={isPending}
+          isSuccess={isSuccess}
+          isError={isError}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          mintAddress={launchCoinResponse?.newMint}
+          logoUri={launchCoinResponse?.logoUri}
+        />
+        <LaunchpadPageContent />
+      </Form>
     </Formik>
   )
 }

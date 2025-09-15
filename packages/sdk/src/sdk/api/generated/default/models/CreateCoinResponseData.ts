@@ -51,6 +51,12 @@ export interface CreateCoinResponseData {
      */
     name: string;
     /**
+     * The URI for the coin's logo image
+     * @type {string}
+     * @memberof CreateCoinResponseData
+     */
+    logoUri?: string;
+    /**
      * The date and time when the coin was created
      * @type {Date}
      * @memberof CreateCoinResponseData
@@ -88,6 +94,7 @@ export function CreateCoinResponseDataFromJSONTyped(json: any, ignoreDiscriminat
         'userId': json['user_id'],
         'decimals': json['decimals'],
         'name': json['name'],
+        'logoUri': !exists(json, 'logo_uri') ? undefined : json['logo_uri'],
         'createdAt': (new Date(json['created_at'])),
     };
 }
@@ -106,6 +113,7 @@ export function CreateCoinResponseDataToJSON(value?: CreateCoinResponseData | nu
         'user_id': value.userId,
         'decimals': value.decimals,
         'name': value.name,
+        'logo_uri': value.logoUri,
         'created_at': (value.createdAt.toISOString()),
     };
 }

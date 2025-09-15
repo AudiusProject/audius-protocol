@@ -44,6 +44,18 @@ export interface CreateCoinRequest {
      * @memberof CreateCoinRequest
      */
     name: string;
+    /**
+     * The URI for the coin's logo image
+     * @type {string}
+     * @memberof CreateCoinRequest
+     */
+    logoUri?: string;
+    /**
+     * The description of the coin
+     * @type {string}
+     * @memberof CreateCoinRequest
+     */
+    description?: string;
 }
 
 /**
@@ -73,6 +85,8 @@ export function CreateCoinRequestFromJSONTyped(json: any, ignoreDiscriminator: b
         'ticker': json['ticker'],
         'decimals': json['decimals'],
         'name': json['name'],
+        'logoUri': !exists(json, 'logo_uri') ? undefined : json['logo_uri'],
+        'description': !exists(json, 'description') ? undefined : json['description'],
     };
 }
 
@@ -89,6 +103,8 @@ export function CreateCoinRequestToJSON(value?: CreateCoinRequest | null): any {
         'ticker': value.ticker,
         'decimals': value.decimals,
         'name': value.name,
+        'logo_uri': value.logoUri,
+        'description': value.description,
     };
 }
 

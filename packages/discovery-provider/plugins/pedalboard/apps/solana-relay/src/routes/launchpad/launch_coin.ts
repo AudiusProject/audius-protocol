@@ -1,4 +1,10 @@
 import {
+  createJupiterApiClient,
+  SwapRequest,
+  QuoteResponse,
+  SwapApi as JupiterApi
+} from '@jup-ag/api'
+import {
   createGenericFile,
   signerIdentity,
   createSignerFromKeypair
@@ -14,19 +20,55 @@ import { config } from '../../config'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
-import { isSolanaAddress } from '~/utils/addressUtils'
-
 interface LaunchCoinRequestBody {
   name: string
   symbol: string
   walletPublicKey: string
   description: string
-  initialBuyAmountAudio?: number
+  initialBuyAmountSolLamports?: number
 }
 
-const AUDIO_DECIMALS = 1e8
+const SOL_MINT = 'So11111111111111111111111111111111111111112'
+const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 
 const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
+
+const createSolToAudioTx = async (
+  jupiterApi: JupiterApi,
+  quote: QuoteResponse,
+  userPublicKey: PublicKey
+): Promise<string> => {
+  try {
+    const swapRequest: SwapRequest = {
+      quoteResponse: quote,
+      userPublicKey: userPublicKey.toBase58(),
+      wrapAndUnwrapSol: true,
+      dynamicSlippage: true, // Uses the slippage from the quote
+      useSharedAccounts: true
+    }
+
+    const swapResponse = await jupiterApi.swapPost({ swapRequest })
+
+    return swapResponse.swapTransaction
+  } catch (error) {
+    logger.error('Error creating Jupiter swap transaction:', error)
+    throw new Error(`Failed to create Jupiter swap transaction: ${error}`)
+  }
+}
+
+const getsolToAudioQuote = async (
+  jupiterApi: JupiterApi,
+  initialBuyAmountSolLamports: number
+) => {
+  return await jupiterApi.quoteGet({
+    inputMint: SOL_MINT,
+    outputMint: AUDIO_MINT,
+    amount: initialBuyAmountSolLamports,
+    swapMode: 'ExactIn',
+    onlyDirectRoutes: false,
+    dynamicSlippage: true
+  })
+}
 
 export const launchCoin = async (
   req: Request<unknown, unknown, LaunchCoinRequestBody> & {
@@ -42,7 +84,7 @@ export const launchCoin = async (
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountAudio
+      initialBuyAmountSolLamports
     } = req.body
 
     // file is the image attached via multer middleware (sent from client as a multipart/form-data request)
@@ -64,19 +106,22 @@ export const launchCoin = async (
     }
 
     if (
-      typeof initialBuyAmountAudio !== 'number' ||
-      initialBuyAmountAudio <= 0 ||
-      isNaN(initialBuyAmountAudio)
+      initialBuyAmountSolLamports !== undefined &&
+      initialBuyAmountSolLamports <= 0
     ) {
       throw new Error(
-        'Invalid initialBuyAmountAudio. Initial buy amount must be a number > 0.'
+        `Invalid initialBuyAmountSol. Initial buy amount must be a number > 0. Received: ${initialBuyAmountSolLamports}`
       )
     }
 
     const walletPublicKey = new PublicKey(walletPublicKeyStr)
 
+    // Initialize Jupiter API client
+    const jupiterApi = createJupiterApiClient()
+
     // TODO: get specific addresses with AUDIO in the name
     const mintKeypair = Keypair.generate()
+    const mintPublicKey = mintKeypair.publicKey
 
     const connection = getConnection()
     const dbcClient = new DynamicBondingCurveClient(connection, 'confirmed')
@@ -106,7 +151,16 @@ export const launchCoin = async (
     }
     const metadataUri = await umi.uploader.uploadJson(metadata)
 
-    // Create Bonding Curve
+    // If using initial buy, get a quote for the swap from SOL -> AUDIO
+    let solToAudioQuote: QuoteResponse | undefined
+    if (initialBuyAmountSolLamports) {
+      solToAudioQuote = await getsolToAudioQuote(
+        jupiterApi,
+        initialBuyAmountSolLamports
+      )
+    }
+
+    // Set up our pool
     const poolConfig = await dbcClient.pool.createPoolWithFirstBuy({
       createPoolParam: {
         config: new PublicKey(configKey),
@@ -114,29 +168,72 @@ export const launchCoin = async (
         symbol,
         uri: metadataUri,
         poolCreator: walletPublicKey,
-        baseMint: mintKeypair.publicKey,
+        baseMint: mintPublicKey,
         payer: walletPublicKey
       },
-      firstBuyParam: initialBuyAmountAudio
-        ? {
-            buyer: walletPublicKey,
-            receiver: walletPublicKey,
-            buyAmount: new BN(initialBuyAmountAudio * AUDIO_DECIMALS), // Multiply by 1 $AUDIO worth
-            minimumAmountOut: new BN(0), // No slippage protection for initial buy
-            referralTokenAccount: null // No referral for creator's initial buy
-          }
-        : undefined
+      firstBuyParam:
+        initialBuyAmountSolLamports && solToAudioQuote
+          ? {
+              buyer: walletPublicKey,
+              receiver: walletPublicKey,
+              buyAmount: new BN(solToAudioQuote.outAmount), // Should already be formatted with correct decimals
+              minimumAmountOut: new BN(0), // No slippage protection for initial buy
+              referralTokenAccount: null // No referral for creator's initial buy
+            }
+          : undefined
     })
 
+    /*
+     * Prepare the transactions to be signed by the client
+     */
+
+    // Create pool transaction
+    const createPoolTx = poolConfig.createPoolTx
+    createPoolTx.feePayer = walletPublicKey
+    createPoolTx.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash
+    // We need to partial sign with the mint keypair that's only accessible here
+    // The client does the final signing with the wallet keypair & will send/confirm the transactions
+    createPoolTx.partialSign(mintKeypair)
+
+    // First buy transaction
+    const firstBuyTx = poolConfig.swapBuyTx
+    let solToAudioTxSerialized: string | undefined
+    if (firstBuyTx) {
+      firstBuyTx.feePayer = walletPublicKey
+      firstBuyTx.recentBlockhash = (
+        await connection.getLatestBlockhash()
+      ).blockhash
+
+      // Create a transaction for the sol-audio swap
+      if (solToAudioQuote && initialBuyAmountSolLamports) {
+        solToAudioTxSerialized = await createSolToAudioTx(
+          jupiterApi,
+          solToAudioQuote,
+          walletPublicKey
+        )
+      }
+    }
+
     return res.status(200).send({
-      mintPublicKey: mintKeypair.publicKey.toBase58(),
-      createPoolTx: poolConfig.createPoolTx,
-      firstBuyTx: poolConfig.swapBuyTx,
+      mintPublicKey: mintPublicKey.toBase58(),
+      imageUri,
+      solToAudioQuote,
+      createPoolTx: Buffer.from(
+        createPoolTx.serialize({ requireAllSignatures: false })
+      ).toString('base64'),
+      firstBuyTx: firstBuyTx
+        ? Buffer.from(
+            firstBuyTx.serialize({ requireAllSignatures: false })
+          ).toString('base64')
+        : undefined,
+      solToAudioTx: solToAudioTxSerialized,
       metadataUri
     })
   } catch (e) {
     logger.error('Error creating coin for launchpad')
     logger.error(e)
-    res.status(500).send({ error: (e as Error).message })
+    res.status(500).send()
   }
 }
