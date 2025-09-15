@@ -20,6 +20,8 @@ import { config } from '../../config'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
+import { AUDIO_MINT, SOL_MINT } from './constants'
+
 interface LaunchCoinRequestBody {
   name: string
   symbol: string
@@ -27,9 +29,6 @@ interface LaunchCoinRequestBody {
   description: string
   initialBuyAmountSolLamports?: number
 }
-
-const SOL_MINT = 'So11111111111111111111111111111111111111112'
-const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 
 const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
 
@@ -56,7 +55,7 @@ const createSolToAudioTx = async (
   }
 }
 
-const getsolToAudioQuote = async (
+const getSolToAudioQuote = async (
   jupiterApi: JupiterApi,
   initialBuyAmountSolLamports: number
 ) => {
@@ -154,7 +153,7 @@ export const launchCoin = async (
     // If using initial buy, get a quote for the swap from SOL -> AUDIO
     let solToAudioQuote: QuoteResponse | undefined
     if (initialBuyAmountSolLamports) {
-      solToAudioQuote = await getsolToAudioQuote(
+      solToAudioQuote = await getSolToAudioQuote(
         jupiterApi,
         initialBuyAmountSolLamports
       )

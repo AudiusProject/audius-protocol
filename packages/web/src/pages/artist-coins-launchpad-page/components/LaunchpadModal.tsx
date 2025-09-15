@@ -134,7 +134,7 @@ const SuccessState = ({
                         {amountUi}
                       </Text>
                       <Text variant='body' size='s' color='subdued'>
-                        {ticker}
+                        ${ticker}
                       </Text>
                     </Flex>
                     <Text variant='body' size='s' color='default'>

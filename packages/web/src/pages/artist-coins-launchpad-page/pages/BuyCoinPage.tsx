@@ -1,8 +1,10 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 
 import { useConnectedWallets, type ConnectedWallet } from '@audius/common/api'
+import { useDebouncedCallback } from '@audius/common/hooks'
 import { Chain } from '@audius/common/models'
-import { shortenSPLAddress } from '@audius/common/utils'
+import { formatNumberCommas, shortenSPLAddress } from '@audius/common/utils'
+import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
   Flex,
@@ -15,10 +17,16 @@ import {
 import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
+import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import type { PhasePageProps, SetupFormValues } from '../components/types'
-import { AMOUNT_OF_STEPS } from '../constants'
+import {
+  AMOUNT_OF_STEPS,
+  SOLANA_DECIMALS,
+  TOKEN_DECIMALS,
+  USDC_DECIMALS
+} from '../constants'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
@@ -30,9 +38,9 @@ const messages = {
   youReceive: 'You Receive',
   connectedWallet: 'Connected Wallet',
   rate: 'Rate',
-  rateValue: '1 $AUDIO ≈ 0.302183',
-  valueInUSDC: 'Value in USDC',
-  usdcValue: '$45.56',
+  rateValue: (exchangeRate: number) =>
+    `1 SOL ≈ ${formatNumberCommas(exchangeRate.toFixed(0))}`,
+  valueInUSDC: 'Value',
   hintMessage:
     "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
   back: 'Back'
@@ -41,6 +49,7 @@ const messages = {
 export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue } = useFormikContext<SetupFormValues>()
+  const [usdcQuoteValue, setUsdcQuoteValue] = useState<string | null>(null)
   const imageUrl = useFormImageUrl(values.coinImage)
 
   const { data: connectedWallets } = useConnectedWallets()
@@ -65,14 +74,61 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     onContinue?.()
   }
 
-  const handlePayAmountChange = (value: string, _valueBigInt: bigint) => {
-    setFieldValue('payAmount', value)
-    // Calculate receive amount based on exchange rate
-    // For now, using mock calculation
-    const payValue = parseFloat(value) ?? 0
-    const calculatedReceive = payValue * 0.302183
-    setFieldValue('receiveAmount', calculatedReceive.toFixed(6))
-  }
+  // Debounced function to call the SDK getFirstBuyQuote method
+  const debouncedGetFirstBuyQuote = useDebouncedCallback(
+    async (payValue: number) => {
+      if (payValue > 0) {
+        try {
+          const sdk = await audiusSdk()
+          const solAmountLamports = Number(
+            new FixedDecimal(payValue, SOLANA_DECIMALS).trunc(SOLANA_DECIMALS)
+              .value
+          )
+          const firstBuyQuoteRes =
+            await sdk.services.solanaRelay.getFirstBuyQuote(solAmountLamports)
+
+          const usdcAmountFD = new FixedDecimal(
+            BigInt(firstBuyQuoteRes.usdcInputAmount),
+            USDC_DECIMALS
+          )
+          const usdcAmountUiString = usdcAmountFD.toLocaleString('en-US', {
+            maximumFractionDigits: 2,
+            roundingMode: 'trunc'
+          })
+          setUsdcQuoteValue(usdcAmountUiString)
+
+          // The value is returned in bigint format, we need to format it to a user friendly format using FixedDecimal
+          const tokenAmountFD = new FixedDecimal(
+            BigInt(firstBuyQuoteRes.tokenOutputAmount),
+            TOKEN_DECIMALS
+          )
+          const tokenAmountUiString = tokenAmountFD.toLocaleString('en-US', {
+            maximumFractionDigits: 0,
+            roundingMode: 'trunc'
+          })
+
+          setFieldValue('receiveAmount', tokenAmountUiString)
+        } catch (error) {
+          console.error('Error getting first buy quote:', error)
+        }
+      } else {
+        setFieldValue('receiveAmount', undefined)
+      }
+    },
+    [setFieldValue],
+    300
+  )
+
+  const handlePayAmountChange = useCallback(
+    async (value: string, _valueBigInt: bigint) => {
+      setFieldValue('payAmount', value)
+      const payValue = parseFloat(value) ?? 0
+
+      // Call debounced API function
+      debouncedGetFirstBuyQuote(payValue)
+    },
+    [setFieldValue, debouncedGetFirstBuyQuote]
+  )
 
   const handleReceiveAmountChange = (value: string, _valueBigInt: bigint) => {
     setFieldValue('receiveAmount', value)
@@ -208,24 +264,14 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               />
             </Flex>
 
-            {/* Exchange Rate Info */}
-            <Flex alignItems='center' justifyContent='space-between' w='100%'>
-              <Flex alignItems='center' gap='xs'>
-                <Text variant='body' size='m' color='subdued'>
-                  {messages.rate}
-                </Text>
-                <Text variant='body' size='m' color='default'>
-                  {messages.rateValue} ${values.coinSymbol.toUpperCase()}
-                </Text>
-              </Flex>
-              <Flex alignItems='center' gap='xs'>
-                <Text variant='body' size='m' color='subdued'>
-                  {messages.valueInUSDC}
-                </Text>
-                <Text variant='body' size='m' color='default'>
-                  {messages.usdcValue}
-                </Text>
-              </Flex>
+            {/* USDC Value quote */}
+            <Flex w='100%' alignItems='center' gap='xs'>
+              <Text variant='body' size='m' color='subdued'>
+                {messages.valueInUSDC}
+              </Text>
+              <Text variant='body' size='m' color='default'>
+                ${usdcQuoteValue ?? '0.00'}
+              </Text>
             </Flex>
           </Flex>
 
