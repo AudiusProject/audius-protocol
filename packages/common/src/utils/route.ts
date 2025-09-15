@@ -74,6 +74,7 @@ export const WALLET_PAGE = '/wallet'
 export const WALLET_GUIDE_PAGE = '/wallet/guide'
 export const ALL_COINS_PAGE = '/wallet/coins'
 export const COINS_CREATE_PAGE = '/coins/create'
+export const COINS_EXPLORE_PAGE = '/coins/explore'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
@@ -239,6 +240,7 @@ export const authenticatedRoutes = [
   WITHDRAWALS_PAGE,
   ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
+  COINS_EXPLORE_PAGE,
   WALLET_GUIDE_PAGE
 ]
 

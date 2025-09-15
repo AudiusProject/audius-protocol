@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 
 import { buySellMessages } from '@audius/common/messages'
 import { TokenInfo, useTokenSwapForm, BuySellTab } from '@audius/common/store'
@@ -41,6 +41,7 @@ export type SwapTabProps = {
   outputIsDefault?: boolean
   tab?: BuySellTab
   onChangeSwapDirection?: () => void
+  initialTicker?: string
 } & TokenPricing &
   UIConfiguration &
   InputConfiguration &
@@ -70,8 +71,22 @@ export const SwapTab = ({
   onInputTokenChange,
   onOutputTokenChange,
   outputBalance,
-  onChangeSwapDirection
+  onChangeSwapDirection,
+  initialTicker
 }: SwapTabProps) => {
+  // If initialTicker is provided, try to find the token and use it as the output token
+  const resolvedOutputToken = useMemo(() => {
+    if (initialTicker && availableOutputTokens) {
+      const tokenByTicker = availableOutputTokens.find(
+        (token) => token.symbol === initialTicker
+      )
+      if (tokenByTicker) {
+        return tokenByTicker
+      }
+    }
+    return outputToken
+  }, [initialTicker, availableOutputTokens, outputToken])
+
   const {
     formik,
     inputAmount,
@@ -85,7 +100,7 @@ export const SwapTab = ({
     handleMaxClick
   } = useTokenSwapForm({
     inputToken,
-    outputToken,
+    outputToken: resolvedOutputToken,
     min,
     max,
     onTransactionDataChange,
@@ -149,7 +164,7 @@ export const SwapTab = ({
 
               <TokenAmountSection
                 title={messages.youReceive}
-                tokenInfo={outputToken}
+                tokenInfo={resolvedOutputToken}
                 isInput={false}
                 amount={outputAmount}
                 availableBalance={outputBalance ?? 0}
@@ -178,7 +193,7 @@ export const SwapTab = ({
                   <Text variant='body' size='s' color='default'>
                     {messages.exchangeRateValue(
                       inputToken.symbol,
-                      outputToken.symbol,
+                      resolvedOutputToken.symbol,
                       displayExchangeRate
                     )}
                   </Text>

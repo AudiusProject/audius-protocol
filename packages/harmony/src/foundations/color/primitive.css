@@ -54,6 +54,12 @@
   --harmony-gradient-color-1: #5b23e1ff;
   --harmony-gradient-color-2: #a22febff;
   --harmony-gradient: linear-gradient(315deg, #5b23e1ff 0%, #a22febff 100%);
+  --harmony-coin-gradient: linear-gradient(
+    85deg,
+    #cc0fe0ff -4.82%,
+    #7e1bccff 49.8%,
+    #1ba1f1ff 104.43%
+  );
   --harmony-trending-blue: #216fdcff;
   --harmony-ai-green: #1fd187ff;
   --harmony-glass-overlay: #ffffffd9;

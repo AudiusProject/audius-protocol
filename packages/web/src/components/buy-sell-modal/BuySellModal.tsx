@@ -1,9 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 
-import {
-  buySellMessages,
-  buySellMessages as messages
-} from '@audius/common/messages'
+import { buySellMessages } from '@audius/common/messages'
 import { useBuySellModal, useAddCashModal } from '@audius/common/store'
 import {
   IconJupiterLogo,
@@ -23,7 +20,8 @@ import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
 export const BuySellModal = () => {
-  const { isOpen, onClose } = useBuySellModal()
+  const { isOpen, onClose, data } = useBuySellModal()
+  const { ticker } = data
   const { onOpen: openAddCashModal } = useAddCashModal()
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
@@ -39,9 +37,9 @@ export const BuySellModal = () => {
 
   const title = useMemo(() => {
     if (isFlowLoading) return ''
-    if (modalScreen === 'confirm') return messages.confirmDetails
-    if (modalScreen === 'success') return messages.modalSuccessTitle
-    return messages.title
+    if (modalScreen === 'confirm') return buySellMessages.confirmDetails
+    if (modalScreen === 'success') return buySellMessages.modalSuccessTitle
+    return buySellMessages.title
   }, [isFlowLoading, modalScreen])
 
   return (
@@ -78,6 +76,7 @@ export const BuySellModal = () => {
           openAddCashModal={openAddCashModal}
           onScreenChange={setModalScreen}
           onLoadingStateChange={setIsFlowLoading}
+          initialTicker={ticker}
         />
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (
@@ -88,7 +87,7 @@ export const BuySellModal = () => {
           pv='m'
         >
           <Text variant='label' size='xs' color='subdued'>
-            {messages.poweredBy}
+            {buySellMessages.poweredBy}
           </Text>
           <IconJupiterLogo />
         </ModalFooter>

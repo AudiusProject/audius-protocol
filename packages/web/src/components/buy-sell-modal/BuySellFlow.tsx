@@ -41,11 +41,17 @@ type BuySellFlowProps = {
   openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
+  initialTicker?: string
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
-    props
+  const {
+    onClose,
+    openAddCashModal,
+    onScreenChange,
+    onLoadingStateChange,
+    initialTicker
+  } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
   const {
@@ -100,9 +106,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     path: ASSET_DETAIL_PAGE,
     exact: true
   })
-  // Get token pair based on location or use default
   const { data: selectedPair } = useTokenPair({
-    baseSymbol: match?.params.ticker,
+    baseSymbol: initialTicker ?? match?.params.ticker,
     quoteSymbol: 'USDC'
   })
 

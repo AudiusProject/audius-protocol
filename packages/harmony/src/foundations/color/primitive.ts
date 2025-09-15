@@ -175,6 +175,8 @@ export const primitiveTheme = {
       gradientStop1: '#6CDF44FF',
       gradientStop2: '#13C65AFF',
       gradient: 'linear-gradient(315deg, #6CDF44FF 0%, #13C65AFF 100%)',
+      gradientCoin:
+        'linear-gradient(91deg, var(--color-primary-P300, #CC0FE0) -7.07%, var(--color-secondary-S300, #7E1BCC) 50.55%, var(--color-special-Blue, #1BA1F1) 108.17%)',
       green: '#2EB954FF',
       lightGreen: '#0BF90BFF',
       orange: '#FFA524FF',

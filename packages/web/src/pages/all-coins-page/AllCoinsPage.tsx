@@ -62,7 +62,7 @@ export const AllCoinsPage = () => {
   const filteredCoins =
     artistCoins?.filter((coin) =>
       coin.ticker?.toLowerCase().includes(searchQuery.toLowerCase())
-    ) || []
+    ) ?? []
 
   const header = <Header primary={messages.title} showBackButton={true} />
 

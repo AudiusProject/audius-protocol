@@ -1,11 +1,4 @@
-import {
-  Button,
-  Flex,
-  IconArrowRight,
-  Paper,
-  Text,
-  useTheme
-} from '@audius/harmony'
+import { Button, Flex, IconArrowRight, Paper, Text } from '@audius/harmony'
 
 const messages = {
   title: 'Ready to launch?',
@@ -20,8 +13,6 @@ type LaunchPanelProps = {
 }
 
 export const LaunchPanel = ({ onContinue }: LaunchPanelProps) => {
-  const { color } = useTheme()
-
   return (
     <Paper p='2xl' gap='xl' direction='column' w='100%' h='fit'>
       <Flex direction='column' gap='s'>
@@ -42,7 +33,7 @@ export const LaunchPanel = ({ onContinue }: LaunchPanelProps) => {
         iconRight={IconArrowRight}
         onClick={onContinue}
         css={{
-          background: `linear-gradient(91deg, ${color.primary.p300} -7.07%, ${color.secondary.s300} 50.55%, ${color.special.blue} 108.17%)`,
+          background: 'var(--harmony-coin-gradient)',
           border: 'none'
         }}
       >

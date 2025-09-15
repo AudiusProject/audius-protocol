@@ -32,9 +32,9 @@ export const BuyTab = ({
   const { baseToken, quoteToken } = tokenPair
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
-  // State for token selection
   const [selectedOutputToken, setSelectedOutputToken] = useState(baseToken)
 
+  // Sync selectedOutputToken with baseToken when tokenPair changes
   useEffect(() => {
     setSelectedOutputToken(baseToken)
   }, [baseToken])
