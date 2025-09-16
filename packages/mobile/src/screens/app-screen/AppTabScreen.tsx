@@ -61,6 +61,8 @@ import {
 import { WalletScreen } from 'app/screens/wallet-screen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
+import { ArtistCoinsExploreScreen } from '../artist-coins-explore-screen/ArtistCoinsExploreScreen'
+import { ArtistCoinSortScreen } from '../artist-coin-sort-screen/ArtistCoinSortScreen'
 
 export type AppTabScreenParamList = {
   Track: {
@@ -111,6 +113,8 @@ export type AppTabScreenParamList = {
 
   AudioScreen: undefined
   RewardsScreen: undefined
+  ArtistCoinsExplore: undefined
+  ArtistCoinSort: undefined
   wallet: undefined
   AllCoinsScreen: undefined
   CoinDetailsScreen: { mint: string }
@@ -231,6 +235,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='wallet' component={WalletScreen} />
       <Stack.Screen name='CoinDetailsScreen' component={CoinDetailsScreen} />
       <Stack.Screen name='AllCoinsScreen' component={AllCoinsScreen} />
+      <Stack.Screen
+        name='ArtistCoinsExplore'
+        component={ArtistCoinsExploreScreen}
+      />
+      <Stack.Screen name='ArtistCoinSort' component={ArtistCoinSortScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />
