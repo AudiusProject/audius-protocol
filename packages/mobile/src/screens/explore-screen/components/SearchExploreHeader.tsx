@@ -34,7 +34,7 @@ import {
   TextInputSize,
   useTheme
 } from '@audius/harmony-native'
-import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.webp'
+import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground.webp'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AccountPictureHeader } from 'app/screens/app-screen/AccountPictureHeader'
 import { SearchCategoriesAndFilters } from 'app/screens/search-screen/SearchCategoriesAndFilters'
