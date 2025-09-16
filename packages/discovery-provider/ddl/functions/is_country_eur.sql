@@ -346,7 +346,6 @@ BEGIN
         country = 'MU' OR
         country = 'MV' OR
         country = 'MW' OR
-        country = 'MX' OR
         country = 'MY' OR
         country = 'MZ' OR
         country = 'NA' OR
