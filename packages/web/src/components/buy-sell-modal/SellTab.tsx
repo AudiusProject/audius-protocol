@@ -9,7 +9,7 @@ import { buySellMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
@@ -118,21 +118,6 @@ export const SellTab = ({
             hideTokenDisplay={true} // Hide token display completely in sell tab output
           />
         </>
-      )}
-
-      {tokenPrice && (
-        <Flex alignItems='center' gap='xs'>
-          <Text variant='body' size='s' color='subdued'>
-            {buySellMessages.exchangeRateLabel}
-          </Text>
-          <Text variant='body' size='s' color='default'>
-            {buySellMessages.exchangeRateValue(
-              selectedInputToken.symbol,
-              quoteToken.symbol,
-              currentExchangeRate
-            )}
-          </Text>
-        </Flex>
       )}
     </Flex>
   )
