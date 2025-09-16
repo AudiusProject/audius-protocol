@@ -8,11 +8,14 @@ import {
   useQueryContext
 } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
+import { toast } from '@audius/common/src/store/ui/toast/slice'
+import { shortenSPLAddress } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
-import { IconArtistCoin } from '@audius/harmony'
+import { Flex, IconArtistCoin, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
+import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { appkitModal } from 'app/ReownAppKitModal'
@@ -40,7 +43,8 @@ import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { setupFormSchema } from './validation'
 
 const messages = {
-  title: 'Create Your Artist Coin'
+  title: 'Create Your Artist Coin',
+  walletAdded: 'Wallet connected successfully'
 }
 
 const getConnectedWallet = (
@@ -59,6 +63,7 @@ const LaunchpadPageContent = () => {
   const { data: connectedWallets } = useConnectedWallets()
   const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
     useState(false)
+  const dispatch = useDispatch()
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -79,6 +84,21 @@ const LaunchpadPageContent = () => {
     return walletBalanceLamports > MIN_SOL_BALANCE
   }
 
+  // NOTE: this hook specifically is after the wallet is both added & has sufficient balance
+  const handleWalletAddSuccess = async (wallet: ConnectedWallet) => {
+    setPhase(Phase.SETUP)
+    dispatch(
+      toast({
+        content: (
+          <Flex gap='xs' direction='column'>
+            <Text>{messages.walletAdded}</Text>
+            <Text>{shortenSPLAddress(wallet.address)}</Text>
+          </Flex>
+        )
+      })
+    )
+  }
+
   // Wallet connection handlers
   const handleWalletConnectSuccess = async (wallets: ConnectedWallet[]) => {
     const newWallet = wallets[0]
@@ -88,7 +108,7 @@ const LaunchpadPageContent = () => {
     )
     try {
       if (isValidWalletBalance) {
-        setPhase(Phase.SETUP)
+        handleWalletAddSuccess(newWallet)
       } else {
         setIsInsufficientBalanceModalOpen(true)
       }
@@ -108,7 +128,7 @@ const LaunchpadPageContent = () => {
           lastConnectedWallet?.address
         )
         if (isValidWalletBalance) {
-          setPhase(Phase.SETUP)
+          handleWalletAddSuccess(lastConnectedWallet)
         } else {
           setIsInsufficientBalanceModalOpen(true)
         }
