@@ -21,7 +21,6 @@ import type { FilterButtonScreenParams } from '@audius/harmony-native'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setLastNavAction } from 'app/hooks/useNavigation'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
-import { AllCoinsScreen } from 'app/screens/all-coins-screen'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AudioScreen } from 'app/screens/audio-screen'
 import { ChangeEmailModalScreen } from 'app/screens/change-email-screen/ChangeEmailScreen'
@@ -112,7 +111,6 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   RewardsScreen: undefined
   wallet: undefined
-  AllCoinsScreen: undefined
   CoinDetailsScreen: { mint: string }
   Upload: {
     initialMetadata?: Partial<TrackMetadataForUpload>
@@ -230,7 +228,6 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
       <Stack.Screen name='wallet' component={WalletScreen} />
       <Stack.Screen name='CoinDetailsScreen' component={CoinDetailsScreen} />
-      <Stack.Screen name='AllCoinsScreen' component={AllCoinsScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />
