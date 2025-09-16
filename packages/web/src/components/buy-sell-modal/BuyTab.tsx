@@ -2,15 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
-  useArtistCoins,
-  useTokenPrice
+  useArtistCoin,
+  useArtistCoins
 } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -40,9 +40,9 @@ export const BuyTab = ({
   }, [baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(selectedOutputToken.address)
+    useArtistCoin({ mint: selectedOutputToken.address })
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
   const decimalPlaces = useMemo(() => {
     if (!tokenPrice) return 2
@@ -123,21 +123,6 @@ export const BuyTab = ({
           />
         </>
       )}
-
-      {tokenPrice ? (
-        <Flex alignItems='center' gap='xs'>
-          <Text variant='body' size='s' color='subdued'>
-            {buySellMessages.exchangeRateLabel}
-          </Text>
-          <Text variant='body' size='s' color='default'>
-            {buySellMessages.exchangeRateValue(
-              quoteToken.symbol,
-              selectedOutputToken.symbol,
-              currentExchangeRate
-            )}
-          </Text>
-        </Flex>
-      ) : null}
     </Flex>
   )
 }

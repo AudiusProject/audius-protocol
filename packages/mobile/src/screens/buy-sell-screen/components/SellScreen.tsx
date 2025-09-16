@@ -2,8 +2,8 @@ import React, { useMemo, useRef } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
-  useArtistCoins,
-  useTokenPrice
+  useArtistCoin,
+  useArtistCoins
 } from '@audius/common/api'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
@@ -76,11 +76,11 @@ export const SellScreen = ({
   initialInputValue,
   onInputValueChange
 }: SellScreenProps) => {
-  const { data: tokenPriceData } = useTokenPrice(
-    tokenPair ? tokenPair.baseToken.address : ''
-  )
+  const { data: tokenPriceData } = useArtistCoin({
+    mint: tokenPair?.baseToken?.address
+  })
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
   const {
     inputAmount,

@@ -10,10 +10,7 @@ import { useUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  TOKEN_LISTING_MAP,
-  useTierAndVerifiedForUser
-} from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import {
   Artwork,
@@ -35,6 +32,7 @@ import cn from 'classnames'
 
 import { ArtistCoinHoverCard } from 'components/hover-card/ArtistCoinHoverCard'
 import { AudioHoverCard } from 'components/hover-card/AudioHoverCard'
+import { env } from 'services/env'
 
 import styles from './UserBadges.module.css'
 
@@ -174,7 +172,7 @@ const UserBadges = ({
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    displayMint !== TOKEN_LISTING_MAP.AUDIO.address
+    displayMint !== env.WAUDIO_MINT_ADDRESS
 
   const artistCoinBadge = useMemo(() => {
     if (!shouldShowArtistCoinBadge) return null

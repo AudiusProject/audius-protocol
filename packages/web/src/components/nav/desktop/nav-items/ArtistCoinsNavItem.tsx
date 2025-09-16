@@ -21,7 +21,11 @@ export const ArtistCoinsNavItem = () => {
   }
 
   return (
-    <LeftNavLink leftIcon={IconArtistCoin} to={COINS_EXPLORE_PAGE}>
+    <LeftNavLink
+      leftIcon={IconArtistCoin}
+      to={COINS_EXPLORE_PAGE}
+      restriction='none'
+    >
       {messages.title}
     </LeftNavLink>
   )

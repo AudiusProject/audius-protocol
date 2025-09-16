@@ -2,15 +2,15 @@ import React, { useMemo, useRef } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
-  useArtistCoins,
-  useTokenPrice
+  useArtistCoin,
+  useArtistCoins
 } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
-import { Box, Flex, Skeleton, Text } from '@audius/harmony-native'
+import { Box, Flex, Skeleton } from '@audius/harmony-native'
 import { InputTokenSection } from 'app/components/buy-sell/InputTokenSection'
 import { OutputTokenSection } from 'app/components/buy-sell/OutputTokenSection'
 
@@ -75,9 +75,9 @@ export const BuyScreen = ({
   onInputValueChange
 }: BuyScreenProps) => {
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(tokenPair ? tokenPair.baseToken.address : '')
+    useArtistCoin({ mint: tokenPair?.baseToken?.address })
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
   const decimalPlaces = useMemo(() => {
     if (!tokenPrice) return 2
@@ -152,10 +152,6 @@ export const BuyScreen = ({
           />
         </>
       )}
-      <Flex row gap='xs'>
-        <Text color='subdued'>Rate</Text>
-        <Text>{`1 ${quoteToken.symbol} ≈ ${(1 / tokenPrice).toFixed(8)} ${baseToken.symbol}`}</Text>
-      </Flex>
     </Flex>
   )
 }
