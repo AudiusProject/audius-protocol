@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
-import { useRoute } from '@react-navigation/native'
+import { useRoute } from 'app/hooks/useRoute'
 
 import type { IconComponent } from '@audius/harmony-native'
 import { Button, Flex, IconSortDown, IconSortUp } from '@audius/harmony-native'
@@ -9,25 +9,29 @@ import { Screen, SegmentedControl } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { SelectionItemList } from '../list-selection-screen/SelectionItemList'
-
-const messages = {
-  title: 'SORT',
-  ascending: 'Ascending',
-  descending: 'Descending',
-  price: 'Price',
-  marketCap: 'Market Cap',
-  volume: 'Volume',
-  launchDate: 'Launch Date',
-  holders: 'Holders',
-  done: 'Done'
-}
+import { walletMessages } from '@audius/common/messages'
 
 const sortOptions = [
-  { value: GetCoinsSortMethodEnum.Price, label: messages.price },
-  { value: GetCoinsSortMethodEnum.Volume, label: messages.volume },
-  { value: GetCoinsSortMethodEnum.MarketCap, label: messages.marketCap },
-  { value: GetCoinsSortMethodEnum.CreatedAt, label: messages.launchDate },
-  { value: GetCoinsSortMethodEnum.Holder, label: messages.holders }
+  {
+    value: GetCoinsSortMethodEnum.Price,
+    label: walletMessages.artistCoins.sortPrice
+  },
+  {
+    value: GetCoinsSortMethodEnum.Volume,
+    label: walletMessages.artistCoins.sortVolume
+  },
+  {
+    value: GetCoinsSortMethodEnum.MarketCap,
+    label: walletMessages.artistCoins.sortMarketCap
+  },
+  {
+    value: GetCoinsSortMethodEnum.CreatedAt,
+    label: walletMessages.artistCoins.sortLaunchDate
+  },
+  {
+    value: GetCoinsSortMethodEnum.Holder,
+    label: walletMessages.artistCoins.sortHolders
+  }
 ]
 
 const directionOptions: Array<{
@@ -37,28 +41,29 @@ const directionOptions: Array<{
 }> = [
   {
     key: GetCoinsSortDirectionEnum.Asc,
-    text: messages.ascending,
+    text: walletMessages.artistCoins.sortAscending,
     leftIcon: IconSortUp
   },
   {
     key: GetCoinsSortDirectionEnum.Desc,
-    text: messages.descending,
+    text: walletMessages.artistCoins.sortDescending,
     leftIcon: IconSortDown
   }
 ]
 
 export const ArtistCoinSortScreen = () => {
   const navigation = useNavigation()
-  const route = useRoute()
+  const { params } = useRoute<'ArtistCoinSort'>()
 
-  const routeParams = route.params as any
-  const initialSortMethod = routeParams?.initialSortMethod
-  const initialSortDirection = routeParams?.initialSortDirection
+  const { initialSortMethod, initialSortDirection } = params
 
-  const [selectedOption, setSelectedOption] =
-    useState<GetCoinsSortMethodEnum>(initialSortMethod)
+  const [selectedOption, setSelectedOption] = useState<GetCoinsSortMethodEnum>(
+    initialSortMethod ?? GetCoinsSortMethodEnum.MarketCap
+  )
   const [selectedDirection, setSelectedDirection] =
-    useState<GetCoinsSortDirectionEnum>(initialSortDirection)
+    useState<GetCoinsSortDirectionEnum>(
+      initialSortDirection ?? GetCoinsSortDirectionEnum.Desc
+    )
 
   const handleBackPress = useCallback(() => {
     // Navigate back to parent screen with sort params
@@ -83,13 +88,13 @@ export const ArtistCoinSortScreen = () => {
   )
 
   return (
-    <Screen title={messages.title} topbarRight={null}>
+    <Screen title={walletMessages.artistCoins.sortTitle} topbarRight={null}>
       <Flex
         pv='m'
         gap='l'
-        backgroundColor='white'
         justifyContent='space-between'
         h='100%'
+        backgroundColor='white'
       >
         <Flex>
           <Flex ph='l'>
@@ -109,7 +114,7 @@ export const ArtistCoinSortScreen = () => {
         </Flex>
         <Flex ph='l'>
           <Button variant='primary' fullWidth onPress={handleBackPress}>
-            {messages.done}
+            {walletMessages.done}
           </Button>
         </Flex>
       </Flex>

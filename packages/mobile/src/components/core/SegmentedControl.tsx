@@ -246,12 +246,12 @@ export const SegmentedControl = <Value,>(
               onPress={() => handleSelectOption(option.key)}
             >
               <Flex direction='row' alignItems='center' gap='s'>
-                {option.leftIcon && (
+                {option.leftIcon ? (
                   <option.leftIcon
                     size='s'
                     color={isSelected ? 'default' : 'subdued'}
                   />
-                )}
+                ) : null}
                 <Text
                   size='s'
                   color={isSelected ? 'default' : 'subdued'}

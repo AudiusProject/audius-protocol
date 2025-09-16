@@ -18,6 +18,7 @@ import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { FilterButtonScreen } from '@audius/harmony-native'
 import type { FilterButtonScreenParams } from '@audius/harmony-native'
+import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setLastNavAction } from 'app/hooks/useNavigation'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'
@@ -114,7 +115,10 @@ export type AppTabScreenParamList = {
   AudioScreen: undefined
   RewardsScreen: undefined
   ArtistCoinsExplore: undefined
-  ArtistCoinSort: undefined
+  ArtistCoinSort: {
+    initialSortMethod?: GetCoinsSortMethodEnum
+    initialSortDirection?: GetCoinsSortDirectionEnum
+  }
   wallet: undefined
   CoinDetailsScreen: { mint: string }
   Upload: {

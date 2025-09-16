@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useDebounce } from 'react-use'
 
 import {
   useArtistCoins,
@@ -28,13 +29,7 @@ import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
-
-const messages = {
-  title: 'Discover Artist Coins',
-  searchPlaceholder: 'Search Artist Coins',
-  noCoins: 'No results found',
-  noCoinsDescription: 'No Artist Coins were found matching your search.'
-}
+import { walletMessages } from '@audius/common/messages'
 
 type CoinRowProps = {
   coin: Coin
@@ -68,13 +63,13 @@ const CoinRow = ({ coin, onPress }: CoinRowProps) => {
 
 const NoCoinsContent = () => {
   return (
-    <Flex justifyContent='center' alignItems='center' p='4xl'>
+    <Flex justifyContent='center' alignItems='center' p='4xl' gap='xl'>
       <IconSearch size='2xl' color='default' />
       <Text variant='heading' size='m'>
-        {messages.noCoins}
+        {walletMessages.artistCoins.noCoins}
       </Text>
       <Text variant='body' size='l' textAlign='center'>
-        {messages.noCoinsDescription}
+        {walletMessages.artistCoins.noCoinsDescription}
       </Text>
     </Flex>
   )
@@ -89,18 +84,19 @@ const Header = ({
 }) => {
   const navigation = useNavigation()
   return (
+    // @ts-ignore webp is causing type error but works
     <ImageBackground source={imageSearchHeaderBackground}>
-      <Flex row pt='unit14' ph='l' pb='m' gap='m' alignItems='center' back>
+      <Flex row pt='unit14' ph='l' pb='m' gap='m' alignItems='center'>
         <IconCaretLeft
           size='l'
-          color='staticWhite'
+          color='white'
           onPress={() => navigation.goBack()}
         />
         <Flex flex={1}>
           <TextInput
             label='Search'
             autoCorrect={false}
-            placeholder={messages.searchPlaceholder}
+            placeholder={walletMessages.artistCoins.searchPlaceholder}
             size={TextInputSize.EXTRA_SMALL}
             startIcon={IconSearch}
             onChangeText={setSearchValue}
@@ -117,6 +113,7 @@ export const ArtistCoinsExploreScreen = () => {
   const route = useRoute()
   const navigation = useNavigation()
   const [searchValue, setSearchValue] = useState('')
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
   const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
     GetCoinsSortMethodEnum.MarketCap
   )
@@ -124,10 +121,13 @@ export const ArtistCoinsExploreScreen = () => {
     GetCoinsSortDirectionEnum.Desc
   )
 
+  // Debounce search value to avoid excessive API calls
+  useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])
+
   const { data: coins, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
-    query: searchValue
+    query: debouncedSearchValue
   })
 
   const handleCoinPress = useCallback(
@@ -176,7 +176,7 @@ export const ArtistCoinsExploreScreen = () => {
               fontFamily: typography.fontByWeight.bold
             }}
           >
-            {messages.title}
+            {walletMessages.artistCoins.title}
           </GradientText>
           <TouchableOpacity onPress={handleSortPress}>
             <Flex

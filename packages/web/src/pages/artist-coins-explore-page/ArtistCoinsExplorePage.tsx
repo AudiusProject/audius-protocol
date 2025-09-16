@@ -25,12 +25,12 @@ import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
+import { walletMessages } from '@audius/common/messages'
 
 const SEARCH_WIDTH = 400
 const CHECKLIST_WIDTH = 540
 
 const messages = {
-  title: 'Discover Artist Coins',
   searchPlaceholder: 'Search',
   getStarted: 'Get Started',
   launchYourOwn: 'Launch Your Own Artist Coin!',
@@ -60,7 +60,7 @@ export const ArtistCoinsExplorePage = () => {
   }, [])
 
   return (
-    <Page title={messages.title}>
+    <Page title={walletMessages.artistCoins.title}>
       <Flex column gap='xl'>
         <Flex
           p='3xl'
@@ -79,7 +79,7 @@ export const ArtistCoinsExplorePage = () => {
           }}
         >
           <Text variant='display' size='s' color='staticWhite'>
-            {messages.title}
+            {walletMessages.artistCoins.title}
           </Text>
 
           <Box w={SEARCH_WIDTH}>
