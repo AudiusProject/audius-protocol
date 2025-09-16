@@ -34,7 +34,7 @@ import {
   TextInputSize,
   useTheme
 } from '@audius/harmony-native'
-import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.png'
+import imageSearchHeaderBackground from 'app/assets/images/imageSearchHeaderBackground2x.webp'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AccountPictureHeader } from 'app/screens/app-screen/AccountPictureHeader'
 import { SearchCategoriesAndFilters } from 'app/screens/search-screen/SearchCategoriesAndFilters'
@@ -327,6 +327,7 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
       </Flex>
       <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
+        {/* @ts-ignore webp is causing type error but works */}
         <ImageBackground source={imageSearchHeaderBackground}>
           <AnimatedFlex pt='unit14' ph='l' style={headerPaddingShrinkStyle}>
             <Flex
