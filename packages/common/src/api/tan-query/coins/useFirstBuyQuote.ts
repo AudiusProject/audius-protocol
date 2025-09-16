@@ -63,7 +63,7 @@ const getFirstBuyQuoteMutationFn =
       TOKEN_LISTING_MAP.SOL.decimals // 9 decimals for SOL
     )
     const solAmountUiString = solAmountFD.toLocaleString('en-US', {
-      maximumFractionDigits: 6,
+      maximumFractionDigits: 6, // 6 decimals is currently the max precision we show in the token input field
       roundingMode: 'trunc'
     })
 

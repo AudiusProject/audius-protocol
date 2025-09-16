@@ -96,7 +96,7 @@ export const ArtistCoinsSubmitRow = ({
             {continueText}
           </Button>
         </Flex>
-        {showError && !isValid ? (
+        {errorText || (showError && !isValid) ? (
           <Flex alignItems='center' gap='xs'>
             <IconError color='danger' size='s' />
             <Text color='danger' size='s' variant='body'>

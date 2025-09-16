@@ -35,9 +35,6 @@ const messages = {
   youPay: 'You Pay',
   youReceive: 'You Receive',
   connectedWallet: 'Connected Wallet',
-  rate: 'Rate',
-  rateValue: (exchangeRate: number) =>
-    `1 SOL ≈ ${formatNumberCommas(exchangeRate.toFixed(0))}`,
   valueInUSDC: 'Value',
   hintMessage:
     "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
@@ -48,7 +45,8 @@ const messages = {
   }
 }
 
-const MAX_SOL_AMOUNT = 60 // The max amount of SOL. TODO: make this dynamic since this is technically based on the SOL-AUDIO exchange rate
+// TODO (PE-6839): improve how we handle this value, this value fluctuates based on the SOL-AUDIO exchange rate
+const MAX_SOL_AMOUNT = 60 // The max amount of SOL
 
 // This number never changes with our pool configs - this number is the max amount of tokens that can be bought out of the pool before graduation triggers
 const MAX_TOKEN_AMOUNT = 249658688
@@ -80,6 +78,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     error: firstBuyQuoteError
   } = useFirstBuyQuote()
 
+  // Resets inputs from disabled when the api call is not pending
   useEffect(() => {
     if (!isFirstBuyQuotePending) {
       setIsPayAmountChanging(false)
@@ -87,7 +86,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     }
   }, [isFirstBuyQuotePending])
 
-  // Update receiveAmount when quote data changes
+  // When quote comes back, update our inputs with the new values
   useEffect(() => {
     if (firstBuyQuoteData) {
       setFieldValue('receiveAmount', firstBuyQuoteData.tokenAmountUiString)
@@ -95,7 +94,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     }
   }, [firstBuyQuoteData, setFieldValue])
 
-  // Format the wallet address for display (always Solana format)
   const formattedWalletAddress = connectedWallet
     ? shortenSPLAddress(connectedWallet.address)
     : null
@@ -293,7 +291,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               />
             </Flex>
 
-            {/* USDC Value quote */}
+            {/* USDC Value */}
             <Flex w='100%' alignItems='center' gap='xs'>
               <Text variant='body' size='m' color='subdued'>
                 {messages.valueInUSDC}
