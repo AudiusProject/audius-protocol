@@ -257,7 +257,10 @@ async function claimRewardsForChallenge({
             }
           })
         )
-        .then(() =>
+        .then((res) => {
+          if (res?.data?.[0]?.error) {
+            throw new Error(res.data[0].error)
+          }
           track(
             make({
               eventName: Name.REWARDS_CLAIM_SUCCESS,
@@ -266,7 +269,8 @@ async function claimRewardsForChallenge({
               amount: specifierWithAmount.amount
             })
           )
-        )
+          return res
+        })
         .then(() => {
           return specifierWithAmount
         })
