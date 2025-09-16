@@ -1,15 +1,19 @@
-import { useMemo, useCallback, useState } from 'react'
+import { useMemo, useCallback, useEffect, useState } from 'react'
 
-import { useConnectedWallets, type ConnectedWallet } from '@audius/common/api'
+import {
+  useConnectedWallets,
+  useFirstBuyQuote,
+  type ConnectedWallet
+} from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { Chain } from '@audius/common/models'
 import { formatNumberCommas, shortenSPLAddress } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
   Flex,
   Hint,
   IconLogoCircleSOL,
+  LoadingSpinner,
   Paper,
   Text,
   TokenAmountInput
@@ -17,16 +21,10 @@ import {
 import { useFormikContext } from 'formik'
 
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
-import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import type { PhasePageProps, SetupFormValues } from '../components/types'
-import {
-  AMOUNT_OF_STEPS,
-  SOLANA_DECIMALS,
-  TOKEN_DECIMALS,
-  USDC_DECIMALS
-} from '../constants'
+import { AMOUNT_OF_STEPS } from '../constants'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
@@ -43,13 +41,22 @@ const messages = {
   valueInUSDC: 'Value',
   hintMessage:
     "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
-  back: 'Back'
+  back: 'Back',
+  errors: {
+    quoteError: 'Failed to get a quote. Please try again.',
+    valueTooHigh: 'Value is too high. Please enter a lower value.'
+  }
 }
+
+const MAX_SOL_AMOUNT = 60 // The max amount of SOL. TODO: make this dynamic since this is technically based on the SOL-AUDIO exchange rate
+const MAX_TOKEN_AMOUNT = 249658688 // A bit magic number-y but this is the max amount of tokens that can be bought out of the pool
 
 export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue } = useFormikContext<SetupFormValues>()
-  const [usdcQuoteValue, setUsdcQuoteValue] = useState<string | null>(null)
+  const [isPayAmountChanging, setIsPayAmountChanging] = useState(false)
+  const [isReceiveAmountChanging, setIsReceiveAmountChanging] = useState(false)
+
   const imageUrl = useFormImageUrl(values.coinImage)
 
   const { data: connectedWallets } = useConnectedWallets()
@@ -60,6 +67,29 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
     [connectedWallets]
   )
+
+  // Get the first buy quote using the hook
+  const {
+    data: firstBuyQuoteData,
+    mutate: getFirstBuyQuote,
+    isPending: isFirstBuyQuotePending,
+    error: firstBuyQuoteError
+  } = useFirstBuyQuote()
+
+  useEffect(() => {
+    if (!isFirstBuyQuotePending) {
+      setIsPayAmountChanging(false)
+      setIsReceiveAmountChanging(false)
+    }
+  }, [isFirstBuyQuotePending])
+
+  // Update receiveAmount when quote data changes
+  useEffect(() => {
+    if (firstBuyQuoteData) {
+      setFieldValue('receiveAmount', firstBuyQuoteData.tokenAmountUiString)
+      setFieldValue('payAmount', firstBuyQuoteData.solAmountUiString)
+    }
+  }, [firstBuyQuoteData, setFieldValue])
 
   // Format the wallet address for display (always Solana format)
   const formattedWalletAddress = connectedWallet
@@ -74,69 +104,43 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     onContinue?.()
   }
 
-  // Debounced function to call the SDK getFirstBuyQuote method
-  const debouncedGetFirstBuyQuote = useDebouncedCallback(
-    async (payValue: number) => {
-      if (payValue > 0) {
-        try {
-          const sdk = await audiusSdk()
-          const solAmountLamports = Number(
-            new FixedDecimal(payValue, SOLANA_DECIMALS).trunc(SOLANA_DECIMALS)
-              .value
-          )
-          const firstBuyQuoteRes =
-            await sdk.services.solanaRelay.getFirstBuyQuote(solAmountLamports)
-
-          const usdcAmountFD = new FixedDecimal(
-            BigInt(firstBuyQuoteRes.usdcInputAmount),
-            USDC_DECIMALS
-          )
-          const usdcAmountUiString = usdcAmountFD.toLocaleString('en-US', {
-            maximumFractionDigits: 2,
-            roundingMode: 'trunc'
-          })
-          setUsdcQuoteValue(usdcAmountUiString)
-
-          // The value is returned in bigint format, we need to format it to a user friendly format using FixedDecimal
-          const tokenAmountFD = new FixedDecimal(
-            BigInt(firstBuyQuoteRes.tokenOutputAmount),
-            TOKEN_DECIMALS
-          )
-          const tokenAmountUiString = tokenAmountFD.toLocaleString('en-US', {
-            maximumFractionDigits: 0,
-            roundingMode: 'trunc'
-          })
-
-          setFieldValue('receiveAmount', tokenAmountUiString)
-        } catch (error) {
-          console.error('Error getting first buy quote:', error)
-        }
-      } else {
-        setFieldValue('receiveAmount', undefined)
+  const debouncedPayAmountChange = useDebouncedCallback(
+    (payAmount: string) => {
+      if (payAmount && Number(payAmount) <= MAX_SOL_AMOUNT) {
+        setIsReceiveAmountChanging(true)
+        getFirstBuyQuote({ solUiInputAmount: payAmount })
       }
     },
-    [setFieldValue],
+    [getFirstBuyQuote],
+    300
+  )
+
+  const debouncedReceiveAmountChange = useDebouncedCallback(
+    (receiveAmount: string) => {
+      if (receiveAmount && Number(receiveAmount) <= MAX_TOKEN_AMOUNT) {
+        setIsPayAmountChanging(true)
+        getFirstBuyQuote({ tokenUiOutputAmount: receiveAmount })
+      }
+    },
+    [getFirstBuyQuote],
     300
   )
 
   const handlePayAmountChange = useCallback(
     async (value: string, _valueBigInt: bigint) => {
       setFieldValue('payAmount', value)
-      const payValue = parseFloat(value) ?? 0
-
-      // Call debounced API function
-      debouncedGetFirstBuyQuote(payValue)
+      debouncedPayAmountChange(value)
     },
-    [setFieldValue, debouncedGetFirstBuyQuote]
+    [setFieldValue, debouncedPayAmountChange]
   )
 
-  const handleReceiveAmountChange = (value: string, _valueBigInt: bigint) => {
-    setFieldValue('receiveAmount', value)
-    // Calculate pay amount based on exchange rate
-    const receiveValue = parseFloat(value) ?? 0
-    const calculatedPay = receiveValue / 0.302183
-    setFieldValue('payAmount', calculatedPay.toFixed(6))
-  }
+  const handleReceiveAmountChange = useCallback(
+    (value: string, _valueBigInt: bigint) => {
+      setFieldValue('receiveAmount', value)
+      debouncedReceiveAmountChange(value)
+    },
+    [setFieldValue, debouncedReceiveAmountChange]
+  )
 
   return (
     <>
@@ -233,6 +237,16 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 onChange={handlePayAmountChange}
                 placeholder='0.00'
                 hideLabel
+                helperText={
+                  values.payAmount && Number(values.payAmount) > MAX_SOL_AMOUNT
+                    ? messages.errors.valueTooHigh
+                    : undefined
+                }
+                error={
+                  !!values.payAmount &&
+                  Number(values.payAmount) > MAX_SOL_AMOUNT
+                }
+                disabled={isPayAmountChanging}
                 endIcon={<IconLogoCircleSOL size='l' />}
               />
             </Flex>
@@ -250,6 +264,17 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 onChange={handleReceiveAmountChange}
                 placeholder='0.00'
                 hideLabel
+                disabled={isReceiveAmountChanging}
+                helperText={
+                  values.receiveAmount &&
+                  Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
+                    ? messages.errors.valueTooHigh
+                    : undefined
+                }
+                error={
+                  !!values.receiveAmount &&
+                  Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
+                }
                 endIcon={
                   imageUrl ? (
                     <Artwork
@@ -269,9 +294,13 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               <Text variant='body' size='m' color='subdued'>
                 {messages.valueInUSDC}
               </Text>
-              <Text variant='body' size='m' color='default'>
-                ${usdcQuoteValue ?? '0.00'}
-              </Text>
+              {isFirstBuyQuotePending ? (
+                <LoadingSpinner size='s' css={{ display: 'inline-block' }} />
+              ) : (
+                <Text variant='body' size='m' color='default'>
+                  ${firstBuyQuoteData?.usdcAmountUiString ?? '0.00'}
+                </Text>
+              )}
             </Flex>
           </Flex>
 
@@ -284,6 +313,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         onContinue={handleContinue}
         onBack={handleBack}
         submit
+        errorText={firstBuyQuoteError ? messages.errors.quoteError : undefined}
       />
     </>
   )

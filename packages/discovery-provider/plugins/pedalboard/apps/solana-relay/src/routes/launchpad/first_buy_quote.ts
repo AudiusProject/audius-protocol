@@ -23,12 +23,12 @@ import {
 
 const getSolToAudioQuote = async (
   jupiterApi: JupiterApi,
-  solAmountLamports: number
+  solAmountLamports: string
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
     inputMint: SOL_MINT,
     outputMint: AUDIO_MINT,
-    amount: solAmountLamports,
+    amount: new BN(solAmountLamports).toNumber(),
     swapMode: 'ExactIn',
     onlyDirectRoutes: false,
     dynamicSlippage: true
@@ -37,12 +37,12 @@ const getSolToAudioQuote = async (
 
 const getSolToUsdcQuote = async (
   jupiterApi: JupiterApi,
-  solAmountLamports: number
+  solAmountLamports: string
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
     inputMint: SOL_MINT,
     outputMint: USDC_MINT,
-    amount: solAmountLamports,
+    amount: new BN(solAmountLamports).toNumber(),
     swapMode: 'ExactIn',
     onlyDirectRoutes: false,
     dynamicSlippage: true
@@ -51,12 +51,12 @@ const getSolToUsdcQuote = async (
 
 const getAudioToSolQuote = async (
   jupiterApi: JupiterApi,
-  audioAmount: number
+  audioAmount: string
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
     inputMint: AUDIO_MINT,
     outputMint: SOL_MINT,
-    amount: audioAmount,
+    amount: new BN(audioAmount).toNumber(),
     swapMode: 'ExactIn',
     onlyDirectRoutes: false,
     dynamicSlippage: true
@@ -97,7 +97,6 @@ const getBondingCurveQuote = async ({
     })
     return quote.outputAmount.toString()
   } else if (tokenAmount) {
-    logger.info(tokenAmount)
     // Swap quote 2 has additional params that allows us to specify ExactOut for the swap
     const quote = await dbcClient.pool.swapQuote2({
       virtualPool: virtualPoolState,
@@ -109,7 +108,6 @@ const getBondingCurveQuote = async ({
       currentPoint: new BN(0)
     })
 
-    logger.info(quote.outputAmount.toString())
     return quote.maximumAmountIn?.toString()
   } else {
     throw new Error('audioAmount or tokenAmount is required')
@@ -119,7 +117,7 @@ const getBondingCurveQuote = async ({
 const getQuoteFromSolInput = async (
   jupiterApi: JupiterApi,
   dbcClient: DynamicBondingCurveClient,
-  solAmountLamports: number
+  solAmountLamports: string
 ) => {
   // Get SOL to AUDIO quote
   const solToAudioQuote = await getSolToAudioQuote(
@@ -130,26 +128,24 @@ const getQuoteFromSolInput = async (
   // Get SOL to USDC quote
   const solToUsdcQuote = await getSolToUsdcQuote(jupiterApi, solAmountLamports)
 
-  // Use the AUDIO amount from Jupiter quote to get bonding curve quote
+  // Use the AUDIO amount from the jupiter quote to get a quote for tokens out of the bonding curve
   const audioAmount = new BN(solToAudioQuote.outAmount)
-
-  // Get the pool quote with token output calculation
   const audioToTokensQuote = await getBondingCurveQuote({
     dbcClient,
     audioAmount
   })
   return {
-    solInputAmount: Number(solAmountLamports),
-    usdcInputAmount: Number(solToUsdcQuote.outAmount),
-    tokenOutputAmount: Number(audioToTokensQuote),
-    audioSwapAmount: Number(solToAudioQuote.outAmount)
+    solInputAmount: solAmountLamports,
+    usdcInputAmount: solToUsdcQuote.outAmount,
+    tokenOutputAmount: audioToTokensQuote,
+    audioSwapAmount: solToAudioQuote.outAmount
   }
 }
 
 const getQuoteFromTokenOutput = async (
   jupiterApi: JupiterApi,
   dbcClient: DynamicBondingCurveClient,
-  tokenAmount: number
+  tokenAmount: string
 ) => {
   // Get AUDIO to TOKEN quote
   const audioAmount = await getBondingCurveQuote({
@@ -157,17 +153,14 @@ const getQuoteFromTokenOutput = async (
     tokenAmount: new BN(tokenAmount)
   })
 
-  const solAmount = await getAudioToSolQuote(jupiterApi, Number(audioAmount))
-  const usdcAmount = await getSolToUsdcQuote(
-    jupiterApi,
-    Number(solAmount.outAmount)
-  )
+  const solAmount = await getAudioToSolQuote(jupiterApi, audioAmount!)
+  const usdcAmount = await getSolToUsdcQuote(jupiterApi, solAmount.outAmount)
 
   return {
-    solInputAmount: Number(solAmount.outAmount),
-    usdcInputAmount: Number(usdcAmount.outAmount),
-    tokenOutputAmount: Number(tokenAmount),
-    audioSwapAmount: Number(audioAmount)
+    solInputAmount: solAmount.outAmount,
+    usdcInputAmount: usdcAmount.outAmount,
+    tokenOutputAmount: tokenAmount,
+    audioSwapAmount: audioAmount
   }
 }
 
@@ -176,16 +169,16 @@ export const firstBuyQuote = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { solAmount: solInput, tokenAmount: tokenOutput } = req.query
+    const { solInputAmount, tokenOutputAmount } = req.query
 
-    if (!solInput && !tokenOutput) {
+    if (!solInputAmount && !tokenOutputAmount) {
       res.status(400).json({
         error: 'solAmount or tokenAmount is required'
       })
       return
     }
 
-    if (solInput && typeof solInput !== 'string') {
+    if (solInputAmount && typeof solInputAmount !== 'string') {
       res.status(400).json({
         error:
           'solAmount is required and must be a string representing the amount in lamports'
@@ -193,47 +186,40 @@ export const firstBuyQuote = async (
       return
     }
 
-    if (tokenOutput && typeof tokenOutput !== 'string') {
+    if (tokenOutputAmount && typeof tokenOutputAmount !== 'string') {
       res.status(400).json({
         error:
-          'tokenAmount is required and must be a string representing the amount in lamports'
+          'tokenAmount is required and must be a string representing the amount in standard 9 decimal format'
       })
       return
     }
 
-    const solAmountParsed = solInput ? parseInt(solInput) : undefined
-    const tokenAmountParsed = tokenOutput ? parseInt(tokenOutput) : undefined
-
-    // if (isNaN(solAmountLamports) || solAmountLamports <= 0) {
-    //   res.status(400).json({
-    //     error: 'solAmount must be a valid positive number in lamports'
-    //   })
-    //   return
-    // }
-
-    // Initialize connection and bonding curve client
+    // Solana connections
     const connection = getConnection()
     const dbcClient = new DynamicBondingCurveClient(connection, 'confirmed')
-
-    // Initialize Jupiter API client
     const jupiterApi = createJupiterApiClient()
-    if (solInput && solAmountParsed) {
+
+    // Handle SOL -> token quote
+    if (solInputAmount && solInputAmount) {
       const quoteFromSolData = await getQuoteFromSolInput(
         jupiterApi,
         dbcClient,
-        solAmountParsed
+        solInputAmount
       )
       res.status(200).send(quoteFromSolData as FirstBuyQuoteResponse)
     }
-    if (tokenOutput && tokenAmountParsed) {
+
+    // Handle token -> SOL quote
+    if (tokenOutputAmount && tokenOutputAmount) {
       const quoteFromTokenData = await getQuoteFromTokenOutput(
         jupiterApi,
         dbcClient,
-        tokenAmountParsed
+        tokenOutputAmount
       )
       res.status(200).send(quoteFromTokenData as FirstBuyQuoteResponse)
     }
   } catch (error) {
+    logger.error(error)
     res.status(500).json({
       error: 'Failed to get first buy quote',
       details: error instanceof Error ? error.message : 'Unknown error'

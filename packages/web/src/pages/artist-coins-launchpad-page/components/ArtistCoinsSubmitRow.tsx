@@ -9,6 +9,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { useFormikContext } from 'formik'
 
 import zIndex from 'utils/zIndex'
 
@@ -27,19 +28,21 @@ type ArtistCoinsSubmitRowProps = {
   cancelText?: string
   backIcon?: boolean
   submit?: boolean
+  errorText?: string
 }
 
 export const ArtistCoinsSubmitRow = ({
   onContinue,
   onBack,
-  isValid = true,
   isLoading = false,
   continueText = defaultMessages.continue,
   cancelText = defaultMessages.cancel,
   backIcon = false,
-  submit = false
+  submit = false,
+  errorText
 }: ArtistCoinsSubmitRowProps) => {
   const { color, spacing } = useTheme()
+  const { isValid } = useFormikContext()
   const [showError, setShowError] = useState(false)
 
   const handleCreate = () => {
@@ -97,7 +100,7 @@ export const ArtistCoinsSubmitRow = ({
           <Flex alignItems='center' gap='xs'>
             <IconError color='danger' size='s' />
             <Text color='danger' size='s' variant='body'>
-              {defaultMessages.fixErrors}
+              {errorText ?? defaultMessages.fixErrors}
             </Text>
           </Flex>
         ) : null}

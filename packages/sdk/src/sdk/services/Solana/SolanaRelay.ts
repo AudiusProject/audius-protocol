@@ -230,21 +230,21 @@ export class SolanaRelay extends BaseAPI {
       'solInputAmount' in params ? params.solInputAmount : undefined
     const tokenOutputAmount =
       'tokenOutputAmount' in params ? params.tokenOutputAmount : undefined
-    const noSolInput = !solInputAmount || solInputAmount <= 0
-    const noTokenInput = !tokenOutputAmount || tokenOutputAmount <= 0
+    const noSolInput = !solInputAmount
+    const noTokenInput = !tokenOutputAmount
     if (noSolInput && noTokenInput) {
       throw new Error(
-        'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided and be a positive number'
+        'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided'
       )
     }
 
     const headerParameters: runtime.HTTPHeaders = {}
     const queryParameters: runtime.HTTPQuery = solInputAmount
       ? {
-          solAmount: solInputAmount.toString()
+          solInputAmount
         }
       : {
-          tokenAmount: tokenOutputAmount!.toString()
+          tokenOutputAmount: tokenOutputAmount!
         }
 
     const response = await this.request(

@@ -141,16 +141,16 @@ export type LaunchCoinResponse = {
 }
 
 export type FirstBuyQuoteResponse = {
-  solInputAmount: number
-  usdcInputAmount: number
-  tokenOutputAmount: number
-  audioSwapAmount: number
+  solInputAmount: string
+  usdcInputAmount: string
+  tokenOutputAmount: string
+  audioSwapAmount: string
 }
 
 export type FirstBuyQuoteRequest =
   | {
-      solInputAmount: number // in lamports
+      solInputAmount: string // in lamports
     }
   | {
-      tokenOutputAmount: number // in big number 9 decimal format
+      tokenOutputAmount: string // in big number 9 decimal format
     }
