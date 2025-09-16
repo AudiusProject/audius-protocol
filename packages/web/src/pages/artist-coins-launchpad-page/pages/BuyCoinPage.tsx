@@ -7,7 +7,7 @@ import {
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { Chain } from '@audius/common/models'
-import { formatNumberCommas, shortenSPLAddress } from '@audius/common/utils'
+import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
