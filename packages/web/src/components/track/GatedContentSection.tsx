@@ -15,6 +15,7 @@ import {
   User,
   isContentTokenGated
 } from '@audius/common/models'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   usersSocialActions as socialActions,
   tippingActions,
@@ -202,7 +203,7 @@ const LockedGatedContentSection = ({
   const handlePurchaseToken = useRequiresAccountCallback(() => {
     if (!coin?.ticker) return
 
-    dispatch(push(`/wallet/${coin.ticker}`))
+    dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)))
 
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)

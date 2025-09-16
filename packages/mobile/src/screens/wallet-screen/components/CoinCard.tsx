@@ -122,12 +122,6 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
                   >
                     {coinData?.ticker}
                   </Text>
-                  {/* TODO: Add coin value for AllCoinsScreen */}
-                  {/* {!showUserBalance ? (
-                    <Text variant='heading' size='m' color='subdued'>
-                      (Coin Value)
-                    </Text>
-                  ) : null} */}
                 </Flex>
                 {showUserBalance ? (
                   <Text variant='heading' size='s' color='subdued'>

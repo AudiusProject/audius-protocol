@@ -69,12 +69,11 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
-export const ASSET_DETAIL_PAGE = '/wallet/:ticker'
+export const ASSET_DETAIL_PAGE = '/coins/:ticker'
 export const WALLET_PAGE = '/wallet'
 export const WALLET_GUIDE_PAGE = '/wallet/guide'
-export const ALL_COINS_PAGE = '/wallet/coins'
 export const COINS_CREATE_PAGE = '/coins/create'
-export const COINS_EXPLORE_PAGE = '/coins/explore'
+export const COINS_EXPLORE_PAGE = '/coins'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
@@ -238,7 +237,6 @@ export const authenticatedRoutes = [
   SALES_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
-  ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
   COINS_EXPLORE_PAGE,
   WALLET_GUIDE_PAGE
@@ -293,7 +291,7 @@ export const orderedRoutes = [
   WALLET_AUDIO_PAGE,
   ASSET_DETAIL_PAGE,
   WALLET_PAGE,
-  ALL_COINS_PAGE,
+  COINS_EXPLORE_PAGE,
   COINS_CREATE_PAGE,
   WALLET_GUIDE_PAGE,
   REWARDS_PAGE,
@@ -347,7 +345,6 @@ export const staticRoutes = new Set([
   AUDIO_PAGE,
   WALLET_PAGE,
   WALLET_GUIDE_PAGE,
-  ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
   WALLET_AUDIO_PAGE,
   REWARDS_PAGE,

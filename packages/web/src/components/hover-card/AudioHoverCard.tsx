@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { AUDIO_TICKER, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import {
@@ -80,7 +81,7 @@ export const AudioHoverCard = ({
 
   const handleClick = useCallback(() => {
     onClick?.()
-    navigate(`/wallet/${AUDIO_TICKER}`)
+    navigate(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER))
   }, [navigate, onClick])
 
   return (
