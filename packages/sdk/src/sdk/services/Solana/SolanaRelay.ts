@@ -39,7 +39,9 @@ export class SolanaRelay extends BaseAPI {
     if (this.feePayer !== null) {
       return this.feePayer
     }
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const response = await this.request(
       {
         path: '/feePayer',
@@ -69,7 +71,9 @@ export class SolanaRelay extends BaseAPI {
   public async getLocationInstruction(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ) {
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const response = await this.request(
       {
         path: '/instruction/location',
@@ -106,7 +110,9 @@ export class SolanaRelay extends BaseAPI {
       RelaySchema
     )(params)
 
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const body: RelayRequestBody = {
       transaction: Buffer.from(transaction.serialize()).toString('base64'),
       confirmationOptions,
