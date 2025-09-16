@@ -164,6 +164,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
       balance={tokenBalanceFormatted || ''}
       dollarValue={tokenDollarValue || ''}
       loading={isLoading}
+      name={coinData?.name ?? ''}
       onClick={() => handleCoinClick(coin.ticker)}
     />
   )
