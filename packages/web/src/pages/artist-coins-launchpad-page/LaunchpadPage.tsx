@@ -1,14 +1,17 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   ConnectedWallet,
+  getWalletSolBalanceOptions,
   useConnectedWallets,
-  useCurrentAccountUser
+  useCurrentAccountUser,
+  useQueryContext
 } from '@audius/common/api'
 import { Chain } from '@audius/common/models'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import { IconArtistCoin } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
+import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -22,9 +25,17 @@ import {
 } from 'hooks/useConnectAndAssociateWallets'
 import { useLaunchCoin } from 'hooks/useLaunchCoin'
 
-import { LaunchpadModal } from './components/LaunchpadModal'
+import {
+  InsufficientBalanceModal,
+  LaunchpadSubmitModal
+} from './components/LaunchpadModals'
 import type { SetupFormValues } from './components/types'
-import { LAUNCHPAD_COIN_DESCRIPTION, Phase, SOLANA_DECIMALS } from './constants'
+import {
+  LAUNCHPAD_COIN_DESCRIPTION,
+  MIN_SOL_BALANCE,
+  Phase,
+  SOLANA_DECIMALS
+} from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { setupFormSchema } from './validation'
 
@@ -32,9 +43,22 @@ const messages = {
   title: 'Create Your Artist Coin'
 }
 
+const getConnectedWallet = (
+  connectedWallets: ConnectedWallet[] | undefined
+) => {
+  return connectedWallets?.filter(
+    (wallet: ConnectedWallet) => wallet.chain === Chain.Sol
+  )?.[0]
+}
+
 const LaunchpadPageContent = () => {
   const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
+  const queryClient = useQueryClient()
+  const queryContext = useQueryContext()
+  const { data: connectedWallets } = useConnectedWallets()
+  const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
+    useState(false)
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -43,22 +67,55 @@ const LaunchpadPageContent = () => {
 
   const header = <Header primary={messages.title} icon={IconArtistCoin} />
 
-  // Wallet connection handlers
-  const handleWalletConnectSuccess = () => {
-    setPhase(Phase.SETUP)
+  const getIsValidWalletBalance = async (walletAddress: string) => {
+    // Check if wallet has sufficient SOL balance
+    const balanceData = await queryClient.fetchQuery(
+      getWalletSolBalanceOptions(queryContext, {
+        walletAddress
+      })
+    )
+
+    const walletBalanceLamports = balanceData.balanceLamports
+    return walletBalanceLamports > MIN_SOL_BALANCE
   }
 
-  const handleWalletConnectError = (error: unknown) => {
+  // Wallet connection handlers
+  const handleWalletConnectSuccess = async (wallets: ConnectedWallet[]) => {
+    const newWallet = wallets[0]
+
+    const isValidWalletBalance = await getIsValidWalletBalance(
+      newWallet.address
+    )
+    try {
+      if (isValidWalletBalance) {
+        setPhase(Phase.SETUP)
+      } else {
+        setIsInsufficientBalanceModalOpen(true)
+      }
+    } catch (error) {
+      alert('Failed to check wallet balance. Please try again.')
+    }
+  }
+
+  const handleWalletConnectError = async (error: unknown) => {
     console.error('Wallet connection failed:', error)
 
-    // If wallet is already associated, continue with the flow
+    // If wallet is already linked, continue with the flow
     if (error instanceof AlreadyAssociatedError) {
-      setPhase(Phase.SETUP)
-      return
+      const lastConnectedWallet = getConnectedWallet(connectedWallets)
+      if (lastConnectedWallet) {
+        const isValidWalletBalance = await getIsValidWalletBalance(
+          lastConnectedWallet?.address
+        )
+        if (isValidWalletBalance) {
+          setPhase(Phase.SETUP)
+        } else {
+          setIsInsufficientBalanceModalOpen(true)
+        }
+      }
     }
 
-    // For other errors, show alert
-    alert('Failed to connect wallet. Please try again.')
+    // TODO: add an error toast here
   }
 
   const { openAppKitModal, isPending: isWalletConnectPending } =
@@ -131,13 +188,19 @@ const LaunchpadPageContent = () => {
   }
 
   return (
-    <Page
-      title={messages.title}
-      header={header}
-      contentClassName='artist-coins-launchpad-page'
-    >
-      {renderCurrentPage()}
-    </Page>
+    <>
+      <InsufficientBalanceModal
+        isOpen={isInsufficientBalanceModalOpen}
+        onClose={() => setIsInsufficientBalanceModalOpen(false)}
+      />
+      <Page
+        title={messages.title}
+        header={header}
+        contentClassName='artist-coins-launchpad-page'
+      >
+        {renderCurrentPage()}
+      </Page>
+    </>
   )
 }
 
@@ -153,15 +216,13 @@ export const LaunchpadPage = () => {
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
 
-  // Get the most recent connected Solana wallet (last in the array)
-  // Filter to only Solana wallets since only SOL wallets can be connected
-  const connectedWallet: ConnectedWallet | undefined = useMemo(
-    () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
-    [connectedWallets]
-  )
-
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
+      // Get the most recent connected Solana wallet (last in the array)
+      // Filter to only Solana wallets since only SOL wallets can be connected
+      const connectedWallet: ConnectedWallet | undefined =
+        getConnectedWallet(connectedWallets)
+
       setIsModalOpen(true)
       if (!user) {
         throw new Error('No current user found for unknown reason')
@@ -189,7 +250,7 @@ export const LaunchpadPage = () => {
         initialBuyAmountSolLamports: payAmountLamports
       })
     },
-    [launchCoin, user, connectedWallet]
+    [launchCoin, user, connectedWallets]
   )
 
   return (
@@ -207,7 +268,7 @@ export const LaunchpadPage = () => {
       onSubmit={handleSubmit}
     >
       <Form>
-        <LaunchpadModal
+        <LaunchpadSubmitModal
           isPending={isPending}
           isSuccess={isSuccess}
           isError={isError}

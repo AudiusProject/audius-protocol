@@ -120,5 +120,6 @@ export const QUERY_KEYS = {
   coinByTicker: 'coinByTicker',
   userbank: 'userbank',
   tokenExchangeRate: 'tokenExchangeRate',
-  tokenPair: 'tokenPair'
+  tokenPair: 'tokenPair',
+  walletSolBalance: 'walletSolBalance'
 } as const

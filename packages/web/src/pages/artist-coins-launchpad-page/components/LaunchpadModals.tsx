@@ -1,21 +1,27 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
+import { musicConfettiActions } from '@audius/common/store'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
   Button,
   Flex,
+  Hint,
+  IconInfo,
   IconX,
   LoadingSpinner,
   Modal,
   ModalContent,
   ModalHeader,
   Paper,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
+import { useDispatch } from 'react-redux'
 
 import { AddressTile } from 'components/address-tile'
+import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 
 import { SOLANA_DECIMALS } from '../constants'
 
@@ -32,7 +38,17 @@ const messages = {
   purchaseSummary: 'Purchase Summary',
   address: 'Coin Address',
   addressTitle: 'Coin Address',
-  shareToX: 'Share to X'
+  shareToX: 'Share to X',
+  insufficientBalanceTitle: 'Check your wallet balance',
+  insufficientBalanceDescription:
+    "You'll need to add funds to your wallet before you can continue.",
+  solAmount: '0.015 SOL',
+  solDescription: ' — required to create your coin',
+  audioDescription:
+    '• Extra SOL if you want to make an initial buy of your coin (optional).',
+  hintText: 'Add SOL to your connected wallet',
+  learnHowToFund: 'Learn how to fund your wallet',
+  sendAudio: 'Send AUDIO'
 }
 
 const LoadingState = ({ numTxs }: { numTxs: number }) => (
@@ -74,8 +90,19 @@ const SuccessState = ({
 }) => {
   const { mint, name, ticker, logoUri, amountUi, amountUsd } = coin
 
+  const dispatch = useDispatch()
+  const hasShownConfettiRef = useRef(false)
+
+  useEffect(() => {
+    if (!hasShownConfettiRef.current) {
+      dispatch(musicConfettiActions.show())
+      hasShownConfettiRef.current = true
+    }
+  }, [dispatch])
+
   return (
     <>
+      <ConnectedMusicConfetti />
       <ModalHeader showDismissButton>
         <Flex justifyContent='center'>
           <Text variant='label' size='xl' color='default' strength='strong'>
@@ -178,7 +205,7 @@ const SuccessState = ({
 
 const ErrorState = () => <ModalContent>TODO: error state</ModalContent>
 
-export const LaunchpadModal = ({
+export const LaunchpadSubmitModal = ({
   isPending,
   isSuccess,
   isError,
@@ -223,6 +250,62 @@ export const LaunchpadModal = ({
       {isPending ? <LoadingState numTxs={numTxs} /> : null}
       {isSuccess ? <SuccessState coin={coin} /> : null}
       {isError ? <ErrorState /> : null}
+    </Modal>
+  )
+}
+
+export const InsufficientBalanceModal = ({
+  isOpen,
+  onClose
+}: {
+  isOpen: boolean
+  onClose: () => void
+}) => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalContent>
+        <ModalHeader showDismissButton>
+          <Flex justifyContent='center'>
+            <Text variant='label' size='xl' color='default' strength='strong'>
+              {messages.insufficientBalanceTitle}
+            </Text>
+          </Flex>
+        </ModalHeader>
+        <Flex direction='column' gap='xl' pt='xl'>
+          <Text variant='body' size='l' color='default'>
+            {messages.insufficientBalanceDescription}
+          </Text>
+
+          <Flex direction='column' gap='l'>
+            <Flex direction='column' gap='s'>
+              <Text variant='body' size='l' color='default'>
+                {'• '}
+                <Text variant='body' size='l' color='default' strength='strong'>
+                  {messages.solAmount}
+                </Text>
+                {messages.solDescription}
+              </Text>
+              <Text variant='body' size='l' color='default'>
+                {messages.audioDescription}
+              </Text>
+            </Flex>
+          </Flex>
+
+          <Hint icon={IconInfo}>
+            <Flex gap='m' direction='column'>
+              <Text>{messages.hintText}</Text>{' '}
+              <TextLink
+                variant='visible'
+                onClick={() => {
+                  /* TODO: DESIGN TO PROVIDE LINK */
+                }}
+              >
+                {messages.learnHowToFund}
+              </TextLink>
+            </Flex>
+          </Hint>
+        </Flex>
+      </ModalContent>
     </Modal>
   )
 }
