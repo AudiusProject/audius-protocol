@@ -61,10 +61,11 @@ const LaunchpadPageContent = () => {
     alert('Failed to connect wallet. Please try again.')
   }
 
-  const { openAppKitModal } = useConnectAndAssociateWallets(
-    handleWalletConnectSuccess,
-    handleWalletConnectError
-  )
+  const { openAppKitModal, isPending: isWalletConnectPending } =
+    useConnectAndAssociateWallets(
+      handleWalletConnectSuccess,
+      handleWalletConnectError
+    )
 
   const handleSplashContinue = async () => {
     // Switch to Solana network to prioritize SOL wallets
@@ -97,7 +98,12 @@ const LaunchpadPageContent = () => {
   const renderCurrentPage = () => {
     switch (phase) {
       case Phase.SPLASH:
-        return <SplashPage onContinue={handleSplashContinue} />
+        return (
+          <SplashPage
+            onContinue={handleSplashContinue}
+            isPending={isWalletConnectPending}
+          />
+        )
       case Phase.SETUP:
         return (
           <SetupPage
@@ -115,7 +121,12 @@ const LaunchpadPageContent = () => {
       case Phase.BUY_COIN:
         return <BuyCoinPage onBack={handleBuyCoinBack} />
       default:
-        return <SplashPage onContinue={handleSplashContinue} />
+        return (
+          <SplashPage
+            onContinue={handleSplashContinue}
+            isPending={isWalletConnectPending}
+          />
+        )
     }
   }
 
