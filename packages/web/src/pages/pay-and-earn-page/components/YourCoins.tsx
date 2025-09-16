@@ -75,7 +75,7 @@ const YourCoinsSkeleton = () => {
 const messages = {
   ...buySellMessages,
   managedAccount: "You can't do that as a managed user",
-  buySellNotSupported: 'Buy/Sell is not yet supported in your region'
+  buySellNotSupported: 'This is not supported in your region'
 }
 
 const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
