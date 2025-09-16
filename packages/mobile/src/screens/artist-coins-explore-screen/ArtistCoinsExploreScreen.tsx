@@ -84,7 +84,6 @@ const Header = ({
 }) => {
   const navigation = useNavigation()
   return (
-    // @ts-ignore webp is causing type error but works
     <ImageBackground source={imageSearchHeaderBackground}>
       <Flex row pt='unit14' ph='l' pb='m' gap='m' alignItems='center'>
         <IconCaretLeft
