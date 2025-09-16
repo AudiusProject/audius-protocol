@@ -89,7 +89,7 @@ const Header = ({
       <Flex row pt='unit14' ph='l' pb='m' gap='m' alignItems='center'>
         <IconCaretLeft
           size='l'
-          color='white'
+          color='staticWhite'
           onPress={() => navigation.goBack()}
         />
         <Flex flex={1}>
