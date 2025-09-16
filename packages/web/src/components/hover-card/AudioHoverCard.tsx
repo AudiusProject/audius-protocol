@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
@@ -70,14 +70,22 @@ export const AudioHoverCard = ({
   const navigate = useNavigate()
   const { cornerRadius } = useTheme()
 
+  // Track hover state to conditionally fetch token balance
+  const [isHovered, setIsHovered] = useState(false)
+
+  const handleHover = useCallback((hovered: boolean) => {
+    setIsHovered(hovered)
+  }, [])
+
   const { data: tokenBalance } = useTokenBalance({
     mint: TOKEN_LISTING_MAP.AUDIO.address,
-    userId
+    userId,
+    enabled: isHovered
   })
 
   const formattedBalance = tokenBalance
     ? formatCount(Number(tokenBalance.balance))
-    : null
+    : '...'
 
   const handleClick = useCallback(() => {
     onClick?.()
@@ -103,7 +111,7 @@ export const AudioHoverCard = ({
                 hex
               />
             }
-            amount={formattedBalance ?? ''}
+            amount={formattedBalance}
           />
         </>
       }
@@ -111,6 +119,7 @@ export const AudioHoverCard = ({
       transformOrigin={transformOrigin}
       onClick={handleClick}
       triggeredBy={triggeredBy}
+      onHover={handleHover}
     >
       {children}
     </HoverCard>

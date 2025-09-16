@@ -32,6 +32,12 @@ export interface UserFullArtistCoinBadge {
      * @memberof UserFullArtistCoinBadge
      */
     logoUri?: string;
+    /**
+     * The coin symbol/ticker
+     * @type {string}
+     * @memberof UserFullArtistCoinBadge
+     */
+    ticker?: string;
 }
 
 /**
@@ -55,6 +61,7 @@ export function UserFullArtistCoinBadgeFromJSONTyped(json: any, ignoreDiscrimina
         
         'mint': !exists(json, 'mint') ? undefined : json['mint'],
         'logoUri': !exists(json, 'logo_uri') ? undefined : json['logo_uri'],
+        'ticker': !exists(json, 'ticker') ? undefined : json['ticker'],
     };
 }
 
@@ -69,6 +76,7 @@ export function UserFullArtistCoinBadgeToJSON(value?: UserFullArtistCoinBadge | 
         
         'mint': value.mint,
         'logo_uri': value.logoUri,
+        'ticker': value.ticker,
     };
 }
 

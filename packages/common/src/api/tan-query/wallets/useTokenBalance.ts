@@ -74,7 +74,8 @@ export const useTokenBalance = ({
           decimals
         }
       },
-      enabled: !isUsdc
+      ...queryOptions,
+      enabled: !isUsdc && queryOptions.enabled !== false
     }
   )
 
@@ -82,7 +83,6 @@ export const useTokenBalance = ({
   const usdcQuery = useUSDCBalance({
     isPolling,
     pollingInterval,
-    enabled: isUsdc && !!ethAddress,
     select: (usdcBalance) => {
       if (!usdcBalance) return null
 
@@ -97,7 +97,8 @@ export const useTokenBalance = ({
         decimals: USDC_DECIMALS
       }
     },
-    ...queryOptions
+    ...queryOptions,
+    enabled: isUsdc && !!ethAddress && queryOptions.enabled !== false
   })
 
   return isUsdc ? usdcQuery : userCoinQuery
