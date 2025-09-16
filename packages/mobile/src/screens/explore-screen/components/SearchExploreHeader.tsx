@@ -327,7 +327,6 @@ export const SearchExploreHeader = (props: SearchExploreHeaderProps) => {
         <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
       </Flex>
       <AnimatedFlex style={[{ zIndex: 2 }, headerSlideAnimatedStyle]}>
-        {/* @ts-ignore webp is causing type error but works */}
         <ImageBackground source={imageSearchHeaderBackground}>
           <AnimatedFlex pt='unit14' ph='l' style={headerPaddingShrinkStyle}>
             <Flex
