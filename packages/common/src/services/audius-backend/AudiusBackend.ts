@@ -378,7 +378,7 @@ export const audiusBackend = ({
     return await signData({ sdk, data })
   }
 
-  async function signDiscoveryNodeRequest({
+  async function signAPIRequest({
     sdk,
     input
   }: {
@@ -390,7 +390,7 @@ export const audiusBackend = ({
       data = input
     } else {
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-      data = `Click sign to authenticate with discovery node: ${unixTs}`
+      data = `Click sign to authenticate with API: ${unixTs}`
     }
     return await signData({ sdk, data })
   }
@@ -1103,7 +1103,7 @@ export const audiusBackend = ({
     sendWelcomeEmail,
     signData,
     signGatedContentRequest,
-    signDiscoveryNodeRequest,
+    signAPIRequest,
     signIdentityServiceRequest,
     instagramHandle,
     tiktokHandle,

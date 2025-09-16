@@ -2,7 +2,6 @@ import { ChatPermission, Genre } from '@audius/sdk'
 
 import { FeedFilter } from '~/models/FeedFilter'
 import { ID, PlayableType } from '~/models/Identifiers'
-import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
 import { TimeRange } from '~/models/TimeRange'
 import {
   SolanaWalletAddress,
@@ -15,6 +14,8 @@ import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
 import { PurchaseMethod } from './PurchaseContent'
 import { AccessConditions, TrackAccessType } from './Track'
+
+import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -330,7 +331,6 @@ export enum Name {
   // System
   WEB_VITALS = 'Web Vitals',
   PERFORMANCE = 'Performance',
-  DISCOVERY_PROVIDER_SELECTION = 'Discovery Provider Selection',
   CREATOR_NODE_SELECTION = 'Creator Node Selection',
 
   // Remixes
@@ -1619,12 +1619,6 @@ type Performance = {
   eventName: Name.PERFORMANCE
   metric: string
   value: number
-}
-
-type DiscoveryProviderSelection = {
-  eventName: Name.DISCOVERY_PROVIDER_SELECTION
-  endpoint: string
-  reason: string
 }
 
 type StemCompleteUpload = {
@@ -3015,7 +3009,6 @@ export type AllTrackingEvents =
   | NotOnFirstPage
   | BrowserNotificationSetting
   | TweetFirstUpload
-  | DiscoveryProviderSelection
   | WebVitals
   | Performance
   | StemCompleteUpload

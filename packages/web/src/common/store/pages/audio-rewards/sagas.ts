@@ -642,7 +642,7 @@ function* watchFetchUserChallenges() {
 
 /**
  * Resets the listen streak override if current_step_count is fetched and non-zero
- * This handles the case where discovery can reset the user's listen streak
+ * This handles the case where API can reset the user's listen streak
  */
 function* handleOptimisticListenStreakUpdate(
   challenge: UserChallenge,
