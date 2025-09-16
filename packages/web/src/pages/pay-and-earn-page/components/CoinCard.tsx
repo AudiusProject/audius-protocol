@@ -28,6 +28,7 @@ const HexagonSkeleton = () => {
 
 export type CoinCardProps = {
   icon: string | ReactNode
+  name: string
   symbol: string
   balance: string
   dollarValue: string
@@ -37,6 +38,7 @@ export type CoinCardProps = {
 
 export const CoinCard = ({
   icon,
+  name,
   symbol,
   balance,
   dollarValue,
@@ -64,7 +66,7 @@ export const CoinCard = ({
     <Flex
       alignItems='center'
       justifyContent='space-between'
-      p='xl'
+      p='l'
       flex={1}
       onClick={onClick}
       css={{
@@ -72,29 +74,36 @@ export const CoinCard = ({
         '&:hover': onClick ? { backgroundColor: color.background.surface2 } : {}
       }}
     >
-      <Flex alignItems='center' gap='m'>
+      <Flex alignItems='center' gap='l'>
         {loading ? <HexagonSkeleton /> : renderIcon()}
-        <Flex direction='column' gap='xs'>
+        <Flex direction='column' gap='2xs' flex={1}>
           {loading ? (
             <CoinCardSkeleton />
           ) : (
             <>
-              <Flex gap='xs'>
-                <Text variant='heading' size='l' color='default'>
+              <Text variant='heading' size='s'>
+                {name}
+              </Text>
+              <Flex gap='xs' alignItems='center'>
+                <Text variant='title' size='l'>
                   {balance}
                 </Text>
-                <Text variant='heading' size='l' color='subdued'>
+                <Text variant='title' size='l' color='subdued'>
                   {symbol}
                 </Text>
               </Flex>
-              <Text variant='heading' size='s' color='subdued'>
-                {dollarValue}
-              </Text>
             </>
           )}
         </Flex>
       </Flex>
-      {onClick ? <IconCaretRight size='l' color='subdued' /> : null}
+      <Flex alignItems='center' gap='m'>
+        {!loading && (
+          <Text variant='title' size='l' color='default'>
+            {dollarValue}
+          </Text>
+        )}
+        {onClick ? <IconCaretRight size='l' color='subdued' /> : null}
+      </Flex>
     </Flex>
   )
 }
