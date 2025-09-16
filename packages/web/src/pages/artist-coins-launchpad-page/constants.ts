@@ -17,4 +17,4 @@ ${coinTicker} is an artist coin created by ${artistHandle} on Audius. Learn more
 
 export const SOLANA_DECIMALS = 9
 
-export const MIN_SOL_BALANCE = 20000000 // 0.02 SOL - Minimum amount to launch a coin + a tiny extra for swap fees
+export const MIN_SOL_BALANCE = 2000000 // 0.02 SOL - Minimum amount to launch a coin + a bit extra for swap fees

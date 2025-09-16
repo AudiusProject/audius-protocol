@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   ConnectedWallet,
@@ -28,6 +28,7 @@ import {
 } from 'hooks/useConnectAndAssociateWallets'
 import { useLaunchCoin } from 'hooks/useLaunchCoin'
 
+import { ConnectedWalletHeader } from './components'
 import {
   InsufficientBalanceModal,
   LaunchpadSubmitModal
@@ -61,6 +62,10 @@ const LaunchpadPageContent = () => {
   const queryClient = useQueryClient()
   const queryContext = useQueryContext()
   const { data: connectedWallets } = useConnectedWallets()
+  const connectedWallet = useMemo(
+    () => getConnectedWallet(connectedWallets),
+    [connectedWallets]
+  )
   const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
     useState(false)
   const dispatch = useDispatch()
@@ -70,7 +75,17 @@ const LaunchpadPageContent = () => {
     title: messages.title
   })
 
-  const header = <Header primary={messages.title} icon={IconArtistCoin} />
+  const header = (
+    <Header
+      primary={messages.title}
+      icon={IconArtistCoin}
+      rightDecorator={
+        connectedWallet && phase !== Phase.SPLASH ? (
+          <ConnectedWalletHeader connectedWallet={connectedWallet} />
+        ) : null
+      }
+    />
+  )
 
   const getIsValidWalletBalance = async (walletAddress: string) => {
     // Check if wallet has sufficient SOL balance
@@ -118,8 +133,6 @@ const LaunchpadPageContent = () => {
   }
 
   const handleWalletConnectError = async (error: unknown) => {
-    console.error('Wallet connection failed:', error)
-
     // If wallet is already linked, continue with the flow
     if (error instanceof AlreadyAssociatedError) {
       const lastConnectedWallet = getConnectedWallet(connectedWallets)
