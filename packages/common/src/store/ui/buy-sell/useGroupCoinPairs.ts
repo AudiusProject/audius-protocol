@@ -4,12 +4,13 @@ import { useQueryContext, UserCoin } from '~/api'
 import { useFeatureFlag } from '~/hooks'
 import { FeatureFlags } from '~/services'
 
-export type CoinPairItem = UserCoin | 'find-more' | 'audio-coin'
+export type CoinPairItem = UserCoin | 'audio-coin'
 
 /**
  * Groups coins into pairs for responsive layout rendering.
- * Filters out USDC coins and optionally pairs remaining coins with FindMoreCoins component
- * based on the ARTIST_COINS feature flag.
+ * Filters out USDC coins for responsive layout.
+ * When artist coins feature flag is disabled, only shows AUDIO coins.
+ * Shows audio coin card when no coins are available and artist coins are disabled.
  *
  * @param coins Array of user coins
  * @param singleColumn Whether to force single column layout (1 item per row)
@@ -23,7 +24,7 @@ export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
 
   return useMemo(() => {
     if (!coins) {
-      return isArtistCoinsEnabled ? [['find-more']] : []
+      return [['audio-coin']]
     }
 
     // Filter out USDC coins
@@ -40,15 +41,7 @@ export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
 
     // If no coins after filtering, show audio coin card
     if (filteredCoins.length === 0) {
-      const basePairs: CoinPairItem[][] = [['audio-coin']]
-
-      if (singleColumn && isArtistCoinsEnabled) {
-        basePairs.push(['find-more'])
-      } else if (!singleColumn && isArtistCoinsEnabled) {
-        basePairs[0].push('find-more')
-      }
-
-      return basePairs
+      return [['audio-coin']]
     }
 
     if (singleColumn) {
@@ -56,27 +49,14 @@ export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
       filteredCoins.forEach((coin) => {
         coinPairs.push([coin])
       })
-
-      // Add FindMoreCoins in its own row if artist coins enabled
-      if (isArtistCoinsEnabled) {
-        coinPairs.push(['find-more'])
-      }
     } else {
       // Two column layout - group coins into pairs
       for (let i = 0; i < filteredCoins.length; i += 2) {
         const pair: CoinPairItem[] = [filteredCoins[i]]
         if (i + 1 < filteredCoins.length) {
           pair.push(filteredCoins[i + 1])
-        } else if (isArtistCoinsEnabled) {
-          // If odd number of coins and artist coins enabled, pair the last one with FindMoreCoins
-          pair.push('find-more')
         }
         coinPairs.push(pair)
-      }
-
-      // If even number of coins and artist coins enabled, FindMoreCoins gets its own row
-      if (filteredCoins.length % 2 === 0 && isArtistCoinsEnabled) {
-        coinPairs.push(['find-more'])
       }
     }
 

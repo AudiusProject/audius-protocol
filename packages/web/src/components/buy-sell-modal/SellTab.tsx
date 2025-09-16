@@ -6,10 +6,13 @@ import {
   useTokenPrice
 } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
+
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
@@ -27,6 +30,7 @@ export const SellTab = ({
   onInputTokenChange
 }: SellTabProps) => {
   const { baseToken, quoteToken } = tokenPair
+  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
   // State for token selection
   const [selectedInputToken, setSelectedInputToken] = useState(baseToken)
@@ -103,7 +107,7 @@ export const SellTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
-            availableTokens={artistCoins}
+            availableTokens={isArtistCoinsEnabled ? artistCoins : undefined}
             onTokenChange={handleInputTokenChange}
           />
           <OutputTokenSection
@@ -118,21 +122,6 @@ export const SellTab = ({
             hideTokenDisplay={true} // Hide token display completely in sell tab output
           />
         </>
-      )}
-
-      {tokenPrice && (
-        <Flex alignItems='center' gap='xs'>
-          <Text variant='body' size='s' color='subdued'>
-            {buySellMessages.exchangeRateLabel}
-          </Text>
-          <Text variant='body' size='s' color='default'>
-            {buySellMessages.exchangeRateValue(
-              selectedInputToken.symbol,
-              quoteToken.symbol,
-              currentExchangeRate
-            )}
-          </Text>
-        </Flex>
       )}
     </Flex>
   )

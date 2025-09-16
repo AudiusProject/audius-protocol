@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { useArtistCoins, useUsers } from '@audius/common/api'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
@@ -21,6 +21,7 @@ import { Cell } from 'react-table'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { TextLink, UserLink } from 'components/link'
 import { Table } from 'components/table'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 import styles from './ArtistCoinsTable.module.css'
 
@@ -227,7 +228,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
 
   const { onOpen: openBuySellModal } = useBuySellModal()
 
-  const handleBuy = useCallback(
+  const handleBuy = useRequiresAccountCallback(
     (ticker: string) => {
       openBuySellModal({
         ticker,

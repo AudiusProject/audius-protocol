@@ -33,9 +33,6 @@ const CustomSingleValue = (props: SingleValueProps<TokenOption>) => {
           size='2xl'
           hex
         />
-        <Text variant='body' size='m' strength='strong' color='default'>
-          {props.data.tokenInfo.symbol}
-        </Text>
       </Flex>
     </components.SingleValue>
   )
@@ -71,7 +68,7 @@ const CustomOption = (props: OptionProps<TokenOption>) => {
           size='l'
           hex
         />
-        <Flex direction='column'>
+        <Flex alignItems='center' gap='s'>
           <Text
             variant='body'
             size='m'
@@ -204,7 +201,10 @@ export const TokenDropdown = ({
             boxShadow: shadows.far,
             borderRadius: cornerRadius.m,
             padding: `${spacing.s} 0`,
-            border: `1px solid ${color.border.default}`
+            border: `1px solid ${color.border.default}`,
+            minWidth: 242,
+            right: 0,
+            marginTop: spacing.l
           }),
           menuList: (provided) => ({
             ...provided,

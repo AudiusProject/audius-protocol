@@ -51,7 +51,6 @@ import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceF
 import { useEnvironment } from 'hooks/useEnvironment'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
-import { AllCoinsPage } from 'pages/all-coins-page/AllCoinsPage'
 import { ArtistCoinsExplorePage } from 'pages/artist-coins-explore-page/ArtistCoinsExplorePage'
 import { LaunchpadPage } from 'pages/artist-coins-launchpad-page'
 import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
@@ -187,7 +186,6 @@ const {
   EDIT_ALBUM_PAGE,
   AIRDROP_PAGE,
   WALLET_PAGE,
-  ALL_COINS_PAGE,
   COINS_CREATE_PAGE,
   COINS_EXPLORE_PAGE,
   DEV_TOOLS_PAGE,
@@ -703,12 +701,23 @@ const WebPlayer = (props) => {
                 isMobile={isMobile}
                 component={TransactionHistoryPage}
               />
-              <Route
-                exact
-                path={ALL_COINS_PAGE}
-                isMobile={isMobile}
-                component={AllCoinsPage}
-              />
+
+              {isArtistCoinsEnabled ? (
+                <Route
+                  exact
+                  path={COINS_EXPLORE_PAGE}
+                  isMobile={isMobile}
+                  component={ArtistCoinsExplorePage}
+                />
+              ) : null}
+              {isArtistCoinsEnabled ? (
+                <Route
+                  exact
+                  path={COINS_CREATE_PAGE}
+                  isMobile={isMobile}
+                  component={LaunchpadPage}
+                />
+              ) : null}
               <Route
                 exact
                 path={ASSET_DETAIL_PAGE}
@@ -739,22 +748,6 @@ const WebPlayer = (props) => {
                 isMobile={isMobile}
                 component={WalletPage}
               />
-              {isArtistCoinsEnabled ? (
-                <Route
-                  exact
-                  path={COINS_EXPLORE_PAGE}
-                  isMobile={isMobile}
-                  component={ArtistCoinsExplorePage}
-                />
-              ) : null}
-              {isArtistCoinsEnabled ? (
-                <Route
-                  exact
-                  path={COINS_CREATE_PAGE}
-                  isMobile={isMobile}
-                  component={LaunchpadPage}
-                />
-              ) : null}
               <Route
                 exact
                 path={[REWARDS_PAGE, AIRDROP_PAGE]}

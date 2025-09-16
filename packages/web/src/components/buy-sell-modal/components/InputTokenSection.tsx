@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
@@ -18,6 +18,7 @@ import { Tooltip } from 'components/tooltip'
 
 import { TokenIcon } from '../TokenIcon'
 
+import { StaticTokenDisplay } from './StaticTokenDisplay'
 import { TokenDropdown } from './TokenDropdown'
 
 type InputTokenSectionProps = {
@@ -108,7 +109,7 @@ export const InputTokenSection = ({
                 !!isStablecoin
               )}
             </Text>
-            <Tooltip text={messages.availableBalanceTooltip}>
+            <Tooltip text={messages.availableBalanceTooltip} mount='body'>
               <IconInfo color='subdued' size='s' />
             </Tooltip>
           </Flex>
@@ -140,7 +141,11 @@ export const InputTokenSection = ({
                 onTokenChange={onTokenChange}
               />
             </Flex>
-          ) : null}
+          ) : (
+            <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
+              <StaticTokenDisplay tokenInfo={tokenInfo} />
+            </Flex>
+          )}
 
           {onMaxClick ? (
             <Button variant='secondary' size='large' onClick={onMaxClick}>
