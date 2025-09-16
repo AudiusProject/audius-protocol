@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
-  useArtistCoins,
-  useTokenPrice
+  useArtistCoin,
+  useArtistCoins
 } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -45,9 +45,9 @@ export const ConvertTab = ({
   }, [baseToken, quoteToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(selectedOutputToken.address)
+    useArtistCoin({ mint: selectedOutputToken.address })
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
   const decimalPlaces = useMemo(() => {
     if (!tokenPrice) return 2
