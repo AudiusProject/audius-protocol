@@ -109,7 +109,7 @@ export const InputTokenSection = ({
                 !!isStablecoin
               )}
             </Text>
-            <Tooltip text={messages.availableBalanceTooltip}>
+            <Tooltip text={messages.availableBalanceTooltip} mount='body'>
               <IconInfo color='subdued' size='s' />
             </Tooltip>
           </Flex>
