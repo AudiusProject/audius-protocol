@@ -1,12 +1,16 @@
 import { useMemo } from 'react'
 
 import { useQueryContext, UserCoin } from '~/api'
+import { useFeatureFlag } from '~/hooks'
+import { FeatureFlags } from '~/services'
 
 export type CoinPairItem = UserCoin | 'audio-coin'
 
 /**
  * Groups coins into pairs for responsive layout rendering.
  * Filters out USDC coins for responsive layout.
+ * When artist coins feature flag is disabled, only shows AUDIO coins.
+ * Shows audio coin card when no coins are available and artist coins are disabled.
  *
  * @param coins Array of user coins
  * @param singleColumn Whether to force single column layout (1 item per row)
@@ -14,14 +18,18 @@ export type CoinPairItem = UserCoin | 'audio-coin'
  */
 export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
   const { env } = useQueryContext()
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
   return useMemo(() => {
     if (!coins) {
-      return []
+      return [['audio-coin']]
     }
 
     // Filter out USDC coins
     const filteredCoins = coins.filter((coin) => {
+      if (!isArtistCoinsEnabled) return coin.mint === env.WAUDIO_MINT_ADDRESS
       return (
         coin.ticker !== 'USDC' &&
         (coin.balance > 0 || coin.mint === env.WAUDIO_MINT_ADDRESS)
@@ -53,5 +61,5 @@ export const useGroupCoinPairs = (coins?: UserCoin[], singleColumn = false) => {
     }
 
     return coinPairs
-  }, [coins, env.WAUDIO_MINT_ADDRESS, singleColumn])
+  }, [coins, env.WAUDIO_MINT_ADDRESS, isArtistCoinsEnabled, singleColumn])
 }
