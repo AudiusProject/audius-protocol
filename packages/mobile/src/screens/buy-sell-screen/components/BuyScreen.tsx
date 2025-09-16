@@ -10,7 +10,7 @@ import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
-import { Box, Flex, Skeleton, Text } from '@audius/harmony-native'
+import { Box, Flex, Skeleton } from '@audius/harmony-native'
 import { InputTokenSection } from 'app/components/buy-sell/InputTokenSection'
 import { OutputTokenSection } from 'app/components/buy-sell/OutputTokenSection'
 
@@ -152,10 +152,6 @@ export const BuyScreen = ({
           />
         </>
       )}
-      <Flex row gap='xs'>
-        <Text color='subdued'>Rate</Text>
-        <Text>{`1 ${quoteToken.symbol} ≈ ${(1 / tokenPrice).toFixed(8)} ${baseToken.symbol}`}</Text>
-      </Flex>
     </Flex>
   )
 }
