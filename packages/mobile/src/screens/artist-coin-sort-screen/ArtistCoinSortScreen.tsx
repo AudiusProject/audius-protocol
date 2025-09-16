@@ -1,15 +1,15 @@
 import { useCallback, useState } from 'react'
 
+import { walletMessages } from '@audius/common/messages'
 import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
-import { useRoute } from 'app/hooks/useRoute'
 
 import type { IconComponent } from '@audius/harmony-native'
 import { Button, Flex, IconSortDown, IconSortUp } from '@audius/harmony-native'
 import { Screen, SegmentedControl } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRoute } from 'app/hooks/useRoute'
 
 import { SelectionItemList } from '../list-selection-screen/SelectionItemList'
-import { walletMessages } from '@audius/common/messages'
 
 const sortOptions = [
   {

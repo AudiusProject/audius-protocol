@@ -13,12 +13,15 @@ import type {
   CreateChatModalState,
   TrackMetadataForUpload
 } from '@audius/common/store'
+import type {
+  GetCoinsSortMethodEnum,
+  GetCoinsSortDirectionEnum
+} from '@audius/sdk'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { FilterButtonScreen } from '@audius/harmony-native'
 import type { FilterButtonScreenParams } from '@audius/harmony-native'
-import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { setLastNavAction } from 'app/hooks/useNavigation'
 import { AiGeneratedTracksScreen } from 'app/screens/ai-generated-tracks-screen'

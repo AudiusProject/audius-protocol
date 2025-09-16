@@ -1,6 +1,7 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
@@ -25,7 +26,6 @@ import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
-import { walletMessages } from '@audius/common/messages'
 
 const SEARCH_WIDTH = 400
 const CHECKLIST_WIDTH = 540

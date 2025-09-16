@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { useArtistCoins, useUsers } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
 import {
@@ -23,7 +24,6 @@ import { TextLink, UserLink } from 'components/link'
 import { Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
-import { walletMessages } from '@audius/common/messages'
 import styles from './ArtistCoinsTable.module.css'
 
 type CoinCell = Cell<Coin>

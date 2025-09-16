@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useDebounce } from 'react-use'
 
 import {
   useArtistCoins,
   GetCoinsSortMethodEnum,
   GetCoinsSortDirectionEnum
 } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import type { Coin } from '@audius/sdk'
 import { HashId } from '@audius/sdk'
 import { useRoute } from '@react-navigation/native'
 import { ImageBackground, TouchableOpacity } from 'react-native'
+import { useDebounce } from 'react-use'
 
 import {
   Divider,
@@ -29,7 +30,6 @@ import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
-import { walletMessages } from '@audius/common/messages'
 
 type CoinRowProps = {
   coin: Coin
