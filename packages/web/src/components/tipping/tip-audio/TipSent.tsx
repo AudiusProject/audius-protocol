@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
+import { useCurrentAccountUser, useArtistCoins } from '@audius/common/api'
 import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
@@ -37,11 +37,11 @@ export const TipSent = () => {
     })
   })
   const { accountHandle, accountErcWallet, accountUserId } = accountData ?? {}
-  const { data: tokenPriceData } = useTokenPrice(
-    TOKEN_LISTING_MAP.AUDIO.address
-  )
+  const { data: tokenPriceData } = useArtistCoins({
+    mint: [TOKEN_LISTING_MAP.AUDIO.address]
+  })
 
-  const tokenPrice = tokenPriceData?.price
+  const tokenPrice = tokenPriceData?.[0]?.price?.toString()
 
   if (!accountErcWallet) {
     throw new Error('Failed to get account ERC wallet')
