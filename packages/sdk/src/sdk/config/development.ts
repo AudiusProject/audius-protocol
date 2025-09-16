@@ -8,13 +8,6 @@ export const developmentConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.0.0",
     "apiEndpoint": "http://audius-protocol-api",
-    "discoveryNodes": [
-      {
-        "delegateOwnerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8",
-        "endpoint": "http://audius-protocol-discovery-provider-1",
-        "ownerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8"
-      }
-    ],
     "storageNodes": [
       {
         "delegateOwnerWallet": "0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c",

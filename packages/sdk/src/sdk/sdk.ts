@@ -3,7 +3,6 @@ import { mainnet } from 'viem/chains'
 
 import { ResolveApi } from './api/ResolveApi'
 import { AlbumsApi } from './api/albums/AlbumsApi'
-import { ChallengesApi } from './api/challenges/ChallengesApi'
 import { ChatsApi } from './api/chats/ChatsApi'
 import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
@@ -51,10 +50,6 @@ import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
 import { createAppWalletClient } from './services/AudiusWalletClient'
-import {
-  DiscoveryNodeSelector,
-  getDefaultDiscoveryNodeSelectorConfig
-} from './services/DiscoveryNodeSelector'
 import { EmailEncryptionService } from './services/Encryption'
 import {
   EntityManagerClient,
@@ -145,8 +140,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-        ? stagingConfig
-        : productionConfig
+      ? stagingConfig
+      : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -180,13 +175,6 @@ const initializeServices = (config: SdkConfig) => {
     createWalletClient({
       chain: mainnet,
       transport: http(servicesConfig.ethereum.rpcEndpoint)
-    })
-
-  const discoveryNodeSelector =
-    config.services?.discoveryNodeSelector ??
-    new DiscoveryNodeSelector({
-      ...getDefaultDiscoveryNodeSelectorConfig(servicesConfig),
-      logger
     })
 
   const storageNodeSelector =
@@ -226,8 +214,7 @@ const initializeServices = (config: SdkConfig) => {
     })
 
   const middleware = [
-    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } }),
-    discoveryNodeSelector.createMiddleware()
+    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } })
   ]
 
   /* Solana Programs */
@@ -381,7 +368,6 @@ const initializeServices = (config: SdkConfig) => {
 
   const services: ServicesContainer = {
     storageNodeSelector,
-    discoveryNodeSelector,
     antiAbuseOracleSelector,
     entityManager,
     storage,
@@ -428,8 +414,8 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-        ? stagingConfig.network.apiEndpoint
-        : productionConfig.network.apiEndpoint
+      ? stagingConfig.network.apiEndpoint
+      : productionConfig.network.apiEndpoint
 
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
@@ -509,17 +495,6 @@ const initializeApis = ({
     services.entityManager
   )
 
-  const challenges = new ChallengesApi(
-    apiClientConfig,
-    users,
-    services.discoveryNodeSelector,
-    services.rewardManagerClient,
-    services.claimableTokensClient,
-    services.antiAbuseOracle,
-    services.logger,
-    services.solanaClient
-  )
-
   const notifications = new NotificationsApi(
     apiClientConfig,
     services.entityManager
@@ -564,7 +539,6 @@ const initializeApis = ({
     grants,
     developerApps,
     dashboardWalletUsers,
-    challenges,
     rewards,
     services,
     comments,

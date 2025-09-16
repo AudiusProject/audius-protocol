@@ -1,8 +1,6 @@
 import { productionConfig } from '../../config/production'
-import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { RendezvousHash } from '../../utils/rendezvous'
-import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { LoggerService } from '../Logger'
 
 import { getDefaultStorageNodeSelectorConfig } from './getDefaultConfig'
@@ -34,33 +32,8 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     this.nodes = this.config.bootstrapNodes ?? []
     this.selectionState = 'healthy_only'
 
-    this.updateAvailableStorageNodes(this.config.endpoint)
-  }
-
-  private async updateAvailableStorageNodes(endpoint: string) {
-    this.logger.info('Updating list of available storage nodes')
-    const healthCheckEndpoint = `${endpoint}/health_check`
-    const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
-    if (!discoveryHealthCheckResponse.ok) {
-      this.logger.warn(
-        'Discovery provider health check did not respond successfully'
-      )
-      return
-    }
-
-    const responseData: { data: HealthCheckResponseData } =
-      await discoveryHealthCheckResponse.json()
-    const contentNodes = responseData.data.network?.content_nodes
-
-    if (!contentNodes) {
-      this.logger.warn(
-        'Discovery provider health check did not contain any available content nodes'
-      )
-      return
-    }
-
-    this.nodes = contentNodes
-    this.selectionState = 'healthy_only'
+    // TODO: This needs to pull from somewhere other than discovery
+    // this.updateAvailableStorageNodes(this.config.endpoint)
   }
 
   public async getSelectedNode(forceReselect = false) {
