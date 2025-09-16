@@ -1,10 +1,16 @@
-import type { ID, AccessConditions } from '@audius/common/models'
+import { useArtistCoin } from '@audius/common/api'
+import type {
+  ID,
+  AccessConditions,
+  TokenGatedConditions
+} from '@audius/common/models'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentSpecialAccess,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import { PurchaseableContentType } from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
@@ -29,10 +35,17 @@ export const DetailsTileGatedAccess = ({
   style,
   contentType
 }: DetailsTileGatedAccessProps) => {
+  const isTokenGated = isContentTokenGated(streamConditions)
+  const { data: token } = useArtistCoin({
+    mint: isTokenGated
+      ? (streamConditions as TokenGatedConditions).token_gate?.token_mint
+      : ''
+  })
   const shouldDisplay =
     isContentCollectibleGated(streamConditions) ||
     isContentFollowGated(streamConditions) ||
     isContentTipGated(streamConditions) ||
+    isContentTokenGated(streamConditions) ||
     isContentSpecialAccess(streamConditions) ||
     isContentUSDCPurchaseGated(streamConditions)
 
@@ -45,6 +58,7 @@ export const DetailsTileGatedAccess = ({
         isOwner={isOwner}
         style={style}
         contentType={contentType}
+        token={token}
       />
     )
   }
@@ -55,6 +69,7 @@ export const DetailsTileGatedAccess = ({
       // Currently only special-access tracks are supported
       contentType={PurchaseableContentType.TRACK}
       streamConditions={streamConditions}
+      token={token}
       style={style}
     />
   )

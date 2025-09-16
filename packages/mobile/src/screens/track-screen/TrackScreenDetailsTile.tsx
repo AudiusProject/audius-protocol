@@ -1,12 +1,13 @@
 import type { RefObject } from 'react'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import {
   useRemixContest,
   useToggleFavoriteTrack,
   useTrackRank,
   useStems,
-  useCurrentUserId
+  useCurrentUserId,
+  useArtistCoin
 } from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -18,14 +19,16 @@ import {
   FavoriteType,
   SquareSizes,
   isContentUSDCPurchaseGated,
-  isContentCollectibleGated
+  isContentCollectibleGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import type {
   UID,
   SearchUser,
   SearchTrack,
   Track,
-  User
+  User,
+  TokenGatedConditions
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -69,7 +72,8 @@ import {
   IconTrending,
   MusicBadge,
   Paper,
-  Text
+  Text,
+  IconArtistCoin
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag } from 'app/components/core'
@@ -112,6 +116,7 @@ const messages = {
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
   premiumTrack: 'premium track',
+  coinGated: 'coin gated',
   generatedWithAi: 'generated with ai',
   trackDeleted: 'track [deleted by artist]',
   play: 'Play',
@@ -251,6 +256,16 @@ export const TrackScreenDetailsTile = ({
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
+  const isTokenGated = useMemo(
+    () => isContentTokenGated(streamConditions),
+    [streamConditions]
+  )
+  const { data: token } = useArtistCoin({
+    mint: isTokenGated
+      ? (streamConditions as TokenGatedConditions).token_gate?.token_mint
+      : ''
+  })
+
   let headerText
   if (isRemixContest) {
     headerText = messages.remixContest
@@ -261,6 +276,8 @@ export const TrackScreenDetailsTile = ({
       headerText = messages.collectibleGated
     } else if (isContentUSDCPurchaseGated(streamConditions)) {
       headerText = messages.premiumTrack
+    } else if (isTokenGated) {
+      headerText = messages.coinGated
     } else {
       headerText = messages.specialAccess
     }
@@ -551,15 +568,18 @@ export const TrackScreenDetailsTile = ({
     <Paper>
       <TrackDogEar trackId={trackId} />
       <Flex p='l' gap='l' alignItems='center' w='100%'>
-        <Text
-          variant='label'
-          size='m'
-          strength='default'
-          textTransform='uppercase'
-          color='subdued'
-        >
-          {headerText}
-        </Text>
+        <Flex row gap='xs' alignItems='center'>
+          {isTokenGated ? <IconArtistCoin size='s' color='subdued' /> : null}
+          <Text
+            variant='label'
+            size='m'
+            strength='default'
+            textTransform='uppercase'
+            color='subdued'
+          >
+            {headerText}
+          </Text>
+        </Flex>
 
         {badges.length > 0 ? (
           <Flex direction='row' gap='s'>
@@ -626,6 +646,7 @@ export const TrackScreenDetailsTile = ({
           <DetailsTileNoAccess
             trackId={trackId}
             contentType={PurchaseableContentType.TRACK}
+            token={token}
             streamConditions={streamConditions}
           />
         ) : null}
@@ -634,6 +655,7 @@ export const TrackScreenDetailsTile = ({
             streamConditions={streamConditions}
             isOwner={isOwner}
             trackArtist={user}
+            token={token}
             contentType={PurchaseableContentType.TRACK}
           />
         ) : null}

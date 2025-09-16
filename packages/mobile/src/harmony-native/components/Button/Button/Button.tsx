@@ -25,6 +25,7 @@ export const Button = (props: ButtonProps) => {
     size = 'default',
     disabled,
     style,
+    gradientColors,
     ...baseProps
   } = props
   const { isLoading, children } = baseProps
@@ -284,6 +285,7 @@ export const Button = (props: ButtonProps) => {
     <BaseButton
       disabled={isDisabled}
       style={[buttonStyles, animatedButtonStyles, style]}
+      gradientColors={variant === 'primary' ? gradientColors : undefined}
       sharedValue={pressed}
       styles={{
         text: [textStyles, animatedTextStyles]
