@@ -25,7 +25,7 @@ import {
   TextInputSize,
   useTheme
 } from '@audius/harmony-native'
-import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage2x.webp'
+import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage.webp'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
