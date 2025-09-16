@@ -8,25 +8,21 @@ import {
   DynamicBondingCurveClient,
   SwapMode
 } from '@meteora-ag/dynamic-bonding-curve-sdk'
+import { NATIVE_MINT as SOL_MINT } from '@solana/spl-token'
 import BN from 'bn.js'
 import { Request, Response } from 'express'
 
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
-import {
-  AUDIO_MINT,
-  QUOTE_POOL_MINT_ADDRESS,
-  SOL_MINT,
-  USDC_MINT
-} from './constants'
+import { AUDIO_MINT, QUOTE_POOL_MINT_ADDRESS, USDC_MINT } from './constants'
 
 const getSolToAudioQuote = async (
   jupiterApi: JupiterApi,
   solAmountLamports: string
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
-    inputMint: SOL_MINT,
+    inputMint: SOL_MINT.toBase58(),
     outputMint: AUDIO_MINT,
     amount: new BN(solAmountLamports).toNumber(),
     swapMode: 'ExactIn',
@@ -40,7 +36,7 @@ const getSolToUsdcQuote = async (
   solAmountLamports: string
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
-    inputMint: SOL_MINT,
+    inputMint: SOL_MINT.toBase58(),
     outputMint: USDC_MINT,
     amount: new BN(solAmountLamports).toNumber(),
     swapMode: 'ExactIn',
@@ -55,7 +51,7 @@ const getAudioToSolQuote = async (
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
     inputMint: AUDIO_MINT,
-    outputMint: SOL_MINT,
+    outputMint: SOL_MINT.toBase58(),
     amount: new BN(audioAmount).toNumber(),
     swapMode: 'ExactIn',
     onlyDirectRoutes: false,

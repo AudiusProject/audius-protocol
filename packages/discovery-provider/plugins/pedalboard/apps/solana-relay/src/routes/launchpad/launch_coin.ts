@@ -13,6 +13,7 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk'
 import { Keypair, PublicKey } from '@solana/web3.js'
+import { NATIVE_MINT as SOL_MINT } from '@solana/spl-token'
 import BN from 'bn.js'
 import { Request, Response } from 'express'
 
@@ -20,7 +21,7 @@ import { config } from '../../config'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
 
-import { AUDIO_MINT, SOL_MINT } from './constants'
+import { AUDIO_MINT } from './constants'
 
 interface LaunchCoinRequestBody {
   name: string
@@ -60,7 +61,7 @@ const getSolToAudioQuote = async (
   initialBuyAmountSolLamports: number
 ) => {
   return await jupiterApi.quoteGet({
-    inputMint: SOL_MINT,
+    inputMint: SOL_MINT.toBase58(),
     outputMint: AUDIO_MINT,
     amount: initialBuyAmountSolLamports,
     swapMode: 'ExactIn',

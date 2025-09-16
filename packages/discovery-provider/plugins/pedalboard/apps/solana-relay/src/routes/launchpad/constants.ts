@@ -1,4 +1,3 @@
-export const SOL_MINT = 'So11111111111111111111111111111111111111112'
 export const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
