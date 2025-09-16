@@ -267,6 +267,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 placeholder='0.00'
                 hideLabel
                 disabled={isReceiveAmountChanging}
+                startAdornmentText='~'
                 helperText={
                   values.receiveAmount &&
                   Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
