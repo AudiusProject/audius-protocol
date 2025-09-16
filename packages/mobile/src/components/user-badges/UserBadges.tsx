@@ -4,15 +4,13 @@ import { useUser } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  TOKEN_LISTING_MAP,
-  useTierAndVerifiedForUser
-} from '@audius/common/store'
+import { useTierAndVerifiedForUser } from '@audius/common/store'
 
 import type { IconSize } from '@audius/harmony-native'
 import { Flex, IconVerified } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
 import { TokenIcon } from 'app/components/core'
+import { env } from 'app/services/env'
 
 type UserBadgesProps = {
   userId: ID
@@ -46,7 +44,7 @@ export const UserBadges = (props: UserBadgesProps) => {
   const shouldShowArtistCoinBadge =
     isArtistCoinEnabled &&
     !!displayMint &&
-    displayMint !== TOKEN_LISTING_MAP.AUDIO.address
+    displayMint !== env.WAUDIO_MINT_ADDRESS
 
   return (
     <Flex row gap='xs' alignItems='center'>

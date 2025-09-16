@@ -13,13 +13,13 @@ import {
 } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal, useGroupCoinPairs } from '@audius/common/store'
 import {
   Box,
   Button,
   Divider,
   Flex,
-  IconCaretRight,
   Paper,
   Text,
   useMedia,
@@ -75,9 +75,7 @@ const YourCoinsSkeleton = () => {
 const messages = {
   ...buySellMessages,
   managedAccount: "You can't do that as a managed user",
-  findMoreCoins: 'Find More Coins',
-  exploreArtistCoins: 'Explore available artist coins on Audius.',
-  buySellNotSupported: 'Buy/Sell is not yet supported in your region'
+  buySellNotSupported: 'This is not supported in your region'
 }
 
 const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
@@ -139,7 +137,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
 
   const handleCoinClick = useCallback(
     (ticker: string) => {
-      dispatch(push(`/wallet/${ticker}`))
+      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
     },
     [dispatch]
   )
@@ -166,41 +164,9 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
       balance={tokenBalanceFormatted || ''}
       dollarValue={tokenDollarValue || ''}
       loading={isLoading}
+      name={coinData?.name ?? ''}
       onClick={() => handleCoinClick(coin.ticker)}
     />
-  )
-}
-
-const FindMoreCoins = ({ css }: { css?: any }) => {
-  const { color, spacing } = useTheme()
-  const { isMobile } = useMedia()
-  const dispatch = useDispatch()
-
-  const handleClick = useCallback(() => {
-    dispatch(push('/wallet/coins'))
-  }, [dispatch])
-
-  return (
-    <Flex
-      h='100%'
-      p={isMobile ? spacing.l : spacing.xl}
-      css={{
-        cursor: 'pointer',
-        '&:hover': { backgroundColor: color.background.surface2 },
-        ...css
-      }}
-      onClick={handleClick}
-    >
-      <Flex flex={1} alignItems='center' justifyContent='space-between'>
-        <Flex column gap='xs'>
-          <Text variant='heading' size='m' color='default'>
-            {messages.findMoreCoins}
-          </Text>
-          <Text color='subdued'>{messages.exploreArtistCoins}</Text>
-        </Flex>
-        <IconCaretRight size='l' color='subdued' />
-      </Flex>
-    </Flex>
   )
 }
 
@@ -230,9 +196,7 @@ export const YourCoins = () => {
                   <Fragment key={key}>
                     {colIndex > 0 && <Divider orientation='vertical' />}
                     <Box flex={1}>
-                      {item === 'find-more' ? (
-                        <FindMoreCoins />
-                      ) : item === 'audio-coin' ? (
+                      {item === 'audio-coin' ? (
                         <AudioCoinCard />
                       ) : (
                         <CoinCardWithBalance coin={item as UserCoin} />

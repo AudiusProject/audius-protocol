@@ -10,7 +10,7 @@ import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -187,21 +187,6 @@ export const ConvertTab = ({
             isArtistCoinsEnabled={isArtistCoinsEnabled}
           />
         </>
-      )}
-
-      {tokenPrice && (
-        <Flex alignItems='center' gap='xs'>
-          <Text variant='body' size='s' color='subdued'>
-            {buySellMessages.exchangeRateLabel}
-          </Text>
-          <Text variant='body' size='s' color='default'>
-            {buySellMessages.exchangeRateValue(
-              selectedInputToken.symbol,
-              selectedOutputToken.symbol,
-              currentExchangeRate
-            )}
-          </Text>
-        </Flex>
       )}
     </Flex>
   )

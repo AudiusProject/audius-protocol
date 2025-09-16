@@ -1,7 +1,5 @@
-import React from 'react'
-
 import type { TokenInfo } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 
 import { TokenIcon } from '../TokenIcon'
 
@@ -14,8 +12,7 @@ type StaticTokenDisplayProps = {
  * without any dropdown functionality. Used when artist-coins feature flag is disabled.
  */
 export const StaticTokenDisplay = ({ tokenInfo }: StaticTokenDisplayProps) => {
-  const { symbol } = tokenInfo
-
+  const { logoURI, icon } = tokenInfo
   return (
     <Flex
       alignItems='center'
@@ -28,15 +25,7 @@ export const StaticTokenDisplay = ({ tokenInfo }: StaticTokenDisplayProps) => {
       borderRadius='s'
       h='unit16'
     >
-      <TokenIcon
-        logoURI={tokenInfo.logoURI}
-        icon={tokenInfo.icon}
-        size='2xl'
-        hex
-      />
-      <Text variant='body' size='m' strength='strong' color='default'>
-        {symbol}
-      </Text>
+      <TokenIcon logoURI={logoURI} icon={icon} size='2xl' hex />
     </Flex>
   )
 }

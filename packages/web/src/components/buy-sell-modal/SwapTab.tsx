@@ -1,17 +1,17 @@
-import { useRef, useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 
 import { buySellMessages } from '@audius/common/messages'
-import { TokenInfo, useTokenSwapForm, BuySellTab } from '@audius/common/store'
-import { Flex, Skeleton, Text } from '@audius/harmony'
+import { BuySellTab, TokenInfo, useTokenSwapForm } from '@audius/common/store'
+import { Flex, Skeleton } from '@audius/harmony'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
 import type {
-  TokenPricing,
-  UIConfiguration,
   InputConfiguration,
+  SwapCallbacks,
+  TokenPricing,
   TokenSelection,
-  SwapCallbacks
+  UIConfiguration
 } from './types'
 
 const messages = {
@@ -183,22 +183,6 @@ export const SwapTab = ({
                 }
                 onChangeSwapDirection={onChangeSwapDirection}
               />
-
-              {/* Show exchange rate for convert flow */}
-              {displayExchangeRate ? (
-                <Flex p='l' justifyContent='flex-start'>
-                  <Text variant='body' size='s' color='subdued'>
-                    {messages.exchangeRateLabel}&nbsp;
-                  </Text>
-                  <Text variant='body' size='s' color='default'>
-                    {messages.exchangeRateValue(
-                      inputToken.symbol,
-                      resolvedOutputToken.symbol,
-                      displayExchangeRate
-                    )}
-                  </Text>
-                </Flex>
-              ) : null}
             </>
           )}
         </Flex>
