@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
-import { useAudioBalance, useArtistCoins } from '~/api'
+import { useAudioBalance, useArtistCoin } from '~/api'
 import { TOKEN_LISTING_MAP } from '~/store/ui/buy-audio/constants'
 import { formatAudioBalance, isNullOrUndefined } from '~/utils'
 
@@ -22,8 +22,8 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const AUDIO_TOKEN_ID = TOKEN_LISTING_MAP.AUDIO.address
 
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
-    useArtistCoins({ mint: [AUDIO_TOKEN_ID] })
-  const audioPrice = audioPriceData?.[0]?.price?.toString() ?? null
+    useArtistCoin({ mint: AUDIO_TOKEN_ID })
+  const audioPrice = audioPriceData?.price?.toString() ?? null
   const hasFetchedAudioBalance = !isNullOrUndefined(totalBalance)
   const audioBalance = hasFetchedAudioBalance ? totalBalance : null
 

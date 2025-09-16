@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useArtistCoins, useUser } from '@audius/common/api'
+import { useArtistCoin, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { TipSendNotification, TOKEN_LISTING_MAP } from '@audius/common/store'
@@ -41,9 +41,9 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { notification } = props
   const { amount, timeLabel, isViewed } = notification
   const uiAmount = useUIAudio(amount)
-  const { data: tokenPriceData } = useArtistCoins({ mint: [AUDIO_TOKEN_ID] })
+  const { data: tokenPriceData } = useArtistCoin({ mint: AUDIO_TOKEN_ID })
 
-  const tokenPrice = tokenPriceData?.[0]?.price?.toString()
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const { data: user } = useUser(notification.entityId)
   const handleClick = useGoToProfile(user)

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
+  useArtistCoin,
   useArtistCoins
 } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
@@ -39,9 +40,9 @@ export const SellTab = ({
   }, [baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoins({ mint: [selectedInputToken.address] })
+    useArtistCoin({ mint: selectedInputToken.address })
 
-  const tokenPrice = tokenPriceData?.[0]?.price?.toString() ?? null
+  const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
   const decimalPlaces = useMemo(() => {
     if (!tokenPrice) return 2

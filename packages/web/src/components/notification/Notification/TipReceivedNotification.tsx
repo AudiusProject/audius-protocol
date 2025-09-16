@@ -8,7 +8,7 @@ import {
   ReactionTypes,
   getReactionFromRawValue,
   useUser,
-  useArtistCoins
+  useArtistCoin
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
@@ -62,11 +62,11 @@ export const TipReceivedNotification = (
   } = notification
 
   const { data: user } = useUser(notification.entityId)
-  const { data: tokenPriceData } = useArtistCoins({
-    mint: [TOKEN_LISTING_MAP.AUDIO.address]
+  const { data: tokenPriceData } = useArtistCoin({
+    mint: TOKEN_LISTING_MAP.AUDIO.address
   })
 
-  const tokenPrice = tokenPriceData?.[0]?.price?.toString()
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification
