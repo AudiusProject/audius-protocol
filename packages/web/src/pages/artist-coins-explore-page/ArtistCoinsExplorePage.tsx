@@ -1,4 +1,4 @@
-import { useCallback, useState, ChangeEvent } from 'react'
+import { useCallback, useState, ChangeEvent, useEffect } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
@@ -21,6 +21,7 @@ import {
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
+import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroundImage2x.webp'
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
@@ -59,6 +60,14 @@ export const ArtistCoinsExplorePage = () => {
     setSearchValue(e.target.value)
   }, [])
 
+  const [, setBannerIsVisible] = useState(false)
+
+  useEffect(() => {
+    const img = new window.Image()
+    img.src = imageCoinsBackgroundImage
+    img.onload = () => setBannerIsVisible(true)
+  }, [])
+
   return (
     <Page title={walletMessages.artistCoins.title}>
       <Flex column gap='xl'>
@@ -71,6 +80,7 @@ export const ArtistCoinsExplorePage = () => {
           w='100%'
           borderRadius='m'
           css={{
+            backgroundImage: `url(${imageCoinsBackgroundImage})`,
             backgroundSize: 'cover, cover',
             backgroundPosition: '0% 0%, 50% 50%',
             backgroundRepeat: 'no-repeat, no-repeat',
