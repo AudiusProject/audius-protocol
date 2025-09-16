@@ -5,6 +5,11 @@ import {
   GetCoinsSortMethodEnum,
   GetCoinsSortDirectionEnum
 } from '@audius/common/api'
+import type { Coin } from '@audius/sdk'
+import { HashId } from '@audius/sdk'
+import { useRoute } from '@react-navigation/native'
+import { ImageBackground, TouchableOpacity } from 'react-native'
+
 import {
   Divider,
   Flex,
@@ -18,15 +23,11 @@ import {
   TextInputSize,
   useTheme
 } from '@audius/harmony-native'
-import { ImageBackground, TouchableOpacity } from 'react-native'
 import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage2x.webp'
-import type { Coin } from '@audius/sdk'
-import { HashId } from '@audius/sdk'
-import { useRoute } from '@react-navigation/native'
+import { UserLink } from 'app/components/user-link'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
-import { useNavigation } from 'app/hooks/useNavigation'
-import { UserLink } from 'app/components/user-link'
 
 const messages = {
   title: 'Discover Artist Coins',

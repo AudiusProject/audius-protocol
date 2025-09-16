@@ -4,10 +4,11 @@ import type { LayoutChangeEvent, TextStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
 
 import { Text, Flex } from '@audius/harmony-native'
-import type { IconComponent } from '../../harmony-native/icons'
 import { light } from 'app/haptics'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
+
+import type { IconComponent } from '../../harmony-native/icons'
 
 // Note, offset is the inner padding of the container div
 const offset = 3

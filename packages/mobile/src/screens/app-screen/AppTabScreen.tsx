@@ -60,9 +60,10 @@ import {
 } from 'app/screens/user-list-screen'
 import { WalletScreen } from 'app/screens/wallet-screen'
 
-import { useAppScreenOptions } from './useAppScreenOptions'
-import { ArtistCoinsExploreScreen } from '../artist-coins-explore-screen/ArtistCoinsExploreScreen'
 import { ArtistCoinSortScreen } from '../artist-coin-sort-screen/ArtistCoinSortScreen'
+import { ArtistCoinsExploreScreen } from '../artist-coins-explore-screen/ArtistCoinsExploreScreen'
+
+import { useAppScreenOptions } from './useAppScreenOptions'
 
 export type AppTabScreenParamList = {
   Track: {

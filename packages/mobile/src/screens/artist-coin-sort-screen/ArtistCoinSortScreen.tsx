@@ -1,20 +1,14 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Button,
-  Flex,
-  IconCaretDown,
-  IconCaretUp,
-  IconComponent,
-  IconSortDown,
-  IconSortUp
-} from '@audius/harmony-native'
-
-import { Screen, SegmentedControl } from 'app/components/core'
-import { SelectionItemList } from '../list-selection-screen/SelectionItemList'
-import { useNavigation } from 'app/hooks/useNavigation'
-import { useRoute } from '@react-navigation/native'
 import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
+import { useRoute } from '@react-navigation/native'
+
+import type { IconComponent } from '@audius/harmony-native'
+import { Button, Flex, IconSortDown, IconSortUp } from '@audius/harmony-native'
+import { Screen, SegmentedControl } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
+
+import { SelectionItemList } from '../list-selection-screen/SelectionItemList'
 
 const messages = {
   title: 'SORT',
