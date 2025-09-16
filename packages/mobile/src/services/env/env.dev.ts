@@ -6,7 +6,7 @@ export const env: Env = {
   AMPLITUDE_API_KEY: null,
   AMPLITUDE_PROXY: null,
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
-  API_URL: 'http://audius-protocol-discovery-provider-1',
+  API_URL: 'http://audius-protocol-api-1',
   APP_NAME: 'audius-client',
   ARCHIVE_ENDPOINT: 'http://audius-protocol-discovery-provider-1',
   AUDIUS_NETWORK_CHAIN_ID: 1337,
