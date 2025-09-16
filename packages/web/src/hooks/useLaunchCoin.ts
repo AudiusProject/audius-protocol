@@ -136,7 +136,8 @@ export const useLaunchCoin = () => {
               ticker: `$${symbolUpper}`,
               decimals: COIN_DECIMALS,
               name,
-              logoUri: imageUri
+              logoUri: imageUri,
+              description
             }
           })
           console.log('Coin added to Audius database', coinRes)

@@ -27,6 +27,8 @@ export const TokenIcon = ({
   if (logoURI) {
     // Handle different size props for Artwork component
     const sizeMap: Record<string, { w: number; h: number }> = {
+      s: { w: spacing.unit4, h: spacing.unit4 },
+      m: { w: spacing.unit5, h: spacing.unit5 },
       l: { w: spacing.unit6, h: spacing.unit6 },
       xl: { w: spacing.unit10, h: spacing.unit10 },
       '2xl': { w: spacing.unit12, h: spacing.unit12 },

@@ -3,7 +3,8 @@ import type { MouseEvent } from 'react'
 import {
   isContentUSDCPurchaseGated,
   AccessConditions,
-  Name
+  Name,
+  isContentTokenGated
 } from '@audius/common/models'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
@@ -12,7 +13,8 @@ import { make, track } from 'services/analytics'
 
 const messages = {
   unlocking: 'Unlocking',
-  locked: 'Locked'
+  locked: 'Locked',
+  buyArtistCoin: 'Buy Artist Coin'
 }
 
 export const GatedConditionsPill = ({
@@ -35,6 +37,7 @@ export const GatedConditionsPill = ({
   contentType: string
 }) => {
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
+  const isTokenGated = isContentTokenGated(streamConditions)
 
   let message = null
   if (unlocking) {
@@ -43,7 +46,9 @@ export const GatedConditionsPill = ({
   } else {
     message = isPurchase
       ? USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
-      : messages.locked
+      : isTokenGated
+        ? messages.buyArtistCoin
+        : messages.locked
   }
 
   return (
@@ -62,7 +67,7 @@ export const GatedConditionsPill = ({
 
         onClick?.(e)
       }}
-      color={isPurchase ? 'lightGreen' : 'blue'}
+      color={isPurchase ? 'lightGreen' : isTokenGated ? 'coinGradient' : 'blue'}
       isLoading={unlocking}
       iconLeft={showIcon ? IconLock : undefined}
       // TODO: Add 'xs' button size in harmony

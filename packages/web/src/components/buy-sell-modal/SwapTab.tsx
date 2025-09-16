@@ -1,17 +1,17 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import { buySellMessages } from '@audius/common/messages'
-import { TokenInfo, useTokenSwapForm, BuySellTab } from '@audius/common/store'
-import { Flex, Skeleton, Text } from '@audius/harmony'
+import { BuySellTab, TokenInfo, useTokenSwapForm } from '@audius/common/store'
+import { Flex, Skeleton } from '@audius/harmony'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
 import type {
-  TokenPricing,
-  UIConfiguration,
   InputConfiguration,
+  SwapCallbacks,
+  TokenPricing,
   TokenSelection,
-  SwapCallbacks
+  UIConfiguration
 } from './types'
 
 const messages = {
@@ -41,6 +41,7 @@ export type SwapTabProps = {
   outputIsDefault?: boolean
   tab?: BuySellTab
   onChangeSwapDirection?: () => void
+  initialTicker?: string
 } & TokenPricing &
   UIConfiguration &
   InputConfiguration &
@@ -70,8 +71,22 @@ export const SwapTab = ({
   onInputTokenChange,
   onOutputTokenChange,
   outputBalance,
-  onChangeSwapDirection
+  onChangeSwapDirection,
+  initialTicker
 }: SwapTabProps) => {
+  // If initialTicker is provided, try to find the token and use it as the output token
+  const resolvedOutputToken = useMemo(() => {
+    if (initialTicker && availableOutputTokens) {
+      const tokenByTicker = availableOutputTokens.find(
+        (token) => token.symbol === initialTicker
+      )
+      if (tokenByTicker) {
+        return tokenByTicker
+      }
+    }
+    return outputToken
+  }, [initialTicker, availableOutputTokens, outputToken])
+
   const {
     formik,
     inputAmount,
@@ -85,7 +100,7 @@ export const SwapTab = ({
     handleMaxClick
   } = useTokenSwapForm({
     inputToken,
-    outputToken,
+    outputToken: resolvedOutputToken,
     min,
     max,
     onTransactionDataChange,
@@ -149,7 +164,7 @@ export const SwapTab = ({
 
               <TokenAmountSection
                 title={messages.youReceive}
-                tokenInfo={outputToken}
+                tokenInfo={resolvedOutputToken}
                 isInput={false}
                 amount={outputAmount}
                 availableBalance={outputBalance ?? 0}
@@ -168,22 +183,6 @@ export const SwapTab = ({
                 }
                 onChangeSwapDirection={onChangeSwapDirection}
               />
-
-              {/* Show exchange rate for convert flow */}
-              {displayExchangeRate ? (
-                <Flex p='l' justifyContent='flex-start'>
-                  <Text variant='body' size='s' color='subdued'>
-                    {messages.exchangeRateLabel}&nbsp;
-                  </Text>
-                  <Text variant='body' size='s' color='default'>
-                    {messages.exchangeRateValue(
-                      inputToken.symbol,
-                      outputToken.symbol,
-                      displayExchangeRate
-                    )}
-                  </Text>
-                </Flex>
-              ) : null}
             </>
           )}
         </Flex>

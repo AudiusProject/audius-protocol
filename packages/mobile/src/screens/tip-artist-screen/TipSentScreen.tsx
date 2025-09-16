@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
+import { useCurrentAccountUser, useArtistCoin } from '@audius/common/api'
 import type { SolanaWalletAddress } from '@audius/common/models'
 import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
 import { formatNumberCommas, getXShareHandle } from '@audius/common/utils'
@@ -66,13 +66,13 @@ export const TipSentScreen = () => {
     source,
     onSuccessActions
   } = useSelector(getSendTipData)
-  const { data: tokenPriceData } = useTokenPrice(
-    TOKEN_LISTING_MAP.AUDIO.address
-  )
+  const { data: tokenPriceData } = useArtistCoin({
+    mint: TOKEN_LISTING_MAP.AUDIO.address
+  })
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const tokenPrice = tokenPriceData?.price
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const getXShareText = () => {
     if (user_id && recipient) {

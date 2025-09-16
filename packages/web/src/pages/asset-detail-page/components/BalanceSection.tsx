@@ -108,7 +108,7 @@ const ZeroBalanceState = ({
           placement='top'
           shouldWrapContent={false}
         >
-          <Box>
+          <Box w='100%'>
             <Button
               variant='primary'
               fullWidth
@@ -179,7 +179,7 @@ const HasBalanceState = ({
           placement='top'
           shouldWrapContent={false}
         >
-          <Box>
+          <Box w='100%'>
             <Button
               variant='secondary'
               fullWidth

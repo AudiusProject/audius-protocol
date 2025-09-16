@@ -25,7 +25,6 @@ import {
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
-import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -37,18 +36,22 @@ import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 
-const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
-
 type BuySellFlowProps = {
   onClose: () => void
   openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
+  initialTicker?: string
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
-    props
+  const {
+    onClose,
+    openAddCashModal,
+    onScreenChange,
+    onLoadingStateChange,
+    initialTicker
+  } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
   const {
@@ -103,9 +106,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     path: ASSET_DETAIL_PAGE,
     exact: true
   })
-  // Get token pair based on location or use default
   const { data: selectedPair } = useTokenPair({
-    baseSymbol: match?.params.ticker,
+    baseSymbol: initialTicker ?? match?.params.ticker,
     quoteSymbol: 'USDC'
   })
 
@@ -491,16 +493,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               >
                 {messages.addCash}
               </TextLink>
-            </Hint>
-          ) : null}
-
-          {hasSufficientBalance &&
-          (activeTab !== 'convert' || !isArtistCoinsEnabled) ? (
-            <Hint>
-              {messages.helpCenter}{' '}
-              <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
-                {messages.walletGuide}
-              </ExternalTextLink>
             </Hint>
           ) : null}
 

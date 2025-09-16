@@ -1,4 +1,5 @@
 import { useArtistCoin } from '@audius/common/api'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
 import { Button, Flex, Paper, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -23,7 +24,7 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
 
   const handleCardClick = () => {
     if (artistCoin?.ticker) {
-      dispatch(push(`/wallet/${artistCoin.ticker}`))
+      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', artistCoin.ticker)))
     }
   }
 
