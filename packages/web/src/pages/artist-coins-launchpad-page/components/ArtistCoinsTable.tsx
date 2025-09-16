@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { walletMessages } from '@audius/common/messages'
 import { useArtistCoins } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
 import {
