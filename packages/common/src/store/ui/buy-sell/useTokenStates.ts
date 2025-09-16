@@ -1,51 +1,54 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 
 import { BuySellTab, TokenPair } from '~/store'
 
 export const useTokenStates = (selectedPair: TokenPair | null) => {
-  // State for dynamic token selection - separate states for each tab
-  // Initialize with default values, will be updated when token pairs load
-  const [buyTabTokens, setBuyTabTokens] = useState<{
-    baseToken: string
-    quoteToken: string
-  }>({
-    baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'USDC' // USDC by default
-  })
+  // State for user-initiated token changes - only track overrides
+  const [userOverrides, setUserOverrides] = useState<{
+    buy?: { baseToken?: string; quoteToken?: string }
+    sell?: { baseToken?: string; quoteToken?: string }
+    convert?: { baseToken?: string; quoteToken?: string }
+  }>({})
 
-  const [sellTabTokens, setSellTabTokens] = useState<{
-    baseToken: string
-    quoteToken: string
-  }>({
-    baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'USDC' // USDC by default
-  })
+  // Compute default tokens from selectedPair or fallback defaults
+  const defaultTokens = useMemo(() => {
+    const baseSymbol = selectedPair?.baseToken?.symbol ?? 'AUDIO'
+    const quoteSymbol = selectedPair?.quoteToken?.symbol ?? 'USDC'
 
-  const [convertTabTokens, setConvertTabTokens] = useState<{
-    baseToken: string
-    quoteToken: string
-  }>({
-    baseToken: 'AUDIO', // AUDIO by default
-    quoteToken: 'USDC' // USDC by default for convert tab
-  })
-
-  // Update token states when selected pair becomes available
-  useEffect(() => {
-    if (selectedPair && selectedPair.baseToken && selectedPair.quoteToken) {
-      setBuyTabTokens({
-        baseToken: selectedPair.baseToken.symbol,
-        quoteToken: selectedPair.quoteToken.symbol
-      })
-      setSellTabTokens({
-        baseToken: selectedPair.baseToken.symbol,
-        quoteToken: selectedPair.quoteToken.symbol
-      })
-      setConvertTabTokens((prev) => ({
-        baseToken: selectedPair.baseToken.symbol,
-        quoteToken: prev.quoteToken // Keep USDC for convert tab
-      }))
+    return {
+      buy: { baseToken: baseSymbol, quoteToken: quoteSymbol },
+      sell: { baseToken: baseSymbol, quoteToken: quoteSymbol },
+      convert: { baseToken: baseSymbol, quoteToken: 'USDC' } // Always USDC for convert
     }
-  }, [selectedPair])
+  }, [selectedPair?.baseToken?.symbol, selectedPair?.quoteToken?.symbol])
+
+  // Merge defaults with user overrides
+  const buyTabTokens = useMemo(
+    () => ({
+      baseToken: userOverrides.buy?.baseToken ?? defaultTokens.buy.baseToken,
+      quoteToken: userOverrides.buy?.quoteToken ?? defaultTokens.buy.quoteToken
+    }),
+    [userOverrides.buy, defaultTokens.buy]
+  )
+
+  const sellTabTokens = useMemo(
+    () => ({
+      baseToken: userOverrides.sell?.baseToken ?? defaultTokens.sell.baseToken,
+      quoteToken:
+        userOverrides.sell?.quoteToken ?? defaultTokens.sell.quoteToken
+    }),
+    [userOverrides.sell, defaultTokens.sell]
+  )
+
+  const convertTabTokens = useMemo(
+    () => ({
+      baseToken:
+        userOverrides.convert?.baseToken ?? defaultTokens.convert.baseToken,
+      quoteToken:
+        userOverrides.convert?.quoteToken ?? defaultTokens.convert.quoteToken
+    }),
+    [userOverrides.convert, defaultTokens.convert]
+  )
 
   // Get current tab's token symbols
   const getCurrentTabTokens = (activeTab: BuySellTab) => {
@@ -58,29 +61,41 @@ export const useTokenStates = (selectedPair: TokenPair | null) => {
 
   // Handle token changes
   const handleInputTokenChange = (symbol: string, activeTab: BuySellTab) => {
-    if (activeTab === 'sell') {
-      // On sell tab, input token change means base token change
-      setSellTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    } else if (activeTab === 'buy') {
-      // On buy tab, input token change means quote token change
-      setBuyTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
-    } else {
-      // On convert tab, input token change means base token change
-      setConvertTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    }
+    setUserOverrides((prev) => {
+      const newOverrides = { ...prev }
+
+      if (activeTab === 'sell') {
+        // On sell tab, input token change means base token change
+        newOverrides.sell = { ...prev.sell, baseToken: symbol }
+      } else if (activeTab === 'buy') {
+        // On buy tab, input token change means quote token change
+        newOverrides.buy = { ...prev.buy, quoteToken: symbol }
+      } else {
+        // On convert tab, input token change means base token change
+        newOverrides.convert = { ...prev.convert, baseToken: symbol }
+      }
+
+      return newOverrides
+    })
   }
 
   const handleOutputTokenChange = (symbol: string, activeTab: BuySellTab) => {
-    if (activeTab === 'buy') {
-      // On buy tab, output token change means base token change
-      setBuyTabTokens((prev) => ({ ...prev, baseToken: symbol }))
-    } else if (activeTab === 'sell') {
-      // On sell tab, output token change means quote token change
-      setSellTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
-    } else {
-      // On convert tab, output token change means quote token change
-      setConvertTabTokens((prev) => ({ ...prev, quoteToken: symbol }))
-    }
+    setUserOverrides((prev) => {
+      const newOverrides = { ...prev }
+
+      if (activeTab === 'buy') {
+        // On buy tab, output token change means base token change
+        newOverrides.buy = { ...prev.buy, baseToken: symbol }
+      } else if (activeTab === 'sell') {
+        // On sell tab, output token change means quote token change
+        newOverrides.sell = { ...prev.sell, quoteToken: symbol }
+      } else {
+        // On convert tab, output token change means quote token change
+        newOverrides.convert = { ...prev.convert, quoteToken: symbol }
+      }
+
+      return newOverrides
+    })
   }
 
   return {
