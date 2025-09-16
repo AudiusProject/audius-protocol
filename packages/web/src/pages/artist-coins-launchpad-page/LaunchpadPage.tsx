@@ -33,7 +33,7 @@ const messages = {
 }
 
 const LaunchpadPageContent = () => {
-  const [phase, setPhase] = useState(Phase.BUY_COIN)
+  const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
 
   // Set up mobile header with icon

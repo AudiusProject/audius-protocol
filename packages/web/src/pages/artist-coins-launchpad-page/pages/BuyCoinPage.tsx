@@ -49,7 +49,11 @@ const messages = {
 }
 
 const MAX_SOL_AMOUNT = 60 // The max amount of SOL. TODO: make this dynamic since this is technically based on the SOL-AUDIO exchange rate
-const MAX_TOKEN_AMOUNT = 249658688 // A bit magic number-y but this is the max amount of tokens that can be bought out of the pool
+
+// This number never changes with our pool configs - this number is the max amount of tokens that can be bought out of the pool before graduation triggers
+const MAX_TOKEN_AMOUNT = 249658688
+
+const INPUT_DEBOUNCE_TIME = 300
 
 export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
@@ -112,7 +116,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
       }
     },
     [getFirstBuyQuote],
-    300
+    INPUT_DEBOUNCE_TIME
   )
 
   const debouncedReceiveAmountChange = useDebouncedCallback(
@@ -123,7 +127,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
       }
     },
     [getFirstBuyQuote],
-    300
+    INPUT_DEBOUNCE_TIME
   )
 
   const handlePayAmountChange = useCallback(

@@ -1,5 +1,8 @@
 import { FixedDecimal } from '@audius/fixed-decimal'
-import { FirstBuyQuoteRequest } from '@audius/sdk'
+import {
+  FirstBuyQuoteRequest,
+  FirstBuyQuoteResponse as FirstBuyQuoteApiResponse
+} from '@audius/sdk'
 import { useMutation, UseMutationOptions } from '@tanstack/react-query'
 
 import { TOKEN_LISTING_MAP } from '~/store'
@@ -46,10 +49,10 @@ const getFirstBuyQuoteMutationFn =
 
     const firstBuyQuoteParams: FirstBuyQuoteRequest = solInputAmount
       ? {
-          solInputAmount: Number(solInputAmount?.value)
+          solInputAmount: solInputAmount.value.toString()
         }
       : {
-          tokenOutputAmount: Number(tokenOutputAmount?.value)
+          tokenOutputAmount: tokenOutputAmount!.value.toString()
         }
 
     const firstBuyQuoteRes =
@@ -92,21 +95,19 @@ const getFirstBuyQuoteMutationFn =
       solInputAmount: firstBuyQuoteRes.solInputAmount,
       usdcInputAmount: firstBuyQuoteRes.usdcInputAmount,
       tokenOutputAmount: firstBuyQuoteRes.tokenOutputAmount
-    }
+    } as FirstBuyQuoteHookResponse
   }
 
-type FirstBuyQuoteResponse = {
-  solInputAmount: number
+type FirstBuyQuoteHookResponse = {
+  // Same response as API but adds UI friendly values
   usdcAmountUiString: string
   tokenAmountUiString: string
   solAmountUiString: string
-  usdcInputAmount: bigint
-  tokenOutputAmount: bigint
-}
+} & FirstBuyQuoteApiResponse
 
 export const useFirstBuyQuote = (
   options?: UseMutationOptions<
-    FirstBuyQuoteResponse,
+    FirstBuyQuoteHookResponse,
     Error,
     UseFirstBuyQuoteParams
   >
