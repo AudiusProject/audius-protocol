@@ -21,6 +21,7 @@ import {
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
 
+import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroundImage2x.webp'
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
@@ -71,6 +72,7 @@ export const ArtistCoinsExplorePage = () => {
           w='100%'
           borderRadius='m'
           css={{
+            backgroundImage: `url(${imageCoinsBackgroundImage})`,
             backgroundSize: 'cover, cover',
             backgroundPosition: '0% 0%, 50% 50%',
             backgroundRepeat: 'no-repeat, no-repeat',
