@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import { useTokenBalance, useTokenPrice } from '../api'
+import { useTokenBalance, useArtistCoins } from '../api'
 import { Status } from '../models/Status'
 import {
   getTokenDecimalPlaces,
@@ -35,11 +35,11 @@ export const useFormattedTokenBalance = (
 
   const isTokenBalanceLoading = balanceStatus === Status.LOADING
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(mint)
+    useArtistCoins({ mint: [mint] })
 
   const balance = tokenBalance?.balance
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = tokenPriceData?.[0]?.price || null
   const hasFetchedTokenBalance = !isNullOrUndefined(balance)
 
   // Format mint balance with dynamic decimal places
@@ -72,7 +72,7 @@ export const useFormattedTokenBalance = (
     tokenBalance: balance ?? null,
     tokenBalanceFormatted,
     isTokenBalanceLoading,
-    tokenPrice,
+    tokenPrice: tokenPrice?.toString() ?? null,
     tokenDollarValue,
     isTokenPriceLoading
   }

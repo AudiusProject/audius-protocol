@@ -25,7 +25,7 @@ import {
   TextInputSize,
   useTheme
 } from '@audius/harmony-native'
-import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage2x.webp'
+import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage.webp'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -84,12 +84,11 @@ const Header = ({
 }) => {
   const navigation = useNavigation()
   return (
-    // @ts-ignore webp is causing type error but works
     <ImageBackground source={imageSearchHeaderBackground}>
       <Flex row pt='unit14' ph='l' pb='m' gap='m' alignItems='center'>
         <IconCaretLeft
           size='l'
-          color='white'
+          color='staticWhite'
           onPress={() => navigation.goBack()}
         />
         <Flex flex={1}>
