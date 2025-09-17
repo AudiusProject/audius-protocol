@@ -16,3 +16,6 @@ export const LAUNCHPAD_COIN_DESCRIPTION = (
 ${coinTicker} is an artist coin created by ${artistHandle} on Audius. Learn more at https://audius.co/coins/${coinTicker}`
 
 export const SOLANA_DECIMALS = 9
+export const AUDIO_DECIMALS = 8
+export const USDC_DECIMALS = 6
+export const TOKEN_DECIMALS = 9

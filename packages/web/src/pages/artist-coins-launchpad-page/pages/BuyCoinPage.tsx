@@ -1,6 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback, useEffect, useState } from 'react'
 
-import { useConnectedWallets, type ConnectedWallet } from '@audius/common/api'
+import {
+  useConnectedWallets,
+  useFirstBuyQuote,
+  type ConnectedWallet
+} from '@audius/common/api'
+import { useDebouncedCallback } from '@audius/common/hooks'
 import { Chain } from '@audius/common/models'
 import { shortenSPLAddress } from '@audius/common/utils'
 import {
@@ -8,6 +13,7 @@ import {
   Flex,
   Hint,
   IconLogoCircleSOL,
+  LoadingSpinner,
   Paper,
   Text,
   TokenAmountInput
@@ -29,18 +35,30 @@ const messages = {
   youPay: 'You Pay',
   youReceive: 'You Receive',
   connectedWallet: 'Connected Wallet',
-  rate: 'Rate',
-  rateValue: '1 $AUDIO ≈ 0.302183',
-  valueInUSDC: 'Value in USDC',
-  usdcValue: '$45.56',
+  valueInUSDC: 'Value',
   hintMessage:
     "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
-  back: 'Back'
+  back: 'Back',
+  errors: {
+    quoteError: 'Failed to get a quote. Please try again.',
+    valueTooHigh: 'Value is too high. Please enter a lower value.'
+  }
 }
+
+// TODO (PE-6839): improve how we handle this value, this value fluctuates based on the SOL-AUDIO exchange rate
+const MAX_SOL_AMOUNT = 60 // The max amount of SOL
+
+// This number never changes with our pool configs - this number is the max amount of tokens that can be bought out of the pool before graduation triggers
+const MAX_TOKEN_AMOUNT = 249658688
+
+const INPUT_DEBOUNCE_TIME = 300
 
 export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue } = useFormikContext<SetupFormValues>()
+  const [isPayAmountChanging, setIsPayAmountChanging] = useState(false)
+  const [isReceiveAmountChanging, setIsReceiveAmountChanging] = useState(false)
+
   const imageUrl = useFormImageUrl(values.coinImage)
 
   const { data: connectedWallets } = useConnectedWallets()
@@ -52,7 +70,30 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     [connectedWallets]
   )
 
-  // Format the wallet address for display (always Solana format)
+  // Get the first buy quote using the hook
+  const {
+    data: firstBuyQuoteData,
+    mutate: getFirstBuyQuote,
+    isPending: isFirstBuyQuotePending,
+    error: firstBuyQuoteError
+  } = useFirstBuyQuote()
+
+  // Resets inputs from disabled when the api call is not pending
+  useEffect(() => {
+    if (!isFirstBuyQuotePending) {
+      setIsPayAmountChanging(false)
+      setIsReceiveAmountChanging(false)
+    }
+  }, [isFirstBuyQuotePending])
+
+  // When quote comes back, update our inputs with the new values
+  useEffect(() => {
+    if (firstBuyQuoteData) {
+      setFieldValue('receiveAmount', firstBuyQuoteData.tokenAmountUiString)
+      setFieldValue('payAmount', firstBuyQuoteData.solAmountUiString)
+    }
+  }, [firstBuyQuoteData, setFieldValue])
+
   const formattedWalletAddress = connectedWallet
     ? shortenSPLAddress(connectedWallet.address)
     : null
@@ -65,22 +106,43 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     onContinue?.()
   }
 
-  const handlePayAmountChange = (value: string, _valueBigInt: bigint) => {
-    setFieldValue('payAmount', value)
-    // Calculate receive amount based on exchange rate
-    // For now, using mock calculation
-    const payValue = parseFloat(value) ?? 0
-    const calculatedReceive = payValue * 0.302183
-    setFieldValue('receiveAmount', calculatedReceive.toFixed(6))
-  }
+  const debouncedPayAmountChange = useDebouncedCallback(
+    (payAmount: string) => {
+      if (payAmount && Number(payAmount) <= MAX_SOL_AMOUNT) {
+        setIsReceiveAmountChanging(true)
+        getFirstBuyQuote({ solUiInputAmount: payAmount })
+      }
+    },
+    [getFirstBuyQuote],
+    INPUT_DEBOUNCE_TIME
+  )
 
-  const handleReceiveAmountChange = (value: string, _valueBigInt: bigint) => {
-    setFieldValue('receiveAmount', value)
-    // Calculate pay amount based on exchange rate
-    const receiveValue = parseFloat(value) ?? 0
-    const calculatedPay = receiveValue / 0.302183
-    setFieldValue('payAmount', calculatedPay.toFixed(6))
-  }
+  const debouncedReceiveAmountChange = useDebouncedCallback(
+    (receiveAmount: string) => {
+      if (receiveAmount && Number(receiveAmount) <= MAX_TOKEN_AMOUNT) {
+        setIsPayAmountChanging(true)
+        getFirstBuyQuote({ tokenUiOutputAmount: receiveAmount })
+      }
+    },
+    [getFirstBuyQuote],
+    INPUT_DEBOUNCE_TIME
+  )
+
+  const handlePayAmountChange = useCallback(
+    async (value: string, _valueBigInt: bigint) => {
+      setFieldValue('payAmount', value)
+      debouncedPayAmountChange(value)
+    },
+    [setFieldValue, debouncedPayAmountChange]
+  )
+
+  const handleReceiveAmountChange = useCallback(
+    (value: string, _valueBigInt: bigint) => {
+      setFieldValue('receiveAmount', value)
+      debouncedReceiveAmountChange(value)
+    },
+    [setFieldValue, debouncedReceiveAmountChange]
+  )
 
   return (
     <>
@@ -177,6 +239,16 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 onChange={handlePayAmountChange}
                 placeholder='0.00'
                 hideLabel
+                helperText={
+                  values.payAmount && Number(values.payAmount) > MAX_SOL_AMOUNT
+                    ? messages.errors.valueTooHigh
+                    : undefined
+                }
+                error={
+                  !!values.payAmount &&
+                  Number(values.payAmount) > MAX_SOL_AMOUNT
+                }
+                disabled={isPayAmountChanging}
                 endIcon={<IconLogoCircleSOL size='l' />}
               />
             </Flex>
@@ -194,6 +266,18 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 onChange={handleReceiveAmountChange}
                 placeholder='0.00'
                 hideLabel
+                disabled={isReceiveAmountChanging}
+                startAdornmentText='~'
+                helperText={
+                  values.receiveAmount &&
+                  Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
+                    ? messages.errors.valueTooHigh
+                    : undefined
+                }
+                error={
+                  !!values.receiveAmount &&
+                  Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
+                }
                 endIcon={
                   imageUrl ? (
                     <Artwork
@@ -208,24 +292,18 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               />
             </Flex>
 
-            {/* Exchange Rate Info */}
-            <Flex alignItems='center' justifyContent='space-between' w='100%'>
-              <Flex alignItems='center' gap='xs'>
-                <Text variant='body' size='m' color='subdued'>
-                  {messages.rate}
-                </Text>
+            {/* USDC Value */}
+            <Flex w='100%' alignItems='center' gap='xs'>
+              <Text variant='body' size='m' color='subdued'>
+                {messages.valueInUSDC}
+              </Text>
+              {isFirstBuyQuotePending ? (
+                <LoadingSpinner size='s' css={{ display: 'inline-block' }} />
+              ) : (
                 <Text variant='body' size='m' color='default'>
-                  {messages.rateValue} ${values.coinSymbol.toUpperCase()}
+                  ${firstBuyQuoteData?.usdcAmountUiString ?? '0.00'}
                 </Text>
-              </Flex>
-              <Flex alignItems='center' gap='xs'>
-                <Text variant='body' size='m' color='subdued'>
-                  {messages.valueInUSDC}
-                </Text>
-                <Text variant='body' size='m' color='default'>
-                  {messages.usdcValue}
-                </Text>
-              </Flex>
+              )}
             </Flex>
           </Flex>
 
@@ -238,6 +316,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         onContinue={handleContinue}
         onBack={handleBack}
         submit
+        errorText={firstBuyQuoteError ? messages.errors.quoteError : undefined}
       />
     </>
   )

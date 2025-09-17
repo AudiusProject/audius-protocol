@@ -47,7 +47,7 @@ type WalletRowProps = {
 } & UserCoinAccount
 
 const WalletRow = ({
-  account: address,
+  owner: address,
   balance,
   isInAppWallet,
   decimals
@@ -210,7 +210,7 @@ export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
         <Flex direction='column' gap='xl' w='100%' pv='l' ph='l'>
           {accounts?.map((walletAccount) => (
             <WalletRow
-              key={walletAccount.account}
+              key={walletAccount.owner}
               {...walletAccount}
               mint={mint}
               decimals={decimals ?? 0}
