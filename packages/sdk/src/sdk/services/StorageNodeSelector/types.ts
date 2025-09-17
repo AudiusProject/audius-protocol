@@ -15,7 +15,7 @@ export type StorageNode = {
 
 export type StorageNodeSelectorConfigInternal = {
   /**
-   * Starting list of healthy storage nodes to use before a discovery node is selected
+   * Starting list of healthy storage nodes to use before the current list is fetched from API
    */
   bootstrapNodes: StorageNode[]
   /**

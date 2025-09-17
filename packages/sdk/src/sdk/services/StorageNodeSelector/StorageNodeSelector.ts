@@ -39,14 +39,14 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private async updateAvailableStorageNodes(endpoint: string) {
     this.logger.info('Updating list of available storage nodes')
     const healthCheckEndpoint = `${endpoint}/health_check`
-    const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
-    if (!discoveryHealthCheckResponse.ok) {
+    const healthCheckResponse = await fetch(healthCheckEndpoint)
+    if (!healthCheckResponse.ok) {
       this.logger.warn('API health check did not respond successfully')
       return
     }
 
     const responseData: { data: HealthCheckResponseData } =
-      await discoveryHealthCheckResponse.json()
+      await healthCheckResponse.json()
     const contentNodes = responseData.data.network?.content_nodes
 
     if (!contentNodes) {
