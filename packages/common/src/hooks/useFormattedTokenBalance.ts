@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { FixedDecimal } from '@audius/fixed-decimal'
 
 import { useTokenBalance, useArtistCoins } from '../api'
-import { Status } from '../models/Status'
 import {
   getTokenDecimalPlaces,
   formatCurrency,
