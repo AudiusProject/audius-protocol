@@ -184,7 +184,7 @@ type DetailsTileNoAccessProps = {
   streamConditions: AccessConditions
   contentType: PurchaseableContentType
   trackId: ID
-  token: Coin | undefined
+  token?: Coin | undefined
   style?: ViewStyle
 }
 

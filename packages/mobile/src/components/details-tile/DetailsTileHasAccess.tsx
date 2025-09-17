@@ -237,7 +237,7 @@ type DetailsTileHasAccessProps = {
   isOwner: boolean
   style?: ViewStyle
   trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
-  token: Coin | undefined
+  token?: Coin | undefined
   contentType: PurchaseableContentType
 }
 
