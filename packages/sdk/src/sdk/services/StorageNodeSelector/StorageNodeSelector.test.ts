@@ -10,7 +10,6 @@ import {
   vitest
 } from 'vitest'
 
-import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
 
 import { StorageNodeSelector } from './StorageNodeSelector'
@@ -29,27 +28,27 @@ const discoveryNode = 'https://discovery-provider.audius.co'
 const logger = new Logger()
 
 const mswHandlers = [
-  rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
-    const data: HealthCheckResponseData = {
-      service: 'discovery-node',
-      version: '1.2.3',
-      block_difference: 0,
-      network: {
-        discovery_nodes_with_owner: [
-          { endpoint: discoveryNode, delegateOwnerWallet: '', ownerWallet: '' }
-        ],
-        content_nodes: [storageNodeA, storageNodeB]
-      }
-    }
+  // rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
+  //   const data: HealthCheckResponseData = {
+  //     service: 'discovery-node',
+  //     version: '1.2.3',
+  //     block_difference: 0,
+  //     network: {
+  //       discovery_nodes_with_owner: [
+  //         { endpoint: discoveryNode, delegateOwnerWallet: '', ownerWallet: '' }
+  //       ],
+  //       content_nodes: [storageNodeA, storageNodeB]
+  //     }
+  //   }
 
-    return res(
-      ctx.status(200),
-      ctx.json({
-        data,
-        comms: { healthy: true }
-      })
-    )
-  }),
+  //   return res(
+  //     ctx.status(200),
+  //     ctx.json({
+  //       data,
+  //       comms: { healthy: true }
+  //     })
+  //   )
+  // }),
 
   rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ data: { diskHasSpace: true } }))

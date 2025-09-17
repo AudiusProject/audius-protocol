@@ -15,8 +15,6 @@ import { PlaylistLibraryKind } from './PlaylistLibrary'
 import { PurchaseMethod } from './PurchaseContent'
 import { AccessConditions, TrackAccessType } from './Track'
 
-import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
-
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
 type JsonMap = Record<string, unknown>
@@ -1704,16 +1702,6 @@ type TransferAudioToWAudioFailure = {
   from: WalletAddress
 }
 
-type ServiceMonitorRequest = {
-  eventName: Name.SERVICE_MONITOR_REQUEST
-  type: ServiceMonitorType
-} & MonitorPayload
-
-type ServiceMonitorHealthCheck = {
-  eventName: Name.SERVICE_MONITOR_HEALTH_CHECK
-  type: ServiceMonitorType
-} & MonitorPayload
-
 type PlaylistLibraryReorder = {
   eventName: Name.PLAYLIST_LIBRARY_REORDER
   // Whether or not the reorder contains newly created temp playlists
@@ -3020,8 +3008,6 @@ export type AllTrackingEvents =
   | SendAudioRequest
   | SendAudioSuccess
   | SendAudioFailure
-  | ServiceMonitorRequest
-  | ServiceMonitorHealthCheck
   | PlaylistLibraryReorder
   | PlaylistLibraryClicked
   | PlaylistLibraryMovePlaylistIntoFolder
