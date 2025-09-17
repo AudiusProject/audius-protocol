@@ -8,8 +8,8 @@ import {
 import { useFeatureFlag } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import type { CoinPairItem } from '@audius/common/store'
-import { AUDIO_TICKER, useGroupCoinPairs } from '@audius/common/store'
+import { AUDIO_TICKER } from '@audius/common/store'
+import { filterUserCoins } from '@audius/common/utils'
 
 import { Box, Button, Divider, Flex, Paper, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -44,13 +44,23 @@ export const YourCoins = () => {
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
   const { data: artistCoins } = useUserCoins({
     userId: currentUserId
   })
 
-  const coinPairs = useGroupCoinPairs(artistCoins, true)
-  const cards = coinPairs.flat()
+  const filteredCoins = filterUserCoins(
+    artistCoins,
+    !!isArtistCoinsEnabled,
+    env.WAUDIO_MINT_ADDRESS
+  )
+
+  // Show audio coin card when no coins are available
+  const showAudioCoin = filteredCoins.length === 0
+  const cards = showAudioCoin ? ['audio-coin' as const] : filteredCoins
 
   const handleBuySell = useCallback(() => {
     navigation.navigate('BuySell', {
@@ -63,7 +73,7 @@ export const YourCoins = () => {
     <Paper>
       <TokensHeader />
       <Flex column>
-        {cards.map((item: CoinPairItem) => (
+        {cards.map((item) => (
           <Box key={typeof item === 'string' ? item : item.mint}>
             {item === 'audio-coin' ? (
               <CoinCard mint={env.WAUDIO_MINT_ADDRESS} />
