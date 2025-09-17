@@ -141,8 +141,8 @@ const initializeServices = (config: SdkConfig) => {
     config.environment === 'development'
       ? developmentConfig
       : config.environment === 'staging'
-      ? stagingConfig
-      : productionConfig
+        ? stagingConfig
+        : productionConfig
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
@@ -415,8 +415,8 @@ const initializeApis = ({
     config.environment === 'development'
       ? developmentConfig.network.apiEndpoint
       : config.environment === 'staging'
-      ? stagingConfig.network.apiEndpoint
-      : productionConfig.network.apiEndpoint
+        ? stagingConfig.network.apiEndpoint
+        : productionConfig.network.apiEndpoint
 
   const middleware = [
     addAppInfoMiddleware({ apiKey, appName, services }),
