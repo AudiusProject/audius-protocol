@@ -29,6 +29,12 @@ declare module '*.jpeg' {
   export default value
 }
 
+declare module '*.webp' {
+  import type { ImageSourcePropType } from 'react-native'
+  const value: ImageSourcePropType
+  export default value
+}
+
 declare module '*.lottie' {
   const content: any
   export default content

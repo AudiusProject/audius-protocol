@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { useArtistCoins, useUsers } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
 import {
@@ -24,14 +25,6 @@ import { Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 import styles from './ArtistCoinsTable.module.css'
-
-const messages = {
-  title: 'Your Token Balances',
-  noCoins: 'No results found',
-  noCoinsDescription: 'No Artist Coins were found matching your search.',
-  buy: 'Buy',
-  dollarSign: '$'
-}
 
 type CoinCell = Cell<Coin>
 
@@ -84,7 +77,7 @@ const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m' color='default'>
-      {messages.dollarSign}
+      {walletMessages.dollarSign}
       {coin.price.toFixed(4)}
     </Text>
   )
@@ -94,7 +87,7 @@ const renderMarketCapCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m'>
-      {messages.dollarSign}
+      {walletMessages.dollarSign}
       {formatCount(coin.marketCap)}
     </Text>
   )
@@ -143,7 +136,7 @@ const renderBuyCell = (
         }}
         onClick={() => handleBuy(coin.ticker ?? '')}
       >
-        {messages.buy}
+        {walletMessages.buy}
       </Button>
     </Flex>
   )
@@ -292,10 +285,10 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
       >
         <IconSearch size='2xl' color='default' />
         <Text variant='heading' size='m'>
-          {messages.noCoins}
+          {walletMessages.artistCoins.noCoins}
         </Text>
         <Text variant='body' size='l'>
-          {messages.noCoinsDescription}
+          {walletMessages.artistCoins.noCoinsDescription}
         </Text>
       </Paper>
     )
