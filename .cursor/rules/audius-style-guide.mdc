@@ -1,162 +1,71 @@
 ---
-description: Use null coalescing (??) and optional chaining (?.) operators instead of logical operators (&& and ||) when checking for null/undefined values or accessing potentially null properties.
+description: TypeScript/React coding standards - prefer null coalescing, optional chaining, ternaries for rendering, optional types, and organized string constants
 globs:
 alwaysApply: true
 ---
 
-# Prefer Null Coalescing & Optional Chaining
+# TypeScript Best Practices
 
-Use null coalescing (??) and optional chaining (?.) operators instead of logical operators (&& and ||) when checking for null/undefined values or accessing potentially null properties.
+## Null Coalescing & Optional Chaining
 
-When to use:
-
-- Use ?? instead of || when providing default values for null/undefined
-- Use ?. instead of && when accessing properties/methods on potentially null objects
-- Use ?. instead of && when conditionally executing methods on potentially null objects
-
-Examples:
-✅ Good:
+Use `??` and `?.` instead of `&&`/`||` for null checks.
 
 ```typescript
-// Null coalescing for defaults
+// ✅ Good
 const value = user?.name ?? 'Anonymous'
-
-// Optional chaining for property access
 const displayName = user?.profile?.displayName ?? 'Unknown'
 
-// Optional chaining for method calls
-user?.updateProfile?.(newData)
-```
-
-❌ Bad:
-
-```typescript
-// Using || for null checks
+// ❌ Bad
 const value = (user && user.name) || 'Anonymous'
-
-// Using && for property access
 const displayName =
   (user && user.profile && user.profile.displayName) || 'Unknown'
-
-// Using && for method calls
-user && user.updateProfile && user.updateProfile(newData)
 ```
 
-Rationale:
+## Conditional Rendering
 
-- Null coalescing (??) only checks for null/undefined, not falsy values like 0, '', false
-- Optional chaining (?.) safely accesses nested properties without throwing errors
-- These operators are more explicit and safer than logical operators for null checks
-- Reduces the need for verbose conditional chains and makes code more readable
-
-# Prefer Ternaries for Conditional Rendering
-
-description: Always use ternary operators instead of && for component conditional renders in JSX/React. This ensures explicit control over what renders when conditions are not met.
-
-When to use:
-
-- Use ternary operators (? :) for all conditional rendering
-- Explicitly return null when conditions aren't met
-- Avoid using && which can render falsy values like 0, '', false
-
-Examples:
-✅ Good:
+Use ternaries instead of `&&` for JSX conditional rendering.
 
 ```tsx
-// Explicit null return
-return !shouldRender ? null : <SomeComponent />
-
-// Check for empty arrays explicitly
-return list.length === 0 ? null : <SomeComponent list={list} />
-
-// Check for null/undefined
+// ✅ Good
 return !user ? null : <UserProfile user={user} />
+return list.length === 0 ? null : <List items={list} />
 
-// Multiple conditions
-return !isLoaded || hasError ? null : <DataComponent data={data} />
+// ❌ Bad
+return user && <UserProfile user={user} />
+return list.length && <List items={list} />
 ```
 
-❌ Bad:
+## Optional Types
 
-```tsx
-// && can render falsy values (0, '', false)
-return shouldRender && <SomeComponent />
+Use `?` modifier instead of `| undefined` for optional properties.
 
-// && with empty array renders nothing, but not explicit
-return list.length && <SomeComponent list={list} />
+```typescript
+// ✅ Good
+interface User {
+  name?: string
+  age?: number
+}
 
-// && doesn't handle falsy values predictably
-return count && <CounterDisplay count={count} />
+// ❌ Bad
+interface User {
+  name: string | undefined
+  age: number | undefined
+}
 ```
 
-Rationale:
+## String Constants
 
-- Ternary operators provide explicit control over both true and false branches
-- Prevents accidental rendering of falsy values like 0, '', false
-- Makes conditional rendering logic more readable and predictable
-- Follows React best practices for conditional rendering
-- References: https://kentcdodds.com/blog/use-ternaries-rather-than-and-and-in-jsx
-
-# Organize String Copy in Messages Object
-
-description: Put all page copy and string constants at the top of files in a const messages object rather than writing copy inline in components. This improves maintainability, enables easier internationalization, and keeps copy organized.
-
-When to use:
-
-- Put all user-facing strings in a messages object at the top of the file
-- Include static strings and dynamic strings using functions
-- Use the messages object throughout the component
-- Group related strings together logically
-
-Examples:
-✅ Good:
+Organize user-facing strings in a `messages` object at the top of components.
 
 ```tsx
+// ✅ Good
 const messages = {
-  title: 'Welcome to our app',
-  subtitle: 'Get started by creating your account',
-  buttonText: 'Click me!',
-  amountButtonText: (amount: number) => `Click ${amount}`,
-  errorMessages: {
-    required: 'This field is required',
-    invalid: 'Please enter a valid value'
-  }
+  title: 'Welcome',
+  error: 'Something went wrong'
 }
 
-const Component = () => {
-  return (
-    <div>
-      <h1>{messages.title}</h1>
-      <p>{messages.subtitle}</p>
-      <Button text={messages.buttonText} />
-      <Button text={messages.amountButtonText(5)} />
-      <ErrorMessage text={messages.errorMessages.required} />
-    </div>
-  )
-}
+return <h1>{messages.title}</h1>
+
+// ❌ Bad
+return <h1>Welcome</h1>
 ```
-
-❌ Bad:
-
-```tsx
-const Component = () => {
-  return (
-    <div>
-      <h1>Welcome to our app</h1>
-      <p>Get started by creating your account</p>
-      <Button text='Click me!' />
-      <Button text={`Click ${5}`} />
-      <ErrorMessage text='This field is required' />
-    </div>
-  )
-}
-```
-
-Rationale:
-
-- Centralizes all copy in one location for easy maintenance
-- Makes internationalization easier by having all strings in one place
-- Reduces duplication of strings across components
-- Improves code readability by separating copy from JSX structure
-- Makes it easier to update copy without touching component logic
-- Enables better copy management and consistency across the application
