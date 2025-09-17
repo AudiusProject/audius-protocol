@@ -236,7 +236,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               <TokenAmountInput
                 label={messages.youPay}
                 tokenLabel='AUDIO'
-                decimals={6}
+                decimals={8}
                 value={values.payAmount ?? ''}
                 onChange={handlePayAmountChange}
                 placeholder='0.00'

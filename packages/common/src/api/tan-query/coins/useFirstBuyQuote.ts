@@ -67,7 +67,7 @@ const getFirstBuyQuoteMutationFn =
       TOKEN_LISTING_MAP.AUDIO.decimals // 8 decimals for AUDIO
     )
     const audioAmountUiString = audioAmountFD.toLocaleString('en-US', {
-      maximumFractionDigits: 6, // 6 decimals is currently the max precision we show in the token input field
+      maximumFractionDigits: 8, // 8 decimals is the max precision we allow in the token input field
       roundingMode: 'trunc'
     })
 
