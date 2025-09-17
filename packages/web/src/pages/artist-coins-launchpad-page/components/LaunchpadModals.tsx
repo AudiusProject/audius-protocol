@@ -42,11 +42,12 @@ const messages = {
   insufficientBalanceTitle: 'Check your wallet balance',
   insufficientBalanceDescription:
     "You'll need to add funds to your wallet before you can continue.",
-  solAmount: '0.015 SOL',
+  solAmount: '0.02 SOL',
   solDescription: ' — required to create your coin',
   audioDescription:
-    '• Extra SOL if you want to make an initial buy of your coin (optional).',
-  hintText: 'Add SOL to your connected wallet',
+    '• Extra AUDIO if you want to make an initial buy of your coin (optional).',
+  hintText:
+    'Add SOL to your connected wallet, or send AUDIO from your Audius wallet',
   learnHowToFund: 'Learn how to fund your wallet',
   sendAudio: 'Send AUDIO'
 }
@@ -266,7 +267,7 @@ export const InsufficientBalanceModal = ({
       <ModalContent>
         <ModalHeader showDismissButton>
           <Flex justifyContent='center'>
-            <Text variant='label' size='xl' color='default' strength='strong'>
+            <Text variant='label' size='xl' strength='strong'>
               {messages.insufficientBalanceTitle}
             </Text>
           </Flex>
@@ -278,14 +279,14 @@ export const InsufficientBalanceModal = ({
 
           <Flex direction='column' gap='l'>
             <Flex direction='column' gap='s'>
-              <Text variant='body' size='l' color='default'>
+              <Text variant='body' size='l'>
                 {'• '}
-                <Text variant='body' size='l' color='default' strength='strong'>
+                <Text variant='body' size='l' strength='strong'>
                   {messages.solAmount}
                 </Text>
                 {messages.solDescription}
               </Text>
-              <Text variant='body' size='l' color='default'>
+              <Text variant='body' size='l'>
                 {messages.audioDescription}
               </Text>
             </Flex>
@@ -293,15 +294,26 @@ export const InsufficientBalanceModal = ({
 
           <Hint icon={IconInfo}>
             <Flex gap='m' direction='column'>
-              <Text>{messages.hintText}</Text>{' '}
-              <TextLink
-                variant='visible'
-                onClick={() => {
-                  /* TODO: DESIGN TO PROVIDE LINK */
-                }}
-              >
-                {messages.learnHowToFund}
-              </TextLink>
+              <Text>{messages.hintText}</Text>
+              <Flex gap='m'>
+                <TextLink
+                  showUnderline
+                  onClick={() => {
+                    /* TODO: DESIGN TO PROVIDE LINK */
+                  }}
+                >
+                  {messages.learnHowToFund}
+                </TextLink>
+                <TextLink
+                  showUnderline
+                  onClick={() => {
+                    /* TODO: DESIGN TO PROVIDE LINK */
+                  }}
+                  css={({ color }) => ({ color: color.icon.default })}
+                >
+                  {messages.sendAudio}
+                </TextLink>
+              </Flex>
             </Flex>
           </Hint>
         </Flex>
