@@ -1,13 +1,7 @@
-import { useMemo, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import {
-  useConnectedWallets,
-  useFirstBuyQuote,
-  type ConnectedWallet
-} from '@audius/common/api'
+import { useFirstBuyQuote } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
-import { Chain } from '@audius/common/models'
-import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
@@ -60,15 +54,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
 
   const imageUrl = useFormImageUrl(values.coinImage)
 
-  const { data: connectedWallets } = useConnectedWallets()
-
-  // Get the most recent connected Solana wallet (last in the array)
-  // Filter to only Solana wallets since only SOL wallets can be connected
-  const connectedWallet: ConnectedWallet | undefined = useMemo(
-    () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
-    [connectedWallets]
-  )
-
   // Get the first buy quote using the hook
   const {
     data: firstBuyQuoteData,
@@ -92,10 +77,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
       setFieldValue('payAmount', firstBuyQuoteData.solAmountUiString)
     }
   }, [firstBuyQuoteData, setFieldValue])
-
-  const formattedWalletAddress = connectedWallet
-    ? shortenSPLAddress(connectedWallet.address)
-    : null
 
   const handleBack = () => {
     onBack?.()
