@@ -9,6 +9,7 @@ import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardW
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { EventsApi } from './api/events/EventsApi'
 import {
+  ChallengesApi,
   CoinsApi,
   Configuration,
   ExploreApi,
@@ -467,6 +468,7 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
+  const challenges = new ChallengesApi(apiClientConfig)
   const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
@@ -545,7 +547,8 @@ const initializeApis = ({
     notifications,
     events,
     explore,
-    coins
+    coins,
+    challenges
   }
 }
 
