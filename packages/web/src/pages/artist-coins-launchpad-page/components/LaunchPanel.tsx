@@ -1,4 +1,11 @@
-import { Button, Flex, IconArrowRight, Paper, Text } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  IconArrowRight,
+  LoadingSpinner,
+  Paper,
+  Text
+} from '@audius/harmony'
 
 const messages = {
   title: 'Ready to launch?',
@@ -10,9 +17,10 @@ const messages = {
 
 type LaunchPanelProps = {
   onContinue: () => void
+  isPending: boolean
 }
 
-export const LaunchPanel = ({ onContinue }: LaunchPanelProps) => {
+export const LaunchPanel = ({ onContinue, isPending }: LaunchPanelProps) => {
   return (
     <Paper p='2xl' gap='xl' direction='column' w='100%' h='fit'>
       <Flex direction='column' gap='s'>
@@ -30,14 +38,15 @@ export const LaunchPanel = ({ onContinue }: LaunchPanelProps) => {
       <Button
         variant='primary'
         fullWidth
-        iconRight={IconArrowRight}
+        iconRight={isPending ? undefined : IconArrowRight}
         onClick={onContinue}
+        disabled={isPending}
         css={{
           background: 'var(--harmony-coin-gradient)',
           border: 'none'
         }}
       >
-        {messages.buttonText}
+        {isPending ? <LoadingSpinner /> : messages.buttonText}
       </Button>
     </Paper>
   )

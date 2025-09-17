@@ -1,4 +1,5 @@
 export { ArtistCoinsSubmitRow } from './ArtistCoinsSubmitRow'
+export { ConnectedWalletHeader } from './ConnectedWalletHeader'
 export { LaunchPanel } from './LaunchPanel'
 export { WalletSetupCard } from './WalletSetupCard'
 export { WhyCreateCard } from './WhyCreateCard'

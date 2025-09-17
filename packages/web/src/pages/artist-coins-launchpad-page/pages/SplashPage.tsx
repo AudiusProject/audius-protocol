@@ -90,9 +90,10 @@ const useStyles = makeResponsiveStyles(({ media, theme }) => {
 
 type SplashPageProps = {
   onContinue: () => void
+  isPending: boolean
 }
 
-export const SplashPage = ({ onContinue }: SplashPageProps) => {
+export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
   const styles = useStyles()
 
   return (
@@ -106,7 +107,7 @@ export const SplashPage = ({ onContinue }: SplashPageProps) => {
         <WalletSetupCard />
       </Flex>
       <Flex css={styles.rightSection}>
-        <LaunchPanel onContinue={onContinue} />
+        <LaunchPanel onContinue={onContinue} isPending={isPending} />
       </Flex>
     </Flex>
   )
