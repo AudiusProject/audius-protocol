@@ -1,6 +1,11 @@
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import { useCurrentAccountUser, useUser, useUserCoin } from '~/api'
+import {
+  useAudioBalance,
+  useCurrentAccountUser,
+  useUser,
+  useUserCoin
+} from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
 
@@ -9,6 +14,7 @@ import { QueryOptions } from '../types'
 import { useUSDCBalance } from './useUSDCBalance'
 
 const USDC_DECIMALS = 6
+const WEI_DECIMALS = 18
 
 /**
  * Wrapper hook that gives the balance of any token - including USDC which uses a different query.
@@ -38,8 +44,12 @@ export const useTokenBalance = ({
   const user = userId ? userById : currentUser
   const ethAddress = user?.wallet ?? null
   const isUsdc = mint === env.USDC_MINT_ADDRESS
+  const isAudio = mint === env.WAUDIO_MINT_ADDRESS
 
-  // Artist coins query (includes AUDIO)
+  // For AUDIO, we need to use the useAudioBalance hook since it includes ETH audio. useUserCoin is only SOL AUDIO
+  const audioTokenQuery = useAudioBalance({ userId }, { enabled: isAudio })
+
+  // Artist coins query
   const userCoinQuery = useUserCoin(
     { mint, userId },
     {
@@ -100,5 +110,21 @@ export const useTokenBalance = ({
     ...queryOptions
   })
 
-  return isUsdc ? usdcQuery : userCoinQuery
+  if (isUsdc) return usdcQuery
+  if (isAudio) {
+    const balanceFD = new FixedDecimal(
+      audioTokenQuery.totalBalance,
+      WEI_DECIMALS // AUDIO has 18 decimals
+    )
+    return {
+      data: {
+        balance: balanceFD,
+        balanceLocaleString: balanceFD.toLocaleString(),
+        decimals: WEI_DECIMALS
+      },
+      isLoading: audioTokenQuery.isLoading,
+      isError: audioTokenQuery.isError
+    }
+  }
+  return userCoinQuery
 }
