@@ -1,13 +1,7 @@
-import { useMemo, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import {
-  useConnectedWallets,
-  useFirstBuyQuote,
-  type ConnectedWallet
-} from '@audius/common/api'
+import { useFirstBuyQuote } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
-import { Chain } from '@audius/common/models'
-import { shortenSPLAddress } from '@audius/common/utils'
 import {
   Artwork,
   Flex,
@@ -35,7 +29,6 @@ const messages = {
     'Before your coin goes live, you have the option to buy some at the lowest price.',
   youPay: 'You Pay',
   youReceive: 'You Receive',
-  connectedWallet: 'Connected Wallet',
   valueInUSDC: 'Value',
   hintMessage:
     "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
@@ -62,15 +55,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
 
   const imageUrl = useFormImageUrl(values.coinImage)
 
-  const { data: connectedWallets } = useConnectedWallets()
-
-  // Get the most recent connected Solana wallet (last in the array)
-  // Filter to only Solana wallets since only SOL wallets can be connected
-  const connectedWallet: ConnectedWallet | undefined = useMemo(
-    () => connectedWallets?.filter((wallet) => wallet.chain === Chain.Sol)?.[0],
-    [connectedWallets]
-  )
-
   // Get the first buy quote using the hook
   const {
     data: firstBuyQuoteData,
@@ -94,10 +78,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
       setFieldValue('payAmount', firstBuyQuoteData.audioAmountUiString)
     }
   }, [firstBuyQuoteData, setFieldValue])
-
-  const formattedWalletAddress = connectedWallet
-    ? shortenSPLAddress(connectedWallet.address)
-    : null
 
   const handleBack = () => {
     onBack?.()
@@ -198,40 +178,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 <Text variant='heading' size='s' color='default'>
                   {messages.youPay}
                 </Text>
-                <Flex alignItems='center' gap='s'>
-                  <Text variant='body' size='m' color='subdued'>
-                    {messages.connectedWallet}
-                  </Text>
-                  <Flex
-                    alignItems='center'
-                    gap='xs'
-                    pl='xs'
-                    pr='s'
-                    pv='xs'
-                    backgroundColor='surface2'
-                    border='default'
-                    borderRadius='xl'
-                  >
-                    <Flex
-                      alignItems='center'
-                      justifyContent='center'
-                      w='xl'
-                      h='xl'
-                      borderRadius='circle'
-                      backgroundColor='accent'
-                    >
-                      <IconLogoCircleSOL size='l' />
-                    </Flex>
-                    <Text
-                      variant='title'
-                      size='m'
-                      strength='weak'
-                      color='default'
-                    >
-                      {formattedWalletAddress}
-                    </Text>
-                  </Flex>
-                </Flex>
               </Flex>
               <TokenAmountInput
                 label={messages.youPay}
