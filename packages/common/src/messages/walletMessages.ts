@@ -102,5 +102,21 @@ export const walletMessages = {
   receiveTokensCopied: 'Copied to Clipboard!',
   becomeMemberTitle: 'Become a member',
   becomeMemberBody: (coinTicker: string) =>
-    `Buy ${coinTicker} to gain access to exclusive members-only perks!`
+    `Buy ${coinTicker} to gain access to exclusive members-only perks!`,
+
+  // Artist Coins messages
+  artistCoins: {
+    title: 'Discover Artist Coins',
+    searchPlaceholder: 'Search Artist Coins',
+    noCoins: 'No results found',
+    noCoinsDescription: 'No Artist Coins were found matching your search.',
+    sortTitle: 'SORT',
+    sortAscending: 'Ascending',
+    sortDescending: 'Descending',
+    sortPrice: 'Price',
+    sortMarketCap: 'Market Cap',
+    sortVolume: 'Volume',
+    sortLaunchDate: 'Launch Date',
+    sortHolders: 'Holders'
+  }
 }
