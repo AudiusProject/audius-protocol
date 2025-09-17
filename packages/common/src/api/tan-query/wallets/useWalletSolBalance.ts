@@ -54,9 +54,9 @@ const getWalletSolBalanceQueryFn =
       )
 
       return {
-        balanceUi: walletSolBalance.toLocaleString(),
+        balanceUi: walletSolBalance.toLocaleString('en-US'),
         balanceLamports: walletSolBalanceFixedDecimal.value,
-        balanceLocaleString: walletSolBalance.toLocaleString()
+        balanceLocaleString: walletSolBalance.toLocaleString('en-US')
       }
     } catch (error) {
       reportToSentry({

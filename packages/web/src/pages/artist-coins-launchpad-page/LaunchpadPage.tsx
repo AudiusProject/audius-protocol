@@ -87,69 +87,90 @@ const LaunchpadPageContent = () => {
     />
   )
 
-  const getIsValidWalletBalance = async (walletAddress: string) => {
-    // Check if wallet has sufficient SOL balance
-    const balanceData = await queryClient.fetchQuery(
-      getWalletSolBalanceOptions(queryContext, {
-        walletAddress
-      })
-    )
+  const getIsValidWalletBalance = useCallback(
+    async (walletAddress: string) => {
+      // Check if wallet has sufficient SOL balance
+      const balanceData = await queryClient.fetchQuery(
+        getWalletSolBalanceOptions(queryContext, {
+          walletAddress
+        })
+      )
 
-    const walletBalanceLamports = balanceData.balanceLamports
-    return walletBalanceLamports > MIN_SOL_BALANCE
-  }
+      const walletBalanceLamports = balanceData.balanceLamports
+      return walletBalanceLamports > MIN_SOL_BALANCE
+    },
+    [queryClient, queryContext]
+  )
 
   // NOTE: this hook specifically is after the wallet is both added & has sufficient balance
-  const handleWalletAddSuccess = async (wallet: ConnectedWallet) => {
-    setPhase(Phase.SETUP)
-    dispatch(
-      toast({
-        content: (
-          <Flex gap='xs' direction='column'>
-            <Text>{messages.walletAdded}</Text>
-            <Text>{shortenSPLAddress(wallet.address)}</Text>
-          </Flex>
-        )
-      })
-    )
-  }
+  const handleWalletAddSuccess = useCallback(
+    (wallet: ConnectedWallet) => {
+      setPhase(Phase.SETUP)
+      dispatch(
+        toast({
+          content: (
+            <Flex gap='xs' direction='column'>
+              <Text>{messages.walletAdded}</Text>
+              <Text>{shortenSPLAddress(wallet.address)}</Text>
+            </Flex>
+          )
+        })
+      )
+    },
+    [setPhase, dispatch]
+  )
 
   // Wallet connection handlers
-  const handleWalletConnectSuccess = async (wallets: ConnectedWallet[]) => {
-    const newWallet = wallets[0]
+  const handleWalletConnectSuccess = useCallback(
+    async (wallets: ConnectedWallet[]) => {
+      const newWallet = wallets[0]
 
-    const isValidWalletBalance = await getIsValidWalletBalance(
-      newWallet.address
-    )
-    try {
-      if (isValidWalletBalance) {
-        handleWalletAddSuccess(newWallet)
-      } else {
-        setIsInsufficientBalanceModalOpen(true)
-      }
-    } catch (error) {
-      alert('Failed to check wallet balance. Please try again.')
-    }
-  }
-
-  const handleWalletConnectError = async (error: unknown) => {
-    // If wallet is already linked, continue with the flow
-    if (error instanceof AlreadyAssociatedError) {
-      const lastConnectedWallet = getConnectedWallet(connectedWallets)
-      if (lastConnectedWallet) {
-        const isValidWalletBalance = await getIsValidWalletBalance(
-          lastConnectedWallet?.address
-        )
+      const isValidWalletBalance = await getIsValidWalletBalance(
+        newWallet.address
+      )
+      try {
         if (isValidWalletBalance) {
-          handleWalletAddSuccess(lastConnectedWallet)
+          handleWalletAddSuccess(newWallet)
         } else {
           setIsInsufficientBalanceModalOpen(true)
         }
+      } catch (error) {
+        alert('Failed to check wallet balance. Please try again.')
       }
-    }
+    },
+    [
+      getIsValidWalletBalance,
+      handleWalletAddSuccess,
+      setIsInsufficientBalanceModalOpen
+    ]
+  )
 
-    // TODO: add an error toast here
-  }
+  const handleWalletConnectError = useCallback(
+    async (error: unknown) => {
+      // If wallet is already linked, continue with the flow
+      if (error instanceof AlreadyAssociatedError) {
+        const lastConnectedWallet = getConnectedWallet(connectedWallets)
+        if (lastConnectedWallet) {
+          const isValidWalletBalance = await getIsValidWalletBalance(
+            lastConnectedWallet?.address
+          )
+          if (isValidWalletBalance) {
+            handleWalletAddSuccess(lastConnectedWallet)
+          } else {
+            setIsInsufficientBalanceModalOpen(true)
+          }
+        }
+      }
+
+      // TODO: add an error toast here
+    },
+    [
+      connectedWallets,
+      getIsValidWalletBalance,
+      handleWalletAddSuccess,
+      setIsInsufficientBalanceModalOpen
+    ]
+  )
 
   const { openAppKitModal, isPending: isWalletConnectPending } =
     useConnectAndAssociateWallets(
@@ -157,33 +178,33 @@ const LaunchpadPageContent = () => {
       handleWalletConnectError
     )
 
-  const handleSplashContinue = async () => {
+  const handleSplashContinue = useCallback(async () => {
     // Switch to Solana network to prioritize SOL wallets
     await appkitModal.switchNetwork(solana)
     openAppKitModal()
-  }
+  }, [openAppKitModal])
 
-  const handleSetupContinue = () => {
+  const handleSetupContinue = useCallback(() => {
     setPhase(Phase.REVIEW)
-  }
+  }, [])
 
-  const handleSetupBack = async () => {
+  const handleSetupBack = useCallback(async () => {
     resetForm()
     await validateForm()
     setPhase(Phase.SPLASH)
-  }
+  }, [resetForm, validateForm])
 
-  const handleReviewContinue = () => {
+  const handleReviewContinue = useCallback(() => {
     setPhase(Phase.BUY_COIN)
-  }
+  }, [])
 
-  const handleReviewBack = () => {
+  const handleReviewBack = useCallback(() => {
     setPhase(Phase.SETUP)
-  }
+  }, [])
 
-  const handleBuyCoinBack = () => {
+  const handleBuyCoinBack = useCallback(() => {
     setPhase(Phase.REVIEW)
-  }
+  }, [])
 
   const renderCurrentPage = () => {
     switch (phase) {

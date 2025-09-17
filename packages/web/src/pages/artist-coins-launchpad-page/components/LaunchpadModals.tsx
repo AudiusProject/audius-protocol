@@ -55,7 +55,7 @@ const messages = {
 const LoadingState = ({ numTxs }: { numTxs: number }) => (
   <ModalContent>
     <Flex
-      direction='column'
+      column
       alignItems='center'
       justifyContent='center'
       gap='xl'
@@ -65,7 +65,7 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
       }}
     >
       <LoadingSpinner size='3xl' />
-      <Flex direction='column' gap='s' alignItems='center'>
+      <Flex column gap='s' alignItems='center'>
         <Text variant='heading' size='l'>
           {messages.awaitingConfirmation}
         </Text>
@@ -112,19 +112,14 @@ const SuccessState = ({
         </Flex>
       </ModalHeader>
       <ModalContent>
-        <Flex
-          direction='column'
-          alignItems='center'
-          justifyContent='center'
-          gap='2xl'
-        >
+        <Flex column alignItems='center' justifyContent='center' gap='2xl'>
           {/* Congratulatory Message */}
           <Text variant='body' size='l' color='default'>
             {messages.congratsDescription}
           </Text>
 
           {/* Purchase Summary */}
-          <Flex direction='column' gap='m' w='100%'>
+          <Flex column gap='m' w='100%'>
             <Text
               variant='label'
               size='s'
@@ -136,7 +131,7 @@ const SuccessState = ({
             <Paper
               p='l'
               gap='l'
-              direction='column'
+              column
               w='100%'
               borderRadius='m'
               border='default'
@@ -148,7 +143,7 @@ const SuccessState = ({
               <Flex alignItems='center' gap='m' w='100%'>
                 <Artwork src={logoUri} w='48px' h='48px' hex borderWidth={0} />
 
-                <Flex direction='column' gap='xs' flex={1}>
+                <Flex column gap='xs' flex={1}>
                   <Text variant='title' size='m' color='default'>
                     {name}
                   </Text>
@@ -175,7 +170,7 @@ const SuccessState = ({
           </Flex>
 
           {/* Contract Address */}
-          <Flex direction='column' gap='m' w='100%'>
+          <Flex column gap='m' w='100%'>
             <Text
               variant='label'
               size='s'
@@ -272,13 +267,13 @@ export const InsufficientBalanceModal = ({
             </Text>
           </Flex>
         </ModalHeader>
-        <Flex direction='column' gap='xl' pt='xl'>
+        <Flex column gap='xl' pt='xl'>
           <Text variant='body' size='l' color='default'>
             {messages.insufficientBalanceDescription}
           </Text>
 
-          <Flex direction='column' gap='l'>
-            <Flex direction='column' gap='s'>
+          <Flex column gap='l'>
+            <Flex column gap='s'>
               <Text variant='body' size='l'>
                 {'• '}
                 <Text variant='body' size='l' strength='strong'>
@@ -293,7 +288,7 @@ export const InsufficientBalanceModal = ({
           </Flex>
 
           <Hint icon={IconInfo}>
-            <Flex gap='m' direction='column'>
+            <Flex gap='m' column>
               <Text>{messages.hintText}</Text>
               <Flex gap='m'>
                 <TextLink
