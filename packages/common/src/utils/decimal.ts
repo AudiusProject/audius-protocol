@@ -164,6 +164,78 @@ export const formatCurrency = (
   }
 }
 
+/**
+ * Formats a number with subscript notation for many leading zeros after decimal.
+ * For example: 0.000068352 → 0.0₄68352
+ *
+ * @param num - The number to format
+ * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @returns Formatted string with subscript notation for leading zeros
+ */
+export const formatCurrencyWithSubscript = (
+  num: number,
+  locale: string = 'en-US'
+): string => {
+  if (num === 0) return '$0.00'
+
+  try {
+    const decimalPlaces = getCurrencyDecimalPlaces(num)
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: Math.min(decimalPlaces, 2),
+      maximumFractionDigits: decimalPlaces
+    }).format(num)
+
+    // Extract the number part (remove currency symbol and commas)
+    const numberPart = formatted.replace(/[^0-9.-]/g, '').replace(/,/g, '')
+
+    // Check if there are leading zeros after decimal that should be subscripted
+    const parts = numberPart.split('.')
+    if (parts.length === 2 && parts[0] === '0') {
+      const decimalPart = parts[1]
+
+      // Find consecutive zeros after the decimal
+      const zeroMatch = decimalPart.match(/^0+/)
+      if (zeroMatch) {
+        const zeroCount = zeroMatch[0].length
+        const remainingDigits = decimalPart.substring(zeroCount)
+
+        // Only apply subscript if there are 3 or more leading zeros
+        if (zeroCount >= 3 && remainingDigits.length > 0) {
+          // Create subscript number (Unicode subscript digits)
+          const subscriptDigits = zeroCount
+            .toString()
+            .split('')
+            .map((digit) => {
+              const subscripts = [
+                '₀',
+                '₁',
+                '₂',
+                '₃',
+                '₄',
+                '₅',
+                '₆',
+                '₇',
+                '₈',
+                '₉'
+              ]
+              return subscripts[parseInt(digit)]
+            })
+            .join('')
+
+          // Format as $0.0[subscript][remaining digits]
+          return `$0.0${subscriptDigits}${remainingDigits}`
+        }
+      }
+    }
+
+    return formatted
+  } catch {
+    return `$${num.toFixed(2)}`
+  }
+}
+
 export const formatCurrencyWithMax = (
   num: number,
   max: number,
