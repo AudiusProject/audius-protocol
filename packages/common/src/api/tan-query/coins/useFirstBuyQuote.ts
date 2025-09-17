@@ -13,8 +13,8 @@ const LAUNCHPAD_TOKEN_DECIMALS = 9
 
 export type UseFirstBuyQuoteParams =
   | {
-      /** The amount of SOL in  to get a quote for */
-      solUiInputAmount: string
+      /** The amount of AUDIO in  to get a quote for */
+      audioUiInputAmount: string
     }
   | {
       /** The amount of the launchpad token to get a quote for */
@@ -32,12 +32,12 @@ const getFirstBuyQuoteMutationFn =
     const { audiusSdk } = context
 
     const sdk = await audiusSdk()
-    const solInputAmount =
-      'solUiInputAmount' in params
+    const audioInputAmount =
+      'audioUiInputAmount' in params
         ? new FixedDecimal(
-            params.solUiInputAmount,
-            TOKEN_LISTING_MAP.SOL.decimals
-          ).trunc(TOKEN_LISTING_MAP.SOL.decimals)
+            params.audioUiInputAmount,
+            TOKEN_LISTING_MAP.AUDIO.decimals
+          ).trunc(TOKEN_LISTING_MAP.AUDIO.decimals)
         : undefined
     const tokenOutputAmount =
       'tokenUiOutputAmount' in params
@@ -47,9 +47,9 @@ const getFirstBuyQuoteMutationFn =
           ).trunc(LAUNCHPAD_TOKEN_DECIMALS)
         : undefined
 
-    const firstBuyQuoteParams: FirstBuyQuoteRequest = solInputAmount
+    const firstBuyQuoteParams: FirstBuyQuoteRequest = audioInputAmount
       ? {
-          solInputAmount: solInputAmount.value.toString()
+          audioInputAmount: audioInputAmount.value.toString()
         }
       : {
           tokenOutputAmount: tokenOutputAmount!.value.toString()
@@ -58,17 +58,21 @@ const getFirstBuyQuoteMutationFn =
     const firstBuyQuoteRes =
       await sdk.services.solanaRelay.getFirstBuyQuote(firstBuyQuoteParams)
 
-    const solAmountFD = new FixedDecimal(
-      BigInt(firstBuyQuoteRes.solInputAmount),
-      TOKEN_LISTING_MAP.SOL.decimals // 9 decimals for SOL
+    console.log({
+      decimals: TOKEN_LISTING_MAP.AUDIO.decimals,
+      audioInputAmount: firstBuyQuoteRes.audioInputAmount
+    })
+    const audioAmountFD = new FixedDecimal(
+      BigInt(firstBuyQuoteRes.audioInputAmount),
+      TOKEN_LISTING_MAP.AUDIO.decimals // 8 decimals for AUDIO
     )
-    const solAmountUiString = solAmountFD.toLocaleString('en-US', {
+    const audioAmountUiString = audioAmountFD.toLocaleString('en-US', {
       maximumFractionDigits: 6, // 6 decimals is currently the max precision we show in the token input field
       roundingMode: 'trunc'
     })
 
     const usdcAmountFD = new FixedDecimal(
-      BigInt(firstBuyQuoteRes.usdcInputAmount),
+      BigInt(firstBuyQuoteRes.usdcValue),
       TOKEN_LISTING_MAP.USDC.decimals // 6 decimals for USDC
     )
     const usdcAmountUiString = usdcAmountFD.toLocaleString('en-US', {
@@ -86,14 +90,15 @@ const getFirstBuyQuoteMutationFn =
       roundingMode: 'trunc'
     })
 
+    console.log('returning')
     return {
       // ui formatted values
       usdcAmountUiString,
       tokenAmountUiString,
-      solAmountUiString,
-      // raw values
-      solInputAmount: firstBuyQuoteRes.solInputAmount,
-      usdcInputAmount: firstBuyQuoteRes.usdcInputAmount,
+      audioAmountUiString,
+      // raw API repsonse values
+      audioInputAmount: firstBuyQuoteRes.audioInputAmount,
+      usdcValue: firstBuyQuoteRes.usdcValue,
       tokenOutputAmount: firstBuyQuoteRes.tokenOutputAmount
     } as FirstBuyQuoteHookResponse
   }
@@ -102,7 +107,7 @@ type FirstBuyQuoteHookResponse = {
   // Same response as API but adds UI friendly values
   usdcAmountUiString: string
   tokenAmountUiString: string
-  solAmountUiString: string
+  audioAmountUiString: string
 } & FirstBuyQuoteApiResponse
 
 export const useFirstBuyQuote = (

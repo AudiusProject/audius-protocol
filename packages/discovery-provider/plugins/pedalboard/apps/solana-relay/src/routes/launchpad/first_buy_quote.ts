@@ -5,10 +5,21 @@ import {
   SwapApi as JupiterApi
 } from '@jup-ag/api'
 import {
+  ActivationType,
+  BaseFeeMode,
+  CollectFeeMode,
+  DammV2DynamicFeeMode,
   DynamicBondingCurveClient,
-  SwapMode
+  FeeMode,
+  MigrationFeeOption,
+  MigrationOption,
+  SwapMode,
+  TokenDecimal,
+  TokenType,
+  TokenUpdateAuthorityOption,
+  buildCurve
 } from '@meteora-ag/dynamic-bonding-curve-sdk'
-import { NATIVE_MINT as SOL_MINT } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { Request, Response } from 'express'
 
@@ -17,41 +28,15 @@ import { getConnection } from '../../utils/connections'
 
 import { AUDIO_MINT, QUOTE_POOL_MINT_ADDRESS, USDC_MINT } from './constants'
 
-const getSolToAudioQuote = async (
-  jupiterApi: JupiterApi,
-  solAmountLamports: string
-): Promise<QuoteResponse> => {
-  return await jupiterApi.quoteGet({
-    inputMint: SOL_MINT.toBase58(),
-    outputMint: AUDIO_MINT,
-    amount: new BN(solAmountLamports).toNumber(),
-    swapMode: 'ExactIn',
-    onlyDirectRoutes: false,
-    dynamicSlippage: true
-  })
-}
+const STARTING_SQRT_PRICE = new BN('18446744073709552')
 
-const getSolToUsdcQuote = async (
-  jupiterApi: JupiterApi,
-  solAmountLamports: string
-): Promise<QuoteResponse> => {
-  return await jupiterApi.quoteGet({
-    inputMint: SOL_MINT.toBase58(),
-    outputMint: USDC_MINT,
-    amount: new BN(solAmountLamports).toNumber(),
-    swapMode: 'ExactIn',
-    onlyDirectRoutes: false,
-    dynamicSlippage: true
-  })
-}
-
-const getAudioToSolQuote = async (
+const getAudioToUSDCQuote = async (
   jupiterApi: JupiterApi,
   audioAmount: string
 ): Promise<QuoteResponse> => {
   return await jupiterApi.quoteGet({
     inputMint: AUDIO_MINT,
-    outputMint: SOL_MINT.toBase58(),
+    outputMint: USDC_MINT,
     amount: new BN(audioAmount).toNumber(),
     swapMode: 'ExactIn',
     onlyDirectRoutes: false,
@@ -76,15 +61,19 @@ const getBondingCurveQuote = async ({
   audioAmount?: BN
   tokenAmount?: BN
 }) => {
-  const virtualPoolState = await dbcClient.state.getPool(
-    QUOTE_POOL_MINT_ADDRESS
-  )
+  const existingPool = await dbcClient.state.getPool(QUOTE_POOL_MINT_ADDRESS)
   const poolConfigState = await dbcClient.state.getPoolConfig(
-    virtualPoolState.config
+    existingPool.config
   )
+
+  const virtualPoolState = {
+    ...existingPool,
+    sqrtPrice: STARTING_SQRT_PRICE // in order to set our curve back to absolute 0 we reset the sqrt to the initial sqrt price
+  }
+
   if (audioAmount) {
     const quote = await dbcClient.pool.swapQuote({
-      virtualPool: virtualPoolState,
+      virtualPool: virtualPoolState as any,
       config: poolConfigState,
       swapBaseForQuote: false,
       amountIn: audioAmount,
@@ -95,7 +84,7 @@ const getBondingCurveQuote = async ({
   } else if (tokenAmount) {
     // Swap quote 2 has additional params that allows us to specify ExactOut for the swap
     const quote = await dbcClient.pool.swapQuote2({
-      virtualPool: virtualPoolState,
+      virtualPool: virtualPoolState as any,
       config: poolConfigState,
       swapBaseForQuote: false,
       swapMode: SwapMode.ExactOut,
@@ -110,31 +99,23 @@ const getBondingCurveQuote = async ({
   }
 }
 
-const getQuoteFromSolInput = async (
+const getQuoteFromAudioInput = async (
   jupiterApi: JupiterApi,
   dbcClient: DynamicBondingCurveClient,
-  solAmountLamports: string
+  audioAmount: string
 ) => {
   // Get SOL to AUDIO quote
-  const solToAudioQuote = await getSolToAudioQuote(
-    jupiterApi,
-    solAmountLamports
-  )
-
-  // Get SOL to USDC quote
-  const solToUsdcQuote = await getSolToUsdcQuote(jupiterApi, solAmountLamports)
+  const audioToUsdcQuote = await getAudioToUSDCQuote(jupiterApi, audioAmount)
 
   // Use the AUDIO amount from the jupiter quote to get a quote for tokens out of the bonding curve
-  const audioAmount = new BN(solToAudioQuote.outAmount)
   const audioToTokensQuote = await getBondingCurveQuote({
     dbcClient,
-    audioAmount
+    audioAmount: new BN(audioAmount)
   })
   return {
-    solInputAmount: solAmountLamports,
-    usdcInputAmount: solToUsdcQuote.outAmount,
-    tokenOutputAmount: audioToTokensQuote,
-    audioSwapAmount: solToAudioQuote.outAmount
+    usdcValue: audioToUsdcQuote.outAmount,
+    audioInputAmount: audioAmount,
+    tokenOutputAmount: audioToTokensQuote
   }
 }
 
@@ -149,14 +130,12 @@ const getQuoteFromTokenOutput = async (
     tokenAmount: new BN(tokenAmount)
   })
 
-  const solAmount = await getAudioToSolQuote(jupiterApi, audioAmount!)
-  const usdcAmount = await getSolToUsdcQuote(jupiterApi, solAmount.outAmount)
+  const usdcValue = await getAudioToUSDCQuote(jupiterApi, audioAmount!)
 
   return {
-    solInputAmount: solAmount.outAmount,
-    usdcInputAmount: usdcAmount.outAmount,
-    tokenOutputAmount: tokenAmount,
-    audioSwapAmount: audioAmount
+    usdcValue: usdcValue.outAmount,
+    audioInputAmount: audioAmount,
+    tokenOutputAmount: tokenAmount
   }
 }
 
@@ -165,19 +144,19 @@ export const firstBuyQuote = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { solInputAmount, tokenOutputAmount } = req.query
+    const { audioInputAmount, tokenOutputAmount } = req.query
 
-    if (!solInputAmount && !tokenOutputAmount) {
+    if (!audioInputAmount && !tokenOutputAmount) {
       res.status(400).json({
         error: 'solAmount or tokenAmount is required'
       })
       return
     }
 
-    if (solInputAmount && typeof solInputAmount !== 'string') {
+    if (audioInputAmount && typeof audioInputAmount !== 'string') {
       res.status(400).json({
         error:
-          'solAmount is required and must be a string representing the amount in lamports'
+          'audioInputAmount is required and must be a string representing the amount in 8 digit waudio decimals'
       })
       return
     }
@@ -185,7 +164,7 @@ export const firstBuyQuote = async (
     if (tokenOutputAmount && typeof tokenOutputAmount !== 'string') {
       res.status(400).json({
         error:
-          'tokenAmount is required and must be a string representing the amount in standard 9 decimal format'
+          'tokenOutputAmount is required and must be a string representing the amount in standard 9 decimal format'
       })
       return
     }
@@ -196,13 +175,13 @@ export const firstBuyQuote = async (
     const jupiterApi = createJupiterApiClient()
 
     // Handle SOL -> token quote
-    if (solInputAmount && solInputAmount) {
-      const quoteFromSolData = await getQuoteFromSolInput(
+    if (audioInputAmount && audioInputAmount) {
+      const quoteFromAudioData = await getQuoteFromAudioInput(
         jupiterApi,
         dbcClient,
-        solInputAmount
+        audioInputAmount
       )
-      res.status(200).send(quoteFromSolData as FirstBuyQuoteResponse)
+      res.status(200).send(quoteFromAudioData as FirstBuyQuoteResponse)
     }
 
     // Handle token -> SOL quote

@@ -20,6 +20,7 @@ import {
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 
+import { IconAUDIO } from 'components/buy-audio-modal/components/Icons'
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
@@ -42,11 +43,11 @@ const messages = {
   errors: {
     quoteError: 'Failed to get a quote. Please try again.',
     valueTooHigh: 'Value is too high. Please enter a lower value.'
-  }
+  },
+  createCoin: 'Create Coin'
 }
 
-// TODO (PE-6839): improve how we handle this value, this value fluctuates based on the SOL-AUDIO exchange rate
-const MAX_SOL_AMOUNT = 60 // The max amount of SOL
+const MAX_AUDIO_AMOUNT = 11000 // Cap the input audio to the max amount that would be required to graduate the coin
 
 // This number never changes with our pool configs - this number is the max amount of tokens that can be bought out of the pool before graduation triggers
 const MAX_TOKEN_AMOUNT = 249658688
@@ -90,7 +91,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   useEffect(() => {
     if (firstBuyQuoteData) {
       setFieldValue('receiveAmount', firstBuyQuoteData.tokenAmountUiString)
-      setFieldValue('payAmount', firstBuyQuoteData.solAmountUiString)
+      setFieldValue('payAmount', firstBuyQuoteData.audioAmountUiString)
     }
   }, [firstBuyQuoteData, setFieldValue])
 
@@ -108,9 +109,10 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
 
   const debouncedPayAmountChange = useDebouncedCallback(
     (payAmount: string) => {
-      if (payAmount && Number(payAmount) <= MAX_SOL_AMOUNT) {
+      if (payAmount && Number(payAmount) <= MAX_AUDIO_AMOUNT) {
         setIsReceiveAmountChanging(true)
-        getFirstBuyQuote({ solUiInputAmount: payAmount })
+        console.log('getting ')
+        getFirstBuyQuote({ audioUiInputAmount: payAmount })
       }
     },
     [getFirstBuyQuote],
@@ -233,23 +235,24 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               </Flex>
               <TokenAmountInput
                 label={messages.youPay}
-                tokenLabel='SOL'
+                tokenLabel='AUDIO'
                 decimals={6}
                 value={values.payAmount ?? ''}
                 onChange={handlePayAmountChange}
                 placeholder='0.00'
                 hideLabel
                 helperText={
-                  values.payAmount && Number(values.payAmount) > MAX_SOL_AMOUNT
+                  values.payAmount &&
+                  Number(values.payAmount) > MAX_AUDIO_AMOUNT
                     ? messages.errors.valueTooHigh
                     : undefined
                 }
                 error={
                   !!values.payAmount &&
-                  Number(values.payAmount) > MAX_SOL_AMOUNT
+                  Number(values.payAmount) > MAX_AUDIO_AMOUNT
                 }
                 disabled={isPayAmountChanging}
-                endIcon={<IconLogoCircleSOL size='l' />}
+                endIcon={<IconAUDIO size='l' />}
               />
             </Flex>
 
@@ -316,6 +319,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         onContinue={handleContinue}
         onBack={handleBack}
         submit
+        continueText={messages.createCoin}
         errorText={firstBuyQuoteError ? messages.errors.quoteError : undefined}
       />
     </>

@@ -232,22 +232,22 @@ export class SolanaRelay extends BaseAPI {
     params: FirstBuyQuoteRequest,
     requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<FirstBuyQuoteResponse> {
-    const solInputAmount =
-      'solInputAmount' in params ? params.solInputAmount : undefined
+    const audioInputAmount =
+      'audioInputAmount' in params ? params.audioInputAmount : undefined
     const tokenOutputAmount =
       'tokenOutputAmount' in params ? params.tokenOutputAmount : undefined
-    const noSolInput = !solInputAmount
+    const noAudioInput = !audioInputAmount
     const noTokenInput = !tokenOutputAmount
-    if (noSolInput && noTokenInput) {
+    if (noAudioInput && noTokenInput) {
       throw new Error(
         'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided'
       )
     }
 
     const headerParameters: runtime.HTTPHeaders = {}
-    const queryParameters: runtime.HTTPQuery = solInputAmount
+    const queryParameters: runtime.HTTPQuery = audioInputAmount
       ? {
-          solInputAmount
+          audioInputAmount
         }
       : {
           tokenOutputAmount: tokenOutputAmount!
@@ -264,24 +264,20 @@ export class SolanaRelay extends BaseAPI {
     )
 
     return await new runtime.JSONApiResponse(response, (json) => {
-      if (!runtime.exists(json, 'solInputAmount')) {
-        throw new Error('solInputAmount missing from response')
+      if (!runtime.exists(json, 'audioInputAmount')) {
+        throw new Error('audioInputAmount missing from response')
       }
-      if (!runtime.exists(json, 'usdcInputAmount')) {
-        throw new Error('usdcInputAmount missing from response')
+      if (!runtime.exists(json, 'usdcValue')) {
+        throw new Error('usdcValue missing from response')
       }
       if (!runtime.exists(json, 'tokenOutputAmount')) {
         throw new Error('tokenOutputAmount missing from response')
       }
-      if (!runtime.exists(json, 'audioSwapAmount')) {
-        throw new Error('audioSwapAmount missing from response')
-      }
 
       return {
-        solInputAmount: json.solInputAmount,
-        usdcInputAmount: json.usdcInputAmount,
+        usdcValue: json.usdcValue,
         tokenOutputAmount: json.tokenOutputAmount,
-        audioSwapAmount: json.audioSwapAmount
+        audioInputAmount: json.audioInputAmount
       } as FirstBuyQuoteResponse
     }).value()
   }
