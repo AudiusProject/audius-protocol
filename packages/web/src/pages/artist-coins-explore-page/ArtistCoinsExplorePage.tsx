@@ -1,4 +1,4 @@
-import { useCallback, useState, ChangeEvent, useEffect } from 'react'
+import { useCallback, useState, ChangeEvent } from 'react'
 
 import { useCurrentAccountUser } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
@@ -58,14 +58,6 @@ export const ArtistCoinsExplorePage = () => {
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
-  }, [])
-
-  const [, setBannerIsVisible] = useState(false)
-
-  useEffect(() => {
-    const img = new window.Image()
-    img.src = imageCoinsBackgroundImage
-    img.onload = () => setBannerIsVisible(true)
   }, [])
 
   return (
