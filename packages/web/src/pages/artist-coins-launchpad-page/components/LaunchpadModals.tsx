@@ -157,7 +157,7 @@ const SuccessState = ({
                         {amountUi}
                       </Text>
                       <Text variant='body' size='s' color='subdued'>
-                        {ticker}
+                        ${ticker}
                       </Text>
                     </Flex>
                     <Text variant='body' size='s' color='default'>
@@ -230,7 +230,10 @@ export const LaunchpadSubmitModal = ({
     amountUsd: receiveAmount
   }
   const payAmountParsed = useMemo(
-    () => (payAmount ? new FixedDecimal(payAmount, SOLANA_DECIMALS).value : 0),
+    () =>
+      payAmount
+        ? new FixedDecimal(payAmount?.replace(',', ''), SOLANA_DECIMALS).value
+        : 0,
     [payAmount]
   )
   const numTxs = payAmount && payAmountParsed > 0 ? 3 : 1

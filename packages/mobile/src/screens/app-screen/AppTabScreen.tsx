@@ -13,6 +13,10 @@ import type {
   CreateChatModalState,
   TrackMetadataForUpload
 } from '@audius/common/store'
+import type {
+  GetCoinsSortMethodEnum,
+  GetCoinsSortDirectionEnum
+} from '@audius/sdk'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
@@ -58,6 +62,9 @@ import {
   CoinLeaderboardScreen
 } from 'app/screens/user-list-screen'
 import { WalletScreen } from 'app/screens/wallet-screen'
+
+import { ArtistCoinSortScreen } from '../artist-coin-sort-screen/ArtistCoinSortScreen'
+import { ArtistCoinsExploreScreen } from '../artist-coins-explore-screen/ArtistCoinsExploreScreen'
 
 import { useAppScreenOptions } from './useAppScreenOptions'
 
@@ -110,6 +117,11 @@ export type AppTabScreenParamList = {
 
   AudioScreen: undefined
   RewardsScreen: undefined
+  ArtistCoinsExplore: undefined
+  ArtistCoinSort: {
+    initialSortMethod?: GetCoinsSortMethodEnum
+    initialSortDirection?: GetCoinsSortDirectionEnum
+  }
   wallet: undefined
   CoinDetailsScreen: { mint: string }
   Upload: {
@@ -228,6 +240,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
       <Stack.Screen name='wallet' component={WalletScreen} />
       <Stack.Screen name='CoinDetailsScreen' component={CoinDetailsScreen} />
+      <Stack.Screen
+        name='ArtistCoinsExplore'
+        component={ArtistCoinsExploreScreen}
+      />
+      <Stack.Screen name='ArtistCoinSort' component={ArtistCoinSortScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />

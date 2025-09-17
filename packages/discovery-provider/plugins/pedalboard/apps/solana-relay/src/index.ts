@@ -18,6 +18,7 @@ import { cache } from './routes/cache'
 import { feePayer } from './routes/feePayer'
 import { health } from './routes/health/health'
 import { location } from './routes/instruction/location'
+import { firstBuyQuote } from './routes/launchpad/first_buy_quote'
 import { launchCoin } from './routes/launchpad/launch_coin'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
@@ -41,6 +42,7 @@ const main = async () => {
     limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
   })
   app.post('/solana/launch_coin', upload.single('image'), launchCoin)
+  app.get('/solana/first_buy_quote', firstBuyQuote)
 
   // Apply middleware for routes that need user/discovery validation
   app.use(userSignerRecoveryMiddleware)
