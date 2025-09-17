@@ -29,11 +29,11 @@ export const useFormattedTokenBalance = (
   mint: string,
   locale: string = 'en-US'
 ): UseFormattedTokenBalanceReturn => {
-  const { data: tokenBalance, status: balanceStatus } = useTokenBalance({
-    mint
-  })
+  const { data: tokenBalance, isPending: isTokenBalanceLoading } =
+    useTokenBalance({
+      mint
+    })
 
-  const isTokenBalanceLoading = balanceStatus === Status.LOADING
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useArtistCoins({ mint: [mint] })
 

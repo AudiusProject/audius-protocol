@@ -1,4 +1,4 @@
-import { FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
 import {
   useAudioBalance,
@@ -112,17 +112,16 @@ export const useTokenBalance = ({
 
   if (isUsdc) return usdcQuery
   if (isAudio) {
-    const balanceFD = new FixedDecimal(
-      audioTokenQuery.totalBalance,
-      WEI_DECIMALS // AUDIO has 18 decimals
-    )
     return {
       data: {
-        balance: balanceFD,
-        balanceLocaleString: balanceFD.toLocaleString(),
+        balance: AUDIO(audioTokenQuery.totalBalance),
+        balanceLocaleString: AUDIO(
+          audioTokenQuery.totalBalance
+        ).toLocaleString(),
         decimals: WEI_DECIMALS
       },
       isLoading: audioTokenQuery.isLoading,
+      isPending: audioTokenQuery.isLoading,
       isError: audioTokenQuery.isError
     }
   }
