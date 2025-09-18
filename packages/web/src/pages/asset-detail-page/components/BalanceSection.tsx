@@ -208,9 +208,7 @@ type AssetDetailProps = {
 }
 
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
-  const { data: coin, isPending: coinsLoading } = useArtistCoin({
-    mint
-  })
+  const { data: coin, isPending: coinsLoading } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
   const { data: usdcBalance } = useUSDCBalance()
 

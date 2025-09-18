@@ -35,7 +35,7 @@ export const SendTokensFailure = ({
   onClose
 }: SendTokensFailureProps) => {
   const { color } = useTheme()
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
   const { tokenBalanceFormatted } = useFormattedTokenBalance(mint)
 

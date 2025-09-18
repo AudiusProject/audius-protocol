@@ -32,7 +32,7 @@ export const SellTab = ({
   }, [baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: selectedInputToken.address })
+    useArtistCoin(selectedInputToken.address)
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 

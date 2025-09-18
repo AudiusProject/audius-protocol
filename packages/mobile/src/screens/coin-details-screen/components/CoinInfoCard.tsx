@@ -25,7 +25,7 @@ import { env } from 'app/services/env'
 const messages = coinDetailsMessages.coinInfo
 
 const BannerSection = ({ mint }: { mint: string }) => {
-  const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: coin, isLoading } = useArtistCoin(mint)
 
   const userId = coin?.ownerId
     ? (decodeHashId(coin.ownerId) ?? undefined)
@@ -156,7 +156,7 @@ const CoinDescriptionSection = ({ coin }: { coin: Coin }) => {
 }
 
 export const CoinInfoCard = ({ mint }: { mint: string }) => {
-  const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: coin, isLoading } = useArtistCoin(mint)
   const navigation = useNavigation()
 
   const handleLearnMore = useCallback(() => {

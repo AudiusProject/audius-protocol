@@ -116,7 +116,7 @@ export const useTokenSwapForm = ({
     })
 
   // Get token price for USD-based limit calculations
-  const { data: tokenPriceData } = useArtistCoin({ mint: inputToken.address })
+  const { data: tokenPriceData } = useArtistCoin(inputToken.address)
   const tokenPrice = tokenPriceData?.price
     ? Number(
         new FixedDecimal(tokenPriceData.price, inputToken.decimals).toString()

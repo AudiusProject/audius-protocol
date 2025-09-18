@@ -18,7 +18,7 @@ const messages = coinDetailsMessages.overflowMenu
 export const AssetInsightsOverflowMenu = () => {
   const { data: drawerData } = useDrawer('AssetInsightsOverflowMenu')
   const mint = drawerData?.mint
-  const { data: artistCoin } = useArtistCoin({ mint })
+  const { data: artistCoin } = useArtistCoin(mint)
   const { toast } = useToast()
 
   const handleCopyCoinAddress = useCallback(() => {

@@ -75,7 +75,7 @@ export const BuyScreen = ({
   onInputValueChange
 }: BuyScreenProps) => {
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: tokenPair?.baseToken?.address })
+    useArtistCoin(tokenPair?.baseToken?.address)
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 

@@ -57,12 +57,7 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
 ) => {
   const { audiusSdk } = useQueryContext()
 
-  const { data: artistCoin } = useArtistCoin(
-    { mint: mint as string },
-    {
-      enabled: !!mint
-    }
-  )
+  const { data: artistCoin } = useArtistCoin(mint)
 
   return useInfiniteQuery({
     queryKey: getCoinLeaderboardQueryKey(

@@ -426,9 +426,9 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     ]
   )
 
-  const { data: token } = useArtistCoin({
-    mint: tempStreamConditions.token_gate?.token_mint ?? ''
-  })
+  const { data: token } = useArtistCoin(
+    tempStreamConditions.token_gate?.token_mint ?? ''
+  )
 
   const renderValue = useCallback(() => {
     if (isContentCollectibleGated(savedStreamConditions)) {

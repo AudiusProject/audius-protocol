@@ -77,9 +77,7 @@ export const SellScreen = ({
   initialInputValue,
   onInputValueChange
 }: SellScreenProps) => {
-  const { data: tokenPriceData } = useArtistCoin({
-    mint: tokenPair?.baseToken?.address
-  })
+  const { data: tokenPriceData } = useArtistCoin(tokenPair?.baseToken?.address)
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 

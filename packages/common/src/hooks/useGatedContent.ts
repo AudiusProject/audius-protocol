@@ -191,7 +191,7 @@ export const useStreamConditionsEntity = (
   )
   const followee = followUserId ? usersById[followUserId] : null
   const tippedUser = tipUserId ? usersById[tipUserId] : null
-  const { data: token } = useArtistCoin({ mint: tokenMint ?? '' })
+  const { data: token } = useArtistCoin(tokenMint ?? '')
 
   const collectionLink = useMemo(() => {
     if (!nftCollection) return ''

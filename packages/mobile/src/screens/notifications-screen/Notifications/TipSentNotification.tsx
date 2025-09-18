@@ -52,9 +52,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { amount } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
-  const { data: tokenPriceData } = useArtistCoin({
-    mint: env.WAUDIO_MINT_ADDRESS
-  })
+  const { data: tokenPriceData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
 
   const tokenPrice = tokenPriceData?.price?.toString()
 

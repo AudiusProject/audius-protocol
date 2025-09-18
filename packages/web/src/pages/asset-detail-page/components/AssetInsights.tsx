@@ -110,7 +110,7 @@ type AssetInsightsProps = {
 }
 
 export const AssetInsights = ({ mint }: AssetInsightsProps) => {
-  const { data: coin, isPending, error } = useArtistCoin({ mint })
+  const { data: coin, isPending, error } = useArtistCoin(mint)
 
   if (isPending || !coin) {
     return <AssetInsightsSkeleton />

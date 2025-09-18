@@ -61,7 +61,7 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
 }
 
 export const CoinInsightsCard = ({ mint }: { mint: string }) => {
-  const { data: coin, isPending, error } = useArtistCoin({ mint })
+  const { data: coin, isPending, error } = useArtistCoin(mint)
 
   const { onOpen } = useDrawer('AssetInsightsOverflowMenu')
 

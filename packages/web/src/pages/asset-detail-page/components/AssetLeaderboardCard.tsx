@@ -57,7 +57,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
   const { data: users, isPending: isUsersPending } = useUsers(
     leaderboardUsers?.map((user) => user.userId)
   )
-  const coinData = useArtistCoin({ mint })
+  const coinData = useArtistCoin(mint)
   const dispatch = useDispatch()
   const isPending = isLeaderboardPending || isUsersPending
 

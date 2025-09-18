@@ -9,11 +9,7 @@ import { QueryKey, SelectableQueryOptions } from '../types'
 import { useQueryContext } from '../utils'
 import { entityCacheOptions } from '../utils/entityCacheOptions'
 
-export interface UseArtistCoinParams {
-  mint: string
-}
-
-export const getArtistCoinQueryKey = (mint: string) =>
+export const getArtistCoinQueryKey = (mint: string | null | undefined) =>
   [QUERY_KEYS.coin, mint] as unknown as QueryKey<Coin | undefined>
 
 export const getArtistCoinByTickerQueryKey = (ticker: string) =>
@@ -36,7 +32,7 @@ export const getArtistCoinQueryFn = async (
 }
 
 export const useArtistCoin = <TResult = Coin | undefined>(
-  params: UseArtistCoinParams,
+  mint: string | null | undefined,
   options?: SelectableQueryOptions<Coin | undefined, TResult>
 ) => {
   const { audiusSdk, env } = useQueryContext()
@@ -44,10 +40,10 @@ export const useArtistCoin = <TResult = Coin | undefined>(
   const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: getArtistCoinQueryKey(params.mint),
+    queryKey: getArtistCoinQueryKey(mint),
     queryFn: async () => {
       const coin = await getArtistCoinQueryFn(
-        params.mint,
+        mint!,
         queryClient,
         await audiusSdk(),
         dispatch
@@ -66,8 +62,6 @@ export const useArtistCoin = <TResult = Coin | undefined>(
     ...options,
     ...entityCacheOptions,
     enabled:
-      options?.enabled !== false &&
-      !!params.mint &&
-      params.mint !== env.USDC_MINT_ADDRESS
+      options?.enabled !== false && !!mint && mint !== env.USDC_MINT_ADDRESS
   })
 }

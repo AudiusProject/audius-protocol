@@ -139,11 +139,11 @@ const LockedGatedContentSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const { data: coin } = useArtistCoin({
-    mint: isContentTokenGated(streamConditions)
+  const { data: coin } = useArtistCoin(
+    isContentTokenGated(streamConditions)
       ? streamConditions.token_gate.token_mint
       : ''
-  })
+  )
   const tipSource = lockedContentModalVisibility
     ? 'howToUnlockModal'
     : 'howToUnlockTrackPage'
@@ -556,11 +556,11 @@ const UnlockedGatedContentSection = ({
   'contentId' | 'buttonClassName' | 'source'
 >) => {
   const messages = getMessages(contentType)
-  const { data: coin } = useArtistCoin({
-    mint: isContentTokenGated(streamConditions)
+  const { data: coin } = useArtistCoin(
+    isContentTokenGated(streamConditions)
       ? streamConditions.token_gate.token_mint
       : ''
-  })
+  )
 
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {

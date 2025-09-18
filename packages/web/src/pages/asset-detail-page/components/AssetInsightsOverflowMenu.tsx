@@ -29,7 +29,7 @@ export const AssetInsightsOverflowMenu = ({
   mint
 }: AssetInsightsOverflowMenuProps) => {
   const { toast } = useContext(ToastContext)
-  const { data: artistCoin } = useArtistCoin({ mint })
+  const { data: artistCoin } = useArtistCoin(mint)
 
   const onCopyCoinAddress = () => {
     if (artistCoin?.mint) {

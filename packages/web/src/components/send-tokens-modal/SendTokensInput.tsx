@@ -61,7 +61,7 @@ const SendTokensInput = ({
   const [addressError, setAddressError] = useState<ValidationError | null>(null)
 
   // Get the coin data and balance using the same hooks as ReceiveTokensModal
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
   const currentBalance = tokenBalance?.balance

@@ -34,7 +34,7 @@ export const useFormattedTokenBalance = (
     })
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint })
+    useArtistCoin(mint)
 
   const balance = tokenBalance?.balance
 

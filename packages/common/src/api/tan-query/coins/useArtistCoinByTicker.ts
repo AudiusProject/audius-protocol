@@ -75,5 +75,5 @@ export const useArtistCoinByTicker = (
     ...getArtistCoinByTickerOptions({ ...context, queryClient }, params)
   })
 
-  return useArtistCoin({ mint: mint! })
+  return useArtistCoin(mint!)
 }

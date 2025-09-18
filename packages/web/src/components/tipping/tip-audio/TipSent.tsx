@@ -38,9 +38,7 @@ export const TipSent = () => {
     })
   })
   const { accountHandle, accountErcWallet, accountUserId } = accountData ?? {}
-  const { data: tokenPriceData } = useArtistCoin({
-    mint: env.WAUDIO_MINT_ADDRESS
-  })
+  const { data: tokenPriceData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
 
   const tokenPrice = tokenPriceData?.price?.toString()
 

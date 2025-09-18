@@ -113,7 +113,7 @@ type BannerSectionProps = {
 }
 
 const BannerSection = ({ mint }: BannerSectionProps) => {
-  const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: coin, isLoading } = useArtistCoin(mint)
 
   const userId = coin?.ownerId
     ? (decodeHashId(coin.ownerId) ?? undefined)
@@ -196,7 +196,7 @@ type AssetInfoSectionProps = {
 export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
 
-  const { data: coin, isLoading } = useArtistCoin({ mint })
+  const { data: coin, isLoading } = useArtistCoin(mint)
   const { data: currentUserId } = useCurrentUserId()
   const { data: userCoins } = useUserCoins({ userId: currentUserId })
   const userToken = useMemo(

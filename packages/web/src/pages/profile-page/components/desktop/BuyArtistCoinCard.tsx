@@ -13,7 +13,7 @@ const messages = {
 }
 
 export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
-  const { data: artistCoin, isLoading } = useArtistCoin({ mint })
+  const { data: artistCoin, isLoading } = useArtistCoin(mint)
   const { onOpen: openBuySellModal } = useBuySellModal()
   const dispatch = useDispatch()
 
