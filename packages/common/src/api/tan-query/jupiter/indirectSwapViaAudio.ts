@@ -11,10 +11,10 @@ import { TOKEN_LISTING_MAP } from '~/store/ui/shared/tokenConstants'
 
 import {
   SwapDependencies,
-  SwapTokensParams,
-  SwapTokensResult,
+  SwapErrorType,
   SwapStatus,
-  SwapErrorType
+  SwapTokensParams,
+  SwapTokensResult
 } from './types'
 import {
   addTransferFromUserBankInstructions,
@@ -137,8 +137,16 @@ export const executeIndirectSwap = async (
       dynamicSlippage: true
     }
 
-    const { swapInstructionsResult: firstSwapResponse } =
-      await getJupiterSwapInstructions(firstSwapRequestParams)
+    const {
+      swapInstructionsResult: firstSwapResponse,
+      outputAtaForJupiter: firstOutputAtaForJupiter
+    } = await getJupiterSwapInstructions(
+      firstSwapRequestParams,
+      audioTokenInfo,
+      userPublicKey,
+      feePayer,
+      firstInstructions
+    )
 
     const firstSwapInstructions = convertJupiterInstructions([
       firstSwapResponse.swapInstruction
@@ -146,15 +154,18 @@ export const executeIndirectSwap = async (
 
     firstInstructions.push(...firstSwapInstructions)
 
-    // Cleanup source ATA after first swap
+    // Cleanup ATAs after first swap
     errorStage = 'INDIRECT_SWAP_FIRST_CLEANUP'
-    firstInstructions.push(
-      createCloseAccountInstruction(
-        sourceAtaForJupiter,
-        feePayer,
-        userPublicKey
+    const firstAtasToClose: PublicKey[] = [sourceAtaForJupiter]
+    if (firstOutputAtaForJupiter) {
+      firstAtasToClose.push(firstOutputAtaForJupiter)
+    }
+
+    for (const ataToClose of firstAtasToClose) {
+      firstInstructions.push(
+        createCloseAccountInstruction(ataToClose, feePayer, userPublicKey)
       )
-    )
+    }
 
     // Build and send first transaction
     errorStage = 'INDIRECT_SWAP_FIRST_TRANSACTION'
