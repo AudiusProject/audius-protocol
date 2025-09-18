@@ -53,6 +53,7 @@ import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { ArtistCoinsExplorePage } from 'pages/artist-coins-explore-page/ArtistCoinsExplorePage'
 import { LaunchpadPage } from 'pages/artist-coins-launchpad-page'
+import { MobileArtistCoinsSortPage } from 'pages/artist-coins-sort-page/MobileArtistCoinsSortPage'
 import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
@@ -708,6 +709,14 @@ const WebPlayer = (props) => {
                   path={COINS_EXPLORE_PAGE}
                   isMobile={isMobile}
                   component={ArtistCoinsExplorePage}
+                />
+              ) : null}
+              {isArtistCoinsEnabled ? (
+                <Route
+                  exact
+                  path='/coins/sort'
+                  isMobile={isMobile}
+                  component={MobileArtistCoinsSortPage}
                 />
               ) : null}
               {isArtistCoinsEnabled ? (

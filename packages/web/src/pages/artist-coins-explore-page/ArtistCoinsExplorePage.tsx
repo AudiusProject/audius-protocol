@@ -25,8 +25,10 @@ import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroun
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
+import { isMobile } from 'utils/clientUtil'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
+import { MobileArtistCoinsExplorePage } from './MobileArtistCoinsExplorePage'
 
 const SEARCH_WIDTH = 400
 const CHECKLIST_WIDTH = 540
@@ -45,7 +47,8 @@ const messages = {
   getStartedTooltip: 'Verified users only'
 }
 
-export const ArtistCoinsExplorePage = () => {
+// Desktop version
+const DesktopArtistCoinsExplorePage = () => {
   const dispatch = useDispatch()
   const [searchValue, setSearchValue] = useState('')
   const { data: currentUser } = useCurrentAccountUser()
@@ -184,5 +187,14 @@ export const ArtistCoinsExplorePage = () => {
         <ArtistCoinsTable searchQuery={searchValue} />
       </Flex>
     </Page>
+  )
+}
+
+// Main component that conditionally renders desktop or mobile version
+export const ArtistCoinsExplorePage = () => {
+  return isMobile() ? (
+    <MobileArtistCoinsExplorePage />
+  ) : (
+    <DesktopArtistCoinsExplorePage />
   )
 }
