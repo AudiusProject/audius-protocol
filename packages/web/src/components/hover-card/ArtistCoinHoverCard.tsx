@@ -81,7 +81,7 @@ export const ArtistCoinHoverCard = ({
   const coinName = artistCoinBadge.ticker || ''
   const formattedBalance = tokenBalance
     ? formatCount(Number(tokenBalance.balance))
-    : '...'
+    : null
 
   return (
     <HoverCard

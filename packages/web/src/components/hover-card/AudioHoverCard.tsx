@@ -87,7 +87,7 @@ export const AudioHoverCard = ({
 
   const formattedBalance = tokenBalance
     ? formatCount(Number(tokenBalance.balance))
-    : '...'
+    : null
 
   const handleClick = useCallback(() => {
     onClick?.()
