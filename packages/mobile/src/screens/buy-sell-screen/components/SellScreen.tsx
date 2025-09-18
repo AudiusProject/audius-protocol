@@ -5,10 +5,11 @@ import {
   useArtistCoin,
   useArtistCoins
 } from '@audius/common/api'
+import { useOwnedTokens } from '@audius/common/hooks'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 
-import { Box, Flex, Skeleton, Text } from '@audius/harmony-native'
+import { Box, Flex, Skeleton } from '@audius/harmony-native'
 import { InputTokenSection } from 'app/components/buy-sell/InputTokenSection'
 import { OutputTokenSection } from 'app/components/buy-sell/OutputTokenSection'
 
@@ -107,9 +108,17 @@ export const SellScreen = ({
   }
 
   const { data: coins } = useArtistCoins()
-  const availableInputTokens: TokenInfo[] = useMemo(() => {
+  const allAvailableTokens: TokenInfo[] = useMemo(() => {
     return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
   }, [coins])
+
+  // Use the owned tokens hook to get filtered tokens
+  const { ownedTokens } = useOwnedTokens(allAvailableTokens)
+
+  // For sell screen:
+  // - "You Sell" section (input): Should show only tokens the user owns
+  // - "You Receive" section (output): Should show all available tokens (but only USDC in practice)
+  const availableInputTokens = ownedTokens
 
   if (!tokenPair) return null
 
@@ -151,10 +160,6 @@ export const SellScreen = ({
           />
         </>
       )}
-      <Flex row gap='xs'>
-        <Text color='subdued'>Rate</Text>
-        <Text>{`1 ${baseToken.symbol} ≈ ${Number(tokenPrice).toFixed(8)} ${quoteToken.symbol}`}</Text>
-      </Flex>
     </Flex>
   )
 }

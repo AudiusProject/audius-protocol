@@ -5,7 +5,7 @@ import { FixedDecimal } from '@audius/fixed-decimal'
 import { useTokenBalance, useArtistCoins } from '../api'
 import {
   getTokenDecimalPlaces,
-  formatCurrency,
+  formatCurrencyWithSubscript,
   isNullOrUndefined
 } from '../utils'
 
@@ -64,7 +64,7 @@ export const useFormattedTokenBalance = (
     if (!tokenPrice) return '$0.00'
 
     const priceNumber = Number(new FixedDecimal(tokenPrice).toString())
-    return formatCurrency(priceNumber)
+    return formatCurrencyWithSubscript(priceNumber)
   }, [tokenPrice])
 
   return {

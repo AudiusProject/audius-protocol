@@ -78,16 +78,11 @@ export const ConvertTab = ({
   }, [coins])
 
   const totalAvailableTokens = useMemo(() => {
-    const allTokens = [
-      ...(availableInputTokens ?? []),
-      ...(availableOutputTokens ?? []),
-      ...artistCoins
-    ]
-    return allTokens.filter(
+    return [...(availableOutputTokens ?? []), ...artistCoins].filter(
       (token, index, arr) =>
         arr.findIndex((t) => t.symbol === token.symbol) === index
     ) // Remove duplicates
-  }, [availableInputTokens, availableOutputTokens, artistCoins])
+  }, [availableOutputTokens, artistCoins])
 
   // Generic token change handler with automatic swapping when only 2 tokens are available
   const createTokenChangeHandler = useCallback(
@@ -170,7 +165,7 @@ export const ConvertTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
-            availableTokens={totalAvailableTokens}
+            availableTokens={availableInputTokens}
             onTokenChange={handleInputTokenChange}
           />
           <OutputTokenSection

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
 import { useTokenPair, useTokens } from '@audius/common/api'
-import { useBuySellAnalytics } from '@audius/common/hooks'
+import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { BuySellTab, TokenInfo } from '@audius/common/store'
 import {
@@ -76,11 +76,41 @@ export const BuySellFlow = ({
   })
 
   const { tokens } = useTokens()
-  const availableBaseTokens: TokenInfo[] = useMemo(() => {
+
+  // Get all available tokens and owned tokens
+  const allAvailableTokens: TokenInfo[] = useMemo(() => {
     return Object.values(tokens).filter(
       (token) => token.symbol !== selectedQuoteToken
     )
   }, [tokens, selectedQuoteToken])
+
+  const { ownedTokens } = useOwnedTokens(allAvailableTokens)
+
+  const {
+    transactionData,
+    hasSufficientBalance,
+    handleTransactionDataChange,
+    resetTransactionData
+  } = useBuySellTransactionData()
+
+  const { activeTab, handleActiveTabChange } = useBuySellTabs({
+    setCurrentScreen,
+    resetTransactionData,
+    initialTab
+  })
+
+  // Determine which tokens to show based on current tab
+  // For buy tab: "You Receive" section should show all tokens
+  // For sell tab: "You Sell" section should show only owned tokens
+  const availableBaseTokens: TokenInfo[] = useMemo(() => {
+    if (activeTab === 'sell') {
+      // In sell tab, the input section should only show owned tokens
+      return ownedTokens
+    } else {
+      // In buy tab, the output section should show all tokens
+      return allAvailableTokens
+    }
+  }, [activeTab, ownedTokens, allAvailableTokens])
 
   const baseTokenOptions = useMemo(
     () =>
@@ -102,19 +132,6 @@ export const BuySellFlow = ({
       ),
     [availableBaseTokens]
   )
-
-  const {
-    transactionData,
-    hasSufficientBalance,
-    handleTransactionDataChange,
-    resetTransactionData
-  } = useBuySellTransactionData()
-
-  const { activeTab, handleActiveTabChange } = useBuySellTabs({
-    setCurrentScreen,
-    resetTransactionData,
-    initialTab
-  })
 
   // Reset screen state to 'input' when this screen comes into focus
   // This handles the case where we navigate back from ConfirmSwapScreen
