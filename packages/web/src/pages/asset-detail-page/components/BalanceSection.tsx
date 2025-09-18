@@ -1,5 +1,5 @@
 import {
-  useArtistCoins,
+  useArtistCoin,
   useTokenBalance,
   useUSDCBalance
 } from '@audius/common/api'
@@ -208,13 +208,12 @@ type AssetDetailProps = {
 }
 
 const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
-  const { data: coinInsights, isPending: coinsLoading } = useArtistCoins({
-    mint: [mint]
+  const { data: coin, isPending: coinsLoading } = useArtistCoin({
+    mint
   })
   const { data: tokenBalance } = useTokenBalance({ mint })
   const { data: usdcBalance } = useUSDCBalance()
 
-  const coin = coinInsights?.[0]
   const { isBuySellSupported } = useBuySellRegionSupport()
 
   // Modal hooks

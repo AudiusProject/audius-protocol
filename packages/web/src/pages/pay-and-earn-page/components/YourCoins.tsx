@@ -2,7 +2,7 @@ import { Fragment, useCallback, useContext } from 'react'
 
 import {
   UserCoin,
-  useArtistCoins,
+  useArtistCoin,
   useCurrentUserId,
   useQueryContext,
   useUserCoins
@@ -191,10 +191,9 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
     isTokenPriceLoading
   } = useFormattedTokenBalance(coin.mint)
 
-  const { data: coinsData, isPending: coinsDataLoading } = useArtistCoins({
-    mint: [coin.mint]
+  const { data: coinData, isPending: coinsDataLoading } = useArtistCoin({
+    mint: coin.mint
   })
-  const coinData = coinsData?.[0] ?? null
 
   const isLoading =
     isTokenBalanceLoading || isTokenPriceLoading || coinsDataLoading
