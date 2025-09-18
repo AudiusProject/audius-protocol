@@ -15,11 +15,10 @@ import {
   type Nullable
 } from '@audius/common/utils'
 import { useField } from 'formik'
-import { Image } from 'react-native'
 
-import { HexagonalIcon, spacing } from '@audius/harmony-native'
+import { spacing } from '@audius/harmony-native'
 import type { ContextualMenuProps } from 'app/components/core'
-import { ContextualMenu } from 'app/components/core'
+import { ContextualMenu, TokenIcon } from 'app/components/core'
 
 export const priceAndAudienceScreenName = 'PriceAndAudience'
 
@@ -62,9 +61,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       label={messages.title}
       startAdornment={
         isContentTokenGated(streamConditions) ? (
-          <HexagonalIcon size={spacing.l}>
-            <Image source={{ uri: token?.logoUri }} />
-          </HexagonalIcon>
+          <TokenIcon logoURI={token?.logoUri} size={spacing.l} />
         ) : null
       }
       menuScreenName={priceAndAudienceScreenName}

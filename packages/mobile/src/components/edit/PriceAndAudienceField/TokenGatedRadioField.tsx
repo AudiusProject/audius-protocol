@@ -9,13 +9,9 @@ import {
 import type { AccessConditions } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import { useField } from 'formik'
-import { Image } from 'react-native'
 
-import {
-  HexagonalIcon,
-  RadioGroupContext,
-  useTheme
-} from '@audius/harmony-native'
+import { RadioGroupContext, useTheme } from '@audius/harmony-native'
+import { TokenIcon } from 'app/components/core'
 import { useSetEntityAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 
 import { ExpandableRadio } from '../ExpandableRadio'
@@ -34,9 +30,14 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
   const { spacing } = useTheme()
 
   const { data: userId } = useCurrentUserId()
-  const { data: coins } = useArtistCoins({
-    owner_id: userId ? [userId] : undefined
-  })
+  const { data: coins } = useArtistCoins(
+    {
+      owner_id: userId ? [userId] : undefined
+    },
+    {
+      enabled: !!userId
+    }
+  )
 
   const setFields = useSetEntityAvailabilityFields()
   const [{ value: streamConditions }] =
@@ -84,9 +85,7 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
       label={messages.title}
       startAdornment={
         selectedCoin?.logoUri ? (
-          <HexagonalIcon size={spacing.xl}>
-            <Image source={{ uri: selectedCoin.logoUri }} />
-          </HexagonalIcon>
+          <TokenIcon logoURI={selectedCoin.logoUri} size={spacing.xl} />
         ) : null
       }
       description={messages.description(
