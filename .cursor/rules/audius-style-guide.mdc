@@ -35,24 +35,6 @@ return user && <UserProfile user={user} />
 return list.length && <List items={list} />
 ```
 
-## Optional Types
-
-Use `?` modifier instead of `| undefined` for optional properties.
-
-```typescript
-// ✅ Good
-interface User {
-  name?: string
-  age?: number
-}
-
-// ❌ Bad
-interface User {
-  name: string | undefined
-  age: number | undefined
-}
-```
-
 ## String Constants
 
 Organize user-facing strings in a `messages` object at the top of components.
