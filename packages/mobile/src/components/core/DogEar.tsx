@@ -3,11 +3,13 @@ import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import {
+  IconArtistCoin,
   IconCart,
   IconCollectible,
   IconReceive,
   IconSparkles
 } from '@audius/harmony-native'
+import CoinGateDogEarRectangle from 'app/assets/images/coinGateDogEarRectangle.svg'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -72,6 +74,9 @@ export const DogEar = (props: DogEarProps) => {
       icon: IconSparkles,
       colors: [accentBlue, accentBlue]
     },
+    [DogEarType.TOKEN_GATED]: {
+      icon: IconArtistCoin
+    },
     [DogEarType.USDC_PURCHASE]: {
       icon: IconCart,
       colors: [specialLightGreen, specialLightGreen]
@@ -88,7 +93,11 @@ export const DogEar = (props: DogEarProps) => {
 
   return (
     <View style={[styles.container, borderOffsetStyle, style]}>
-      <DogEarRectangle fill={colors[0]} style={styles.rectangle} />
+      {type === DogEarType.TOKEN_GATED ? (
+        <CoinGateDogEarRectangle style={styles.rectangle} />
+      ) : (
+        <DogEarRectangle fill={colors[0]} style={styles.rectangle} />
+      )}
       <Icon
         width={spacing(4)}
         height={spacing(4)}

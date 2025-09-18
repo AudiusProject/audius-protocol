@@ -6,7 +6,8 @@ import {
   SquareSizes,
   GatedContentType,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import type { ColorValue } from 'react-native'
@@ -17,6 +18,7 @@ import {
   Flex,
   IconArtistCoin,
   IconCart,
+  IconCoinGatedLabel,
   IconCollectible,
   IconSparkles
 } from '@audius/harmony-native'
@@ -90,6 +92,7 @@ export const TrackDetailsTile = ({
   const { data: track } = useTrack(trackId)
   const { data: owner } = useUser(track?.owner_id)
   const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
+  const isTokenGated = isContentTokenGated(track?.stream_conditions)
   const isUSDCPurchaseGated =
     useIsUSDCEnabled() && isContentUSDCPurchaseGated(track?.stream_conditions)
 
@@ -97,7 +100,9 @@ export const TrackDetailsTile = ({
     ? GatedContentType.USDC_PURCHASE
     : isCollectibleGated
       ? GatedContentType.COLLECTIBLE_GATED
-      : GatedContentType.SPECIAL_ACCESS
+      : isTokenGated
+        ? GatedContentType.TOKEN_GATED
+        : GatedContentType.SPECIAL_ACCESS
 
   const headerAttributes: {
     [k in GatedContentType]: {
@@ -120,7 +125,6 @@ export const TrackDetailsTile = ({
       [GatedContentType.TOKEN_GATED]: {
         message: messages.coinGated,
         icon: IconArtistCoin,
-        // TODO - KJ: Add color for coin gated
         color: accentBlue
       },
       [GatedContentType.USDC_PURCHASE]: {
@@ -149,20 +153,26 @@ export const TrackDetailsTile = ({
         <View style={styles.metadataContainer}>
           {showLabel ? (
             <View style={styles.streamContentLabelContainer}>
-              <IconComponent
-                fill={color}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-              <Text
-                fontSize='small'
-                colorValue={color}
-                weight='demiBold'
-                textTransform='uppercase'
-                style={styles.streamContentLabel}
-              >
-                {title}
-              </Text>
+              {isTokenGated ? (
+                <IconCoinGatedLabel height={28} width={108} />
+              ) : (
+                <>
+                  <IconComponent
+                    fill={color}
+                    width={spacing(5)}
+                    height={spacing(5)}
+                  />
+                  <Text
+                    fontSize='small'
+                    colorValue={color}
+                    weight='demiBold'
+                    textTransform='uppercase'
+                    style={styles.streamContentLabel}
+                  >
+                    {title}
+                  </Text>
+                </>
+              )}
             </View>
           ) : null}
           <Text

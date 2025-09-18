@@ -5,16 +5,21 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
+  isContentTokenGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { AccessConditions, User } from '@audius/common/models'
 import type { PurchaseableContentType } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
+import type { Coin } from '@audius/sdk'
 import type { ViewStyle } from 'react-native'
-import { View } from 'react-native'
+import { Image, View } from 'react-native'
 
 import {
   Flex,
+  Text as HarmonyText,
+  HexagonalIcon,
+  IconArtistCoin,
   IconCart,
   IconCollectible,
   IconSparkles
@@ -30,6 +35,12 @@ const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   payToUnlock: 'Pay to Unlock',
+  coinGated: 'COIN GATED',
+  artistCoin: "This artist's coin",
+  unlockedTokenGatedSuffix: (contentType: PurchaseableContentType) =>
+    ` was found in a linked wallet. This ${contentType} is now available.`,
+  ownerTokenGated:
+    'Fans can unlock access by linking a wallet containing your artist coin',
   unlockedCollectibleGatedPrefix: 'A Collectible from ',
   unlockedCollectibleGatedSuffix: (contentType: PurchaseableContentType) =>
     ` was found in a linked wallet. This ${contentType} is now available.`,
@@ -90,12 +101,14 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 type HasAccessProps = {
   streamConditions: AccessConditions
   handlePressCollection: () => void
+  token: Coin | undefined
   contentType: PurchaseableContentType
 }
 
 const DetailsTileOwnerSection = ({
   streamConditions,
   handlePressCollection,
+  token,
   contentType
 }: HasAccessProps) => {
   const styles = useStyles()
@@ -158,6 +171,36 @@ const DetailsTileOwnerSection = ({
       </Flex>
     )
   }
+  if (isContentTokenGated(streamConditions)) {
+    return (
+      <Flex
+        p='l'
+        gap='s'
+        backgroundColor='white'
+        border='strong'
+        borderRadius='m'
+      >
+        <Flex row alignItems='center' gap='s'>
+          <IconArtistCoin fill={neutral} width={16} height={16} />
+          <HarmonyText variant='title' size='m' strength='strong'>
+            {messages.coinGated}
+          </HarmonyText>
+        </Flex>
+        <Flex>
+          <Text style={styles.description}>{messages.ownerTokenGated}</Text>
+        </Flex>
+        <Flex row alignItems='center' gap='xs'>
+          <HexagonalIcon size={24}>
+            <Image
+              source={{ uri: token?.logoUri }}
+              style={{ width: 24, height: 24 }}
+            />
+          </HexagonalIcon>
+          <HarmonyText variant='title'>{token?.ticker}</HarmonyText>
+        </Flex>
+      </Flex>
+    )
+  }
   if (isContentUSDCPurchaseGated(streamConditions)) {
     return (
       <Flex
@@ -194,6 +237,7 @@ type DetailsTileHasAccessProps = {
   isOwner: boolean
   style?: ViewStyle
   trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
+  token?: Coin | undefined
   contentType: PurchaseableContentType
 }
 
@@ -201,6 +245,7 @@ export const DetailsTileHasAccess = ({
   streamConditions,
   isOwner,
   style,
+  token,
   trackArtist,
   contentType
 }: DetailsTileHasAccessProps) => {
@@ -218,6 +263,12 @@ export const DetailsTileHasAccess = ({
     },
     [navigation]
   )
+
+  const handleTokenPress = useCallback(() => {
+    if (token?.mint) {
+      navigation.push('CoinDetailsScreen', { mint: token.mint })
+    }
+  }, [navigation, token?.mint])
 
   const renderUnlockedSpecialAccessDescription = useCallback(
     (args: {
@@ -291,6 +342,25 @@ export const DetailsTileHasAccess = ({
         suffix: messages.unlockedUSDCPurchaseSuffix
       })
     }
+    if (isContentTokenGated(streamConditions)) {
+      if (!trackArtist) return null
+
+      return (
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text
+              style={[styles.description, styles.name]}
+              onPress={handleTokenPress}
+            >
+              {token?.ticker ?? messages.artistCoin}
+            </Text>
+            <Text style={styles.description}>
+              {messages.unlockedTokenGatedSuffix(contentType)}
+            </Text>
+          </Text>
+        </View>
+      )
+    }
     return null
   }, [
     streamConditions,
@@ -299,11 +369,13 @@ export const DetailsTileHasAccess = ({
     styles.description,
     styles.name,
     handlePressCollection,
+    contentType,
     followee,
     renderUnlockedSpecialAccessDescription,
     tippedUser,
     trackArtist,
-    contentType
+    handleTokenPress,
+    token?.ticker
   ])
 
   if (isOwner) {
@@ -311,6 +383,7 @@ export const DetailsTileHasAccess = ({
       <DetailsTileOwnerSection
         streamConditions={streamConditions}
         handlePressCollection={handlePressCollection}
+        token={token}
         contentType={contentType}
       />
     )
@@ -330,7 +403,11 @@ export const DetailsTileHasAccess = ({
         <LockedStatusBadge
           locked={false}
           variant={
-            isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
+            isContentUSDCPurchaseGated(streamConditions)
+              ? 'premium'
+              : isContentTokenGated(streamConditions)
+                ? 'tokenGated'
+                : 'gated'
           }
         />
       </View>

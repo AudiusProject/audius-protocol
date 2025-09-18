@@ -9,7 +9,8 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -21,6 +22,7 @@ import {
   gatedContentSelectors
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
+import type { Coin } from '@audius/sdk'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,7 +32,8 @@ import {
   IconUserFollow,
   IconTipping,
   Flex,
-  Button
+  Button,
+  useTheme
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
@@ -66,6 +69,9 @@ const messages = {
   lockedTipGatedSuffix: ' a tip.',
   unlockingTipGatedPrefix: 'Thank you for supporting ',
   unlockingTipGatedSuffix: ' by sending them a tip!',
+  lockedTokenGatedPrefix: 'You must hold at least ',
+  lockedTokenGatedSuffix: ' in a connected wallet.',
+  buyArtistCoin: 'Buy Artist Coin',
   lockedUSDCPurchase: 'Unlock access with a one-time purchase!'
 }
 
@@ -178,17 +184,19 @@ type DetailsTileNoAccessProps = {
   streamConditions: AccessConditions
   contentType: PurchaseableContentType
   trackId: ID
+  token?: Coin | undefined
   style?: ViewStyle
 }
 
 export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
-  const { trackId, contentType, streamConditions, style } = props
+  const { trackId, contentType, streamConditions, style, token } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { isOpen: isModalOpen, onClose } = useDrawer('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const { color } = useTheme()
   const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
   const followSource = isModalOpen
     ? FollowSource.HOW_TO_UNLOCK_MODAL
@@ -235,6 +243,12 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
       }
     )
   }, [trackId, contentType, openPremiumContentPurchaseModal, onClose])
+
+  const handleTokenPress = useCallback(() => {
+    if (token?.mint) {
+      navigation.navigate('CoinDetailsScreen', { mint: token.mint })
+    }
+  }, [navigation, token?.mint])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {
@@ -342,6 +356,36 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
         </>
       )
     }
+    if (isContentTokenGated(streamConditions)) {
+      return (
+        <Flex column gap='xl'>
+          <Flex column gap='s'>
+            <View style={styles.descriptionContainer}>
+              <Text>
+                <Text style={styles.description}>
+                  {messages.lockedTokenGatedPrefix}
+                </Text>
+                <Text
+                  style={[styles.description, styles.name]}
+                  onPress={handleTokenPress}
+                >
+                  1 {token?.ticker}
+                </Text>
+                <Text style={styles.description}>
+                  {messages.lockedTokenGatedSuffix}
+                </Text>
+              </Text>
+            </View>
+          </Flex>
+          <Button
+            onPress={handleTokenPress}
+            gradient={color.special.coinGradient}
+          >
+            {messages.buyArtistCoin}
+          </Button>
+        </Flex>
+      )
+    }
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <Flex gap='s'>
@@ -373,12 +417,16 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     styles.collectionImage,
     styles.collectionChainImageContainer,
     styles.collectionChainImage,
+    styles.name,
     handlePressCollection,
     followee,
     renderLockedSpecialAccessDescription,
     handleFollowArtist,
     tippedUser,
     handleSendTip,
+    handleTokenPress,
+    token?.ticker,
+    color.special.coinGradient,
     handlePurchasePress
   ])
 
