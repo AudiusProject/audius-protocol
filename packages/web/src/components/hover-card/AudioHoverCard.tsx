@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { AUDIO_TICKER, TOKEN_LISTING_MAP } from '@audius/common/store'
+import { AUDIO_TICKER } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import {
   HoverCard,
@@ -19,6 +19,8 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
+
+import { env } from 'services/env'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -71,7 +73,7 @@ export const AudioHoverCard = ({
   const { cornerRadius } = useTheme()
 
   const { data: tokenBalance } = useTokenBalance({
-    mint: TOKEN_LISTING_MAP.AUDIO.address,
+    mint: env.WAUDIO_MINT_ADDRESS,
     userId
   })
 
