@@ -49,6 +49,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
 
@@ -418,8 +419,15 @@ const LockedGatedContentSection = ({
     return null
   }
 
+  const isMobile = useIsMobile()
+
   return (
-    <Flex w='100%' justifyContent='space-between'>
+    <Flex
+      w='100%'
+      direction={isMobile ? 'column' : 'row'}
+      gap='m'
+      justifyContent='space-between'
+    >
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusBadge
@@ -444,7 +452,7 @@ const LockedGatedContentSection = ({
           </Flex>
         ) : null}
       </Flex>
-      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
+      <Flex w={isMobile ? '100%' : BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
