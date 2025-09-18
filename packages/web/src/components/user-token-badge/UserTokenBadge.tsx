@@ -44,7 +44,7 @@ export const UserTokenBadge = ({ userId }: UserTokenBadgeProps) => {
           }
         }}
       >
-        <Avatar userId={userId} w={spacing.xl} h={spacing.xl} />
+        <Avatar userId={userId} w={spacing.xl} h={spacing.xl} disableLink />
         <Flex alignItems='center' gap='xs'>
           <Text variant='body' size='l'>
             {name}
