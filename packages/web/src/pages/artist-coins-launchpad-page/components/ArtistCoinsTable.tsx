@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
@@ -23,6 +22,7 @@ import {
   HashId
 } from '@audius/sdk'
 import moment from 'moment'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Cell } from 'react-table'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
