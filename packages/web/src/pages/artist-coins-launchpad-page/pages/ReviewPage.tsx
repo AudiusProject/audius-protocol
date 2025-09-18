@@ -1,6 +1,8 @@
 import {
   Artwork,
   Flex,
+  Hint,
+  IconInfo,
   Paper,
   Text,
   makeResponsiveStyles
@@ -28,14 +30,22 @@ const messages = {
   allocation: 'Allocation',
   vesting: 'Vesting',
   tradingFees: 'Trading Fees',
-  back: 'Back'
+  back: 'Back',
+  hintMessage:
+    "Remember! This is your one and only coin and its details can't be changed later."
 }
 
 const coinDetails = {
-  initialPrice: '~$0.000415',
+  initialPrice: '~$0.0₄415',
   totalSupply: '1,000,000,000',
-  initialMarketCap: '10,000 $AUDIO',
-  graduationMarketCap: '500,000 $AUDIO',
+  initialMarketCap: {
+    usd: '(~$612)',
+    audio: '10K $AUDIO'
+  },
+  graduationMarketCap: {
+    usd: '(~$30.6K)',
+    audio: '1M $AUDIO'
+  },
   allocation: '50%',
   vesting: '5 years (Linear)',
   tradingFees: '50%'
@@ -185,13 +195,31 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
                   />
                   <TokenInfoRow
                     label={messages.initialMarketCap}
-                    value={coinDetails.initialMarketCap}
+                    value={
+                      <Flex gap='s' alignItems='center'>
+                        <Text variant='body' size='m' color='subdued'>
+                          {coinDetails.initialMarketCap.usd}
+                        </Text>
+                        <Text variant='body' size='m' color='default'>
+                          {coinDetails.initialMarketCap.audio}
+                        </Text>
+                      </Flex>
+                    }
                     hasTooltip
                     tooltipContent={tooltipContent.initialMarketCap}
                   />
                   <TokenInfoRow
                     label={messages.graduationMarketCap}
-                    value={coinDetails.graduationMarketCap}
+                    value={
+                      <Flex gap='s' alignItems='center'>
+                        <Text variant='body' size='m' color='subdued'>
+                          {coinDetails.graduationMarketCap.usd}
+                        </Text>
+                        <Text variant='body' size='m' color='default'>
+                          {coinDetails.graduationMarketCap.audio}
+                        </Text>
+                      </Flex>
+                    }
                     hasTooltip
                     tooltipContent={tooltipContent.graduationMarketCap}
                   />
@@ -232,6 +260,7 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
               </Flex>
             </Flex>
           </Flex>
+          <Hint icon={IconInfo}>{messages.hintMessage}</Hint>
         </Paper>
       </Flex>
       <ArtistCoinsSubmitRow

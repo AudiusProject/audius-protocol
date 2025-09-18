@@ -9,6 +9,7 @@ import {
   IconLogoCircleSOL,
   LoadingSpinner,
   Paper,
+  Pill,
   Text,
   TokenAmountInput
 } from '@audius/harmony'
@@ -22,15 +23,15 @@ import { AMOUNT_OF_STEPS } from '../constants'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
-  title: 'Buy Your Coin Early',
-  optional: 'OPTIONAL',
+  title: 'Claim Your Share First',
+  optional: 'optional',
   description:
     'Before your coin goes live, you have the option to buy some at the lowest price.',
   youPay: 'You Pay',
   youReceive: 'You Receive',
   valueInUSDC: 'Value',
   hintMessage:
-    "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
+    "Buying shares now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches it's graduation market cap (500K AUDIO).",
   back: 'Back',
   errors: {
     quoteError: 'Failed to get a quote. Please try again.',
@@ -141,28 +142,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               <Text variant='heading' size='l' color='default'>
                 {messages.title}
               </Text>
-              <Flex
-                alignItems='center'
-                justifyContent='center'
-                ph='s'
-                pv='xs'
-                backgroundColor='accent'
-                borderRadius='l'
-              >
-                <Text
-                  variant='label'
-                  size='xs'
-                  css={(theme) => ({
-                    color:
-                      theme.type === 'day'
-                        ? theme.color.text.staticWhite
-                        : theme.color.text.white
-                  })}
-                  textTransform='uppercase'
-                >
-                  {messages.optional}
-                </Text>
-              </Flex>
+              <Pill variant='primary'>{messages.optional}</Pill>
             </Flex>
             <Text variant='body' size='l' color='subdued'>
               {messages.description}
