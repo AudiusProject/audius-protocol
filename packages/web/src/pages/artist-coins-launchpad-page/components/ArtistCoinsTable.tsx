@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
-import { useArtistCoins, useUsers } from '@audius/common/api'
+import { useArtistCoins } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
 import {
@@ -14,24 +15,22 @@ import {
   spacing,
   Text
 } from '@audius/harmony'
-import { Coin, HashId } from '@audius/sdk'
+import {
+  GetCoinsSortMethodEnum,
+  GetCoinsSortDirectionEnum,
+  Coin,
+  HashId
+} from '@audius/sdk'
 import moment from 'moment'
 import { Cell } from 'react-table'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { TextLink, UserLink } from 'components/link'
-import { Table } from 'components/table'
+import { dateSorter, numericSorter, Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import styles from './ArtistCoinsTable.module.css'
-
-const messages = {
-  title: 'Your Token Balances',
-  noCoins: 'No results found',
-  noCoinsDescription: 'No Artist Coins were found matching your search.',
-  buy: 'Buy',
-  dollarSign: '$'
-}
 
 type CoinCell = Cell<Coin>
 
@@ -84,7 +83,7 @@ const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m' color='default'>
-      {messages.dollarSign}
+      {walletMessages.dollarSign}
       {coin.price.toFixed(4)}
     </Text>
   )
@@ -94,7 +93,7 @@ const renderMarketCapCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m'>
-      {messages.dollarSign}
+      {walletMessages.dollarSign}
       {formatCount(coin.marketCap)}
     </Text>
   )
@@ -143,7 +142,7 @@ const renderBuyCell = (
         }}
         onClick={() => handleBuy(coin.ticker ?? '')}
       >
-        {messages.buy}
+        {walletMessages.buy}
       </Button>
     </Flex>
   )
@@ -165,7 +164,8 @@ const tableColumnMap = {
     accessor: 'price',
     Cell: renderPriceCell,
     disableSortBy: false,
-    align: 'right'
+    align: 'right',
+    sorter: numericSorter('price')
   },
   volume24h: {
     id: 'volume24h',
@@ -173,7 +173,8 @@ const tableColumnMap = {
     accessor: 'v24hUSD',
     Cell: renderVolume24hCell,
     disableSortBy: false,
-    align: 'right'
+    align: 'right',
+    sorter: numericSorter('v24hUSD')
   },
   marketCap: {
     id: 'marketCap',
@@ -182,7 +183,8 @@ const tableColumnMap = {
     Cell: renderMarketCapCell,
     disableSortBy: false,
     align: 'right',
-    width: 80
+    width: 80,
+    sorter: numericSorter('marketCap')
   },
   createdDate: {
     id: 'createdDate',
@@ -190,7 +192,8 @@ const tableColumnMap = {
     accessor: 'createdAt',
     Cell: renderCreatedDateCell,
     disableSortBy: false,
-    align: 'right'
+    align: 'right',
+    sorter: dateSorter('createdAt')
   },
   holders: {
     id: 'holders',
@@ -198,7 +201,8 @@ const tableColumnMap = {
     accessor: 'holder',
     Cell: renderHoldersCell,
     disableSortBy: false,
-    align: 'right'
+    align: 'right',
+    sorter: numericSorter('holder')
   },
   buy: {
     id: 'buy',
@@ -209,24 +213,65 @@ const tableColumnMap = {
   }
 }
 
+const sortMethodMap: Record<string, GetCoinsSortMethodEnum> = {
+  price: GetCoinsSortMethodEnum.Price,
+  marketCap: GetCoinsSortMethodEnum.MarketCap,
+  volume24h: GetCoinsSortMethodEnum.Volume,
+  createdDate: GetCoinsSortMethodEnum.CreatedAt,
+  holders: GetCoinsSortMethodEnum.Holder
+}
+
+const sortDirectionMap: Record<string, GetCoinsSortDirectionEnum> = {
+  asc: GetCoinsSortDirectionEnum.Asc,
+  desc: GetCoinsSortDirectionEnum.Desc
+}
+
 type ArtistCoinsTableProps = {
   searchQuery?: string
 }
 
+const ARTIST_COINS_BATCH_SIZE = 50
+
+const isEmptyRow = (row: any) => {
+  return Boolean(!row?.original || Object.keys(row.original).length === 0)
+}
+
 export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
-  const { data: coins, isPending } = useArtistCoins()
-
-  const ownerIds = useMemo(() => {
-    if (!coins) return []
-    const uniqueIds = [
-      ...new Set(coins.map((coin) => coin.ownerId).filter(Boolean))
-    ]
-    return uniqueIds.map((id) => HashId.parse(id)).filter(Boolean) as number[]
-  }, [coins])
-
-  const { data: users } = useUsers(ownerIds)
-
+  const mainContentRef = useMainContentRef()
   const { onOpen: openBuySellModal } = useBuySellModal()
+  const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
+    GetCoinsSortMethodEnum.MarketCap
+  )
+  const [sortDirection, setSortDirection] = useState<GetCoinsSortDirectionEnum>(
+    GetCoinsSortDirectionEnum.Desc
+  )
+  const [page, setPage] = useState(0)
+
+  const { data: coins, isPending } = useArtistCoins({
+    sortMethod,
+    sortDirection,
+    query: searchQuery,
+    limit: ARTIST_COINS_BATCH_SIZE,
+    offset: page * ARTIST_COINS_BATCH_SIZE
+  })
+
+  const fetchMore = useCallback((offset: number) => {
+    setPage(Math.floor(offset / ARTIST_COINS_BATCH_SIZE))
+  }, [])
+
+  const onSort = useCallback(
+    (method: string, direction: string) => {
+      const newSortMethod = sortMethodMap[method] ?? sortMethod
+      const newSortDirection = sortDirectionMap[direction] ?? sortDirection
+
+      setSortMethod(newSortMethod)
+      setSortDirection(newSortDirection)
+
+      // Reset page when sorting changes
+      setPage(0)
+    },
+    [sortMethod, sortDirection]
+  )
 
   const handleBuy = useRequiresAccountCallback(
     (ticker: string) => {
@@ -237,29 +282,6 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     },
     [openBuySellModal]
   )
-
-  const filteredCoins = useMemo(() => {
-    if (!coins || !searchQuery?.trim()) return coins
-
-    const query = searchQuery.toLowerCase().trim()
-    return coins.filter((coin) => {
-      const name = coin.name?.toLowerCase() ?? ''
-      const ticker = coin.ticker?.toLowerCase() ?? ''
-
-      // Check coin name and ticker
-      if (name.includes(query) || ticker.includes(query)) {
-        return true
-      }
-
-      // Check owner artist name
-      const ownerId = HashId.parse(coin.ownerId)
-      const ownerUser = users?.find((user) => user.user_id === ownerId)
-      const ownerName = ownerUser?.name?.toLowerCase() ?? ''
-      const ownerHandle = ownerUser?.handle?.toLowerCase() ?? ''
-
-      return ownerName.includes(query) || ownerHandle.includes(query)
-    })
-  }, [coins, searchQuery, users])
 
   const columns = useMemo(() => {
     const baseColumns = { ...tableColumnMap }
@@ -280,7 +302,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     )
   }
 
-  if (!filteredCoins || filteredCoins.length === 0) {
+  if (!coins || coins.length === 0) {
     return (
       <Paper
         column
@@ -292,10 +314,10 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
       >
         <IconSearch size='2xl' color='default' />
         <Text variant='heading' size='m'>
-          {messages.noCoins}
+          {walletMessages.artistCoins.noCoins}
         </Text>
         <Text variant='body' size='l'>
-          {messages.noCoinsDescription}
+          {walletMessages.artistCoins.noCoinsDescription}
         </Text>
       </Paper>
     )
@@ -304,8 +326,14 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   return (
     <Table
       columns={columns}
-      data={filteredCoins}
+      data={coins}
+      isVirtualized
+      onSort={onSort}
+      isEmptyRow={isEmptyRow}
+      fetchMore={fetchMore}
+      fetchBatchSize={ARTIST_COINS_BATCH_SIZE}
       tableHeaderClassName={styles.tableHeader}
+      scrollRef={mainContentRef}
     />
   )
 }

@@ -29,6 +29,7 @@ import {
 import type { CSSObject } from '@emotion/react'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
+import { ownedCoinsFilter } from '~/utils'
 import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
@@ -225,17 +226,10 @@ export const YourCoins = () => {
 
   const { isLarge } = useMedia()
 
-  // Filter coins using the same logic as useGroupCoinPairs
   const filteredCoins =
-    artistCoins?.filter((coin) => {
-      if (!isArtistCoinsEnabled) {
-        return coin.mint === env.WAUDIO_MINT_ADDRESS
-      }
-      return (
-        coin.ticker !== 'USDC' &&
-        (coin.balance > 0 || coin.mint === env.WAUDIO_MINT_ADDRESS)
-      )
-    }) || []
+    artistCoins?.filter(
+      ownedCoinsFilter(!!isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS)
+    ) ?? []
 
   // Show audio coin card when no coins are available
   const showAudioCoin = filteredCoins.length === 0

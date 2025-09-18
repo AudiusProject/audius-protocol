@@ -21,7 +21,7 @@ import {
   SwapTokensParams,
   SwapTokensResult
 } from './types'
-import { getSwapErrorResponse, isDirectRouteAvailable } from './utils'
+import { getSwapErrorResponse } from './utils'
 
 const initializeSwapDependencies = async (
   solanaWalletService: QueryContextType['solanaWalletService'],
@@ -91,7 +91,8 @@ const initializeSwapDependencies = async (
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk, env } =
+    useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const { tokens } = useTokens()
 
@@ -122,14 +123,11 @@ export const useSwapTokens = () => {
         const dependencies = dependenciesResult
 
         errorStage = 'DIRECT_QUOTE_CHECK'
-        const hasDirectPath = await isDirectRouteAvailable(
-          inputMintUiAddress,
-          outputMintUiAddress,
-          params.amountUi,
-          tokens
-        )
+        const isAudioPairedSwap =
+          inputMintUiAddress === env.WAUDIO_MINT_ADDRESS ||
+          outputMintUiAddress === env.WAUDIO_MINT_ADDRESS
 
-        if (hasDirectPath) {
+        if (isAudioPairedSwap) {
           const result = await executeDirectSwap(params, dependencies, tokens)
           if (result.status === SwapStatus.ERROR && result.errorStage) {
             errorStage = result.errorStage

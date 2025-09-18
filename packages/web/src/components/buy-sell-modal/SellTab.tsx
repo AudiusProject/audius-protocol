@@ -1,18 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import {
-  transformArtistCoinsToTokenInfoMap,
-  useArtistCoin,
-  useArtistCoins
-} from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { buySellMessages } from '@audius/common/messages'
-import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
-
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
@@ -30,7 +23,6 @@ export const SellTab = ({
   onInputTokenChange
 }: SellTabProps) => {
   const { baseToken, quoteToken } = tokenPair
-  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
   // State for token selection
   const [selectedInputToken, setSelectedInputToken] = useState(baseToken)
@@ -67,11 +59,6 @@ export const SellTab = ({
     onInputValueChange
   })
 
-  const { data: coins } = useArtistCoins()
-  const artistCoins: TokenInfo[] = useMemo(() => {
-    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
-  }, [coins])
-
   // Token change handlers
   const handleInputTokenChange = (token: TokenInfo) => {
     setSelectedInputToken(token)
@@ -107,7 +94,7 @@ export const SellTab = ({
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
-            availableTokens={isArtistCoinsEnabled ? artistCoins : undefined}
+            availableTokens={availableInputTokens}
             onTokenChange={handleInputTokenChange}
           />
           <OutputTokenSection

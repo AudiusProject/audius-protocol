@@ -139,3 +139,18 @@ export type LaunchCoinResponse = {
   metadataUri: string
   imageUri: string
 }
+
+export type FirstBuyQuoteResponse = {
+  solInputAmount: string
+  usdcInputAmount: string
+  tokenOutputAmount: string
+  audioSwapAmount: string
+}
+
+export type FirstBuyQuoteRequest =
+  | {
+      solInputAmount: string // in lamports
+    }
+  | {
+      tokenOutputAmount: string // in big number 9 decimal format
+    }

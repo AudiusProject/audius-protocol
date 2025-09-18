@@ -13,12 +13,15 @@ import { createUmi } from '@metaplex-foundation/umi-bundle-defaults'
 import { irysUploader } from '@metaplex-foundation/umi-uploader-irys'
 import { DynamicBondingCurveClient } from '@meteora-ag/dynamic-bonding-curve-sdk'
 import { Keypair, PublicKey } from '@solana/web3.js'
+import { NATIVE_MINT as SOL_MINT } from '@solana/spl-token'
 import BN from 'bn.js'
 import { Request, Response } from 'express'
 
 import { config } from '../../config'
 import { logger } from '../../logger'
 import { getConnection } from '../../utils/connections'
+
+import { AUDIO_MINT } from './constants'
 
 interface LaunchCoinRequestBody {
   name: string
@@ -27,9 +30,6 @@ interface LaunchCoinRequestBody {
   description: string
   initialBuyAmountSolLamports?: number
 }
-
-const SOL_MINT = 'So11111111111111111111111111111111111111112'
-const AUDIO_MINT = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
 
 const AUDIUS_COIN_URL = (ticker: string) => `https://audius.co/coins/${ticker}`
 
@@ -56,12 +56,12 @@ const createSolToAudioTx = async (
   }
 }
 
-const getsolToAudioQuote = async (
+const getSolToAudioQuote = async (
   jupiterApi: JupiterApi,
   initialBuyAmountSolLamports: number
 ) => {
   return await jupiterApi.quoteGet({
-    inputMint: SOL_MINT,
+    inputMint: SOL_MINT.toBase58(),
     outputMint: AUDIO_MINT,
     amount: initialBuyAmountSolLamports,
     swapMode: 'ExactIn',
@@ -154,7 +154,7 @@ export const launchCoin = async (
     // If using initial buy, get a quote for the swap from SOL -> AUDIO
     let solToAudioQuote: QuoteResponse | undefined
     if (initialBuyAmountSolLamports) {
-      solToAudioQuote = await getsolToAudioQuote(
+      solToAudioQuote = await getSolToAudioQuote(
         jupiterApi,
         initialBuyAmountSolLamports
       )

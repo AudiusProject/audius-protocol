@@ -27,7 +27,9 @@ export const TokenInfoRow = ({
   return (
     <Flex alignItems='center' justifyContent='space-between' w='100%'>
       {hasTooltip && tooltipContent ? (
-        <Tooltip text={tooltipContent}>{tooltipTrigger}</Tooltip>
+        <Tooltip text={tooltipContent} mount='body'>
+          {tooltipTrigger}
+        </Tooltip>
       ) : (
         tooltipTrigger
       )}

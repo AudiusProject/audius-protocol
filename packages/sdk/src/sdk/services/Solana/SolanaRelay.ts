@@ -14,7 +14,9 @@ import {
   RelaySchema,
   LaunchCoinRequest,
   LaunchCoinResponse,
-  LaunchCoinSchema
+  LaunchCoinSchema,
+  FirstBuyQuoteResponse,
+  FirstBuyQuoteRequest
 } from './types'
 
 /**
@@ -219,6 +221,68 @@ export class SolanaRelay extends BaseAPI {
         metadataUri: json.metadataUri,
         imageUri: json.imageUri
       } as LaunchCoinResponse
+    }).value()
+  }
+
+  /**
+   * Gets a quote for the first buy transaction on the launchpad.
+   * Returns quotes for SOL to AUDIO, SOL to USDC, and the bonding curve quote.
+   */
+  public async getFirstBuyQuote(
+    params: FirstBuyQuoteRequest,
+    requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<FirstBuyQuoteResponse> {
+    const solInputAmount =
+      'solInputAmount' in params ? params.solInputAmount : undefined
+    const tokenOutputAmount =
+      'tokenOutputAmount' in params ? params.tokenOutputAmount : undefined
+    const noSolInput = !solInputAmount
+    const noTokenInput = !tokenOutputAmount
+    if (noSolInput && noTokenInput) {
+      throw new Error(
+        'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided'
+      )
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {}
+    const queryParameters: runtime.HTTPQuery = solInputAmount
+      ? {
+          solInputAmount
+        }
+      : {
+          tokenOutputAmount: tokenOutputAmount!
+        }
+
+    const response = await this.request(
+      {
+        path: '/first_buy_quote',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      requestInitOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      if (!runtime.exists(json, 'solInputAmount')) {
+        throw new Error('solInputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'usdcInputAmount')) {
+        throw new Error('usdcInputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'tokenOutputAmount')) {
+        throw new Error('tokenOutputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'audioSwapAmount')) {
+        throw new Error('audioSwapAmount missing from response')
+      }
+
+      return {
+        solInputAmount: json.solInputAmount,
+        usdcInputAmount: json.usdcInputAmount,
+        tokenOutputAmount: json.tokenOutputAmount,
+        audioSwapAmount: json.audioSwapAmount
+      } as FirstBuyQuoteResponse
     }).value()
   }
 }
