@@ -76,7 +76,12 @@ export const NavBarActionDrawer = ({
         onClick: goToSettingsPage
       }
     ],
-    [goToRewardsPage, goToSettingsPage, goToWalletPage]
+    [
+      goToRewardsPage,
+      goToSettingsPage,
+      goToWalletPage,
+      goToArtistCoinsExplorePage
+    ]
   )
 
   return <ActionDrawer actions={actions} onClose={onClose} isOpen={isOpen} />

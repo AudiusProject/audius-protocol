@@ -28,6 +28,7 @@ import { Tooltip } from 'components/tooltip'
 import { isMobile } from 'utils/clientUtil'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
+
 import { MobileArtistCoinsExplorePage } from './MobileArtistCoinsExplorePage'
 
 const SEARCH_WIDTH = 400

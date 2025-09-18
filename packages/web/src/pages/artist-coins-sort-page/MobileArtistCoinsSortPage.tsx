@@ -1,14 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
-
-import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
 import { walletMessages } from '@audius/common/messages'
-import { useMobileHeader } from 'components/header/mobile/hooks'
-
 import {
-  Box,
   Flex,
   Text,
   Button,
@@ -19,7 +12,12 @@ import {
   IconSortDown,
   IconComponent
 } from '@audius/harmony'
+import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
+import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
+import { push } from 'redux-first-history'
+
+import { useMobileHeader } from 'components/header/mobile/hooks'
 
 const sortOptions = [
   {

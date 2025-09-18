@@ -12,7 +12,7 @@ import {
   GetCoinsSortDirectionEnum
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
-import { HashId, type Coin } from '@audius/sdk'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   Box,
   Flex,
@@ -25,18 +25,18 @@ import {
   TextInput,
   TextInputSize
 } from '@audius/harmony'
+import { HashId, type Coin } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useLocation } from 'react-router-dom'
 import { useDebounce } from 'react-use'
+import { push } from 'redux-first-history'
 
+import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
+import { UserLink } from 'components/link'
 import NavContext, {
   LeftPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
-import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
-import { UserLink } from 'components/link'
-import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { useLocation } from 'react-router-dom'
 
 type CoinRowProps = {
   coin: Coin
