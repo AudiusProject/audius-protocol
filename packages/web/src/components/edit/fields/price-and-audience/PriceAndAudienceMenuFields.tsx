@@ -18,6 +18,7 @@ import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 
 import { SpecialAccessFields } from '../stream-availability/SpecialAccessFields'
 import { CollectibleGatedRadioField } from '../stream-availability/collectible-gated/CollectibleGatedRadioField'
+import { TokenGatedRadioField } from '../stream-availability/token-gated/TokenGatedRadioField'
 import { UsdcPurchaseGatedRadioField } from '../stream-availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
 import { STREAM_AVAILABILITY_TYPE, STREAM_CONDITIONS } from '../types'
 
@@ -77,6 +78,9 @@ export const PriceAndAudienceMenuFields = (
   const { isEnabled: isUdscPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
+  const { isEnabled: isTokenGatingEnabled } = useFeatureFlag(
+    FeatureFlags.TOKEN_GATING
+  )
 
   const [availabilityField] = useField({ name: STREAM_AVAILABILITY_TYPE })
 
@@ -134,8 +138,15 @@ export const PriceAndAudienceMenuFields = (
             )}
           />
         ) : null}
-        {!isAlbum ? (
+        {!isAlbum && !isTokenGatingEnabled ? (
           <CollectibleGatedRadioField
+            isRemix={isRemix}
+            isUpload={isUpload}
+            isInitiallyUnlisted={isInitiallyUnlisted}
+          />
+        ) : null}
+        {!isAlbum && isTokenGatingEnabled ? (
+          <TokenGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
             isInitiallyUnlisted={isInitiallyUnlisted}

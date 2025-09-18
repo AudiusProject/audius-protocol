@@ -78,7 +78,8 @@ export type SellTabProps = BaseTabProps & {
 }
 
 export type ConvertTabProps = BaseTabProps & {
-  availableTokens?: TokenInfo[]
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
   onInputTokenChange?: (symbol: string) => void
   onOutputTokenChange?: (symbol: string) => void
   onChangeSwapDirection?: () => void

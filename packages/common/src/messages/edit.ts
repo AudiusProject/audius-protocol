@@ -26,6 +26,7 @@ export const priceAndAudienceMessages = {
   premium: 'Premium',
   specialAccess: 'Special Access',
   collectibleGated: 'Collectible Gated',
+  coinGated: 'Coin Gated',
   followersOnly: 'Followers Only',
   supportersOnly: 'Supporters Only',
   markedAsRemix:
@@ -61,6 +62,12 @@ export const priceAndAudienceMessages = {
     ownersOf: 'Owners Of',
     noCollectibles:
       'No Collectibles found. To enable this option, link a wallet containing a collectible.'
+  },
+  tokenGatedRadio: {
+    title: 'Coin Gated',
+    yourCoin: 'your coin',
+    description: (coinTicker: string) =>
+      `Anyone holding ${coinTicker} can stream.`
   }
 }
 

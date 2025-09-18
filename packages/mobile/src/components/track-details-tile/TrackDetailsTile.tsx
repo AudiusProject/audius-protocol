@@ -15,6 +15,7 @@ import type { SvgProps } from 'react-native-svg'
 
 import {
   Flex,
+  IconArtistCoin,
   IconCart,
   IconCollectible,
   IconSparkles
@@ -33,6 +34,7 @@ const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   premiumTrack: 'PREMIUM TRACK',
+  coinGated: 'COIN GATED',
   earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
@@ -113,6 +115,12 @@ export const TrackDetailsTile = ({
       [GatedContentType.SPECIAL_ACCESS]: {
         message: messages.specialAccess,
         icon: IconSparkles,
+        color: accentBlue
+      },
+      [GatedContentType.TOKEN_GATED]: {
+        message: messages.coinGated,
+        icon: IconArtistCoin,
+        // TODO - KJ: Add color for coin gated
         color: accentBlue
       },
       [GatedContentType.USDC_PURCHASE]: {

@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
-import { useAudioBalance, useCurrentUserId, useUser } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
-import { AUDIO_PAGE } from '@audius/common/src/utils/route'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { AUDIO_TICKER } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import {
   HoverCard,
   HoverCardHeader,
@@ -19,6 +19,8 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
+
+import { env } from 'services/env'
 
 import { HoverCardBody } from './HoverCardBody'
 
@@ -54,12 +56,6 @@ const getBadgeName = (tier: BadgeTier) => {
   return `${tier} Badge`
 }
 
-const formatBalance = (balance: string | AudioWei | undefined | null) => {
-  if (!balance) return '0'
-  const audioValue = AUDIO(BigInt(balance))
-  return formatCount(Number(audioValue.toFixed(2)))
-}
-
 /**
  * A complete HoverCard for $AUDIO badge tiers that includes both header and body
  */
@@ -76,20 +72,18 @@ export const AudioHoverCard = ({
   const navigate = useNavigate()
   const { cornerRadius } = useTheme()
 
-  // Get user's formatted balance directly using select
-  const { data: userBalance = '0' } = useUser(userId, {
-    select: (user) => formatBalance(user?.total_balance)
+  const { data: tokenBalance } = useTokenBalance({
+    mint: env.WAUDIO_MINT_ADDRESS,
+    userId
   })
-  const { data: currentUserId } = useCurrentUserId()
-  const isCurrentUser = currentUserId === userId
-  const { accountBalance: currentUserBalance } = useAudioBalance()
-  const formattedBalance = isCurrentUser
-    ? formatBalance(currentUserBalance)
-    : userBalance
+
+  const formattedBalance = tokenBalance
+    ? formatCount(Number(tokenBalance.balance))
+    : null
 
   const handleClick = useCallback(() => {
     onClick?.()
-    navigate(AUDIO_PAGE)
+    navigate(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER))
   }, [navigate, onClick])
 
   return (
@@ -111,7 +105,7 @@ export const AudioHoverCard = ({
                 hex
               />
             }
-            amount={formattedBalance}
+            amount={formattedBalance ?? ''}
           />
         </>
       }

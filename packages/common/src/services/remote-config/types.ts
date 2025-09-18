@@ -393,6 +393,9 @@ export enum StringKeys {
   /** 2-Letter ISO Country Codes of Allowed Countries for Link by Stripe */
   STRIPE_ALLOWED_COUNTRIES_2_LETTER = 'STRIPE_ALLOWED_COUNTRIES_2_LETTER',
 
+  /** 2-Letter ISO Country Codes of Denied Countries for Buy/Sell */
+  BUY_SELL_DENIED_COUNTRIES = 'BUY_SELL_DENIED_COUNTRIES',
+
   /** Text to display on related features when Solana/$AUDIO features are degraded */
   AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT',
 

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Flex } from '@audius/harmony-native'
 import {
-  Screen as MobileScreen,
+  Screen,
   ScreenContent,
   FixedFooter,
   ScrollView
@@ -51,7 +51,7 @@ export const BuySellScreen = ({ route }: BuySellScreenProps) => {
   }, [insets.bottom, keyboardHeight, keyboardShown])
 
   return (
-    <MobileScreen title={messages.title} variant='white' url='/buy-sell'>
+    <Screen title={messages.title} variant='white' url='/buy-sell'>
       <ScreenContent>
         <ScrollView
           style={{ flex: 1 }}
@@ -70,6 +70,6 @@ export const BuySellScreen = ({ route }: BuySellScreenProps) => {
 
         <FixedFooter avoidKeyboard>{flowData.footer}</FixedFooter>
       </ScreenContent>
-    </MobileScreen>
+    </Screen>
   )
 }

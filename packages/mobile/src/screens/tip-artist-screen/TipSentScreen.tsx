@@ -1,16 +1,16 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser, useTokenPrice } from '@audius/common/api'
+import { useArtistCoin, useCurrentAccountUser } from '@audius/common/api'
 import type { SolanaWalletAddress } from '@audius/common/models'
-import { tippingSelectors, TOKEN_LISTING_MAP } from '@audius/common/store'
+import { tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas, getXShareHandle } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { env } from 'services/env'
 
 import { IconCheck, IconClose, PlainButton } from '@audius/harmony-native'
 import { XButton } from 'app/components/x-button'
-import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
@@ -66,13 +66,13 @@ export const TipSentScreen = () => {
     source,
     onSuccessActions
   } = useSelector(getSendTipData)
-  const { data: tokenPriceData } = useTokenPrice(
-    TOKEN_LISTING_MAP.AUDIO.address
-  )
+  const { data: tokenPriceData } = useArtistCoin({
+    mint: env.WAUDIO_MINT_ADDRESS
+  })
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const tokenPrice = tokenPriceData?.price
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const getXShareText = () => {
     if (user_id && recipient) {

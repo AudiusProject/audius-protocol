@@ -69,9 +69,11 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
-export const ASSET_DETAIL_PAGE = '/wallet/:mint'
+export const ASSET_DETAIL_PAGE = '/coins/:ticker'
 export const WALLET_PAGE = '/wallet'
-export const ALL_COINS_PAGE = '/wallet/coins'
+export const WALLET_GUIDE_PAGE = '/wallet/guide'
+export const COINS_CREATE_PAGE = '/coins/create'
+export const COINS_EXPLORE_PAGE = '/coins'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
@@ -214,6 +216,11 @@ export const AUDIUS_API_LINK = 'https://audius.org/api'
 export const AUDIUS_TOKENS_HELP_LINK =
   'https://support.audius.co/product/tokens'
 
+// Dexscreener Links
+export const DEXSCREENER_BASE_URL = 'https://dexscreener.com/solana'
+export const dexscreenerUrl = (mint: string) =>
+  `${DEXSCREENER_BASE_URL}/${mint}`
+
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,
@@ -230,7 +237,8 @@ export const authenticatedRoutes = [
   SALES_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
-  ALL_COINS_PAGE
+  COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE
 ]
 
 export const guestRoutes = [
@@ -282,7 +290,9 @@ export const orderedRoutes = [
   WALLET_AUDIO_PAGE,
   ASSET_DETAIL_PAGE,
   WALLET_PAGE,
-  ALL_COINS_PAGE,
+  COINS_EXPLORE_PAGE,
+  COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -333,7 +343,9 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_PAGE,
-  ALL_COINS_PAGE,
+  WALLET_GUIDE_PAGE,
+  COINS_EXPLORE_PAGE,
+  COINS_CREATE_PAGE,
   WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,
@@ -449,8 +461,4 @@ export const searchPage = (searchOptions: SearchOptions) => {
     url: generatePath(SEARCH_PAGE, { category }),
     query: searchParams
   })
-}
-
-export const solanaExplorerAddress = (address: string) => {
-  return `https://explorer.solana.com/address/${address}`
 }

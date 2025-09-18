@@ -19,7 +19,17 @@ export {
   GetAudioTransactionHistorySortDirectionEnum,
   GetNotificationsTypesEnum
 } from './api/generated/full'
-export * from './api/challenges/types'
+export {
+  ChallengeId,
+  GenerateSpecifierSchema,
+  type GenerateSpecifierRequest,
+  ClaimRewardsSchema,
+  type AttestationTransactionSignature,
+  type AAOErrorResponse,
+  ClaimAllRewardsSchema,
+  type ClaimAllRewardsRequest,
+  type ClaimAllResponseBody
+} from './api/challenges/types'
 export * from './api/chats/clientTypes'
 export * from './api/chats/serverTypes'
 export * from './api/comments/types'

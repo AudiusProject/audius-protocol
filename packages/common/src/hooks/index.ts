@@ -48,6 +48,7 @@ export * from './useFormattedTokenBalance'
 export * from './useCurrentTrack'
 export * from './useDebounce'
 export * from './useIsArtist'
+export * from './useOwnedTokens'
 
 export * from './useAnalytics'
 export * from './useBuySellAnalytics'

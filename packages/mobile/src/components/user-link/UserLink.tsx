@@ -23,10 +23,18 @@ type UserLinkProps = Omit<TextLinkProps<ParamList>, 'to' | 'children'> & {
   userId: ID
   badgeSize?: IconSize
   textLinkStyle?: StyleProp<TextStyle>
+  disabled?: boolean
 }
 
 export const UserLink = (props: UserLinkProps) => {
-  const { userId, badgeSize = 's', style, textLinkStyle, ...other } = props
+  const {
+    userId,
+    badgeSize = 's',
+    style,
+    textLinkStyle,
+    disabled,
+    ...other
+  } = props
   const { data: userName } = useUser(userId, {
     select: (user) => user?.name
   })
@@ -42,11 +50,16 @@ export const UserLink = (props: UserLinkProps) => {
 
   return (
     <Pressable
+      disabled={disabled}
       onPressIn={(e) => {
-        animatedPressed.value = withTiming(1, motion.press)
+        if (!disabled) {
+          animatedPressed.value = withTiming(1, motion.press)
+        }
       }}
       onPressOut={() => {
-        animatedPressed.value = withTiming(0, motion.press)
+        if (!disabled) {
+          animatedPressed.value = withTiming(0, motion.press)
+        }
       }}
     >
       <AnimatedFlex
@@ -61,6 +74,7 @@ export const UserLink = (props: UserLinkProps) => {
           flexShrink={1}
           animatedPressed={animatedPressed}
           style={textLinkStyle}
+          disabled={disabled}
           {...other}
         >
           {userName}

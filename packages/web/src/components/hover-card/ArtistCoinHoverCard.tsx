@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useArtistCoin, useTokenBalance } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { WALLET_PAGE } from '@audius/common/src/utils/route'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { formatCount } from '@audius/common/utils'
 import {
   Artwork,
@@ -61,8 +61,8 @@ export const ArtistCoinHoverCard = ({
 
   const handleClick = useCallback(() => {
     onClick?.()
-    navigate(`${WALLET_PAGE}/${mint}`)
-  }, [navigate, mint, onClick])
+    navigate(ASSET_DETAIL_PAGE.replace(':ticker', coin?.ticker ?? ''))
+  }, [onClick, navigate, coin?.ticker])
 
   if (!tokenBalance || !coin) return null
 

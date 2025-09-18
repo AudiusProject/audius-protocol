@@ -9,7 +9,8 @@ import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
 import type { User } from '~/models/User'
 import { JupiterQuoteResult } from '~/services/Jupiter'
-import { useTokens } from '~/store/ui/buy-sell'
+
+import { useTokens } from '../tokens/useTokens'
 
 import { executeDirectSwap } from './directSwap'
 import { executeIndirectSwap } from './indirectSwapViaAudio'
@@ -20,7 +21,7 @@ import {
   SwapTokensParams,
   SwapTokensResult
 } from './types'
-import { getSwapErrorResponse, isDirectRouteAvailable } from './utils'
+import { getSwapErrorResponse } from './utils'
 
 const initializeSwapDependencies = async (
   solanaWalletService: QueryContextType['solanaWalletService'],
@@ -90,7 +91,8 @@ const initializeSwapDependencies = async (
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk, env } =
+    useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const { tokens } = useTokens()
 
@@ -121,17 +123,54 @@ export const useSwapTokens = () => {
         const dependencies = dependenciesResult
 
         errorStage = 'DIRECT_QUOTE_CHECK'
-        const hasDirectPath = await isDirectRouteAvailable(
-          inputMintUiAddress,
-          outputMintUiAddress,
-          params.amountUi,
-          tokens
-        )
+        const isAudioPairedSwap =
+          inputMintUiAddress === env.WAUDIO_MINT_ADDRESS ||
+          outputMintUiAddress === env.WAUDIO_MINT_ADDRESS
 
-        if (hasDirectPath) {
-          return await executeDirectSwap(params, dependencies, tokens)
+        if (isAudioPairedSwap) {
+          const result = await executeDirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown direct swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         } else {
-          return await executeIndirectSwap(params, dependencies, tokens)
+          const result = await executeIndirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown indirect swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         }
       } catch (error: unknown) {
         reportToSentry({
@@ -141,6 +180,7 @@ export const useSwapTokens = () => {
           additionalInfo: {
             params,
             signature,
+            errorStage,
             firstQuoteResponse: firstQuoteResult?.quote,
             secondQuoteResponse: secondQuoteResult?.quote
           }

@@ -3,15 +3,14 @@ import { useCallback } from 'react'
 import { useTokenBalance, useArtistCoin } from '@audius/common/api'
 import { useFormattedTokenBalance } from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
-import { Image } from 'react-native'
-
 import {
-  Paper,
-  Flex,
-  Text,
-  HexagonalIcon,
-  Button
-} from '@audius/harmony-native'
+  receiveTokensModalActions,
+  sendTokensModalActions
+} from '@audius/common/store'
+import { useDispatch } from 'react-redux'
+
+import { Paper, Flex, Text, Button } from '@audius/harmony-native'
+import { TokenIcon } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 const messages = coinDetailsMessages.balance
@@ -24,22 +23,6 @@ type BalanceStateProps = {
   onSend?: () => void
 }
 
-const TokenIcon = ({ logoURI }: { logoURI?: string }) => {
-  if (!logoURI) return null
-
-  return (
-    <HexagonalIcon size={64}>
-      <Image
-        source={{ uri: logoURI }}
-        style={{
-          width: 64,
-          height: 64
-        }}
-      />
-    </HexagonalIcon>
-  )
-}
-
 const ZeroBalanceState = ({
   title,
   logoURI,
@@ -49,7 +32,7 @@ const ZeroBalanceState = ({
   return (
     <Flex column gap='l' w='100%'>
       <Flex row gap='s' alignItems='center'>
-        <TokenIcon logoURI={logoURI} />
+        <TokenIcon logoURI={logoURI} size={64} />
         <Text variant='heading' size='l' color='subdued'>
           {title}
         </Text>
@@ -100,7 +83,7 @@ const HasBalanceState = ({
   return (
     <Flex column gap='l' w='100%'>
       <Flex row gap='s' alignItems='center'>
-        <TokenIcon logoURI={logoURI} />
+        <TokenIcon logoURI={logoURI} size={64} />
         <Flex column gap='xs'>
           <Flex row gap='xs'>
             <Text variant='heading' size='l' color='default'>
@@ -131,6 +114,7 @@ const HasBalanceState = ({
 }
 
 export const BalanceCard = ({ mint }: { mint: string }) => {
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { data: coin, isPending: coinsLoading } = useArtistCoin({ mint })
   const { data: tokenBalance } = useTokenBalance({ mint })
@@ -141,6 +125,14 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
       coinTicker: coin?.ticker
     })
   }, [navigation, coin])
+
+  const handleReceive = useCallback(() => {
+    dispatch(receiveTokensModalActions.open({ mint, isOpen: true }))
+  }, [dispatch, mint])
+
+  const handleSend = useCallback(() => {
+    dispatch(sendTokensModalActions.open({ mint, isOpen: true }))
+  }, [dispatch, mint])
 
   if (coinsLoading || !coin) {
     // TODO: Add skeleton state
@@ -158,15 +150,15 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
           title={title}
           logoURI={logoURI}
           onBuy={handleBuy}
-          onReceive={() => {}}
+          onReceive={handleReceive}
         />
       ) : (
         <HasBalanceState
           title={title}
           logoURI={logoURI}
           onBuy={handleBuy}
-          onSend={() => {}}
-          onReceive={() => {}}
+          onSend={handleSend}
+          onReceive={handleReceive}
           mint={mint}
         />
       )}

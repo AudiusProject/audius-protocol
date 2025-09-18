@@ -34,6 +34,7 @@ export type Drawer =
   | 'Comment'
   | 'EditTrackFormOverflowMenu'
   | 'PickWinners'
+  | 'AssetInsightsOverflowMenu'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -77,6 +78,7 @@ export type DrawerData = {
   Comment: { userId: ID; entityId: ID; isEntityOwner: boolean; artistId: ID }
   EditTrackFormOverflowMenu: undefined
   PickWinners: undefined
+  AssetInsightsOverflowMenu: { mint: string }
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -112,6 +114,7 @@ const initialState: DrawersState = {
   Comment: false,
   EditTrackFormOverflowMenu: false,
   PickWinners: false,
+  AssetInsightsOverflowMenu: false,
   data: {}
 }
 

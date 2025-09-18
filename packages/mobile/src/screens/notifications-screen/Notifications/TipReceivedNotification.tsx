@@ -2,19 +2,19 @@ import { useCallback } from 'react'
 
 import type { ReactionTypes } from '@audius/common/api'
 import {
-  useReaction,
-  useWriteReaction,
-  useCurrentUserId,
   getReactionFromRawValue,
+  useArtistCoin,
+  useCurrentUserId,
+  useReaction,
   useUser,
-  useTokenPrice
+  useWriteReaction
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
-import { TOKEN_LISTING_MAP } from '@audius/common/store'
 import type { TipReceiveNotification } from '@audius/common/store'
-import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { formatNumberCommas } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
+import { env } from 'services/env'
 
 import { IconTipping } from '@audius/harmony-native'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
@@ -23,15 +23,15 @@ import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 
 import {
-  NotificationTile,
+  NotificationBody,
   NotificationHeader,
-  NotificationText,
-  NotificationTitle,
   NotificationProfilePicture,
-  TipText,
-  UserNameLink,
+  NotificationText,
+  NotificationTile,
+  NotificationTitle,
   NotificationXButton,
-  NotificationBody
+  TipText,
+  UserNameLink
 } from '../Notification'
 import { ReactionList } from '../Reaction'
 
@@ -74,11 +74,11 @@ export const TipReceivedNotification = (
   } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
-  const { data: tokenPriceData } = useTokenPrice(
-    TOKEN_LISTING_MAP.AUDIO.address
-  )
+  const { data: tokenPriceData } = useArtistCoin({
+    mint: env.WAUDIO_MINT_ADDRESS
+  })
 
-  const tokenPrice = tokenPriceData?.price
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const { data: user } = useUser(notification.entityId)
 

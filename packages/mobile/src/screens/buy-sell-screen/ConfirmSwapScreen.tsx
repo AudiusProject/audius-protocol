@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 
-import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
+import {
+  formatUSDCValue,
+  SLIPPAGE_BPS,
+  useDefaultTokenPair
+} from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
 import {
-  useSupportedTokenPairs,
   useBuySellScreen,
   useBuySellSwap,
   useSwapDisplayData,
@@ -129,9 +132,7 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
   // Determine if this is a buy or sell based on token types
   const activeTab = payTokenInfo.symbol === 'USDC' ? 'buy' : 'sell'
 
-  const [selectedPairIndex] = useState(0)
-  const { pairs: supportedTokenPairs } = useSupportedTokenPairs()
-  const selectedPair = supportedTokenPairs[selectedPairIndex]
+  const { data: selectedPair } = useDefaultTokenPair()
 
   const {
     handleConfirmSwap,

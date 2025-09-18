@@ -5,39 +5,25 @@ import { useFeatureFlag, useFormattedTokenBalance } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { Image, TouchableOpacity } from 'react-native'
 
-import {
-  Flex,
-  HexagonalIcon,
-  IconCaretRight,
-  Skeleton,
-  Text
-} from '@audius/harmony-native'
+import { Flex, HexagonalIcon, Skeleton, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 // TODO: Fix loading states
 // Skeletons are not working as expected
 
+const ICON_SIZE = 64
+
 const CoinCardSkeleton = () => {
   return (
-    <Flex column h='2xl' w='100%' gap='xs'>
-      <Text>Test Ticker Name</Text>
-      <Skeleton w='100px' h='24px' />
+    <Flex column gap='xs'>
+      <Skeleton w='240px' h='36px' />
+      <Skeleton w='140px' h='24px' />
     </Flex>
   )
 }
 
-const HexagonSkeleton = () => {
-  return (
-    <Skeleton
-      w='64px'
-      h='64px'
-      style={{
-        // TODO: Figure out how to use the clip path
-        // clipPath: `url(#${roundedHexClipPath})`
-        borderRadius: '100%'
-      }}
-    />
-  )
+const IconSkeleteon = () => {
+  return <Skeleton w={ICON_SIZE} h={ICON_SIZE} />
 }
 
 export type CoinCardProps = {
@@ -47,7 +33,7 @@ export type CoinCardProps = {
 
 export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
   const navigation = useNavigation()
-  const ICON_SIZE = showUserBalance ? 64 : 40
+
   const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )
@@ -102,43 +88,35 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
         justifyContent='space-between'
         alignItems='center'
       >
-        <Flex row alignItems='center' gap='m'>
-          {isLoading ? <HexagonSkeleton /> : renderIcon()}
-          <Flex column gap='xs' h='3xl' justifyContent='center'>
+        <Flex row alignItems='center' gap='l'>
+          {isLoading ? <IconSkeleteon /> : renderIcon()}
+          <Flex column gap='xs'>
             {isLoading ? (
               <CoinCardSkeleton />
             ) : (
               <>
-                <Flex row alignItems='center' h='2xl' gap='xs'>
-                  {showUserBalance ? (
-                    <Text variant='heading' size='l'>
-                      {balance}
-                    </Text>
-                  ) : null}
-                  <Text
-                    variant='heading'
-                    size={showUserBalance ? 'l' : 'm'}
-                    color={showUserBalance ? 'subdued' : 'default'}
-                  >
+                <Text variant='heading' size='s'>
+                  {coinData?.name}
+                </Text>
+                <Flex row alignItems='center' gap='xs'>
+                  <Text variant='title' size='l'>
+                    {balance}
+                  </Text>
+                  <Text variant='title' size='l' color='subdued'>
                     {coinData?.ticker}
                   </Text>
-                  {/* TODO: Add coin value for AllCoinsScreen */}
-                  {/* {!showUserBalance ? (
-                    <Text variant='heading' size='m' color='subdued'>
-                      (Coin Value)
-                    </Text>
-                  ) : null} */}
                 </Flex>
-                {showUserBalance ? (
-                  <Text variant='heading' size='s' color='subdued'>
-                    {dollarValue}
-                  </Text>
-                ) : null}
               </>
             )}
           </Flex>
         </Flex>
-        <IconCaretRight size='l' color='subdued' />
+        <Flex row alignItems='center' gap='m'>
+          {!isLoading && showUserBalance ? (
+            <Text variant='title' size='l' color='default'>
+              {dollarValue}
+            </Text>
+          ) : null}
+        </Flex>
       </Flex>
     </TouchableOpacity>
   )

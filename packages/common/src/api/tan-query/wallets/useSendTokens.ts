@@ -1,4 +1,4 @@
-import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
+import { PublicKey } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -6,6 +6,7 @@ import { Name, SolanaWalletAddress } from '~/models'
 import { getErrorMessage } from '~/utils'
 
 import { getUserCoinQueryKey } from '../coins/useUserCoin'
+import { useCurrentAccountUser } from '../users/account/accountSelectors'
 import { useWalletAddresses } from '../users/account/useWalletAddresses'
 
 import { useTokenBalance } from './useTokenBalance'
@@ -28,9 +29,10 @@ export type SendTokensResult = {
  */
 export const useSendTokens = ({ mint }: { mint: string }) => {
   const queryClient = useQueryClient()
-  const { audiusBackend, audiusSdk, reportToSentry, analytics, env } =
+  const { audiusBackend, audiusSdk, reportToSentry, analytics } =
     useQueryContext()
   const { data: walletAddresses } = useWalletAddresses()
+  const { data: currentUser } = useCurrentAccountUser()
 
   const { data: tokenBalance } = useTokenBalance({ mint })
 
@@ -40,12 +42,6 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       amount
     }: SendTokensParams): Promise<SendTokensResult> => {
       try {
-        // For now, we only support wAUDIO transfers
-        // This can be extended to support other tokens in the future
-        if (mint !== env.WAUDIO_MINT_ADDRESS) {
-          throw new Error(`Token mint ${mint} is not supported for sending`)
-        }
-
         const currentUser = walletAddresses?.currentUser
         if (!currentUser) {
           throw new Error('Failed to retrieve current user wallet address')
@@ -57,15 +53,16 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
           throw new Error('Insufficient balance to send tokens')
         }
 
-        await audiusBackend.sendWAudioTokens({
+        const { res: signature } = await audiusBackend.sendTokens({
           address: recipientWallet,
-          amount: AUDIO(wAUDIO(amount)).value,
+          amount: amount as any, // TODO: Fix type mismatch between bigint and AudioWei
           ethAddress: currentUser,
-          sdk
+          sdk,
+          mint: new PublicKey(mint) as any // TODO: Fix type mismatch between string and MintName | PublicKey
         })
 
         return {
-          signature: 'success', // The backend doesn't return a signature, so we use a placeholder
+          signature,
           success: true
         }
       } catch (error) {
@@ -87,21 +84,23 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       }
     },
     onMutate: async ({ amount }) => {
-      const queryKey = getUserCoinQueryKey(mint)
+      const userId = currentUser?.user_id ?? null
+      const queryKey = getUserCoinQueryKey(mint, userId)
       await queryClient.cancelQueries({ queryKey })
 
       const previousBalance = queryClient.getQueryData(queryKey)
 
       if (previousBalance) {
-        queryClient.setQueryData(queryKey, (old: any) => {
+        queryClient.setQueryData(queryKey, (old) => {
           if (!old) return old
 
+          const amountNumber = Number(amount)
           return {
             ...old,
-            balance: old.balance - amount,
+            balance: old.balance - amountNumber,
             accounts: old.accounts?.map((account: any) =>
               account.isInAppWallet
-                ? { ...account, balance: account.balance - amount }
+                ? { ...account, balance: account.balance - amountNumber }
                 : account
             )
           }
@@ -126,7 +125,8 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
     },
     onError: (error, { amount, recipientWallet }, context) => {
       if (context?.previousBalance) {
-        const queryKey = getUserCoinQueryKey(mint)
+        const userId = currentUser?.user_id ?? null
+        const queryKey = getUserCoinQueryKey(mint, userId)
         queryClient.setQueryData(queryKey, context.previousBalance)
       }
 
@@ -156,7 +156,8 @@ export const useSendTokens = ({ mint }: { mint: string }) => {
       }
     },
     onSettled: () => {
-      const queryKey = getUserCoinQueryKey(mint)
+      const userId = currentUser?.user_id ?? null
+      const queryKey = getUserCoinQueryKey(mint, userId)
       queryClient.invalidateQueries({ queryKey })
     }
   })

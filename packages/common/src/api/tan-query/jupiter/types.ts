@@ -46,6 +46,7 @@ export type SwapTokensResult = {
   status: SwapStatus
   signature?: string
   firstTransactionSignature?: string
+  errorStage?: string
   error?: {
     type: SwapErrorType
     message: string

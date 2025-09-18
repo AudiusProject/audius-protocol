@@ -7,7 +7,7 @@ const BASE_TOKEN_METADATA = {
   AUDIO: {
     chainId: 101,
     symbol: 'AUDIO',
-    name: 'Audius (Portal)',
+    name: 'Audius Coin',
     decimals: 8,
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM/logo.png'

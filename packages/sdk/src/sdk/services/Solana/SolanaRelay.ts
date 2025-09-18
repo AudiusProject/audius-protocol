@@ -8,7 +8,16 @@ import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
 import { parseParams } from '../../utils/parseParams'
 
-import { type RelayRequestBody, RelayRequest, RelaySchema } from './types'
+import {
+  type RelayRequestBody,
+  RelayRequest,
+  RelaySchema,
+  LaunchCoinRequest,
+  LaunchCoinResponse,
+  LaunchCoinSchema,
+  FirstBuyQuoteResponse,
+  FirstBuyQuoteRequest
+} from './types'
 
 /**
  * Client for the Solana Relay Plugin on Discovery.
@@ -32,7 +41,9 @@ export class SolanaRelay extends BaseAPI {
     if (this.feePayer !== null) {
       return this.feePayer
     }
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const response = await this.request(
       {
         path: '/feePayer',
@@ -62,7 +73,9 @@ export class SolanaRelay extends BaseAPI {
   public async getLocationInstruction(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ) {
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const response = await this.request(
       {
         path: '/instruction/location',
@@ -99,7 +112,9 @@ export class SolanaRelay extends BaseAPI {
       RelaySchema
     )(params)
 
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const body: RelayRequestBody = {
       transaction: Buffer.from(transaction.serialize()).toString('base64'),
       confirmationOptions,
@@ -146,6 +161,128 @@ export class SolanaRelay extends BaseAPI {
       return {
         signature: json.signature as string
       }
+    }).value()
+  }
+
+  /**
+   * Launches a new artist coin on the launchpad with bonding curve.
+   */
+  public async launchCoin(
+    params: LaunchCoinRequest
+  ): Promise<LaunchCoinResponse> {
+    const {
+      name,
+      symbol,
+      description,
+      walletPublicKey,
+      initialBuyAmountSolLamports,
+      image
+    } = await parseParams('launchCoin', LaunchCoinSchema)(params)
+
+    const headerParameters: runtime.HTTPHeaders = {}
+
+    // API uses multipart/form-data for the upload
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('symbol', symbol)
+    formData.append('description', description)
+    formData.append('walletPublicKey', walletPublicKey.toBase58())
+    if (initialBuyAmountSolLamports) {
+      formData.append(
+        'initialBuyAmountSolLamports',
+        initialBuyAmountSolLamports.toString()
+      )
+    }
+    formData.append('image', image)
+
+    const response = await this.request({
+      path: '/launch_coin',
+      method: 'POST',
+      headers: headerParameters,
+      body: formData
+    })
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      if (!runtime.exists(json, 'mintPublicKey')) {
+        throw new Error('mintPublicKey missing from response')
+      }
+      if (!runtime.exists(json, 'createPoolTx')) {
+        throw new Error('createPoolTx missing from response')
+      }
+      if (!runtime.exists(json, 'imageUri')) {
+        throw new Error('imageUri missing from response')
+      }
+
+      return {
+        mintPublicKey: json.mintPublicKey,
+        createPoolTx: json.createPoolTx,
+        firstBuyTx: json.firstBuyTx,
+        solToAudioTx: json.solToAudioTx,
+        metadataUri: json.metadataUri,
+        imageUri: json.imageUri
+      } as LaunchCoinResponse
+    }).value()
+  }
+
+  /**
+   * Gets a quote for the first buy transaction on the launchpad.
+   * Returns quotes for SOL to AUDIO, SOL to USDC, and the bonding curve quote.
+   */
+  public async getFirstBuyQuote(
+    params: FirstBuyQuoteRequest,
+    requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<FirstBuyQuoteResponse> {
+    const solInputAmount =
+      'solInputAmount' in params ? params.solInputAmount : undefined
+    const tokenOutputAmount =
+      'tokenOutputAmount' in params ? params.tokenOutputAmount : undefined
+    const noSolInput = !solInputAmount
+    const noTokenInput = !tokenOutputAmount
+    if (noSolInput && noTokenInput) {
+      throw new Error(
+        'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided'
+      )
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {}
+    const queryParameters: runtime.HTTPQuery = solInputAmount
+      ? {
+          solInputAmount
+        }
+      : {
+          tokenOutputAmount: tokenOutputAmount!
+        }
+
+    const response = await this.request(
+      {
+        path: '/first_buy_quote',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      requestInitOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      if (!runtime.exists(json, 'solInputAmount')) {
+        throw new Error('solInputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'usdcInputAmount')) {
+        throw new Error('usdcInputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'tokenOutputAmount')) {
+        throw new Error('tokenOutputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'audioSwapAmount')) {
+        throw new Error('audioSwapAmount missing from response')
+      }
+
+      return {
+        solInputAmount: json.solInputAmount,
+        usdcInputAmount: json.usdcInputAmount,
+        tokenOutputAmount: json.tokenOutputAmount,
+        audioSwapAmount: json.audioSwapAmount
+      } as FirstBuyQuoteResponse
     }).value()
   }
 }

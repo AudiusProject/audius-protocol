@@ -47,7 +47,8 @@ type WalletRowProps = {
 } & UserCoinAccount
 
 const WalletRow = ({
-  account: address,
+  owner,
+  account,
   balance,
   isInAppWallet,
   decimals
@@ -56,6 +57,8 @@ const WalletRow = ({
   const [isRemovingWallet, setIsRemovingWallet] = useState(false)
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  // For connected wallets we want to use the root wallet address, for in-app wallets the owner will be us and not the user so we need to use the token account address
+  const address = isInAppWallet ? owner : account
   const copyAddressToClipboard = useCallback(() => {
     copyToClipboard(address)
     toast(messages.copied, COPIED_TOAST_TIMEOUT)
@@ -210,7 +213,7 @@ export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
         <Flex direction='column' gap='xl' w='100%' pv='l' ph='l'>
           {accounts?.map((walletAccount) => (
             <WalletRow
-              key={walletAccount.account}
+              key={walletAccount.owner}
               {...walletAccount}
               mint={mint}
               decimals={decimals ?? 0}

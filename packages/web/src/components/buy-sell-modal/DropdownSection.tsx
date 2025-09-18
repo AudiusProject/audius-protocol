@@ -231,11 +231,12 @@ export const DropdownSection = ({
           Option: (props: OptionProps<TokenOption>) => (
             <CustomOption {...props} />
           ),
-          DropdownIndicator: (props) => (
-            <components.DropdownIndicator {...props}>
-              <IconCaretDown size='s' color='default' />
-            </components.DropdownIndicator>
-          ),
+          DropdownIndicator: (props) =>
+            availableTokens?.length ? (
+              <components.DropdownIndicator {...props}>
+                <IconCaretDown size='s' color='default' />
+              </components.DropdownIndicator>
+            ) : null,
           IndicatorSeparator: null
         }}
         styles={{

@@ -1,6 +1,22 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { SwapTab } from './SwapTab'
+import {
+  transformArtistCoinsToTokenInfoMap,
+  useArtistCoin,
+  useArtistCoins
+} from '@audius/common/api'
+import { buySellMessages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
+import type { TokenInfo } from '@audius/common/store'
+import { useTokenSwapForm } from '@audius/common/store'
+import { getCurrencyDecimalPlaces } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
+
+import { useFlag } from 'hooks/useRemoteConfig'
+
+import { InputTokenSection } from './components/InputTokenSection'
+import { OutputTokenSection } from './components/OutputTokenSection'
+import { SwapFormSkeleton } from './components/SwapSkeletons'
 import { ConvertTabProps } from './types'
 
 export const ConvertTab = ({
@@ -10,95 +26,163 @@ export const ConvertTab = ({
   errorMessage,
   initialInputValue,
   onInputValueChange,
-  availableTokens,
+  availableInputTokens,
+  availableOutputTokens,
   onInputTokenChange,
   onOutputTokenChange,
   onChangeSwapDirection
 }: ConvertTabProps) => {
-  // Extract the tokens from the pair
   const { baseToken, quoteToken } = tokenPair
+  const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
 
-  const handleChangeSwapDirection = useCallback(() => {
-    if (onInputTokenChange && onOutputTokenChange) {
-      onInputTokenChange(quoteToken.symbol)
-      onOutputTokenChange(baseToken.symbol)
-    }
-    onChangeSwapDirection?.()
-  }, [
-    baseToken.symbol,
-    quoteToken.symbol,
-    onInputTokenChange,
-    onOutputTokenChange,
-    onChangeSwapDirection
-  ])
+  // State for token selection
+  const [selectedInputToken, setSelectedInputToken] = useState(baseToken)
+  const [selectedOutputToken, setSelectedOutputToken] = useState(quoteToken)
 
-  // Filter available tokens to prevent same token selection
-  const availableInputTokens = useMemo(() => {
-    return availableTokens?.filter(
-      (token) =>
-        token.symbol !== baseToken.symbol && token.symbol !== quoteToken.symbol
-    )
-  }, [availableTokens, baseToken.symbol, quoteToken.symbol])
+  useEffect(() => {
+    setSelectedInputToken(baseToken)
+    setSelectedOutputToken(quoteToken)
+  }, [baseToken, quoteToken])
 
-  const availableOutputTokens = useMemo(() => {
-    return availableTokens?.filter(
-      (token) =>
-        token.symbol !== quoteToken.symbol && token.symbol !== baseToken.symbol
-    )
-  }, [availableTokens, quoteToken.symbol, baseToken.symbol])
+  const { data: tokenPriceData, isPending: isTokenPriceLoading } =
+    useArtistCoin({ mint: selectedOutputToken.address })
 
-  // Enhanced token change handlers for automatic swapping when only 2 tokens available
-  const handleInputTokenChange = useCallback(
-    (symbol: string) => {
-      onInputTokenChange?.(symbol)
+  const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
-      // If there are only 2 available tokens, automatically set the other as output
-      if (availableTokens?.length === 2) {
-        const otherToken = availableTokens.find(
-          (token) => token.symbol !== symbol
-        )
-        if (otherToken) {
-          onOutputTokenChange?.(otherToken.symbol)
+  const decimalPlaces = useMemo(() => {
+    if (!tokenPrice) return 2
+    return getCurrencyDecimalPlaces(parseFloat(tokenPrice))
+  }, [tokenPrice])
+
+  const {
+    inputAmount,
+    outputAmount,
+    isExchangeRateLoading,
+    isBalanceLoading,
+    availableBalance,
+    currentExchangeRate,
+    handleInputAmountChange,
+    handleOutputAmountChange,
+    handleMaxClick
+  } = useTokenSwapForm({
+    inputToken: selectedInputToken,
+    outputToken: selectedOutputToken,
+    onTransactionDataChange,
+    initialInputValue,
+    onInputValueChange
+  })
+
+  const { data: coins } = useArtistCoins()
+  const artistCoins: TokenInfo[] = useMemo(() => {
+    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
+  }, [coins])
+
+  const totalAvailableTokens = useMemo(() => {
+    return [...(availableOutputTokens ?? []), ...artistCoins].filter(
+      (token, index, arr) =>
+        arr.findIndex((t) => t.symbol === token.symbol) === index
+    ) // Remove duplicates
+  }, [availableOutputTokens, artistCoins])
+
+  // Generic token change handler with automatic swapping when only 2 tokens are available
+  const createTokenChangeHandler = useCallback(
+    (
+      primaryCallback: (token: TokenInfo) => void,
+      secondaryCallback?: (token: TokenInfo) => void
+    ) =>
+      (token: TokenInfo) => {
+        primaryCallback(token)
+
+        // If there are only 2 total available tokens, automatically set the other token
+        if (totalAvailableTokens.length === 2) {
+          const otherToken = totalAvailableTokens.find(
+            (t) => t.symbol !== token.symbol
+          )
+          if (otherToken && secondaryCallback) {
+            secondaryCallback(otherToken)
+          }
         }
-      }
-    },
-    [onInputTokenChange, onOutputTokenChange, availableTokens]
+      },
+    [totalAvailableTokens]
   )
 
-  const handleOutputTokenChange = useCallback(
-    (symbol: string) => {
-      onOutputTokenChange?.(symbol)
-
-      // If there are only 2 available tokens, automatically set the other as input
-      if (availableTokens?.length === 2) {
-        const otherToken = availableTokens.find(
-          (token) => token.symbol !== symbol
-        )
-        if (otherToken) {
-          onInputTokenChange?.(otherToken.symbol)
+  const handleInputTokenChange = useMemo(
+    () =>
+      createTokenChangeHandler(
+        (token) => {
+          setSelectedInputToken(token)
+          onInputTokenChange?.(token.symbol)
+        },
+        (token) => {
+          setSelectedOutputToken(token)
+          onOutputTokenChange?.(token.symbol)
         }
-      }
-    },
-    [onInputTokenChange, onOutputTokenChange, availableTokens]
+      ),
+    [createTokenChangeHandler, onInputTokenChange, onOutputTokenChange]
   )
+
+  const handleOutputTokenChange = useMemo(
+    () =>
+      createTokenChangeHandler(
+        (token) => {
+          setSelectedOutputToken(token)
+          onOutputTokenChange?.(token.symbol)
+        },
+        (token) => {
+          setSelectedInputToken(token)
+          onInputTokenChange?.(token.symbol)
+        }
+      ),
+    [createTokenChangeHandler, onInputTokenChange, onOutputTokenChange]
+  )
+
+  // Track if an exchange rate has ever been successfully fetched
+  const hasRateEverBeenFetched = useRef(false)
+  if (currentExchangeRate !== null) {
+    hasRateEverBeenFetched.current = true
+  }
+
+  if (!tokenPair) return null
+
+  // Show initial loading state if balance is loading,
+  // OR if exchange rate is loading AND we've never fetched a rate before.
+  const isInitialLoading =
+    isBalanceLoading ||
+    (isExchangeRateLoading && !hasRateEverBeenFetched.current)
 
   return (
-    <SwapTab
-      inputToken={baseToken}
-      outputToken={quoteToken}
-      onTransactionDataChange={onTransactionDataChange}
-      isDefault={false}
-      tab='convert'
-      error={error}
-      errorMessage={errorMessage}
-      tooltipPlacement='right'
-      initialInputValue={initialInputValue}
-      onInputValueChange={onInputValueChange}
-      availableInputTokens={availableInputTokens}
-      availableOutputTokens={availableOutputTokens}
-      onInputTokenChange={handleInputTokenChange}
-      onOutputTokenChange={handleOutputTokenChange}
-      onChangeSwapDirection={handleChangeSwapDirection}
-    />
+    <Flex direction='column' gap='xl'>
+      {isInitialLoading ? (
+        <SwapFormSkeleton />
+      ) : (
+        <>
+          <InputTokenSection
+            title={buySellMessages.youPay}
+            tokenInfo={selectedInputToken}
+            amount={inputAmount}
+            onAmountChange={handleInputAmountChange}
+            onMaxClick={handleMaxClick}
+            availableBalance={availableBalance}
+            error={error}
+            errorMessage={errorMessage}
+            availableTokens={availableInputTokens}
+            onTokenChange={handleInputTokenChange}
+          />
+          <OutputTokenSection
+            tokenInfo={selectedOutputToken}
+            amount={outputAmount}
+            onAmountChange={handleOutputAmountChange}
+            availableBalance={0}
+            exchangeRate={currentExchangeRate}
+            tokenPrice={tokenPrice}
+            isTokenPriceLoading={isTokenPriceLoading}
+            tokenPriceDecimalPlaces={decimalPlaces}
+            availableTokens={totalAvailableTokens}
+            onTokenChange={handleOutputTokenChange}
+            isArtistCoinsEnabled={isArtistCoinsEnabled}
+          />
+        </>
+      )}
+    </Flex>
   )
 }

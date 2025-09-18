@@ -1,5 +1,11 @@
-import { useState, useEffect, useContext, useMemo } from 'react'
+import { useState, useEffect, useContext, useMemo, useCallback } from 'react'
 
+import {
+  useCurrentAccountUser,
+  useUserCoins,
+  useTokens,
+  useTokenPair
+} from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
@@ -14,15 +20,11 @@ import {
   BuySellTab,
   Screen,
   useTokenStates,
-  useCurrentTokenPair,
-  useAvailableTokens,
-  useSupportedTokenPairs,
-  useTokens
+  useCurrentTokenPair
 } from '@audius/common/store'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
-import { ExternalTextLink } from 'components/link'
 import { ModalLoading } from 'components/modal-loading'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -34,18 +36,22 @@ import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
 
-const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
-
 type BuySellFlowProps = {
   onClose: () => void
   openAddCashModal: () => void
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
+  initialTicker?: string
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
-  const { onClose, openAddCashModal, onScreenChange, onLoadingStateChange } =
-    props
+  const {
+    onClose,
+    openAddCashModal,
+    onScreenChange,
+    onLoadingStateChange,
+    initialTicker
+  } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
   const {
@@ -55,12 +61,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     trackAddFundsClicked
   } = useBuySellAnalytics()
 
-  // Get tokens and token pairs from API
+  // Get tokens from API
   const { tokens, isLoading: tokensLoading } = useTokens()
-  const { pairs: supportedTokenPairs, isLoading: pairsLoading } =
-    useSupportedTokenPairs()
-
-  const isTokenDataLoading = tokensLoading || pairsLoading
 
   const { currentScreen, setCurrentScreen } = useBuySellScreen({
     onScreenChange
@@ -100,19 +102,14 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const location = useLocation()
   const pathname = getPathname(location)
-  const match = matchPath<{ mint: string }>(pathname, {
+  const match = matchPath<{ ticker: string }>(pathname, {
     path: ASSET_DETAIL_PAGE,
     exact: true
   })
-  const pairFromLocation =
-    match?.params.mint &&
-    supportedTokenPairs.find(
-      (pair) =>
-        pair.baseToken.address === match.params.mint &&
-        pair.quoteToken.symbol === 'USDC'
-    )
-
-  const selectedPair = pairFromLocation || supportedTokenPairs[0]
+  const { data: selectedPair } = useTokenPair({
+    baseSymbol: initialTicker ?? match?.params.ticker,
+    quoteSymbol: 'USDC'
+  })
 
   // Use custom hooks for token state management
   const {
@@ -137,20 +134,58 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     resetTransactionData()
   }
 
-  // Get all available tokens
-  const availableTokens = useAvailableTokens({
-    tokens,
-    supportedTokenPairs,
-    isTokenDataLoading
+  // Get all available tokens (simplified since we have all tokens now)
+  const availableTokens = useMemo(() => {
+    return tokensLoading ? [] : Object.values(tokens)
+  }, [tokens, tokensLoading])
+
+  // Get current user and their coin balances
+  const { data: currentUser } = useCurrentAccountUser()
+  const { data: userCoins } = useUserCoins({
+    userId: currentUser?.user_id ?? null
   })
+
+  // Create a helper to check if user has positive balance for a token
+  const hasPositiveBalance = useCallback(
+    (tokenAddress: string): boolean => {
+      if (!userCoins) return false
+      const userCoin = userCoins.find((coin) => coin.mint === tokenAddress)
+      return userCoin ? userCoin.balance > 0 : false
+    },
+    [userCoins]
+  )
+
+  // Create filtered token lists for each tab (unified filtering approach)
+  const availableInputTokensForSell = useMemo(() => {
+    return availableTokens.filter(
+      (t) =>
+        t.symbol !== baseTokenSymbol &&
+        t.symbol !== 'USDC' &&
+        hasPositiveBalance(t.address)
+    )
+  }, [availableTokens, baseTokenSymbol, hasPositiveBalance])
+
+  const availableInputTokensForConvert = useMemo(() => {
+    return availableTokens.filter(
+      (t) =>
+        t.symbol !== baseTokenSymbol &&
+        t.symbol !== quoteTokenSymbol &&
+        hasPositiveBalance(t.address)
+    )
+  }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
+
+  const availableOutputTokensForConvert = useMemo(() => {
+    return availableTokens.filter(
+      (t) => t.symbol !== quoteTokenSymbol && t.symbol !== baseTokenSymbol
+    )
+  }, [availableTokens, quoteTokenSymbol, baseTokenSymbol])
 
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
     baseTokenSymbol,
     quoteTokenSymbol,
     availableTokens,
-    selectedPair,
-    supportedTokenPairs
+    selectedPair
   })
 
   const swapTokens = useMemo(() => {
@@ -384,7 +419,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     return <ModalLoading />
   }
 
-  if (isTokenDataLoading) {
+  if (tokensLoading) {
     return <ModalLoading noText />
   }
 
@@ -425,9 +460,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.sell}
               onInputValueChange={handleTabInputValueChange}
-              availableInputTokens={availableTokens.filter(
-                (t) => t.symbol !== baseTokenSymbol && t.symbol !== 'USDC'
-              )}
+              availableInputTokens={availableInputTokensForSell}
               onInputTokenChange={handleInputTokenChange}
             />
           ) : isArtistCoinsEnabled && currentTokenPair ? (
@@ -438,7 +471,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               errorMessage={displayErrorMessage}
               initialInputValue={tabInputValues.convert}
               onInputValueChange={handleTabInputValueChange}
-              availableTokens={availableTokens}
+              availableInputTokens={availableInputTokensForConvert}
+              availableOutputTokens={availableOutputTokensForConvert}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
             />
@@ -459,16 +493,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               >
                 {messages.addCash}
               </TextLink>
-            </Hint>
-          ) : null}
-
-          {hasSufficientBalance &&
-          (activeTab !== 'convert' || !isArtistCoinsEnabled) ? (
-            <Hint>
-              {messages.helpCenter}{' '}
-              <ExternalTextLink to={WALLET_GUIDE_URL} variant='visible'>
-                {messages.walletGuide}
-              </ExternalTextLink>
             </Hint>
           ) : null}
 

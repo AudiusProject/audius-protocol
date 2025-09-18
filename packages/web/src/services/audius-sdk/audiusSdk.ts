@@ -31,9 +31,6 @@ export const initSdk = async () => {
   const solanaRelay = new SolanaRelay(
     new Configuration({
       basePath: '/solana',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       middleware: [
         {
           pre: async (context) => {

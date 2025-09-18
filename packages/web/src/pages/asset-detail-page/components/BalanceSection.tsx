@@ -11,12 +11,21 @@ import {
   useReceiveTokensModal,
   useSendTokensModal
 } from '@audius/common/store'
-import { Artwork, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import {
+  Artwork,
+  Box,
+  Button,
+  Flex,
+  Paper,
+  Text,
+  useTheme
+} from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { useBuySellRegionSupport } from 'components/buy-sell-modal'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
-import { SendTokensModal } from 'components/send-tokens-modal'
 import Skeleton from 'components/skeleton/Skeleton'
+import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
@@ -65,8 +74,9 @@ const ZeroBalanceState = ({
   ticker,
   logoURI,
   onBuy,
-  onReceive
-}: BalanceStateProps) => {
+  onReceive,
+  isBuySellSupported
+}: BalanceStateProps & { isBuySellSupported: boolean }) => {
   return (
     <>
       <Flex gap='s' alignItems='center'>
@@ -91,9 +101,24 @@ const ZeroBalanceState = ({
         </Text>
       </Paper>
       <Flex gap='s'>
-        <Button variant='primary' fullWidth onClick={onBuy}>
-          {walletMessages.buy}
-        </Button>
+        <Tooltip
+          disabled={isBuySellSupported}
+          text={walletMessages.buySellNotSupported}
+          color='secondary'
+          placement='top'
+          shouldWrapContent={false}
+        >
+          <Box w='100%'>
+            <Button
+              variant='primary'
+              fullWidth
+              onClick={onBuy}
+              disabled={!isBuySellSupported}
+            >
+              {walletMessages.buy}
+            </Button>
+          </Box>
+        </Tooltip>
         <Button variant='secondary' fullWidth onClick={onReceive}>
           {walletMessages.receive}
         </Button>
@@ -108,8 +133,9 @@ const HasBalanceState = ({
   onBuy,
   onSend,
   onReceive,
-  mint
-}: BalanceStateProps & { mint: string }) => {
+  mint,
+  isBuySellSupported
+}: BalanceStateProps & { mint: string; isBuySellSupported: boolean }) => {
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
@@ -146,9 +172,24 @@ const HasBalanceState = ({
         </Flex>
       </Flex>
       <Flex direction='column' gap='s'>
-        <Button variant='secondary' fullWidth onClick={onBuy}>
-          {walletMessages.buySell}
-        </Button>
+        <Tooltip
+          disabled={isBuySellSupported}
+          text={walletMessages.buySellNotSupported}
+          color='secondary'
+          placement='top'
+          shouldWrapContent={false}
+        >
+          <Box w='100%'>
+            <Button
+              variant='secondary'
+              fullWidth
+              onClick={onBuy}
+              disabled={!isBuySellSupported}
+            >
+              {walletMessages.buySell}
+            </Button>
+          </Box>
+        </Tooltip>
         <Flex gap='s'>
           <Button variant='secondary' fullWidth onClick={onSend}>
             {walletMessages.send}
@@ -174,6 +215,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { data: usdcBalance } = useUSDCBalance()
 
   const coin = coinInsights?.[0]
+  const { isBuySellSupported } = useBuySellRegionSupport()
 
   // Modal hooks
   const { onOpen: openBuySellModal } = useBuySellModal()
@@ -226,32 +268,30 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const logoURI = coin.logoUri
 
   return (
-    <>
-      <Paper ph='xl' pv='l'>
-        <Flex direction='column' gap='l' w='100%'>
-          {!tokenBalance?.balance ||
-          Number(tokenBalance.balance.toString()) === 0 ? (
-            <ZeroBalanceState
-              ticker={ticker}
-              logoURI={logoURI}
-              onBuy={handleAddCash}
-              onReceive={handleReceive}
-            />
-          ) : (
-            <HasBalanceState
-              ticker={ticker}
-              logoURI={logoURI}
-              onBuy={handleBuySell}
-              onSend={handleSend}
-              onReceive={handleReceive}
-              mint={mint}
-            />
-          )}
-        </Flex>
-      </Paper>
-
-      <SendTokensModal />
-    </>
+    <Paper ph='xl' pv='l'>
+      <Flex direction='column' gap='l' w='100%'>
+        {!tokenBalance?.balance ||
+        Number(tokenBalance.balance.toString()) === 0 ? (
+          <ZeroBalanceState
+            ticker={ticker}
+            logoURI={logoURI}
+            onBuy={handleAddCash}
+            onReceive={handleReceive}
+            isBuySellSupported={isBuySellSupported}
+          />
+        ) : (
+          <HasBalanceState
+            ticker={ticker}
+            logoURI={logoURI}
+            onBuy={handleBuySell}
+            onSend={handleSend}
+            onReceive={handleReceive}
+            mint={mint}
+            isBuySellSupported={isBuySellSupported}
+          />
+        )}
+      </Flex>
+    </Paper>
   )
 }
 

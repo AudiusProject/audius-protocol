@@ -1,4 +1,9 @@
-import { Id, Coin } from '@audius/sdk'
+import {
+  Id,
+  Coin,
+  GetCoinsSortMethodEnum,
+  GetCoinsSortDirectionEnum
+} from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { ID } from '~/models'
@@ -13,9 +18,12 @@ export type UseArtistCoinsParams = {
   owner_id?: ID[]
   limit?: number
   offset?: number
+  sortMethod?: GetCoinsSortMethodEnum
+  sortDirection?: GetCoinsSortDirectionEnum
+  query?: string
 }
 
-export const getArtistCoinsQueryKey = (params: UseArtistCoinsParams) =>
+export const getArtistCoinsQueryKey = (params?: UseArtistCoinsParams) =>
   [QUERY_KEYS.coins, 'list', params] as unknown as QueryKey<Coin[]>
 
 export const useArtistCoins = <TResult = Coin[]>(
@@ -38,7 +46,10 @@ export const useArtistCoins = <TResult = Coin[]>(
         mint: params.mint,
         ownerId: encodedOwnerIds,
         limit: params.limit,
-        offset: params.offset
+        offset: params.offset,
+        sortMethod: params.sortMethod,
+        sortDirection: params.sortDirection,
+        query: params.query
       })
 
       return response?.data
@@ -47,3 +58,6 @@ export const useArtistCoins = <TResult = Coin[]>(
     enabled: options?.enabled !== false
   })
 }
+
+// Export enum types for use in other components
+export { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum }

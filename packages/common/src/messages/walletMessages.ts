@@ -16,7 +16,7 @@ export const walletMessages = {
   cashTransferDescription:
     'Transfer your cash balance to your bank account or debit card. $5 minimum.',
   back: 'Back',
-  tryAgain: 'Try Again',
+  tryAgain: 'Try Again?',
   error: 'An error occured.',
   close: 'Close',
 
@@ -40,6 +40,18 @@ export const walletMessages = {
     'By proceeding, you accept full responsibility for any errors, including the risk of irreversible loss of funds. Transfers are final and cannot be reversed.',
   iHaveReviewed:
     'I have reviewed the information and understand that transfers are final.',
+  sent: 'Sent',
+  sendTokensAmount: 'Amount',
+  sendTokensAmountToSend: 'Amount to Send',
+  sendTokensDestinationAddress: 'Destination Address',
+  sendTokensWalletAddress: 'Wallet Address',
+  sendTokensAmountRequired: 'Amount is required',
+  sendTokensAmountInsufficient: 'Insufficient balance',
+  sendTokensInvalidAddress: 'A valid wallet address is required',
+  sendTokensInvalidAmount: 'Invalid amount',
+  sendTokensDisclaimer:
+    'By proceeding, you accept full responsibility for any errors, including the risk of irreversible loss of funds. Transfers are final and cannot be reversed.',
+  sendTokensTransactionInProgress: 'Transaction in Progress',
 
   // PrepareTransfer messages
   holdOn: 'Hold on!',
@@ -55,6 +67,7 @@ export const walletMessages = {
   viewOnExplorer: 'View on Solana Block Explorer',
   transactionComplete: 'Your transaction is complete!',
   done: 'Done',
+  confirm: 'Confirm',
 
   // Error messages
   errors: {
@@ -66,6 +79,8 @@ export const walletMessages = {
     minCashTransfer: 'A minimum of $5 is required for cash withdrawals.',
     pleaseConfirm:
       'Please confirm you have reviewed this transaction and accept responsibility for errors.',
+    youMustConfirm:
+      'You must confirm that you’ve reviewed and understand before continuing.',
     unableToLoadBalance: 'Unable to load balance information'
   },
 
@@ -75,6 +90,7 @@ export const walletMessages = {
   buy: 'Buy',
   send: 'Send',
   receive: 'Receive',
+  buySellNotSupported: 'This is not supported in your region',
 
   // ReceiveTokensModal messages
   receiveTokensTitle: 'receive',
@@ -86,5 +102,21 @@ export const walletMessages = {
   receiveTokensCopied: 'Copied to Clipboard!',
   becomeMemberTitle: 'Become a member',
   becomeMemberBody: (coinTicker: string) =>
-    `Buy ${coinTicker} to gain access to exclusive members-only perks!`
+    `Buy ${coinTicker} to gain access to exclusive members-only perks!`,
+
+  // Artist Coins messages
+  artistCoins: {
+    title: 'Discover Artist Coins',
+    searchPlaceholder: 'Search Artist Coins',
+    noCoins: 'No results found',
+    noCoinsDescription: 'No Artist Coins were found matching your search.',
+    sortTitle: 'SORT',
+    sortAscending: 'Ascending',
+    sortDescending: 'Descending',
+    sortPrice: 'Price',
+    sortMarketCap: 'Market Cap',
+    sortVolume: 'Volume',
+    sortLaunchDate: 'Launch Date',
+    sortHolders: 'Holders'
+  }
 }

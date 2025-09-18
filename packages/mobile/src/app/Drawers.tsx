@@ -38,6 +38,8 @@ import { PremiumContentPurchaseDrawer } from 'app/components/premium-content-pur
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
+import { ReceiveTokensDrawer } from 'app/components/receive-tokens-drawer'
+import { SendTokensDrawer } from 'app/components/send-tokens-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { SignOutConfirmationDrawer } from 'app/components/sign-out-confirmation-drawer'
 import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
@@ -46,6 +48,7 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
 import { WithdrawUSDCDrawer } from 'app/components/withdraw-usdc-drawer/WithdrawUSDCDrawer'
+import { AssetInsightsOverflowMenu } from 'app/screens/coin-details-screen/components/AssetInsightsOverflowMenu'
 import { ReplaceTrackProgressDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
@@ -138,7 +141,9 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ArtistPick: ArtistPickConfirmationDrawer,
   DownloadTrackArchive: DownloadTrackArchiveDrawer,
   HostRemixContest: HostRemixContestDrawer,
-  WithdrawUSDCModal: WithdrawUSDCDrawer
+  WithdrawUSDCModal: WithdrawUSDCDrawer,
+  ReceiveTokensModal: ReceiveTokensDrawer,
+  SendTokensModal: SendTokensDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -162,7 +167,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   SupportersInfo: SupportersInfoDrawer,
   Welcome: WelcomeDrawer,
   ConnectNewWallet: ConnectNewWalletDrawer,
-  PickWinners: PickWinnersDrawer
+  PickWinners: PickWinnersDrawer,
+  AssetInsightsOverflowMenu
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

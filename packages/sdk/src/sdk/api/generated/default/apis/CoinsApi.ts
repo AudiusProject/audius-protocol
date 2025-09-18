@@ -20,6 +20,8 @@ import type {
   CoinMembersResponse,
   CoinResponse,
   CoinsResponse,
+  CreateCoinRequest,
+  CreateCoinResponse,
 } from '../models';
 import {
     CoinInsightsResponseFromJSON,
@@ -30,10 +32,23 @@ import {
     CoinResponseToJSON,
     CoinsResponseFromJSON,
     CoinsResponseToJSON,
+    CreateCoinRequestFromJSON,
+    CreateCoinRequestToJSON,
+    CreateCoinResponseFromJSON,
+    CreateCoinResponseToJSON,
 } from '../models';
+
+export interface CreateCoinOperationRequest {
+    userId: string;
+    createCoinRequest: CreateCoinRequest;
+}
 
 export interface GetCoinRequest {
     mint: string;
+}
+
+export interface GetCoinByTickerRequest {
+    ticker: string;
 }
 
 export interface GetCoinInsightsRequest {
@@ -51,14 +66,59 @@ export interface GetCoinsRequest {
     mint?: Array<string>;
     ownerId?: Array<string>;
     ticker?: Array<string>;
+    query?: string;
     offset?: number;
     limit?: number;
+    sortMethod?: GetCoinsSortMethodEnum;
+    sortDirection?: GetCoinsSortDirectionEnum;
 }
 
 /**
  * 
  */
 export class CoinsApi extends runtime.BaseAPI {
+
+    /**
+     * @hidden
+     * Creates a new artist coin
+     */
+    async createCoinRaw(params: CreateCoinOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateCoinResponse>> {
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling createCoin.');
+        }
+
+        if (params.createCoinRequest === null || params.createCoinRequest === undefined) {
+            throw new runtime.RequiredError('createCoinRequest','Required parameter params.createCoinRequest was null or undefined when calling createCoin.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/coins`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateCoinRequestToJSON(params.createCoinRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreateCoinResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Creates a new artist coin
+     */
+    async createCoin(params: CreateCoinOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateCoinResponse> {
+        const response = await this.createCoinRaw(params, initOverrides);
+        return await response.value();
+    }
 
     /**
      * @hidden
@@ -88,6 +148,37 @@ export class CoinsApi extends runtime.BaseAPI {
      */
     async getCoin(params: GetCoinRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
         const response = await this.getCoinRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets information about a specific coin by its ticker
+     */
+    async getCoinByTickerRaw(params: GetCoinByTickerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoinResponse>> {
+        if (params.ticker === null || params.ticker === undefined) {
+            throw new runtime.RequiredError('ticker','Required parameter params.ticker was null or undefined when calling getCoinByTicker.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/coins/ticker/{ticker}`.replace(`{${"ticker"}}`, encodeURIComponent(String(params.ticker))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoinResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets information about a specific coin by its ticker
+     */
+    async getCoinByTicker(params: GetCoinByTickerRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoinResponse> {
+        const response = await this.getCoinByTickerRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -184,12 +275,24 @@ export class CoinsApi extends runtime.BaseAPI {
             queryParameters['ticker'] = params.ticker;
         }
 
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
+        }
+
         if (params.offset !== undefined) {
             queryParameters['offset'] = params.offset;
         }
 
         if (params.limit !== undefined) {
             queryParameters['limit'] = params.limit;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -222,3 +325,22 @@ export const GetCoinMembersSortDirectionEnum = {
     Desc: 'desc'
 } as const;
 export type GetCoinMembersSortDirectionEnum = typeof GetCoinMembersSortDirectionEnum[keyof typeof GetCoinMembersSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetCoinsSortMethodEnum = {
+    MarketCap: 'market_cap',
+    Volume: 'volume',
+    Price: 'price',
+    CreatedAt: 'created_at',
+    Holder: 'holder'
+} as const;
+export type GetCoinsSortMethodEnum = typeof GetCoinsSortMethodEnum[keyof typeof GetCoinsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetCoinsSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetCoinsSortDirectionEnum = typeof GetCoinsSortDirectionEnum[keyof typeof GetCoinsSortDirectionEnum];

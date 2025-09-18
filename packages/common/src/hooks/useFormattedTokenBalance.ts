@@ -2,11 +2,10 @@ import { useMemo } from 'react'
 
 import { FixedDecimal } from '@audius/fixed-decimal'
 
-import { useTokenBalance, useTokenPrice } from '../api'
-import { Status } from '../models/Status'
+import { useTokenBalance, useArtistCoins } from '../api'
 import {
   getTokenDecimalPlaces,
-  formatCurrency,
+  formatCurrencyWithSubscript,
   isNullOrUndefined
 } from '../utils'
 
@@ -29,17 +28,17 @@ export const useFormattedTokenBalance = (
   mint: string,
   locale: string = 'en-US'
 ): UseFormattedTokenBalanceReturn => {
-  const { data: tokenBalance, status: balanceStatus } = useTokenBalance({
-    mint
-  })
+  const { data: tokenBalance, isPending: isTokenBalanceLoading } =
+    useTokenBalance({
+      mint
+    })
 
-  const isTokenBalanceLoading = balanceStatus === Status.LOADING
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useTokenPrice(mint)
+    useArtistCoins({ mint: [mint] })
 
   const balance = tokenBalance?.balance
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = tokenPriceData?.[0]?.price || null
   const hasFetchedTokenBalance = !isNullOrUndefined(balance)
 
   // Format mint balance with dynamic decimal places
@@ -65,14 +64,14 @@ export const useFormattedTokenBalance = (
     if (!tokenPrice) return '$0.00'
 
     const priceNumber = Number(new FixedDecimal(tokenPrice).toString())
-    return formatCurrency(priceNumber)
+    return formatCurrencyWithSubscript(priceNumber)
   }, [tokenPrice])
 
   return {
     tokenBalance: balance ?? null,
     tokenBalanceFormatted,
     isTokenBalanceLoading,
-    tokenPrice,
+    tokenPrice: tokenPrice?.toString() ?? null,
     tokenDollarValue,
     isTokenPriceLoading
   }

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useTokenBalance, useTokenExchangeRate, useTokenPrice } from '~/api'
+import { useTokenBalance, useTokenExchangeRate, useArtistCoin } from '~/api'
 
 import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
 import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
@@ -115,9 +116,11 @@ export const useTokenSwapForm = ({
     })
 
   // Get token price for USD-based limit calculations
-  const { data: tokenPriceData } = useTokenPrice(inputToken.address)
+  const { data: tokenPriceData } = useArtistCoin({ mint: inputToken.address })
   const tokenPrice = tokenPriceData?.price
-    ? parseFloat(tokenPriceData.price)
+    ? Number(
+        new FixedDecimal(tokenPriceData.price, inputToken.decimals).toString()
+      )
     : null
 
   // Calculate min/max based on USD limits and current price
@@ -180,6 +183,9 @@ export const useTokenSwapForm = ({
     }
   }, [tokenValidationKey, values.inputAmount, setFieldTouched, formik])
 
+  // Track the source of updates to prevent infinite loops between input and output updating the other
+  const updateSourceRef = useRef<'input' | 'output' | null>(null)
+
   // Calculate the numeric value of the input amount
   const numericInputAmount = useMemo(() => {
     if (!values.inputAmount) return 0
@@ -192,6 +198,8 @@ export const useTokenSwapForm = ({
     return getSafeAmountForExchangeRate(numericInputAmount)
   }, [numericInputAmount])
 
+  // NOTE: This seems to be running too much when the input amount changes.
+  // This is causing bad updates when the input changes, but not the output.
   const {
     data: exchangeRateData,
     isLoading: isExchangeRateLoading,
@@ -204,33 +212,40 @@ export const useTokenSwapForm = ({
     inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
   })
 
-  // Get a static display rate using base amount of 1 for consistent display
-  const { data: displayExchangeRateData } = useTokenExchangeRate({
-    inputMint,
-    outputMint,
-    inputDecimals: inputToken.decimals,
-    outputDecimals: outputToken.decimals,
-    inputAmount: 1
-  })
+  const exchangeRateRef = useRef<number>(0)
+
+  useEffect(() => {
+    if (
+      !isExchangeRateLoading &&
+      exchangeRateData?.rate !== undefined &&
+      exchangeRateData.rate !== exchangeRateRef.current
+    ) {
+      exchangeRateRef.current = exchangeRateData.rate
+    }
+  }, [exchangeRateData, isExchangeRateLoading])
+
+  const currentExchangeRate = exchangeRateRef.current
 
   // Update output amount when exchange rate or input amount changes
   useEffect(() => {
-    if (numericInputAmount <= 0) {
-      setFieldValue('outputAmount', '0', false)
+    // Only update output if the last update came from input
+    if (updateSourceRef.current !== 'input') {
       return
     }
 
-    if (!isExchangeRateLoading && exchangeRateData) {
-      // Use the actual input amount for output calculation, not the safe amount
-      const newAmount = exchangeRateData.rate * numericInputAmount
-      setFieldValue('outputAmount', newAmount.toString(), false)
+    if (numericInputAmount <= 0) {
+      setFieldValue('outputAmount', '', false)
+      updateSourceRef.current = null // Reset after handling
+      return
     }
-  }, [
-    numericInputAmount,
-    exchangeRateData,
-    isExchangeRateLoading,
-    setFieldValue
-  ])
+
+    if (currentExchangeRate) {
+      // Use the actual input amount for output calculation, not the safe amount
+      const newAmount = currentExchangeRate * numericInputAmount
+      setFieldValue('outputAmount', newAmount.toString(), false)
+      updateSourceRef.current = null // Reset after successful update
+    }
+  }, [numericInputAmount, currentExchangeRate, setFieldValue])
 
   const numericOutputAmount = useMemo(() => {
     if (!values.outputAmount) return 0
@@ -238,10 +253,43 @@ export const useTokenSwapForm = ({
     return isNaN(parsed) ? 0 : parsed
   }, [values.outputAmount])
 
-  const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
-  const displayExchangeRate = displayExchangeRateData
-    ? displayExchangeRateData.rate
-    : null
+  // Derive display rate from the main exchange rate data to avoid duplicate API calls
+  const displayExchangeRate = useMemo(() => {
+    if (!exchangeRateData) return null
+    // Calculate rate for display purposes (rate per 1 unit)
+    return exchangeRateData.rate / (exchangeRateData.inputAmount.uiAmount || 1)
+  }, [exchangeRateData])
+
+  // Update input amount when output amount changes (reverse calculation)
+  useEffect(() => {
+    // Only update input if the last update came from output
+    if (updateSourceRef.current !== 'output') {
+      return
+    }
+
+    if (numericOutputAmount <= 0) {
+      setFieldValue('inputAmount', '', true)
+      setFieldTouched('inputAmount', true, false)
+      onInputValueChange?.('')
+      updateSourceRef.current = null // Reset after handling
+      return
+    }
+
+    if (currentExchangeRate) {
+      const calculatedInput = numericOutputAmount / currentExchangeRate
+      const calculatedInputString = calculatedInput.toString()
+      setFieldValue('inputAmount', calculatedInputString, true)
+      setFieldTouched('inputAmount', true, false)
+      onInputValueChange?.(calculatedInputString)
+      updateSourceRef.current = null // Reset after successful update
+    }
+  }, [
+    numericOutputAmount,
+    currentExchangeRate,
+    setFieldValue,
+    setFieldTouched,
+    onInputValueChange
+  ])
 
   // Only show error if field has been touched, has a value, and has an error
   // This prevents showing "Required" error when field is empty during typing
@@ -263,37 +311,38 @@ export const useTokenSwapForm = ({
     availableBalance
   ])
 
-  useEffect(() => {
-    if (onTransactionDataChange) {
-      const isValid =
-        numericInputAmount > 0 && !errors.inputAmount && !isBalanceLoading
+  // Memoize the transaction data to prevent excessive callbacks
+  const transactionData = useMemo(
+    () => ({
+      inputAmount: numericInputAmount,
+      outputAmount: numericOutputAmount,
+      isValid:
+        numericInputAmount > 0 && !errors.inputAmount && !isBalanceLoading,
+      error,
+      isInsufficientBalance,
+      exchangeRate: currentExchangeRate
+    }),
+    [
+      numericInputAmount,
+      numericOutputAmount,
+      errors.inputAmount,
+      error,
+      isInsufficientBalance,
+      currentExchangeRate,
+      isBalanceLoading
+    ]
+  )
 
-      onTransactionDataChange({
-        inputAmount: numericInputAmount,
-        outputAmount: numericOutputAmount,
-        isValid,
-        error,
-        isInsufficientBalance,
-        exchangeRate: currentExchangeRate
-      })
-    }
-  }, [
-    numericInputAmount,
-    numericOutputAmount,
-    errors.inputAmount,
-    error, // Use the filtered error
-    isExchangeRateLoading,
-    onTransactionDataChange,
-    isInsufficientBalance,
-    currentExchangeRate,
-    isBalanceLoading
-  ])
+  useEffect(() => {
+    onTransactionDataChange?.(transactionData)
+  }, [transactionData, onTransactionDataChange])
 
   // Handle input changes
   const handleInputAmountChange = useCallback(
     (value: string) => {
       // Allow only valid number input with better decimal handling
       if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
+        updateSourceRef.current = 'input'
         setFieldValue('inputAmount', value, true)
         setFieldTouched('inputAmount', true, false)
         // Call the persistence callback
@@ -303,12 +352,25 @@ export const useTokenSwapForm = ({
     [setFieldValue, setFieldTouched, onInputValueChange]
   )
 
+  // Handle output amount changes (reverse calculation)
+  const handleOutputAmountChange = useCallback(
+    (value: string) => {
+      // Allow only valid number input with better decimal handling
+      if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
+        updateSourceRef.current = 'output'
+        setFieldValue('outputAmount', value, false)
+      }
+    },
+    [setFieldValue]
+  )
+
   // Handle max button click
   const handleMaxClick = useCallback(() => {
     const balance = Number(inputTokenBalanceData?.balance ?? 0)
     if (balance !== undefined) {
       const finalAmount = Math.min(balance, max)
       const finalAmountString = finalAmount.toString()
+      updateSourceRef.current = 'input'
       setFieldValue('inputAmount', finalAmountString, true)
       setFieldTouched('inputAmount', true, false)
       // Call the persistence callback
@@ -335,6 +397,7 @@ export const useTokenSwapForm = ({
     currentExchangeRate,
     displayExchangeRate,
     handleInputAmountChange,
+    handleOutputAmountChange,
     handleMaxClick,
     formik,
     inputToken,
