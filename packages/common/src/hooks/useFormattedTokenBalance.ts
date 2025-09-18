@@ -29,16 +29,13 @@ export const useFormattedTokenBalance = (
   locale: string = 'en-US'
 ): UseFormattedTokenBalanceReturn => {
   const { data: tokenBalance, isPending: isTokenBalanceLoading } =
-    useTokenBalance({
-      mint
-    })
+    useTokenBalance({ mint })
 
-  const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin(mint)
+  const { data, isPending: isTokenPriceLoading } = useArtistCoin(mint)
 
   const balance = tokenBalance?.balance
 
-  const tokenPrice = tokenPriceData?.price || null
+  const tokenPrice = data?.price
   const hasFetchedTokenBalance = !isNullOrUndefined(balance)
 
   // Format mint balance with dynamic decimal places

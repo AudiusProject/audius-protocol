@@ -15,7 +15,7 @@ export type BalanceSectionProps = {
 
 export const BalanceSection = ({ mint }: BalanceSectionProps) => {
   const { tokenBalanceFormatted } = useFormattedTokenBalance(mint ?? '')
-  const { data: coin } = useArtistCoin(mint ?? '')
+  const { data: coin } = useArtistCoin(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
   return (

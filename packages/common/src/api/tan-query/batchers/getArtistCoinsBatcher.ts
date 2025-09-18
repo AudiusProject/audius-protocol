@@ -14,11 +14,9 @@ export const getArtistCoinsBatcher = memoize(
         const { sdk, queryClient } = context
         if (!mints.length) return []
 
-        const { data } = await sdk.coins.getCoins({
+        const { data: coins } = await sdk.coins.getCoins({
           mint: mints
         })
-
-        const coins = data || []
 
         // Prime individual coin data
         coins.forEach((coin) => {

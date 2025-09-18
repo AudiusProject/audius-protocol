@@ -22,10 +22,10 @@ export const CoinLeaderboardScreen = () => {
   const { params } = useRoute<'CoinLeaderboard'>()
   const { mint } = params
   const reduxMint = useSelector(coinLeaderboardUserListSelectors.getMint)
-  const { data: coin } = useArtistCoin(reduxMint || mint)
+  const { data: coin } = useArtistCoin(reduxMint ?? mint)
 
   const { data, isFetchingNextPage, fetchNextPage, isPending } =
-    useArtistCoinMembers({ mint: reduxMint || mint })
+    useArtistCoinMembers({ mint: reduxMint ?? mint })
 
   useEffect(() => {
     if (mint) {
