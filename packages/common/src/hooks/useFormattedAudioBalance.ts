@@ -19,7 +19,7 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
   const { totalBalance, isLoading: isAudioBalanceLoading } = useAudioBalance()
 
   const { data: audioPriceData, isPending: isAudioPriceLoading } =
-    useArtistCoin({ mint: env.WAUDIO_MINT_ADDRESS })
+    useArtistCoin(env.WAUDIO_MINT_ADDRESS)
   const audioPrice = audioPriceData?.price?.toString() ?? null
   const hasFetchedAudioBalance = !isNullOrUndefined(totalBalance)
   const audioBalance = hasFetchedAudioBalance ? totalBalance : null

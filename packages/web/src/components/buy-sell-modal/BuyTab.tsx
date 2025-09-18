@@ -40,7 +40,7 @@ export const BuyTab = ({
   }, [baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: selectedOutputToken.address })
+    useArtistCoin(selectedOutputToken.address)
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 

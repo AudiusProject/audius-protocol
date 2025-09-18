@@ -1,4 +1,4 @@
-import { useArtistCoinInsights } from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, type MetricData } from '@audius/common/utils'
 
@@ -61,11 +61,7 @@ const MetricRow = ({ metric }: { metric: MetricData }) => {
 }
 
 export const CoinInsightsCard = ({ mint }: { mint: string }) => {
-  const {
-    data: coinInsights,
-    isPending,
-    error
-  } = useArtistCoinInsights({ mint })
+  const { data: coin, isPending, error } = useArtistCoin(mint)
 
   const { onOpen } = useDrawer('AssetInsightsOverflowMenu')
 
@@ -73,11 +69,11 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
     onOpen({ mint })
   }
 
-  if (isPending || !coinInsights) {
+  if (isPending || !coin) {
     return null
   }
 
-  const metrics = createCoinMetrics(coinInsights)
+  const metrics = createCoinMetrics(coin)
 
   return (
     <Paper
@@ -106,7 +102,7 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
         />
       </Flex>
 
-      {error || !coinInsights ? (
+      {error || !coin ? (
         <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
           <Text variant='body' color='subdued'>
             Unable to load insights

@@ -54,7 +54,7 @@ const SendTokensConfirmation = ({
   const { isMobile } = useMedia()
 
   // Get token data and balance using the same hooks as ReceiveTokensModal
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
   const currentBalance = tokenBalance?.balance

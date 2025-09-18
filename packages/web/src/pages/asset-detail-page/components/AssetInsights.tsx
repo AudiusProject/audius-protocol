@@ -1,4 +1,4 @@
-import { useArtistCoinInsights } from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, MetricData } from '@audius/common/utils'
 import { Flex, IconSortDown, IconSortUp, Paper, Text } from '@audius/harmony'
@@ -110,17 +110,13 @@ type AssetInsightsProps = {
 }
 
 export const AssetInsights = ({ mint }: AssetInsightsProps) => {
-  const {
-    data: coinInsights,
-    isPending,
-    error
-  } = useArtistCoinInsights({ mint })
+  const { data: coin, isPending, error } = useArtistCoin(mint)
 
-  if (isPending || !coinInsights) {
+  if (isPending || !coin) {
     return <AssetInsightsSkeleton />
   }
 
-  if (error || !coinInsights) {
+  if (error || !coin) {
     return (
       <Paper
         direction='column'
@@ -150,7 +146,7 @@ export const AssetInsights = ({ mint }: AssetInsightsProps) => {
     )
   }
 
-  const metrics = createCoinMetrics(coinInsights)
+  const metrics = createCoinMetrics(coin)
 
   return (
     <Paper

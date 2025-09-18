@@ -1,5 +1,5 @@
 import {
-  useArtistCoinInsights,
+  useArtistCoin,
   useArtistCoinMembers,
   useUsers
 } from '@audius/common/api'
@@ -57,7 +57,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
   const { data: users, isPending: isUsersPending } = useUsers(
     leaderboardUsers?.map((user) => user.userId)
   )
-  const coinInsights = useArtistCoinInsights({ mint })
+  const coinData = useArtistCoin(mint)
   const dispatch = useDispatch()
   const isPending = isLeaderboardPending || isUsersPending
 
@@ -117,7 +117,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
           >
             <UserProfilePictureList
               users={users ?? []}
-              totalUserCount={coinInsights?.data?.holder}
+              totalUserCount={coinData?.data?.holder}
               limit={isSmallScreen ? 6 : 8}
               disableProfileClick={true}
               disablePopover={true}

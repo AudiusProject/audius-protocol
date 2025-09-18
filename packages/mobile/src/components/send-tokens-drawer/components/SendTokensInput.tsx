@@ -23,7 +23,7 @@ export const SendTokensInput = ({
   initialAmount,
   initialDestinationAddress
 }: SendTokensInputProps) => {
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
   const [amount, setAmount] = useState(

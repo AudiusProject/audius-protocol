@@ -116,7 +116,7 @@ const HasBalanceState = ({
 export const BalanceCard = ({ mint }: { mint: string }) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { data: coin, isPending: coinsLoading } = useArtistCoin({ mint })
+  const { data: coin, isPending: coinsLoading } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
 
   const handleBuy = useCallback(() => {

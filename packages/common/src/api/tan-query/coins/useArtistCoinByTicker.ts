@@ -1,6 +1,7 @@
 import {
   queryOptions,
   useQuery,
+  useQueryClient,
   type QueryFunctionContext
 } from '@tanstack/react-query'
 
@@ -11,6 +12,8 @@ import {
 
 import { QUERY_KEYS } from '../queryKeys'
 
+import { useArtistCoin, getArtistCoinQueryKey } from './useArtistCoin'
+
 export interface UseArtistCoinByTickerParams {
   ticker: string
 }
@@ -18,7 +21,9 @@ export interface UseArtistCoinByTickerParams {
 const getArtistCoinByTickerQueryKey = (ticker: string) =>
   [QUERY_KEYS.coinByTicker, ticker] as const
 
-type FetchArtistCoinByTickerContext = Pick<QueryContextType, 'audiusSdk'>
+type FetchArtistCoinByTickerContext = Pick<QueryContextType, 'audiusSdk'> & {
+  queryClient: any
+}
 
 const getArtistCoinByTickerQueryFn =
   (context: FetchArtistCoinByTickerContext) =>
@@ -33,7 +38,14 @@ const getArtistCoinByTickerQueryFn =
     const response = await sdk.coins.getCoinByTicker({
       ticker
     })
-    return response.data
+    const coin = response.data
+
+    // Prime the artist coin query key if we have the mint
+    if (coin?.mint) {
+      context.queryClient.setQueryData(getArtistCoinQueryKey(coin.mint), coin)
+    }
+
+    return coin?.mint
   }
 
 /**
@@ -56,8 +68,12 @@ export const useArtistCoinByTicker = (
   options?: Partial<ReturnType<typeof getArtistCoinByTickerOptions>>
 ) => {
   const context = useQueryContext()
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const { data: mint } = useQuery({
     ...options,
-    ...getArtistCoinByTickerOptions(context, params)
+    ...getArtistCoinByTickerOptions({ ...context, queryClient }, params)
   })
+
+  return useArtistCoin(mint!)
 }

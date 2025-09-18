@@ -38,9 +38,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
     FeatureFlags.ARTIST_COINS
   )
 
-  const { data: coinData, isPending: coinsDataLoading } = useArtistCoin({
-    mint
-  })
+  const { data: coinData, isPending: coinsDataLoading } = useArtistCoin(mint)
 
   const icon = coinData?.logoUri ?? ''
 

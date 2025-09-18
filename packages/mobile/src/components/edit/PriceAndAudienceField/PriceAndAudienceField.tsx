@@ -28,11 +28,11 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const [{ value: streamConditions }] =
     useField<Nullable<AccessConditions>>('stream_conditions')
 
-  const { data: token } = useArtistCoin({
-    mint: isContentTokenGated(streamConditions)
+  const { data: token } = useArtistCoin(
+    isContentTokenGated(streamConditions)
       ? streamConditions.token_gate.token_mint
       : ''
-  })
+  )
 
   const trackAvailabilityLabels = useMemo(() => {
     if (isContentUSDCPurchaseGated(streamConditions)) {

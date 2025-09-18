@@ -1,4 +1,4 @@
-import { CoinInsights } from '@audius/sdk'
+import { Coin } from '@audius/sdk'
 
 import { formatCurrencyWithMax } from './decimal'
 import { formatCount } from './formatUtil'
@@ -52,27 +52,27 @@ const createMetric = (
   }
 }
 
-export const createCoinMetrics = (coinInsights: CoinInsights): MetricData[] => {
+export const createCoinMetrics = (coin: Coin): MetricData[] => {
   const potentialMetrics = [
     createMetric(
-      formatCurrencyWithMax(coinInsights.price, CURRENCY_FORMAT_MAX),
+      formatCurrencyWithMax(coin.price, CURRENCY_FORMAT_MAX),
       messages.pricePerCoin,
-      coinInsights.priceChange24hPercent
+      coin.priceChange24hPercent
     ),
     createMetric(
-      formatCount(coinInsights.holder || 0),
+      formatCount(coin.holder),
       messages.uniqueHolders,
-      coinInsights.uniqueWallet24hChangePercent
+      coin.uniqueWallet24hChangePercent
     ),
     createMetric(
-      formatCurrencyWithMax(coinInsights.v24hUSD, CURRENCY_FORMAT_MAX),
+      formatCurrencyWithMax(coin.v24hUSD, CURRENCY_FORMAT_MAX),
       messages.volume24hr,
-      coinInsights.v24hChangePercent
+      coin.v24hChangePercent
     ),
     createMetric(
-      formatCount(coinInsights.trade24h),
+      formatCount(coin.trade24h),
       messages.totalTransfers,
-      coinInsights.trade24hChangePercent
+      coin.trade24hChangePercent
     )
   ]
 

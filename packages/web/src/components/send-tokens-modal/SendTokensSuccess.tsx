@@ -42,7 +42,7 @@ const SendTokensSuccess = ({
   onClose
 }: SendTokensSuccessProps) => {
   const { isMobile } = useMedia()
-  const { data: coin } = useArtistCoin({ mint })
+  const { data: coin } = useArtistCoin(mint)
   const { data: tokenBalance } = useTokenBalance({ mint })
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
   const currentBalance = tokenBalance?.balance

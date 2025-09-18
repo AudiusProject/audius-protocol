@@ -45,7 +45,7 @@ export const ConvertTab = ({
   }, [baseToken, quoteToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin({ mint: selectedOutputToken.address })
+    useArtistCoin(selectedOutputToken.address)
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 

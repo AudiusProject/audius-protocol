@@ -38,7 +38,7 @@ const SendTokensModal = () => {
   })
   const [error, setError] = useState<string>('')
 
-  const { data: coin } = useArtistCoin({ mint: mint ?? '' })
+  const { data: coin } = useArtistCoin(mint ?? '')
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
 
   const sendTokensMutation = useSendTokens({ mint: mint ?? '' })

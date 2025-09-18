@@ -36,7 +36,7 @@ export const ReceiveTokensModal = () => {
   const { isMobile } = useMedia()
   const { mint } = data ?? {}
 
-  const { data: coin } = useArtistCoin({ mint: mint ?? '' })
+  const { data: coin } = useArtistCoin(mint ?? '')
   const { data: tokenBalance } = useTokenBalance({ mint: mint ?? '' })
   const { userBankAddress, wallet } = useUserbank(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
