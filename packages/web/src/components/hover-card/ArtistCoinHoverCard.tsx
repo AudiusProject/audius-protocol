@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
-import { useArtistCoin, useTokenBalance } from '@audius/common/api'
+import { useTokenBalance, useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { formatCount } from '@audius/common/utils'
@@ -27,12 +27,7 @@ type ArtistCoinHoverCardProps = Pick<
   | 'triggeredBy'
 > & {
   /**
-   * The mint address of the artist coin
-   */
-  mint: string
-
-  /**
-   * The user ID to fetch balance information for
+   * The user ID to fetch coin data and balance information for
    */
   userId: ID
 }
@@ -42,7 +37,6 @@ type ArtistCoinHoverCardProps = Pick<
  */
 export const ArtistCoinHoverCard = ({
   children,
-  mint,
   userId,
   onClose,
   anchorOrigin,
@@ -53,22 +47,41 @@ export const ArtistCoinHoverCard = ({
   const navigate = useNavigateToPage()
   const { cornerRadius, spacing } = useTheme()
 
-  const { data: coin } = useArtistCoin({ mint })
+  // Track hover state to conditionally fetch token balance
+  const [isHovered, setIsHovered] = useState(false)
+
+  // Get user data to access artist_coin_badge
+  const { data: user } = useUser(userId, {
+    select: (user) => ({
+      artistCoinBadge: user?.artist_coin_badge
+    })
+  })
+
+  const { artistCoinBadge } = user ?? {}
+
+  // Only fetch token balance when hovered and we have the mint address
   const { data: tokenBalance } = useTokenBalance({
-    mint,
-    userId
+    mint: artistCoinBadge?.mint ?? '',
+    userId,
+    enabled: isHovered && !!artistCoinBadge?.mint
   })
 
   const handleClick = useCallback(() => {
     onClick?.()
-    navigate(ASSET_DETAIL_PAGE.replace(':ticker', coin?.ticker ?? ''))
-  }, [onClick, navigate, coin?.ticker])
+    navigate(
+      ASSET_DETAIL_PAGE.replace(':ticker', artistCoinBadge?.ticker ?? '')
+    )
+  }, [onClick, navigate, artistCoinBadge?.ticker])
 
-  if (!tokenBalance || !coin) return null
+  // Don't render if we don't have the basic coin info
+  if (!artistCoinBadge?.ticker || !artistCoinBadge?.logo_uri) {
+    return null
+  }
 
-  const formattedBalance = formatCount(Number(tokenBalance.balance))
-  const coinName = coin.ticker || ''
-  const logoURI = coin.logoUri
+  const coinName = artistCoinBadge.ticker || ''
+  const formattedBalance = tokenBalance
+    ? formatCount(Number(tokenBalance.balance))
+    : null
 
   return (
     <HoverCard
@@ -76,9 +89,9 @@ export const ArtistCoinHoverCard = ({
         <>
           <HoverCardHeader
             iconLeft={() =>
-              logoURI ? (
+              artistCoinBadge?.logo_uri ? (
                 <Artwork
-                  src={logoURI}
+                  src={artistCoinBadge.logo_uri}
                   hex
                   w={spacing.unit6}
                   h={spacing.unit6}
@@ -93,9 +106,9 @@ export const ArtistCoinHoverCard = ({
           />
           <HoverCardBody
             icon={
-              logoURI ? (
+              artistCoinBadge?.logo_uri ? (
                 <Artwork
-                  src={logoURI}
+                  src={artistCoinBadge.logo_uri}
                   hex
                   w={spacing.unit16}
                   h={spacing.unit16}
@@ -113,6 +126,7 @@ export const ArtistCoinHoverCard = ({
       transformOrigin={transformOrigin}
       onClick={handleClick}
       triggeredBy={triggeredBy}
+      onHover={setIsHovered}
     >
       {children}
     </HoverCard>

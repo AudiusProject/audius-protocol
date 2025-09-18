@@ -24,6 +24,7 @@ export type UserMetadata = {
   artist_coin_badge?: Nullable<{
     mint: string
     logo_uri: string
+    ticker: string
   }>
   artist_pick_track_id: Nullable<number>
   associated_wallets_balance?: Nullable<StringWei>

@@ -179,7 +179,6 @@ const UserBadges = ({
 
     return (
       <ArtistCoinHoverCard
-        mint={displayMint ?? ''}
         userId={userId}
         anchorOrigin={anchorOrigin}
         transformOrigin={transformOrigin}
@@ -206,7 +205,6 @@ const UserBadges = ({
     )
   }, [
     shouldShowArtistCoinBadge,
-    displayMint,
     userId,
     anchorOrigin,
     transformOrigin,

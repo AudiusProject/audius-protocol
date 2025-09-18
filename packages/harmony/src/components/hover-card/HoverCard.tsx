@@ -1,4 +1,4 @@
-import { useRef, useCallback, memo } from 'react'
+import { useRef, useCallback, memo, useEffect } from 'react'
 
 import { Flex, Paper, Popup } from '..'
 import { useHoverDelay } from '../../hooks/useHoverDelay'
@@ -46,7 +46,8 @@ const HoverCardComponent = ({
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
   transformOrigin = DEFAULT_TRANSFORM_ORIGIN,
   mouseEnterDelay = 0.5,
-  triggeredBy = 'hover'
+  triggeredBy = 'hover',
+  onHover
 }: HoverCardProps) => {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const {
@@ -58,6 +59,11 @@ const HoverCardComponent = ({
     setIsHovered,
     setIsClicked
   } = useHoverDelay(mouseEnterDelay, triggeredBy)
+
+  // Call onHover callback when hover state changes
+  useEffect(() => {
+    onHover?.(isVisible)
+  }, [isVisible, onHover])
 
   const handleClose = useCallback(() => {
     clearTimer()
