@@ -1,23 +1,15 @@
 import { UserCoin } from '~/api'
 
 /**
- * Filters user coins based on the ARTIST_COINS feature flag and balance requirements
+ * Creates a predicate function for filtering user coins based on the ARTIST_COINS feature flag and balance requirements
  *
- * @param userCoins - Array of user coins to filter
  * @param isArtistCoinsEnabled - Whether the ARTIST_COINS feature flag is enabled
  * @param wAudioMintAddress - The WAUDIO mint address from environment
- * @returns Filtered array of user coins
+ * @returns Predicate function that can be used with Array.filter()
  */
-export const filterUserCoins = (
-  userCoins: UserCoin[] | undefined,
-  isArtistCoinsEnabled: boolean,
-  wAudioMintAddress: string
-): UserCoin[] => {
-  if (!userCoins) {
-    return []
-  }
-
-  return userCoins.filter((coin) => {
+export const ownedCoinsFilter =
+  (isArtistCoinsEnabled: boolean, wAudioMintAddress: string) =>
+  (coin: UserCoin): boolean => {
     if (!isArtistCoinsEnabled) {
       // When artist coins disabled, only show AUDIO
       return coin.mint === wAudioMintAddress
@@ -29,5 +21,4 @@ export const filterUserCoins = (
       coin.ticker !== 'USDC' &&
       (coin.balance > 0 || coin.mint === wAudioMintAddress)
     )
-  })
-}
+  }

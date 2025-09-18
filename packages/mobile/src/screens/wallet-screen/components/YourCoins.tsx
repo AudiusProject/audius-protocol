@@ -9,7 +9,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { AUDIO_TICKER } from '@audius/common/store'
-import { filterUserCoins } from '@audius/common/utils'
+import { ownedCoinsFilter } from '@audius/common/utils'
 
 import { Box, Button, Divider, Flex, Paper, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -52,11 +52,10 @@ export const YourCoins = () => {
     userId: currentUserId
   })
 
-  const filteredCoins = filterUserCoins(
-    artistCoins,
-    !!isArtistCoinsEnabled,
-    env.WAUDIO_MINT_ADDRESS
-  )
+  const filteredCoins =
+    artistCoins?.filter(
+      ownedCoinsFilter(!!isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS)
+    ) ?? []
 
   // Show audio coin card when no coins are available
   const showAudioCoin = filteredCoins.length === 0

@@ -9,12 +9,11 @@ import {
 import { useFeatureFlag } from '~/hooks'
 import { FeatureFlags } from '~/services'
 import type { TokenInfo } from '~/store'
-import { filterUserCoins } from '~/utils'
+import { ownedCoinsFilter } from '~/utils'
 
 /**
  * Hook to filter tokens based on user ownership and positive balance
  * Respects the ARTIST_COINS feature flag - when disabled, only shows AUDIO tokens
- * Returns both owned tokens and all available tokens for different use cases
  */
 export const useOwnedTokens = (allTokens: TokenInfo[]) => {
   const { data: currentUserId } = useCurrentUserId()
@@ -24,15 +23,13 @@ export const useOwnedTokens = (allTokens: TokenInfo[]) => {
     FeatureFlags.ARTIST_COINS
   )
 
-  const { ownedTokens, allAvailableTokens } = useMemo(() => {
+  const ownedTokens = useMemo(() => {
     if (!userCoins || !allTokens.length) {
-      return { ownedTokens: [], allAvailableTokens: allTokens }
+      return []
     }
 
-    const filteredUserCoins = filterUserCoins(
-      userCoins,
-      !!isArtistCoinsEnabled,
-      env.WAUDIO_MINT_ADDRESS
+    const filteredUserCoins = userCoins.filter(
+      ownedCoinsFilter(!!isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS)
     )
 
     // Create a map of user's owned tokens by mint address
@@ -45,15 +42,11 @@ export const useOwnedTokens = (allTokens: TokenInfo[]) => {
       userOwnedMints.has(token.address)
     )
 
-    return {
-      ownedTokens: ownedTokensList,
-      allAvailableTokens: allTokens
-    }
+    return ownedTokensList
   }, [userCoins, allTokens, isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS])
 
   return {
     ownedTokens,
-    allAvailableTokens,
     isLoading: !userCoins
   }
 }
