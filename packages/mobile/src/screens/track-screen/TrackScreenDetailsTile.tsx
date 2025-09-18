@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 
 import {
   useRemixContest,
@@ -256,10 +256,7 @@ export const TrackScreenDetailsTile = ({
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
-  const isTokenGated = useMemo(
-    () => isContentTokenGated(streamConditions),
-    [streamConditions]
-  )
+  const isTokenGated = isContentTokenGated(streamConditions)
   const { data: token } = useArtistCoin({
     mint: isTokenGated
       ? (streamConditions as TokenGatedConditions).token_gate?.token_mint

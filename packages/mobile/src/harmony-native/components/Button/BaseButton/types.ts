@@ -69,9 +69,13 @@ export type BaseButtonProps = {
   styles?: BaseButtonStyles
 
   /**
-   * Define custom gradient colors for the button
+   * Define custom gradient for the button
    */
-  gradientColors?: string[]
+  gradient?: {
+    start: { x: number; y: number }
+    end: { x: number; y: number }
+    colors: string[]
+  }
 
   /**
    * Internal props used by derived button components

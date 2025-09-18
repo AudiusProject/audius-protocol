@@ -32,7 +32,8 @@ import {
   IconUserFollow,
   IconTipping,
   Flex,
-  Button
+  Button,
+  useTheme
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
@@ -45,7 +46,6 @@ import { make, track } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { EventNames } from 'app/types/analytics'
-import { useThemeColors } from 'app/utils/theme'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { followUser } = usersSocialActions
@@ -196,11 +196,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
   const { isOpen: isModalOpen, onClose } = useDrawer('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const {
-    specialCoinGradientColor1,
-    specialCoinGradientColor2,
-    specialCoinGradientColor3
-  } = useThemeColors()
+  const { color } = useTheme()
   const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
   const followSource = isModalOpen
     ? FollowSource.HOW_TO_UNLOCK_MODAL
@@ -383,11 +379,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
           </Flex>
           <Button
             onPress={handleTokenPress}
-            gradientColors={[
-              specialCoinGradientColor1,
-              specialCoinGradientColor2,
-              specialCoinGradientColor3
-            ]}
+            gradient={color.special.coinGradient}
           >
             {messages.buyArtistCoin}
           </Button>
@@ -434,9 +426,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     handleSendTip,
     handleTokenPress,
     token?.ticker,
-    specialCoinGradientColor1,
-    specialCoinGradientColor2,
-    specialCoinGradientColor3,
+    color.special.coinGradient,
     handlePurchasePress
   ])
 

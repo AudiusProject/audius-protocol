@@ -17,6 +17,14 @@ const primitiveOverrides = {
           harmonyPrimitiveTheme.day.special.gradientStop1,
           harmonyPrimitiveTheme.day.special.gradientStop2
         ]
+      },
+      coinGradient: {
+        ...baseLinearGradient,
+        colors: [
+          harmonyPrimitiveTheme.day.special.coinGradientColor1,
+          harmonyPrimitiveTheme.day.special.coinGradientColor2,
+          harmonyPrimitiveTheme.day.special.coinGradientColor3
+        ]
       }
     }
   },
@@ -28,6 +36,14 @@ const primitiveOverrides = {
           harmonyPrimitiveTheme.dark.special.gradientStop1,
           harmonyPrimitiveTheme.dark.special.gradientStop2
         ]
+      },
+      coinGradient: {
+        ...baseLinearGradient,
+        colors: [
+          harmonyPrimitiveTheme.dark.special.coinGradientColor1,
+          harmonyPrimitiveTheme.dark.special.coinGradientColor2,
+          harmonyPrimitiveTheme.dark.special.coinGradientColor3
+        ]
       }
     }
   },
@@ -38,6 +54,14 @@ const primitiveOverrides = {
         colors: [
           harmonyPrimitiveTheme.matrix.special.gradientStop1,
           harmonyPrimitiveTheme.matrix.special.gradientStop2
+        ]
+      },
+      coinGradient: {
+        ...baseLinearGradient,
+        colors: [
+          harmonyPrimitiveTheme.matrix.special.coinGradientColor1,
+          harmonyPrimitiveTheme.matrix.special.coinGradientColor2,
+          harmonyPrimitiveTheme.matrix.special.coinGradientColor3
         ]
       }
     }

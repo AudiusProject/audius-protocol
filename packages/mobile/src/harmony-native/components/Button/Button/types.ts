@@ -21,11 +21,6 @@ export type ButtonProps = {
   hexColor?: HexColor
 
   /**
-   * Define custom gradient colors for the button, only valid for the `PRIMARY` variant
-   */
-  gradientColors?: string[]
-
-  /**
    * The type of the button
    */
   variant?: ButtonVariant

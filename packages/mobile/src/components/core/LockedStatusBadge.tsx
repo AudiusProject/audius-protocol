@@ -1,10 +1,10 @@
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
-import { IconLock, IconLockUnlocked } from '@audius/harmony-native'
+import { IconLock, IconLockUnlocked, useTheme } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useColor, useThemeColors } from 'app/utils/theme'
+import { useColor } from 'app/utils/theme'
 
 import { Text } from './Text'
 
@@ -48,22 +48,17 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
   const styles = useStyles()
   const staticWhite = useColor('white')
   const LockComponent = locked ? IconLock : IconLockUnlocked
-  const {
-    specialCoinGradientColor1,
-    specialCoinGradientColor2,
-    specialCoinGradientColor3,
-    neutralLight4
-  } = useThemeColors()
+  const { color } = useTheme()
 
   return variant === 'tokenGated' ? (
     <LinearGradient
       colors={
         locked
-          ? [neutralLight4, neutralLight4]
+          ? [color.neutral.n400, color.neutral.n400]
           : [
-              specialCoinGradientColor1,
-              specialCoinGradientColor2,
-              specialCoinGradientColor3
+              color.special.coinGradientColor1,
+              color.special.coinGradientColor2,
+              color.special.coinGradientColor3
             ]
       }
       start={{ x: 0, y: 0 }}

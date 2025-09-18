@@ -28,7 +28,7 @@ export const BaseButton = (props: BaseButtonProps) => {
     iconRight: RightIconComponent,
     isLoading,
     isStaticIcon,
-    gradientColors,
+    gradient,
     innerProps,
     children,
     style,
@@ -105,11 +105,9 @@ export const BaseButton = (props: BaseButtonProps) => {
         onPress={handlePress}
         {...other}
       >
-        {gradientColors ? (
+        {gradient ? (
           <LinearGradient
-            colors={gradientColors}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            {...gradient}
             style={{
               position: 'absolute',
               top: 0,
