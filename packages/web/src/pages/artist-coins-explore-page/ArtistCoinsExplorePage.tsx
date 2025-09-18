@@ -18,15 +18,17 @@ import {
   PlainButton,
   IconSearch
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroundImage2x.webp'
 import { ExternalLink } from 'components/link'
 import Page from 'components/page/Page'
 import { Tooltip } from 'components/tooltip'
+import { isMobile } from 'utils/clientUtil'
 
 import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/ArtistCoinsTable'
+
+import { MobileArtistCoinsExplorePage } from './MobileArtistCoinsExplorePage'
 
 const SEARCH_WIDTH = 400
 const CHECKLIST_WIDTH = 540
@@ -45,16 +47,17 @@ const messages = {
   getStartedTooltip: 'Verified users only'
 }
 
-export const ArtistCoinsExplorePage = () => {
-  const dispatch = useDispatch()
+// Desktop version
+const DesktopArtistCoinsExplorePage = () => {
+  const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
   const { data: currentUser } = useCurrentAccountUser()
 
   const isVerified = currentUser?.is_verified ?? false
 
   const handleGetStarted = useCallback(() => {
-    dispatch(push(COINS_CREATE_PAGE))
-  }, [dispatch])
+    navigate(COINS_CREATE_PAGE)
+  }, [navigate])
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
@@ -184,5 +187,14 @@ export const ArtistCoinsExplorePage = () => {
         <ArtistCoinsTable searchQuery={searchValue} />
       </Flex>
     </Page>
+  )
+}
+
+// Main component that conditionally renders desktop or mobile version
+export const ArtistCoinsExplorePage = () => {
+  return isMobile() ? (
+    <MobileArtistCoinsExplorePage />
+  ) : (
+    <DesktopArtistCoinsExplorePage />
   )
 }
