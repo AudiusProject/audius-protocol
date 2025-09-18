@@ -18,8 +18,7 @@ import {
   PlainButton,
   IconSearch
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import imageCoinsBackgroundImage from 'assets/img/publicSite/imageCoinsBackgroundImage2x.webp'
 import { ExternalLink } from 'components/link'
@@ -50,15 +49,15 @@ const messages = {
 
 // Desktop version
 const DesktopArtistCoinsExplorePage = () => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
   const { data: currentUser } = useCurrentAccountUser()
 
   const isVerified = currentUser?.is_verified ?? false
 
   const handleGetStarted = useCallback(() => {
-    dispatch(push(COINS_CREATE_PAGE))
-  }, [dispatch])
+    navigate(COINS_CREATE_PAGE)
+  }, [navigate])
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)

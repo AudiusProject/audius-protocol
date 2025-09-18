@@ -26,10 +26,9 @@ import {
   TextInputSize
 } from '@audius/harmony'
 import { HashId, type Coin } from '@audius/sdk'
-import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useDebounce } from 'react-use'
-import { push } from 'redux-first-history'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { UserLink } from 'components/link'
@@ -111,15 +110,19 @@ const SearchSection = ({
 }
 
 export const MobileArtistCoinsExplorePage: React.FC = () => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const location = useLocation()
   const [searchValue, setSearchValue] = useState('')
   const [debouncedSearchValue, setDebouncedSearchValue] = useState('')
-  const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
-    GetCoinsSortMethodEnum.MarketCap
+  const routeParams = location.state as {
+    sortMethod?: GetCoinsSortMethodEnum
+    sortDirection?: GetCoinsSortDirectionEnum
+  }
+  const [sortMethod] = useState<GetCoinsSortMethodEnum>(
+    routeParams?.sortMethod ?? GetCoinsSortMethodEnum.MarketCap
   )
-  const [sortDirection, setSortDirection] = useState<GetCoinsSortDirectionEnum>(
-    GetCoinsSortDirectionEnum.Desc
+  const [sortDirection] = useState<GetCoinsSortDirectionEnum>(
+    routeParams?.sortDirection ?? GetCoinsSortDirectionEnum.Desc
   )
 
   const { data: coins, isPending } = useArtistCoins({
@@ -137,35 +140,21 @@ export const MobileArtistCoinsExplorePage: React.FC = () => {
     setRight(RightPreset.KEBAB)
   }, [setLeft, setRight])
 
-  // Handle route params from sort screen
-  useEffect(() => {
-    const routeParams = location.state as {
-      sortMethod?: GetCoinsSortMethodEnum
-      sortDirection?: GetCoinsSortDirectionEnum
-    }
-    if (routeParams?.sortMethod) {
-      setSortMethod(routeParams.sortMethod)
-    }
-    if (routeParams?.sortDirection) {
-      setSortDirection(routeParams.sortDirection)
-    }
-  }, [location.state])
-
   const handleCoinPress = useCallback(
     (ticker: string) => {
-      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ticker))
     },
-    [dispatch]
+    [navigate]
   )
 
   const handleSortPress = useCallback(() => {
-    dispatch(
-      push('/coins/sort', {
-        initialSortMethod: sortMethod,
-        initialSortDirection: sortDirection
-      })
-    )
-  }, [dispatch, sortMethod, sortDirection])
+    navigate('/coins/sort', {
+      state: {
+        sortMethod,
+        sortDirection
+      }
+    })
+  }, [navigate, sortMethod, sortDirection])
 
   const shouldShowNoCoinsContent = !coins || coins.length === 0
 

@@ -13,9 +13,8 @@ import {
   IconComponent
 } from '@audius/harmony'
 import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
-import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { useMobileHeader } from 'components/header/mobile/hooks'
 
@@ -60,35 +59,34 @@ const directionOptions: Array<{
 ]
 
 export const MobileArtistCoinsSortPage = () => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const location = useLocation()
 
   // Remove the mobile header title entirely
   useMobileHeader({ title: '' })
 
-  const { initialSortMethod, initialSortDirection } =
+  const { sortMethod, sortDirection } =
     (location.state as {
-      initialSortMethod?: GetCoinsSortMethodEnum
-      initialSortDirection?: GetCoinsSortDirectionEnum
+      sortMethod?: GetCoinsSortMethodEnum
+      sortDirection?: GetCoinsSortDirectionEnum
     }) ?? {}
 
   const [selectedOption, setSelectedOption] = useState<GetCoinsSortMethodEnum>(
-    initialSortMethod ?? GetCoinsSortMethodEnum.MarketCap
+    sortMethod ?? GetCoinsSortMethodEnum.MarketCap
   )
   const [selectedDirection, setSelectedDirection] =
     useState<GetCoinsSortDirectionEnum>(
-      initialSortDirection ?? GetCoinsSortDirectionEnum.Desc
+      sortDirection ?? GetCoinsSortDirectionEnum.Desc
     )
 
   const handleBackPress = useCallback(() => {
-    // Navigate back to explore page with sort params
-    dispatch(
-      push('/coins', {
+    navigate('/coins', {
+      state: {
         sortMethod: selectedOption,
         sortDirection: selectedDirection
-      })
-    )
-  }, [dispatch, selectedOption, selectedDirection])
+      }
+    })
+  }, [navigate, selectedOption, selectedDirection])
 
   const handleDirectionChange = useCallback(
     (direction: GetCoinsSortDirectionEnum) => {
