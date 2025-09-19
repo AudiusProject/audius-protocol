@@ -1,11 +1,13 @@
-import type { MouseEvent } from 'react'
+import { useCallback, type MouseEvent } from 'react'
 
+import { useArtistCoin } from '@audius/common/api'
 import {
   isContentUSDCPurchaseGated,
   AccessConditions,
   Name,
   isContentTokenGated
 } from '@audius/common/models'
+import { useBuySellModal } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
 
@@ -51,12 +53,18 @@ export const GatedConditionsPill = ({
         : messages.locked
   }
 
-  return (
-    <Button
-      className={className}
-      size={buttonSize}
-      onClick={(e) => {
-        e.stopPropagation()
+  const { data: token } = useArtistCoin(
+    isTokenGated ? streamConditions.token_gate.token_mint : ''
+  )
+
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
+  const handleClick = useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation()
+      if (isTokenGated) {
+        openBuySellModal({ isOpen: true, ticker: token?.ticker })
+      } else {
         track(
           make({
             eventName: Name.PURCHASE_CONTENT_BUY_CLICKED,
@@ -64,9 +72,24 @@ export const GatedConditionsPill = ({
             contentType
           })
         )
-
         onClick?.(e)
-      }}
+      }
+    },
+    [
+      contentId,
+      contentType,
+      isTokenGated,
+      onClick,
+      openBuySellModal,
+      token?.ticker
+    ]
+  )
+
+  return (
+    <Button
+      className={className}
+      size={buttonSize}
+      onClick={handleClick}
       color={isPurchase ? 'lightGreen' : isTokenGated ? 'coinGradient' : 'blue'}
       isLoading={unlocking}
       iconLeft={showIcon ? IconLock : undefined}

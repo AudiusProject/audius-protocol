@@ -15,13 +15,13 @@ import {
   User,
   isContentTokenGated
 } from '@audius/common/models'
-import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import {
   usersSocialActions as socialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useBuySellModal
 } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
@@ -43,7 +43,6 @@ import {
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
-import { push } from 'redux-first-history'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
@@ -201,18 +200,19 @@ const LockedGatedContentSection = ({
     handlePurchaseViaGuestCheckout
   ])
 
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
   const handlePurchaseToken = useRequiresAccountCallback(() => {
     if (!coin?.ticker) return
-
-    dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)))
+    openBuySellModal({ isOpen: true, ticker: coin.ticker })
 
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
   }, [
     coin?.ticker,
-    dispatch,
     lockedContentModalVisibility,
+    openBuySellModal,
     setLockedContentModalVisibility
   ])
 
