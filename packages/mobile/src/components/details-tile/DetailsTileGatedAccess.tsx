@@ -36,11 +36,10 @@ export const DetailsTileGatedAccess = ({
   contentType
 }: DetailsTileGatedAccessProps) => {
   const isTokenGated = isContentTokenGated(streamConditions)
-  const { data: token } = useArtistCoin({
-    mint: isTokenGated
-      ? (streamConditions as TokenGatedConditions).token_gate?.token_mint
-      : ''
-  })
+  const { data: token } = useArtistCoin(
+    (streamConditions as TokenGatedConditions).token_gate?.token_mint,
+    { enabled: isTokenGated }
+  )
   const shouldDisplay =
     isContentCollectibleGated(streamConditions) ||
     isContentFollowGated(streamConditions) ||
