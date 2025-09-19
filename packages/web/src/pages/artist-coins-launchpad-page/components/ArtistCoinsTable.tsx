@@ -30,9 +30,9 @@ import { TextLink, UserLink } from 'components/link'
 import { dateSorter, numericSorter, Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useMainContentRef } from 'pages/MainContentContext'
+import { env } from 'services/env'
 
 import styles from './ArtistCoinsTable.module.css'
-import { env } from 'services/env'
 
 type CoinCell = Cell<Coin>
 

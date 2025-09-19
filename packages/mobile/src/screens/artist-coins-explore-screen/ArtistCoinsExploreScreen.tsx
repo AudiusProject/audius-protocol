@@ -29,6 +29,7 @@ import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundI
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { env } from 'app/services/env'
+
 import { GradientText, TokenIcon, Screen } from '../../components/core'
 
 type CoinRowProps = {
