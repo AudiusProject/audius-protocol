@@ -37,7 +37,7 @@ export const AssetDetailPage = () => {
     return <Redirect to='/wallet' />
   }
 
-  return <AssetDetailPageContent mint={coin.mint} title={coin.ticker ?? ''} />
+  return <AssetDetailPageContent mint={coin?.mint} title={coin?.ticker} />
 }
 
 type AssetDetailPageContentProps = {
