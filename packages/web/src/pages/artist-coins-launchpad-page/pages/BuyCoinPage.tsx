@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   useConnectedWallets,
   useFirstBuyQuote,
-  useWalletAudioBalances
+  useWalletAudioBalance
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { AUDIO } from '@audius/fixed-decimal'
@@ -73,26 +73,24 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
-  const { data: audioBalanceArr } = useWalletAudioBalances({
-    wallets: [
-      { address: connectedWallet!.address, chain: connectedWallet!.chain }
-    ]
+  const { data: audioBalance } = useWalletAudioBalance({
+    address: connectedWallet!.address,
+    chain: connectedWallet!.chain
   })
   const { audioBalanceString } = useMemo(() => {
-    if (!audioBalanceArr || !audioBalanceArr[0].balance) {
+    if (!audioBalance) {
       return { audioBalanceString: '0.00', audioBalanceInt: 0 }
     }
     return {
-      audioBalanceString: AUDIO(audioBalanceArr[0].balance).toLocaleString(
-        'en-US',
-        {
-          maximumFractionDigits: 2,
-          roundingMode: 'trunc'
-        }
-      ),
-      audioBalanceInt: Number(AUDIO(audioBalanceArr[0].balance).toFixed(2))
+      audioBalanceString: AUDIO(audioBalance).toLocaleString('en-US', {
+        maximumFractionDigits: 2,
+        roundingMode: 'trunc'
+      }),
+      audioBalanceInt: Number(AUDIO(audioBalance).toFixed(2))
     }
-  }, [audioBalanceArr])
+  }, [audioBalance])
+
+  console.log('audioBalance', audioBalance)
 
   const imageUrl = useFormImageUrl(values.coinImage)
 
