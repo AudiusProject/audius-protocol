@@ -232,7 +232,7 @@ export const LaunchpadSubmitModal = ({
   const payAmountParsed = useMemo(
     () =>
       payAmount
-        ? new FixedDecimal(payAmount?.replace(',', ''), SOLANA_DECIMALS).value
+        ? new FixedDecimal(payAmount?.replace(/,/g, ''), SOLANA_DECIMALS).value
         : 0,
     [payAmount]
   )

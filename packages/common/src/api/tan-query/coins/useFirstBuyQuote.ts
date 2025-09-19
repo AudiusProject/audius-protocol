@@ -58,10 +58,6 @@ const getFirstBuyQuoteMutationFn =
     const firstBuyQuoteRes =
       await sdk.services.solanaRelay.getFirstBuyQuote(firstBuyQuoteParams)
 
-    console.log({
-      decimals: TOKEN_LISTING_MAP.AUDIO.decimals,
-      audioInputAmount: firstBuyQuoteRes.audioInputAmount
-    })
     const audioAmountFD = new FixedDecimal(
       BigInt(firstBuyQuoteRes.audioInputAmount),
       TOKEN_LISTING_MAP.AUDIO.decimals // 8 decimals for AUDIO
@@ -90,16 +86,13 @@ const getFirstBuyQuoteMutationFn =
       roundingMode: 'trunc'
     })
 
-    console.log('returning')
     return {
       // ui formatted values
       usdcAmountUiString,
       tokenAmountUiString,
       audioAmountUiString,
       // raw API repsonse values
-      audioInputAmount: firstBuyQuoteRes.audioInputAmount,
-      usdcValue: firstBuyQuoteRes.usdcValue,
-      tokenOutputAmount: firstBuyQuoteRes.tokenOutputAmount
+      ...firstBuyQuoteRes
     } as FirstBuyQuoteHookResponse
   }
 

@@ -59,14 +59,14 @@ export const launchCoin = async (
       )
     }
 
-    // TODO: validate initialBuyAmountAudio is a valid number
-    // if (
-    //   initialBuyAmountAudio !== undefined
-    // ) {
-    //   throw new Error(
-    //     `Invalid initialBuyAmountSol. Initial buy amount must be a number > 0. Received: ${initialBuyAmountSolLamports}`
-    //   )
-    // }
+    if (
+      initialBuyAmountAudio !== undefined &&
+      !new BN(initialBuyAmountAudio).gt(new BN(0))
+    ) {
+      throw new Error(
+        `Invalid initialBuyAmountSol. Initial buy amount must be a number > 0. Received: ${initialBuyAmountAudio}`
+      )
+    }
 
     const walletPublicKey = new PublicKey(walletPublicKeyStr)
 

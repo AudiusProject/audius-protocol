@@ -7,7 +7,6 @@ import {
   useCurrentAccountUser,
   useQueryContext
 } from '@audius/common/api'
-import { Chain } from '@audius/common/models'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import { shortenSPLAddress } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
@@ -16,7 +15,6 @@ import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { Header } from 'components/header/desktop/Header'
@@ -41,19 +39,12 @@ import {
   SOLANA_DECIMALS
 } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
-import { setupFormSchema } from './validation'
+import { getLatestConnectedWallet } from './utils'
+import { useLaunchpadFormSchema } from './validation'
 
 const messages = {
   title: 'Create Your Artist Coin',
   walletAdded: 'Wallet connected successfully'
-}
-
-const getConnectedWallet = (
-  connectedWallets: ConnectedWallet[] | undefined
-) => {
-  return connectedWallets?.filter(
-    (wallet: ConnectedWallet) => wallet.chain === Chain.Sol
-  )?.[0]
 }
 
 const LaunchpadPageContent = () => {
@@ -63,7 +54,7 @@ const LaunchpadPageContent = () => {
   const queryContext = useQueryContext()
   const { data: connectedWallets } = useConnectedWallets()
   const connectedWallet = useMemo(
-    () => getConnectedWallet(connectedWallets),
+    () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
   const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
@@ -149,7 +140,7 @@ const LaunchpadPageContent = () => {
     async (error: unknown) => {
       // If wallet is already linked, continue with the flow
       if (error instanceof AlreadyAssociatedError) {
-        const lastConnectedWallet = getConnectedWallet(connectedWallets)
+        const lastConnectedWallet = getLatestConnectedWallet(connectedWallets)
         if (lastConnectedWallet) {
           const isValidWalletBalance = await getIsValidWalletBalance(
             lastConnectedWallet?.address
@@ -269,13 +260,16 @@ export const LaunchpadPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
+  const { validationSchema } = useLaunchpadFormSchema()
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
+      // console.log('submitting')
+      // return
       // Get the most recent connected Solana wallet (last in the array)
       // Filter to only Solana wallets since only SOL wallets can be connected
       const connectedWallet: ConnectedWallet | undefined =
-        getConnectedWallet(connectedWallets)
+        getLatestConnectedWallet(connectedWallets)
 
       setIsModalOpen(true)
       if (!user) {
@@ -316,7 +310,7 @@ export const LaunchpadPage = () => {
         payAmount: '',
         receiveAmount: ''
       }}
-      validationSchema={toFormikValidationSchema(setupFormSchema)}
+      validationSchema={validationSchema}
       validateOnMount={true}
       validateOnChange={true}
       onSubmit={handleSubmit}

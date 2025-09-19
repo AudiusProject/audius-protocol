@@ -16,7 +16,8 @@ import {
   LaunchCoinResponse,
   LaunchCoinSchema,
   FirstBuyQuoteResponse,
-  FirstBuyQuoteRequest
+  FirstBuyQuoteRequest,
+  LaunchpadConfigResponse
 } from './types'
 
 /**
@@ -196,7 +197,7 @@ export class SolanaRelay extends BaseAPI {
     formData.append('image', image)
 
     const response = await this.request({
-      path: '/launch_coin',
+      path: '/launchpad/launch_coin',
       method: 'POST',
       headers: headerParameters,
       body: formData
@@ -255,7 +256,7 @@ export class SolanaRelay extends BaseAPI {
 
     const response = await this.request(
       {
-        path: '/first_buy_quote',
+        path: '/launchpad/first_buy_quote',
         method: 'GET',
         headers: headerParameters,
         query: queryParameters
@@ -277,8 +278,38 @@ export class SolanaRelay extends BaseAPI {
       return {
         usdcValue: json.usdcValue,
         tokenOutputAmount: json.tokenOutputAmount,
-        audioInputAmount: json.audioInputAmount
+        audioInputAmount: json.audioInputAmount,
+        maxAudioInputAmount: json.maxAudioInputAmount,
+        maxTokenOutputAmount: json.maxTokenOutputAmount
       } as FirstBuyQuoteResponse
+    }).value()
+  }
+
+  /**
+   * Gets launchpad config details such as max input/outut amounts & starting price.
+   * These values only change if we decide to change our launchpad coin launch params.
+   * We pull them from the server just to avoid having to hardcode values in the UI.
+   */
+  public async getLaunchpadConfig(
+    requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<LaunchpadConfigResponse> {
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
+    const queryParameters: runtime.HTTPQuery = {}
+
+    const response = await this.request(
+      {
+        path: '/launchpad/config',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      requestInitOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      return json as LaunchpadConfigResponse
     }).value()
   }
 }

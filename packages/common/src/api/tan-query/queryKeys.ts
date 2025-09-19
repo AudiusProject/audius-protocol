@@ -122,5 +122,6 @@ export const QUERY_KEYS = {
   tokenExchangeRate: 'tokenExchangeRate',
   tokenPair: 'tokenPair',
   firstBuyQuote: 'firstBuyQuote',
-  walletSolBalance: 'walletSolBalance'
+  walletSolBalance: 'walletSolBalance',
+  launchpadConfig: 'launchpadConfig'
 } as const

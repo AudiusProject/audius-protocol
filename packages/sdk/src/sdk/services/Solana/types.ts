@@ -140,6 +140,8 @@ export type FirstBuyQuoteResponse = {
   usdcValue: string
   tokenOutputAmount: string
   audioInputAmount: string
+  maxAudioInputAmount: string
+  maxTokenOutputAmount: string
 }
 
 export type FirstBuyQuoteRequest =
@@ -149,3 +151,9 @@ export type FirstBuyQuoteRequest =
   | {
       tokenOutputAmount: string // in big number 9 decimal format
     }
+
+export type LaunchpadConfigResponse = {
+  maxAudioInputAmount: string
+  maxTokenOutputAmount: string
+  startingPrice: string
+}
