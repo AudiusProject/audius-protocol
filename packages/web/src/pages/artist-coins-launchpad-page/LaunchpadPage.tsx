@@ -9,7 +9,7 @@ import {
 } from '@audius/common/api'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import { shortenSPLAddress } from '@audius/common/utils'
-import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
+import { wAUDIO } from '@audius/fixed-decimal'
 import { Flex, IconArtistCoin, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
@@ -32,12 +32,7 @@ import {
   LaunchpadSubmitModal
 } from './components/LaunchpadModals'
 import type { SetupFormValues } from './components/types'
-import {
-  LAUNCHPAD_COIN_DESCRIPTION,
-  MIN_SOL_BALANCE,
-  Phase,
-  SOLANA_DECIMALS
-} from './constants'
+import { LAUNCHPAD_COIN_DESCRIPTION, MIN_SOL_BALANCE, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { getLatestConnectedWallet } from './utils'
 import { useLaunchpadFormSchema } from './validation'

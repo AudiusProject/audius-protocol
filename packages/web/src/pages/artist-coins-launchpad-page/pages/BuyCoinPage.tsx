@@ -22,7 +22,6 @@ import {
 import { useFormikContext } from 'formik'
 import { usePrevious } from 'react-use'
 
-import { setField } from 'common/store/pages/signon/actions'
 import { IconAUDIO } from 'components/buy-audio-modal/components/Icons'
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
@@ -154,6 +153,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   const debouncedPayAmountChange = useDebouncedCallback(
     async (payAmount: string) => {
       const payAmountNumber = parseFloat(payAmount)
+      // NOTE: unfortunately with the way this form is set up its easier to manually validate max values here (not using formik errors field)
       if (payAmount && payAmountNumber <= maxAudioInputAmount) {
         setIsReceiveAmountChanging(true)
         getFirstBuyQuote({ audioUiInputAmount: payAmount })
@@ -166,7 +166,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   const debouncedReceiveAmountChange = useDebouncedCallback(
     async (receiveAmount: string) => {
       const receiveAmountNumber = parseFloat(receiveAmount)
-      // Check for field validity before making api calls for the quotes
+      // NOTE: unfortunately with the way this form is set up its easier to manually validate max values here (not using formik errors field)
       if (receiveAmount && receiveAmountNumber <= maxTokenOutputAmount) {
         setIsPayAmountChanging(true)
         getFirstBuyQuote({ tokenUiOutputAmount: receiveAmount })

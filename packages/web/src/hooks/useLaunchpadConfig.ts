@@ -3,7 +3,6 @@ import {
   QueryContextType,
   useQueryContext
 } from '@audius/common/api'
-import { wAUDIO } from '@audius/fixed-decimal'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
 type LaunchpadConfigHookResponse = {
