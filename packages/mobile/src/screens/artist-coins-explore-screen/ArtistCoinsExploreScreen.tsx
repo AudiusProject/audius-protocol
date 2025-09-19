@@ -28,7 +28,7 @@ import {
 import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage.webp'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
-
+import { env } from 'app/services/env'
 import { GradientText, TokenIcon, Screen } from '../../components/core'
 
 type CoinRowProps = {
@@ -123,11 +123,14 @@ export const ArtistCoinsExploreScreen = () => {
   // Debounce search value to avoid excessive API calls
   useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])
 
-  const { data: coins, isPending } = useArtistCoins({
+  const { data: coinsData, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
     query: debouncedSearchValue
   })
+  const coins = coinsData?.filter(
+    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+  )
 
   const handleCoinPress = useCallback(
     (ticker: string) => {
