@@ -178,8 +178,8 @@ export function* watchPlay() {
       }
 
       let endChannel: EventChannel<any>
-      // If we have a stream URL from Discovery already for content node, use that.
-      // If not, we might need the NFT gated signature, so fallback to the DN stream endpoint.
+      // If we have a stream URL from API already for content node, use that.
+      // If not, we might need the NFT gated signature, so fallback to the API stream endpoint.
       if (contentNodeStreamUrl) {
         endChannel = yield* call(createEndChannel, contentNodeStreamUrl)
       } else {
@@ -187,7 +187,7 @@ export function* watchPlay() {
           audiusBackendInstance.signGatedContentRequest,
           { sdk }
         )
-        const discoveryNodeStreamUrl = yield* call(
+        const streamUrl = yield* call(
           [sdk.tracks, sdk.tracks.getTrackStreamUrl],
           {
             trackId: Id.parse(trackId),
@@ -200,7 +200,7 @@ export function* watchPlay() {
             preview: shouldPreview ? true : undefined
           }
         )
-        endChannel = yield* call(createEndChannel, discoveryNodeStreamUrl)
+        endChannel = yield* call(createEndChannel, streamUrl)
       }
 
       const isLongFormContent =

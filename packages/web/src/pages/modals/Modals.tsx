@@ -17,7 +17,6 @@ import CollectibleDetailsModal from 'components/collectibles/components/Collecti
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import { DeleteTrackConfirmationModal } from 'components/delete-track-confirmation-modal/DeleteTrackConfirmationModal'
-import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DownloadTrackArchiveModal } from 'components/download-track-archive-modal/DownloadTrackArchiveModal'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import { EarlyReleaseConfirmationModal } from 'components/early-release-confirmation-modal'
@@ -170,7 +169,6 @@ const Modals = () => {
           <AppCTAModal />
           {/* dev-mode hot-key modals */}
           <ConfirmerPreview />
-          <DiscoveryNodeSelection />
           <FeatureFlagOverrideModal />
         </>
       )}

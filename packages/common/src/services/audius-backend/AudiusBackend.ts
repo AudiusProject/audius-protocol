@@ -43,7 +43,6 @@ import {
 import { getErrorMessage, uuid, Maybe, Nullable } from '../../utils'
 
 import { MintName } from './solana'
-import { MonitoringCallbacks } from './types'
 
 type DisplayEncoding = 'utf8' | 'hex'
 type PhantomEvent = 'disconnect' | 'connect' | 'accountChanged'
@@ -93,8 +92,6 @@ const unauthenticatedUuid = uuid()
 
 export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
-type DiscoveryProviderListener = (endpoint: Nullable<string>) => void
-
 type AudiusBackendSolanaConfig = Partial<{
   claimableTokenPda: string
   claimableTokenProgramAddress: string
@@ -126,7 +123,6 @@ type AudiusBackendParams = {
   generalAdmissionUrl: Maybe<string>
   isElectron: Maybe<boolean>
   localStorage?: LocalStorage
-  monitoringCallbacks: MonitoringCallbacks
   nativeMobile: Maybe<boolean>
   recaptchaSiteKey: Maybe<string>
   recordAnalytics: (event: AnalyticsEvent, callback?: () => void) => void
@@ -150,18 +146,6 @@ export const audiusBackend = ({
   reportError,
   env
 }: AudiusBackendParams) => {
-  const currentDiscoveryProvider: Nullable<string> = null
-  const didSelectDiscoveryProviderListeners: DiscoveryProviderListener[] = []
-
-  function addDiscoveryProviderSelectionListener(
-    listener: DiscoveryProviderListener
-  ) {
-    didSelectDiscoveryProviderListeners.push(listener)
-    if (currentDiscoveryProvider !== null) {
-      listener(currentDiscoveryProvider)
-    }
-  }
-
   function getMintAddress(mint: MintName): PublicKey {
     // Simple mapping for the fixed set of mint names
     const mintAddresses: Record<MintName, string> = {
@@ -394,7 +378,7 @@ export const audiusBackend = ({
     return await signData({ sdk, data })
   }
 
-  async function signDiscoveryNodeRequest({
+  async function signAPIRequest({
     sdk,
     input
   }: {
@@ -406,7 +390,7 @@ export const audiusBackend = ({
       data = input
     } else {
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-      data = `Click sign to authenticate with discovery node: ${unixTs}`
+      data = `Click sign to authenticate with API: ${unixTs}`
     }
     return await signData({ sdk, data })
   }
@@ -1096,11 +1080,8 @@ export const audiusBackend = ({
   }
 
   return {
-    addDiscoveryProviderSelectionListener,
     clearNotificationBadges,
-    currentDiscoveryProvider,
     deregisterDeviceToken,
-    didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
     findAssociatedTokenAddress,
     getAddressTotalStakedBalance,
@@ -1122,7 +1103,7 @@ export const audiusBackend = ({
     sendWelcomeEmail,
     signData,
     signGatedContentRequest,
-    signDiscoveryNodeRequest,
+    signAPIRequest,
     signIdentityServiceRequest,
     instagramHandle,
     tiktokHandle,

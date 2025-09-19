@@ -17,7 +17,7 @@ export enum ErrorLevel {
   /**
    * WARNING
    * What to use for: Something not ideal but within realm of expected behavior
-   * e.g. discovery network call failure
+   * e.g. api call failure
    */
   'Warning' = 'Warning',
 

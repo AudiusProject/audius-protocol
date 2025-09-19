@@ -2,7 +2,6 @@ import { ChatPermission, Genre } from '@audius/sdk'
 
 import { FeedFilter } from '~/models/FeedFilter'
 import { ID, PlayableType } from '~/models/Identifiers'
-import { MonitorPayload, ServiceMonitorType } from '~/models/Services'
 import { TimeRange } from '~/models/TimeRange'
 import {
   SolanaWalletAddress,
@@ -330,7 +329,6 @@ export enum Name {
   // System
   WEB_VITALS = 'Web Vitals',
   PERFORMANCE = 'Performance',
-  DISCOVERY_PROVIDER_SELECTION = 'Discovery Provider Selection',
   CREATOR_NODE_SELECTION = 'Creator Node Selection',
 
   // Remixes
@@ -1621,12 +1619,6 @@ type Performance = {
   value: number
 }
 
-type DiscoveryProviderSelection = {
-  eventName: Name.DISCOVERY_PROVIDER_SELECTION
-  endpoint: string
-  reason: string
-}
-
 type StemCompleteUpload = {
   eventName: Name.STEM_COMPLETE_UPLOAD
   id: number
@@ -1709,16 +1701,6 @@ type TransferAudioToWAudioFailure = {
   eventName: Name.TRANSFER_AUDIO_TO_WAUDIO_FAILURE
   from: WalletAddress
 }
-
-type ServiceMonitorRequest = {
-  eventName: Name.SERVICE_MONITOR_REQUEST
-  type: ServiceMonitorType
-} & MonitorPayload
-
-type ServiceMonitorHealthCheck = {
-  eventName: Name.SERVICE_MONITOR_HEALTH_CHECK
-  type: ServiceMonitorType
-} & MonitorPayload
 
 type PlaylistLibraryReorder = {
   eventName: Name.PLAYLIST_LIBRARY_REORDER
@@ -3015,7 +2997,6 @@ export type AllTrackingEvents =
   | NotOnFirstPage
   | BrowserNotificationSetting
   | TweetFirstUpload
-  | DiscoveryProviderSelection
   | WebVitals
   | Performance
   | StemCompleteUpload
@@ -3027,8 +3008,6 @@ export type AllTrackingEvents =
   | SendAudioRequest
   | SendAudioSuccess
   | SendAudioFailure
-  | ServiceMonitorRequest
-  | ServiceMonitorHealthCheck
   | PlaylistLibraryReorder
   | PlaylistLibraryClicked
   | PlaylistLibraryMovePlaylistIntoFolder
