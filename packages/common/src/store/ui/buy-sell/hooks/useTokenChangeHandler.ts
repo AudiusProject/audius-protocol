@@ -70,13 +70,16 @@ export const useTokenChangeHandler = ({
     }
   }, [inputTokenAddress, outputTokenAddress])
 
-  const updatePreservedValues = useCallback((values: {
-    inputAmount: number
-    outputAmount: number
-    source: CalculationSource
-  }) => {
-    preservedValuesRef.current = values
-  }, [])
+  const updatePreservedValues = useCallback(
+    (values: {
+      inputAmount: number
+      outputAmount: number
+      source: CalculationSource
+    }) => {
+      preservedValuesRef.current = values
+    },
+    []
+  )
 
   const markForRecalculation = useCallback(() => {
     needsRecalculation.current = true
