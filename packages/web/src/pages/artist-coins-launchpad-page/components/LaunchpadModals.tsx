@@ -1,29 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { musicConfettiActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
   Button,
   Flex,
   Hint,
-  IconCheck,
-  IconCopy,
   IconInfo,
-  IconRocket,
   IconShare,
   IconX,
   LoadingSpinner,
   Modal,
   ModalContent,
   ModalHeader,
+  ModalTitle,
   Paper,
-  PlainButton,
   Text,
   TextLink
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
@@ -36,14 +35,15 @@ const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
   launchingCoinDescription: (numTxs: number) =>
     `You have ${numTxs} transactions to sign. Please don't close this page.`,
-  congratsTitle: '🎉 Your Artist Coin is Live!',
+  congratsTitle: '🎉 Congrats!',
   title: 'Create Your Artist Coin',
   congratsDescription:
-    'Congratulations! Your artist coin has been successfully created and is now live on Audius.',
+    'Congrats on launching your artist coin on Audius! Time to share the good news with your fans.',
   purchaseSummary: 'Purchase Summary',
   address: 'Coin Address',
-  addressTitle: 'Contract Address',
-  shareToX: 'Share on X',
+  addressTitle: 'Coin Address',
+  shareToX: 'Share To X',
+  uploadCoinGatedTrack: 'Upload Coin Gated Track',
   copyAddress: 'Copy Address',
   viewOnExplorer: 'View on Solscan',
   insufficientBalanceTitle: 'Check your wallet balance',
@@ -56,11 +56,7 @@ const messages = {
   hintText:
     'Add SOL to your connected wallet, or send AUDIO from your Audius wallet',
   learnHowToFund: 'Learn how to fund your wallet',
-  sendAudio: 'Send AUDIO',
-  successSubtitle: 'Your coin is now available for trading and discovery',
-  nextSteps: 'Next Steps',
-  shareWithFans: 'Share with your fans',
-  exploreFeatures: 'Explore coin features'
+  sendAudio: 'Send AUDIO'
 }
 
 const LoadingState = ({ numTxs }: { numTxs: number }) => (
@@ -101,7 +97,6 @@ const SuccessState = ({
   }
 }) => {
   const { mint, name, ticker, logoUri, amountUi, amountUsd } = coin
-  const [copied, setCopied] = useState(false)
 
   const dispatch = useDispatch()
   const hasShownConfettiRef = useRef(false)
@@ -113,157 +108,95 @@ const SuccessState = ({
     }
   }, [dispatch])
 
-  const handleCopyAddress = async () => {
-    if (mint) {
-      try {
-        await navigator.clipboard.writeText(mint)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      } catch (err) {
-        console.error('Failed to copy address:', err)
-      }
-    }
+  const navigate = useNavigate()
+
+  const handleUploadCoinGatedTrack = () => {
+    navigate(route.UPLOAD_PAGE)
   }
 
   const handleShareToX = () => {
-    const shareText = `🎉 Just launched my artist coin ${name} ($${ticker}) on @AudiusProject! Check it out:`
+    const shareText = `My artist coin $${ticker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
     window.open(shareUrl, '_blank')
-  }
-
-  const handleViewOnExplorer = () => {
-    if (mint) {
-      window.open(`https://solscan.io/token/${mint}`, '_blank')
-    }
   }
 
   return (
     <>
       <ConnectedMusicConfetti />
       <ModalHeader showDismissButton>
-        <Flex justifyContent='center' alignItems='center' gap='s'>
-          <IconRocket color='success' />
-          <Text variant='label' size='xl' color='default' strength='strong'>
-            {messages.congratsTitle}
-          </Text>
-        </Flex>
+        <ModalTitle title={messages.congratsTitle} />
       </ModalHeader>
       <ModalContent>
-        <Flex column alignItems='center' justifyContent='center' gap='2xl'>
-          {/* Success Message */}
-          <Flex column alignItems='center' gap='m'>
-            <Text variant='body' size='l' color='default' textAlign='center'>
-              {messages.congratsDescription}
-            </Text>
-            <Text variant='body' size='m' color='subdued' textAlign='center'>
-              {messages.successSubtitle}
-            </Text>
-          </Flex>
+        <Flex column gap='2xl' w='100%'>
+          {/* Congratulatory Message */}
+          <Text variant='body' size='l' color='default'>
+            {messages.congratsDescription}
+          </Text>
 
-          {/* Coin Summary Card */}
-          <Paper
-            p='xl'
-            gap='l'
-            column
-            w='100%'
-            borderRadius='l'
-            border='strong'
-            backgroundColor='surface1'
-            css={{
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-            }}
-          >
-            <Flex alignItems='center' gap='l' w='100%'>
-              <Artwork src={logoUri} w='64px' h='64px' hex borderWidth={0} />
-              
-              <Flex column gap='s' flex={1}>
-                <Text variant='title' size='l' color='default'>
-                  {name}
-                </Text>
-                <Text variant='body' size='m' color='subdued'>
-                  ${ticker}
-                </Text>
-                <Flex alignItems='center' gap='xs'>
-                  <IconCheck color='success' />
-                  <Text variant='body' size='s' color='success'>
-                    Successfully Created
+          {/* Purchase Summary */}
+          <Flex column gap='m' w='100%'>
+            <Text variant='label' size='l' color='subdued'>
+              {messages.purchaseSummary}
+            </Text>
+            <Paper
+              p='m'
+              gap='m'
+              w='100%'
+              borderRadius='s'
+              border='default'
+              backgroundColor='surface1'
+            >
+              <Flex alignItems='center' gap='m' w='100%'>
+                <Artwork src={logoUri} w='48px' h='48px' hex borderWidth={0} />
+
+                <Flex column gap='xs' flex={1}>
+                  <Text variant='title' size='m' color='default'>
+                    {name}
                   </Text>
+                  <Flex
+                    alignItems='center'
+                    justifyContent='space-between'
+                    w='100%'
+                  >
+                    <Text variant='title' size='s' strength='weak'>
+                      {amountUi} <Text color='subdued'>${ticker}</Text>
+                    </Text>
+                    <Text variant='title' size='s' strength='weak'>
+                      ${amountUsd}
+                    </Text>
+                  </Flex>
                 </Flex>
               </Flex>
-              
-              <Flex column alignItems='flex-end' gap='xs'>
-                <Text variant='title' size='m' color='default'>
-                  {amountUi}
-                </Text>
-                <Text variant='body' size='s' color='subdued'>
-                  ${amountUsd}
-                </Text>
-              </Flex>
-            </Flex>
-          </Paper>
+            </Paper>
+          </Flex>
 
           {/* Contract Address Section */}
           <Flex column gap='m' w='100%'>
-            <Text
-              variant='label'
-              size='s'
-              color='subdued'
-              css={{ textTransform: 'uppercase' }}
-            >
+            <Text variant='label' size='l' color='subdued'>
               {messages.addressTitle}
             </Text>
-            <Flex alignItems='center' gap='s' w='100%'>
-              <AddressTile address={mint} />
-              <PlainButton
-                onClick={handleCopyAddress}
-                iconLeft={copied ? IconCheck : IconCopy}
-                color={copied ? 'success' : 'default'}
-                size='small'
-              >
-                {copied ? 'Copied!' : messages.copyAddress}
-              </PlainButton>
-            </Flex>
+            <AddressTile address={mint} />
           </Flex>
 
           {/* Action Buttons */}
-          <Flex column gap='m' w='100%'>
+          <Flex column gap='s' w='100%'>
             <Button
               variant='primary'
+              fullWidth
+              onClick={handleUploadCoinGatedTrack}
+              iconLeft={IconShare}
+            >
+              {messages.uploadCoinGatedTrack}
+            </Button>
+
+            <Button
+              variant='secondary'
               fullWidth
               onClick={handleShareToX}
               iconLeft={IconX}
             >
               {messages.shareToX}
             </Button>
-            
-            <Button
-              variant='secondary'
-              fullWidth
-              onClick={handleViewOnExplorer}
-              iconLeft={IconShare}
-            >
-              {messages.viewOnExplorer}
-            </Button>
-          </Flex>
-
-          {/* Next Steps */}
-          <Flex column gap='m' w='100%'>
-            <Text
-              variant='label'
-              size='s'
-              color='subdued'
-              css={{ textTransform: 'uppercase' }}
-            >
-              {messages.nextSteps}
-            </Text>
-            <Flex column gap='s'>
-              <Text variant='body' size='s' color='default'>
-                • {messages.shareWithFans}
-              </Text>
-              <Text variant='body' size='s' color='default'>
-                • {messages.exploreFeatures}
-              </Text>
-            </Flex>
           </Flex>
         </Flex>
       </ModalContent>
@@ -293,15 +226,15 @@ export const LaunchpadSubmitModal = ({
   const { values } = useFormikContext()
   const { coinName, coinSymbol, receiveAmount, payAmount } =
     values as SetupFormValues
-  
+
   // Use fake data for testing if no real data is available
   const coin = {
     mint: mintAddress,
-    name: coinName || 'Test Artist Coin',
-    ticker: coinSymbol || 'TAC',
-    logoUri: logoUri || 'https://via.placeholder.com/200x200/6366f1/ffffff?text=TEST',
-    amountUi: receiveAmount || '1,000,000',
-    amountUsd: payAmount || '415.00'
+    name: coinName,
+    ticker: coinSymbol,
+    logoUri,
+    amountUi: receiveAmount,
+    amountUsd: receiveAmount
   }
   const payAmountParsed = useMemo(
     () =>
@@ -314,6 +247,7 @@ export const LaunchpadSubmitModal = ({
   return (
     <Modal
       isOpen={isOpen}
+      size={isSuccess ? 'small' : undefined}
       onClose={() => {
         if (isSuccess || isError) {
           onClose()
