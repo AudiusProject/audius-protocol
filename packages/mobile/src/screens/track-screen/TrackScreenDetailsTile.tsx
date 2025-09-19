@@ -257,11 +257,10 @@ export const TrackScreenDetailsTile = ({
     (!isOwner && (playCount ?? 0) <= 0)
 
   const isTokenGated = isContentTokenGated(streamConditions)
-  const { data: token } = useArtistCoin({
-    mint: isTokenGated
-      ? (streamConditions as TokenGatedConditions).token_gate?.token_mint
-      : ''
-  })
+  const { data: token } = useArtistCoin(
+    (streamConditions as TokenGatedConditions).token_gate?.token_mint,
+    { enabled: isTokenGated }
+  )
 
   let headerText
   if (isRemixContest) {

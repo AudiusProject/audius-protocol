@@ -269,6 +269,8 @@ export const LaunchpadPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
+  const queryClient = useQueryClient()
+  const queryContext = useQueryContext()
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
@@ -316,9 +318,12 @@ export const LaunchpadPage = () => {
         payAmount: '',
         receiveAmount: ''
       }}
-      validationSchema={toFormikValidationSchema(setupFormSchema)}
+      validationSchema={toFormikValidationSchema(
+        setupFormSchema({ queryContext, queryClient })
+      )}
       validateOnMount={true}
       validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={handleSubmit}
     >
       <Form>

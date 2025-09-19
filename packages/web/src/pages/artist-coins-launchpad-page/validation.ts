@@ -1,4 +1,9 @@
+import {
+  QueryContextType,
+  fetchCoinTickerAvailability
+} from '@audius/common/api'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
+import { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 
 const MAX_COIN_SYMBOL_LENGTH = 10
@@ -6,7 +11,9 @@ const MAX_COIN_SYMBOL_LENGTH = 10
 export const coinSymbolErrorMessages = {
   badCharacterError: 'Please only use letters and numbers',
   symbolTooLong: 'Coin symbol is too long (max 10 characters)',
-  missingSymbolError: 'Please enter a coin symbol'
+  missingSymbolError: 'Please enter a coin symbol',
+  tickerTakenError: 'Symbol unavailable.',
+  unknownError: 'An unknown error occurred.'
 }
 
 const coinSymbolSchema = z.object({
@@ -39,10 +46,51 @@ const coinImageSchema = z.object({
     .refine((file) => file !== null, coinImageErrorMessages.missingImageError)
 })
 
-export const setupFormSchema = z.object({
-  coinName: coinNameSchema.shape.coinName,
-  coinSymbol: coinSymbolSchema.shape.coinSymbol,
-  coinImage: coinImageSchema.shape.coinImage,
-  payAmount: z.string().optional(),
-  receiveAmount: z.string().optional()
-})
+export const setupFormSchema = ({
+  queryContext,
+  queryClient
+}: {
+  queryContext: QueryContextType
+  queryClient: QueryClient
+}) => {
+  return z.object({
+    coinName: coinNameSchema.shape.coinName,
+    coinSymbol: coinSymbolSchema.shape.coinSymbol.superRefine(
+      async (ticker, context) => {
+        // Only validate if ticker has at least 2 characters and passes basic format validation
+        if (ticker && ticker.length >= 2) {
+          try {
+            const result = await queryClient.fetchQuery({
+              queryKey: ['coinTickerAvailability', ticker],
+              queryFn: async () =>
+                await fetchCoinTickerAvailability(ticker, queryContext)
+            })
+            const isAvailable = result.available
+
+            if (!isAvailable) {
+              context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: coinSymbolErrorMessages.tickerTakenError,
+                fatal: true
+              })
+              return z.NEVER
+            }
+          } catch (error: any) {
+            // Log the error for debugging
+            console.error('Ticker validation error:', error)
+            // For other errors, show unknown error
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: coinSymbolErrorMessages.unknownError
+            })
+            return z.NEVER
+          }
+        }
+        return z.NEVER
+      }
+    ),
+    coinImage: coinImageSchema.shape.coinImage,
+    payAmount: z.string().optional(),
+    receiveAmount: z.string().optional()
+  })
+}

@@ -14,6 +14,35 @@ import { QUERY_KEYS } from '../queryKeys'
 
 import { useArtistCoin, getArtistCoinQueryKey } from './useArtistCoin'
 
+/**
+ * Function to check if a coin ticker is available for use.
+ * Returns true if available, false if taken.
+ * Handles 404 errors gracefully without reporting them to Sentry.
+ */
+export const fetchCoinTickerAvailability = async (
+  ticker: string,
+  { audiusSdk }: Pick<QueryContextType, 'audiusSdk'>
+) => {
+  if (!ticker || ticker.length < 2) {
+    return { available: false }
+  }
+
+  const sdk = await audiusSdk()
+  try {
+    // Use getCoinByTicker - if it returns a coin, the ticker is taken
+    await sdk.coins.getCoinByTicker({ ticker: `$${ticker}` })
+    // If we get a coin back, the ticker is not available
+    return { available: false }
+  } catch (error: any) {
+    // The API returns 404 if ticker is available (no coin found with that ticker)
+    if ('response' in error && error.response.status === 404) {
+      return { available: true }
+    }
+    // For other errors, throw them so they can be handled by React Query
+    throw error
+  }
+}
+
 export interface UseArtistCoinByTickerParams {
   ticker: string
 }
