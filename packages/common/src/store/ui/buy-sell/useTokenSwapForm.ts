@@ -100,7 +100,6 @@ export const useTokenSwapForm = ({
   const swapCalculations = useSwapCalculations({
     exchangeRate: tokenData.exchangeRate,
     onInputValueChange,
-    initialInputValue,
     inputTokenAddress: inputToken.address,
     outputTokenAddress: outputToken.address,
     inputTokenDecimals: inputToken.decimals,
