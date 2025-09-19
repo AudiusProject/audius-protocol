@@ -32,7 +32,6 @@ import { make, track } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTileSource } from './types'
 
@@ -79,12 +78,6 @@ export const LineupTileAccessStatus = ({
   const isTokenGated = isContentTokenGated(streamConditions)
   const isUnlocking = gatedTrackStatus === 'UNLOCKING'
   const navigation = useNavigation()
-
-  const {
-    specialCoinGradientColor1,
-    specialCoinGradientColor2,
-    specialCoinGradientColor3
-  } = useThemeColors()
 
   const handlePress = useCallback(() => {
     if (hasStreamAccess) {
@@ -181,13 +174,9 @@ export const LineupTileAccessStatus = ({
       >
         {isTokenGated ? (
           <LinearGradient
-            colors={[
-              specialCoinGradientColor1,
-              specialCoinGradientColor2,
-              specialCoinGradientColor3
-            ]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            colors={color.special.coinGradient.colors}
+            start={color.special.coinGradient.start}
+            end={color.special.coinGradient.end}
             style={{
               position: 'absolute',
               borderRadius: hasStreamAccess || isUnlocking ? 12 : 4,

@@ -41,10 +41,7 @@ export const LaunchPanel = ({ onContinue, isPending }: LaunchPanelProps) => {
         iconRight={isPending ? undefined : IconArrowRight}
         onClick={onContinue}
         disabled={isPending}
-        css={{
-          background: 'var(--harmony-coin-gradient)',
-          border: 'none'
-        }}
+        color='coinGradient'
       >
         {isPending ? <LoadingSpinner /> : messages.buttonText}
       </Button>
