@@ -16,7 +16,8 @@ import {
   LaunchCoinResponse,
   LaunchCoinSchema,
   FirstBuyQuoteResponse,
-  FirstBuyQuoteRequest
+  FirstBuyQuoteRequest,
+  LaunchpadConfigResponse
 } from './types'
 
 /**
@@ -175,7 +176,7 @@ export class SolanaRelay extends BaseAPI {
       symbol,
       description,
       walletPublicKey,
-      initialBuyAmountSolLamports,
+      initialBuyAmountAudio,
       image
     } = await parseParams('launchCoin', LaunchCoinSchema)(params)
 
@@ -187,16 +188,13 @@ export class SolanaRelay extends BaseAPI {
     formData.append('symbol', symbol)
     formData.append('description', description)
     formData.append('walletPublicKey', walletPublicKey.toBase58())
-    if (initialBuyAmountSolLamports) {
-      formData.append(
-        'initialBuyAmountSolLamports',
-        initialBuyAmountSolLamports.toString()
-      )
+    if (initialBuyAmountAudio) {
+      formData.append('initialBuyAmountAudio', initialBuyAmountAudio.toString())
     }
     formData.append('image', image)
 
     const response = await this.request({
-      path: '/launch_coin',
+      path: '/launchpad/launch_coin',
       method: 'POST',
       headers: headerParameters,
       body: formData
@@ -213,14 +211,7 @@ export class SolanaRelay extends BaseAPI {
         throw new Error('imageUri missing from response')
       }
 
-      return {
-        mintPublicKey: json.mintPublicKey,
-        createPoolTx: json.createPoolTx,
-        firstBuyTx: json.firstBuyTx,
-        solToAudioTx: json.solToAudioTx,
-        metadataUri: json.metadataUri,
-        imageUri: json.imageUri
-      } as LaunchCoinResponse
+      return json as LaunchCoinResponse
     }).value()
   }
 
@@ -232,22 +223,22 @@ export class SolanaRelay extends BaseAPI {
     params: FirstBuyQuoteRequest,
     requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
   ): Promise<FirstBuyQuoteResponse> {
-    const solInputAmount =
-      'solInputAmount' in params ? params.solInputAmount : undefined
+    const audioInputAmount =
+      'audioInputAmount' in params ? params.audioInputAmount : undefined
     const tokenOutputAmount =
       'tokenOutputAmount' in params ? params.tokenOutputAmount : undefined
-    const noSolInput = !solInputAmount
+    const noAudioInput = !audioInputAmount
     const noTokenInput = !tokenOutputAmount
-    if (noSolInput && noTokenInput) {
+    if (noAudioInput && noTokenInput) {
       throw new Error(
         'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided'
       )
     }
 
     const headerParameters: runtime.HTTPHeaders = {}
-    const queryParameters: runtime.HTTPQuery = solInputAmount
+    const queryParameters: runtime.HTTPQuery = audioInputAmount
       ? {
-          solInputAmount
+          audioInputAmount
         }
       : {
           tokenOutputAmount: tokenOutputAmount!
@@ -255,7 +246,7 @@ export class SolanaRelay extends BaseAPI {
 
     const response = await this.request(
       {
-        path: '/first_buy_quote',
+        path: '/launchpad/first_buy_quote',
         method: 'GET',
         headers: headerParameters,
         query: queryParameters
@@ -264,25 +255,51 @@ export class SolanaRelay extends BaseAPI {
     )
 
     return await new runtime.JSONApiResponse(response, (json) => {
-      if (!runtime.exists(json, 'solInputAmount')) {
-        throw new Error('solInputAmount missing from response')
+      if (!runtime.exists(json, 'audioInputAmount')) {
+        throw new Error('audioInputAmount missing from response')
       }
-      if (!runtime.exists(json, 'usdcInputAmount')) {
-        throw new Error('usdcInputAmount missing from response')
+      if (!runtime.exists(json, 'usdcValue')) {
+        throw new Error('usdcValue missing from response')
       }
       if (!runtime.exists(json, 'tokenOutputAmount')) {
         throw new Error('tokenOutputAmount missing from response')
       }
-      if (!runtime.exists(json, 'audioSwapAmount')) {
-        throw new Error('audioSwapAmount missing from response')
-      }
 
       return {
-        solInputAmount: json.solInputAmount,
-        usdcInputAmount: json.usdcInputAmount,
+        usdcValue: json.usdcValue,
         tokenOutputAmount: json.tokenOutputAmount,
-        audioSwapAmount: json.audioSwapAmount
+        audioInputAmount: json.audioInputAmount,
+        maxAudioInputAmount: json.maxAudioInputAmount,
+        maxTokenOutputAmount: json.maxTokenOutputAmount
       } as FirstBuyQuoteResponse
+    }).value()
+  }
+
+  /**
+   * Gets launchpad config details such as max input/outut amounts & starting price.
+   * These values only change if we decide to change our launchpad coin launch params.
+   * We pull them from the server just to avoid having to hardcode values in the UI.
+   */
+  public async getLaunchpadConfig(
+    requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<LaunchpadConfigResponse> {
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
+    const queryParameters: runtime.HTTPQuery = {}
+
+    const response = await this.request(
+      {
+        path: '/launchpad/config',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      requestInitOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      return json as LaunchpadConfigResponse
     }).value()
   }
 }

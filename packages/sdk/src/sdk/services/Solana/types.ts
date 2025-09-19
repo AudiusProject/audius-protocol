@@ -119,10 +119,7 @@ export const LaunchCoinSchema = z
     symbol: z.string().min(1, 'Symbol is required'),
     description: z.string().min(1, 'Description is required'),
     walletPublicKey: PublicKeySchema,
-    initialBuyAmountSolLamports: z
-      .number()
-      .nonnegative('Initial buy amount must be non-negative')
-      .optional(),
+    initialBuyAmountAudio: z.string().optional(),
     image: z.custom<Blob>((data) => {
       return data instanceof Blob
     }, 'Image file is required')
@@ -135,22 +132,28 @@ export type LaunchCoinResponse = {
   mintPublicKey: string
   createPoolTx: string
   firstBuyTx: string | undefined
-  solToAudioTx: string | undefined
   metadataUri: string
   imageUri: string
 }
 
 export type FirstBuyQuoteResponse = {
-  solInputAmount: string
-  usdcInputAmount: string
+  usdcValue: string
   tokenOutputAmount: string
-  audioSwapAmount: string
+  audioInputAmount: string
+  maxAudioInputAmount: string
+  maxTokenOutputAmount: string
 }
 
 export type FirstBuyQuoteRequest =
   | {
-      solInputAmount: string // in lamports
+      audioInputAmount: string // in lamports
     }
   | {
       tokenOutputAmount: string // in big number 9 decimal format
     }
+
+export type LaunchpadConfigResponse = {
+  maxAudioInputAmount: string
+  maxTokenOutputAmount: string
+  startingPrice: string
+}
