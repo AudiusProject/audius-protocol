@@ -9,7 +9,7 @@ import {
 } from '@audius/common/api'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import { shortenSPLAddress } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
+import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
 import { Flex, IconArtistCoin, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
@@ -48,7 +48,7 @@ const messages = {
 }
 
 const LaunchpadPageContent = () => {
-  const [phase, setPhase] = useState(Phase.BUY_COIN)
+  const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
   const queryClient = useQueryClient()
   const queryContext = useQueryContext()
@@ -264,10 +264,7 @@ export const LaunchpadPage = () => {
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
-      // console.log('submitting')
-      // return
       // Get the most recent connected Solana wallet (last in the array)
-      // Filter to only Solana wallets since only SOL wallets can be connected
       const connectedWallet: ConnectedWallet | undefined =
         getLatestConnectedWallet(connectedWallets)
 
@@ -278,12 +275,8 @@ export const LaunchpadPage = () => {
       if (!connectedWallet) {
         throw new Error('No connected wallet found')
       }
-      const payAmountLamports = formValues.payAmount
-        ? Number(
-            new FixedDecimal(formValues.payAmount, SOLANA_DECIMALS).trunc(
-              SOLANA_DECIMALS
-            ).value
-          )
+      const audioAmountBigNumber = formValues.payAmount
+        ? wAUDIO(formValues.payAmount).value.toString()
         : undefined
       launchCoin({
         userId: user.user_id,
@@ -295,7 +288,7 @@ export const LaunchpadPage = () => {
           formValues.coinSymbol
         ),
         walletPublicKey: connectedWallet.address,
-        initialBuyAmountSolLamports: payAmountLamports
+        initialBuyAmountAudio: audioAmountBigNumber
       })
     },
     [launchCoin, user, connectedWallets]

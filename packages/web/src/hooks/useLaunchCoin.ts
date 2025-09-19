@@ -20,7 +20,7 @@ export type LaunchCoinParams = {
   symbol: string
   description: string
   walletPublicKey: string
-  initialBuyAmountSolLamports?: number
+  initialBuyAmountAudio?: string
   image: Blob
 }
 
@@ -46,9 +46,17 @@ export const useLaunchCoin = () => {
       symbol,
       description,
       walletPublicKey: walletPublicKeyStr,
-      initialBuyAmountSolLamports,
+      initialBuyAmountAudio,
       image
     }: LaunchCoinParams): Promise<LaunchCoinResponse> => {
+      const progress = {
+        relayResponseReceived: false,
+        poolTxSigned: false,
+        poolCreateConfirmed: false,
+        sdkCoinAdded: false,
+        firstBuyTxSigned: false,
+        firstBuyConfirmed: false
+      }
       try {
         console.log('Launching coin...', {
           userId,
@@ -56,7 +64,7 @@ export const useLaunchCoin = () => {
           symbol,
           description,
           walletPublicKeyStr,
-          initialBuyAmountSolLamports
+          initialBuyAmountAudio
         })
         const symbolUpper = symbol.toUpperCase()
         const sdk = await audiusSdk()
@@ -68,16 +76,22 @@ export const useLaunchCoin = () => {
           throw new Error('Missing solana wallet keypair')
         }
 
-        const signAndSendTx = async (transactionSerialized: string) => {
+        const signTx = async (transactionSerialized: string) => {
           // Transaction is sent from the backend as a serialized base64 string
           const deserializedTx = VersionedTransaction.deserialize(
             Buffer.from(transactionSerialized, 'base64')
           )
 
-          // Sends the transaction to the 3rd party wallet to sign & sends directly to solana from there
-          const txSignature =
-            await solanaProvider.signAndSendTransaction(deserializedTx)
+          // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
+          return await solanaProvider.signTransaction(deserializedTx)
+        }
 
+        const sendTx = async (transaction: VersionedTransaction) => {
+          const txSignature = await solanaProvider.sendTransaction(
+            transaction,
+            await sdk.services.solanaClient.connection
+          )
+          // TODO: retries here?
           // Wait for confirmation
           await sdk.services.solanaClient.connection.confirmTransaction(
             txSignature,
@@ -96,13 +110,13 @@ export const useLaunchCoin = () => {
           symbol: symbolUpper,
           description,
           walletPublicKey,
-          initialBuyAmountSolLamports,
+          initialBuyAmountAudio,
           image
         })
+        progress.relayResponseReceived = true
         const {
           createPoolTx: createPoolTxSerialized,
           firstBuyTx: firstBuyTxSerialized,
-          solToAudioTx: solToAudioTxSerialized,
           metadataUri,
           mintPublicKey,
           imageUri
@@ -111,21 +125,29 @@ export const useLaunchCoin = () => {
         console.log('Relay launch_coin response received!', {
           createPoolTxSerialized,
           firstBuyTxSerialized,
-          solToAudioTxSerialized,
           metadataUri,
           mintPublicKey
         })
 
-        // Sign pool tx
+        /**
+         * Pool creation - sign & send TX
+         */
         console.log('Signing pool tx')
-        const createPoolTxSignature = await signAndSendTx(
-          createPoolTxSerialized
-        )
+        const createPoolTxSigned = await signTx(createPoolTxSerialized)
+        progress.poolTxSigned = true
+        console.log('Pool tx signed')
+
+        const createPoolTxSignature = await sendTx(createPoolTxSigned)
         console.log(
           'Pool created successfully! createPoolTxSignature',
           createPoolTxSignature
         )
+        progress.poolCreateConfirmed = true
 
+        /*
+         * Add coin to Audius database
+         * its in a separate try/catch because it's technically non-blocking
+         */
         try {
           // Create coin in Audius database
           console.log('Adding coin to Audius database')
@@ -140,27 +162,23 @@ export const useLaunchCoin = () => {
               description
             }
           })
+          progress.sdkCoinAdded = true
           console.log('Coin added to Audius database', coinRes)
         } catch (e) {
+          // TODO: report critical error here
           console.error('Error adding coin to Audius database', e)
         }
 
         // Perform sol->audio swap & first buy
-        if (
-          firstBuyTxSerialized &&
-          solToAudioTxSerialized &&
-          initialBuyAmountSolLamports &&
-          initialBuyAmountSolLamports > 0
-        ) {
-          // Sol to audio swap
-          console.log('Sending sol to audio swap tx to user to sign')
-          const solToAudioTx = await signAndSendTx(solToAudioTxSerialized)
-          console.log('Jupiter first buy tx signed', solToAudioTx)
-
+        if (firstBuyTxSerialized && initialBuyAmountAudio) {
           // First buy
           console.log('Sending first buy tx to user to sign')
-          const firstBuyTxSignature = await signAndSendTx(firstBuyTxSerialized)
-          console.log('First buy tx signed', firstBuyTxSignature)
+          const firstBuyTxSigned = await signTx(firstBuyTxSerialized)
+          progress.firstBuyTxSigned = true
+          console.log('First buy tx signed')
+          const firstBuyTxSignature = await sendTx(firstBuyTxSigned)
+          progress.firstBuyConfirmed = true
+          console.log('First buy tx confirmed', firstBuyTxSignature)
         }
 
         return {
@@ -192,7 +210,7 @@ export const useLaunchCoin = () => {
           additionalInfo: {
             coinName: params.name,
             coinSymbol: params.symbol,
-            initialBuyAmount: params.initialBuyAmountSolLamports ?? 0
+            initialBuyAmount: params.initialBuyAmountAudio ?? 0
           }
         })
       }

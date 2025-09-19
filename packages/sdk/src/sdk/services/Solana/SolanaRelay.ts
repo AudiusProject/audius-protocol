@@ -176,7 +176,7 @@ export class SolanaRelay extends BaseAPI {
       symbol,
       description,
       walletPublicKey,
-      initialBuyAmountSolLamports,
+      initialBuyAmountAudio,
       image
     } = await parseParams('launchCoin', LaunchCoinSchema)(params)
 
@@ -188,11 +188,8 @@ export class SolanaRelay extends BaseAPI {
     formData.append('symbol', symbol)
     formData.append('description', description)
     formData.append('walletPublicKey', walletPublicKey.toBase58())
-    if (initialBuyAmountSolLamports) {
-      formData.append(
-        'initialBuyAmountSolLamports',
-        initialBuyAmountSolLamports.toString()
-      )
+    if (initialBuyAmountAudio) {
+      formData.append('initialBuyAmountAudio', initialBuyAmountAudio.toString())
     }
     formData.append('image', image)
 
@@ -214,14 +211,7 @@ export class SolanaRelay extends BaseAPI {
         throw new Error('imageUri missing from response')
       }
 
-      return {
-        mintPublicKey: json.mintPublicKey,
-        createPoolTx: json.createPoolTx,
-        firstBuyTx: json.firstBuyTx,
-        solToAudioTx: json.solToAudioTx,
-        metadataUri: json.metadataUri,
-        imageUri: json.imageUri
-      } as LaunchCoinResponse
+      return json as LaunchCoinResponse
     }).value()
   }
 
