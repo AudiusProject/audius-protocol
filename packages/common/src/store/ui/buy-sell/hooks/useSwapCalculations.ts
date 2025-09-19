@@ -3,7 +3,7 @@
  * Orchestrates smaller, focused hooks for better maintainability
  */
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import type { SwapCalculationsHookResult } from '../types/swap.types'
 import { isValidNumericInput } from '../utils/tokenCalculations'
@@ -90,12 +90,18 @@ export const useSwapCalculations = ({
   }, [tokenHandler, stateMachine, calculator, onInputValueChange])
 
   // Handle initial value changes (for tab switching)
+  const lastInitialValueRef = useRef<string>('')
   useEffect(() => {
-    if (initialInputValue && initialInputValue !== calculator.inputAmount) {
+    if (
+      initialInputValue &&
+      initialInputValue !== lastInitialValueRef.current
+    ) {
       calculator.setInputAmount(initialInputValue)
       stateMachine.setSource('input')
+      lastInitialValueRef.current = initialInputValue
     }
-  }, [initialInputValue, calculator, stateMachine])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialInputValue])
 
   // Clear output when exchange rate becomes unavailable
   useEffect(() => {
@@ -115,9 +121,9 @@ export const useSwapCalculations = ({
 
       stateMachine.beginUpdate()
       stateMachine.setSource('input')
+      stateMachine.endUpdate()
       calculator.setInputAmount(value)
       onInputValueChange?.(value)
-      stateMachine.endUpdate()
     },
     [stateMachine, calculator, onInputValueChange]
   )
@@ -131,8 +137,8 @@ export const useSwapCalculations = ({
 
       stateMachine.beginUpdate()
       stateMachine.setSource('output')
-      calculator.setOutputAmount(value)
       stateMachine.endUpdate()
+      calculator.setOutputAmount(value)
     },
     [stateMachine, calculator]
   )
