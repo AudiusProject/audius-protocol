@@ -52,10 +52,21 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
       justifyContent='space-between'
       w='100%'
     >
-      <Flex gap='s' alignItems='center' w='100%'>
-        <TokenIcon logoURI={coin.logoUri} size='xl' hex />
-        <Flex column>
-          <TextLink to={assetDetailUrl} textVariant='title' size='s'>
+      <Flex gap='s' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
+        <TokenIcon
+          logoURI={coin.logoUri}
+          size='xl'
+          hex
+          css={{ minWidth: spacing.unit10, minHeight: spacing.unit10 }}
+        />
+        <Flex column css={{ overflow: 'hidden' }}>
+          <TextLink
+            to={assetDetailUrl}
+            textVariant='title'
+            size='s'
+            ellipses
+            css={{ display: 'block' }}
+          >
             {coin.name}
           </TextLink>
           <TextLink
@@ -63,14 +74,22 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             textVariant='body'
             size='s'
             strength='strong'
+            ellipses
+            css={{ display: 'block' }}
           >
             {coin.ticker}
           </TextLink>
         </Flex>
       </Flex>
-      <Flex w='100%' justifyContent='flex-start'>
+      <Flex w='100%' justifyContent='flex-start' css={{ overflow: 'hidden' }}>
         {ownerId ? (
-          <UserLink userId={ownerId} size='s' badgeSize='xs' />
+          <UserLink
+            userId={ownerId}
+            size='s'
+            badgeSize='xs'
+            ellipses
+            fullWidth
+          />
         ) : (
           <Skeleton h='24px' w='100px' />
         )}
