@@ -15,7 +15,7 @@ export const AssetDetailPage = () => {
     isPending,
     isSuccess,
     error: coinError
-  } = useArtistCoinByTicker({ ticker: ticker })
+  } = useArtistCoinByTicker({ ticker })
 
   if (!ticker) {
     return <Redirect to='/wallet' />
@@ -37,7 +37,12 @@ export const AssetDetailPage = () => {
     return <Redirect to='/wallet' />
   }
 
-  return <AssetDetailPageContent mint={coin?.mint} title={coin?.ticker} />
+  return (
+    <AssetDetailPageContent
+      mint={coin?.mint ?? ''}
+      title={coin?.ticker ?? ''}
+    />
+  )
 }
 
 type AssetDetailPageContentProps = {
