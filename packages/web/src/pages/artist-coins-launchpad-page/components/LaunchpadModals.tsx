@@ -293,13 +293,15 @@ export const LaunchpadSubmitModal = ({
   const { values } = useFormikContext()
   const { coinName, coinSymbol, receiveAmount, payAmount } =
     values as SetupFormValues
+  
+  // Use fake data for testing if no real data is available
   const coin = {
     mint: mintAddress,
-    name: coinName,
-    ticker: coinSymbol,
-    logoUri,
-    amountUi: receiveAmount,
-    amountUsd: receiveAmount
+    name: coinName || 'Test Artist Coin',
+    ticker: coinSymbol || 'TAC',
+    logoUri: logoUri || 'https://via.placeholder.com/200x200/6366f1/ffffff?text=TEST',
+    amountUi: receiveAmount || '1,000,000',
+    amountUsd: payAmount || '415.00'
   }
   const payAmountParsed = useMemo(
     () =>

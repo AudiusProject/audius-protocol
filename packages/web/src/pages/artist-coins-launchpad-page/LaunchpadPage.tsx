@@ -267,17 +267,33 @@ export const LaunchpadPage = () => {
     isError
   } = useLaunchCoin()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showFakeSuccess, setShowFakeSuccess] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
 
+  // Fake data for testing the success modal UI
+  const fakeCoinData = {
+    newMint: 'So11111111111111111111111111111111111111112',
+    logoUri: 'https://via.placeholder.com/200x200/6366f1/ffffff?text=TEST',
+    coinName: 'Test Artist Coin',
+    coinSymbol: 'TAC',
+    amountUi: '1,000,000',
+    amountUsd: '415.00'
+  }
+
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
+      // TEMPORARY: Show fake success modal immediately for UI testing
+      setIsModalOpen(true)
+      setShowFakeSuccess(true)
+      
+      // Comment out the real coin launch for now
+      /*
       // Get the most recent connected Solana wallet (last in the array)
       // Filter to only Solana wallets since only SOL wallets can be connected
       const connectedWallet: ConnectedWallet | undefined =
         getConnectedWallet(connectedWallets)
 
-      setIsModalOpen(true)
       if (!user) {
         throw new Error('No current user found for unknown reason')
       }
@@ -303,6 +319,7 @@ export const LaunchpadPage = () => {
         walletPublicKey: connectedWallet.address,
         initialBuyAmountSolLamports: payAmountLamports
       })
+      */
     },
     [launchCoin, user, connectedWallets]
   )
@@ -323,13 +340,16 @@ export const LaunchpadPage = () => {
     >
       <Form>
         <LaunchpadSubmitModal
-          isPending={isPending}
-          isSuccess={isSuccess}
-          isError={isError}
+          isPending={false}
+          isSuccess={showFakeSuccess}
+          isError={false}
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          mintAddress={launchCoinResponse?.newMint}
-          logoUri={launchCoinResponse?.logoUri}
+          onClose={() => {
+            setIsModalOpen(false)
+            setShowFakeSuccess(false)
+          }}
+          mintAddress={showFakeSuccess ? fakeCoinData.newMint : launchCoinResponse?.newMint}
+          logoUri={showFakeSuccess ? fakeCoinData.logoUri : launchCoinResponse?.logoUri}
         />
         <LaunchpadPageContent />
       </Form>
