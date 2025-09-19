@@ -52,8 +52,12 @@ const messages = {
   createCoin: 'Create Coin',
   max: 'MAX',
   audioBalance: (balance: string) => `${balance} $AUDIO`,
-  buyAudio: 'Buy $AUDIO'
+  buyAudio: 'Buy $AUDIO',
+  audioInputLabel: 'AUDIO'
 }
+
+// Not to be confused with AUDIO_DECIMALS - this is the amount of decimal places the input will alow you to enter
+const FORM_INPUT_DECIMALS = 8
 
 const INPUT_DEBOUNCE_TIME = 400
 
@@ -89,8 +93,6 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
       audioBalanceInt: Number(AUDIO(audioBalance).toFixed(2))
     }
   }, [audioBalance])
-
-  console.log('audioBalance', audioBalance)
 
   const imageUrl = useFormImageUrl(values.coinImage)
 
@@ -251,7 +253,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                   <Flex gap='xs'>
                     <IconWallet color='subdued' />
                     <Text variant='body' size='m' color='subdued'>
-                      {audioBalanceString} $AUDIO
+                      {messages.audioBalance(audioBalanceString)}
                     </Text>
                   </Flex>
                 </Flex>
@@ -259,8 +261,8 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               <Flex gap='s' w='100%'>
                 <TokenAmountInput
                   label={messages.youPay}
-                  tokenLabel='AUDIO'
-                  decimals={8}
+                  tokenLabel={messages.audioInputLabel}
+                  decimals={FORM_INPUT_DECIMALS}
                   value={values[FIELDS.payAmount] ?? ''}
                   onChange={handlePayAmountChange}
                   placeholder='0.00'

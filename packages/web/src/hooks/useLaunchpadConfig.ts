@@ -5,6 +5,11 @@ import {
 } from '@audius/common/api'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
+import {
+  AUDIO_DECIMALS,
+  TOKEN_DECIMALS
+} from 'pages/artist-coins-launchpad-page/constants'
+
 type LaunchpadConfigHookResponse = {
   maxAudioInputAmount: number
   maxTokenOutputAmount: number
@@ -25,10 +30,10 @@ const getLaunchpadConfigQueryFn =
 
     return {
       maxAudioInputAmount: Math.ceil(
-        Number(launchpadConfigRes.maxAudioInputAmount) / 10 ** 8
+        Number(launchpadConfigRes.maxAudioInputAmount) / 10 ** AUDIO_DECIMALS
       ),
       maxTokenOutputAmount: Math.floor(
-        Number(launchpadConfigRes.maxTokenOutputAmount) / 10 ** 9
+        Number(launchpadConfigRes.maxTokenOutputAmount) / 10 ** TOKEN_DECIMALS
       )
     } as LaunchpadConfigHookResponse
   }

@@ -76,29 +76,20 @@ export const useLaunchCoin = () => {
           throw new Error('Missing solana wallet keypair')
         }
 
-        const signTx = async (transactionSerialized: string) => {
+        const signAndSendTx = async (transactionSerialized: string) => {
           // Transaction is sent from the backend as a serialized base64 string
           const deserializedTx = VersionedTransaction.deserialize(
             Buffer.from(transactionSerialized, 'base64')
           )
 
           // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
-          return await solanaProvider.signTransaction(deserializedTx)
-        }
-
-        const sendTx = async (transaction: VersionedTransaction) => {
-          const txSignature = await solanaProvider.sendTransaction(
-            transaction,
-            await sdk.services.solanaClient.connection
-          )
-          // TODO: retries here?
-          // Wait for confirmation
+          const signature =
+            await solanaProvider.signAndSendTransaction(deserializedTx)
           await sdk.services.solanaClient.connection.confirmTransaction(
-            txSignature,
+            signature,
             'confirmed'
           )
-
-          return txSignature
+          return signature
         }
 
         const walletPublicKey = new PublicKey(walletPublicKeyStr)
@@ -133,15 +124,8 @@ export const useLaunchCoin = () => {
          * Pool creation - sign & send TX
          */
         console.log('Signing pool tx')
-        const createPoolTxSigned = await signTx(createPoolTxSerialized)
-        progress.poolTxSigned = true
-        console.log('Pool tx signed')
-
-        const createPoolTxSignature = await sendTx(createPoolTxSigned)
-        console.log(
-          'Pool created successfully! createPoolTxSignature',
-          createPoolTxSignature
-        )
+        await signAndSendTx(createPoolTxSerialized)
+        console.log('Pool tx signed & confirmed')
         progress.poolCreateConfirmed = true
 
         /*
@@ -165,7 +149,7 @@ export const useLaunchCoin = () => {
           progress.sdkCoinAdded = true
           console.log('Coin added to Audius database', coinRes)
         } catch (e) {
-          // TODO: report critical error here
+          // TODO: report critical errors here
           console.error('Error adding coin to Audius database', e)
         }
 
@@ -173,12 +157,8 @@ export const useLaunchCoin = () => {
         if (firstBuyTxSerialized && initialBuyAmountAudio) {
           // First buy
           console.log('Sending first buy tx to user to sign')
-          const firstBuyTxSigned = await signTx(firstBuyTxSerialized)
-          progress.firstBuyTxSigned = true
-          console.log('First buy tx signed')
-          const firstBuyTxSignature = await sendTx(firstBuyTxSigned)
+          await signAndSendTx(firstBuyTxSerialized)
           progress.firstBuyConfirmed = true
-          console.log('First buy tx confirmed', firstBuyTxSignature)
         }
 
         return {
@@ -186,6 +166,7 @@ export const useLaunchCoin = () => {
           logoUri: imageUri
         }
       } catch (error) {
+        console.error({ progress })
         console.error('Error launching coin:', error)
         throw error instanceof Error
           ? error
