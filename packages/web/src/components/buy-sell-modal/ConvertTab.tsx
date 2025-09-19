@@ -84,6 +84,13 @@ export const ConvertTab = ({
     ) // Remove duplicates
   }, [availableOutputTokens, artistCoins])
 
+  // Filter out the currently selected input token from available output tokens
+  const filteredAvailableOutputTokens = useMemo(() => {
+    return totalAvailableTokens.filter(
+      (token) => token.symbol !== selectedInputToken.symbol
+    )
+  }, [totalAvailableTokens, selectedInputToken.symbol])
+
   // Generic token change handler with automatic swapping when only 2 tokens are available
   const createTokenChangeHandler = useCallback(
     (
@@ -177,7 +184,7 @@ export const ConvertTab = ({
             tokenPrice={tokenPrice}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
-            availableTokens={totalAvailableTokens}
+            availableTokens={filteredAvailableOutputTokens}
             onTokenChange={handleOutputTokenChange}
             isArtistCoinsEnabled={isArtistCoinsEnabled}
           />

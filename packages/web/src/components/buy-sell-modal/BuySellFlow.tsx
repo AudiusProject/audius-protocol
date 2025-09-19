@@ -175,10 +175,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
 
   const availableOutputTokensForConvert = useMemo(() => {
-    return availableTokens.filter(
-      (t) => t.symbol !== quoteTokenSymbol && t.symbol !== baseTokenSymbol
-    )
-  }, [availableTokens, quoteTokenSymbol, baseTokenSymbol])
+    return availableTokens.filter((t) => t.symbol !== baseTokenSymbol)
+  }, [availableTokens, baseTokenSymbol])
 
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
