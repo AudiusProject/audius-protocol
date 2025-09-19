@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 
 import { musicConfettiActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
@@ -8,17 +9,20 @@ import {
   Flex,
   Hint,
   IconInfo,
+  IconShare,
   IconX,
   LoadingSpinner,
   Modal,
   ModalContent,
   ModalHeader,
+  ModalTitle,
   Paper,
   Text,
   TextLink
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
@@ -34,11 +38,14 @@ const messages = {
   congratsTitle: '🎉 Congrats!',
   title: 'Create Your Artist Coin',
   congratsDescription:
-    'Congrats on launching your artist coin on Audius! Time to share the good news with your community of fans.',
+    'Congrats on launching your artist coin on Audius! Time to share the good news with your fans.',
   purchaseSummary: 'Purchase Summary',
   address: 'Coin Address',
   addressTitle: 'Coin Address',
-  shareToX: 'Share to X',
+  shareToX: 'Share To X',
+  uploadCoinGatedTrack: 'Upload Coin Gated Track',
+  copyAddress: 'Copy Address',
+  viewOnExplorer: 'View on Solscan',
   insufficientBalanceTitle: 'Check your wallet balance',
   insufficientBalanceDescription:
     "You'll need to add funds to your wallet before you can continue.",
@@ -101,18 +108,26 @@ const SuccessState = ({
     }
   }, [dispatch])
 
+  const navigate = useNavigate()
+
+  const handleUploadCoinGatedTrack = () => {
+    navigate(route.UPLOAD_PAGE)
+  }
+
+  const handleShareToX = () => {
+    const shareText = `My artist coin $${ticker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
+    window.open(shareUrl, '_blank')
+  }
+
   return (
     <>
       <ConnectedMusicConfetti />
       <ModalHeader showDismissButton>
-        <Flex justifyContent='center'>
-          <Text variant='label' size='xl' color='default' strength='strong'>
-            {messages.congratsTitle}
-          </Text>
-        </Flex>
+        <ModalTitle title={messages.congratsTitle} />
       </ModalHeader>
       <ModalContent>
-        <Flex column alignItems='center' justifyContent='center' gap='2xl'>
+        <Flex column gap='2xl' w='100%'>
           {/* Congratulatory Message */}
           <Text variant='body' size='l' color='default'>
             {messages.congratsDescription}
@@ -120,25 +135,16 @@ const SuccessState = ({
 
           {/* Purchase Summary */}
           <Flex column gap='m' w='100%'>
-            <Text
-              variant='label'
-              size='s'
-              color='subdued'
-              css={{ textTransform: 'uppercase' }}
-            >
+            <Text variant='label' size='l' color='subdued'>
               {messages.purchaseSummary}
             </Text>
             <Paper
-              p='l'
-              gap='l'
-              column
+              p='m'
+              gap='m'
               w='100%'
-              borderRadius='m'
+              borderRadius='s'
               border='default'
               backgroundColor='surface1'
-              css={{
-                boxShadow: 'none'
-              }}
             >
               <Flex alignItems='center' gap='m' w='100%'>
                 <Artwork src={logoUri} w='48px' h='48px' hex borderWidth={0} />
@@ -152,15 +158,10 @@ const SuccessState = ({
                     justifyContent='space-between'
                     w='100%'
                   >
-                    <Flex alignItems='center' gap='xs'>
-                      <Text variant='body' size='s' color='default'>
-                        {amountUi}
-                      </Text>
-                      <Text variant='body' size='s' color='subdued'>
-                        ${ticker}
-                      </Text>
-                    </Flex>
-                    <Text variant='body' size='s' color='default'>
+                    <Text variant='title' size='s' strength='weak'>
+                      {amountUi} <Text color='subdued'>${ticker}</Text>
+                    </Text>
+                    <Text variant='title' size='s' strength='weak'>
                       ${amountUsd}
                     </Text>
                   </Flex>
@@ -169,30 +170,34 @@ const SuccessState = ({
             </Paper>
           </Flex>
 
-          {/* Contract Address */}
+          {/* Contract Address Section */}
           <Flex column gap='m' w='100%'>
-            <Text
-              variant='label'
-              size='s'
-              color='subdued'
-              css={{ textTransform: 'uppercase' }}
-            >
+            <Text variant='label' size='l' color='subdued'>
               {messages.addressTitle}
             </Text>
             <AddressTile address={mint} />
           </Flex>
 
-          {/* X Share Button */}
-          <Button
-            variant='secondary'
-            fullWidth
-            onClick={() => {
-              // TODO: Implement share to X
-            }}
-            iconLeft={IconX}
-          >
-            {messages.shareToX}
-          </Button>
+          {/* Action Buttons */}
+          <Flex column gap='s' w='100%'>
+            <Button
+              variant='primary'
+              fullWidth
+              onClick={handleUploadCoinGatedTrack}
+              iconLeft={IconShare}
+            >
+              {messages.uploadCoinGatedTrack}
+            </Button>
+
+            <Button
+              variant='secondary'
+              fullWidth
+              onClick={handleShareToX}
+              iconLeft={IconX}
+            >
+              {messages.shareToX}
+            </Button>
+          </Flex>
         </Flex>
       </ModalContent>
     </>
@@ -221,6 +226,8 @@ export const LaunchpadSubmitModal = ({
   const { values } = useFormikContext()
   const { coinName, coinSymbol, receiveAmount, payAmount } =
     values as SetupFormValues
+
+  // Use fake data for testing if no real data is available
   const coin = {
     mint: mintAddress,
     name: coinName,
@@ -240,6 +247,7 @@ export const LaunchpadSubmitModal = ({
   return (
     <Modal
       isOpen={isOpen}
+      size={isSuccess ? 'small' : undefined}
       onClose={() => {
         if (isSuccess || isError) {
           onClose()
