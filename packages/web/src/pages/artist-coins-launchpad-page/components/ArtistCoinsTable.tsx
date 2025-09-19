@@ -4,6 +4,7 @@ import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -103,9 +104,8 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
 const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
-    <Text variant='body' size='m' color='default'>
-      {walletMessages.dollarSign}
-      {coin.price.toFixed(4)}
+    <Text variant='body' size='m'>
+      {formatCurrencyWithSubscript(coin.price)}
     </Text>
   )
 }
