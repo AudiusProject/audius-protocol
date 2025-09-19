@@ -5,7 +5,8 @@ import {
   isContentUSDCPurchaseGated,
   AccessConditions,
   Name,
-  isContentTokenGated
+  isContentTokenGated,
+  TokenGatedConditions
 } from '@audius/common/models'
 import { useBuySellModal } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
@@ -54,7 +55,8 @@ export const GatedConditionsPill = ({
   }
 
   const { data: token } = useArtistCoin(
-    isTokenGated ? streamConditions.token_gate.token_mint : ''
+    (streamConditions as TokenGatedConditions).token_gate.token_mint,
+    { enabled: isTokenGated }
   )
 
   const { onOpen: openBuySellModal } = useBuySellModal()
