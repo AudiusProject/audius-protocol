@@ -30,6 +30,7 @@ import { TextLink, UserLink } from 'components/link'
 import { dateSorter, numericSorter, Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useMainContentRef } from 'pages/MainContentContext'
+import { env } from 'services/env'
 
 import styles from './ArtistCoinsTable.module.css'
 
@@ -271,13 +272,16 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   )
   const [page, setPage] = useState(0)
 
-  const { data: coins, isPending } = useArtistCoins({
+  const { data: coinsData, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
     query: searchQuery,
     limit: ARTIST_COINS_BATCH_SIZE,
     offset: page * ARTIST_COINS_BATCH_SIZE
   })
+  const coins = coinsData?.filter(
+    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+  )
 
   const fetchMore = useCallback((offset: number) => {
     setPage(Math.floor(offset / ARTIST_COINS_BATCH_SIZE))
