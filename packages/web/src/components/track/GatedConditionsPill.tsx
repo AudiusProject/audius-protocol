@@ -55,7 +55,7 @@ export const GatedConditionsPill = ({
   }
 
   const { data: token } = useArtistCoin(
-    (streamConditions as TokenGatedConditions).token_gate.token_mint,
+    (streamConditions as TokenGatedConditions)?.token_gate?.token_mint,
     { enabled: isTokenGated }
   )
 

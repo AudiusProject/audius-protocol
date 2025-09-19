@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { HashId } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { SLIPPAGE_BPS, useCurrentAccountUser, useSwapTokens } from '~/api'
+import {
+  SLIPPAGE_BPS,
+  useArtistCoin,
+  useCurrentAccountUser,
+  useSwapTokens,
+  useUser,
+  useUserTracksByHandle
+} from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
+import { isContentTokenGated } from '~/models'
 
 import type {
   BuySellTab,
@@ -38,6 +47,25 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
   const [isRetrying, setIsRetrying] = useState(false)
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSwapDataRef = useRef<any>(null)
+
+  const { data: baseCoin } = useArtistCoin(selectedPair.baseToken.address ?? '')
+  const { data: quoteCoin } = useArtistCoin(
+    selectedPair.quoteToken.address ?? ''
+  )
+  const baseOwnerId = baseCoin?.ownerId ? HashId.parse(baseCoin?.ownerId) : null
+  const quoteOwnerId = quoteCoin?.ownerId
+    ? HashId.parse(quoteCoin?.ownerId)
+    : null
+
+  const { data: baseUser } = useUser(baseOwnerId)
+  const { data: quoteUser } = useUser(quoteOwnerId)
+
+  const { data: baseUserTracks } = useUserTracksByHandle({
+    handle: baseUser?.handle
+  })
+  const { data: quoteUserTracks } = useUserTracksByHandle({
+    handle: quoteUser?.handle
+  })
 
   const MAX_RETRIES = 3
   const RETRY_DELAY = 2000
@@ -90,6 +118,26 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.userCoins]
       })
+
+      // Invalidate track queries to provide track access if the user has traded the artist coin
+      if (baseUserTracks?.length) {
+        baseUserTracks.forEach((track) => {
+          if (isContentTokenGated(track.stream_conditions)) {
+            queryClient.invalidateQueries({
+              queryKey: [QUERY_KEYS.track, track.track_id]
+            })
+          }
+        })
+      }
+      if (quoteUserTracks?.length) {
+        quoteUserTracks.forEach((track) => {
+          if (isContentTokenGated(track.stream_conditions)) {
+            queryClient.invalidateQueries({
+              queryKey: [QUERY_KEYS.track, track.track_id]
+            })
+          }
+        })
+      }
     }
     if (user?.spl_wallet) {
       queryClient.invalidateQueries({
