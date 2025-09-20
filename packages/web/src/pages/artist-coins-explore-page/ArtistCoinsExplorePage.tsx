@@ -128,14 +128,14 @@ const DesktopArtistCoinsExplorePage = () => {
               <Tooltip
                 text={messages.getStartedTooltip}
                 placement='top'
-                // disabled={isVerified}
+                disabled={isVerified}
               >
                 {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
                 <Flex>
                   <Button
                     onClick={handleGetStarted}
                     fullWidth
-                    // disabled={!isVerified}
+                    disabled={!isVerified}
                     css={{
                       background: isVerified
                         ? 'var(--harmony-coin-gradient)'
