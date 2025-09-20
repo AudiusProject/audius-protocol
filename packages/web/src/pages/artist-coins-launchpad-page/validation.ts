@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
-import { useConnectedWallets, useWalletAudioBalances } from '@audius/common/api'
+import { useConnectedWallets, useWalletAudioBalance } from '@audius/common/api'
+import { Chain } from '@audius/common/models'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { AUDIO } from '@audius/fixed-decimal'
 import { z } from 'zod'
@@ -130,26 +131,22 @@ export const useLaunchpadFormSchema = () => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
-  const { data: audioBalanceArr } = useWalletAudioBalances({
-    wallets: connectedWallet
-      ? [{ address: connectedWallet?.address, chain: connectedWallet?.chain }]
-      : []
+  const { data: audioBalance } = useWalletAudioBalance({
+    address: connectedWallet?.address ?? '',
+    chain: connectedWallet?.chain ?? Chain.Sol
   })
   const { audioBalanceNumber } = useMemo(() => {
-    if (!audioBalanceArr || !audioBalanceArr[0].balance) {
+    if (!audioBalance) {
       return { audioBalanceString: '0.00', audioBalanceNumber: 0 }
     }
     return {
-      audioBalanceString: AUDIO(audioBalanceArr[0].balance).toLocaleString(
-        'en-US',
-        {
-          maximumFractionDigits: 2,
-          roundingMode: 'trunc'
-        }
-      ),
-      audioBalanceNumber: Number(AUDIO(audioBalanceArr[0].balance).toFixed(2))
+      audioBalanceString: AUDIO(audioBalance).toLocaleString('en-US', {
+        maximumFractionDigits: 2,
+        roundingMode: 'trunc'
+      }),
+      audioBalanceNumber: Number(AUDIO(audioBalance).toFixed(2))
     }
-  }, [audioBalanceArr])
+  }, [audioBalance])
 
   return useMemo(() => {
     return {

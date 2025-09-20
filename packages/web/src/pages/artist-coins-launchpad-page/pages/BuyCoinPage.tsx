@@ -28,6 +28,7 @@ import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
+import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
 import type { PhasePageProps, SetupFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 import { getLatestConnectedWallet } from '../utils'
@@ -78,6 +79,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(true)
   const { data: audioBalance } = useWalletAudioBalance({
     address: connectedWallet!.address,
     chain: connectedWallet!.chain
@@ -194,6 +196,10 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   )
   return (
     <>
+      <LaunchpadBuyModal
+        isOpen={isBuyModalOpen}
+        onClose={() => setIsBuyModalOpen(false)}
+      />
       <Flex
         direction='column'
         alignItems='center'
@@ -226,7 +232,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 <Flex gap='s'>
                   <TextLink
                     variant='visible'
-                    // TODO: onclick show modals
+                    onClick={() => setIsBuyModalOpen(true)}
                   >
                     {messages.buyAudio}
                   </TextLink>

@@ -4,6 +4,7 @@ import { formatTokenPrice } from '../api/tan-query/jupiter/utils'
 
 export const buySellMessages = {
   title: 'BUY / SELL',
+  buyAudioTitle: 'Buy $AUDIO',
   buy: 'Buy',
   sell: 'Sell',
   convert: 'Convert',
