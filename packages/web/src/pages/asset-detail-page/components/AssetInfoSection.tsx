@@ -9,6 +9,7 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
+import { profilePage } from '@audius/common/src/utils/route'
 import {
   Flex,
   Paper,
@@ -205,6 +206,8 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   )
   const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
+  const userTokenOwnerId = userToken?.ownerId
+  const { data: user } = useUser(userTokenOwnerId)
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
@@ -213,7 +216,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   }
 
   const handleLearnMore = () => {
-    window.open(coin?.website, '_blank')
+    window.open(coin?.website ?? profilePage(user?.handle) ?? '', '_blank')
   }
 
   const handleBrowseRewards = useCallback(() => {
@@ -311,16 +314,30 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
             </PlainButton>
           </Flex>
         </Flex>
-        <Flex
-          alignItems='center'
-          justifyContent='space-between'
-          alignSelf='stretch'
-          p='l'
-          borderTop='default'
-        >
-          <Flex alignItems='center' justifyContent='center' gap='s'>
-            {isUserBalanceUnavailable ? (
-              <Tooltip text={messages.discordDisabledTooltip(coin?.ticker)}>
+        {userToken?.hasDiscord ? (
+          <Flex
+            alignItems='center'
+            justifyContent='space-between'
+            alignSelf='stretch'
+            p='l'
+            borderTop='default'
+          >
+            <Flex alignItems='center' justifyContent='center' gap='s'>
+              {isUserBalanceUnavailable ? (
+                <Tooltip text={messages.discordDisabledTooltip(coin?.ticker)}>
+                  <Flex style={{ cursor: 'pointer' }}>
+                    <PlainButton
+                      onClick={openDiscord}
+                      iconLeft={IconDiscord}
+                      variant='default'
+                      size='large'
+                      disabled={isUserBalanceUnavailable}
+                    >
+                      {messages.openDiscord}
+                    </PlainButton>
+                  </Flex>
+                </Tooltip>
+              ) : (
                 <Flex style={{ cursor: 'pointer' }}>
                   <PlainButton
                     onClick={openDiscord}
@@ -332,22 +349,10 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                     {messages.openDiscord}
                   </PlainButton>
                 </Flex>
-              </Tooltip>
-            ) : (
-              <Flex style={{ cursor: 'pointer' }}>
-                <PlainButton
-                  onClick={openDiscord}
-                  iconLeft={IconDiscord}
-                  variant='default'
-                  size='large'
-                  disabled={isUserBalanceUnavailable}
-                >
-                  {messages.openDiscord}
-                </PlainButton>
-              </Flex>
-            )}
+              )}
+            </Flex>
           </Flex>
-        </Flex>
+        ) : null}
       </Paper>
     </>
   )
