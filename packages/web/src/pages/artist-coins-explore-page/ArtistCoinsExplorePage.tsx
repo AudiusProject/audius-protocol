@@ -1,6 +1,10 @@
 import { useCallback, useState, ChangeEvent } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import {
+  useCurrentAccountUser,
+  useCurrentUserId,
+  useUserCreatedCoins
+} from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { COINS_CREATE_PAGE } from '@audius/common/src/utils/route'
 import {
@@ -44,7 +48,8 @@ const messages = {
     'Offer exclusive perks to your fans'
   ],
   help: 'Help',
-  getStartedTooltip: 'Verified users only'
+  getStartedTooltip: 'Verified users only',
+  alreadyHasCoinTooltip: 'You already have an artist coin'
 }
 
 // Desktop version
@@ -52,12 +57,20 @@ const DesktopArtistCoinsExplorePage = () => {
   const navigate = useNavigate()
   const [searchValue, setSearchValue] = useState('')
   const { data: currentUser } = useCurrentAccountUser()
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: createdCoins } = useUserCreatedCoins({
+    userId: currentUserId
+  })
 
   const isVerified = currentUser?.is_verified ?? false
+  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
+  const canLaunchCoin = isVerified && !hasExistingArtistCoin
 
   const handleGetStarted = useCallback(() => {
-    navigate(COINS_CREATE_PAGE)
-  }, [navigate])
+    if (canLaunchCoin) {
+      navigate(COINS_CREATE_PAGE)
+    }
+  }, [navigate, canLaunchCoin])
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value)
@@ -126,18 +139,24 @@ const DesktopArtistCoinsExplorePage = () => {
               </Flex>
 
               <Tooltip
-                text={messages.getStartedTooltip}
+                text={
+                  !isVerified
+                    ? messages.getStartedTooltip
+                    : hasExistingArtistCoin
+                      ? messages.alreadyHasCoinTooltip
+                      : ''
+                }
                 placement='top'
-                disabled={isVerified}
+                disabled={canLaunchCoin}
               >
                 {/* Need to wrap with Flex because disabled button doesn't capture mouse events */}
                 <Flex>
                   <Button
                     onClick={handleGetStarted}
                     fullWidth
-                    disabled={!isVerified}
+                    disabled={!canLaunchCoin}
                     css={{
-                      background: isVerified
+                      background: canLaunchCoin
                         ? 'var(--harmony-coin-gradient)'
                         : undefined
                     }}

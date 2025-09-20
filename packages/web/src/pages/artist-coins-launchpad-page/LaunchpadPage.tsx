@@ -5,9 +5,12 @@ import {
   getWalletSolBalanceOptions,
   useConnectedWallets,
   useCurrentAccountUser,
-  useQueryContext
+  useCurrentUserId,
+  useQueryContext,
+  useUserCreatedCoins
 } from '@audius/common/api'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
+import { COINS_EXPLORE_PAGE } from '@audius/common/src/utils/route'
 import { shortenSPLAddress } from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
 import { Flex, IconArtistCoin, Text } from '@audius/harmony'
@@ -15,6 +18,7 @@ import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
+import { Navigate } from 'react-router-dom-v5-compat'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { Header } from 'components/header/desktop/Header'
@@ -245,6 +249,15 @@ const LaunchpadPageContent = () => {
 }
 
 export const LaunchpadPage = () => {
+  const { data: currentUser } = useCurrentAccountUser()
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: createdCoins } = useUserCreatedCoins({
+    userId: currentUserId
+  })
+
+  const isVerified = currentUser?.is_verified ?? false
+  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
+
   const {
     mutate: launchCoin,
     isPending,
@@ -288,6 +301,11 @@ export const LaunchpadPage = () => {
     },
     [launchCoin, user, connectedWallets]
   )
+
+  // Redirect if user is not verified or already has an artist coin
+  if (!isVerified || hasExistingArtistCoin) {
+    return <Navigate to={COINS_EXPLORE_PAGE} replace />
+  }
 
   return (
     <Formik
