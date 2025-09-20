@@ -55,14 +55,10 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
       colors={
         locked
           ? [color.neutral.n400, color.neutral.n400]
-          : [
-              color.special.coinGradientColor1,
-              color.special.coinGradientColor2,
-              color.special.coinGradientColor3
-            ]
+          : color.special.coinGradient.colors
       }
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      start={locked ? { x: 0, y: 0 } : color.special.coinGradient.start}
+      end={locked ? { x: 1, y: 1 } : color.special.coinGradient.end}
       style={{ borderRadius: 10 }}
     >
       <View style={styles.root}>

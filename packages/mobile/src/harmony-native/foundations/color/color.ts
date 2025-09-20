@@ -71,26 +71,32 @@ const primitiveOverrides = {
 const semanticOverrides = {
   day: {
     text: {
-      heading: primitiveOverrides.day.special.gradient
+      heading: primitiveOverrides.day.special.gradient,
+      artistCoin: primitiveOverrides.day.special.coinGradient
     },
     icon: {
-      heading: primitiveOverrides.day.special.gradient
+      heading: primitiveOverrides.day.special.gradient,
+      artistCoin: primitiveOverrides.day.special.coinGradient
     }
   },
   dark: {
     text: {
-      heading: primitiveOverrides.dark.special.gradient
+      heading: primitiveOverrides.dark.special.gradient,
+      artistCoin: primitiveOverrides.dark.special.coinGradient
     },
     icon: {
-      heading: primitiveOverrides.dark.special.gradient
+      heading: primitiveOverrides.dark.special.gradient,
+      artistCoin: primitiveOverrides.dark.special.coinGradient
     }
   },
   matrix: {
     text: {
-      heading: primitiveOverrides.matrix.special.gradient
+      heading: primitiveOverrides.matrix.special.gradient,
+      artistCoin: primitiveOverrides.matrix.special.coinGradient
     },
     icon: {
-      heading: primitiveOverrides.matrix.special.gradient
+      heading: primitiveOverrides.matrix.special.gradient,
+      artistCoin: primitiveOverrides.matrix.special.coinGradient
     }
   }
 }
@@ -151,6 +157,7 @@ export const primitiveTheme = merge(
 )
 
 export type {
+  BackgroundColors,
   IconColors,
   SpecialColors,
   TextColors
