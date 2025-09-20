@@ -134,6 +134,7 @@ def validate_user_metadata(
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
         handle_lower = validate_user_handle(user_metadata["handle"])
+        validate_user_name(user_metadata["name"])
         user_handle_exists = session.query(
             session.query(User).filter(User.handle_lc == handle_lower).exists()
         ).scalar()
@@ -190,6 +191,14 @@ def validate_user_handle(handle: Union[str, None]):
     if any(badword in handle for badword in handle_badwords_lower):
         raise IndexingValidationError(f"Handle {handle} contains a bad word")
     return handle
+
+
+def validate_user_name(name: Union[str, None]):
+    if not name:
+        return name
+    if any(badword in name.lower() for badword in handle_badwords_lower):
+        raise IndexingValidationError(f"Name {name} contains a bad word")
+    return name
 
 
 def create_user(params: ManageEntityParameters):
