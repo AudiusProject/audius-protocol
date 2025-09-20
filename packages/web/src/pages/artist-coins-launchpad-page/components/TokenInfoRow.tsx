@@ -1,10 +1,12 @@
+import { ReactNode } from 'react'
+
 import { Flex, IconInfo, Text } from '@audius/harmony'
 
 import { Tooltip } from 'components/tooltip'
 
 type TokenInfoRowProps = {
   label: string
-  value: string
+  value: string | ReactNode
   hasTooltip?: boolean
   tooltipContent?: string
 }
@@ -33,9 +35,13 @@ export const TokenInfoRow = ({
       ) : (
         tooltipTrigger
       )}
-      <Text variant='body' size='m' color='default'>
-        {value}
-      </Text>
+      {typeof value === 'string' ? (
+        <Text variant='body' size='m' color='default'>
+          {value}
+        </Text>
+      ) : (
+        value
+      )}
     </Flex>
   )
 }
