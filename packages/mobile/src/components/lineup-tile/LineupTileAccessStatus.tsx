@@ -174,9 +174,7 @@ export const LineupTileAccessStatus = ({
       >
         {isTokenGated ? (
           <LinearGradient
-            colors={color.special.coinGradient.colors}
-            start={color.special.coinGradient.start}
-            end={color.special.coinGradient.end}
+            {...color.special.coinGradient}
             style={{
               position: 'absolute',
               borderRadius: hasStreamAccess || isUnlocking ? 12 : 4,
