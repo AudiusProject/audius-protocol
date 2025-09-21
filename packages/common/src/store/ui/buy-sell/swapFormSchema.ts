@@ -3,6 +3,8 @@ import { z } from 'zod'
 
 import { buySellMessages as messages } from '../../../messages'
 
+import { TokenInfo } from './types'
+
 /**
  * Schema for validating token swap input
  */
@@ -85,4 +87,6 @@ export const createSwapFormSchema = (
 export type SwapFormValues = {
   inputAmount: string
   outputAmount: string
+  selectedInputToken: TokenInfo
+  selectedOutputToken: TokenInfo
 }

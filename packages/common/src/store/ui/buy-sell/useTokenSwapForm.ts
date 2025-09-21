@@ -56,6 +56,10 @@ export type TokenSwapFormProps = {
    * Callback for when input value changes (for persistence)
    */
   onInputValueChange?: (value: string) => void
+  /**
+   * Optional - specify a specific externalwallet address to use as the source of balance
+   */
+  externalWalletAddress?: string
 }
 
 /**
@@ -68,7 +72,8 @@ export const useTokenSwapForm = ({
   max: providedMax,
   onTransactionDataChange,
   initialInputValue = '',
-  onInputValueChange
+  onInputValueChange,
+  externalWalletAddress
 }: TokenSwapFormProps) => {
   // Get token price for USD-based limit calculations
   const { data: tokenPriceData } = useArtistCoin(inputToken.address)
@@ -94,7 +99,8 @@ export const useTokenSwapForm = ({
   const tokenData = useTokenData({
     inputToken,
     outputToken,
-    inputAmount: parseNumericAmount(initialInputValue)
+    inputAmount: parseNumericAmount(initialInputValue),
+    externalWalletAddress
   })
 
   const swapCalculations = useSwapCalculations({
@@ -134,7 +140,10 @@ export const useTokenSwapForm = ({
   const formik = useFormik<SwapFormValues>({
     initialValues: {
       inputAmount: initialInputValue,
-      outputAmount: '0'
+      outputAmount: '0',
+      // TODO: whats up with these types
+      selectedInputToken: inputToken,
+      selectedOutputToken: outputToken
     },
     validationSchema,
     validateOnBlur: true,
@@ -145,7 +154,13 @@ export const useTokenSwapForm = ({
     }
   })
 
-  const { values, setFieldValue, setFieldTouched } = formik
+  const {
+    values,
+    errors: formikErrors,
+    setFieldValue,
+    setFieldTouched,
+    setFieldError
+  } = formik
 
   // Refs to track last synced values to avoid circular dependencies
   const lastSyncedInputRef = useRef<string>('')
@@ -200,6 +215,15 @@ export const useTokenSwapForm = ({
 
   // Use validation from our composed hook
   const error = swapValidation.error
+  useEffect(() => {
+    if (error && !formikErrors.inputAmount) {
+      setFieldError('inputAmount', error)
+    }
+    // Clear error
+    if (!error) {
+      setFieldError('inputAmount', undefined)
+    }
+  }, [error, formikErrors.inputAmount, setFieldError])
   const isInsufficientBalance = swapValidation.isInsufficientBalance
 
   // Memoize the transaction data to prevent excessive callbacks

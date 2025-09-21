@@ -15,13 +15,15 @@ type USDCBalanceSectionProps = {
   tokenInfo: TokenInfo
   amount: string
   tooltipPlacement?: TooltipPlacement
+  hideTooltip?: boolean
 }
 
 export const USDCBalanceSection = ({
   title,
   tokenInfo,
   amount,
-  tooltipPlacement
+  tooltipPlacement,
+  hideTooltip
 }: USDCBalanceSectionProps) => {
   const isUsdc = tokenInfo.address === env.USDC_MINT_ADDRESS
   return (
@@ -37,7 +39,7 @@ export const USDCBalanceSection = ({
         <Text variant='heading' size='s' color='subdued'>
           {title}
         </Text>
-        <TooltipInfoIcon placement={tooltipPlacement} />
+        {!hideTooltip ? <TooltipInfoIcon placement={tooltipPlacement} /> : null}
         <Divider css={{ flexGrow: 1 }} />
       </Flex>
       <Text variant='heading' size='xl'>

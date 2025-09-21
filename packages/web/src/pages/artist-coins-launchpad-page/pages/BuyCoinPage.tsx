@@ -6,6 +6,7 @@ import {
   useWalletAudioBalance
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
+import { Chain } from '@audius/common/models'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Artwork,
@@ -81,8 +82,8 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   )
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(true)
   const { data: audioBalance } = useWalletAudioBalance({
-    address: connectedWallet!.address,
-    chain: connectedWallet!.chain
+    address: connectedWallet?.address ?? '',
+    chain: connectedWallet?.chain ?? Chain.Sol
   })
   const { audioBalanceString } = useMemo(() => {
     if (!audioBalance) {
@@ -196,10 +197,12 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   )
   return (
     <>
-      <LaunchpadBuyModal
-        isOpen={isBuyModalOpen}
-        onClose={() => setIsBuyModalOpen(false)}
-      />
+      {isBuyModalOpen ? (
+        <LaunchpadBuyModal
+          isOpen={isBuyModalOpen}
+          onClose={() => setIsBuyModalOpen(false)}
+        />
+      ) : null}
       <Flex
         direction='column'
         alignItems='center'

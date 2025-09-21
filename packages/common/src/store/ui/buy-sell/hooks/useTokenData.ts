@@ -1,11 +1,13 @@
 /**
  * Combined hook for managing token balance and exchange rate data
  * Consolidates data fetching and provides clean interface to consumers
+ * Supports fetching balance for any specified token mint address
  */
 
 import { useMemo } from 'react'
 
 import { useTokenBalance, useTokenExchangeRate } from '~/api'
+import { useExternalWalletBalance } from '~/api/tan-query/wallets/useExternalWalletBalance'
 
 import type { TokenInfo, TokenDataHookResult } from '../types/swap.types'
 import {
@@ -17,22 +19,54 @@ export type UseTokenDataProps = {
   inputToken: TokenInfo
   outputToken: TokenInfo
   inputAmount: number
+  externalWalletAddress?: string
+  /** The mint address of the token to fetch balance for. If not provided, defaults to inputToken.address */
+  mint?: string
 }
 
 /**
  * Hook that consolidates token balance and exchange rate fetching
  * Provides a clean interface with loading states and error handling
+ *
+ * @param inputToken - Token information for the input side of the swap
+ * @param outputToken - Token information for the output side of the swap
+ * @param inputAmount - Amount for exchange rate calculations
+ * @param externalWalletAddress - Optional external wallet address for balance fetching
+ * @param mint - Optional mint address for balance fetching. If not provided, defaults to inputToken.address
  */
 export const useTokenData = ({
   inputToken,
   outputToken,
-  inputAmount
+  inputAmount,
+  externalWalletAddress,
+  mint
 }: UseTokenDataProps): TokenDataHookResult => {
+  // Determine which mint to use for balance fetching
+  const balanceMint = mint ?? inputToken.address
+
   // Get token balance
-  const { data: balanceData, isPending: isBalanceLoading } = useTokenBalance({
-    mint: inputToken.address,
+  const {
+    data: internalWalletBalanceData,
+    isPending: isInternalWalletBalanceLoading
+  } = useTokenBalance({
+    mint: balanceMint,
     includeExternalWallets: false
   })
+
+  const {
+    data: externalWalletBalanceData,
+    isPending: isExternalWalletBalanceLoading
+  } = useExternalWalletBalance({
+    walletAddress: externalWalletAddress,
+    mint: balanceMint
+  })
+
+  const balanceData = externalWalletAddress
+    ? externalWalletBalanceData
+    : internalWalletBalanceData
+  const isBalanceLoading = externalWalletAddress
+    ? isExternalWalletBalanceLoading
+    : isInternalWalletBalanceLoading
 
   // Get token price for calculations (currently unused but may be needed for future features)
   // const { data: tokenPriceData } = useArtistCoin({ mint: inputToken.address })

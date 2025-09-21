@@ -33,6 +33,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["src", "index.d.ts"],
+  "include": ["src", "index.d.ts", "../web/src/hooks/useExternalWalletSwap.ts"],
   "exclude": ["node_modules", "dist", "rollup.config.js"]
 }

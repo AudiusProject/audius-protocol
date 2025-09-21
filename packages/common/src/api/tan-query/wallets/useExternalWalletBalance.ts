@@ -22,28 +22,28 @@ import { toErrorWithMessage } from '~/utils/error'
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryOptions } from '../types'
 
-type UseExternalWalletTokenBalanceParams = {
+type UseExternalWalletBalanceParams = {
   walletAddress: string
   mint: string
 }
 
-const getExternalWalletTokenBalanceQueryKey = ({
+export const getExternalWalletBalanceQueryKey = ({
   walletAddress,
   mint
-}: UseExternalWalletTokenBalanceParams) =>
-  [QUERY_KEYS.externalWalletTokenBalance, { walletAddress, mint }] as const
+}: UseExternalWalletBalanceParams) =>
+  [QUERY_KEYS.externalWalletBalance, { walletAddress, mint }] as const
 
-type FetchExternalWalletTokenBalanceContext = Pick<
+type FetchExternalWalletBalanceContext = Pick<
   QueryContextType,
   'audiusSdk' | 'env' | 'reportToSentry'
 >
 
-const getExternalWalletTokenBalanceQueryFn =
-  (context: FetchExternalWalletTokenBalanceContext) =>
+const getExternalWalletBalanceQueryFn =
+  (context: FetchExternalWalletBalanceContext) =>
   async ({
     queryKey
   }: QueryFunctionContext<
-    ReturnType<typeof getExternalWalletTokenBalanceQueryKey>
+    ReturnType<typeof getExternalWalletBalanceQueryKey>
   >) => {
     const [_ignored, { walletAddress, mint }] = queryKey
     const { audiusSdk, env, reportToSentry } = context
@@ -103,7 +103,7 @@ const getExternalWalletTokenBalanceQueryFn =
     } catch (error) {
       reportToSentry({
         error: toErrorWithMessage(error),
-        name: 'ExternalWalletTokenBalanceFetchError',
+        name: 'ExternalWalletBalanceFetchError',
         feature: Feature.TanQuery,
         additionalInfo: { walletAddress }
       })
@@ -115,20 +115,20 @@ const getExternalWalletTokenBalanceQueryFn =
  * Helper function to get the query options for fetching external wallet token balances.
  * Useful for getting the query key tagged with the data type stored in the cache.
  */
-const getExternalWalletTokenBalanceOptions = (
-  context: FetchExternalWalletTokenBalanceContext,
-  { walletAddress, mint }: UseExternalWalletTokenBalanceParams
+const getExternalWalletBalanceOptions = (
+  context: FetchExternalWalletBalanceContext,
+  { walletAddress, mint }: UseExternalWalletBalanceParams
 ) => {
   return queryOptions({
-    queryKey: getExternalWalletTokenBalanceQueryKey({ walletAddress, mint }),
-    queryFn: getExternalWalletTokenBalanceQueryFn(context)
+    queryKey: getExternalWalletBalanceQueryKey({ walletAddress, mint }),
+    queryFn: getExternalWalletBalanceQueryFn(context)
   })
 }
 
 /**
  * Query function for getting SOL and USDC token balances for an external wallet.
  */
-export const useExternalWalletTokenBalance = (
+export const useExternalWalletBalance = (
   {
     walletAddress,
     mint
@@ -138,7 +138,7 @@ export const useExternalWalletTokenBalance = (
   const context = useQueryContext()
   return useQuery({
     ...options,
-    ...getExternalWalletTokenBalanceOptions(context, {
+    ...getExternalWalletBalanceOptions(context, {
       walletAddress: walletAddress!,
       mint: mint!
     }),
