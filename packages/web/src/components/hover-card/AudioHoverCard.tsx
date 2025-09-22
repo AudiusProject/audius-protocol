@@ -91,8 +91,9 @@ export const AudioHoverCard = ({
 
   const handleClick = useCallback(() => {
     onClick?.()
+    onClose?.()
     navigate(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER))
-  }, [navigate, onClick])
+  }, [navigate, onClick, onClose])
 
   return (
     <HoverCard

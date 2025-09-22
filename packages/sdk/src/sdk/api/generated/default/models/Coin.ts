@@ -82,6 +82,12 @@ export interface Coin {
      */
     website?: string;
     /**
+     * Whether the coin has a Discord server
+     * @type {boolean}
+     * @memberof Coin
+     */
+    hasDiscord: boolean;
+    /**
      * The date and time when the coin was added to Audius.
      * @type {string}
      * @memberof Coin
@@ -356,6 +362,7 @@ export function instanceOfCoin(value: object): value is Coin {
     isInstance = isInstance && "mint" in value && value["mint"] !== undefined;
     isInstance = isInstance && "decimals" in value && value["decimals"] !== undefined;
     isInstance = isInstance && "ownerId" in value && value["ownerId"] !== undefined;
+    isInstance = isInstance && "hasDiscord" in value && value["hasDiscord"] !== undefined;
     isInstance = isInstance && "createdAt" in value && value["createdAt"] !== undefined;
     isInstance = isInstance && "marketCap" in value && value["marketCap"] !== undefined;
     isInstance = isInstance && "fdv" in value && value["fdv"] !== undefined;
@@ -406,6 +413,7 @@ export function CoinFromJSONTyped(json: any, ignoreDiscriminator: boolean): Coin
         'logoUri': !exists(json, 'logo_uri') ? undefined : json['logo_uri'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'website': !exists(json, 'website') ? undefined : json['website'],
+        'hasDiscord': json['has_discord'],
         'createdAt': json['created_at'],
         'address': !exists(json, 'address') ? undefined : json['address'],
         'symbol': !exists(json, 'symbol') ? undefined : json['symbol'],
@@ -470,6 +478,7 @@ export function CoinToJSON(value?: Coin | null): any {
         'logo_uri': value.logoUri,
         'description': value.description,
         'website': value.website,
+        'has_discord': value.hasDiscord,
         'created_at': value.createdAt,
         'address': value.address,
         'symbol': value.symbol,

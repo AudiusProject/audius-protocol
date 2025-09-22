@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { musicConfettiActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Artwork,
   Button,
@@ -26,8 +25,6 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
-
-import { SOLANA_DECIMALS } from '../constants'
 
 import { SetupFormValues } from './types'
 
@@ -223,11 +220,8 @@ export const LaunchpadSubmitModal = ({
   mintAddress: string | undefined
   logoUri: string | undefined
 }) => {
-  const { values } = useFormikContext()
-  const { coinName, coinSymbol, receiveAmount, payAmount } =
-    values as SetupFormValues
-
-  // Use fake data for testing if no real data is available
+  const { values } = useFormikContext<SetupFormValues>()
+  const { coinName, coinSymbol, receiveAmount, payAmount } = values
   const coin = {
     mint: mintAddress,
     name: coinName,
@@ -236,14 +230,7 @@ export const LaunchpadSubmitModal = ({
     amountUi: receiveAmount,
     amountUsd: receiveAmount
   }
-  const payAmountParsed = useMemo(
-    () =>
-      payAmount
-        ? new FixedDecimal(payAmount?.replace(',', ''), SOLANA_DECIMALS).value
-        : 0,
-    [payAmount]
-  )
-  const numTxs = payAmount && payAmountParsed > 0 ? 3 : 1
+  const numTxs = payAmount ? 2 : 1
   return (
     <Modal
       isOpen={isOpen}

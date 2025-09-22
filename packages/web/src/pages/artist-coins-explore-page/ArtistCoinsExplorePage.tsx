@@ -136,11 +136,7 @@ const DesktopArtistCoinsExplorePage = () => {
                     onClick={handleGetStarted}
                     fullWidth
                     disabled={!isVerified}
-                    css={{
-                      background: isVerified
-                        ? 'var(--harmony-coin-gradient)'
-                        : undefined
-                    }}
+                    color={isVerified ? 'coinGradient' : undefined}
                   >
                     {messages.getStarted}
                   </Button>

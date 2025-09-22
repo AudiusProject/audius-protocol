@@ -10,7 +10,7 @@ import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex } from '@audius/harmony'
+import { Divider, Flex, IconButton, IconTransaction } from '@audius/harmony'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -83,6 +83,13 @@ export const ConvertTab = ({
         arr.findIndex((t) => t.symbol === token.symbol) === index
     ) // Remove duplicates
   }, [availableOutputTokens, artistCoins])
+
+  // Filter out the currently selected input token from available output tokens
+  const filteredAvailableOutputTokens = useMemo(() => {
+    return totalAvailableTokens.filter(
+      (token) => token.symbol !== selectedInputToken.symbol
+    )
+  }, [totalAvailableTokens, selectedInputToken.symbol])
 
   // Generic token change handler with automatic swapping when only 2 tokens are available
   const createTokenChangeHandler = useCallback(
@@ -168,6 +175,21 @@ export const ConvertTab = ({
             availableTokens={availableInputTokens}
             onTokenChange={handleInputTokenChange}
           />
+
+          {/* Swap Direction Divider */}
+          <Flex alignItems='center' justifyContent='center' gap='s' w='full'>
+            <Divider />
+            <IconButton
+              icon={IconTransaction}
+              size='s'
+              color='subdued'
+              onClick={onChangeSwapDirection}
+              aria-label='Swap token direction'
+              css={{ transform: 'rotate(90deg)' }}
+            />
+            <Divider />
+          </Flex>
+
           <OutputTokenSection
             tokenInfo={selectedOutputToken}
             amount={outputAmount}
@@ -177,7 +199,7 @@ export const ConvertTab = ({
             tokenPrice={tokenPrice}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
-            availableTokens={totalAvailableTokens}
+            availableTokens={filteredAvailableOutputTokens}
             onTokenChange={handleOutputTokenChange}
             isArtistCoinsEnabled={isArtistCoinsEnabled}
           />
