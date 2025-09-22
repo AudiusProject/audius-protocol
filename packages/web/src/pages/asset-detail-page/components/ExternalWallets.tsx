@@ -58,7 +58,7 @@ const WalletRow = ({
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   // For connected wallets we want to use the root wallet address, for in-app wallets the owner will be us and not the user so we need to use the token account address
-  const address = isInAppWallet ? owner : account
+  const address = isInAppWallet ? account : owner
   const copyAddressToClipboard = useCallback(() => {
     copyToClipboard(address)
     toast(messages.copied, COPIED_TOAST_TIMEOUT)
