@@ -78,30 +78,29 @@ const RewardsBanner = ({ bannerType }: RewardsBannerProps) => {
         w='100%'
         alignItems={isMobile ? 'flex-start' : 'center'}
         gap={isMobile ? undefined : 'l'}
-        mr='m'
         css={{
           '@media (max-width: 1300px)': {
             flexDirection: 'column',
-            alignItems: 'flex-start',
+            alignItems: isMobile ? 'center' : 'flex-start',
             gap: 'unset'
           }
         }}
       >
-        <Flex alignItems='center' mb={isMobile ? 'xs' : undefined} gap='s'>
-          <IconCrown size='l' color='staticWhite' />
-          <Text variant='title' size='l' color='staticWhite'>
+        <Flex mb={isMobile ? 'xs' : undefined} gap={isMobile ? 'xs' : 's'}>
+          <IconCrown size={isMobile ? 's' : 'm'} color='staticWhite' />
+          <Text variant='title' size={isMobile ? 's' : 'l'} color='staticWhite'>
             {messageMap[bannerType].title}
           </Text>
         </Flex>
         <Text
           variant='body'
-          size='l'
+          size={isMobile ? 's' : 'l'}
           strength='strong'
           color='staticWhite'
           css={{
             opacity: 0.8,
             marginTop: isMobile ? spacing.xs : 0,
-            whiteSpace: isMobile ? 'normal' : 'nowrap'
+            whiteSpace: 'nowrap'
           }}
         >
           {messageMap[bannerType].description}

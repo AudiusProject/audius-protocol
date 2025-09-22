@@ -6,7 +6,8 @@ import {
   StemUploadWithFile,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { removeNullable, formatPrice, Nullable } from '@audius/common/utils'
+import { removeNullable, Nullable } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { usePrevious } from 'react-use'
@@ -43,9 +44,9 @@ const messages = {
       'Allow your fans to download a lossless copy of your full track.'
   },
   priceTooLow: (minPrice: number) =>
-    `Price must be at least $${formatPrice(minPrice)}.`,
+    `Price must be at least $${USDC(minPrice / 100).toLocaleString()}.`,
   priceTooHigh: (maxPrice: number) =>
-    `Price must be less than $${formatPrice(maxPrice)}.`,
+    `Price must be less than $${USDC(maxPrice / 100).toLocaleString()}.`,
   gatedNoDownloadableAssets:
     'You must enable full track download or upload a stem file before setting download availability.'
 }

@@ -4,7 +4,7 @@ const { libs } = require('@audius/sdk')
 
 const ETH_TOKEN_ADDRESS = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
 const ETH_REGISTRY_ADDRESS = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
-const ETH_PROVIDER_ENDPOINT = 'https://eth.audius.co'
+const ETH_PROVIDER_ENDPOINT = 'https://eth-client.audius.co'
 const ETH_OWNER_WALLET = '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5'
 const audiusLibs = new libs({
   ethWeb3Config: libs.configEthWeb3(
@@ -22,22 +22,22 @@ const prefix = 'audius_exporters_sdk_'
 const metricNames = {
   PROPOSALS: 'proposals',
   PROPOSALS_BY_UNKNOWN_PROPOSERS: 'proposals_by_unknown_proposers',
-  API_FAILURE: 'api_failure',
+  API_FAILURE: 'api_failure'
 }
 const METRICS = Object.freeze({
   [metricNames.PROPOSALS]: new promClient.Gauge({
     name: `${prefix}${metricNames.PROPOSALS}`,
     help: 'Number for all Proposal (by outcome)',
-    labelNames: ['outcome'],
+    labelNames: ['outcome']
   }),
   [metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS]: new promClient.Gauge({
     name: `${prefix}${metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS}`,
-    help: 'The number of proposals opened by an unknown proposer',
+    help: 'The number of proposals opened by an unknown proposer'
   }),
   [metricNames.API_FAILURE]: new promClient.Gauge({
     name: `${prefix}${metricNames.API_FAILURE}`,
-    help: 'Count when alchemy calls fail.',
-  }),
+    help: 'Count when alchemy calls fail.'
+  })
 })
 METRICS[metricNames.PROPOSALS].set({ outcome: 'InProgress' }, 0)
 METRICS[metricNames.PROPOSALS_BY_UNKNOWN_PROPOSERS].set(0)
@@ -58,7 +58,7 @@ const KNOWN_PROPOSERS = new Set([
   '0xA62c3ced6906B188A4d4A3c981B79f2AABf2107F',
   '0xbdbB5945f252bc3466A319CDcC3EE8056bf2e569',
   '0x683A3C882e1DCD0A3012E2D45A47A9e8de8868d7',
-  '0xf1a1Bd34b2Bc73629aa69E50E3249E89A3c16786',
+  '0xf1a1Bd34b2Bc73629aa69E50E3249E89A3c16786'
 ])
 const OUTCOME = Object.freeze({
   0: 'InProgress',
@@ -69,14 +69,14 @@ const OUTCOME = Object.freeze({
   // Evaluating - transient internal state
   5: 'Vetoed',
   6: 'TargetContractAddressChanged',
-  7: 'TargetContractCodeHashChanged',
+  7: 'TargetContractCodeHashChanged'
 })
 let PREVIOUSLY_SEEN_PROPOSAL_ID = 0
 const PROPOSAL_OUTCOME_TALLY = {}
 
 const clearTally = () => {
   for (const outcome in PROPOSAL_OUTCOME_TALLY) {
-    delete PROPOSAL_OUTCOME_TALLY[outcome];
+    delete PROPOSAL_OUTCOME_TALLY[outcome]
   }
 }
 
@@ -89,7 +89,8 @@ const tallyProposalOutcomes = (outcome) => {
 
 const scanGovernanceProposals = async () => {
   // Grab all proposals
-  const proposals = await audiusLibs.ethContracts.GovernanceClient.getProposals()
+  const proposals =
+    await audiusLibs.ethContracts.GovernanceClient.getProposals()
   const lastProposal = proposals[proposals.length - 1]
 
   // If a new proposal is detected (or the exporter is starting) calculate
@@ -106,7 +107,10 @@ const scanGovernanceProposals = async () => {
       }
 
       // grab the full proposal to look for open proposals
-      const fullProposal = await audiusLibs.ethContracts.GovernanceClient.getProposalById(proposal.proposalId)
+      const fullProposal =
+        await audiusLibs.ethContracts.GovernanceClient.getProposalById(
+          proposal.proposalId
+        )
       tallyProposalOutcomes(OUTCOME[fullProposal.outcome])
     }
 
@@ -139,7 +143,9 @@ const monitorGovernanceProposals = async () => {
 const main = async () => {
   await audiusLibs.init()
   monitorGovernanceProposals()
-  setInterval(function () { monitorGovernanceProposals() }, 30 * 1000)
+  setInterval(function () {
+    monitorGovernanceProposals()
+  }, 30 * 1000)
 
   // Start Prometheus exporter
   const server = express()
@@ -154,7 +160,7 @@ const main = async () => {
   })
   server.listen(port, () => {
     console.log(
-      `Server listening to ${port}, metrics exposed on /metrics endpoint`,
+      `Server listening to ${port}, metrics exposed on /metrics endpoint`
     )
   })
 }

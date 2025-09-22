@@ -47,6 +47,16 @@ reserved_handles = {
 }
 
 
+handle_badwords = {
+    "audius",
+    "airdrop",
+    "audlus",
+    "auduis",
+    "auddius",
+    "avdius",
+    "audus",
+}
+
 genre_allowlist = {
     "Acoustic",
     "Alternative",
@@ -129,5 +139,6 @@ moods = {
 }
 
 reserved_handles_lower = {x.lower() for x in reserved_handles}
+handle_badwords_lower = {x.lower() for x in handle_badwords}
 genres_lower = {x.lower() for x in genre_allowlist}
 moods_lower = {x.lower() for x in moods}

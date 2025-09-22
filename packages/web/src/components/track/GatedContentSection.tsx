@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useUsers } from '@audius/common/api'
+import { useArtistCoin, useUsers } from '@audius/common/api'
 import {
   Name,
   FollowSource,
@@ -12,16 +12,19 @@ import {
   isContentUSDCPurchaseGated,
   ID,
   AccessConditions,
-  User
+  User,
+  isContentTokenGated
 } from '@audius/common/models'
 import {
   usersSocialActions as socialActions,
   tippingActions,
   usePremiumContentPurchaseModal,
   gatedContentSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  useBuySellModal
 } from '@audius/common/store'
-import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
+import { removeNullable, Nullable } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Flex,
   Text,
@@ -34,15 +37,18 @@ import {
   useTheme,
   Button,
   IconUserFollow,
-  IconTipping
+  IconTipping,
+  IconArtistCoin
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
 
@@ -56,16 +62,18 @@ const { getGatedContentStatusMap } = gatedContentSelectors
 const BUY_BUTTON_WIDTH = 250
 
 const getMessages = (contentType: PurchaseableContentType) => ({
-  howToUnlock: 'HOW TO UNLOCK',
-  payToUnlock: 'PAY TO UNLOCK',
-  purchasing: 'PURCHASING',
-  unlocking: 'UNLOCKING',
-  unlocked: 'UNLOCKED',
+  howToUnlock: 'how to unlock',
+  payToUnlock: 'pay to unlock',
+  purchasing: 'purchasing',
+  unlocking: 'unlocking',
+  unlocked: 'unlocked',
+  coinGated: 'COIN GATED',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   goToCollection: 'Open Collection',
   sendTip: 'Send Tip',
   followArtist: 'Follow Artist',
+  buyArtistCoin: 'Buy Artist Coin',
   period: '.',
   exclamationMark: '!',
   ownCollectibleGatedPrefix:
@@ -85,10 +93,18 @@ const getMessages = (contentType: PurchaseableContentType) => ({
   unlockingTipGatedContentSuffix: 'by sending them a tip!',
   unlockedTipGatedContentSuffix: `by sending them a tip! This ${contentType} is now available.`,
   unlockWithPurchase: `Unlock this ${contentType} with a one-time purchase!`,
+  ofArtistsCoin: "of the artist's coin",
+  artistCoin: 'Artist coin',
+  unlockTokenGatedContent: (amount: number, tokenTicker: string) =>
+    `You must hold at least ${amount} ${tokenTicker} in a connected wallet.`,
+  unlockedTokenGatedContent: (tokenTicker: string) =>
+    `${tokenTicker} was found in a linked wallet. This ${contentType} is now available.`,
+  ownTokenGated:
+    'Fans can unlock access by linking a wallet containing your artist coin',
   purchased: `You've purchased this ${contentType}.`,
-  buy: (price: string) => `Buy $${price}`,
+  buy: (price: string) => `Buy ${price}`,
   usersCanPurchase: (price: string) =>
-    `Users can unlock access to this ${contentType} for a one time purchase of $${price}`
+    `Users can unlock access to this ${contentType} for a one time purchase of ${price}`
 })
 
 type GatedContentAccessSectionProps = {
@@ -122,6 +138,11 @@ const LockedGatedContentSection = ({
     useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const { data: coin } = useArtistCoin(
+    isContentTokenGated(streamConditions)
+      ? streamConditions.token_gate.token_mint
+      : ''
+  )
   const tipSource = lockedContentModalVisibility
     ? 'howToUnlockModal'
     : 'howToUnlockTrackPage'
@@ -129,6 +150,7 @@ const LockedGatedContentSection = ({
     ? FollowSource.HOW_TO_UNLOCK_MODAL
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
+  const isTokenGated = isContentTokenGated(streamConditions)
   const { spacing } = useTheme()
   const [searchParams] = useSearchParams()
   const openCheckout = searchParams.get('checkout') === 'true'
@@ -176,6 +198,22 @@ const LockedGatedContentSection = ({
     handlePurchase,
     isUSDCPurchaseGated,
     handlePurchaseViaGuestCheckout
+  ])
+
+  const { onOpen: openBuySellModal } = useBuySellModal()
+
+  const handlePurchaseToken = useRequiresAccountCallback(() => {
+    if (!coin?.ticker) return
+    openBuySellModal({ isOpen: true, ticker: coin.ticker })
+
+    if (lockedContentModalVisibility) {
+      setLockedContentModalVisibility(false)
+    }
+  }, [
+    coin?.ticker,
+    lockedContentModalVisibility,
+    openBuySellModal,
+    setLockedContentModalVisibility
   ])
 
   const handleSendTip = useRequiresAccountCallback(() => {
@@ -254,7 +292,6 @@ const LockedGatedContentSection = ({
         <Text variant='body' strength='strong'>
           {messages.unlockFollowGatedContentPrefix}{' '}
           <UserLink userId={followee.user_id} />
-          {messages.period}
         </Text>
       )
     }
@@ -263,8 +300,21 @@ const LockedGatedContentSection = ({
       return (
         <Text variant='body' strength='strong'>
           {messages.unlockTipGatedContentPrefix}{' '}
-          <UserLink userId={tippedUser.user_id} />
+          <UserLink userId={tippedUser.user_id} />{' '}
           {messages.unlockTipGatedContentSuffix}
+        </Text>
+      )
+    }
+
+    if (isContentTokenGated(streamConditions)) {
+      const { token_gate } = streamConditions
+
+      return (
+        <Text variant='body' strength='strong'>
+          {messages.unlockTokenGatedContent(
+            token_gate.token_amount,
+            coin?.ticker ?? messages.ofArtistsCoin
+          )}
         </Text>
       )
     }
@@ -326,6 +376,19 @@ const LockedGatedContentSection = ({
       )
     }
 
+    if (isContentTokenGated(streamConditions)) {
+      return (
+        <Button
+          variant='primary'
+          color='coinGradient'
+          onClick={handlePurchaseToken}
+          fullWidth
+        >
+          {messages.buyArtistCoin}
+        </Button>
+      )
+    }
+
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <Button
@@ -343,7 +406,9 @@ const LockedGatedContentSection = ({
           }}
           fullWidth
         >
-          {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+          {messages.buy(
+            USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
+          )}
         </Button>
       )
     }
@@ -354,21 +419,40 @@ const LockedGatedContentSection = ({
     return null
   }
 
+  const isMobile = useIsMobile()
+
   return (
-    <Flex w='100%' justifyContent='space-between'>
+    <Flex
+      w='100%'
+      direction={isMobile ? 'column' : 'row'}
+      gap='m'
+      justifyContent='space-between'
+    >
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
           <LockedStatusBadge
             locked
-            variant={isUSDCPurchaseGated ? 'premium' : 'gated'}
+            variant={
+              isUSDCPurchaseGated
+                ? 'premium'
+                : isTokenGated
+                  ? 'tokenGated'
+                  : 'gated'
+            }
           />
           <Text variant='label' size='l' strength='strong'>
             {isUSDCPurchaseGated ? messages.payToUnlock : messages.howToUnlock}
           </Text>
         </Flex>
         {renderLockedDescription()}
+        {coin ? (
+          <Flex gap='xs' alignItems='center'>
+            <TokenIcon logoURI={coin.logoUri} size='l' hex />
+            <Text variant='title'>{coin.ticker}</Text>
+          </Flex>
+        ) : null}
       </Flex>
-      <Flex w={BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
+      <Flex w={isMobile ? '100%' : BUY_BUTTON_WIDTH}>{renderButton()}</Flex>
     </Flex>
   )
 }
@@ -472,6 +556,12 @@ const UnlockedGatedContentSection = ({
   'contentId' | 'buttonClassName' | 'source'
 >) => {
   const messages = getMessages(contentType)
+  const { data: coin } = useArtistCoin(
+    isContentTokenGated(streamConditions)
+      ? streamConditions.token_gate.token_mint
+      : ''
+  )
+
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
       return isOwner ? (
@@ -516,10 +606,22 @@ const UnlockedGatedContentSection = ({
       )
     }
 
+    if (isContentTokenGated(streamConditions)) {
+      return isOwner ? (
+        messages.ownTokenGated
+      ) : (
+        <Text variant='body' strength='strong'>
+          {messages.unlockedTokenGatedContent(
+            coin?.ticker ?? messages.artistCoin
+          )}
+        </Text>
+      )
+    }
+
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return isOwner ? (
         messages.usersCanPurchase(
-          formatPrice(streamConditions.usdc_purchase.price)
+          USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
         )
       ) : (
         <>
@@ -550,28 +652,43 @@ const UnlockedGatedContentSection = ({
   } else if (isContentUSDCPurchaseGated(streamConditions)) {
     IconComponent = IconCart
     gatedConditionTitle = messages.payToUnlock
+  } else if (isContentTokenGated(streamConditions)) {
+    IconComponent = IconArtistCoin
+    gatedConditionTitle = messages.coinGated
   }
 
   return (
-    <Flex column className={className} gap='s'>
-      <Flex gap='s'>
-        {isOwner ? (
-          <IconComponent size='s' color='default' />
-        ) : (
-          <LockedStatusBadge
-            locked={false}
-            variant={
-              isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
-            }
-          />
-        )}
-        <Text variant='label' size='l' strength='strong'>
-          {isOwner ? gatedConditionTitle : messages.unlocked}
+    <Flex row className={className} w='100%' justifyContent='space-between'>
+      <Flex column gap='s'>
+        <Flex gap='s'>
+          {isOwner ? (
+            <IconComponent size='s' color='default' />
+          ) : (
+            <LockedStatusBadge
+              locked={false}
+              variant={
+                isContentUSDCPurchaseGated(streamConditions)
+                  ? 'premium'
+                  : isContentTokenGated(streamConditions)
+                    ? 'tokenGated'
+                    : 'gated'
+              }
+            />
+          )}
+          <Text variant='label' size='l' strength='strong'>
+            {isOwner ? gatedConditionTitle : messages.unlocked}
+          </Text>
+        </Flex>
+        <Text variant='body' strength='strong'>
+          {renderUnlockedDescription()}
         </Text>
       </Flex>
-      <Text variant='body' strength='strong'>
-        {renderUnlockedDescription()}
-      </Text>
+      {coin ? (
+        <Flex gap='xs' alignItems='center'>
+          <TokenIcon logoURI={coin.logoUri} size='l' hex />
+          <Text variant='title'>{coin.ticker}</Text>
+        </Flex>
+      ) : null}
     </Flex>
   )
 }
@@ -609,12 +726,14 @@ export const GatedContentSection = ({
 
   const isFollowGated = isContentFollowGated(streamConditions)
   const isTipGated = isContentTipGated(streamConditions)
+  const isTokenGated = isContentTokenGated(streamConditions)
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const shouldDisplay =
     isFollowGated ||
     isTipGated ||
     isContentCollectibleGated(streamConditions) ||
-    isUSDCPurchaseGated
+    isUSDCPurchaseGated ||
+    isTokenGated
   const { byId: users } = useUsers(
     [
       isFollowGated ? streamConditions.follow_user_id : null,

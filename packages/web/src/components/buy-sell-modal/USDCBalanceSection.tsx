@@ -1,6 +1,8 @@
 import { TokenInfo } from '@audius/common/store'
-import { Divider, Flex, Text } from '@audius/harmony'
+import { Divider, Flex, Text, IconLogoCircleUSDC } from '@audius/harmony'
 import { TooltipPlacement } from 'antd/lib/tooltip'
+
+import { env } from 'services/env'
 
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
@@ -13,24 +15,31 @@ type USDCBalanceSectionProps = {
   tokenInfo: TokenInfo
   amount: string
   tooltipPlacement?: TooltipPlacement
+  hideTooltip?: boolean
 }
 
 export const USDCBalanceSection = ({
   title,
   tokenInfo,
   amount,
-  tooltipPlacement
+  tooltipPlacement,
+  hideTooltip
 }: USDCBalanceSectionProps) => {
+  const isUsdc = tokenInfo.address === env.USDC_MINT_ADDRESS
   return (
     <Flex direction='column' gap='l'>
       <Flex alignItems='center' gap='s'>
         <Flex h='l' w='l' alignItems='center' justifyContent='center'>
-          {tokenInfo.icon ? <tokenInfo.icon size='s' /> : null}
+          {isUsdc ? (
+            <IconLogoCircleUSDC size='s' />
+          ) : tokenInfo.icon ? (
+            <tokenInfo.icon size='s' />
+          ) : null}
         </Flex>
         <Text variant='heading' size='s' color='subdued'>
           {title}
         </Text>
-        <TooltipInfoIcon placement={tooltipPlacement} />
+        {!hideTooltip ? <TooltipInfoIcon placement={tooltipPlacement} /> : null}
         <Divider css={{ flexGrow: 1 }} />
       </Flex>
       <Text variant='heading' size='xl'>

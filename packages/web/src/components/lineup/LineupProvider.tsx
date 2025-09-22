@@ -21,7 +21,7 @@ import { Dispatch } from 'redux'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import {
   TrackTileProps,
-  PlaylistTileProps,
+  CollectionTileProps,
   TrackTileSize,
   TileProps
 } from 'components/track/types'
@@ -111,7 +111,7 @@ export interface LineupProviderProps {
   'aria-label'?: string
   // Tile components
   trackTile: ComponentType<TrackTileProps> | any
-  playlistTile: ComponentType<PlaylistTileProps> | any
+  playlistTile: ComponentType<CollectionTileProps> | any
 
   // Other props
 
@@ -537,7 +537,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
         } else if (entry.kind === Kind.COLLECTIONS || entry.playlist_id) {
           // Render a track tile if the kind tracks or there's a track id present
 
-          const playlistProps: PlaylistTileProps = {
+          const playlistProps: CollectionTileProps = {
             ...entry,
             index,
             uid: entry.uid,
@@ -772,7 +772,10 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                 useWindow={isMobile}
                 initialLoad={false}
                 getScrollParent={() => {
-                  if (scrollParent?.id === 'mainContent') {
+                  if (
+                    scrollParent?.id === 'mainContent' ||
+                    scrollParent === null
+                  ) {
                     return document.getElementById('mainContent')
                   }
                   return scrollParent

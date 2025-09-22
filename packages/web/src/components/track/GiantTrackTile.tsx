@@ -20,7 +20,13 @@ import {
   useEarlyReleaseConfirmationModal,
   usePublishConfirmationModal
 } from '@audius/common/store'
-import { Genre, Nullable, dayjs, formatReleaseDate } from '@audius/common/utils'
+import {
+  Genre,
+  Nullable,
+  dayjs,
+  formatReleaseDate,
+  formatContestDeadline
+} from '@audius/common/utils'
 import {
   Text,
   Box,
@@ -103,11 +109,7 @@ const messages = {
   contestDeadline: 'Contest Deadline',
   uploadRemixButtonText: 'Upload Your Remix',
   contestEnded: 'Contest Ended',
-  deadline: (deadline?: string) => {
-    return deadline
-      ? `${dayjs(deadline).format('MM/DD/YYYY')} at ${dayjs(deadline).format('h:mm A')}`
-      : ''
-  },
+  deadline: (deadline?: string) => formatContestDeadline(deadline, 'long'),
   seeMore: 'See More',
   seeLess: 'See Less'
 }
@@ -471,6 +473,7 @@ export const GiantTrackTile = ({
       genre,
       handle: artistHandle,
       isFavorited: isSaved,
+      isReposted,
       mount: 'page',
       isOwner,
       includeFavorite: hasStreamAccess,
@@ -635,7 +638,7 @@ export const GiantTrackTile = ({
       </Flex>
 
       {isStreamGated && streamConditions ? (
-        <Box pb='xl' ph='xl' w='100%' backgroundColor='surface1'>
+        <Box p='l' pb='xl' w='100%' backgroundColor='surface1'>
           <GatedContentSection
             isLoading={isLoading}
             contentId={trackId}

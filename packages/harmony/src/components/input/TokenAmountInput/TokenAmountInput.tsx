@@ -1,7 +1,5 @@
 import { ChangeEventHandler, Ref, forwardRef, useCallback } from 'react'
 
-import BN from 'bn.js'
-
 import { useControlled } from '~harmony/hooks/useControlled'
 
 import { TextInput } from '../TextInput'
@@ -27,6 +25,7 @@ export const TokenAmountInput = forwardRef(
       isWhole = false,
       value: valueProp,
       onChange,
+      endIcon,
       ...other
     } = props
 
@@ -40,8 +39,10 @@ export const TokenAmountInput = forwardRef(
       (e) => {
         const input = e.target.value.replace(/[^0-9.]+/g, '')
         // Regex to grab the whole and decimal parts of the number, stripping duplicate '.' characters
-        const match = input.match(/^(?<whole>\d*)(?<dot>.)?(?<decimal>\d*)/)
-        const { whole, decimal, dot } = match?.groups || {}
+        const match = input.match(/^(\d*)(.)?(\d*)/)
+        const whole = match?.[1] || ''
+        const decimal = match?.[3] || ''
+        const dot = match?.[2] || ''
 
         // Conditionally render the decimal part, and only for the number of decimals specified
         const stringAmount =
@@ -49,10 +50,15 @@ export const TokenAmountInput = forwardRef(
             ? `${whole}.${decimal.substring(0, decimals)}`
             : whole
 
-        // Also add the BN to the onChange event for convenience
-        let amount = new BN(whole)
-        amount = amount.mul(new BN(10 ** decimals))
-        amount = amount.add(new BN(decimal.padEnd(decimals, '0')))
+        // Calculate the wei amount using BigInt arithmetic instead of BN
+        const wholeBigInt = BigInt(whole || '0')
+        const decimalPadded = decimal
+          .padEnd(decimals, '0')
+          .substring(0, decimals)
+        const decimalBigInt = BigInt(decimalPadded || '0')
+        const multiplier = BigInt(10 ** decimals)
+        const amount = wholeBigInt * multiplier + decimalBigInt
+
         setValueState(formatNumberCommas(stringAmount))
         if (onChange) {
           onChange(stringAmount, amount)
@@ -60,6 +66,9 @@ export const TokenAmountInput = forwardRef(
       },
       [decimals, isWhole, setValueState, onChange]
     )
+    // Determine if endIcon is an IconComponent or ReactNode
+    const isIconComponent = endIcon && typeof endIcon === 'function'
+
     return (
       <TextInput
         ref={ref}
@@ -67,6 +76,8 @@ export const TokenAmountInput = forwardRef(
         value={value}
         onChange={handleChange}
         endAdornmentText={tokenLabel}
+        endIcon={isIconComponent ? (endIcon as any) : undefined}
+        endAdornment={!isIconComponent ? endIcon : undefined}
       />
     )
   }

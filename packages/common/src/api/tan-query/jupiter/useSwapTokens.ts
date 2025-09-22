@@ -1,30 +1,90 @@
-import { createCloseAccountInstruction } from '@solana/spl-token'
-import {
-  PublicKey,
-  TransactionInstruction,
-  VersionedTransaction
-} from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useCurrentAccountUser, useQueryContext } from '~/api'
+import {
+  getUserCoinQueryKey,
+  getUserQueryKey,
+  useCurrentAccountUser,
+  useQueryContext
+} from '~/api'
+import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
-import {
-  convertJupiterInstructions,
-  getJupiterQuoteByMint,
-  jupiterInstance
-} from '~/services/Jupiter'
+import type { User } from '~/models/User'
+import { JupiterQuoteResult } from '~/services/Jupiter'
 
-import { QUERY_KEYS } from '../queryKeys'
+import { useTokens } from '../tokens/useTokens'
 
-import { USER_BANK_MANAGED_TOKENS } from './constants'
-import { updateAudioBalanceOptimistically } from './optimisticUpdates'
+import { executeDirectSwap } from './directSwap'
+import { executeIndirectSwap } from './indirectSwapViaAudio'
 import {
+  SwapDependencies,
   SwapErrorType,
   SwapStatus,
   SwapTokensParams,
   SwapTokensResult
 } from './types'
-import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
+import { getSwapErrorResponse } from './utils'
+
+const initializeSwapDependencies = async (
+  solanaWalletService: QueryContextType['solanaWalletService'],
+  audiusSdk: QueryContextType['audiusSdk'],
+  queryClient: ReturnType<typeof useQueryClient>,
+  user: User | undefined
+): Promise<SwapDependencies | { error: SwapTokensResult }> => {
+  try {
+    const [sdk, keypair] = await Promise.all([
+      audiusSdk(),
+      solanaWalletService.getKeypair()
+    ])
+
+    if (!keypair) {
+      return {
+        error: {
+          status: SwapStatus.ERROR,
+          error: {
+            type: SwapErrorType.WALLET_ERROR,
+            message: 'Wallet not initialised'
+          }
+        }
+      }
+    }
+
+    const userPublicKey = keypair.publicKey
+    const feePayer = await sdk.services.solanaClient.getFeePayer()
+    const ethAddress = user?.wallet
+
+    if (!ethAddress) {
+      return {
+        error: {
+          status: SwapStatus.ERROR,
+          error: {
+            type: SwapErrorType.WALLET_ERROR,
+            message: 'User wallet address not found'
+          }
+        }
+      }
+    }
+
+    return {
+      sdk,
+      keypair,
+      userPublicKey,
+      feePayer,
+      ethAddress,
+      queryClient,
+      user
+    }
+  } catch (error) {
+    return {
+      error: {
+        status: SwapStatus.ERROR,
+        error: {
+          type: SwapErrorType.WALLET_ERROR,
+          message: 'Failed to initialize wallet dependencies'
+        }
+      }
+    }
+  }
+}
 
 /**
  * Hook for executing token swaps using Jupiter.
@@ -32,161 +92,86 @@ import { addUserBankToAtaInstructions, getSwapErrorResponse } from './utils'
  */
 export const useSwapTokens = () => {
   const queryClient = useQueryClient()
-  const { solanaWalletService, reportToSentry, audiusSdk } = useQueryContext()
+  const { solanaWalletService, reportToSentry, audiusSdk, env } =
+    useQueryContext()
   const { data: user } = useCurrentAccountUser()
+  const { tokens } = useTokens()
 
   return useMutation<SwapTokensResult, Error, SwapTokensParams>({
     mutationFn: async (params): Promise<SwapTokensResult> => {
-      const {
-        inputMint: inputMintUiAddress,
-        outputMint: outputMintUiAddress,
-        amountUi
-      } = params
-      const slippageBps = params.slippageBps ?? 50
-      const wrapUnwrapSol = params.wrapUnwrapSol ?? true
+      const { inputMint: inputMintUiAddress, outputMint: outputMintUiAddress } =
+        params
 
-      let quoteResult
-      let signature: string | undefined
       let errorStage = 'UNKNOWN'
-      const instructions: TransactionInstruction[] = []
+      let firstQuoteResult: JupiterQuoteResult | undefined
+      let secondQuoteResult: JupiterQuoteResult | undefined
+      let signature: string | undefined
 
       try {
-        // ---------- 1. Initialize Dependencies & Wallet ----------
+        // Initialize dependencies
         errorStage = 'WALLET_INITIALIZATION'
-        const [sdk, keypair] = await Promise.all([
-          audiusSdk(),
-          solanaWalletService.getKeypair()
-        ])
+        const dependenciesResult = await initializeSwapDependencies(
+          solanaWalletService,
+          audiusSdk,
+          queryClient,
+          user
+        )
 
-        if (!keypair) {
-          return {
-            status: SwapStatus.ERROR,
-            error: {
-              type: SwapErrorType.WALLET_ERROR,
-              message: 'Wallet not initialised'
-            }
+        if ('error' in dependenciesResult) {
+          return dependenciesResult.error
+        }
+
+        const dependencies = dependenciesResult
+
+        errorStage = 'DIRECT_QUOTE_CHECK'
+        const isAudioPairedSwap =
+          inputMintUiAddress === env.WAUDIO_MINT_ADDRESS ||
+          outputMintUiAddress === env.WAUDIO_MINT_ADDRESS
+
+        if (isAudioPairedSwap) {
+          const result = await executeDirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
           }
-        }
-        const userPublicKey = keypair.publicKey
-        const feePayer = await sdk.services.solanaClient.getFeePayer()
-        const ethAddress = user?.wallet
-
-        // ---------- 2. Get Quote from Jupiter ----------
-        errorStage = 'QUOTE_RETRIEVAL'
-        quoteResult = await getJupiterQuoteByMint({
-          inputMint: inputMintUiAddress,
-          outputMint: outputMintUiAddress,
-          amountUi,
-          slippageBps,
-          swapMode: 'ExactIn',
-          onlyDirectRoutes: true
-        })
-
-        // ---------- 3. Prepare Transaction Instructions ----------
-        const inputTokenConfig =
-          USER_BANK_MANAGED_TOKENS[inputMintUiAddress.toUpperCase()]
-        const outputTokenConfig =
-          USER_BANK_MANAGED_TOKENS[outputMintUiAddress.toUpperCase()]
-
-        // --- 3a. Handle Input Token (if user bank managed) ---
-        errorStage = 'INPUT_TOKEN_PREPARATION'
-
-        const sourceAtaForJupiter = await addUserBankToAtaInstructions({
-          tokenInfo: inputTokenConfig!,
-          userPublicKey,
-          ethAddress: ethAddress!,
-          amountLamports: BigInt(quoteResult.inputAmount.amount),
-          sdk,
-          feePayer,
-          instructions
-        })
-
-        // --- 3b. Determine Jupiter's Destination Token Account ---
-        errorStage = 'OUTPUT_TOKEN_PREPARATION'
-
-        const result =
-          await sdk.services.claimableTokensClient.getOrCreateUserBank({
-            ethWallet: ethAddress!,
-            mint: outputTokenConfig!.claimableTokenMint
-          })
-        const outputUserBankAddress = result.userBank
-        const preferredJupiterDestination = outputUserBankAddress.toBase58()
-
-        // --- 3c. Get Jupiter Swap Instructions ---
-        errorStage = 'SWAP_INSTRUCTION_RETRIEVAL'
-        const {
-          tokenLedgerInstruction,
-          swapInstruction,
-          addressLookupTableAddresses
-        } = await jupiterInstance.swapInstructionsPost({
-          swapRequest: {
-            quoteResponse: quoteResult.quote,
-            userPublicKey: userPublicKey.toBase58(),
-            destinationTokenAccount: preferredJupiterDestination,
-            wrapAndUnwrapSol: wrapUnwrapSol,
-            useSharedAccounts: true
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown direct swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
           }
-        })
-
-        const jupiterInstructions = convertJupiterInstructions([
-          tokenLedgerInstruction,
-          swapInstruction
-        ])
-
-        instructions.push(...jupiterInstructions)
-
-        // --- 3f. Add Cleanup Instructions for Temporary ATAs ---
-        const atasToClose: PublicKey[] = []
-
-        // Add source ATA if it's temporary
-        if (sourceAtaForJupiter) {
-          atasToClose.push(sourceAtaForJupiter)
-        }
-
-        // Add close account instructions for all ATAs that need to be closed
-        for (const ataToClose of atasToClose) {
-          instructions.push(
-            createCloseAccountInstruction(ataToClose, feePayer, userPublicKey)
-          )
-        }
-
-        // ---------- 4. Build and Sign Transaction ----------
-        errorStage = 'TRANSACTION_BUILD'
-        const swapTx: VersionedTransaction =
-          await sdk.services.solanaClient.buildTransaction({
-            feePayer,
-            instructions,
-            addressLookupTables: addressLookupTableAddresses.map(
-              (addr: string) => new PublicKey(addr)
-            )
-          })
-
-        swapTx.sign([keypair])
-
-        // ---------- 5. Send Transaction ----------
-        errorStage = 'TRANSACTION_RELAY'
-        signature = await sdk.services.solanaClient.sendTransaction(swapTx)
-
-        // ---------- 6. Success & Invalidation ----------
-        if (user?.wallet) {
-          queryClient.invalidateQueries({
-            queryKey: [QUERY_KEYS.usdcBalance, user.wallet]
-          })
-        }
-        if (user?.spl_wallet) {
-          updateAudioBalanceOptimistically(
-            queryClient,
-            params,
-            quoteResult?.outputAmount?.uiAmount,
-            user.spl_wallet
-          )
-        }
-
-        return {
-          status: SwapStatus.SUCCESS,
-          signature,
-          inputAmount: quoteResult.inputAmount,
-          outputAmount: quoteResult.outputAmount
+          return result
+        } else {
+          const result = await executeIndirectSwap(params, dependencies, tokens)
+          if (result.status === SwapStatus.ERROR && result.errorStage) {
+            errorStage = result.errorStage
+          }
+          if (result.status === SwapStatus.ERROR) {
+            reportToSentry({
+              name: `JupiterSwap${result.errorStage || errorStage}Error`,
+              error: new Error(
+                result.error?.message || 'Unknown indirect swap error'
+              ),
+              feature: Feature.TanQuery,
+              additionalInfo: {
+                params,
+                signature,
+                errorStage: result.errorStage || errorStage,
+                firstQuoteResponse: firstQuoteResult?.quote,
+                secondQuoteResponse: secondQuoteResult?.quote
+              }
+            })
+          }
+          return result
         }
       } catch (error: unknown) {
         reportToSentry({
@@ -196,17 +181,77 @@ export const useSwapTokens = () => {
           additionalInfo: {
             params,
             signature,
-            quoteResponse: quoteResult?.quote
+            errorStage,
+            firstQuoteResponse: firstQuoteResult?.quote,
+            secondQuoteResponse: secondQuoteResult?.quote
           }
         })
 
         return getSwapErrorResponse({
           errorStage,
           error: error as Error,
-          inputAmount: quoteResult?.inputAmount,
-          outputAmount: quoteResult?.outputAmount
+          inputAmount: firstQuoteResult?.inputAmount,
+          outputAmount:
+            secondQuoteResult?.outputAmount || firstQuoteResult?.outputAmount
         })
       }
+    },
+    onSuccess: (result, params) => {
+      const { inputMint, outputMint } = params
+      const { inputAmount, outputAmount } = result
+      if (inputMint) {
+        queryClient.setQueryData(
+          getUserCoinQueryKey(inputMint, user?.user_id),
+          (prevAccountBalances) => {
+            if (!prevAccountBalances) return null
+
+            return {
+              ...prevAccountBalances,
+              // Update aggregate account balance (includes connected wallets)
+              balance:
+                prevAccountBalances?.balance - (inputAmount?.amount ?? 0),
+              // Update internal wallet balance (we only do swaps against internal wallets)
+              accounts: prevAccountBalances.accounts.map((account) =>
+                account.isInAppWallet
+                  ? {
+                      ...account,
+                      balance: account.balance - (inputAmount?.amount ?? 0)
+                    }
+                  : account
+              )
+            }
+          }
+        )
+      }
+      if (outputMint) {
+        queryClient.setQueryData(
+          getUserCoinQueryKey(outputMint, user?.user_id),
+          (prevAccountBalances) => {
+            if (!prevAccountBalances) return null
+
+            return {
+              ...prevAccountBalances,
+              // Update aggregate account balance (includes connected wallets)
+              balance:
+                prevAccountBalances?.balance + (outputAmount?.amount ?? 0),
+              // Update internal wallet balance (we only do swaps against internal wallets)
+              accounts: prevAccountBalances.accounts.map((account) =>
+                account.isInAppWallet
+                  ? {
+                      ...account,
+                      balance: account.balance + (outputAmount?.amount ?? 0)
+                    }
+                  : account
+              )
+            }
+          }
+        )
+      }
+
+      // Invalidate user query to ensure user data is fresh after swap
+      queryClient.invalidateQueries({
+        queryKey: getUserQueryKey(user?.user_id)
+      })
     },
     onMutate: () => {
       return { status: SwapStatus.SENDING_TRANSACTION }

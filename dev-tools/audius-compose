@@ -24,6 +24,7 @@ audius-protocol-eth-ganache-1 \
 audius-protocol-pedalboard \
 audius-protocol-anti-abuse-oracle-1 \
 audius-protocol-discovery-provider-redis-1 \
+audius-protocol-api \
 """
 
 

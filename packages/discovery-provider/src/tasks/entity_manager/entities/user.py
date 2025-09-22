@@ -34,7 +34,12 @@ from src.tasks.entity_manager.utils import (
 )
 from src.tasks.metadata import immutable_user_fields
 from src.utils.config import shared_config
-from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
+from src.utils.hardcoded_data import (
+    genres_lower,
+    handle_badwords_lower,
+    moods_lower,
+    reserved_handles_lower,
+)
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 
@@ -129,6 +134,7 @@ def validate_user_metadata(
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
         handle_lower = validate_user_handle(user_metadata["handle"])
+        validate_user_name(user_metadata["name"])
         user_handle_exists = session.query(
             session.query(User).filter(User.handle_lc == handle_lower).exists()
         ).scalar()
@@ -182,7 +188,17 @@ def validate_user_handle(handle: Union[str, None]):
         raise IndexingValidationError(f"Handle {handle} is a genre name")
     if handle in moods_lower:
         raise IndexingValidationError(f"Handle {handle} is a mood name")
+    if any(badword in handle for badword in handle_badwords_lower):
+        raise IndexingValidationError(f"Handle {handle} contains a bad word")
     return handle
+
+
+def validate_user_name(name: Union[str, None]):
+    if not name:
+        return name
+    if any(badword in name.lower() for badword in handle_badwords_lower):
+        raise IndexingValidationError(f"Name {name} contains a bad word")
+    return name
 
 
 def create_user(params: ManageEntityParameters):

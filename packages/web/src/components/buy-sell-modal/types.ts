@@ -1,49 +1,89 @@
-export type BuySellTab = 'buy' | 'sell'
+import { TokenInfo, TokenPair } from '@audius/common/store'
+import { TooltipPlacement } from 'antd/lib/tooltip'
 
-export type Screen = 'input' | 'confirm' | 'success'
-
-export type TokenType = 'AUDIO' | 'USDC'
-
-export type TokenInfo = {
-  symbol: string // e.g., 'AUDIO', 'USDC', 'WETH'
-  name: string // e.g., 'Audius', 'USD Coin', 'Wrapped Ether'
-  icon: React.ComponentType<any> // Component for the token's icon
-  decimals: number // Number of decimal places (e.g., 18 for ETH)
-  balance: number | null // User's balance for this token
-  address?: string // Optional contract address
-  isStablecoin?: boolean // Flag for UI formatting ($ prefix, etc.)
+// Transaction data structure
+export type TransactionData = {
+  inputAmount: number
+  outputAmount: number
+  isValid: boolean
+  error: string | null
+  isInsufficientBalance: boolean
 }
 
-export type TokenPair = {
-  baseToken: TokenInfo // The token being priced (e.g., AUDIO)
-  quoteToken: TokenInfo // The token used for pricing (e.g., USDC)
-  exchangeRate: number | null // Rate of baseToken in terms of quoteToken
-}
-
-export type TokenAmountSectionProps = {
-  title: string
-  tokenInfo: TokenInfo
-  isInput: boolean
-  amount: number | string
-  onAmountChange?: (value: string) => void
-  onMaxClick?: () => void
-  availableBalance: number
-  exchangeRate?: number | null
-  placeholder?: string
+// UI configuration options
+export type UIConfiguration = {
   isDefault?: boolean
   error?: boolean
   errorMessage?: string
+  tooltipPlacement?: TooltipPlacement
+}
+
+// Token pricing configuration
+export type TokenPricing = {
   tokenPrice?: string | null
   isTokenPriceLoading?: boolean
   tokenPriceDecimalPlaces?: number
 }
 
-// Data structure for the transaction success screen
-export type SuccessDisplayData = {
-  payTokenInfo: TokenInfo
-  receiveTokenInfo: TokenInfo
-  payAmount: number
-  receiveAmount: number
-  pricePerBaseToken: number
-  baseTokenSymbol: string
+// Input handling configuration
+export type InputConfiguration = {
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
+  min?: number
+  max?: number
 }
+
+// Token selection configuration
+export type TokenSelection = {
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
+}
+
+// Callback functions
+export type SwapCallbacks = {
+  onTransactionDataChange?: (data: TransactionData) => void
+  onChangeSwapDirection?: () => void
+}
+
+// Main SwapTab props interface composed of smaller interfaces
+export type SwapTabProps = {
+  tokens: TokenPair
+  configuration: UIConfiguration
+  pricing: TokenPricing
+  input: InputConfiguration
+  tokenSelection: TokenSelection
+  callbacks: SwapCallbacks
+}
+
+// Base props shared across all tab components
+export type BaseTabProps = {
+  tokenPair: TokenPair
+  onTransactionDataChange?: (data: TransactionData) => void
+  error?: boolean
+  errorMessage?: string
+  initialInputValue?: string
+  onInputValueChange?: (value: string) => void
+}
+
+export type BuyTabProps = BaseTabProps & {
+  availableOutputTokens?: TokenInfo[]
+  onOutputTokenChange?: (symbol: string) => void
+}
+
+export type SellTabProps = BaseTabProps & {
+  availableInputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+}
+
+export type ConvertTabProps = BaseTabProps & {
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
+  onChangeSwapDirection?: () => void
+}
+
+// Modal screen types
+export type Screen = 'input' | 'confirm' | 'success'

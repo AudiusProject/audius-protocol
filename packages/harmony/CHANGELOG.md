@@ -1,5 +1,17 @@
 # @audius/harmony
 
+## 0.4.2
+
+### Patch Changes
+
+- e8b67c8: Fix tests by ensuring social logos are loaded before using
+
+## 0.4.1
+
+### Patch Changes
+
+- 0dfd7d0: Fix X icon color
+
 ## 0.4.0
 
 ### Minor Changes

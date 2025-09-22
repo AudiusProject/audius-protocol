@@ -2,7 +2,9 @@ import { QueryClient } from '@tanstack/react-query'
 import { omit } from 'lodash'
 import { getContext } from 'typed-redux-saga'
 
+import { Kind } from '~/models'
 import { CollectionMetadata, UserCollectionMetadata } from '~/models/Collection'
+import { Uid } from '~/utils'
 
 import { getCollectionQueryKey } from '../collection/useCollection'
 import { getCollectionByPermalinkQueryKey } from '../collection/useCollectionByPermalink'
@@ -26,7 +28,13 @@ export const primeCollectionData = ({
     const tqCollection = {
       ...omit(collection, ['tracks', 'user']),
       trackIds:
-        collection.playlist_contents?.track_ids?.map((t) => t.track) ?? []
+        collection.playlist_contents?.track_ids?.map((t) => t.track) ?? [],
+      playlist_contents: {
+        track_ids: collection.playlist_contents.track_ids.map((t) => ({
+          ...t,
+          uid: t.uid ?? new Uid(Kind.TRACKS, t.track, 'collection').toString()
+        }))
+      }
     } as TQCollection
     // Prime collection data only if it doesn't exist and skipQueryData is false
     if (
@@ -58,8 +66,7 @@ export const primeCollectionData = ({
     if ('user' in collection) {
       primeUserData({
         users: [collection.user],
-        queryClient,
-        forceReplace
+        queryClient
       })
     }
 

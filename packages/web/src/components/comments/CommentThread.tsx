@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { useComment, useCommentReplies } from '@audius/common/api'
+import {
+  useComment,
+  useCommentReplies,
+  useHighlightedComment
+} from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Comment, ID, Name, ReplyComment } from '@audius/common/models'
@@ -19,6 +23,11 @@ import { CommentBlock } from './CommentBlock'
 export const CommentThread = ({ commentId }: { commentId: ID }) => {
   const { data: rootCommentData } = useComment(commentId)
   const rootComment = rootCommentData as Comment // We can safely assume that this is a parent comment
+  const highlightedComment = useHighlightedComment()
+  const highlightReplyId =
+    highlightedComment?.parentCommentId === commentId
+      ? highlightedComment?.id
+      : null
 
   const { entityId } = useCurrentCommentSection()
   const [hasRequestedMore, setHasRequestedMore] = useState(false)
@@ -67,8 +76,8 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
     <Flex direction='column' as='li'>
       <CommentBlock commentId={rootComment.id} />
       {hasReplies ? (
-        <Flex ml='56px' direction='column' mt='l' gap='l'>
-          <Box alignSelf='flex-start'>
+        <Flex direction='column' mt='l'>
+          <Box alignSelf='flex-start' ph={80}>
             <PlainButton
               onClick={() => toggleReplies(rootComment.id)}
               variant='subdued'
@@ -91,18 +100,31 @@ export const CommentThread = ({ commentId }: { commentId: ID }) => {
             <Flex direction='column' gap='l' css={{ overflow: 'hidden' }}>
               <Flex
                 direction='column'
+                pt='l'
                 gap='l'
                 as='ul'
                 aria-label={messages.replies}
               >
-                {replies.map((reply: ReplyComment) => (
-                  <Flex w='100%' key={reply.id} as='li'>
+                {highlightReplyId ? (
+                  <Flex w='100%' key={highlightReplyId}>
                     <CommentBlock
-                      commentId={reply.id}
+                      commentId={highlightReplyId}
                       parentCommentId={rootComment.id}
                     />
                   </Flex>
-                ))}
+                ) : null}
+                {replies
+                  ?.filter(
+                    (reply: ReplyComment) => reply.id !== highlightReplyId
+                  )
+                  .map((reply: ReplyComment) => (
+                    <Flex w='100%' key={reply.id} as='li'>
+                      <CommentBlock
+                        commentId={reply.id}
+                        parentCommentId={rootComment.id}
+                      />
+                    </Flex>
+                  ))}
               </Flex>
 
               {hasMoreReplies ? (

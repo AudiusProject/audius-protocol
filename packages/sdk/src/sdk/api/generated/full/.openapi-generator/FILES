@@ -2,6 +2,7 @@
 apis/ChallengesApi.ts
 apis/CidDataApi.ts
 apis/CommentsApi.ts
+apis/ExploreApi.ts
 apis/NotificationsApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
@@ -37,6 +38,8 @@ models/ArtistRemixContestSubmissionsNotificationAction.ts
 models/ArtistRemixContestSubmissionsNotificationActionData.ts
 models/Attestation.ts
 models/AttestationReponse.ts
+models/BestSellingFullResponse.ts
+models/BestSellingItem.ts
 models/ChallengeRewardNotification.ts
 models/ChallengeRewardNotificationAction.ts
 models/ChallengeRewardNotificationActionData.ts
@@ -60,6 +63,7 @@ models/CommentReactionNotification.ts
 models/CommentReactionNotificationAction.ts
 models/CommentReactionNotificationActionData.ts
 models/CommentRepliesResponse.ts
+models/CommentResponse.ts
 models/CommentThreadNotification.ts
 models/CommentThreadNotificationAction.ts
 models/CommentThreadNotificationActionData.ts
@@ -75,6 +79,7 @@ models/CreateNotificationActionData.ts
 models/CreatePlaylistNotificationActionData.ts
 models/CreateTrackNotificationActionData.ts
 models/DataAndType.ts
+models/ExtendedTokenGate.ts
 models/FanRemixContestEndedNotification.ts
 models/FanRemixContestEndedNotificationAction.ts
 models/FanRemixContestEndedNotificationActionData.ts
@@ -104,8 +109,6 @@ models/FullGetSupporting.ts
 models/FullMutualFollowersResponse.ts
 models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
-models/FullPlaylistWithScore.ts
-models/FullPlaylistWithScoreResponse.ts
 models/FullPurchasersResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts
@@ -221,6 +224,7 @@ models/TierChangeNotification.ts
 models/TierChangeNotificationAction.ts
 models/TierChangeNotificationActionData.ts
 models/TipGate.ts
+models/TokenGate.ts
 models/TopGenreUsersResponseFull.ts
 models/TopUsersResponseFull.ts
 models/TrackActivityFull.ts
@@ -267,6 +271,7 @@ models/UserCommentsResponseFull.ts
 models/UserFeedItem.ts
 models/UserFeedResponse.ts
 models/UserFull.ts
+models/UserFullArtistCoinBadge.ts
 models/UserManager.ts
 models/UserMilestoneNotificationActionData.ts
 models/UserSubscribers.ts

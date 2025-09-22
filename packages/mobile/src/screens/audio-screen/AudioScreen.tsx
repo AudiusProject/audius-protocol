@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect } from 'react'
 
+import { useAudioBalance } from '@audius/common/api'
 import {
   modalsActions,
   tokenDashboardPageActions,
-  tokenDashboardPageSelectors,
-  walletActions,
-  walletSelectors
+  tokenDashboardPageSelectors
 } from '@audius/common/store'
-import { isNullOrUndefined } from '@audius/common/utils'
+import { formatNumberCommas, isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking } from 'react-native'
@@ -21,7 +20,8 @@ import {
   IconCrown,
   IconInfo,
   Paper,
-  Text
+  Text,
+  LoadingSpinner
 } from '@audius/harmony-native'
 import TokenStill from 'app/assets/images/tokenSpinStill.png'
 import {
@@ -33,7 +33,6 @@ import {
 } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
@@ -42,8 +41,6 @@ import { useThemeColors } from 'app/utils/theme'
 import { ClaimAllRewardsTile } from '../rewards-screen/ClaimAllRewardsTile'
 
 const { setVisibility } = modalsActions
-const { getBalance } = walletActions
-const { getAccountTotalBalance, getTotalBalanceLoadDidFail } = walletSelectors
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
 
@@ -117,8 +114,11 @@ export const AudioScreen = () => {
   const navigation = useNavigation()
   const { toast } = useToast()
 
-  const totalBalance = useSelector(getAccountTotalBalance)
-  const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
+  const {
+    totalBalance,
+    isLoading: isAudioBalanceLoading,
+    isError: isAudioBalanceError
+  } = useAudioBalance()
 
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
 
@@ -129,19 +129,18 @@ export const AudioScreen = () => {
   useFocusEffect(
     useCallback(() => {
       dispatch(fetchAssociatedWallets())
-      dispatch(getBalance())
     }, [dispatch])
   )
 
   useEffect(() => {
-    if (balanceLoadDidFail) {
+    if (isAudioBalanceError) {
       toast({
         content: 'Balance failed to load. Please try again later.',
         type: 'error',
         timeout: 10000
       })
     }
-  }, [balanceLoadDidFail, toast])
+  }, [isAudioBalanceError, toast])
 
   const renderAudioTile = () => {
     return (
@@ -158,7 +157,7 @@ export const AudioScreen = () => {
           onPress={hasMultipleWallets ? handlePressWalletInfo : undefined}
         >
           <Flex alignItems='center'>
-            {isNullOrUndefined(totalBalance) ? (
+            {isAudioBalanceLoading || isNullOrUndefined(totalBalance) ? (
               <LoadingSpinner
                 fill={'rgba(255, 255, 255, 0.75)'}
                 style={styles.spinner}
@@ -170,7 +169,11 @@ export const AudioScreen = () => {
                 color='staticWhite'
                 strength='strong'
               >
-                {AUDIO(totalBalance).toShorthand()}
+                {formatNumberCommas(
+                  AUDIO(totalBalance).toLocaleString('en-US', {
+                    maximumFractionDigits: 0
+                  })
+                )}
               </Text>
             )}
           </Flex>

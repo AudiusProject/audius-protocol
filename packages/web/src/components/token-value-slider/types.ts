@@ -1,15 +1,17 @@
-import BN from 'bn.js'
+import { ComponentType } from 'react'
+
+import { AudioWei } from '@audius/fixed-decimal'
 
 export type TokenValueSliderProps = {
   className?: string
   sliderClassName?: string
   sliderBarClassName?: string
-  min: BN
-  max: BN
-  value: BN
+  min: AudioWei
+  max: AudioWei
+  value: AudioWei
   minSliderWidth: number
-  initialValue?: BN
+  initialValue?: AudioWei
   isIncrease?: boolean
-  minWrapper?: React.ComponentType<{ value: BN }>
-  maxWrapper?: React.ComponentType<{ value: BN }>
+  minWrapper?: ComponentType<{ value: AudioWei }>
+  maxWrapper?: ComponentType<{ value: AudioWei }>
 }

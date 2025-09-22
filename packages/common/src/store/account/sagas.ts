@@ -1,5 +1,4 @@
 import { HedgehogWalletNotFoundError, Id } from '@audius/sdk'
-import { omit } from 'lodash'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -11,16 +10,13 @@ import {
 } from 'typed-redux-saga'
 
 import {
-  getWalletAccountQueryFn,
-  getWalletAccountQueryKey,
   getWalletAddressesQueryKey,
   queryAccountUser,
   getCurrentAccountQueryKey,
-  queryCurrentAccount,
   queryCurrentUserId,
   primeUserData,
   getUserQueryKey,
-  NormalizedAccountUserMetadata
+  getWalletAccountSaga
 } from '~/api'
 import { getAccountStatusQueryKey } from '~/api/tan-query/users/account/useAccountStatus'
 import { AccountUserMetadata, ErrorLevel, Status, UserMetadata } from '~/models'
@@ -52,7 +48,8 @@ import {
   renameAccountPlaylist,
   fetchSavedPlaylistsSucceeded,
   incrementTrackSaveCount,
-  decrementTrackSaveCount
+  decrementTrackSaveCount,
+  setGuestEmail
 } from './slice'
 import { AccountState } from './types'
 
@@ -122,13 +119,13 @@ function* initializeMetricsForUser({
   const queryClient = yield* getContext('queryClient')
 
   if (accountUser && accountUser.handle && web3WalletAddress) {
-    const accountData = (yield* call([queryClient, queryClient.fetchQuery], {
-      queryKey: getWalletAccountQueryKey(web3WalletAddress),
-      queryFn: async () =>
-        getWalletAccountQueryFn(web3WalletAddress, sdk, queryClient),
-      staleTime: Infinity,
-      gcTime: Infinity
-    })) as AccountUserMetadata | undefined
+    const accountData = yield* call(
+      getWalletAccountSaga,
+      web3WalletAddress,
+      sdk,
+      queryClient
+    )
+
     const { user: web3User } = accountData ?? {}
 
     let solanaWallet
@@ -222,22 +219,9 @@ export function* fetchAccountAsync({
     return
   }
 
-  let accountData
+  let accountData: AccountUserMetadata | null | undefined
   try {
-    accountData = yield* call(
-      getWalletAccountQueryFn,
-      wallet!,
-      sdk,
-      queryClient
-    )
-    const normalizedAccountData = {
-      ...omit(accountData, ['user']),
-      userId: accountData?.user?.user_id
-    } as NormalizedAccountUserMetadata
-    queryClient.setQueryData(
-      getWalletAccountQueryKey(wallet!),
-      normalizedAccountData
-    )
+    accountData = yield* call(getWalletAccountSaga, wallet!, sdk, queryClient)
   } catch (e) {}
 
   if (!accountData) {
@@ -390,34 +374,21 @@ function* setLocalStorageAccountAndUser(
     user: accountUser,
     playlist_library: playlistLibrary,
     playlists: collections,
-    guestEmail
+    guestEmail,
+    track_save_count: trackSaveCount
   } = account
   const localStorage = yield* getContext('localStorage')
 
-  const formattedAccount = {
+  const formattedAccount: Partial<AccountState> = {
     userId: accountUser.user_id,
     collections,
     playlistLibrary,
-    guestEmail
+    guestEmail,
+    trackSaveCount
   }
 
   yield* call([localStorage, localStorage.setAudiusAccount], formattedAccount)
   yield* call([localStorage, localStorage.setAudiusAccountUser], accountUser)
-}
-
-/** Used to synchronize account to localStorage when values in the slice
- * change.
- */
-function* syncAccountToLocalStorage() {
-  const localStorage = yield* getContext('localStorage')
-  const { userId, collections, playlistLibrary, guestEmail } =
-    (yield* call(queryCurrentAccount)) ?? {}
-  yield* call([localStorage, localStorage.setAudiusAccount], {
-    userId,
-    collections,
-    playlistLibrary,
-    guestEmail
-  })
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
@@ -651,10 +622,6 @@ function* watchTikTokLogin() {
   yield* takeEvery(tikTokLogin.type, associateTikTokAccount)
 }
 
-function* watchUpdatePlaylistLibrary() {
-  yield* takeEvery(updatePlaylistLibrary.type, syncAccountToLocalStorage)
-}
-
 export function* watchFetchTrackCount() {
   yield* takeLatest(fetchHasTracks, handleFetchTrackCount)
 }
@@ -681,7 +648,8 @@ function* syncAccountToQueryClient() {
       setHasTracks.type,
       updatePlaylistLibrary.type,
       incrementTrackSaveCount.type,
-      decrementTrackSaveCount.type
+      decrementTrackSaveCount.type,
+      setGuestEmail.type
     ],
     function* () {
       const state = yield* select((state) => state.account)
@@ -723,7 +691,6 @@ export default function sagas() {
     watchTikTokLogin,
     watchTwitterLogin,
     watchUploadTrack,
-    watchUpdatePlaylistLibrary,
     syncAccountToQueryClient
   ]
 }

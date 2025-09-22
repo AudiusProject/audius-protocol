@@ -22,7 +22,7 @@
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #c675ff;
+  color: var(--harmony-text-disabled);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
 }
@@ -35,7 +35,7 @@
   font-size: var(--harmony-font-l);
   line-height: 24px;
   text-align: center;
-  color: var(--harmony-white);
+  color: var(--harmony-text-heading);
 }
 .text.mobile {
   font-size: var(--harmony-font-m);

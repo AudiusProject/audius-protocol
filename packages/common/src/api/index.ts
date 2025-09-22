@@ -16,6 +16,19 @@ export * from './tan-query/collection/useCollectionTracksWithUid'
 export * from './tan-query/collection/useFeaturedPlaylists'
 export * from './tan-query/collection/useLibraryCollections'
 export * from './tan-query/collection/useCollectionByParams'
+export * from './tan-query/collection/useDeleteCollection'
+
+// Coins
+export * from './tan-query/coins/useArtistCoin'
+export * from './tan-query/coins/useArtistCoinByTicker'
+export * from './tan-query/coins/useArtistCoinMembers'
+export * from './tan-query/coins/useUserCoin'
+export * from './tan-query/coins/useUserCoins'
+export * from './tan-query/coins/useArtistCoinMembersCount'
+export * from './tan-query/coins/useUserCreatedCoins'
+export * from './tan-query/coins/useArtistCoins'
+export * from './tan-query/coins/useFirstBuyQuote'
+export * from './tan-query/coins/tokenUtils'
 
 // Developer Apps
 export * from '../schemas/developerApps'
@@ -29,6 +42,7 @@ export * from './tan-query/events'
 
 // Explore
 export * from './tan-query/collection/useExploreContent'
+export * from './tan-query/explore/useBestSelling'
 
 // Lineups
 export * from './tan-query/lineups/useFeed'
@@ -36,7 +50,10 @@ export * from './tan-query/lineups/useLibraryTracks'
 export * from './tan-query/lineups/useProfileReposts'
 export * from './tan-query/lineups/useProfileTracks'
 export * from './tan-query/lineups/useTrending'
+export * from './tan-query/lineups/useTrendingPlaylists'
+export * from './tan-query/lineups/useTrendingUnderground'
 export * from './tan-query/lineups/useTrackPageLineup'
+export * from './tan-query/lineups/useLineupQuery'
 
 // Notifications
 export * from './tan-query/notifications/useMarkNotificationsAsViewed'
@@ -44,7 +61,6 @@ export * from './tan-query/notifications/useNotifications'
 export * from './tan-query/notifications/useNotificationEntities'
 export * from './tan-query/notifications/useNotificationEntity'
 export * from './tan-query/notifications/useNotificationUnreadCount'
-export * from './tan-query/notifications/useNotificationValidTypes'
 
 // Purchases
 export * from './tan-query/purchases/useAudioTransactions'
@@ -95,7 +111,13 @@ export * from './tan-query/tracks/useFileSizes'
 export * from './tan-query/tracks/useTrackFileInfo'
 export * from './tan-query/tracks/useUpdateTrack'
 export * from './tan-query/tracks/useRemixedTracks'
+export * from './tan-query/tracks/useRecommendedTracks'
+export * from './tan-query/tracks/useRecentPremiumTracks'
 export * from './tan-query/tracks/useSuggestedPlaylistTracks'
+export * from './tan-query/tracks/useFeelingLuckyTrack'
+export * from './tan-query/tracks/useRecentlyPlayedTracks'
+export * from './tan-query/tracks/useRecentlyCommentedTracks'
+export * from './tan-query/tracks/useMostSharedTracks'
 
 // Users
 export * from './tan-query/users/useUpdateProfile'
@@ -137,6 +159,7 @@ export * from './tan-query/users/account/useCurrentUserId'
 export * from './tan-query/users/account/useWalletUser'
 export * from './tan-query/users/account/useAddToPlaylistFolder'
 export * from './tan-query/users/account/useCurrentAccount'
+export * from './tan-query/users/account/useDiscordCode'
 export * from './tan-query/users/account/usePlaylistLibrary'
 export * from './tan-query/users/account/useReorderLibrary'
 export * from './tan-query/users/account/useUpdatePlaylistLibrary'
@@ -147,10 +170,12 @@ export * from './tan-query/users/account/useSyncLocalStorageUser'
 // Wallet logic
 export * from './tan-query/wallets/useAudioBalance'
 export * from './tan-query/wallets/useConnectedWallets'
-export * from './tan-query/wallets/useTokenPrice'
 export * from './tan-query/wallets/useWalletCollectibles'
 export * from './tan-query/wallets/useWalletOwner'
 export * from './tan-query/wallets/useUSDCBalance'
+export * from './tan-query/wallets/useTokenBalance'
+export * from './tan-query/wallets/useSendTokens'
+export * from './tan-query/wallets/useWalletSolBalance'
 export * from './tan-query/jupiter/useSwapTokens'
 export * from './tan-query/jupiter/useTokenExchangeRate'
 export * from './tan-query/jupiter/utils'
@@ -162,3 +187,6 @@ export * from './tan-query/utils'
 // New authorized-apps exports
 export * from './tan-query/authorized-apps/useAuthorizedApps'
 export * from './tan-query/authorized-apps/useRemoveAuthorizedApp'
+
+// Tokens
+export * from './tan-query/tokens'

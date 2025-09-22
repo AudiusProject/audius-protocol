@@ -1,5 +1,5 @@
 import { OptionalId } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { SearchResults, searchResultsFromSDK } from '~/adapters/search'
 import { useQueryContext } from '~/api/tan-query/utils'
@@ -32,6 +32,7 @@ export const useSearchAutocomplete = (
   const { isEnabled: isUSDCEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
+  const queryClient = useQueryClient()
 
   return useQuery({
     queryKey: getSearchAutocompleteQueryKey({ query, limit }),
@@ -43,8 +44,7 @@ export const useSearchAutocomplete = (
         limit,
         includePurchaseable: isUSDCEnabled
       })
-
-      return searchResultsFromSDK(data)
+      return searchResultsFromSDK(data, queryClient)
     },
     placeholderData: (prev) => (query === '' ? undefined : prev),
     ...options,

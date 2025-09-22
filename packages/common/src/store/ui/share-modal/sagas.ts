@@ -86,18 +86,6 @@ function* handleRequestOpen(action: ShareModalRequestOpenAction) {
       }
       break
     }
-    case 'audioNftPlaylist': {
-      const { userId, source } = action.payload
-      const user = yield* queryUser(userId)
-      if (!user) return
-      yield put(
-        open({
-          type: 'audioNftPlaylist',
-          user,
-          source
-        })
-      )
-    }
   }
 
   yield put(setVisibility({ modal: 'Share', visible: true }))

@@ -9,7 +9,7 @@ export const NoComments = () => {
       alignItems='center'
       justifyContent='center'
       direction='column'
-      css={{ paddingTop: 80, paddingBottom: 80 }}
+      css={{ paddingBlock: 80, paddingInline: 24 }}
     >
       <Text>{messages.noComments}</Text>
       <Text color='subdued'>

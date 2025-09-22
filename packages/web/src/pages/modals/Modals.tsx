@@ -37,11 +37,12 @@ import { PasswordResetModal } from 'components/password-reset/PasswordResetModal
 import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
+import { ReceiveTokensModal } from 'components/receive-tokens-modal'
 import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirmation-modal/ReplaceTrackConfirmationModal'
 import { ReplaceTrackProgressModal } from 'components/replace-track-progress-modal/ReplaceTrackProgressModal'
 import { ClaimAllRewardsModal } from 'components/rewards/modals/ClaimAllRewardsModal'
 import TopAPIModal from 'components/rewards/modals/TopAPI'
-import { VipDiscordModal } from 'components/rewards/modals/VipDiscordModal'
+import { SendTokensModal } from 'components/send-tokens-modal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -86,7 +87,6 @@ const CommentSettingsModal = lazy(
 
 const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
-  VipDiscord: VipDiscordModal,
   EditFolder: EditFolderModal,
   AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
@@ -136,7 +136,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   PayoutWallet: PayoutWalletModal,
   ConnectedWallets: ConnectedWalletsModal,
   DownloadTrackArchive: DownloadTrackArchiveModal,
-  BuySellModal
+  BuySellModal,
+  ReceiveTokensModal,
+  SendTokensModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

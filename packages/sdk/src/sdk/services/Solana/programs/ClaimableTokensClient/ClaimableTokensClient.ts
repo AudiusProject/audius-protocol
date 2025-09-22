@@ -15,8 +15,7 @@ import {
 
 import { productionConfig } from '../../../../config/production'
 import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
-import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
-import { parseMintToken } from '../../../../utils/parseMintToken'
+import { parseMint } from '../../../../utils/parseMint'
 import { parseParams } from '../../../../utils/parseParams'
 import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 import type { LoggerService } from '../../../Logger'
@@ -73,9 +72,9 @@ export class ClaimableTokensClient {
   /** The program ID of the ClaimableTokensProgram instance. */
   private readonly programId: PublicKey
   /** Map from token mint name to public key address. */
-  private readonly mints: Record<TokenName, PublicKey>
+  private readonly preconfiguredMints: Record<TokenName, PublicKey>
   /** Map from token mint name to derived user bank authority. */
-  private readonly authorities: Record<TokenName, PublicKey>
+  private readonly authorities: Record<string, PublicKey>
   private readonly logger: LoggerService
   private readonly audiusWalletClient: AudiusWalletClient
 
@@ -100,17 +99,16 @@ export class ClaimableTokensClient {
     )
     this.client = configWithDefaults.solanaClient
     this.programId = configWithDefaults.programId
-    this.mints = configWithDefaults.mints
-    this.authorities = {
-      wAUDIO: ClaimableTokensProgram.deriveAuthority({
-        programId: configWithDefaults.programId,
-        mint: configWithDefaults.mints.wAUDIO
-      }),
-      USDC: ClaimableTokensProgram.deriveAuthority({
-        programId: configWithDefaults.programId,
-        mint: configWithDefaults.mints.USDC
-      })
-    }
+    this.preconfiguredMints = configWithDefaults.mints
+    this.authorities = Object.fromEntries(
+      Object.entries(configWithDefaults.mints).map(([token, mint]) => [
+        token,
+        ClaimableTokensProgram.deriveAuthority({
+          programId: configWithDefaults.programId,
+          mint
+        })
+      ])
+    ) as Record<TokenName, PublicKey>
     this.audiusWalletClient = configWithDefaults.audiusWalletClient
     this.logger = configWithDefaults.logger.createPrefixedLogger(
       '[claimable-tokens-client]'
@@ -129,7 +127,7 @@ export class ClaimableTokensClient {
       ethWallet = await this.getDefaultWalletAddress(),
       feePayer: feePayerOverride
     } = args
-    const { mint, token } = parseMintToken(args.mint, this.mints)
+    const mint = parseMint(args.mint, this.preconfiguredMints)
     const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank(args)
 
@@ -152,7 +150,7 @@ export class ClaimableTokensClient {
             ethAddress: ethWallet,
             payer: feePayer,
             mint,
-            authority: this.authorities[token],
+            authority: this.deriveAuthority(mint),
             userBank,
             programId: this.programId
           })
@@ -195,18 +193,18 @@ export class ClaimableTokensClient {
     const {
       feePayer: feePayerOverride,
       ethWallet = await this.getDefaultWalletAddress(),
-      mint,
+      mint: mintOrToken,
       destination
     } = await parseParams(
       'createTransferInstruction',
       CreateTransferSchema
     )(params)
-    const { token } = parseMintToken(mint, this.mints)
+    const mint = parseMint(mintOrToken, this.preconfiguredMints)
     const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[token],
+      authority: this.deriveAuthority(mint),
       programId: this.programId
     })
     return ClaimableTokensProgram.createTransferInstruction({
@@ -215,7 +213,7 @@ export class ClaimableTokensClient {
       sourceUserBank: source,
       destination,
       nonceAccount: nonceKey,
-      authority: this.authorities[token],
+      authority: this.deriveAuthority(mint),
       programId: this.programId
     })
   }
@@ -231,19 +229,19 @@ export class ClaimableTokensClient {
       ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
       destination,
       amount,
-      mint,
+      mint: mintOrToken,
       instructionIndex
     } = await parseParams(
       'createTransferSecpInstruction',
       CreateSecpSchema
     )(params)
 
-    const { token } = parseMintToken(mint, this.mints)
+    const mint = parseMint(mintOrToken, this.preconfiguredMints)
 
     let nonce = BigInt(0)
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.authorities[token],
+      authority: this.deriveAuthority(mint),
       programId: this.programId
     })
     const nonceAccount = await this.client.connection.getAccountInfo(nonceKey)
@@ -255,7 +253,7 @@ export class ClaimableTokensClient {
     }
     const data = ClaimableTokensProgram.createSignedTransferInstructionData({
       destination,
-      amount: mintFixedDecimalMap[token](amount).value,
+      amount,
       nonce
     })
     const [signature, recoveryId] = await this.audiusWalletClient.sign({
@@ -278,15 +276,30 @@ export class ClaimableTokensClient {
   public async deriveUserBank(params: DeriveUserBankRequest) {
     const {
       ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
-      mint
+      mint: mintOrToken
     } = await parseParams('deriveUserBank', GetOrCreateUserBankSchema)(params)
 
-    const { token } = parseMintToken(mint, this.mints)
+    const mint = parseMint(mintOrToken, this.preconfiguredMints)
 
     return await ClaimableTokensProgram.deriveUserBank({
       ethAddress: ethWallet,
-      claimableTokensPDA: this.authorities[token]
+      claimableTokensPDA: this.deriveAuthority(mint)
     })
+  }
+
+  /**
+   * Derives the authority for a given mint.
+   * If the authority is not already cached, it will derive it.
+   */
+  private deriveAuthority(mint: PublicKey) {
+    const authority = this.authorities[mint.toBase58()]
+    if (!authority) {
+      return ClaimableTokensProgram.deriveAuthority({
+        programId: this.programId,
+        mint
+      })
+    }
+    return authority
   }
 
   /**

@@ -4,6 +4,7 @@ import { SearchSortMethod } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { isEmpty } from 'lodash'
+import { flushSync } from 'react-dom'
 import { generatePath, useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
@@ -37,19 +38,23 @@ export const useSearchCategory = () => {
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const categoryParam = routeMatch?.params.category as CategoryView
 
-  const category = isMobile ? (categoryParam ?? 'profiles') : categoryParam
+  const category = isMobile ? (categoryParam ?? 'all') : categoryParam
 
   const { history } = useHistoryContext()
   const searchParams = useSearchParams()
   const { setStackReset } = useContext(RouterContext)
 
   const setCategory = useCallback(
-    (newCategory: CategoryKey) => {
-      // Do not animate on mobile
-      setStackReset(true)
+    (newCategory: CategoryKey, params?: UseSearchParamsResult) => {
+      // Do not animate on mobile - use flushSync to ensure this is processed before navigation
+      if (isMobile) {
+        flushSync(() => {
+          setStackReset(true)
+        })
+      }
 
       const commonFilterParams = Object.fromEntries(
-        Object.entries(searchParams)
+        Object.entries(params || searchParams)
           .filter(([key, value]) => value !== undefined && value !== null)
           .map(([key, value]) => [key, String(value)])
       )
@@ -73,13 +78,24 @@ export const useSearchCategory = () => {
         state: {}
       })
     },
-    [searchParams, history, setStackReset]
+    [searchParams, history, setStackReset, isMobile]
   )
 
   return [category || CategoryView.ALL, setCategory] as const
 }
 
-export const useSearchParams = () => {
+type UseSearchParamsResult = {
+  query?: string
+  genre?: Genre
+  mood?: Mood
+  bpm?: string
+  key?: string
+  isVerified?: boolean
+  hasDownloads?: boolean
+  isPremium?: boolean
+  sortMethod?: SearchSortMethod
+}
+export const useSearchParams = (): UseSearchParamsResult => {
   const [urlSearchParams] = useParams()
 
   const query = urlSearchParams.get('query')
@@ -93,17 +109,18 @@ export const useSearchParams = () => {
   const isPremium = urlSearchParams.get('isPremium')
 
   const searchParams = useMemo(
-    () => ({
-      query: query || undefined,
-      genre: (genre || undefined) as Genre,
-      mood: (mood || undefined) as Mood,
-      bpm: bpm || undefined,
-      key: key || undefined,
-      isVerified: isVerified === 'true' ? true : undefined,
-      hasDownloads: hasDownloads === 'true' ? true : undefined,
-      isPremium: isPremium === 'true' ? true : undefined,
-      sortMethod: sortMethod || undefined
-    }),
+    () =>
+      ({
+        query: query || undefined,
+        genre: (genre || undefined) as Genre | undefined,
+        mood: (mood || undefined) as Mood | undefined,
+        bpm: bpm || undefined,
+        key: key || undefined,
+        isVerified: isVerified === 'true' ? true : undefined,
+        hasDownloads: hasDownloads === 'true' ? true : undefined,
+        isPremium: isPremium === 'true' ? true : undefined,
+        sortMethod: sortMethod || undefined
+      }) as UseSearchParamsResult,
     [
       query,
       genre,

@@ -6,14 +6,7 @@ import { pick } from 'lodash'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
-import {
-  Flex,
-  IconButton,
-  IconCaretRight,
-  Text,
-  spacing,
-  useTheme
-} from '@audius/harmony-native'
+import { Flex, Text, spacing, useTheme } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { TrackImage } from 'app/components/image/TrackImage'
@@ -33,7 +26,7 @@ type SearchItemContainerProps = {
 } & SearchItemProps
 
 const SearchItemContainer = (props: SearchItemContainerProps) => {
-  const { children, icon: Icon = IconCaretRight, onPressIcon, onPress } = props
+  const { children, onPress } = props
 
   return (
     <TouchableOpacity onPress={onPress}>
@@ -47,16 +40,6 @@ const SearchItemContainer = (props: SearchItemContainerProps) => {
         gap='m'
       >
         {children}
-        {onPressIcon ? (
-          <IconButton
-            icon={Icon}
-            color='subdued'
-            size='s'
-            onPress={onPressIcon}
-          />
-        ) : (
-          <Icon size='s' color='subdued' />
-        )}
       </Flex>
     </TouchableOpacity>
   )

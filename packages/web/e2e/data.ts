@@ -3,7 +3,7 @@ import path from 'path'
 
 import type { full } from '@audius/sdk'
 
-const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
+const runAgainstLocalStack = process.env.RUN_AGAINST_STAGE !== 'true'
 
 const getData = (filename: string) =>
   JSON.parse(readFileSync(path.resolve('../web/e2e/data/', filename), 'utf8'))
@@ -130,20 +130,5 @@ export const getPlaylist = () => {
   return {
     url: 'df/playlist/probers_playlist_do_not_delete-511',
     name: 'PROBERS_PLAYLIST_DO_NOT_DELETE'
-  }
-}
-
-export const getAiAttributionUser = () => {
-  if (runAgainstLocalStack) {
-    const { handle, name } = user2()
-
-    return {
-      handle,
-      name
-    }
-  }
-
-  return {
-    name: 'probers ai DO NOT DELETE'
   }
 }

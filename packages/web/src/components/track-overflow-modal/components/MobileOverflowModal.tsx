@@ -43,7 +43,7 @@ const rowMessageMap = {
   [OverflowAction.DELETE_PLAYLIST]: 'Delete Playlist',
   [OverflowAction.PUBLISH_PLAYLIST]: 'Publish Playlist',
   [OverflowAction.VIEW_TRACK_PAGE]: 'View Track Page',
-  [OverflowAction.VIEW_ARTIST_PAGE]: 'View Artist Page',
+  [OverflowAction.VIEW_ARTIST_PAGE]: 'View Profile',
   [OverflowAction.VIEW_PLAYLIST_PAGE]: 'View Playlist Page',
   [OverflowAction.VIEW_COLLECTIBLE_PAGE]: 'View Collectible Page',
   [OverflowAction.VIEW_EPISODE_PAGE]: 'View Episode Page',

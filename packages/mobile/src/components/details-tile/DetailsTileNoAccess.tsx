@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
 import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
@@ -9,7 +9,8 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import type { ID, AccessConditions, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -20,7 +21,8 @@ import {
   usePremiumContentPurchaseModal,
   gatedContentSelectors
 } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
+import type { Coin } from '@audius/sdk'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,13 +32,14 @@ import {
   IconUserFollow,
   IconTipping,
   Flex,
-  Button
+  Button,
+  useTheme
 } from '@audius/harmony-native'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { LockedStatusBadge, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
@@ -54,7 +57,7 @@ const messages = {
   goToCollection: 'Go To Collection',
   followArtist: 'Follow Artist',
   sendTip: 'Send Tip',
-  buy: (price: string) => `Buy $${price}`,
+  buy: (price: string) => `Buy ${price}`,
   lockedCollectibleGated:
     'To unlock this track, you must link a wallet containing a collectible from:',
   unlockingCollectibleGatedPrefix: 'A Collectible from ',
@@ -66,6 +69,9 @@ const messages = {
   lockedTipGatedSuffix: ' a tip.',
   unlockingTipGatedPrefix: 'Thank you for supporting ',
   unlockingTipGatedSuffix: ' by sending them a tip!',
+  lockedTokenGatedPrefix: 'You must hold at least ',
+  lockedTokenGatedSuffix: ' in a connected wallet.',
+  buyArtistCoin: 'Buy Artist Coin',
   lockedUSDCPurchase: 'Unlock access with a one-time purchase!'
 }
 
@@ -178,17 +184,19 @@ type DetailsTileNoAccessProps = {
   streamConditions: AccessConditions
   contentType: PurchaseableContentType
   trackId: ID
+  token?: Coin | undefined
   style?: ViewStyle
 }
 
 export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
-  const { trackId, contentType, streamConditions, style } = props
+  const { trackId, contentType, streamConditions, style, token } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { isOpen: isModalOpen, onClose } = useDrawer('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const { color } = useTheme()
   const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
   const followSource = isModalOpen
     ? FollowSource.HOW_TO_UNLOCK_MODAL
@@ -236,6 +244,12 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     )
   }, [trackId, contentType, openPremiumContentPurchaseModal, onClose])
 
+  const handleTokenPress = useCallback(() => {
+    if (token?.mint) {
+      navigation.navigate('CoinDetailsScreen', { mint: token.mint })
+    }
+  }, [navigation, token?.mint])
+
   const handlePressArtistName = useCallback(
     (handle: string) => () => {
       navigation.push('Profile', { handle })
@@ -255,12 +269,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
           >
             {entity.name}
           </Text>
-          <UserBadges
-            badgeSize={spacing(4)}
-            user={entity}
-            nameStyle={styles.description}
-            hideName
-          />
+          <UserBadges userId={entity.user_id} badgeSize='xs' />
           {suffix ? <Text style={styles.description}>{suffix}</Text> : null}
         </View>
       )
@@ -347,6 +356,36 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
         </>
       )
     }
+    if (isContentTokenGated(streamConditions)) {
+      return (
+        <Flex column gap='xl'>
+          <Flex column gap='s'>
+            <View style={styles.descriptionContainer}>
+              <Text>
+                <Text style={styles.description}>
+                  {messages.lockedTokenGatedPrefix}
+                </Text>
+                <Text
+                  style={[styles.description, styles.name]}
+                  onPress={handleTokenPress}
+                >
+                  1 {token?.ticker}
+                </Text>
+                <Text style={styles.description}>
+                  {messages.lockedTokenGatedSuffix}
+                </Text>
+              </Text>
+            </View>
+          </Flex>
+          <Button
+            onPress={handleTokenPress}
+            gradient={color.special.coinGradient}
+          >
+            {messages.buyArtistCoin}
+          </Button>
+        </Flex>
+      )
+    }
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
         <Flex gap='s'>
@@ -356,7 +395,9 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
             </Text>
           </View>
           <Button color='lightGreen' onPress={handlePurchasePress} fullWidth>
-            {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
+            {messages.buy(
+              USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
+            )}
           </Button>
         </Flex>
       )
@@ -376,12 +417,16 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     styles.collectionImage,
     styles.collectionChainImageContainer,
     styles.collectionChainImage,
+    styles.name,
     handlePressCollection,
     followee,
     renderLockedSpecialAccessDescription,
     handleFollowArtist,
     tippedUser,
     handleSendTip,
+    handleTokenPress,
+    token?.ticker,
+    color.special.coinGradient,
     handlePurchasePress
   ])
 
@@ -398,12 +443,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
             >
               {entity.name}
             </Text>
-            <UserBadges
-              badgeSize={spacing(4)}
-              user={entity}
-              nameStyle={styles.description}
-              hideName
-            />
+            <UserBadges userId={entity.user_id} badgeSize='xs' />
             <Text style={styles.description}>{suffix}</Text>
           </Text>
         </View>

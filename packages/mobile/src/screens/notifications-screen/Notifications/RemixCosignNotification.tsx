@@ -20,14 +20,14 @@ import {
   EntityLink,
   UserNameLink,
   NotificationProfilePicture,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
 const messages = {
   title: 'Remix was Co-signed',
   cosign: 'Co-signed your Remix of',
-  shareTwitterText: (trackTitle: string, handle: string) =>
-    `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius #Audius $AUDIO`
+  shareXText: (trackTitle: string, handle: string) =>
+    `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius $AUDIO`
 }
 
 type RemixCosignNotificationProps = {
@@ -57,10 +57,10 @@ export const RemixCosignNotification = (
     }
   }, [childTrack, navigation, notification])
 
-  const handleTwitterShareData = useCallback(
+  const handleXShareData = useCallback(
     (handle: string | undefined) => {
       if (parentTrackTitle && handle) {
-        const shareText = messages.shareTwitterText(parentTrackTitle, handle)
+        const shareText = messages.shareXText(parentTrackTitle, handle)
         const analytics = {
           eventName: EventNames.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
           text: shareText
@@ -74,7 +74,7 @@ export const RemixCosignNotification = (
 
   if (!user || !childTrack || !parentTrack) return null
 
-  const twitterUrl = getTrackRoute(childTrack, true)
+  const xUrl = getTrackRoute(childTrack, true)
 
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
@@ -90,11 +90,11 @@ export const RemixCosignNotification = (
           </NotificationText>
         </View>
       </View>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
-        url={twitterUrl}
+        url={xUrl}
         handle={user.handle}
-        shareData={handleTwitterShareData}
+        shareData={handleXShareData}
       />
     </NotificationTile>
   )

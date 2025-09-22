@@ -1,4 +1,3 @@
-import { QUERY_KEYS } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { TRENDING_PAGE } from '@audius/common/src/utils/route'
 import {
@@ -29,7 +28,11 @@ function* watchSignOut() {
         yield call(disconnect, wagmiConfig)
       }
       yield put(resetAccount())
-      queryClient.resetQueries({ queryKey: [QUERY_KEYS.account] })
+      // NOTE: Weird workaround here - queryClient.clear() is necessary to delete all of the cache
+      // HOWEVER, this does NOT trigger a rerender on any active queries.
+      // So we need to call resetQueries() to trigger a rerender and then clear the cache.
+      queryClient.resetQueries()
+      queryClient.clear() // ORDER MATTERS HERE - clear() must be called after resetQueries()
       yield put(unsubscribeBrowserPushNotifications())
       yield put(
         make(Name.SETTINGS_LOG_OUT, {

@@ -15,20 +15,27 @@ export type CollectionTrackWithUid = TrackMetadata & {
  * NOTE: not an actual query hook, more of a selector
  */
 export const useCollectionTracksWithUid = (
-  collection: Pick<TQCollection, 'playlist_contents' | 'trackIds'> | undefined,
+  collection:
+    | Pick<TQCollection, 'playlist_contents' | 'trackIds' | 'playlist_id'>
+    | undefined,
   collectionUid: UID | undefined
 ) => {
   const collectionSource = Uid.fromString(collectionUid ?? '')?.source
 
-  const { byId } = useTracks(collection?.trackIds, { enabled: !!collectionUid })
+  const { byId, isPending } = useTracks(collection?.trackIds, {
+    enabled: !!collectionUid
+  })
 
   // Return tracks & rebuild UIDs for the track so they refer directly to this collection
   return useMemo(() => {
+    if (isPending) {
+      return []
+    }
     return (collection?.playlist_contents?.track_ids ?? [])
       .map((t, i) => {
         const { uid, track: trackId } = t ?? {}
         const trackUid = Uid.fromString(`${uid}`)
-        trackUid.source = `${collectionSource}:${trackUid.source}`
+        trackUid.source = `${collectionSource}:${trackUid.source}-${collection?.playlist_id}`
         trackUid.count = i
 
         if (!byId?.[trackId]) {
@@ -41,5 +48,11 @@ export const useCollectionTracksWithUid = (
         }
       })
       .filter(Boolean) as CollectionTrackWithUid[]
-  }, [collection?.playlist_contents?.track_ids, collectionSource, byId])
+  }, [
+    isPending,
+    collection?.playlist_contents?.track_ids,
+    collectionSource,
+    collection?.playlist_id,
+    byId
+  ])
 }

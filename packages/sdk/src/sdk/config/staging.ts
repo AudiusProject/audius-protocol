@@ -13,21 +13,6 @@ export const stagingConfig: SdkServicesConfig = {
         "endpoint": "https://discoveryprovider.staging.audius.co",
         "ownerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA",
         "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
-      },
-      {
-        "endpoint": "https://discoveryprovider2.staging.audius.co",
-        "ownerWallet": "0x5E98cBEEAA2aCEDEc0833AC3D1634E2A7aE0f3c2",
-        "delegateOwnerWallet": "0x5E98cBEEAA2aCEDEc0833AC3D1634E2A7aE0f3c2"
-      },
-      {
-        "endpoint": "https://discoveryprovider3.staging.audius.co",
-        "ownerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056",
-        "delegateOwnerWallet": "0xf7C96916bd37Ad76D4EEDd6536B81c29706C8056"
-      },
-      {
-        "endpoint": "https://discoveryprovider5.staging.audius.co",
-        "ownerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1",
-        "delegateOwnerWallet": "0x8311f59B72522e728231dC60226359A51878F9A1"
       }
     ],
     "storageNodes": [
@@ -81,10 +66,11 @@ export const stagingConfig: SdkServicesConfig = {
     "rpcEndpoint": "https://audius-fe.rpcpool.com",
     "usdcTokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "wAudioTokenMint": "BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo",
+    "bonkTokenMint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
     "rewardManagerLookupTableAddress": "ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J"
   },
   "ethereum": {
-    "rpcEndpoint": "https://eth-sepolia.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ",
+    "rpcEndpoint": "https://eth-client.staging.audius.co",
     "addresses": {
       "ethRewardsManagerAddress": "0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1",
       "serviceProviderFactoryAddress": "0x377BE01aD31360d0DFB16035A4515954395A8185",

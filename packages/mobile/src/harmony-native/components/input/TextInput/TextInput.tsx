@@ -7,7 +7,12 @@ import type {
   TextInputChangeEventData,
   TextInputFocusEventData
 } from 'react-native'
-import { Platform, Pressable, TextInput as RNTextInput } from 'react-native'
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput as RNTextInput
+} from 'react-native'
 import { Gesture, GestureDetector, State } from 'react-native-gesture-handler'
 import InsetShadow from 'react-native-inset-shadow'
 import Animated, {
@@ -87,7 +92,8 @@ export const TextInput = forwardRef(
 
     const innerInputRef = useRef<RNTextInput>(null)
 
-    const { typography, color, motion, cornerRadius, type } = useTheme()
+    const { typography, color, motion, cornerRadius, type, spacing } =
+      useTheme()
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
@@ -134,11 +140,19 @@ export const TextInput = forwardRef(
     const hasValue = characterCount > 0
 
     // Hide the label when requested or when the size is set to small
-    const shouldShowLabel = !hideLabel && size !== TextInputSize.SMALL
+    const shouldShowLabel =
+      !hideLabel &&
+      size !== TextInputSize.SMALL &&
+      size !== TextInputSize.EXTRA_SMALL
     const labelText = required ? `${labelProp} *` : labelProp
     const placeholderText =
       required && hideLabel ? `${placeholder} *` : placeholder
-    const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
+    const helperTextSize: TextSize =
+      size === TextInputSize.EXTRA_SMALL
+        ? 'xs'
+        : size === TextInputSize.SMALL
+          ? 'xs'
+          : 's'
 
     // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
     const shouldShowPlaceholder = isFocused || !shouldShowLabel
@@ -159,7 +173,9 @@ export const TextInput = forwardRef(
       maxLengthTextColor = 'warning'
     }
 
-    const isSmall = size === TextInputSize.SMALL
+    const isSmall =
+      size === TextInputSize.SMALL || size === TextInputSize.EXTRA_SMALL
+    const isExtraSmall = size === TextInputSize.EXTRA_SMALL
     const statusColor = disabled
       ? 'subdued'
       : error
@@ -243,14 +259,18 @@ export const TextInput = forwardRef(
         >
           <GestureDetector gesture={tap}>
             <InsetShadow
-              containerStyle={[
+              containerStyle={StyleSheet.flatten([
                 css({
                   width: '100%',
-                  height: isSmall ? 48 : 64,
+                  height: isExtraSmall
+                    ? spacing['2xl']
+                    : isSmall
+                      ? spacing['3xl']
+                      : spacing['4xl'],
                   borderRadius: cornerRadius.s
                 }),
                 inputStyle
-              ]}
+              ])}
               shadowOpacity={0.05}
               shadowColor='#000000'
               shadowRadius={4}
@@ -264,13 +284,13 @@ export const TextInput = forwardRef(
                 border={disabled ? 'default' : 'strong'}
                 borderRadius='s'
                 backgroundColor='surface1'
-                ph={isSmall ? 'm' : 'l'}
-                gap={isSmall ? 's' : 'm'}
+                ph={isExtraSmall ? 's' : isSmall ? 'm' : 'l'}
+                gap={isExtraSmall || isSmall ? 's' : 'm'}
                 style={[animatedRootStyles, innerContainerStyle, inputStyle]}
               >
                 {StartIcon ? (
                   <StartIcon
-                    size={isSmall ? 'l' : 'm'} // TODO adjust large variant accordingly
+                    size={isExtraSmall ? 's' : isSmall ? 'l' : 'm'} // TODO adjust large variant accordingly
                     color='subdued'
                     {...IconProps}
                   />
@@ -343,10 +363,13 @@ export const TextInput = forwardRef(
                         css({
                           flex: 1,
                           // Need absolute height to ensure consistency across platforms
-                          height: !isSmall ? 23 : undefined,
+                          height: isExtraSmall ? 18 : !isSmall ? 23 : undefined,
                           // Android has a default padding that needs to be removed
                           padding: 0,
-                          fontSize: typography.size[isSmall ? 'm' : 'l'],
+                          fontSize:
+                            typography.size[
+                              isExtraSmall ? 's' : isSmall ? 'm' : 'l'
+                            ],
                           fontFamily: typography.fontByWeight.medium,
                           color: color.text[disabled ? 'subdued' : 'default']
                         })

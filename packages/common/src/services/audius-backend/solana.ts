@@ -434,8 +434,8 @@ type TransferFromUserBankParams = {
   /** The token mint address */
   mint: PublicKey
   connection: Connection
-  /** Amount, in decimal token amounts (eg dollars for USDC) */
-  amount: number
+  /** Amount, in wei token amounts (eg 10^6 for USDC) */
+  amount: bigint
   /** The eth address of the sender (for deriving user bank) */
   ethWallet: string
   /** The destination wallet (not token account but Solana wallet) */
@@ -464,19 +464,39 @@ export const transferFromUserBank = async ({
   try {
     const instructions: TransactionInstruction[] = []
 
-    const destination = getAssociatedTokenAddressSync(
-      mint,
-      destinationWallet,
-      true
-    )
+    // Check if destinationWallet is already an associated token account
+    let destination = destinationWallet
+    let isDestinationAlreadyAta = false
 
     try {
-      await getAccount(connection, destination)
+      const account = await getAccount(connection, destinationWallet)
+      if (account.mint.equals(mint)) {
+        isDestinationAlreadyAta = true
+        console.debug(
+          `Destination ${destinationWallet.toBase58()} is already a token account for the correct mint`
+        )
+      } else {
+        throw new Error(
+          `Destination ${destinationWallet.toBase58()} is a token account but for mint ${account.mint.toBase58()}, expected ${mint.toBase58()}`
+        )
+      }
     } catch (e) {
-      // Throws if token account doesn't exist or account isn't a token account
+      if (
+        e instanceof Error &&
+        e.message.includes('is a token account but for mint')
+      ) {
+        throw e
+      }
+    }
+
+    // If destinationWallet is not already an ATA, derive the ATA and create it if needed
+    if (!isDestinationAlreadyAta) {
+      destination = getAssociatedTokenAddressSync(mint, destinationWallet, true)
+
+      // Always create the ATA instruction - it's idempotent so it will succeed whether it exists or not
       isCreatingTokenAccount = true
       console.debug(
-        `Associated token account ${destination.toBase58()} does not exist. Creating w/ transfer...`
+        `Ensuring associated token account ${destination.toBase58()} exists...`
       )
 
       // Historically, the token account was created in a separate transaction

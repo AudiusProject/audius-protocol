@@ -1,6 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useCurrentTrack } from '@audius/common/hooks'
 import { playerSelectors, playbackRateValueMap } from '@audius/common/store'
+import { Genre } from '@audius/common/utils'
 import { useAppState } from '@react-native-community/hooks'
 import type { GestureResponderEvent } from 'react-native'
 import { Easing, View, Animated, PanResponder } from 'react-native'
@@ -117,6 +119,9 @@ export const Slider = memo(function Slider(props: SliderProps) {
     onDrag,
     onDragRelease
   } = props
+  const trackGenre = useCurrentTrack({
+    select: (track) => track?.genre
+  })
   const styles = useStyles()
   const { primaryLight2, primaryDark2 } = useThemeColors()
   const seek = useSelector(getSeek)
@@ -151,11 +156,19 @@ export const Slider = memo(function Slider(props: SliderProps) {
 
   const currentAnimation = useRef<Animated.CompositeAnimation>()
   const playbackRate = useSelector(getPlaybackRate)
+
+  // Calculate the actual playback rate based on track type
+  const isLongFormContent =
+    trackGenre === Genre.PODCASTS || trackGenre === Genre.AUDIOBOOKS
+  const actualPlaybackRate = isLongFormContent
+    ? playbackRateValueMap[playbackRate]
+    : 1.0
+
   const play = useCallback(
     (timeRemaining: number) => {
       currentAnimation.current = Animated.timing(translationAnim, {
         toValue: railWidth,
-        duration: timeRemaining / playbackRateValueMap[playbackRate],
+        duration: timeRemaining / actualPlaybackRate,
         easing: Easing.linear,
         // Can't use native driver because this animation is potentially hours long,
         // and would have to be serialized into an array to be passed to the native layer.
@@ -164,7 +177,7 @@ export const Slider = memo(function Slider(props: SliderProps) {
       })
       currentAnimation.current.start()
     },
-    [translationAnim, railWidth, playbackRate]
+    [translationAnim, railWidth, actualPlaybackRate]
   )
 
   const pause = useCallback(() => {

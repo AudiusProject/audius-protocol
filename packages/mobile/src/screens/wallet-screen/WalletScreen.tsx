@@ -20,7 +20,7 @@ export const WalletScreen = () => {
     >
       <ScreenContent>
         <ScrollView>
-          <Flex direction='column' gap='xl' p='s' mt='2xl'>
+          <Flex direction='column' gap='xl' ph='s' pv='2xl'>
             <CashWallet />
             <YourCoins />
           </Flex>

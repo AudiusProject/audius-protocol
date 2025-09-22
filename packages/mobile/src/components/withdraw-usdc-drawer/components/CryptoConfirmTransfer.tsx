@@ -3,18 +3,17 @@ import React, { useCallback, useState } from 'react'
 import { walletMessages } from '@audius/common/messages'
 import {
   useWithdrawUSDCModal,
-  WithdrawUSDCModalPages
+  WithdrawUSDCModalPages,
+  AMOUNT,
+  CONFIRM,
+  type WithdrawUSDCFormValues as WithdrawFormValues
 } from '@audius/common/store'
-import { decimalIntegerToHumanReadable } from '@audius/common/utils'
 import { css } from '@emotion/native'
 import { useFormikContext, useField } from 'formik'
 
 import { Button, Divider, Flex, Text } from '@audius/harmony-native'
 import { CashBalanceSection } from 'app/components/add-funds-drawer/CashBalanceSection'
 import { Switch } from 'app/components/core'
-
-import type { WithdrawFormValues } from '../types'
-import { AMOUNT, CONFIRM } from '../types'
 
 export const CryptoConfirmTransfer = () => {
   const { submitForm, values } = useFormikContext<WithdrawFormValues>()
@@ -42,7 +41,7 @@ export const CryptoConfirmTransfer = () => {
           {walletMessages.amountToWithdraw}
         </Text>
         <Text variant='heading' size='s'>
-          {walletMessages.minus}${decimalIntegerToHumanReadable(amountValue)}
+          {walletMessages.minus}${amountValue}
         </Text>
       </Flex>
 

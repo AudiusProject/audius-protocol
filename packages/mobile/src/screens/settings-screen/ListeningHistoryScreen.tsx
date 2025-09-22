@@ -53,7 +53,7 @@ export const ListeningHistoryScreen = () => {
         {showNoHistory ? (
           <EmptyTileCTA message={messages.noHistoryMessage} />
         ) : (
-          <Paper m='l' gap='l'>
+          <Paper m='l' gap='l' h='100%'>
             <FilterInput
               placeholder={messages.inputPlaceholder}
               onChangeText={handleChangeFilterValue}

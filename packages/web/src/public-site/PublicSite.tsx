@@ -23,6 +23,7 @@ const {
 const PrivacyPolicyPage = lazy(
   () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
 )
+const ApiTermsPage = lazy(() => import('./pages/api-terms-page/ApiTermsPage'))
 const DownloadPage = lazy(() => import('./pages/download-page/DownloadPage'))
 const TermsOfUsePage = lazy(
   () => import('./pages/terms-of-use-page/TermsOfUsePage')
@@ -118,6 +119,17 @@ export const PublicSite = (props: PublicSiteProps) => {
                 path={'/legal/privacy-policy'}
                 render={() => (
                   <PrivacyPolicyPage
+                    isMobile={isMobileOrNarrow}
+                    openNavScreen={openNavScreen}
+                    setRenderPublicSite={setRenderPublicSite}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={'/legal/api-terms'}
+                render={() => (
+                  <ApiTermsPage
                     isMobile={isMobileOrNarrow}
                     openNavScreen={openNavScreen}
                     setRenderPublicSite={setRenderPublicSite}

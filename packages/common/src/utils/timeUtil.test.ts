@@ -8,7 +8,9 @@ import {
   formatDate,
   utcToLocalTime,
   getLocalTimezone,
-  formatDateWithTimezoneOffset
+  formatDateWithTimezoneOffset,
+  formatContestDeadline,
+  formatContestDeadlineWithStatus
 } from './timeUtil'
 
 describe('formatSeconds', () => {
@@ -68,5 +70,48 @@ describe('getLocalTimezone', () => {
   test('should return the local timezone', () => {
     const timezone = getLocalTimezone()
     expect(timezone).toBe(dayjs().format('z'))
+  })
+})
+
+describe('formatContestDeadline', () => {
+  test('should format deadline with short format', () => {
+    const result = formatContestDeadline('2023-12-17T15:30:00Z', 'short')
+    expect(result).toBe('12/17/23')
+  })
+
+  test('should format deadline with card format', () => {
+    const result = formatContestDeadline('2023-12-17T15:30:00Z', 'card')
+    expect(result).toContain('12/17/23 at')
+    expect(result).toMatch(/(AM|PM)/)
+  })
+
+  test('should format deadline with long format', () => {
+    const result = formatContestDeadline('2023-12-17T15:30:00Z', 'long')
+    expect(result).toContain('Sun. Dec 17, 2023 at')
+    expect(result).toMatch(/(AM|PM)/)
+    expect(result).toContain(getLocalTimezone())
+  })
+
+  test('should return empty string for undefined deadline', () => {
+    expect(formatContestDeadline(undefined)).toBe('')
+  })
+})
+
+describe('formatContestDeadlineWithStatus', () => {
+  test('should format active deadline', () => {
+    const result = formatContestDeadlineWithStatus(
+      '2023-12-17T15:30:00Z',
+      false
+    )
+    expect(result).toBe('Deadline: 12/17/23')
+  })
+
+  test('should format ended deadline', () => {
+    const result = formatContestDeadlineWithStatus('2023-12-17T15:30:00Z', true)
+    expect(result).toBe('Ended: 12/17/23')
+  })
+
+  test('should return empty string for undefined deadline', () => {
+    expect(formatContestDeadlineWithStatus(undefined)).toBe('')
   })
 })

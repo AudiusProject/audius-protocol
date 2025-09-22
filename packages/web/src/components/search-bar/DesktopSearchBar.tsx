@@ -13,7 +13,9 @@ import {
   Flex,
   LoadingSpinner,
   Text,
-  PlainButton
+  PlainButton,
+  useHotkeys,
+  ModifierKeys
 } from '@audius/harmony'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
@@ -334,6 +336,20 @@ export const DesktopSearchBar = () => {
       )
     }
   }, [showResults])
+
+  const focusSearchInput = useCallback(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  // Set up hotkeys for '/' and 'Cmd + K' to focus search input
+  useHotkeys({
+    191: focusSearchInput, // '/' key
+    75: {
+      // 'K' key
+      cb: focusSearchInput,
+      and: [ModifierKeys.CMD]
+    }
+  })
 
   return (
     <Flex className={styles.searchBar}>

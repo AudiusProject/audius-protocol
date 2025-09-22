@@ -4,10 +4,11 @@ import {
   settingsPageActions,
   PushNotificationSetting
 } from '@audius/common/store'
-import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
+  Flex,
+  Text,
   IconCosign,
   IconUserFollow,
   IconNotificationOn,
@@ -18,12 +19,9 @@ import {
   IconRepost,
   Button
 } from '@audius/harmony-native'
-import { GradientText } from 'app/components/core'
+import { GradientIcon, GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
-import Text from 'app/components/text'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 const { togglePushNotificationSetting } = settingsPageActions
 
 const messages = {
@@ -70,62 +68,9 @@ const actions = [
   }
 ]
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  drawer: {
-    flexDirection: 'column',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    paddingHorizontal: spacing(4),
-    paddingTop: spacing(12),
-    paddingBottom: spacing(8)
-  },
-
-  cta: {
-    marginTop: spacing(4),
-    fontSize: 28
-  },
-
-  turnOn: {
-    color: palette.neutral,
-    fontSize: 24,
-    lineHeight: 29,
-    marginTop: 4
-  },
-
-  top: {
-    marginBottom: spacing(8),
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-
-  actions: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    marginBottom: spacing(8)
-  },
-
-  action: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing(3)
-  },
-
-  actionText: {
-    fontSize: 24,
-    color: palette.neutralLight2
-  },
-
-  actionIcon: {
-    marginRight: spacing(4)
-  }
-}))
-
 export const EnablePushNotificationsDrawer = () => {
   const dispatch = useDispatch()
   const { onClose } = useDrawer('EnablePushNotifications')
-  const styles = useStyles()
-
-  const { neutralLight2, pageHeaderGradientColor2 } = useThemeColors()
 
   const enablePushNotifications = useCallback(() => {
     dispatch(
@@ -136,35 +81,38 @@ export const EnablePushNotificationsDrawer = () => {
 
   return (
     <NativeDrawer drawerName='EnablePushNotifications'>
-      <View style={styles.drawer}>
-        <View style={styles.top}>
-          <IconNotificationOn
-            height={66}
-            width={66}
-            fill={pageHeaderGradientColor2}
-          />
-          <GradientText style={styles.cta}>{messages.dontMiss}</GradientText>
-          <Text style={styles.turnOn}>{messages.turnOn}</Text>
-        </View>
-        <View style={styles.actions}>
+      <Flex
+        column
+        justifyContent='space-evenly'
+        pt='3xl'
+        pb='2xl'
+        ph='l'
+        alignItems='center'
+        gap='2xl'
+      >
+        <Flex column alignItems='center' gap='l'>
+          <GradientIcon icon={IconNotificationOn} height={66} width={66} />
+          <Flex column gap='xs' alignItems='center'>
+            <GradientText style={{ fontSize: 28 }}>
+              {messages.dontMiss}
+            </GradientText>
+            <Text variant='heading'>{messages.turnOn}</Text>
+          </Flex>
+        </Flex>
+        <Flex column>
           {actions.map(({ label, icon: Icon }) => (
-            <View style={styles.action} key={label}>
-              <Icon
-                height={30}
-                width={30}
-                fill={neutralLight2}
-                style={styles.actionIcon}
-              />
-              <Text style={styles.actionText} weight='bold'>
+            <Flex row alignItems='center' mb='m' gap='l' key={label}>
+              <Icon size='xl' color='default' colorSecondary='white' />
+              <Text variant='title' size='l' color='default'>
                 {label}
               </Text>
-            </View>
+            </Flex>
           ))}
-        </View>
+        </Flex>
         <Button onPress={enablePushNotifications} fullWidth>
           {messages.enable}
         </Button>
-      </View>
+      </Flex>
     </NativeDrawer>
   )
 }

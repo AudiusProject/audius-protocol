@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 
+import { useIsMobile } from 'hooks/useIsMobile'
+import { useIsDarkMode, useIsMatrix } from 'utils/theme/theme'
+
 import ShuffleButton from './ShuffleButton'
 
 type ShuffleButtonProviderProps = {
-  darkMode: boolean
-  isMatrix: boolean
   onShuffleOn: () => void
   onShuffleOff: () => void
-  isMobile: boolean
 }
 
 type AnimationStates = {
@@ -16,12 +16,12 @@ type AnimationStates = {
 }
 
 const ShuffleButtonProvider = ({
-  darkMode,
-  isMatrix,
   onShuffleOn,
-  onShuffleOff,
-  isMobile
+  onShuffleOff
 }: ShuffleButtonProviderProps) => {
+  const isMatrix = useIsMatrix()
+  const darkMode = useIsDarkMode()
+  const isMobile = useIsMobile()
   const [animations, setAnimations] = useState<AnimationStates | null>(null)
   const defaultAnimations = useRef<AnimationStates | null>(null)
   const darkAnimations = useRef<AnimationStates | null>(null)

@@ -36,7 +36,9 @@ describe('Trending Track Notification', () => {
       { user_id: 2 },
       { user_id: 3 }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 10, owner_id: 1, cover_art_sizes: 'test-hash' }
+    ])
 
     // User 1 follows user 2
     const notificationRow = {
@@ -82,7 +84,8 @@ describe('Trending Track Notification', () => {
           entityId: 10,
           id: 'timestamp:1589373217:group_id:trending:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600',
           type: 'TrendingTrack'
-        }
+        },
+        imageUrl: 'https://creatornode2.audius.co/content/test-hash/150x150.jpg'
       }
     )
   })

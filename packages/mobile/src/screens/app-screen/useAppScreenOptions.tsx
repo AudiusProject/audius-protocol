@@ -21,7 +21,6 @@ import { makeStyles } from 'app/styles'
 import { AppDrawerContext } from '../app-drawer-screen'
 
 import { AccountPictureHeader } from './AccountPictureHeader'
-import type { AppTabScreenParamList } from './AppTabScreen'
 import type { AppScreenParamList } from './AppTabsScreen'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -43,7 +42,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
-type ParamList = AppScreenParamList & Pick<AppTabScreenParamList, 'Search'>
+type ParamList = AppScreenParamList
 
 type Options = {
   navigation: NativeStackNavigationProp<ParamList>
@@ -62,7 +61,10 @@ export const useAppScreenOptions = (
   }, [drawerHelpers])
 
   const handlePressSearch = useCallback(() => {
-    navigation.navigate('Search', { autoFocus: true })
+    navigation.navigate('explore', {
+      screen: 'SearchExplore',
+      params: { autoFocus: true }
+    })
   }, [navigation])
 
   const screenOptions: (options: Options) => NativeStackNavigationOptions =

@@ -1,10 +1,17 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
 import {
+  useArtistCoinMembersCount,
+  useArtistCoins,
+  useCurrentAccountUser,
+  useCurrentUserId
+} from '@audius/common/api'
+import {
+  useFeatureFlag,
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import { formatNumberCommas } from '@audius/common/utils'
 import { ChatBlastAudience } from '@audius/sdk'
 import { useField } from 'formik'
@@ -41,7 +48,14 @@ const messages = {
     placeholder: 'Tracks with Remixes',
     filterBy: 'Filter by Tracks With Remixes',
     search: 'Search for tracks with remixes'
-  }
+  },
+  coinHolders: {
+    label: (symbol: string) => `${symbol} Members`,
+    description: (symbol: string) =>
+      `Send a bulk message to every holder of ${symbol} on Audius.`,
+    placeholder: 'Coin Holders'
+  },
+  count: (count: number) => ` (${formatNumberCommas(count)})`
 }
 
 export const ChatBlastSelectAudienceFields = () => {
@@ -52,6 +66,7 @@ export const ChatBlastSelectAudienceFields = () => {
       <TipSupportersMessageField />
       <PastPurchasersMessageField />
       <RemixCreatorsMessageField />
+      <CoinHoldersMessageField />
     </ExpandableRadioGroup>
   )
 }
@@ -66,7 +81,7 @@ const LabelWithCount = (props: {
     <Text>
       {label}
       {isSelected && count ? (
-        <Text color='subdued'>{formatNumberCommas(count)}</Text>
+        <Text color='subdued'>{messages.count(count)}</Text>
       ) : null}
     </Text>
   )
@@ -229,6 +244,40 @@ const RemixCreatorsMessageField = () => {
           </Flex>
         </TouchableOpacity>
       }
+    />
+  )
+}
+
+const CoinHoldersMessageField = () => {
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+  const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
+  const isSelected = targetAudience === ChatBlastAudience.COIN_HOLDERS
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: coinMembersCount } = useArtistCoinMembersCount()
+  const { data: coins } = useArtistCoins({
+    owner_id: [currentUserId ?? 0],
+    limit: 1
+  })
+  const coinSymbol = coins?.[0]?.ticker ?? ''
+  const isDisabled = !isArtistCoinEnabled || coinMembersCount === 0
+  if (!isArtistCoinEnabled) {
+    return null
+  }
+
+  return (
+    <ExpandableRadio
+      value={ChatBlastAudience.COIN_HOLDERS}
+      disabled={isDisabled}
+      label={
+        <LabelWithCount
+          label={messages.coinHolders.label(coinSymbol)}
+          count={coinMembersCount}
+          isSelected={isSelected}
+        />
+      }
+      description={messages.coinHolders.description(coinSymbol)}
     />
   )
 }

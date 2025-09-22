@@ -10,6 +10,7 @@ import { CommentMentionNotification as CommentMentionNotificationType } from '@a
 import { IconMessage } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track, make } from 'services/analytics'
 import {
@@ -26,7 +27,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
-import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
 
 const messages = {
@@ -43,7 +43,8 @@ export const CommentMentionNotification = (
   props: CommentMentionNotificationProps
 ) => {
   const { notification } = props
-  const { id, userIds, entityType, timeLabel, isViewed } = notification
+  const { commentId, id, userIds, entityType, timeLabel, isViewed } =
+    notification
   const { data: users } = useUsers(
     notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
@@ -60,11 +61,11 @@ export const CommentMentionNotification = (
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType, true)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true, commentId)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
-      if (!isMultiUser) {
+      if (isMultiUser) {
         dispatch(
           setUserListUsers({
             userListType: UserListType.NOTIFICATION,

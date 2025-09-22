@@ -113,7 +113,7 @@ const SignedInView = ({
       <Avatar userId={userId} h={48} w={48} />
       <AccountInfo>
         <Flex alignItems='center' justifyContent='space-between' gap='s' h={20}>
-          <Flex css={{ maxWidth: '85%' }}>
+          <Flex css={{ maxWidth: '85%', overflow: 'hidden' }}>
             <UserLink
               popover
               textVariant='title'

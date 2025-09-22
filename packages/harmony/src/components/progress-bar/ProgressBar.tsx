@@ -1,18 +1,17 @@
 import { useState, useEffect, useMemo } from 'react'
 
-import BN from 'bn.js'
 import cn from 'classnames'
 
 import styles from './ProgressBar.module.css'
 import { ProgressBarProps, ProgressValue } from './types'
 
-const getBN = (num: ProgressValue): BN => {
-  if (num instanceof BN) return num
-  return new BN(num)
+const getBigInt = (num: ProgressValue): bigint => {
+  if (typeof num === 'bigint') return num
+  return BigInt(Math.round(num))
 }
 
-function clampBN(value: BN, min: BN, max: BN): BN {
-  return BN.min(BN.max(value, min), max)
+function clampBigInt(value: bigint, min: bigint, max: bigint): bigint {
+  return value < min ? min : value > max ? max : value
 }
 
 // @beta - This component was directly ported from stems and subject to change
@@ -21,8 +20,8 @@ export const ProgressBar = (props: ProgressBarProps) => {
     className,
     sliderClassName,
     sliderBarClassName,
-    min = new BN(0),
-    max = new BN(100),
+    min = 0,
+    max = 100,
     value,
     showLabels = false,
     minWrapper: MinWrapper,
@@ -32,24 +31,27 @@ export const ProgressBar = (props: ProgressBarProps) => {
   const [sliderWidth, setSliderWidth] = useState(0)
 
   const percentage = useMemo(() => {
-    const minBN = getBN(min)
-    const maxBN = getBN(max)
-    const valBN = getBN(value)
+    const minBigInt = getBigInt(min)
+    const maxBigInt = getBigInt(max)
+    const valBigInt = getBigInt(value)
 
-    return clampBN(valBN.sub(minBN), new BN(0), maxBN)
-      .mul(new BN(100))
-      .div(maxBN.sub(minBN))
+    const clampedValue = clampBigInt(
+      valBigInt - minBigInt,
+      BigInt(0),
+      maxBigInt
+    )
+    return Number((clampedValue * BigInt(100)) / (maxBigInt - minBigInt))
   }, [max, min, value])
 
   useEffect(() => {
-    setSliderWidth(percentage.toNumber())
+    setSliderWidth(percentage)
   }, [percentage])
 
   return (
     <div
       className={cn(styles.container, { [className!]: !!className })}
       role='progressbar'
-      aria-valuenow={percentage.toNumber()}
+      aria-valuenow={percentage}
       {...other}
     >
       <div
@@ -67,10 +69,10 @@ export const ProgressBar = (props: ProgressBarProps) => {
       {showLabels && (
         <div className={styles.labels}>
           <div className={styles.minLabel}>
-            {MinWrapper ? <MinWrapper value={min} /> : min.toString()}
+            {MinWrapper ? <MinWrapper value={min} /> : String(min)}
           </div>
           <div className={styles.maxLabel}>
-            {MaxWrapper ? <MaxWrapper value={max} /> : max.toString()}
+            {MaxWrapper ? <MaxWrapper value={max} /> : String(max)}
           </div>
         </div>
       )}

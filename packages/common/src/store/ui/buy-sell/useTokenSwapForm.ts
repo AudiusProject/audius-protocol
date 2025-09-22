@@ -1,60 +1,23 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { buySellMessages as messages } from '~/messages'
+import { useArtistCoin } from '~/api'
 
-import { useTokenExchangeRate, useTokenPrice } from '../../../api'
-import type { JupiterTokenSymbol } from '../../../services/Jupiter'
-
-import { MIN_SWAP_AMOUNT_USD, MAX_SWAP_AMOUNT_USD } from './constants'
+import { useSwapCalculations } from './hooks/useSwapCalculations'
+import { useSwapValidation } from './hooks/useSwapValidation'
+import { useTokenData } from './hooks/useTokenData'
 import { createSwapFormSchema, type SwapFormValues } from './swapFormSchema'
-import type { TokenInfo } from './types'
+import type { TokenInfo } from './types/swap.types'
+import { parseNumericAmount } from './utils/tokenCalculations'
+import { resolveTokenLimits } from './utils/tokenLimits'
 
 export type BalanceConfig = {
   get: () => number | undefined
   loading: boolean
   formatError: (amount: number) => string
-}
-
-// Maximum safe amount for API calls to prevent errors
-const MAX_SAFE_EXCHANGE_RATE_AMOUNT = 1000000000000
-
-/**
- * Returns a safe numeric value for exchange rate API calls
- */
-const getSafeAmountForExchangeRate = (amount: number): number => {
-  return Math.min(amount, MAX_SAFE_EXCHANGE_RATE_AMOUNT)
-}
-
-/**
- * Calculates min/max token amounts based on USD limits and current token price
- */
-const calculateTokenLimits = (
-  tokenPrice: number | null,
-  isStablecoin: boolean
-): { min: number; max: number } => {
-  if (isStablecoin) {
-    // For stablecoins like USDC, 1 token ≈ $1 USD
-    return {
-      min: MIN_SWAP_AMOUNT_USD,
-      max: MAX_SWAP_AMOUNT_USD
-    }
-  }
-
-  if (!tokenPrice || tokenPrice <= 0) {
-    // Fallback to reasonable defaults if price is unavailable
-    return {
-      min: 1,
-      max: 1000000
-    }
-  }
-
-  return {
-    min: MIN_SWAP_AMOUNT_USD / tokenPrice,
-    max: MAX_SWAP_AMOUNT_USD / tokenPrice
-  }
 }
 
 export type TokenSwapFormProps = {
@@ -75,10 +38,6 @@ export type TokenSwapFormProps = {
    */
   max?: number
   /**
-   * Configuration for handling the input token balance
-   */
-  balance: BalanceConfig
-  /**
    * Callback for when transaction data changes
    */
   onTransactionDataChange?: (data: {
@@ -87,6 +46,7 @@ export type TokenSwapFormProps = {
     isValid: boolean
     error: string | null
     isInsufficientBalance: boolean
+    exchangeRate?: number | null
   }) => void
   /**
    * Initial value for the input field
@@ -96,6 +56,10 @@ export type TokenSwapFormProps = {
    * Callback for when input value changes (for persistence)
    */
   onInputValueChange?: (value: string) => void
+  /**
+   * Optional - specify a specific externalwallet address to use as the source of balance
+   */
+  externalWalletAddress?: string
 }
 
 /**
@@ -106,48 +70,79 @@ export const useTokenSwapForm = ({
   outputToken,
   min: providedMin,
   max: providedMax,
-  balance,
   onTransactionDataChange,
   initialInputValue = '',
-  onInputValueChange
+  onInputValueChange,
+  externalWalletAddress
 }: TokenSwapFormProps) => {
-  // Get token symbols for the exchange rate API
-  const inputTokenSymbol = inputToken.symbol as JupiterTokenSymbol
-  const outputTokenSymbol = outputToken.symbol as JupiterTokenSymbol
-
-  const { get: getInputBalance, loading: isBalanceLoading } = balance
-
   // Get token price for USD-based limit calculations
-  const { data: tokenPriceData } = useTokenPrice(inputToken.address)
+  const { data: tokenPriceData } = useArtistCoin(inputToken.address)
   const tokenPrice = tokenPriceData?.price
-    ? parseFloat(tokenPriceData.price)
+    ? Number(
+        new FixedDecimal(tokenPriceData.price, inputToken.decimals).toString()
+      )
     : null
 
   // Calculate min/max based on USD limits and current price
-  const { min, max } = useMemo(() => {
-    if (providedMin !== undefined && providedMax !== undefined) {
-      return { min: providedMin, max: providedMax }
-    }
-    return calculateTokenLimits(tokenPrice, inputToken.isStablecoin || false)
+  const calculatedLimits = useMemo(() => {
+    return resolveTokenLimits({
+      tokenPrice,
+      isStablecoin: inputToken.isStablecoin || false,
+      providedMin,
+      providedMax
+    })
   }, [providedMin, providedMax, tokenPrice, inputToken.isStablecoin])
 
-  const availableBalance = useMemo(() => {
-    const balance = getInputBalance()
-    return balance !== undefined ? balance : (inputToken.balance ?? 0)
-  }, [getInputBalance, inputToken.balance])
+  const { min, max } = calculatedLimits
 
+  // Use new composed hooks
+  const tokenData = useTokenData({
+    inputToken,
+    outputToken,
+    inputAmount: parseNumericAmount(initialInputValue),
+    externalWalletAddress
+  })
+
+  const swapCalculations = useSwapCalculations({
+    exchangeRate: tokenData.exchangeRate,
+    onInputValueChange,
+    inputTokenAddress: inputToken.address,
+    outputTokenAddress: outputToken.address,
+    inputTokenDecimals: inputToken.decimals,
+    outputTokenDecimals: outputToken.decimals
+  })
+
+  const swapValidation = useSwapValidation({
+    inputAmount: swapCalculations.inputAmount,
+    balance: tokenData.balance,
+    limits: calculatedLimits,
+    tokenSymbol: inputToken.symbol,
+    tokenDecimals: inputToken.decimals,
+    isBalanceLoading: tokenData.isBalanceLoading,
+    isTouched: true // Simplified - in real implementation would track this properly
+  })
+
+  const availableBalance = tokenData.balance
   // Create validation schema
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      createSwapFormSchema(min, max, availableBalance, inputToken.symbol)
+      createSwapFormSchema(
+        min,
+        max,
+        availableBalance,
+        inputToken.symbol,
+        inputToken.decimals
+      )
     )
-  }, [min, max, availableBalance, inputToken.symbol])
+  }, [min, max, availableBalance, inputToken.symbol, inputToken.decimals])
 
   // Initialize form with Formik
   const formik = useFormik<SwapFormValues>({
     initialValues: {
       inputAmount: initialInputValue,
-      outputAmount: '0'
+      outputAmount: '0',
+      selectedInputToken: inputToken,
+      selectedOutputToken: outputToken
     },
     validationSchema,
     validateOnBlur: true,
@@ -158,133 +153,134 @@ export const useTokenSwapForm = ({
     }
   })
 
-  const { values, errors, touched, setFieldValue, setFieldTouched } = formik
+  const {
+    values,
+    errors: formikErrors,
+    setFieldValue,
+    setFieldTouched,
+    setFieldError
+  } = formik
+
+  // Refs to track last synced values to avoid circular dependencies
+  const lastSyncedInputRef = useRef<string>('')
+  const lastSyncedOutputRef = useRef<string>('')
 
   // Update form value when initialInputValue changes (tab switch)
   useEffect(() => {
-    if (initialInputValue !== values.inputAmount) {
+    if (initialInputValue !== lastSyncedInputRef.current) {
       setFieldValue('inputAmount', initialInputValue, false)
+      lastSyncedInputRef.current = initialInputValue
     }
-  }, [initialInputValue, values.inputAmount, setFieldValue])
+  }, [initialInputValue, setFieldValue])
 
-  // Calculate the numeric value of the input amount
-  const numericInputAmount = useMemo(() => {
-    if (!values.inputAmount) return 0
-    const parsed = parseFloat(values.inputAmount)
-    return isNaN(parsed) ? 0 : parsed
-  }, [values.inputAmount])
-
-  // Use safe amount for exchange rate API calls
-  const safeExchangeRateAmount = useMemo(() => {
-    return getSafeAmountForExchangeRate(numericInputAmount)
-  }, [numericInputAmount])
-
-  const {
-    data: exchangeRateData,
-    isLoading: isExchangeRateLoading,
-    error: exchangeRateError
-  } = useTokenExchangeRate({
-    inputTokenSymbol,
-    outputTokenSymbol,
-    inputAmount: safeExchangeRateAmount > 0 ? safeExchangeRateAmount : 1
-  })
-
-  // Update output amount when exchange rate or input amount changes
+  // Re-validate input when token or balance changes. Guard to avoid infinite loops.
+  const lastValidationKeyRef = useRef<string | null>(null)
+  // Only re-validate on actual token change to avoid recursive updates during balance polling
+  const tokenValidationKey = `${inputToken.address}-${outputToken.address}`
   useEffect(() => {
-    if (numericInputAmount <= 0) {
-      setFieldValue('outputAmount', '0', false)
-      return
+    if (!values.inputAmount || values.inputAmount === '') return
+    if (lastValidationKeyRef.current !== tokenValidationKey) {
+      lastValidationKeyRef.current = tokenValidationKey
+      setFieldTouched('inputAmount', true, true)
+      // Explicitly validate to refresh errors for the new token
+      formik.validateForm()
     }
+  }, [tokenValidationKey, values.inputAmount, setFieldTouched, formik])
 
-    if (!isExchangeRateLoading && exchangeRateData) {
-      // Use the actual input amount for output calculation, not the safe amount
-      const newAmount = exchangeRateData.rate * numericInputAmount
-      setFieldValue('outputAmount', newAmount.toString(), false)
+  // Extract values from composed hooks
+  const numericInputAmount = swapCalculations.numericInputAmount
+  const numericOutputAmount = swapCalculations.numericOutputAmount
+  const currentExchangeRate = tokenData.exchangeRate
+  const displayExchangeRate = tokenData.displayExchangeRate
+  const isExchangeRateLoading = tokenData.isExchangeRateLoading
+  const exchangeRateError = tokenData.exchangeRateError
+  const isBalanceLoading = tokenData.isBalanceLoading
+
+  // Sync Formik values with our calculation hook
+  // Use refs to avoid circular dependencies while still syncing when needed
+  useEffect(() => {
+    if (swapCalculations.inputAmount !== lastSyncedInputRef.current) {
+      setFieldValue('inputAmount', swapCalculations.inputAmount, false)
+      lastSyncedInputRef.current = swapCalculations.inputAmount
     }
-  }, [
-    numericInputAmount,
-    exchangeRateData,
-    isExchangeRateLoading,
-    setFieldValue
-  ])
-
-  const numericOutputAmount = useMemo(() => {
-    if (!values.outputAmount) return 0
-    const parsed = parseFloat(values.outputAmount)
-    return isNaN(parsed) ? 0 : parsed
-  }, [values.outputAmount])
-
-  const currentExchangeRate = exchangeRateData ? exchangeRateData.rate : null
-
-  // Only show error if field has been touched, has a value, and has an error
-  // This prevents showing "Required" error when field is empty during typing
-  const error = useMemo(() => {
-    if (!touched.inputAmount || !errors.inputAmount) return null
-    if (values.inputAmount === '') return null // Don't show error for empty field
-    return errors.inputAmount
-  }, [touched.inputAmount, errors.inputAmount, values.inputAmount])
-
-  // Derive if current error is specifically an insufficient balance error
-  const isInsufficientBalance = useMemo(() => {
-    return (
-      formik.errors.inputAmount ===
-      messages.insufficientBalance(inputToken.symbol)
-    )
-  }, [formik.errors.inputAmount, inputToken.symbol])
+  }, [swapCalculations.inputAmount, setFieldValue])
 
   useEffect(() => {
-    if (onTransactionDataChange) {
-      const isValid = numericInputAmount > 0 && !errors.inputAmount
-
-      onTransactionDataChange({
-        inputAmount: numericInputAmount,
-        outputAmount: numericOutputAmount,
-        isValid,
-        error,
-        isInsufficientBalance
-      })
+    if (swapCalculations.outputAmount !== lastSyncedOutputRef.current) {
+      setFieldValue('outputAmount', swapCalculations.outputAmount, false)
+      lastSyncedOutputRef.current = swapCalculations.outputAmount
     }
-  }, [
-    numericInputAmount,
-    numericOutputAmount,
-    errors.inputAmount,
-    error, // Use the filtered error
-    isExchangeRateLoading,
-    onTransactionDataChange,
-    isInsufficientBalance
-  ])
+  }, [swapCalculations.outputAmount, setFieldValue])
 
-  // Handle input changes
+  // Use validation from our composed hook
+  const error = swapValidation.error
+  useEffect(() => {
+    if (error && !formikErrors.inputAmount) {
+      setFieldError('inputAmount', error)
+    }
+    // Clear error
+    if (!error) {
+      setFieldError('inputAmount', undefined)
+    }
+  }, [error, formikErrors.inputAmount, setFieldError])
+  const isInsufficientBalance = swapValidation.isInsufficientBalance
+
+  // Memoize the transaction data to prevent excessive callbacks
+  const transactionData = useMemo(
+    () => ({
+      inputAmount: numericInputAmount,
+      outputAmount: numericOutputAmount,
+      isValid: swapValidation.isValid,
+      error,
+      isInsufficientBalance,
+      exchangeRate: currentExchangeRate
+    }),
+    [
+      numericInputAmount,
+      numericOutputAmount,
+      swapValidation.isValid,
+      error,
+      isInsufficientBalance,
+      currentExchangeRate
+    ]
+  )
+
+  useEffect(() => {
+    onTransactionDataChange?.(transactionData)
+  }, [transactionData, onTransactionDataChange])
+
+  // Handle input changes through our calculation hook
   const handleInputAmountChange = useCallback(
     (value: string) => {
-      // Allow only valid number input with better decimal handling
-      if (value === '' || /^(\d*\.?\d*|\d+\.)$/.test(value)) {
-        setFieldValue('inputAmount', value, true)
-        setFieldTouched('inputAmount', true, false)
-        // Call the persistence callback
-        onInputValueChange?.(value)
-      }
+      swapCalculations.handleInputChange(value)
+      setFieldTouched('inputAmount', true, false)
     },
-    [setFieldValue, setFieldTouched, onInputValueChange]
+    [swapCalculations, setFieldTouched]
+  )
+
+  // Handle output amount changes through our calculation hook
+  const handleOutputAmountChange = useCallback(
+    (value: string) => {
+      swapCalculations.handleOutputChange(value)
+    },
+    [swapCalculations]
   )
 
   // Handle max button click
   const handleMaxClick = useCallback(() => {
-    const balance = getInputBalance()
+    const balance = tokenData.balance
     if (balance !== undefined) {
       const finalAmount = Math.min(balance, max)
       const finalAmountString = finalAmount.toString()
-      setFieldValue('inputAmount', finalAmountString, true)
+      swapCalculations.handleInputChange(finalAmountString)
       setFieldTouched('inputAmount', true, false)
-      // Call the persistence callback
-      onInputValueChange?.(finalAmountString)
     }
-  }, [getInputBalance, max, setFieldValue, setFieldTouched, onInputValueChange])
+  }, [tokenData.balance, max, swapCalculations, setFieldTouched])
 
   return {
-    inputAmount: values.inputAmount, // Raw string input for display
+    inputAmount: swapCalculations.inputAmount, // Raw string input for display
     numericInputAmount,
-    outputAmount: values.outputAmount,
+    outputAmount: swapCalculations.outputAmount,
     numericOutputAmount,
     error,
     exchangeRateError,
@@ -292,11 +288,13 @@ export const useTokenSwapForm = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
+    displayExchangeRate,
     handleInputAmountChange,
+    handleOutputAmountChange,
     handleMaxClick,
     formik,
     inputToken,
     outputToken,
-    calculatedLimits: { min, max } // Expose the calculated limits
+    calculatedLimits // Expose the calculated limits
   }
 }

@@ -31,6 +31,14 @@ export interface GetUndisbursedChallengesRequest {
     challengeId?: string;
 }
 
+export interface GetUndisbursedChallengesForUserRequest {
+    userId: string;
+    offset?: number;
+    limit?: number;
+    completedBlocknumber?: number;
+    challengeId?: string;
+}
+
 /**
  * 
  */
@@ -80,6 +88,53 @@ export class ChallengesApi extends runtime.BaseAPI {
      */
     async getUndisbursedChallenges(params: GetUndisbursedChallengesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UndisbursedChallenges> {
         const response = await this.getUndisbursedChallengesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get all undisbursed challenges for a user
+     */
+    async getUndisbursedChallengesForUserRaw(params: GetUndisbursedChallengesForUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UndisbursedChallenges>> {
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getUndisbursedChallengesForUser.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.completedBlocknumber !== undefined) {
+            queryParameters['completed_blocknumber'] = params.completedBlocknumber;
+        }
+
+        if (params.challengeId !== undefined) {
+            queryParameters['challenge_id'] = params.challengeId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/challenges/undisbursed/{user_id}`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UndisbursedChallengesFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all undisbursed challenges for a user
+     */
+    async getUndisbursedChallengesForUser(params: GetUndisbursedChallengesForUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UndisbursedChallenges> {
+        const response = await this.getUndisbursedChallengesForUserRaw(params, initOverrides);
         return await response.value();
     }
 

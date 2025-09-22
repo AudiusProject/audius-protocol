@@ -7,7 +7,7 @@ import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
 import { Flex, useTheme } from '@audius/harmony-native'
-import { UserList } from 'app/components/user-list'
+import { UserCardList } from 'app/components/user-card-list'
 import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -67,12 +67,13 @@ export const ProfileResults = () => {
       {hasNoResults ? (
         <NoResultsTile />
       ) : (
-        <UserList
+        <UserCardList
           keyboardShouldPersistTaps='handled'
           style={{
             height: '100%',
             paddingVertical: spacing.m
           }}
+          ListFooterComponent={<Flex h={200} />}
           profiles={profiles}
           isLoading={isLoading}
           onCardPress={handlePress}

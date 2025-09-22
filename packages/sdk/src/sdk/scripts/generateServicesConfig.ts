@@ -95,12 +95,12 @@ const productionConfig: SdkServicesConfig = {
     rpcEndpoint: 'https://audius-fe.rpcpool.com',
     usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     wAudioTokenMint: '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM',
+    bonkTokenMint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     rewardManagerLookupTableAddress:
       '4UQwpGupH66RgQrWRqmPM9Two6VJEE68VZ7GeqZ3mvVv'
   },
   ethereum: {
-    rpcEndpoint:
-      'https://eth-mainnet.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ',
+    rpcEndpoint: 'https://eth-client.audius.co',
     addresses: {
       ethRewardsManagerAddress: '0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0',
       serviceProviderFactoryAddress:
@@ -140,12 +140,12 @@ const stagingConfig: SdkServicesConfig = {
     rpcEndpoint: 'https://audius-fe.rpcpool.com',
     usdcTokenMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
     wAudioTokenMint: 'BELGiMZQ34SDE6x2FUaML2UHDAgBLS64xvhXjX5tBBZo',
+    bonkTokenMint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     rewardManagerLookupTableAddress:
       'ChFCWjeFxM6SRySTfT46zXn2K7m89TJsft4HWzEtkB4J'
   },
   ethereum: {
-    rpcEndpoint:
-      'https://eth-sepolia.g.alchemy.com/v2/T_trbeTeNv2w04OpyAPkvZ_gH4nr_KuZ',
+    rpcEndpoint: 'https://eth-client.staging.audius.co',
     addresses: {
       ethRewardsManagerAddress: '0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1',
       serviceProviderFactoryAddress:
@@ -162,7 +162,7 @@ const stagingConfig: SdkServicesConfig = {
 const developmentConfig: SdkServicesConfig = {
   network: {
     minVersion: '0.0.0',
-    apiEndpoint: 'http://audius-protocol-discovery-provider-1',
+    apiEndpoint: 'http://audius-protocol-api',
     discoveryNodes: [
       {
         delegateOwnerWallet:
@@ -198,6 +198,7 @@ const developmentConfig: SdkServicesConfig = {
     rpcEndpoint: 'http://audius-protocol-solana-test-validator-1',
     usdcTokenMint: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y',
     wAudioTokenMint: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3',
+    bonkTokenMint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     rewardManagerLookupTableAddress:
       'GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J'
   },

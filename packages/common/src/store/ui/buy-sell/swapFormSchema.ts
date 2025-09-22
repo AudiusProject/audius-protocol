@@ -1,6 +1,9 @@
+import { FixedDecimal } from '@audius/fixed-decimal'
 import { z } from 'zod'
 
 import { buySellMessages as messages } from '../../../messages'
+
+import { TokenInfo } from './types/swap.types'
 
 /**
  * Schema for validating token swap input
@@ -9,7 +12,8 @@ export const createSwapFormSchema = (
   min: number = 0,
   max: number = Number.MAX_SAFE_INTEGER,
   balance: number | undefined = undefined,
-  tokenSymbol: string = ''
+  tokenSymbol: string = '',
+  decimals: number = 8
 ) =>
   z.object({
     inputAmount: z
@@ -18,7 +22,13 @@ export const createSwapFormSchema = (
         (val) => {
           // Allow empty string during typing, but require it for final validation
           if (val === '') return false
-          return !isNaN(parseFloat(val))
+          try {
+            // eslint-disable-next-line no-new
+            new FixedDecimal(val, decimals)
+            return true
+          } catch {
+            return false
+          }
         },
         {
           message: messages.emptyAmount
@@ -27,7 +37,13 @@ export const createSwapFormSchema = (
       .refine(
         (val) => {
           if (val === '') return false
-          return parseFloat(val) >= min
+          try {
+            const amount = new FixedDecimal(val, decimals)
+            const minAmount = new FixedDecimal(min, decimals)
+            return amount.value >= minAmount.value
+          } catch {
+            return false
+          }
         },
         {
           message: messages.minAmount(min, tokenSymbol)
@@ -36,7 +52,13 @@ export const createSwapFormSchema = (
       .refine(
         (val) => {
           if (val === '') return false
-          return parseFloat(val) <= max
+          try {
+            const amount = new FixedDecimal(val, decimals)
+            const maxAmount = new FixedDecimal(max, decimals)
+            return amount.value <= maxAmount.value
+          } catch {
+            return false
+          }
         },
         {
           message: messages.maxAmount(max, tokenSymbol)
@@ -45,7 +67,15 @@ export const createSwapFormSchema = (
       .refine(
         (val) => {
           if (val === '') return false
-          return !balance || parseFloat(val) <= balance
+          // Treat only null/undefined as "unknown balance"; do not bypass check for numeric 0
+          if (balance == null || balance === undefined) return true
+          try {
+            const amount = new FixedDecimal(val, decimals)
+            const balanceAmount = new FixedDecimal(balance, decimals)
+            return amount.value <= balanceAmount.value
+          } catch {
+            return false
+          }
         },
         {
           message: messages.insufficientBalance(tokenSymbol)
@@ -57,4 +87,6 @@ export const createSwapFormSchema = (
 export type SwapFormValues = {
   inputAmount: string
   outputAmount: string
+  selectedInputToken: TokenInfo
+  selectedOutputToken: TokenInfo
 }

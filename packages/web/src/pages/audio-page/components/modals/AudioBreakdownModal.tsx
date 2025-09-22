@@ -1,20 +1,20 @@
-import { useWalletAudioBalances, useConnectedWallets } from '@audius/common/api'
-import { BNWei } from '@audius/common/models'
-import { walletSelectors } from '@audius/common/store'
+import {
+  useAudioBalance,
+  useConnectedWallets,
+  useWalletAudioBalances
+} from '@audius/common/api'
+import { AUDIO } from '@audius/fixed-decimal'
 import { IconInfo } from '@audius/harmony'
-import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useSelector } from 'utils/reducer'
 
 import DisplayAudio from '../DisplayAudio'
 import WalletsTable from '../WalletsTable'
 
 import styles from './AudioBreakdownModal.module.css'
-const { getAccountBalance } = walletSelectors
 
 const messages = {
   modalTitle: '$AUDIO BREAKDOWN',
@@ -30,26 +30,29 @@ const messages = {
 
 const AudioBreakdownBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
-  const accountBalance = (useSelector(getAccountBalance) ??
-    new BN('0')) as BNWei
+  const { accountBalance } = useAudioBalance()
 
-  const { data: connectedWallets, isPending: isConnectedWalletsPending } =
+  const { data: connectedWallets = [], isPending: isConnectedWalletsPending } =
     useConnectedWallets()
   const balances = useWalletAudioBalances(
     {
-      wallets: connectedWallets ?? [],
+      wallets: connectedWallets,
       includeStaked: true
     },
     { enabled: !isConnectedWalletsPending }
   )
 
-  const linkedWalletsBalance = new BN(
-    balances
-      .reduce((acc, result) => acc + (result.data ?? BigInt(0)), BigInt(0))
-      .toString()
-  ) as BNWei
+  const linkedWalletsBalance = AUDIO(
+    balances.data.reduce(
+      (acc, result) =>
+        AUDIO((acc ?? BigInt(0)) + (result.balance ?? BigInt(0))).value,
+      AUDIO(0).value
+    ) ?? 0
+  ).value
 
-  const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
+  const totalBalance = AUDIO(
+    AUDIO(accountBalance).value + AUDIO(linkedWalletsBalance).value
+  ).value
 
   return (
     <div className={wm(styles.container)}>

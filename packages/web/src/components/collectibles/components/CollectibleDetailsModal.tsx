@@ -12,7 +12,7 @@ import {
   collectibleDetailsUISelectors,
   collectibleDetailsUIActions
 } from '@audius/common/store'
-import { formatDateWithTimezoneOffset } from '@audius/common/utils'
+import { formatDateWithTimezoneOffset, getHash } from '@audius/common/utils'
 import {
   Button,
   ModalContent,
@@ -469,14 +469,21 @@ const ConnectedCollectibleDetailsModal = () => {
     setIsEmbedModalOpen,
     onClose
   } = useSelector(getCollectibleDetails)
+  const collectible = useSelector(getCollectible)
 
   const shareUrl = useMemo(() => {
+    if (!ownerHandle) return ''
+
+    // Use embedCollectibleHash if available (from deep link), otherwise generate from collectible ID
+    const collectibleHash =
+      embedCollectibleHash || (collectible ? getHash(collectible.id) : '')
+
     return getCopyableLink(
       `/${ownerHandle}/collectibles${
-        embedCollectibleHash ? `/${embedCollectibleHash}` : ''
+        collectibleHash ? `/${collectibleHash}` : ''
       }`
     )
-  }, [ownerHandle, embedCollectibleHash])
+  }, [ownerHandle, embedCollectibleHash, collectible])
 
   return (
     <CollectibleDetailsModal

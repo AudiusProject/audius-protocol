@@ -1,7 +1,9 @@
-import { decodeAbi } from './abi'
+import { audiusSdk } from '.'
 
 export const isUserCreate = (encodedABI: string): boolean => {
-  const decodedAbi = decodeAbi(encodedABI)
+  const decodedAbi = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
   return decodedAbi.action === 'Create' && decodedAbi.entityType === 'User'
 }
 
@@ -9,7 +11,9 @@ export const isUserDeactivate = (
   isDeactivated: boolean,
   encodedABI: string
 ): boolean => {
-  const decodedAbi = decodeAbi(encodedABI)
+  const decodedAbi = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
   return (
     isDeactivated === false &&
     decodedAbi.action === 'Update' &&
@@ -19,19 +23,25 @@ export const isUserDeactivate = (
 }
 
 export const isTrackDownload = (encodedABI: string) => {
-  const decodedAbi = decodeAbi(encodedABI)
+  const decodedAbi = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
   return decodedAbi.action === 'Download' && decodedAbi.entityType === 'Track'
 }
 
 export const isViewNotification = (encodedABI: string): boolean => {
-  const decodedAbi = decodeAbi(encodedABI)
+  const decodedAbi = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
   return (
     decodedAbi.action === 'View' && decodedAbi.entityType === 'Notification'
   )
 }
 
 export const isViewPlaylistNotification = (encodedABI: string): boolean => {
-  const decodedAbi = decodeAbi(encodedABI)
+  const decodedAbi = audiusSdk.services.entityManager.decodeManageEntity(
+    encodedABI as `0x${string}`
+  )
   return (
     decodedAbi.action === 'ViewPlaylist' &&
     decodedAbi.entityType === 'Notification'

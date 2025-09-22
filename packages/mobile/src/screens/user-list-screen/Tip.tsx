@@ -1,5 +1,5 @@
 import type { StringWei } from '@audius/common/models'
-import { stringWeiToBN, formatWei } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 
 import { Flex, Text, IconTipping } from '@audius/harmony-native'
 import { AudioText } from 'app/components/core'
@@ -16,7 +16,7 @@ export const Tip = (props: TipProps) => {
       <IconTipping color='subdued' size='s' />
       <Flex row alignItems='center' gap='2xs'>
         <Text size='s' color='subdued' strength='strong'>
-          {formatWei(stringWeiToBN(amount))}
+          {AUDIO(BigInt(amount)).toLocaleString()}
         </Text>
         <AudioText fontSize='small' color='neutralLight4' />
       </Flex>

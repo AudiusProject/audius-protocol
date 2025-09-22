@@ -134,74 +134,98 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
         .all()
     )
     existing_tracks = {track.track_id: track for track in existing_playlist_tracks}
-    playlist = helpers.model_to_dictionary(playlist_record)
-    updated_track_ids = [
-        track["track"] for track in playlist["playlist_contents"]["track_ids"]
-    ]
+    playlist_contents = dict(playlist_record.playlist_contents)
+    track_ids = playlist_contents.get("track_ids", [])
+
+    updated_track_ids = [track["track"] for track in track_ids]
     params.logger.debug(
-        f"playlists.py | Updating playlist tracks for {playlist['playlist_id']}"
+        f"playlists.py | Updating playlist tracks for {playlist_record.playlist_id}"
     )
 
+    # Build a unique list of track IDs from both existing and updated tracks and fetch them
+    track_ids = list(set(list(existing_tracks.keys()) + updated_track_ids))
+
+    track_records = session.query(Track).filter(Track.track_id.in_(track_ids)).all()
+    track_records_dict = {track.track_id: track for track in track_records}
+
     # delete relations that previously existed but are not in the updated list
+    # Note: we are checking the tracks and only touching the models if things
+    # actually need to change to avoid unnecessary DB updates across a bunch of Track rows
     for playlist_track in existing_playlist_tracks:
         if playlist_track.track_id not in updated_track_ids:
-            playlist_track.is_removed = True
-            playlist_track.updated_at = params.block_datetime
-            track_record = (
-                session.query(Track)
-                .filter(Track.track_id == playlist_track.track_id)
-                .first()
-            )
-            if track_record:
-                current_playlist_id = playlist["playlist_id"]
-                track = helpers.model_to_dictionary(track_record)
-                track_record.updated_at = params.block_datetime
-                # remove from playlists_containing_track
-                track_record.playlists_containing_track = [
-                    playlist_id
-                    for playlist_id in track["playlists_containing_track"]
-                    if playlist_id != current_playlist_id
-                ]
+            if not playlist_track.is_removed:
+                playlist_track.is_removed = True
+                playlist_track.updated_at = params.block_datetime
 
-                # add to or overwrite existing entry in playlists_previously_containing_track
-                playlists_previously_containing_track = track[
-                    "playlists_previously_containing_track"
-                ].copy()
-                playlists_previously_containing_track[str(current_playlist_id)] = {
-                    "time": params.block_integer_time
-                }
-                track_record.playlists_previously_containing_track = (
-                    playlists_previously_containing_track
-                )
+            track_record = track_records_dict.get(playlist_track.track_id)
+            if track_record:
+                # remove from playlists_containing_track if necessary
+                if (
+                    track_record.playlists_containing_track
+                    and playlist_record.playlist_id
+                    in track_record.playlists_containing_track
+                ):
+                    updated_playlists = list(track_record.playlists_containing_track)
+                    updated_playlists.remove(playlist_record.playlist_id)
+                    track_record.playlists_containing_track = updated_playlists
+                    track_record.updated_at = params.block_datetime
+
+                # Update playlists_previously_containing_track if necessary
+                if not track_record.playlists_previously_containing_track or (
+                    track_record.playlists_previously_containing_track
+                    and str(playlist_record.playlist_id)
+                    not in track_record.playlists_previously_containing_track
+                ):
+                    updated_playlists_previously_containing_track = (
+                        dict(track_record.playlists_previously_containing_track)
+                        if track_record.playlists_previously_containing_track
+                        else {}
+                    )
+                    updated_playlists_previously_containing_track[
+                        str(playlist_record.playlist_id)
+                    ] = {"time": params.block_integer_time}
+                    track_record.playlists_previously_containing_track = (
+                        updated_playlists_previously_containing_track
+                    )
+                    track_record.updated_at = params.block_datetime
 
     for track_id in updated_track_ids:
         # add playlist_id to playlists_containing_track and remove from playlists_previously_containing_track
-        track_record = session.query(Track).filter(Track.track_id == track_id).first()
+        track_record = track_records_dict.get(track_id)
         if track_record:
-            current_playlist_id = playlist["playlist_id"]
-            track = helpers.model_to_dictionary(track_record)
-            track_record.updated_at = params.block_datetime
-
-            track_record.playlists_containing_track = list(
-                set((track["playlists_containing_track"]) + [current_playlist_id])
-            )
+            current_playlist_id = playlist_record.playlist_id
+            # add playlist_id to playlists_containing_track if it's not already there
+            if (
+                not track_record.playlists_containing_track
+                or current_playlist_id not in track_record.playlists_containing_track
+            ):
+                if not track_record.playlists_containing_track:
+                    track_record.playlists_containing_track = [current_playlist_id]
+                else:
+                    updated_playlists = list(track_record.playlists_containing_track)
+                    updated_playlists.append(current_playlist_id)
+                    track_record.playlists_containing_track = updated_playlists
+                track_record.updated_at = params.block_datetime
 
             if (
                 str(current_playlist_id)
                 in track_record.playlists_previously_containing_track
             ):
-                playlists_previously_containing_track = track[
-                    "playlists_previously_containing_track"
-                ].copy()
-                del playlists_previously_containing_track[str(current_playlist_id)]
-                track_record.playlists_previously_containing_track = (
-                    playlists_previously_containing_track
+                updated_playlists_previously_containing_track = dict(
+                    track_record.playlists_previously_containing_track
                 )
+                del updated_playlists_previously_containing_track[
+                    str(current_playlist_id)
+                ]
+                track_record.playlists_previously_containing_track = (
+                    updated_playlists_previously_containing_track
+                )
+                track_record.updated_at = params.block_datetime
 
         # add row for each track that is not already in the table
         if track_id not in existing_tracks:
             new_playlist_track = PlaylistTrack(
-                playlist_id=playlist["playlist_id"],
+                playlist_id=playlist_record.playlist_id,
                 track_id=track_id,
                 is_removed=False,
                 created_at=params.block_datetime,
@@ -215,7 +239,7 @@ def update_playlist_tracks(params: ManageEntityParameters, playlist_record: Play
             existing_tracks[track_id].updated_at = params.block_datetime
 
     params.logger.debug(
-        f"playlists.py | Updated playlist tracks for {playlist['playlist_id']}"
+        f"playlists.py | Updated playlist tracks for {playlist_record.playlist_id}"
     )
 
 

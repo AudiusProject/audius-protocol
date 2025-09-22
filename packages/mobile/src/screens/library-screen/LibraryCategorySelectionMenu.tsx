@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import type { LibraryCategoryType } from '@audius/common/store'
 import {
@@ -50,11 +50,12 @@ const ALL_CATEGORIES = [
 
 const CATEGORIES_WITHOUT_PURCHASED = ALL_CATEGORIES.slice(0, -1)
 
-type LibraryTabRouteName = 'albums' | 'tracks' | 'playlists'
+type LibraryTabRouteName = 'Albums' | 'Tracks' | 'Playlists'
+
 const ROUTE_NAME_TO_TAB = {
-  albums: LibraryPageTabs.ALBUMS,
-  tracks: LibraryPageTabs.TRACKS,
-  playlists: LibraryPageTabs.PLAYLISTS
+  Albums: LibraryPageTabs.ALBUMS,
+  Tracks: LibraryPageTabs.TRACKS,
+  Playlists: LibraryPageTabs.PLAYLISTS
 } as Record<LibraryTabRouteName, LibraryPageTabs>
 
 export const LibraryCategorySelectionMenu = () => {
@@ -80,7 +81,10 @@ export const LibraryCategorySelectionMenu = () => {
       return LibraryPageTabs.TRACKS
     }
 
-    return ROUTE_NAME_TO_TAB[routeName] || LibraryPageTabs.TRACKS
+    return (
+      ROUTE_NAME_TO_TAB[routeName as LibraryTabRouteName] ||
+      LibraryPageTabs.TRACKS
+    )
   }) as LibraryPageTabs
 
   const selectedCategory = useSelector((state) =>
@@ -88,6 +92,27 @@ export const LibraryCategorySelectionMenu = () => {
       currentTab
     })
   )
+
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const categories =
+    isUSDCPurchasesEnabled &&
+    (currentTab === LibraryPageTabs.TRACKS ||
+      currentTab === LibraryPageTabs.ALBUMS)
+      ? ALL_CATEGORIES
+      : CATEGORIES_WITHOUT_PURCHASED
+
+  // Auto-switch to "All" if the selected category is not available for the current tab
+  useEffect(() => {
+    const availableCategoryValues = categories.map((category) => category.value)
+    if (!availableCategoryValues.includes(selectedCategory)) {
+      dispatch(
+        setSelectedCategory({
+          currentTab,
+          category: LibraryCategory.All
+        })
+      )
+    }
+  }, [currentTab, selectedCategory, categories, dispatch])
 
   const handleChange = useCallback(
     (category: string) => {
@@ -100,14 +125,6 @@ export const LibraryCategorySelectionMenu = () => {
     },
     [currentTab, dispatch]
   )
-
-  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const categories =
-    isUSDCPurchasesEnabled &&
-    (currentTab === LibraryPageTabs.TRACKS ||
-      currentTab === LibraryPageTabs.ALBUMS)
-      ? ALL_CATEGORIES
-      : CATEGORIES_WITHOUT_PURCHASED
 
   return (
     <View style={styles.container}>

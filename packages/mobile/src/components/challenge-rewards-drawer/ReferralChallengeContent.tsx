@@ -10,7 +10,7 @@ import { getChallengeConfig } from 'app/utils/challenges'
 import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
 import { ClaimError } from './ClaimError'
 import { ReferralLinkCopyButton } from './ReferralLinkCopyButton'
-import { TwitterShareButton } from './TwitterShareButton'
+import { XShareButton } from './XShareButton'
 import type { ChallengeContentProps } from './types'
 
 const messages = {
@@ -82,7 +82,7 @@ export const ReferralChallengeContent = ({
 
   const referralContent = (
     <Flex gap='m' w='100%'>
-      <TwitterShareButton
+      <XShareButton
         inviteUrl={inviteUrl}
         isVerified={config.isVerifiedChallenge ?? false}
       />

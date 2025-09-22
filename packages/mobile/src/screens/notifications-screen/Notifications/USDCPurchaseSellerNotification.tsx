@@ -1,9 +1,13 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useNotificationEntity, useUser } from '@audius/common/api'
-import type { StringUSDC } from '@audius/common/models'
-import type { USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType } from '@audius/common/store'
-import { stringUSDCToBN, formatUSDCWeiToUSDString } from '@audius/common/utils'
+import type { User } from '@audius/common/models'
+import type {
+  CollectionEntity,
+  TrackEntity,
+  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
+} from '@audius/common/store'
+import { USDC } from '@audius/fixed-decimal'
 import { capitalize } from 'lodash'
 
 import { IconCart } from '@audius/harmony-native'
@@ -20,12 +24,25 @@ import {
 
 const messages = {
   title: (type: string) => `${capitalize(type)} Sold`,
-  congrats: 'Congrats, ',
-  someone: 'someone',
-  justBoughtYourTrack: (type: string) => ` just bought your ${type} `,
-  for: ' for ',
-  exclamation: '!',
-  dollar: '$'
+  body: (
+    buyerUser: User,
+    entityType: string,
+    content: TrackEntity | CollectionEntity,
+    totalAmount: bigint
+  ) => (
+    <>
+      {'Congrats, '}
+      {buyerUser?.handle ? <UserNameLink user={buyerUser} /> : 'someone'}
+      {` just bought your ${entityType} `}
+      <EntityLink entity={content} />
+      {' for $'}
+      {USDC(totalAmount).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}
+      {'!'}
+    </>
+  )
 }
 
 type USDCPurchaseSellerNotificationProps = {
@@ -41,33 +58,22 @@ export const USDCPurchaseSellerNotification = (
   const content = useNotificationEntity(notification)
   const { data: buyerUser } = useUser(notification.userIds[0])
   const { amount, extraAmount } = notification
+  const totalAmount =
+    USDC(BigInt(amount)).value + USDC(BigInt(extraAmount)).value
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
 
   if (!content || !buyerUser) return null
+
   return (
     <NotificationTile notification={notification} onPress={handlePress}>
       <NotificationHeader icon={IconCart}>
         <NotificationTitle>{messages.title(entityType)}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>
-        {messages.congrats}{' '}
-        {buyerUser.handle ? (
-          <UserNameLink user={buyerUser} />
-        ) : (
-          messages.someone
-        )}
-        {messages.justBoughtYourTrack(entityType)}
-        <EntityLink entity={content} />
-        {messages.for + messages.dollar}
-        {formatUSDCWeiToUSDString(
-          stringUSDCToBN(amount)
-            .add(stringUSDCToBN(extraAmount))
-            .toString() as StringUSDC
-        )}
-        {messages.exclamation}
+        {messages.body(buyerUser, entityType, content, totalAmount)}
       </NotificationText>
     </NotificationTile>
   )

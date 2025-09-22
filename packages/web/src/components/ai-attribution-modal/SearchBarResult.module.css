@@ -1,12 +1,3 @@
-.searchBarResultContainer {
-  height: 48px;
-  width: 100%;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 .userInfo {
   display: inline-flex;
   margin-right: auto;
@@ -88,14 +79,4 @@
 
 .secondaryContainer .verified {
   margin-left: 4px;
-}
-
-.twitterButton {
-  height: 24px !important;
-  width: 48px !important;
-  border-radius: 4px !important;
-  margin: 0 0 0 8px !important;
-  padding: unset !important;
-  cursor: pointer !important;
-  justify-content: center !important;
 }

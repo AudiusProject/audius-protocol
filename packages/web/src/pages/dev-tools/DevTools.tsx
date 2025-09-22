@@ -1,4 +1,5 @@
 import { modalsActions } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -7,6 +8,7 @@ import {
   IconSolana,
   IconShieldCheck,
   IconDashboard,
+  IconUser,
   Paper,
   Text,
   makeResponsiveStyles
@@ -20,10 +22,7 @@ import { env } from 'services/env'
 
 import { messages } from './messages'
 
-/**
- * Dev Tools page - only available in development and staging environments
- * This page contains tools and utilities for developers to test and debug the application
- */
+const { USER_ID_PARSER_PAGE } = route
 
 type DevToolCardProps = {
   icon: React.ElementType
@@ -33,6 +32,11 @@ type DevToolCardProps = {
   onButtonClick: () => void
   buttonDisabled?: boolean
 }
+
+/**
+ * Dev Tools page - only available in development and staging environments
+ * This page contains tools and utilities for developers to test and debug the application
+ */
 
 export const useDevToolCardStyles = makeResponsiveStyles(({ theme }) => ({
   root: {
@@ -130,6 +134,10 @@ export const DevTools = () => {
     window.open('https://healthz.audius.co/', '_blank')
   }
 
+  const handleOpenUserIdParser = () => {
+    history.push(USER_ID_PARSER_PAGE)
+  }
+
   return (
     <Page
       title={messages.pageTitle}
@@ -192,6 +200,14 @@ export const DevTools = () => {
             description={messages.healthzDescription}
             buttonText={messages.healthzButton}
             onButtonClick={handleOpenHealthzDashboard}
+          />
+
+          <DevToolCard
+            icon={IconUser}
+            title={messages.userIdParserTitle}
+            description={messages.userIdParserDescription}
+            buttonText={messages.userIdParserButton}
+            onButtonClick={handleOpenUserIdParser}
           />
         </Flex>
       </Box>

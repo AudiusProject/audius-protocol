@@ -9,7 +9,6 @@ import {
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   stripeModalUISagas as stripeModalSagas,
-  vipDiscordModalSagas,
   toastSagas,
   searchUsersModalSagas,
   modalsSagas,
@@ -33,7 +32,6 @@ import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import collectionSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
-import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
 import librarySagas from 'common/store/pages/library/sagas'
@@ -53,11 +51,9 @@ import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
-import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import uploadSagas from 'common/store/upload/sagas'
-import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
 import passwordResetSagas from 'components/password-reset/store/sagas'
 import dashboardSagas from 'pages/dashboard-page/store/sagas'
@@ -76,7 +72,6 @@ import reachabilitySagas from 'store/reachability/sagas'
 import reloadSagas from 'store/reload/sagas'
 import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
-import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
 export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
@@ -103,7 +98,6 @@ export default function* rootSaga() {
     collectionSagas(),
     chatSagas(),
     dashboardSagas(),
-    exploreCollectionsPageSagas(),
     feedPageSagas(),
     historySagas(),
     passwordResetSagas(),
@@ -134,9 +128,6 @@ export default function* rootSaga() {
     playbackPositionSagas(),
     queueSagas(),
 
-    // Wallet
-    walletSagas(),
-
     // Cast
     castSagas(),
 
@@ -156,12 +147,10 @@ export default function* rootSaga() {
     stripeModalSagas(),
     overflowMenuSagas(),
     toastSagas(),
-    smartCollectionPageSagas(),
+
     searchUsersModalSagas(),
     stemUploadSagas(),
-    tokenDashboardSagas(),
     userListModalSagas(),
-    vipDiscordModalSagas(),
     commonReachabilitySagas(),
 
     // Remote config
@@ -204,7 +193,6 @@ export function* testRootSaga() {
     // collectionSagas(),
     // chatSagas(),
     // dashboardSagas(),
-    // exploreCollectionsPageSagas(),
     // feedPageSagas(),
     // historySagas(),
     // passwordResetSagas(),
@@ -246,12 +234,10 @@ export function* testRootSaga() {
     // stripeModalSagas(),
     // overflowMenuSagas(),
     // toastSagas(),
-    // smartCollectionPageSagas(),
+
     // searchUsersModalSagas(),
     // stemUploadSagas(),
-    // tokenDashboardSagas(),
     // userListModalSagas(),
-    // vipDiscordModalSagas(),
     // commonReachabilitySagas(),
 
     // Remote config

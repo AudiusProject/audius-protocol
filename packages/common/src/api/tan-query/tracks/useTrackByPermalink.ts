@@ -12,6 +12,7 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, QueryOptions, SelectableQueryOptions } from '../types'
 import { useAccountStatus } from '../users/account/useAccountStatus'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
+import { entityCacheOptions } from '../utils/entityCacheOptions'
 import { primeTrackData } from '../utils/primeTrackData'
 
 import { useTrack } from './useTrack'
@@ -59,8 +60,8 @@ export const useTrackByPermalink = <TResult = TQTrack>(
 
       return track?.track_id
     },
-    staleTime: simpleOptions?.staleTime ?? Infinity,
     throwOnError: simpleOptions?.throwOnError ?? false,
+    ...entityCacheOptions,
     enabled:
       simpleOptions?.enabled !== false &&
       !!permalink &&

@@ -54,7 +54,9 @@ import {
   UploadTrackFilesRequest,
   UploadTrackSchema,
   UpdateTrackSchema,
-  UploadTrackFilesSchema
+  UploadTrackFilesSchema,
+  ShareTrackSchema,
+  ShareTrackRequest
 } from './types'
 
 // Extend that new class
@@ -109,7 +111,9 @@ export class TracksApi extends GeneratedTracksApi {
       encodeURIComponent(String(params.trackId))
     )
     const queryString = queryParams.toString()
-    return `${this.configuration.basePath}${path}${queryString ? '?' + queryString : ''}`
+    return `${this.configuration.basePath}${path}${
+      queryString ? '?' + queryString : ''
+    }`
   }
 
   /**
@@ -130,8 +134,6 @@ export class TracksApi extends GeneratedTracksApi {
     if (params.userData) queryParams.append('user_data', params.userData)
     if (params.nftAccessSignature)
       queryParams.append('nft_access_signature', params.nftAccessSignature)
-    if (params.original !== undefined)
-      queryParams.append('original', String(params.original))
     if (params.filename) queryParams.append('filename', params.filename)
 
     const path = `/tracks/{track_id}/download`.replace(
@@ -139,7 +141,9 @@ export class TracksApi extends GeneratedTracksApi {
       encodeURIComponent(String(params.trackId))
     )
     const queryString = queryParams.toString()
-    return `${this.configuration.basePath}${path}${queryString ? '?' + queryString : ''}`
+    return `${this.configuration.basePath}${path}${
+      queryString ? '?' + queryString : ''
+    }`
   }
 
   /** @hidden
@@ -425,6 +429,28 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNSAVE,
+      ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Share a track
+   */
+  async shareTrack(
+    params: ShareTrackRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId } = await parseParams(
+      'shareTrack',
+      ShareTrackSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.SHARE,
       ...advancedOptions
     })
   }

@@ -3,6 +3,7 @@
 export * from './ChallengesApi';
 export * from './CidDataApi';
 export * from './CommentsApi';
+export * from './ExploreApi';
 export * from './NotificationsApi';
 export * from './PlaylistsApi';
 export * from './ReactionsApi';

@@ -36,6 +36,7 @@ export const commentsMessages = {
   menuActions: {
     pin: 'Pin',
     unpin: 'Unpin',
+    share: 'Share',
     flagAndHide: 'Flag & Hide',
     flagAndRemove: 'Flag & Remove',
     muteUser: 'Mute User',
@@ -56,7 +57,8 @@ export const commentsMessages = {
     mutedNotifs: 'Notifications turned off',
     unmutedNotifs: 'Notifications turned on',
     mutedTrackNotifs: 'Comment notifications turned off',
-    unmutedTrackNotifs: 'Comment notifications turned on'
+    unmutedTrackNotifs: 'Comment notifications turned on',
+    linkCopied: 'Link copied to clipboard!'
   },
   popups: {
     pin: {

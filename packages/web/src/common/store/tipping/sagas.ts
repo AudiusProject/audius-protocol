@@ -1,4 +1,5 @@
 import {
+  QUERY_KEYS,
   getSupportedUsersQueryKey,
   getSupporterQueryKey,
   getSupportersQueryKey,
@@ -6,19 +7,17 @@ import {
   queryAccountUser,
   queryWalletAddresses
 } from '@audius/common/api'
-import { Name, BNWei, SolanaWalletAddress } from '@audius/common/models'
+import { Name, SolanaWalletAddress } from '@audius/common/models'
 import {
   chatActions,
   tippingSelectors,
   tippingActions,
-  walletActions,
   getContext,
   getSDK
 } from '@audius/common/store'
 import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import { Id } from '@audius/sdk'
-import BN from 'bn.js'
 import {
   call,
   delay,
@@ -32,7 +31,6 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
-const { getBalance } = walletActions
 const {
   confirmSendTip,
   convert,
@@ -97,7 +95,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       ethAddress: currentUser
     }
   )
-  const audioWeiAmount = new BN(AUDIO(amount).value.toString()) as BNWei
+  const audioWeiAmount = AUDIO(amount).value
 
   if (isNullOrUndefined(waudioBalanceWei)) {
     throw new Error('Failed to retrieve current wAudio balance')
@@ -105,7 +103,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
 
   // If transferring spl wrapped audio and there are insufficent funds with only the
   // user bank balance, transfer all eth AUDIO to spl wrapped audio
-  if (audioWeiAmount.gt(waudioBalanceWei)) {
+  if (audioWeiAmount > waudioBalanceWei) {
     console.info('Converting Ethereum AUDIO to Solana wAUDIO...')
 
     // Wait for a second before showing the notice that this might take a while
@@ -113,9 +111,19 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       yield delay(1000)
       yield put(convert())
     })
-    yield call([walletClient, walletClient.transferTokensFromEthToSol], {
-      ethAddress: currentUser
-    })
+    try {
+      yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
+        ethAddress: currentUser
+      })
+    } catch (e) {
+      reportToSentry({
+        error: e instanceof Error ? e : new Error(e as string),
+        name: 'transferTokensFromEthToSol',
+        additionalInfo: {
+          ethAddress: currentUser
+        }
+      })
+    }
     // Cancel showing the notice if the conversion was magically super quick
     yield cancel(showConvertingMessage)
   }
@@ -207,8 +215,10 @@ function* sendTipAsync() {
       // Wait for tip to index
       yield* call(confirmTipIndexed, { signature })
 
-      // Fetch balance
-      yield* put(getBalance)
+      // Trigger a refetch for all audio balances
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.audioBalance]
+      })
 
       // Refetch chat permissions
       yield* put(

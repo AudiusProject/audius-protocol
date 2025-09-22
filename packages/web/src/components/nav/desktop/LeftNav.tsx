@@ -1,33 +1,32 @@
-import { Fragment, useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { useAccountStatus } from '@audius/common/api'
-import { FavoriteSource, Status } from '@audius/common/models'
-import {
-  collectionsSocialActions,
-  tracksSocialActions
-} from '@audius/common/store'
+import { Status } from '@audius/common/models'
 import { Box, Divider, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
-import { connect } from 'react-redux'
-import { RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
-import { Dispatch } from 'redux'
 
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
-import { AppState } from 'store/types'
 
 import { AccountDetails } from './AccountDetails'
 import { LeftNavCTA } from './LeftNavCTA'
-import { LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
-import { RestrictedExpandableNavItem } from './RestrictedExpandableNavItem'
 import { RouteNav } from './RouteNav'
-import { NavItemConfig, useNavConfig } from './useNavConfig'
-
-const { saveTrack } = tracksSocialActions
-const { saveCollection } = collectionsSocialActions
+import {
+  FeedNavItem,
+  TrendingNavItem,
+  ExploreNavItem,
+  LibraryNavItem,
+  MessagesNavItem,
+  WalletNavItem,
+  RewardsNavItem,
+  UploadNavItem,
+  DevToolsNavItem,
+  PlaylistsNavItem,
+  ArtistCoinsNavItem
+} from './nav-items'
 
 export const LEFT_NAV_WIDTH = 240
 
@@ -35,12 +34,7 @@ type OwnProps = {
   isElectron: boolean
 }
 
-type NavColumnProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
-
-const LeftNav = (props: NavColumnProps) => {
+export const LeftNav = (props: OwnProps) => {
   const { isElectron } = props
   const { data: accountStatus } = useAccountStatus()
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
@@ -50,8 +44,6 @@ const LeftNav = (props: NavColumnProps) => {
   const [dragScrollingDirection, setDragScrollingDirection] = useState<
     'up' | 'down' | undefined
   >(undefined)
-
-  const navConfig = useNavConfig()
 
   const handleChangeDragScrollingDirection = useCallback(
     (newDirection: 'up' | 'down' | undefined) => {
@@ -66,46 +58,6 @@ const LeftNav = (props: NavColumnProps) => {
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
-
-  const renderNavItem = useCallback(
-    (item: NavItemConfig) => {
-      if (item.isExpandable) {
-        const NestedComponent = item.nestedComponent
-        return (
-          <RestrictedExpandableNavItem
-            key={item.label}
-            label={item.label}
-            leftIcon={item.leftIcon}
-            rightIcon={item.rightIcon}
-            shouldPersistRightIcon={item.shouldPersistRightIcon}
-            nestedItems={
-              NestedComponent ? (
-                <NestedComponent scrollbarRef={scrollbarRef} />
-              ) : null
-            }
-            canUnfurl={item.canUnfurl}
-            restriction={item.restriction}
-            disabled={item.disabled}
-          />
-        )
-      }
-
-      return (
-        <LeftNavLink
-          key={item.label}
-          leftIcon={item.leftIcon}
-          rightIcon={item.rightIcon}
-          to={item.to}
-          disabled={item.disabled}
-          restriction={item.restriction}
-          hasNotification={item.hasNotification}
-        >
-          {item.label}
-        </LeftNavLink>
-      )
-    },
-    [scrollbarRef]
-  )
 
   const navLoaded =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
@@ -160,19 +112,20 @@ const LeftNav = (props: NavColumnProps) => {
               flex='1 1 auto'
               css={{ overflow: 'hidden' }}
             >
-              {navConfig.map((item, index) => {
-                const isLastMainItem = index === navConfig.length - 2
-                return (
-                  <Fragment key={item.label}>
-                    {renderNavItem(item)}
-                    {isLastMainItem ? (
-                      <Box mv='s'>
-                        <Divider />
-                      </Box>
-                    ) : null}
-                  </Fragment>
-                )
-              })}
+              <FeedNavItem />
+              <TrendingNavItem />
+              <ExploreNavItem />
+              <LibraryNavItem />
+              <MessagesNavItem />
+              <WalletNavItem />
+              <ArtistCoinsNavItem />
+              <RewardsNavItem />
+              <UploadNavItem />
+              <DevToolsNavItem />
+              <Box mv='s'>
+                <Divider />
+              </Box>
+              <PlaylistsNavItem />
             </Flex>
           </DragAutoscroller>
         </Scrollbar>
@@ -187,20 +140,3 @@ const LeftNav = (props: NavColumnProps) => {
     </Flex>
   )
 }
-
-const mapStateToProps = (state: AppState) => {
-  return {}
-}
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  saveTrack: (trackId: number) =>
-    dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),
-  saveCollection: (collectionId: number) =>
-    dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR))
-})
-
-const ConnectedLeftNav = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(LeftNav)
-)
-
-export default ConnectedLeftNav

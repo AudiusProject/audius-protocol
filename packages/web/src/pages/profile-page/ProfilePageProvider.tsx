@@ -1,11 +1,7 @@
 import { ComponentProps, ComponentType, PureComponent, RefObject } from 'react'
 
-import {
-  selectAccountHasTracks,
-  useCurrentAccountUser,
-  useProfileUser
-} from '@audius/common/api'
-import { useCurrentTrack } from '@audius/common/hooks'
+import { useCurrentAccountUser, useProfileUser } from '@audius/common/api'
+import { useCurrentTrack, useIsArtist } from '@audius/common/hooks'
 import {
   Name,
   ShareSource,
@@ -18,7 +14,6 @@ import {
   User
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
-import { getIsSubscribed } from '@audius/common/src/store/pages/profile/selectors'
 import {
   accountActions,
   cacheCollectionsActions,
@@ -47,7 +42,7 @@ import {
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
-import { connect, useSelector } from 'react-redux'
+import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
@@ -103,7 +98,6 @@ type OwnProps = {
     | ComponentType<DesktopProfilePageProps>
   profile: {
     status: Status | null | undefined
-    isSubscribed: boolean | null | undefined
     profile: User | undefined | null
   }
 }
@@ -201,7 +195,7 @@ class ProfilePageClassComponent extends PureComponent<
       artistTracks,
       goToRoute,
       accountUserId,
-      accountHasTracks
+      isArtist
     } = this.props
     const { editMode, activeTab } = this.state
 
@@ -214,18 +208,15 @@ class ProfilePageClassComponent extends PureComponent<
     }
 
     const isOwnProfile = accountUserId === profile.profile?.user_id
-    const hasTracks =
-      (profile.profile && profile.profile.track_count > 0) ||
-      (isOwnProfile && accountHasTracks)
 
-    if (!isOwnProfile || accountHasTracks !== null) {
+    if (!isOwnProfile) {
       if (
         !activeTab &&
         profile &&
         profile.profile &&
         artistTracks!.status === Status.SUCCESS
       ) {
-        if (hasTracks) {
+        if (isArtist) {
           this.setState({
             activeTab: ProfilePageTabs.TRACKS
           })
@@ -234,7 +225,7 @@ class ProfilePageClassComponent extends PureComponent<
             activeTab: ProfilePageTabs.REPOSTS
           })
         }
-      } else if (!activeTab && profile && profile.profile && !hasTracks) {
+      } else if (!activeTab && profile && profile.profile && !isArtist) {
         this.setState({
           activeTab: ProfilePageTabs.REPOSTS
         })
@@ -645,12 +636,11 @@ class ProfilePageClassComponent extends PureComponent<
     const {
       didChangeTabsFrom,
       profile: { profile },
-      accountHasTracks
+      isArtist
     } = this.props
     if (profile) {
       let tab = `/${currLabel.toLowerCase()}`
-      const isOwner = this.getIsOwner()
-      if (profile.track_count > 0 || (isOwner && accountHasTracks)) {
+      if (isArtist) {
         // An artist, default route is tracks
         if (currLabel === ProfilePageTabs.TRACKS) {
           tab = ''
@@ -680,15 +670,7 @@ class ProfilePageClassComponent extends PureComponent<
   }
 
   getIsArtist = () => {
-    const {
-      profile: { profile },
-      accountHasTracks
-    } = this.props
-    const isOwner = this.getIsOwner()
-    return !!(
-      (profile && profile.track_count > 0) ||
-      (isOwner && accountHasTracks)
-    )
+    return this.props.isArtist ?? false
   }
 
   getIsOwner = (overrideProps?: ProfilePageProps) => {
@@ -735,7 +717,7 @@ class ProfilePageClassComponent extends PureComponent<
 
   render() {
     const {
-      profile: { profile, status: profileLoadingStatus, isSubscribed },
+      profile: { profile, status: profileLoadingStatus },
       // Tracks
       artistTracks,
       playArtistTrack,
@@ -748,7 +730,6 @@ class ProfilePageClassComponent extends PureComponent<
       goToRoute,
       createPlaylist,
       currentQueueItem,
-      setNotificationSubscription,
       setFollowingUserId,
       setFollowersUserId
     } = this.props
@@ -926,8 +907,6 @@ class ProfilePageClassComponent extends PureComponent<
 
       areArtistRecommendationsVisible,
       onCloseArtistRecommendations: this.onCloseArtistRecommendations,
-      setNotificationSubscription,
-      isSubscribed: !!isSubscribed,
 
       userFeed,
       playUserFeedTrack,
@@ -1083,19 +1062,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           CreatePlaylistSource.PROFILE_PAGE
         )
       ),
-    setNotificationSubscription: (
-      userId: ID,
-      isSubscribed: boolean,
-      update = false
-    ) =>
-      dispatch(
-        profileActions.setNotificationSubscription(
-          userId,
-          isSubscribed,
-          update,
-          handleLower
-        )
-      ),
 
     setFollowingUserId: (userId: ID) => dispatch(setFollowing(userId)),
     setFollowersUserId: (userId: ID) => dispatch(setFollowers(userId)),
@@ -1158,21 +1124,22 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 
 type HookStateProps = {
   accountUserId?: ID | undefined
-  accountHasTracks?: boolean | undefined
+  isArtist?: boolean
   chatPermissions?: ReturnType<typeof useCanCreateChat>
 }
 const hookStateToProps = (Component: typeof ProfilePage) => {
   return (props: ProfilePageProps) => {
+    const isArtist = useIsArtist({ id: props.profile?.profile?.user_id })
     const { data: accountData } = useCurrentAccountUser({
       select: (user) => ({
-        accountUserId: user?.user_id,
-        accountHasTracks: selectAccountHasTracks(user)
+        accountUserId: user?.user_id
       })
     })
     const chatPermissions = useCanCreateChat(props.profile?.profile?.user_id)
     return (
       <ProfilePage
         {...(accountData as HookStateProps)}
+        isArtist={isArtist}
         chatPermissions={chatPermissions}
         {...props}
       />
@@ -1191,12 +1158,11 @@ const ProfilePageProviderWrapper = (
   props: Omit<ComponentProps<typeof ProfilePageInner>, 'profile'>
 ) => {
   const profile = useProfileUser()
-  const isSubscribed = useSelector(getIsSubscribed)
 
   return (
     <ProfilePageInner
       {...props}
-      profile={{ profile: profile.user, isSubscribed, status: profile.status }}
+      profile={{ profile: profile.user, status: profile.status }}
     />
   )
 }

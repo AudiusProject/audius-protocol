@@ -1,7 +1,7 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { useIsManagedAccount } from '@audius/common/hooks'
+import { useIsManagedAccount, useShareAction } from '@audius/common/hooks'
 import { Name, PlayableType } from '@audius/common/models'
 import {
   collectionsSocialActions,
@@ -20,21 +20,22 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useModalState } from 'pages/modals/useModalState'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
-import { openTwitterLink } from 'utils/tweet'
+import { openXLink } from 'utils/xShare'
 
 import { ShareDialog } from './components/ShareDialog'
 import { ShareDrawer } from './components/ShareDrawer'
 import { messages } from './messages'
-import { getTwitterShareText } from './utils'
+import { getXShareText } from './utils'
 
 const { getShareState } = shareModalUISelectors
 const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
-const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
+const { shareCollection } = collectionsSocialActions
 const { setVisibility } = modalsActions
 
 export const ShareModal = () => {
   const { isOpen, onClose, onClosed } = useModalState('Share')
+  const sendShareAction = useShareAction()
 
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
@@ -53,26 +54,20 @@ export const ShareModal = () => {
     onClose()
     openCreateChatModal({
       // Just care about the link
-      presetMessage: (await getTwitterShareText(content, false)).link,
+      presetMessage: (await getXShareText(content, false)).link,
       onCancelAction: setVisibility({ modal: 'Share', visible: true }),
       defaultUserList: 'chats'
     })
     dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'share' }))
   }, [openCreateChatModal, dispatch, onClose, content])
 
-  const handleShareToTwitter = useCallback(async () => {
+  const handleShareToX = useCallback(async () => {
     if (!source || !content) return
-    const isPlaylistOwner =
-      content.type === 'audioNftPlaylist' &&
-      accountUserId === content.user.user_id
-    const { twitterText, link, analyticsEvent } = await getTwitterShareText(
-      content,
-      isPlaylistOwner
-    )
-    openTwitterLink(link, twitterText)
+    const { xText, link, analyticsEvent } = await getXShareText(content)
+    openXLink(link, xText)
     record(make(Name.SHARE_TO_TWITTER, { source, ...analyticsEvent }))
     onClose()
-  }, [source, content, accountUserId, record, onClose])
+  }, [source, content, record, onClose])
 
   const handleCopyLink = useCallback(() => {
     if (!source || !content) return
@@ -88,9 +83,6 @@ export const ShareModal = () => {
         break
       case 'playlist':
         dispatch(shareCollection(content.playlist.playlist_id, source))
-        break
-      case 'audioNftPlaylist':
-        dispatch(shareAudioNftPlaylist(content.user.handle, source))
         break
     }
     toast(messages.toast(content.type), SHARE_TOAST_TIMEOUT_MILLIS)
@@ -119,6 +111,21 @@ export const ShareModal = () => {
     }
   }, [content, dispatch, onClose])
 
+  // Trigger share action on mount with new content
+  useEffect(() => {
+    if (!content) return
+    switch (content.type) {
+      case 'track':
+        sendShareAction(content.track.track_id, 'track')
+        break
+      case 'album':
+        sendShareAction(content.album.playlist_id, 'playlist')
+        break
+      case 'playlist':
+        sendShareAction(content.playlist.playlist_id, 'playlist')
+    }
+  }, [content, sendShareAction])
+
   const shareProps = {
     isOpen,
     isOwner,
@@ -126,7 +133,7 @@ export const ShareModal = () => {
     onShareToDirectMessage: isManagerMode
       ? undefined
       : handleShareToDirectMessage,
-    onShareToTwitter: handleShareToTwitter,
+    onShareToX: handleShareToX,
     onCopyLink: handleCopyLink,
     onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
       ? handleEmbed

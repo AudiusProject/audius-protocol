@@ -20,20 +20,16 @@ import { NotificationReminder } from 'app/components/notification-reminder/Notif
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
-import { useAndroidAppLifecycleManager } from 'app/hooks/useAndroidAppLifecycleManager'
-import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { localStorage } from 'app/services/local-storage'
 import { queryClient } from 'app/services/query-client'
 import { persistor, store } from 'app/store'
-import {
-  forceRefreshConnectivity,
-  subscribeToNetworkStatusUpdates
-} from 'app/utils/reachability'
+import { subscribeToNetworkStatusUpdates } from 'app/utils/reachability'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
+import { ConnectivityManager } from './ConnectivityManager'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
@@ -62,12 +58,6 @@ const App = () => {
     TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })
 
-  useEnterForeground(() => {
-    forceRefreshConnectivity()
-  })
-
-  useAndroidAppLifecycleManager()
-
   return (
     <AppContextProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
@@ -80,6 +70,7 @@ const App = () => {
                     <GestureHandlerRootView style={{ flex: 1 }}>
                       <PortalProvider>
                         <ErrorBoundary>
+                          <ConnectivityManager />
                           <NavigationContainer
                             navigationIntegration={navigationIntegration}
                           >

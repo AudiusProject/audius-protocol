@@ -2,17 +2,19 @@ import { useCallback } from 'react'
 
 import type { ReactionTypes } from '@audius/common/api'
 import {
-  useReaction,
-  useWriteReaction,
-  useCurrentUserId,
   getReactionFromRawValue,
-  useUser
+  useArtistCoin,
+  useCurrentUserId,
+  useReaction,
+  useUser,
+  useWriteReaction
 } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type { TipReceiveNotification } from '@audius/common/store'
-import { formatNumberCommas } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { formatNumberCommas } from '@audius/common/utils'
 import { Image, Platform, View } from 'react-native'
+import { env } from 'services/env'
 
 import { IconTipping } from '@audius/harmony-native'
 import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
@@ -21,15 +23,15 @@ import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
 
 import {
-  NotificationTile,
+  NotificationBody,
   NotificationHeader,
-  NotificationText,
-  NotificationTitle,
   NotificationProfilePicture,
+  NotificationText,
+  NotificationTile,
+  NotificationTitle,
+  NotificationXButton,
   TipText,
-  UserNameLink,
-  NotificationTwitterButton,
-  NotificationBody
+  UserNameLink
 } from '../Notification'
 import { ReactionList } from '../Reaction'
 
@@ -43,10 +45,17 @@ const messages = {
   sayThanks: 'Say Thanks With a Reaction',
   reactionSent: 'Reaction Sent!',
   // NOTE: Send tip -> Send $AUDIO change
-  twitterShare: (senderHandle: string, amount: number, ios: boolean) =>
-    `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
+  xShare: (
+    senderHandle: string,
+    amount: number,
+    ios: boolean,
+    price?: string
+  ) => {
+    const totalValue = price && amount ? Number(price) * amount : null
+    return `Thanks ${senderHandle} for the ${formatNumberCommas(amount)} ${
       ios ? '$AUDIO' : '$AUDIO tip'
-    } on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
+    } ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius! ${ios ? '' : ''}`
+  }
 }
 
 type TipReceivedNotificationProps = {
@@ -65,12 +74,15 @@ export const TipReceivedNotification = (
   } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
+  const { data: tokenPriceData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
+
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const { data: user } = useUser(notification.entityId)
 
   const { data: reaction } = useReaction(tipTxSignature, {
     // Only fetch if we don't have a reaction in the notification
-    enabled: notificationReactionValue !== null
+    enabled: notificationReactionValue === null
   })
 
   // Use the reaction from the query, falling back to notification data
@@ -98,12 +110,13 @@ export const TipReceivedNotification = (
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(
+      const shareText = messages.xShare(
         senderHandle,
         uiAmount,
-        Platform.OS === 'ios'
+        Platform.OS === 'ios',
+        tokenPrice
       )
       return {
         shareText,
@@ -113,7 +126,7 @@ export const TipReceivedNotification = (
         } as const
       }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null
@@ -158,10 +171,10 @@ export const TipReceivedNotification = (
         onChange={handleReaction}
         isVisible={isVisible}
       />
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={user.handle}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
       />
     </NotificationTile>
   )

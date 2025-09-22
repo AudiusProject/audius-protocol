@@ -36,7 +36,6 @@ export type ProfileState = {
   profileMeterDismissed: boolean
   feed: LineupState<Track | Collection>
   tracks: LineupState<Track>
-  isNotificationSubscribed: boolean
   error?: string
 }
 

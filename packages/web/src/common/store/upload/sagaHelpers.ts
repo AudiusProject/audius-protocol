@@ -4,6 +4,7 @@ import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
+  isContentTokenGated,
   isContentUSDCPurchaseGated,
   USDCPurchaseConditions
 } from '@audius/common/models'
@@ -12,8 +13,7 @@ import {
   TrackForUpload,
   TrackMetadataForUpload
 } from '@audius/common/store'
-import { BN_USDC_CENT_WEI } from '@audius/common/utils'
-import BN from 'bn.js'
+import { USDC } from '@audius/fixed-decimal'
 import { all, call, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -59,6 +59,14 @@ export function* recordGatedTracks(
               lossless: isOriginalAvailable
             })
           )
+        } else if (isContentTokenGated(streamConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_TOKEN_GATED, {
+              kind: 'tracks',
+              downloadable: isDownloadable,
+              lossless: isOriginalAvailable
+            })
+          )
         } else if (isContentUSDCPurchaseGated(streamConditions)) {
           out.push(
             make(Name.TRACK_UPLOAD_USDC_GATED, {
@@ -73,6 +81,14 @@ export function* recordGatedTracks(
         if (isContentFollowGated(dowloadConditions)) {
           out.push(
             make(Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD, {
+              kind: 'tracks',
+              downloadable: isDownloadable,
+              lossless: isOriginalAvailable
+            })
+          )
+        } else if (isContentTokenGated(dowloadConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_TOKEN_GATED_DOWNLOAD, {
               kind: 'tracks',
               downloadable: isDownloadable,
               lossless: isOriginalAvailable
@@ -102,7 +118,7 @@ export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
   const ownerUserbank = yield* call(getOrCreateUSDCUserBank, wallet)
   const priceCents = stream_conditions.usdc_purchase.price
-  const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+  const priceWei = Number(USDC(priceCents / 100).value.toString())
   const conditionsWithMetadata: USDCPurchaseConditions = {
     usdc_purchase: {
       price: priceCents,

@@ -8,10 +8,10 @@ import {
 } from '@audius/common/store'
 import { range } from 'lodash'
 import { Keyboard } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
-import { Divider, Flex, Text } from '@audius/harmony-native'
-import { SectionList } from 'app/components/core'
+import { Flex, Paper, Text } from '@audius/harmony-native'
 import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
@@ -30,9 +30,6 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
       <Text variant='label' size='s' textTransform='uppercase'>
         {title}
       </Text>
-      <Flex flex={1}>
-        <Divider />
-      </Flex>
     </Flex>
   )
 }
@@ -154,23 +151,29 @@ export const AllResults = () => {
   const hasNoResults = (!data || sections.length === 0) && isSuccess
 
   return (
-    <Flex onTouchStart={Keyboard.dismiss}>
-      {hasNoResults ? (
-        <NoResultsTile />
-      ) : (
-        <SectionList<SearchItemType>
-          keyboardShouldPersistTaps='always'
-          stickySectionHeadersEnabled={false}
-          sections={isLoading ? skeletonSections : sections}
-          keyExtractor={({ id, kind }) => `${kind}-${id}`}
-          renderItem={({ item }) => <AllResultsItem item={item} />}
-          renderSectionHeader={({ section: { title } }) => (
-            <Flex ph='l' mt='l'>
-              <SearchSectionHeader title={title} />
-            </Flex>
-          )}
-        />
-      )}
-    </Flex>
+    <ScrollView>
+      <Flex onTouchStart={Keyboard.dismiss}>
+        {hasNoResults ? (
+          <NoResultsTile />
+        ) : (
+          <Flex mh='l' gap='l' mt='l' mb='xl'>
+            {(isLoading ? skeletonSections : sections).map((section, index) => {
+              const items = section.data.map((item) => (
+                <AllResultsItem key={item.id} item={item} />
+              ))
+
+              return (
+                <Paper key={`${section.title}`} border='default' shadow='mid'>
+                  <Flex ph='l' mt='l'>
+                    <SearchSectionHeader title={section.title} />
+                  </Flex>
+                  <Flex w={'90%'}>{items}</Flex>
+                </Paper>
+              )
+            })}
+          </Flex>
+        )}
+      </Flex>
+    </ScrollView>
   )
 }

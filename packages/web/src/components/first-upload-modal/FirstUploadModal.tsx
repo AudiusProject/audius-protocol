@@ -14,7 +14,7 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import { AppState } from 'store/types'
 import { fullProfilePage } from 'utils/route'
-import { openTwitterLink } from 'utils/tweet'
+import { openXLink } from 'utils/xShare'
 
 import styles from './FirstUploadModal.module.css'
 import { getIsOpen } from './store/selectors'
@@ -28,7 +28,7 @@ const messages = {
   shareButton: 'Share With Your Fans',
   // Note: twitter auto appends the link to the text
   tweet:
-    'I just joined @audius and uploaded my first track! Check out my profile #Audius $AUDIO'
+    'I just joined @audius and uploaded my first track! Check out my profile $AUDIO'
 }
 
 const Title = () => {
@@ -64,7 +64,7 @@ const FirstUploadModal = ({ isOpen, close }: FirstUploadModalProps) => {
     if (!handle) return
     const url = fullProfilePage(handle)
     const text = messages.tweet
-    openTwitterLink(url, text)
+    openXLink(url, text)
     record(make(Name.TWEET_FIRST_UPLOAD, { handle }))
   }, [handle, record])
 
@@ -74,6 +74,8 @@ const FirstUploadModal = ({ isOpen, close }: FirstUploadModalProps) => {
       dispatch(show())
     }
   }, [isOpen, dispatch])
+
+  if (!userId) return null
 
   return (
     <>
@@ -109,7 +111,7 @@ const FirstUploadModal = ({ isOpen, close }: FirstUploadModalProps) => {
             <div className={styles.text}>{messages.deal}</div>
             <div className={styles.text}>{messages.share}</div>
             <SocialButton
-              socialType='twitter'
+              socialType='x'
               onClick={onShare}
               className={styles.tweetButton}
             >

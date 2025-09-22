@@ -1,9 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { FixedDecimal } from '@audius/fixed-decimal'
-import BN from 'bn.js'
 import numeral from 'numeral'
-
-import { BNWei } from '~/models/Wallet'
 
 import dayjs from './dayjs'
 
@@ -16,56 +11,41 @@ import dayjs from './dayjs'
  * 443,123 => 443K
  * 4,001,000 => 4M Followers
  */
-export const formatCount = (count: number) => {
+export const formatCount = (count: number): string => {
   if (count >= 1000) {
     const countStr = count.toString()
     if (countStr.length % 3 === 0) {
       return numeral(count).format('0a').toUpperCase()
     } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
-      return numeral(count).format('0.00a').toUpperCase()
+      const formatted = numeral(count).format('0.00a').toUpperCase()
+      // If the result has .00, use the simpler format without decimals
+      return formatted.includes('.00')
+        ? numeral(count).format('0a').toUpperCase()
+        : formatted
     } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
-      return numeral(count).format('0.0a').toUpperCase()
+      const formatted = numeral(count).format('0.0a').toUpperCase()
+      // If the result has .0, use the simpler format without decimals
+      return formatted.includes('.0')
+        ? numeral(count).format('0a').toUpperCase()
+        : formatted
     } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
-      return numeral(count).format('0.0a').toUpperCase()
+      const formatted = numeral(count).format('0.0a').toUpperCase()
+      // If the result has .0, use the simpler format without decimals
+      return formatted.includes('.0')
+        ? numeral(count).format('0a').toUpperCase()
+        : formatted
     } else {
       return numeral(count).format('0a').toUpperCase()
     }
+  } else if (count > 1) {
+    // For numbers between 1 and 999, format with up to 2 decimals if needed
+    const formatted = numeral(count).format('0.00').toUpperCase()
+    // Remove trailing zeros
+    return formatted.replace(/\.00$/, '').replace(/\.0$/, '')
   } else if (!count) {
     return '0'
   } else {
     return `${count}`
-  }
-}
-
-/**
- * @deprecated Use the relevant currency shorthand, eg. `AUDIO(amount).toShorthand()` from {@link FixedDecimal} instead
- *
- * The format any currency should be:
- * - show 0 if 0
- * - don't show decimal places if input is a round number
- * - show only up to 2 decimal places if input is not a round number
- * - round down to nearest thousand if input is greater than 10000
- * ie.
- * 0 => 0
- * 8 => 8
- * 8.01 => 8.01
- * 8.10 => 8.10
- * 4,210 => 4210
- * 9,999.99 => 9999.99
- * 56,010 => 56K
- * 443,123 => 443K
- */
-export const formatCurrencyBalance = (amount: number) => {
-  if (amount === 0) {
-    return '0'
-  } else if (amount >= 9999.995) {
-    const roundedAmount = Math.floor(amount / 1000)
-    return `${roundedAmount}K`
-  } else if (Number.isInteger(amount)) {
-    return amount.toString()
-  } else {
-    const decimalCount = amount > 10000 ? 0 : 2
-    return amount.toFixed(decimalCount)
   }
 }
 
@@ -149,32 +129,6 @@ export const pluralize = (
 ) => `${message}${(count ?? 0) !== 1 || pluralizeAnyway ? suffix : ''}`
 
 /**
- * @deprecated Use `wAUDIO().toLocaleString()` from {@link FixedDecimal} instead
- *
- * Format a $AUDIO string with commas and decimals
- * @param amount The $AUDIO amount
- * @param decimals Number of decimal places to display
- * @returns The formatted $AUDIO amount
- */
-export const formatAudio = (amount: string, decimals?: number) => {
-  // remove negative sign if present.
-  const amountPos = amount.replace('-', '')
-  let audio = (parseFloat(amountPos) / AUDIO_DIVISOR).toString()
-  const formatString = '0,0' + (decimals ? '.' + '0'.repeat(decimals!) : '')
-  audio = numeral(audio).format(formatString)
-  return audio
-}
-
-// Wei -> Audio
-/**
- * @deprecated Use `AUDIO(wei).trunc().toFixed()` from {@link FixedDecimal} instead
- */
-export const formatWeiToAudioString = (wei: BNWei) => {
-  const aud = wei.div(WEI_DIVISOR)
-  return aud.toString()
-}
-
-/**
  * Format a number to have commas
  */
 export const formatNumberCommas = (num: number | string) => {
@@ -185,20 +139,9 @@ export const formatNumberCommas = (num: number | string) => {
   )
 }
 
-/**
- * @deprecated Use `USDC().toLocaleString()` from {@link FixedDecimal} instead
- */
-export const formatPrice = (num: number) => {
-  return formatNumberCommas((num / 100).toFixed(2))
-}
-
 export const trimRightZeros = (number: string) => {
   return number.replace(/(\d)0+$/gm, '$1')
 }
-
-export const AUDIO_DIVISOR = 100000000
-export const WEI_DIVISOR = new BN('1000000000000000000')
-export const USDC_DIVISOR = new BN('1000000')
 
 export const checkOnlyNumeric = (number: string) => {
   const reg = /^\d+$/
@@ -216,63 +159,8 @@ export const checkOnlyWeiFloat = (number: string) => {
   return true
 }
 
-/**
- * @deprecated Use `AUDIO()` from {@link FixedDecimal} instead
- */
-export const convertFloatToWei = (number: string) => {
-  const nums = number.split('.')
-  if (nums.length !== 2) return null
-  if (!checkOnlyNumeric(nums[0]) || !checkOnlyNumeric(nums[1])) return null
-  const aud = new BN(nums[0]).mul(WEI_DIVISOR)
-  const weiMultiplier = 18 - nums[1].length
-  const wei = new BN(nums[1]).mul(new BN('1'.padEnd(weiMultiplier + 1, '0')))
-  return aud.add(wei)
-}
-
 export const checkWeiNumber = (number: string) => {
   return checkOnlyNumeric(number) || checkOnlyWeiFloat(number)
-}
-
-// Audio -> Wei
-/**
- * @deprecated Use `AUDIO()` from {@link FixedDecimal} instead
- */
-export const parseWeiNumber = (number: string) => {
-  if (checkOnlyNumeric(number)) {
-    return new BN(number).mul(WEI_DIVISOR)
-  } else if (checkOnlyWeiFloat(number)) {
-    return convertFloatToWei(number)
-  } else {
-    return null
-  }
-}
-
-type FormatOptions = {
-  minDecimals?: number
-  maxDecimals?: number
-  excludeCommas?: boolean
-}
-
-/**
- * @deprecated Use `FixedDecimal().toLocaleString()` instead
- */
-export const formatNumberString = (
-  number?: string,
-  options?: FormatOptions
-) => {
-  if (!number) {
-    return null
-  }
-  const parts = number.split('.')
-  const res =
-    parts.length > 1 && parts[1] !== undefined
-      ? parts[0] +
-        '.' +
-        parts[1]
-          .substring(0, options?.maxDecimals ?? parts[1].length)
-          .padEnd(options?.minDecimals ?? 0, '0')
-      : parts[0]
-  return options?.excludeCommas ? res : formatNumberCommas(res)
 }
 
 /** Capitalizes the given input string */

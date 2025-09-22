@@ -6,6 +6,7 @@ import { CommentNotification as CommentNotificationType } from '@audius/common/s
 import { IconMessage } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { UserProfilePictureList } from 'components/user-profile-picture-list'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { make, track } from 'services/analytics'
 import {
@@ -22,7 +23,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { OthersLink } from './components/OthersLink'
 import { UserNameLink } from './components/UserNameLink'
-import { UserProfilePictureList } from './components/UserProfilePictureList'
 import { entityToUserListEntity, USER_LENGTH_LIMIT } from './utils'
 
 const messages = {
@@ -34,7 +34,8 @@ type CommentNotificationProps = {
 }
 export const CommentNotification = (props: CommentNotificationProps) => {
   const { notification } = props
-  const { id, userIds, entityType, timeLabel, isViewed } = notification
+  const { commentId, id, userIds, entityType, timeLabel, isViewed } =
+    notification
   const { data: users } = useUsers(
     notification.userIds.slice(0, USER_LENGTH_LIMIT)
   )
@@ -47,7 +48,7 @@ export const CommentNotification = (props: CommentNotificationProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
 
-  const handleGoToEntity = useGoToEntity(entity, entityType, true)
+  const handleGoToEntity = useGoToEntity(entity, entityType, true, commentId)
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {

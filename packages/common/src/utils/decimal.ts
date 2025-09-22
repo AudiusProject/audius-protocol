@@ -1,3 +1,6 @@
+import { AUDIO } from '@audius/fixed-decimal'
+import numeral from 'numeral'
+
 const PRECISION = 2
 
 export type DecimalUtilOptions = {
@@ -68,4 +71,182 @@ export const getCurrencyDecimalPlaces = (priceUSD: number) => {
   if (priceUSD >= 0.01) return 4
   if (priceUSD >= 0.0001) return 6
   return 8
+}
+
+/**
+ * Returns the number of decimal places to show for AUDIO balance formatting
+ * based on the balance magnitude. Smaller balances show more decimals to remain meaningful.
+ * Always shows a minimum of 2 decimal places.
+ *
+ * @param balance - The balance value to determine decimal places for
+ * @returns Number of decimal places to show (minimum 2)
+ *
+ * @example
+ * getTokenDecimalPlaces(1234.56)   // 2 → "1,234.56"
+ * getTokenDecimalPlaces(92.0253)   // 2 → "92.02"
+ * getTokenDecimalPlaces(1.2345)    // 2 → "1.23"
+ * getTokenDecimalPlaces(0.1234)    // 3 → "0.123"
+ * getTokenDecimalPlaces(0.00123)   // 5 → "0.00123"
+ */
+export const getTokenDecimalPlaces = (balance: number) => {
+  const absBalance = Math.abs(balance)
+
+  if (absBalance >= 1000) {
+    return 2 // 1,234.56 (minimum 2 decimals even for large amounts)
+  }
+  if (absBalance >= 100) {
+    return 2 // 123.45
+  }
+  if (absBalance >= 10) {
+    return 2 // 12.34
+  }
+  if (absBalance >= 1) {
+    return 2 // 1.23
+  }
+  if (absBalance >= 0.1) {
+    return 3 // 0.123
+  }
+  if (absBalance >= 0.01) {
+    return 4 // 0.0123
+  }
+  if (absBalance >= 0.001) {
+    return 5 // 0.00123
+  }
+
+  // For very small amounts, show enough decimals to see meaningful value
+  return 6
+}
+
+export const formatAudioBalance = (
+  balance: bigint,
+  locale: string = 'en-US'
+): string => {
+  const balanceNumber = Number(AUDIO(balance).toString())
+  const decimalPlaces = getTokenDecimalPlaces(balanceNumber)
+
+  return AUDIO(balance).toLocaleString(locale, {
+    maximumFractionDigits: decimalPlaces,
+    roundingMode: 'trunc'
+  })
+}
+
+/**
+ * Formats a number as currency with dynamic decimal places based on value magnitude.
+ * Uses getCurrencyDecimalPlaces to determine appropriate precision.
+ *
+ * @param num - The number to format as currency
+ * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @returns Formatted currency string
+ *
+ * @example
+ * formatCurrency(123.456)  // "$123.46"
+ * formatCurrency(0.0012)   // "$0.001200"
+ * formatCurrency(0)        // "$0.00"
+ */
+export const formatCurrency = (
+  num: number,
+  locale: string = 'en-US'
+): string => {
+  if (num === 0) return '$0.00'
+
+  try {
+    const decimalPlaces = getCurrencyDecimalPlaces(num)
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: Math.min(decimalPlaces, 2),
+      maximumFractionDigits: decimalPlaces
+    }).format(num)
+
+    return formatted
+  } catch {
+    return `$${num.toFixed(2)}`
+  }
+}
+
+/**
+ * Formats a number with subscript notation for many leading zeros after decimal.
+ * For example: 0.000068352 → 0.0₄68352
+ *
+ * @param num - The number to format
+ * @param locale - Locale for number formatting (defaults to 'en-US')
+ * @returns Formatted string with subscript notation for leading zeros
+ */
+export const formatCurrencyWithSubscript = (
+  num: number,
+  locale: string = 'en-US'
+): string => {
+  if (num === 0) return '$0.00'
+
+  try {
+    const decimalPlaces = getCurrencyDecimalPlaces(num)
+    const formatted = new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: Math.min(decimalPlaces, 2),
+      maximumFractionDigits: decimalPlaces
+    }).format(num)
+
+    // Extract the number part (remove currency symbol and commas)
+    const numberPart = formatted.replace(/[^0-9.-]/g, '').replace(/,/g, '')
+
+    // Check if there are leading zeros after decimal that should be subscripted
+    const parts = numberPart.split('.')
+    if (parts.length === 2 && parts[0] === '0') {
+      const decimalPart = parts[1]
+
+      // Find consecutive zeros after the decimal
+      const zeroMatch = decimalPart.match(/^0+/)
+      if (zeroMatch) {
+        const zeroCount = zeroMatch[0].length
+        const remainingDigits = decimalPart.substring(zeroCount)
+
+        // Only apply subscript if there are 3 or more leading zeros
+        if (zeroCount >= 3 && remainingDigits.length > 0) {
+          // Create subscript number (Unicode subscript digits)
+          const subscriptDigits = zeroCount
+            .toString()
+            .split('')
+            .map((digit) => {
+              const subscripts = [
+                '₀',
+                '₁',
+                '₂',
+                '₃',
+                '₄',
+                '₅',
+                '₆',
+                '₇',
+                '₈',
+                '₉'
+              ]
+              return subscripts[parseInt(digit)]
+            })
+            .join('')
+
+          // Format as $0.0[subscript][remaining digits]
+          return `$0.0${subscriptDigits}${remainingDigits}`
+        }
+      }
+    }
+
+    return formatted
+  } catch {
+    return `$${num.toFixed(2)}`
+  }
+}
+
+export const formatCurrencyWithMax = (
+  num: number,
+  max: number,
+  locale: string = 'en-US'
+): string => {
+  if (num >= max) {
+    const formatted = numeral(num).format('0.00a').toUpperCase()
+    return formatted.includes('.00')
+      ? `$${numeral(num).format('0a').toUpperCase()}`
+      : `$${formatted}`
+  }
+
+  return formatCurrency(num, locale)
 }

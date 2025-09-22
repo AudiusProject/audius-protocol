@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useRemixContest, useTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { formatDate } from '@audius/common/utils'
+import { formatContestDeadlineWithStatus } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
@@ -16,15 +16,15 @@ import {
 } from '@audius/harmony-native'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
-import { CollectionCardSkeleton } from '../collection-list/CollectionCardSkeleton'
 import { TrackImage } from '../image/TrackImage'
+import { TrackCardSkeleton } from '../track/TrackCardSkeleton'
 import { UserLink } from '../user-link'
 
 const messages = {
   deadline: (releaseDate?: string) =>
     releaseDate
       ? new Date(releaseDate) > new Date()
-        ? `Deadline: ${formatDate(releaseDate)}`
+        ? formatContestDeadlineWithStatus(releaseDate, false)
         : 'Ended'
       : releaseDate
 }
@@ -46,10 +46,10 @@ export const RemixContestCard = (props: RemixContestCardProps) => {
   }, [navigation, trackId])
 
   if (!track || !remixContest) {
-    return <CollectionCardSkeleton />
+    return <TrackCardSkeleton />
   }
   return (
-    <Paper onPress={handlePress}>
+    <Paper border='default' onPress={handlePress}>
       <Flex p='s' gap='s'>
         <TrackImage trackId={trackId} size={SquareSizes.SIZE_480_BY_480} />
         <Text variant='title' textAlign='center' numberOfLines={1}>

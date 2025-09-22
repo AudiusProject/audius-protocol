@@ -3,8 +3,8 @@ import {
   IconAudiusLogoHorizontalColorNew,
   IconTelegram,
   IconInstagram,
-  IconTwitter as IconTwitterBird,
-  IconDiscord
+  IconDiscord,
+  IconX
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -15,12 +15,14 @@ import { handleClickRoute } from './handleClickRoute'
 
 const {
   HOME_PAGE,
-  AUDIUS_TWITTER_LINK,
+  AUDIUS_X_LINK,
   AUDIUS_INSTAGRAM_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_PRESS_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE,
+  API_TERMS,
+  OPEN_MUSIC_LICENSE_LINK,
   TRENDING_PAGE,
   AUDIUS_BLOG_LINK,
   DOWNLOAD_LINK,
@@ -38,6 +40,14 @@ const bottomLinks = [
   {
     text: 'Privacy Policy',
     link: PRIVACY_POLICY
+  },
+  {
+    text: 'API Terms of Service',
+    link: API_TERMS
+  },
+  {
+    text: 'Open Music License',
+    link: OPEN_MUSIC_LICENSE_LINK
   }
 ]
 
@@ -67,9 +77,9 @@ const socialLinks = [
     link: AUDIUS_INSTAGRAM_LINK
   },
   {
-    text: 'Twitter',
-    Icon: IconTwitterBird,
-    link: AUDIUS_TWITTER_LINK
+    text: 'X',
+    Icon: IconX,
+    link: AUDIUS_X_LINK
   },
   {
     text: 'Discord',

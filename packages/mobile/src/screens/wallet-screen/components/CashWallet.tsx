@@ -12,7 +12,7 @@ import {
   Box,
   Button,
   Flex,
-  IconLogoCircleUSDC,
+  IconTokenUSDC,
   Paper,
   Skeleton,
   Text
@@ -44,7 +44,7 @@ export const CashWallet = () => {
       <Flex p='l' gap='s' direction='column'>
         <Flex gap='xs' direction='row' alignItems='center'>
           <Box mr='s'>
-            <IconLogoCircleUSDC size='l' />
+            <IconTokenUSDC size='l' />
           </Box>
           <Text variant='heading' size='s' color='subdued'>
             {walletMessages.cashBalance}

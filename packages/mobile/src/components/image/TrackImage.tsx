@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { useTrack } from '@audius/common/api'
 import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
@@ -49,7 +51,7 @@ export const useTrackImage = ({
       return track.artwork
     }
   })
-  const image = useImageSize({
+  const { imageUrl, onError } = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: '',
@@ -58,10 +60,11 @@ export const useTrackImage = ({
     }
   })
 
-  if (image === '') {
+  if (imageUrl === '') {
     return {
       source: imageEmpty,
-      isFallbackImage: true
+      isFallbackImage: true,
+      onError
     }
   }
 
@@ -73,13 +76,15 @@ export const useTrackImage = ({
     return {
       // @ts-ignore
       source: primitiveToImageSource(artwork.url),
-      isFallbackImage: false
+      isFallbackImage: false,
+      onError
     }
   }
 
   return {
-    source: primitiveToImageSource(image),
-    isFallbackImage: false
+    source: primitiveToImageSource(imageUrl),
+    isFallbackImage: false,
+    onError
   }
 }
 
@@ -89,6 +94,7 @@ type TrackImageProps = {
   style?: FastImageProps['style']
   borderRadius?: CornerRadiusOptions
   onLoad?: FastImageProps['onLoad']
+  onError?: FastImageProps['onError']
   children?: React.ReactNode
 }
 
@@ -106,9 +112,20 @@ export const TrackImage = (props: TrackImageProps) => {
   const trackImageSource = useTrackImage({ trackId, size })
   const { cornerRadius } = useTheme()
   const { skeleton } = useThemeColors()
-  const { source: loadedSource, isFallbackImage } = trackImageSource
+  const { source: loadedSource, isFallbackImage, onError } = trackImageSource
 
   const source = loadedSource ?? localTrackImageUri
+
+  const handleError = useCallback(() => {
+    if (
+      source &&
+      typeof source === 'object' &&
+      'uri' in source &&
+      typeof source.uri === 'string'
+    ) {
+      onError(source.uri)
+    }
+  }, [source, onError])
 
   return (
     <FastImage
@@ -120,7 +137,8 @@ export const TrackImage = (props: TrackImageProps) => {
         },
         style
       ]}
-      source={source ?? { uri: '' }}
+      source={source}
+      onError={handleError}
       onLoad={onLoad}
     />
   )

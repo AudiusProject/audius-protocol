@@ -17,6 +17,7 @@
       "outputLogs": "new-only"
     },
     "ios": {
+      "env": ["ENVFILE"],
       "dependsOn": ["build"],
       "cache": false,
       "persistent": true,

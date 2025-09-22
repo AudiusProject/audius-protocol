@@ -86,8 +86,7 @@ export const HighlightText = ({ text }: { text: string }) => (
       color: '#7E1BCC',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -105,8 +104,7 @@ export const BodyText = ({
       color: '#858199',
       fontSize: '14px',
       fontWeight: '500'
-    }}
-  >
+    }}>
     {text}
   </span>
 )
@@ -397,7 +395,7 @@ const notificationMap = {
     }
     return (
       <span className={'notificationText'}>
-        <table cellSpacing='0' cellPadding='0' style={{ marginBottom: '4px' }}>
+        <table cellSpacing="0" cellPadding="0" style={{ marginBottom: '4px' }}>
           <tr>
             <td>{icon}</td>
             <td>
@@ -509,8 +507,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-                ? 'their'
-                : `${notification.entityUser.name}'s`
+              ? 'their'
+              : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -532,8 +530,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-                ? 'their'
-                : `${notification.entityUser.name}'s`
+              ? 'their'
+              : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -555,8 +553,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-                ? 'their'
-                : `${notification.entityUser.name}'s`
+              ? 'their'
+              : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -614,7 +612,7 @@ const getTwitter = (notification) => {
       const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`
         : parentTrackUser.name
-      const text = `New remix of ${parentTrack.title} by ${twitterHandle} on @audius #Audius`
+      const text = `New remix of ${parentTrack.title} by ${twitterHandle} on @audius`
       const url = getTrackLink(remixTrack)
       return {
         message: 'Share With Your Friends',
@@ -632,7 +630,7 @@ const getTwitter = (notification) => {
       const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`
         : parentTrackUser.name
-      const text = `My remix of ${parentTrack.title} was Co-Signed by ${twitterHandle} on @audius #Audius`
+      const text = `My remix of ${parentTrack.title} was Co-Signed by ${twitterHandle} on @audius`
       return {
         message: 'Share With Your Friends',
         href: `http://twitter.com/share?url=${encodeURIComponent(
@@ -643,7 +641,7 @@ const getTwitter = (notification) => {
     case 'trending_playlist': {
       const { entity } = notification
       const url = getTrackLink(entity)
-      const text = `My playlist ${entity.title} is trending on @audius! Check it out! #Audius #AudiusTrending`
+      const text = `My playlist ${entity.title} is trending on @audius! Check it out!`
       return {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(
@@ -654,7 +652,7 @@ const getTwitter = (notification) => {
     case 'trending_track': {
       const { entity } = notification
       const url = getTrackLink(entity)
-      const text = `My track ${entity.title} is trending on @audius! Check it out! #Audius #AudiusTrending`
+      const text = `My track ${entity.title} is trending on @audius! Check it out!`
       return {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(
@@ -665,7 +663,7 @@ const getTwitter = (notification) => {
     case 'trending_underground': {
       const { entity } = notification
       const url = getTrackLink(entity)
-      const text = `My track ${entity.title} made it to the top of underground trending on @audius! Check it out! #Audius #AudiusTrending`
+      const text = `My track ${entity.title} made it to the top of underground trending on @audius! Check it out!`
       return {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(
@@ -679,7 +677,7 @@ const getTwitter = (notification) => {
       const twitterHandle = trackOwnerUser.twitterHandle
         ? `@${trackOwnerUser.twitterHandle}`
         : trackOwnerUser.name
-      const text = `I was one of the first to discover ${entity.name} by ${twitterHandle} on @audius and it just made it onto trending! #Audius #AudiusTastemaker`
+      const text = `I was one of the first to discover ${entity.name} by ${twitterHandle} on @audius and it just made it onto trending!`
       return {
         message: 'Share With Your Friends',
         href: `http://twitter.com/share?url=${encodeURIComponent(
@@ -688,7 +686,7 @@ const getTwitter = (notification) => {
       }
     }
     case 'challenge_reward': {
-      const text = `I earned $AUDIO for completing challenges on @audius #AudioRewards`
+      const text = `I earned $AUDIO for completing challenges on @audius`
       return {
         message: 'Share this with your fans',
         href: `http://twitter.com/share?text=${encodeURIComponent(text)}`

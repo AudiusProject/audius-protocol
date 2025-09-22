@@ -44,6 +44,12 @@ import {
     ProfilePictureFullFromJSONTyped,
     ProfilePictureFullToJSON,
 } from './ProfilePictureFull';
+import type { UserFullArtistCoinBadge } from './UserFullArtistCoinBadge';
+import {
+    UserFullArtistCoinBadgeFromJSON,
+    UserFullArtistCoinBadgeFromJSONTyped,
+    UserFullArtistCoinBadgeToJSON,
+} from './UserFullArtistCoinBadge';
 
 /**
  * 
@@ -63,6 +69,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     artistPickTrackId?: string;
+    /**
+     * 
+     * @type {UserFullArtistCoinBadge}
+     * @memberof UserFull
+     */
+    artistCoinBadge: UserFullArtistCoinBadge;
     /**
      * 
      * @type {string}
@@ -213,6 +225,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     splWallet: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UserFull
+     */
+    splUsdcWallet: string;
     /**
      * 
      * @type {string}
@@ -401,6 +419,7 @@ export interface UserFull {
 export function instanceOfUserFull(value: object): value is UserFull {
     let isInstance = true;
     isInstance = isInstance && "albumCount" in value && value["albumCount"] !== undefined;
+    isInstance = isInstance && "artistCoinBadge" in value && value["artistCoinBadge"] !== undefined;
     isInstance = isInstance && "followeeCount" in value && value["followeeCount"] !== undefined;
     isInstance = isInstance && "followerCount" in value && value["followerCount"] !== undefined;
     isInstance = isInstance && "handle" in value && value["handle"] !== undefined;
@@ -417,6 +436,7 @@ export function instanceOfUserFull(value: object): value is UserFull {
     isInstance = isInstance && "isAvailable" in value && value["isAvailable"] !== undefined;
     isInstance = isInstance && "ercWallet" in value && value["ercWallet"] !== undefined;
     isInstance = isInstance && "splWallet" in value && value["splWallet"] !== undefined;
+    isInstance = isInstance && "splUsdcWallet" in value && value["splUsdcWallet"] !== undefined;
     isInstance = isInstance && "supporterCount" in value && value["supporterCount"] !== undefined;
     isInstance = isInstance && "supportingCount" in value && value["supportingCount"] !== undefined;
     isInstance = isInstance && "totalAudioBalance" in value && value["totalAudioBalance"] !== undefined;
@@ -453,6 +473,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'albumCount': json['album_count'],
         'artistPickTrackId': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
+        'artistCoinBadge': UserFullArtistCoinBadgeFromJSON(json['artist_coin_badge']),
         'bio': !exists(json, 'bio') ? undefined : json['bio'],
         'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFullFromJSON(json['cover_photo']),
         'followeeCount': json['followee_count'],
@@ -478,6 +499,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'isAvailable': json['is_available'],
         'ercWallet': json['erc_wallet'],
         'splWallet': json['spl_wallet'],
+        'splUsdcWallet': json['spl_usdc_wallet'],
         'splUsdcPayoutWallet': !exists(json, 'spl_usdc_payout_wallet') ? undefined : json['spl_usdc_payout_wallet'],
         'supporterCount': json['supporter_count'],
         'supportingCount': json['supporting_count'],
@@ -522,6 +544,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         
         'album_count': value.albumCount,
         'artist_pick_track_id': value.artistPickTrackId,
+        'artist_coin_badge': UserFullArtistCoinBadgeToJSON(value.artistCoinBadge),
         'bio': value.bio,
         'cover_photo': CoverPhotoFullToJSON(value.coverPhoto),
         'followee_count': value.followeeCount,
@@ -547,6 +570,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'is_available': value.isAvailable,
         'erc_wallet': value.ercWallet,
         'spl_wallet': value.splWallet,
+        'spl_usdc_wallet': value.splUsdcWallet,
         'spl_usdc_payout_wallet': value.splUsdcPayoutWallet,
         'supporter_count': value.supporterCount,
         'supporting_count': value.supportingCount,

@@ -41,7 +41,6 @@ function* signOut() {
   yield* call(waitForValue, getIsSettingUp, {}, (isSettingUp) => !isSettingUp)
 
   yield* put(resetAccount())
-  queryClient.clear()
   yield* put(feedPageLineupActions.reset())
 
   yield* put(clearHistory())
@@ -58,6 +57,11 @@ function* signOut() {
   for (const storageKey of storageKeysToRemove) {
     yield* call([localStorage, 'removeItem'], storageKey)
   }
+  // NOTE: Weird workaround here - queryClient.clear() is necessary to delete all of the cache
+  // HOWEVER, this does NOT trigger a rerender on any active queries.
+  // So we need to call resetQueries() to trigger a rerender and then clear the cache.
+  queryClient.resetQueries()
+  queryClient.clear() // ORDER MATTERS HERE - clear() must be called after resetQueries()
   // On web we reload the page to get the app into a state
   // where it is acting like first-load. On mobile, in order to
   // get the same behavior, call to set up the backend again,

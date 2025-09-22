@@ -1,107 +1,28 @@
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
-
-import { ExploreScreen } from 'app/screens/explore-screen'
-import {
-  CHILL_PLAYLISTS,
-  INTENSE_PLAYLISTS,
-  INTIMATE_PLAYLISTS,
-  PROVOKING_PLAYLISTS,
-  UPBEAT_PLAYLISTS
-} from 'app/screens/explore-screen/collections'
-import {
-  BEST_NEW_RELEASES,
-  FEELING_LUCKY,
-  HEAVY_ROTATION,
-  MOST_LOVED,
-  REMIXABLES,
-  UNDER_THE_RADAR
-} from 'app/screens/explore-screen/smartCollections'
-import {
-  LetThemDJScreen,
-  PremiumTracksScreen,
-  TopAlbumsScreen,
-  TrendingPlaylistsScreen,
-  TrendingUndergroundScreen
-} from 'app/screens/explore-screen/tabs/ForYouTab'
-import { MoodCollectionScreen } from 'app/screens/mood-collection-screen/MoodCollectionScreen'
-import { SmartCollectionScreen } from 'app/screens/smart-collection-screen/SmartCollectionScreen'
+import type { SearchCategory, SearchFilters } from '@audius/common/api'
 
 import { SearchExploreScreen } from '../explore-screen/SearchExploreScreen'
+import { TrendingPlaylistsScreen } from '../explore-screen/tabs/ForYouTab/TrendingPlaylistsScreen'
+import { TrendingUndergroundScreen } from '../explore-screen/tabs/ForYouTab/TrendingUndergroundScreen'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
 
 export type ExploreTabScreenParamList = AppTabScreenParamList & {
-  Explore: undefined
-  // Smart Collection Screens
-  UnderTheRadar: undefined
-  MostLoved: undefined
-  FeelingLucky: undefined
-  HeavyRotation: undefined
-  BestNewReleases: undefined
-  Remixables: undefined
-  // Collection Screens
-  PremiumTracks: undefined
-  TrendingUnderground: undefined
-  LetThemDJ: undefined
-  TopAlbums: undefined
+  SearchExplore: {
+    autoFocus?: boolean
+    query?: string
+    category?: SearchCategory
+    filters?: SearchFilters
+  }
   TrendingPlaylists: undefined
-  // Mood Screens
-  ChillPlaylists: undefined
-  IntensePlaylists: undefined
-  IntimatePlaylists: undefined
-  UpbeatPlaylists: undefined
-  ProvokingPlaylists: undefined
+  TrendingUnderground: undefined
 }
-
-const moodCollections = [
-  CHILL_PLAYLISTS,
-  INTENSE_PLAYLISTS,
-  INTIMATE_PLAYLISTS,
-  PROVOKING_PLAYLISTS,
-  UPBEAT_PLAYLISTS
-]
-
-const smartCollections = [
-  UNDER_THE_RADAR,
-  BEST_NEW_RELEASES,
-  REMIXABLES,
-  MOST_LOVED,
-  FEELING_LUCKY,
-  HEAVY_ROTATION
-]
 
 export const ExploreTabScreen =
   createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => {
-    const searchExploreFeatureFlag = useFeatureFlag(
-      FeatureFlags.SEARCH_EXPLORE_MOBILE
-    )
-    const isSearchExploreEnabled =
-      searchExploreFeatureFlag.isEnabled && searchExploreFeatureFlag.isLoaded
-
-    if (isSearchExploreEnabled) {
-      return (
-        <>
-          <Stack.Screen name='SearchExplore' component={SearchExploreScreen} />
-          <Stack.Screen
-            name='TrendingPlaylists'
-            component={TrendingPlaylistsScreen}
-          />
-          <Stack.Screen
-            name='TrendingUnderground'
-            component={TrendingUndergroundScreen}
-          />
-        </>
-      )
-    }
-
     return (
       <>
-        <Stack.Screen name='Explore' component={ExploreScreen} />
-        <Stack.Screen name='PremiumTracks' component={PremiumTracksScreen} />
-        <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
-        <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
+        <Stack.Screen name='SearchExplore' component={SearchExploreScreen} />
         <Stack.Screen
           name='TrendingPlaylists'
           component={TrendingPlaylistsScreen}
@@ -110,16 +31,6 @@ export const ExploreTabScreen =
           name='TrendingUnderground'
           component={TrendingUndergroundScreen}
         />
-        {smartCollections.map((collection) => (
-          <Stack.Screen name={collection.screen} key={collection.screen}>
-            {() => <SmartCollectionScreen smartCollection={collection} />}
-          </Stack.Screen>
-        ))}
-        {moodCollections.map((collection) => (
-          <Stack.Screen name={collection.screen} key={collection.screen}>
-            {() => <MoodCollectionScreen collection={collection} />}
-          </Stack.Screen>
-        ))}
       </>
     )
   })

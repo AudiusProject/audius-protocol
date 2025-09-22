@@ -123,6 +123,8 @@ export const ArtistContentSection = () => {
         </Flex>
         <Flex>
           <TextInput
+            css={{ height: 32 }}
+            IconProps={{ size: 'm' }}
             placeholder={messages.search(selectedPill)}
             label={messages.search(selectedPill)}
             value={filterText}

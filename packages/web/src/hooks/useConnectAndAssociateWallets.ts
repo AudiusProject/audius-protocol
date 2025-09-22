@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 
 import {
   type ConnectedWallet,
@@ -17,6 +17,8 @@ import type { Hex } from 'viem'
 import { useSignMessage, useSwitchAccount, useAccount } from 'wagmi'
 
 import { appkitModal, wagmiAdapter, audiusChain } from 'app/ReownAppKitModal'
+
+import { useRequiresAccountCallback } from './useRequiresAccount'
 
 /**
  * Helper hook that signs a message using the current connected wallet, whether
@@ -96,8 +98,8 @@ export const useConnectAndAssociateWallets = (
 
   // The state goes from modal open => connecting => associating
   const { open: isAppKitModalOpen } = useAppKitState()
-  const isConnectingRef = useRef(false)
-  const isAssociatingRef = useRef(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isAssociating, setIsAssociating] = useState(false)
 
   // Keep track of any existing connected external wallets
   const { isConnected, connector, chainId } = useAccount()
@@ -117,7 +119,7 @@ export const useConnectAndAssociateWallets = (
    * - Ensures all existing connections are disconnected
    * - Ensures that the network is set to mainnet (for Eth)
    */
-  const openAppKitModal = useCallback(async () => {
+  const openAppKitModal = useRequiresAccountCallback(async () => {
     // If previously connected, disconnect to give a "fresh" view of options
     if (isConnected) {
       await disconnect()
@@ -161,7 +163,7 @@ export const useConnectAndAssociateWallets = (
    */
   const associateConnectedWallets = useCallback(async () => {
     try {
-      isAssociatingRef.current = true
+      setIsAssociating(true)
       track(make({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START }))
       const activeAccount = appkitModal.getAccount()
       const originalAddress = currentUser?.wallet
@@ -253,7 +255,7 @@ export const useConnectAndAssociateWallets = (
       track(make({ eventName: Name.CONNECT_WALLET_ERROR, error: String(e) }))
       onError?.(e)
     } finally {
-      isAssociatingRef.current = false
+      setIsAssociating(false)
       await reconnectExternalAuthWallet()
     }
   }, [
@@ -280,23 +282,27 @@ export const useConnectAndAssociateWallets = (
   useEffect(() => {
     return appkitModal.subscribeEvents(async (event) => {
       if (event.data.event === 'SELECT_WALLET') {
-        isConnectingRef.current = true
+        setIsConnecting(true)
       } else if (event.data.event === 'MODAL_CLOSE') {
-        if (!isConnectingRef.current && !isAssociatingRef.current) {
+        if (!isConnecting && !isAssociating) {
           await reconnectExternalAuthWallet()
         }
       } else if (event.data.event === 'CONNECT_SUCCESS') {
-        isConnectingRef.current = false
+        setIsConnecting(false)
         await associateConnectedWallets()
       } else if (event.data.event === 'CONNECT_ERROR') {
-        isConnectingRef.current = false
+        setIsConnecting(false)
       }
     })
-  }, [associateConnectedWallets, reconnectExternalAuthWallet])
+  }, [
+    associateConnectedWallets,
+    reconnectExternalAuthWallet,
+    isConnecting,
+    isAssociating
+  ])
 
   return {
-    isPending:
-      isAppKitModalOpen || isConnectingRef.current || isAssociatingRef.current,
+    isPending: isAppKitModalOpen || isConnecting || isAssociating,
     openAppKitModal
   }
 }

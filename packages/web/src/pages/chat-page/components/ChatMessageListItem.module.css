@@ -45,20 +45,13 @@
 
 .unfurl {
   border-radius: 0;
-}
-
-.bubble .unfurl:not(:last-child) {
-  border-bottom: 1px solid var(--harmony-n-150);
-}
-
-.isAuthor .bubble .unfurl:not(:last-child) {
-  border-bottom: 1px solid var(--harmony-s-400);
+  flex: 1 1;
 }
 
 .textWrapper {
   background-color: var(--bubble-color);
-  padding: var(--harmony-unit-4);
   text-align: left;
+  max-width: 448px;
 }
 
 .text {

@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { AudiusSdk } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -13,6 +11,7 @@ import { AccountState } from '~/store'
 
 import { QUERY_KEYS } from '../../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../../types'
+import { getUserQueryKey } from '../useUser'
 
 import { getAccountStatusQueryKey } from './useAccountStatus'
 import { useWalletAddresses } from './useWalletAddresses'
@@ -31,7 +30,10 @@ const getLocalAccount = (
   const localAccountUser =
     localStorage.getAudiusAccountUserSync?.() as UserMetadata
   if (localAccount && localAccountUser) {
-    if (localAccountUser) {
+    if (
+      localAccountUser &&
+      !queryClient.getQueryData(getUserQueryKey(localAccountUser.user_id))
+    ) {
       primeUserData({ users: [localAccountUser], queryClient })
     }
     // feature-tan-query TODO: when removing account sagas,
@@ -47,7 +49,7 @@ const getLocalAccount = (
       walletAddresses: { currentUser: null, web3User: null },
       playlistLibrary: localAccount.playlistLibrary ?? null,
       trackSaveCount: localAccount.trackSaveCount,
-      guestEmail: null
+      guestEmail: localAccount.guestEmail
     } as AccountState
   }
   return null
@@ -112,12 +114,6 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
   const currentUserWallet = walletAddresses?.currentUser
   const { localStorage } = useAppContext()
   const queryClient = useQueryClient()
-  // We intentionally cache account data in local storage to quickly render the account details
-  // This initialData primes our query slice up front and will cause the hook to return synchronously (if the data exists)
-  const initialData = useMemo(
-    () => getLocalAccount(localStorage, queryClient),
-    [localStorage, queryClient]
-  )
 
   return useQuery({
     queryKey: getCurrentAccountQueryKey(),
@@ -131,7 +127,6 @@ export const useCurrentAccount = <TResult = AccountState | null | undefined>(
     staleTime: Infinity,
     gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserWallet,
-    initialData: initialData ?? undefined,
     ...options
   })
 }

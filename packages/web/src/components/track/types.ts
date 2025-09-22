@@ -51,6 +51,7 @@ export type TrackTileProps = TileProps & {
   disableActions?: boolean
   showArtworkIcon?: boolean
   showSkeleton?: boolean
+  noShimmer?: boolean
   userSignedIn?: boolean
   saveCount: number
   commentCount: number
@@ -77,7 +78,7 @@ export type TrackTileProps = TileProps & {
   source?: ModalSource
 }
 
-export type PlaylistTileProps = TileProps & {
+export type CollectionTileProps = TileProps & {
   playingUid?: UID | null
   playingTrackId?: ID | null
   isAlbum: boolean
@@ -95,6 +96,7 @@ export type PlaylistTileProps = TileProps & {
   collection?: Nullable<Collection>
   showArtworkIcon?: boolean
   showSkeleton?: boolean
+  noShimmer?: boolean
   pauseTrack: () => void
   playTrack: (uid: UID) => void
   disableActions?: boolean

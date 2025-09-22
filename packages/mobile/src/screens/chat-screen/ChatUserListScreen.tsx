@@ -154,7 +154,7 @@ const useDefaultUserList = (
     { enabled: defaultUserList === 'followers' }
   )
   const chatsUserList = useSelector((state) =>
-    getChatsUserList(currentUserId)(state)
+    getChatsUserList(state, currentUserId)
   )
 
   const userIds =
@@ -298,7 +298,6 @@ export const ChatUserListScreen = () => {
           ) : (
             <KeyboardAwareFlatList
               onEndReached={handleLoadMore}
-              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               data={users}
               renderItem={({ item }) => (
                 <ChatUserListItem

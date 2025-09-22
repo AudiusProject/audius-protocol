@@ -5,7 +5,6 @@ import {
 } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import {
-  smartCollectionPageSelectors,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
   queueSelectors
@@ -17,28 +16,21 @@ import { select, call } from 'redux-saga/effects'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
 const { getPositions } = queueSelectors
-const {
-  getSmartCollectionVariant,
-  getCollectionId,
-  getCollectionTracksLineup,
-  getCollectionPermalink
-} = collectionPageSelectors
-const { getCollection: getSmartCollection } = smartCollectionPageSelectors
+const { getCollectionId, getCollectionTracksLineup, getCollectionPermalink } =
+  collectionPageSelectors
 
 function* getCollectionTracks() {
-  const smartCollectionVariant = yield select(getSmartCollectionVariant)
   const permalink = yield select(getCollectionPermalink)
   const collectionId = yield select(getCollectionId)
   let collection
-  if (smartCollectionVariant) {
-    collection = yield select(getSmartCollection, {
-      variant: smartCollectionVariant
-    })
-  } else if (permalink) {
+
+  if (permalink) {
     collection = yield call(queryCollectionByPermalink, permalink)
   } else if (collectionId) {
     collection = yield call(queryCollection, collectionId)
   }
+
+  if (!collection) return []
 
   const tracks = collection.playlist_contents.track_ids
 

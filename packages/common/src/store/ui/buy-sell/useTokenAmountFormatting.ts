@@ -1,15 +1,20 @@
 import { useCallback, useMemo } from 'react'
 
-import { formatUSDCValue } from '../../../api'
-import { getCurrencyDecimalPlaces } from '../../../utils'
+import { FixedDecimal } from '@audius/fixed-decimal'
+
+import { formatUSDCValue } from '~/api'
+import { getTokenDecimalPlaces, getCurrencyDecimalPlaces } from '~/utils'
 
 export type UseTokenAmountFormattingProps = {
   amount?: string | number
-  availableBalance: number
+  availableBalance?: number | null
   exchangeRate?: number | null
   isStablecoin: boolean
+  decimals: number
   placeholder?: string
 }
+
+export const DEFAULT_TOKEN_AMOUNT_PLACEHOLDER = '0.00'
 
 const defaultDecimalPlaces = 2
 
@@ -28,9 +33,9 @@ const getSafeNumericValue = (value: string | number): number => {
 export const useTokenAmountFormatting = ({
   amount,
   availableBalance,
-  exchangeRate,
   isStablecoin,
-  placeholder = '0.00'
+  decimals,
+  placeholder = DEFAULT_TOKEN_AMOUNT_PLACEHOLDER
 }: UseTokenAmountFormattingProps) => {
   const getDisplayDecimalPlaces = useCallback(
     (currentExchangeRate: number | null | undefined) => {
@@ -44,44 +49,40 @@ export const useTokenAmountFormatting = ({
   )
 
   const formattedAvailableBalance = useMemo(() => {
-    if (isNaN(availableBalance)) return placeholder
+    if (availableBalance == null || isNaN(availableBalance)) return null
 
     if (isStablecoin) {
-      return formatUSDCValue(availableBalance)
+      return formatUSDCValue(availableBalance, { useFixed: false })
     }
 
-    const decimals = getDisplayDecimalPlaces(exchangeRate)
+    const tokenAmount = new FixedDecimal(availableBalance, decimals)
+    const displayDecimals = getTokenDecimalPlaces(availableBalance)
+    const maxFractionDigits = Math.min(displayDecimals, decimals)
 
-    return availableBalance.toLocaleString('en-US', {
-      minimumFractionDigits: defaultDecimalPlaces,
-      maximumFractionDigits: decimals
+    return tokenAmount.toLocaleString('en-US', {
+      maximumFractionDigits: maxFractionDigits
     })
-  }, [
-    availableBalance,
-    exchangeRate,
-    getDisplayDecimalPlaces,
-    placeholder,
-    isStablecoin
-  ])
+  }, [availableBalance, isStablecoin, decimals])
 
   const formattedAmount = useMemo(() => {
-    if (!amount && amount !== 0) return placeholder
+    if (!amount && amount !== 0) return null
 
     // Use safe value for calculations while preserving original for display logic
     const safeNumericAmount = getSafeNumericValue(amount)
     if (safeNumericAmount === 0) return placeholder
 
     if (isStablecoin) {
-      return formatUSDCValue(safeNumericAmount)
+      return formatUSDCValue(safeNumericAmount, { useFixed: false })
     }
 
-    const decimals = getDisplayDecimalPlaces(exchangeRate)
+    const tokenAmount = new FixedDecimal(safeNumericAmount, decimals)
+    const displayDecimals = getTokenDecimalPlaces(safeNumericAmount)
+    const maxFractionDigits = Math.min(displayDecimals, decimals)
 
-    return safeNumericAmount.toLocaleString('en-US', {
-      minimumFractionDigits: defaultDecimalPlaces,
-      maximumFractionDigits: decimals
+    return tokenAmount.toLocaleString('en-US', {
+      maximumFractionDigits: maxFractionDigits
     })
-  }, [amount, exchangeRate, getDisplayDecimalPlaces, placeholder, isStablecoin])
+  }, [amount, placeholder, isStablecoin, decimals])
 
   return {
     formattedAvailableBalance,

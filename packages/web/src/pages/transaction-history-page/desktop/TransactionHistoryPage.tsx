@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  selectAccountHasTracks,
-  selectIsGuestAccount,
-  useCurrentAccountUser
-} from '@audius/common/api'
+import { useCurrentAccount } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -46,27 +42,19 @@ type TableMetadata = {
 export const TransactionHistoryPage = ({
   tableView
 }: TransactionHistoryPageProps) => {
-  const { data: accountData } = useCurrentAccountUser({
-    select: (user) => ({
-      handle: user?.handle,
-      userId: user?.user_id,
-      hasTracks: selectAccountHasTracks(user),
-      isGuest: selectIsGuestAccount(user)
-    })
+  const { data: isArtist } = useCurrentAccount({
+    select: (account) => account?.hasTracks
   })
-  const { hasTracks, isGuest } = accountData ?? {}
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
 
   // Initialize table options based on account type
   useState(() => {
-    if (hasTracks !== null || isGuest) {
-      const tableOptions = hasTracks
-        ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
-        : [TableType.PURCHASES, TableType.WITHDRAWALS]
-      setTableOptions(tableOptions)
-      setSelectedTable(tableView ?? tableOptions[0])
-    }
+    const tableOptions = isArtist
+      ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
+      : [TableType.PURCHASES, TableType.WITHDRAWALS]
+    setTableOptions(tableOptions)
+    setSelectedTable(tableView ?? tableOptions[0])
   })
 
   const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(

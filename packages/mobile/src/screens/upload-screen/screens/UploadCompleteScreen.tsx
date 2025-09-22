@@ -1,6 +1,6 @@
-import { useCallback } from 'react'
+import React, { useCallback } from 'react'
 
-import { useCurrentAccountUser, useTrack } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { Name, ShareSource } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -21,7 +21,6 @@ import {
 } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import { Text, Tile } from 'app/components/core'
-import { LineupTileSkeleton, TrackTile } from 'app/components/lineup-tile'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
@@ -35,8 +34,8 @@ const messages = {
   title: 'Upload',
   complete: 'Upload Complete',
   share: 'Share your new track with your fans!',
-  twitterShareText: (title: string) =>
-    `Check out my new track, ${title} on @audius #Audius $AUDIO`,
+  xShareText: (title: string) =>
+    `Check out my new track, ${title} on @audius $AUDIO`,
   copyLink: 'Copy Link',
   linkCopied: 'Link Copied!',
   shareToast: 'Copied Link to Track',
@@ -81,7 +80,6 @@ export const UploadCompleteScreen = () => {
   )
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const { data: accountUser } = useCurrentAccountUser()
   const { data: track } = useTrack(trackId)
   const trackRoute = track ? getTrackRoute(track, true) : ''
 
@@ -89,11 +87,6 @@ export const UploadCompleteScreen = () => {
     navigation.getParent()?.goBack()
     dispatch(reset())
   }, [navigation, dispatch])
-
-  const handlePressTrack = useCallback(() => {
-    handleClose()
-    navigation.push('Track', { trackId })
-  }, [handleClose, navigation, trackId])
 
   const handleDone = useCallback(() => {
     handleClose()
@@ -175,17 +168,6 @@ export const UploadCompleteScreen = () => {
             </>
           ) : null}
         </Tile>
-        {accountUser && track ? (
-          <TrackTile
-            id={track.track_id}
-            uid={''}
-            index={0}
-            togglePlay={() => {}}
-            onPress={handlePressTrack}
-          />
-        ) : (
-          <LineupTileSkeleton />
-        )}
       </View>
     </FormScreen>
   )

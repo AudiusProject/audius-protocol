@@ -42,7 +42,7 @@ import { Droppable } from 'components/dragndrop'
 import { Header } from 'components/header/desktop/Header'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { Page } from 'components/page/Page'
-import ConnectedTrackTile from 'components/track/desktop/ConnectedTrackTile'
+import { TrackTile } from 'components/track/desktop/TrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { useUpdateSearchParams } from 'pages/search-page/hooks'
 import { track, make } from 'services/analytics'
@@ -397,11 +397,11 @@ export const PickWinnersPage = () => {
                 })}
               >
                 <>
-                  <ConnectedTrackTile
+                  <TrackTile
                     key={winnerId}
                     dragKind='winner-tile'
-                    id={winnerId}
                     uid={uid}
+                    id={winnerId}
                     index={index}
                     order={index}
                     ordered={false}
@@ -492,7 +492,7 @@ export const PickWinnersPage = () => {
                     options={[
                       { label: 'Most Recent', value: 'recent' },
                       { label: 'Most Plays', value: 'plays' },
-                      { label: 'Most Likes', value: 'likes' }
+                      { label: 'Most Favorites', value: 'likes' }
                     ]}
                   />
                 </Flex>

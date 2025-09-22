@@ -1,6 +1,8 @@
+import React from 'react'
+
 import { useSupporterPrompt, useRemoteVar } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
-import { formatWei } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import { Platform, Text } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -75,7 +77,10 @@ export const SupporterPrompt = ({ receiverId }: SupporterPromptProps) => {
               {isIOS
                 ? messages.becomeTopSupporterPrefixAlt
                 : messages.becomeTopSupporterPrefix}
-              {formatWei(amountToDethrone!, true, 0)}
+              {AUDIO(amountToDethrone!).trunc().toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              })}
               {messages.becomeTopSupporterSuffix}
             </>
           ))}

@@ -1,42 +1,134 @@
-import { useCallback, useContext } from 'react'
+import { Fragment, useCallback, useContext } from 'react'
 
 import {
+  UserCoin,
+  useArtistCoin,
+  useCurrentUserId,
+  useQueryContext,
+  useUserCoins
+} from '@audius/common/api'
+import {
   useFeatureFlag,
-  useFormattedAudioBalance,
+  useFormattedTokenBalance,
   useIsManagedAccount
 } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
+  Box,
   Button,
+  Divider,
   Flex,
-  IconCaretRight,
-  IconTokenAUDIO,
   Paper,
   Text,
   useMedia,
   useTheme
 } from '@audius/harmony'
+import type { CSSObject } from '@emotion/react'
 import { useDispatch } from 'react-redux'
 import { push } from 'redux-first-history'
+import { ownedCoinsFilter } from '~/utils'
+import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
+import { useBuySellRegionSupport } from 'components/buy-sell-modal'
+import Skeleton from 'components/skeleton/Skeleton'
 import { ToastContext } from 'components/toast/ToastContext'
+import Tooltip from 'components/tooltip/Tooltip'
+
+import { AudioCoinCard } from './AudioCoinCard'
+import { CoinCard } from './CoinCard'
+
+// Helper function to determine if an item should have a right border
+const shouldShowRightBorder = (
+  index: number,
+  isSingleColumn: boolean,
+  shouldSpanFullWidth: boolean,
+  isOddCount: boolean,
+  totalItems: number
+): boolean => {
+  if (isSingleColumn || shouldSpanFullWidth) {
+    return false
+  }
+
+  const isEvenIndex = index % 2 === 0
+  const isItemBeforeFullWidth = isOddCount && index === totalItems - 2
+
+  return isEvenIndex && !isItemBeforeFullWidth
+}
+
+// Helper function to build CSS styles for a coin item
+const getCoinItemStyles = (
+  shouldSpanFullWidth: boolean,
+  shouldHaveRightBorder: boolean,
+  borderColor: string
+): CSSObject => {
+  const baseStyles: CSSObject = {
+    position: 'relative',
+    padding: '0'
+  }
+
+  if (shouldSpanFullWidth) {
+    baseStyles.gridColumn = '1 / -1'
+  } else if (shouldHaveRightBorder) {
+    baseStyles.borderRight = `1px solid ${borderColor}`
+    baseStyles.paddingRight = '0'
+  }
+
+  return baseStyles
+}
+
+const YourCoinsSkeleton = () => {
+  const { spacing } = useTheme()
+  const { isMobile } = useMedia()
+
+  return (
+    <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
+      <Flex
+        alignItems='center'
+        justifyContent='space-between'
+        p={isMobile ? spacing.l : undefined}
+        alignSelf='stretch'
+      >
+        <Flex alignItems='center' gap='m' p='xl' flex={1}>
+          <Skeleton
+            width='64px'
+            height='64px'
+            css={{
+              clipPath: `url(#${roundedHexClipPath})`
+            }}
+          />
+          <Flex direction='column' gap='xs'>
+            <Skeleton width='200px' height='36px' />
+            <Skeleton width='100px' height='24px' />
+          </Flex>
+        </Flex>
+      </Flex>
+      <Divider />
+      <Flex gap='m' p='xl' flex={1} direction='column'>
+        <Skeleton width='180px' height='28px' />
+        <Skeleton width='300px' height='22px' />
+      </Flex>
+    </Paper>
+  )
+}
 
 const messages = {
   ...buySellMessages,
-  managedAccount: "You can't do that as a managed user"
+  managedAccount: "You can't do that as a managed user",
+  buySellNotSupported: 'This is not supported in your region'
 }
 
-const DIMENSIONS = 64
-const { WALLET_AUDIO_PAGE } = route
-
-const YourCoinsHeader = () => {
-  const { color } = useTheme()
+const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
   const { onOpen: openBuySellModal } = useBuySellModal()
   const isManagedAccount = useIsManagedAccount()
   const { toast } = useContext(ToastContext)
+  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
+    FeatureFlags.WALLET_UI_BUY_SELL
+  )
+
+  const { isBuySellSupported } = useBuySellRegionSupport()
 
   const handleBuySellClick = useCallback(() => {
     if (isManagedAccount) {
@@ -51,91 +143,157 @@ const YourCoinsHeader = () => {
       alignItems='center'
       justifyContent='space-between'
       p='l'
-      css={{ borderBottom: `1px solid ${color.border.default}` }}
+      borderBottom='default'
     >
       <Text variant='heading' size='m' color='heading'>
         {messages.yourCoins}
       </Text>
-      <Button variant='secondary' size='small' onClick={handleBuySellClick}>
-        {messages.buySell}
-      </Button>
+      {isWalletUIBuySellEnabled && !isLoading ? (
+        <Tooltip
+          disabled={isBuySellSupported}
+          text={messages.buySellNotSupported}
+          color='secondary'
+          placement='left'
+          shouldWrapContent={false}
+        >
+          <Box>
+            <Button
+              variant='secondary'
+              size='small'
+              onClick={handleBuySellClick}
+              disabled={!isBuySellSupported}
+            >
+              {messages.buySell}
+            </Button>
+          </Box>
+        </Tooltip>
+      ) : null}
     </Flex>
   )
 }
 
-export const YourCoins = () => {
+const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   const dispatch = useDispatch()
-  const { color, spacing, cornerRadius, motion } = useTheme()
-  const { isMobile, isExtraSmall } = useMedia()
-  const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
-    FeatureFlags.WALLET_UI_BUY_SELL
+
+  const tokenSymbol = coin.ticker
+
+  const handleCoinClick = useCallback(
+    (ticker: string) => {
+      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
+    },
+    [dispatch]
   )
 
   const {
-    audioBalanceFormatted,
-    audioDollarValue,
-    isAudioBalanceLoading,
-    isAudioPriceLoading
-  } = useFormattedAudioBalance()
+    tokenBalanceFormatted,
+    tokenDollarValue,
+    isTokenBalanceLoading,
+    isTokenPriceLoading
+  } = useFormattedTokenBalance(coin.mint)
 
-  const handleTokenClick = useCallback(() => {
-    dispatch(push(WALLET_AUDIO_PAGE))
-  }, [dispatch])
+  const { data: coinData, isPending: coinsDataLoading } = useArtistCoin(
+    coin.mint
+  )
 
-  const isLoading = isAudioBalanceLoading || isAudioPriceLoading
+  const isLoading =
+    isTokenBalanceLoading || isTokenPriceLoading || coinsDataLoading
 
   return (
-    <Paper
-      direction='column'
-      shadow='far'
-      borderRadius='l'
-      css={{ overflow: 'hidden' }}
-    >
-      {isWalletUIBuySellEnabled ? <YourCoinsHeader /> : null}
-      <Flex
-        alignItems='center'
-        justifyContent='space-between'
-        p={isMobile ? spacing.l : spacing.xl}
-        alignSelf='stretch'
-        onClick={handleTokenClick}
-        css={{
-          cursor: 'pointer',
-          '&:hover': {
-            backgroundColor: color.background.surface2
-          }
-        }}
-      >
-        <Flex alignItems='center' gap={isExtraSmall ? 'm' : 'l'}>
-          <IconTokenAUDIO
-            width={DIMENSIONS}
-            height={DIMENSIONS}
-            css={{
-              borderRadius: cornerRadius.circle
-            }}
-          />
-          <Flex
-            direction='column'
-            gap='xs'
-            css={{
-              opacity: isLoading ? 0 : 1,
-              transition: `opacity ${motion.expressive}`
-            }}
-          >
-            <Flex gap='xs'>
-              <Text variant='heading' size='l' color='default'>
-                {audioBalanceFormatted}
-              </Text>
-              <Text variant='heading' size='l' color='subdued'>
-                {messages.audioTicker}
-              </Text>
-            </Flex>
-            <Text variant='heading' size='s' color='subdued'>
-              {audioDollarValue}
-            </Text>
-          </Flex>
-        </Flex>
+    <CoinCard
+      icon={coinData?.logoUri}
+      symbol={tokenSymbol ?? ''}
+      balance={tokenBalanceFormatted || ''}
+      dollarValue={tokenDollarValue || ''}
+      loading={isLoading}
+      name={coinData?.name ?? ''}
+      onClick={() => handleCoinClick(coin.ticker)}
+    />
+  )
+}
 
-        <IconCaretRight size='l' color='subdued' />
+export const YourCoins = () => {
+  const { data: currentUserId } = useCurrentUserId()
+  const { env } = useQueryContext()
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+  const { color } = useTheme()
+
+  const { data: artistCoins, isPending: isLoadingCoins } = useUserCoins({
+    userId: currentUserId
+  })
+
+  const { isLarge } = useMedia()
+
+  const filteredCoins =
+    artistCoins?.filter(
+      ownedCoinsFilter(!!isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS)
+    ) ?? []
+
+  // Show audio coin card when no coins are available
+  const showAudioCoin = filteredCoins.length === 0
+  const allCoins = showAudioCoin ? ['audio-coin' as const] : filteredCoins
+
+  const isSingleColumn = isLarge
+
+  return (
+    <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
+      <YourCoinsHeader isLoading={isLoadingCoins} />
+      <Flex column>
+        {isLoadingCoins || !currentUserId ? <YourCoinsSkeleton /> : null}
+        <Box
+          css={{
+            display: 'grid',
+            gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
+            gap: '0'
+          }}
+        >
+          {allCoins.map((item, index) => {
+            const key = typeof item === 'string' ? item : item.mint
+            const isLastItem = index === allCoins.length - 1
+            const isOddCount = !isSingleColumn && allCoins.length % 2 === 1
+            const shouldSpanFullWidth = isOddCount && isLastItem
+            const isLastInRow = isSingleColumn ? true : index % 2 === 1
+            const isLastRow =
+              index >= allCoins.length - (isSingleColumn ? 1 : 2)
+
+            // Use helper functions for cleaner logic
+            const shouldHaveRightBorder = shouldShowRightBorder(
+              index,
+              isSingleColumn,
+              shouldSpanFullWidth,
+              isOddCount,
+              allCoins.length
+            )
+
+            const itemStyles = getCoinItemStyles(
+              shouldSpanFullWidth,
+              shouldHaveRightBorder,
+              color.border.default
+            )
+
+            return (
+              <Fragment key={key}>
+                <Box css={itemStyles}>
+                  {item === 'audio-coin' ? (
+                    <AudioCoinCard />
+                  ) : (
+                    <CoinCardWithBalance coin={item as UserCoin} />
+                  )}
+                </Box>
+                {/* Horizontal divider after each row except the last */}
+                {!isLastRow && isLastInRow && (
+                  <Box
+                    css={{
+                      gridColumn: '1 / -1',
+                      borderBottom: `1px solid ${color.border.default}`
+                    }}
+                  />
+                )}
+              </Fragment>
+            )
+          })}
+        </Box>
       </Flex>
     </Paper>
   )

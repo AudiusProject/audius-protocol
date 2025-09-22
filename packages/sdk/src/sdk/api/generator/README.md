@@ -23,9 +23,9 @@ npm run gen:{env}:{flavor?}
 ### Options
 
 - `env` choices=("dev", "stage", "prod"): Which environment to choose the Discovery Provider to generate from
-  - `dev`: http://localhost:5000/
-  - `stage`: https://discoveryprovider.staging.audius.co/
-  - `prod`: https://discoveryprovider.audius.co
+  - `dev`: http://127.0.0.1:1323/
+  - `stage`: https://api.staging.audius.co/
+  - `prod`: https://api.audius.co
 - `flavor` [optional] choices=("default", "full"): Which flavor of the API to generate types for
   - undefined for both
   - `default` for /v1

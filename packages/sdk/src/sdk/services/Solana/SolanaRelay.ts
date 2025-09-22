@@ -8,7 +8,17 @@ import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
 import { parseParams } from '../../utils/parseParams'
 
-import { type RelayRequestBody, RelayRequest, RelaySchema } from './types'
+import {
+  type RelayRequestBody,
+  RelayRequest,
+  RelaySchema,
+  LaunchCoinRequest,
+  LaunchCoinResponse,
+  LaunchCoinSchema,
+  FirstBuyQuoteResponse,
+  FirstBuyQuoteRequest,
+  LaunchpadConfigResponse
+} from './types'
 
 /**
  * Client for the Solana Relay Plugin on Discovery.
@@ -32,7 +42,9 @@ export class SolanaRelay extends BaseAPI {
     if (this.feePayer !== null) {
       return this.feePayer
     }
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const response = await this.request(
       {
         path: '/feePayer',
@@ -62,7 +74,9 @@ export class SolanaRelay extends BaseAPI {
   public async getLocationInstruction(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ) {
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const response = await this.request(
       {
         path: '/instruction/location',
@@ -99,7 +113,9 @@ export class SolanaRelay extends BaseAPI {
       RelaySchema
     )(params)
 
-    const headerParameters: runtime.HTTPHeaders = {}
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
     const body: RelayRequestBody = {
       transaction: Buffer.from(transaction.serialize()).toString('base64'),
       confirmationOptions,
@@ -146,6 +162,144 @@ export class SolanaRelay extends BaseAPI {
       return {
         signature: json.signature as string
       }
+    }).value()
+  }
+
+  /**
+   * Launches a new artist coin on the launchpad with bonding curve.
+   */
+  public async launchCoin(
+    params: LaunchCoinRequest
+  ): Promise<LaunchCoinResponse> {
+    const {
+      name,
+      symbol,
+      description,
+      walletPublicKey,
+      initialBuyAmountAudio,
+      image
+    } = await parseParams('launchCoin', LaunchCoinSchema)(params)
+
+    const headerParameters: runtime.HTTPHeaders = {}
+
+    // API uses multipart/form-data for the upload
+    const formData = new FormData()
+    formData.append('name', name)
+    formData.append('symbol', symbol)
+    formData.append('description', description)
+    formData.append('walletPublicKey', walletPublicKey.toBase58())
+    if (initialBuyAmountAudio) {
+      formData.append('initialBuyAmountAudio', initialBuyAmountAudio.toString())
+    }
+    formData.append('image', image)
+
+    const response = await this.request({
+      path: '/launchpad/launch_coin',
+      method: 'POST',
+      headers: headerParameters,
+      body: formData
+    })
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      if (!runtime.exists(json, 'mintPublicKey')) {
+        throw new Error('mintPublicKey missing from response')
+      }
+      if (!runtime.exists(json, 'createPoolTx')) {
+        throw new Error('createPoolTx missing from response')
+      }
+      if (!runtime.exists(json, 'imageUri')) {
+        throw new Error('imageUri missing from response')
+      }
+
+      return json as LaunchCoinResponse
+    }).value()
+  }
+
+  /**
+   * Gets a quote for the first buy transaction on the launchpad.
+   * Returns quotes for SOL to AUDIO, SOL to USDC, and the bonding curve quote.
+   */
+  public async getFirstBuyQuote(
+    params: FirstBuyQuoteRequest,
+    requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<FirstBuyQuoteResponse> {
+    const audioInputAmount =
+      'audioInputAmount' in params ? params.audioInputAmount : undefined
+    const tokenOutputAmount =
+      'tokenOutputAmount' in params ? params.tokenOutputAmount : undefined
+    const noAudioInput = !audioInputAmount
+    const noTokenInput = !tokenOutputAmount
+    if (noAudioInput && noTokenInput) {
+      throw new Error(
+        'Invalid arguments. Either solInputAmount or tokenOutputAmount must be provided'
+      )
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {}
+    const queryParameters: runtime.HTTPQuery = audioInputAmount
+      ? {
+          audioInputAmount
+        }
+      : {
+          tokenOutputAmount: tokenOutputAmount!
+        }
+
+    const response = await this.request(
+      {
+        path: '/launchpad/first_buy_quote',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      requestInitOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      if (!runtime.exists(json, 'audioInputAmount')) {
+        throw new Error('audioInputAmount missing from response')
+      }
+      if (!runtime.exists(json, 'usdcValue')) {
+        throw new Error('usdcValue missing from response')
+      }
+      if (!runtime.exists(json, 'tokenOutputAmount')) {
+        throw new Error('tokenOutputAmount missing from response')
+      }
+
+      return {
+        usdcValue: json.usdcValue,
+        tokenOutputAmount: json.tokenOutputAmount,
+        audioInputAmount: json.audioInputAmount,
+        maxAudioInputAmount: json.maxAudioInputAmount,
+        maxTokenOutputAmount: json.maxTokenOutputAmount
+      } as FirstBuyQuoteResponse
+    }).value()
+  }
+
+  /**
+   * Gets launchpad config details such as max input/outut amounts & starting price.
+   * These values only change if we decide to change our launchpad coin launch params.
+   * We pull them from the server just to avoid having to hardcode values in the UI.
+   */
+  public async getLaunchpadConfig(
+    requestInitOverrides?: RequestInit | runtime.InitOverrideFunction
+  ): Promise<LaunchpadConfigResponse> {
+    const headerParameters: runtime.HTTPHeaders = {
+      'Content-Type': 'application/json'
+    }
+    const queryParameters: runtime.HTTPQuery = {}
+
+    const response = await this.request(
+      {
+        path: '/launchpad/config',
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters
+      },
+      requestInitOverrides
+    )
+
+    return await new runtime.JSONApiResponse(response, (json) => {
+      return json as LaunchpadConfigResponse
     }).value()
   }
 }

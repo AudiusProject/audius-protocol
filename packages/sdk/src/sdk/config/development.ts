@@ -7,7 +7,7 @@ import type { SdkServicesConfig } from './types'
 export const developmentConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.0.0",
-    "apiEndpoint": "http://audius-protocol-discovery-provider-1",
+    "apiEndpoint": "http://audius-protocol-api",
     "discoveryNodes": [
       {
         "delegateOwnerWallet": "0xd09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8",
@@ -44,6 +44,7 @@ export const developmentConfig: SdkServicesConfig = {
     "rpcEndpoint": "http://audius-protocol-solana-test-validator-1",
     "usdcTokenMint": "26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y",
     "wAudioTokenMint": "37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3",
+    "bonkTokenMint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
     "rewardManagerLookupTableAddress": "GNHKVSmHvoRBt1JJCxz7RSMfzDQGDGhGEjmhHyxb3K5J"
   },
   "ethereum": {

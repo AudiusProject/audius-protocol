@@ -1,23 +1,26 @@
 import { useCallback } from 'react'
 
-import type { Collection, Track } from '@audius/common/models'
+import type { Collection, ID, Track } from '@audius/common/models'
+import { OptionalId } from '@audius/sdk'
 
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 type EntityLinkProps = {
   entity: Track | Collection
+  commentId?: ID
 }
 
 export const EntityLink = (props: EntityLinkProps) => {
-  const { entity } = props
+  const { entity, commentId } = props
   const navigation = useNavigation()
 
   const onPress = useCallback(() => {
     if ('track_id' in entity) {
       navigation.navigate('Track', {
         trackId: entity.track_id,
-        fromNotifications: true
+        fromNotifications: true,
+        commentId: OptionalId.parse(commentId)
       })
     } else if ('playlist_id' in entity) {
       navigation.navigate('Collection', {
@@ -25,7 +28,7 @@ export const EntityLink = (props: EntityLinkProps) => {
         fromNotifications: true
       })
     }
-  }, [entity, navigation])
+  }, [commentId, entity, navigation])
 
   if (!entity) return null
 

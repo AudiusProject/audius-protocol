@@ -7,6 +7,8 @@ import { mergeCustomizer } from '~/store/cache/mergeCustomizer'
 
 import { getCollectionQueryKey } from '../collection/useCollection'
 
+import { primeCollectionData } from './primeCollectionData'
+
 type PartialCollectionUpdate = Partial<Collection> & { playlist_id: ID }
 
 export const updateCollectionData = function* (
@@ -14,13 +16,28 @@ export const updateCollectionData = function* (
 ) {
   const queryClient = yield* getContext<QueryClient>('queryClient')
 
-  partialCollections.forEach((partialCollection) => {
+  // Get existing collection data and merge with updates
+  const collectionsToUpdate = partialCollections.map((partialCollection) => {
     const { playlist_id } = partialCollection
+    const existingCollection = queryClient.getQueryData(
+      getCollectionQueryKey(playlist_id)
+    ) as Collection | undefined
 
-    queryClient.setQueryData(
-      getCollectionQueryKey(playlist_id),
-      // TODO: drop the merge customizer once we're fully off of redux
-      (prev) => prev && mergeWith({}, prev, partialCollection, mergeCustomizer)
-    )
+    if (existingCollection) {
+      return mergeWith(
+        {},
+        existingCollection,
+        partialCollection,
+        mergeCustomizer
+      )
+    }
+    return partialCollection as Collection
+  })
+
+  // Use primeCollectionData with forceReplace to ensure updates are saved
+  primeCollectionData({
+    collections: collectionsToUpdate,
+    queryClient,
+    forceReplace: true
   })
 }

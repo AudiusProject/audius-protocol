@@ -19,9 +19,6 @@ export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
-export const SET_NOTIFICATION_SUBSCRIPTION =
-  'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
-
 export type FetchProfileAction = {
   type: typeof FETCH_PROFILE
   handle: string | null
@@ -80,14 +77,6 @@ export type DismissProfileMeterAction = {
   type: typeof DISMISS_PROFILE_METER
 }
 
-export type SetNotificationSubscriptionAction = {
-  type: typeof SET_NOTIFICATION_SUBSCRIPTION
-  userId: ID
-  isSubscribed: boolean
-  update?: boolean
-  handle?: string
-}
-
 export type ProfilePageAction =
   | FetchProfileAction
   | FetchProfileSucceededAction
@@ -99,7 +88,6 @@ export type ProfilePageAction =
   | UpdateCollectionSortModeAction
   | SetProfileFieldAction
   | DismissProfileMeterAction
-  | SetNotificationSubscriptionAction
 
 // Either handle or userId is required
 // TODO: Move this to redux toolkit
@@ -169,19 +157,4 @@ export function setProfileField(
 
 export function profileMeterDismissed(): DismissProfileMeterAction {
   return { type: DISMISS_PROFILE_METER }
-}
-
-export function setNotificationSubscription(
-  userId: ID,
-  isSubscribed: boolean,
-  update = false,
-  handle?: string
-): SetNotificationSubscriptionAction {
-  return {
-    type: SET_NOTIFICATION_SUBSCRIPTION,
-    userId,
-    isSubscribed,
-    update,
-    handle
-  }
 }

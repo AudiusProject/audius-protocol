@@ -6,6 +6,5 @@ export const shadow = () => ({
   },
   shadowOpacity: 0.1,
   shadowRadius: 1.41,
-
   elevation: 2
 })

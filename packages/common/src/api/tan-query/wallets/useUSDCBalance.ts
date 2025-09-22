@@ -1,21 +1,21 @@
 import { useCallback } from 'react'
 
+import { UsdcWei } from '@audius/fixed-decimal'
 import { TokenAccountNotFoundError } from '@solana/spl-token'
 import { Commitment } from '@solana/web3.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useCurrentAccountUser } from '~/api'
 import { useQueryContext } from '~/api/tan-query/utils'
 import { Status } from '~/models/Status'
-import { BNUSDC, StringUSDC } from '~/models/Wallet'
+import { StringUSDC } from '~/models/Wallet'
 import { getUserbankAccountInfo } from '~/services/index'
 import { getRecoveryStatus } from '~/store/buy-usdc/selectors'
 import { setUSDCBalance } from '~/store/wallet/slice'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { QueryOptions, type QueryKey } from '../types'
+import { type QueryKey, SelectableQueryOptions } from '../types'
 
 export const getUSDCBalanceQueryKey = (
   ethAddress: string | null,
@@ -25,7 +25,7 @@ export const getUSDCBalanceQueryKey = (
     QUERY_KEYS.usdcBalance,
     ethAddress,
     commitment
-  ] as unknown as QueryKey<BNUSDC | null>
+  ] as unknown as QueryKey<UsdcWei | null>
 
 /**
  * Hook to get the USDC balance for the current user.
@@ -34,7 +34,7 @@ export const getUSDCBalanceQueryKey = (
  * @param options Options for the query and polling
  * @returns Object with status, data, refresh, and cancelPolling
  */
-export const useUSDCBalance = ({
+export const useUSDCBalance = <TResult = UsdcWei | null>({
   isPolling,
   pollingInterval = 1000,
   commitment = 'processed',
@@ -43,7 +43,7 @@ export const useUSDCBalance = ({
   isPolling?: boolean
   pollingInterval?: number
   commitment?: Commitment
-} & QueryOptions = {}) => {
+} & SelectableQueryOptions<UsdcWei | null, TResult> = {}) => {
   const { audiusSdk } = useQueryContext()
   const { data: user } = useCurrentAccountUser()
   const ethAddress = user?.wallet ?? null
@@ -70,7 +70,7 @@ export const useUSDCBalance = ({
         )
         const balance =
           account?.amount !== undefined && account?.amount !== null
-            ? (new BN(account.amount.toString()) as BNUSDC)
+            ? (BigInt(account.amount.toString()) as UsdcWei)
             : null
 
         // Still update Redux for compatibility with existing code
@@ -80,7 +80,7 @@ export const useUSDCBalance = ({
       } catch (e) {
         // If user doesn't have a USDC token account yet, return 0 balance
         if (e instanceof TokenAccountNotFoundError) {
-          const balance = new BN(0) as BNUSDC
+          const balance = BigInt(0) as UsdcWei
           dispatch(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
           return balance
         }
@@ -124,6 +124,7 @@ export const useUSDCBalance = ({
 
   return {
     status,
+    isPending: result.isPending,
     data,
     error: result.error,
     refresh: result.refetch,

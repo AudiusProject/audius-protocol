@@ -1,8 +1,7 @@
 import { ethers } from 'ethers'
-import { decodeAbi } from './abi.js'
 import { create } from '@bufbuild/protobuf'
 import { createClient, Client } from '@connectrpc/connect'
-import { createGrpcTransport, createConnectTransport } from '@connectrpc/connect-node'
+import { createConnectTransport } from '@connectrpc/connect-node'
 import {
   Protocol,
   SignedTransactionSchema,
@@ -18,6 +17,7 @@ import {
   PingRequestSchema,
   SendTransactionResponse as ConnectTransactionResponse
 } from './audiusd-sdk/core/v1/types_pb.js'
+import { audiusSdk } from '.'
 
 type ClientType = 'grpc' | 'connect'
 
@@ -27,19 +27,18 @@ interface ClientInfo {
   lastSuccessfulPing: number
 }
 
-const clients: {
-  grpc?: ClientInfo
-  connect?: ClientInfo
-} = {}
-
 let activeClient: ClientInfo | null = null
 
 async function pingClient(clientInfo: ClientInfo): Promise<boolean> {
   try {
     if (clientInfo.type === 'grpc') {
-      await (clientInfo.client as Client<typeof Protocol>).ping(create(GrpcPingRequestSchema, {}))
+      await (clientInfo.client as Client<typeof Protocol>).ping(
+        create(GrpcPingRequestSchema, {})
+      )
     } else {
-      await (clientInfo.client as Client<typeof CoreService>).ping(create(PingRequestSchema, {}))
+      await (clientInfo.client as Client<typeof CoreService>).ping(
+        create(PingRequestSchema, {})
+      )
     }
     clientInfo.lastSuccessfulPing = Date.now()
     return true
@@ -48,65 +47,16 @@ async function pingClient(clientInfo: ClientInfo): Promise<boolean> {
   }
 }
 
-async function updateActiveClient(logger: pino.Logger) {
-  // Ping both clients
-  const results = await Promise.all([
-    clients.grpc && pingClient(clients.grpc),
-    clients.connect && pingClient(clients.connect)
-  ])
-
-  // Update active client based on most recent successful ping
-  const grpcSuccess = results[0]
-  const connectSuccess = results[1]
-
-  if (grpcSuccess && connectSuccess) {
-    // Use the client with the most recent successful ping
-    activeClient = clients.grpc!.lastSuccessfulPing > clients.connect!.lastSuccessfulPing
-      ? clients.grpc!
-      : clients.connect!
-  } else if (grpcSuccess) {
-    activeClient = clients.grpc!
-  } else if (connectSuccess) {
-    activeClient = clients.connect!
-  } else {
-    activeClient = null
-  }
-
-  if (activeClient) {
-    logger.info(`Using ${activeClient.type} client for transactions`)
-  } else {
-    logger.error('No clients are currently available')
-  }
-}
-
 async function initializeClients(logger: pino.Logger): Promise<boolean> {
-  const config = readConfig()
-
-  // Try GRPC client
-  try {
-    const grpcTransport = createGrpcTransport({
-      baseUrl: config.coreEndpoint,
-      useBinaryFormat: true
-    })
-    const grpcClient = createClient(Protocol, grpcTransport)
-    const grpcInfo: ClientInfo = {
-      type: 'grpc',
-      client: grpcClient,
-      lastSuccessfulPing: 0
-    }
-    if (await pingClient(grpcInfo)) {
-      clients.grpc = grpcInfo
-      logger.info('Successfully connected using gRPC client')
-    }
-  } catch (e) {
-    logger.warn({ err: e }, 'gRPC client initialization failed')
+  if (activeClient) {
+    return true
   }
 
-  // Try Connect client
+  const config = readConfig()
   try {
     const connectTransport = createConnectTransport({
       baseUrl: config.coreEndpoint,
-      httpVersion: "2",
+      httpVersion: '2',
       useBinaryFormat: true
     })
     const connectClient = createClient(CoreService, connectTransport)
@@ -116,23 +66,13 @@ async function initializeClients(logger: pino.Logger): Promise<boolean> {
       lastSuccessfulPing: 0
     }
     if (await pingClient(connectInfo)) {
-      clients.connect = connectInfo
+      activeClient = connectInfo
       logger.info('Successfully connected using Connect client')
+      return true
     }
   } catch (e) {
     logger.warn({ err: e }, 'Connect client initialization failed')
   }
-
-  // Update active client based on ping results
-  await updateActiveClient(logger)
-
-  // Start periodic ping checks if at least one client is available
-  if (activeClient) {
-    setInterval(() => updateActiveClient(logger), 30000) // Check every 30 seconds
-    return true
-  }
-
-  logger.error('Failed to initialize any clients')
   return false
 }
 
@@ -167,19 +107,18 @@ export const coreRelay = async (
     const { encodedABI } = request
 
     const {
-      userId: userIdBig,
-      entityId: entityIdBig,
+      userId,
+      entityId,
       entityType,
       action,
-      metadata: metadataAny,
+      metadata,
       subjectSig,
       nonce: nonceBytes
-    } = decodeAbi(encodedABI)
+    } = audiusSdk.services.entityManager.decodeManageEntity(
+      encodedABI as `0x${string}`
+    )
 
     const signer = request.senderAddress
-    const userId = BigInt(userIdBig.toString())
-    const entityId = BigInt(entityIdBig.toString())
-    const metadata = metadataAny as string
     const signature = ethers.utils.hexlify(subjectSig)
     const nonce = ethers.utils.hexlify(nonceBytes)
 
@@ -209,7 +148,9 @@ export const coreRelay = async (
     })
 
     // Extract transaction info based on client type
-    let txHash = '', blockHeight = BigInt(0), blockHash = ''
+    let txHash = '',
+      blockHeight = BigInt(0),
+      blockHash = ''
 
     if (activeClient.type === 'grpc') {
       const grpcRes = res as GrpcTransactionResponse

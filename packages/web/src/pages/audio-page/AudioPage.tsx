@@ -1,12 +1,8 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
 import { StringKeys } from '@audius/common/services'
-import { WALLET_AUDIO_PAGE } from '@audius/common/src/utils/route'
-import { walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
-import { useLocation } from 'react-router-dom'
 
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
@@ -25,11 +21,9 @@ import { BASE_URL } from 'utils/route'
 
 import styles from './AudioPage.module.css'
 import { AudioWalletTransactions } from './AudioWalletTransactions'
-import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
 const { AUDIO_PAGE, TRENDING_PAGE } = route
-const { getBalance } = walletActions
 
 const messages = {
   title: '$AUDIO Wallet',
@@ -47,7 +41,6 @@ const RewardsContent = () => {
 
   return (
     <Flex column gap='2xl'>
-      <WalletModal />
       {audioFeaturesDegradedText ? (
         <div className={styles.topBanner}>
           <span className={styles.topBannerText}>
@@ -64,13 +57,7 @@ const RewardsContent = () => {
 }
 
 const DesktopPage = ({ children }: { children: ReactNode }) => {
-  const location = useLocation()
-
-  const showBackButton = location.pathname === WALLET_AUDIO_PAGE
-
-  const header = (
-    <Header primary={messages.title} showBackButton={showBackButton} />
-  )
+  const header = <Header primary={messages.title} showBackButton />
   return (
     <Page
       title={messages.title}
@@ -88,7 +75,7 @@ const useMobileNavContext = () => {
   const { setLeft, setRight } = useContext(NavContext)!
   useEffect(() => {
     setLeft(LeftPreset.BACK)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
   }, [setLeft, setRight])
 }
 
@@ -108,11 +95,7 @@ const MobilePage = ({ children }: { children: ReactNode }) => {
 }
 
 export const AudioPage = () => {
-  const dispatch = useDispatch()
   const isMobile = useIsMobile()
-  useEffect(() => {
-    dispatch(getBalance())
-  }, [dispatch])
   const Page = isMobile ? MobilePage : DesktopPage
   return (
     <Page>

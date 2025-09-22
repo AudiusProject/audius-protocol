@@ -1,26 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 
-import {
-  getProfileRepostsQueryKey,
-  getProfileTracksQueryKey,
-  useCurrentUserId,
-  useUserByParams
-} from '@audius/common/api'
-import { ShareSource, Status } from '@audius/common/models'
+import { useCurrentUserId, useUserByParams } from '@audius/common/api'
+import { ShareSource } from '@audius/common/models'
 import {
   profilePageActions,
-  profilePageSelectors,
   reachabilitySelectors,
   shareModalUIActions,
   modalsActions,
-  profilePageTracksLineupActions,
-  ProfilePageTabs,
-  profilePageFeedLineupActions
+  ProfilePageTabs
 } from '@audius/common/store'
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect, useNavigationState } from '@react-navigation/native'
-import { useQueryClient } from '@tanstack/react-query'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -32,7 +23,6 @@ import {
 import { Screen, ScreenContent } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
-import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -40,12 +30,9 @@ import { makeStyles } from 'app/styles'
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
+import { useRefreshProfile } from './useRefreshProfile'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const {
-  fetchProfile: fetchProfileAction,
-  setCurrentUser: setCurrentUserAction
-} = profilePageActions
-const { getProfileStatus } = profilePageSelectors
+const { setCurrentUser: setCurrentUserAction } = profilePageActions
 const { getIsReachable } = reachabilitySelectors
 const { setVisibility } = modalsActions
 
@@ -58,7 +45,7 @@ const useStyles = makeStyles(() => ({
 export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
-  const { handle: userHandle, id } = params
+  const { handle: userHandle } = params
   const { data: profile } = useUserByParams(params, {
     select: (user) => ({
       user_id: user.user_id,
@@ -73,11 +60,7 @@ export const ProfileScreen = () => {
   const { data: accountUserId } = useCurrentUserId()
   const isOwner = accountUserId === profile?.user_id
   const dispatch = useDispatch()
-  const status = useSelector((state) => getProfileStatus(state, handleLower))
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
-  const isScreenReady = useIsScreenReady()
-  const queryClient = useQueryClient()
 
   const setCurrentUser = useCallback(() => {
     dispatch(setCurrentUserAction(handleLower))
@@ -109,67 +92,13 @@ export const ProfileScreen = () => {
     }
   }) as ProfilePageTabs
 
-  const fetchProfile = useCallback(
-    (forceFetch = false) => {
-      if (!isScreenReady) return
-      dispatch(
-        fetchProfileAction(handleLower, id ?? null, forceFetch, true, false)
-      )
-    },
-    [dispatch, handleLower, id, isScreenReady]
+  const { handleRefresh, isRefreshing } = useRefreshProfile(
+    profile,
+    handleLower,
+    currentTab
   )
 
   useFocusEffect(setCurrentUser)
-
-  useEffect(() => {
-    fetchProfile()
-  }, [fetchProfile])
-
-  const handleRefresh = useCallback(() => {
-    // TODO: Investigate why this function over-fires when you pull to refresh
-    if (profile) {
-      setIsRefreshing(true)
-      fetchProfile(true)
-      switch (currentTab) {
-        case ProfilePageTabs.TRACKS:
-          queryClient.resetQueries({
-            queryKey: getProfileTracksQueryKey({
-              handle: handleLower
-            })
-          })
-          dispatch(
-            profilePageTracksLineupActions.refreshInView(
-              true,
-              { userId: profile.user_id },
-              null,
-              { handle: handleLower }
-            )
-          )
-          break
-        case ProfilePageTabs.REPOSTS:
-          queryClient.resetQueries({
-            queryKey: getProfileRepostsQueryKey({
-              handle: handleLower
-            })
-          })
-          dispatch(
-            profilePageFeedLineupActions.refreshInView(
-              true,
-              { userId: profile.user_id },
-              null,
-              { handle: handleLower }
-            )
-          )
-          break
-      }
-    }
-  }, [profile, fetchProfile, currentTab, queryClient, handleLower, dispatch])
-
-  useEffect(() => {
-    if (status === Status.SUCCESS) {
-      setIsRefreshing(false)
-    }
-  }, [status])
 
   const handlePressTopRight = useCallback(() => {
     if (profile) {

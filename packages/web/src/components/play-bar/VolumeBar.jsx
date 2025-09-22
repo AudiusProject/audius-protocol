@@ -30,10 +30,9 @@ const getLibraryVolume = (defaultVolume) => {
     return parseFloat(localStorageVolume)
   }
 }
-
 const VolumeBar = ({
   defaultValue = 100,
-  onChange = () => {},
+  onChange = (value) => {},
   granularity
 }) => {
   const [volumeLevel, setVolumeLevel] = useState(getLibraryVolume(defaultValue))

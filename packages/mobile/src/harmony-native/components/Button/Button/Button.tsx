@@ -1,6 +1,7 @@
 import type { ReactNativeStyle } from '@emotion/native'
 import Color from 'color'
 import type { TextStyle, ViewStyle } from 'react-native'
+import { Platform } from 'react-native'
 import {
   interpolateColor,
   useAnimatedProps,
@@ -24,6 +25,7 @@ export const Button = (props: ButtonProps) => {
     size = 'default',
     disabled,
     style,
+    gradient,
     ...baseProps
   } = props
   const { isLoading, children } = baseProps
@@ -78,7 +80,8 @@ export const Button = (props: ButtonProps) => {
 
   // - Variant Styles -
   const primaryOverrideColor =
-    hexColor ?? (color ? themeColors.special[color] : null)
+    hexColor ??
+    (color && color !== 'coinGradient' ? themeColors.special[color] : null)
 
   const primaryStyles: ReactNativeStyle = {
     backgroundColor: isDisabled
@@ -260,6 +263,14 @@ export const Button = (props: ButtonProps) => {
     animatedPropAdapter
   )
 
+  // Non-animated version for Android
+  const staticIconProps = {
+    fill:
+      isDisabled && variant === 'secondary'
+        ? themeColors.icon.staticWhite
+        : dynamicStyles.default.icon
+  }
+
   const textColor =
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
       ? 'default'
@@ -275,6 +286,7 @@ export const Button = (props: ButtonProps) => {
     <BaseButton
       disabled={isDisabled}
       style={[buttonStyles, animatedButtonStyles, style]}
+      gradient={variant === 'primary' ? gradient : undefined}
       sharedValue={pressed}
       styles={{
         text: [textStyles, animatedTextStyles]
@@ -283,10 +295,16 @@ export const Button = (props: ButtonProps) => {
         text: {
           color: textColor
         },
-        icon: {
-          animatedProps: animatedIconProps,
-          size: iconSize
-        },
+        icon:
+          Platform.OS === 'android'
+            ? {
+                ...staticIconProps,
+                size: iconSize
+              }
+            : {
+                animatedProps: animatedIconProps,
+                size: iconSize
+              },
         loader: {
           style: {
             height: loaderSize,

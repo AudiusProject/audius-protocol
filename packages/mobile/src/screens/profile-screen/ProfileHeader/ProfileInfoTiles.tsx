@@ -15,7 +15,7 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import type { UserMetadata } from '@audius/common/models'
 import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { Platform, View, ScrollView } from 'react-native'
+import { View, ScrollView } from 'react-native'
 import Animated, {
   FadeIn,
   LayoutAnimationConfig,
@@ -48,6 +48,7 @@ import { ProfileTierTile } from './ProfileTierTile'
 
 const MAX_CARD_PROFILE_PICTURES = 4
 const PROFILE_CARD_PICTURE_SIZE = 24
+const DEFAULT_RELATED_ARTISTS_COUNT = 100
 
 const useInfoTileStyles = makeStyles(({ spacing }) => ({
   tile: { flexDirection: 'column', height: 64 },
@@ -81,7 +82,6 @@ const messages = {
   mutuals: 'Mutuals',
   relatedArtists: 'Related Artists',
   viewAll: 'View All',
-  tipSupporters: 'Tip Supporters',
   topSupporters: 'Top Supporters',
   supportedUsers: 'Supporting'
 }
@@ -229,9 +229,7 @@ const SupportersTile = ({
     <ProfileInfoTile
       screen='TopSupporters'
       icon={IconTrophy}
-      title={
-        Platform.OS === 'ios' ? messages.topSupporters : messages.tipSupporters
-      }
+      title={messages.topSupporters}
       content={
         <UserListWithCount
           users={supporters}
@@ -292,7 +290,13 @@ const RelatedArtistsTile = ({ userId }: { userId: number }) => {
       content={
         <UserListWithCount
           users={relatedArtists}
-          count={isLoading ? MAX_CARD_PROFILE_PICTURES : relatedArtists.length}
+          count={
+            isLoading
+              ? MAX_CARD_PROFILE_PICTURES
+              : relatedArtists.length < MAX_CARD_PROFILE_PICTURES
+                ? relatedArtists.length
+                : DEFAULT_RELATED_ARTISTS_COUNT
+          }
           loading={isLoading}
           showCount={false}
         />

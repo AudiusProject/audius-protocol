@@ -26,7 +26,7 @@ export const useTrackCoverArt = ({
   const { data: artwork } = useTrack(trackId, {
     select: (track) => track?.artwork
   })
-  const image = useImageSize({
+  const { imageUrl } = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: defaultImage ?? imageEmpty,
@@ -39,7 +39,7 @@ export const useTrackCoverArt = ({
   // @ts-ignore
   if (artwork?.url) return artwork.url
 
-  return image
+  return imageUrl
 }
 
 export const useTrackCoverArtDominantColors = ({

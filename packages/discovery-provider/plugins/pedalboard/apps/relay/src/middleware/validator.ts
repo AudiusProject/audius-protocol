@@ -2,8 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { RelayRequest } from '../types/relay'
 import { validationError } from '../error'
 import { DeveloperApps, Table, Users } from '@pedalboard/storage'
-import { AudiusABIDecoder } from '@audius/sdk-legacy/dist/libs'
-import { config, discoveryDb } from '..'
+import { audiusSdk, config, discoveryDb } from '..'
 import {
   isTrackDownload,
   isUserCreate,
@@ -195,13 +194,12 @@ export const retrieveUser = async (
 
   // if entitymanager transaction, recover signer
   if (contractRegistryKey === 'EntityManager') {
-    const recoveredAddress = AudiusABIDecoder.recoverSigner({
-      encodedAbi: encodedABI,
-      entityManagerAddress: contractAddress,
-      chainId: config.acdcChainId!
-    })
+    const recoveredAddress =
+      await audiusSdk.services.entityManager.recoverSigner(
+        encodedABI as `0x${string}`
+      )
 
-    query = query.where('wallet', '=', recoveredAddress)
+    query = query.where('wallet', '=', recoveredAddress.toLowerCase())
     addedWalletClause = true
   }
 
@@ -233,13 +231,11 @@ export const retrieveDeveloperApp = async (params: {
   encodedABI: string
   contractAddress: string
 }): Promise<DeveloperApps | undefined> => {
-  const { encodedABI, contractAddress } = params
-  const recoveredAddress = AudiusABIDecoder.recoverSigner({
-    encodedAbi: encodedABI,
-    entityManagerAddress: contractAddress,
-    chainId: config.acdcChainId!
-  })
+  const { encodedABI } = params
+  const recoveredAddress = await audiusSdk.services.entityManager.recoverSigner(
+    encodedABI as `0x${string}`
+  )
   return await discoveryDb<DeveloperApps>(Table.DeveloperApps)
-    .where('address', '=', recoveredAddress)
+    .where('address', '=', recoveredAddress.toLowerCase())
     .first()
 }

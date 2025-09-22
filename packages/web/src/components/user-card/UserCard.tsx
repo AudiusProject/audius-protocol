@@ -17,6 +17,34 @@ const messages = {
   followers: (count: number) => (count === 1 ? 'Follower' : 'Followers')
 }
 
+export const UserCardSkeleton = (
+  props: Omit<CardProps, 'id'> & { noShimmer?: boolean }
+) => (
+  <Card {...props}>
+    <Box p='l' pb='s'>
+      <Skeleton
+        border='default'
+        borderRadius='circle'
+        css={{ aspectRatio: 1 }}
+        noShimmer={props.noShimmer}
+      />
+    </Box>
+    <CardContent p='s' pt={0} gap='xs'>
+      <Skeleton h={22} w='80%' alignSelf='center' noShimmer={props.noShimmer} />
+      <Skeleton
+        h={16}
+        w='50%'
+        mv='xs'
+        alignSelf='center'
+        noShimmer={props.noShimmer}
+      />
+    </CardContent>
+    <CardFooter>
+      <Skeleton h={20} w='60%' alignSelf='center' noShimmer={props.noShimmer} />
+    </CardFooter>
+  </Card>
+)
+
 export type UserCardProps = Omit<CardProps, 'id'> & {
   id: ID
   loading?: boolean
@@ -44,24 +72,7 @@ export const UserCard = (props: UserCardProps) => {
   )
 
   if (!handle || follower_count === undefined || loading) {
-    return (
-      <Card size={size} {...other}>
-        <Box p='l' pb='s'>
-          <Skeleton
-            border='default'
-            borderRadius='circle'
-            css={{ aspectRatio: 1 }}
-          />
-        </Box>
-        <CardContent p='s' pt={0} gap='xs'>
-          <Skeleton h={22} w='80%' alignSelf='center' />
-          <Skeleton h={16} w='50%' mv='xs' alignSelf='center' />
-        </CardContent>
-        <CardFooter>
-          <Skeleton h={20} w='60%' alignSelf='center' />
-        </CardFooter>
-      </Card>
-    )
+    return <UserCardSkeleton size={size} {...other} />
   }
 
   return (
@@ -80,8 +91,9 @@ export const UserCard = (props: UserCardProps) => {
           textVariant='title'
           size='l'
           center
+          fullWidth
           onClick={onUserLinkClick}
-          popover={true}
+          popover
         />
         <ArtistPopover handle={handle} css={{ width: '100%' }}>
           <TextLink

@@ -1,4 +1,4 @@
-import { FavoritesScreen } from 'app/screens/library-screen'
+import { LibraryScreen } from 'app/screens/library-screen'
 
 import type { AppTabScreenParamList } from './AppTabScreen'
 import { createAppTabScreenStack } from './createAppTabScreenStack'
@@ -11,6 +11,6 @@ export type FavoritesTabScreenParamList = AppTabScreenParamList & {
 export const FavoritesTabScreen =
   createAppTabScreenStack<FavoritesTabScreenParamList>((Stack) => (
     <>
-      <Stack.Screen name='Library' component={FavoritesScreen} />
+      <Stack.Screen name='Library' component={LibraryScreen} />
     </>
   ))

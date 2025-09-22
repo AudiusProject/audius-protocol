@@ -5,7 +5,7 @@ import {
   SolanaRelay,
   ArchiverService
 } from '@audius/sdk'
-import { createWalletClient, custom } from 'viem'
+import { createWalletClient, custom, RpcRequestError } from 'viem'
 import { mainnet } from 'viem/chains'
 import { getHttpRpcClient } from 'viem/utils'
 
@@ -31,9 +31,6 @@ export const initSdk = async () => {
   const solanaRelay = new SolanaRelay(
     new Configuration({
       basePath: '/solana',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       middleware: [
         {
           pre: async (context) => {
@@ -71,20 +68,27 @@ export const initSdk = async () => {
     chain: mainnet,
     transport: custom({
       request: async (request) => {
+        const url = `${env.IDENTITY_SERVICE}/ethereum/rpc`
         const message = `signature:${new Date().getTime()}`
         const signature = await audiusWalletClient.signMessage({ message })
-        const rpcClient = getHttpRpcClient(
-          `${env.IDENTITY_SERVICE}/ethereum/rpc`,
-          {
-            fetchOptions: {
-              headers: {
-                'Encoded-Data-Message': message,
-                'Encoded-Data-Signature': signature
-              }
+        const rpcClient = getHttpRpcClient(url, {
+          fetchOptions: {
+            headers: {
+              'Encoded-Data-Message': message,
+              'Encoded-Data-Signature': signature
             }
           }
-        )
-        return await rpcClient.request(request)
+        })
+        const res = await rpcClient.request({ body: request })
+        if ('result' in res) {
+          return res.result
+        }
+        throw new RpcRequestError({
+          body: request,
+          error:
+            'error' in res ? res.error : { code: 0, message: 'Unknown error' },
+          url
+        })
       }
     })
   })

@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux'
 
-import { useTrack } from '~/api'
+import { SelectableQueryOptions, useTrack } from '~/api'
+import { TQTrack } from '~/api/tan-query/models'
 
 import { playerSelectors } from '../store/player'
 
@@ -10,8 +11,10 @@ const { getTrackId } = playerSelectors
  * Hook to get the current track from the player state
  * @returns The current track or null if no track is playing
  */
-export const useCurrentTrack = () => {
+export const useCurrentTrack = <TResult = TQTrack>(
+  options?: SelectableQueryOptions<TQTrack, TResult>
+) => {
   const trackId = useSelector(getTrackId)
-  const { data: track } = useTrack(trackId)
+  const { data: track } = useTrack(trackId, options)
   return track ?? null
 }

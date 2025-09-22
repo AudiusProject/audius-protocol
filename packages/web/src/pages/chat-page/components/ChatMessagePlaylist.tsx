@@ -8,18 +8,13 @@ import {
 } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import { Name, Kind, Status, ID, ModalSource } from '@audius/common/models'
-import {
-  QueueSource,
-  playerSelectors,
-  ChatMessageTileProps
-} from '@audius/common/store'
+import { QueueSource, ChatMessageTileProps } from '@audius/common/store'
 import { getPathFromPlaylistUrl, makeUid } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
-
-const { getTrackId } = playerSelectors
+import { CollectionTile } from 'components/track/mobile/CollectionTile'
+import { TrackTileSize } from 'components/track/types'
 
 export const ChatMessagePlaylist = ({
   link,
@@ -28,7 +23,6 @@ export const ChatMessagePlaylist = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
   const { data: playlist } = useCollectionByPermalink(permalink)
@@ -78,7 +72,8 @@ export const ChatMessagePlaylist = ({
   const play = usePlayTrack()
   const playTrack = useCallback(
     (uid: string) => {
-      play({ uid, entries })
+      // Have to pass the uid bc the sagas cant get the lineup from the route in the ChatPage
+      play({ uid, entries, passUid: true })
     },
     [play, entries]
   )
@@ -98,21 +93,20 @@ export const ChatMessagePlaylist = ({
   return collectionId && uid ? (
     // You may wonder why we use the mobile web playlist tile here.
     // It's simply because the chat playlist tile uses the same design as mobile web.
-    <MobilePlaylistTile
+    <CollectionTile
       containerClassName={className}
       index={0}
       uid={uid}
       id={collectionId}
-      collection={collection}
-      tracks={tracksWithUids}
+      size={TrackTileSize.SMALL}
+      ordered={false}
+      togglePlay={() => {}}
       playTrack={playTrack}
       pauseTrack={pauseTrack}
       hasLoaded={() => {}}
       isLoading={status === Status.LOADING || status === Status.IDLE}
       isTrending={false}
       numLoadingSkeletonRows={tracksWithUids.length}
-      togglePlay={() => {}}
-      playingTrackId={playingTrackId}
       variant='readonly'
       source={ModalSource.DirectMessageCollectionTile}
     />

@@ -59,7 +59,8 @@ const messages = {
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
     `Fans can unlock & download these files for a one time purchase of ${price}`,
-  downloadAll: 'Download All'
+  downloadAll: 'Download All',
+  download: 'Download'
 }
 
 type DownloadSectionProps = {
@@ -179,12 +180,34 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
   const handleDownloadAll = useRequiresAccountCallback(
     (e: MouseEvent) => {
       e.stopPropagation()
+      // Only include parent track in count if it's downloadable
+      const parentTrackCount = access?.download ? 1 : 0
       openDownloadTrackArchiveModal({
         trackId,
-        fileCount: stemTracks.length + 1
+        fileCount: stemTracks.length + parentTrackCount
       })
     },
-    [openDownloadTrackArchiveModal, trackId, stemTracks.length]
+    [
+      openDownloadTrackArchiveModal,
+      trackId,
+      stemTracks.length,
+      access?.download
+    ]
+  )
+
+  const hasStems = stemTracks.length > 0 || isUploadingStems
+  const downloadButtonText = hasStems ? messages.downloadAll : messages.download
+
+  const handleDownloadButtonClick = useRequiresAccountCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation()
+      if (hasStems) {
+        handleDownloadAll(e)
+      } else {
+        handleDownload({ trackIds: [trackId] })
+      }
+    },
+    [hasStems, handleDownloadAll, handleDownload, trackId]
   )
 
   const renderDownloadAllButton = () => {
@@ -204,9 +227,9 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
             disabled={shouldDisplayDownloadFollowGated}
             variant='secondary'
             size='small'
-            onClick={handleDownloadAll}
+            onClick={handleDownloadButtonClick}
           >
-            {messages.downloadAll}
+            {downloadButtonText}
           </Button>
         </Flex>
       </Tooltip>

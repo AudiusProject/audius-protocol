@@ -1,91 +1,18 @@
-import type { BNWei } from '@audius/common/models'
-import { Chain } from '@audius/common/models'
-import type { AssociatedWallet } from '@audius/common/store'
 import {
-  tokenDashboardPageSelectors,
-  walletSelectors
-} from '@audius/common/store'
-import { formatWei } from '@audius/common/utils'
-import BN from 'bn.js'
-import { View } from 'react-native'
-import { useSelector } from 'react-redux'
+  useAudioBalance,
+  useConnectedWallets,
+  useWalletAudioBalances
+} from '@audius/common/api'
+import { formatNumberCommas } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 
+import { Divider, Flex, spacing, Text } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
-import Text from 'app/components/text'
-import { makeStyles } from 'app/styles'
 
 import { Wallet } from './Wallet'
-const { getAccountBalance } = walletSelectors
-const { getAssociatedWallets } = tokenDashboardPageSelectors
 
 const AUDIO_BREAKDOWN_MODAL_NAME = 'AudioBreakdown'
-
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  drawer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: spacing(6),
-    paddingTop: spacing(3),
-    height: '100%'
-  },
-  amount: {
-    fontSize: 48
-  },
-  total: {
-    marginTop: spacing(2),
-    marginBottom: spacing(6),
-    fontSize: typography.fontSize.large,
-    color: palette.neutralLight4
-  },
-  section: {
-    width: '100%',
-    marginBottom: spacing(6),
-    padding: spacing(6),
-    borderRadius: spacing(4),
-    borderWidth: 2,
-    borderColor: palette.neutralLight7,
-    backgroundColor: palette.neutralLight10
-  },
-  sectionTitle: {
-    flexDirection: 'row',
-    justifyContent: 'center'
-  },
-  titleLabel: {
-    fontSize: typography.fontSize.large,
-    color: palette.neutral
-  },
-  titleAmount: {
-    marginLeft: spacing(3),
-    fontSize: typography.fontSize.large
-  },
-  sectionDescription: {
-    marginTop: spacing(3)
-  },
-  description: {
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    color: palette.neutralLight4,
-    fontSize: spacing(3)
-  },
-  walletsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: spacing(6),
-    paddingHorizontal: spacing(6),
-    paddingBottom: 14,
-    fontSize: spacing(4)
-  },
-  headerLabel: {
-    color: palette.neutralLight4
-  },
-  walletsBody: {
-    paddingLeft: spacing(6),
-    paddingRight: spacing(6),
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight8
-  }
-}))
 
 const messages = {
   modalTitle: '$AUDIO BREAKDOWN',
@@ -101,26 +28,13 @@ const messages = {
 }
 
 export const AudioBreakdownDrawer = () => {
-  const styles = useStyles()
+  const { accountBalance, connectedWalletsBalance, totalBalance } =
+    useAudioBalance()
 
-  const accountBalance = (useSelector(getAccountBalance, (a, b) =>
-    Boolean(a && b && a.eq(b))
-  ) ?? new BN('0')) as BNWei
-
-  const associatedWallets = useSelector(getAssociatedWallets)
-  const { connectedEthWallets: ethWallets, connectedSolWallets: solWallets } =
-    associatedWallets ?? {
-      ethWallets: null,
-      solWallets: null
-    }
-
-  const linkedWalletsBalance = ((ethWallets ?? [])
-    .concat(solWallets ?? [])
-    .reduce((total, wallet) => {
-      return total.add(new BN(wallet.balance as unknown as string))
-    }, new BN('0')) ?? new BN('0')) as unknown as BNWei
-
-  const totalBalance = accountBalance.add(linkedWalletsBalance) as BNWei
+  const { data: connectedWallets = [] } = useConnectedWallets()
+  const connectedWalletsBalances = useWalletAudioBalances({
+    wallets: connectedWallets
+  })
 
   return (
     <AppDrawer
@@ -128,69 +42,99 @@ export const AudioBreakdownDrawer = () => {
       title={messages.modalTitle}
       isFullscreen
     >
-      <View style={styles.drawer}>
-        <GradientText style={styles.amount}>
-          {formatWei(totalBalance, true)}
-        </GradientText>
+      <Flex alignItems='center' p='xl' pt='l' gap='xl'>
+        <Flex gap='s'>
+          <GradientText style={{ fontSize: spacing.unit12 }}>
+            {formatNumberCommas(
+              AUDIO(totalBalance).trunc().toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+              })
+            )}
+          </GradientText>
 
-        <Text style={styles.total} weight='bold'>
-          {messages.total}
-        </Text>
+          <Text variant='title' size='l' color='subdued'>
+            {messages.total}
+          </Text>
+        </Flex>
 
-        <View style={styles.section}>
-          <View style={styles.sectionTitle}>
-            <Text style={styles.titleLabel} weight='bold'>
+        <Flex
+          p='xl'
+          borderRadius='l'
+          border='strong'
+          backgroundColor='surface1'
+        >
+          <Flex row justifyContent='center'>
+            <Text variant='title' size='l'>
               {messages.audiusWallet}
             </Text>
 
-            <GradientText style={styles.titleAmount}>
-              {formatWei(accountBalance, true)}
+            <GradientText style={{ marginLeft: spacing.m, fontSize: 18 }}>
+              {formatNumberCommas(
+                AUDIO(accountBalance).trunc().toLocaleString('en-US', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                })
+              )}
             </GradientText>
-          </View>
+          </Flex>
 
-          <View style={styles.sectionDescription}>
-            <Text style={styles.description} weight='bold'>
+          <Flex mt='l'>
+            <Text variant='label' size='s' color='subdued' textAlign='center'>
               {messages.audiusWalletDescription}
             </Text>
-          </View>
-        </View>
+          </Flex>
+        </Flex>
 
-        <View style={styles.section}>
-          <View style={styles.sectionTitle}>
-            <Text style={styles.titleLabel} weight='bold'>
+        <Flex
+          p='xl'
+          borderRadius='l'
+          border='strong'
+          backgroundColor='surface1'
+          gap='l'
+        >
+          <Flex row justifyContent='center'>
+            <Text variant='title' size='l'>
               {messages.linkedWallets}
             </Text>
 
-            <GradientText style={styles.titleAmount}>
-              {formatWei(linkedWalletsBalance, true)}
+            <GradientText style={{ marginLeft: spacing.m, fontSize: 18 }}>
+              {formatNumberCommas(
+                AUDIO(connectedWalletsBalance).trunc().toLocaleString('en-US', {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0
+                })
+              )}
             </GradientText>
-          </View>
+          </Flex>
 
-          <View style={styles.walletsHeader}>
-            <Text style={styles.headerLabel} weight='bold'>
+          <Flex row justifyContent='space-between'>
+            <Text variant='label' color='subdued'>
               {messages.linkedWallets}
             </Text>
-            <Text style={styles.headerLabel} weight='bold'>
+            <Text variant='label' color='subdued'>
               {messages.audio}
             </Text>
-          </View>
+          </Flex>
 
-          <View style={styles.walletsBody}>
-            {ethWallets?.map((wallet: AssociatedWallet) => (
-              <Wallet chain={Chain.Eth} key={wallet.address} {...wallet} />
-            ))}
-            {solWallets?.map((wallet: AssociatedWallet) => (
-              <Wallet chain={Chain.Sol} key={wallet.address} {...wallet} />
-            ))}
-          </View>
+          <Divider orientation='horizontal' />
 
-          <View style={styles.sectionDescription}>
-            <Text style={styles.description} weight='bold'>
-              {messages.linkedWalletsDescription}
-            </Text>
-          </View>
-        </View>
-      </View>
+          {connectedWalletsBalances.data.map((res) =>
+            res.balance ? (
+              <Wallet
+                chain={res.chain}
+                key={res.address}
+                address={res.address}
+                balance={res.balance}
+              />
+            ) : null
+          )}
+
+          <Text variant='label' size='s' color='subdued' textAlign='center'>
+            {messages.linkedWalletsDescription}
+          </Text>
+        </Flex>
+      </Flex>
     </AppDrawer>
   )
 }

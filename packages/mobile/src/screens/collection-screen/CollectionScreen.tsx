@@ -1,6 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 
-import { useCollection, useCurrentUserId, useUser } from '@audius/common/api'
+import {
+  useCollectionByParams,
+  useCurrentUserId,
+  useUser
+} from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -71,15 +75,38 @@ const useStyles = makeStyles(({ spacing }) => ({
  */
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
+  const navigation = useNavigation()
 
   // params is incorrectly typed and can sometimes be undefined
-  const { id = null, searchCollection, collectionType } = params ?? {}
+  const {
+    id = null,
+    searchCollection,
+    collectionType,
+    handle,
+    slug
+  } = params ?? {}
 
-  const { data: cachedCollection } = useCollection(id)
+  // Use useCollectionByParams to handle both ID-based and permalink-based collection fetching
+  const collectionParams = id ? { collectionId: id } : { handle, slug }
+
+  const { data: cachedCollection } = useCollectionByParams(collectionParams)
   const { data: cachedUser } = useUser(cachedCollection?.playlist_owner_id)
 
   const collection = cachedCollection ?? searchCollection
   const user = cachedUser ?? searchCollection?.user
+
+  const isDeleted = collection?.is_delete
+  const isMarkedDeleted =
+    collection && '_marked_deleted' in collection
+      ? collection._marked_deleted
+      : false
+
+  // Navigate back if collection is deleted or marked for deletion
+  useEffect(() => {
+    if (isDeleted || isMarkedDeleted) {
+      navigation.goBack()
+    }
+  }, [isDeleted, isMarkedDeleted, navigation])
 
   if (!collection || !user) {
     return <CollectionScreenSkeleton collectionType={collectionType} />

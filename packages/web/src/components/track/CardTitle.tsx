@@ -1,7 +1,8 @@
 import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
-  AccessConditions
+  AccessConditions,
+  isContentTokenGated
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import {
@@ -9,7 +10,8 @@ import {
   IconCart,
   IconCollectible,
   IconSparkles,
-  Flex
+  Flex,
+  IconArtistCoin
 } from '@audius/harmony'
 
 const messages = {
@@ -18,6 +20,7 @@ const messages = {
   remixTitle: 'REMIX',
   hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   collectibleGated: 'COLLECTIBLE GATED',
+  coinGated: 'COIN GATED',
   specialAccess: 'SPECIAL ACCESS',
   premiumTrack: 'PREMIUM TRACK',
   remixContest: 'REMIX CONTEST'
@@ -59,6 +62,9 @@ export const CardTitle = ({
     } else if (isContentUSDCPurchaseGated(streamConditions)) {
       icon = <IconCart size='s' color='subdued' />
       message = messages.premiumTrack
+    } else if (isContentTokenGated(streamConditions)) {
+      icon = <IconArtistCoin size='s' color='subdued' />
+      message = messages.coinGated
     } else {
       icon = <IconSparkles size='s' color='subdued' />
       message = messages.specialAccess

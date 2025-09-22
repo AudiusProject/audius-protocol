@@ -78,7 +78,6 @@ import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
-import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
 
 import {
   addPremiumMetadata,
@@ -104,6 +103,7 @@ function* combineMetadata(
 ) {
   const metadata = trackMetadata
 
+  // @ts-expect-error - Typing is hard here because playlists and albums have different artwork types
   metadata.artwork = collectionMetadata.artwork
 
   if (!metadata.genre)
@@ -981,9 +981,6 @@ export function* uploadCollection(
         queryClient.invalidateQueries({
           queryKey: getUserQueryKey(userId)
         })
-
-        // Finally, add to the library
-        yield* call(addPlaylistsNotInLibrary)
       },
       function* ({ error }) {
         console.error(

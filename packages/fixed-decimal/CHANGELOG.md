@@ -1,5 +1,17 @@
 # @audius/fixed-decimal
 
+## 0.2.0
+
+### Minor Changes
+
+- 1026ce1: Remove BN.js dependency
+
+## 0.2.0
+
+### Major Changes
+
+- Remove BN.js support: The `FixedDecimal` constructor and currency constructors no longer accept BN.js instances. Use BigInt or string/number inputs instead. This eliminates the BN.js dependency and simplifies the API to focus on modern BigInt-based operations.
+
 ## 0.1.1
 
 ### Patch Changes

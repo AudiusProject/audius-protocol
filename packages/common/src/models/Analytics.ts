@@ -216,10 +216,12 @@ export enum Name {
   TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
+  TRACK_UPLOAD_TOKEN_GATED = 'Track Upload: Token Gated',
   TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
   // Download-Only Gated Track Uploads
   TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD = 'Track Upload: Follow Gated Download',
   TRACK_UPLOAD_USDC_GATED_DOWNLOAD = 'Track Upload: USDC Gated Download',
+  TRACK_UPLOAD_TOKEN_GATED_DOWNLOAD = 'Track Upload: Token Gated Download',
   TRACK_UPLOAD_CLICK_USDC_DOWNLOAD_WAITLIST_LINK = 'Track Upload: Clicked USDC Download Waitlist Link',
 
   // Track Downloads
@@ -248,9 +250,11 @@ export enum Name {
   COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
   FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
   TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
+  TOKEN_GATED_TRACK_UNLOCKED = 'Token Gated: Track Unlocked',
   // Unlocked Download-Only Gated Tracks
   USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED = 'USDC Gated: Download Track Unlocked',
   FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Follow Gated: Download Track Unlocked',
+  TOKEN_GATED_DOWNLOAD_TRACK_UNLOCKED = 'Token Gated: Download Track Unlocked',
 
   // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
@@ -300,10 +304,6 @@ export enum Name {
   PLAYBACK_PAUSE = 'Playback: Pause',
   // Playback performance metrics
   BUFFERING_TIME = 'Buffering Time',
-  BUFFER_SPINNER_SHOWN = 'Buffer Spinner Shown',
-
-  // A listen is when we record against the backend vs. a play which is a UI action
-  LISTEN = 'Listen',
 
   // Navigation
   PAGE_VIEW = 'Page View',
@@ -362,8 +362,6 @@ export enum Name {
   PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER = 'Playlist Library: Move Playlist Out of Folder',
   PLAYLIST_LIBRARY_EXPAND_FOLDER = 'Playlist Library: Expand Folder',
   PLAYLIST_LIBRARY_COLLAPSE_FOLDER = 'Playlist Library: Collapse Folder',
-  // When an update is available in the playlist library
-  PLAYLIST_LIBRARY_HAS_UPDATE = 'Playlist Library: Has Update',
   // When a user clicks on a playlist in the library
   PLAYLIST_LIBRARY_CLICKED = 'Playlist Library: Clicked',
 
@@ -424,6 +422,12 @@ export enum Name {
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
+
+  BUY_SELL_SWAP_REQUESTED = 'Buy Sell Modal: Swap Requested',
+  BUY_SELL_SWAP_CONFIRMED = 'Buy Sell Modal: Swap Confirmed',
+  BUY_SELL_SWAP_SUCCESS = 'Buy Sell Modal: Swap Success',
+  BUY_SELL_SWAP_FAILURE = 'Buy Sell Modal: Swap Failure',
+  BUY_SELL_ADD_FUNDS_CLICKED = 'Buy Sell Modal: Add Funds Clicked',
 
   // Withdraw USDC
 
@@ -948,7 +952,7 @@ type Share = {
 
 export type ShareToTwitter = {
   eventName: Name.SHARE_TO_TWITTER
-  kind: 'profile' | 'album' | 'playlist' | 'track' | 'audioNftPlaylist'
+  kind: 'profile' | 'album' | 'playlist' | 'track'
   source: ShareSource
   id: number
   url: string
@@ -1175,12 +1179,26 @@ type TrackUploadUSDCGated = {
   lossless: boolean
 }
 
+type TrackUploadTokenGated = {
+  eventName: Name.TRACK_UPLOAD_TOKEN_GATED
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
 type TrackUploadClickUSDCWaitListLink = {
   eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
 }
 
 type TrackUploadFollowGatedDownload = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED_DOWNLOAD
+  kind: 'tracks'
+  downloadable: boolean
+  lossless: boolean
+}
+
+type TrackUploadTokenGatedDownload = {
+  eventName: Name.TRACK_UPLOAD_TOKEN_GATED_DOWNLOAD
   kind: 'tracks'
   downloadable: boolean
   lossless: boolean
@@ -1290,6 +1308,11 @@ type TipGatedTrackUnlocked = {
   trackId: number
 }
 
+type TokenGatedTrackUnlocked = {
+  eventName: Name.TOKEN_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
 type USDCGatedDownloadTrackUnlocked = {
   eventName: Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
   count: number
@@ -1297,6 +1320,11 @@ type USDCGatedDownloadTrackUnlocked = {
 
 type FollowGatedDownloadTrackUnlocked = {
   eventName: Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
+  trackId: number
+}
+
+type TokenGatedDownloadTrackUnlocked = {
+  eventName: Name.TOKEN_GATED_DOWNLOAD_TRACK_UNLOCKED
   trackId: number
 }
 
@@ -1487,9 +1515,6 @@ type BufferingTime = {
   duration: number
 }
 
-type BufferSpinnerShown = {
-  eventName: Name.BUFFER_SPINNER_SHOWN
-}
 // Linking
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
@@ -1565,11 +1590,6 @@ type SearchResultSelect = {
   kind: 'track' | 'profile' | 'playlist' | 'album'
 }
 
-type Listen = {
-  eventName: Name.LISTEN
-  trackId: string
-}
-
 type ListenGated = {
   eventName: Name.LISTEN_GATED
   trackId: string
@@ -1595,7 +1615,6 @@ type WebVitals = {
   value: number
   route: string
 }
-
 type Performance = {
   eventName: Name.PERFORMANCE
   metric: string
@@ -1706,11 +1725,6 @@ type PlaylistLibraryReorder = {
   // Whether or not the reorder contains newly created temp playlists
   containsTemporaryPlaylists: boolean
   kind: PlaylistLibraryKind
-}
-
-type PlaylistLibraryHasUpdate = {
-  eventName: Name.PLAYLIST_LIBRARY_HAS_UPDATE
-  count: number
 }
 
 type PlaylistLibraryClicked = {
@@ -2104,6 +2118,41 @@ type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
 
+export type BuySellSwapEventFields = {
+  activeTab: 'buy' | 'sell' | 'convert'
+  inputToken: string
+  outputToken: string
+  inputAmount?: number
+  outputAmount?: number
+  exchangeRate?: number | null
+}
+
+type BuySellSwapRequested = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_REQUESTED
+}
+
+type BuySellSwapConfirmed = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_CONFIRMED
+  slippageBps: number
+}
+
+type BuySellSwapSuccess = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_SUCCESS
+  signature: string
+}
+
+type BuySellSwapFailure = BuySellSwapEventFields & {
+  eventName: Name.BUY_SELL_SWAP_FAILURE
+  errorType: string
+  errorStage: string
+  errorMessage?: string
+}
+
+type BuySellAddFundsClicked = {
+  eventName: Name.BUY_SELL_ADD_FUNDS_CLICKED
+  source: 'insufficient_balance_hint' | 'input_screen'
+}
+
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
@@ -2191,7 +2240,7 @@ export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
   signature: string
 }
 
-// Stripe
+// Stripe Tracking
 export type StripeEventFields = {
   amount: string
   destinationCurrency: string
@@ -2882,9 +2931,11 @@ export type AllTrackingEvents =
   | TrackUploadFollowGated
   | TrackUploadTipGated
   | TrackUploadUSDCGated
+  | TrackUploadTokenGated
   | TrackUploadClickUSDCWaitListLink
   | TrackUploadFollowGatedDownload
   | TrackUploadUSDCGatedDownload
+  | TrackUploadTokenGatedDownload
   | TrackUploadClickUSDCDownloadWaitListLink
   | TrackDownloadClickedDownloadAll
   | TrackDownloadSuccessfulDownloadAll
@@ -2907,8 +2958,10 @@ export type AllTrackingEvents =
   | CollectibleGatedTrackUnlocked
   | FollowGatedTrackUnlocked
   | TipGatedTrackUnlocked
+  | TokenGatedTrackUnlocked
   | USDCGatedDownloadTrackUnlocked
   | FollowGatedDownloadTrackUnlocked
+  | TokenGatedDownloadTrackUnlocked
   | TrendingChangeView
   | TrendingPaginate
   | FeedChangeView
@@ -2944,7 +2997,6 @@ export type AllTrackingEvents =
   | PlaybackPlay
   | PlaybackPause
   | BufferingTime
-  | BufferSpinnerShown
   | Follow
   | Unfollow
   | LinkClicking
@@ -2955,7 +3007,6 @@ export type AllTrackingEvents =
   | SearchTag
   | SearchMoreResults
   | SearchResultSelect
-  | Listen
   | ListenGated
   | ErrorPage
   | NotFoundPage
@@ -2979,7 +3030,6 @@ export type AllTrackingEvents =
   | ServiceMonitorRequest
   | ServiceMonitorHealthCheck
   | PlaylistLibraryReorder
-  | PlaylistLibraryHasUpdate
   | PlaylistLibraryClicked
   | PlaylistLibraryMovePlaylistIntoFolder
   | PlaylistLibraryAddPlaylistToFolder
@@ -3042,6 +3092,11 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
+  | BuySellSwapRequested
+  | BuySellSwapConfirmed
+  | BuySellSwapSuccess
+  | BuySellSwapFailure
+  | BuySellAddFundsClicked
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError

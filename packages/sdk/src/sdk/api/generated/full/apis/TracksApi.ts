@@ -67,6 +67,7 @@ export interface GetBulkTracksRequest {
     userId?: string;
     permalink?: Array<string>;
     id?: Array<string>;
+    isrc?: Array<string>;
 }
 
 export interface GetFeelingLuckyTracksRequest {
@@ -82,10 +83,23 @@ export interface GetMostLovedTracksRequest {
     withUsers?: boolean;
 }
 
+export interface GetMostSharedTracksRequest {
+    userId?: string;
+    limit?: number;
+    offset?: number;
+    timeRange?: GetMostSharedTracksTimeRangeEnum;
+}
+
 export interface GetNFTGatedTrackSignaturesRequest {
     userId: string;
     trackIds?: Array<number>;
     tokenIds?: Array<string>;
+}
+
+export interface GetRecentPremiumTracksRequest {
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface GetRecommendedTracksRequest {
@@ -150,6 +164,12 @@ export interface GetTrackTopListenersRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+}
+
+export interface GetTracksWithRecentCommentsRequest {
+    userId?: string;
+    limit?: number;
+    offset?: number;
 }
 
 export interface GetTrendingTrackIDsRequest {
@@ -306,6 +326,10 @@ export class TracksApi extends runtime.BaseAPI {
             queryParameters['id'] = params.id;
         }
 
+        if (params.isrc) {
+            queryParameters['isrc'] = params.isrc;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -352,7 +376,7 @@ export class TracksApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/feeling_lucky`,
+            path: `/tracks/feeling-lucky`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -410,6 +434,49 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the most shared tracks for a given time range
+     */
+    async getMostSharedTracksRaw(params: GetMostSharedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.timeRange !== undefined) {
+            queryParameters['time_range'] = params.timeRange;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/most-shared`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most shared tracks for a given time range
+     */
+    async getMostSharedTracks(params: GetMostSharedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getMostSharedTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets gated track signatures for passed in gated track ids
      */
     async getNFTGatedTrackSignaturesRaw(params: GetNFTGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<NftGatedTrackSignaturesResponse>> {
@@ -444,6 +511,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getNFTGatedTrackSignatures(params: GetNFTGatedTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<NftGatedTrackSignaturesResponse> {
         const response = await this.getNFTGatedTrackSignaturesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the most recently listed premium tracks
+     */
+    async getRecentPremiumTracksRaw(params: GetRecentPremiumTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/recent-premium`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most recently listed premium tracks
+     */
+    async getRecentPremiumTracks(params: GetRecentPremiumTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getRecentPremiumTracksRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -835,6 +941,45 @@ export class TracksApi extends runtime.BaseAPI {
      */
     async getTrackTopListeners(params: GetTrackTopListenersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTopListener> {
         const response = await this.getTrackTopListenersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the most recent tracks with active discussion
+     */
+    async getTracksWithRecentCommentsRaw(params: GetTracksWithRecentCommentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/recent-comments`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most recent tracks with active discussion
+     */
+    async getTracksWithRecentComments(params: GetTracksWithRecentCommentsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getTracksWithRecentCommentsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1346,6 +1491,15 @@ export const GetBestNewReleasesWindowEnum = {
     Year: 'year'
 } as const;
 export type GetBestNewReleasesWindowEnum = typeof GetBestNewReleasesWindowEnum[keyof typeof GetBestNewReleasesWindowEnum];
+/**
+ * @export
+ */
+export const GetMostSharedTracksTimeRangeEnum = {
+    Week: 'week',
+    Month: 'month',
+    AllTime: 'allTime'
+} as const;
+export type GetMostSharedTracksTimeRangeEnum = typeof GetMostSharedTracksTimeRangeEnum[keyof typeof GetMostSharedTracksTimeRangeEnum];
 /**
  * @export
  */

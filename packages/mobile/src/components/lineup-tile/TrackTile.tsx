@@ -6,12 +6,15 @@ import {
   useTrack,
   useUser
 } from '@audius/common/api'
+import { useGatedTrackAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  SquareSizes
+  SquareSizes,
+  isContentUSDCPurchaseGated,
+  ModalSource
 } from '@audius/common/models'
 import {
   tracksSocialActions,
@@ -22,25 +25,27 @@ import {
   playerSelectors,
   playbackPositionSelectors,
   trackPageActions,
-  usePublishConfirmationModal,
-  PurchaseableContentType
+  PurchaseableContentType,
+  gatedContentActions,
+  usePremiumContentPurchaseModal,
+  usePublishConfirmationModal
 } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ImageProps } from '@audius/harmony-native'
+import { Paper, type ImageProps } from '@audius/harmony-native'
 import type { TrackTileProps } from 'app/components/lineup-tile/types'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { setVisibility } from 'app/store/drawers/slice'
 
 import { TrackImage } from '../image/TrackImage'
 import { TrackDogEar } from '../track/TrackDogEar'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
-import { LineupTileRoot } from './LineupTileRoot'
-import { LineupTileTopRight } from './LineupTileTopRight'
 import { TrackTileStats } from './TrackTileStats'
 
 const { getUid } = playerSelectors
@@ -48,9 +53,10 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, undoRepostTrack } = tracksSocialActions
 const { getTrackPosition } = playbackPositionSelectors
+const { setLockedContentId } = gatedContentActions
 
 export const TrackTile = (props: TrackTileProps) => {
-  const { id, onPress, togglePlay, variant, ...lineupTileProps } = props
+  const { id, onPress, togglePlay, variant, style, ...lineupTileProps } = props
 
   const dispatch = useDispatch()
   const navigation = useNavigation()
@@ -61,12 +67,16 @@ export const TrackTile = (props: TrackTileProps) => {
   })
   const { data: currentUserId } = useCurrentUserId()
   const { onOpen: openPublishModal } = usePublishConfirmationModal()
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
+  const isUSDCEnabled = useIsUSDCEnabled()
 
   const { data: track } = useTrack(id, {
     select: (track) => ({
       duration: track.duration,
       field_visibility: track.field_visibility,
       has_current_user_reposted: track.has_current_user_reposted,
+      has_current_user_saved: track.has_current_user_saved,
       title: track.title,
       track_id: track.track_id,
       genre: track.genre,
@@ -76,7 +86,8 @@ export const TrackTile = (props: TrackTileProps) => {
       album_backlink: track.album_backlink,
       owner_id: track.owner_id,
       is_delete: track.is_delete,
-      is_scheduled_release: track.is_scheduled_release
+      is_scheduled_release: track.is_scheduled_release,
+      preview_cid: track.preview_cid
     })
   })
 
@@ -87,6 +98,15 @@ export const TrackTile = (props: TrackTileProps) => {
       is_deactivated: user.is_deactivated
     })
   })
+
+  const { hasStreamAccess } = useGatedTrackAccess(id)
+
+  const openLockedContentModal = useCallback(() => {
+    if (track?.track_id) {
+      dispatch(setLockedContentId({ id: track.track_id }))
+      dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
+    }
+  }, [track?.track_id, dispatch])
 
   const isPlayingUid = useSelector(
     (state: CommonState) => getUid(state) === lineupTileProps.uid
@@ -105,6 +125,27 @@ export const TrackTile = (props: TrackTileProps) => {
 
   const handlePress = useCallback(() => {
     if (!track) return
+
+    const isUSDCPurchase =
+      isUSDCEnabled && isContentUSDCPurchaseGated(track.stream_conditions)
+    const isStreamGated = !!track.stream_conditions
+
+    // Check if track is gated and user doesn't have access
+    if (isStreamGated && !hasStreamAccess && !track.preview_cid) {
+      if (isUSDCPurchase) {
+        openPremiumContentPurchaseModal(
+          {
+            contentId: track.track_id,
+            contentType: PurchaseableContentType.TRACK
+          },
+          { source: ModalSource.LineUpTrackTile }
+        )
+      } else {
+        openLockedContentModal()
+      }
+      return
+    }
+
     setTimeout(() => {
       togglePlay({
         uid: lineupTileProps.uid,
@@ -113,7 +154,16 @@ export const TrackTile = (props: TrackTileProps) => {
       })
       onPress?.(track.track_id)
     }, 100)
-  }, [togglePlay, lineupTileProps.uid, track, onPress])
+  }, [
+    track,
+    hasStreamAccess,
+    isUSDCEnabled,
+    openPremiumContentPurchaseModal,
+    openLockedContentModal,
+    togglePlay,
+    lineupTileProps.uid,
+    onPress
+  ])
 
   const handlePressTitle = useCallback(() => {
     if (!track) return
@@ -225,23 +275,10 @@ export const TrackTile = (props: TrackTileProps) => {
   const isOwner = currentUserId === track.owner_id
   const hideShare = !isOwner && track.field_visibility?.share === false
   const isReadonly = variant === 'readonly'
-  const scale = isReadonly ? 1 : undefined
 
   return (
-    <LineupTileRoot
-      onPress={handlePress}
-      style={lineupTileProps.styles}
-      scaleTo={scale}
-    >
+    <Paper onPress={handlePress} style={style}>
       <TrackDogEar trackId={track.track_id} hideUnlocked />
-      <LineupTileTopRight
-        duration={track.duration}
-        trackId={track.track_id}
-        isLongFormContent={
-          track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
-        }
-        isCollection={false}
-      />
       <LineupTileMetadata
         renderImage={renderImage}
         onPressTitle={handlePressTitle}
@@ -250,6 +287,10 @@ export const TrackTile = (props: TrackTileProps) => {
         isPlayingUid={isPlayingUid}
         type='track'
         trackId={track.track_id}
+        duration={track.duration}
+        isLongFormContent={
+          track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
+        }
       />
       <TrackTileStats
         trackId={track.track_id}
@@ -261,7 +302,7 @@ export const TrackTile = (props: TrackTileProps) => {
       {isReadonly ? null : (
         <LineupTileActionButtons
           hasReposted={track.has_current_user_reposted}
-          hasSaved={false} // This will be handled by the hook
+          hasSaved={track.has_current_user_saved}
           isOwner={isOwner}
           isShareHidden={hideShare}
           isUnlisted={track.is_unlisted}
@@ -269,7 +310,7 @@ export const TrackTile = (props: TrackTileProps) => {
           contentId={track.track_id}
           contentType={PurchaseableContentType.TRACK}
           streamConditions={track.stream_conditions}
-          hasStreamAccess={true} // This should be determined by the hook
+          hasStreamAccess={hasStreamAccess}
           source={lineupTileProps.source}
           onPressOverflow={handlePressOverflow}
           onPressRepost={handlePressRepost}
@@ -279,6 +320,6 @@ export const TrackTile = (props: TrackTileProps) => {
           onPressEdit={onPressEdit}
         />
       )}
-    </LineupTileRoot>
+    </Paper>
   )
 }

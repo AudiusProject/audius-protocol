@@ -41,6 +41,7 @@ function* fetchEthWalletInfo(wallets: string[]) {
 
   return wallets.map((_, idx) => ({
     ...ethWalletBalances[idx],
+    balance: BigInt(ethWalletBalances[idx].balance.toString()),
     collectibleCount: collectibleCounts[idx]
   }))
 }
@@ -68,7 +69,8 @@ function* fetchSplWalletInfo(wallets: string[]) {
   )
 
   return wallets.map((_, idx) => ({
-    ...splWalletBalances[idx]
+    ...splWalletBalances[idx],
+    balance: BigInt(splWalletBalances[idx].balance.toString())
   }))
 }
 

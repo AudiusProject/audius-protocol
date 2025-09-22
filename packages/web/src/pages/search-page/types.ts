@@ -19,6 +19,14 @@ export enum CategoryView {
   ALBUMS = 'albums'
 }
 
+export const labelByCategoryView: Record<CategoryView, string> = {
+  [CategoryView.ALL]: 'All',
+  [CategoryView.PROFILES]: 'Profiles',
+  [CategoryView.TRACKS]: 'Tracks',
+  [CategoryView.PLAYLISTS]: 'Playlists',
+  [CategoryView.ALBUMS]: 'Albums'
+}
+
 export type Filter =
   | 'genre'
   | 'mood'

@@ -1,14 +1,9 @@
 import { useCallback, useState } from 'react'
 
 import { useAudioBalance } from '@audius/common/api'
-import type { StringWei } from '@audius/common/models'
-import {
-  tippingSelectors,
-  tippingActions,
-  walletActions
-} from '@audius/common/store'
-import { parseAudioInputToWei, stringWeiToBN } from '@audius/common/utils'
-import { useFocusEffect } from '@react-navigation/native'
+import { tippingSelectors, tippingActions } from '@audius/common/store'
+import type { AudioWei } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -27,7 +22,6 @@ import { TipInput } from './TipInput'
 import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
 
-const { getBalance } = walletActions
 const { sendTip } = tippingActions
 const { getSendUser } = tippingSelectors
 
@@ -44,20 +38,15 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const zeroWei = stringWeiToBN('0' as StringWei)
+const zeroWei = BigInt(0) as AudioWei
 
 export const SendTipScreen = () => {
   const styles = useStyles()
   const [tipAmount, setTipAmount] = useState('')
 
-  const { accountBalance: audioBalanceBigInt } = useAudioBalance({
+  const { accountBalance } = useAudioBalance({
     includeConnectedWallets: false
   })
-
-  // Convert BigInt to BN for compatibility with existing code
-  const accountBalance = audioBalanceBigInt
-    ? stringWeiToBN(audioBalanceBigInt.toString() as StringWei)
-    : zeroWei
 
   const navigation = useNavigation<TipArtistNavigationParamList>()
   const dispatch = useDispatch()
@@ -73,14 +62,15 @@ export const SendTipScreen = () => {
     navigation.navigate('ConfirmTip')
   }, [dispatch, tipAmount, navigation])
 
-  useFocusEffect(
-    useCallback(() => {
-      dispatch(getBalance())
-    }, [dispatch])
-  )
+  let tipAmountWei: AudioWei | null = null
+  try {
+    tipAmountWei = tipAmount.length > 0 ? AUDIO(tipAmount).value : null
+  } catch {
+    tipAmountWei = null
+  }
 
-  const tipAmountWei = parseAudioInputToWei(tipAmount)
-  const hasInsufficientBalance = tipAmountWei?.gt(accountBalance)
+  const hasInsufficientBalance =
+    tipAmountWei !== null && tipAmountWei > accountBalance
 
   return (
     <TipScreen
@@ -98,7 +88,10 @@ export const SendTipScreen = () => {
         iconRight={IconArrowRight}
         fullWidth
         disabled={
-          !tipAmount || tipAmountWei?.lte(zeroWei) || hasInsufficientBalance
+          !tipAmount ||
+          tipAmountWei === null ||
+          tipAmountWei <= zeroWei ||
+          hasInsufficientBalance
         }
         style={styles.sendButton}
       >

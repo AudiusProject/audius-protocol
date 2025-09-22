@@ -17,7 +17,7 @@ export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
   FlatListComponent?: ComponentType<FlatListProps<ItemT | LoadingCard>>
   isLoading?: boolean
   isLoadingMore?: boolean
-  LoadingCardComponent?: ComponentType
+  LoadingCardComponent?: ComponentType<{ noShimmer?: boolean }>
   // If total count is known, use this to aid in rendering the right number
   // of skeletons
   totalCount?: number
@@ -53,7 +53,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexGrow: 0
   },
   cardHorizontal: {
-    width: spacing(40),
+    width: spacing(43),
     paddingRight: spacing(3),
     paddingBottom: spacing(3)
   }
@@ -88,6 +88,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   const data = useMemo(() => {
     const skeletonData = isLoading ? getSkeletonData(totalCount) : []
     const moreSkeletonData = isLoadingMore ? getSkeletonData(2) : []
+
     return [...(dataProp ?? []), ...skeletonData, ...moreSkeletonData]
   }, [dataProp, isLoading, isLoadingMore, totalCount])
 
@@ -95,7 +96,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     (info) => {
       const itemElement =
         '_loading' in info.item ? (
-          <LoadingCardComponent />
+          <LoadingCardComponent noShimmer />
         ) : (
           (renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null)
         )

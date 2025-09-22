@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 import { Flex } from '~harmony/components/layout/Flex'
 
 import { make } from 'common/store/analytics/actions'
+import { XShareButton } from 'components/x-share-button/XShareButton'
 import { push } from 'utils/navigation'
 
 import { EntityLink } from './components/EntityLink'
@@ -19,7 +20,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TrackContent } from './components/TrackContent'
-import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
@@ -27,8 +27,8 @@ import { getEntityLink } from './utils'
 const messages = {
   title: 'Remix was Co-signed',
   cosign: 'Co-signed your Remix of',
-  shareTwitterText: (trackTitle: string, handle: string) =>
-    `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius #Audius $AUDIO`
+  shareXText: (trackTitle: string, handle: string) =>
+    `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius $AUDIO`
 }
 
 type RemixCosignNotificationProps = {
@@ -52,26 +52,27 @@ export const RemixCosignNotification = (
   const parentTrack = tracks?.find(
     (track) => track.owner_id === parentTrackUserId
   )
-  const parentTrackTitle = parentTrack?.title
 
   const handleClick = useCallback(() => {
     if (!childTrack) return
     dispatch(push(getEntityLink(childTrack)))
   }, [childTrack, dispatch])
 
-  const handleTwitterShare = useCallback(
-    (handle: string) => {
-      if (!parentTrackTitle) return null
-      const shareText = messages.shareTwitterText(parentTrackTitle, handle)
-      const analytics = make(
-        Name.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
-        {
-          text: shareText
-        }
+  const handleXShare = useCallback(
+    (parentTrackUserHandle: string) => {
+      const parentTrackTitle = parentTrack?.title || ''
+      const shareText = messages.shareXText(
+        parentTrackTitle,
+        parentTrackUserHandle
       )
-      return { shareText, analytics }
+      return {
+        shareText,
+        analytics: make(Name.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE, {
+          text: shareText
+        })
+      }
     },
-    [parentTrackTitle]
+    [parentTrack?.title]
   )
 
   if (!user || !parentTrack || !childTrack) return null
@@ -89,10 +90,10 @@ export const RemixCosignNotification = (
           <EntityLink entity={parentTrack} entityType={entityType} />
         </NotificationBody>
       </Flex>
-      <TwitterShareButton
+      <XShareButton
         type='dynamic'
         handle={user.handle}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
         url={getEntityLink(childTrack, true)}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />

@@ -16,8 +16,9 @@ const ForwardSkipButton = ({ onClick, isMobile }: ForwardSkipButtonProps) => {
         [styles.previousNext]: isMobile
       })}
       onClick={onClick}
+      aria-label='Skip forward 15 seconds'
     >
-      <IconPodcastForward className={styles.noAnimation} />
+      <IconPodcastForward color='default' className={styles.noAnimation} />
     </button>
   )
 }

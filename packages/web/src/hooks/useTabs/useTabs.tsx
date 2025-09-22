@@ -436,7 +436,8 @@ const GestureSupportingBodyContainer = memo(
     setTabBarFractionalOffset,
     dimensionsAreDirty,
     didSetDimensions,
-    initialScrollOffset
+    initialScrollOffset,
+    isMobile
   }: BodyContainerProps) => {
     const { containerWidth, containerCallbackRef, elementCallbackRef } =
       useContainerDimensions(activeIndex, dimensionsAreDirty)

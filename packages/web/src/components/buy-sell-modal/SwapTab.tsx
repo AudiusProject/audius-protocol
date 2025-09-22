@@ -1,15 +1,21 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { TokenInfo, useTokenSwapForm } from '@audius/common/store'
+import { buySellMessages } from '@audius/common/messages'
+import { BuySellTab, TokenInfo, useTokenSwapForm } from '@audius/common/store'
 import { Flex, Skeleton } from '@audius/harmony'
-import { TooltipPlacement } from 'antd/lib/tooltip'
 import { Form, FormikProvider } from 'formik'
 
 import { TokenAmountSection } from './TokenAmountSection'
+import type {
+  InputConfiguration,
+  SwapCallbacks,
+  TokenPricing,
+  TokenSelection,
+  UIConfiguration
+} from './types'
 
 const messages = {
-  youPay: 'You Pay',
-  youReceive: 'You Receive',
+  ...buySellMessages,
   placeholder: '0.00'
 }
 
@@ -30,40 +36,28 @@ const SwapFormSkeleton = () => (
 export type SwapTabProps = {
   inputToken: TokenInfo
   outputToken: TokenInfo
-  min?: number
-  max?: number
-  balance: {
-    get: () => number | undefined
-    loading: boolean
-    formatError: () => string
-  }
-
-  onTransactionDataChange?: (data: {
-    inputAmount: number
-    outputAmount: number
-    isValid: boolean
-    error: string | null
-    isInsufficientBalance: boolean
-  }) => void
-  isDefault?: boolean
-  error?: boolean
-  errorMessage?: string
-  tokenPrice?: string | null
-  isTokenPriceLoading?: boolean
-  tokenPriceDecimalPlaces?: number
-  tooltipPlacement?: TooltipPlacement
-  initialInputValue?: string
-  onInputValueChange?: (value: string) => void
-}
+  outputBalance?: number
+  inputIsDefault?: boolean
+  outputIsDefault?: boolean
+  tab?: BuySellTab
+  onChangeSwapDirection?: () => void
+  initialTicker?: string
+} & TokenPricing &
+  UIConfiguration &
+  InputConfiguration &
+  TokenSelection &
+  SwapCallbacks
 
 export const SwapTab = ({
   inputToken,
   outputToken,
   min,
   max,
-  balance,
   onTransactionDataChange,
   isDefault = true,
+  inputIsDefault,
+  outputIsDefault,
+  tab,
   error,
   errorMessage,
   tokenPrice,
@@ -71,8 +65,28 @@ export const SwapTab = ({
   tokenPriceDecimalPlaces = 2,
   tooltipPlacement,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  availableInputTokens,
+  availableOutputTokens,
+  onInputTokenChange,
+  onOutputTokenChange,
+  outputBalance,
+  onChangeSwapDirection,
+  initialTicker
 }: SwapTabProps) => {
+  // If initialTicker is provided, try to find the token and use it as the output token
+  const resolvedOutputToken = useMemo(() => {
+    if (initialTicker && availableOutputTokens) {
+      const tokenByTicker = availableOutputTokens.find(
+        (token) => token.symbol === initialTicker
+      )
+      if (tokenByTicker) {
+        return tokenByTicker
+      }
+    }
+    return outputToken
+  }, [initialTicker, availableOutputTokens, outputToken])
+
   const {
     formik,
     inputAmount,
@@ -81,14 +95,14 @@ export const SwapTab = ({
     isBalanceLoading,
     availableBalance,
     currentExchangeRate,
+    displayExchangeRate,
     handleInputAmountChange,
     handleMaxClick
   } = useTokenSwapForm({
     inputToken,
-    outputToken,
+    outputToken: resolvedOutputToken,
     min,
     max,
-    balance,
     onTransactionDataChange,
     initialInputValue,
     onInputValueChange
@@ -96,8 +110,14 @@ export const SwapTab = ({
 
   // Track if an exchange rate has ever been successfully fetched
   const hasRateEverBeenFetched = useRef(false)
+  const hasDisplayRateEverBeenFetched = useRef(false)
+
   if (currentExchangeRate !== null) {
     hasRateEverBeenFetched.current = true
+  }
+
+  if (displayExchangeRate !== null) {
+    hasDisplayRateEverBeenFetched.current = true
   }
 
   // Show initial loading state if balance is loading,
@@ -105,6 +125,12 @@ export const SwapTab = ({
   const isInitialLoading =
     isBalanceLoading ||
     (isExchangeRateLoading && !hasRateEverBeenFetched.current)
+
+  // Determine isDefault values for input and output sections
+  const inputSectionIsDefault =
+    inputIsDefault !== undefined ? inputIsDefault : isDefault
+  const outputSectionIsDefault =
+    outputIsDefault !== undefined ? outputIsDefault : isDefault
 
   return (
     <FormikProvider value={formik}>
@@ -123,23 +149,39 @@ export const SwapTab = ({
                 onMaxClick={handleMaxClick}
                 availableBalance={availableBalance}
                 placeholder={messages.placeholder}
-                isDefault={isDefault}
+                isDefault={inputSectionIsDefault}
                 error={error}
                 errorMessage={errorMessage}
                 tooltipPlacement={tooltipPlacement}
+                availableTokens={
+                  !inputSectionIsDefault ? availableInputTokens : undefined
+                }
+                onTokenChange={
+                  !inputSectionIsDefault ? onInputTokenChange : undefined
+                }
+                onChangeSwapDirection={onChangeSwapDirection}
               />
 
               <TokenAmountSection
                 title={messages.youReceive}
-                tokenInfo={outputToken}
+                tokenInfo={resolvedOutputToken}
                 isInput={false}
                 amount={outputAmount}
-                availableBalance={0}
+                availableBalance={outputBalance ?? 0}
                 exchangeRate={currentExchangeRate}
                 tokenPrice={tokenPrice}
                 isTokenPriceLoading={isTokenPriceLoading}
                 tokenPriceDecimalPlaces={tokenPriceDecimalPlaces}
                 tooltipPlacement={tooltipPlacement}
+                isDefault={outputSectionIsDefault}
+                tab={tab}
+                availableTokens={
+                  !outputSectionIsDefault ? availableOutputTokens : undefined
+                }
+                onTokenChange={
+                  !outputSectionIsDefault ? onOutputTokenChange : undefined
+                }
+                onChangeSwapDirection={onChangeSwapDirection}
               />
             </>
           )}

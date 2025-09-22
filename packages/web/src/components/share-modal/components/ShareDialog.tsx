@@ -7,7 +7,7 @@ import {
   IconLink,
   IconMessage,
   IconShare,
-  IconTwitter as IconTwitterBird,
+  IconX,
   ButtonProps,
   Button,
   ModalContentText
@@ -38,7 +38,7 @@ type ShareDialogProps = ShareProps
 
 export const ShareDialog = ({
   onShareToDirectMessage,
-  onShareToTwitter,
+  onShareToX,
   onCopyLink,
   onEmbed,
   isOpen,
@@ -71,11 +71,8 @@ export const ShareDialog = ({
                 {messages.directMessage}
               </ShareActionListItem>
             ) : null}
-            <ShareActionListItem
-              iconLeft={IconTwitterBird}
-              onClick={onShareToTwitter}
-            >
-              {messages.twitter}
+            <ShareActionListItem iconLeft={IconX} onClick={onShareToX}>
+              {messages.x}
             </ShareActionListItem>
             <ShareActionListItem iconLeft={IconLink} onClick={onCopyLink}>
               {messages.copyLink}

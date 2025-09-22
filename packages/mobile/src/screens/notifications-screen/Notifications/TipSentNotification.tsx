@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useArtistCoin, useUser } from '@audius/common/api'
 import { useUIAudio } from '@audius/common/hooks'
 import type { TipSendNotification } from '@audius/common/store'
 import { Platform, View } from 'react-native'
+import { env } from 'services/env'
 
 import { IconTipping } from '@audius/harmony-native'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
@@ -11,11 +12,11 @@ import { EventNames } from 'app/types/analytics'
 
 import {
   NotificationHeader,
+  NotificationProfilePicture,
   NotificationText,
   NotificationTile,
   NotificationTitle,
-  NotificationTwitterButton,
-  NotificationProfilePicture
+  NotificationXButton
 } from '../Notification'
 import { TipText } from '../Notification/TipText'
 import { UserNameLink } from '../Notification/UserNameLink'
@@ -28,12 +29,17 @@ const messages = {
   sentAlt: 'You successfully sent', // iOS only
   to: 'to',
   // NOTE: Send tip -> Send $AUDIO changes
-  twitterShare: (senderHandle: string, uiAmount: number, ios: boolean) =>
-    `I just ${
+  xShare: (
+    senderHandle: string,
+    uiAmount: number,
+    ios: boolean,
+    price?: string
+  ) => {
+    const totalValue = price && uiAmount ? Number(price) * uiAmount : null
+    return `I just ${
       ios ? 'tipped' : 'sent'
-    } ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius ${
-      ios ? '#AUDIO' : '#AUDIOTip'
-    }`
+    } ${senderHandle} ${uiAmount} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius ${ios ? '' : ''}`
+  }
 }
 
 type TipSentNotificationProps = {
@@ -46,6 +52,9 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
   const { amount } = notification
   const uiAmount = useUIAudio(amount)
   const navigation = useNotificationNavigation()
+  const { data: tokenPriceData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
+
+  const tokenPrice = tokenPriceData?.price?.toString()
 
   const { data: user } = useUser(notification.entityId)
 
@@ -53,12 +62,13 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  const handleTwitterShare = useCallback(
+  const handleXShare = useCallback(
     (senderHandle: string) => {
-      const shareText = messages.twitterShare(
+      const shareText = messages.xShare(
         senderHandle,
         uiAmount,
-        Platform.OS === 'ios'
+        Platform.OS === 'ios',
+        tokenPrice
       )
       return {
         shareText,
@@ -68,7 +78,7 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
         } as const
       }
     },
-    [uiAmount]
+    [uiAmount, tokenPrice]
   )
 
   if (!user) return null
@@ -93,10 +103,10 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
           <UserNameLink user={user} />
         </NotificationText>
       </View>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={user.handle}
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
       />
     </NotificationTile>
   )

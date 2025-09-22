@@ -6,7 +6,8 @@ import {
   SquareSizes,
   GatedContentType,
   isContentCollectibleGated,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
 import type { ColorValue } from 'react-native'
@@ -15,12 +16,14 @@ import type { SvgProps } from 'react-native-svg'
 
 import {
   Flex,
+  IconArtistCoin,
   IconCart,
+  IconCoinGatedLabel,
   IconCollectible,
   IconSparkles
 } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -33,6 +36,7 @@ const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
   premiumTrack: 'PREMIUM TRACK',
+  coinGated: 'COIN GATED',
   earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
@@ -66,10 +70,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   streamContentLabel: {
     letterSpacing: spacing(0.5)
   },
-  trackOwnerContainer: {
-    ...flexRowCentered(),
-    marginTop: spacing(1)
-  },
   trackOwner: {
     fontFamily: typography.fontByWeight.medium,
     fontSize: typography.fontSize.medium
@@ -92,6 +92,7 @@ export const TrackDetailsTile = ({
   const { data: track } = useTrack(trackId)
   const { data: owner } = useUser(track?.owner_id)
   const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
+  const isTokenGated = isContentTokenGated(track?.stream_conditions)
   const isUSDCPurchaseGated =
     useIsUSDCEnabled() && isContentUSDCPurchaseGated(track?.stream_conditions)
 
@@ -99,7 +100,9 @@ export const TrackDetailsTile = ({
     ? GatedContentType.USDC_PURCHASE
     : isCollectibleGated
       ? GatedContentType.COLLECTIBLE_GATED
-      : GatedContentType.SPECIAL_ACCESS
+      : isTokenGated
+        ? GatedContentType.TOKEN_GATED
+        : GatedContentType.SPECIAL_ACCESS
 
   const headerAttributes: {
     [k in GatedContentType]: {
@@ -117,6 +120,11 @@ export const TrackDetailsTile = ({
       [GatedContentType.SPECIAL_ACCESS]: {
         message: messages.specialAccess,
         icon: IconSparkles,
+        color: accentBlue
+      },
+      [GatedContentType.TOKEN_GATED]: {
+        message: messages.coinGated,
+        icon: IconArtistCoin,
         color: accentBlue
       },
       [GatedContentType.USDC_PURCHASE]: {
@@ -145,20 +153,26 @@ export const TrackDetailsTile = ({
         <View style={styles.metadataContainer}>
           {showLabel ? (
             <View style={styles.streamContentLabelContainer}>
-              <IconComponent
-                fill={color}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-              <Text
-                fontSize='small'
-                colorValue={color}
-                weight='demiBold'
-                textTransform='uppercase'
-                style={styles.streamContentLabel}
-              >
-                {title}
-              </Text>
+              {isTokenGated ? (
+                <IconCoinGatedLabel height={28} width={108} />
+              ) : (
+                <>
+                  <IconComponent
+                    fill={color}
+                    width={spacing(5)}
+                    height={spacing(5)}
+                  />
+                  <Text
+                    fontSize='small'
+                    colorValue={color}
+                    weight='demiBold'
+                    textTransform='uppercase'
+                    style={styles.streamContentLabel}
+                  >
+                    {title}
+                  </Text>
+                </>
+              )}
             </View>
           ) : null}
           <Text
@@ -169,10 +183,10 @@ export const TrackDetailsTile = ({
           >
             {track.title}
           </Text>
-          <View style={styles.trackOwnerContainer}>
+          <Flex row alignItems='center' gap='xs' mt='xs'>
             <Text fontSize='medium'>{owner.name}</Text>
-            <UserBadges badgeSize={spacing(4)} user={owner} hideName />
-          </View>
+            <UserBadges userId={owner.user_id} badgeSize='xs' />
+          </Flex>
           {earnAmount ? (
             <Flex direction='row' alignItems='center' gap='xs' pt='xs'>
               <IconCart size='s' color='premium' />

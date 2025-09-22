@@ -1,54 +1,28 @@
 import { useCallback } from 'react'
 
-import type { BNWei } from '@audius/common/models'
 import { Chain } from '@audius/common/models'
 import {
-  formatWei,
   shortenSPLAddress,
-  shortenEthAddress
+  shortenEthAddress,
+  formatNumberCommas
 } from '@audius/common/utils'
+import { AUDIO } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Animated, TouchableWithoutFeedback, View } from 'react-native'
+import { Animated, TouchableWithoutFeedback } from 'react-native'
 
-import { IconCopy } from '@audius/harmony-native'
-import { ChainLogo, Text } from 'app/components/core'
+import { Flex, Text, IconCopy } from '@audius/harmony-native'
+import { ChainLogo } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useToast } from 'app/hooks/useToast'
-import { makeStyles } from 'app/styles'
 
 const messages = {
   copied: 'Copied To Clipboard!'
 }
 
-const useSyles = makeStyles(({ palette, spacing }) => ({
-  walletRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: spacing(3),
-    paddingBottom: spacing(2)
-  },
-  linkedWallet: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  walletAddress: {
-    marginLeft: spacing(4),
-    fontSize: 14
-  },
-  linkedAmount: {
-    fontSize: 14
-  },
-  copyIcon: {
-    marginLeft: 10
-  }
-}))
-
-type WalletProps = { chain: Chain; address: string; balance: BNWei }
+type WalletProps = { chain: Chain; address: string; balance: bigint }
 
 export const Wallet = (props: WalletProps) => {
   const { chain, address, balance } = props
-  const styles = useSyles()
   const { toast } = useToast()
 
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.98)
@@ -62,25 +36,30 @@ export const Wallet = (props: WalletProps) => {
   }, [address, toast])
 
   return (
-    <View style={styles.walletRow}>
+    <Flex row alignItems='center' justifyContent='space-between' gap='xs'>
       <Animated.View style={[{ transform: [{ scale }] }]}>
         <TouchableWithoutFeedback
           onPress={handleCopy}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         >
-          <View style={styles.linkedWallet}>
+          <Flex row alignItems='center' gap='m'>
             <ChainLogo chain={chain} />
-            <Text style={styles.walletAddress} weight='demiBold'>
+            <Text variant='body' size='s' strength='strong'>
               {displayAddress(address)}
             </Text>
-            <IconCopy style={styles.copyIcon} size='s' color='subdued' />
-          </View>
+            <IconCopy size='s' color='subdued' />
+          </Flex>
         </TouchableWithoutFeedback>
       </Animated.View>
-      <Text style={styles.linkedAmount} weight='demiBold'>
-        {formatWei(balance, true)}
+      <Text variant='body' size='s' strength='strong'>
+        {formatNumberCommas(
+          AUDIO(balance).toLocaleString('en-US', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 0
+          })
+        )}
       </Text>
-    </View>
+    </Flex>
   )
 }

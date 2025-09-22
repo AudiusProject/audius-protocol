@@ -1,14 +1,9 @@
 import React from 'react'
 
-import type { TokenInfo } from '@audius/common/store'
+import { type TokenInfo } from '@audius/common/store'
+import { Image } from 'react-native'
 
-import {
-  Flex,
-  IconLogoCircleUSDC,
-  IconTokenAUDIO,
-  Text,
-  useTheme
-} from '@audius/harmony-native'
+import { Flex, Text, useTheme, HexagonalIcon } from '@audius/harmony-native'
 
 const messages = {
   symbol: (symbol: string) => `$${symbol}`
@@ -27,11 +22,9 @@ export const CryptoBalanceSection = ({
   amount,
   priceLabel
 }: CryptoBalanceSectionProps) => {
-  const { spacing, cornerRadius } = useTheme()
-  const { symbol } = tokenInfo
-
-  // Get the appropriate token icon for mobile
-  const TokenIcon = symbol === 'AUDIO' ? IconTokenAUDIO : IconLogoCircleUSDC
+  const { logoURI } = tokenInfo
+  const { iconSizes } = useTheme()
+  const iconSize = iconSizes['4xl']
 
   return (
     <Flex direction='column' gap='m'>
@@ -42,13 +35,12 @@ export const CryptoBalanceSection = ({
 
       {/* Amount and token info */}
       <Flex direction='row' alignItems='center' gap='s'>
-        <TokenIcon
-          style={{
-            height: spacing.unit16,
-            width: spacing.unit16,
-            borderRadius: cornerRadius.circle
-          }}
-        />
+        <HexagonalIcon size={iconSize}>
+          <Image
+            source={{ uri: logoURI }}
+            style={{ width: iconSize, height: iconSize }}
+          />
+        </HexagonalIcon>
         <Flex direction='column'>
           <Flex direction='row' gap='xs' alignItems='center'>
             <Text variant='heading' size='l'>

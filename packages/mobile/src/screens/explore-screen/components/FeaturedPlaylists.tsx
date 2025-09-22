@@ -1,36 +1,34 @@
 import React from 'react'
 
-import { useExploreContent } from '@audius/common/api'
+import { useCollections, useExploreContent } from '@audius/common/api'
 import { exploreMessages as messages } from '@audius/common/messages'
 
 import { useTheme } from '@audius/harmony-native'
 import { CollectionList } from 'app/components/collection-list'
 
+import { useDeferredElement } from '../../../hooks/useDeferredElement'
+
 import { ExploreSection } from './ExploreSection'
 
-interface FeaturedPlaylistsProps {
-  isLoading?: boolean
-}
-
-export const FeaturedPlaylists = ({
-  isLoading: externalLoading
-}: FeaturedPlaylistsProps) => {
+export const FeaturedPlaylists = () => {
   const { spacing } = useTheme()
+  const { InViewWrapper, inView } = useDeferredElement()
 
-  const { data: exploreContent, isLoading: isExploreContentLoading } =
-    useExploreContent()
-
-  // Use external loading state if provided, otherwise use internal loading state
-  const isLoading =
-    externalLoading !== undefined ? externalLoading : isExploreContentLoading
+  const { data: exploreContent } = useExploreContent({ enabled: inView })
+  const { data: playlists } = useCollections(
+    exploreContent?.featuredPlaylists,
+    { enabled: inView }
+  )
 
   return (
-    <ExploreSection title={messages.featuredPlaylists} isLoading={isLoading}>
-      <CollectionList
-        horizontal
-        collectionIds={exploreContent?.featuredPlaylists ?? []}
-        carouselSpacing={spacing.l}
-      />
-    </ExploreSection>
+    <InViewWrapper>
+      <ExploreSection title={messages.featuredPlaylists}>
+        <CollectionList
+          horizontal
+          collectionIds={playlists?.map((playlist) => playlist.playlist_id)}
+          carouselSpacing={spacing.l}
+        />
+      </ExploreSection>
+    </InViewWrapper>
   )
 }

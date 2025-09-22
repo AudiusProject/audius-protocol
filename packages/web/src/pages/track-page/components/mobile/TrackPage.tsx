@@ -74,7 +74,7 @@ const TrackPage = ({
   useEffect(() => {
     setLeft(LeftPreset.BACK)
     setCenter(CenterPreset.LOGO)
-    setRight(RightPreset.SEARCH)
+    setRight(RightPreset.KEBAB)
   }, [setLeft, setCenter, setRight])
 
   const { setHeader } = useContext(HeaderContext)
@@ -118,6 +118,8 @@ const TrackPage = ({
       ogDescription={defaults.description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='track'
+      entityId={heroTrack?.track_id}
       noIndex={defaults.isUnlisted}
     >
       <Flex column p='l' gap='2xl' w='100%'>

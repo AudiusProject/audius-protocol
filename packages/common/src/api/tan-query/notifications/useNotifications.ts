@@ -21,7 +21,6 @@ import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { useUsers } from '../users/useUsers'
 
 import { useNotificationUnreadCount } from './useNotificationUnreadCount'
-import { useNotificationValidTypes } from './useNotificationValidTypes'
 
 const DEFAULT_LIMIT = 20
 const USER_INITIAL_LOAD_COUNT = 9
@@ -158,6 +157,10 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
         .slice(0, USER_INITIAL_LOAD_COUNT)
         .forEach((id) => userIds.add(id))
     }
+    if (type === NotificationType.RemixCreate) {
+      trackIds.add(notification.parentTrackId)
+      trackIds.add(notification.childTrackId)
+    }
   })
 
   return {
@@ -188,7 +191,6 @@ export const getNotificationsQueryKey = ({
 export const useNotifications = (options?: QueryOptions) => {
   const { audiusSdk } = useQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const validTypes = useNotificationValidTypes()
   const pageSize = DEFAULT_LIMIT
   const { data: unreadCount } = useNotificationUnreadCount()
   const prevUnreadCount = usePrevious(unreadCount)
@@ -205,8 +207,7 @@ export const useNotifications = (options?: QueryOptions) => {
         userId: Id.parse(currentUserId),
         limit: DEFAULT_LIMIT,
         timestamp: pageParam?.timestamp,
-        groupId: pageParam?.groupId,
-        validTypes
+        groupId: pageParam?.groupId
       })
 
       return transformAndCleanList(

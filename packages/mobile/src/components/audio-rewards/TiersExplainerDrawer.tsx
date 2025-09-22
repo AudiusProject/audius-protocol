@@ -1,11 +1,7 @@
+import { useProfileUser } from '@audius/common/api'
 import type { BadgeTierInfo } from '@audius/common/store'
-import {
-  useTierAndVerifiedForUser,
-  profilePageSelectors,
-  badgeTiers
-} from '@audius/common/store'
+import { useTierAndVerifiedForUser, badgeTiers } from '@audius/common/store'
 import { Text, View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
 
@@ -13,7 +9,6 @@ import { IconAudioBadge } from '../core/IconAudioBadge'
 import { AppDrawer } from '../drawer/AppDrawer'
 
 import { TierText } from './TierText'
-const { getProfileUserId } = profilePageSelectors
 
 export const MODAL_NAME = 'TiersExplainer'
 
@@ -22,7 +17,9 @@ const messages = {
   explainer1: 'Unlock $AUDIO VIP Tiers by simply holding more $AUDIO.',
   explainer2:
     'Advancing to a new tier will earn you a profile badge, visible throughout the app, and unlock various new features, as they are released.',
-  learnMore: 'LEARN MORE'
+  learnMore: 'LEARN MORE',
+  audio: '$AUDIO',
+  plus: '+'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -67,14 +64,15 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const TiersExplainerDrawer = () => {
   const styles = useStyles()
 
-  const profileId = useSelector(getProfileUserId)
+  const { user } = useProfileUser()
+  const profileId = user?.user_id
   const { tier, tierNumber } = useTierAndVerifiedForUser(profileId)
 
-  const { minAudio } = badgeTiers.find(
+  const { humanReadableAmount } = badgeTiers.find(
     (tierReq) => tierReq.tier === tier
   ) as BadgeTierInfo
 
-  const minAudioText = minAudio.toString()
+  const minAudioText = humanReadableAmount?.toString() ?? '0'
 
   return (
     <AppDrawer modalName={MODAL_NAME}>
@@ -91,7 +89,8 @@ export const TiersExplainerDrawer = () => {
             accessibilityLabel={`${minAudioText} or more audio tokens`}
             style={styles.minAudio}
           >
-            {minAudio.toString()}+ $AUDIO
+            {humanReadableAmount?.toString() ?? '0'}
+            {messages.plus} {messages.audio}
           </Text>
         </View>
       </View>

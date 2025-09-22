@@ -6,7 +6,7 @@ import type { ReactionNotification } from '@audius/common/store'
 import { Platform, View } from 'react-native'
 
 import { IconTipping } from '@audius/harmony-native'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
@@ -19,7 +19,7 @@ import {
   TipText,
   NotificationText,
   NotificationProfilePicture,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 import { reactionMap } from '../Reaction'
 
@@ -30,10 +30,10 @@ const messages = {
   reactAltPrefix: 'reacted to the ', // iOS only
   reactAltSuffix: ' you sent them', // iOS only
   // NOTE: Send tip -> Send $AUDIO change
-  twitterShare: (handle: string, ios: boolean) =>
+  xShare: (handle: string, ios: boolean) =>
     `I got a thanks from ${handle} for ${
       ios ? 'sending' : 'tipping'
-    } them $AUDIO on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
+    } them $AUDIO on @audius! ${ios ? '' : ''}`
 }
 
 const useStyles = makeStyles(() => ({
@@ -82,8 +82,8 @@ export const TipReactionNotification = (
     navigation.navigate(notification)
   }, [navigation, notification])
 
-  const handleTwitterShare = useCallback((handle: string) => {
-    const shareText = messages.twitterShare(handle, Platform.OS === 'ios')
+  const handleXShare = useCallback((handle: string) => {
+    const shareText = messages.xShare(handle, Platform.OS === 'ios')
     return {
       shareText,
       analytics: {
@@ -117,7 +117,7 @@ export const TipReactionNotification = (
         <View style={styles.content}>
           <View style={styles.userNameLink}>
             <UserNameLink user={user} weight='bold' />
-            <UserBadges user={user} hideName />
+            <UserBadges userId={user.user_id} badgeSize='xs' />
           </View>
           <NotificationText>
             {Platform.OS === 'ios' ? messages.reactAltPrefix : messages.react}
@@ -126,9 +126,9 @@ export const TipReactionNotification = (
           </NotificationText>
         </View>
       </View>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
-        shareData={handleTwitterShare}
+        shareData={handleXShare}
         handle={user.handle}
       />
     </NotificationTile>

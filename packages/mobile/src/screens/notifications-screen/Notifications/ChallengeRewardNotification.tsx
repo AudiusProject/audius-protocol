@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
-import type { BNAudio } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
 import {
   challengeRewardsConfig,
-  formatNumberCommas,
-  stringWeiToAudioBN
+  formatNumberCommas
 } from '@audius/common/utils'
+import type { FixedDecimal } from '@audius/fixed-decimal'
+import { AUDIO } from '@audius/fixed-decimal'
 import { Platform, Image } from 'react-native'
 
 import { IconAudiusLogo } from '@audius/harmony-native'
@@ -19,20 +19,19 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTitle,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
-const formatNumber = (amount: BNAudio) => {
-  return formatNumberCommas(Number(amount.toString()))
+const formatNumber = (amount: FixedDecimal) => {
+  return formatNumberCommas(Number(amount.trunc().toString()))
 }
 
 const messages = {
-  amountEarned: (amount: BNAudio) =>
+  amountEarned: (amount: FixedDecimal) =>
     `You've earned ${formatNumber(amount)} $AUDIO`,
   referredText: 'for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: 'for completing this challenge!',
-  twitterShareText:
-    'I earned $AUDIO for completing challenges on @audius #AudioRewards',
+  xShareText: 'I earned $AUDIO for completing challenges on @audius',
   streakMilestone: (amountEarned: number, listenStreak: number) =>
     `You've earned ${amountEarned} $AUDIO for hitting Day ${listenStreak} of your listening streak! You'll now earn an additional $AUDIO reward for every day you keep your streak going!`,
   streakMaintenance: (amountEarned: number) =>
@@ -61,7 +60,7 @@ export const ChallengeRewardNotification = (
 
   const info = challengeRewardsConfig[mappedChallengeRewardsConfigKey]
   const icon = getChallengeConfig(challengeId)?.icon
-  const amount = stringWeiToAudioBN(notification.amount)
+  const amount = AUDIO(BigInt(notification.amount))
   const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
@@ -108,10 +107,7 @@ export const ChallengeRewardNotification = (
         </NotificationTitle>
       </NotificationHeader>
       <NotificationText>{notificationText}</NotificationText>
-      <NotificationTwitterButton
-        type='static'
-        shareText={messages.twitterShareText}
-      />
+      <NotificationXButton type='static' shareText={messages.xShareText} />
     </NotificationTile>
   )
 }

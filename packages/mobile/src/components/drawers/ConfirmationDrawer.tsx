@@ -19,6 +19,7 @@ export type BaseConfirmationDrawerProps = {
     header: string
     description: string
     confirm: string
+    confirmLoading?: string
     cancel?: string
   }
   onConfirm: () => void
@@ -27,6 +28,7 @@ export type BaseConfirmationDrawerProps = {
   icon?: IconComponent
   addBottomInset?: boolean
   children?: ReactNode | ReactNode[]
+  isConfirming?: boolean
 }
 
 type NativeConfirmationDrawerProps = BaseConfirmationDrawerProps & {
@@ -54,7 +56,8 @@ export const ConfirmationDrawerContent = (props: DrawerContentProps) => {
     variant = 'destructive',
     icon: Icon,
     addBottomInset,
-    children
+    children,
+    isConfirming = false
   } = props
   const messages = { ...defaultMessages, ...messagesProp }
   const insets = useSafeAreaInsets()
@@ -88,10 +91,19 @@ export const ConfirmationDrawerContent = (props: DrawerContentProps) => {
           variant={variant === 'destructive' ? 'destructive' : 'primary'}
           fullWidth
           onPress={handleConfirm}
+          disabled={isConfirming}
+          isLoading={isConfirming}
         >
-          {messages.confirm}
+          {isConfirming && messages.confirmLoading
+            ? messages.confirmLoading
+            : messages.confirm}
         </Button>
-        <Button variant='secondary' fullWidth onPress={handleCancel}>
+        <Button
+          variant='secondary'
+          fullWidth
+          onPress={handleCancel}
+          disabled={isConfirming}
+        >
           {messages.cancel}
         </Button>
       </Flex>

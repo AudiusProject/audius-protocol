@@ -9,7 +9,6 @@ import {
   ID,
   UID,
   ProfilePictureSizes,
-  CoverPhotoSizes,
   LineupState,
   Track,
   User
@@ -103,15 +102,12 @@ export type ProfilePageProps = {
   tikTokVerified: boolean
   website: string
   donation: string
-  coverPhotoSizes: CoverPhotoSizes | null
   updatedCoverPhoto: { error: boolean; url: string }
   profilePictureSizes: ProfilePictureSizes | null
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
   activeTab: ProfilePageTabs | null
   dropdownDisabled: boolean
-  following: boolean
-  isSubscribed: boolean
   mode: ProfileMode
   stats: StatProps[]
   isBlocked: boolean
@@ -167,11 +163,6 @@ export type ProfilePageProps = {
     selectedFiles: any,
     source: 'original' | 'unsplash' | 'url'
   ) => Promise<void>
-  setNotificationSubscription: (
-    userId: ID,
-    isSubscribed: boolean,
-    update: boolean
-  ) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onCloseArtistRecommendations: () => void
   onMessage: () => void
@@ -264,15 +255,11 @@ const ProfilePage = ({
   tikTokVerified,
   website,
   donation,
-  coverPhotoSizes,
   updatedCoverPhoto,
   profilePictureSizes,
   updatedProfilePicture,
   hasProfilePicture,
   dropdownDisabled,
-  following,
-  isSubscribed,
-  setNotificationSubscription,
   didChangeTabsFrom
 }: ProfilePageProps) => {
   const renderProfileCompletionCard = () => {
@@ -437,11 +424,6 @@ const ProfilePage = ({
     return { headers, elements }
   }
 
-  const toggleNotificationSubscription = () => {
-    if (!userId) return
-    setNotificationSubscription(userId, !isSubscribed, true)
-  }
-
   const getUserProfileContent = () => {
     if (!profile) return { headers: [], elements: [] }
 
@@ -582,6 +564,8 @@ const ProfilePage = ({
       description={description}
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
+      entityType='user'
+      entityId={userId!}
       variant='flush'
       scrollableSearch
       fromOpacity={1}
@@ -716,9 +700,6 @@ const ProfilePage = ({
                   onSave={onSave}
                   onShare={onShare}
                   onCancel={onCancel}
-                  following={following}
-                  isSubscribed={isSubscribed}
-                  onToggleSubscribe={toggleNotificationSubscription}
                   onFollow={onFollow}
                   onUnfollow={onUnfollow}
                   canCreateChat={canCreateChat}

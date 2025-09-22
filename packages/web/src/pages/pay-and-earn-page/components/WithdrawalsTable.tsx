@@ -4,7 +4,7 @@ import {
   USDCTransactionDetails,
   USDCTransactionType
 } from '@audius/common/models'
-import { formatUSDCWeiToUSDString } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import moment from 'moment'
 
 import { Table } from 'components/table'
@@ -82,7 +82,10 @@ const renderDateCell = (cellInfo: TransactionCell) => {
 
 const renderAmountCell = (cellInfo: TransactionCell) => {
   const transaction = cellInfo.row.original
-  return `-$${formatUSDCWeiToUSDString(transaction.change)}`
+  return USDC(BigInt(transaction.change)).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 }
 
 // Columns

@@ -135,6 +135,12 @@ export interface Comment {
      * @memberof Comment
      */
     replies?: Array<ReplyComment>;
+    /**
+     * 
+     * @type {number}
+     * @memberof Comment
+     */
+    parentCommentId?: number;
 }
 
 /**
@@ -181,6 +187,7 @@ export function CommentFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'createdAt': json['created_at'],
         'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
         'replies': !exists(json, 'replies') ? undefined : ((json['replies'] as Array<any>).map(ReplyCommentFromJSON)),
+        'parentCommentId': !exists(json, 'parent_comment_id') ? undefined : json['parent_comment_id'],
     };
 }
 
@@ -210,6 +217,7 @@ export function CommentToJSON(value?: Comment | null): any {
         'created_at': value.createdAt,
         'updated_at': value.updatedAt,
         'replies': value.replies === undefined ? undefined : ((value.replies as Array<any>).map(ReplyCommentToJSON)),
+        'parent_comment_id': value.parentCommentId,
     };
 }
 

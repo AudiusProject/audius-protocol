@@ -6,7 +6,8 @@ import {
   useToggleFavoriteTrack,
   useTrackRank,
   useStems,
-  useCurrentUserId
+  useCurrentUserId,
+  useArtistCoin
 } from '@audius/common/api'
 import { useCurrentTrack, useGatedContentAccess } from '@audius/common/hooks'
 import {
@@ -18,14 +19,16 @@ import {
   FavoriteType,
   SquareSizes,
   isContentUSDCPurchaseGated,
-  isContentCollectibleGated
+  isContentCollectibleGated,
+  isContentTokenGated
 } from '@audius/common/models'
 import type {
   UID,
   SearchUser,
   SearchTrack,
   Track,
-  User
+  User,
+  TokenGatedConditions
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -47,8 +50,12 @@ import {
   usePublishConfirmationModal,
   useEarlyReleaseConfirmationModal
 } from '@audius/common/store'
-import { formatReleaseDate, Genre, removeNullable } from '@audius/common/utils'
-import dayjs from 'dayjs'
+import {
+  formatReleaseDate,
+  Genre,
+  removeNullable,
+  dayjs
+} from '@audius/common/utils'
 import type { FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -66,8 +73,7 @@ import {
   MusicBadge,
   Paper,
   Text,
-  spacing,
-  type ImageProps
+  IconArtistCoin
 } from '@audius/harmony-native'
 import { useCommentDrawer } from 'app/components/comments/CommentDrawerContext'
 import { Tag } from 'app/components/core'
@@ -83,7 +89,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackDogEar } from 'app/components/track/TrackDogEar'
 import { TrackFlair, Size } from 'app/components/track-flair'
-import UserBadges from 'app/components/user-badges'
+import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -110,6 +116,7 @@ const messages = {
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
   premiumTrack: 'premium track',
+  coinGated: 'coin gated',
   generatedWithAi: 'generated with ai',
   trackDeleted: 'track [deleted by artist]',
   play: 'Play',
@@ -120,12 +127,7 @@ const messages = {
   hidden: 'Hidden',
   releases: (releaseDate: string) =>
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`,
-  remixContest: 'Remix Contest',
-  contestEnded: 'Contest Ended',
-  contestDeadline: 'Contest Deadline',
-  deadline: (deadline?: string) =>
-    deadline ? `${dayjs(deadline).format('MM/DD/YYYY')}` : '',
-  uploadRemixButtonText: 'Upload Your Remix'
+  remixContest: 'Remix Contest'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -254,6 +256,12 @@ export const TrackScreenDetailsTile = ({
     isStreamGated ||
     (!isOwner && (playCount ?? 0) <= 0)
 
+  const isTokenGated = isContentTokenGated(streamConditions)
+  const { data: token } = useArtistCoin(
+    (streamConditions as TokenGatedConditions).token_gate?.token_mint,
+    { enabled: isTokenGated }
+  )
+
   let headerText
   if (isRemixContest) {
     headerText = messages.remixContest
@@ -264,6 +272,8 @@ export const TrackScreenDetailsTile = ({
       headerText = messages.collectibleGated
     } else if (isContentUSDCPurchaseGated(streamConditions)) {
       headerText = messages.premiumTrack
+    } else if (isTokenGated) {
+      headerText = messages.coinGated
     } else {
       headerText = messages.specialAccess
     }
@@ -311,23 +321,13 @@ export const TrackScreenDetailsTile = ({
       : messages.replay
     : messages.play
 
-  const renderImage = useCallback(
-    (props: ImageProps) => (
+  const imageElement = (
+    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
       <TrackImage
         trackId={track.track_id}
         size={SquareSizes.SIZE_480_BY_480}
-        {...props}
+        style={styles.coverArt}
       />
-    ),
-    [track]
-  )
-  const innerImageElement = renderImage({
-    style: styles.coverArt
-  })
-
-  const imageElement = (
-    <TrackFlair trackId={track.track_id} size={Size.LARGE}>
-      {innerImageElement}
     </TrackFlair>
   )
 
@@ -564,15 +564,18 @@ export const TrackScreenDetailsTile = ({
     <Paper>
       <TrackDogEar trackId={trackId} />
       <Flex p='l' gap='l' alignItems='center' w='100%'>
-        <Text
-          variant='label'
-          size='m'
-          strength='default'
-          textTransform='uppercase'
-          color='subdued'
-        >
-          {headerText}
-        </Text>
+        <Flex row gap='xs' alignItems='center'>
+          {isTokenGated ? <IconArtistCoin size='s' color='subdued' /> : null}
+          <Text
+            variant='label'
+            size='m'
+            strength='default'
+            textTransform='uppercase'
+            color='subdued'
+          >
+            {headerText}
+          </Text>
+        </Flex>
 
         {badges.length > 0 ? (
           <Flex direction='row' gap='s'>
@@ -590,7 +593,7 @@ export const TrackScreenDetailsTile = ({
                 <Text variant='body' color='accent' size='l'>
                   {user.name}
                 </Text>
-                <UserBadges badgeSize={spacing.l} user={user} hideName />
+                <UserBadges userId={user.user_id} badgeSize='s' />
               </Flex>
             </TouchableOpacity>
           ) : null}
@@ -639,6 +642,7 @@ export const TrackScreenDetailsTile = ({
           <DetailsTileNoAccess
             trackId={trackId}
             contentType={PurchaseableContentType.TRACK}
+            token={token}
             streamConditions={streamConditions}
           />
         ) : null}
@@ -647,6 +651,7 @@ export const TrackScreenDetailsTile = ({
             streamConditions={streamConditions}
             isOwner={isOwner}
             trackArtist={user}
+            token={token}
             contentType={PurchaseableContentType.TRACK}
           />
         ) : null}

@@ -73,7 +73,6 @@ export type Modals =
   | 'BuyAudio'
   | 'BuyAudioRecovery'
   | 'TransactionDetails'
-  | 'VipDiscord'
   | 'StripeOnRamp'
   | 'CoinflowOnramp'
   | 'InboxSettings'
@@ -115,6 +114,8 @@ export type Modals =
   | 'DownloadTrackArchive'
   | 'BuySellModal'
   | 'HostRemixContest'
+  | 'ReceiveTokensModal'
+  | 'SendTokensModal'
   | 'FinalizeWinnersConfirmation'
 
 export type BasicModalsState = {
@@ -151,6 +152,16 @@ export type StatefulModalsState = {
   DownloadTrackArchive: DownloadTrackArchiveModalState
   BuySellModal: BuySellModalState
   HostRemixContest: HostRemixContestModalState
+  ReceiveTokensModal: ReceiveTokensModalState
+  SendTokensModal: SendTokensModalState
+}
+
+export type ReceiveTokensModalState = BaseModalState & {
+  mint?: string
+}
+
+export type SendTokensModalState = BaseModalState & {
+  mint?: string
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

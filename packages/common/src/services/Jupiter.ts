@@ -1,3 +1,4 @@
+import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   createJupiterApiClient,
   Instruction,
@@ -19,6 +20,9 @@ export const SLIPPAGE_TOLERANCE_EXCEEDED_ERROR = 6001
 // Define JupiterTokenSymbol type here since we can't import it directly
 export type JupiterTokenSymbol = keyof typeof TOKEN_LISTING_MAP
 
+export const DEFAULT_MAX_ACCOUNTS = 20
+export const MAX_ALLOWED_ACCOUNTS = 64
+
 let _jup: ReturnType<typeof createJupiterApiClient>
 
 const initJupiter = () => {
@@ -39,15 +43,6 @@ const getInstance = () => {
 
 export const jupiterInstance = getInstance()
 
-/**
- * Helper function to find a token by its mint address
- */
-const findTokenByMint = (mintAddress: string) => {
-  return Object.values(TOKEN_LISTING_MAP).find(
-    (token) => token.address === mintAddress
-  )
-}
-
 export type JupiterQuoteParams = {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
@@ -61,10 +56,13 @@ export type JupiterQuoteParams = {
 export type JupiterMintQuoteParams = {
   inputMint: string
   outputMint: string
+  inputDecimals: number
+  outputDecimals: number
   amountUi: number
-  slippageBps: number
+  slippageBps?: number
   swapMode?: SwapMode
   onlyDirectRoutes?: boolean
+  maxAccounts?: number
 }
 
 export type JupiterQuoteResult = {
@@ -89,8 +87,6 @@ export type JupiterQuoteResult = {
   quote: QuoteResponse
 }
 
-const DEFAULT_DECIMALS = 9
-
 /**
  * Gets a quote from Jupiter using mint addresses directly
  * This version is used by the useSwapTokens hook
@@ -98,22 +94,18 @@ const DEFAULT_DECIMALS = 9
 export const getJupiterQuoteByMint = async ({
   inputMint,
   outputMint,
+  inputDecimals,
+  outputDecimals,
   amountUi,
   slippageBps,
   swapMode = 'ExactIn',
-  onlyDirectRoutes = false
+  onlyDirectRoutes = false,
+  maxAccounts = DEFAULT_MAX_ACCOUNTS
 }: JupiterMintQuoteParams): Promise<JupiterQuoteResult> => {
-  const inputToken = findTokenByMint(inputMint)
-  const outputToken = findTokenByMint(outputMint)
-
-  // Default to 9 decimals if tokens aren't found (fallback for safety)
-  const inputDecimals = inputToken?.decimals ?? DEFAULT_DECIMALS
-  const outputDecimals = outputToken?.decimals ?? DEFAULT_DECIMALS
-
   const amount =
     swapMode === 'ExactIn'
-      ? Math.ceil(amountUi * 10 ** inputDecimals)
-      : Math.floor(amountUi * 10 ** outputDecimals)
+      ? Number(new FixedDecimal(amountUi, inputDecimals).value.toString())
+      : Number(new FixedDecimal(amountUi, outputDecimals).value.toString())
 
   const quote = await jupiterInstance.quoteGet({
     inputMint,
@@ -121,7 +113,9 @@ export const getJupiterQuoteByMint = async ({
     amount,
     slippageBps,
     swapMode,
-    onlyDirectRoutes
+    onlyDirectRoutes,
+    maxAccounts,
+    dynamicSlippage: !slippageBps
   })
 
   if (!quote) {
@@ -142,6 +136,66 @@ export const getJupiterQuoteByMint = async ({
       swapMode === 'ExactIn' ? outputDecimals : inputDecimals
     ),
     quote
+  }
+}
+
+export type JupiterQuoteWithRetryResult = {
+  maxAccountsValue: number
+  quoteResult: JupiterQuoteResult
+}
+
+/**
+ * Gets a Jupiter quote with automatic retry logic for maxAccounts
+ * Starts with DEFAULT_MAX_ACCOUNTS and increments by 10 until MAX_ALLOWED_ACCOUNTS
+ * Returns the successful quote along with the maxAccounts value that worked
+ */
+export const getJupiterQuoteByMintWithRetry = async ({
+  inputMint,
+  outputMint,
+  inputDecimals,
+  outputDecimals,
+  amountUi,
+  slippageBps,
+  swapMode = 'ExactIn',
+  onlyDirectRoutes = false
+}: Omit<
+  JupiterMintQuoteParams,
+  'maxAccounts'
+>): Promise<JupiterQuoteWithRetryResult> => {
+  let maxAccounts = DEFAULT_MAX_ACCOUNTS
+  let lastError
+  let quoteResult: JupiterQuoteResult | null = null
+
+  while (maxAccounts <= MAX_ALLOWED_ACCOUNTS) {
+    try {
+      quoteResult = await getJupiterQuoteByMint({
+        inputMint,
+        outputMint,
+        inputDecimals,
+        outputDecimals,
+        amountUi,
+        slippageBps,
+        swapMode,
+        onlyDirectRoutes,
+        maxAccounts
+      })
+      break
+    } catch (err) {
+      lastError = err
+      maxAccounts += 10
+      if (maxAccounts > MAX_ALLOWED_ACCOUNTS) {
+        throw lastError
+      }
+    }
+  }
+
+  if (quoteResult === null) {
+    throw lastError
+  }
+
+  return {
+    maxAccountsValue: maxAccounts,
+    quoteResult
   }
 }
 

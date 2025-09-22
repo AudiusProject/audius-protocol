@@ -3,15 +3,15 @@ import { useCallback, useMemo } from 'react'
 import { useAudioBalance, useConnectedWallets } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { buySellMessages } from '@audius/common/messages'
-import { BNWei, Client } from '@audius/common/models'
+import { Client } from '@audius/common/models'
 import { FeatureFlags, Location, StringKeys } from '@audius/common/services'
 import {
   OnRampProvider,
-  tokenDashboardPageActions,
   useBuySellModal,
   useConnectedWalletsModal,
-  walletSelectors,
-  buyAudioActions
+  buyAudioActions,
+  useReceiveTokensModal,
+  useSendTokensModal
 } from '@audius/common/store'
 import { isNullOrUndefined, route } from '@audius/common/utils'
 import { AUDIO, type AudioWei } from '@audius/fixed-decimal'
@@ -28,8 +28,7 @@ import {
   IconWallet,
   Text
 } from '@audius/harmony'
-import BN from 'bn.js'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
@@ -41,13 +40,12 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
+import { env } from 'services/env'
 import { getClient } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
-const { pressReceive, pressSend } = tokenDashboardPageActions
-const { getAccountBalance } = walletSelectors
 const { startBuyAudioFlow } = buyAudioActions
 const { TRENDING_PAGE } = route
 
@@ -75,27 +73,24 @@ const OptionButton = (props: ButtonProps) => {
 }
 
 const WalletActions = () => {
-  const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
-  const dispatch = useDispatch()
-  const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
+  const { accountBalance: balance } = useAudioBalance()
+  const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
+  const { onOpen: openSendTokensModal } = useSendTokensModal()
+  const hasBalance = !isNullOrUndefined(balance) && balance !== BigInt(0)
 
-  const isMobile = useIsMobile()
   const onClickReceive = useCallback(() => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressReceive())
-    }
-  }, [dispatch, isMobile, openTransferDrawer])
+    openReceiveTokensModal({
+      mint: env.WAUDIO_MINT_ADDRESS,
+      isOpen: true
+    })
+  }, [openReceiveTokensModal])
 
   const onClickSend = useCallback(() => {
-    if (isMobile) {
-      openTransferDrawer(true)
-    } else {
-      dispatch(pressSend())
-    }
-  }, [isMobile, dispatch, openTransferDrawer])
+    openSendTokensModal({
+      mint: env.WAUDIO_MINT_ADDRESS,
+      isOpen: true
+    })
+  }, [openSendTokensModal])
 
   return (
     <Flex gap='m' wrap='wrap' justifyContent='center'>
@@ -280,7 +275,8 @@ const ManageWalletsButton = () => {
 export const WalletManagementTile = () => {
   const isManagedAccount = useIsManagedAccount()
   const { totalBalance, isLoading: isBalanceLoading } = useAudioBalance({
-    includeConnectedWallets: true
+    includeConnectedWallets: true,
+    includeStaked: true
   })
   const { data: connectedWallets } = useConnectedWallets()
   const [, setOpen] = useModalState('AudioBreakdown')

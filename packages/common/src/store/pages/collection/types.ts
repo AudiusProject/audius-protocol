@@ -3,7 +3,6 @@ import {
   UID,
   Collectible,
   LineupState,
-  SmartCollectionVariant,
   Status,
   LineupTrack
 } from '~/models'
@@ -19,7 +18,6 @@ export type CollectionsPageState = {
   status: Status | null
   tracks: LineupState<CollectionTrack>
   userUid: UID | null
-  smartCollectionVariant: SmartCollectionVariant
 }
 
 export type CollectionsPageType = 'playlist' | 'album'

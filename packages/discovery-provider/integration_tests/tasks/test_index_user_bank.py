@@ -12,6 +12,7 @@ from integration_tests.tasks.user_bank_mock_transactions import (
     SENDER_ROOT_WALLET_USDC_ACCOUNT_OWNER,
     SENDER_USDC_USER_BANK_ADDRESS,
     mock_failed_track_purchase_tx,
+    mock_lookup_tables_tx,
     mock_unknown_instruction_tx,
     mock_valid_create_audio_token_account_tx,
     mock_valid_create_usdc_token_account_tx,
@@ -651,3 +652,46 @@ def test_process_user_bank_txs_details_transfer_audio_tip_challenge_event(app):
             )
         ]
         challenge_event_bus.dispatch.assert_has_calls(calls)
+
+
+def test_process_user_bank_tx_with_lookup_tables(app):
+    tx_response = mock_lookup_tables_tx
+
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_user_bank_tx_details(
+            solana_client_manager=solana_client_manager_mock,
+            session=session,
+            redis=redis,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.fromtimestamp(tx_response.value.block_time),
+            challenge_event_bus=challenge_event_bus,
+        )
+        sender_transaction_record = (
+            session.query(AudioTransactionsHistory)
+            .filter(AudioTransactionsHistory.signature == tx_sig_str)
+            .filter(AudioTransactionsHistory.user_bank == sender_waudio_user_bank)
+            .first()
+        )
+        assert sender_transaction_record is not None
+        assert sender_transaction_record.transaction_type == TransactionType.transfer
+        assert sender_transaction_record.method == TransactionMethod.send
+        assert sender_transaction_record.change == -100000000
+        assert (
+            sender_transaction_record.tx_metadata
+            == "42pcdG2k1SiZPbDDYsieJkRptSKQ8qqRZvVuotEKKyu3"
+        )

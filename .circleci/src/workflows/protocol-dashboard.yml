@@ -8,19 +8,11 @@ jobs:
         - Vercel
       requires:
         - protocol-dashboard-init
-  - protocol-dashboard-pin-staging:
+  - protocol-dashboard-deploy-staging:
       context:
         - Audius Client
       requires:
         - protocol-dashboard-build-staging
-      filters:
-        branches:
-          only: /^main$/
-  - protocol-dashboard-deploy-staging:
-      context:
-        - Armada
-      requires:
-        - protocol-dashboard-pin-staging
       filters:
         branches:
           only: /^main$/
@@ -36,19 +28,11 @@ jobs:
       filters:
         branches:
           only: /(^main|^release.*)$/
-  - protocol-dashboard-pin-prod:
+  - protocol-dashboard-deploy-prod:
       context:
         - Audius Client
       requires:
         - protocol-dashboard-hold-deploy-prod
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
-  - protocol-dashboard-deploy-prod:
-      context:
-        - Armada
-      requires:
-        - protocol-dashboard-pin-prod
       filters:
         branches:
           only: /(^main|^release.*)$/

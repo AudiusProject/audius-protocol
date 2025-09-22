@@ -1,18 +1,27 @@
-import { buySellMessages as messages } from '@audius/common/messages'
-import { TokenInfo } from '@audius/common/store'
+import { formatUSDCValue } from '@audius/common/api'
+import { buySellMessages as baseMessages } from '@audius/common/messages'
+import { useTokenAmountFormatting, TokenInfo } from '@audius/common/store'
 import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
-import { useTokenAmountFormatting } from './hooks/useTokenAmountFormatting'
+
+const messages = {
+  ...baseMessages,
+  priceEach: (price: number) => {
+    const formatted = formatUSDCValue(price, { includeDollarSign: true })
+    return `(${formatted} ea.)`
+  }
+}
 
 type TransactionSuccessScreenProps = {
   payTokenInfo: TokenInfo
   receiveTokenInfo: TokenInfo
   payAmount: number
   receiveAmount: number
-  pricePerBaseToken: number
+  pricePerBaseToken?: number
   baseTokenSymbol: string
   onDone: () => void
+  hideUSDCTooltip?: boolean
 }
 
 export const TransactionSuccessScreen = (
@@ -25,27 +34,32 @@ export const TransactionSuccessScreen = (
     receiveAmount,
     pricePerBaseToken,
     baseTokenSymbol,
-    onDone
+    onDone,
+    hideUSDCTooltip
   } = props
 
+  // Follow same pattern as ConfirmSwapScreen - call hooks first
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
     amount: payAmount,
-    availableBalance: payAmount, // Use actual amount as available balance for display
-    isStablecoin: !!payTokenInfo.isStablecoin
+    isStablecoin: !!payTokenInfo.isStablecoin,
+    decimals: payTokenInfo.decimals
   })
 
   const { formattedAmount: formattedReceiveAmount } = useTokenAmountFormatting({
     amount: receiveAmount,
-    availableBalance: receiveAmount, // Use actual amount as available balance for display
-    isStablecoin: !!receiveTokenInfo.isStablecoin
+    isStablecoin: !!receiveTokenInfo.isStablecoin,
+    decimals: receiveTokenInfo.decimals
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
-  const priceLabel = isReceivingBaseToken
-    ? messages.priceEach(pricePerBaseToken)
-    : undefined
+  const priceLabel =
+    isReceivingBaseToken && pricePerBaseToken
+      ? messages.priceEach(pricePerBaseToken)
+      : undefined
 
-  if (!formattedPayAmount || !formattedReceiveAmount) return null
+  if (!formattedPayAmount || !formattedReceiveAmount) {
+    return null
+  }
 
   return (
     <Flex direction='column' gap='xl'>
@@ -60,6 +74,7 @@ export const TransactionSuccessScreen = (
           title={messages.youPaid}
           tokenInfo={payTokenInfo}
           amount={formattedPayAmount}
+          hideUSDCTooltip={hideUSDCTooltip}
         />
         <SwapBalanceSection
           title={messages.youReceived}

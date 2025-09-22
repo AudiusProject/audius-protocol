@@ -1,0 +1,50 @@
+/* Right side of the track tile */
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: var(--harmony-unit-4);
+}
+
+.duration {
+  text-align: right;
+  letter-spacing: 0.2px;
+
+  /* Neutral Light 4 [day] */
+  color: var(--harmony-n-400);
+}
+
+.large .topRight {
+  /* Matches header row height for large tile variant */
+  line-height: var(--harmony-unit-3);
+}
+
+.progressTextContainer {
+  display: flex;
+  gap: var(--harmony-unit-3);
+  align-items: center;
+}
+
+.progressText {
+  white-space: nowrap;
+}
+
+.progressTextSlider {
+  height: var(--harmony-unit-1);
+  width: 128px;
+}
+
+.completeText {
+  display: flex;
+  gap: var(--harmony-unit-1);
+  align-items: center;
+  color: var(--harmony-secondary);
+}
+
+.completeIcon {
+  height: var(--harmony-unit-3);
+  width: var(--harmony-unit-3);
+}
+
+.completeIcon path {
+  fill: var(--harmony-secondary);
+}

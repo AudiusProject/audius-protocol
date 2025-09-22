@@ -258,7 +258,7 @@ export const PullToRefresh = ({
           )
         : interpolate(scrollY.value, [-60, -16], [1, 0], 'clamp')
     }
-  }, [didHitTop, scrollY.value, yOffsetDisappearance])
+  }, [didHitTop, scrollY, yOffsetDisappearance])
 
   useAnimatedReaction(
     () => scrollY.value,

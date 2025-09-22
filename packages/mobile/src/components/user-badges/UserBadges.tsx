@@ -1,66 +1,58 @@
-import type { ComponentType } from 'react'
+import { useMemo } from 'react'
 
-import type { User } from '@audius/common/models'
+import { useUser } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import type { ID } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { useTierAndVerifiedForUser } from '@audius/common/store'
-import type { ViewStyle, StyleProp, TextStyle } from 'react-native'
-import { StyleSheet, View, Text } from 'react-native'
 
-import { IconVerified } from '@audius/harmony-native'
+import type { IconSize } from '@audius/harmony-native'
+import { Flex, IconVerified } from '@audius/harmony-native'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { useThemePalette } from 'app/utils/theme'
+import { TokenIcon } from 'app/components/core'
+import { env } from 'app/services/env'
 
 type UserBadgesProps = {
-  user: Pick<User, 'user_id' | 'name' | 'is_verified'> | undefined
-  badgeSize?: number
-  style?: StyleProp<ViewStyle>
-  nameStyle?: StyleProp<TextStyle>
-  hideName?: boolean
-  as?: ComponentType
+  userId: ID
+  badgeSize?: IconSize
+  mint?: string
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start'
-  },
-  badge: {
-    marginLeft: 4
-  }
-})
 
 export const UserBadges = (props: UserBadgesProps) => {
-  const {
-    user,
-    badgeSize = 14,
-    style,
-    nameStyle,
-    hideName,
-    as: Component = View
-  } = props
-  const { tier } = useTierAndVerifiedForUser(user?.user_id)
-  const palette = useThemePalette()
+  const { userId, badgeSize = 's', mint } = props
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
-  if (!user) return null
+  const { data: userData } = useUser(userId, {
+    select: (user) => ({
+      isVerified: user?.is_verified,
+      artistCoinBadge: user?.artist_coin_badge
+    })
+  })
+  const { isVerified: userIsVerified, artistCoinBadge: userArtistCoinBadge } =
+    userData ?? {}
+  const { tier } = useTierAndVerifiedForUser(userId)
+
+  const displayMint = useMemo(() => {
+    // Priority: explicit mint prop > user's artist_coin_badge > null
+    if (mint) return mint
+    if (userArtistCoinBadge?.mint) return userArtistCoinBadge.mint
+    return null
+  }, [mint, userArtistCoinBadge?.mint])
+
+  const shouldShowArtistCoinBadge =
+    isArtistCoinEnabled &&
+    !!displayMint &&
+    displayMint !== env.WAUDIO_MINT_ADDRESS
 
   return (
-    <Component style={[styles.container, style]}>
-      {hideName ? null : (
-        <Text style={nameStyle} numberOfLines={1}>
-          {user.name}
-        </Text>
-      )}
-      {user.is_verified ? (
-        <IconVerified
-          height={badgeSize}
-          width={badgeSize}
-          style={styles.badge}
-          fill={palette.staticPrimary}
-        />
+    <Flex row gap='xs' alignItems='center'>
+      {userIsVerified ? <IconVerified size={badgeSize} /> : null}
+      <IconAudioBadge tier={tier} size={badgeSize} />
+      {shouldShowArtistCoinBadge ? (
+        <TokenIcon logoURI={userArtistCoinBadge?.logo_uri} size={badgeSize} />
       ) : null}
-      <IconAudioBadge tier={tier} style={styles.badge} size='xs' />
-    </Component>
+    </Flex>
   )
 }
-
-export default UserBadges

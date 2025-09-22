@@ -1,19 +1,25 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCreateUserbankIfNeeded } from '@audius/common/hooks'
+import { useQueryContext } from '@audius/common/api'
+import { useUserbank } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import Clipboard from '@react-native-clipboard/clipboard'
-import QRCode from 'react-qr-code'
-import { useAsync } from 'react-use'
 
-import { IconError, Button, Flex, Text, TextLink } from '@audius/harmony-native'
+import {
+  IconError,
+  Button,
+  Flex,
+  Text,
+  TextLink,
+  LoadingSpinner
+} from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
-import { make, track, track as trackEvent } from 'app/services/analytics'
-import { getUSDCUserBank } from 'app/services/buyCrypto'
+import { make, track as trackEvent } from 'app/services/analytics'
 import type { AllEvents } from 'app/types/analytics'
 
 import { CashBalanceSection } from '../add-funds-drawer/CashBalanceSection'
 import { AddressTile } from '../core/AddressTile'
+import { QRCodeComponent } from '../core/QRCode'
 
 const USDCLearnMore = 'https://support.audius.co/product/usdc'
 
@@ -37,40 +43,50 @@ export const USDCManualTransfer = ({
 }: USDCManualTransferProps) => {
   const { toast } = useToast()
 
-  useCreateUserbankIfNeeded({
-    recordAnalytics: track,
-    mint: 'USDC'
-  })
+  const { env } = useQueryContext()
+  const { userBankAddress: usdcUserBank, loading: userBankLoading } =
+    useUserbank(env.USDC_MINT_ADDRESS)
 
-  const { value: USDCUserBank } = useAsync(async () => {
-    const USDCUserBankPubKey = await getUSDCUserBank()
-    return USDCUserBankPubKey?.toString() ?? ''
-  })
-
-  const analytics: AllEvents = useMemo(
-    () => ({
-      eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-      address: USDCUserBank ?? ''
-    }),
-    [USDCUserBank]
+  const analytics: AllEvents | null = useMemo(
+    () =>
+      usdcUserBank
+        ? {
+            eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+            address: usdcUserBank
+          }
+        : null,
+    [usdcUserBank]
   )
 
   const handleConfirmPress = useCallback(() => {
-    Clipboard.setString(USDCUserBank ?? '')
+    if (!usdcUserBank || !analytics) return
+    Clipboard.setString(usdcUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
     trackEvent(make(analytics))
-  }, [USDCUserBank, analytics, toast])
+  }, [usdcUserBank, analytics, toast])
+
+  if (userBankLoading) {
+    return (
+      <Flex ph='l' gap='xl' justifyContent='center' alignItems='center'>
+        <LoadingSpinner style={{ height: 32 }} />
+      </Flex>
+    )
+  }
 
   return (
     <Flex ph='l' gap='xl'>
       <CashBalanceSection />
       <Flex row gap='l' alignItems='center'>
-        {USDCUserBank ? <QRCode size={160} value={USDCUserBank} /> : null}
+        {usdcUserBank ? (
+          <QRCodeComponent size={160} value={usdcUserBank} />
+        ) : null}
         <Flex flex={1}>
           <Text size='l'>{messages.explainer}</Text>
         </Flex>
       </Flex>
-      <AddressTile address={USDCUserBank} analytics={analytics} />
+      {usdcUserBank && analytics ? (
+        <AddressTile address={usdcUserBank} analytics={analytics} />
+      ) : null}
       <Flex
         row
         gap='l'

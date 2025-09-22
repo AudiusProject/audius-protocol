@@ -4,6 +4,7 @@ import { ID } from '~/models/Identifiers'
 import {
   isContentCollectibleGated,
   isContentSpecialAccess,
+  isContentTokenGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
 import { Nullable } from '~/utils'
@@ -36,6 +37,7 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   const isUnlockedStream = !isOwner && hasStreamAccess
   const isUnlockedDownload = !isOwner && hasDownloadAccess
   const isPurchaseable = isContentUSDCPurchaseGated(track?.stream_conditions)
+  const isTokenGated = isContentTokenGated(track?.stream_conditions)
   const isCollectibleGated = isContentCollectibleGated(track?.stream_conditions)
   const isSpecialAccess = isContentSpecialAccess(track?.stream_conditions)
   const isDownloadGated = isContentUSDCPurchaseGated(track?.download_conditions)
@@ -54,6 +56,9 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
     isUnlocked = isUnlockedStream
   } else if (isCollectibleGated) {
     type = AccessType.COLLECTIBLE_GATED
+    isUnlocked = isUnlockedStream
+  } else if (isTokenGated) {
+    type = AccessType.TOKEN_GATED
     isUnlocked = isUnlockedStream
   } else if (isSpecialAccess) {
     type = AccessType.SPECIAL_ACCESS

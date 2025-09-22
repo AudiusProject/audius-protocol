@@ -53,3 +53,4 @@ Run lint
 
 FIX_LINT=1 ./scripts/lint.sh
 ```
+

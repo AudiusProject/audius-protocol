@@ -3,6 +3,7 @@ import {
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
+  primeCollectionDataSaga,
   queryAccountUser,
   queryCollection,
   queryCurrentUserId,
@@ -14,7 +15,6 @@ import {
   Name,
   Kind,
   CollectionMetadata,
-  Collection,
   ID,
   Track
 } from '@audius/common/models'
@@ -34,7 +34,6 @@ import { Id, OptionalId } from '@audius/sdk'
 import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -111,7 +110,7 @@ function* optimisticallySavePlaylist(
   const accountUser = yield* call(queryAccountUser)
   if (!accountUser) return
   const { user_id, handle } = accountUser
-  const playlist: Partial<Collection> & { playlist_id: ID } = {
+  const playlist: Partial<CollectionMetadata> & { playlist_id: ID } = {
     playlist_id: playlistId,
     ...formFields
   }
@@ -147,7 +146,7 @@ function* optimisticallySavePlaylist(
     playlist.is_album
   )
 
-  yield* call(updateCollectionData, [playlist])
+  yield* call(primeCollectionDataSaga, [playlist as CollectionMetadata])
 
   yield* put(
     accountActions.addAccountPlaylist({
@@ -166,8 +165,6 @@ function* optimisticallySavePlaylist(
       category: LibraryCategory.Favorite
     })
   )
-
-  yield* call(addPlaylistsNotInLibrary)
 }
 
 function* createAndConfirmPlaylist(
@@ -230,8 +227,6 @@ function* createAndConfirmPlaylist(
     }
 
     yield* call(updateCollectionData, [reformattedPlaylist])
-
-    yield* call(addPlaylistsNotInLibrary)
 
     yield* put(
       make(Name.PLAYLIST_COMPLETE_CREATE, {

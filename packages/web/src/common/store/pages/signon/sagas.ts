@@ -1,7 +1,6 @@
 import {
   getAccountStatusQueryKey,
-  getWalletAccountQueryFn,
-  getWalletAccountQueryKey,
+  getWalletAccountSaga,
   queryAccountUser,
   queryHasAccount,
   queryIsAccountComplete,
@@ -18,7 +17,6 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata,
   Status
 } from '@audius/common/models'
 import {
@@ -480,7 +478,7 @@ function* createGuestAccount(
         yield* call([localStorage, 'clearAudiusAccountUser'])
         yield* call([authService, authService.signOut])
         yield put(accountActions.resetAccount())
-        queryClient.setQueryData(getAccountStatusQueryKey(), Status.IDLE)
+        queryClient.setQueryData(getAccountStatusQueryKey(), Status.SUCCESS)
         yield put(accountActions.setGuestEmail({ guestEmail }))
 
         const currentUser = yield* call(queryAccountUser)
@@ -588,17 +586,12 @@ function* signUp() {
                 sdk.services.audiusWalletClient,
                 sdk.services.audiusWalletClient.getAddresses
               ])
-              const account = (yield* call(
-                [queryClient, queryClient.fetchQuery],
-                {
-                  queryKey: getWalletAccountQueryKey(wallet),
-                  queryFn: async () =>
-                    getWalletAccountQueryFn(wallet!, sdk, queryClient),
-                  staleTime: Infinity,
-                  gcTime: Infinity
-                }
-              )) as AccountUserMetadata | undefined
-              // TODO: Do I need to prime the accountUser slice here?
+              const account = yield* call(
+                getWalletAccountSaga,
+                wallet,
+                sdk,
+                queryClient
+              )
               if (!account) {
                 throw new Error('Account user ID does not exist')
               }
@@ -902,13 +895,12 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       return
     }
 
-    const account = (yield* call([queryClient, queryClient.fetchQuery], {
-      queryKey: getWalletAccountQueryKey(signInResponse.walletAddress),
-      queryFn: async () =>
-        getWalletAccountQueryFn(signInResponse.walletAddress, sdk, queryClient),
-      staleTime: Infinity,
-      gcTime: Infinity
-    })) as AccountUserMetadata | undefined
+    const account = yield* call(
+      getWalletAccountSaga,
+      signInResponse.walletAddress,
+      sdk,
+      queryClient
+    )
 
     // Login succeeded but we found no account for the user (incomplete signup)
     if (!account) {

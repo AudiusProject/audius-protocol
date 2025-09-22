@@ -3,7 +3,7 @@ import { IconArrowRight, Paper, PlainButton } from '@audius/harmony'
 import {
   UserProfileListProps,
   UserProfilePictureList
-} from 'components/notification/Notification/components/UserProfilePictureList'
+} from 'components/user-profile-picture-list'
 
 const messages = {
   viewAll: 'View All'

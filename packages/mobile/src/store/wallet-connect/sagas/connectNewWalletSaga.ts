@@ -72,7 +72,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet: public_key,
           chain: Chain.Sol,
-          balance,
+          balance: BigInt(balance.toString()),
           collectibleCount
         })
       )
@@ -121,7 +121,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet: publicKeyEncoded,
           chain: Chain.Sol,
-          balance,
+          balance: BigInt(balance.toString()),
           collectibleCount
         })
       )
@@ -149,7 +149,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
         setIsConnectingWallet({
           wallet,
           chain: Chain.Eth,
-          balance,
+          balance: BigInt(balance.toString()),
           collectibleCount
         })
       )

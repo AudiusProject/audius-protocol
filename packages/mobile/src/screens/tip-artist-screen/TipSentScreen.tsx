@@ -1,16 +1,16 @@
 import { useCallback } from 'react'
 
-import { useCurrentAccountUser } from '@audius/common/api'
+import { useArtistCoin, useCurrentAccountUser } from '@audius/common/api'
 import type { SolanaWalletAddress } from '@audius/common/models'
 import { tippingSelectors } from '@audius/common/store'
-import { formatNumberCommas } from '@audius/common/utils'
+import { formatNumberCommas, getXShareHandle } from '@audius/common/utils'
 import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { env } from 'services/env'
 
 import { IconCheck, IconClose, PlainButton } from '@audius/harmony-native'
-import { TwitterButton } from 'app/components/twitter-button'
-import { env } from 'app/services/env'
+import { XButton } from 'app/components/x-button'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
@@ -26,16 +26,21 @@ const messages = {
   title: 'Tip Sent',
   // NOTE: Send tip -> Send $AUDIO change
   titleAlt: '$AUDIO Sent', // iOS only
-  description: 'Share your support on Twitter!',
+  description: 'Share your support on X!',
   done: 'Done',
-  twitterCopyPrefix: 'I just tipped ',
-  twitterCopyPrefixAlt: 'I just sent ', // iOS only
-  twitterCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip',
-  twitterCopySuffixAlt: ' $AUDIO on @audius #Audius #AUDIO' // iOS only
+  xShare: (
+    recipient: string,
+    amount: string,
+    isIOS: boolean,
+    price?: string
+  ) => {
+    const totalValue = price && amount ? Number(price) * Number(amount) : null
+    return `I just ${isIOS ? 'sent' : 'tipped'} ${recipient} ${formatNumberCommas(Number(amount))} $AUDIO ${totalValue ? `(~$${totalValue.toLocaleString('en-US', { maximumFractionDigits: 2 })})` : ''} on @audius`
+  }
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
-  twitter: {
+  x: {
     marginBottom: spacing(6)
   },
   close: {
@@ -61,25 +66,21 @@ export const TipSentScreen = () => {
     source,
     onSuccessActions
   } = useSelector(getSendTipData)
+  const { data: tokenPriceData } = useArtistCoin(env.WAUDIO_MINT_ADDRESS)
   const styles = useStyles()
   const navigation = useNavigation()
 
-  const getTwitterShareText = () => {
-    const formattedSendAmount = formatNumberCommas(sendAmount)
+  const tokenPrice = tokenPriceData?.price?.toString()
+
+  const getXShareText = () => {
     if (user_id && recipient) {
-      let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
-      if (recipient.twitter_handle) {
-        recipientAndAmount = `@${recipient.twitter_handle} ${formattedSendAmount}`
-      }
-      return `${
-        Platform.OS === 'ios'
-          ? messages.twitterCopyPrefixAlt
-          : messages.twitterCopyPrefix
-      }${recipientAndAmount}${
-        Platform.OS === 'ios'
-          ? messages.twitterCopySuffixAlt
-          : messages.twitterCopySuffix
-      }`
+      const recipientName = getXShareHandle(recipient)
+      return messages.xShare(
+        recipientName,
+        sendAmount,
+        Platform.OS === 'ios',
+        tokenPrice
+      )
     }
     return ''
   }
@@ -105,11 +106,11 @@ export const TipSentScreen = () => {
       <TipHeader status='sent' />
       <ReceiverDetails />
       <DescriptionText>{messages.description}</DescriptionText>
-      <TwitterButton
+      <XButton
         type='static'
         fullWidth
-        style={styles.twitter}
-        shareText={getTwitterShareText()}
+        style={styles.x}
+        shareText={getXShareText()}
         url={recipient ? `${env.AUDIUS_URL}/${recipient.handle}` : undefined}
         analytics={
           user_id && recipient

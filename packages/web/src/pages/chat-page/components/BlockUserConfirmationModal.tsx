@@ -15,7 +15,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { UserLink } from 'components/link/UserLink'
 import { track, make } from 'services/analytics'
 
 import styles from './BlockUserConfirmationModal.module.css'
@@ -30,7 +30,7 @@ const messages = {
   content: (user: User, isReport?: boolean) => (
     <>
       Are you sure you want to {isReport ? 'report' : 'block'}{' '}
-      <UserNameAndBadges user={user} />{' '}
+      <UserLink userId={user.user_id} size='l' />{' '}
       {isReport
         ? 'for abuse? They will be blocked from sending you new messages.'
         : 'from sending messages to your inbox?'}

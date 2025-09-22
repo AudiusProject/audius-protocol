@@ -1,4 +1,4 @@
-integration-init:
+e2e-init:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
@@ -29,7 +29,7 @@ integration-init:
           - packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
           - packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
-integration-test:
+e2e-test:
   machine: true
   resource_class: audiusproject/gcp-n2-standard-4
   working_directory: ~/audius-protocol
@@ -51,13 +51,14 @@ integration-test:
         no_output_timeout: 15m
         command: |
           . ~/.profile; audius-cmd test
-    - run:
-        name: verify sdk types
-        command: |
-          cd ~/audius-protocol/packages/sdk
-          . ~/.profile
-          audius-compose connect --nopass
-          ./scripts/check-generated-types.sh
+    # Disabled until we are able to run bridge server in local stack
+    # - run:
+    #     name: verify sdk types
+    #     command: |
+    #       cd ~/audius-protocol/packages/sdk
+    #       . ~/.profile
+    #       audius-compose connect --nopass
+    #       ./scripts/check-generated-types.sh
     - run:
         name: install playwright
         command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
@@ -65,7 +66,7 @@ integration-test:
         name: run playwright tests
         command: |
           cd packages/web
-          RUN_AGAINST_LOCAL_STACK=true npx playwright test
+          CLEAN=true npx playwright test
         when: always
     - store_test_results:
         path: packages/web/report.xml

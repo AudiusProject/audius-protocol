@@ -1,12 +1,14 @@
-import { ReactNode } from 'react'
+import { useCallback, useState } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { AUDIO_TICKER } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { AUDIO } from '@audius/fixed-decimal'
 import {
   HoverCard,
   HoverCardHeader,
+  HoverCardProps,
   IconArrowRight,
   IconComponent,
   IconTokenAUDIO,
@@ -16,17 +18,21 @@ import {
   IconTokenSilver,
   useTheme
 } from '@audius/harmony'
-import { Origin } from '@audius/harmony/src/components/popup/types'
-import BN from 'bn.js'
+import { useNavigate } from 'react-router-dom-v5-compat'
+
+import { env } from 'services/env'
 
 import { HoverCardBody } from './HoverCardBody'
 
-type AudioHoverCardProps = {
-  /**
-   * Content displayed as the hover trigger
-   */
-  children: ReactNode
-
+type AudioHoverCardProps = Pick<
+  HoverCardProps,
+  | 'children'
+  | 'onClose'
+  | 'onClick'
+  | 'anchorOrigin'
+  | 'transformOrigin'
+  | 'triggeredBy'
+> & {
   /**
    * The $AUDIO tier to display
    */
@@ -36,26 +42,6 @@ type AudioHoverCardProps = {
    * The user ID to fetch balance and tier information for
    */
   userId: ID
-
-  /**
-   * Optional callback fired when the hover card is closed
-   */
-  onClose?: () => void
-
-  /**
-   * Position of the anchor origin
-   */
-  anchorOrigin?: Origin
-
-  /**
-   * Position of the transform origin
-   */
-  transformOrigin?: Origin
-
-  /**
-   * Optional callback fired when the hover card is clicked
-   */
-  onClick?: () => void
 }
 
 // Audio tier badge map for header icons
@@ -80,19 +66,34 @@ export const AudioHoverCard = ({
   onClose,
   anchorOrigin,
   transformOrigin,
-  onClick
+  onClick,
+  triggeredBy
 }: AudioHoverCardProps) => {
+  const navigate = useNavigate()
   const { cornerRadius } = useTheme()
 
-  // Get user's formatted balance directly using select
-  const { data: formattedBalance = '0' } = useUser(userId, {
-    select: (user) => {
-      if (!user?.total_balance) return '0'
-      const balanceValue = new BN(user.total_balance)
-      const audioValue = AUDIO(balanceValue)
-      return formatCount(Number(audioValue.toFixed(2)))
-    }
+  // Track hover state to conditionally fetch token balance
+  const [isHovered, setIsHovered] = useState(false)
+
+  const handleHover = useCallback((hovered: boolean) => {
+    setIsHovered(hovered)
+  }, [])
+
+  const { data: tokenBalance } = useTokenBalance({
+    mint: env.WAUDIO_MINT_ADDRESS,
+    userId,
+    enabled: isHovered
   })
+
+  const formattedBalance = tokenBalance
+    ? formatCount(Number(tokenBalance.balance))
+    : null
+
+  const handleClick = useCallback(() => {
+    onClick?.()
+    onClose?.()
+    navigate(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER))
+  }, [navigate, onClick, onClose])
 
   return (
     <HoverCard
@@ -101,6 +102,7 @@ export const AudioHoverCard = ({
           <HoverCardHeader
             iconLeft={audioTierBadgeMap[tier]}
             title={getBadgeName(tier)}
+            onClick={handleClick}
             onClose={onClose}
             iconRight={IconArrowRight}
           />
@@ -109,6 +111,7 @@ export const AudioHoverCard = ({
               <IconTokenAUDIO
                 size='3xl'
                 css={{ borderRadius: cornerRadius.circle }}
+                hex
               />
             }
             amount={formattedBalance}
@@ -117,7 +120,9 @@ export const AudioHoverCard = ({
       }
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
-      onClick={onClick}
+      onClick={handleClick}
+      triggeredBy={triggeredBy}
+      onHover={handleHover}
     >
       {children}
     </HoverCard>

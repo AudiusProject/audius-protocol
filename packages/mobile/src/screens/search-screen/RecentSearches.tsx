@@ -1,16 +1,18 @@
-import type { ReactNode } from 'react'
+import type { ReactElement } from 'react'
 import { useCallback, useMemo } from 'react'
 
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind } from '@audius/common/models'
 import { searchActions, searchSelectors } from '@audius/common/store'
+import { ScrollView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Flex, IconCloseAlt, PlainButton, Text } from '@audius/harmony-native'
-import { FlatList } from 'app/components/core'
+import { Button, Flex, IconCloseAlt, Paper, Text } from '@audius/harmony-native'
+
+import { useDeferredElement } from '../../hooks/useDeferredElement'
 
 import { SearchItem } from './SearchItem'
-import { useSearchCategory } from './searchState'
+import { useSearchCategory } from './searchState.tsx'
 
 const { removeItem, clearHistory } = searchActions
 const { getSearchHistory } = searchSelectors
@@ -26,12 +28,13 @@ const itemKindByCategory: Record<string, Kind | null> = {
 }
 
 type RecentSearchesProps = {
-  ListHeaderComponent?: ReactNode
+  ListHeaderComponent?: ReactElement
 }
 
 export const RecentSearches = (props: RecentSearchesProps) => {
   const { ListHeaderComponent } = props
   const dispatch = useDispatch()
+  const { InViewWrapper } = useDeferredElement()
 
   // Get state from context
   const [category] = useSearchCategory()
@@ -53,37 +56,54 @@ export const RecentSearches = (props: RecentSearchesProps) => {
     dispatch(clearHistory())
   }, [dispatch])
 
-  if (filteredSearchItems.length === 0) return null
+  if (filteredSearchItems.length === 0) return ListHeaderComponent || null
 
   return (
-    <FlatList
-      ListHeaderComponent={
-        <Flex gap='l'>
-          {ListHeaderComponent}
-          <Flex ph='l'>
-            <Text variant='title'>{messages.title}</Text>
+    <InViewWrapper>
+      <ScrollView>
+        {ListHeaderComponent && (
+          <Flex ph='xs' pv='l'>
+            {ListHeaderComponent}
           </Flex>
-        </Flex>
-      }
-      data={filteredSearchItems}
-      keyExtractor={({ id, kind }) => `${kind}-${id}`}
-      renderItem={({ item }) => (
-        <SearchItem
-          searchItem={item}
-          icon={IconCloseAlt}
-          onPressIcon={() => dispatch(removeItem({ searchItem: item }))}
-        />
-      )}
-      ListFooterComponent={
-        <Flex pv='l' ph='l'>
-          <PlainButton
-            style={{ alignSelf: 'center' }}
-            onPress={handleClearSearchHistory}
-          >
-            {messages.clear}
-          </PlainButton>
-        </Flex>
-      }
-    />
+        )}
+        <Paper
+          w='100%'
+          pv='l'
+          direction='column'
+          shadow='mid'
+          backgroundColor='surface1'
+          border='default'
+          gap='m'
+        >
+          <Flex ph='l'>
+            <Text variant='title' size='l'>
+              {messages.title}
+            </Text>
+          </Flex>
+
+          <Flex direction='column' gap='m'>
+            {filteredSearchItems.map((item) => (
+              <SearchItem
+                key={`${item.kind}-${item.id}`}
+                searchItem={item}
+                icon={IconCloseAlt}
+                onPressIcon={() => dispatch(removeItem({ searchItem: item }))}
+              />
+            ))}
+          </Flex>
+
+          <Flex pt='l' ph='l'>
+            <Button
+              variant='secondary'
+              size='small'
+              style={{ alignSelf: 'center' }}
+              onPress={handleClearSearchHistory}
+            >
+              {messages.clear}
+            </Button>
+          </Flex>
+        </Paper>
+      </ScrollView>
+    </InViewWrapper>
   )
 }

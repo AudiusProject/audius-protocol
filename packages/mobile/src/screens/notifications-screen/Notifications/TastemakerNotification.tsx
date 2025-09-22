@@ -15,14 +15,14 @@ import {
   NotificationHeader,
   NotificationText,
   NotificationTile,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
 const messages = {
   title: "You're a Tastemaker!",
   tastemaker: 'is now trending thanks to you! Great work 🙌',
-  twitterShare: (handle: string, trackTitle: string) =>
-    `I was one of the first to discover ${trackTitle} by ${handle} on @audius and it just made it onto trending! #Audius #AudiusTastemaker $AUDIO`
+  xShare: (handle: string, trackTitle: string) =>
+    `I was one of the first to discover ${trackTitle} by ${handle} on @audius and it just made it onto trending! $AUDIO`
 }
 
 type TastemakerNotificationProps = {
@@ -45,8 +45,8 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
     (trackOwnerHandle: string) => {
       if (!entity) return null
       const trackTitle = entity.title ?? ''
-      const shareText = messages.twitterShare(trackOwnerHandle, trackTitle)
-      // The analytics object is cast as any to satisfy the NotificationTwitterButton prop
+      const shareText = messages.xShare(trackOwnerHandle, trackTitle)
+      // The analytics object is cast as any to satisfy the NotificationXButton prop
       const analytics = {
         eventName: 'NOTIFICATIONS_CLICK_TASTEMAKER_TWITTER_SHARE',
         text: shareText
@@ -65,7 +65,7 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
           <EntityLink entity={entity} /> {messages.tastemaker}
         </NotificationText>
       </NotificationHeader>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='dynamic'
         handle={trackOwnerUser.handle}
         shareData={handleShare}

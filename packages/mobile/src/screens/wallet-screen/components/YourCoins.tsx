@@ -1,101 +1,95 @@
 import React, { useCallback } from 'react'
 
-import { useFeatureFlag, useFormattedAudioBalance } from '@audius/common/hooks'
-import { buySellMessages as messages } from '@audius/common/messages'
-import { FeatureFlags } from '@audius/common/services'
-
 import {
-  Button,
-  Flex,
-  IconCaretRight,
-  IconTokenAUDIO,
-  Paper,
-  Skeleton,
-  Text,
-  cornerRadius
-} from '@audius/harmony-native'
+  useCurrentUserId,
+  useQueryContext,
+  useUserCoins
+} from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
+import { buySellMessages } from '@audius/common/messages'
+import { FeatureFlags } from '@audius/common/services'
+import { AUDIO_TICKER } from '@audius/common/store'
+import { ownedCoinsFilter } from '@audius/common/utils'
+
+import { Box, Button, Divider, Flex, Paper, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { CoinCard } from './CoinCard'
+
+const messages = {
+  ...buySellMessages
+}
+
 const TokensHeader = () => {
-  const navigation = useNavigation()
-
-  const handleBuySellClick = useCallback(() => {
-    navigation.navigate('BuySell', { initialTab: 'buy' })
-  }, [navigation])
-
   return (
     <Flex
-      direction='row'
+      row
       alignItems='center'
       justifyContent='space-between'
       p='l'
+      pb='s'
       borderBottom='default'
     >
-      <Text variant='heading' size='s' color='heading'>
+      <Text variant='heading' color='heading'>
         {messages.yourCoins}
       </Text>
-      <Button variant='secondary' size='small' onPress={handleBuySellClick}>
-        {messages.buySell}
-      </Button>
     </Flex>
   )
 }
 
 export const YourCoins = () => {
+  const { data: currentUserId } = useCurrentUserId()
   const navigation = useNavigation()
+  const { env } = useQueryContext()
   const { isEnabled: isWalletUIBuySellEnabled } = useFeatureFlag(
     FeatureFlags.WALLET_UI_BUY_SELL
   )
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
 
-  const {
-    audioBalanceFormatted,
-    audioDollarValue,
-    isAudioBalanceLoading,
-    isAudioPriceLoading
-  } = useFormattedAudioBalance()
+  const { data: artistCoins } = useUserCoins({
+    userId: currentUserId
+  })
 
-  const handleTokenClick = useCallback(() => {
-    navigation.navigate('AudioScreen')
+  const filteredCoins =
+    artistCoins?.filter(
+      ownedCoinsFilter(!!isArtistCoinsEnabled, env.WAUDIO_MINT_ADDRESS)
+    ) ?? []
+
+  // Show audio coin card when no coins are available
+  const showAudioCoin = filteredCoins.length === 0
+  const cards = showAudioCoin ? ['audio-coin' as const] : filteredCoins
+
+  const handleBuySell = useCallback(() => {
+    navigation.navigate('BuySell', {
+      initialTab: 'buy',
+      coinTicker: AUDIO_TICKER
+    })
   }, [navigation])
 
   return (
-    <Paper onPress={handleTokenClick}>
-      {isWalletUIBuySellEnabled ? <TokensHeader /> : null}
-      <Flex
-        p='l'
-        pv='2xl'
-        direction='row'
-        justifyContent='space-between'
-        alignItems='center'
-      >
-        <Flex direction='row' alignItems='center' gap='m'>
-          <IconTokenAUDIO size='4xl' borderRadius={cornerRadius.circle} />
-          <Flex direction='column' gap='xs' h='3xl' justifyContent='center'>
-            <Flex direction='row' alignItems='center' h='2xl' gap='xs'>
-              {isAudioBalanceLoading ? (
-                <Skeleton h='2xl' w='5xl' />
-              ) : (
-                <>
-                  <Text variant='heading' size='l' color='default'>
-                    {audioBalanceFormatted}
-                  </Text>
-                  <Text variant='heading' size='l' color='subdued'>
-                    {messages.audioTicker}
-                  </Text>
-                </>
-              )}
-            </Flex>
-            {isAudioPriceLoading ? (
-              <Skeleton h='l' w='3xl' />
+    <Paper>
+      <TokensHeader />
+      <Flex column>
+        {cards.map((item) => (
+          <Box key={typeof item === 'string' ? item : item.mint}>
+            {item === 'audio-coin' ? (
+              <CoinCard mint={env.WAUDIO_MINT_ADDRESS} />
             ) : (
-              <Text variant='heading' size='s' color='subdued'>
-                {audioDollarValue}
-              </Text>
+              <CoinCard mint={item.mint} />
             )}
-          </Flex>
-        </Flex>
-        <IconCaretRight size='l' color='subdued' />
+            <Divider />
+          </Box>
+        ))}
       </Flex>
+      {isWalletUIBuySellEnabled ? (
+        <Flex p='l'>
+          <Button variant='secondary' size='small' onPress={handleBuySell}>
+            {messages.buySell}
+          </Button>
+        </Flex>
+      ) : null}
     </Paper>
   )
 }

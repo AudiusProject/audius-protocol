@@ -45,7 +45,8 @@ export const sendIOSMessage = async ({
   badgeCount,
   data,
   playSound = true,
-  targetARN
+  targetARN,
+  imageUrl
 }: {
   title: string
   body: string
@@ -53,23 +54,33 @@ export const sendIOSMessage = async ({
   data?: object
   playSound: boolean
   targetARN: string
+  imageUrl?: string
 }) => {
-  let arn
+  let arn: string | undefined
   if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) arn = 'APNS'
+
+  const apnsConfig: any = {
+    aps: {
+      alert: {
+        title,
+        body
+      },
+      sound: playSound && 'default',
+      badge: badgeCount
+    },
+    data
+  }
+
+  // Enable rich notifications when image is provided (People Thumbnail notifications)
+  if (imageUrl) {
+    apnsConfig.aps['mutable-content'] = 1
+    apnsConfig['media-url'] = imageUrl
+  }
+
   const message = JSON.stringify({
     ['default']: body,
-    [arn]: JSON.stringify({
-      aps: {
-        alert: {
-          title,
-          body
-        },
-        sound: playSound && 'default',
-        badge: badgeCount
-      },
-      data
-    })
+    [arn]: JSON.stringify(apnsConfig)
   })
 
   await publish({
@@ -84,13 +95,15 @@ export const sendAndroidMessage = async ({
   body,
   targetARN,
   data = {},
-  playSound = true
+  playSound = true,
+  imageUrl
 }: {
   title: string
   body: string
   targetARN: string
   data: object
   playSound: boolean
+  imageUrl?: string
 }) => {
   const message = JSON.stringify({
     default: body,
@@ -98,9 +111,13 @@ export const sendAndroidMessage = async ({
       notification: {
         ...(title ? { title } : {}),
         body,
-        sound: playSound && 'default'
+        sound: playSound && 'default',
+        ...(imageUrl ? { image: imageUrl } : {})
       },
-      data
+      data: {
+        ...data,
+        ...(imageUrl ? { imageUrl } : {})
+      }
     })
   })
   await publish({
@@ -115,7 +132,7 @@ type Device = {
   targetARN: string
   badgeCount: number
 }
-type Message = { title: string; body: string; data: object }
+type Message = { title: string; body: string; data: object; imageUrl?: string }
 
 export type SendPushNotificationResult<T extends boolean> = T extends true
   ? { endpointDisabled: true; arn: string }
@@ -133,7 +150,8 @@ export const sendPushNotification = async (
         badgeCount: device.badgeCount,
         data: message.data,
         playSound: true,
-        targetARN: device.targetARN
+        targetARN: device.targetARN,
+        imageUrl: message.imageUrl
       })
     } else if (device.type == 'android') {
       await sendAndroidMessage({
@@ -141,7 +159,8 @@ export const sendPushNotification = async (
         body: message.body,
         data: message.data,
         playSound: true,
-        targetARN: device.targetARN
+        targetARN: device.targetARN,
+        imageUrl: message.imageUrl
       })
     }
   } catch (e) {

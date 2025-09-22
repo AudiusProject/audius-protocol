@@ -10,22 +10,24 @@ import React, {
 
 import { ScrollView } from 'react-native'
 
-import { Flex } from '@audius/harmony-native'
+import { Flex, type SpacingOptions } from '@audius/harmony-native'
 
 interface ProgressiveScrollViewProps {
   children: React.ReactNode
   initialLoadCount?: number
   loadDelay?: number
   onUserInteraction?: () => void
+  gap?: SpacingOptions
 }
 
 export const ProgressiveScrollView = ({
   children,
   initialLoadCount = 0,
   loadDelay = 100,
+  gap,
   onUserInteraction
 }: ProgressiveScrollViewProps) => {
-  const [loadedIndices, setLoadedIndices] = useState<Set<number>>(new Set([0]))
+  const [loadedIndices, setLoadedIndices] = useState<Set<number>>(new Set())
   const [isUserInteracting, setIsUserInteracting] = useState(false)
   const scrollViewRef = useRef<ScrollView>(null)
   const hasStartedLoadingRef = useRef(false)
@@ -72,7 +74,6 @@ export const ProgressiveScrollView = ({
 
   const renderChild = (child: React.ReactElement, index: number) => {
     const isLoaded = loadedIndices.has(index)
-
     // Clone the child and pass isLoading prop
     return cloneElement(child, {
       key: index,
@@ -86,7 +87,7 @@ export const ProgressiveScrollView = ({
       onScroll={handleScroll}
       scrollEventThrottle={16}
     >
-      <Flex direction='column' ph='l' pt='xl' pb='3xl'>
+      <Flex gap={gap} direction='column' ph='l' pt='s' pb='unit20' mb='unit20'>
         {childrenArray.map((child, index) => {
           if (isValidElement(child)) {
             return renderChild(child, index)

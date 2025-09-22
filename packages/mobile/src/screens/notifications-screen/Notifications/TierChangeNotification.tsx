@@ -18,15 +18,15 @@ import {
   NotificationHeader,
   NotificationTitle,
   NotificationText,
-  NotificationTwitterButton
+  NotificationXButton
 } from '../Notification'
 
 const messages = {
   unlocked: 'Tier Unlocked',
   congrats: (tierLabel: string, amount: number) =>
     `Congrats, you’ve reached ${tierLabel} Tier by having over ${amount} $AUDIO! You now have access to exclusive features & a shiny new badge by your name.`,
-  twitterShareText: (tier: string, icon: string) =>
-    `I've reached ${tier} Tier on @audius! Check out the shiny new badge next to my name ${icon} #Audius $AUDIO`
+  xShareText: (tier: string, icon: string) =>
+    `I've reached ${tier} Tier on @audius! Check out the shiny new badge next to my name ${icon} $AUDIO`
 }
 
 const tierInfoMap = {
@@ -34,31 +34,31 @@ const tierInfoMap = {
     icon: (props) => <IconTokenBronze size='xl' {...props} />,
     label: 'None',
     amount: 0,
-    twitterIcon: ''
+    xIcon: ''
   },
   bronze: {
     icon: (props) => <IconTokenBronze size='xl' {...props} />,
     label: 'Bronze',
     amount: 10,
-    twitterIcon: '🥉'
+    xIcon: '🥉'
   },
   silver: {
     icon: (props) => <IconTokenSilver size='xl' {...props} />,
     label: 'Silver',
     amount: 100,
-    twitterIcon: '🥈'
+    xIcon: '🥈'
   },
   gold: {
     icon: (props) => <IconTokenGold size='xl' {...props} />,
     label: 'Gold',
     amount: 1000,
-    twitterIcon: '🥇'
+    xIcon: '🥇'
   },
   platinum: {
     icon: (props) => <IconTokenPlatinum size='xl' {...props} />,
     label: 'Platinum',
     amount: 10000,
-    twitterIcon: '🥇'
+    xIcon: '🥇'
   }
 }
 
@@ -73,7 +73,7 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
   const { data: handle } = useUser(userId, {
     select: (user) => user.handle
   })
-  const { icon, label, amount, twitterIcon } = tierInfoMap[tier]
+  const { icon, label, amount, xIcon } = tierInfoMap[tier]
 
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
@@ -89,10 +89,10 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         </NotificationTitle>
       </NotificationHeader>
       <NotificationText>{messages.congrats(label, amount)}</NotificationText>
-      <NotificationTwitterButton
+      <NotificationXButton
         type='static'
         url={`${env.AUDIUS_URL}${route.profilePage(handle)}`}
-        shareText={messages.twitterShareText(label, twitterIcon)}
+        shareText={messages.xShareText(label, xIcon)}
       />
     </NotificationTile>
   )

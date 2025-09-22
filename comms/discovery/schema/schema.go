@@ -67,11 +67,12 @@ type ChatMessageRPC struct {
 }
 
 type ChatMessageRPCParams struct {
-	ChatID          string  `json:"chat_id"`
-	IsPlaintext     *bool   `json:"is_plaintext,omitempty"`
-	Message         string  `json:"message"`
-	MessageID       string  `json:"message_id"`
-	ParentMessageID *string `json:"parent_message_id,omitempty"`
+	ChatID          string             `json:"chat_id"`
+	IsPlaintext     *bool              `json:"is_plaintext,omitempty"`
+	Message         string             `json:"message"`
+	MessageID       string             `json:"message_id"`
+	ParentMessageID *string            `json:"parent_message_id,omitempty"`
+	Audience        *ChatBlastAudience `json:"audience,omitempty"`
 }
 
 type ChatReactRPC struct {
@@ -316,10 +317,11 @@ const (
 type ChatBlastAudience string
 
 const (
-	CustomerAudience ChatBlastAudience = "customer_audience"
-	FollowerAudience ChatBlastAudience = "follower_audience"
-	RemixerAudience  ChatBlastAudience = "remixer_audience"
-	TipperAudience   ChatBlastAudience = "tipper_audience"
+	CustomerAudience   ChatBlastAudience = "customer_audience"
+	FollowerAudience   ChatBlastAudience = "follower_audience"
+	RemixerAudience    ChatBlastAudience = "remixer_audience"
+	TipperAudience     ChatBlastAudience = "tipper_audience"
+	CoinHolderAudience ChatBlastAudience = "coin_holder_audience"
 )
 
 type AudienceContentType string

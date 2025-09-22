@@ -9,6 +9,7 @@ import { convertGenreLabelToValue, Genre } from './genres'
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
+export const API_TERMS = '/legal/api-terms'
 export const DOWNLOAD_START_LINK = '/download?start_download=true'
 export const DOWNLOAD_LINK = '/download'
 export const PRESS_PAGE = '/press'
@@ -27,20 +28,8 @@ export const TRENDING_PAGE = '/trending'
 export const TRENDING_PLAYLISTS_PAGE_LEGACY = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
-export const EXPLORE_PREMIUM_TRACKS_PAGE = '/explore/premium-tracks'
-export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
-export const EXPLORE_LET_THEM_DJ_PAGE = '/explore/let-them-dj'
-export const EXPLORE_BEST_NEW_RELEASES_PAGE = '/explore/best-new-releases'
-export const EXPLORE_UNDER_THE_RADAR_PAGE = '/explore/under-the-radar'
-export const EXPLORE_TOP_ALBUMS_PAGE = '/explore/top-albums'
-export const EXPLORE_MOST_LOVED_PAGE = '/explore/most-loved'
-export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
-export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
 export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
 export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
-export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
-
-export const AUDIO_NFT_PLAYLIST_PAGE = '/:handle/audio-nft-playlist'
 
 // DEPRECATED - use /library instead.
 export const SAVED_PAGE = '/favorites'
@@ -80,10 +69,16 @@ export const PURCHASES_PAGE = '/payments/purchases'
 export const SALES_PAGE = '/payments/sales'
 export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export const TRANSACTION_HISTORY_PAGE = '/wallet/transaction-history'
+export const ASSET_DETAIL_PAGE = '/coins/:ticker'
 export const WALLET_PAGE = '/wallet'
+export const WALLET_GUIDE_PAGE = '/wallet/guide'
+export const COINS_CREATE_PAGE = '/coins/create'
+export const COINS_EXPLORE_PAGE = '/coins'
 export const PRIVATE_KEY_EXPORTER_SETTINGS_PAGE = '/settings/export-private-key'
 export const DEV_TOOLS_PAGE = '/dev-tools'
 export const SOLANA_TOOLS_PAGE = '/dev-tools/solana'
+export const USER_ID_PARSER_PAGE = '/dev-tools/user-id-parser'
+export const COIN_API_MOCKS_PAGE = '/dev-tools/coin-api-mocks'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
@@ -158,6 +153,7 @@ export const REPOSTING_USERS_ROUTE = '/reposting_users'
 export const FAVORITING_USERS_ROUTE = '/favoriting_users'
 export const FOLLOWING_USERS_ROUTE = '/following'
 export const FOLLOWERS_USERS_ROUTE = '/followers'
+export const LEADERBOARD_USERS_ROUTE = '/leaderboard'
 export const SUPPORTING_USERS_ROUTE = '/supporting'
 export const TOP_SUPPORTERS_USERS_ROUTE = '/top-supporters'
 export const ACCOUNT_SETTINGS_PAGE = '/settings/account'
@@ -175,9 +171,11 @@ export const TRENDING_GENRES = '/trending/genres'
 export const EMPTY_PAGE = '/empty_page'
 
 // External Links
-export const AUDIUS_TWITTER_LINK = 'https://twitter.com/audius'
+export const AUDIUS_X_LINK = 'https://x.com/audius'
 export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audius'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
+export const AUDIUS_DISCORD_OAUTH_LINK =
+  'https://discord.com/oauth2/authorize?client_id=1404512878890975373&response_type=code&redirect_uri=http%3A%2F%2Fdiscord.audius.co%3A8081%2Fdiscord_callback&scope=guilds.join+identify'
 export const AUDIUS_TELEGRAM_LINK = 'https://t.me/Audius'
 export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'
 export const AUDIUS_MERCH_LINK = 'https://merch.audius.co/'
@@ -189,6 +187,8 @@ export const AUDIUS_GATED_CONTENT_BLOG_LINK =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 export const AUDIUS_CONTACT_EMAIL_LINK = 'mailto:contact@audius.co'
 export const AUDIUS_PROTOCOL_DASHBOARD_LINK = 'https://dashboard.audius.org'
+export const OPEN_MUSIC_LICENSE_LINK =
+  'https://audius.org/open-music-license.pdf'
 
 export const externalInternalLinks = [
   AUDIUS_PRESS_LINK,
@@ -214,6 +214,14 @@ export const AUDIUS_PODCAST_LINK =
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/audius'
 export const AUDIUS_API_LINK = 'https://audius.org/api'
 
+export const AUDIUS_TOKENS_HELP_LINK =
+  'https://support.audius.co/product/tokens'
+
+// Dexscreener Links
+export const DEXSCREENER_BASE_URL = 'https://dexscreener.com/solana'
+export const dexscreenerUrl = (mint: string) =>
+  `${DEXSCREENER_BASE_URL}/${mint}`
+
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,
@@ -230,7 +238,8 @@ export const authenticatedRoutes = [
   SALES_PAGE,
   PAYMENTS_PAGE,
   WITHDRAWALS_PAGE,
-  WALLET_PAGE
+  COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE
 ]
 
 export const guestRoutes = [
@@ -245,6 +254,7 @@ export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,
   PRIVACY_POLICY,
+  API_TERMS,
   DOWNLOAD_LINK,
   AUTH_REDIRECT
 ]
@@ -279,7 +289,11 @@ export const orderedRoutes = [
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_AUDIO_PAGE,
+  ASSET_DETAIL_PAGE,
   WALLET_PAGE,
+  COINS_EXPLORE_PAGE,
+  COINS_CREATE_PAGE,
+  WALLET_GUIDE_PAGE,
   REWARDS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -313,6 +327,9 @@ export const staticRoutes = new Set([
   FEED_PAGE,
   TRENDING_PAGE,
   EXPLORE_PAGE,
+  TRENDING_PLAYLISTS_PAGE,
+  TRENDING_PLAYLISTS_PAGE_LEGACY,
+  TRENDING_UNDERGROUND_PAGE,
   SEARCH_BASE_ROUTE,
   SEARCH_PAGE_ALL,
   SEARCH_PAGE_PROFILES,
@@ -327,6 +344,9 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   WALLET_PAGE,
+  WALLET_GUIDE_PAGE,
+  COINS_EXPLORE_PAGE,
+  COINS_CREATE_PAGE,
   WALLET_AUDIO_PAGE,
   REWARDS_PAGE,
   TRACK_EDIT_PAGE,

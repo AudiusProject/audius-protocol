@@ -1,6 +1,5 @@
 import type { ShareContent } from '@audius/common/store'
-import { makeTwitterShareUrl } from '@audius/common/utils'
-import type { User } from '~/models'
+import { makeXShareUrl, getXShareHandle } from '@audius/common/utils'
 
 import {
   getCollectionRoute,
@@ -28,59 +27,41 @@ export const getContentUrl = (content: ShareContent) => {
       const { playlist } = content
       return getCollectionRoute(playlist, true)
     }
-    // TODO: add audioNFTPlaylist link
-    case 'audioNftPlaylist': {
-      return ''
-    }
   }
 }
 
-const getTwitterShareHandle = (user: User) => {
-  const twitterHandle = user.twitter_handle
-  return twitterHandle ? `@${twitterHandle}` : user.handle
-}
-
-export const getTwitterShareText = async (content: ShareContent) => {
+export const getXShareText = async (content: ShareContent) => {
   switch (content.type) {
     case 'track': {
       const {
         track: { title },
         artist
       } = content
-      return messages.trackShareText(title, getTwitterShareHandle(artist))
+      return messages.trackShareText(title, getXShareHandle(artist))
     }
     case 'profile': {
       const { profile } = content
-      return messages.profileShareText(getTwitterShareHandle(profile))
+      return messages.profileShareText(getXShareHandle(profile))
     }
     case 'album': {
       const {
         album: { playlist_name },
         artist
       } = content
-      return messages.albumShareText(
-        playlist_name,
-        getTwitterShareHandle(artist)
-      )
+      return messages.albumShareText(playlist_name, getXShareHandle(artist))
     }
     case 'playlist': {
       const {
         playlist: { playlist_name },
         creator
       } = content
-      return messages.playlistShareText(
-        playlist_name,
-        getTwitterShareHandle(creator)
-      )
-    }
-    case 'audioNftPlaylist': {
-      return messages.nftPlaylistShareText
+      return messages.playlistShareText(playlist_name, getXShareHandle(creator))
     }
   }
 }
 
-export const getTwitterShareUrl = async (content: ShareContent) => {
+export const getXShareUrl = async (content: ShareContent) => {
   const url = getContentUrl(content)
-  const shareText = await getTwitterShareText(content)
-  return makeTwitterShareUrl(url ?? null, shareText)
+  const shareText = await getXShareText(content)
+  return makeXShareUrl(url ?? null, shareText)
 }

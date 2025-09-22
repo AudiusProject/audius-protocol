@@ -14,17 +14,23 @@ import {
   buyUSDCSelectors,
   createWithdrawUSDCFormSchema
 } from '@audius/common/store'
+import {
+  AMOUNT,
+  METHOD,
+  ADDRESS,
+  CONFIRM,
+  type WithdrawUSDCFormValues as WithdrawFormValues
+} from '@audius/common/store'
+import { filterDecimalString } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
-import type { BottomSheetScrollViewMethods } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
-import BN from 'bn.js'
 import type { FormikProps } from 'formik'
 import { Formik, useFormikContext } from 'formik'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Divider, Flex, Text } from '@audius/harmony-native'
+import { Divider, Flex, Text, useTheme } from '@audius/harmony-native'
 
 import { CoinflowConfirmTransfer } from './components/CoinflowConfirmTransfer'
 import { CryptoConfirmTransfer } from './components/CryptoConfirmTransfer'
@@ -33,13 +39,6 @@ import { ErrorPage } from './components/ErrorPage'
 import { PrepareTransfer } from './components/PrepareTransfer'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
-import {
-  AMOUNT,
-  METHOD,
-  ADDRESS,
-  CONFIRM,
-  type WithdrawFormValues
-} from './types'
 
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
@@ -53,11 +52,9 @@ const DISABLE_DRAWER_CLOSE_PAGES = new Set([
 
 const WithdrawUSDCForm = ({
   onClose,
-  scrollViewRef,
   balanceNumberCents
 }: {
   onClose: () => void
-  scrollViewRef: React.RefObject<BottomSheetScrollViewMethods>
   balanceNumberCents: number
 }) => {
   const { data } = useWithdrawUSDCModal()
@@ -69,10 +66,7 @@ const WithdrawUSDCForm = ({
   switch (page) {
     case WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS:
       formPage = (
-        <EnterTransferDetails
-          scrollViewRef={scrollViewRef}
-          balanceNumberCents={balanceNumberCents}
-        />
+        <EnterTransferDetails balanceNumberCents={balanceNumberCents} />
       )
       break
     case WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS:
@@ -97,17 +91,13 @@ const WithdrawUSDCForm = ({
       break
     default:
       formPage = (
-        <EnterTransferDetails
-          scrollViewRef={scrollViewRef}
-          balanceNumberCents={balanceNumberCents}
-        />
+        <EnterTransferDetails balanceNumberCents={balanceNumberCents} />
       )
       break
   }
 
   return (
     <BottomSheetScrollView
-      ref={scrollViewRef}
       style={{ flex: 1 }}
       contentContainerStyle={{
         flexGrow: 1,
@@ -134,6 +124,7 @@ const WithdrawUSDCForm = ({
 export const WithdrawUSDCDrawer = () => {
   const dispatch = useDispatch()
   const { isOpen, onClose, onClosed, setData, data } = useWithdrawUSDCModal()
+  const { color } = useTheme()
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.COINFLOW_OFFRAMP_ENABLED
   )
@@ -143,14 +134,13 @@ export const WithdrawUSDCDrawer = () => {
   const { data: balance } = useUSDCBalance()
   const balanceNumberCents = Math.floor(
     Number(
-      USDC(balance ?? new BN(0))
+      USDC(balance ?? 0)
         .floor(2)
         .toString()
     ) * 100
   )
 
   const bottomSheetRef = useRef<BottomSheetModal>(null)
-  const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null)
 
   const withdrawalStatus = useSelector(getWithdrawStatus)
   const recoveryStatus = useSelector(getRecoveryStatus)
@@ -186,9 +176,12 @@ export const WithdrawUSDCDrawer = () => {
 
   const handleSubmit = useCallback(
     ({ amount, method, address }: WithdrawFormValues) => {
+      // On mobile, amount is always a string from text input
+      const amountInCents = filterDecimalString(amount as string).value
+
       dispatch(
         beginWithdrawUSDC({
-          amount,
+          amount: amountInCents,
           method,
           currentBalance: balanceNumberCents,
           destinationAddress: address ?? ''
@@ -215,11 +208,13 @@ export const WithdrawUSDCDrawer = () => {
       android_keyboardInputMode='adjustResize'
       enablePanDownToClose={isClosable}
       enableContentPanningGesture={isClosable}
+      backgroundStyle={{ backgroundColor: color.background.white }}
+      handleIndicatorStyle={{ backgroundColor: color.neutral.n200 }}
     >
       <Formik
         innerRef={formRef}
         initialValues={{
-          [AMOUNT]: 0,
+          [AMOUNT]: '0.00',
           [METHOD]: isCoinflowEnabled
             ? WithdrawMethod.COINFLOW
             : WithdrawMethod.MANUAL_TRANSFER,
@@ -237,7 +232,6 @@ export const WithdrawUSDCDrawer = () => {
       >
         <WithdrawUSDCForm
           onClose={handleClose}
-          scrollViewRef={scrollViewRef}
           balanceNumberCents={balanceNumberCents}
         />
       </Formik>

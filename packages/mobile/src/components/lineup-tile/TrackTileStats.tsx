@@ -30,15 +30,20 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
 
   const isUnlockable = useIsTrackUnlockable(trackId)
 
-  const { data: isUnlisted } = useTrack(trackId, {
+  const { data: partialTrack } = useTrack(trackId, {
     select: (track) => {
-      return track.is_unlisted
+      return {
+        isUnlisted: track.is_unlisted,
+        noMetrics:
+          !track.repost_count && !track.save_count && !track.comment_count
+      }
     }
   })
+  const { isUnlisted, noMetrics } = partialTrack ?? {}
 
   return (
     <Flex row justifyContent='space-between' alignItems='center' p='s' h={32}>
-      <Flex direction='row' gap='m'>
+      <Flex direction='row' gap='m' alignItems='center'>
         {isTrending && rankIndex !== undefined ? (
           <LineupTileRankIcon index={rankIndex} />
         ) : null}
@@ -47,7 +52,12 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
           <>
             <RepostsMetric trackId={trackId} />
             <SavesMetric trackId={trackId} />
-            <CommentMetric trackId={trackId} uid={uid} actions={actions} />
+            <CommentMetric
+              trackId={trackId}
+              uid={uid}
+              actions={actions}
+              showLeaveCommentText={noMetrics}
+            />
             <TrackDownloadStatusIndicator size='s' trackId={trackId} />
           </>
         )}

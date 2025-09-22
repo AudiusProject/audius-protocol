@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 
 import { useCurrentUserId, useTracks, useUsers } from '@audius/common/api'
 import { useCurrentTrack } from '@audius/common/hooks'
-import { Name } from '@audius/common/models'
+import { ErrorLevel, Feature, Name } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import {
   libraryPageTracksLineupActions,
@@ -59,6 +59,7 @@ import {
   addOfflineEntries,
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { useChromecast } from './GoogleCast'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
@@ -189,6 +190,7 @@ export const AudioPlayer = () => {
     () => queueOrder.map((trackData) => trackData.id as ID),
     [queueOrder]
   )
+
   const { byId: tracksById } = useTracks(uniq(queueTrackIds))
   const queueTracks = useMemo(
     () =>
@@ -204,7 +206,7 @@ export const AudioPlayer = () => {
     [queueTracks]
   )
 
-  const queueTrackOwnersMap = useUsers(queueTrackOwnerIds)
+  const { byId: queueTrackOwnersMap } = useUsers(queueTrackOwnerIds)
 
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(
@@ -303,68 +305,85 @@ export const AudioPlayer = () => {
 
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack, retries?: number) => {
-      if (!track) {
-        return unlistedTrackFallbackTrackData
-      }
-      setRetries(retries ?? 0)
+      try {
+        if (!track) {
+          return unlistedTrackFallbackTrackData
+        }
+        setRetries(retries ?? 0)
 
-      const trackOwner = queueTrackOwnersMap[track.owner_id].metadata
-      const trackId = track.track_id
-      const offlineTrackAvailable =
-        trackId && offlineAvailabilityByTrackId[trackId]
+        const trackOwner = queueTrackOwnersMap[track.owner_id]
+        const trackId = track.track_id
+        const offlineTrackAvailable =
+          trackId && offlineAvailabilityByTrackId[trackId]
 
-      const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)
+        const { shouldPreview } = calculatePlayerBehavior(track, playerBehavior)
 
-      // Get Track url
-      let url: string
+        // Get Track url
+        let url: string
 
-      const contentNodeStreamUrl = getMirrorStreamUrl(
-        track,
-        shouldPreview,
-        retries ?? 0
-      )
-      if (offlineTrackAvailable && isCollectionMarkedForDownload) {
-        const audioFilePath = getLocalAudioPath(trackId)
-        url = `file://${audioFilePath}`
-      } else if (contentNodeStreamUrl) {
-        url = contentNodeStreamUrl
-      } else {
-        const sdk = await audiusSdk()
-        const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
-        const { data, signature } =
-          await audiusBackendInstance.signGatedContentRequest({
-            sdk
+        const contentNodeStreamUrl = getMirrorStreamUrl(
+          track,
+          shouldPreview,
+          retries ?? 0
+        )
+        if (offlineTrackAvailable && isCollectionMarkedForDownload) {
+          const audioFilePath = getLocalAudioPath(trackId)
+          url = `file://${audioFilePath}`
+        } else if (contentNodeStreamUrl) {
+          url = contentNodeStreamUrl
+        } else {
+          const sdk = await audiusSdk()
+          const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
+          const { data, signature } =
+            await audiusBackendInstance.signGatedContentRequest({
+              sdk
+            })
+          url = await sdk.tracks.getTrackStreamUrl({
+            trackId: Id.parse(track.track_id),
+            userId: OptionalId.parse(currentUserId),
+            userSignature: signature,
+            userData: data,
+            nftAccessSignature: nftAccessSignature
+              ? JSON.stringify(nftAccessSignature)
+              : undefined
           })
-        url = await sdk.tracks.getTrackStreamUrl({
-          trackId: Id.parse(track.track_id),
-          userId: OptionalId.parse(currentUserId),
-          userSignature: signature,
-          userData: data,
-          nftAccessSignature: nftAccessSignature
-            ? JSON.stringify(nftAccessSignature)
+        }
+
+        const localTrackImageSource =
+          isNotReachable && track
+            ? `file://${getLocalTrackCoverArtPath(trackId.toString())}`
             : undefined
+
+        const imageUrl =
+          localTrackImageSource ??
+          track.artwork['1000x1000'] ??
+          DEFAULT_IMAGE_URL
+
+        return {
+          url,
+          type: TrackType.Default,
+          title: track.title,
+          artist: trackOwner.name,
+          genre: track.genre,
+          date: track.created_at,
+          artwork: imageUrl,
+          duration: shouldPreview
+            ? getTrackPreviewDuration(track)
+            : track.duration
+        }
+      } catch (e) {
+        reportToSentry({
+          level: ErrorLevel.Error,
+          name: 'AudioPlayer: makeTrackData failed',
+          additionalInfo: {
+            track,
+            playerBehavior,
+            trackOwner: queueTrackOwnersMap[track?.owner_id ?? '']
+          },
+          feature: Feature.Playback,
+          error: e
         })
-      }
-
-      const localTrackImageSource =
-        isNotReachable && track
-          ? `file://${getLocalTrackCoverArtPath(trackId.toString())}`
-          : undefined
-
-      const imageUrl =
-        localTrackImageSource ?? track.artwork['1000x1000'] ?? DEFAULT_IMAGE_URL
-
-      return {
-        url,
-        type: TrackType.Default,
-        title: track.title,
-        artist: trackOwner.name,
-        genre: track.genre,
-        date: track.created_at,
-        artwork: imageUrl,
-        duration: shouldPreview
-          ? getTrackPreviewDuration(track)
-          : track.duration
+        return unlistedTrackFallbackTrackData
       }
     },
     [
@@ -498,14 +517,16 @@ export const AudioPlayer = () => {
       const isLongFormContent =
         queueTracks[playerIndex]?.track?.genre === Genre.PODCASTS ||
         queueTracks[playerIndex]?.track?.genre === Genre.AUDIOBOOKS
+
+      // Always set the correct playback rate when the active track changes
+      const newRate = isLongFormContent
+        ? playbackRateValueMap[playbackRate]
+        : 1.0
+      await TrackPlayer.setRate(newRate)
+
+      // Update lock screen and notification controls only when long-form content status changes
       if (isLongFormContent !== isLongFormContentRef.current) {
         isLongFormContentRef.current = isLongFormContent
-        // Update playback rate based on if the track is a podcast or not
-        const newRate = isLongFormContent
-          ? playbackRateValueMap[playbackRate]
-          : 1.0
-        await TrackPlayer.setRate(newRate)
-        // Update lock screen and notification controls
         await updatePlayerOptions(isLongFormContent)
       }
 
@@ -617,6 +638,18 @@ export const AudioPlayer = () => {
 
   const handleQueueChange = useCallback(async () => {
     const refUids = queueListRef.current
+
+    // Due to a dependency waterfall (queue from redux -> useTracks -> useUsers),
+    // we need to wait for all 3 things to be loaded before loading anything into RNTP - queue + tracks + users
+    // Original bug: https://linear.app/audius/issue/QA-2255/keeps-playing-the-same-track-when-clicking-new-tracks-in-the-same
+    if (
+      !queueTracks.every(
+        ({ track }) =>
+          !!track?.track_id && !!queueTrackOwnersMap[track.owner_id]
+      )
+    ) {
+      return
+    }
     if (queueIndex === -1) {
       return
     }
@@ -671,7 +704,6 @@ export const AudioPlayer = () => {
     const newQueueTracks = isQueueAppend
       ? queueTracks.slice(refUids.length)
       : queueTracks
-
     // Enqueue tracks using 'middle-out' to ensure user can ready skip forward or backwards
     const enqueueTracks = async (
       queuableTracks: QueueableTrack[],
@@ -688,7 +720,8 @@ export const AudioPlayer = () => {
 
         const nextTrack = queuableTracks[queueIndex + currentPivot]
         if (nextTrack) {
-          await TrackPlayer.add(await makeTrackData(nextTrack))
+          const trackData = await makeTrackData(nextTrack)
+          await TrackPlayer.add(trackData)
         }
 
         const previousTrack = queuableTracks[queueIndex - currentPivot]
@@ -718,11 +751,12 @@ export const AudioPlayer = () => {
       enqueueTracksJobRef.current = undefined
     }
   }, [
+    queueTracks,
     queueIndex,
     queueTrackUids,
     didOfflineToggleChange,
     didPlayerBehaviorChange,
-    queueTracks,
+    queueTrackOwnersMap,
     makeTrackData
   ])
 

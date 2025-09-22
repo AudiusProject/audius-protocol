@@ -1,15 +1,20 @@
 import { useCallback } from 'react'
 
 import type { ID, AccessConditions } from '@audius/common/models'
-import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import {
+  ModalSource,
+  isContentTokenGated,
+  isContentUSDCPurchaseGated
+} from '@audius/common/models'
 import {
   PurchaseableContentType,
   usePremiumContentPurchaseModal,
   gatedContentActions,
   gatedContentSelectors
 } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { USDC } from '@audius/fixed-decimal'
 import { TouchableOpacity } from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { FlexProps } from '@audius/harmony-native'
@@ -22,6 +27,7 @@ import {
 } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
@@ -35,6 +41,7 @@ const { setLockedContentId } = gatedContentActions
 const messages = {
   unlocking: 'Unlocking',
   locked: 'Locked',
+  buyArtistCoin: 'Buy Artist Coin',
   price: (price: string) => `$${price}`
 }
 
@@ -68,7 +75,9 @@ export const LineupTileAccessStatus = ({
   const gatedTrackStatus = gatedTrackStatusMap[contentId]
   const isUSDCPurchase =
     isUSDCEnabled && isContentUSDCPurchaseGated(streamConditions)
+  const isTokenGated = isContentTokenGated(streamConditions)
   const isUnlocking = gatedTrackStatus === 'UNLOCKING'
+  const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
     if (hasStreamAccess) {
@@ -99,6 +108,12 @@ export const LineupTileAccessStatus = ({
           source: determineModalSource()
         }
       )
+    } else if (isTokenGated) {
+      if (streamConditions?.token_gate?.token_mint) {
+        navigation.push('CoinDetailsScreen', {
+          mint: streamConditions.token_gate.token_mint
+        })
+      }
     } else if (contentId) {
       dispatch(setLockedContentId({ id: contentId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
@@ -106,24 +121,34 @@ export const LineupTileAccessStatus = ({
   }, [
     hasStreamAccess,
     isUSDCPurchase,
+    isTokenGated,
     contentId,
-    openPremiumContentPurchaseModal,
     contentType,
+    openPremiumContentPurchaseModal,
     tileSource,
+    streamConditions,
+    navigation,
     dispatch
   ])
 
   const buttonText = isUSDCPurchase
-    ? messages.price(formatPrice(streamConditions.usdc_purchase.price))
-    : isUnlocking
-      ? messages.unlocking
-      : messages.locked
+    ? messages.price(
+        USDC(streamConditions.usdc_purchase.price / 100).toLocaleString()
+      )
+    : isTokenGated
+      ? messages.buyArtistCoin
+      : isUnlocking
+        ? messages.unlocking
+        : messages.locked
 
-  const showButtonText = !isUSDCPurchase || (!hasStreamAccess && !isUnlocking)
+  const showButtonText =
+    !isUSDCPurchase || isTokenGated || (!hasStreamAccess && !isUnlocking)
 
   const backgroundColor = isUSDCPurchase
     ? color.special.lightGreen
-    : color.special.blue
+    : isTokenGated
+      ? color.primary.default
+      : color.special.blue
 
   const lockedStyles: FlexProps = {
     borderRadius: 's',
@@ -147,6 +172,19 @@ export const LineupTileAccessStatus = ({
         alignItems='center'
         gap='xs'
       >
+        {isTokenGated ? (
+          <LinearGradient
+            {...color.special.coinGradient}
+            style={{
+              position: 'absolute',
+              borderRadius: hasStreamAccess || isUnlocking ? 12 : 4,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0
+            }}
+          />
+        ) : null}
         {hasStreamAccess ? (
           <IconLockUnlocked color='white' size='xs' />
         ) : isUnlocking ? (
@@ -154,9 +192,9 @@ export const LineupTileAccessStatus = ({
             style={styles.loadingSpinner}
             fill={color.icon.staticWhite}
           />
-        ) : (
+        ) : !isTokenGated ? (
           <IconLock color='white' size='s' />
-        )}
+        ) : null}
         {showButtonText ? (
           <Text color='white' variant='label' size='m'>
             {buttonText}

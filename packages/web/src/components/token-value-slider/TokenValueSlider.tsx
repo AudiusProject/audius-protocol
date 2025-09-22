@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import * as React from 'react'
+import { FC, useState, useRef, useEffect } from 'react'
 
-import BN from 'bn.js'
+import { AUDIO, AudioWei } from '@audius/fixed-decimal'
 import cn from 'classnames'
 
 import styles from './TokenValueSlider.module.css'
@@ -13,15 +12,32 @@ const messages = {
   current: 'CURRENT'
 }
 
-function getBNPercentage(n1: BN, n2: BN): number {
-  if (n2.isZero()) return 0
-  const thousand = new BN('1000')
-  const num = n1.mul(thousand).div(n2)
-  if (num.gte(thousand)) return 1
-  return num.toNumber() / 1000
+/**
+ * Calculates percentage for slider position using BigInt arithmetic
+ * @param value Current value
+ * @param min Minimum value
+ * @param max Maximum value
+ * @returns Percentage as a number between 0 and 1
+ */
+const calculatePercentage = (
+  value: AudioWei,
+  min: AudioWei,
+  max: AudioWei
+): number => {
+  const valueDiff = BigInt(value - min)
+  const maxDiff = BigInt(max - min)
+
+  if (maxDiff === BigInt(0)) {
+    return 0
+  }
+
+  // Use integer arithmetic to avoid decimal precision issues
+  // Multiply by 10000 for better precision, then divide
+  const percentage = Number((valueDiff * BigInt(10000)) / maxDiff) / 10000
+  return percentage
 }
 
-export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
+export const TokenValueSlider: FC<TokenValueSliderProps> = ({
   className,
   sliderClassName,
   sliderBarClassName,
@@ -40,14 +56,20 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
 
   const [initialSliderWidth, setInitialSliderWidth] = useState(0)
   const [sliderWidth, setSliderWidth] = useState(0)
+
   useEffect(() => {
     if (containerRef.current) {
-      const percentage = getBNPercentage(value.sub(min), max.sub(min))
+      const valueDiff = BigInt(value) - min
+      const percentage = calculatePercentage(value, min, max)
       const totalWidth = containerRef.current.offsetWidth
-      if (value.sub(min).isZero()) {
+
+      if (valueDiff === BigInt(0)) {
         setSliderWidth(0)
       } else {
-        const newSliderWidth = Math.max(totalWidth * percentage, minSliderWidth)
+        const newSliderWidth = Math.max(
+          totalWidth * Math.min(Math.max(percentage, 0), 1),
+          minSliderWidth
+        )
         setSliderWidth(newSliderWidth)
       }
     }
@@ -55,9 +77,12 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
 
   useEffect(() => {
     if (initialValue && !initialSliderWidth && containerRef.current) {
-      const percentage = getBNPercentage(initialValue.sub(min), max.sub(min))
+      const percentage = calculatePercentage(initialValue, min, max)
       const totalWidth = containerRef.current.offsetWidth
-      const newSliderWidth = Math.max(totalWidth * percentage, minSliderWidth)
+      const newSliderWidth = Math.max(
+        totalWidth * Math.min(Math.max(percentage, 0), 1),
+        minSliderWidth
+      )
       setInitialSliderWidth(newSliderWidth)
     }
   }, [
@@ -84,7 +109,7 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
           className={cn(
             styles.newValueSlider,
             {
-              [styles.invalid]: value.gt(max) || value.lt(min),
+              [styles.invalid]: value > max || value < min,
               [styles.lighter]: isIncrease
             },
             sliderBarClassName
@@ -112,7 +137,12 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
                       : messages.min
                     : messages.min}
                 </span>
-                <span>{min.toString()}</span>
+                <span>
+                  {AUDIO(min).trunc().toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  })}
+                </span>
               </>
             )}
           </div>
@@ -123,7 +153,12 @@ export const TokenValueSlider: React.FC<TokenValueSliderProps> = ({
               <MaxWrapper value={max} />
             ) : (
               <>
-                <span>{max.toString()}</span>
+                <span>
+                  {AUDIO(max).trunc().toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  })}
+                </span>
                 <span className={styles.maxLabel}>
                   {isIncrease !== undefined
                     ? isIncrease

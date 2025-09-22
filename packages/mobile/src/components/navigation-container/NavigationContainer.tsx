@@ -75,6 +75,24 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
     ]
   })
 
+const createExploreStackState = (route): PartialState<NavigationState> =>
+  createAppTabState({
+    routes: [
+      {
+        name: 'explore',
+        state: {
+          index: 1,
+          routes: [
+            {
+              name: 'Explore'
+            },
+            route
+          ]
+        }
+      }
+    ]
+  })
+
 /**
  * NavigationContainer contains the react-navigation context
  * and configures linking
@@ -240,6 +258,14 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Add leading slash if it is missing
       if (path[0] !== '/') path = `/${path}`
 
+      // Decode URL-encoded characters in the path
+      try {
+        path = decodeURIComponent(path)
+      } catch (e) {
+        // If decoding fails, continue with the original path
+        console.warn('Failed to decode URL path:', path, e)
+      }
+
       path = path.replace('#embed', '')
 
       const connectPath = /^\/(connect)/
@@ -312,17 +338,39 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       }
 
       // /search
-      if (path.match(`^/search(/|$)`)) {
+      if (path.match(/^\/search(?:\/|\?|$)/)) {
         const {
-          query: { query, ...filters }
+          query: { query: searchQuery, ...filters }
         } = queryString.parseUrl(path)
 
-        return createFeedStackState({
-          name: 'Search',
+        // Route search URLs to the explore tab with SearchExplore screen
+        // This ensures proper deeplinking for both search URLs and search with filters
+        return createExploreStackState({
+          name: 'SearchExplore',
           params: {
-            query,
+            query: searchQuery,
             category: pathPart(path)(2) ?? 'all',
-            filters
+            filters,
+            autoFocus: false
+          }
+        })
+      }
+
+      // /explore
+      if (path.match(/^\/explore(?:\/|\?|$)/)) {
+        const {
+          query: { query: exploreQuery, ...filters }
+        } = queryString.parseUrl(path)
+
+        // Route explore URLs to the explore tab with SearchExplore screen
+        // This ensures both /search and /explore URLs work for deeplinking
+        return createExploreStackState({
+          name: 'SearchExplore',
+          params: {
+            query: exploreQuery,
+            category: pathPart(path)(2) ?? 'all',
+            filters,
+            autoFocus: false
           }
         })
       }
@@ -373,6 +421,12 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           // set the path as `collection`
           path = path.replace(/(^\/[^/]+\/)(album)(\/[^/]+$)/, '$1collection$3')
           path = `${path}?collectionType=album`
+        } else if (path.match(/^\/[^/]+\/collectibles\/[^/]+$/)) {
+          // Handle collectible deep links by navigating to the collectibles tab
+          // The collectible ID will be passed as a parameter to open the drawer
+          const handle = pathPart(path)(1)
+          const collectibleId = pathPart(path)(3)
+          path = `/${handle}/collectibles?collectibleId=${collectibleId}`
         }
       }
 

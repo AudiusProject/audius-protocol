@@ -24,6 +24,7 @@ export { default as IconGift } from '@audius/harmony/src/assets/icons/Gift.svg'
 export { default as IconSettings } from '@audius/harmony/src/assets/icons/Settings.svg'
 export { default as IconArrowLeft } from '@audius/harmony/src/assets/icons/ArrowLeft.svg'
 export { default as IconHeart } from '@audius/harmony/src/assets/icons/Heart.svg'
+export { default as IconX } from '@audius/harmony/src/assets/icons/X.svg'
 export { default as IconShare } from '@audius/harmony/src/assets/icons/Share.svg'
 export { default as IconArrowRight } from '@audius/harmony/src/assets/icons/ArrowRight.svg'
 export { default as IconImage } from '@audius/harmony/src/assets/icons/Image.svg'
@@ -163,6 +164,8 @@ export { default as IconPin } from '@audius/harmony/src/assets/icons/Pin.svg'
 export { default as IconPaperAirplane } from '@audius/harmony/src/assets/icons/PaperAirplane.svg'
 export { default as IconArrowUpToLine } from '@audius/harmony/src/assets/icons/ArrowUpToLine.svg'
 export { default as IconJupiterLogo } from '@audius/harmony/src/assets/icons/JupiterLogo.svg'
+export { default as IconArtistCoin } from '@audius/harmony/src/assets/icons/ArtistCoin.svg'
+export { default as IconCoinGatedLabel } from '@audius/harmony/src/assets/icons/CoinGatedLabel.svg'
 
 // Two Tone / Special Styling
 
@@ -183,6 +186,8 @@ export { IconTokenSilver } from './components/IconTokenSilver'
 export { IconTokenGold } from './components/IconTokenGold'
 export { IconTokenNoTier } from './components/IconTokenNoTier'
 export { IconTokenAUDIO } from './components/IconTokenAUDIO'
+export { IconTokenUSDC } from './components/IconTokenUSDC'
+export { IconTokenBonk } from './components/IconTokenBonk'
 
 // File Types
 export { default as IconFile3GA } from '@audius/harmony/src/assets/icons/file3GA.svg'
@@ -249,7 +254,6 @@ export { default as IconFacebook } from '@audius/harmony/src/assets/icons/Facebo
 export { default as IconMetamask } from '@audius/harmony/src/assets/icons/Metamask.svg'
 export { default as IconSnapChat } from '@audius/harmony/src/assets/icons/SnapChat.svg'
 export { default as IconTelegram } from '@audius/harmony/src/assets/icons/Telegram.svg'
-export { default as IconTwitter } from '@audius/harmony/src/assets/icons/Twitter.svg'
 export { default as IconTikTok } from '@audius/harmony/src/assets/icons/TikTok.svg'
 export { default as IconInstagram } from '@audius/harmony/src/assets/icons/Instagram.svg'
 export { default as IconLogoCircle } from '@audius/harmony/src/assets/icons/LogoCircle.svg'

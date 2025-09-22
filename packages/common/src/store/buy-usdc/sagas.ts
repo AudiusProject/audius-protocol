@@ -7,7 +7,6 @@ import {
 } from '@solana/spl-token'
 import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import retry from 'async-retry'
-import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, take, takeLeading } from 'typed-redux-saga'
 
@@ -16,7 +15,7 @@ import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { PurchaseVendor } from '~/models/PurchaseContent'
 import { Status } from '~/models/Status'
-import { BNUSDC, StringUSDC } from '~/models/Wallet'
+import { StringUSDC } from '~/models/Wallet'
 import {
   findAssociatedTokenAddress,
   getUserbankAccountInfo,
@@ -318,7 +317,7 @@ function* doBuyUSDC({
       ethAddress,
       mint: 'USDC'
     })
-    const balance = (account?.amount ?? new BN(0)) as BNUSDC
+    const balance = account?.amount ?? BigInt(0)
     yield* put(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
 
     // Record success
@@ -393,8 +392,9 @@ function* recoverPurchaseIfNecessary() {
     } catch (e) {
       if (e instanceof TokenAccountNotFoundError) {
         amount = BigInt(0)
+      } else {
+        throw e
       }
-      throw e
     }
 
     if (amount === BigInt(0)) {

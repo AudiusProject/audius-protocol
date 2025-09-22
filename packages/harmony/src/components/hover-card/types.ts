@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { TriggerType } from '../../hooks/useHoverDelay'
 import { IconComponent } from '../icon'
 import { Origin } from '../popup/types'
 
@@ -46,6 +47,18 @@ export type HoverCardProps = {
    * @default 0.5
    */
   mouseEnterDelay?: number
+
+  /**
+   * Whether to trigger the hover card on hover, click, or both
+   * @default 'hover'
+   */
+  triggeredBy?: TriggerType
+
+  /**
+   * Callback fired when hover state changes
+   * @param isHovered Whether the component is currently being hovered
+   */
+  onHover?: (isHovered: boolean) => void
 }
 
 export type HoverCardHeaderProps = {
@@ -61,6 +74,10 @@ export type HoverCardHeaderProps = {
    * The title to display in the header
    */
   title: string
+  /**
+   * Optional callback for when either icon in the header is clicked.
+   */
+  onClick?: () => void
   /**
    * Optional callback when the close button is clicked.
    * If not provided, the close button will be rendered as a non-interactive icon.

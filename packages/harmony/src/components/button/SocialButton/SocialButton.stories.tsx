@@ -20,6 +20,6 @@ export const SocialButtons = () => (
   <Flex gap='m'>
     <SocialButton socialType='tiktok' aria-label='TikTok button' />
     <SocialButton socialType='instagram' aria-label='Instagram button' />
-    <SocialButton socialType='twitter' aria-label='Twitter button' />
+    <SocialButton socialType='x' aria-label='X button' />
   </Flex>
 )

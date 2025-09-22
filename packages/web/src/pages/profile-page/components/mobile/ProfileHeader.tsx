@@ -20,7 +20,7 @@ import {
   IconDonate,
   IconLink,
   IconTikTok,
-  IconTwitter as IconTwitterBird,
+  IconX,
   Flex,
   Button,
   IconPencil,
@@ -102,7 +102,7 @@ type ProfileHeaderProps = {
   setFollowersUserId: (id: ID) => void
   followingCount: number
   setFollowingUserId: (id: ID) => void
-  twitterHandle: string
+  xHandle: string
   instagramHandle: string
   tikTokHandle: string
   website: string
@@ -110,7 +110,6 @@ type ProfileHeaderProps = {
   followers: any
   goToRoute: (route: string) => void
   following: boolean
-  isSubscribed: boolean
   mode: string
   onFollow: (id: ID) => void
   onUnfollow: (id: ID) => void
@@ -125,7 +124,6 @@ type ProfileHeaderProps = {
     files: any,
     source: 'original' | 'unsplash' | 'url'
   ) => void
-  setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   areArtistRecommendationsVisible: boolean
   onCloseArtistRecommendations: () => void
 }
@@ -148,7 +146,7 @@ const ProfileHeader = ({
   trackCount,
   followerCount,
   followingCount,
-  twitterHandle,
+  xHandle,
   instagramHandle,
   tikTokHandle,
   website,
@@ -157,7 +155,6 @@ const ProfileHeader = ({
   setFollowingUserId,
   goToRoute,
   following,
-  isSubscribed,
   mode,
   onFollow,
   onUnfollow,
@@ -166,7 +163,6 @@ const ProfileHeader = ({
   updatedProfilePicture,
   onUpdateCoverPhoto,
   onUpdateProfilePicture,
-  setNotificationSubscription,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations
 }: ProfileHeaderProps) => {
@@ -230,14 +226,14 @@ const ProfileHeader = ({
     )
   }, [record, instagramHandle, handle])
 
-  const onGoToTwitter = useCallback(() => {
+  const onGoToX = useCallback(() => {
     record(
       make(Name.PROFILE_PAGE_CLICK_TWITTER, {
         handle: handle.replace('@', ''),
-        twitterHandle
+        twitterHandle: xHandle
       })
     )
-  }, [record, twitterHandle, handle])
+  }, [record, xHandle, handle])
 
   const onGoToTikTok = useCallback(() => {
     record(
@@ -285,10 +281,6 @@ const ProfileHeader = ({
     },
     [record, handle]
   )
-
-  const toggleNotificationSubscription = () => {
-    setNotificationSubscription(userId, !isSubscribed)
-  }
 
   // If we're not loading, we know that
   // nullable fields such as userId are valid.
@@ -341,18 +333,12 @@ const ProfileHeader = ({
               </div>
               <div className={styles.artistHandleWrapper}>
                 <div className={styles.artistHandle}>{handle}</div>
-                <FollowsYouBadge userId={userId} />
+                <FollowsYouBadge variant='flat' userId={userId} />
               </div>
             </div>
 
             <Flex gap='s' justifyContent='flex-end' flex={1}>
-              {following ? (
-                <SubscribeButton
-                  isSubscribed={isSubscribed}
-                  isFollowing={following}
-                  onToggleSubscribe={toggleNotificationSubscription}
-                />
-              ) : null}
+              {following ? <SubscribeButton userId={userId} /> : null}
               {mode === 'owner' ? (
                 <Button
                   variant='secondary'
@@ -407,11 +393,11 @@ const ProfileHeader = ({
           <Flex alignItems='center' gap='m'>
             <ProfilePageBadge userId={userId} isCompact />
             <Flex gap='xl' justifyContent='center' flex={1}>
-              {twitterHandle ? (
+              {xHandle ? (
                 <SocialLink
-                  to={`https://twitter.com/${twitterHandle}`}
-                  onClick={onGoToTwitter}
-                  icon={<IconTwitterBird size='xl' />}
+                  to={`https://x.com/${xHandle}`}
+                  onClick={onGoToX}
+                  icon={<IconX size='xl' />}
                 />
               ) : null}
               {instagramHandle ? (

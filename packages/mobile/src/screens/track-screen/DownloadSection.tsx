@@ -50,7 +50,8 @@ const messages = {
   followToDownload: 'Must follow artist to download.',
   purchaseableIsOwner: (price: string) =>
     `Fans can unlock & download these files for a one time purchase of ${price}`,
-  downloadAll: 'Download All'
+  downloadAll: 'Download All',
+  download: 'Download'
 }
 
 export const DownloadSection = ({ trackId }: { trackId: ID }) => {
@@ -142,17 +143,31 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
       return
     }
 
+    // Only include parent track in count if it's downloadable
+    const parentTrackCount = track?.access?.download ? 1 : 0
     openDownloadTrackArchiveModal({
       trackId,
-      fileCount: stemTracks.length + 1
+      fileCount: stemTracks.length + parentTrackCount
     })
   }, [
     openDownloadTrackArchiveModal,
     shouldDisplayDownloadFollowGated,
     stemTracks.length,
     toast,
-    trackId
+    trackId,
+    track?.access?.download
   ])
+
+  const hasStems = stemTracks.length > 0
+  const downloadButtonText = hasStems ? messages.downloadAll : messages.download
+
+  const handleDownloadButtonPress = useCallback(() => {
+    if (hasStems) {
+      handleDownloadAll()
+    } else {
+      handleDownload({ trackIds: [trackId] })
+    }
+  }, [hasStems, handleDownloadAll, handleDownload, trackId])
 
   const renderHeader = () => {
     return (
@@ -204,10 +219,10 @@ export const DownloadSection = ({ trackId }: { trackId: ID }) => {
           <Button
             variant='secondary'
             size='small'
-            onPress={handleDownloadAll}
+            onPress={handleDownloadButtonPress}
             fullWidth
           >
-            {messages.downloadAll}
+            {downloadButtonText}
           </Button>
         ) : null}
         {shouldDisplayOwnerPremiumDownloads && formattedPrice ? (

@@ -9,7 +9,13 @@ import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { EventsApi } from './api/events/EventsApi'
-import { Configuration, TipsApi } from './api/generated/default'
+import {
+  CoinsApi,
+  Configuration,
+  ExploreApi,
+  RewardsApi,
+  TipsApi
+} from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
   Configuration as ConfigurationFull,
@@ -21,7 +27,8 @@ import {
   TransactionsApi as TransactionsApiFull,
   NotificationsApi as NotificationsApiFull,
   CidDataApi as CidDataApiFull,
-  CommentsApi as CommentsApiFull
+  CommentsApi as CommentsApiFull,
+  ExploreApi as ExploreApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { NotificationsApi } from './api/notifications/NotificationsApi'
@@ -474,8 +481,10 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
+  const coins = new CoinsApi(apiClientConfig)
   const tips = new TipsApi(apiClientConfig)
   const resolveApi = new ResolveApi(apiClientConfig)
+  const rewards = new RewardsApi(apiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
 
   const chats = new ChatsApi(
@@ -527,6 +536,7 @@ const initializeApis = ({
     services.entityManager,
     services.logger
   )
+  const explore = new ExploreApi(apiClientConfig)
 
   const full = {
     tracks: new TracksApiFull(generatedApiClientConfigFull),
@@ -538,7 +548,8 @@ const initializeApis = ({
     transactions: new TransactionsApiFull(generatedApiClientConfigFull),
     notifications: new NotificationsApiFull(generatedApiClientConfigFull),
     cidData: new CidDataApiFull(generatedApiClientConfigFull),
-    comments: new CommentsApiFull(generatedApiClientConfigFull)
+    comments: new CommentsApiFull(generatedApiClientConfigFull),
+    explore: new ExploreApiFull(generatedApiClientConfigFull)
   }
 
   return {
@@ -554,10 +565,13 @@ const initializeApis = ({
     developerApps,
     dashboardWalletUsers,
     challenges,
+    rewards,
     services,
     comments,
     notifications,
-    events
+    events,
+    explore,
+    coins
   }
 }
 

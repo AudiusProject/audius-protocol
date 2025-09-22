@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import { useSearchTrackResults } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
@@ -33,10 +33,6 @@ export const TrackResults = () => {
   })
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
-
-  useEffect(() => {
-    dispatch(searchResultsPageTracksLineupActions.reset())
-  }, [dispatch, query, filters])
 
   const handlePress = useCallback(
     (id: ID) => {
@@ -80,6 +76,7 @@ export const TrackResults = () => {
         loadMore={loadNextPage}
         keyboardShouldPersistTaps='handled'
         onPressItem={handlePress}
+        ListFooterComponent={<Flex h={200} />}
       />
     </Flex>
   )

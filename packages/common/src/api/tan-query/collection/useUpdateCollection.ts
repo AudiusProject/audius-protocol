@@ -1,6 +1,6 @@
+import { USDC } from '@audius/fixed-decimal'
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import BN from 'bn.js'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -33,9 +33,6 @@ type UpdateCollectionParams = {
   collectionId: ID
   metadata: EditCollectionValues
 }
-
-// Constants for USDC conversion
-const BN_USDC_CENT_WEI = new BN('10000')
 
 export const useUpdateCollection = () => {
   const {
@@ -89,7 +86,7 @@ export const useUpdateCollection = () => {
         const priceCents = Number(
           collectionUpdate.stream_conditions.usdc_purchase.price
         )
-        const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
+        const priceWei = Number(USDC(priceCents / 100).value.toString())
 
         const walletToUse = erc_wallet ?? wallet
         if (!walletToUse) {
@@ -182,10 +179,11 @@ export const useUpdateCollection = () => {
     onError: (_err, { collectionId }, context?: MutationContext) => {
       // If the mutation fails, roll back collection data
       if (context?.previousCollection) {
-        queryClient.setQueryData(
-          getCollectionQueryKey(collectionId),
-          context.previousCollection
-        )
+        primeCollectionData({
+          collections: [context.previousCollection],
+          queryClient,
+          forceReplace: true
+        })
       }
     },
     onSettled: (_, __, { collectionId }) => {

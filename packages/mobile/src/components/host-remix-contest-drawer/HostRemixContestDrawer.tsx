@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   useCurrentUserId,
@@ -79,6 +79,10 @@ export const HostRemixContestDrawer = () => {
   const isEdit = !!remixContest
   const hasContestEntries = remixesLoading || remixes?.length
   const displayTurnOffButton = !hasContestEntries && isEdit
+  const contestMinDate = useMemo(
+    () => (remixContest ? dayjs(remixContest.endDate) : dayjs()),
+    [remixContest]
+  )
 
   const remixContestData = remixContest?.eventData
 
@@ -95,20 +99,23 @@ export const HostRemixContestDrawer = () => {
   )
   const [endDateError, setEndDateError] = useState<boolean>(false)
 
-  const handleChange = useCallback((date: string, time: string) => {
-    if (!date && !time) {
-      setEndDate(null)
-      return
-    }
+  const handleChange = useCallback(
+    (date: string, time: string) => {
+      if (!date && !time) {
+        setEndDate(null)
+        return
+      }
 
-    const newDate = mergeDateTime(date || time, time || date)
-    if (newDate.isBefore(dayjs())) {
-      setEndDateError(true)
-    } else {
-      setEndDateError(false)
-    }
-    setEndDate(newDate)
-  }, [])
+      const newDate = mergeDateTime(date || time, time || date)
+      if (newDate.isBefore(contestMinDate)) {
+        setEndDateError(true)
+      } else {
+        setEndDateError(false)
+      }
+      setEndDate(newDate)
+    },
+    [contestMinDate]
+  )
 
   const handleDateChange = useCallback(
     (date: string) => {
@@ -266,7 +273,7 @@ export const HostRemixContestDrawer = () => {
                 date={endDate?.toString() ?? ''}
                 onChange={handleDateChange}
                 dateTimeProps={{
-                  minimumDate: new Date(),
+                  minimumDate: contestMinDate.toDate(),
                   maximumDate: dayjs().add(90, 'days').toDate()
                 }}
                 inputProps={{

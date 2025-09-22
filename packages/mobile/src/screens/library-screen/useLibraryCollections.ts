@@ -8,7 +8,6 @@ import {
 import { Status } from '@audius/common/models'
 import {
   libraryPageSelectors,
-  LibraryPageTabs,
   reachabilitySelectors
 } from '@audius/common/store'
 import type { CommonState, CollectionType } from '@audius/common/store'
@@ -25,7 +24,7 @@ import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 const { getIsReachable } = reachabilitySelectors
 const {
-  getCategory,
+  getCollectionsCategory,
   getSelectedCategoryLocalAlbumAdds,
   getSelectedCategoryLocalAlbumRemovals,
   getSelectedCategoryLocalPlaylistAdds,
@@ -43,14 +42,7 @@ export const useLibraryCollections = ({
 }: UseLibraryCollectionsConfig) => {
   const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
   const isReachable = useSelector(getIsReachable)
-  const selectedCategory = useSelector((state) =>
-    getCategory(state, {
-      currentTab:
-        collectionType === 'albums'
-          ? LibraryPageTabs.ALBUMS
-          : LibraryPageTabs.PLAYLISTS
-    })
-  )
+  const selectedCategory = useSelector(getCollectionsCategory)
 
   const locallyAddedCollectionIds = useSelector((state: CommonState) => {
     const ids =

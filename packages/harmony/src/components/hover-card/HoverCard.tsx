@@ -1,4 +1,4 @@
-import { useRef, useCallback, memo } from 'react'
+import { useRef, useCallback, memo, useEffect } from 'react'
 
 import { Flex, Paper, Popup } from '..'
 import { useHoverDelay } from '../../hooks/useHoverDelay'
@@ -45,42 +45,53 @@ const HoverCardComponent = ({
   onClick,
   anchorOrigin = DEFAULT_ANCHOR_ORIGIN,
   transformOrigin = DEFAULT_TRANSFORM_ORIGIN,
-  mouseEnterDelay = 0.5
+  mouseEnterDelay = 0.5,
+  triggeredBy = 'hover',
+  onHover
 }: HoverCardProps) => {
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const {
-    isHovered,
+    isVisible,
     handleMouseEnter,
     handleMouseLeave,
+    handleClick,
     clearTimer,
-    setIsHovered
-  } = useHoverDelay(mouseEnterDelay)
+    setIsHovered,
+    setIsClicked
+  } = useHoverDelay(mouseEnterDelay, triggeredBy)
+
+  // Call onHover callback when hover state changes
+  useEffect(() => {
+    onHover?.(isVisible)
+  }, [isVisible, onHover])
 
   const handleClose = useCallback(() => {
     clearTimer()
-    onClose?.()
-  }, [clearTimer, onClose])
-
-  const handleClick = useCallback(() => {
-    onClick?.()
-    clearTimer()
     setIsHovered(false)
-  }, [onClick, clearTimer, setIsHovered])
+    setIsClicked(false)
+    onClose?.()
+  }, [clearTimer, setIsHovered, setIsClicked, onClose])
+
+  const handleClickInternal = useCallback(() => {
+    handleClick()
+    handleClose()
+    onClick?.()
+  }, [handleClick, handleClose, onClick])
 
   return (
     <Flex
       ref={anchorRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={triggeredBy !== 'hover' ? handleClickInternal : undefined}
     >
       {children}
 
       <Popup
-        shadow='near'
+        shadow='far'
         anchorRef={anchorRef}
-        isVisible={isHovered}
+        isVisible={isVisible}
         onClose={handleClose}
-        dismissOnMouseLeave
         hideCloseButton
         zIndex={30000}
         anchorOrigin={anchorOrigin}
@@ -88,10 +99,12 @@ const HoverCardComponent = ({
       >
         <Paper
           className={className}
+          border='strong'
           borderRadius='m'
           backgroundColor='white'
           direction='column'
-          onClick={handleClick}
+          onClick={onClick}
+          shadow='far'
         >
           {content}
         </Paper>

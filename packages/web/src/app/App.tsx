@@ -1,5 +1,5 @@
 // @refresh reset
-import { useEffect, Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 
 import { route } from '@audius/common/utils'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
@@ -35,10 +35,13 @@ const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
 export const App = () => {
+  // TODO: These web vitals events are costly in amplitude, is there a better way to track this with a different tool?
   const { history } = useHistoryContext()
 
   useEffect(() => {
-    initWebVitals(history.location)
+    if (!IS_PRODUCTION) {
+      initWebVitals(history.location)
+    }
   }, [history])
 
   return (

@@ -8,7 +8,7 @@ import { QueryKey } from '../types'
 
 import { CommentOrReply, TrackCommentCount } from './types'
 
-export const getCommentQueryKey = (commentId: ID) => {
+export const getCommentQueryKey = (commentId: ID | null | undefined) => {
   return [QUERY_KEYS.comment, commentId] as unknown as QueryKey<CommentOrReply>
 }
 

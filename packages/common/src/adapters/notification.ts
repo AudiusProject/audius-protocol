@@ -1,4 +1,4 @@
-import { full, HashId } from '@audius/sdk'
+import { full, HashId, OptionalHashId } from '@audius/sdk'
 import dayjs from 'dayjs'
 
 import { BadgeTier, type ID } from '~/models'
@@ -296,7 +296,7 @@ export const notificationFromSDK = (
         const data = action.data
         childTrackId = HashId.parse(data.trackId)
         parentTrackId = HashId.parse(data.parentTrackId)
-        trackOwnerId = HashId.parse(data.trackOwnerId)
+        trackOwnerId = HashId.parse(action.specifier)
       })
       return {
         type: NotificationType.RemixCreate,
@@ -541,12 +541,14 @@ export const notificationFromSDK = (
     case 'comment': {
       let entityId = 0
       let entityType = Entity.Track
+      let commentId: ID | undefined
       const userIds = Array.from(
         new Set(
           notification.actions
             .map((action) => {
               const data = action.data
               entityId = HashId.parse(data.entityId)
+              commentId = OptionalHashId.parse(data.commentId)
               // @ts-ignore
               entityType = data.type
               return HashId.parse(data.commentUserId)
@@ -559,6 +561,7 @@ export const notificationFromSDK = (
         userIds,
         entityId,
         entityType,
+        ...(commentId && { commentId }),
         ...formatBaseNotification(notification)
       }
     }
@@ -566,6 +569,7 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
+      let commentId: ID | undefined
       const userIds = Array.from(
         new Set(
           notification.actions
@@ -573,6 +577,7 @@ export const notificationFromSDK = (
               const data = action.data
               entityId = HashId.parse(data.entityId)
               entityUserId = HashId.parse(data.entityUserId)
+              commentId = OptionalHashId.parse(data.commentId)
               // @ts-ignore
               entityType = data.type
               return HashId.parse(data.commentUserId)
@@ -586,6 +591,7 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        ...(commentId && { commentId }),
         ...formatBaseNotification(notification)
       }
     }
@@ -593,11 +599,13 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
+      let commentId: ID | undefined
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
           entityId = HashId.parse(data.entityId)
           entityUserId = HashId.parse(data.entityUserId)
+          commentId = OptionalHashId.parse(data.commentId)
           // @ts-ignore
           entityType = data.type
           return HashId.parse(data.commentUserId)
@@ -609,6 +617,7 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        ...(commentId && { commentId }),
         ...formatBaseNotification(notification)
       }
     }
@@ -616,11 +625,13 @@ export const notificationFromSDK = (
       let entityId = 0
       let entityType = Entity.Track
       let entityUserId = 0
+      let commentId: ID | undefined
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
           entityId = HashId.parse(data.entityId)
           entityUserId = HashId.parse(data.entityUserId)
+          commentId = OptionalHashId.parse(data.commentId)
           // @ts-ignore
           entityType = data.type
           return HashId.parse(data.reacterUserId)
@@ -632,6 +643,7 @@ export const notificationFromSDK = (
         entityId,
         entityType,
         entityUserId,
+        ...(commentId && { commentId }),
         ...formatBaseNotification(notification)
       }
     }
@@ -648,7 +660,6 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.FanRemixContestEnded,
         entityId: HashId.parse(data.entityId),
-        entityType: Entity.Track,
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
@@ -667,7 +678,6 @@ export const notificationFromSDK = (
       return {
         type: NotificationType.ArtistRemixContestEndingSoon,
         entityId: HashId.parse(data.entityId),
-        entityType: Entity.Track,
         entityUserId: HashId.parse(data.entityUserId),
         ...formatBaseNotification(notification)
       }
@@ -718,5 +728,4 @@ export const notificationFromSDK = (
       }
     }
   }
-  return undefined
 }

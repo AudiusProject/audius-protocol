@@ -6,7 +6,7 @@ import {
   IconMessage,
   IconDiscord,
   IconInstagram,
-  IconTwitter,
+  IconX,
   IconUserGroup
 } from '@audius/harmony-native'
 import appIcon from 'app/assets/images/appIcon.png'
@@ -27,7 +27,7 @@ const messages = {
   version: 'Audius Version',
   copyright: COPYRIGHT_TEXT,
   discord: 'Join our community on Discord',
-  twitter: 'Follow us on Twitter',
+  x: 'Follow us on X',
   instagram: 'Follow us on Instagram',
   contact: 'Contact Us',
   careers: 'Careers at Audius',
@@ -69,8 +69,8 @@ export const AboutScreen = () => {
         <SettingsRow url={route.AUDIUS_DISCORD_LINK} firstItem>
           <SettingsRowLabel label={messages.discord} icon={IconDiscord} />
         </SettingsRow>
-        <SettingsRow url={route.AUDIUS_TWITTER_LINK}>
-          <SettingsRowLabel label={messages.twitter} icon={IconTwitter} />
+        <SettingsRow url={route.AUDIUS_X_LINK}>
+          <SettingsRowLabel label={messages.x} icon={IconX} />
         </SettingsRow>
         <SettingsRow url={route.AUDIUS_INSTAGRAM_LINK}>
           <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />

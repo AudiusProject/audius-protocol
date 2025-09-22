@@ -6,7 +6,7 @@ from solders.rpc.responses import GetTransactionResp
 from src.solana.solana_client_manager import SolanaClientManager
 
 solana_client_manager = SolanaClientManager(
-    "https://audius.rpcpool.com,https://api.mainnet-beta.solana.com,https://solana-api.projectserum.com"
+    "https://fake-endpoint.com,https://fake-endpoint-2.com,https://fake-endpoint-3.com"
 )
 
 example_response = GetTransactionResp.from_json(

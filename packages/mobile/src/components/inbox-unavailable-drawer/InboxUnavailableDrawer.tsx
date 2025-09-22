@@ -190,11 +190,12 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Text style={styles.callToActionText}>
             {messages.followRequired(
               user ? (
-                <UserBadges
-                  user={user}
-                  nameStyle={styles.callToActionText}
-                  as={Text}
-                />
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                >
+                  <Text style={styles.callToActionText}>{user.name}</Text>
+                  <UserBadges userId={user.user_id} badgeSize='xs' />
+                </View>
               ) : null
             )}
           </Text>
@@ -214,11 +215,12 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Text style={styles.callToActionText}>
             {messages.tipGated(
               user ? (
-                <UserBadges
-                  user={user}
-                  nameStyle={styles.callToActionText}
-                  as={Text}
-                />
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                >
+                  <Text style={styles.callToActionText}>{user.name}</Text>
+                  <UserBadges userId={user.user_id} badgeSize='xs' />
+                </View>
               ) : null
             )}
           </Text>
@@ -261,11 +263,12 @@ const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
           <Text style={styles.callToActionText}>
             {messages.noAction}
             {user ? (
-              <UserBadges
-                user={user}
-                nameStyle={styles.callToActionText}
-                as={Text}
-              />
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+              >
+                <Text style={styles.callToActionText}>{user.name}</Text>
+                <UserBadges userId={user.user_id} badgeSize='xs' />
+              </View>
             ) : null}
           </Text>
           <Button

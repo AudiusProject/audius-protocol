@@ -22,12 +22,15 @@ export const initSharedData = async (): Promise<SharedData> => {
 
   sharedData = {
     sdk: audiusSdk({
+      apiKey: process.env.trending_rewards_api_key!,
+      apiSecret: process.env.trending_rewards_api_secret!,
       environment: process.env.environment as
         | 'development'
         | 'staging'
         | 'production',
       discoveryNodeAllowlist:
         process.env.discovery_node_allowlist?.split(',') ?? undefined,
+      solanaRpcEndpoint: process.env.solana_rpc_endpoint,
       solanaRelayNode: process.env.solana_relay_node!
     }),
     runNow: process.env.run_now?.toLowerCase() === 'true',

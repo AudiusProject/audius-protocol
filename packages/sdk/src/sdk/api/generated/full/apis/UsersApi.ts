@@ -501,6 +501,14 @@ export interface GetUserLibraryTracksRequest {
     encodedDataSignature?: string;
 }
 
+export interface GetUserRecommendedTracksRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    timeRange?: GetUserRecommendedTracksTimeRangeEnum;
+}
+
 export interface GetUsersTrackHistoryRequest {
     id: string;
     offset?: number;
@@ -508,6 +516,7 @@ export interface GetUsersTrackHistoryRequest {
     query?: string;
     sortMethod?: GetUsersTrackHistorySortMethodEnum;
     sortDirection?: GetUsersTrackHistorySortDirectionEnum;
+    userId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -2736,6 +2745,53 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the recommended tracks for the user
+     */
+    async getUserRecommendedTracksRaw(params: GetUserRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserRecommendedTracks.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.timeRange !== undefined) {
+            queryParameters['time_range'] = params.timeRange;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/recommended-tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the recommended tracks for the user
+     */
+    async getUserRecommendedTracks(params: GetUserRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
+        const response = await this.getUserRecommendedTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Get the tracks the user recently listened to.
      */
     async getUsersTrackHistoryRaw(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HistoryResponseFull>> {
@@ -2763,6 +2819,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.sortDirection !== undefined) {
             queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -3158,6 +3218,15 @@ export const GetUserLibraryTracksTypeEnum = {
     Purchase: 'purchase'
 } as const;
 export type GetUserLibraryTracksTypeEnum = typeof GetUserLibraryTracksTypeEnum[keyof typeof GetUserLibraryTracksTypeEnum];
+/**
+ * @export
+ */
+export const GetUserRecommendedTracksTimeRangeEnum = {
+    Week: 'week',
+    Month: 'month',
+    AllTime: 'allTime'
+} as const;
+export type GetUserRecommendedTracksTimeRangeEnum = typeof GetUserRecommendedTracksTimeRangeEnum[keyof typeof GetUserRecommendedTracksTimeRangeEnum];
 /**
  * @export
  */
