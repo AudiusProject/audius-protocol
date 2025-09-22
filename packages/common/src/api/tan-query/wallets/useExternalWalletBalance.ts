@@ -17,7 +17,7 @@ import {
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models/ErrorReporting'
-import { TOKEN_LISTING_MAP } from '~/store'
+import { TOKEN_LISTING_MAP, TokenInfo } from '~/store'
 import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -39,7 +39,7 @@ type FetchExternalWalletBalanceContext = Pick<
   QueryContextType,
   'audiusSdk' | 'env' | 'reportToSentry'
 > & {
-  tokens: Record<string, any>
+  tokens: Record<string, TokenInfo>
 }
 
 const getExternalWalletBalanceQueryFn =
