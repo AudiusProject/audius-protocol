@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   useArtistCoin,
@@ -9,27 +9,25 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import {
   Flex,
   IconDiscord,
   IconExternalLink,
   IconGift,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
   Paper,
   PlainButton,
   Text
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
+import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import Tiers from 'pages/rewards-page/Tiers'
 import { env } from 'services/env'
+import { push } from 'utils/navigation'
 
 const messages = coinDetailsMessages.coinInfo
 
@@ -193,8 +191,10 @@ type AssetInfoSectionProps = {
   mint: string
 }
 
+const { REWARDS_PAGE } = route
+
 export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
-  const [isTiersModalOpen, setIsTiersModalOpen] = useState(false)
+  const dispatch = useDispatch()
 
   const { data: coin, isLoading } = useArtistCoin(mint)
   const { data: currentUserId } = useCurrentUserId()
@@ -217,12 +217,8 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   }
 
   const handleBrowseRewards = useCallback(() => {
-    setIsTiersModalOpen(true)
-  }, [])
-
-  const handleCloseTiersModal = useCallback(() => {
-    setIsTiersModalOpen(false)
-  }, [])
+    dispatch(push(REWARDS_PAGE))
+  }, [dispatch])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -235,101 +231,74 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     !userTokenBalance || Number(userTokenBalance) <= 0
 
   return (
-    <>
-      <Modal
-        isOpen={isTiersModalOpen}
-        onClose={handleCloseTiersModal}
-        size='large'
-        css={{ maxWidth: '90vw' }}
-      >
-        <ModalHeader>
-          <ModalTitle title={messages.rewardTiers} />
-        </ModalHeader>
-        <ModalContent css={{ padding: 0, overflow: 'auto' }}>
-          <Tiers />
-        </ModalContent>
-      </Modal>
-      <Paper
-        borderRadius='l'
-        shadow='far'
-        direction='column'
-        alignItems='flex-start'
-      >
-        <BannerSection mint={mint} />
+    <Paper
+      borderRadius='l'
+      shadow='far'
+      direction='column'
+      alignItems='flex-start'
+    >
+      <BannerSection mint={mint} />
 
-        {coin.description ? (
-          <Flex
-            direction='column'
-            alignItems='flex-start'
-            alignSelf='stretch'
-            p='xl'
-            gap='l'
-          >
-            <Flex direction='column' gap='m'>
-              {descriptionParagraphs.map((paragraph) => {
-                if (paragraph.trim() === '') {
-                  return null
-                }
+      {coin.description ? (
+        <Flex
+          direction='column'
+          alignItems='flex-start'
+          alignSelf='stretch'
+          p='xl'
+          gap='l'
+        >
+          <Flex direction='column' gap='m'>
+            {descriptionParagraphs.map((paragraph) => {
+              if (paragraph.trim() === '') {
+                return null
+              }
 
-                return (
-                  <Text
-                    key={paragraph.slice(0, 10)}
-                    variant='body'
-                    size='m'
-                    color='subdued'
-                  >
-                    {paragraph}
-                  </Text>
-                )
-              })}
-            </Flex>
+              return (
+                <Text
+                  key={paragraph.slice(0, 10)}
+                  variant='body'
+                  size='m'
+                  color='subdued'
+                >
+                  {paragraph}
+                </Text>
+              )
+            })}
           </Flex>
-        ) : null}
+        </Flex>
+      ) : null}
 
-        {isWAudio || coin.website ? (
-          <Flex
-            alignItems='center'
-            justifyContent='space-between'
-            alignSelf='stretch'
-            p='l'
-            borderTop='default'
-          >
-            <Flex alignItems='center' justifyContent='center' gap='s'>
-              <PlainButton
-                onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
-                iconLeft={CTAIcon}
-                variant='default'
-                size='large'
-              >
-                {isWAudio ? messages.browseRewards : messages.learnMore}
-              </PlainButton>
-            </Flex>
+      {isWAudio || coin.website ? (
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='l'
+          borderTop='default'
+        >
+          <Flex alignItems='center' justifyContent='center' gap='s'>
+            <PlainButton
+              onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
+              iconLeft={CTAIcon}
+              variant='default'
+              size='large'
+            >
+              {isWAudio ? messages.browseRewards : messages.learnMore}
+            </PlainButton>
           </Flex>
-        ) : null}
-        {userToken?.hasDiscord ? (
-          <Flex
-            alignItems='center'
-            justifyContent='space-between'
-            alignSelf='stretch'
-            p='l'
-            borderTop='default'
-          >
-            <Flex alignItems='center' justifyContent='center' gap='s'>
-              {isUserBalanceUnavailable ? (
-                <Tooltip text={messages.discordDisabledTooltip(coin?.ticker)}>
-                  <Flex style={{ cursor: 'pointer' }}>
-                    <PlainButton
-                      onClick={openDiscord}
-                      iconLeft={IconDiscord}
-                      variant='default'
-                      size='large'
-                      disabled={isUserBalanceUnavailable}
-                    >
-                      {messages.openDiscord}
-                    </PlainButton>
-                  </Flex>
-                </Tooltip>
-              ) : (
+        </Flex>
+      ) : null}
+      {userToken?.hasDiscord ? (
+        <Flex
+          alignItems='center'
+          justifyContent='space-between'
+          alignSelf='stretch'
+          p='l'
+          borderTop='default'
+        >
+          <Flex alignItems='center' justifyContent='center' gap='s'>
+            {isUserBalanceUnavailable ? (
+              <Tooltip text={messages.discordDisabledTooltip(coin?.ticker)}>
                 <Flex style={{ cursor: 'pointer' }}>
                   <PlainButton
                     onClick={openDiscord}
@@ -341,11 +310,23 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
                     {messages.openDiscord}
                   </PlainButton>
                 </Flex>
-              )}
-            </Flex>
+              </Tooltip>
+            ) : (
+              <Flex style={{ cursor: 'pointer' }}>
+                <PlainButton
+                  onClick={openDiscord}
+                  iconLeft={IconDiscord}
+                  variant='default'
+                  size='large'
+                  disabled={isUserBalanceUnavailable}
+                >
+                  {messages.openDiscord}
+                </PlainButton>
+              </Flex>
+            )}
           </Flex>
-        ) : null}
-      </Paper>
-    </>
+        </Flex>
+      ) : null}
+    </Paper>
   )
 }
