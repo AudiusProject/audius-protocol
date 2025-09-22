@@ -2,9 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import {
   getUserCoinQueryKey,
+  getUserQueryKey,
   useCurrentAccountUser,
-  useQueryContext,
-  QUERY_KEYS
+  useQueryContext
 } from '~/api'
 import type { QueryContextType } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models'
@@ -250,7 +250,7 @@ export const useSwapTokens = () => {
 
       // Invalidate user query to ensure user data is fresh after swap
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.user, user?.user_id]
+        queryKey: getUserQueryKey(user?.user_id)
       })
     },
     onMutate: () => {

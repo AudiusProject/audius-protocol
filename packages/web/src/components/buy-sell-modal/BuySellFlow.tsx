@@ -115,7 +115,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const {
     getCurrentTabTokens,
     handleInputTokenChange: handleInputTokenChangeInternal,
-    handleOutputTokenChange: handleOutputTokenChangeInternal
+    handleOutputTokenChange: handleOutputTokenChangeInternal,
+    handleSwapDirection
   } = useTokenStates(selectedPair)
 
   // Get current tab's token symbols
@@ -131,6 +132,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const handleOutputTokenChange = (symbol: string) => {
     handleOutputTokenChangeInternal(symbol, activeTab)
+    resetTransactionData()
+  }
+
+  const handleChangeSwapDirection = () => {
+    handleSwapDirection(activeTab)
     resetTransactionData()
   }
 
@@ -473,6 +479,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               availableOutputTokens={availableOutputTokensForConvert}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
+              onChangeSwapDirection={handleChangeSwapDirection}
             />
           ) : null}
 

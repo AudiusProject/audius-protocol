@@ -10,7 +10,7 @@ import { FeatureFlags } from '@audius/common/services'
 import type { TokenInfo } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
-import { Flex } from '@audius/harmony'
+import { Divider, Flex, IconButton, IconTransaction } from '@audius/harmony'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -175,6 +175,21 @@ export const ConvertTab = ({
             availableTokens={availableInputTokens}
             onTokenChange={handleInputTokenChange}
           />
+
+          {/* Swap Direction Divider */}
+          <Flex alignItems='center' justifyContent='center' gap='s' w='full'>
+            <Divider />
+            <IconButton
+              icon={IconTransaction}
+              size='s'
+              color='subdued'
+              onClick={onChangeSwapDirection}
+              aria-label='Swap token direction'
+              css={{ transform: 'rotate(90deg)' }}
+            />
+            <Divider />
+          </Flex>
+
           <OutputTokenSection
             tokenInfo={selectedOutputToken}
             amount={outputAmount}
