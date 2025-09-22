@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { musicConfettiActions } from '@audius/common/store'
+import { musicConfettiActions, useSendTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Artwork,
@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
+import { env } from 'services/env'
 
 import { SetupFormValues } from './types'
 
@@ -255,6 +256,8 @@ export const InsufficientBalanceModal = ({
   isOpen: boolean
   onClose: () => void
 }) => {
+  const { onOpen: openSendTokensModal } = useSendTokensModal()
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalContent>
@@ -300,7 +303,10 @@ export const InsufficientBalanceModal = ({
                 <TextLink
                   showUnderline
                   onClick={() => {
-                    /* TODO: DESIGN TO PROVIDE LINK */
+                    openSendTokensModal({
+                      mint: env.WAUDIO_MINT_ADDRESS,
+                      isOpen: true
+                    })
                   }}
                   css={({ color }) => ({ color: color.icon.default })}
                 >
