@@ -1,14 +1,20 @@
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useMemo } from 'react'
 
+import { useUser } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import PropTypes from 'prop-types'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useProfilePicture } from 'hooks/useProfilePicture'
+import { env } from 'services/env'
 
 import styles from './ProfilePicture.module.css'
 
@@ -38,6 +44,23 @@ const ProfilePicture = ({
   const [processing, setProcessing] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
+  const { data: artistCoinBadge } = useUser(userId, {
+    select: (user) => user?.artist_coin_badge
+  })
+
+  const shouldShowArtistCoinBadge = useMemo(() => {
+    return (
+      isArtistCoinEnabled &&
+      !!artistCoinBadge?.mint &&
+      artistCoinBadge.mint !== env.WAUDIO_MINT_ADDRESS &&
+      !!artistCoinBadge?.logo_uri
+    )
+  }, [isArtistCoinEnabled, artistCoinBadge?.mint, artistCoinBadge?.logo_uri])
+
   useEffect(() => {
     if (editMode) {
       setHasChanged(false)
@@ -59,6 +82,8 @@ const ProfilePicture = ({
   const onClose = () => {
     setModalOpen(false)
   }
+
+  const { color } = useTheme()
 
   return (
     <div
@@ -100,6 +125,16 @@ const ProfilePicture = ({
             source='ProfilePicture'
           />
         ) : null}
+        {shouldShowArtistCoinBadge && (
+          <TokenIcon
+            logoURI={artistCoinBadge?.logo_uri}
+            css={{ position: 'absolute', bottom: 0, right: 0, zIndex: 10 }}
+            hex
+            w={64}
+            h={64}
+            hexBorderColor={color.static.white}
+          />
+        )}
       </div>
     </div>
   )
