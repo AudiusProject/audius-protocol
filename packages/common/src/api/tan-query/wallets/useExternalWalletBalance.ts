@@ -1,28 +1,39 @@
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
-  getAssociatedTokenAddressSync,
-  getAccount,
-  TokenAccountNotFoundError
-} from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
-import {
   queryOptions,
   useQuery,
   type QueryFunctionContext
 } from '@tanstack/react-query'
 
-import { findTokenByAddress } from '~/api/tan-query/jupiter/utils'
 import {
   useQueryContext,
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
 import { Feature } from '~/models/ErrorReporting'
-import { TOKEN_LISTING_MAP, TokenInfo } from '~/store'
+import { TOKEN_LISTING_MAP } from '~/store'
 import { toErrorWithMessage } from '~/utils/error'
 
 import { QUERY_KEYS } from '../queryKeys'
-import { useTokens } from '../tokens/useTokens'
 import { QueryOptions } from '../types'
+
+type TokenAccount = {
+  account: string
+  amount: string
+  uiAmount: number
+  uiAmountString: string
+  isFrozen: boolean
+  isAssociatedTokenAccount: boolean
+  decimals: number
+  programId: string
+  excludeFromNetWorth: boolean
+}
+
+type ExternalWalletBalanceResponse = {
+  amount: string
+  uiAmount: number
+  uiAmountString: string
+  tokens: Record<string, TokenAccount[]>
+}
 
 type UseExternalWalletBalanceParams = {
   walletAddress: string
@@ -38,9 +49,7 @@ export const getExternalWalletBalanceQueryKey = ({
 type FetchExternalWalletBalanceContext = Pick<
   QueryContextType,
   'audiusSdk' | 'env' | 'reportToSentry'
-> & {
-  tokens: Record<string, TokenInfo>
-}
+>
 
 const getExternalWalletBalanceQueryFn =
   (context: FetchExternalWalletBalanceContext) =>
@@ -50,80 +59,37 @@ const getExternalWalletBalanceQueryFn =
     ReturnType<typeof getExternalWalletBalanceQueryKey>
   >) => {
     const [_ignored, { walletAddress, mint }] = queryKey
-    const { audiusSdk, reportToSentry, tokens } = context
+    const { reportToSentry } = context
     try {
-      const sdk = await audiusSdk()
-      const connection = sdk.services.solanaClient.connection
-      const walletPublicKey = new PublicKey(walletAddress)
+      // Call Jupiter API to get balances
+      const response = await fetch(
+        `https://lite-api.jup.ag/ultra/v1/holdings/${walletAddress}`
+      )
 
-      // Find token info by mint address
-      const tokenInfo = findTokenByAddress(tokens, mint)
-      // Handle SOL as special case (since not using any token account address)
-      if (mint === TOKEN_LISTING_MAP.SOL.address) {
-        const solBalance =
-          (await connection.getBalance(walletPublicKey)) /
-          10 ** TOKEN_LISTING_MAP.SOL.decimals
-        return {
-          balance: new FixedDecimal(
-            solBalance.toString(),
-            TOKEN_LISTING_MAP.SOL.decimals
-          ),
-          name: TOKEN_LISTING_MAP.SOL.name,
-          symbol: `$${TOKEN_LISTING_MAP.SOL.symbol}`,
-          decimals: TOKEN_LISTING_MAP.SOL.decimals,
-          address: TOKEN_LISTING_MAP.SOL.address,
-          logoURI: TOKEN_LISTING_MAP.SOL.logoURI,
-          isStablecoin: false
-        }
-      }
-
-      // Handle SPL tokens (need token account)
-      let tokenBalance = BigInt(0)
-      let tokenDecimals = 6 // default
-      let tokenName = 'Unknown Token'
-      let tokenSymbol = 'UNKNOWN'
-      let tokenLogoURI = ''
-      let isStablecoin = false
-
-      // Use token info if found
-      if (tokenInfo) {
-        tokenDecimals = tokenInfo.decimals
-        tokenName = tokenInfo.name
-        tokenSymbol = tokenInfo.symbol
-        tokenLogoURI = tokenInfo.logoURI ?? ''
-        isStablecoin = tokenInfo.isStablecoin ?? false
-      }
-
-      try {
-        const mintPublicKey = new PublicKey(mint)
-        const tokenAccountAddress = getAssociatedTokenAddressSync(
-          mintPublicKey,
-          walletPublicKey,
-          true // allowOwnerOffCurve
+      if (!response.ok) {
+        throw new Error(
+          `Jupiter API error: ${response.status} ${response.statusText}`
         )
-
-        const tokenAccount = await getAccount(connection, tokenAccountAddress)
-
-        tokenBalance = tokenAccount.amount
-      } catch (e) {
-        // If the token account doesn't exist, balance is 0
-        if (e instanceof TokenAccountNotFoundError) {
-          tokenBalance = BigInt(0)
-        } else {
-          console.error(`Error fetching token balance for ${mint}:`, e)
-          tokenBalance = BigInt(0)
-        }
       }
 
-      return {
-        balance: new FixedDecimal(tokenBalance, tokenDecimals),
-        name: tokenName,
-        symbol: tokenSymbol,
-        decimals: tokenDecimals,
-        address: mint,
-        logoURI: tokenLogoURI,
-        isStablecoin
+      const balances: ExternalWalletBalanceResponse = await response.json()
+
+      // Solana balance is at the top of the balances, no need to drill into the token accounts
+      if (mint === TOKEN_LISTING_MAP.SOL.address) {
+        return new FixedDecimal(
+          balances.uiAmount,
+          TOKEN_LISTING_MAP.SOL.decimals
+        )
       }
+      // Find the balance for the specific mint
+      const tokenBalance = mint ? balances?.tokens?.[mint]?.[0] : undefined
+
+      if (!tokenBalance) {
+        return new FixedDecimal(0)
+      }
+
+      // Convert raw balance to FixedDecimal with proper decimals
+      return new FixedDecimal(tokenBalance.uiAmount, tokenBalance.decimals)
     } catch (error) {
       reportToSentry({
         error: toErrorWithMessage(error),
@@ -137,10 +103,13 @@ const getExternalWalletBalanceQueryFn =
 
 const getExternalWalletBalanceOptions = (
   context: FetchExternalWalletBalanceContext,
-  { walletAddress, mint }: UseExternalWalletBalanceParams
+  { walletAddress, mint }: Partial<UseExternalWalletBalanceParams>
 ) => {
   return queryOptions({
-    queryKey: getExternalWalletBalanceQueryKey({ walletAddress, mint }),
+    queryKey: getExternalWalletBalanceQueryKey({
+      walletAddress: walletAddress!,
+      mint: mint!
+    }),
     queryFn: getExternalWalletBalanceQueryFn(context)
   })
 }
@@ -153,15 +122,14 @@ export const useExternalWalletBalance = (
   options?: QueryOptions
 ) => {
   const context = useQueryContext()
-  const { tokens } = useTokens()
 
   return useQuery({
     ...options,
     ...getExternalWalletBalanceOptions(
-      { ...context, tokens },
+      { ...context },
       {
-        walletAddress: walletAddress!,
-        mint: mint!
+        walletAddress,
+        mint
       }
     ),
     enabled: options?.enabled !== false && !!walletAddress && !!mint

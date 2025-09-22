@@ -22,6 +22,8 @@ export type UseTokenDataProps = {
   externalWalletAddress?: string
 }
 
+const MAX_VISIBLE_DECIMALS = 6
+
 export const useTokenData = ({
   inputToken,
   outputToken,
@@ -34,22 +36,26 @@ export const useTokenData = ({
     isPending: isInternalWalletBalanceLoading
   } = useTokenBalance({
     mint: inputToken.address,
-    includeExternalWallets: false
+    includeExternalWallets: false,
+    enabled: !externalWalletAddress
   })
 
   // Get token balance from an explicit external wallet
   const {
-    data: externalWalletBalanceData,
+    data: externalWalletBalance,
     isPending: isExternalWalletBalanceLoading
-  } = useExternalWalletBalance({
-    walletAddress: externalWalletAddress,
-    mint: inputToken.address
-  })
+  } = useExternalWalletBalance(
+    {
+      walletAddress: externalWalletAddress,
+      mint: inputToken.address
+    },
+    { enabled: !!externalWalletAddress }
+  )
 
   // Use whichever balance based on configuration
-  const balanceData = externalWalletAddress
-    ? externalWalletBalanceData
-    : internalWalletBalanceData
+  const balanceFD = externalWalletAddress
+    ? externalWalletBalance
+    : internalWalletBalanceData?.balance
   const isBalanceLoading = externalWalletAddress
     ? isExternalWalletBalanceLoading
     : isInternalWalletBalanceLoading
@@ -77,14 +83,11 @@ export const useTokenData = ({
   })
 
   // Process balance data
-  const balance = useMemo(() => {
-    return Number(balanceData?.balance ?? 0)
-  }, [balanceData?.balance])
-
+  const balance = Number(balanceFD?.trunc(MAX_VISIBLE_DECIMALS) ?? 0)
   const formattedBalance = useMemo(() => {
-    if (!balanceData?.balance) return '0'
-    return balanceData.balance.toString()
-  }, [balanceData?.balance])
+    if (!balance) return '0'
+    return balance.toString()
+  }, [balance])
 
   // Process exchange rate data
   const exchangeRate = useMemo(() => {
