@@ -48,35 +48,22 @@ const ProfilePicture = ({
     FeatureFlags.ARTIST_COINS
   )
 
-  const { data: artistCoinBadge } = useUser(userId, {
-    select: (user) => user?.artist_coin_badge
-  })
-
   const { data: ownedCoins } = useUserCreatedCoins({ userId, limit: 1 })
+  const ownedCoin = ownedCoins?.[0]
+  console.log('ownedCoin', ownedCoin)
 
   const shouldShowArtistCoinBadge = useMemo(() => {
-    if (
-      !isArtistCoinEnabled ||
-      !artistCoinBadge?.mint ||
-      !artistCoinBadge?.logo_uri
-    ) {
+    if (!isArtistCoinEnabled || !ownedCoin?.mint || !ownedCoin?.logoUri) {
       return false
     }
 
     // Don't show for wAUDIO
-    if (artistCoinBadge.mint === env.WAUDIO_MINT_ADDRESS) {
+    if (ownedCoin.mint === env.WAUDIO_MINT_ADDRESS) {
       return false
     }
 
-    // Only show if the user actually owns this coin (not just holds it)
-    const ownedCoin = ownedCoins?.[0]
-    return ownedCoin?.mint === artistCoinBadge.mint
-  }, [
-    isArtistCoinEnabled,
-    artistCoinBadge.mint,
-    artistCoinBadge?.logo_uri,
-    ownedCoins
-  ])
+    return true
+  }, [isArtistCoinEnabled, ownedCoin?.mint, ownedCoin?.logoUri])
 
   useEffect(() => {
     if (editMode) {
@@ -144,12 +131,12 @@ const ProfilePicture = ({
         ) : null}
         {shouldShowArtistCoinBadge && (
           <TokenIcon
-            logoURI={artistCoinBadge?.logo_uri}
+            logoURI={ownedCoin?.logoUri}
             css={{ position: 'absolute', bottom: 0, right: 0, zIndex: 10 }}
             hex
             w={64}
             h={64}
-            hexBorderColor={color.static.white}
+            borderColor={color.static.white}
           />
         )}
       </div>

@@ -16,7 +16,7 @@ export type ArtworkProps = {
   noLoading?: boolean
   onError?: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void
   hex?: boolean
-  hexBorderColor?: string
+  borderColor?: string
 } & Pick<ComponentProps<'img'>, 'src' | 'onError'> &
   BoxProps
 
@@ -38,7 +38,7 @@ export const Artwork = (props: ArtworkProps) => {
     'data-testid': testId,
     onError,
     hex = false,
-    hexBorderColor,
+    borderColor,
     ...other
   } = props
   const imgRef = useRef<HTMLImageElement | null>(null)
@@ -166,9 +166,9 @@ export const Artwork = (props: ArtworkProps) => {
               // Occurs in the upload flow when selecting coin gating audience option
               css={{ fill: 'none !important' }}
               fill='none'
-              opacity={hexBorderColor ? 1 : 0.3}
-              stroke={hexBorderColor || color.neutral.n950}
-              strokeWidth={hexBorderColor ? '0.02' : '0.005'}
+              opacity={borderColor ? 1 : 0.3}
+              stroke={borderColor || color.neutral.n950}
+              strokeWidth={borderColor ? '0.02' : '0.005'}
             />
           </g>
         </svg>
