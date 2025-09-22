@@ -9,13 +9,15 @@ type TokenInfoRowProps = {
   value: string | ReactNode
   hasTooltip?: boolean
   tooltipContent?: string
+  variant?: 'inline' | 'block'
 }
 
 export const TokenInfoRow = ({
   label,
   value,
   hasTooltip,
-  tooltipContent
+  tooltipContent,
+  variant = 'inline'
 }: TokenInfoRowProps) => {
   const tooltipTrigger = (
     <Flex alignItems='center' gap='xs'>
@@ -26,22 +28,37 @@ export const TokenInfoRow = ({
     </Flex>
   )
 
+  const labelElement =
+    hasTooltip && tooltipContent ? (
+      <Tooltip text={tooltipContent} mount='body'>
+        {tooltipTrigger}
+      </Tooltip>
+    ) : (
+      tooltipTrigger
+    )
+
+  const valueElement =
+    typeof value === 'string' ? (
+      <Text variant='body' size='m' color='default'>
+        {value}
+      </Text>
+    ) : (
+      value
+    )
+
+  if (variant === 'block') {
+    return (
+      <Flex direction='column' gap='xs' w='100%'>
+        {labelElement}
+        {valueElement}
+      </Flex>
+    )
+  }
+
   return (
     <Flex alignItems='center' justifyContent='space-between' w='100%'>
-      {hasTooltip && tooltipContent ? (
-        <Tooltip text={tooltipContent} mount='body'>
-          {tooltipTrigger}
-        </Tooltip>
-      ) : (
-        tooltipTrigger
-      )}
-      {typeof value === 'string' ? (
-        <Text variant='body' size='m' color='default'>
-          {value}
-        </Text>
-      ) : (
-        value
-      )}
+      {labelElement}
+      {valueElement}
     </Flex>
   )
 }

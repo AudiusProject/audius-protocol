@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
@@ -9,12 +9,15 @@ import {
   IconCopy,
   IconExternalLink,
   IconButton,
-  IconKebabHorizontal
+  IconKebabHorizontal,
+  IconInfo
 } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
+
+import { ArtistCoinDetailsModal } from './ArtistCoinDetailsModal'
 
 const messages = coinDetailsMessages.overflowMenu
 
@@ -30,6 +33,7 @@ export const AssetInsightsOverflowMenu = ({
 }: AssetInsightsOverflowMenuProps) => {
   const { toast } = useContext(ToastContext)
   const { data: artistCoin } = useArtistCoin(mint)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   const onCopyCoinAddress = () => {
     if (artistCoin?.mint) {
@@ -48,6 +52,10 @@ export const AssetInsightsOverflowMenu = ({
     }
   }
 
+  const onOpenDetails = () => {
+    setIsDetailsModalOpen(true)
+  }
+
   const menuItems: PopupMenuItem[] = [
     {
       text: messages.copyCoinAddress,
@@ -58,6 +66,11 @@ export const AssetInsightsOverflowMenu = ({
       text: messages.openDexscreener,
       icon: <IconExternalLink />,
       onClick: onOpenDexscreener
+    },
+    {
+      text: messages.details,
+      icon: <IconInfo />,
+      onClick: onOpenDetails
     }
   ]
 
@@ -67,18 +80,26 @@ export const AssetInsightsOverflowMenu = ({
   }
 
   return (
-    <PopupMenu
-      items={menuItems}
-      renderTrigger={(anchorRef, triggerPopup, triggerProps) => (
-        <IconButton
-          ref={anchorRef}
-          icon={IconKebabHorizontal}
-          onClick={() => triggerPopup()}
-          aria-label='More options'
-          size='l'
-          ripple
-        />
-      )}
-    />
+    <>
+      <PopupMenu
+        items={menuItems}
+        renderTrigger={(anchorRef, triggerPopup, triggerProps) => (
+          <IconButton
+            ref={anchorRef}
+            icon={IconKebabHorizontal}
+            onClick={() => triggerPopup()}
+            aria-label='More options'
+            size='l'
+            ripple
+          />
+        )}
+      />
+
+      <ArtistCoinDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        mint={mint}
+      />
+    </>
   )
 }
