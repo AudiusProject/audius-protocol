@@ -64,7 +64,10 @@ const getExternalWalletBalanceQueryFn =
           (await connection.getBalance(walletPublicKey)) /
           10 ** TOKEN_LISTING_MAP.SOL.decimals
         return {
-          balance: new FixedDecimal(solBalance.toString()),
+          balance: new FixedDecimal(
+            solBalance.toString(),
+            TOKEN_LISTING_MAP.SOL.decimals
+          ),
           name: TOKEN_LISTING_MAP.SOL.name,
           symbol: `$${TOKEN_LISTING_MAP.SOL.symbol}`,
           decimals: TOKEN_LISTING_MAP.SOL.decimals,
