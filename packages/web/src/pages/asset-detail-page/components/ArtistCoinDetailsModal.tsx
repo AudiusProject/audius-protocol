@@ -119,7 +119,10 @@ export const ArtistCoinDetailsModal = ({
               label={messages.totalSupply}
               value={
                 artistCoin?.totalSupply
-                  ? new FixedDecimal(artistCoin.totalSupply, 0).toLocaleString()
+                  ? new FixedDecimal(
+                      artistCoin.totalSupply.toString(),
+                      0
+                    ).toLocaleString()
                   : messages.unknown
               }
               hasTooltip
@@ -131,7 +134,7 @@ export const ArtistCoinDetailsModal = ({
               label={messages.marketCap}
               value={
                 artistCoin?.marketCap
-                  ? `$${new FixedDecimal(artistCoin.marketCap, 2).toLocaleString()}`
+                  ? `$${new FixedDecimal(artistCoin.marketCap.toString(), 2).toLocaleString()}`
                   : messages.unknown
               }
               hasTooltip
@@ -143,7 +146,7 @@ export const ArtistCoinDetailsModal = ({
               label={messages.fdv}
               value={
                 artistCoin?.fdv
-                  ? `$${new FixedDecimal(artistCoin.fdv, 2).toLocaleString()}`
+                  ? `$${new FixedDecimal(artistCoin.fdv.toString(), 2).toLocaleString()}`
                   : messages.unknown
               }
               hasTooltip
@@ -155,7 +158,7 @@ export const ArtistCoinDetailsModal = ({
               label={messages.price}
               value={
                 artistCoin?.price
-                  ? `$${new FixedDecimal(artistCoin.price, 6).toLocaleString()}`
+                  ? `$${new FixedDecimal(artistCoin.price.toString(), 6).toLocaleString()}`
                   : messages.unknown
               }
               hasTooltip
@@ -167,7 +170,7 @@ export const ArtistCoinDetailsModal = ({
               label={messages.liquidity}
               value={
                 artistCoin?.liquidity
-                  ? `$${new FixedDecimal(artistCoin.liquidity, 2).toLocaleString()}`
+                  ? `$${new FixedDecimal(artistCoin.liquidity.toString(), 2).toLocaleString()}`
                   : messages.unknown
               }
               hasTooltip
@@ -180,7 +183,7 @@ export const ArtistCoinDetailsModal = ({
               value={
                 artistCoin?.circulatingSupply
                   ? new FixedDecimal(
-                      artistCoin.circulatingSupply,
+                      artistCoin.circulatingSupply.toString(),
                       0
                     ).toLocaleString()
                   : messages.unknown
