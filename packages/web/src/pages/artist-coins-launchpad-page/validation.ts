@@ -1,4 +1,5 @@
 import {
+  QUERY_KEYS,
   QueryContextType,
   fetchCoinTickerAvailability
 } from '@audius/common/api'
@@ -61,7 +62,7 @@ export const setupFormSchema = ({
         if (ticker && ticker.length >= 2) {
           try {
             const result = await queryClient.fetchQuery({
-              queryKey: ['coinTickerAvailability', ticker],
+              queryKey: [QUERY_KEYS.coinByTicker, ticker],
               queryFn: async () =>
                 await fetchCoinTickerAvailability(ticker, queryContext)
             })
