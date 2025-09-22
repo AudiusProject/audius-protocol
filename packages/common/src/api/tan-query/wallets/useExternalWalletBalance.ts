@@ -60,7 +60,9 @@ const getExternalWalletBalanceQueryFn =
       const tokenInfo = findTokenByAddress(tokens, mint)
       // Handle SOL as special case (since not using any token account address)
       if (mint === TOKEN_LISTING_MAP.SOL.address) {
-        const solBalance = await connection.getBalance(walletPublicKey) 
+        const solBalance =
+          (await connection.getBalance(walletPublicKey)) /
+          10 ** TOKEN_LISTING_MAP.SOL.decimals
         return {
           balance: new FixedDecimal(solBalance.toString()),
           name: TOKEN_LISTING_MAP.SOL.name,

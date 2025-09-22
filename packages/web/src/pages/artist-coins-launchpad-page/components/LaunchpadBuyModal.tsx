@@ -38,36 +38,26 @@ import { getLatestConnectedWallet } from '../utils'
 
 const INPUT_TOKEN_MAP: Record<string, TokenInfo> = {
   USDC: {
-    symbol: 'USDC',
-    name: 'USDC',
-    decimals: TOKEN_LISTING_MAP.USDC.decimals,
+    ...TOKEN_LISTING_MAP.USDC,
     balance: null,
-    address: TOKEN_LISTING_MAP.USDC.address,
-    logoURI: TOKEN_LISTING_MAP.USDC.logoURI,
     isStablecoin: true
   },
   SOL: {
-    symbol: 'SOL',
-    name: 'SOL',
-    decimals: TOKEN_LISTING_MAP.SOL.decimals,
+    ...TOKEN_LISTING_MAP.SOL,
     balance: null,
-    address: TOKEN_LISTING_MAP.SOL.address,
-    logoURI: TOKEN_LISTING_MAP.SOL.logoURI,
     isStablecoin: false
   }
 }
 
+const INPUT_TOKEN_LIST = Object.values(INPUT_TOKEN_MAP)
+
+const DEFAULT_INPUT_TOKEN = INPUT_TOKEN_MAP.USDC
+
 const OUTPUT_TOKEN: TokenInfo = {
-  symbol: '$AUDIO',
-  name: 'AUDIO',
+  ...TOKEN_LISTING_MAP.AUDIO,
   balance: null,
-  decimals: TOKEN_LISTING_MAP.AUDIO.decimals,
-  address: TOKEN_LISTING_MAP.AUDIO.address,
   isStablecoin: false
 }
-
-const INPUT_TOKEN_LIST = Object.values(INPUT_TOKEN_MAP)
-const DEFAULT_INPUT_TOKEN = INPUT_TOKEN_MAP.USDC
 
 type FormikValues = {
   inputAmount: string
@@ -221,7 +211,7 @@ const ConfirmationStep = ({
   onClose: () => void
   onBack: () => void
   onConfirm: () => void
-  isConfirming: boolean // TODO
+  isConfirming: boolean
 }) => {
   const { values } = useFormikContext<FormikValues>()
   const { formattedAmount: formattedPayAmount } = useTokenAmountFormatting({
@@ -255,7 +245,6 @@ const ConfirmationStep = ({
               title={buySellMessages.youReceive}
               tokenInfo={values.selectedOutputToken}
               amount={formattedReceiveAmount ?? ''}
-              //   priceLabel={values.currentExchangeRate}
             />
           </Flex>
 
@@ -331,7 +320,6 @@ export const LaunchpadBuyModal = ({
   onClose: () => void
 }) => {
   const { toast } = useContext(ToastContext)
-  // TODO: ideally this is just a form field
   const [selectedInputToken, setSelectedInputToken] =
     useState(DEFAULT_INPUT_TOKEN)
 
