@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useMemo } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useUser, useUserCreatedCoins } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -52,14 +52,31 @@ const ProfilePicture = ({
     select: (user) => user?.artist_coin_badge
   })
 
+  const { data: ownedCoins } = useUserCreatedCoins({ userId, limit: 1 })
+
   const shouldShowArtistCoinBadge = useMemo(() => {
-    return (
-      isArtistCoinEnabled &&
-      !!artistCoinBadge?.mint &&
-      artistCoinBadge.mint !== env.WAUDIO_MINT_ADDRESS &&
-      !!artistCoinBadge?.logo_uri
-    )
-  }, [isArtistCoinEnabled, artistCoinBadge?.mint, artistCoinBadge?.logo_uri])
+    if (
+      !isArtistCoinEnabled ||
+      !artistCoinBadge?.mint ||
+      !artistCoinBadge?.logo_uri
+    ) {
+      return false
+    }
+
+    // Don't show for wAUDIO
+    if (artistCoinBadge.mint === env.WAUDIO_MINT_ADDRESS) {
+      return false
+    }
+
+    // Only show if the user actually owns this coin (not just holds it)
+    const ownedCoin = ownedCoins?.[0]
+    return ownedCoin?.mint === artistCoinBadge.mint
+  }, [
+    isArtistCoinEnabled,
+    artistCoinBadge.mint,
+    artistCoinBadge?.logo_uri,
+    ownedCoins
+  ])
 
   useEffect(() => {
     if (editMode) {
