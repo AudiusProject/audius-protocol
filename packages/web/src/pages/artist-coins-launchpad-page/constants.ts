@@ -13,7 +13,7 @@ export const LAUNCHPAD_COIN_DESCRIPTION = (
   artistHandle: string,
   coinTicker: string
 ) => `
-$${coinTicker} is an artist coin created by @${artistHandle} on Audius. Learn more at https://audius.co/coins/${coinTicker}`
+$${coinTicker} is an artist coin created by @${artistHandle} on Audius. Learn more at https://audius.co/coins/$${coinTicker}`
 
 export const SOLANA_DECIMALS = 9
 export const AUDIO_DECIMALS = 8
