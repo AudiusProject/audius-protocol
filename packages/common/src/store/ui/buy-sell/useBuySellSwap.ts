@@ -119,9 +119,16 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
         queryKey: [QUERY_KEYS.userCoins]
       })
       // Invalidate artist coin members queries (leaderboard)
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.artistCoinMembers]
-      })
+      if (baseCoin?.mint) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.artistCoinMembers, baseCoin?.mint]
+        })
+      }
+      if (quoteCoin?.mint) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.artistCoinMembers, quoteCoin?.mint]
+        })
+      }
 
       // Invalidate track queries to provide track access if the user has traded the artist coin
       if (baseUserTracks?.length) {
