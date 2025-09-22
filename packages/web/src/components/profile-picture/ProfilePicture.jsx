@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useMemo } from 'react'
 
-import { useUser, useUserCreatedCoins } from '@audius/common/api'
+import { useUserCreatedCoins } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -50,7 +50,6 @@ const ProfilePicture = ({
 
   const { data: ownedCoins } = useUserCreatedCoins({ userId, limit: 1 })
   const ownedCoin = ownedCoins?.[0]
-  console.log('ownedCoin', ownedCoin)
 
   const shouldShowArtistCoinBadge = useMemo(() => {
     if (!isArtistCoinEnabled || !ownedCoin?.mint || !ownedCoin?.logoUri) {
