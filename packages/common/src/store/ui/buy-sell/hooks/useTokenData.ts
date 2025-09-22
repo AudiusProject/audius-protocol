@@ -20,47 +20,33 @@ export type UseTokenDataProps = {
   outputToken: TokenInfo
   inputAmount: number
   externalWalletAddress?: string
-  /** The mint address of the token to fetch balance for. If not provided, defaults to inputToken.address */
-  mint?: string
 }
 
-/**
- * Hook that consolidates token balance and exchange rate fetching
- * Provides a clean interface with loading states and error handling
- *
- * @param inputToken - Token information for the input side of the swap
- * @param outputToken - Token information for the output side of the swap
- * @param inputAmount - Amount for exchange rate calculations
- * @param externalWalletAddress - Optional external wallet address for balance fetching
- * @param mint - Optional mint address for balance fetching. If not provided, defaults to inputToken.address
- */
 export const useTokenData = ({
   inputToken,
   outputToken,
   inputAmount,
-  externalWalletAddress,
-  mint
+  externalWalletAddress
 }: UseTokenDataProps): TokenDataHookResult => {
-  // Determine which mint to use for balance fetching
-  const balanceMint = mint ?? inputToken.address
-
-  // Get token balance
+  // Get token balance from internal wallet
   const {
     data: internalWalletBalanceData,
     isPending: isInternalWalletBalanceLoading
   } = useTokenBalance({
-    mint: balanceMint,
+    mint: inputToken.address,
     includeExternalWallets: false
   })
 
+  // Get token balance from an explicit external wallet
   const {
     data: externalWalletBalanceData,
     isPending: isExternalWalletBalanceLoading
   } = useExternalWalletBalance({
     walletAddress: externalWalletAddress,
-    mint: balanceMint
+    mint: inputToken.address
   })
 
+  // Use whichever balance based on configuration
   const balanceData = externalWalletAddress
     ? externalWalletBalanceData
     : internalWalletBalanceData

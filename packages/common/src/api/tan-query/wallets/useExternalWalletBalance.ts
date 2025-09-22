@@ -102,9 +102,6 @@ const getExternalWalletBalanceQueryFn =
         const tokenAccount = await getAccount(connection, tokenAccountAddress)
 
         tokenBalance = tokenAccount.amount
-        console.log(tokenBalance, tokenDecimals, {
-          FixedDecimal: new FixedDecimal(tokenBalance.toString(), tokenDecimals)
-        })
       } catch (e) {
         // If the token account doesn't exist, balance is 0
         if (e instanceof TokenAccountNotFoundError) {
@@ -135,10 +132,6 @@ const getExternalWalletBalanceQueryFn =
     }
   }
 
-/**
- * Helper function to get the query options for fetching external wallet token balances.
- * Useful for getting the query key tagged with the data type stored in the cache.
- */
 const getExternalWalletBalanceOptions = (
   context: FetchExternalWalletBalanceContext,
   { walletAddress, mint }: UseExternalWalletBalanceParams
@@ -149,9 +142,6 @@ const getExternalWalletBalanceOptions = (
   })
 }
 
-/**
- * Query function for getting token balance for an external wallet based on the provided mint address.
- */
 export const useExternalWalletBalance = (
   {
     walletAddress,
