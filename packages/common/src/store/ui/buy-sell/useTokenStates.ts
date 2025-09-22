@@ -98,12 +98,30 @@ export const useTokenStates = (selectedPair: TokenPair | null) => {
     })
   }
 
+  const handleSwapDirection = (activeTab: BuySellTab) => {
+    if (activeTab !== 'convert') return
+
+    setUserOverrides((prev) => {
+      const currentTokens = prev.convert ?? defaultTokens.convert
+      const newOverrides = { ...prev }
+
+      // Swap base and quote tokens for convert tab
+      newOverrides.convert = {
+        baseToken: currentTokens.quoteToken,
+        quoteToken: currentTokens.baseToken
+      }
+
+      return newOverrides
+    })
+  }
+
   return {
     buyTabTokens,
     sellTabTokens,
     convertTabTokens,
     getCurrentTabTokens,
     handleInputTokenChange,
-    handleOutputTokenChange
+    handleOutputTokenChange,
+    handleSwapDirection
   }
 }
