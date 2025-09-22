@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { buySellMessages as messages } from '../../../messages'
 
-import { TokenInfo } from './types'
+import { TokenInfo } from './types/swap.types'
 
 /**
  * Schema for validating token swap input

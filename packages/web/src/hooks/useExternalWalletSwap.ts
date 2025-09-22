@@ -4,7 +4,6 @@ import {
   useQueryContext
 } from '@audius/common/api'
 import { Chain, ErrorLevel, Feature } from '@audius/common/models'
-import { getExternalWalletBalanceQueryKey } from '@audius/common/src/api/tan-query/wallets/useExternalWalletBalance'
 import {
   getJupiterQuoteByMintWithRetry,
   jupiterInstance

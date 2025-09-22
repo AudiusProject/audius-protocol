@@ -141,7 +141,6 @@ export const useTokenSwapForm = ({
     initialValues: {
       inputAmount: initialInputValue,
       outputAmount: '0',
-      // TODO: whats up with these types
       selectedInputToken: inputToken,
       selectedOutputToken: outputToken
     },
