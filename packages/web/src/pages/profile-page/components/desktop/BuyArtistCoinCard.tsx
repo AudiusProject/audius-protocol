@@ -49,7 +49,7 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
       <Text variant='body' size='s'>
         {messages.cardBody}
       </Text>
-      <Button size='small' onClick={handleBuyCoins}>
+      <Button size='small' onClick={handleBuyCoins} color='coinGradient'>
         {messages.buyCoins}
       </Button>
     </Paper>
