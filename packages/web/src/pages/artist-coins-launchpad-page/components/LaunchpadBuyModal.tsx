@@ -62,6 +62,8 @@ const OUTPUT_TOKEN: TokenInfo = {
   isStablecoin: false
 }
 
+const FORM_INPUT_DECIMALS = 8 // This is the number of decimals that are allowed to be entered in the text input
+
 type FormikValues = {
   inputAmount: string
   outputAmount: string
@@ -154,7 +156,7 @@ const FormInputStep = ({
                   hideLabel
                   label={buySellMessages.youPay}
                   placeholder='0.00'
-                  decimals={8}
+                  decimals={FORM_INPUT_DECIMALS}
                   tokenLabel={values.selectedInputToken.symbol}
                   value={values.inputAmount}
                   onChange={onInputAmountChange}
@@ -186,7 +188,7 @@ const FormInputStep = ({
               tokenLabel={OUTPUT_TOKEN.symbol}
               endIcon={<IconAUDIO />}
               value={values.outputAmount}
-              //   onChange={handleOutputAmountChange}
+              onChange={onOutputAmountChange}
             />
           </Flex>
           {/* Button */}
