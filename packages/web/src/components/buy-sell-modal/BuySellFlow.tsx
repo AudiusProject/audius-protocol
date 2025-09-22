@@ -35,6 +35,7 @@ import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
+import { SwapFormSkeleton } from './components/SwapSkeletons'
 
 type BuySellFlowProps = {
   onClose: () => void
@@ -424,7 +425,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }
 
   if (tokensLoading) {
-    return <ModalLoading noText />
+    return <SwapFormSkeleton />
   }
 
   return (
