@@ -301,6 +301,7 @@ export const LaunchpadPage = () => {
       validationSchema={validationSchema}
       validateOnMount={true}
       validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={handleSubmit}
     >
       <Form>
