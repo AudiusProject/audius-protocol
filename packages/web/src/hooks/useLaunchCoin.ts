@@ -31,10 +31,8 @@ export type LaunchCoinErrorMetadata = {
   userId: number
   lastStep: string
   relayResponseReceived: boolean
-  poolTxSigned: boolean
   poolCreateConfirmed: boolean
   sdkCoinAdded: boolean
-  firstBuyTxSigned: boolean
   firstBuyConfirmed: boolean
   createPoolTx: string
   firstBuyTx: string | undefined
@@ -81,10 +79,8 @@ export const useLaunchCoin = () => {
         userId,
         lastStep: '',
         relayResponseReceived: false,
-        poolTxSigned: false,
         poolCreateConfirmed: false,
         sdkCoinAdded: false,
-        firstBuyTxSigned: false,
         firstBuyConfirmed: false,
         createPoolTx: '',
         firstBuyTx: '',

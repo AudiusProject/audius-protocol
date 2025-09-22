@@ -252,7 +252,6 @@ const UnknownErrorState = ({
   mintAddress: string | undefined
   onClose: () => void
 }) => {
-  const mint = mintAddress || errorMetadata?.coinMetadata?.mint
   return (
     <>
       <ModalHeader onClose={onClose}>
@@ -265,12 +264,12 @@ const UnknownErrorState = ({
               errorMetadata?.poolCreateConfirmed ?? false
             )}
           </Text>
-          {mint ? (
+          {mintAddress ? (
             <Flex column gap='s'>
               <Text variant='label' size='l' color='subdued'>
                 {messages.addressTitle}
               </Text>
-              <AddressTile address={mint} />
+              <AddressTile address={mintAddress} />
             </Flex>
           ) : null}
         </Flex>
@@ -322,7 +321,7 @@ export const LaunchpadSubmitModal = ({
   const { values } = useFormikContext<SetupFormValues>()
   const { coinName, coinSymbol, receiveAmount, payAmount } = values
   const coin = {
-    mint: mintAddress,
+    mint: mintAddress || errorMetadata?.coinMetadata?.mint,
     name: coinName,
     ticker: coinSymbol,
     logoUri,
@@ -345,7 +344,7 @@ export const LaunchpadSubmitModal = ({
       {isError ? (
         <ErrorState
           errorMetadata={errorMetadata}
-          mintAddress={mintAddress}
+          mintAddress={coin.mint}
           onClose={onClose}
         />
       ) : null}
