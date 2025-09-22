@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   ConnectedWallet,
@@ -42,7 +42,7 @@ const messages = {
   walletAdded: 'Wallet connected successfully'
 }
 
-const LaunchpadPageContent = () => {
+const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
   const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
   const queryClient = useQueryClient()
@@ -217,7 +217,9 @@ const LaunchpadPageContent = () => {
           />
         )
       case Phase.BUY_COIN:
-        return <BuyCoinPage onBack={handleBuyCoinBack} />
+        return (
+          <BuyCoinPage onBack={handleBuyCoinBack} submitError={submitError} />
+        )
       default:
         return (
           <SplashPage
@@ -249,14 +251,25 @@ export const LaunchpadPage = () => {
   const {
     mutate: launchCoin,
     isPending,
-    isSuccess,
+    isSuccess: isLaunchCoinFinished,
     data: launchCoinResponse,
-    isError
+    isError: uncaughtLaunchCoinError
   } = useLaunchCoin()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
+  const isPoolCreateError =
+    launchCoinResponse?.isError &&
+    !launchCoinResponse?.errorMetadata.poolCreateConfirmed
+  const isError = uncaughtLaunchCoinError || !!launchCoinResponse?.isError
+
+  // If an error occurs before the pool is created, we close the modal so the user can resubmit
+  useEffect(() => {
+    if (isPoolCreateError) {
+      setIsModalOpen(false)
+    }
+  }, [isPoolCreateError])
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
@@ -308,14 +321,15 @@ export const LaunchpadPage = () => {
       <Form>
         <LaunchpadSubmitModal
           isPending={isPending}
-          isSuccess={isSuccess}
+          isSuccess={isLaunchCoinFinished && !launchCoinResponse.isError}
           isError={isError}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           mintAddress={launchCoinResponse?.newMint}
           logoUri={launchCoinResponse?.logoUri}
+          errorMetadata={launchCoinResponse?.errorMetadata}
         />
-        <LaunchpadPageContent />
+        <LaunchpadPageContent submitError={!!isPoolCreateError} />
       </Form>
     </Formik>
   )
