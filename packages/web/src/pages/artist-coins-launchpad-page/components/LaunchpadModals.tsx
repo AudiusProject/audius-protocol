@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
+import { LaunchCoinErrorMetadata } from 'hooks/useLaunchCoin'
 
 import { SetupFormValues } from './types'
 
@@ -53,7 +54,15 @@ const messages = {
   hintText:
     'Add SOL to your connected wallet, or send AUDIO from your Audius wallet',
   learnHowToFund: 'Learn how to fund your wallet',
-  sendAudio: 'Send AUDIO'
+  sendAudio: 'Send AUDIO',
+  errorMessages: {
+    notInAudiusBody:
+      'It’s live on the blockchain but not showing in Audius yet. Use the address below to view it and check back later once it’s connected.',
+    yourCoinIsLive: 'YOUR COIN IS LIVE! 🎉',
+    unknownErrorDescription: (coinLaunched: boolean) =>
+      `Something unexpected went wrong ${coinLaunched ? 'but your coin is live on the blockchain' : ''}`,
+    unknownErrorTitle: 'Something went wrong'
+  }
 }
 
 const LoadingState = ({ numTxs }: { numTxs: number }) => (
@@ -201,7 +210,95 @@ const SuccessState = ({
   )
 }
 
-const ErrorState = () => <ModalContent>TODO: error state</ModalContent>
+/**
+ * Rare edge case modal where the SDK call to add the coin to Audius fails
+ */
+const CoinNotInAudiusState = ({
+  onClose,
+  mintAddress
+}: {
+  onClose: () => void
+  mintAddress: string
+}) => (
+  <>
+    <ModalHeader onClose={onClose}>
+      <ModalTitle title={messages.errorMessages.yourCoinIsLive} />
+    </ModalHeader>
+    <ModalContent>
+      <Flex column gap='2xl'>
+        <Text variant='body' size='l' color='default'>
+          {messages.errorMessages.notInAudiusBody}
+        </Text>
+        <Flex column gap='s'>
+          <Text variant='label' size='l' color='subdued'>
+            {messages.addressTitle}
+          </Text>
+          <AddressTile address={mintAddress} />
+        </Flex>
+      </Flex>
+    </ModalContent>
+  </>
+)
+
+/**
+ * Rare edge case modal where an uncaught error crashed the tan-query useLaunchCoin mutation
+ */
+const UnknownErrorState = ({
+  errorMetadata,
+  mintAddress,
+  onClose
+}: {
+  errorMetadata?: LaunchCoinErrorMetadata
+  mintAddress: string | undefined
+  onClose: () => void
+}) => {
+  const mint = mintAddress || errorMetadata?.coinMetadata?.mint
+  return (
+    <>
+      <ModalHeader onClose={onClose}>
+        <ModalTitle title={messages.errorMessages.unknownErrorTitle} />
+      </ModalHeader>
+      <ModalContent>
+        <Flex column gap='2xl'>
+          <Text variant='body' size='l' color='default'>
+            {messages.errorMessages.unknownErrorDescription(
+              errorMetadata?.poolCreateConfirmed ?? false
+            )}
+          </Text>
+          {mint ? (
+            <Flex column gap='s'>
+              <Text variant='label' size='l' color='subdued'>
+                {messages.addressTitle}
+              </Text>
+              <AddressTile address={mint} />
+            </Flex>
+          ) : null}
+        </Flex>
+      </ModalContent>
+    </>
+  )
+}
+
+const ErrorState = ({
+  errorMetadata,
+  mintAddress,
+  onClose
+}: {
+  errorMetadata?: LaunchCoinErrorMetadata
+  mintAddress: string | undefined
+  onClose: () => void
+}) => {
+  if (errorMetadata?.poolCreateConfirmed && mintAddress) {
+    return <CoinNotInAudiusState onClose={onClose} mintAddress={mintAddress} />
+  }
+  return (
+    <UnknownErrorState
+      errorMetadata={errorMetadata}
+      mintAddress={mintAddress}
+      onClose={onClose}
+    />
+  )
+}
 
 export const LaunchpadSubmitModal = ({
   isPending,
@@ -210,7 +307,8 @@ export const LaunchpadSubmitModal = ({
   isOpen,
   onClose,
   mintAddress,
-  logoUri
+  logoUri,
+  errorMetadata
 }: {
   isPending: boolean
   isSuccess: boolean
@@ -219,6 +317,7 @@ export const LaunchpadSubmitModal = ({
   onClose: () => void
   mintAddress: string | undefined
   logoUri: string | undefined
+  errorMetadata?: LaunchCoinErrorMetadata
 }) => {
   const { values } = useFormikContext<SetupFormValues>()
   const { coinName, coinSymbol, receiveAmount, payAmount } = values
@@ -234,7 +333,7 @@ export const LaunchpadSubmitModal = ({
   return (
     <Modal
       isOpen={isOpen}
-      size={isSuccess ? 'small' : undefined}
+      size={isSuccess || isError ? 'small' : undefined}
       onClose={() => {
         if (isSuccess || isError) {
           onClose()
@@ -243,7 +342,13 @@ export const LaunchpadSubmitModal = ({
     >
       {isPending ? <LoadingState numTxs={numTxs} /> : null}
       {isSuccess ? <SuccessState coin={coin} /> : null}
-      {isError ? <ErrorState /> : null}
+      {isError ? (
+        <ErrorState
+          errorMetadata={errorMetadata}
+          mintAddress={mintAddress}
+          onClose={onClose}
+        />
+      ) : null}
     </Modal>
   )
 }

@@ -24,7 +24,34 @@ export type LaunchCoinParams = {
   image: Blob
 }
 
+/**
+ * Errors here are complicated & a sensitive area for users, so we want to log lots of info
+ */
+export type LaunchCoinErrorMetadata = {
+  userId: number
+  lastStep: string
+  relayResponseReceived: boolean
+  poolTxSigned: boolean
+  poolCreateConfirmed: boolean
+  sdkCoinAdded: boolean
+  firstBuyTxSigned: boolean
+  firstBuyConfirmed: boolean
+  createPoolTx: string
+  firstBuyTx: string | undefined
+  initialBuyAmountAudio: string | undefined
+  coinMetadata: {
+    mint: string
+    imageUri: string
+    name: string
+    symbol: string
+    description: string
+    walletAddress: string
+  }
+}
+
 export type LaunchCoinResponse = {
+  isError: boolean
+  errorMetadata: LaunchCoinErrorMetadata
   newMint: string
   logoUri: string
 }
@@ -49,24 +76,29 @@ export const useLaunchCoin = () => {
       initialBuyAmountAudio,
       image
     }: LaunchCoinParams): Promise<LaunchCoinResponse> => {
-      const progress = {
+      const symbolUpper = symbol.toUpperCase()
+      const errorMetadata: LaunchCoinErrorMetadata = {
+        userId,
+        lastStep: '',
         relayResponseReceived: false,
         poolTxSigned: false,
         poolCreateConfirmed: false,
         sdkCoinAdded: false,
         firstBuyTxSigned: false,
-        firstBuyConfirmed: false
+        firstBuyConfirmed: false,
+        createPoolTx: '',
+        firstBuyTx: '',
+        initialBuyAmountAudio,
+        coinMetadata: {
+          mint: '',
+          imageUri: '',
+          name,
+          symbol: symbolUpper,
+          description,
+          walletAddress: walletPublicKeyStr
+        }
       }
       try {
-        console.log('Launching coin...', {
-          userId,
-          name,
-          symbol,
-          description,
-          walletPublicKeyStr,
-          initialBuyAmountAudio
-        })
-        const symbolUpper = symbol.toUpperCase()
         const sdk = await audiusSdk()
         const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
         if (!solanaProvider) {
@@ -94,7 +126,6 @@ export const useLaunchCoin = () => {
 
         const walletPublicKey = new PublicKey(walletPublicKeyStr)
 
-        console.log('Sending request to relay to launch coin...')
         // Sets up coin TXs and on-chain metadata on relay side
         const res = await sdk.services.solanaRelay.launchCoin({
           name,
@@ -104,29 +135,26 @@ export const useLaunchCoin = () => {
           initialBuyAmountAudio,
           image
         })
-        progress.relayResponseReceived = true
         const {
           createPoolTx: createPoolTxSerialized,
           firstBuyTx: firstBuyTxSerialized,
-          metadataUri,
           mintPublicKey,
           imageUri
         } = res
+        errorMetadata.createPoolTx = createPoolTxSerialized
+        errorMetadata.firstBuyTx = firstBuyTxSerialized
+        errorMetadata.coinMetadata.mint = mintPublicKey
+        errorMetadata.coinMetadata.imageUri = imageUri
 
-        console.log('Relay launch_coin response received!', {
-          createPoolTxSerialized,
-          firstBuyTxSerialized,
-          metadataUri,
-          mintPublicKey
-        })
+        errorMetadata.relayResponseReceived = true
+        errorMetadata.lastStep = 'relayResponseReceived'
 
         /**
          * Pool creation - sign & send TX
          */
-        console.log('Signing pool tx')
         await signAndSendTx(createPoolTxSerialized)
-        console.log('Pool tx signed & confirmed')
-        progress.poolCreateConfirmed = true
+        errorMetadata.poolCreateConfirmed = true
+        errorMetadata.lastStep = 'poolCreateConfirmed'
 
         /*
          * Add coin to Audius database
@@ -134,8 +162,7 @@ export const useLaunchCoin = () => {
          */
         try {
           // Create coin in Audius database
-          console.log('Adding coin to Audius database')
-          const coinRes = await sdk.coins.createCoin({
+          await sdk.coins.createCoin({
             userId: Id.parse(userId),
             createCoinRequest: {
               mint: mintPublicKey,
@@ -146,31 +173,43 @@ export const useLaunchCoin = () => {
               description
             }
           })
-          progress.sdkCoinAdded = true
-          console.log('Coin added to Audius database', coinRes)
+          errorMetadata.sdkCoinAdded = true
+          errorMetadata.lastStep = 'sdkCoinAdded'
         } catch (e) {
-          // TODO: report critical errors here
-          console.error('Error adding coin to Audius database', e)
+          if (reportToSentry) {
+            reportToSentry({
+              error: e instanceof Error ? e : new Error(e as string),
+              name: 'SDK Create Coin Failure',
+              feature: Feature.ArtistCoins,
+              additionalInfo: errorMetadata
+            })
+          }
         }
 
         // Perform sol->audio swap & first buy
         if (firstBuyTxSerialized && initialBuyAmountAudio) {
           // First buy
-          console.log('Sending first buy tx to user to sign')
           await signAndSendTx(firstBuyTxSerialized)
-          progress.firstBuyConfirmed = true
+          errorMetadata.firstBuyConfirmed = true
+          errorMetadata.lastStep = 'firstBuyConfirmed'
         }
 
         return {
+          isError: false,
           newMint: mintPublicKey,
-          logoUri: imageUri
+          logoUri: imageUri,
+          errorMetadata
         }
       } catch (error) {
-        console.error({ progress })
-        console.error('Error launching coin:', error)
-        throw error instanceof Error
-          ? error
-          : new Error('Failed to launch coin')
+        if (reportToSentry) {
+          reportToSentry({
+            error: error instanceof Error ? error : new Error(error as string),
+            name: 'Launch Coin Failure',
+            feature: Feature.ArtistCoins,
+            additionalInfo: errorMetadata
+          })
+        }
+        return { isError: true, errorMetadata, newMint: '', logoUri: '' }
       }
     },
     onSuccess: (_result, params, _context) => {
