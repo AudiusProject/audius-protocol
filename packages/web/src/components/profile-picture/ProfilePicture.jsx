@@ -4,10 +4,12 @@ import { useUserCreatedCoins } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import PropTypes from 'prop-types'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
@@ -50,6 +52,13 @@ const ProfilePicture = ({
 
   const { data: ownedCoins } = useUserCreatedCoins({ userId, limit: 1 })
   const ownedCoin = ownedCoins?.[0]
+  const navigate = useNavigate()
+
+  const handleCoinClick = () => {
+    if (ownedCoin?.ticker) {
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ownedCoin.ticker))
+    }
+  }
 
   const shouldShowArtistCoinBadge = useMemo(() => {
     if (!isArtistCoinEnabled || !ownedCoin?.mint || !ownedCoin?.logoUri) {
@@ -131,11 +140,18 @@ const ProfilePicture = ({
         {shouldShowArtistCoinBadge && (
           <TokenIcon
             logoURI={ownedCoin?.logoUri}
-            css={{ position: 'absolute', bottom: 0, right: 0, zIndex: 10 }}
+            css={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              zIndex: 10,
+              cursor: 'pointer'
+            }}
             hex
             w={64}
             h={64}
             borderColor={color.static.white}
+            onClick={handleCoinClick}
           />
         )}
       </div>
