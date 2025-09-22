@@ -80,7 +80,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
-  const [isBuyModalOpen, setIsBuyModalOpen] = useState(true)
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false)
   const { data: audioBalance } = useWalletAudioBalance({
     address: connectedWallet?.address ?? '',
     chain: connectedWallet?.chain ?? Chain.Sol
