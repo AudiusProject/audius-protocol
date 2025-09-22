@@ -71,7 +71,7 @@ const GraduationMetricRow = ({
           </Text>
           {hasGraduated && <GraduatedPill />}
         </Flex>
-        <Flex row alignItems='center'>
+        <Flex row alignItems='center' gap='m'>
           <Text variant='title' size='m' color='subdued'>
             {metric.label}
           </Text>
