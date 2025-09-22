@@ -256,16 +256,16 @@ export const InsufficientBalanceModal = ({
   onClose: () => void
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size='small'>
+      <ModalHeader showDismissButton>
+        <Flex justifyContent='center'>
+          <Text variant='label' size='xl' strength='strong'>
+            {messages.insufficientBalanceTitle}
+          </Text>
+        </Flex>
+      </ModalHeader>
       <ModalContent>
-        <ModalHeader showDismissButton>
-          <Flex justifyContent='center'>
-            <Text variant='label' size='xl' strength='strong'>
-              {messages.insufficientBalanceTitle}
-            </Text>
-          </Flex>
-        </ModalHeader>
-        <Flex column gap='xl' pt='xl'>
+        <Flex column gap='xl'>
           <Text variant='body' size='l' color='default'>
             {messages.insufficientBalanceDescription}
           </Text>
