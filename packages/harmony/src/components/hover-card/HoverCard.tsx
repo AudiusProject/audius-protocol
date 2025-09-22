@@ -74,8 +74,9 @@ const HoverCardComponent = ({
 
   const handleClickInternal = useCallback(() => {
     handleClick()
+    handleClose()
     onClick?.()
-  }, [handleClick, onClick])
+  }, [handleClick, handleClose, onClick])
 
   return (
     <Flex

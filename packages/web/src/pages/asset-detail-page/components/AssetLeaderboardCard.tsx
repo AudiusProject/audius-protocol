@@ -95,6 +95,9 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
         justifyContent='space-between'
         alignItems='center'
         w='100%'
+        onClick={handleViewLeaderboard}
+        css={{ cursor: 'pointer' }}
+        role='button'
       >
         {isPending ? (
           <Flex alignItems='center'>
@@ -108,13 +111,7 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
             <AvatarSkeleton />
           </Flex>
         ) : (
-          <Flex
-            onClick={(e) => {
-              handleViewLeaderboard()
-            }}
-            css={{ cursor: 'pointer' }}
-            role='button'
-          >
+          <Flex>
             <UserProfilePictureList
               users={users ?? []}
               totalUserCount={coinData?.data?.holder}
