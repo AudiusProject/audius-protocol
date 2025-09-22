@@ -8,6 +8,7 @@ import { useMemo } from 'react'
 
 import { useTokenBalance, useTokenExchangeRate } from '~/api'
 import { useExternalWalletBalance } from '~/api/tan-query/wallets/useExternalWalletBalance'
+import { getTokenDecimalPlaces } from '~/utils'
 
 import type { TokenInfo, TokenDataHookResult } from '../types/swap.types'
 import {
@@ -21,8 +22,6 @@ export type UseTokenDataProps = {
   inputAmount: number
   externalWalletAddress?: string
 }
-
-const MAX_VISIBLE_DECIMALS = 6
 
 export const useTokenData = ({
   inputToken,
@@ -83,7 +82,11 @@ export const useTokenData = ({
   })
 
   // Process balance data
-  const balance = Number(balanceFD?.trunc(MAX_VISIBLE_DECIMALS) ?? 0)
+  const displayDecimals = getTokenDecimalPlaces(Number(balanceFD))
+  const balance =
+    balanceFD && balanceFD.toString() !== '0'
+      ? Number(balanceFD.trunc(displayDecimals))
+      : 0
   const formattedBalance = useMemo(() => {
     if (!balance) return '0'
     return balance.toString()
