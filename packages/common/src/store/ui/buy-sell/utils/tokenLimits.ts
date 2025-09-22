@@ -43,13 +43,12 @@ export const calculateTokenLimits = (
 export const resolveTokenLimits = (input: TokenLimitInput): TokenLimits => {
   const { tokenPrice, isStablecoin, providedMin, providedMax } = input
 
-  // If both min and max are explicitly provided, use them
-  if (providedMin !== undefined && providedMax !== undefined) {
-    return { min: providedMin, max: providedMax }
-  }
-
   // Otherwise, calculate based on USD limits and price
-  return calculateTokenLimits(tokenPrice, isStablecoin)
+  const { min, max } = calculateTokenLimits(tokenPrice, isStablecoin)
+  return {
+    min: providedMin ?? min,
+    max: providedMax ?? max
+  }
 }
 
 /**

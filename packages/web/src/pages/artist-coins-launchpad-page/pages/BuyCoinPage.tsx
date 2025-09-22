@@ -6,6 +6,7 @@ import {
   useWalletAudioBalance
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
+import { Chain } from '@audius/common/models'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Artwork,
@@ -28,6 +29,7 @@ import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
+import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
 import type { PhasePageProps, SetupFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 import { getLatestConnectedWallet } from '../utils'
@@ -78,9 +80,10 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false)
   const { data: audioBalance } = useWalletAudioBalance({
-    address: connectedWallet!.address,
-    chain: connectedWallet!.chain
+    address: connectedWallet?.address ?? '',
+    chain: connectedWallet?.chain ?? Chain.Sol
   })
   const { audioBalanceString } = useMemo(() => {
     if (!audioBalance) {
@@ -194,6 +197,12 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   )
   return (
     <>
+      {isBuyModalOpen ? (
+        <LaunchpadBuyModal
+          isOpen={isBuyModalOpen}
+          onClose={() => setIsBuyModalOpen(false)}
+        />
+      ) : null}
       <Flex
         direction='column'
         alignItems='center'
@@ -226,7 +235,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 <Flex gap='s'>
                   <TextLink
                     variant='visible'
-                    // TODO: onclick show modals
+                    onClick={() => setIsBuyModalOpen(true)}
                   >
                     {messages.buyAudio}
                   </TextLink>

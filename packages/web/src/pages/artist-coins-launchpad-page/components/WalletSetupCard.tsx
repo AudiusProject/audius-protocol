@@ -10,7 +10,7 @@ const messages = {
     },
     {
       id: 'have-sol',
-      text: 'Have a little SOL (~.015) ready to cover setup costs.'
+      text: 'Have a little SOL (~.03) ready to cover setup costs.'
     },
     {
       id: 'add-funds',

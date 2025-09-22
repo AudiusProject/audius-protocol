@@ -43,7 +43,7 @@ export const useSwapCalculations = ({
   // Calculator for handling bidirectional calculations
   const calculator = useBidirectionalCalculator({
     exchangeRate,
-    source: stateMachine.source,
+    source: stateMachine.source, // either input or output
     isUpdateInProgress: stateMachine.isUpdateInProgress,
     inputDecimals: inputTokenDecimals,
     outputDecimals: outputTokenDecimals

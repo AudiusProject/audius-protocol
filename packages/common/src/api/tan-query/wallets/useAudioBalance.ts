@@ -34,7 +34,7 @@ type UseWalletAudioBalanceParams = {
   includeStaked?: boolean
 }
 
-const getWalletAudioBalanceQueryKey = ({
+export const getWalletAudioBalanceQueryKey = ({
   address,
   includeStaked,
   chain

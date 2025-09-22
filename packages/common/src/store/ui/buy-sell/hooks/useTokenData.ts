@@ -1,11 +1,13 @@
 /**
  * Combined hook for managing token balance and exchange rate data
  * Consolidates data fetching and provides clean interface to consumers
+ * Supports fetching balance for any specified token mint address
  */
 
 import { useMemo } from 'react'
 
 import { useTokenBalance, useTokenExchangeRate } from '~/api'
+import { useExternalWalletBalance } from '~/api/tan-query/wallets/useExternalWalletBalance'
 
 import type { TokenInfo, TokenDataHookResult } from '../types/swap.types'
 import {
@@ -17,22 +19,46 @@ export type UseTokenDataProps = {
   inputToken: TokenInfo
   outputToken: TokenInfo
   inputAmount: number
+  externalWalletAddress?: string
 }
 
-/**
- * Hook that consolidates token balance and exchange rate fetching
- * Provides a clean interface with loading states and error handling
- */
+const MAX_VISIBLE_DECIMALS = 6
+
 export const useTokenData = ({
   inputToken,
   outputToken,
-  inputAmount
+  inputAmount,
+  externalWalletAddress
 }: UseTokenDataProps): TokenDataHookResult => {
-  // Get token balance
-  const { data: balanceData, isPending: isBalanceLoading } = useTokenBalance({
+  // Get token balance from internal wallet
+  const {
+    data: internalWalletBalanceData,
+    isPending: isInternalWalletBalanceLoading
+  } = useTokenBalance({
     mint: inputToken.address,
-    includeExternalWallets: false
+    includeExternalWallets: false,
+    enabled: !externalWalletAddress
   })
+
+  // Get token balance from an explicit external wallet
+  const {
+    data: externalWalletBalance,
+    isPending: isExternalWalletBalanceLoading
+  } = useExternalWalletBalance(
+    {
+      walletAddress: externalWalletAddress,
+      mint: inputToken.address
+    },
+    { enabled: !!externalWalletAddress }
+  )
+
+  // Use whichever balance based on configuration
+  const balanceFD = externalWalletAddress
+    ? externalWalletBalance
+    : internalWalletBalanceData?.balance
+  const isBalanceLoading = externalWalletAddress
+    ? isExternalWalletBalanceLoading
+    : isInternalWalletBalanceLoading
 
   // Get token price for calculations (currently unused but may be needed for future features)
   // const { data: tokenPriceData } = useArtistCoin({ mint: inputToken.address })
@@ -57,14 +83,11 @@ export const useTokenData = ({
   })
 
   // Process balance data
-  const balance = useMemo(() => {
-    return Number(balanceData?.balance ?? 0)
-  }, [balanceData?.balance])
-
+  const balance = Number(balanceFD?.trunc(MAX_VISIBLE_DECIMALS) ?? 0)
   const formattedBalance = useMemo(() => {
-    if (!balanceData?.balance) return '0'
-    return balanceData.balance.toString()
-  }, [balanceData?.balance])
+    if (!balance) return '0'
+    return balance.toString()
+  }, [balance])
 
   // Process exchange rate data
   const exchangeRate = useMemo(() => {

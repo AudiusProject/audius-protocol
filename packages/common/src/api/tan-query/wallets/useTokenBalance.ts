@@ -30,6 +30,7 @@ export const useTokenBalance = ({
   isPolling,
   pollingInterval = 1000,
   includeExternalWallets = true,
+  walletAddress,
   ...queryOptions
 }: {
   mint: string
@@ -37,6 +38,7 @@ export const useTokenBalance = ({
   isPolling?: boolean
   includeExternalWallets?: boolean
   pollingInterval?: number
+  walletAddress?: string
 } & QueryOptions) => {
   const { env } = useQueryContext()
   const { data: userById } = useUser(userId)

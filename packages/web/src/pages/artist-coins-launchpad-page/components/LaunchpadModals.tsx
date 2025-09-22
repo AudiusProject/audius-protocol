@@ -46,7 +46,7 @@ const messages = {
   insufficientBalanceTitle: 'Check your wallet balance',
   insufficientBalanceDescription:
     "You'll need to add funds to your wallet before you can continue.",
-  solAmount: '0.02 SOL',
+  solAmount: '0.03 SOL',
   solDescription: ' — required to create your coin',
   audioDescription:
     '• Extra AUDIO if you want to make an initial buy of your coin (optional).',
