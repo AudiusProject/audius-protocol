@@ -201,14 +201,11 @@ export const BuyCoinPage = ({
     [setFieldValue, debouncedReceiveAmountChange]
   )
 
-  const submitFooterErrorText = useMemo(() => {
-    if (firstBuyQuoteError) {
-      return messages.errors.quoteError
-    }
-    if (submitError) {
-      return messages.errors.transactionFailed
-    }
-  }, [firstBuyQuoteError, submitError])
+  const submitFooterErrorText = firstBuyQuoteError
+    ? messages.errors.quoteError
+    : submitError
+      ? messages.errors.transactionFailed
+      : undefined
 
   return (
     <>
