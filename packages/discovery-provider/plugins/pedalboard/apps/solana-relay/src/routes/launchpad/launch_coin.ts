@@ -141,6 +141,9 @@ export const launchCoin = async (
     // First buy transaction
     const firstBuyTx = poolConfig.swapBuyTx
     if (firstBuyTx) {
+      firstBuyTx.recentBlockhash = (
+        await connection.getLatestBlockhash()
+      ).blockhash
       firstBuyTx.feePayer = walletPublicKey
     }
 
