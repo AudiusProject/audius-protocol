@@ -25,6 +25,7 @@ import {
 import { FormikProvider, useFormikContext } from 'formik'
 
 import { IconAUDIO } from 'components/buy-audio-modal/components/Icons'
+import { WALLET_GUIDE_URL } from 'components/buy-sell-modal'
 import { SwapBalanceSection } from 'components/buy-sell-modal/SwapBalanceSection'
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import { TransactionSuccessScreen } from 'components/buy-sell-modal/TransactionSuccessScreen'
@@ -104,7 +105,7 @@ const FormInputStep = ({
           size='default'
           iconLeft={IconQuestionCircle}
           onClick={() => {
-            window.open('https://help.audius.co/product/wallet-guide', '_blank')
+            window.open(WALLET_GUIDE_URL, '_blank')
           }}
           css={(theme) => ({
             position: 'absolute',

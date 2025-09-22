@@ -19,6 +19,8 @@ import { zIndex } from '../../utils/zIndex'
 import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
+export const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
+
 export const BuySellModal = () => {
   const { isOpen, onClose, data } = useBuySellModal()
   const { ticker } = data
@@ -58,7 +60,7 @@ export const BuySellModal = () => {
           size='default'
           iconLeft={IconQuestionCircle}
           onClick={() => {
-            window.open('https://help.audius.co/product/wallet-guide', '_blank')
+            window.open(WALLET_GUIDE_URL, '_blank')
           }}
           css={(theme) => ({
             position: 'absolute',

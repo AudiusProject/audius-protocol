@@ -43,7 +43,7 @@ type UseExternalWalletBalanceParams = {
 export const getExternalWalletBalanceQueryKey = ({
   walletAddress,
   mint
-}: UseExternalWalletBalanceParams) =>
+}: Partial<UseExternalWalletBalanceParams>) =>
   [QUERY_KEYS.externalWalletBalance, { walletAddress, mint }] as const
 
 type FetchExternalWalletBalanceContext = Pick<
@@ -59,6 +59,9 @@ const getExternalWalletBalanceQueryFn =
     ReturnType<typeof getExternalWalletBalanceQueryKey>
   >) => {
     const [_ignored, { walletAddress, mint }] = queryKey
+    if (!walletAddress || !mint) {
+      throw new Error('Wallet address and mint are required')
+    }
     const { reportToSentry } = context
     try {
       // Call Jupiter API to get balances
