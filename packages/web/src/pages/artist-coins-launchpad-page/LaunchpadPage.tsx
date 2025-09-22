@@ -263,6 +263,7 @@ export const LaunchpadPage = () => {
     !launchCoinResponse?.errorMetadata.poolCreateConfirmed
   const isError = uncaughtLaunchCoinError || !!launchCoinResponse?.isError
 
+  // If an error occurs before the pool is created, we close the modal so the user can resubmit
   useEffect(() => {
     if (isPoolCreateError) {
       setIsModalOpen(false)
