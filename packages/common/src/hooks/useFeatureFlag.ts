@@ -156,6 +156,32 @@ export const useFeatureFlag = (
     getOverride()
   })
 
+  // Hard-code ARTIST_COINS to be enabled only on farid.audius.co
+  if (
+    flag === FeatureFlags.ARTIST_COINS &&
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'farid.audius.co'
+  ) {
+    return {
+      isLoaded: configLoaded,
+      isEnabled: true,
+      setOverride: async () => {}
+    }
+  }
+
+  // Hard-code TOKEN_GATING to be enabled only on farid.audius.co
+  if (
+    flag === FeatureFlags.TOKEN_GATING &&
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'farid.audius.co'
+  ) {
+    return {
+      isLoaded: configLoaded,
+      isEnabled: true,
+      setOverride: async () => {}
+    }
+  }
+
   return {
     isLoaded: configLoaded,
     isEnabled: isLocallyEnabled ?? isEnabled,

@@ -227,6 +227,24 @@ export const remoteConfig = <
    * Accepts a fallback flag which will be checked if the primary flag is disabled
    */
   function getFeatureEnabled(flag: FeatureFlags, fallbackFlag?: FeatureFlags) {
+    // Hard-code ARTIST_COINS to be enabled only on farid.audius.co
+    if (
+      flag === FeatureFlags.ARTIST_COINS &&
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'farid.audius.co'
+    ) {
+      return true
+    }
+
+    // Hard-code TOKEN_GATING to be enabled only on farid.audius.co
+    if (
+      flag === FeatureFlags.TOKEN_GATING &&
+      typeof window !== 'undefined' &&
+      window.location.hostname === 'farid.audius.co'
+    ) {
+      return true
+    }
+
     const defaultVal =
       environmentFlagDefaults[environment][flag] ?? flagDefaults[flag]
 

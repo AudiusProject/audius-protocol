@@ -10,6 +10,24 @@ const getLocalStorageItem = (key: string) =>
   typeof window !== 'undefined' ? window.localStorage.getItem(key) : null
 
 const getFlagEnabled = (flag: FeatureFlags) => {
+  // Hard-code ARTIST_COINS to be enabled only on farid.audius.co
+  if (
+    flag === FeatureFlags.ARTIST_COINS &&
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'farid.audius.co'
+  ) {
+    return true
+  }
+
+  // Hard-code TOKEN_GATING to be enabled only on farid.audius.co
+  if (
+    flag === FeatureFlags.TOKEN_GATING &&
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'farid.audius.co'
+  ) {
+    return true
+  }
+
   const overrideKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
   const override = getLocalStorageItem?.(overrideKey) as OverrideSetting
 
