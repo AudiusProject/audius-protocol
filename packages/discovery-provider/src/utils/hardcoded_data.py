@@ -47,7 +47,15 @@ reserved_handles = {
 }
 
 
-handle_badwords = {"audius", "airdrop"}
+handle_badwords = {
+    "audius",
+    "airdrop",
+    "audlus",
+    "auduis",
+    "auddius",
+    "avdius",
+    "audus",
+}
 
 genre_allowlist = {
     "Acoustic",
