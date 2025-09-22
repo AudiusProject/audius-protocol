@@ -316,7 +316,12 @@ const LoadingStep = () => {
   )
 }
 
-type BuyModalStep = 'form' | 'confirmation' | 'success' | 'loading'
+enum BuyModalStep {
+  Form = 'form',
+  Confirmation = 'confirmation',
+  Success = 'success',
+  Loading = 'loading'
+}
 
 export const LaunchpadBuyModal = ({
   isOpen,
@@ -334,22 +339,27 @@ export const LaunchpadBuyModal = ({
     mutate: swapTokens,
     isPending: swapPending,
     isSuccess: swapSuccess,
-    isError: swapError
+    isError: swapError,
+    data: swapData
   } = useExternalWalletSwap()
 
   useEffect(() => {
     if (swapSuccess) {
-      setCurrentStep('success')
+      setCurrentStep(BuyModalStep.Success)
     }
     if (swapPending) {
-      setCurrentStep('loading')
+      setCurrentStep(BuyModalStep.Loading)
     }
-    if (swapError) {
+    if (swapError || swapData?.isError) {
       console.error(swapError)
-      toast(buySellMessages.transactionFailed, 5000)
-      setCurrentStep('form')
+      const toastMessage = swapData?.progress?.userCancelled
+        ? buySellMessages.transactionCancelled
+        : buySellMessages.transactionFailed
+      toast(toastMessage, 5000)
+      setCurrentStep(BuyModalStep.Form)
     }
-  }, [swapSuccess, swapPending, swapError, toast])
+  }, [swapSuccess, swapPending, swapError, toast, swapData])
+
   const onInputTokenChange = (token: TokenInfo) => {
     setSelectedInputToken(token)
   }
@@ -371,11 +381,13 @@ export const LaunchpadBuyModal = ({
     externalWalletAddress
   })
 
-  const [currentStep, setCurrentStep] = useState<BuyModalStep>('form')
+  const [currentStep, setCurrentStep] = useState<BuyModalStep>(
+    BuyModalStep.Form
+  )
 
   const handleContinue = () => {
-    if (currentStep === 'form') {
-      setCurrentStep('confirmation')
+    if (currentStep === BuyModalStep.Form) {
+      setCurrentStep(BuyModalStep.Confirmation)
     } else if (currentStep === 'confirmation') {
       swapTokens({
         inputAmountUi: Number(buyModalForm.values.inputAmount),
@@ -387,19 +399,19 @@ export const LaunchpadBuyModal = ({
   }
 
   const handleBack = () => {
-    if (currentStep === 'confirmation') {
-      setCurrentStep('form')
+    if (currentStep === BuyModalStep.Confirmation) {
+      setCurrentStep(BuyModalStep.Form)
     }
   }
 
   const renderCurrentStep = () => {
-    if (currentStep === 'loading') {
+    if (currentStep === BuyModalStep.Loading) {
       return <LoadingStep />
     }
-    if (currentStep === 'success') {
+    if (currentStep === BuyModalStep.Success) {
       return <SuccessStep onClose={onClose} />
     }
-    if (currentStep === 'confirmation') {
+    if (currentStep === BuyModalStep.Confirmation) {
       return (
         <ConfirmationStep
           onClose={onClose}

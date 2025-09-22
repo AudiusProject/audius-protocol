@@ -33,7 +33,8 @@ export const useExternalWalletSwap = () => {
         receivedQuote: false,
         receivedSwapTx: false,
         sentSwapTx: false,
-        confirmedSwapTx: false
+        confirmedSwapTx: false,
+        userCancelled: false
       }
       const { inputAmountUi, inputToken, outputToken, walletAddress } = params
 
@@ -45,6 +46,7 @@ export const useExternalWalletSwap = () => {
         if (!appKitSolanaProvider) {
           throw new Error('Missing appKitSolanaProvider')
         }
+        // Get jupiter quote first
         const { quoteResult: quote } = await getJupiterQuoteByMintWithRetry({
           inputMint: inputToken.address,
           outputMint: outputToken.address,
@@ -86,12 +88,18 @@ export const useExternalWalletSwap = () => {
           signature: txSignature,
           inputAmount: inputAmountUi,
           inputToken: inputToken.symbol,
-          outputToken: outputToken.symbol
+          outputToken: outputToken.symbol,
+          progress: hookProgress,
+          isError: false
         }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error)
         console.error('External wallet swap failed:', error)
+
+        if (errorMessage.includes('User rejected')) {
+          hookProgress.userCancelled = true
+        }
 
         reportToSentry({
           error: error instanceof Error ? error : new Error(errorMessage),
@@ -104,7 +112,7 @@ export const useExternalWalletSwap = () => {
           }
         })
 
-        throw error
+        return { progress: hookProgress, isError: true }
       }
     },
     onSuccess: (result, params) => {
