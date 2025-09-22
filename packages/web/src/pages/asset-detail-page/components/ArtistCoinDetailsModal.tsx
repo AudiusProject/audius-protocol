@@ -14,6 +14,21 @@ import {
 import { TokenIcon } from '../../../components/buy-sell-modal/TokenIcon'
 import { TokenInfoRow } from '../../artist-coins-launchpad-page/components/TokenInfoRow'
 
+const messages = {
+  details: 'Details',
+  unknown: 'Unknown',
+  unknownToken: 'Unknown Token',
+  unknownTicker: 'UNKNOWN',
+  coinAddress: 'Coin Address',
+  onChainDescription: 'On-Chain Description',
+  totalSupply: 'Total Supply',
+  marketCap: 'Market Cap',
+  fdv: 'Fully Diluted Valuation',
+  price: 'Current Price',
+  liquidity: 'Liquidity',
+  circulatingSupply: 'Circulating Supply'
+}
+
 const tooltipContent = {
   totalSupply:
     'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
@@ -52,7 +67,7 @@ export const ArtistCoinDetailsModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size='small'>
       <ModalHeader>
-        <ModalTitle Icon={IconInfo} title='Details' />
+        <ModalTitle Icon={IconInfo} title={messages.details} />
       </ModalHeader>
 
       <ModalContent>
@@ -64,10 +79,10 @@ export const ArtistCoinDetailsModal = ({
               <TokenIcon logoURI={artistCoin?.logoUri} w={64} h={64} />
               <Flex direction='column' gap='xs'>
                 <Text variant='title' size='l'>
-                  {artistCoin?.name ?? 'Unknown Token'}
+                  {artistCoin?.name ?? messages.unknownToken}
                 </Text>
                 <Text variant='body' size='m' color='subdued'>
-                  {artistCoin?.ticker ?? 'UNKNOWN'}
+                  {artistCoin?.ticker ?? messages.unknownTicker}
                 </Text>
               </Flex>
             </Flex>
@@ -78,17 +93,17 @@ export const ArtistCoinDetailsModal = ({
           {/* Coin Address */}
           <Flex direction='column' gap='xs'>
             <Text variant='label' size='s' color='subdued'>
-              Coin Address
+              {messages.coinAddress}
             </Text>
             <Text variant='body' size='s' color='default'>
-              {artistCoin?.mint ?? 'N/A'}
+              {artistCoin?.mint ?? messages.unknown}
             </Text>
           </Flex>
 
           {/* On-Chain Description */}
           <Flex direction='column' gap='xs'>
             <Text variant='label' size='s' color='subdued'>
-              On-Chain Description
+              {messages.onChainDescription}
             </Text>
             <Text variant='body' size='s' color='default'>
               {artistCoin?.description ??
@@ -101,11 +116,11 @@ export const ArtistCoinDetailsModal = ({
           {/* Token Details */}
           <Flex direction='column' gap='m'>
             <TokenInfoRow
-              label='Total Supply'
+              label={messages.totalSupply}
               value={
                 artistCoin?.totalSupply
                   ? new FixedDecimal(artistCoin.totalSupply, 0).toLocaleString()
-                  : 'N/A'
+                  : messages.unknown
               }
               hasTooltip
               tooltipContent={tooltipContent.totalSupply}
@@ -113,11 +128,11 @@ export const ArtistCoinDetailsModal = ({
             />
 
             <TokenInfoRow
-              label='Market Cap'
+              label={messages.marketCap}
               value={
                 artistCoin?.marketCap
                   ? `$${new FixedDecimal(artistCoin.marketCap, 2).toLocaleString()}`
-                  : 'N/A'
+                  : messages.unknown
               }
               hasTooltip
               tooltipContent={tooltipContent.marketCap}
@@ -125,11 +140,11 @@ export const ArtistCoinDetailsModal = ({
             />
 
             <TokenInfoRow
-              label='Fully Diluted Valuation'
+              label={messages.fdv}
               value={
                 artistCoin?.fdv
                   ? `$${new FixedDecimal(artistCoin.fdv, 2).toLocaleString()}`
-                  : 'N/A'
+                  : messages.unknown
               }
               hasTooltip
               tooltipContent={tooltipContent.fdv}
@@ -137,11 +152,11 @@ export const ArtistCoinDetailsModal = ({
             />
 
             <TokenInfoRow
-              label='Current Price'
+              label={messages.price}
               value={
                 artistCoin?.price
                   ? `$${new FixedDecimal(artistCoin.price, 6).toLocaleString()}`
-                  : 'N/A'
+                  : messages.unknown
               }
               hasTooltip
               tooltipContent={tooltipContent.price}
@@ -149,11 +164,11 @@ export const ArtistCoinDetailsModal = ({
             />
 
             <TokenInfoRow
-              label='Liquidity'
+              label={messages.liquidity}
               value={
                 artistCoin?.liquidity
                   ? `$${new FixedDecimal(artistCoin.liquidity, 2).toLocaleString()}`
-                  : 'N/A'
+                  : messages.unknown
               }
               hasTooltip
               tooltipContent={tooltipContent.liquidity}
@@ -161,14 +176,14 @@ export const ArtistCoinDetailsModal = ({
             />
 
             <TokenInfoRow
-              label='Circulating Supply'
+              label={messages.circulatingSupply}
               value={
                 artistCoin?.circulatingSupply
                   ? new FixedDecimal(
                       artistCoin.circulatingSupply,
                       0
                     ).toLocaleString()
-                  : 'N/A'
+                  : messages.unknown
               }
               hasTooltip
               tooltipContent={tooltipContent.circulatingSupply}

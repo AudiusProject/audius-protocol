@@ -39,7 +39,7 @@ export const TokenInfoRow = ({
 
   const valueElement =
     typeof value === 'string' ? (
-      <Text variant='body' size='m' color='default'>
+      <Text variant='body' size='m'>
         {value}
       </Text>
     ) : (
