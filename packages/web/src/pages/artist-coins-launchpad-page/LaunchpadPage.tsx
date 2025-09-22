@@ -76,11 +76,12 @@ const LaunchpadPageContent = () => {
   const getIsValidWalletBalance = useCallback(
     async (walletAddress: string) => {
       // Check if wallet has sufficient SOL balance
-      const balanceData = await queryClient.fetchQuery(
-        getWalletSolBalanceOptions(queryContext, {
+      const balanceData = await queryClient.fetchQuery({
+        ...getWalletSolBalanceOptions(queryContext, {
           walletAddress
-        })
-      )
+        }),
+        staleTime: 0
+      })
 
       const walletBalanceLamports = balanceData.balanceLamports
       return walletBalanceLamports > MIN_SOL_BALANCE
