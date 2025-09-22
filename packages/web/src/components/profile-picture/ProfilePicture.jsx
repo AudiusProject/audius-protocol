@@ -1,14 +1,22 @@
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useMemo } from 'react'
 
+import { useUserCreatedCoins } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import PropTypes from 'prop-types'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useProfilePicture } from 'hooks/useProfilePicture'
+import { env } from 'services/env'
 
 import styles from './ProfilePicture.module.css'
 
@@ -38,6 +46,33 @@ const ProfilePicture = ({
   const [processing, setProcessing] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
+  const { data: ownedCoins } = useUserCreatedCoins({ userId, limit: 1 })
+  const ownedCoin = ownedCoins?.[0]
+  const navigate = useNavigate()
+
+  const handleCoinClick = () => {
+    if (ownedCoin?.ticker) {
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ownedCoin.ticker))
+    }
+  }
+
+  const shouldShowArtistCoinBadge = useMemo(() => {
+    if (!isArtistCoinEnabled || !ownedCoin?.mint || !ownedCoin?.logoUri) {
+      return false
+    }
+
+    // Don't show for wAUDIO
+    if (ownedCoin.mint === env.WAUDIO_MINT_ADDRESS) {
+      return false
+    }
+
+    return true
+  }, [isArtistCoinEnabled, ownedCoin?.mint, ownedCoin?.logoUri])
+
   useEffect(() => {
     if (editMode) {
       setHasChanged(false)
@@ -59,6 +94,8 @@ const ProfilePicture = ({
   const onClose = () => {
     setModalOpen(false)
   }
+
+  const { color } = useTheme()
 
   return (
     <div
@@ -100,6 +137,23 @@ const ProfilePicture = ({
             source='ProfilePicture'
           />
         ) : null}
+        {shouldShowArtistCoinBadge && (
+          <TokenIcon
+            logoURI={ownedCoin?.logoUri}
+            css={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              zIndex: 10,
+              cursor: 'pointer'
+            }}
+            hex
+            w={64}
+            h={64}
+            borderColor={color.static.white}
+            onClick={handleCoinClick}
+          />
+        )}
       </div>
     </div>
   )

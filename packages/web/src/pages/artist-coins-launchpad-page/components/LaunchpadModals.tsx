@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { musicConfettiActions } from '@audius/common/store'
+import { musicConfettiActions, useSendTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Artwork,
@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { AddressTile } from 'components/address-tile'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import { LaunchCoinErrorMetadata } from 'hooks/useLaunchCoin'
+import { env } from 'services/env'
 
 import { SetupFormValues } from './types'
 
@@ -359,17 +360,19 @@ export const InsufficientBalanceModal = ({
   isOpen: boolean
   onClose: () => void
 }) => {
+  const { onOpen: openSendTokensModal } = useSendTokensModal()
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size='small'>
+      <ModalHeader showDismissButton>
+        <Flex justifyContent='center'>
+          <Text variant='label' size='xl' strength='strong'>
+            {messages.insufficientBalanceTitle}
+          </Text>
+        </Flex>
+      </ModalHeader>
       <ModalContent>
-        <ModalHeader showDismissButton>
-          <Flex justifyContent='center'>
-            <Text variant='label' size='xl' strength='strong'>
-              {messages.insufficientBalanceTitle}
-            </Text>
-          </Flex>
-        </ModalHeader>
-        <Flex column gap='xl' pt='xl'>
+        <Flex column gap='xl'>
           <Text variant='body' size='l' color='default'>
             {messages.insufficientBalanceDescription}
           </Text>
@@ -404,7 +407,10 @@ export const InsufficientBalanceModal = ({
                 <TextLink
                   showUnderline
                   onClick={() => {
-                    /* TODO: DESIGN TO PROVIDE LINK */
+                    openSendTokensModal({
+                      mint: env.WAUDIO_MINT_ADDRESS,
+                      isOpen: true
+                    })
                   }}
                   css={({ color }) => ({ color: color.icon.default })}
                 >

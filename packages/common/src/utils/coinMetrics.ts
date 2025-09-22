@@ -53,9 +53,12 @@ const createMetric = (
 }
 
 export const createCoinMetrics = (coin: Coin): MetricData[] => {
+  // If coin has not graduated yet, use the price from the dynamic bonding curve
+  const price =
+    coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   const potentialMetrics = [
     createMetric(
-      formatCurrencyWithMax(coin.price, CURRENCY_FORMAT_MAX),
+      formatCurrencyWithMax(price, CURRENCY_FORMAT_MAX),
       messages.pricePerCoin,
       coin.priceChange24hPercent
     ),
