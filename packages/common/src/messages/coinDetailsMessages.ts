@@ -7,7 +7,6 @@ export const coinDetailsMessages = {
   coinInfo: {
     loading: 'Loading...',
     createdBy: 'Created By',
-    whatIs: (title: string) => `What is ${title}?`,
     description1: (title: string) =>
       `${title} is a community token on the Audius platform. You can use ${title} for tipping artists, participating in community activities, and engaging with the decentralized music ecosystem.`,
     description2: (title: string) =>

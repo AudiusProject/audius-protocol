@@ -63,10 +63,6 @@ export type ThemeColors = {
   staticNeutralLight8: string
   staticAccentGreenLight1: string
   specialLightGreen: string
-  specialCoinGradient: string
-  specialCoinGradientColor1: string
-  specialCoinGradientColor2: string
-  specialCoinGradientColor3: string
   specialGreen: string
   staticPrimary: string
   staticSecondary: string
@@ -139,11 +135,7 @@ const createMobileThemeFromHarmony = (
     staticNeutralLight8: color.neutral.n100,
     staticAccentGreenLight1: color.special.lightGreen,
     specialLightGreen: color.special.lightGreen,
-    specialCoinGradient: color.special.coinGradient,
     specialGreen: color.special.green,
-    specialCoinGradientColor1: color.special.coinGradientColor1,
-    specialCoinGradientColor2: color.special.coinGradientColor2,
-    specialCoinGradientColor3: color.special.coinGradientColor3,
     staticPrimary: color.static.primary,
     staticSecondary: color.static.secondary,
     pageHeaderGradientColor1: color.special.gradientStop1,

@@ -4,6 +4,7 @@ import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -22,6 +23,7 @@ import {
   HashId
 } from '@audius/sdk'
 import moment from 'moment'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { Cell } from 'react-table'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
@@ -29,6 +31,7 @@ import { TextLink, UserLink } from 'components/link'
 import { dateSorter, numericSorter, Table } from 'components/table'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { useMainContentRef } from 'pages/MainContentContext'
+import { env } from 'services/env'
 
 import styles from './ArtistCoinsTable.module.css'
 
@@ -52,10 +55,21 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
       justifyContent='space-between'
       w='100%'
     >
-      <Flex gap='s' alignItems='center' w='100%'>
-        <TokenIcon logoURI={coin.logoUri} size='xl' hex />
-        <Flex column>
-          <TextLink to={assetDetailUrl} textVariant='title' size='s'>
+      <Flex gap='s' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
+        <TokenIcon
+          logoURI={coin.logoUri}
+          size='xl'
+          hex
+          css={{ minWidth: spacing.unit10, minHeight: spacing.unit10 }}
+        />
+        <Flex column css={{ overflow: 'hidden' }}>
+          <TextLink
+            to={assetDetailUrl}
+            textVariant='title'
+            size='s'
+            ellipses
+            css={{ display: 'block' }}
+          >
             {coin.name}
           </TextLink>
           <TextLink
@@ -63,14 +77,22 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             textVariant='body'
             size='s'
             strength='strong'
+            ellipses
+            css={{ display: 'block' }}
           >
             {coin.ticker}
           </TextLink>
         </Flex>
       </Flex>
-      <Flex w='100%' justifyContent='flex-start'>
+      <Flex w='100%' justifyContent='flex-start' css={{ overflow: 'hidden' }}>
         {ownerId ? (
-          <UserLink userId={ownerId} size='s' badgeSize='xs' />
+          <UserLink
+            userId={ownerId}
+            size='s'
+            badgeSize='xs'
+            ellipses
+            fullWidth
+          />
         ) : (
           <Skeleton h='24px' w='100px' />
         )}
@@ -82,9 +104,8 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
 const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
-    <Text variant='body' size='m' color='default'>
-      {walletMessages.dollarSign}
-      {coin.price.toFixed(4)}
+    <Text variant='body' size='m'>
+      {formatCurrencyWithSubscript(coin.price)}
     </Text>
   )
 }
@@ -140,7 +161,10 @@ const renderBuyCell = (
         css={{
           boxShadow: '0 0 0 1px inset var(--harmony-border-default) !important'
         }}
-        onClick={() => handleBuy(coin.ticker ?? '')}
+        onClick={(e) => {
+          e.stopPropagation()
+          handleBuy(coin.ticker ?? '')
+        }}
       >
         {walletMessages.buy}
       </Button>
@@ -238,6 +262,7 @@ const isEmptyRow = (row: any) => {
 
 export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const mainContentRef = useMainContentRef()
+  const navigate = useNavigate()
   const { onOpen: openBuySellModal } = useBuySellModal()
   const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
     GetCoinsSortMethodEnum.MarketCap
@@ -247,13 +272,16 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   )
   const [page, setPage] = useState(0)
 
-  const { data: coins, isPending } = useArtistCoins({
+  const { data: coinsData, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
     query: searchQuery,
     limit: ARTIST_COINS_BATCH_SIZE,
     offset: page * ARTIST_COINS_BATCH_SIZE
   })
+  const coins = coinsData?.filter(
+    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+  )
 
   const fetchMore = useCallback((offset: number) => {
     setPage(Math.floor(offset / ARTIST_COINS_BATCH_SIZE))
@@ -281,6 +309,16 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
       })
     },
     [openBuySellModal]
+  )
+
+  const handleRowClick = useRequiresAccountCallback(
+    (e: React.MouseEvent<HTMLTableRowElement>, rowInfo: any) => {
+      const coin = rowInfo.original
+      if (coin?.ticker) {
+        navigate(ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker))
+      }
+    },
+    [navigate]
   )
 
   const columns = useMemo(() => {
@@ -329,6 +367,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
       data={coins}
       isVirtualized
       onSort={onSort}
+      onClickRow={handleRowClick}
       isEmptyRow={isEmptyRow}
       fetchMore={fetchMore}
       fetchBatchSize={ARTIST_COINS_BATCH_SIZE}

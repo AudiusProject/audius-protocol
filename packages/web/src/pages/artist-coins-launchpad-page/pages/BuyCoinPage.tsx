@@ -1,56 +1,99 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useFirstBuyQuote } from '@audius/common/api'
+import {
+  useConnectedWallets,
+  useFirstBuyQuote,
+  useWalletAudioBalance
+} from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
+import { AUDIO } from '@audius/fixed-decimal'
 import {
   Artwork,
+  Button,
   Flex,
   Hint,
-  IconLogoCircleSOL,
+  IconWallet,
   LoadingSpinner,
   Paper,
+  Pill,
   Text,
+  TextLink,
   TokenAmountInput
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
+import { usePrevious } from 'react-use'
 
+import { IconAUDIO } from 'components/buy-audio-modal/components/Icons'
 import { useFormImageUrl } from 'hooks/useFormImageUrl'
+import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
 import type { PhasePageProps, SetupFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
+import { getLatestConnectedWallet } from '../utils'
+import { FIELDS } from '../validation'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
-  title: 'Buy Your Coin Early',
-  optional: 'OPTIONAL',
+  title: 'Claim Your Share First',
+  optional: 'optional',
   description:
     'Before your coin goes live, you have the option to buy some at the lowest price.',
   youPay: 'You Pay',
   youReceive: 'You Receive',
   valueInUSDC: 'Value',
   hintMessage:
-    "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
+    "Buying shares now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches it's graduation market cap (500K AUDIO).",
   back: 'Back',
   errors: {
     quoteError: 'Failed to get a quote. Please try again.',
-    valueTooHigh: 'Value is too high. Please enter a lower value.'
-  }
+    valueTooHigh: 'Value is too high. Please enter a lower value.',
+    insufficientBalance: 'Insufficient $AUDIO balance.'
+  },
+  createCoin: 'Create Coin',
+  max: 'MAX',
+  audioBalance: (balance: string) => `${balance} $AUDIO`,
+  buyAudio: 'Buy $AUDIO',
+  audioInputLabel: 'AUDIO'
 }
 
-// TODO (PE-6839): improve how we handle this value, this value fluctuates based on the SOL-AUDIO exchange rate
-const MAX_SOL_AMOUNT = 60 // The max amount of SOL
+// Not to be confused with AUDIO_DECIMALS - this is the amount of decimal places the input will alow you to enter
+const FORM_INPUT_DECIMALS = 8
 
-// This number never changes with our pool configs - this number is the max amount of tokens that can be bought out of the pool before graduation triggers
-const MAX_TOKEN_AMOUNT = 249658688
-
-const INPUT_DEBOUNCE_TIME = 300
+const INPUT_DEBOUNCE_TIME = 400
 
 export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
-  const { values, setFieldValue } = useFormikContext<SetupFormValues>()
+  const { values, setFieldValue, errors, validateForm } =
+    useFormikContext<SetupFormValues>()
+  const { data: launchpadConfig } = useLaunchpadConfig()
+  const { maxTokenOutputAmount, maxAudioInputAmount } = launchpadConfig ?? {
+    maxTokenOutputAmount: Infinity,
+    maxAudioInputAmount: Infinity
+  }
   const [isPayAmountChanging, setIsPayAmountChanging] = useState(false)
   const [isReceiveAmountChanging, setIsReceiveAmountChanging] = useState(false)
+  const { data: connectedWallets } = useConnectedWallets()
+  const connectedWallet = useMemo(
+    () => getLatestConnectedWallet(connectedWallets),
+    [connectedWallets]
+  )
+  const { data: audioBalance } = useWalletAudioBalance({
+    address: connectedWallet!.address,
+    chain: connectedWallet!.chain
+  })
+  const { audioBalanceString } = useMemo(() => {
+    if (!audioBalance) {
+      return { audioBalanceString: '0.00', audioBalanceInt: 0 }
+    }
+    return {
+      audioBalanceString: AUDIO(audioBalance).toLocaleString('en-US', {
+        maximumFractionDigits: 2,
+        roundingMode: 'trunc'
+      }),
+      audioBalanceInt: Number(AUDIO(audioBalance).toFixed(2))
+    }
+  }, [audioBalance])
 
   const imageUrl = useFormImageUrl(values.coinImage)
 
@@ -70,13 +113,30 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     }
   }, [isFirstBuyQuotePending])
 
+  const prevFirstBuyQuoteData = usePrevious(firstBuyQuoteData)
   // When quote comes back, update our inputs with the new values
   useEffect(() => {
     if (firstBuyQuoteData) {
-      setFieldValue('receiveAmount', firstBuyQuoteData.tokenAmountUiString)
-      setFieldValue('payAmount', firstBuyQuoteData.solAmountUiString)
+      if (isReceiveAmountChanging) {
+        setFieldValue(
+          FIELDS.receiveAmount,
+          firstBuyQuoteData.tokenAmountUiString
+        )
+        validateForm()
+      }
+      if (isPayAmountChanging) {
+        setFieldValue(FIELDS.payAmount, firstBuyQuoteData.audioAmountUiString)
+        validateForm()
+      }
     }
-  }, [firstBuyQuoteData, setFieldValue])
+  }, [
+    firstBuyQuoteData,
+    setFieldValue,
+    isReceiveAmountChanging,
+    isPayAmountChanging,
+    prevFirstBuyQuoteData,
+    validateForm
+  ])
 
   const handleBack = () => {
     onBack?.()
@@ -86,31 +146,40 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     onContinue?.()
   }
 
+  const handleMaxClick = () => {
+    setFieldValue(FIELDS.payAmount, audioBalanceString)
+    debouncedPayAmountChange(audioBalanceString)
+  }
+
   const debouncedPayAmountChange = useDebouncedCallback(
-    (payAmount: string) => {
-      if (payAmount && Number(payAmount) <= MAX_SOL_AMOUNT) {
+    async (payAmount: string) => {
+      const payAmountNumber = parseFloat(payAmount)
+      // NOTE: unfortunately with the way this form is set up its easier to manually validate max values here (not using formik errors field)
+      if (payAmount && payAmountNumber <= maxAudioInputAmount) {
         setIsReceiveAmountChanging(true)
-        getFirstBuyQuote({ solUiInputAmount: payAmount })
+        getFirstBuyQuote({ audioUiInputAmount: payAmount })
       }
     },
-    [getFirstBuyQuote],
+    [getFirstBuyQuote, maxAudioInputAmount],
     INPUT_DEBOUNCE_TIME
   )
 
   const debouncedReceiveAmountChange = useDebouncedCallback(
-    (receiveAmount: string) => {
-      if (receiveAmount && Number(receiveAmount) <= MAX_TOKEN_AMOUNT) {
+    async (receiveAmount: string) => {
+      const receiveAmountNumber = parseFloat(receiveAmount)
+      // NOTE: unfortunately with the way this form is set up its easier to manually validate max values here (not using formik errors field)
+      if (receiveAmount && receiveAmountNumber <= maxTokenOutputAmount) {
         setIsPayAmountChanging(true)
         getFirstBuyQuote({ tokenUiOutputAmount: receiveAmount })
       }
     },
-    [getFirstBuyQuote],
+    [getFirstBuyQuote, maxTokenOutputAmount],
     INPUT_DEBOUNCE_TIME
   )
 
   const handlePayAmountChange = useCallback(
     async (value: string, _valueBigInt: bigint) => {
-      setFieldValue('payAmount', value)
+      setFieldValue(FIELDS.payAmount, value)
       debouncedPayAmountChange(value)
     },
     [setFieldValue, debouncedPayAmountChange]
@@ -118,12 +187,11 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
 
   const handleReceiveAmountChange = useCallback(
     (value: string, _valueBigInt: bigint) => {
-      setFieldValue('receiveAmount', value)
+      setFieldValue(FIELDS.receiveAmount, value)
       debouncedReceiveAmountChange(value)
     },
     [setFieldValue, debouncedReceiveAmountChange]
   )
-
   return (
     <>
       <Flex
@@ -141,28 +209,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               <Text variant='heading' size='l' color='default'>
                 {messages.title}
               </Text>
-              <Flex
-                alignItems='center'
-                justifyContent='center'
-                ph='s'
-                pv='xs'
-                backgroundColor='accent'
-                borderRadius='l'
-              >
-                <Text
-                  variant='label'
-                  size='xs'
-                  css={(theme) => ({
-                    color:
-                      theme.type === 'day'
-                        ? theme.color.text.staticWhite
-                        : theme.color.text.white
-                  })}
-                  textTransform='uppercase'
-                >
-                  {messages.optional}
-                </Text>
-              </Flex>
+              <Pill variant='primary'>{messages.optional}</Pill>
             </Flex>
             <Text variant='body' size='l' color='subdued'>
               {messages.description}
@@ -176,27 +223,43 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 <Text variant='heading' size='s' color='default'>
                   {messages.youPay}
                 </Text>
+                <Flex gap='s'>
+                  <TextLink
+                    variant='visible'
+                    // TODO: onclick show modals
+                  >
+                    {messages.buyAudio}
+                  </TextLink>
+                  <Flex gap='xs'>
+                    <IconWallet color='subdued' />
+                    <Text variant='body' size='m' color='subdued'>
+                      {messages.audioBalance(audioBalanceString)}
+                    </Text>
+                  </Flex>
+                </Flex>
               </Flex>
-              <TokenAmountInput
-                label={messages.youPay}
-                tokenLabel='SOL'
-                decimals={6}
-                value={values.payAmount ?? ''}
-                onChange={handlePayAmountChange}
-                placeholder='0.00'
-                hideLabel
-                helperText={
-                  values.payAmount && Number(values.payAmount) > MAX_SOL_AMOUNT
-                    ? messages.errors.valueTooHigh
-                    : undefined
-                }
-                error={
-                  !!values.payAmount &&
-                  Number(values.payAmount) > MAX_SOL_AMOUNT
-                }
-                disabled={isPayAmountChanging}
-                endIcon={<IconLogoCircleSOL size='l' />}
-              />
+              <Flex gap='s' w='100%'>
+                <TokenAmountInput
+                  label={messages.youPay}
+                  tokenLabel={messages.audioInputLabel}
+                  decimals={FORM_INPUT_DECIMALS}
+                  value={values[FIELDS.payAmount] ?? ''}
+                  onChange={handlePayAmountChange}
+                  placeholder='0.00'
+                  hideLabel
+                  disabled={isPayAmountChanging}
+                  endIcon={<IconAUDIO />}
+                  error={!!errors[FIELDS.payAmount]}
+                  helperText={errors[FIELDS.payAmount]}
+                />
+                <Button
+                  variant='secondary'
+                  size='large'
+                  onClick={handleMaxClick}
+                >
+                  {messages.max}
+                </Button>
+              </Flex>
             </Flex>
 
             {/* You Receive Section */}
@@ -206,24 +269,13 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               </Text>
               <TokenAmountInput
                 label={messages.youReceive}
-                tokenLabel={`$${values.coinSymbol}`}
+                tokenLabel={`$${values[FIELDS.coinSymbol]}`}
                 decimals={6}
-                value={values.receiveAmount ?? ''}
+                value={values[FIELDS.receiveAmount] ?? ''}
                 onChange={handleReceiveAmountChange}
-                placeholder='0.00'
+                placeholder='0'
                 hideLabel
                 disabled={isReceiveAmountChanging}
-                startAdornmentText='~'
-                helperText={
-                  values.receiveAmount &&
-                  Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
-                    ? messages.errors.valueTooHigh
-                    : undefined
-                }
-                error={
-                  !!values.receiveAmount &&
-                  Number(values.receiveAmount) > MAX_TOKEN_AMOUNT
-                }
                 endIcon={
                   imageUrl ? (
                     <Artwork
@@ -235,6 +287,8 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                     />
                   ) : null
                 }
+                error={!!errors[FIELDS.receiveAmount]}
+                helperText={errors[FIELDS.receiveAmount]}
               />
             </Flex>
 
@@ -262,6 +316,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         onContinue={handleContinue}
         onBack={handleBack}
         submit
+        continueText={messages.createCoin}
         errorText={firstBuyQuoteError ? messages.errors.quoteError : undefined}
       />
     </>

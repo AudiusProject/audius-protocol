@@ -68,10 +68,6 @@ export const ImageUploadArea = ({
     border: `1px dashed ${
       isDragActive ? theme.color.border.accent : theme.color.border.default
     }`,
-    borderRadius: theme.cornerRadius.m,
-    background: isDragActive
-      ? theme.color.background.default
-      : theme.color.special.white,
     cursor: isProcessing ? 'default' : 'pointer',
     transition: `border-color ${theme.motion.hover}, background-color ${theme.motion.hover}`,
     ':hover': {
@@ -109,6 +105,8 @@ export const ImageUploadArea = ({
         gap='l'
         p='xl'
         w='100%'
+        borderRadius='m'
+        backgroundColor={isDragActive ? 'default' : 'white'}
         css={borderContainerStyles}
       >
         {coinImage && imageUrl ? (

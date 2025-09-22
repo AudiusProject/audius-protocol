@@ -12,15 +12,16 @@ export const AssetDetailPage = () => {
 
   const {
     data: coin,
-    isLoading: coinLoading,
+    isPending,
+    isSuccess,
     error: coinError
-  } = useArtistCoinByTicker({ ticker: ticker ?? '' })
+  } = useArtistCoinByTicker({ ticker })
 
   if (!ticker) {
     return <Redirect to='/wallet' />
   }
 
-  if (coinLoading) {
+  if (isPending) {
     return (
       <Flex
         justifyContent='center'
@@ -32,11 +33,16 @@ export const AssetDetailPage = () => {
     )
   }
 
-  if (coinError || !coin) {
+  if (coinError || (isSuccess && !coin)) {
     return <Redirect to='/wallet' />
   }
 
-  return <AssetDetailPageContent mint={coin.mint} title={coin.ticker ?? ''} />
+  return (
+    <AssetDetailPageContent
+      mint={coin?.mint ?? ''}
+      title={coin?.ticker ?? ''}
+    />
+  )
 }
 
 type AssetDetailPageContentProps = {

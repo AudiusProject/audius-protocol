@@ -36,6 +36,7 @@ import NavContext, {
   LeftPreset,
   RightPreset
 } from 'components/nav/mobile/NavContext'
+import { env } from 'services/env'
 
 type CoinRowProps = {
   coin: Coin
@@ -125,11 +126,14 @@ export const MobileArtistCoinsExplorePage: React.FC = () => {
     routeParams?.sortDirection ?? GetCoinsSortDirectionEnum.Desc
   )
 
-  const { data: coins, isPending } = useArtistCoins({
+  const { data: coinsData, isPending } = useArtistCoins({
     sortMethod,
     sortDirection,
     query: debouncedSearchValue
   })
+  const coins = coinsData?.filter(
+    (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
+  )
 
   // Debounce search value to avoid excessive API calls
   useDebounce(() => setDebouncedSearchValue(searchValue), 300, [searchValue])

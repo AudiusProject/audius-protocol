@@ -35,6 +35,7 @@ import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
+import { SwapFormSkeleton } from './components/SwapSkeletons'
 
 type BuySellFlowProps = {
   onClose: () => void
@@ -115,7 +116,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const {
     getCurrentTabTokens,
     handleInputTokenChange: handleInputTokenChangeInternal,
-    handleOutputTokenChange: handleOutputTokenChangeInternal
+    handleOutputTokenChange: handleOutputTokenChangeInternal,
+    handleSwapDirection
   } = useTokenStates(selectedPair)
 
   // Get current tab's token symbols
@@ -131,6 +133,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const handleOutputTokenChange = (symbol: string) => {
     handleOutputTokenChangeInternal(symbol, activeTab)
+    resetTransactionData()
+  }
+
+  const handleChangeSwapDirection = () => {
+    handleSwapDirection(activeTab)
     resetTransactionData()
   }
 
@@ -175,10 +182,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
 
   const availableOutputTokensForConvert = useMemo(() => {
-    return availableTokens.filter(
-      (t) => t.symbol !== quoteTokenSymbol && t.symbol !== baseTokenSymbol
-    )
-  }, [availableTokens, quoteTokenSymbol, baseTokenSymbol])
+    return availableTokens.filter((t) => t.symbol !== baseTokenSymbol)
+  }, [availableTokens, baseTokenSymbol])
 
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
@@ -420,7 +425,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }
 
   if (tokensLoading) {
-    return <ModalLoading noText />
+    return <SwapFormSkeleton />
   }
 
   return (
@@ -475,6 +480,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               availableOutputTokens={availableOutputTokensForConvert}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
+              onChangeSwapDirection={handleChangeSwapDirection}
             />
           ) : null}
 
