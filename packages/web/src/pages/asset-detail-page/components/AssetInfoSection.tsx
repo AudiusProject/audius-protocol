@@ -9,19 +9,18 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
-import { profilePage } from '@audius/common/src/utils/route'
 import {
   Flex,
-  Paper,
-  Text,
-  PlainButton,
   IconDiscord,
-  IconGift,
   IconExternalLink,
+  IconGift,
+  Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
-  Modal
+  Paper,
+  PlainButton,
+  Text
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
 
@@ -206,8 +205,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   )
   const discordOAuthLink = useDiscordOAuthLink(userToken?.ticker)
   const { balance: userTokenBalance } = userToken ?? {}
-  const userTokenOwnerId = userToken?.ownerId
-  const { data: user } = useUser(userTokenOwnerId)
 
   const descriptionParagraphs = coin?.description?.split('\n') ?? []
 
@@ -216,7 +213,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   }
 
   const handleLearnMore = () => {
-    window.open(coin?.website ?? profilePage(user?.handle) ?? '', '_blank')
+    window.open(coin?.website, '_blank')
   }
 
   const handleBrowseRewards = useCallback(() => {
@@ -296,24 +293,26 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           </Flex>
         ) : null}
 
-        <Flex
-          alignItems='center'
-          justifyContent='space-between'
-          alignSelf='stretch'
-          p='l'
-          borderTop='default'
-        >
-          <Flex alignItems='center' justifyContent='center' gap='s'>
-            <PlainButton
-              onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
-              iconLeft={CTAIcon}
-              variant='default'
-              size='large'
-            >
-              {isWAudio ? messages.browseRewards : messages.learnMore}
-            </PlainButton>
+        {isWAudio || coin.website ? (
+          <Flex
+            alignItems='center'
+            justifyContent='space-between'
+            alignSelf='stretch'
+            p='l'
+            borderTop='default'
+          >
+            <Flex alignItems='center' justifyContent='center' gap='s'>
+              <PlainButton
+                onClick={isWAudio ? handleBrowseRewards : handleLearnMore}
+                iconLeft={CTAIcon}
+                variant='default'
+                size='large'
+              >
+                {isWAudio ? messages.browseRewards : messages.learnMore}
+              </PlainButton>
+            </Flex>
           </Flex>
-        </Flex>
+        ) : null}
         {userToken?.hasDiscord ? (
           <Flex
             alignItems='center'
