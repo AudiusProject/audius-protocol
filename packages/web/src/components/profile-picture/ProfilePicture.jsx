@@ -1,14 +1,20 @@
-import { memo, useState, useEffect } from 'react'
+import { memo, useState, useEffect, useMemo } from 'react'
 
+import { useUser, useUserCreatedCoins } from '@audius/common/api'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
+import { useTheme } from '@audius/harmony'
 import cn from 'classnames'
 import Lottie from 'lottie-react'
 import PropTypes from 'prop-types'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useProfilePicture } from 'hooks/useProfilePicture'
+import { env } from 'services/env'
 
 import styles from './ProfilePicture.module.css'
 
@@ -38,6 +44,27 @@ const ProfilePicture = ({
   const [processing, setProcessing] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
+  const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
+  const { data: ownedCoins } = useUserCreatedCoins({ userId, limit: 1 })
+  const ownedCoin = ownedCoins?.[0]
+  console.log('ownedCoin', ownedCoin)
+
+  const shouldShowArtistCoinBadge = useMemo(() => {
+    if (!isArtistCoinEnabled || !ownedCoin?.mint || !ownedCoin?.logoUri) {
+      return false
+    }
+
+    // Don't show for wAUDIO
+    if (ownedCoin.mint === env.WAUDIO_MINT_ADDRESS) {
+      return false
+    }
+
+    return true
+  }, [isArtistCoinEnabled, ownedCoin?.mint, ownedCoin?.logoUri])
+
   useEffect(() => {
     if (editMode) {
       setHasChanged(false)
@@ -59,6 +86,8 @@ const ProfilePicture = ({
   const onClose = () => {
     setModalOpen(false)
   }
+
+  const { color } = useTheme()
 
   return (
     <div
@@ -100,6 +129,16 @@ const ProfilePicture = ({
             source='ProfilePicture'
           />
         ) : null}
+        {shouldShowArtistCoinBadge && (
+          <TokenIcon
+            logoURI={ownedCoin?.logoUri}
+            css={{ position: 'absolute', bottom: 0, right: 0, zIndex: 10 }}
+            hex
+            w={64}
+            h={64}
+            borderColor={color.static.white}
+          />
+        )}
       </div>
     </div>
   )
