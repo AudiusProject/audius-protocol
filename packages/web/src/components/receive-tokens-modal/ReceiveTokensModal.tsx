@@ -1,22 +1,21 @@
 import { useCallback, useContext } from 'react'
 
 import {
-  useArtistCoin,
-  useTokenBalance,
-  transformArtistCoinToTokenInfo
+  transformArtistCoinToTokenInfo,
+  useArtistCoin
 } from '@audius/common/api'
-import { useUserbank } from '@audius/common/hooks'
+import { useFormattedTokenBalance, useUserbank } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { useReceiveTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
-  Flex,
-  IconError,
-  Text,
-  LoadingSpinner,
   Divider,
+  Flex,
   Hint,
+  IconError,
+  LoadingSpinner,
+  Text,
   useMedia
 } from '@audius/harmony'
 
@@ -37,10 +36,10 @@ export const ReceiveTokensModal = () => {
   const { mint } = data ?? {}
 
   const { data: coin } = useArtistCoin(mint ?? '')
-  const { data: tokenBalance } = useTokenBalance({ mint: mint ?? '' })
+  const { tokenBalanceFormatted } = useFormattedTokenBalance(mint ?? '')
   const { userBankAddress, wallet } = useUserbank(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-  const balance = tokenBalance?.balance?.toString()
+  const balance = tokenBalanceFormatted
 
   const handleCopy = useCallback(() => {
     copyToClipboard(userBankAddress ?? '')
