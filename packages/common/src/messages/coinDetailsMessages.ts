@@ -30,7 +30,17 @@ export const coinDetailsMessages = {
     holdersOnAudius: 'Holders on Audius',
     uniqueHolders: 'Unique Holders',
     volume24hr: 'Volume (24hr)',
-    totalTransfers: 'Total Transfers'
+    totalTransfers: 'Total Transfers',
+    unableToLoad: 'Unable to load insights',
+    graduationProgress: {
+      graduated: 'Graduated',
+      tooltip: {
+        preGraduation:
+          'Until graduation, the price of this coin is tied to the controlled distribution of supply.',
+        postGraduation:
+          'This coin has graduated. The price is determined by the open market.'
+      }
+    }
   },
   coinLeaderboard: {
     title: 'Members Leaderboard',
