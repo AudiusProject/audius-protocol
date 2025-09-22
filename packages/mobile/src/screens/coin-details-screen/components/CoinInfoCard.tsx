@@ -121,7 +121,6 @@ const BannerSection = ({ mint }: { mint: string }) => {
 const CoinDescriptionSection = ({ coin }: { coin: Coin }) => {
   if (!coin.description) return null
 
-  const title = coin.ticker ?? ''
   const descriptionParagraphs = coin.description.split('\n') ?? []
 
   return (
@@ -132,12 +131,6 @@ const CoinDescriptionSection = ({ coin }: { coin: Coin }) => {
       p='xl'
       gap='l'
     >
-      <Flex alignSelf='stretch'>
-        <Text variant='heading' size='s' color='heading'>
-          {messages.whatIs(title)}
-        </Text>
-      </Flex>
-
       <Flex direction='column' gap='m'>
         {descriptionParagraphs.map((paragraph) => {
           if (paragraph.trim() === '') {

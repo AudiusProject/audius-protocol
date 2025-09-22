@@ -228,7 +228,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     return <AssetInfoSectionSkeleton />
   }
 
-  const title = coin.ticker ?? ''
   const isWAudio = coin.mint === env.WAUDIO_MINT_ADDRESS
   const CTAIcon = isWAudio ? IconGift : IconExternalLink
 
@@ -266,12 +265,6 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
             p='xl'
             gap='l'
           >
-            <Flex alignItems='center' alignSelf='stretch'>
-              <Text variant='heading' size='s' color='heading'>
-                {messages.whatIs(title)}
-              </Text>
-            </Flex>
-
             <Flex direction='column' gap='m'>
               {descriptionParagraphs.map((paragraph) => {
                 if (paragraph.trim() === '') {
