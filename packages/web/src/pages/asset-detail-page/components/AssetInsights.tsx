@@ -3,7 +3,6 @@ import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, MetricData } from '@audius/common/utils'
 import {
   Flex,
-  HoverCard,
   IconInfo,
   IconSortDown,
   IconSortUp,
@@ -11,12 +10,13 @@ import {
   Text
 } from '@audius/harmony'
 
+import { Tooltip } from 'components/tooltip'
+
 import { componentWithErrorBoundary } from '../../../components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from '../../../components/skeleton/Skeleton'
 
 import { AssetInsightsOverflowMenu } from './AssetInsightsOverflowMenu'
 import { GraduationProgressBar } from './GraduationProgressBar'
-import { Tooltip } from 'components/tooltip'
 
 const messages = coinDetailsMessages.coinInsights
 
