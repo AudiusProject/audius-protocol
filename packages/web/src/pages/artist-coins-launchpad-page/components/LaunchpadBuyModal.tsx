@@ -36,18 +36,21 @@ import zIndex from 'utils/zIndex'
 
 import { getLatestConnectedWallet } from '../utils'
 
-const INPUT_TOKEN_MAP: Record<string, TokenInfo> = {
-  USDC: {
-    ...TOKEN_LISTING_MAP.USDC,
-    balance: null,
-    isStablecoin: true
-  },
-  SOL: {
-    ...TOKEN_LISTING_MAP.SOL,
-    balance: null,
-    isStablecoin: false
+const INPUT_TOKEN_MAP: Record<string, TokenInfo & { minSwapAmount?: number }> =
+  {
+    USDC: {
+      ...TOKEN_LISTING_MAP.USDC,
+      balance: null,
+      isStablecoin: true,
+      minSwapAmount: 0.01
+    },
+    SOL: {
+      ...TOKEN_LISTING_MAP.SOL,
+      balance: null,
+      isStablecoin: false,
+      minSwapAmount: 0.000001
+    }
   }
-}
 
 const INPUT_TOKEN_LIST = Object.values(INPUT_TOKEN_MAP)
 
@@ -366,7 +369,8 @@ export const LaunchpadBuyModal = ({
   } = useTokenSwapForm({
     inputToken: selectedInputToken,
     outputToken: OUTPUT_TOKEN,
-    externalWalletAddress
+    externalWalletAddress,
+    min: selectedInputToken.minSwapAmount
   })
 
   const [currentStep, setCurrentStep] = useState<BuyModalStep>(
