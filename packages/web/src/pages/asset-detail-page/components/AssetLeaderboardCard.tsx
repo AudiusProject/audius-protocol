@@ -4,6 +4,8 @@ import {
   useUsers
 } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
+import { LEADERBOARD_USERS_ROUTE } from '@audius/common/src/utils/route'
+import { coinLeaderboardUserListActions } from '@audius/common/store'
 import {
   Flex,
   Paper,
@@ -17,6 +19,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { UserProfilePictureList } from 'components/user-profile-picture-list'
+import { useIsMobile } from 'hooks/useIsMobile'
 import {
   setUsers,
   setVisibility
@@ -25,6 +28,7 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 
 const messages = coinDetailsMessages.coinLeaderboard
 
@@ -60,16 +64,22 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
   const coinData = useArtistCoin(mint)
   const dispatch = useDispatch()
   const isPending = isLeaderboardPending || isUsersPending
+  const isMobile = useIsMobile()
 
   const handleViewLeaderboard = () => {
-    dispatch(
-      setUsers({
-        userListType: UserListType.COIN_LEADERBOARD,
-        entityType: UserListEntityType.USER,
-        entity: mint
-      })
-    )
-    dispatch(setVisibility(true))
+    if (isMobile) {
+      dispatch(coinLeaderboardUserListActions.setCoinLeaderboard(mint))
+      dispatch(push(LEADERBOARD_USERS_ROUTE))
+    } else {
+      dispatch(
+        setUsers({
+          userListType: UserListType.COIN_LEADERBOARD,
+          entityType: UserListEntityType.USER,
+          entity: mint
+        })
+      )
+      dispatch(setVisibility(true))
+    }
   }
 
   if (leaderboardUsers?.length === 0) {

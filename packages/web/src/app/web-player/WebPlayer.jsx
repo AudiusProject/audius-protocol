@@ -73,6 +73,7 @@ import FeedPage from 'pages/feed-page/FeedPage'
 import FollowersPage from 'pages/followers-page/FollowersPage'
 import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
+import { LeaderboardPage } from 'pages/leaderboard-page/LeaderboardPage'
 import LibraryPage from 'pages/library-page/LibraryPage'
 import { NotFoundPage } from 'pages/not-found-page/NotFoundPage'
 import { NotificationUsersPage } from 'pages/notification-users-page/NotificationUsersPage'
@@ -150,6 +151,7 @@ const {
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
+  LEADERBOARD_USERS_ROUTE,
   TRENDING_GENRES,
   APP_REDIRECT,
   TRACK_ID_PAGE,
@@ -943,6 +945,12 @@ const WebPlayer = (props) => {
                 path={FOLLOWERS_USERS_ROUTE}
                 isMobile={isMobile}
                 component={FollowersPage}
+              />
+              <MobileRoute
+                exact
+                path={LEADERBOARD_USERS_ROUTE}
+                isMobile={isMobile}
+                component={LeaderboardPage}
               />
               <MobileRoute
                 exact
