@@ -1,4 +1,5 @@
 import { useArtistCoin } from '@audius/common/api'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Modal,
@@ -8,7 +9,8 @@ import {
   Flex,
   Text,
   Divider,
-  IconInfo
+  IconInfo,
+  useTheme
 } from '@audius/harmony'
 
 import { TokenIcon } from '../../../components/buy-sell-modal/TokenIcon'
@@ -62,6 +64,7 @@ export const ArtistCoinDetailsModal = ({
   onClose,
   mint
 }: ArtistCoinDetailsModalProps) => {
+  const { spacing } = useTheme()
   const { data: artistCoin } = useArtistCoin(mint)
 
   return (
@@ -76,7 +79,12 @@ export const ArtistCoinDetailsModal = ({
           <Flex direction='column' gap='m'>
             <Flex alignItems='center' gap='m'>
               {/* Token Icon */}
-              <TokenIcon logoURI={artistCoin?.logoUri} w={64} h={64} />
+              <TokenIcon
+                logoURI={artistCoin?.logoUri}
+                w={spacing['4xl']}
+                h={spacing['4xl']}
+                hex
+              />
               <Flex direction='column' gap='xs'>
                 <Text variant='title' size='l'>
                   {artistCoin?.name ?? messages.unknownToken}
@@ -158,7 +166,7 @@ export const ArtistCoinDetailsModal = ({
               label={messages.price}
               value={
                 artistCoin?.price
-                  ? `$${new FixedDecimal(artistCoin.price.toString(), 6).toLocaleString()}`
+                  ? formatCurrencyWithSubscript(artistCoin.price)
                   : messages.unknown
               }
               hasTooltip

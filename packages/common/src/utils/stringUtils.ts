@@ -1,3 +1,5 @@
+import { getTokenDecimalPlaces } from './decimal'
+
 /**
  * Converts a provided URL params object to a query string
  */
@@ -64,4 +66,32 @@ export const sanitizeNumericInput = (input: string): string => {
   }
 
   return cleaned
+}
+
+/**
+ * Formats a numeric input string with smart decimal precision based on value magnitude
+ */
+export const formatTokenInputWithSmartDecimals = (value: string): string => {
+  if (!value || value === '' || value === '.') {
+    return value
+  }
+
+  try {
+    const numericValue = parseFloat(value)
+    if (isNaN(numericValue) || numericValue <= 0) {
+      return value
+    }
+
+    const maxDecimals = getTokenDecimalPlaces(numericValue)
+
+    const parts = value.split('.')
+
+    if (parts.length === 2 && parts[1].length > maxDecimals) {
+      return `${parts[0]}.${parts[1].substring(0, maxDecimals)}`
+    }
+
+    return value
+  } catch {
+    return value
+  }
 }
