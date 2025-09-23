@@ -19,7 +19,6 @@ import {
 import { QRCodeComponent, BalanceSection } from 'app/components/core'
 import { AddressTile } from 'app/components/core/AddressTile'
 import Drawer from 'app/components/drawer/Drawer'
-import Skeleton from 'app/components/skeleton'
 import { useToast } from 'app/hooks/useToast'
 
 import { DrawerHeader } from '../drawer/DrawerHeader'
@@ -30,7 +29,7 @@ export const ReceiveTokensDrawer = () => {
   const { isOpen, onClose, data } = useReceiveTokensModal()
   const { toast } = useToast()
   const { mint } = data ?? {}
-  const { userBankAddress } = useUserbank(mint)
+  const { userBankAddress, loading: userBankLoading } = useUserbank(mint)
 
   const handleCopyAddress = useCallback(() => {
     if (userBankAddress) {
@@ -51,6 +50,32 @@ export const ReceiveTokensDrawer = () => {
     )
   }
 
+  if (userBankLoading || !userBankAddress) {
+    return (
+      <Drawer isOpen={isOpen} onClose={onClose}>
+        <Flex
+          direction='column'
+          justifyContent='center'
+          alignItems='center'
+          ph='l'
+          pv='xl'
+          gap='xl'
+          h={160}
+        >
+          <LoadingSpinner style={{ height: 32, width: 32 }} />
+          <Flex column gap='xs' alignItems='center'>
+            <Text variant='heading' size='l'>
+              {walletMessages.receiveTokensLoadingTitle}
+            </Text>
+            <Text variant='title' size='l' strength='weak'>
+              {walletMessages.receiveTokensLoadingSubtitle}
+            </Text>
+          </Flex>
+        </Flex>
+      </Drawer>
+    )
+  }
+
   return (
     <Drawer isOpen={isOpen} onClose={onClose} drawerHeader={renderHeader}>
       <Flex direction='column' gap='xl' ph='xl'>
@@ -64,18 +89,7 @@ export const ReceiveTokensDrawer = () => {
             alignItems='center'
             justifyContent='center'
           >
-            {userBankAddress ? (
-              <QRCodeComponent value={userBankAddress} size={QR_CODE_SIZE} />
-            ) : (
-              <Flex
-                alignItems='center'
-                justifyContent='center'
-                w={QR_CODE_SIZE}
-                h={QR_CODE_SIZE}
-              >
-                <LoadingSpinner />
-              </Flex>
-            )}
+            <QRCodeComponent value={userBankAddress} size={QR_CODE_SIZE} />
           </Flex>
           <Flex gap='xl' justifyContent='center' flex={1}>
             <Text variant='body' size='l'>
@@ -85,11 +99,7 @@ export const ReceiveTokensDrawer = () => {
         </Flex>
 
         {/* Address Tile */}
-        {userBankAddress ? (
-          <AddressTile address={userBankAddress} />
-        ) : (
-          <Skeleton height={58} />
-        )}
+        <AddressTile address={userBankAddress} />
 
         {/* Hint Section */}
         <Hint
@@ -106,12 +116,7 @@ export const ReceiveTokensDrawer = () => {
         </Hint>
 
         {/* Copy Button */}
-        <Button
-          variant='primary'
-          fullWidth
-          onPress={handleCopyAddress}
-          disabled={!userBankAddress}
-        >
+        <Button variant='primary' fullWidth onPress={handleCopyAddress}>
           {walletMessages.receiveTokensCopy}
         </Button>
       </Flex>
