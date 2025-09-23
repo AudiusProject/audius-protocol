@@ -19,23 +19,20 @@ export const TokenInfoRow = ({
   tooltipContent,
   variant = 'inline'
 }: TokenInfoRowProps) => {
-  const tooltipTrigger = (
+  const labelElement = (
     <Flex alignItems='center' gap='xs'>
       <Text variant='body' size='m' color='subdued'>
         {label}
       </Text>
-      {hasTooltip && <IconInfo size='s' color='subdued' />}
+      {hasTooltip && tooltipContent ? (
+        <Tooltip text={tooltipContent} mount='body'>
+          <IconInfo size='s' color='subdued' />
+        </Tooltip>
+      ) : (
+        <IconInfo size='s' color='subdued' />
+      )}
     </Flex>
   )
-
-  const labelElement =
-    hasTooltip && tooltipContent ? (
-      <Tooltip text={tooltipContent} mount='body'>
-        {tooltipTrigger}
-      </Tooltip>
-    ) : (
-      tooltipTrigger
-    )
 
   const valueElement =
     typeof value === 'string' ? (
