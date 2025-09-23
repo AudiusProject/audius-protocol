@@ -19,6 +19,7 @@ import { createCollapsibleTabNavigator } from 'app/components/top-tab-bar/create
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
+import { SkipButton } from '../../components/SkipButton'
 import { Heading, PageFooter } from '../../components/layout'
 import type { SignOnScreenParamList } from '../../types'
 import { useTrackScreen } from '../../utils/useTrackScreen'
@@ -64,7 +65,7 @@ export const SelectArtistsScreen = () => {
     // Follow selected artists
     dispatch(addFollowArtists(selectedArtists))
     dispatch(completeFollowArtists())
-    // This call is what eventually triggers the RootScreen to redirect to the home page (via conditional rendering)
+
     dispatch(finishSignUp())
     if (accountCreationStatus === EditingStatus.LOADING) {
       navigation.navigate('AccountLoading')
@@ -93,6 +94,7 @@ export const SelectArtistsScreen = () => {
             disabled: selectedArtists.length < 3,
             onPress: handleSubmit
           }}
+          prefix={<SkipButton />}
           postfix={
             <Text variant='body'>
               {selectArtistsPageMessages.selected} {selectedArtists.length || 0}

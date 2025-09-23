@@ -25,6 +25,7 @@ export const BuySellModal = () => {
   const { isOpen, onClose, data } = useBuySellModal()
   const { ticker } = data
   const { onOpen: openAddCashModal } = useAddCashModal()
+  const [resetState, setResetState] = useState<(() => void) | null>(null)
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
@@ -48,8 +49,10 @@ export const BuySellModal = () => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      onClosed={resetState ?? undefined}
       size='medium'
       zIndex={zIndex.BUY_SELL_MODAL}
+      dismissOnClickOutside={modalScreen !== 'confirm'}
     >
       <ModalHeader
         onClose={onClose}
@@ -79,6 +82,7 @@ export const BuySellModal = () => {
           onScreenChange={setModalScreen}
           onLoadingStateChange={setIsFlowLoading}
           initialTicker={ticker}
+          setResetState={setResetState}
         />
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (

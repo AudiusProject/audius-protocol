@@ -43,6 +43,7 @@ type BuySellFlowProps = {
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
   initialTicker?: string
+  setResetState: (resetState: () => void) => void
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
@@ -51,7 +52,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     openAddCashModal,
     onScreenChange,
     onLoadingStateChange,
-    initialTicker
+    initialTicker,
+    setResetState
   } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
@@ -383,6 +385,22 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     setHasAttemptedSubmit(false)
   }, [activeTab])
 
+  useEffect(() => {
+    setResetState(() => {
+      resetTransactionData()
+      resetSuccessDisplayData()
+      setCurrentScreen('input')
+      // Clear all tab input values on completion
+      setTabInputValues({ buy: '', sell: '', convert: '' })
+    })
+  }, [
+    setResetState,
+    resetTransactionData,
+    resetSuccessDisplayData,
+    setCurrentScreen,
+    setTabInputValues
+  ])
+
   const isTransactionInvalid = !transactionData?.isValid
 
   const displayErrorMessage = useMemo(() => {
@@ -534,17 +552,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
         style={{ display: currentScreen === 'success' ? 'flex' : 'none' }}
       >
         {currentScreen === 'success' && successDisplayData ? (
-          <TransactionSuccessScreen
-            {...successDisplayData}
-            onDone={() => {
-              onClose()
-              resetTransactionData()
-              resetSuccessDisplayData()
-              setCurrentScreen('input')
-              // Clear all tab input values on completion
-              setTabInputValues({ buy: '', sell: '', convert: '' })
-            }}
-          />
+          <TransactionSuccessScreen {...successDisplayData} onDone={onClose} />
         ) : null}
       </Flex>
     </>

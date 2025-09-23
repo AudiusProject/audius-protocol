@@ -28,8 +28,10 @@ export const SellTab = ({
   const [selectedInputToken, setSelectedInputToken] = useState(baseToken)
 
   useEffect(() => {
-    setSelectedInputToken(baseToken)
-  }, [baseToken])
+    setSelectedInputToken((prev) =>
+      prev?.symbol === baseToken.symbol ? prev : baseToken
+    )
+  }, [baseToken.symbol, baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useArtistCoin(selectedInputToken.address)

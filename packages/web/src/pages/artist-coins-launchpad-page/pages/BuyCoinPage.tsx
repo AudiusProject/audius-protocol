@@ -50,7 +50,8 @@ const messages = {
   errors: {
     quoteError: 'Failed to get a quote. Please try again.',
     valueTooHigh: 'Value is too high. Please enter a lower value.',
-    insufficientBalance: 'Insufficient $AUDIO balance.'
+    insufficientBalance: 'Insufficient $AUDIO balance.',
+    transactionFailed: 'Transaction failed. Please try again.'
   },
   createCoin: 'Create Coin',
   max: 'MAX',
@@ -64,7 +65,11 @@ const FORM_INPUT_DECIMALS = 8
 
 const INPUT_DEBOUNCE_TIME = 400
 
-export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
+export const BuyCoinPage = ({
+  onContinue,
+  onBack,
+  submitError
+}: PhasePageProps & { submitError: boolean }) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue, errors, validateForm } =
     useFormikContext<SetupFormValues>()
@@ -195,6 +200,13 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     },
     [setFieldValue, debouncedReceiveAmountChange]
   )
+
+  const submitFooterErrorText = firstBuyQuoteError
+    ? messages.errors.quoteError
+    : submitError
+      ? messages.errors.transactionFailed
+      : undefined
+
   return (
     <>
       {isBuyModalOpen ? (
@@ -326,7 +338,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         onBack={handleBack}
         submit
         continueText={messages.createCoin}
-        errorText={firstBuyQuoteError ? messages.errors.quoteError : undefined}
+        errorText={submitFooterErrorText}
       />
     </>
   )

@@ -60,7 +60,7 @@ export const useFormattedTokenBalance = (
   const tokenDollarValue = useMemo(() => {
     if (!tokenPrice) return '$0.00'
 
-    const priceNumber = Number(new FixedDecimal(tokenPrice).toString())
+    const priceNumber = Number(tokenPrice)
     return formatCurrencyWithSubscript(priceNumber)
   }, [tokenPrice])
 

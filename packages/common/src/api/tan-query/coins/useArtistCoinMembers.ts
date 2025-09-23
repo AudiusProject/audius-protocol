@@ -73,6 +73,7 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
     },
     queryFn: async ({ pageParam }) => {
       if (!mint) return []
+      if (!artistCoin) return []
 
       const sdk = await audiusSdk()
 
@@ -86,7 +87,7 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
       const response = await sdk.coins.getCoinMembers(params)
 
       const members = (response.data ?? []).map((member) => {
-        const decimals = artistCoin?.decimals
+        const decimals = artistCoin.decimals
         const balanceFD = new FixedDecimal(
           BigInt(member.balance.toString()),
           decimals
@@ -106,6 +107,6 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
       return members
     },
     select: options?.select ?? ((data) => data.pages.flat() as TResult),
-    enabled: options?.enabled !== false && !!mint
+    enabled: options?.enabled !== false && !!mint && !!artistCoin
   })
 }

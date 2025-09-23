@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
@@ -124,6 +124,7 @@ const renderVolume24hCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m'>
+      {walletMessages.dollarSign}
       {formatCount(coin.v24hUSD)}
     </Text>
   )
@@ -178,7 +179,8 @@ const tableColumnMap = {
     Header: 'Coin',
     accessor: 'name',
     Cell: renderTokenNameCell,
-    width: 200,
+    width: 300,
+    minWidth: 300,
     disableSortBy: true,
     align: 'left'
   },
@@ -189,6 +191,7 @@ const tableColumnMap = {
     Cell: renderPriceCell,
     disableSortBy: false,
     align: 'right',
+    width: 100,
     sorter: numericSorter('price')
   },
   volume24h: {
@@ -217,6 +220,7 @@ const tableColumnMap = {
     Cell: renderCreatedDateCell,
     disableSortBy: false,
     align: 'right',
+    width: 80,
     sorter: dateSorter('createdAt')
   },
   holders: {
@@ -226,6 +230,7 @@ const tableColumnMap = {
     Cell: renderHoldersCell,
     disableSortBy: false,
     align: 'right',
+    width: 80,
     sorter: numericSorter('holder')
   },
   buy: {
@@ -233,7 +238,8 @@ const tableColumnMap = {
     accessor: 'buy',
     Cell: renderBuyCell,
     disableSortBy: true,
-    align: 'right'
+    align: 'right',
+    width: 80
   }
 }
 
@@ -264,6 +270,8 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const mainContentRef = useMainContentRef()
   const navigate = useNavigate()
   const { onOpen: openBuySellModal } = useBuySellModal()
+  const tableRef = useRef<HTMLDivElement>(null)
+  const [hiddenColumns, setHiddenColumns] = useState<string[] | null>(null)
   const [sortMethod, setSortMethod] = useState<GetCoinsSortMethodEnum>(
     GetCoinsSortMethodEnum.MarketCap
   )
@@ -282,6 +290,44 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   const coins = coinsData?.filter(
     (coin) => coin.mint !== env.WAUDIO_MINT_ADDRESS
   )
+
+  // Watch table width and hide columns accordingly
+  useEffect(() => {
+    const updateColumnVisibility = () => {
+      if (tableRef.current) {
+        const width = tableRef.current.offsetWidth
+        if (width < 550) {
+          setHiddenColumns([
+            tableColumnMap.volume24h.id,
+            tableColumnMap.marketCap.id,
+            tableColumnMap.createdDate.id,
+            tableColumnMap.holders.id
+          ])
+        } else if (width < 650) {
+          setHiddenColumns([
+            tableColumnMap.marketCap.id,
+            tableColumnMap.createdDate.id,
+            tableColumnMap.holders.id
+          ])
+        } else if (width < 720) {
+          setHiddenColumns([
+            tableColumnMap.createdDate.id,
+            tableColumnMap.holders.id
+          ])
+        } else if (width < 790) {
+          setHiddenColumns([tableColumnMap.holders.id])
+        } else {
+          setHiddenColumns(null)
+        }
+      }
+    }
+    updateColumnVisibility()
+    const resizeObserver = new ResizeObserver(updateColumnVisibility)
+    if (tableRef.current) {
+      resizeObserver.observe(tableRef.current)
+    }
+    return () => resizeObserver.disconnect()
+  }, [])
 
   const fetchMore = useCallback((offset: number) => {
     setPage(Math.floor(offset / ARTIST_COINS_BATCH_SIZE))
@@ -327,8 +373,10 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
       ...baseColumns.buy,
       Cell: (cellInfo: CoinCell) => renderBuyCell(cellInfo, handleBuy)
     }
-    return Object.values(baseColumns)
-  }, [handleBuy])
+    return Object.values(baseColumns).filter(
+      (column) => !hiddenColumns?.includes(column.id)
+    )
+  }, [handleBuy, hiddenColumns])
 
   if (isPending) {
     return (
@@ -362,17 +410,19 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   }
 
   return (
-    <Table
-      columns={columns}
-      data={coins}
-      isVirtualized
-      onSort={onSort}
-      onClickRow={handleRowClick}
-      isEmptyRow={isEmptyRow}
-      fetchMore={fetchMore}
-      fetchBatchSize={ARTIST_COINS_BATCH_SIZE}
-      tableHeaderClassName={styles.tableHeader}
-      scrollRef={mainContentRef}
-    />
+    <Flex ref={tableRef}>
+      <Table
+        columns={columns}
+        data={coins}
+        isVirtualized
+        onSort={onSort}
+        onClickRow={handleRowClick}
+        isEmptyRow={isEmptyRow}
+        fetchMore={fetchMore}
+        fetchBatchSize={ARTIST_COINS_BATCH_SIZE}
+        tableHeaderClassName={styles.tableHeader}
+        scrollRef={mainContentRef}
+      />
+    </Flex>
   )
 }

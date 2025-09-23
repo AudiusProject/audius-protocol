@@ -34,7 +34,6 @@ import {
   PageFooter,
   ScrollView
 } from '../components/layout'
-import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } = route
 
@@ -67,7 +66,6 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
-  const isFastReferral = useFastReferral()
   const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +77,7 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
+
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
@@ -259,7 +258,7 @@ export const SelectArtistsPage = () => {
                 disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
-              prefix={isFastReferral ? <SkipButton /> : null}
+              prefix={<SkipButton />}
               postfix={
                 <Text variant='body'>
                   {selectArtistsPageMessages.selected}{' '}
