@@ -32,10 +32,8 @@ export const addAppInfoMiddleware = ({
     pre: async (context: RequestContext): Promise<FetchParams> => {
       // If an app name is not provided, fetch the name from the dev app
       if (!providedAppName) {
-        const middleware = [services.discoveryNodeSelector.createMiddleware()]
         const apiClientConfig = new Configuration({
-          fetchApi: fetch,
-          middleware
+          fetchApi: fetch
         })
         const developerApps = new DeveloperAppsApi(
           apiClientConfig,

@@ -8,18 +8,12 @@ import {
 import { z } from 'zod'
 
 import type { Prettify } from '../../utils/prettify'
-import { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 
 import type { SolanaRelay } from './SolanaRelay'
 
 export type SolanaWalletAdapter = WalletAdapterProps
 
-export type SolanaConfig = {
-  /**
-   * Selector that finds a healthy discovery node.
-   */
-  discoveryNodeSelector: DiscoveryNodeSelectorService
-}
+export type SolanaConfig = {}
 
 export type SolanaRelayService = SolanaRelay
 

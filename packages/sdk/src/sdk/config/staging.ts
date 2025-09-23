@@ -8,13 +8,6 @@ export const stagingConfig: SdkServicesConfig = {
   "network": {
     "minVersion": "0.6.0",
     "apiEndpoint": "https://api.staging.audius.co",
-    "discoveryNodes": [
-      {
-        "endpoint": "https://discoveryprovider.staging.audius.co",
-        "ownerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA",
-        "delegateOwnerWallet": "0x8fcFA10Bd3808570987dbb5B1EF4AB74400FbfDA"
-      }
-    ],
     "storageNodes": [
       {
         "endpoint": "https://creatornode12.staging.audius.co",
