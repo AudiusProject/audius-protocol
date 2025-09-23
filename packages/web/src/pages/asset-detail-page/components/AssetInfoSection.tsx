@@ -17,7 +17,8 @@ import {
   IconGift,
   Paper,
   PlainButton,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
@@ -34,6 +35,8 @@ const messages = coinDetailsMessages.coinInfo
 const BANNER_HEIGHT = 120
 
 const AssetInfoSectionSkeleton = () => {
+  const theme = useTheme()
+
   return (
     <Paper
       borderRadius='l'
@@ -47,7 +50,7 @@ const AssetInfoSectionSkeleton = () => {
         alignItems='flex-start'
         alignSelf='stretch'
         h={BANNER_HEIGHT}
-        css={{ backgroundColor: '#f0f0f0' }}
+        css={{ backgroundColor: theme.color.neutral.n100 }}
       >
         <Flex
           direction='column'
@@ -112,6 +115,7 @@ type BannerSectionProps = {
 
 const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
+  const theme = useTheme()
 
   const userId = coin?.ownerId
     ? (decodeHashId(coin.ownerId) ?? undefined)
@@ -130,7 +134,7 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
         alignItems='flex-start'
         alignSelf='stretch'
         h={BANNER_HEIGHT}
-        css={{ backgroundColor: '#f0f0f0' }}
+        css={{ backgroundColor: theme.color.neutral.n100 }}
       >
         <Flex
           direction='column'
