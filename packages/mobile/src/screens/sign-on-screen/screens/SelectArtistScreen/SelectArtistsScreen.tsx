@@ -19,6 +19,7 @@ import { createCollapsibleTabNavigator } from 'app/components/top-tab-bar/create
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
+import { SkipButton } from '../../components/SkipButton'
 import { Heading, PageFooter } from '../../components/layout'
 import { useFastReferral } from '../../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../../types'
@@ -107,6 +108,7 @@ export const SelectArtistsScreen = () => {
             disabled: selectedArtists.length < 3,
             onPress: handleSubmit
           }}
+          prefix={<SkipButton />}
           postfix={
             <Text variant='body'>
               {selectArtistsPageMessages.selected} {selectedArtists.length || 0}

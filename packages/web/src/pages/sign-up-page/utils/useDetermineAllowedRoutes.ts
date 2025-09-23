@@ -67,13 +67,14 @@ export const useDetermineAllowedRoute = () => {
       // At this point their identity account is either fully created or being created in the background
       // Either way the user can't go back any more
       allowedRoutes = [SignUpPath.selectGenres]
+      // Always allow loading step as users can skip genres and artists
+      allowedRoutes.push(SignUpPath.loading)
 
       if (isFastReferral) {
         allowedRoutes.push(SignUpPath.selectArtists)
         allowedRoutes.push(SignUpPath.appCta)
         allowedRoutes.push(SignUpPath.completedRedirect)
         allowedRoutes.push(SignUpPath.completedReferrerRedirect)
-        allowedRoutes.push(SignUpPath.loading)
       }
 
       // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
@@ -90,8 +91,6 @@ export const useDetermineAllowedRoute = () => {
             isAccountComplete
           ) {
             allowedRoutes.push(SignUpPath.completedRedirect)
-          } else {
-            allowedRoutes.push(SignUpPath.loading)
           }
         }
       }

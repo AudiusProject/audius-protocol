@@ -11,20 +11,14 @@ import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  Box,
-  Flex,
-  Paper,
-  SelectablePill,
-  Button
-} from '@audius/harmony-native'
+import { Box, Flex, Paper, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
+import { SkipButton } from '../components/SkipButton'
 import { Heading, PageFooter, gutterSize } from '../components/layout'
-import { useFastReferral } from '../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
@@ -100,7 +94,6 @@ const SelectGenresFieldArray = () => {
 export const SelectGenresScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignOnScreenParamList>()
-  const isFastReferral = useFastReferral()
 
   useEffectOnce(() => {
     dispatch(setFinishedPhase1(true))
@@ -114,10 +107,6 @@ export const SelectGenresScreen = () => {
     },
     [dispatch, navigation]
   )
-
-  const handleSkip = useCallback(() => {
-    navigation.navigate('SelectArtists')
-  }, [navigation])
 
   return (
     <Formik
@@ -140,15 +129,7 @@ export const SelectGenresScreen = () => {
             </Flex>
           </Paper>
         </ScrollView>
-        <PageFooter
-          prefix={
-            isFastReferral ? (
-              <Button variant='secondary' onPress={handleSkip}>
-                Skip
-              </Button>
-            ) : null
-          }
-        />
+        <PageFooter prefix={<SkipButton />} />
       </View>
     </Formik>
   )

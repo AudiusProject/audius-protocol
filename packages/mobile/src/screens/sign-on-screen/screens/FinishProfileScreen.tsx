@@ -23,11 +23,10 @@ import type {
   NativeSyntheticEvent,
   TextInputFocusEventData
 } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Paper, useTheme, Text, Flex } from '@audius/harmony-native'
+import { Paper, useTheme, Flex } from '@audius/harmony-native'
 import { ScrollView } from 'app/components/core'
 import { HarmonyTextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -41,13 +40,11 @@ import { useFastReferral } from '../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
-const AnimatedText = Animated.createAnimatedComponent(Text)
-
 const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
 type FinishProfileValues = {
   displayName: string
-  profileImage: Image
+  profileImage?: Image
   coverPhoto?: Image
 }
 
@@ -76,10 +73,12 @@ export const FinishProfileScreen = () => {
     [dispatch, isFastReferral, navigation]
   )
 
+  const { value: handle } = useSelector(getHandleField)
+  const displayNameValue = savedDisplayName || handle || ''
   const initialValues = {
-    profileImage: savedProfileImage || ({} as Image),
-    coverPhoto: savedCoverPhoto || ({} as Image),
-    displayName: savedDisplayName
+    profileImage: savedProfileImage || undefined,
+    coverPhoto: savedCoverPhoto || undefined,
+    displayName: displayNameValue
   }
 
   const saveDisplayName = useCallback(
@@ -111,6 +110,7 @@ export const FinishProfileScreen = () => {
                 placeholder={finishProfilePageMessages.inputPlaceholder}
                 maxLength={MAX_DISPLAY_NAME_LENGTH}
                 autoComplete='off'
+                value={displayNameValue}
                 onChange={saveDisplayName}
                 style={css({
                   padding: spacing.l,
@@ -120,7 +120,7 @@ export const FinishProfileScreen = () => {
             </Paper>
           </Flex>
         </ScrollView>
-        <PageFooter prefix={<UploadProfilePhotoHelperText />} />
+        <PageFooter requireDirty={false} />
       </Page>
     </Formik>
   )
@@ -183,25 +183,5 @@ const AccountHeaderField = () => {
       handle={handle}
       isVerified={isVerified}
     />
-  )
-}
-
-const UploadProfilePhotoHelperText = () => {
-  const [{ value: displayName }, { touched }] = useField('displayName')
-  const [{ value: profileImage }] = useField<Image>('profileImage')
-  const isVisible = displayName && touched && isEmpty(profileImage)
-  const { motion } = useTheme()
-
-  if (!isVisible) return null
-
-  return (
-    <AnimatedText
-      variant='body'
-      textAlign='center'
-      entering={FadeIn.duration(motion.calm.duration)}
-      exiting={FadeOut.duration(motion.calm.duration)}
-    >
-      {finishProfilePageMessages.uploadProfilePhoto}
-    </AnimatedText>
   )
 }

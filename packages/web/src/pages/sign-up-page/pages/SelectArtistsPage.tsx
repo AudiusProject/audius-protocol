@@ -263,7 +263,7 @@ export const SelectArtistsPage = () => {
                 disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
-              prefix={isFastReferral ? <SkipButton /> : null}
+              prefix={<SkipButton />}
               postfix={
                 <Text variant='body'>
                   {selectArtistsPageMessages.selected}{' '}

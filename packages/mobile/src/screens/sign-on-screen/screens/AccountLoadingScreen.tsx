@@ -2,11 +2,7 @@
 
 import { useEffect } from 'react'
 
-import {
-  getStatus,
-  getAccountReady
-} from '@audius/web/src/common/store/pages/signon/selectors'
-import { EditingStatus } from '@audius/web/src/common/store/pages/signon/types'
+import { getAccountReady } from '@audius/web/src/common/store/pages/signon/selectors'
 import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
@@ -14,24 +10,18 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { Heading, Page } from '../components/layout'
-import { useFastReferral } from '../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../types'
 
 const messages = {
   heading: 'Your Account is Almost Ready to Rock 🤘',
-  description: "We're just finishing up a few things..."
+  description: "We're just finishing up a few things...",
+  continueButton: 'Continue to Audius'
 }
 
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const AccountLoadingScreen = () => {
   const navigation = useNavigation<SignOnScreenParamList>()
-  const isFastReferral = useFastReferral()
-  const accountReady = useSelector(getAccountReady)
-  const accountCreationStatus = useSelector(getStatus)
-
-  const isAccountReady = isFastReferral
-    ? accountReady
-    : accountCreationStatus === EditingStatus.SUCCESS
+  const isAccountReady = useSelector(getAccountReady)
 
   useEffect(() => {
     if (isAccountReady) {
