@@ -32,15 +32,11 @@ export const coinDetailsMessages = {
     volume24hr: 'Volume (24hr)',
     totalTransfers: 'Total Transfers',
     unableToLoad: 'Unable to load insights',
-    graduationProgress: {
-      graduated: 'Graduated',
-      tooltip: {
-        preGraduation:
-          'Until graduation, the price of this coin is tied to the controlled distribution of supply.',
-        postGraduation:
-          'This coin has graduated. The price is determined by the open market.'
-      }
-    }
+    graduated: 'Graduated',
+    preGraduation:
+      'Until graduation, the price of this coin is tied to the controlled distribution of supply.',
+    postGraduation:
+      'This coin has graduated. The price is determined by the open market.'
   },
   coinLeaderboard: {
     title: 'Members Leaderboard',

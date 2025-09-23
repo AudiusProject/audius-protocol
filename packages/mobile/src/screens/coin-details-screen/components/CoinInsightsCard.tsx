@@ -18,6 +18,8 @@ import { isIos } from 'app/utils/os'
 
 import { GraduationProgressBar } from './GraduationProgressBar'
 
+const messages = coinDetailsMessages.coinInsights
+
 const GraduatedPill = () => {
   return (
     <Flex
@@ -37,7 +39,7 @@ const GraduatedPill = () => {
         textTransform='uppercase'
         style={{ marginTop: isIos ? 2 : 0 }} // Bugfix for iOS label variant text alignment
       >
-        {coinDetailsMessages.coinInsights.graduationProgress.graduated}
+        {messages.graduated}
       </Text>
     </Flex>
   )
@@ -78,11 +80,7 @@ const GraduationMetricRow = ({
           <TooltipInfoIcon
             title='Graduation Progress'
             message={
-              hasGraduated
-                ? coinDetailsMessages.coinInsights.graduationProgress.tooltip
-                    .postGraduation
-                : coinDetailsMessages.coinInsights.graduationProgress.tooltip
-                    .preGraduation
+              hasGraduated ? messages.postGraduation : messages.preGraduation
             }
           />
         </Flex>
@@ -175,7 +173,7 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
         w='100%'
       >
         <Text variant='heading' size='s' color='heading'>
-          {coinDetailsMessages.coinInsights.title}
+          {messages.title}
         </Text>
         <IconButton
           icon={IconKebabHorizontal}
@@ -187,7 +185,7 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
       {error || !coin ? (
         <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
           <Text variant='body' color='subdued'>
-            {coinDetailsMessages.coinInsights.unableToLoad}
+            {messages.unableToLoad}
           </Text>
         </Flex>
       ) : (

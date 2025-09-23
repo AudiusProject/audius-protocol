@@ -1,4 +1,4 @@
-import { Box } from '@audius/harmony'
+import { Box, useTheme } from '@audius/harmony'
 
 interface GraduationProgressBarProps {
   value: number
@@ -11,6 +11,7 @@ export const GraduationProgressBar = ({
   min = 0,
   max = 100
 }: GraduationProgressBarProps) => {
+  const theme = useTheme()
   const percentage = Math.max(
     0,
     Math.min(100, ((value - min) / (max - min)) * 100)
@@ -32,7 +33,7 @@ export const GraduationProgressBar = ({
         h='100%'
         borderRadius='3xl'
         css={{
-          background: 'var(--harmony-gradient)',
+          background: theme.color.background.gradient,
           transition: 'width 300ms ease-out'
         }}
       />

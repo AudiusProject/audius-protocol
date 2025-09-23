@@ -75,7 +75,7 @@ const GraduatedPill = () => {
       }}
     >
       <Text variant='label' size='s' color='accent' textTransform='uppercase'>
-        {messages.graduationProgress.graduated}
+        {messages.graduated}
       </Text>
     </Flex>
   )
@@ -95,9 +95,7 @@ const GraduationProgressMetricRowComponent = ({
   const tooltipContent = (
     <Flex direction='column' gap='s' p='s'>
       <Text variant='body' size='s'>
-        {hasGraduated
-          ? messages.graduationProgress.tooltip.postGraduation
-          : messages.graduationProgress.tooltip.preGraduation}
+        {hasGraduated ? messages.postGraduation : messages.preGraduation}
       </Text>
     </Flex>
   )

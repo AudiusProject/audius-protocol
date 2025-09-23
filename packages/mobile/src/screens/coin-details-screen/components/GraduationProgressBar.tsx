@@ -20,7 +20,12 @@ export const GraduationProgressBar = ({
   )
 
   return (
-    <Box w='100%' h={4} borderRadius='3xl' backgroundColor='surface2'>
+    <Box
+      w='100%'
+      h={spacing.unit1}
+      borderRadius='3xl'
+      backgroundColor='surface2'
+    >
       <LinearGradient
         {...color.special.gradient}
         start={{ x: 0, y: 0.5 }}
