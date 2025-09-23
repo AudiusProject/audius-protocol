@@ -7,11 +7,10 @@ import {
   SLIPPAGE_BPS,
   useArtistCoin,
   useCurrentAccountUser,
-  useSwapTokens,
-  useUser,
-  useUserTracksByHandle
+  useSwapTokens
 } from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
+import { TQTrack } from '~/api/tan-query/models'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 import { isContentTokenGated } from '~/models'
 
@@ -57,15 +56,15 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
     ? HashId.parse(quoteCoin?.ownerId)
     : null
 
-  const { data: baseUser } = useUser(baseOwnerId)
-  const { data: quoteUser } = useUser(quoteOwnerId)
+  const baseOwnerTracks = queryClient
+    .getQueriesData({ queryKey: [QUERY_KEYS.track] })
+    .filter(([_, track]) => (track as TQTrack)?.owner_id === baseOwnerId)
+    .map(([_, track]) => track as TQTrack)
 
-  const { data: baseUserTracks } = useUserTracksByHandle({
-    handle: baseUser?.handle
-  })
-  const { data: quoteUserTracks } = useUserTracksByHandle({
-    handle: quoteUser?.handle
-  })
+  const quoteOwnerTracks = queryClient
+    .getQueriesData({ queryKey: [QUERY_KEYS.track] })
+    .filter(([_, track]) => (track as TQTrack)?.owner_id === quoteOwnerId)
+    .map(([_, track]) => track as TQTrack)
 
   const MAX_RETRIES = 3
   const RETRY_DELAY = 2000
@@ -131,8 +130,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       }
 
       // Invalidate track queries to provide track access if the user has traded the artist coin
-      if (baseUserTracks?.length) {
-        baseUserTracks.forEach((track) => {
+      if (baseOwnerTracks?.length) {
+        baseOwnerTracks.forEach((track) => {
           if (isContentTokenGated(track.stream_conditions)) {
             queryClient.invalidateQueries({
               queryKey: [QUERY_KEYS.track, track.track_id]
@@ -140,8 +139,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
           }
         })
       }
-      if (quoteUserTracks?.length) {
-        quoteUserTracks.forEach((track) => {
+      if (quoteOwnerTracks?.length) {
+        quoteOwnerTracks.forEach((track) => {
           if (isContentTokenGated(track.stream_conditions)) {
             queryClient.invalidateQueries({
               queryKey: [QUERY_KEYS.track, track.track_id]
