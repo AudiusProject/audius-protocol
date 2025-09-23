@@ -149,8 +149,9 @@ const SuccessState = ({
               p='m'
               gap='m'
               w='100%'
-              borderRadius='s'
+              borderRadius='m'
               border='default'
+              shadow='flat'
               backgroundColor='surface1'
             >
               <Flex alignItems='center' gap='m' w='100%'>
@@ -327,7 +328,7 @@ export const LaunchpadSubmitModal = ({
     ticker: coinSymbol,
     logoUri,
     amountUi: receiveAmount,
-    amountUsd: receiveAmount
+    amountUsd: values.usdcValue
   }
   const numTxs = payAmount ? 2 : 1
   return (
