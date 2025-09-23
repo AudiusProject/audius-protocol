@@ -100,7 +100,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
   const recentCommentsFlag = useFeatureFlag(FeatureFlags.RECENT_COMMENTS)
   const isRecentCommentsEnabled =
     recentCommentsFlag.isLoaded && recentCommentsFlag.isEnabled
-  const isArtistCoinsEnabled = useFeatureFlag(FeatureFlags.ARTIST_COINS)
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
   const showArtistCoinCTA =
     accountUserId !== userId &&
     !isArtistCoinLoading &&
