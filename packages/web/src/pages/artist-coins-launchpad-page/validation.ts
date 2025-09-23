@@ -24,7 +24,8 @@ export const FIELDS = {
   coinSymbol: 'coinSymbol',
   coinImage: 'coinImage',
   payAmount: 'payAmount',
-  receiveAmount: 'receiveAmount'
+  receiveAmount: 'receiveAmount',
+  usdcValue: 'usdcValue'
 }
 
 const MAX_COIN_SYMBOL_LENGTH = 10
