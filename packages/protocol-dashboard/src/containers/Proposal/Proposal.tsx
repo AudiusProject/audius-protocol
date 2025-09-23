@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 
 import Markdown from 'react-markdown'
 import { useParams } from 'react-router-dom'
-import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
+import remarkGfm from 'remark-gfm'
 
 import Loading from 'components/Loading'
 import Page from 'components/Page'
@@ -72,21 +72,26 @@ const Proposal = () => {
         </div>
         {proposal ? (
           <div className={styles.descriptionBody}>
-            <Markdown 
+            <Markdown
               remarkPlugins={[remarkGfm, remarkBreaks]}
               components={{
                 a: ({ node, ...props }) => (
-                  <a {...props} target="_blank" rel="noopener noreferrer" />
+                  <a {...props} target='_blank' rel='noopener noreferrer' />
                 ),
                 ul: ({ node, ...props }) => (
                   <ul
-                    style={{ listStyleType: "disc", paddingLeft: "1.5rem", marginLeft: "1rem", marginBottom: "1rem" }}
+                    style={{
+                      listStyleType: 'disc',
+                      paddingLeft: '1.5rem',
+                      marginLeft: '1rem',
+                      marginBottom: '1rem'
+                    }}
                     {...props}
                   />
                 ),
                 p: ({ node, ...props }) => (
-                  <p style={{ marginBottom: "1rem" }} {...props} />
-                ),
+                  <p style={{ marginBottom: '1rem' }} {...props} />
+                )
               }}
             >
               {proposal.description || ''}
