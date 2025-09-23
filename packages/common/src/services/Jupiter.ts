@@ -1,7 +1,6 @@
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Configuration,
-  createJupiterApiClient,
   Instruction,
   QuoteResponse,
   SwapApi,
@@ -26,7 +25,7 @@ export const DEFAULT_MAX_ACCOUNTS = 20
 export const MAX_ALLOWED_ACCOUNTS = 64
 const JUP_BASE_PATH = 'https://jup.audius.co/swap/v1'
 
-let _jup: ReturnType<typeof createJupiterApiClient>
+let _jup: SwapApi
 
 const initJupiter = () => {
   try {
