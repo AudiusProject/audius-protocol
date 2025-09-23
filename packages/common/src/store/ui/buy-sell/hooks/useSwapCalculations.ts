@@ -48,6 +48,7 @@ export const useSwapCalculations = ({
     inputDecimals: inputTokenDecimals,
     outputDecimals: outputTokenDecimals
   })
+  const { setOutputAmount } = calculator
 
   // Token change handler for managing token switches
   const tokenHandler = useTokenChangeHandler({
@@ -91,10 +92,10 @@ export const useSwapCalculations = ({
   useEffect(() => {
     if (!exchangeRate || exchangeRate <= 0) {
       if (stateMachine.source !== 'output') {
-        calculator.setOutputAmount('')
+        setOutputAmount('')
       }
     }
-  }, [exchangeRate, stateMachine.source, calculator])
+  }, [exchangeRate, stateMachine.source, setOutputAmount])
 
   // Handle input changes from user
   const handleInputChange = useCallback(

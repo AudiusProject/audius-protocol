@@ -36,8 +36,10 @@ export const BuyTab = ({
 
   // Sync selectedOutputToken with baseToken when tokenPair changes
   useEffect(() => {
-    setSelectedOutputToken(baseToken)
-  }, [baseToken])
+    setSelectedOutputToken((prev) =>
+      prev?.symbol === baseToken.symbol ? prev : baseToken
+    )
+  }, [baseToken.symbol, baseToken])
 
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useArtistCoin(selectedOutputToken.address)
