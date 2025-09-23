@@ -369,12 +369,10 @@ export const LaunchpadPage = () => {
       <Form>
         <LaunchpadSubmitModal
           isPending={isPending}
-          isSuccess={isLaunchCoinFinished && !launchCoinResponse.isError}
           isError={isError}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           mintAddress={launchCoinResponse?.newMint}
-          logoUri={launchCoinResponse?.logoUri}
           errorMetadata={launchCoinResponse?.errorMetadata}
         />
         <LaunchpadPageContent submitError={!!isPoolCreateError} />
