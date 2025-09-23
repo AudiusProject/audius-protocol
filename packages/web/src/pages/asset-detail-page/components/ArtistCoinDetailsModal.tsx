@@ -1,4 +1,5 @@
 import { useArtistCoin } from '@audius/common/api'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Modal,
@@ -158,7 +159,7 @@ export const ArtistCoinDetailsModal = ({
               label={messages.price}
               value={
                 artistCoin?.price
-                  ? `$${new FixedDecimal(artistCoin.price.toString(), 6).toLocaleString()}`
+                  ? formatCurrencyWithSubscript(artistCoin.price)
                   : messages.unknown
               }
               hasTooltip

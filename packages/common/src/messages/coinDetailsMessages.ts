@@ -26,7 +26,7 @@ export const coinDetailsMessages = {
   },
   coinInsights: {
     title: 'Insights',
-    pricePerCoin: 'Price per coin',
+    pricePerCoin: 'Price',
     holdersOnAudius: 'Holders on Audius',
     uniqueHolders: 'Unique Holders',
     volume24hr: 'Volume (24hr)',

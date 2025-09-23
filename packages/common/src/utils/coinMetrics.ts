@@ -1,6 +1,6 @@
 import { Coin } from '@audius/sdk'
 
-import { formatCurrencyWithMax } from './decimal'
+import { formatCurrencyWithMax, formatCurrencyWithSubscript } from './decimal'
 import { formatCount } from './formatUtil'
 
 export type MetricData = {
@@ -13,7 +13,7 @@ export type MetricData = {
 }
 
 const messages = {
-  pricePerCoin: 'Price per coin',
+  pricePerCoin: 'Price',
   holdersOnAudius: 'Holders on Audius',
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
@@ -58,7 +58,7 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
     coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   const potentialMetrics = [
     createMetric(
-      formatCurrencyWithMax(price, CURRENCY_FORMAT_MAX),
+      formatCurrencyWithSubscript(price),
       messages.pricePerCoin,
       coin.priceChange24hPercent
     ),
