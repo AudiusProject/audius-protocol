@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { FixedDecimal } from '@audius/fixed-decimal'
 import { useFormik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -77,11 +76,7 @@ export const useTokenSwapForm = ({
 }: TokenSwapFormProps) => {
   // Get token price for USD-based limit calculations
   const { data: tokenPriceData } = useArtistCoin(inputToken.address)
-  const tokenPrice = tokenPriceData?.price
-    ? Number(
-        new FixedDecimal(tokenPriceData.price, inputToken.decimals).toString()
-      )
-    : null
+  const tokenPrice = tokenPriceData?.price ? Number(tokenPriceData.price) : null
 
   // Calculate min/max based on USD limits and current price
   const calculatedLimits = useMemo(() => {
