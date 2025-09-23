@@ -5,8 +5,11 @@ import {
   getWalletSolBalanceOptions,
   useConnectedWallets,
   useCurrentAccountUser,
-  useQueryContext
+  useQueryContext,
+  useSwapTokens,
+  SLIPPAGE_BPS
 } from '@audius/common/api'
+import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/shared/tokenConstants'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
 import { shortenSPLAddress } from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
@@ -43,7 +46,7 @@ const messages = {
 }
 
 const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
-  const [phase, setPhase] = useState(Phase.SPLASH)
+  const [phase, setPhase] = useState(Phase.BUY_COIN)
   const { resetForm, validateForm } = useFormikContext()
   const queryClient = useQueryClient()
   const queryContext = useQueryContext()
@@ -255,10 +258,17 @@ export const LaunchpadPage = () => {
     data: launchCoinResponse,
     isError: uncaughtLaunchCoinError
   } = useLaunchCoin()
+  const {
+    mutate: swapTokens,
+    status: swapStatus,
+    error: swapError,
+    data: swapData
+  } = useSwapTokens()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
+  const dispatch = useDispatch()
   const isPoolCreateError =
     launchCoinResponse?.isError &&
     !launchCoinResponse?.errorMetadata.poolCreateConfirmed
@@ -270,6 +280,26 @@ export const LaunchpadPage = () => {
       setIsModalOpen(false)
     }
   }, [isPoolCreateError])
+
+  // Handle swap results for first buy transaction
+  useEffect(() => {
+    if (swapStatus === 'success' && swapData) {
+      // Close modal on successful swap
+      setIsModalOpen(false)
+      dispatch(
+        toast({
+          content: 'First buy transaction completed successfully!'
+        })
+      )
+    } else if (swapStatus === 'error' && swapError) {
+      // Show error toast but keep modal open for retry
+      dispatch(
+        toast({
+          content: 'First buy transaction failed. Please try again.'
+        })
+      )
+    }
+  }, [swapStatus, swapData, swapError, dispatch])
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
@@ -287,20 +317,41 @@ export const LaunchpadPage = () => {
       const audioAmountBigNumber = formValues.payAmount
         ? wAUDIO(formValues.payAmount).value.toString()
         : undefined
-      launchCoin({
-        userId: user.user_id,
-        name: formValues.coinName,
-        symbol: formValues.coinSymbol,
-        image: formValues.coinImage!,
-        description: LAUNCHPAD_COIN_DESCRIPTION(
-          user.handle,
-          formValues.coinSymbol
-        ),
-        walletPublicKey: connectedWallet.address,
-        initialBuyAmountAudio: audioAmountBigNumber
-      })
+
+      // Check if we've already attempted to submit and created the pool already
+      if (launchCoinResponse?.errorMetadata.createPoolTx) {
+        // Pool already created, perform first buy transaction using swap
+        if (formValues.payAmount && launchCoinResponse.newMint) {
+          swapTokens({
+            inputMint: TOKEN_LISTING_MAP.AUDIO.address, // Pay with AUDIO
+            outputMint: launchCoinResponse.newMint, // Receive new coin
+            amountUi: parseFloat(formValues.payAmount),
+            slippageBps: SLIPPAGE_BPS
+          })
+        }
+      } else {
+        launchCoin({
+          userId: user.user_id,
+          name: formValues.coinName,
+          symbol: formValues.coinSymbol,
+          image: formValues.coinImage!,
+          description: LAUNCHPAD_COIN_DESCRIPTION(
+            user.handle,
+            formValues.coinSymbol
+          ),
+          walletPublicKey: connectedWallet.address,
+          initialBuyAmountAudio: audioAmountBigNumber
+        })
+      }
     },
-    [launchCoin, user, connectedWallets]
+    [
+      connectedWallets,
+      user,
+      launchCoinResponse?.errorMetadata.createPoolTx,
+      launchCoinResponse?.newMint,
+      launchCoin,
+      swapTokens
+    ]
   )
 
   return (
