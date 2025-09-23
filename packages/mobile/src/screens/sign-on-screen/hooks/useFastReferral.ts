@@ -8,6 +8,5 @@ export const useFastReferral = () => {
   const { isEnabled: isFastReferralEnabled } = useFeatureFlag(
     FeatureFlags.FAST_REFERRAL
   )
-  // Remove isMobile check to enable fast referral on all platforms
   return Boolean(hasReferrer && isFastReferralEnabled)
 }

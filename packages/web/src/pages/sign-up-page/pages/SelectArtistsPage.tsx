@@ -34,7 +34,6 @@ import {
   PageFooter,
   ScrollView
 } from '../components/layout'
-import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_APP_CTA_PAGE, SIGN_UP_COMPLETED_REDIRECT } = route
 
@@ -67,7 +66,6 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
-  const isFastReferral = useFastReferral()
   const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -80,16 +78,13 @@ export const SelectArtistsPage = () => {
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
 
-      if (isFastReferral) {
-        // In fast referral mode, navigate to app CTA instead of completing sign up
-        navigate(SIGN_UP_APP_CTA_PAGE)
-      } else if (isMobile) {
+      if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
         navigate(SIGN_UP_APP_CTA_PAGE)
       }
     },
-    [dispatch, isFastReferral, isMobile, navigate]
+    [dispatch, isMobile, navigate]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'

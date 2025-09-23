@@ -27,7 +27,6 @@ export const AccountLoadingScreen = () => {
     if (isAccountReady) {
       navigation.navigate('HomeStack', { screen: 'Trending' })
     }
-    // TODO: what to do in an error scenario? Any way to recover to a valid step?
   }, [isAccountReady, navigation])
 
   return (

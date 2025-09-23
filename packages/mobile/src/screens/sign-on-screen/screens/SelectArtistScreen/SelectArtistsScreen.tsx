@@ -21,7 +21,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { ReadOnlyAccountHeader } from '../../components/AccountHeader'
 import { SkipButton } from '../../components/SkipButton'
 import { Heading, PageFooter } from '../../components/layout'
-import { useFastReferral } from '../../hooks/useFastReferral'
 import type { SignOnScreenParamList } from '../../types'
 import { useTrackScreen } from '../../utils/useTrackScreen'
 
@@ -41,7 +40,6 @@ export const SelectArtistsScreen = () => {
   const selectedArtists = useSelector(getFollowIds)
   const dispatch = useDispatch()
   const navigation = useNavigation<SignOnScreenParamList>()
-  const isFastReferral = useFastReferral()
   useTrackScreen('SelectArtists')
 
   const accountCreationStatus = useSelector(getStatus)
@@ -68,23 +66,11 @@ export const SelectArtistsScreen = () => {
     dispatch(addFollowArtists(selectedArtists))
     dispatch(completeFollowArtists())
 
-    if (isFastReferral) {
-      // In fast referral mode, go directly to home screen
-      navigation.navigate('HomeStack', { screen: 'Trending' })
-    } else {
-      // This call is what eventually triggers the RootScreen to redirect to the home page (via conditional rendering)
-      dispatch(finishSignUp())
-      if (accountCreationStatus === EditingStatus.LOADING) {
-        navigation.navigate('AccountLoading')
-      }
+    dispatch(finishSignUp())
+    if (accountCreationStatus === EditingStatus.LOADING) {
+      navigation.navigate('AccountLoading')
     }
-  }, [
-    accountCreationStatus,
-    dispatch,
-    isFastReferral,
-    navigation,
-    selectedArtists
-  ])
+  }, [accountCreationStatus, dispatch, navigation, selectedArtists])
 
   return (
     <SelectArtistsPreviewContextProvider>
