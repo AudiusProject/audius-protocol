@@ -68,8 +68,8 @@ const INPUT_DEBOUNCE_TIME = 400
 export const BuyCoinPage = ({
   onContinue,
   onBack,
-  submitError
-}: PhasePageProps & { submitError: boolean }) => {
+  submitErrorText
+}: PhasePageProps & { submitErrorText: string }) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue, errors, validateForm } =
     useFormikContext<SetupFormValues>()
@@ -201,11 +201,9 @@ export const BuyCoinPage = ({
     [setFieldValue, debouncedReceiveAmountChange]
   )
 
-  const submitFooterErrorText = firstBuyQuoteError
-    ? messages.errors.quoteError
-    : submitError
-      ? messages.errors.transactionFailed
-      : undefined
+  const submitFooterErrorText =
+    submitErrorText ||
+    (firstBuyQuoteError ? messages.errors.quoteError : undefined)
 
   return (
     <>

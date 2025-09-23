@@ -34,6 +34,7 @@ const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
   launchingCoinDescription: (numTxs: number) =>
     `You have ${numTxs} transactions to sign. Please don't close this page.`,
+  couldTakeAMoment: 'This could take a moment.',
   congratsTitle: '🎉 Congrats!',
   title: 'Create Your Artist Coin',
   congratsDescription:
@@ -80,11 +81,16 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
     >
       <LoadingSpinner size='3xl' />
       <Flex column gap='s' alignItems='center'>
-        <Text variant='heading' size='l'>
-          {messages.awaitingConfirmation}
-        </Text>
-        <Text variant='body' size='l'>
-          {messages.launchingCoinDescription(numTxs)}
+        <Flex column gap='s' alignItems='center'>
+          <Text variant='heading' size='l'>
+            {messages.awaitingConfirmation}
+          </Text>
+          <Text variant='body' size='l'>
+            {messages.launchingCoinDescription(numTxs)}
+          </Text>
+        </Flex>
+        <Text variant='body' size='l' color='subdued'>
+          {messages.couldTakeAMoment}
         </Text>
       </Flex>
     </Flex>
@@ -330,19 +336,32 @@ export const LaunchpadSubmitModal = ({
     amountUsd: receiveAmount
   }
   const numTxs = payAmount ? 2 : 1
+
+  // Keep track of current state in a string so we avoid overlapping states
+  const currentState = isPending
+    ? 'pending'
+    : isSuccess
+      ? 'success'
+      : isError
+        ? 'error'
+        : 'closed'
   return (
     <Modal
       isOpen={isOpen}
-      size={isSuccess || isError ? 'small' : undefined}
+      size={
+        currentState === 'success' || currentState === 'error'
+          ? 'small'
+          : undefined
+      }
       onClose={() => {
-        if (isSuccess || isError) {
+        if (currentState === 'success' || currentState === 'error') {
           onClose()
         }
       }}
     >
-      {isPending ? <LoadingState numTxs={numTxs} /> : null}
-      {isSuccess ? <SuccessState coin={coin} /> : null}
-      {isError ? (
+      {currentState === 'pending' ? <LoadingState numTxs={numTxs} /> : null}
+      {currentState === 'success' ? <SuccessState coin={coin} /> : null}
+      {currentState === 'error' ? (
         <ErrorState
           errorMetadata={errorMetadata}
           mintAddress={coin.mint}

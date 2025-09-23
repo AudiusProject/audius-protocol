@@ -78,15 +78,15 @@ export const useLaunchCoin = () => {
       const errorMetadata: LaunchCoinErrorMetadata = {
         userId,
         lastStep: '',
-        relayResponseReceived: false,
-        poolCreateConfirmed: false,
-        sdkCoinAdded: false,
+        relayResponseReceived: true,
+        poolCreateConfirmed: true,
+        sdkCoinAdded: true,
         firstBuyConfirmed: false,
         createPoolTx: '',
         firstBuyTx: '',
         initialBuyAmountAudio,
         coinMetadata: {
-          mint: '',
+          mint: '5FZW5SJbyTb23WofRnm6ERvzfibmNk4h5nPDFWNkwDXG',
           imageUri: '',
           name,
           symbol: symbolUpper,
@@ -94,119 +94,125 @@ export const useLaunchCoin = () => {
           walletAddress: walletPublicKeyStr
         }
       }
-      try {
-        const sdk = await audiusSdk()
-        const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
-        if (!solanaProvider) {
-          throw new Error('Missing SolanaProvider')
-        }
-        if (!walletPublicKeyStr) {
-          throw new Error('Missing solana wallet keypair')
-        }
-
-        const signAndSendTx = async (transactionSerialized: string) => {
-          // Transaction is sent from the backend as a serialized base64 string
-          const deserializedTx = VersionedTransaction.deserialize(
-            Buffer.from(transactionSerialized, 'base64')
-          )
-
-          // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
-          const signature =
-            await solanaProvider.signAndSendTransaction(deserializedTx)
-          await sdk.services.solanaClient.connection.confirmTransaction(
-            signature,
-            'confirmed'
-          )
-          return signature
-        }
-
-        const walletPublicKey = new PublicKey(walletPublicKeyStr)
-
-        // Sets up coin TXs and on-chain metadata on relay side
-        const res = await sdk.services.solanaRelay.launchCoin({
-          name,
-          symbol: symbolUpper,
-          description,
-          walletPublicKey,
-          initialBuyAmountAudio,
-          image
-        })
-        const {
-          createPoolTx: createPoolTxSerialized,
-          firstBuyTx: firstBuyTxSerialized,
-          mintPublicKey,
-          imageUri
-        } = res
-        errorMetadata.createPoolTx = createPoolTxSerialized
-        errorMetadata.firstBuyTx = firstBuyTxSerialized
-        errorMetadata.coinMetadata.mint = mintPublicKey
-        errorMetadata.coinMetadata.imageUri = imageUri
-
-        errorMetadata.relayResponseReceived = true
-        errorMetadata.lastStep = 'relayResponseReceived'
-
-        /**
-         * Pool creation - sign & send TX
-         */
-        await signAndSendTx(createPoolTxSerialized)
-        errorMetadata.poolCreateConfirmed = true
-        errorMetadata.lastStep = 'poolCreateConfirmed'
-
-        /*
-         * Add coin to Audius database
-         * its in a separate try/catch because it's technically non-blocking
-         */
-        try {
-          // Create coin in Audius database
-          await sdk.coins.createCoin({
-            userId: Id.parse(userId),
-            createCoinRequest: {
-              mint: mintPublicKey,
-              ticker: `$${symbolUpper}`,
-              decimals: COIN_DECIMALS,
-              name,
-              logoUri: imageUri,
-              description
-            }
-          })
-          errorMetadata.sdkCoinAdded = true
-          errorMetadata.lastStep = 'sdkCoinAdded'
-        } catch (e) {
-          if (reportToSentry) {
-            reportToSentry({
-              error: e instanceof Error ? e : new Error(e as string),
-              name: 'SDK Create Coin Failure',
-              feature: Feature.ArtistCoins,
-              additionalInfo: errorMetadata
-            })
-          }
-        }
-
-        // Perform sol->audio swap & first buy
-        if (firstBuyTxSerialized && initialBuyAmountAudio) {
-          // First buy
-          await signAndSendTx(firstBuyTxSerialized)
-          errorMetadata.firstBuyConfirmed = true
-          errorMetadata.lastStep = 'firstBuyConfirmed'
-        }
-
-        return {
-          isError: false,
-          newMint: mintPublicKey,
-          logoUri: imageUri,
-          errorMetadata
-        }
-      } catch (error) {
-        if (reportToSentry) {
-          reportToSentry({
-            error: error instanceof Error ? error : new Error(error as string),
-            name: 'Launch Coin Failure',
-            feature: Feature.ArtistCoins,
-            additionalInfo: errorMetadata
-          })
-        }
-        return { isError: true, errorMetadata, newMint: '', logoUri: '' }
+      return {
+        isError: true,
+        errorMetadata,
+        newMint: '',
+        logoUri: ''
       }
+      // try {
+      //   const sdk = await audiusSdk()
+      //   const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
+      //   if (!solanaProvider) {
+      //     throw new Error('Missing SolanaProvider')
+      //   }
+      //   if (!walletPublicKeyStr) {
+      //     throw new Error('Missing solana wallet keypair')
+      //   }
+
+      //   const signAndSendTx = async (transactionSerialized: string) => {
+      //     // Transaction is sent from the backend as a serialized base64 string
+      //     const deserializedTx = VersionedTransaction.deserialize(
+      //       Buffer.from(transactionSerialized, 'base64')
+      //     )
+
+      //     // Triggers 3rd party wallet to sign the transaction, doesnt send to Solana just yet
+      //     const signature =
+      //       await solanaProvider.signAndSendTransaction(deserializedTx)
+      //     await sdk.services.solanaClient.connection.confirmTransaction(
+      //       signature,
+      //       'confirmed'
+      //     )
+      //     return signature
+      //   }
+
+      //   const walletPublicKey = new PublicKey(walletPublicKeyStr)
+
+      //   // Sets up coin TXs and on-chain metadata on relay side
+      //   const res = await sdk.services.solanaRelay.launchCoin({
+      //     name,
+      //     symbol: symbolUpper,
+      //     description,
+      //     walletPublicKey,
+      //     initialBuyAmountAudio,
+      //     image
+      //   })
+      //   const {
+      //     createPoolTx: createPoolTxSerialized,
+      //     firstBuyTx: firstBuyTxSerialized,
+      //     mintPublicKey,
+      //     imageUri
+      //   } = res
+      //   errorMetadata.createPoolTx = createPoolTxSerialized
+      //   errorMetadata.firstBuyTx = firstBuyTxSerialized
+      //   errorMetadata.coinMetadata.mint = mintPublicKey
+      //   errorMetadata.coinMetadata.imageUri = imageUri
+
+      //   errorMetadata.relayResponseReceived = true
+      //   errorMetadata.lastStep = 'relayResponseReceived'
+
+      //   /**
+      //    * Pool creation - sign & send TX
+      //    */
+      //   await signAndSendTx(createPoolTxSerialized)
+      //   errorMetadata.poolCreateConfirmed = true
+      //   errorMetadata.lastStep = 'poolCreateConfirmed'
+
+      //   /*
+      //    * Add coin to Audius database
+      //    * its in a separate try/catch because it's technically non-blocking
+      //    */
+      //   try {
+      //     // Create coin in Audius database
+      //     await sdk.coins.createCoin({
+      //       userId: Id.parse(userId),
+      //       createCoinRequest: {
+      //         mint: mintPublicKey,
+      //         ticker: `$${symbolUpper}`,
+      //         decimals: COIN_DECIMALS,
+      //         name,
+      //         logoUri: imageUri,
+      //         description
+      //       }
+      //     })
+      //     errorMetadata.sdkCoinAdded = true
+      //     errorMetadata.lastStep = 'sdkCoinAdded'
+      //   } catch (e) {
+      //     if (reportToSentry) {
+      //       reportToSentry({
+      //         error: e instanceof Error ? e : new Error(e as string),
+      //         name: 'SDK Create Coin Failure',
+      //         feature: Feature.ArtistCoins,
+      //         additionalInfo: errorMetadata
+      //       })
+      //     }
+      //   }
+
+      //   // Perform sol->audio swap & first buy
+      //   if (firstBuyTxSerialized && initialBuyAmountAudio) {
+      //     // First buy
+      //     await signAndSendTx(firstBuyTxSerialized)
+      //     errorMetadata.firstBuyConfirmed = true
+      //     errorMetadata.lastStep = 'firstBuyConfirmed'
+      //   }
+
+      //   return {
+      //     isError: false,
+      //     newMint: mintPublicKey,
+      //     logoUri: imageUri,
+      //     errorMetadata
+      //   }
+      // } catch (error) {
+      //   if (reportToSentry) {
+      //     reportToSentry({
+      //       error: error instanceof Error ? error : new Error(error as string),
+      //       name: 'Launch Coin Failure',
+      //       feature: Feature.ArtistCoins,
+      //       additionalInfo: errorMetadata
+      //     })
+      //   }
+      //   return { isError: true, errorMetadata, newMint: '', logoUri: '' }
+      // }
     },
     onSuccess: (_result, params, _context) => {
       // Invalidate the list of artist coins to add it to the list

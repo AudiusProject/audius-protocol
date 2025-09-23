@@ -5,8 +5,7 @@ import {
   getWalletSolBalanceOptions,
   useConnectedWallets,
   useCurrentAccountUser,
-  useQueryContext,
-  useSwapTokens
+  useQueryContext
 } from '@audius/common/api'
 import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/shared/tokenConstants'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
@@ -26,11 +25,8 @@ import {
   useConnectAndAssociateWallets,
   AlreadyAssociatedError
 } from 'hooks/useConnectAndAssociateWallets'
-import {
-  LaunchCoinErrorMetadata,
-  LaunchCoinResponse,
-  useLaunchCoin
-} from 'hooks/useLaunchCoin'
+import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
+import { LaunchCoinResponse, useLaunchCoin } from 'hooks/useLaunchCoin'
 
 import { ConnectedWalletHeader } from './components'
 import {
@@ -42,14 +38,22 @@ import { LAUNCHPAD_COIN_DESCRIPTION, MIN_SOL_BALANCE, Phase } from './constants'
 import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { getLatestConnectedWallet } from './utils'
 import { useLaunchpadFormSchema } from './validation'
-import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
 
 const messages = {
   title: 'Create Your Artist Coin',
-  walletAdded: 'Wallet connected successfully'
+  walletAdded: 'Wallet connected successfully',
+  errors: {
+    coinCreationFailed: 'Coin creation failed. Please try again.',
+    firstBuyFailed: 'Coin purchase failed. Please try again.',
+    firstBuyFailedToast: 'Coin created! Your purchase failed, please try again.'
+  }
 }
 
-const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
+const LaunchpadPageContent = ({
+  submitErrorText
+}: {
+  submitErrorText?: string
+}) => {
   const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
   const queryClient = useQueryClient()
@@ -155,8 +159,6 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
           }
         }
       }
-
-      // TODO: add an error toast here
     },
     [
       connectedWallets,
@@ -225,7 +227,10 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
         )
       case Phase.BUY_COIN:
         return (
-          <BuyCoinPage onBack={handleBuyCoinBack} submitError={submitError} />
+          <BuyCoinPage
+            onBack={handleBuyCoinBack}
+            submitErrorText={submitErrorText}
+          />
         )
       default:
         return (
@@ -257,34 +262,22 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
 export const LaunchpadPage = () => {
   const {
     mutate: launchCoin,
-    isPending,
+    isPending: isLaunchCoinPending,
     isSuccess: isLaunchCoinFinished,
-    // data: launchCoinResponse,
+    data: launchCoinResponse,
     isError: uncaughtLaunchCoinError
   } = useLaunchCoin()
-  const launchCoinResponse: Partial<LaunchCoinResponse> = {
-    isError: true,
-    newMint: 'bearR26zyyB3fNQm5wWv1ZfN8MPQDUMwaAuoG79b1Yj',
-    errorMetadata: {
-      poolCreateConfirmed: true,
-      firstBuyConfirmed: false,
-      sdkCoinAdded: true,
-      coinMetadata: {
-        mint: 'bearR26zyyB3fNQm5wWv1ZfN8MPQDUMwaAuoG79b1Yj',
-        imageUri: 'testimageuri',
-        name: 'testname',
-        symbol: 'testsymbol',
-        description: 'testdescription',
-        walletAddress: 'testwalletaddress'
-      }
-    }
-  }
   const {
     mutate: swapTokens,
-    status: swapStatus,
-    error: swapError,
+    isPending: isSwapPending,
+    isSuccess: isSwapFinished,
+    isError: isSwapError,
     data: swapData
   } = useExternalWalletSwap()
+
+  console.log({ swapData })
+  const swapError = !!swapData?.isError
+  const isSwapSuccess = isSwapFinished && !swapError
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
@@ -296,10 +289,14 @@ export const LaunchpadPage = () => {
   const isFirstBuyError =
     launchCoinResponse?.isError &&
     launchCoinResponse?.errorMetadata?.poolCreateConfirmed &&
+    launchCoinResponse?.errorMetadata?.sdkCoinAdded &&
     !launchCoinResponse?.errorMetadata?.firstBuyConfirmed
+
+  const isSuccess =
+    (isLaunchCoinFinished && !launchCoinResponse?.isError) || isSwapSuccess
+  const isPending = isLaunchCoinPending || isSwapPending
   const isError =
-    uncaughtLaunchCoinError ||
-    (!!launchCoinResponse?.isError && !isFirstBuyError)
+    uncaughtLaunchCoinError || !!launchCoinResponse?.isError || isSwapError
 
   // If an error occurs before the pool is created, we close the modal so the user can resubmit
   useEffect(() => {
@@ -308,25 +305,29 @@ export const LaunchpadPage = () => {
     }
   }, [isPoolCreateError, swapError])
 
-  // Handle swap results for first buy transaction
   useEffect(() => {
-    if (swapStatus === 'success' && swapData) {
-      // Close modal on successful swap
+    if (isFirstBuyError) {
       setIsModalOpen(false)
       dispatch(
         toast({
-          content: 'First buy transaction completed successfully!'
-        })
-      )
-    } else if (swapStatus === 'error' && swapError) {
-      // Show error toast but keep modal open for retry
-      dispatch(
-        toast({
-          content: 'First buy transaction failed. Please try again.'
+          content: messages.errors.firstBuyFailedToast
         })
       )
     }
-  }, [swapStatus, swapData, swapError, dispatch])
+  }, [isFirstBuyError, dispatch])
+
+  // Handle swap results for first buy transaction
+  useEffect(() => {
+    if (isSwapError && swapError) {
+      setIsModalOpen(false)
+      // Show error toast but keep modal open for retry
+      dispatch(
+        toast({
+          content: messages.errors.firstBuyFailed
+        })
+      )
+    }
+  }, [isSwapError, swapError, dispatch])
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
@@ -349,22 +350,27 @@ export const LaunchpadPage = () => {
       if (
         launchCoinResponse?.errorMetadata?.poolCreateConfirmed &&
         launchCoinResponse?.errorMetadata?.sdkCoinAdded &&
-        !launchCoinResponse.errorMetadata?.firstBuyConfirmed
+        !launchCoinResponse?.errorMetadata?.firstBuyConfirmed
       ) {
         const mintAddress =
           launchCoinResponse.newMint ||
-          launchCoinResponse.errorMetadata?.coinMetadata?.mint
+          launchCoinResponse?.errorMetadata?.coinMetadata?.mint
         // The pool has already been created but something went wrong with the first buy transaction
         if (formValues.payAmount && mintAddress) {
-          console.log({
-            fd: Number(new FixedDecimal(formValues.payAmount).value)
-          })
           // In this instance, we can't use the same first buy transaction since the user can change the form inputs
           // Additionally the first buy TX already failed once so we want a new one
           swapTokens({
-            inputMint: TOKEN_LISTING_MAP.AUDIO.address, // Pay with AUDIO
-            outputMint: launchCoinResponse.newMint, // Receive new coin
-            amountUi: Number(new FixedDecimal(formValues.payAmount).value)
+            inputToken: TOKEN_LISTING_MAP.AUDIO,
+            outputToken: {
+              address: mintAddress,
+              decimals: 9,
+              symbol: formValues.coinSymbol,
+              name: formValues.coinName,
+              balance: null
+            },
+            walletAddress: connectedWallet.address,
+            inputAmountUi: Number(new FixedDecimal(formValues.payAmount).value),
+            isAMM: true
           })
         } else {
           setIsModalOpen(false)
@@ -387,11 +393,11 @@ export const LaunchpadPage = () => {
     [
       connectedWallets,
       user,
-      launchCoinResponse.errorMetadata?.poolCreateConfirmed,
-      launchCoinResponse.errorMetadata?.sdkCoinAdded,
-      launchCoinResponse.errorMetadata?.firstBuyConfirmed,
-      launchCoinResponse.errorMetadata?.coinMetadata?.mint,
-      launchCoinResponse.newMint,
+      launchCoinResponse?.errorMetadata?.poolCreateConfirmed,
+      launchCoinResponse?.errorMetadata?.sdkCoinAdded,
+      launchCoinResponse?.errorMetadata?.firstBuyConfirmed,
+      launchCoinResponse?.errorMetadata?.coinMetadata?.mint,
+      launchCoinResponse?.newMint,
       swapTokens,
       launchCoin
     ]
@@ -415,7 +421,7 @@ export const LaunchpadPage = () => {
       <Form>
         <LaunchpadSubmitModal
           isPending={isPending}
-          isSuccess={isLaunchCoinFinished && !launchCoinResponse.isError}
+          isSuccess={isSuccess}
           isError={isError}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -423,7 +429,15 @@ export const LaunchpadPage = () => {
           logoUri={launchCoinResponse?.logoUri}
           errorMetadata={launchCoinResponse?.errorMetadata}
         />
-        <LaunchpadPageContent submitError={!!isPoolCreateError} />
+        <LaunchpadPageContent
+          submitErrorText={
+            isPoolCreateError
+              ? messages.errors.coinCreationFailed
+              : swapError || isFirstBuyError
+                ? messages.errors.firstBuyFailed
+                : undefined
+          }
+        />
       </Form>
     </Formik>
   )

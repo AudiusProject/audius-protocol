@@ -22,6 +22,7 @@ type ExternalWalletSwapParams = {
   inputToken: TokenInfo
   outputToken: TokenInfo
   walletAddress: string
+  isAMM: boolean
 }
 export const useExternalWalletSwap = () => {
   const { audiusSdk } = useQueryContext()
@@ -35,7 +36,13 @@ export const useExternalWalletSwap = () => {
         confirmedSwapTx: false,
         userCancelled: false
       }
-      const { inputAmountUi, inputToken, outputToken, walletAddress } = params
+      const {
+        inputAmountUi,
+        inputToken,
+        outputToken,
+        walletAddress,
+        isAMM = false
+      } = params
 
       try {
         const sdk = await audiusSdk()
@@ -63,7 +70,7 @@ export const useExternalWalletSwap = () => {
           quoteResponse: quote.quote,
           userPublicKey: walletAddress,
           dynamicSlippage: true, // Uses the slippage from the quote
-          useSharedAccounts: true
+          useSharedAccounts: !isAMM
         }
         const swapTx = await jupiterInstance.swapPost({ swapRequest })
 
@@ -103,7 +110,7 @@ export const useExternalWalletSwap = () => {
         reportToSentry({
           error: error instanceof Error ? error : new Error(errorMessage),
           level: ErrorLevel.Error,
-          feature: Feature.TanQuery,
+          feature: Feature.ArtistCoins,
           name: 'External Wallet Swap Error',
           additionalInfo: {
             ...params,
