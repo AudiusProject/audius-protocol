@@ -248,7 +248,7 @@ const sortMethodMap: Record<string, GetCoinsSortMethodEnum> = {
   marketCap: GetCoinsSortMethodEnum.MarketCap,
   volume24h: GetCoinsSortMethodEnum.Volume,
   createdDate: GetCoinsSortMethodEnum.CreatedAt,
-  holders: GetCoinsSortMethodEnum.Holder
+  holder: GetCoinsSortMethodEnum.Holder
 }
 
 const sortDirectionMap: Record<string, GetCoinsSortDirectionEnum> = {
