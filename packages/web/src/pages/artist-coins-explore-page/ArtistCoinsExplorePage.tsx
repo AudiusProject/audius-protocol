@@ -31,7 +31,8 @@ import { ArtistCoinsTable } from '../artist-coins-launchpad-page/components/Arti
 import { MobileArtistCoinsExplorePage } from './MobileArtistCoinsExplorePage'
 
 const SEARCH_WIDTH = 400
-const CHECKLIST_WIDTH = 540
+const CHECKLIST_WIDTH = 340
+const MIN_WIDTH = 620
 
 const messages = {
   searchPlaceholder: 'Search',
@@ -64,7 +65,10 @@ const DesktopArtistCoinsExplorePage = () => {
   }, [])
 
   return (
-    <Page title={walletMessages.artistCoins.title}>
+    <Page
+      title={walletMessages.artistCoins.title}
+      css={{ minWidth: MIN_WIDTH }}
+    >
       <Flex column gap='xl'>
         <Flex
           p='3xl'
@@ -87,7 +91,7 @@ const DesktopArtistCoinsExplorePage = () => {
             {walletMessages.artistCoins.title}
           </Text>
 
-          <Box w={SEARCH_WIDTH}>
+          <Box w='100%' css={{ maxWidth: SEARCH_WIDTH }}>
             <TextInput
               label={messages.searchPlaceholder}
               placeholder={messages.searchPlaceholder}
@@ -100,9 +104,21 @@ const DesktopArtistCoinsExplorePage = () => {
         </Flex>
 
         <Paper p='xl' gap='xl'>
-          <Flex gap='xl' w='100%'>
-            <Flex column gap='l' justifyContent='space-between' w='100%'>
-              <Flex alignItems='center' justifyContent='space-between'>
+          <Flex gap='xl' w='100%' wrap='wrap'>
+            <Flex
+              column
+              gap='l'
+              justifyContent='space-between'
+              flex='2 1 0'
+              css={{ minWidth: 'max-content' }}
+            >
+              <Flex
+                alignItems='center'
+                justifyContent='space-between'
+                wrap='nowrap'
+                gap='s'
+                css={{ minWidth: 'max-content' }}
+              >
                 <Text variant='heading'>{messages.launchYourOwn}</Text>
                 <Flex
                   pl='s'
@@ -149,7 +165,8 @@ const DesktopArtistCoinsExplorePage = () => {
               borderRadius='m'
               p='l'
               backgroundColor='surface1'
-              w={CHECKLIST_WIDTH}
+              flex='1 1 0'
+              css={{ minWidth: CHECKLIST_WIDTH }}
             >
               <Flex column gap='s'>
                 {messages.checklistItems.map((item) => (
