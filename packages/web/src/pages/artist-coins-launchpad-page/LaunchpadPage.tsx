@@ -304,13 +304,14 @@ export const LaunchpadPage = () => {
   )
 
   return (
-    <Formik
+    <Formik<SetupFormValues>
       initialValues={{
         coinName: '',
         coinSymbol: '',
         coinImage: null as File | null,
         payAmount: '',
-        receiveAmount: ''
+        receiveAmount: '',
+        usdcValue: ''
       }}
       validationSchema={validationSchema}
       validateOnMount={true}
