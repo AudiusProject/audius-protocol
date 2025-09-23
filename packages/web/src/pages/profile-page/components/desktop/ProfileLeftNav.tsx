@@ -230,9 +230,9 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         {/* For artist coin owners, replace the tip CTA with their coin */}
         {showArtistCoinCTA ? (
           <BuyArtistCoinCard mint={ownedCoin.mint} />
-        ) : (
+        ) : !isArtistCoinLoading ? (
           <TipAudioButton />
-        )}
+        ) : null}
         {isRecentCommentsEnabled ? <RecentComments userId={userId} /> : null}
         <SupportingList />
         <TopSupporters />
