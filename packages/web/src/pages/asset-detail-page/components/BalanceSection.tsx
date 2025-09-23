@@ -40,7 +40,7 @@ type BalanceStateProps = {
 const BalanceSectionSkeleton = () => {
   return (
     <Paper ph='xl' pv='l'>
-      <Flex direction='column' gap='l' w='100%'>
+      <Flex column gap='l' w='100%'>
         <Flex gap='s' alignItems='center'>
           <Skeleton width='64px' height='64px' />
           <Skeleton width='120px' height='24px' />
@@ -266,7 +266,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
 
   return (
     <Paper ph='xl' pv='l'>
-      <Flex direction='column' gap='l' w='100%'>
+      <Flex column gap='l' w='100%'>
         {!tokenBalance?.balance ||
         Number(tokenBalance.balance.toString()) === 0 ? (
           <ZeroBalanceState
@@ -298,7 +298,7 @@ export const BalanceSection = componentWithErrorBoundary(
     name: 'BalanceSection',
     fallback: (
       <Paper ph='xl' pv='l'>
-        <Flex direction='column' gap='l' w='100%'>
+        <Flex column gap='l' w='100%'>
           <Text variant='body' size='m' color='subdued'>
             {walletMessages.errors.unableToLoadBalance}
           </Text>

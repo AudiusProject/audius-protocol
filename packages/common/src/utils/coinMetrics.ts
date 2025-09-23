@@ -17,7 +17,8 @@ const messages = {
   holdersOnAudius: 'Holders on Audius',
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
-  totalTransfers: 'Total Transfers'
+  totalTransfers: 'Total Transfers',
+  graduationProgress: 'Graduation Progress'
 }
 
 const CURRENCY_FORMAT_MAX = 100_000
@@ -53,7 +54,7 @@ const createMetric = (
 }
 
 export const createCoinMetrics = (coin: Coin): MetricData[] => {
-  // If coin has not graduated yet, use the price from the dynamic bonding curve
+  // Birdeye price may not be available right after launch. Fall back to dynamic bonding curve price if so.
   const price =
     coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   const potentialMetrics = [
@@ -66,6 +67,10 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
       formatCount(coin.holder),
       messages.uniqueHolders,
       coin.uniqueWallet24hChangePercent
+    ),
+    createMetric(
+      `${Math.round((coin.dynamicBondingCurve?.curveProgress ?? 0) * 100)}%`,
+      messages.graduationProgress
     ),
     createMetric(
       formatCurrencyWithMax(coin.v24hUSD, CURRENCY_FORMAT_MAX),
