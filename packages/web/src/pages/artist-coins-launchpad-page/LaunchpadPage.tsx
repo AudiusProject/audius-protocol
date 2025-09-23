@@ -43,7 +43,7 @@ const messages = {
 }
 
 const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
-  const [phase, setPhase] = useState(Phase.BUY_COIN)
+  const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
   const queryClient = useQueryClient()
   const queryContext = useQueryContext()
@@ -255,7 +255,7 @@ export const LaunchpadPage = () => {
     data: launchCoinResponse,
     isError: uncaughtLaunchCoinError
   } = useLaunchCoin()
-  const [isModalOpen, setIsModalOpen] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
@@ -321,16 +321,11 @@ export const LaunchpadPage = () => {
       <Form>
         <LaunchpadSubmitModal
           isPending={isPending}
-          isSuccess={
-            true || (isLaunchCoinFinished && !launchCoinResponse.isError)
-          }
+          isSuccess={isLaunchCoinFinished && !launchCoinResponse.isError}
           isError={isError}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          mintAddress={
-            launchCoinResponse?.newMint ??
-            'testmintasoasudnaousndaosdunaousdnaosudnuaowsndouasndoundwa'
-          }
+          mintAddress={launchCoinResponse?.newMint}
           logoUri={launchCoinResponse?.logoUri}
           errorMetadata={launchCoinResponse?.errorMetadata}
         />
