@@ -8,6 +8,7 @@ import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
 import { BuySellModalState } from './buy-sell-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
+import { CoinSuccessModalState } from './coin-success-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
 import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
@@ -117,6 +118,7 @@ export type Modals =
   | 'ReceiveTokensModal'
   | 'SendTokensModal'
   | 'FinalizeWinnersConfirmation'
+  | 'CoinSuccessModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -154,6 +156,7 @@ export type StatefulModalsState = {
   HostRemixContest: HostRemixContestModalState
   ReceiveTokensModal: ReceiveTokensModalState
   SendTokensModal: SendTokensModalState
+  CoinSuccessModal: CoinSuccessModalState
 }
 
 export type ReceiveTokensModalState = BaseModalState & {

@@ -6,6 +6,7 @@ import { announcementModalReducer } from './announcement-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
 import { buySellModalReducer } from './buy-sell-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
+import { coinSuccessModalReducer } from './coin-success-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { connectedWalletsModalReducer } from './connected-wallets-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
@@ -86,7 +87,8 @@ const combinedReducers = combineReducers({
   HostRemixContest: hostRemixContestModalReducer,
   FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer,
   ReceiveTokensModal: receiveTokensModalReducer,
-  SendTokensModal: sendTokensModalReducer
+  SendTokensModal: sendTokensModalReducer,
+  CoinSuccessModal: coinSuccessModalReducer
 })
 
 /**

@@ -7,14 +7,18 @@ import {
   useCurrentAccountUser,
   useQueryContext
 } from '@audius/common/api'
+import { launchpadMessages } from '@audius/common/messages'
 import { toast } from '@audius/common/src/store/ui/toast/slice'
+import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { useCoinSuccessModal } from '@audius/common/store'
 import { shortenSPLAddress } from '@audius/common/utils'
 import { wAUDIO } from '@audius/fixed-decimal'
-import { Flex, IconArtistCoin, Text } from '@audius/harmony'
+import { Flex, IconArtistCoin, IconCheck, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { Header } from 'components/header/desktop/Header'
@@ -37,11 +41,6 @@ import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { getLatestConnectedWallet } from './utils'
 import { useLaunchpadFormSchema } from './validation'
 
-const messages = {
-  title: 'Create Your Artist Coin',
-  walletAdded: 'Wallet connected successfully'
-}
-
 const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
   const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
@@ -58,12 +57,12 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
 
   // Set up mobile header with icon
   useMobileHeader({
-    title: messages.title
+    title: launchpadMessages.page.title
   })
 
   const header = (
     <Header
-      primary={messages.title}
+      primary={launchpadMessages.page.title}
       icon={IconArtistCoin}
       rightDecorator={
         connectedWallet && phase !== Phase.SPLASH ? (
@@ -97,7 +96,7 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
         toast({
           content: (
             <Flex gap='xs' direction='column'>
-              <Text>{messages.walletAdded}</Text>
+              <Text>{launchpadMessages.page.walletAdded}</Text>
               <Text>{shortenSPLAddress(wallet.address)}</Text>
             </Flex>
           )
@@ -237,7 +236,7 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
         onClose={() => setIsInsufficientBalanceModalOpen(false)}
       />
       <Page
-        title={messages.title}
+        title={launchpadMessages.page.title}
         header={header}
         contentClassName='artist-coins-launchpad-page'
       >
@@ -256,9 +255,13 @@ export const LaunchpadPage = () => {
     isError: uncaughtLaunchCoinError
   } = useLaunchCoin()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [formValues, setFormValues] = useState<SetupFormValues | null>(null)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
+  const { onOpen: openCoinSuccessModal } = useCoinSuccessModal()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const isPoolCreateError =
     launchCoinResponse?.isError &&
     !launchCoinResponse?.errorMetadata.poolCreateConfirmed
@@ -271,8 +274,53 @@ export const LaunchpadPage = () => {
     }
   }, [isPoolCreateError])
 
+  // Handle successful coin creation
+  useEffect(() => {
+    if (
+      isLaunchCoinFinished &&
+      !launchCoinResponse?.isError &&
+      launchCoinResponse &&
+      formValues
+    ) {
+      // Show toast notification
+      dispatch(
+        toast({
+          content: (
+            <Flex gap='xs'>
+              <IconCheck size='m' color='white' />
+              <Text>{launchpadMessages.toast.coinCreated}</Text>
+            </Flex>
+          )
+        })
+      )
+
+      // Navigate to the new coin's detail page
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol))
+
+      // Open the success modal
+      openCoinSuccessModal({
+        mint: launchCoinResponse.newMint,
+        name: formValues.coinName,
+        ticker: formValues.coinSymbol,
+        logoUri: launchCoinResponse.logoUri,
+        amountUi: formValues.receiveAmount || '0',
+        amountUsd: formValues.receiveAmount || '0'
+      })
+    }
+  }, [
+    isLaunchCoinFinished,
+    launchCoinResponse,
+    formValues,
+    openCoinSuccessModal,
+    dispatch,
+    navigate
+  ])
+
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
+      // Store form values for success modal
+      setFormValues(formValues)
+
       // Get the most recent connected Solana wallet (last in the array)
       const connectedWallet: ConnectedWallet | undefined =
         getLatestConnectedWallet(connectedWallets)
