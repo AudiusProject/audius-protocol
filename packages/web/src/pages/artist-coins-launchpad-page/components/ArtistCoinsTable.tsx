@@ -103,9 +103,11 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
 
 const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
+  const price =
+    coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   return (
     <Text variant='body' size='m'>
-      {formatCurrencyWithSubscript(coin.price)}
+      {formatCurrencyWithSubscript(price)}
     </Text>
   )
 }
