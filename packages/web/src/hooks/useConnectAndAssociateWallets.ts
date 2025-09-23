@@ -97,7 +97,7 @@ export const useConnectAndAssociateWallets = (
   const { disconnect } = useDisconnect()
 
   // The state goes from modal open => connecting => associating
-  const { open: isAppKitModalOpen } = useAppKitState()
+  const { open: isAppKitModalOpen, activeChain } = useAppKitState()
   const [isConnecting, setIsConnecting] = useState(false)
   const [isAssociating, setIsAssociating] = useState(false)
 
@@ -128,9 +128,18 @@ export const useConnectAndAssociateWallets = (
     appkitModal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
     // If the user is signed in using an external wallet, they'll be connected
     // to the audiusChain network. Reset that to mainnet to connect properly.
-    await appkitModal.switchNetwork(mainnet)
+    // Note: If the eip155 adapter was removed (e.g., for Solana-focused flows),
+    // mainnet may not be available, so we only switch if we're on an Ethereum network.
+    if (activeChain === 'eip155') {
+      try {
+        await appkitModal.switchNetwork(mainnet)
+      } catch (error: any) {
+        console.debug('[openAppKitModal] Could not switch to mainnet:', error)
+        // Continue anyway - the network switch is not critical for opening the modal
+      }
+    }
     await open({ view: 'Connect' })
-  }, [disconnect, isConnected, open, theme.type])
+  }, [disconnect, isConnected, open, theme.type, activeChain])
 
   /**
    * Reconnects to the external auth wallet connector if the user wallet isn't

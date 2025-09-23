@@ -167,8 +167,11 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
 
   const handleSplashContinue = useCallback(async () => {
     // Switch to Solana network to prioritize SOL wallets
-    await appkitModal.switchNetwork(solana)
     appkitModal.removeAdapter('eip155')
+    appkitModal.removeAdapter('bip122')
+    appkitModal.removeAdapter('polkadot')
+    await appkitModal.switchNetwork(solana)
+  
     openAppKitModal()
   }, [openAppKitModal])
 
