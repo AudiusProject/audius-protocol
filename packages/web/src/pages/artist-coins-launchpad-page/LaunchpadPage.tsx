@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import {
   ConnectedWallet,
@@ -8,24 +8,21 @@ import {
   useQueryContext
 } from '@audius/common/api'
 import { launchpadMessages } from '@audius/common/messages'
-import { Feature } from '@audius/common/src/models/ErrorReporting'
-import { TOKEN_LISTING_MAP } from '@audius/common/src/store/ui/shared/tokenConstants'
-import { toast } from '@audius/common/src/store/ui/toast/slice'
-import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { useCoinSuccessModal } from '@audius/common/store'
-import { shortenSPLAddress } from '@audius/common/utils'
+import { Feature } from '@audius/common/models'
+import { TOKEN_LISTING_MAP, useCoinSuccessModal } from '@audius/common/store'
+import { shortenSPLAddress, routes } from '@audius/common/utils'
 import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
 import { Flex, IconArtistCoin, IconCheck, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
+import { ToastContext } from 'components/toast/ToastContext'
 import {
   useConnectAndAssociateWallets,
   AlreadyAssociatedError
@@ -70,13 +67,13 @@ const LaunchpadPageContent = ({
   const queryClient = useQueryClient()
   const queryContext = useQueryContext()
   const { data: connectedWallets } = useConnectedWallets()
+  const { toast } = useContext(ToastContext)
   const connectedWallet = useMemo(
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
   const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
     useState(false)
-  const dispatch = useDispatch()
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -115,18 +112,14 @@ const LaunchpadPageContent = ({
   const handleWalletAddSuccess = useCallback(
     (wallet: ConnectedWallet) => {
       setPhase(Phase.SETUP)
-      dispatch(
-        toast({
-          content: (
-            <Flex gap='xs' direction='column'>
-              <Text>{launchpadMessages.page.walletAdded}</Text>
-              <Text>{shortenSPLAddress(wallet.address)}</Text>
-            </Flex>
-          )
-        })
+      toast(
+        <Flex gap='xs' direction='column'>
+          <Text>{launchpadMessages.page.walletAdded}</Text>
+          <Text>{shortenSPLAddress(wallet.address)}</Text>
+        </Flex>
       )
     },
-    [setPhase, dispatch]
+    [setPhase, toast]
   )
 
   // Wallet connection handlers
@@ -273,7 +266,7 @@ const LaunchpadPageContent = ({
 
 export const LaunchpadPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const dispatch = useDispatch()
+  const { toast } = useContext(ToastContext)
   const { data: user } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
   const { validationSchema } = useLaunchpadFormSchema()
@@ -333,19 +326,17 @@ export const LaunchpadPage = () => {
   useEffect(() => {
     if (isSuccess && launchCoinResponse && formValues) {
       // Show toast notification
-      dispatch(
-        toast({
-          content: (
-            <Flex gap='xs'>
-              <IconCheck size='m' color='white' />
-              <Text>{launchpadMessages.toast.coinCreated}</Text>
-            </Flex>
-          )
-        })
+      toast(
+        <Flex gap='xs'>
+          <IconCheck size='m' color='white' />
+          <Text>{launchpadMessages.toast.coinCreated}</Text>
+        </Flex>
       )
 
       // Navigate to the new coin's detail page
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol))
+      navigate(
+        routes.ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol)
+      )
 
       // Open the success modal
       openCoinSuccessModal({
@@ -361,11 +352,11 @@ export const LaunchpadPage = () => {
     isLaunchCoinFinished,
     launchCoinResponse,
     openCoinSuccessModal,
-    dispatch,
     navigate,
     formValues,
     isError,
-    isSuccess
+    isSuccess,
+    toast
   ])
 
   // If the swap retry fails close the modal again and let user attempt to resubmit if they want
@@ -380,25 +371,17 @@ export const LaunchpadPage = () => {
   useEffect(() => {
     if (isFirstBuyError) {
       setIsModalOpen(false)
-      dispatch(
-        toast({
-          content: messages.errors.firstBuyFailedToast
-        })
-      )
+      toast(messages.errors.firstBuyFailedToast)
     }
-  }, [isFirstBuyError, dispatch])
+  }, [isFirstBuyError, toast])
 
   // Handle swap results for first buy transaction
   useEffect(() => {
     if (isSwapRetryError) {
       // Show error toast but keep modal open for retry
-      dispatch(
-        toast({
-          content: messages.errors.firstBuyFailed
-        })
-      )
+      toast(messages.errors.firstBuyFailed)
     }
-  }, [isSwapRetryError, dispatch])
+  }, [isSwapRetryError, toast])
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
@@ -410,11 +393,7 @@ export const LaunchpadPage = () => {
         getLatestConnectedWallet(connectedWallets)
 
       if (!user || !connectedWallet) {
-        dispatch(
-          toast({
-            content: messages.errors.unknownError
-          })
-        )
+        toast(messages.errors.unknownError)
         reportToSentry({
           error: new Error(
             'Unable to submit launchpad form. No user or connected wallet found'
@@ -454,11 +433,7 @@ export const LaunchpadPage = () => {
           })
         } else {
           setIsModalOpen(false)
-          dispatch(
-            toast({
-              content: messages.errors.unknownError
-            })
-          )
+          toast(messages.errors.unknownError)
           reportToSentry({
             error: new Error(
               'First buy retry failed. No mint address or pay amount found.'
@@ -493,7 +468,7 @@ export const LaunchpadPage = () => {
       launchCoinResponse?.newMint,
       errorMetadata,
       swapTokens,
-      dispatch,
+      toast,
       launchCoin
     ]
   )
