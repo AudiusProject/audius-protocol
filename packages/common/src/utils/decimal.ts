@@ -250,17 +250,22 @@ export const formatCurrencyWithSubscript = (
 export const formatCount = (count: number, decimals: number = 0) => {
   if (count >= 1000) {
     const countStr = count.toString()
+    let formatted: string
+
     if (countStr.length % 3 === 0) {
-      return numeral(count).format('0a').toUpperCase()
+      formatted = numeral(count).format('0a').toUpperCase()
     } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
-      return numeral(count).format('0.00a').toUpperCase()
+      formatted = numeral(count).format('0.00a').toUpperCase()
     } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
-      return numeral(count).format('0.0a').toUpperCase()
+      formatted = numeral(count).format('0.0a').toUpperCase()
     } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
-      return numeral(count).format('0.0a').toUpperCase()
+      formatted = numeral(count).format('0.0a').toUpperCase()
     } else {
-      return numeral(count).format('0a').toUpperCase()
+      formatted = numeral(count).format('0a').toUpperCase()
     }
+
+    // Strip .00 before letter suffixes
+    return formatted.replace(/\.00([A-Z])/g, '$1')
   } else if (!count) {
     return '0'
   } else {
