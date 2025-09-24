@@ -7,8 +7,8 @@ import { AlbumTrackRemoveConfirmationModalState } from './album-track-remove-con
 import { AnnouncementModalState } from './announcement-modal'
 import { ArtistPickModalState } from './artist-pick-modal'
 import { BuySellModalState } from './buy-sell-modal'
-import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinSuccessModalState } from './coin-success-modal'
+import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
 import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
@@ -117,6 +117,7 @@ export type Modals =
   | 'HostRemixContest'
   | 'ReceiveTokensModal'
   | 'SendTokensModal'
+  | 'ArtistCoinDetailsModal'
   | 'FinalizeWinnersConfirmation'
   | 'CoinSuccessModal'
 
@@ -157,6 +158,7 @@ export type StatefulModalsState = {
   ReceiveTokensModal: ReceiveTokensModalState
   SendTokensModal: SendTokensModalState
   CoinSuccessModal: CoinSuccessModalState
+  ArtistCoinDetailsModal: ArtistCoinDetailsModalState
 }
 
 export type ReceiveTokensModalState = BaseModalState & {
@@ -164,6 +166,10 @@ export type ReceiveTokensModalState = BaseModalState & {
 }
 
 export type SendTokensModalState = BaseModalState & {
+  mint?: string
+}
+
+export type ArtistCoinDetailsModalState = BaseModalState & {
   mint?: string
 }
 
