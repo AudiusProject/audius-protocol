@@ -4,7 +4,11 @@ import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
-import { formatCurrencyWithSubscript } from '@audius/common/utils'
+import {
+  CURRENCY_FORMAT_MAX,
+  formatCurrencyWithMax,
+  formatCurrencyWithSubscript
+} from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -103,9 +107,11 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
 
 const renderPriceCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
+  const price =
+    coin.price === 0 ? coin.dynamicBondingCurve.priceUSD : coin.price
   return (
     <Text variant='body' size='m'>
-      {formatCurrencyWithSubscript(coin.price)}
+      {formatCurrencyWithSubscript(price)}
     </Text>
   )
 }
@@ -124,8 +130,7 @@ const renderVolume24hCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m'>
-      {walletMessages.dollarSign}
-      {formatCount(coin.v24hUSD)}
+      {formatCurrencyWithMax(coin.v24hUSD, CURRENCY_FORMAT_MAX)}
     </Text>
   )
 }
@@ -248,7 +253,7 @@ const sortMethodMap: Record<string, GetCoinsSortMethodEnum> = {
   marketCap: GetCoinsSortMethodEnum.MarketCap,
   volume24h: GetCoinsSortMethodEnum.Volume,
   createdDate: GetCoinsSortMethodEnum.CreatedAt,
-  holders: GetCoinsSortMethodEnum.Holder
+  holder: GetCoinsSortMethodEnum.Holder
 }
 
 const sortDirectionMap: Record<string, GetCoinsSortDirectionEnum> = {

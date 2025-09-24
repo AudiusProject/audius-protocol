@@ -59,21 +59,23 @@ export const BuySellModal = () => {
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
       >
         <ModalTitle title={title} />
-        <PlainButton
-          size='default'
-          iconLeft={IconQuestionCircle}
-          onClick={() => {
-            window.open(WALLET_GUIDE_URL, '_blank')
-          }}
-          css={(theme) => ({
-            position: 'absolute',
-            top: theme.spacing.xl,
-            right: theme.spacing.xl,
-            zIndex: zIndex.BUY_SELL_MODAL + 1
-          })}
-        >
-          {buySellMessages.help}
-        </PlainButton>
+        {modalScreen === 'input' && !isFlowLoading && (
+          <PlainButton
+            size='default'
+            iconLeft={IconQuestionCircle}
+            onClick={() => {
+              window.open(WALLET_GUIDE_URL, '_blank')
+            }}
+            css={(theme) => ({
+              position: 'absolute',
+              top: theme.spacing.xl,
+              right: theme.spacing.xl,
+              zIndex: zIndex.BUY_SELL_MODAL + 1
+            })}
+          >
+            {buySellMessages.help}
+          </PlainButton>
+        )}
       </ModalHeader>
       <ModalContent>
         <BuySellFlow

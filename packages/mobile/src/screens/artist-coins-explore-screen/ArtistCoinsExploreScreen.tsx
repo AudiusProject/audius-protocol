@@ -9,7 +9,7 @@ import { walletMessages } from '@audius/common/messages'
 import type { Coin } from '@audius/sdk'
 import { HashId } from '@audius/sdk'
 import { useRoute } from '@react-navigation/native'
-import { ImageBackground, TouchableOpacity } from 'react-native'
+import { ImageBackground, ScrollView, TouchableOpacity } from 'react-native'
 import { useDebounce } from 'react-use'
 
 import {
@@ -194,23 +194,25 @@ export const ArtistCoinsExploreScreen = () => {
           </TouchableOpacity>
         </Flex>
         <Divider orientation='horizontal' />
-        {isPending ? (
-          <Flex justifyContent='center' alignItems='center' p='4xl'>
-            <LoadingSpinner />
-          </Flex>
-        ) : shouldShowNoCoinsContent ? (
-          <NoCoinsContent />
-        ) : (
-          <Flex pt='s'>
-            {coins.map((coin) => (
-              <CoinRow
-                key={coin.mint}
-                coin={coin}
-                onPress={() => handleCoinPress(coin.mint ?? '')}
-              />
-            ))}
-          </Flex>
-        )}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {isPending ? (
+            <Flex justifyContent='center' alignItems='center' p='4xl'>
+              <LoadingSpinner />
+            </Flex>
+          ) : shouldShowNoCoinsContent ? (
+            <NoCoinsContent />
+          ) : (
+            <Flex pt='s' pb='4xl'>
+              {coins.map((coin) => (
+                <CoinRow
+                  key={coin.mint}
+                  coin={coin}
+                  onPress={() => handleCoinPress(coin.mint ?? '')}
+                />
+              ))}
+            </Flex>
+          )}
+        </ScrollView>
       </Paper>
     </Screen>
   )

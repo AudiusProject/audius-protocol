@@ -2,6 +2,7 @@ import { ComponentType, lazy } from 'react'
 
 import { Modals as ModalTypes } from '@audius/common/store'
 
+import { CoinSuccessModal } from 'components/CoinSuccessModal'
 import { AddCashModal } from 'components/add-cash-modal/AddCashModal'
 import AddToCollectionModal from 'components/add-to-collection/desktop/AddToCollectionModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
@@ -175,6 +176,7 @@ const Modals = () => {
         </>
       )}
       <TipAudioModal />
+      <CoinSuccessModal />
     </>
   )
 }

@@ -1,10 +1,6 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
-import {
-  useRemoveConnectedWallet,
-  QUERY_KEYS,
-  useCurrentUserId
-} from '@audius/common/api'
+import { useRemoveConnectedWallet } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Chain } from '@audius/common/models'
 import { useUserCoin } from '@audius/common/src/api/tan-query/coins/useUserCoin'
@@ -27,9 +23,10 @@ import {
   IconLogoCircle
 } from '@audius/harmony'
 import { UserCoinAccount } from '@audius/sdk'
-import { useQueryClient } from '@tanstack/react-query'
 
+import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import {
@@ -55,8 +52,9 @@ const WalletRow = ({
 }: WalletRowProps) => {
   const { toast } = useContext(ToastContext)
   const [isRemovingWallet, setIsRemovingWallet] = useState(false)
-  const queryClient = useQueryClient()
-  const { data: currentUserId } = useCurrentUserId()
+  const isMobile = useIsMobile()
+  const [isMobileOverflowOpen, setIsMobileOverflowOpen] = useState(false)
+
   // For connected wallets we want to use the root wallet address, for in-app wallets the owner will be us and not the user so we need to use the token account address
   const address = isInAppWallet ? account : owner
   const copyAddressToClipboard = useCallback(() => {
@@ -66,35 +64,34 @@ const WalletRow = ({
 
   const { mutateAsync: removeConnectedWalletAsync } = useRemoveConnectedWallet()
 
+  const onOpenMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(true)
+  }, [setIsMobileOverflowOpen])
+
+  const onCloseMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(false)
+  }, [setIsMobileOverflowOpen])
+
   const handleRemove = useCallback(async () => {
-    try {
-      setIsRemovingWallet(true)
-      await removeConnectedWalletAsync({
-        wallet: { address, chain: Chain.Sol }
-      })
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.userCoin, currentUserId]
-      })
-      toast(messages.toasts.walletRemoved)
-    } catch (e) {
-      toast(messages.toasts.error)
-    } finally {
-      setIsRemovingWallet(false)
-    }
-  }, [removeConnectedWalletAsync, address, queryClient, toast, currentUserId])
+    setIsRemovingWallet(true)
+    await removeConnectedWalletAsync({
+      wallet: { address, chain: Chain.Sol }
+    })
+    setIsRemovingWallet(false)
+  }, [removeConnectedWalletAsync, address])
 
   const items: PopupMenuItem[] = useMemo(
     () =>
       [
         {
           text: messages.copy,
-          icon: <IconCopy />,
+          icon: <IconCopy color='default' />,
           onClick: copyAddressToClipboard
         },
         !isInAppWallet
           ? {
               text: messages.remove,
-              icon: <IconTrash />,
+              icon: <IconTrash color='default' />,
               onClick: handleRemove
             }
           : null
@@ -117,32 +114,55 @@ const WalletRow = ({
         </Text>
       </Flex>
       <Flex css={{ flex: 1 }} justifyContent='flex-end'>
-        <Text variant='body' size='m' strength='strong' color='default'>
+        <Text variant='body' size='m' strength='strong'>
           {Math.trunc(balance / Math.pow(10, decimals)).toLocaleString()}
         </Text>
       </Flex>
-      <Flex
-        css={{
-          marginLeft: 'auto',
-          flexBasis: 0
-        }}
-      >
-        <PopupMenu
-          items={items}
-          aria-disabled={isRemovingWallet}
-          renderTrigger={(ref, trigger) => (
-            <IconButton
-              ref={ref}
-              icon={IconKebabHorizontal}
-              size='s'
-              color='subdued'
-              disabled={isRemovingWallet}
-              onClick={() => trigger()}
-              aria-label={messages.options}
-            />
-          )}
-        />
-      </Flex>
+      {isMobile ? (
+        <>
+          <IconButton
+            icon={IconKebabHorizontal}
+            onClick={onOpenMobileOverflow}
+            aria-label='More options'
+          />
+          <ActionDrawer
+            actions={items.map((item) => ({
+              text: item.text as string,
+              icon: item.icon,
+              onClick: (e) => {
+                // @ts-ignore - Element vs HTMLElement
+                item.onClick?.(e)
+                onCloseMobileOverflow()
+              }
+            }))}
+            isOpen={isMobileOverflowOpen}
+            onClose={onCloseMobileOverflow}
+          />
+        </>
+      ) : (
+        <Flex
+          css={{
+            marginLeft: 'auto',
+            flexBasis: 0
+          }}
+        >
+          <PopupMenu
+            items={items}
+            aria-disabled={isRemovingWallet}
+            renderTrigger={(ref, trigger) => (
+              <IconButton
+                ref={ref}
+                icon={IconKebabHorizontal}
+                size='s'
+                color='subdued'
+                disabled={isRemovingWallet}
+                onClick={() => trigger()}
+                aria-label={messages.options}
+              />
+            )}
+          />
+        </Flex>
+      )}
     </Flex>
   )
 }
@@ -161,16 +181,11 @@ export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
     [unsortedAccounts]
   )
   const { toast } = useContext(ToastContext)
-  const queryClient = useQueryClient()
   const hasAccounts = accounts.length > 0
-  const { data: currentUserId } = useCurrentUserId()
 
   const handleAddWalletSuccess = useCallback(async () => {
     toast(messages.newWalletConnected)
-    await queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.userCoin, currentUserId]
-    })
-  }, [toast, queryClient, currentUserId])
+  }, [toast])
 
   const handleAddWalletError = useCallback(
     async (e: unknown) => {

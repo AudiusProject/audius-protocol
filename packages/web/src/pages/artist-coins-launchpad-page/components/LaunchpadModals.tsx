@@ -1,30 +1,20 @@
-import { useEffect, useRef } from 'react'
-
-import { musicConfettiActions, useSendTokensModal } from '@audius/common/store'
-import { route } from '@audius/common/utils'
+import { useSendTokensModal } from '@audius/common/store'
+import { wAUDIO } from '@audius/fixed-decimal'
 import {
-  Artwork,
-  Button,
   Flex,
   Hint,
   IconInfo,
-  IconShare,
-  IconX,
   LoadingSpinner,
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
-  Paper,
   Text,
   TextLink
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { AddressTile } from 'components/address-tile'
-import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import { LaunchCoinErrorMetadata } from 'hooks/useLaunchCoin'
 import { env } from 'services/env'
 
@@ -42,10 +32,6 @@ const messages = {
   purchaseSummary: 'Purchase Summary',
   address: 'Coin Address',
   addressTitle: 'Coin Address',
-  shareToX: 'Share To X',
-  uploadCoinGatedTrack: 'Upload Coin Gated Track',
-  copyAddress: 'Copy Address',
-  viewOnExplorer: 'View on Solscan',
   insufficientBalanceTitle: 'Check your wallet balance',
   insufficientBalanceDescription:
     "You'll need to add funds to your wallet before you can continue.",
@@ -59,7 +45,7 @@ const messages = {
   sendAudio: 'Send AUDIO',
   errorMessages: {
     notInAudiusBody:
-      'It’s live on the blockchain but not showing in Audius yet. Use the address below to view it and check back later once it’s connected.',
+      "It's live on the blockchain but not showing in Audius yet. Use the address below to view it and check back later once it's connected.",
     yourCoinIsLive: 'YOUR COIN IS LIVE! 🎉',
     unknownErrorDescription: (coinLaunched: boolean) =>
       `Something unexpected went wrong ${coinLaunched ? 'but your coin is live on the blockchain' : ''}`,
@@ -96,126 +82,6 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
     </Flex>
   </ModalContent>
 )
-
-const SuccessState = ({
-  coin
-}: {
-  coin: {
-    mint?: string
-    name?: string
-    ticker?: string
-    logoUri?: string
-    amountUi: string
-    amountUsd: string
-  }
-}) => {
-  const { mint, name, ticker, logoUri, amountUi, amountUsd } = coin
-
-  const dispatch = useDispatch()
-  const hasShownConfettiRef = useRef(false)
-
-  useEffect(() => {
-    if (!hasShownConfettiRef.current) {
-      dispatch(musicConfettiActions.show())
-      hasShownConfettiRef.current = true
-    }
-  }, [dispatch])
-
-  const navigate = useNavigate()
-
-  const handleUploadCoinGatedTrack = () => {
-    navigate(route.UPLOAD_PAGE)
-  }
-
-  const handleShareToX = () => {
-    const shareText = `My artist coin $${ticker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
-    window.open(shareUrl, '_blank')
-  }
-
-  return (
-    <>
-      <ConnectedMusicConfetti />
-      <ModalHeader showDismissButton>
-        <ModalTitle title={messages.congratsTitle} />
-      </ModalHeader>
-      <ModalContent>
-        <Flex column gap='2xl' w='100%'>
-          {/* Congratulatory Message */}
-          <Text variant='body' size='l' color='default'>
-            {messages.congratsDescription}
-          </Text>
-
-          {/* Purchase Summary */}
-          <Flex column gap='m' w='100%'>
-            <Text variant='label' size='l' color='subdued'>
-              {messages.purchaseSummary}
-            </Text>
-            <Paper
-              p='m'
-              gap='m'
-              w='100%'
-              borderRadius='s'
-              border='default'
-              backgroundColor='surface1'
-            >
-              <Flex alignItems='center' gap='m' w='100%'>
-                <Artwork src={logoUri} w='48px' h='48px' hex borderWidth={0} />
-
-                <Flex column gap='xs' flex={1}>
-                  <Text variant='title' size='m' color='default'>
-                    {name}
-                  </Text>
-                  <Flex
-                    alignItems='center'
-                    justifyContent='space-between'
-                    w='100%'
-                  >
-                    <Text variant='title' size='s' strength='weak'>
-                      {amountUi} <Text color='subdued'>${ticker}</Text>
-                    </Text>
-                    <Text variant='title' size='s' strength='weak'>
-                      ${amountUsd}
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Flex>
-            </Paper>
-          </Flex>
-
-          {/* Contract Address Section */}
-          <Flex column gap='m' w='100%'>
-            <Text variant='label' size='l' color='subdued'>
-              {messages.addressTitle}
-            </Text>
-            <AddressTile address={mint} />
-          </Flex>
-
-          {/* Action Buttons */}
-          <Flex column gap='s' w='100%'>
-            <Button
-              variant='primary'
-              fullWidth
-              onClick={handleUploadCoinGatedTrack}
-              iconLeft={IconShare}
-            >
-              {messages.uploadCoinGatedTrack}
-            </Button>
-
-            <Button
-              variant='secondary'
-              fullWidth
-              onClick={handleShareToX}
-              iconLeft={IconX}
-            >
-              {messages.shareToX}
-            </Button>
-          </Flex>
-        </Flex>
-      </ModalContent>
-    </>
-  )
-}
 
 /**
  * Rare edge case modal where the SDK call to add the coin to Audius fails
@@ -308,65 +174,44 @@ const ErrorState = ({
 
 export const LaunchpadSubmitModal = ({
   isPending,
-  isSuccess,
   isError,
   isOpen,
   onClose,
   mintAddress,
-  logoUri,
   errorMetadata
 }: {
   isPending: boolean
-  isSuccess: boolean
   isError: boolean
   isOpen: boolean
   onClose: () => void
   mintAddress: string | undefined
-  logoUri: string | undefined
   errorMetadata?: LaunchCoinErrorMetadata
 }) => {
   const { values } = useFormikContext<SetupFormValues>()
-  const { coinName, coinSymbol, receiveAmount, payAmount } = values
-  const coin = {
-    mint: mintAddress || errorMetadata?.coinMetadata?.mint,
-    name: coinName,
-    ticker: coinSymbol,
-    logoUri,
-    amountUi: receiveAmount,
-    amountUsd: receiveAmount
-  }
+  const { payAmount } = values
+  const payAmountNumber = Number(wAUDIO(payAmount).value)
+
   const isFirstBuyRetry =
     errorMetadata?.requestedFirstBuy && errorMetadata?.poolCreateConfirmed
-  const numTxs = payAmount && !isFirstBuyRetry ? 2 : 1
+  const numTxs = payAmount && payAmountNumber > 0 && !isFirstBuyRetry ? 2 : 1
 
   // Keep track of current state in a string so we avoid overlapping states
-  const currentState = isPending
-    ? 'pending'
-    : isSuccess
-      ? 'success'
-      : isError
-        ? 'error'
-        : 'closed'
+  const currentState = isPending ? 'pending' : isError ? 'error' : 'closed'
   return (
     <Modal
       isOpen={isOpen}
-      size={
-        currentState === 'success' || currentState === 'error'
-          ? 'small'
-          : undefined
-      }
+      size={currentState === 'error' ? 'small' : undefined}
       onClose={() => {
-        if (currentState === 'success' || currentState === 'error') {
+        if (currentState === 'error') {
           onClose()
         }
       }}
     >
       {currentState === 'pending' ? <LoadingState numTxs={numTxs} /> : null}
-      {currentState === 'success' ? <SuccessState coin={coin} /> : null}
       {currentState === 'error' ? (
         <ErrorState
           errorMetadata={errorMetadata}
-          mintAddress={coin.mint}
+          mintAddress={mintAddress || errorMetadata?.coinMetadata?.mint}
           onClose={onClose}
         />
       ) : null}

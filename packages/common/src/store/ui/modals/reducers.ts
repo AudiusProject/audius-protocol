@@ -3,8 +3,10 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 import { addCashModalReducer } from './add-cash-modal'
 import { albumTrackRemoveConfirmationModalReducer } from './album-track-remove-confirmation-modal'
 import { announcementModalReducer } from './announcement-modal'
+import { artistCoinDetailsModalReducer } from './artist-coin-details-modal'
 import { artistPickModalReducer } from './artist-pick-modal'
 import { buySellModalReducer } from './buy-sell-modal'
+import { coinSuccessModalReducer } from './coin-success-modal'
 import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { connectedWalletsModalReducer } from './connected-wallets-modal'
@@ -86,7 +88,9 @@ const combinedReducers = combineReducers({
   HostRemixContest: hostRemixContestModalReducer,
   FinalizeWinnersConfirmation: finalizeWinnersConfirmationModalReducer,
   ReceiveTokensModal: receiveTokensModalReducer,
-  SendTokensModal: sendTokensModalReducer
+  SendTokensModal: sendTokensModalReducer,
+  CoinSuccessModal: coinSuccessModalReducer,
+  ArtistCoinDetailsModal: artistCoinDetailsModalReducer
 })
 
 /**

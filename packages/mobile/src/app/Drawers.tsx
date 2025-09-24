@@ -6,6 +6,7 @@ import type { Modals } from '@audius/common/store'
 import { AddCashDrawer } from 'app/components/add-funds-drawer/AddCashDrawer'
 import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
+import { ArtistCoinDetailsDrawer } from 'app/components/artist-coin-details-drawer/ArtistCoinDetailsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
@@ -56,6 +57,7 @@ import { ConnectNewWalletDrawer } from 'app/screens/external-wallets/components/
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { PickWinnersDrawer } from 'app/screens/track-screen/PickWinnersDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
+import { WalletRowOverflowMenu } from 'app/screens/wallet-screen/components/LinkedWallets'
 
 import { useDrawerState } from '../components/drawer'
 import {
@@ -143,7 +145,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   HostRemixContest: HostRemixContestDrawer,
   WithdrawUSDCModal: WithdrawUSDCDrawer,
   ReceiveTokensModal: ReceiveTokensDrawer,
-  SendTokensModal: SendTokensDrawer
+  SendTokensModal: SendTokensDrawer,
+  ArtistCoinDetailsModal: ArtistCoinDetailsDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -168,7 +171,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   Welcome: WelcomeDrawer,
   ConnectNewWallet: ConnectNewWalletDrawer,
   PickWinners: PickWinnersDrawer,
-  AssetInsightsOverflowMenu
+  AssetInsightsOverflowMenu,
+  WalletRowOverflowMenu
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [
