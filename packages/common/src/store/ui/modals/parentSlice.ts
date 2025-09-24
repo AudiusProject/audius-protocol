@@ -84,6 +84,7 @@ export const initialState: BasicModalsState = {
   FinalizeWinnersConfirmation: { isOpen: false },
   ReceiveTokensModal: { isOpen: false },
   SendTokensModal: { isOpen: false },
+  CoinSuccessModal: { isOpen: false },
   ArtistCoinDetailsModal: { isOpen: false }
 }
 
