@@ -11,18 +11,10 @@ import { FeatureFlags } from '@audius/common/services'
 import { AUDIO_TICKER } from '@audius/common/store'
 import { ownedCoinsFilter } from '@audius/common/utils'
 
-import {
-  Box,
-  Button,
-  Divider,
-  Flex,
-  Paper,
-  Skeleton,
-  Text
-} from '@audius/harmony-native'
+import { Box, Button, Divider, Flex, Paper, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { CoinCard } from './CoinCard'
+import { CoinCard, CoinCardSkeleton, HexagonalSkeleton } from './CoinCard'
 
 const messages = {
   ...buySellMessages
@@ -30,19 +22,10 @@ const messages = {
 
 const YourCoinsSkeleton = () => {
   return (
-    <Flex column>
-      <Flex p='l' pl='xl' row alignItems='center' gap='l'>
-        <Box w={64} h={64}>
-          <Skeleton />
-        </Box>
-        <Flex column gap='xs'>
-          <Box w={240} h={36}>
-            <Skeleton />
-          </Box>
-          <Box w={140} h={24}>
-            <Skeleton />
-          </Box>
-        </Flex>
+    <Flex p='l' pl='xl' row justifyContent='space-between' alignItems='center'>
+      <Flex row alignItems='center' gap='l'>
+        <HexagonalSkeleton />
+        <CoinCardSkeleton />
       </Flex>
     </Flex>
   )
