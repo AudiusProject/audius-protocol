@@ -79,9 +79,9 @@ export const useLaunchCoin = () => {
       const errorMetadata: LaunchCoinErrorMetadata = {
         userId,
         lastStep: '',
-        relayResponseReceived: true,
-        poolCreateConfirmed: true,
-        sdkCoinAdded: true,
+        relayResponseReceived: false,
+        poolCreateConfirmed: false,
+        sdkCoinAdded: false,
         firstBuyConfirmed: false,
         requestedFirstBuy: !!initialBuyAmountAudio,
         createPoolTx: '',
@@ -208,7 +208,6 @@ export const useLaunchCoin = () => {
             additionalInfo: errorMetadata
           })
         }
-        console.log({ errorMetadata })
         return { isError: true, errorMetadata, newMint: '', logoUri: '' }
       }
     },
