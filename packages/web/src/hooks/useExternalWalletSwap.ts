@@ -12,7 +12,6 @@ import { SwapRequest } from '@jup-ag/api'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { TokenInfo } from '~/store'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { reportToSentry } from 'store/errors/reportToSentry'

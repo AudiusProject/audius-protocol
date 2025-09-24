@@ -27,11 +27,7 @@ import {
   AlreadyAssociatedError
 } from 'hooks/useConnectAndAssociateWallets'
 import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
-import {
-  LAUNCHPAD_COIN_DECIMALS,
-  LaunchCoinErrorMetadata,
-  useLaunchCoin
-} from 'hooks/useLaunchCoin'
+import { LAUNCHPAD_COIN_DECIMALS, useLaunchCoin } from 'hooks/useLaunchCoin'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { ConnectedWalletHeader } from './components'
