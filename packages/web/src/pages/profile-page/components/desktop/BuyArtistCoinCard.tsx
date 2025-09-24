@@ -19,7 +19,7 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
 
   const handleBuyCoins = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent triggering Paper's onClick
-    openBuySellModal()
+    openBuySellModal({ ticker: artistCoin?.ticker ?? undefined, isOpen: true })
   }
 
   const handleCardClick = () => {
