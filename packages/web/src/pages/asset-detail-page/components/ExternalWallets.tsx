@@ -55,8 +55,6 @@ const WalletRow = ({
 }: WalletRowProps) => {
   const { toast } = useContext(ToastContext)
   const [isRemovingWallet, setIsRemovingWallet] = useState(false)
-  const queryClient = useQueryClient()
-  const { data: currentUserId } = useCurrentUserId()
   // For connected wallets we want to use the root wallet address, for in-app wallets the owner will be us and not the user so we need to use the token account address
   const address = isInAppWallet ? account : owner
   const copyAddressToClipboard = useCallback(() => {
@@ -67,21 +65,13 @@ const WalletRow = ({
   const { mutateAsync: removeConnectedWalletAsync } = useRemoveConnectedWallet()
 
   const handleRemove = useCallback(async () => {
-    try {
-      setIsRemovingWallet(true)
-      await removeConnectedWalletAsync({
-        wallet: { address, chain: Chain.Sol }
-      })
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.userCoin, currentUserId]
-      })
-      toast(messages.toasts.walletRemoved)
-    } catch (e) {
-      toast(messages.toasts.error)
-    } finally {
-      setIsRemovingWallet(false)
-    }
-  }, [removeConnectedWalletAsync, address, queryClient, toast, currentUserId])
+    setIsRemovingWallet(true)
+    await removeConnectedWalletAsync({
+      wallet: { address, chain: Chain.Sol },
+      toast: (message) => toast(message)
+    })
+    setIsRemovingWallet(false)
+  }, [removeConnectedWalletAsync, address, toast])
 
   const items: PopupMenuItem[] = useMemo(
     () =>

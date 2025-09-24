@@ -26,10 +26,10 @@ import {
   useTheme,
   LoadingSpinner
 } from '@audius/harmony'
-import { useQueryClient } from '@tanstack/react-query'
 
 import { ToastContext } from 'components/toast/ToastContext'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 
 import {
   AlreadyAssociatedError,
@@ -192,7 +192,10 @@ const WalletEmptyState = () => {
   const { toast } = useContext(ToastContext)
 
   const handleAddWalletSuccess = useCallback(async () => {
-    toast(walletMessages.linkedWallets.newWalletConnected, COPIED_TOAST_TIMEOUT)
+    toast(
+      walletMessages.linkedWallets.newWalletConnected,
+      NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS
+    )
   }, [toast])
 
   const handleAddWalletError = useCallback(
@@ -232,7 +235,7 @@ export const LinkedWallets = () => {
   const { data: connectedWallets, isLoading } = useConnectedWallets()
   const { toast } = useContext(ToastContext)
 
-  const hasWallets = (connectedWallets?.length ?? 0) > 0
+  const hasWallets = !!connectedWallets?.length
   const walletCount = connectedWallets?.length ?? 0
 
   const handleAddWalletSuccess = useCallback(async () => {

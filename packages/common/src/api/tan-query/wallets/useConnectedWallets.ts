@@ -1,4 +1,3 @@
-import { useCallback } from 'react'
 import { Id } from '@audius/sdk'
 import {
   queryOptions,
@@ -13,13 +12,13 @@ import {
   useQueryContext,
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
+import { walletMessages } from '~/messages'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { getUserCollectiblesQueryKey } from '../users/useUserCollectibles'
-import { walletMessages } from '~/messages'
 
 export type ConnectedWallet = {
   address: string
@@ -198,6 +197,10 @@ export const useRemoveConnectedWallet = () => {
       })
       queryClient.invalidateQueries({
         queryKey: getUserCollectiblesQueryKey({ userId: currentUserId })
+      })
+      // Invalidate user coin query to update balances
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.userCoin, currentUserId]
       })
 
       // Temporarily manually refetch relevant redux states

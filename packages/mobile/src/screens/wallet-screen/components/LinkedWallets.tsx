@@ -3,14 +3,12 @@ import { useCallback, useMemo, useState } from 'react'
 import type { ConnectedWallet } from '@audius/common/api'
 import {
   useConnectedWallets,
-  useRemoveConnectedWallet,
-  useCurrentUserId
+  useRemoveConnectedWallet
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { Chain } from '@audius/common/models'
 import { shortenSPLAddress, WALLET_COUNT_LIMIT } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { useQueryClient } from '@tanstack/react-query'
 
 import {
   Button,
@@ -131,15 +129,12 @@ export const WalletRowOverflowMenu = () => {
   const handleRemove = useCallback(async () => {
     if (!address || !chain || !setIsRemovingWallet) return
 
-    try {
-      setIsRemovingWallet(true)
-      await removeConnectedWalletAsync({
-        wallet: { address, chain },
-        toast: (message, type) => toast({ content: message, type })
-      })
-    } finally {
-      setIsRemovingWallet(false)
-    }
+    setIsRemovingWallet(true)
+    await removeConnectedWalletAsync({
+      wallet: { address, chain },
+      toast: (message, type) => toast({ content: message, type })
+    })
+    setIsRemovingWallet(false)
   }, [address, chain, setIsRemovingWallet, removeConnectedWalletAsync, toast])
 
   const rows: ActionDrawerRow[] = useMemo(
@@ -203,7 +198,7 @@ export const LinkedWallets = () => {
   const navigation = useNavigation()
   const { data: connectedWallets, isLoading } = useConnectedWallets()
 
-  const hasWallets = (connectedWallets?.length ?? 0) > 0
+  const hasWallets = !!connectedWallets?.length
   const walletCount = connectedWallets?.length ?? 0
 
   const handleAddWallet = useCallback(() => {
