@@ -2,11 +2,12 @@ import { useCallback } from 'react'
 
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
+import { useArtistCoinDetailsModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Linking } from 'react-native'
 
-import { IconCopy, IconExternalLink } from '@audius/harmony-native'
+import { IconCopy, IconExternalLink, IconInfo } from '@audius/harmony-native'
 import ActionDrawer, {
   type ActionDrawerRow
 } from 'app/components/action-drawer/ActionDrawer'
@@ -20,6 +21,7 @@ export const AssetInsightsOverflowMenu = () => {
   const mint = drawerData?.mint
   const { data: artistCoin } = useArtistCoin(mint)
   const { toast } = useToast()
+  const { onOpen: openArtistCoinDetailsModal } = useArtistCoinDetailsModal()
 
   const handleCopyCoinAddress = useCallback(() => {
     if (artistCoin?.mint) {
@@ -34,7 +36,18 @@ export const AssetInsightsOverflowMenu = () => {
     }
   }, [artistCoin?.mint])
 
+  const handleOpenDetails = useCallback(() => {
+    if (mint) {
+      openArtistCoinDetailsModal({ mint, isOpen: true })
+    }
+  }, [mint, openArtistCoinDetailsModal])
+
   const rows: ActionDrawerRow[] = [
+    {
+      text: messages.details,
+      icon: <IconInfo color='accent' />,
+      callback: handleOpenDetails
+    },
     {
       text: messages.copyCoinAddress,
       icon: <IconCopy color='accent' />,

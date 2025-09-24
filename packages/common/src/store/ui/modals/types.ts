@@ -116,6 +116,7 @@ export type Modals =
   | 'HostRemixContest'
   | 'ReceiveTokensModal'
   | 'SendTokensModal'
+  | 'ArtistCoinDetailsModal'
   | 'FinalizeWinnersConfirmation'
 
 export type BasicModalsState = {
@@ -154,6 +155,7 @@ export type StatefulModalsState = {
   HostRemixContest: HostRemixContestModalState
   ReceiveTokensModal: ReceiveTokensModalState
   SendTokensModal: SendTokensModalState
+  ArtistCoinDetailsModal: ArtistCoinDetailsModalState
 }
 
 export type ReceiveTokensModalState = BaseModalState & {
@@ -161,6 +163,10 @@ export type ReceiveTokensModalState = BaseModalState & {
 }
 
 export type SendTokensModalState = BaseModalState & {
+  mint?: string
+}
+
+export type ArtistCoinDetailsModalState = BaseModalState & {
   mint?: string
 }
 

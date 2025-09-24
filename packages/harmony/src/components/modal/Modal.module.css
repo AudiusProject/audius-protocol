@@ -58,7 +58,6 @@
   width: 100vw;
   min-height: 100vh;
   z-index: var(--harmony-layer-modal);
-  user-select: none;
   display: flex;
   justify-content: center;
   pointer-events: all;
