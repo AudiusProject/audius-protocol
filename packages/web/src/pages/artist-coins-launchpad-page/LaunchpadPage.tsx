@@ -252,14 +252,14 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
 }
 
 export const LaunchpadPage = () => {
-  const { data: currentUser } = useCurrentAccountUser()
+  // const { data: currentUser } = useCurrentAccountUser()
   const { data: currentUserId } = useCurrentUserId()
   const { data: createdCoins } = useUserCreatedCoins({
     userId: currentUserId
   })
 
   // TODO (PE-6821) This is temporarily disabled to allow for testing
-  const isVerified = false // currentUser?.is_verified ?? false
+  const isVerified = true // currentUser?.is_verified ?? false
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const {
