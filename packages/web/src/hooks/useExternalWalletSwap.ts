@@ -19,8 +19,8 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 
 type ExternalWalletSwapParams = {
   inputAmountUi: number
-  inputToken: TokenInfo
-  outputToken: TokenInfo
+  inputToken: { decimals: number; address: string }
+  outputToken: { decimals: number; address: string }
   walletAddress: string
   isAMM: boolean
 }
@@ -93,8 +93,6 @@ export const useExternalWalletSwap = () => {
         return {
           signature: txSignature,
           inputAmount: inputAmountUi,
-          inputToken: inputToken.symbol,
-          outputToken: outputToken.symbol,
           progress: hookProgress,
           isError: false
         }

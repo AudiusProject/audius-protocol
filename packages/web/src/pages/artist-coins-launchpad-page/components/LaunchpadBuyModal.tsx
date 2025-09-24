@@ -388,7 +388,8 @@ export const LaunchpadBuyModal = ({
         inputAmountUi: Number(buyModalForm.values.inputAmount),
         inputToken: selectedInputToken,
         outputToken: OUTPUT_TOKEN,
-        walletAddress: externalWalletAddress!
+        walletAddress: externalWalletAddress!,
+        isAMM: false
       })
     }
   }

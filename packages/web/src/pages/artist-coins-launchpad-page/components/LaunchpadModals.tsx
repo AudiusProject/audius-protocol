@@ -33,7 +33,7 @@ import { SetupFormValues } from './types'
 const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
   launchingCoinDescription: (numTxs: number) =>
-    `You have ${numTxs} transactions to sign. Please don't close this page.`,
+    `You have ${numTxs} transaction${numTxs > 1 ? 's' : ''} to sign. Please don't close this page.`,
   couldTakeAMoment: 'This could take a moment.',
   congratsTitle: '🎉 Congrats!',
   title: 'Create Your Artist Coin',
@@ -335,7 +335,9 @@ export const LaunchpadSubmitModal = ({
     amountUi: receiveAmount,
     amountUsd: receiveAmount
   }
-  const numTxs = payAmount ? 2 : 1
+  const isFirstBuyRetry =
+    errorMetadata?.requestedFirstBuy && errorMetadata?.poolCreateConfirmed
+  const numTxs = payAmount && !isFirstBuyRetry ? 2 : 1
 
   // Keep track of current state in a string so we avoid overlapping states
   const currentState = isPending
