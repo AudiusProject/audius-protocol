@@ -3,9 +3,6 @@ import numeral from 'numeral'
 
 const PRECISION = 2
 
-// Currency formatting constants
-export const CURRENCY_FORMAT_MAX = 100_000
-
 export type DecimalUtilOptions = {
   /** Number of digits used on the right side of human-readable values. Defaults to 2 */
   precision?: number
