@@ -16,7 +16,7 @@ const BASE_TOKEN_METADATA = {
     chainId: 101,
     address: 'So11111111111111111111111111111111111111112',
     symbol: 'SOL',
-    name: 'Wrapped SOL',
+    name: 'Solana',
     decimals: 9,
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'
