@@ -3,7 +3,7 @@ import { useCallback, useContext, useState } from 'react'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
-import { route } from '@audius/common/utils'
+import { formatTickerForUrl, route } from '@audius/common/utils'
 import {
   PopupMenu,
   PopupMenuItem,
@@ -62,10 +62,12 @@ export const AssetInsightsOverflowMenu = ({
   const onOpenDetails = () => {
     if (isMobile) {
       if (artistCoin?.ticker) {
-        const urlTicker = artistCoin?.ticker.startsWith('$')
-          ? artistCoin?.ticker.slice(1)
-          : artistCoin?.ticker
-        navigate(COIN_DETAIL_ROUTE.replace(':ticker', urlTicker))
+        navigate(
+          COIN_DETAIL_ROUTE.replace(
+            ':ticker',
+            formatTickerForUrl(artistCoin.ticker)
+          )
+        )
       }
     } else {
       setIsDetailsModalOpen(true)

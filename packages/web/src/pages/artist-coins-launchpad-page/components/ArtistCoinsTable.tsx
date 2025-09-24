@@ -4,7 +4,11 @@ import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
-import { formatCurrencyWithSubscript, formatCount } from '@audius/common/utils'
+import {
+  formatCurrencyWithSubscript,
+  formatCount,
+  formatTickerForUrl
+} from '@audius/common/utils'
 import {
   Button,
   Flex,
@@ -44,10 +48,10 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
     return null
   }
 
-  const urlTicker = coin.ticker.startsWith('$')
-    ? coin.ticker.slice(1)
-    : coin.ticker
-  const assetDetailUrl = ASSET_DETAIL_PAGE.replace(':ticker', urlTicker)
+  const assetDetailUrl = ASSET_DETAIL_PAGE.replace(
+    ':ticker',
+    formatTickerForUrl(coin.ticker)
+  )
 
   return (
     <Flex
@@ -365,10 +369,9 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     (e: React.MouseEvent<HTMLTableRowElement>, rowInfo: any) => {
       const coin = rowInfo.original
       if (coin?.ticker) {
-        const urlTicker = coin.ticker.startsWith('$')
-          ? coin.ticker.slice(1)
-          : coin.ticker
-        navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker))
+        navigate(
+          ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(coin.ticker))
+        )
       }
     },
     [navigate]

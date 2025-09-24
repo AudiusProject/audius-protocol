@@ -27,7 +27,7 @@ import {
 } from '@audius/harmony'
 import type { CSSObject } from '@emotion/react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { ownedCoinsFilter } from '~/utils'
+import { formatTickerForUrl, ownedCoinsFilter } from '~/utils'
 import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
@@ -172,8 +172,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
 
   const handleCoinClick = useCallback(
     (ticker: string) => {
-      const urlTicker = ticker.startsWith('$') ? ticker.slice(1) : ticker
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker))
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(ticker)))
     },
     [navigate]
   )

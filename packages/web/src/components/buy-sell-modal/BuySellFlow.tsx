@@ -25,6 +25,7 @@ import {
   useSafeTokenPair,
   useBuySellTabsArray
 } from '@audius/common/store'
+import { formatTickerFromUrl } from '@audius/common/utils'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
@@ -113,7 +114,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     exact: true
   })
   const { data: selectedPair } = useTokenPair({
-    baseSymbol: initialTicker ?? `$${match?.params.ticker}`,
+    baseSymbol:
+      initialTicker ?? formatTickerFromUrl(match?.params.ticker ?? ''),
     quoteSymbol: 'USDC'
   })
 
