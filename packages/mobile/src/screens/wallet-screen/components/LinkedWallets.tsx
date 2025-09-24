@@ -31,6 +31,8 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 
+const WALLET_ROW_HEIGHT = 52
+
 type WalletRowProps = {
   address: string
   chain: Chain
@@ -62,7 +64,7 @@ const WalletRowContent = ({
       w='100%'
       ph='l'
       pv='m'
-      h={spacing.unit13}
+      h={WALLET_ROW_HEIGHT}
       style={{ opacity: isRemovingWallet ? 0.5 : 1 }}
     >
       <Flex row alignItems='center' gap='s'>
@@ -131,11 +133,10 @@ export const WalletRowOverflowMenu = () => {
 
     setIsRemovingWallet(true)
     await removeConnectedWalletAsync({
-      wallet: { address, chain },
-      toast: (message, type) => toast({ content: message, type })
+      wallet: { address, chain }
     })
     setIsRemovingWallet(false)
-  }, [address, chain, setIsRemovingWallet, removeConnectedWalletAsync, toast])
+  }, [address, chain, setIsRemovingWallet, removeConnectedWalletAsync])
 
   const rows: ActionDrawerRow[] = useMemo(
     () => [

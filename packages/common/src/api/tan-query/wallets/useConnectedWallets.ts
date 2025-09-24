@@ -15,6 +15,7 @@ import {
 import { walletMessages } from '~/messages'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
+import { toast } from '~/store/ui/toast/slice'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
@@ -163,7 +164,6 @@ export const useAddConnectedWallet = () => {
 
 export type RemoveConnectedWalletParams = {
   wallet: { address: string; chain: Chain }
-  toast?: (message: string, type: 'info' | 'error') => void
 }
 
 export const useRemoveConnectedWallet = () => {
@@ -186,10 +186,13 @@ export const useRemoveConnectedWallet = () => {
       })
       return response
     },
-    onSuccess: (_, { toast }) => {
-      if (toast) {
-        toast(walletMessages.linkedWallets.toasts.walletRemoved, 'info')
-      }
+    onSuccess: () => {
+      dispatch(
+        toast({
+          content: walletMessages.linkedWallets.toasts.walletRemoved,
+          type: 'info'
+        })
+      )
     },
     onSettled: () => {
       queryClient.invalidateQueries({
@@ -214,10 +217,13 @@ export const useRemoveConnectedWallet = () => {
         )
       )
     },
-    onError: (error, { toast }) => {
-      if (toast) {
-        toast(walletMessages.linkedWallets.toasts.error, 'error')
-      }
+    onError: (error) => {
+      dispatch(
+        toast({
+          content: walletMessages.linkedWallets.toasts.error,
+          type: 'error'
+        })
+      )
       reportToSentry({
         error,
         name: 'Remove Connected Wallet'

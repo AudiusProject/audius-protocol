@@ -75,11 +75,10 @@ const WalletRow = ({
   const handleRemove = useCallback(async () => {
     setIsRemovingWallet(true)
     await removeConnectedWalletAsync({
-      wallet: { address, chain: Chain.Sol },
-      toast: (message) => toast(message)
+      wallet: { address, chain: Chain.Sol }
     })
     setIsRemovingWallet(false)
-  }, [removeConnectedWalletAsync, address, toast])
+  }, [removeConnectedWalletAsync, address])
 
   const items: PopupMenuItem[] = useMemo(
     () =>
@@ -115,7 +114,7 @@ const WalletRow = ({
         </Text>
       </Flex>
       <Flex css={{ flex: 1 }} justifyContent='flex-end'>
-        <Text variant='body' size='m' strength='strong' color='default'>
+        <Text variant='body' size='m' strength='strong'>
           {Math.trunc(balance / Math.pow(10, decimals)).toLocaleString()}
         </Text>
       </Flex>

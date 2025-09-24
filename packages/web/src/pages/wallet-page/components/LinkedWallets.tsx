@@ -121,13 +121,12 @@ const WalletRow = ({
     try {
       setIsRemovingWallet(true)
       await removeConnectedWalletAsync({
-        wallet: { address, chain },
-        toast: (message) => toast(message)
+        wallet: { address, chain }
       })
     } finally {
       setIsRemovingWallet(false)
     }
-  }, [removeConnectedWalletAsync, address, chain, toast])
+  }, [removeConnectedWalletAsync, address, chain])
 
   const items: PopupMenuItem[] = useMemo(
     () =>
