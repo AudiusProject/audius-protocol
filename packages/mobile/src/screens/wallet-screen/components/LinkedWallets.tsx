@@ -54,8 +54,6 @@ const WalletRowContent = ({
   isRemovingWallet,
   onOpenOverflowMenu
 }: WalletRowContentProps) => {
-  const { spacing } = useTheme()
-
   return (
     <Flex
       row
