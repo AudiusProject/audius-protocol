@@ -10,7 +10,7 @@ import {
 import { launchpadMessages } from '@audius/common/messages'
 import { Feature } from '@audius/common/models'
 import { TOKEN_LISTING_MAP, useCoinSuccessModal } from '@audius/common/store'
-import { shortenSPLAddress, routes } from '@audius/common/utils'
+import { shortenSPLAddress, route } from '@audius/common/utils'
 import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
 import { Flex, IconArtistCoin, IconCheck, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
@@ -335,7 +335,7 @@ export const LaunchpadPage = () => {
 
       // Navigate to the new coin's detail page
       navigate(
-        routes.ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol)
+        route.ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol)
       )
 
       // Open the success modal
