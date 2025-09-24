@@ -1,46 +1,20 @@
 import { useArtistCoin } from '@audius/common/api'
-import { FixedDecimal } from '@audius/fixed-decimal'
+import { coinDetailsMessages } from '@audius/common/messages'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
   Flex,
   Text,
   Divider,
-  IconInfo
+  IconInfo,
+  Button,
+  useTheme
 } from '@audius/harmony'
 
 import { TokenIcon } from '../../../components/buy-sell-modal/TokenIcon'
+import ResponsiveModal from '../../../components/modal/ResponsiveModal'
 import { TokenInfoRow } from '../../artist-coins-launchpad-page/components/TokenInfoRow'
 
-const messages = {
-  details: 'Details',
-  unknown: 'Unknown',
-  unknownToken: 'Unknown Token',
-  unknownTicker: 'UNKNOWN',
-  coinAddress: 'Coin Address',
-  onChainDescription: 'On-Chain Description',
-  totalSupply: 'Total Supply',
-  marketCap: 'Market Cap',
-  fdv: 'Fully Diluted Valuation',
-  price: 'Current Price',
-  liquidity: 'Liquidity',
-  circulatingSupply: 'Circulating Supply'
-}
-
-const tooltipContent = {
-  totalSupply:
-    'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
-  marketCap:
-    'The current total value of all your artist coins in circulation, calculated by multiplying the current price by the total supply.',
-  fdv: 'The theoretical market cap if all tokens were in circulation, calculated by multiplying the current price by the total supply.',
-  price: 'The current price of a single artist coin in USD.',
-  liquidity:
-    'The amount of funds available for trading your artist coin, which affects how easily it can be bought or sold.',
-  circulatingSupply:
-    'The number of artist coins currently available for trading, excluding any tokens that are locked or reserved.'
-}
+const { artistCoinDetails } = coinDetailsMessages
 
 type ArtistCoinDetailsModalProps = {
   /**
@@ -62,139 +36,133 @@ export const ArtistCoinDetailsModal = ({
   onClose,
   mint
 }: ArtistCoinDetailsModalProps) => {
+  const { spacing } = useTheme()
   const { data: artistCoin } = useArtistCoin(mint)
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size='small'>
-      <ModalHeader>
-        <ModalTitle Icon={IconInfo} title={messages.details} />
-      </ModalHeader>
-
-      <ModalContent>
-        <Flex direction='column' gap='l' p='l'>
-          {/* Token Info Section */}
-          <Flex direction='column' gap='m'>
-            <Flex alignItems='center' gap='m'>
-              {/* Token Icon */}
-              <TokenIcon logoURI={artistCoin?.logoUri} w={64} h={64} />
-              <Flex direction='column' gap='xs'>
-                <Text variant='title' size='l'>
-                  {artistCoin?.name ?? messages.unknownToken}
-                </Text>
-                <Text variant='body' size='m' color='subdued'>
-                  {artistCoin?.ticker ?? messages.unknownTicker}
-                </Text>
-              </Flex>
+    <ResponsiveModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={artistCoinDetails.details}
+      Icon={IconInfo}
+      size='s'
+      isFullscreen
+    >
+      <Flex direction='column' gap='l' p='l'>
+        {/* Token Info Section */}
+        <Flex direction='column' gap='m'>
+          <Flex alignItems='center' gap='m'>
+            {/* Token Icon */}
+            <TokenIcon
+              logoURI={artistCoin?.logoUri}
+              w={spacing['4xl']}
+              h={spacing['4xl']}
+              hex
+            />
+            <Flex direction='column' gap='xs'>
+              <Text variant='title' size='l'>
+                {artistCoin?.name}
+              </Text>
+              <Text variant='body' size='m' color='subdued'>
+                {artistCoin?.ticker}
+              </Text>
             </Flex>
           </Flex>
-
-          <Divider />
-
-          {/* Coin Address */}
-          <Flex direction='column' gap='xs'>
-            <Text variant='label' size='s' color='subdued'>
-              {messages.coinAddress}
-            </Text>
-            <Text variant='body' size='s' color='default'>
-              {artistCoin?.mint ?? messages.unknown}
-            </Text>
-          </Flex>
-
-          {/* On-Chain Description */}
-          <Flex direction='column' gap='xs'>
-            <Text variant='label' size='s' color='subdued'>
-              {messages.onChainDescription}
-            </Text>
-            <Text variant='body' size='s' color='default'>
-              {artistCoin?.description ??
-                `${artistCoin?.ticker ?? 'UNKNOWN'} is an artist coin created on Audius. Learn more at https://audius.co/coin/${artistCoin?.ticker ?? 'unknown'}`}
-            </Text>
-          </Flex>
-
-          <Divider />
-
-          {/* Token Details */}
-          <Flex direction='column' gap='m'>
-            <TokenInfoRow
-              label={messages.totalSupply}
-              value={
-                artistCoin?.totalSupply
-                  ? new FixedDecimal(
-                      artistCoin.totalSupply.toString(),
-                      0
-                    ).toLocaleString()
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.totalSupply}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.marketCap}
-              value={
-                artistCoin?.marketCap
-                  ? `$${new FixedDecimal(artistCoin.marketCap.toString(), 2).toLocaleString()}`
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.marketCap}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.fdv}
-              value={
-                artistCoin?.fdv
-                  ? `$${new FixedDecimal(artistCoin.fdv.toString(), 2).toLocaleString()}`
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.fdv}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.price}
-              value={
-                artistCoin?.price
-                  ? `$${new FixedDecimal(artistCoin.price.toString(), 6).toLocaleString()}`
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.price}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.liquidity}
-              value={
-                artistCoin?.liquidity
-                  ? `$${new FixedDecimal(artistCoin.liquidity.toString(), 2).toLocaleString()}`
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.liquidity}
-              variant='block'
-            />
-
-            <TokenInfoRow
-              label={messages.circulatingSupply}
-              value={
-                artistCoin?.circulatingSupply
-                  ? new FixedDecimal(
-                      artistCoin.circulatingSupply.toString(),
-                      0
-                    ).toLocaleString()
-                  : messages.unknown
-              }
-              hasTooltip
-              tooltipContent={tooltipContent.circulatingSupply}
-              variant='block'
-            />
-          </Flex>
         </Flex>
-      </ModalContent>
-    </Modal>
+
+        <Divider />
+
+        {/* Coin Address */}
+        {artistCoin?.mint ? (
+          <TokenInfoRow
+            label={artistCoinDetails.coinAddress}
+            value={artistCoin.mint}
+            variant='block'
+          />
+        ) : null}
+
+        {/* On-Chain Description */}
+        {artistCoin?.description ? (
+          <TokenInfoRow
+            label={artistCoinDetails.onChainDescription}
+            value={artistCoin.description}
+            variant='block'
+          />
+        ) : null}
+
+        <Divider />
+
+        {/* Token Details */}
+        <Flex direction='column' gap='m'>
+          {artistCoin?.totalSupply ? (
+            <TokenInfoRow
+              label={artistCoinDetails.totalSupply}
+              value={artistCoin.totalSupply.toLocaleString()}
+              hasTooltip
+              tooltipContent={artistCoinDetails.tooltips.totalSupply}
+              variant='block'
+            />
+          ) : null}
+
+          {artistCoin?.marketCap ? (
+            <TokenInfoRow
+              label={artistCoinDetails.marketCap}
+              value={`$${artistCoin.marketCap.toLocaleString()}`}
+              hasTooltip
+              tooltipContent={artistCoinDetails.tooltips.marketCap}
+              variant='block'
+            />
+          ) : null}
+
+          {artistCoin?.fdv ? (
+            <TokenInfoRow
+              label={artistCoinDetails.fdv}
+              value={`$${artistCoin.fdv.toLocaleString()}`}
+              hasTooltip
+              tooltipContent={artistCoinDetails.tooltips.fdv}
+              variant='block'
+            />
+          ) : null}
+
+          {artistCoin?.price ? (
+            <TokenInfoRow
+              label={artistCoinDetails.price}
+              value={formatCurrencyWithSubscript(artistCoin.price)}
+              hasTooltip
+              tooltipContent={artistCoinDetails.tooltips.price}
+              variant='block'
+            />
+          ) : null}
+
+          {artistCoin?.liquidity ? (
+            <TokenInfoRow
+              label={artistCoinDetails.liquidity}
+              value={`$${artistCoin.liquidity.toLocaleString()}`}
+              hasTooltip
+              tooltipContent={artistCoinDetails.tooltips.liquidity}
+              variant='block'
+            />
+          ) : null}
+
+          {artistCoin?.circulatingSupply ? (
+            <TokenInfoRow
+              label={artistCoinDetails.circulatingSupply}
+              value={artistCoin.circulatingSupply.toLocaleString()}
+              hasTooltip
+              tooltipContent={artistCoinDetails.tooltips.circulatingSupply}
+              variant='block'
+            />
+          ) : null}
+        </Flex>
+
+        {/* Close Button */}
+        <Flex direction='column' gap='l' pt='l'>
+          <Divider />
+          <Button variant='primary' onClick={onClose} fullWidth>
+            Close
+          </Button>
+        </Flex>
+      </Flex>
+    </ResponsiveModal>
   )
 }

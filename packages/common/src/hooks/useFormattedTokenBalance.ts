@@ -35,7 +35,8 @@ export const useFormattedTokenBalance = (
 
   const balance = tokenBalance?.balance
 
-  const tokenPrice = data?.price
+  const tokenPrice =
+    data?.price === 0 ? data?.dynamicBondingCurve.priceUSD : data?.price
   const hasFetchedTokenBalance = !isNullOrUndefined(balance)
 
   // Format mint balance with dynamic decimal places

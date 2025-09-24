@@ -7,11 +7,10 @@ import {
   SLIPPAGE_BPS,
   useArtistCoin,
   useCurrentAccountUser,
-  useSwapTokens,
-  useUser,
-  useUserTracksByHandle
+  useSwapTokens
 } from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
+import { TQTrack } from '~/api/tan-query/models'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 import { isContentTokenGated } from '~/models'
 
@@ -52,20 +51,6 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
   const { data: quoteCoin } = useArtistCoin(
     selectedPair.quoteToken.address ?? ''
   )
-  const baseOwnerId = baseCoin?.ownerId ? HashId.parse(baseCoin?.ownerId) : null
-  const quoteOwnerId = quoteCoin?.ownerId
-    ? HashId.parse(quoteCoin?.ownerId)
-    : null
-
-  const { data: baseUser } = useUser(baseOwnerId)
-  const { data: quoteUser } = useUser(quoteOwnerId)
-
-  const { data: baseUserTracks } = useUserTracksByHandle({
-    handle: baseUser?.handle
-  })
-  const { data: quoteUserTracks } = useUserTracksByHandle({
-    handle: quoteUser?.handle
-  })
 
   const MAX_RETRIES = 3
   const RETRY_DELAY = 2000
@@ -131,24 +116,25 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       }
 
       // Invalidate track queries to provide track access if the user has traded the artist coin
-      if (baseUserTracks?.length) {
-        baseUserTracks.forEach((track) => {
-          if (isContentTokenGated(track.stream_conditions)) {
-            queryClient.invalidateQueries({
-              queryKey: [QUERY_KEYS.track, track.track_id]
-            })
-          }
-        })
-      }
-      if (quoteUserTracks?.length) {
-        quoteUserTracks.forEach((track) => {
-          if (isContentTokenGated(track.stream_conditions)) {
-            queryClient.invalidateQueries({
-              queryKey: [QUERY_KEYS.track, track.track_id]
-            })
-          }
-        })
-      }
+      const baseOwnerId = baseCoin?.ownerId
+        ? HashId.parse(baseCoin?.ownerId)
+        : null
+      const quoteOwnerId = quoteCoin?.ownerId
+        ? HashId.parse(quoteCoin?.ownerId)
+        : null
+
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          return (
+            query.queryKey[0] === QUERY_KEYS.track &&
+            ((query.queryKey[1] as TQTrack)?.owner_id === baseOwnerId ||
+              (query.queryKey[1] as TQTrack)?.owner_id === quoteOwnerId) &&
+            isContentTokenGated(
+              (query.queryKey[1] as TQTrack)?.stream_conditions
+            )
+          )
+        }
+      })
     }
     if (user?.spl_wallet) {
       queryClient.invalidateQueries({

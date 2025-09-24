@@ -5,25 +5,38 @@ import { useFeatureFlag, useFormattedTokenBalance } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { Image, TouchableOpacity } from 'react-native'
 
-import { Flex, HexagonalIcon, Skeleton, Text } from '@audius/harmony-native'
+import {
+  Box,
+  Flex,
+  HexagonalIcon,
+  Skeleton,
+  Text
+} from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
-
-// TODO: Fix loading states
-// Skeletons are not working as expected
 
 const ICON_SIZE = 64
 
 const CoinCardSkeleton = () => {
   return (
     <Flex column gap='xs'>
-      <Skeleton w='240px' h='36px' />
-      <Skeleton w='140px' h='24px' />
+      <Box w={240} h={36}>
+        <Skeleton />
+      </Box>
+      <Box w={140} h={24}>
+        <Skeleton />
+      </Box>
     </Flex>
   )
 }
 
-const IconSkeleteon = () => {
-  return <Skeleton w={ICON_SIZE} h={ICON_SIZE} />
+const HexagonalSkeleton = () => {
+  return (
+    <HexagonalIcon size={ICON_SIZE}>
+      <Box w={ICON_SIZE} h={ICON_SIZE}>
+        <Skeleton />
+      </Box>
+    </HexagonalIcon>
+  )
 }
 
 export type CoinCardProps = {
@@ -87,7 +100,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
         alignItems='center'
       >
         <Flex row alignItems='center' gap='l'>
-          {isLoading ? <IconSkeleteon /> : renderIcon()}
+          {isLoading ? <HexagonalSkeleton /> : renderIcon()}
           <Flex column gap='xs'>
             {isLoading ? (
               <CoinCardSkeleton />
