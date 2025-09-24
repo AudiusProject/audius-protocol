@@ -44,11 +44,6 @@ export const AssetInsightsOverflowMenu = () => {
 
   const rows: ActionDrawerRow[] = [
     {
-      text: messages.details,
-      icon: <IconInfo color='accent' />,
-      callback: handleOpenDetails
-    },
-    {
       text: messages.copyCoinAddress,
       icon: <IconCopy color='accent' />,
       callback: handleCopyCoinAddress
@@ -57,6 +52,11 @@ export const AssetInsightsOverflowMenu = () => {
       text: messages.openDexscreener,
       icon: <IconExternalLink color='accent' />,
       callback: handleOpenDexscreener
+    },
+    {
+      text: messages.details,
+      icon: <IconInfo color='accent' />,
+      callback: handleOpenDetails
     }
   ]
 
