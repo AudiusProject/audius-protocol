@@ -67,6 +67,8 @@ type SellScreenProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
+  onInputTokenChange?: (token: TokenInfo) => void
+  availableInputTokens?: TokenInfo[]
 }
 
 export const SellScreen = ({
@@ -75,7 +77,9 @@ export const SellScreen = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  onInputTokenChange,
+  availableInputTokens: propAvailableInputTokens
 }: SellScreenProps) => {
   const { data: tokenPriceData } = useArtistCoin(tokenPair?.baseToken?.address)
 
@@ -116,7 +120,11 @@ export const SellScreen = ({
   // For sell screen:
   // - "You Sell" section (input): Should show only tokens the user owns
   // - "You Receive" section (output): Should show all available tokens (but only USDC in practice)
-  const availableInputTokens = ownedTokens
+  const localAvailableInputTokens = ownedTokens
+
+  // Use prop if provided, otherwise use local data
+  const availableInputTokens =
+    propAvailableInputTokens || localAvailableInputTokens
 
   if (!tokenPair) return null
 
@@ -145,6 +153,7 @@ export const SellScreen = ({
             error={error}
             errorMessage={errorMessage}
             availableTokens={availableInputTokens}
+            onTokenChange={onInputTokenChange}
           />
           <OutputTokenSection
             tokenInfo={quoteToken}

@@ -1,4 +1,8 @@
-import type { TokenInfo, SuccessDisplayData } from '@audius/common/store'
+import type {
+  TokenInfo,
+  SuccessDisplayData,
+  TokenPair
+} from '@audius/common/store'
 
 export type BuySellScreenParams = {
   initialTab?: 'buy' | 'sell'
@@ -13,7 +17,10 @@ export type ConfirmSwapScreenParams = {
     receiveAmount: number
     pricePerBaseToken: number
     baseTokenSymbol: string
+    exchangeRate?: number | null
   }
+  activeTab: 'buy' | 'sell' | 'convert'
+  selectedPair: TokenPair
 }
 
 export type TransactionResultScreenParams = {

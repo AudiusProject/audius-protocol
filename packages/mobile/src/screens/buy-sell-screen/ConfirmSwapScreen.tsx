@@ -1,19 +1,15 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
-import {
-  formatUSDCValue,
-  SLIPPAGE_BPS,
-  useDefaultTokenPair
-} from '@audius/common/api'
+import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
-import type { TokenInfo } from '@audius/common/store'
+import type { TokenInfo, TokenPair } from '@audius/common/store'
 import {
+  getSwapTokens,
   useBuySellScreen,
   useBuySellSwap,
   useSwapDisplayData,
-  useTokenAmountFormatting,
-  getSwapTokens
+  useTokenAmountFormatting
 } from '@audius/common/store'
 
 import {
@@ -25,10 +21,10 @@ import {
   Text
 } from '@audius/harmony-native'
 import {
-  Screen,
-  ScreenContent,
   FixedFooter,
-  FixedFooterContent
+  FixedFooterContent,
+  Screen,
+  ScreenContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -58,6 +54,8 @@ type ConfirmSwapScreenProps = {
         baseTokenSymbol: string
         exchangeRate?: number | null
       }
+      activeTab: 'buy' | 'sell' | 'convert'
+      selectedPair: TokenPair
     }
   }
 }
@@ -103,7 +101,9 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
       pricePerBaseToken,
       baseTokenSymbol,
       exchangeRate = null
-    }
+    },
+    activeTab,
+    selectedPair
   } = route.params
 
   const stableOnScreenChange = useCallback(() => {
@@ -128,11 +128,6 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
     }),
     [payAmount, receiveAmount]
   )
-
-  // Determine if this is a buy or sell based on token types
-  const activeTab = payTokenInfo.symbol === 'USDC' ? 'buy' : 'sell'
-
-  const { data: selectedPair } = useDefaultTokenPair()
 
   const {
     handleConfirmSwap,
