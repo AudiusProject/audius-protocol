@@ -138,9 +138,6 @@ models/MilestoneNotificationAction.ts
 models/MilestoneNotificationActionData.ts
 models/NftCollection.ts
 models/NftGate.ts
-models/NftGatedTrackSignature.ts
-models/NftGatedTrackSignatureData.ts
-models/NftGatedTrackSignaturesResponse.ts
 models/Notification.ts
 models/Notifications.ts
 models/NotificationsResponse.ts

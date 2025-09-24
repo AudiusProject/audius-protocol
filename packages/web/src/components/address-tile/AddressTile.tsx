@@ -56,12 +56,15 @@ export const AddressTile = ({
         borderBottomLeftRadius='s'
         borderBottomRightRadius='s'
       >
-        <Box p='l' borderRadius='s'>
+        <Box
+          p='l'
+          borderRadius='s'
+          w='100%'
+          css={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+        >
           <Text
             css={{
               userSelect: 'text',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
               lineHeight: '125%'
             }}
             variant='body'

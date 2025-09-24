@@ -4,6 +4,7 @@ export type SetupFormValues = {
   coinImage: File | null
   payAmount: string
   receiveAmount: string
+  usdcValue: string
 }
 
 export type PhasePageProps = {
