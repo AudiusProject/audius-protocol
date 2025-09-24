@@ -53,7 +53,7 @@ export const InputTokenSection = ({
   const iconSize = iconSizes.s
   const { spacing } = useTheme()
   const { symbol, isStablecoin } = tokenInfo
-  const [localAmount, setLocalAmount] = useState(amount || '')
+  const [localAmount, setLocalAmount] = useState(amount ?? '')
 
   const { formattedAvailableBalance } = useTokenAmountFormatting({
     amount,
@@ -119,7 +119,7 @@ export const InputTokenSection = ({
           <Flex flex={1}>
             <TokenSelectButton
               selectedToken={tokenInfo}
-              availableTokens={availableTokens || []}
+              availableTokens={availableTokens ?? []}
               onTokenChange={onTokenChange}
               title={title}
             />

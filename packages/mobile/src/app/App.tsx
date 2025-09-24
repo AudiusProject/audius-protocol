@@ -87,7 +87,6 @@ const App = () => {
                               </CommentDrawerProvider>
                             </BottomSheetModalProvider>
                             <PortalHost name='DrawerPortal' />
-                            <PortalHost name='TokenSelectPortal' />
                           </NavigationContainer>
                         </ErrorBoundary>
                       </PortalProvider>
