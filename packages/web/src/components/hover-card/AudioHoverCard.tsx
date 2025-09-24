@@ -4,7 +4,7 @@ import { useTokenBalance } from '@audius/common/api'
 import { AudioTiers, BadgeTier, ID } from '@audius/common/models'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { AUDIO_TICKER } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCount, formatTickerForUrl } from '@audius/common/utils'
 import {
   HoverCard,
   HoverCardHeader,
@@ -92,7 +92,9 @@ export const AudioHoverCard = ({
   const handleClick = useCallback(() => {
     onClick?.()
     onClose?.()
-    navigate(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER))
+    navigate(
+      ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(AUDIO_TICKER))
+    )
   }, [navigate, onClick, onClose])
 
   return (

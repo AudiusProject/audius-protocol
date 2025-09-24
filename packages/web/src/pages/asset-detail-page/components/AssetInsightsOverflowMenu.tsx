@@ -3,7 +3,7 @@ import { useCallback, useContext, useState } from 'react'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
-import { route } from '@audius/common/utils'
+import { formatTickerForUrl, route } from '@audius/common/utils'
 import {
   PopupMenu,
   PopupMenuItem,
@@ -13,12 +13,11 @@ import {
   IconKebabHorizontal,
   IconInfo
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { push } from 'utils/navigation'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
 
@@ -36,7 +35,7 @@ type AssetInsightsOverflowMenuProps = {
 export const AssetInsightsOverflowMenu = ({
   mint
 }: AssetInsightsOverflowMenuProps) => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { toast } = useContext(ToastContext)
   const { data: artistCoin } = useArtistCoin(mint)
   const isMobile = useIsMobile()
@@ -62,9 +61,14 @@ export const AssetInsightsOverflowMenu = ({
 
   const onOpenDetails = () => {
     if (isMobile) {
-      dispatch(
-        push(COIN_DETAIL_ROUTE.replace(':ticker', artistCoin?.ticker ?? ''))
-      )
+      if (artistCoin?.ticker) {
+        navigate(
+          COIN_DETAIL_ROUTE.replace(
+            ':ticker',
+            formatTickerForUrl(artistCoin.ticker)
+          )
+        )
+      }
     } else {
       setIsDetailsModalOpen(true)
     }

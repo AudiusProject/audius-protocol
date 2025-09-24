@@ -1,9 +1,9 @@
 import { useArtistCoin } from '@audius/common/api'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
+import { formatTickerForUrl } from '@audius/common/utils'
 import { Button, Flex, Paper, Text } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { TokenIcon } from 'components/buy-sell-modal/TokenIcon'
 
@@ -15,7 +15,7 @@ const messages = {
 export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
   const { data: artistCoin, isLoading } = useArtistCoin(mint)
   const { onOpen: openBuySellModal } = useBuySellModal()
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const handleBuyCoins = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent triggering Paper's onClick
@@ -24,7 +24,12 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
 
   const handleCardClick = () => {
     if (artistCoin?.ticker) {
-      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', artistCoin.ticker)))
+      navigate(
+        ASSET_DETAIL_PAGE.replace(
+          ':ticker',
+          formatTickerForUrl(artistCoin.ticker)
+        )
+      )
     }
   }
 
