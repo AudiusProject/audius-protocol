@@ -1,11 +1,6 @@
 import { Coin } from '@audius/sdk'
 
-import {
-  CURRENCY_FORMAT_MAX,
-  formatCurrencyWithMax,
-  formatCurrencyWithSubscript
-} from './decimal'
-import { formatCount } from './formatUtil'
+import { formatCurrencyWithSubscript, formatCount } from './decimal'
 
 export type MetricData = {
   value: string
@@ -75,7 +70,7 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
       messages.graduationProgress
     ),
     createMetric(
-      formatCurrencyWithMax(coin.v24hUSD, CURRENCY_FORMAT_MAX),
+      formatCount(coin.v24hUSD, 2),
       messages.volume24hr,
       coin.v24hChangePercent
     ),
