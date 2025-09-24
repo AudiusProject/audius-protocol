@@ -20,8 +20,12 @@ import {
   BuySellTab,
   Screen,
   useTokenStates,
-  useCurrentTokenPair
+  useCurrentTokenPair,
+  useBuySellTokenFilters,
+  useSafeTokenPair,
+  useBuySellTabsArray
 } from '@audius/common/store'
+import { formatTickerFromUrl } from '@audius/common/utils'
 import { Button, Flex, Hint, SegmentedControl, TextLink } from '@audius/harmony'
 import { matchPath, useLocation } from 'react-router-dom'
 
@@ -110,7 +114,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     exact: true
   })
   const { data: selectedPair } = useTokenPair({
-    baseSymbol: initialTicker ?? match?.params.ticker,
+    baseSymbol:
+      initialTicker ?? formatTickerFromUrl(match?.params.ticker ?? ''),
     quoteSymbol: 'USDC'
   })
 
@@ -164,29 +169,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     [userCoins]
   )
 
-  // Create filtered token lists for each tab (unified filtering approach)
-  const availableInputTokensForSell = useMemo(() => {
-    return availableTokens.filter(
-      (t) =>
-        t.symbol !== baseTokenSymbol &&
-        t.symbol !== 'USDC' &&
-        hasPositiveBalance(t.address)
-    )
-  }, [availableTokens, baseTokenSymbol, hasPositiveBalance])
-
-  const availableInputTokensForConvert = useMemo(() => {
-    return availableTokens.filter(
-      (t) =>
-        t.symbol !== baseTokenSymbol &&
-        t.symbol !== quoteTokenSymbol &&
-        hasPositiveBalance(t.address)
-    )
-  }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
-
-  const availableOutputTokensForConvert = useMemo(() => {
-    return availableTokens.filter((t) => t.symbol !== baseTokenSymbol)
-  }, [availableTokens, baseTokenSymbol])
-
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
     baseTokenSymbol,
@@ -194,6 +176,24 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     availableTokens,
     selectedPair
   })
+
+  // Use shared token filtering logic
+  const {
+    availableInputTokensForSell,
+    availableInputTokensForConvert,
+    availableOutputTokensForConvert
+  } = useBuySellTokenFilters({
+    availableTokens,
+    baseTokenSymbol,
+    quoteTokenSymbol,
+    hasPositiveBalance
+  })
+
+  // Use shared safe token pair logic
+  const safeSelectedPair = useSafeTokenPair(currentTokenPair)
+
+  // Use shared tabs array logic
+  const tabs = useBuySellTabsArray()
 
   const swapTokens = useMemo(() => {
     // Return safe defaults if currentTokenPair is not available
@@ -219,34 +219,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
           : currentTokenPair.quoteToken
     }
   }, [activeTab, baseTokenSymbol, quoteTokenSymbol, currentTokenPair])
-
-  // Create a safe selectedPair for hooks that can't handle null values
-  const safeSelectedPair = useMemo(() => {
-    if (currentTokenPair?.baseToken && currentTokenPair?.quoteToken) {
-      return currentTokenPair
-    }
-
-    // Return minimal safe token pair to prevent hook crashes
-    return {
-      baseToken: {
-        symbol: 'AUDIO',
-        name: 'Audius',
-        decimals: 8,
-        balance: null,
-        address: '',
-        isStablecoin: false
-      },
-      quoteToken: {
-        symbol: 'USDC',
-        name: 'USD Coin',
-        decimals: 6,
-        balance: null,
-        address: '',
-        isStablecoin: true
-      },
-      exchangeRate: null
-    }
-  }, [currentTokenPair])
 
   const {
     handleShowConfirmation,
@@ -315,19 +287,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     currentExchangeRate,
     trackSwapFailure
   ])
-
-  const tabs = useMemo(() => {
-    const baseTabs = [
-      { key: 'buy' as BuySellTab, text: messages.buy },
-      { key: 'sell' as BuySellTab, text: messages.sell }
-    ]
-
-    if (isArtistCoinsEnabled) {
-      baseTabs.push({ key: 'convert' as BuySellTab, text: messages.convert })
-    }
-
-    return baseTabs
-  }, [isArtistCoinsEnabled])
 
   const {
     successDisplayData,

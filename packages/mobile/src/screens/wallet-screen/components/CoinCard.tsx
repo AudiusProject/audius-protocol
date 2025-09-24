@@ -16,7 +16,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 const ICON_SIZE = 64
 
-const CoinCardSkeleton = () => {
+export const CoinCardSkeleton = () => {
   return (
     <Flex column gap='xs'>
       <Box w={240} h={36}>
@@ -29,7 +29,7 @@ const CoinCardSkeleton = () => {
   )
 }
 
-const HexagonalSkeleton = () => {
+export const HexagonalSkeleton = () => {
   return (
     <HexagonalIcon size={ICON_SIZE}>
       <Box w={ICON_SIZE} h={ICON_SIZE}>

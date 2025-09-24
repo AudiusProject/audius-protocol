@@ -231,15 +231,15 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
   const { onOpen: openSendTokensModal } = useSendTokensModal()
   const isMobile = useIsMobile()
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
+  const [isOpenAppDrawerOpen, setIsOpenAppDrawerOpen] = useState(false)
 
-  const onOpenMobileDrawer = useCallback(() => {
-    setIsMobileDrawerOpen(true)
-  }, [setIsMobileDrawerOpen])
+  const onOpenOpenAppDrawer = useCallback(() => {
+    setIsOpenAppDrawerOpen(true)
+  }, [setIsOpenAppDrawerOpen])
 
-  const onCloseMobileDrawer = useCallback(() => {
-    setIsMobileDrawerOpen(false)
-  }, [setIsMobileDrawerOpen])
+  const onCloseOpenAppDrawer = useCallback(() => {
+    setIsOpenAppDrawerOpen(false)
+  }, [setIsOpenAppDrawerOpen])
 
   // Handler functions with account requirements - defined before early return
   const handleBuySell = useRequiresAccountCallback(() => {
@@ -290,7 +290,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
           <ZeroBalanceState
             ticker={ticker}
             logoURI={logoURI}
-            onBuy={isMobile ? onOpenMobileDrawer : handleAddCash}
+            onBuy={isMobile ? onOpenOpenAppDrawer : handleAddCash}
             onReceive={handleReceive}
             isBuySellSupported={isBuySellSupported}
           />
@@ -298,7 +298,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
           <HasBalanceState
             ticker={ticker}
             logoURI={logoURI}
-            onBuy={isMobile ? onOpenMobileDrawer : handleBuySell}
+            onBuy={isMobile ? onOpenOpenAppDrawer : handleBuySell}
             onSend={handleSend}
             onReceive={handleReceive}
             mint={mint}
@@ -308,9 +308,9 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
         {isMobile && (
           <Drawer
             zIndex={zIndex.BUY_SELL_MODAL}
-            isOpen={isMobileDrawerOpen}
-            onClose={onCloseMobileDrawer}
-            shouldClose={!isMobileDrawerOpen}
+            isOpen={isOpenAppDrawerOpen}
+            onClose={onCloseOpenAppDrawer}
+            shouldClose={!isOpenAppDrawerOpen}
           >
             <Flex direction='column' p='l' pb='2xl' w='100%'>
               <Box pv='s'>
