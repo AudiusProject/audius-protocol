@@ -51,3 +51,16 @@ return <h1>{messages.title}</h1>
 // ❌ Bad
 return <h1>Welcome</h1>
 ```
+
+## Flex Component Direction
+
+Flex components default to column direction on mobile and row direction on web. Use the `column` prop directly instead of `direction='column'`, or omit the prop entirely for the default responsive behavior.
+
+```tsx
+// ✅ Good
+<Flex>...</Flex>          // Default: Mobile column, Web row
+<Flex column>...</Flex>   // Explicit column on both platforms
+
+// ❌ Bad
+<Flex direction='column'>...</Flex>
+```
