@@ -65,7 +65,6 @@ type BuyScreenProps = {
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
   onOutputTokenChange?: (token: TokenInfo) => void
-  availableOutputTokens?: TokenInfo[]
 }
 
 export const BuyScreen = ({
@@ -75,8 +74,7 @@ export const BuyScreen = ({
   errorMessage,
   initialInputValue,
   onInputValueChange,
-  onOutputTokenChange,
-  availableOutputTokens: propAvailableOutputTokens
+  onOutputTokenChange
 }: BuyScreenProps) => {
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
     useArtistCoin(tokenPair?.baseToken?.address)
@@ -107,13 +105,9 @@ export const BuyScreen = ({
   })
 
   const { data: coins } = useArtistCoins()
-  const localAvailableOutputTokens: TokenInfo[] = useMemo(() => {
+  const artistCoins: TokenInfo[] = useMemo(() => {
     return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
   }, [coins])
-
-  // Use prop if provided, otherwise use local data
-  const availableOutputTokens =
-    propAvailableOutputTokens || localAvailableOutputTokens
 
   // Track if an exchange rate has ever been successfully fetched
   const hasRateEverBeenFetched = useRef(false)
@@ -156,7 +150,7 @@ export const BuyScreen = ({
             tokenPrice={tokenPrice}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
-            availableTokens={availableOutputTokens}
+            availableTokens={artistCoins}
             onTokenChange={onOutputTokenChange}
           />
         </>

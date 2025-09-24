@@ -378,9 +378,6 @@ export const BuySellFlow = ({
               onOutputTokenChange={(token) =>
                 handleOutputTokenChange(token.symbol)
               }
-              availableOutputTokens={availableTokens.filter(
-                (t) => t.symbol !== quoteTokenSymbol && t.symbol !== 'USDC'
-              )}
             />
           ) : null}
         </Flex>

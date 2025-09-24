@@ -1,11 +1,6 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useRef } from 'react'
 
-import {
-  transformArtistCoinsToTokenInfoMap,
-  useArtistCoin,
-  useArtistCoins
-} from '@audius/common/api'
-import { useOwnedTokens } from '@audius/common/hooks'
+import { useArtistCoin } from '@audius/common/api'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 
@@ -79,7 +74,7 @@ export const SellScreen = ({
   initialInputValue,
   onInputValueChange,
   onInputTokenChange,
-  availableInputTokens: propAvailableInputTokens
+  availableInputTokens
 }: SellScreenProps) => {
   const { data: tokenPriceData } = useArtistCoin(tokenPair?.baseToken?.address)
 
@@ -108,23 +103,6 @@ export const SellScreen = ({
   if (currentExchangeRate !== null) {
     hasRateEverBeenFetched.current = true
   }
-
-  const { data: coins } = useArtistCoins()
-  const allAvailableTokens: TokenInfo[] = useMemo(() => {
-    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
-  }, [coins])
-
-  // Use the owned tokens hook to get filtered tokens
-  const { ownedTokens } = useOwnedTokens(allAvailableTokens)
-
-  // For sell screen:
-  // - "You Sell" section (input): Should show only tokens the user owns
-  // - "You Receive" section (output): Should show all available tokens (but only USDC in practice)
-  const localAvailableInputTokens = ownedTokens
-
-  // Use prop if provided, otherwise use local data
-  const availableInputTokens =
-    propAvailableInputTokens || localAvailableInputTokens
 
   if (!tokenPair) return null
 
