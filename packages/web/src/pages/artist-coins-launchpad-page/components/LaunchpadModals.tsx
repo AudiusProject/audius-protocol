@@ -1,4 +1,5 @@
 import { useSendTokensModal } from '@audius/common/store'
+import { wAUDIO } from '@audius/fixed-decimal'
 import {
   Flex,
   Hint,
@@ -22,7 +23,14 @@ import { SetupFormValues } from './types'
 const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
   launchingCoinDescription: (numTxs: number) =>
-    `You have ${numTxs} transactions to sign. Please don't close this page.`,
+    `You have ${numTxs} transaction${numTxs > 1 ? 's' : ''} to sign. Please don't close this page.`,
+  couldTakeAMoment: 'This could take a moment.',
+  congratsTitle: '🎉 Congrats!',
+  title: 'Create Your Artist Coin',
+  congratsDescription:
+    'Congrats on launching your artist coin on Audius! Time to share the good news with your fans.',
+  purchaseSummary: 'Purchase Summary',
+  address: 'Coin Address',
   addressTitle: 'Coin Address',
   insufficientBalanceTitle: 'Check your wallet balance',
   insufficientBalanceDescription:
@@ -59,11 +67,16 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
     >
       <LoadingSpinner size='3xl' />
       <Flex column gap='s' alignItems='center'>
-        <Text variant='heading' size='l'>
-          {messages.awaitingConfirmation}
-        </Text>
-        <Text variant='body' size='l'>
-          {messages.launchingCoinDescription(numTxs)}
+        <Flex column gap='s' alignItems='center'>
+          <Text variant='heading' size='l'>
+            {messages.awaitingConfirmation}
+          </Text>
+          <Text variant='body' size='l'>
+            {messages.launchingCoinDescription(numTxs)}
+          </Text>
+        </Flex>
+        <Text variant='body' size='l' color='subdued'>
+          {messages.couldTakeAMoment}
         </Text>
       </Flex>
     </Flex>
@@ -73,15 +86,9 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
 /**
  * Rare edge case modal where the SDK call to add the coin to Audius fails
  */
-const CoinNotInAudiusState = ({
-  onClose,
-  mintAddress
-}: {
-  onClose: () => void
-  mintAddress: string
-}) => (
+const CoinNotInAudiusState = ({ mintAddress }: { mintAddress: string }) => (
   <>
-    <ModalHeader onClose={onClose}>
+    <ModalHeader showDismissButton={false}>
       <ModalTitle title={messages.errorMessages.yourCoinIsLive} />
     </ModalHeader>
     <ModalContent>
@@ -148,7 +155,7 @@ const ErrorState = ({
   onClose: () => void
 }) => {
   if (errorMetadata?.poolCreateConfirmed && mintAddress) {
-    return <CoinNotInAudiusState onClose={onClose} mintAddress={mintAddress} />
+    return <CoinNotInAudiusState mintAddress={mintAddress} />
   }
   return (
     <UnknownErrorState
@@ -176,19 +183,30 @@ export const LaunchpadSubmitModal = ({
 }) => {
   const { values } = useFormikContext<SetupFormValues>()
   const { payAmount } = values
-  const numTxs = payAmount ? 2 : 1
+  const payAmountNumber = Number(wAUDIO(payAmount).value)
+
+  const isFirstBuyRetry =
+    errorMetadata?.requestedFirstBuy && errorMetadata?.poolCreateConfirmed
+  const isSDKCoinError =
+    isError &&
+    errorMetadata?.poolCreateConfirmed &&
+    !errorMetadata?.sdkCoinAdded
+  const numTxs = payAmount && payAmountNumber > 0 && !isFirstBuyRetry ? 2 : 1
+
+  // Keep track of current state in a string so we avoid overlapping states
+  const currentState = isPending ? 'pending' : isError ? 'error' : 'closed'
   return (
     <Modal
       isOpen={isOpen}
-      size={isError ? 'small' : undefined}
+      size={currentState === 'error' ? 'small' : undefined}
       onClose={() => {
-        if (isError) {
+        if (currentState === 'error' && !isSDKCoinError) {
           onClose()
         }
       }}
     >
-      {isPending ? <LoadingState numTxs={numTxs} /> : null}
-      {isError ? (
+      {currentState === 'pending' ? <LoadingState numTxs={numTxs} /> : null}
+      {currentState === 'error' ? (
         <ErrorState
           errorMetadata={errorMetadata}
           mintAddress={mintAddress || errorMetadata?.coinMetadata?.mint}

@@ -34,6 +34,7 @@ export type LaunchCoinErrorMetadata = {
   poolCreateConfirmed: boolean
   sdkCoinAdded: boolean
   firstBuyConfirmed: boolean
+  requestedFirstBuy: boolean
   createPoolTx: string
   firstBuyTx: string | undefined
   initialBuyAmountAudio: string | undefined
@@ -54,7 +55,7 @@ export type LaunchCoinResponse = {
   logoUri: string
 }
 
-const COIN_DECIMALS = 9 // All our launched coins will have 9 decimals
+export const LAUNCHPAD_COIN_DECIMALS = 9 // All our launched coins will have 9 decimals
 
 /**
  * Hook for launching a new coin on the launchpad with bonding curve.
@@ -82,6 +83,7 @@ export const useLaunchCoin = () => {
         poolCreateConfirmed: false,
         sdkCoinAdded: false,
         firstBuyConfirmed: false,
+        requestedFirstBuy: !!initialBuyAmountAudio,
         createPoolTx: '',
         firstBuyTx: '',
         initialBuyAmountAudio,
@@ -94,6 +96,7 @@ export const useLaunchCoin = () => {
           walletAddress: walletPublicKeyStr
         }
       }
+
       try {
         const sdk = await audiusSdk()
         const solanaProvider = appkitModal.getProvider<SolanaProvider>('solana')
@@ -163,7 +166,7 @@ export const useLaunchCoin = () => {
             createCoinRequest: {
               mint: mintPublicKey,
               ticker: `$${symbolUpper}`,
-              decimals: COIN_DECIMALS,
+              decimals: LAUNCHPAD_COIN_DECIMALS,
               name,
               logoUri: imageUri,
               description
