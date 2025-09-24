@@ -318,12 +318,19 @@ export const LaunchpadPage = () => {
   const isError =
     uncaughtLaunchCoinError || isLaunchCoinError || isSwapRetryError
 
-  // If an error occurs before the pool is created, we close the modal to let the user resubmit via the swap retry flow
+  // If an error occurs after the pool is created, we close the modal to let the user resubmit via the swap retry flow
   useEffect(() => {
-    if (isPoolCreateError || isSwapRetryError) {
+    if (isPoolCreateError) {
       setIsModalOpen(false)
     }
-  }, [isPoolCreateError, isSwapRetryError])
+  }, [isPoolCreateError])
+
+  // If the swap retry fails close the modal again and let user attempt to resubmit if they want
+  useEffect(() => {
+    if (isSwapRetryError) {
+      setIsModalOpen(false)
+    }
+  }, [isSwapRetryError])
 
   // If the first buy TX fails, we show a toast and close the modal
   // they are still able to attempt to resubmit
