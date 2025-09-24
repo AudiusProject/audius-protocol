@@ -1,13 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useTokenPair, useTokens } from '@audius/common/api'
-import {
-  useBuySellAnalytics,
-  useFeatureFlag,
-  useOwnedTokens
-} from '@audius/common/hooks'
+import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
-import { FeatureFlags } from '@audius/common/services'
 import type { BuySellTab, TokenInfo } from '@audius/common/store'
 import {
   AUDIO_TICKER,
@@ -16,8 +11,11 @@ import {
   useBuySellScreen,
   useBuySellSwap,
   useBuySellTabs,
+  useBuySellTabsArray,
+  useBuySellTokenFilters,
   useBuySellTransactionData,
   useCurrentTokenPair,
+  useSafeTokenPair,
   useSwapDisplayData,
   useTokenStates
 } from '@audius/common/store'
@@ -43,9 +41,7 @@ export const BuySellFlow = ({
   const navigation = useNavigation()
   const { onOpen: openAddCashModal } = useAddCashModal()
   const { trackSwapRequested, trackAddFundsClicked } = useBuySellAnalytics()
-  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
-    FeatureFlags.ARTIST_COINS
-  )
+
   // Get token pair for the initial coin, fallback to AUDIO/USDC
   const { data: selectedPair } = useTokenPair({
     baseSymbol: coinTicker,
@@ -99,28 +95,17 @@ export const BuySellFlow = ({
     [ownedTokens]
   )
 
-  // Create filtered token lists for each tab (unified filtering approach)
-  const availableInputTokensForSell = useMemo(() => {
-    return availableTokens.filter(
-      (t) =>
-        t.symbol !== baseTokenSymbol &&
-        t.symbol !== 'USDC' &&
-        hasPositiveBalance(t.address)
-    )
-  }, [availableTokens, baseTokenSymbol, hasPositiveBalance])
-
-  const availableInputTokensForConvert = useMemo(() => {
-    return availableTokens.filter(
-      (t) =>
-        t.symbol !== baseTokenSymbol &&
-        t.symbol !== quoteTokenSymbol &&
-        hasPositiveBalance(t.address)
-    )
-  }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
-
-  const availableOutputTokensForConvert = useMemo(() => {
-    return availableTokens.filter((t) => t.symbol !== baseTokenSymbol)
-  }, [availableTokens, baseTokenSymbol])
+  // Use shared token filtering logic
+  const {
+    availableInputTokensForSell,
+    availableInputTokensForConvert,
+    availableOutputTokensForConvert
+  } = useBuySellTokenFilters({
+    availableTokens,
+    baseTokenSymbol,
+    quoteTokenSymbol,
+    hasPositiveBalance
+  })
 
   // Reset screen state to 'input' when this screen comes into focus
   // This handles the case where we navigate back from ConfirmSwapScreen
@@ -194,33 +179,8 @@ export const BuySellFlow = ({
     selectedPair
   })
 
-  // Create a safe selectedPair for hooks that can't handle null values (same as web)
-  const safeSelectedPair = useMemo(() => {
-    if (currentTabTokenPair?.baseToken && currentTabTokenPair?.quoteToken) {
-      return currentTabTokenPair
-    }
-
-    // Return minimal safe token pair to prevent hook crashes
-    return {
-      baseToken: {
-        symbol: 'AUDIO',
-        name: 'Audius',
-        decimals: 8,
-        balance: null,
-        address: '',
-        isStablecoin: false
-      },
-      quoteToken: {
-        symbol: 'USDC',
-        name: 'USD Coin',
-        decimals: 6,
-        balance: null,
-        address: '',
-        isStablecoin: true
-      },
-      exchangeRate: null
-    }
-  }, [currentTabTokenPair])
+  // Use shared safe token pair logic
+  const safeSelectedPair = useSafeTokenPair(currentTabTokenPair)
 
   const { handleShowConfirmation, isContinueButtonLoading } = useBuySellSwap({
     transactionData,
@@ -253,18 +213,8 @@ export const BuySellFlow = ({
     selectedPair: safeSelectedPair
   })
 
-  const tabs = useMemo(() => {
-    const baseTabs = [
-      { key: 'buy' as BuySellTab, text: messages.buy },
-      { key: 'sell' as BuySellTab, text: messages.sell }
-    ]
-
-    if (isArtistCoinsEnabled) {
-      baseTabs.push({ key: 'convert' as BuySellTab, text: messages.convert })
-    }
-
-    return baseTabs
-  }, [isArtistCoinsEnabled])
+  // Use shared tabs array logic
+  const tabs = useBuySellTabsArray()
 
   const handleContinueClick = useCallback(() => {
     setHasAttemptedSubmit(true)
