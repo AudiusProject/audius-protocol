@@ -333,8 +333,12 @@ export const LaunchpadPage = () => {
         throw new Error('No connected wallet found')
       }
       const audioAmountBigNumber = formValues.payAmount
-        ? wAUDIO(formValues.payAmount).value.toString()
+        ? wAUDIO(formValues.payAmount).value
         : undefined
+      const initialBuyAmountAudio =
+        audioAmountBigNumber && audioAmountBigNumber > 0
+          ? audioAmountBigNumber.toString()
+          : undefined
       launchCoin({
         userId: user.user_id,
         name: formValues.coinName,
@@ -345,7 +349,7 @@ export const LaunchpadPage = () => {
           formValues.coinSymbol
         ),
         walletPublicKey: connectedWallet.address,
-        initialBuyAmountAudio: audioAmountBigNumber
+        initialBuyAmountAudio
       })
     },
     [launchCoin, user, connectedWallets]

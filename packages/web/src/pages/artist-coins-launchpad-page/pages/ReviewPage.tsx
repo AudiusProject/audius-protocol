@@ -267,6 +267,7 @@ export const ReviewPage = ({ onContinue, onBack }: PhasePageProps) => {
         cancelText={messages.back}
         backIcon
         onContinue={handleContinue}
+        isValid={true} // There are no form fields changing on this page - no need to check validation here
         onBack={handleBack}
       />
     </>
