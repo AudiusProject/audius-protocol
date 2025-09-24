@@ -16,7 +16,7 @@ export const TokenSelectItem = ({ token, item }: TokenSelectItemProps) => {
   return (
     <Flex row alignItems='center' gap='s' flex={1}>
       <Flex borderRadius='s' style={{ overflow: 'hidden' }}>
-        <TokenIcon logoURI={token.logoURI} size={24} />
+        <TokenIcon logoURI={token.logoURI} size='xl' />
       </Flex>
       <Flex flex={1}>
         <Text
