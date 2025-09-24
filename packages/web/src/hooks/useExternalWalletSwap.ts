@@ -69,7 +69,7 @@ export const useExternalWalletSwap = () => {
           quoteResponse: quote.quote,
           userPublicKey: walletAddress,
           dynamicSlippage: true, // Uses the slippage from the quote
-          useSharedAccounts: !isAMM
+          useSharedAccounts: !isAMM // Shared accounts cant be used for AMM pool swaps
         }
         const swapTx = await jupiterInstance.swapPost({ swapRequest })
 
