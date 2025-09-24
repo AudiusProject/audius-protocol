@@ -1,4 +1,4 @@
-import type { ID } from '@audius/common/models'
+import type { Chain, ID } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
@@ -82,9 +82,8 @@ export type DrawerData = {
   AssetInsightsOverflowMenu: { mint: string }
   WalletRowOverflowMenu: {
     address: string
-    copyCallback: () => void
-    removeCallback: () => void
-    isInAppWallet: boolean
+    chain: Chain
+    setIsRemovingWallet: (isRemovingWallet: boolean) => void
   }
 }
 

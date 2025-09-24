@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { Id } from '@audius/sdk'
 import {
   queryOptions,
@@ -18,6 +19,7 @@ import { profilePageActions } from '~/store/pages'
 import { QUERY_KEYS } from '../queryKeys'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
 import { getUserCollectiblesQueryKey } from '../users/useUserCollectibles'
+import { walletMessages } from '~/messages'
 
 export type ConnectedWallet = {
   address: string
@@ -162,6 +164,7 @@ export const useAddConnectedWallet = () => {
 
 export type RemoveConnectedWalletParams = {
   wallet: { address: string; chain: Chain }
+  toast?: (message: string, type: 'info' | 'error') => void
 }
 
 export const useRemoveConnectedWallet = () => {
@@ -184,6 +187,11 @@ export const useRemoveConnectedWallet = () => {
       })
       return response
     },
+    onSuccess: (_, { toast }) => {
+      if (toast) {
+        toast(walletMessages.linkedWallets.toasts.walletRemoved, 'info')
+      }
+    },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
@@ -203,7 +211,10 @@ export const useRemoveConnectedWallet = () => {
         )
       )
     },
-    onError: (error) => {
+    onError: (error, { toast }) => {
+      if (toast) {
+        toast(walletMessages.linkedWallets.toasts.error, 'error')
+      }
       reportToSentry({
         error,
         name: 'Remove Connected Wallet'

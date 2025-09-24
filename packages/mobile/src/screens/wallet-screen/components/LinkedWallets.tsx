@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import type { ConnectedWallet } from '@audius/common/api'
 import {
   useConnectedWallets,
   useRemoveConnectedWallet,
-  QUERY_KEYS,
   useCurrentUserId
 } from '@audius/common/api'
+import { walletMessages } from '@audius/common/messages'
 import { Chain } from '@audius/common/models'
+import { shortenSPLAddress, WALLET_COUNT_LIMIT } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -21,7 +23,8 @@ import {
   Text,
   Skeleton,
   Divider,
-  useTheme
+  useTheme,
+  LoadingSpinner
 } from '@audius/harmony-native'
 import ActionDrawer, {
   type ActionDrawerRow
@@ -30,79 +33,28 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 
-const WALLET_COUNT_LIMIT = 5
-
-const messages = {
-  titleHasWallets: 'Linked Wallets ',
-  titleNoWallets: 'Link External Wallet',
-  count: (count: number) => `(${count}/${WALLET_COUNT_LIMIT})`,
-  addWallet: 'Add Linked Wallet',
-  copied: 'Copied To Clipboard!',
-  copy: 'Copy Address',
-  remove: 'Remove',
-  linkedWallet: (index: number) => `Linked Wallet ${index + 1}`,
-  linkWallet:
-    'Link an external wallet to take advantage of in-app features, and take full control of your assets.',
-  toasts: {
-    walletRemoved: 'Wallet removed successfully!',
-    error: 'Error removing wallet'
-  }
-}
-
 type WalletRowProps = {
   address: string
   chain: Chain
   index: number
 }
 
-const WalletRow = ({ address, chain, index }: WalletRowProps) => {
-  const { onOpen } = useDrawer('WalletRowOverflowMenu')
-  const { toast } = useToast()
-  const [isRemovingWallet, setIsRemovingWallet] = useState(false)
-  const queryClient = useQueryClient()
-  const { data: currentUserId } = useCurrentUserId()
+type WalletRowContentProps = {
+  address: string
+  chain: Chain
+  index: number
+  isRemovingWallet: boolean
+  onOpenOverflowMenu: () => void
+}
 
-  const copyAddressToClipboard = useCallback(() => {
-    Clipboard.setString(address)
-    toast({ content: messages.copied, type: 'info' })
-  }, [address, toast])
-
-  const { mutateAsync: removeConnectedWalletAsync } = useRemoveConnectedWallet()
-
-  const handleRemove = useCallback(async () => {
-    try {
-      setIsRemovingWallet(true)
-      await removeConnectedWalletAsync({
-        wallet: { address, chain: Chain.Sol }
-      })
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.connectedWallets, currentUserId]
-      })
-      toast({ content: messages.toasts.walletRemoved, type: 'info' })
-    } catch (e) {
-      toast({ content: messages.toasts.error, type: 'error' })
-    } finally {
-      setIsRemovingWallet(false)
-    }
-  }, [removeConnectedWalletAsync, address, queryClient, toast, currentUserId])
-
-  const handleOpenOverflowMenu = useCallback(() => {
-    onOpen({
-      address,
-      copyCallback: copyAddressToClipboard,
-      removeCallback: handleRemove
-    })
-  }, [address, copyAddressToClipboard, handleRemove, onOpen])
-
-  const getWalletIcon = () => {
-    if (chain === Chain.Eth) return <IconLogoCircleETH />
-    return <IconLogoCircleSOL />
-  }
-
-  const formatAddress = (addr: string) => {
-    if (addr.length <= 8) return addr
-    return `${addr.slice(0, 4)}...${addr.slice(-4)}`
-  }
+const WalletRowContent = ({
+  address,
+  chain,
+  index,
+  isRemovingWallet,
+  onOpenOverflowMenu
+}: WalletRowContentProps) => {
+  const { spacing } = useTheme()
 
   return (
     <Flex
@@ -112,52 +64,142 @@ const WalletRow = ({ address, chain, index }: WalletRowProps) => {
       w='100%'
       ph='l'
       pv='m'
+      h={spacing.unit13}
       style={{ opacity: isRemovingWallet ? 0.5 : 1 }}
     >
       <Flex row alignItems='center' gap='s'>
-        {getWalletIcon()}
+        {chain === Chain.Eth ? <IconLogoCircleETH /> : <IconLogoCircleSOL />}
         <Text variant='body' size='m' strength='strong'>
-          {messages.linkedWallet(index)}
+          {walletMessages.linkedWallets.linkedWallet(index)}
         </Text>
       </Flex>
       <Flex flex={1}>
         <Text variant='body' size='m' strength='strong' color='subdued'>
-          {formatAddress(address)}
+          {shortenSPLAddress(address)}
         </Text>
       </Flex>
-      <IconButton
-        icon={IconKebabHorizontal}
-        onPress={handleOpenOverflowMenu}
-        disabled={isRemovingWallet}
-        ripple
-      />
+      {isRemovingWallet ? (
+        <LoadingSpinner />
+      ) : (
+        <IconButton
+          icon={IconKebabHorizontal}
+          onPress={onOpenOverflowMenu}
+          ripple
+        />
+      )}
     </Flex>
+  )
+}
+
+const WalletRow = ({ address, chain, index }: WalletRowProps) => {
+  const { onOpen } = useDrawer('WalletRowOverflowMenu')
+  const [isRemovingWallet, setIsRemovingWallet] = useState(false)
+
+  const handleOpenOverflowMenu = useCallback(() => {
+    onOpen({
+      address,
+      chain,
+      setIsRemovingWallet
+    })
+  }, [address, chain, onOpen, setIsRemovingWallet])
+
+  return (
+    <WalletRowContent
+      address={address}
+      chain={chain}
+      index={index}
+      isRemovingWallet={isRemovingWallet}
+      onOpenOverflowMenu={handleOpenOverflowMenu}
+    />
   )
 }
 
 export const WalletRowOverflowMenu = () => {
   const { data: drawerData } = useDrawer('WalletRowOverflowMenu')
+  const { toast } = useToast()
+  const { address, chain, setIsRemovingWallet } = drawerData ?? {}
+
+  const { mutateAsync: removeConnectedWalletAsync } = useRemoveConnectedWallet()
+
+  const handleCopy = useCallback(() => {
+    if (address) {
+      Clipboard.setString(address)
+      toast({ content: walletMessages.linkedWallets.copied, type: 'info' })
+    }
+  }, [address, toast])
+
+  const handleRemove = useCallback(async () => {
+    if (!address || !chain || !setIsRemovingWallet) return
+
+    try {
+      setIsRemovingWallet(true)
+      await removeConnectedWalletAsync({
+        wallet: { address, chain },
+        toast: (message, type) => toast({ content: message, type })
+      })
+    } finally {
+      setIsRemovingWallet(false)
+    }
+  }, [address, chain, setIsRemovingWallet, removeConnectedWalletAsync, toast])
 
   const rows: ActionDrawerRow[] = useMemo(
     () => [
       {
-        text: messages.copy,
-        callback: drawerData?.copyCallback
+        text: walletMessages.linkedWallets.copy,
+        callback: handleCopy
       },
       {
-        text: messages.remove,
-        callback: drawerData?.removeCallback,
-        isDestructive: true
+        text: walletMessages.linkedWallets.remove,
+        isDestructive: true,
+        callback: handleRemove
       }
     ],
-    [drawerData]
+    [handleCopy, handleRemove]
   )
 
   return <ActionDrawer drawerName='WalletRowOverflowMenu' rows={rows} />
 }
 
-export const LinkedWallets = () => {
+const WalletLoadingState = () => {
   const { spacing } = useTheme()
+  return (
+    <>
+      <Flex mh='l' mt='l' gap='s' h={spacing.unit16}>
+        <Skeleton h={spacing.unit12} />
+      </Flex>
+      <Flex mh='l' gap='s' h={spacing.unit16}>
+        <Skeleton h={spacing.unit12} />
+      </Flex>
+    </>
+  )
+}
+
+const WalletRowsList = ({
+  connectedWallets
+}: {
+  connectedWallets?: ConnectedWallet[]
+}) => (
+  <>
+    {connectedWallets?.map((wallet, index) => (
+      <WalletRow
+        key={wallet.address}
+        address={wallet.address}
+        chain={wallet.chain}
+        index={index}
+      />
+    ))}
+  </>
+)
+
+const WalletEmptyState = () => (
+  <Flex p='l'>
+    <Text variant='body' size='m' color='subdued'>
+      {walletMessages.linkedWallets.linkWallet}
+    </Text>
+  </Flex>
+)
+
+export const LinkedWallets = () => {
   const navigation = useNavigation()
   const { data: connectedWallets, isLoading } = useConnectedWallets()
 
@@ -168,7 +210,7 @@ export const LinkedWallets = () => {
     navigation.navigate('ExternalWallets')
   }, [navigation])
 
-  const isAtLimit = walletCount >= WALLET_COUNT_LIMIT
+  const isAtOrAboveLimit = walletCount >= WALLET_COUNT_LIMIT
 
   return (
     <Paper>
@@ -176,11 +218,13 @@ export const LinkedWallets = () => {
       <Flex gap='xl' p='l'>
         <Flex row alignItems='center' gap='s'>
           <Text variant='heading' size='m' color='heading'>
-            {hasWallets ? messages.titleHasWallets : messages.titleNoWallets}
+            {hasWallets
+              ? walletMessages.linkedWallets.titleHasWallets
+              : walletMessages.linkedWallets.titleNoWallets}
           </Text>
           {hasWallets && !isLoading ? (
             <Text variant='heading' size='m' color='subdued'>
-              {messages.count(walletCount)}
+              {walletMessages.linkedWallets.count(walletCount)}
             </Text>
           ) : null}
         </Flex>
@@ -189,31 +233,11 @@ export const LinkedWallets = () => {
 
       {/* Wallet Stack Section */}
       {isLoading ? (
-        <>
-          <Flex mh='l' mt='l' gap='s' h={spacing.unit16}>
-            <Skeleton h={spacing.unit12} />
-          </Flex>
-          <Flex mh='l' gap='s' h={spacing.unit16}>
-            <Skeleton h={spacing.unit12} />
-          </Flex>
-        </>
+        <WalletLoadingState />
       ) : hasWallets ? (
-        <>
-          {connectedWallets?.map((wallet, index) => (
-            <WalletRow
-              key={wallet.address}
-              address={wallet.address}
-              chain={wallet.chain}
-              index={index}
-            />
-          ))}
-        </>
+        <WalletRowsList connectedWallets={connectedWallets} />
       ) : (
-        <Flex p='l'>
-          <Text variant='body' size='m' color='subdued'>
-            {messages.linkWallet}
-          </Text>
-        </Flex>
+        <WalletEmptyState />
       )}
       <Divider />
 
@@ -223,10 +247,10 @@ export const LinkedWallets = () => {
           variant='secondary'
           size='small'
           onPress={handleAddWallet}
-          disabled={isAtLimit}
+          disabled={isAtOrAboveLimit}
           fullWidth
         >
-          {messages.addWallet}
+          {walletMessages.linkedWallets.addWallet}
         </Button>
       </Flex>
     </Paper>
