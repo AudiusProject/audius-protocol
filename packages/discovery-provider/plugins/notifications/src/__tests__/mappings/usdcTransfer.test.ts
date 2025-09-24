@@ -1,6 +1,18 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sendEmailFns from '../../email/notifications/sendEmail'
+import { USDCTransfer } from '../../processNotifications/mappers/usdcTransfer'
+import type { NotificationRow } from '../../types/dn'
+import type { USDCTransferNotification } from '../../types/notifications'
+
+jest.mock('@solana/web3.js', () => ({
+  Connection: jest.fn().mockImplementation(() => ({})),
+  PublicKey: jest.fn().mockImplementation((v: string) => v)
+}))
+
+jest.mock('@solana/spl-token', () => ({
+  getAccount: jest.fn()
+}))
 
 import {
   createUsers,
@@ -58,5 +70,49 @@ describe('USDC Transfer', () => {
       html: expect.anything(),
       subject: 'Your USDC Transfer is Complete!'
     })
+  })
+
+  test('isInternalTransfer returns true when token owners match (mocked RPC)', async () => {
+    type MinimalOwner = { toString: () => string }
+    type MinimalAccount = { owner: MinimalOwner }
+    type GetAccountFn = (c: unknown, p: unknown) => Promise<MinimalAccount>
+    const mockedSplToken = jest.requireMock('@solana/spl-token') as unknown as {
+      getAccount: unknown
+    }
+    const mockedGetAccount =
+      mockedSplToken.getAccount as unknown as jest.MockedFunction<GetAccountFn>
+    mockedGetAccount
+      .mockResolvedValueOnce({ owner: { toString: () => 'OWNER_1' } })
+      .mockResolvedValueOnce({ owner: { toString: () => 'OWNER_1' } })
+
+    process.env.NOTIFICATIONS_SOLANA_RPC = 'https://dummy.unused'
+
+    const notification: NotificationRow & {
+      data: USDCTransferNotification
+      user_ids: number[]
+    } = {
+      specifier: '1',
+      group_id: 'g1',
+      type: 'usdc_transfer',
+      timestamp: new Date(Date.now()),
+      user_ids: [1],
+      data: {
+        user_id: 1,
+        signature: 'sig',
+        change: -100,
+        receiver_account: 'ReceiverATA111111111111111111111111111111',
+        user_bank: 'UserBankATA1111111111111111111111111111111'
+      }
+    }
+
+    const transfer = new USDCTransfer(
+      processor.discoveryDB,
+      processor.identityDB,
+      notification
+    )
+
+    const result = await transfer.isInternalTransfer()
+    expect(result).toBe(true)
+    expect(mockedGetAccount).toHaveBeenCalledTimes(2)
   })
 })

@@ -4,6 +4,7 @@
     "outDir": "build",
     "jsx": "react",
     "isolatedModules": true,
-    "strict": false
+    "strict": false,
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   }
 }
