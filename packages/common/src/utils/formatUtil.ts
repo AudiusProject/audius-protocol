@@ -3,53 +3,6 @@ import numeral from 'numeral'
 import dayjs from './dayjs'
 
 /**
- * The format for counting numbers should be 4 characters if possible (3 numbers and 1 Letter) without trailing 0
- * ie.
- * 375 => 375
- * 4,210 => 4.21K
- * 56,010 => 56K
- * 443,123 => 443K
- * 4,001,000 => 4M Followers
- */
-export const formatCount = (count: number): string => {
-  if (count >= 1000) {
-    const countStr = count.toString()
-    if (countStr.length % 3 === 0) {
-      return numeral(count).format('0a').toUpperCase()
-    } else if (countStr.length % 3 === 1 && countStr[2] !== '0') {
-      const formatted = numeral(count).format('0.00a').toUpperCase()
-      // If the result has .00, use the simpler format without decimals
-      return formatted.includes('.00')
-        ? numeral(count).format('0a').toUpperCase()
-        : formatted
-    } else if (countStr.length % 3 === 1 && countStr[1] !== '0') {
-      const formatted = numeral(count).format('0.0a').toUpperCase()
-      // If the result has .0, use the simpler format without decimals
-      return formatted.includes('.0')
-        ? numeral(count).format('0a').toUpperCase()
-        : formatted
-    } else if (countStr.length % 3 === 2 && countStr[2] !== '0') {
-      const formatted = numeral(count).format('0.0a').toUpperCase()
-      // If the result has .0, use the simpler format without decimals
-      return formatted.includes('.0')
-        ? numeral(count).format('0a').toUpperCase()
-        : formatted
-    } else {
-      return numeral(count).format('0a').toUpperCase()
-    }
-  } else if (count > 1) {
-    // For numbers between 1 and 999, format with up to 2 decimals if needed
-    const formatted = numeral(count).format('0.00').toUpperCase()
-    // Remove trailing zeros
-    return formatted.replace(/\.00$/, '').replace(/\.0$/, '')
-  } else if (!count) {
-    return '0'
-  } else {
-    return `${count}`
-  }
-}
-
-/**
  * Formats a number of bytes into a nice looking string.
  * ie.
  * 1024 => 1.02 KB
@@ -236,3 +189,15 @@ export const getHash = (str: string) =>
  */
 export const formatDoubleDigit = (value: number) =>
   value.toString().padStart(2, '0')
+
+/**
+ * Formats a ticker to be url friendly
+ */
+export const formatTickerForUrl = (ticker: string) =>
+  ticker.startsWith('$') ? ticker.slice(1) : ticker
+
+/**
+ * Formats a ticker from url to be display friendly
+ */
+export const formatTickerFromUrl = (ticker: string) =>
+  ticker.startsWith('$') ? ticker : `$${ticker}`

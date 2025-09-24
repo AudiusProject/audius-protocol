@@ -13,6 +13,7 @@ import {
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
+import { formatTickerForUrl } from '@audius/common/utils'
 import {
   Box,
   Flex,
@@ -146,7 +147,7 @@ export const MobileArtistCoinsExplorePage: React.FC = () => {
 
   const handleCoinPress = useCallback(
     (ticker: string) => {
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ticker))
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', formatTickerForUrl(ticker)))
     },
     [navigate]
   )

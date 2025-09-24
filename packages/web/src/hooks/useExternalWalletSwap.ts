@@ -12,16 +12,16 @@ import { SwapRequest } from '@jup-ag/api'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { TokenInfo } from '~/store'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 type ExternalWalletSwapParams = {
   inputAmountUi: number
-  inputToken: TokenInfo
-  outputToken: TokenInfo
+  inputToken: { decimals: number; address: string }
+  outputToken: { decimals: number; address: string }
   walletAddress: string
+  isAMM: boolean
 }
 export const useExternalWalletSwap = () => {
   const { audiusSdk } = useQueryContext()
@@ -35,7 +35,13 @@ export const useExternalWalletSwap = () => {
         confirmedSwapTx: false,
         userCancelled: false
       }
-      const { inputAmountUi, inputToken, outputToken, walletAddress } = params
+      const {
+        inputAmountUi,
+        inputToken,
+        outputToken,
+        walletAddress,
+        isAMM = false
+      } = params
 
       try {
         const sdk = await audiusSdk()
@@ -63,7 +69,7 @@ export const useExternalWalletSwap = () => {
           quoteResponse: quote.quote,
           userPublicKey: walletAddress,
           dynamicSlippage: true, // Uses the slippage from the quote
-          useSharedAccounts: true
+          useSharedAccounts: !isAMM // Shared accounts cant be used for AMM pool swaps
         }
         const swapTx = await jupiterInstance.swapPost({ swapRequest })
 
@@ -86,8 +92,6 @@ export const useExternalWalletSwap = () => {
         return {
           signature: txSignature,
           inputAmount: inputAmountUi,
-          inputToken: inputToken.symbol,
-          outputToken: outputToken.symbol,
           progress: hookProgress,
           isError: false
         }
@@ -103,7 +107,7 @@ export const useExternalWalletSwap = () => {
         reportToSentry({
           error: error instanceof Error ? error : new Error(errorMessage),
           level: ErrorLevel.Error,
-          feature: Feature.TanQuery,
+          feature: Feature.ArtistCoins,
           name: 'External Wallet Swap Error',
           additionalInfo: {
             ...params,

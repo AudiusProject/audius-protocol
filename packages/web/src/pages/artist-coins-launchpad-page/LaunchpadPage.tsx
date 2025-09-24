@@ -1,34 +1,37 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import {
   ConnectedWallet,
   getWalletSolBalanceOptions,
   useConnectedWallets,
   useCurrentAccountUser,
-  useQueryContext
+  useCurrentUserId,
+  useQueryContext,
+  useUserCreatedCoins
 } from '@audius/common/api'
 import { launchpadMessages } from '@audius/common/messages'
-import { toast } from '@audius/common/src/store/ui/toast/slice'
-import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
-import { useCoinSuccessModal } from '@audius/common/store'
-import { shortenSPLAddress } from '@audius/common/utils'
-import { wAUDIO } from '@audius/fixed-decimal'
+import { Feature } from '@audius/common/models'
+import { TOKEN_LISTING_MAP, useCoinSuccessModal } from '@audius/common/store'
+import { shortenSPLAddress, route } from '@audius/common/utils'
+import { FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
 import { Flex, IconArtistCoin, IconCheck, Text } from '@audius/harmony'
 import { solana } from '@reown/appkit/networks'
 import { useQueryClient } from '@tanstack/react-query'
 import { Form, Formik, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { Navigate, useNavigate } from 'react-router-dom-v5-compat'
 
 import { appkitModal } from 'app/ReownAppKitModal'
 import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Page from 'components/page/Page'
+import { ToastContext } from 'components/toast/ToastContext'
 import {
   useConnectAndAssociateWallets,
   AlreadyAssociatedError
 } from 'hooks/useConnectAndAssociateWallets'
-import { useLaunchCoin } from 'hooks/useLaunchCoin'
+import { useExternalWalletSwap } from 'hooks/useExternalWalletSwap'
+import { LAUNCHPAD_COIN_DECIMALS, useLaunchCoin } from 'hooks/useLaunchCoin'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { ConnectedWalletHeader } from './components'
 import {
@@ -41,19 +44,38 @@ import { BuyCoinPage, ReviewPage, SetupPage, SplashPage } from './pages'
 import { getLatestConnectedWallet } from './utils'
 import { useLaunchpadFormSchema } from './validation'
 
-const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
+const messages = {
+  title: 'Create Your Artist Coin',
+  walletAdded: 'Wallet connected successfully',
+  errors: {
+    coinCreationFailed: 'Coin creation failed. Please try again.',
+    firstBuyFailed: 'Coin purchase failed. Please try again.',
+    firstBuyFailedToast:
+      'Coin created! Your purchase failed, please try again.',
+    unknownError:
+      'An unknown error occurred. The Audius team has been notified.'
+  }
+}
+
+const LaunchpadPageContent = ({
+  submitErrorText,
+  submitButtonText
+}: {
+  submitErrorText?: string
+  submitButtonText?: string
+}) => {
   const [phase, setPhase] = useState(Phase.SPLASH)
   const { resetForm, validateForm } = useFormikContext()
   const queryClient = useQueryClient()
   const queryContext = useQueryContext()
   const { data: connectedWallets } = useConnectedWallets()
+  const { toast } = useContext(ToastContext)
   const connectedWallet = useMemo(
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
   const [isInsufficientBalanceModalOpen, setIsInsufficientBalanceModalOpen] =
     useState(false)
-  const dispatch = useDispatch()
 
   // Set up mobile header with icon
   useMobileHeader({
@@ -92,18 +114,14 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
   const handleWalletAddSuccess = useCallback(
     (wallet: ConnectedWallet) => {
       setPhase(Phase.SETUP)
-      dispatch(
-        toast({
-          content: (
-            <Flex gap='xs' direction='column'>
-              <Text>{launchpadMessages.page.walletAdded}</Text>
-              <Text>{shortenSPLAddress(wallet.address)}</Text>
-            </Flex>
-          )
-        })
+      toast(
+        <Flex gap='xs' direction='column'>
+          <Text>{launchpadMessages.page.walletAdded}</Text>
+          <Text>{shortenSPLAddress(wallet.address)}</Text>
+        </Flex>
       )
     },
-    [setPhase, dispatch]
+    [setPhase, toast]
   )
 
   // Wallet connection handlers
@@ -147,8 +165,6 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
           }
         }
       }
-
-      // TODO: add an error toast here
     },
     [
       connectedWallets,
@@ -217,7 +233,11 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
         )
       case Phase.BUY_COIN:
         return (
-          <BuyCoinPage onBack={handleBuyCoinBack} submitError={submitError} />
+          <BuyCoinPage
+            onBack={handleBuyCoinBack}
+            submitErrorText={submitErrorText}
+            submitButtonText={submitButtonText}
+          />
         )
       default:
         return (
@@ -247,27 +267,67 @@ const LaunchpadPageContent = ({ submitError }: { submitError: boolean }) => {
 }
 
 export const LaunchpadPage = () => {
+  // const { data: currentUser } = useCurrentAccountUser()
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: createdCoins } = useUserCreatedCoins({
+    userId: currentUserId
+  })
+
+  // TODO (PE-6821) This is temporarily disabled to allow for testing
+  const isVerified = true // currentUser?.is_verified ?? false
+  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { toast } = useContext(ToastContext)
+  const { data: user } = useCurrentAccountUser()
+  const { data: connectedWallets } = useConnectedWallets()
+  const { validationSchema } = useLaunchpadFormSchema()
+  const [formValues, setFormValues] = useState<SetupFormValues | null>(null)
+
+  const { onOpen: openCoinSuccessModal } = useCoinSuccessModal()
+  const navigate = useNavigate()
+
+  // Launch coin mutation hook - this handles pool creation, sdk coin creation, and first buy transaction
   const {
     mutate: launchCoin,
-    isPending,
+    isPending: isLaunchCoinPending,
     isSuccess: isLaunchCoinFinished,
     data: launchCoinResponse,
     isError: uncaughtLaunchCoinError
   } = useLaunchCoin()
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [formValues, setFormValues] = useState<SetupFormValues | null>(null)
-  const { data: user } = useCurrentAccountUser()
-  const { data: connectedWallets } = useConnectedWallets()
-  const { validationSchema } = useLaunchpadFormSchema()
-  const { onOpen: openCoinSuccessModal } = useCoinSuccessModal()
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const isPoolCreateError =
-    launchCoinResponse?.isError &&
-    !launchCoinResponse?.errorMetadata.poolCreateConfirmed
-  const isError = uncaughtLaunchCoinError || !!launchCoinResponse?.isError
 
-  // If an error occurs before the pool is created, we close the modal so the user can resubmit
+  // If something during coin launch hook fails, this errorMetadata is used to trigger recovery flows
+  const errorMetadata = launchCoinResponse?.errorMetadata
+
+  const isLaunchCoinError = launchCoinResponse?.isError
+  const isPoolCreateError =
+    isLaunchCoinError && !errorMetadata?.poolCreateConfirmed
+  const isFirstBuyError =
+    isLaunchCoinError &&
+    errorMetadata?.poolCreateConfirmed &&
+    !errorMetadata?.firstBuyConfirmed &&
+    errorMetadata?.requestedFirstBuy
+
+  // This hook is used in the case where the first buy TX failed for some reason but the pool was created successfully
+  // Since the pool is launched, we can retry the first buy transaction with a new jupiter swap TX
+  const {
+    mutate: swapTokens,
+    isPending: isSwapRetryPending,
+    isSuccess: isSwapRetryFinished,
+    data: swapData
+  } = useExternalWalletSwap()
+
+  const isSwapRetryError = !!swapData?.isError
+  const isSwapRetrySuccess = isSwapRetryFinished && !isSwapRetryError
+
+  // Overall success, pending, and error states account for both hooks
+  const isSuccess =
+    (isLaunchCoinFinished && !isLaunchCoinError) || isSwapRetrySuccess
+  const isPending = isLaunchCoinPending || isSwapRetryPending
+  const isError =
+    uncaughtLaunchCoinError || isLaunchCoinError || isSwapRetryError
+
+  // If an error occurs after the pool is created, we close the modal to let the user resubmit via the swap retry flow
   useEffect(() => {
     if (isPoolCreateError) {
       setIsModalOpen(false)
@@ -276,26 +336,19 @@ export const LaunchpadPage = () => {
 
   // Handle successful coin creation
   useEffect(() => {
-    if (
-      isLaunchCoinFinished &&
-      !launchCoinResponse?.isError &&
-      launchCoinResponse &&
-      formValues
-    ) {
+    if (isSuccess && launchCoinResponse && formValues) {
       // Show toast notification
-      dispatch(
-        toast({
-          content: (
-            <Flex gap='xs'>
-              <IconCheck size='m' color='white' />
-              <Text>{launchpadMessages.toast.coinCreated}</Text>
-            </Flex>
-          )
-        })
+      toast(
+        <Flex gap='xs'>
+          <IconCheck size='m' color='white' />
+          <Text>{launchpadMessages.toast.coinCreated}</Text>
+        </Flex>
       )
 
       // Navigate to the new coin's detail page
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol))
+      navigate(
+        route.ASSET_DETAIL_PAGE.replace(':ticker', formValues.coinSymbol)
+      )
 
       // Open the success modal
       openCoinSuccessModal({
@@ -310,11 +363,37 @@ export const LaunchpadPage = () => {
   }, [
     isLaunchCoinFinished,
     launchCoinResponse,
-    formValues,
     openCoinSuccessModal,
-    dispatch,
-    navigate
+    navigate,
+    formValues,
+    isError,
+    isSuccess,
+    toast
   ])
+
+  // If the swap retry fails close the modal again and let user attempt to resubmit if they want
+  useEffect(() => {
+    if (isSwapRetryError) {
+      setIsModalOpen(false)
+    }
+  }, [isSwapRetryError])
+
+  // If the first buy TX fails, we show a toast and close the modal
+  // they are still able to attempt to resubmit
+  useEffect(() => {
+    if (isFirstBuyError) {
+      setIsModalOpen(false)
+      toast(messages.errors.firstBuyFailedToast)
+    }
+  }, [isFirstBuyError, toast])
+
+  // Handle swap results for first buy transaction
+  useEffect(() => {
+    if (isSwapRetryError) {
+      // Show error toast but keep modal open for retry
+      toast(messages.errors.firstBuyFailed)
+    }
+  }, [isSwapRetryError, toast])
 
   const handleSubmit = useCallback(
     (formValues: SetupFormValues) => {
@@ -325,13 +404,24 @@ export const LaunchpadPage = () => {
       const connectedWallet: ConnectedWallet | undefined =
         getLatestConnectedWallet(connectedWallets)
 
+      if (!user || !connectedWallet) {
+        toast(messages.errors.unknownError)
+        reportToSentry({
+          error: new Error(
+            'Unable to submit launchpad form. No user or connected wallet found'
+          ),
+          name: 'Launchpad Submit Error',
+          feature: Feature.ArtistCoins,
+          additionalInfo: {
+            user,
+            connectedWallet,
+            formValues
+          }
+        })
+        throw new Error('No user or connected wallet found')
+      }
+
       setIsModalOpen(true)
-      if (!user) {
-        throw new Error('No current user found for unknown reason')
-      }
-      if (!connectedWallet) {
-        throw new Error('No connected wallet found')
-      }
       const audioAmountBigNumber = formValues.payAmount
         ? wAUDIO(formValues.payAmount).value
         : undefined
@@ -339,21 +429,70 @@ export const LaunchpadPage = () => {
         audioAmountBigNumber && audioAmountBigNumber > 0
           ? audioAmountBigNumber.toString()
           : undefined
-      launchCoin({
-        userId: user.user_id,
-        name: formValues.coinName,
-        symbol: formValues.coinSymbol,
-        image: formValues.coinImage!,
-        description: LAUNCHPAD_COIN_DESCRIPTION(
-          user.handle,
-          formValues.coinSymbol
-        ),
-        walletPublicKey: connectedWallet.address,
-        initialBuyAmountAudio
-      })
+
+      // Check if we've already attempted to submit and need to retry the first buy transaction instead of creating a new pool
+      if (isFirstBuyError) {
+        // Recover the mint address from the error metadata
+        const mintAddress =
+          launchCoinResponse.newMint || errorMetadata?.coinMetadata?.mint
+        if (formValues.payAmount && mintAddress) {
+          // Retry the first buy transaction with a new swap TX
+          swapTokens({
+            inputToken: TOKEN_LISTING_MAP.AUDIO,
+            outputToken: {
+              address: mintAddress,
+              decimals: LAUNCHPAD_COIN_DECIMALS
+            },
+            walletAddress: connectedWallet.address,
+            inputAmountUi: Number(new FixedDecimal(formValues.payAmount).value),
+            isAMM: true
+          })
+        } else {
+          setIsModalOpen(false)
+          toast(messages.errors.unknownError)
+          reportToSentry({
+            error: new Error(
+              'First buy retry failed. No mint address or pay amount found.'
+            ),
+            name: 'First Buy Retry Failure',
+            feature: Feature.ArtistCoins,
+            additionalInfo: {
+              errorMetadata,
+              formValues
+            }
+          })
+        }
+      } else {
+        launchCoin({
+          userId: user.user_id,
+          name: formValues.coinName,
+          symbol: formValues.coinSymbol,
+          image: formValues.coinImage!,
+          description: LAUNCHPAD_COIN_DESCRIPTION(
+            user.handle,
+            formValues.coinSymbol
+          ),
+          walletPublicKey: connectedWallet.address,
+          initialBuyAmountAudio
+        })
+      }
     },
-    [launchCoin, user, connectedWallets]
+    [
+      connectedWallets,
+      user,
+      isFirstBuyError,
+      launchCoinResponse?.newMint,
+      errorMetadata,
+      swapTokens,
+      toast,
+      launchCoin
+    ]
   )
+
+  // Redirect if user is not verified or already has an artist coin
+  if (!isVerified || hasExistingArtistCoin) {
+    return <Navigate to={route.COINS_EXPLORE_PAGE} replace />
+  }
 
   return (
     <Formik<SetupFormValues>
@@ -378,9 +517,18 @@ export const LaunchpadPage = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           mintAddress={launchCoinResponse?.newMint}
-          errorMetadata={launchCoinResponse?.errorMetadata}
+          errorMetadata={errorMetadata}
         />
-        <LaunchpadPageContent submitError={!!isPoolCreateError} />
+        <LaunchpadPageContent
+          submitErrorText={
+            isPoolCreateError
+              ? messages.errors.coinCreationFailed
+              : isSwapRetryError || isFirstBuyError
+                ? messages.errors.firstBuyFailed
+                : undefined
+          }
+          submitButtonText={isFirstBuyError ? 'Continue' : undefined}
+        />
       </Form>
     </Formik>
   )

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { MobileOS } from '@audius/common/models'
-import { PortalHost } from '@gorhom/portal'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Platform } from 'react-native'
 
@@ -73,12 +72,6 @@ export const AppScreen = () => {
           name='ChangePassword'
           component={ChangePasswordModalScreen}
         />
-        <Stack.Screen
-          name='BaseTokenDropdownSelect'
-          options={{ presentation: 'modal' }}
-        >
-          {() => <PortalHost name='BaseTokenDropdownSelectPortal' />}
-        </Stack.Screen>
       </Stack.Group>
     </Stack.Navigator>
   )
