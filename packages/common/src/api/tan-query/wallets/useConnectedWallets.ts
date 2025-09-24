@@ -12,8 +12,10 @@ import {
   useQueryContext,
   type QueryContextType
 } from '~/api/tan-query/utils/QueryContext'
+import { walletMessages } from '~/messages'
 import { Chain, type ID } from '~/models'
 import { profilePageActions } from '~/store/pages'
+import { toast } from '~/store/ui/toast/slice'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { useCurrentUserId } from '../users/account/useCurrentUserId'
@@ -184,12 +186,24 @@ export const useRemoveConnectedWallet = () => {
       })
       return response
     },
+    onSuccess: () => {
+      dispatch(
+        toast({
+          content: walletMessages.linkedWallets.toasts.walletRemoved,
+          type: 'info'
+        })
+      )
+    },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: getConnectedWalletsQueryKey({ userId: currentUserId })
       })
       queryClient.invalidateQueries({
         queryKey: getUserCollectiblesQueryKey({ userId: currentUserId })
+      })
+      // Invalidate user coin query to update balances
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.userCoin, currentUserId]
       })
 
       // Temporarily manually refetch relevant redux states
@@ -204,6 +218,12 @@ export const useRemoveConnectedWallet = () => {
       )
     },
     onError: (error) => {
+      dispatch(
+        toast({
+          content: walletMessages.linkedWallets.toasts.error,
+          type: 'error'
+        })
+      )
       reportToSentry({
         error,
         name: 'Remove Connected Wallet'

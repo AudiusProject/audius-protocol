@@ -57,6 +57,7 @@ import { ConnectNewWalletDrawer } from 'app/screens/external-wallets/components/
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
 import { PickWinnersDrawer } from 'app/screens/track-screen/PickWinnersDrawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
+import { WalletRowOverflowMenu } from 'app/screens/wallet-screen/components/LinkedWallets'
 
 import { useDrawerState } from '../components/drawer'
 import {
@@ -170,7 +171,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   Welcome: WelcomeDrawer,
   ConnectNewWallet: ConnectNewWalletDrawer,
   PickWinners: PickWinnersDrawer,
-  AssetInsightsOverflowMenu
+  AssetInsightsOverflowMenu,
+  WalletRowOverflowMenu
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

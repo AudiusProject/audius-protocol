@@ -12,6 +12,8 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { CashWallet } from 'pages/pay-and-earn-page/components/CashWallet'
 import { YourCoins } from 'pages/pay-and-earn-page/components/YourCoins'
 
+import { LinkedWallets } from './components/LinkedWallets'
+
 const messages = {
   title: 'Wallet'
 }
@@ -47,6 +49,7 @@ export const WalletPage = () => {
     >
       <CashWallet />
       <YourCoins />
+      <LinkedWallets />
     </Flex>
   )
 

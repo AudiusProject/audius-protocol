@@ -1,10 +1,6 @@
 import { useCallback, useContext, useMemo, useState } from 'react'
 
-import {
-  useRemoveConnectedWallet,
-  QUERY_KEYS,
-  useCurrentUserId
-} from '@audius/common/api'
+import { useRemoveConnectedWallet } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { Chain } from '@audius/common/models'
 import { useUserCoin } from '@audius/common/src/api/tan-query/coins/useUserCoin'
@@ -27,7 +23,6 @@ import {
   IconLogoCircle
 } from '@audius/harmony'
 import { UserCoinAccount } from '@audius/sdk'
-import { useQueryClient } from '@tanstack/react-query'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -58,9 +53,8 @@ const WalletRow = ({
   const { toast } = useContext(ToastContext)
   const [isRemovingWallet, setIsRemovingWallet] = useState(false)
   const isMobile = useIsMobile()
-  const queryClient = useQueryClient()
   const [isMobileOverflowOpen, setIsMobileOverflowOpen] = useState(false)
-  const { data: currentUserId } = useCurrentUserId()
+
   // For connected wallets we want to use the root wallet address, for in-app wallets the owner will be us and not the user so we need to use the token account address
   const address = isInAppWallet ? account : owner
   const copyAddressToClipboard = useCallback(() => {
@@ -79,21 +73,12 @@ const WalletRow = ({
   }, [setIsMobileOverflowOpen])
 
   const handleRemove = useCallback(async () => {
-    try {
-      setIsRemovingWallet(true)
-      await removeConnectedWalletAsync({
-        wallet: { address, chain: Chain.Sol }
-      })
-      await queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.userCoin, currentUserId]
-      })
-      toast(messages.toasts.walletRemoved)
-    } catch (e) {
-      toast(messages.toasts.error)
-    } finally {
-      setIsRemovingWallet(false)
-    }
-  }, [removeConnectedWalletAsync, address, queryClient, toast, currentUserId])
+    setIsRemovingWallet(true)
+    await removeConnectedWalletAsync({
+      wallet: { address, chain: Chain.Sol }
+    })
+    setIsRemovingWallet(false)
+  }, [removeConnectedWalletAsync, address])
 
   const items: PopupMenuItem[] = useMemo(
     () =>
@@ -129,7 +114,7 @@ const WalletRow = ({
         </Text>
       </Flex>
       <Flex css={{ flex: 1 }} justifyContent='flex-end'>
-        <Text variant='body' size='m' strength='strong' color='default'>
+        <Text variant='body' size='m' strength='strong'>
           {Math.trunc(balance / Math.pow(10, decimals)).toLocaleString()}
         </Text>
       </Flex>
@@ -196,16 +181,11 @@ export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
     [unsortedAccounts]
   )
   const { toast } = useContext(ToastContext)
-  const queryClient = useQueryClient()
   const hasAccounts = accounts.length > 0
-  const { data: currentUserId } = useCurrentUserId()
 
   const handleAddWalletSuccess = useCallback(async () => {
     toast(messages.newWalletConnected)
-    await queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.userCoin, currentUserId]
-    })
-  }, [toast, queryClient, currentUserId])
+  }, [toast])
 
   const handleAddWalletError = useCallback(
     async (e: unknown) => {

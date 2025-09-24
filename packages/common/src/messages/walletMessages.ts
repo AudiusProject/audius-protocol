@@ -106,6 +106,28 @@ export const walletMessages = {
   becomeMemberBody: (coinTicker: string) =>
     `Buy ${coinTicker} to gain access to exclusive members-only perks!`,
 
+  // Linked Wallets messages
+  linkedWallets: {
+    titleHasWallets: 'Linked Wallets ',
+    titleNoWallets: 'Link External Wallet',
+    count: (count: number) => `(${count}/5)`,
+    addWallet: 'Add Linked Wallet',
+    copied: 'Copied To Clipboard!',
+    copy: 'Copy Address',
+    remove: 'Remove Wallet',
+    options: 'Options',
+    newWalletConnected: 'New Wallet Successfully Connected!',
+    error: 'Something went wrong. Please try again.',
+    walletAlreadyAdded: 'No new wallets selected to connect.',
+    linkedWallet: (index: number) => `Linked Wallet ${index + 1}`,
+    linkWallet:
+      'Link an external wallet to take advantage of in-app features, and take full control of your assets.',
+    toasts: {
+      walletRemoved: 'Wallet removed successfully!',
+      error: 'Error removing wallet'
+    }
+  },
+
   // Artist Coins messages
   artistCoins: {
     title: 'Discover Artist Coins',
