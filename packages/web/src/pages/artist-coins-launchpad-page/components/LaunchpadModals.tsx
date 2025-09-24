@@ -86,15 +86,9 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
 /**
  * Rare edge case modal where the SDK call to add the coin to Audius fails
  */
-const CoinNotInAudiusState = ({
-  onClose,
-  mintAddress
-}: {
-  onClose: () => void
-  mintAddress: string
-}) => (
+const CoinNotInAudiusState = ({ mintAddress }: { mintAddress: string }) => (
   <>
-    <ModalHeader onClose={onClose}>
+    <ModalHeader showDismissButton={false}>
       <ModalTitle title={messages.errorMessages.yourCoinIsLive} />
     </ModalHeader>
     <ModalContent>
@@ -161,7 +155,7 @@ const ErrorState = ({
   onClose: () => void
 }) => {
   if (errorMetadata?.poolCreateConfirmed && mintAddress) {
-    return <CoinNotInAudiusState onClose={onClose} mintAddress={mintAddress} />
+    return <CoinNotInAudiusState mintAddress={mintAddress} />
   }
   return (
     <UnknownErrorState
@@ -193,6 +187,10 @@ export const LaunchpadSubmitModal = ({
 
   const isFirstBuyRetry =
     errorMetadata?.requestedFirstBuy && errorMetadata?.poolCreateConfirmed
+  const isSDKCoinError =
+    isError &&
+    errorMetadata?.poolCreateConfirmed &&
+    !errorMetadata?.sdkCoinAdded
   const numTxs = payAmount && payAmountNumber > 0 && !isFirstBuyRetry ? 2 : 1
 
   // Keep track of current state in a string so we avoid overlapping states
@@ -202,7 +200,7 @@ export const LaunchpadSubmitModal = ({
       isOpen={isOpen}
       size={currentState === 'error' ? 'small' : undefined}
       onClose={() => {
-        if (currentState === 'error') {
+        if (currentState === 'error' && !isSDKCoinError) {
           onClose()
         }
       }}

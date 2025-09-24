@@ -296,7 +296,7 @@ export const LaunchpadPage = () => {
 
   const isLaunchCoinError = launchCoinResponse?.isError
   const isPoolCreateError =
-    isLaunchCoinError && errorMetadata?.poolCreateConfirmed
+    isLaunchCoinError && !errorMetadata?.poolCreateConfirmed
   const isFirstBuyError =
     isLaunchCoinError &&
     errorMetadata?.poolCreateConfirmed &&
@@ -521,7 +521,6 @@ export const LaunchpadPage = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           mintAddress={launchCoinResponse?.newMint}
-          logoUri={launchCoinResponse?.logoUri}
           errorMetadata={errorMetadata}
         />
         <LaunchpadPageContent
