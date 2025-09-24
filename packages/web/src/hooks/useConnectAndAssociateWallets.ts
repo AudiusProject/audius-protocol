@@ -89,7 +89,7 @@ export const useConnectAndAssociateWallets = (
     analytics: { track, make }
   } = useAppContext()
   const theme = useTheme()
-  const { open } = useAppKit()
+  const { open: openAppKitModal, close: closeAppKitModal } = useAppKit()
   const { signMessageAgnostic } = useSignMessageAgnostic()
   const { data: currentUser } = useCurrentAccountUser()
   const { data: connectedWallets } = useConnectedWallets()
@@ -119,18 +119,23 @@ export const useConnectAndAssociateWallets = (
    * - Ensures all existing connections are disconnected
    * - Ensures that the network is set to mainnet (for Eth)
    */
-  const openAppKitModal = useRequiresAccountCallback(async () => {
-    // If previously connected, disconnect to give a "fresh" view of options
-    if (isConnected) {
-      await disconnect()
-    }
-    appkitModal.updateFeatures({ socials: false, email: false })
-    appkitModal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
-    // If the user is signed in using an external wallet, they'll be connected
-    // to the audiusChain network. Reset that to mainnet to connect properly.
-    await appkitModal.switchNetwork(mainnet)
-    await open({ view: 'Connect' })
-  }, [disconnect, isConnected, open, theme.type])
+  const openAppKitModalCallback = useRequiresAccountCallback(
+    async (namespace?: keyof NamespaceTypeMap) => {
+      // If previously connected, disconnect to give a "fresh" view of options
+      if (isConnected) {
+        await disconnect()
+      }
+      appkitModal.updateFeatures({ socials: false, email: false })
+      appkitModal.setThemeMode(theme.type === 'day' ? 'light' : 'dark')
+      // If the user is signed in using an external wallet, they'll be connected
+      // to the audiusChain network. Reset that to mainnet to connect properly.
+      await appkitModal.switchNetwork(mainnet)
+      await openAppKitModal(
+        namespace ? { view: 'Connect', namespace } : { view: 'Connect' }
+      )
+    },
+    [disconnect, isConnected, openAppKitModal, theme.type]
+  )
 
   /**
    * Reconnects to the external auth wallet connector if the user wallet isn't
@@ -290,6 +295,7 @@ export const useConnectAndAssociateWallets = (
       } else if (event.data.event === 'CONNECT_SUCCESS') {
         setIsConnecting(false)
         await associateConnectedWallets()
+        closeAppKitModal()
       } else if (event.data.event === 'CONNECT_ERROR') {
         setIsConnecting(false)
       }
@@ -298,11 +304,12 @@ export const useConnectAndAssociateWallets = (
     associateConnectedWallets,
     reconnectExternalAuthWallet,
     isConnecting,
-    isAssociating
+    isAssociating,
+    closeAppKitModal
   ])
 
   return {
     isPending: isAppKitModalOpen || isConnecting || isAssociating,
-    openAppKitModal
+    openAppKitModal: openAppKitModalCallback
   }
 }

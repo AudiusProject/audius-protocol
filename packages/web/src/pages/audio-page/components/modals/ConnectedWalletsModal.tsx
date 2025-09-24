@@ -235,7 +235,9 @@ export const ConnectedWalletsModal = () => {
             variant='primary'
             disabled={isConnectDisabled}
             isLoading={isConnectingWallets}
-            onClick={openAppKitModal}
+            onClick={() => {
+              openAppKitModal()
+            }}
             fullWidth
           >
             {messages.connect}
