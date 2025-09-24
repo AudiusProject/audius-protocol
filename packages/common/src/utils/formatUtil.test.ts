@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
-import { formatBytes } from './formatUtil'
 import { formatCount } from './decimal'
+import { formatBytes } from './formatUtil'
 
 describe('formatUtil', function () {
   it('can format count', function () {
