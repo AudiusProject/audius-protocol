@@ -28,18 +28,19 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const DIMENSIONS = 160
+const LOADING_HEIGHT = 400
 
 export const ReceiveTokensModal = () => {
-  const { isOpen, onClose, data } = useReceiveTokensModal()
   const { toast } = useContext(ToastContext)
   const { isMobile } = useMedia()
+  const { isOpen, onClose, data } = useReceiveTokensModal()
   const { mint } = data ?? {}
-
-  const { data: coin } = useArtistCoin(mint ?? '')
-  const { tokenBalanceFormatted } = useFormattedTokenBalance(mint ?? '')
+  const { data: coin } = useArtistCoin(mint)
+  const { tokenBalanceFormatted: balance } = useFormattedTokenBalance(
+    mint ?? ''
+  )
   const { userBankAddress, loading: userBankLoading } = useUserbank(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-  const balance = tokenBalanceFormatted
 
   const handleCopy = useCallback(() => {
     copyToClipboard(userBankAddress ?? '')
@@ -60,7 +61,7 @@ export const ReceiveTokensModal = () => {
           alignItems='center'
           p='xl'
           w='100%'
-          h={400}
+          h={LOADING_HEIGHT}
           gap='l'
         >
           <LoadingSpinner size='2xl' color='subdued' />

@@ -14,7 +14,8 @@ import {
   LoadingSpinner,
   Divider,
   Hint,
-  TextLink
+  TextLink,
+  useTheme
 } from '@audius/harmony-native'
 import { QRCodeComponent, BalanceSection } from 'app/components/core'
 import { AddressTile } from 'app/components/core/AddressTile'
@@ -24,11 +25,13 @@ import { useToast } from 'app/hooks/useToast'
 import { DrawerHeader } from '../drawer/DrawerHeader'
 
 const QR_CODE_SIZE = 160
+const LOADING_HEIGHT = 160
 
 export const ReceiveTokensDrawer = () => {
   const { isOpen, onClose, data } = useReceiveTokensModal()
   const { toast } = useToast()
   const { mint } = data ?? {}
+  const { spacing } = useTheme()
   const { userBankAddress, loading: userBankLoading } = useUserbank(mint)
 
   const handleCopyAddress = useCallback(() => {
@@ -50,19 +53,21 @@ export const ReceiveTokensDrawer = () => {
     )
   }
 
-  if (userBankLoading || !userBankAddress) {
+  if (!userBankLoading || !userBankAddress) {
     return (
       <Drawer isOpen={isOpen} onClose={onClose}>
         <Flex
-          direction='column'
+          column
           justifyContent='center'
           alignItems='center'
           ph='l'
           pv='xl'
           gap='xl'
-          h={160}
+          h={LOADING_HEIGHT}
         >
-          <LoadingSpinner style={{ height: 32, width: 32 }} />
+          <LoadingSpinner
+            style={{ height: spacing['2xl'], width: spacing['2xl'] }}
+          />
           <Flex column gap='xs' alignItems='center'>
             <Text variant='heading' size='l'>
               {walletMessages.receiveTokensLoadingTitle}
