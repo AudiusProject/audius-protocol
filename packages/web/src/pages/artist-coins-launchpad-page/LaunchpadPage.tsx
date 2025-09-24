@@ -258,7 +258,8 @@ export const LaunchpadPage = () => {
     userId: currentUserId
   })
 
-  const isVerified = currentUser?.is_verified ?? false
+  // TODO (PE-6821) This is temporarily disabled to allow for testing
+  const isVerified = false // currentUser?.is_verified ?? false
   const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
 
   const {
