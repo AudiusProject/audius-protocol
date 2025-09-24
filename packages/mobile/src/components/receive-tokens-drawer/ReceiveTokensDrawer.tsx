@@ -53,7 +53,7 @@ export const ReceiveTokensDrawer = () => {
     )
   }
 
-  if (!userBankLoading || !userBankAddress) {
+  if (userBankLoading || !userBankAddress) {
     return (
       <Drawer isOpen={isOpen} onClose={onClose}>
         <Flex

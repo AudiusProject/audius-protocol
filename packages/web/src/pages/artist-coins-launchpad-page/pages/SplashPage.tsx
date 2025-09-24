@@ -1,6 +1,5 @@
-import { Flex, makeResponsiveStyles } from '@audius/harmony'
-
 import { useArtistCoins, useCurrentUserId } from '@audius/common/api'
+import { Flex, makeResponsiveStyles } from '@audius/harmony'
 
 import gift from 'assets/fonts/emojis/gift.png'
 import globe from 'assets/fonts/emojis/globe.png'

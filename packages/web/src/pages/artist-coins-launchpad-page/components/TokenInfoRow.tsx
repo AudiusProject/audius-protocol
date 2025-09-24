@@ -21,7 +21,7 @@ export const TokenInfoRow = ({
 }: TokenInfoRowProps) => {
   const labelElement = (
     <Flex alignItems='center' gap='xs'>
-      <Text variant='body' size='m' color='subdued'>
+      <Text variant='body' size='m' strength='strong' color='subdued'>
         {label}
       </Text>
       {hasTooltip && tooltipContent ? (
@@ -36,7 +36,7 @@ export const TokenInfoRow = ({
 
   const valueElement =
     typeof value === 'string' ? (
-      <Text variant='body' size='m'>
+      <Text variant='body' size='m' userSelect='text'>
         {value}
       </Text>
     ) : (
