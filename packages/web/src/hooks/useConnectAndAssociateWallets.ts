@@ -130,9 +130,7 @@ export const useConnectAndAssociateWallets = (
       // If the user is signed in using an external wallet, they'll be connected
       // to the audiusChain network. Reset that to mainnet to connect properly.
       await appkitModal.switchNetwork(mainnet)
-      await openAppKitModal(
-        namespace ? { view: 'Connect', namespace } : { view: 'Connect' }
-      )
+      await openAppKitModal({ view: 'Connect', namespace })
     },
     [disconnect, isConnected, openAppKitModal, theme.type]
   )
