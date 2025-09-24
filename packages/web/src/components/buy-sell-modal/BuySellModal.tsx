@@ -59,7 +59,7 @@ export const BuySellModal = () => {
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
       >
         <ModalTitle title={title} />
-        {modalScreen === 'input' && (
+        {modalScreen === 'input' && !isFlowLoading && (
           <PlainButton
             size='default'
             iconLeft={IconQuestionCircle}

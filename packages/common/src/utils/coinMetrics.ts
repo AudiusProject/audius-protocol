@@ -1,6 +1,10 @@
 import { Coin } from '@audius/sdk'
 
-import { formatCurrencyWithMax, formatCurrencyWithSubscript } from './decimal'
+import {
+  CURRENCY_FORMAT_MAX,
+  formatCurrencyWithMax,
+  formatCurrencyWithSubscript
+} from './decimal'
 import { formatCount } from './formatUtil'
 
 export type MetricData = {
@@ -20,8 +24,6 @@ const messages = {
   totalTransfers: 'Total Transfers',
   graduationProgress: 'Graduation Progress'
 }
-
-const CURRENCY_FORMAT_MAX = 100_000
 
 const formatPercentage = (num: number): string => {
   return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`
