@@ -67,7 +67,7 @@ export const UserLink = (props: UserLinkProps) => {
   )
 
   const containerStyles: CSSObject = {
-    columnGap: spacing.xs,
+    columnGap: spacing['2xs'],
     alignItems: 'center',
     lineHeight: 'normal',
     display: 'inline-flex',

@@ -35,6 +35,7 @@ export type Drawer =
   | 'EditTrackFormOverflowMenu'
   | 'PickWinners'
   | 'AssetInsightsOverflowMenu'
+  | 'WalletRowOverflowMenu'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -79,6 +80,12 @@ export type DrawerData = {
   EditTrackFormOverflowMenu: undefined
   PickWinners: undefined
   AssetInsightsOverflowMenu: { mint: string }
+  WalletRowOverflowMenu: {
+    address: string
+    copyCallback: () => void
+    removeCallback: () => void
+    isInAppWallet: boolean
+  }
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -115,6 +122,7 @@ const initialState: DrawersState = {
   EditTrackFormOverflowMenu: false,
   PickWinners: false,
   AssetInsightsOverflowMenu: false,
+  WalletRowOverflowMenu: false,
   data: {}
 }
 
