@@ -6,6 +6,7 @@ import type { Modals } from '@audius/common/store'
 import { AddCashDrawer } from 'app/components/add-funds-drawer/AddCashDrawer'
 import { AddToCollectionDrawer } from 'app/components/add-to-collection-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
+import { ArtistCoinDetailsDrawer } from 'app/components/artist-coin-details-drawer/ArtistCoinDetailsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
@@ -144,7 +145,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   HostRemixContest: HostRemixContestDrawer,
   WithdrawUSDCModal: WithdrawUSDCDrawer,
   ReceiveTokensModal: ReceiveTokensDrawer,
-  SendTokensModal: SendTokensDrawer
+  SendTokensModal: SendTokensDrawer,
+  ArtistCoinDetailsModal: ArtistCoinDetailsDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

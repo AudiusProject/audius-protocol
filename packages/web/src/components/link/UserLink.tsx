@@ -71,7 +71,8 @@ export const UserLink = (props: UserLinkProps) => {
     alignItems: 'center',
     lineHeight: 'normal',
     display: 'inline-flex',
-    width: fullWidth ? '100%' : undefined
+    width: fullWidth ? '100%' : undefined,
+    overflow: 'hidden'
   }
 
   // Badges should be outside the TextLink to prevent hover effects on badges

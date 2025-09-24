@@ -125,6 +125,10 @@ export const BuyCoinPage = ({
   // When quote comes back, update our inputs with the new values
   useEffect(() => {
     if (firstBuyQuoteData) {
+      setFieldValue(
+        FIELDS.usdcValue,
+        firstBuyQuoteData.usdcAmountUiString ?? '0.00'
+      )
       if (isReceiveAmountChanging) {
         setFieldValue(
           FIELDS.receiveAmount,

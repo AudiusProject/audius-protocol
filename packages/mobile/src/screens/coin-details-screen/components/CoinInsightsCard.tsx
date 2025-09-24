@@ -1,6 +1,7 @@
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, type MetricData } from '@audius/common/utils'
+import type { Coin } from '@audius/sdk'
 
 import {
   Flex,
@@ -11,12 +12,91 @@ import {
   Text,
   IconKebabHorizontal
 } from '@audius/harmony-native'
+import { TooltipInfoIcon } from 'app/components/buy-sell/TooltipInfoIcon'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { isIos } from 'app/utils/os'
+
+import { GraduationProgressBar } from './GraduationProgressBar'
 
 const messages = coinDetailsMessages.coinInsights
 
-const MetricRow = ({ metric }: { metric: MetricData }) => {
+const GraduatedPill = () => {
+  return (
+    <Flex
+      alignItems='center'
+      justifyContent='center'
+      pv='2xs'
+      ph='s'
+      borderRadius='l'
+      style={{
+        backgroundColor: 'rgba(126, 27, 204, 0.1)' // Have to hardcode for opacity
+      }}
+    >
+      <Text
+        variant='label'
+        size='s'
+        color='accent'
+        textTransform='uppercase'
+        style={{ marginTop: isIos ? 2 : 0 }} // Bugfix for iOS label variant text alignment
+      >
+        {messages.graduated}
+      </Text>
+    </Flex>
+  )
+}
+
+const GraduationMetricRow = ({
+  metric,
+  coin
+}: {
+  metric: MetricData
+  coin?: Coin
+}) => {
+  const progress = coin?.dynamicBondingCurve?.curveProgress ?? 0
+  const progressPercentage = Math.round(progress * 100)
+  const hasGraduated = progress >= 1.0
+
+  return (
+    <Flex
+      row
+      alignItems='flex-start'
+      justifyContent='space-between'
+      borderTop='default'
+      pv='m'
+      ph='l'
+      w='100%'
+    >
+      <Flex alignItems='flex-start' gap='s' flex={1}>
+        <Flex row alignItems='center' justifyContent='space-between' w='100%'>
+          <Text variant='heading' size='xl'>
+            {metric.value}
+          </Text>
+          {hasGraduated && <GraduatedPill />}
+        </Flex>
+        <Flex row alignItems='center' gap='m'>
+          <Text variant='title' size='m' color='subdued'>
+            {metric.label}
+          </Text>
+          <TooltipInfoIcon
+            title='Graduation Progress'
+            message={
+              hasGraduated ? messages.postGraduation : messages.preGraduation
+            }
+          />
+        </Flex>
+        <GraduationProgressBar value={progressPercentage} min={0} max={100} />
+      </Flex>
+    </Flex>
+  )
+}
+
+const MetricRow = ({ metric, coin }: { metric: MetricData; coin?: Coin }) => {
   const changeColor = metric.change?.isPositive ? 'premium' : 'danger'
+  const isGraduationProgress = metric.label === 'Graduation Progress'
+
+  if (isGraduationProgress) {
+    return <GraduationMetricRow metric={metric} coin={coin} />
+  }
 
   return (
     <Flex
@@ -105,12 +185,12 @@ export const CoinInsightsCard = ({ mint }: { mint: string }) => {
       {error || !coin ? (
         <Flex pv='xl' ph='l' w='100%' justifyContent='center'>
           <Text variant='body' color='subdued'>
-            Unable to load insights
+            {messages.unableToLoad}
           </Text>
         </Flex>
       ) : (
         metrics.map((metric) => (
-          <MetricRow key={metric.label} metric={metric} />
+          <MetricRow key={metric.label} metric={metric} coin={coin} />
         ))
       )}
     </Paper>

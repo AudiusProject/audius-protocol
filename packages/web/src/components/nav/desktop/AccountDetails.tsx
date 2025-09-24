@@ -120,11 +120,8 @@ const SignedInView = ({
               size='s'
               userId={userId}
               badgeSize='xs'
+              ellipses
               css={{
-                flex: 1,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                wordBreak: 'break-word',
                 ...(isManagedAccount && {
                   color: color.secondary.s500,
                   '&:hover': { color: color.secondary.s500 }
