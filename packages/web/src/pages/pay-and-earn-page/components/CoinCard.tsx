@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { formatCount, formatCurrencyWithSubscript } from '@audius/common/utils'
 import { Flex, Text, useTheme, IconCaretRight, Artwork } from '@audius/harmony'
 import { roundedHexClipPath } from '@audius/harmony/src/icons/SVGDefs'
 
@@ -31,6 +32,7 @@ export type CoinCardProps = {
   name: string
   symbol: string
   balance: string
+  heldValue?: number | null
   dollarValue: string
   loading?: boolean
   onClick?: () => void
@@ -41,6 +43,7 @@ export const CoinCard = ({
   name,
   symbol,
   balance,
+  heldValue,
   dollarValue,
   loading = false,
   onClick
@@ -61,6 +64,12 @@ export const CoinCard = ({
     }
     return icon
   }
+
+  const formattedHeldValue = heldValue
+    ? heldValue >= 1
+      ? `$${formatCount(heldValue, 2)}`
+      : formatCurrencyWithSubscript(heldValue)
+    : null
 
   return (
     <Flex
@@ -99,7 +108,7 @@ export const CoinCard = ({
       <Flex alignItems='center' gap='m'>
         {!loading && (
           <Text variant='title' size='l' color='default'>
-            {dollarValue}
+            {formattedHeldValue ?? dollarValue}
           </Text>
         )}
         {onClick ? <IconCaretRight size='l' color='subdued' /> : null}
