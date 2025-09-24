@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
 import { useArtistCoin } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
 import { useArtistCoinDetailsModal } from '@audius/common/store'
 import { formatCurrencyWithSubscript } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
 
 import { Flex, Text, Divider, Button, useTheme } from '@audius/harmony-native'
@@ -13,19 +13,7 @@ import { useToast } from 'app/hooks/useToast'
 
 import { DrawerHeader } from '../drawer/DrawerHeader'
 
-const messages = {
-  title: 'Artist Coin Details',
-  coinAddress: 'Coin Address',
-  onChainDescription: 'On-Chain Description',
-  totalSupply: 'Total Supply',
-  marketCap: 'Market Cap',
-  fdv: 'Fully Diluted Valuation',
-  price: 'Current Price',
-  liquidity: 'Liquidity',
-  circulatingSupply: 'Circulating Supply',
-  close: 'Close',
-  copied: 'Copied to clipboard!'
-}
+const { artistCoinDetails } = coinDetailsMessages
 
 export const ArtistCoinDetailsDrawer = () => {
   const { spacing } = useTheme()
@@ -37,7 +25,7 @@ export const ArtistCoinDetailsDrawer = () => {
   const handleCopyAddress = useCallback(() => {
     if (artistCoin?.mint) {
       Clipboard.setString(artistCoin.mint)
-      toast({ content: messages.copied, type: 'info' })
+      toast({ content: artistCoinDetails.copied, type: 'info' })
     }
   }, [artistCoin?.mint, toast])
 
@@ -48,7 +36,7 @@ export const ArtistCoinDetailsDrawer = () => {
   const renderHeader = () => {
     return (
       <Flex pv='l' ph='xl' gap='m' mb='m'>
-        <DrawerHeader onClose={onClose} title={messages.title} />
+        <DrawerHeader onClose={onClose} title={artistCoinDetails.title} />
         <Divider />
       </Flex>
     )
@@ -78,7 +66,7 @@ export const ArtistCoinDetailsDrawer = () => {
         {artistCoin?.mint ? (
           <Flex direction='column' gap='xs'>
             <Text variant='label' size='s' color='subdued'>
-              {messages.coinAddress}
+              {artistCoinDetails.coinAddress}
             </Text>
             <Text
               variant='body'
@@ -96,7 +84,7 @@ export const ArtistCoinDetailsDrawer = () => {
         {artistCoin?.description ? (
           <Flex direction='column' gap='xs'>
             <Text variant='label' size='s' color='subdued'>
-              {messages.onChainDescription}
+              {artistCoinDetails.onChainDescription}
             </Text>
             <Text variant='body' size='s'>
               {artistCoin.description}
@@ -109,13 +97,10 @@ export const ArtistCoinDetailsDrawer = () => {
           {artistCoin?.totalSupply ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>
-                {messages.totalSupply}
+                {artistCoinDetails.totalSupply}
               </Text>
               <Text variant='body' size='s'>
-                {new FixedDecimal(
-                  artistCoin.totalSupply.toString(),
-                  0
-                ).toLocaleString()}
+                {artistCoin.totalSupply.toLocaleString()}
               </Text>
             </Flex>
           ) : null}
@@ -123,14 +108,10 @@ export const ArtistCoinDetailsDrawer = () => {
           {artistCoin?.marketCap ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>
-                {messages.marketCap}
+                {artistCoinDetails.marketCap}
               </Text>
               <Text variant='body' size='s'>
-                $
-                {new FixedDecimal(
-                  artistCoin.marketCap.toString(),
-                  2
-                ).toLocaleString()}
+                ${artistCoin.marketCap.toLocaleString()}
               </Text>
             </Flex>
           ) : null}
@@ -138,14 +119,10 @@ export const ArtistCoinDetailsDrawer = () => {
           {artistCoin?.fdv ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>
-                {messages.fdv}
+                {artistCoinDetails.fdv}
               </Text>
               <Text variant='body' size='s'>
-                $
-                {new FixedDecimal(
-                  artistCoin.fdv.toString(),
-                  2
-                ).toLocaleString()}
+                ${artistCoin.fdv.toLocaleString()}
               </Text>
             </Flex>
           ) : null}
@@ -153,7 +130,7 @@ export const ArtistCoinDetailsDrawer = () => {
           {artistCoin?.price ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>
-                {messages.price}
+                {artistCoinDetails.price}
               </Text>
               <Text variant='body' size='s'>
                 {formatCurrencyWithSubscript(artistCoin.price)}
@@ -164,14 +141,10 @@ export const ArtistCoinDetailsDrawer = () => {
           {artistCoin?.liquidity ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>
-                {messages.liquidity}
+                {artistCoinDetails.liquidity}
               </Text>
               <Text variant='body' size='s'>
-                $
-                {new FixedDecimal(
-                  artistCoin.liquidity.toString(),
-                  2
-                ).toLocaleString()}
+                ${artistCoin.liquidity.toLocaleString()}
               </Text>
             </Flex>
           ) : null}
@@ -179,13 +152,10 @@ export const ArtistCoinDetailsDrawer = () => {
           {artistCoin?.circulatingSupply ? (
             <Flex direction='column' gap='xs'>
               <Text variant='label' size='s' color='subdued'>
-                {messages.circulatingSupply}
+                {artistCoinDetails.circulatingSupply}
               </Text>
               <Text variant='body' size='s'>
-                {new FixedDecimal(
-                  artistCoin.circulatingSupply.toString(),
-                  0
-                ).toLocaleString()}
+                {artistCoin.circulatingSupply.toLocaleString()}
               </Text>
             </Flex>
           ) : null}
@@ -193,7 +163,7 @@ export const ArtistCoinDetailsDrawer = () => {
 
         {/* Close Button */}
         <Button variant='primary' fullWidth onPress={onClose}>
-          {messages.close}
+          {artistCoinDetails.close}
         </Button>
       </Flex>
     </Drawer>

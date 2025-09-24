@@ -1,6 +1,6 @@
 import { useArtistCoin } from '@audius/common/api'
+import { coinDetailsMessages } from '@audius/common/messages'
 import { formatCurrencyWithSubscript } from '@audius/common/utils'
-import { FixedDecimal } from '@audius/fixed-decimal'
 import {
   Flex,
   Text,
@@ -14,30 +14,7 @@ import { TokenIcon } from '../../../components/buy-sell-modal/TokenIcon'
 import ResponsiveModal from '../../../components/modal/ResponsiveModal'
 import { TokenInfoRow } from '../../artist-coins-launchpad-page/components/TokenInfoRow'
 
-const messages = {
-  details: 'Details',
-  coinAddress: 'Coin Address',
-  onChainDescription: 'On-Chain Description',
-  totalSupply: 'Total Supply',
-  marketCap: 'Market Cap',
-  fdv: 'Fully Diluted Valuation',
-  price: 'Current Price',
-  liquidity: 'Liquidity',
-  circulatingSupply: 'Circulating Supply'
-}
-
-const tooltipContent = {
-  totalSupply:
-    'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
-  marketCap:
-    'The current total value of all your artist coins in circulation, calculated by multiplying the current price by the total supply.',
-  fdv: 'The theoretical market cap if all tokens were in circulation, calculated by multiplying the current price by the total supply.',
-  price: 'The current price of a single artist coin in USD.',
-  liquidity:
-    'The amount of funds available for trading your artist coin, which affects how easily it can be bought or sold.',
-  circulatingSupply:
-    'The number of artist coins currently available for trading, excluding any tokens that are locked or reserved.'
-}
+const { artistCoinDetails } = coinDetailsMessages
 
 type ArtistCoinDetailsModalProps = {
   /**
@@ -66,7 +43,7 @@ export const ArtistCoinDetailsModal = ({
     <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
-      title={messages.details}
+      title={artistCoinDetails.details}
       Icon={IconInfo}
       size='s'
       isFullscreen
@@ -98,7 +75,7 @@ export const ArtistCoinDetailsModal = ({
         {/* Coin Address */}
         {artistCoin?.mint ? (
           <TokenInfoRow
-            label={messages.coinAddress}
+            label={artistCoinDetails.coinAddress}
             value={artistCoin.mint}
             variant='block'
           />
@@ -107,7 +84,7 @@ export const ArtistCoinDetailsModal = ({
         {/* On-Chain Description */}
         {artistCoin?.description ? (
           <TokenInfoRow
-            label={messages.onChainDescription}
+            label={artistCoinDetails.onChainDescription}
             value={artistCoin.description}
             variant='block'
           />
@@ -119,66 +96,60 @@ export const ArtistCoinDetailsModal = ({
         <Flex direction='column' gap='m'>
           {artistCoin?.totalSupply ? (
             <TokenInfoRow
-              label={messages.totalSupply}
-              value={new FixedDecimal(
-                artistCoin.totalSupply.toString(),
-                0
-              ).toLocaleString()}
+              label={artistCoinDetails.totalSupply}
+              value={artistCoin.totalSupply.toLocaleString()}
               hasTooltip
-              tooltipContent={tooltipContent.totalSupply}
+              tooltipContent={artistCoinDetails.tooltips.totalSupply}
               variant='block'
             />
           ) : null}
 
           {artistCoin?.marketCap ? (
             <TokenInfoRow
-              label={messages.marketCap}
-              value={`$${new FixedDecimal(artistCoin.marketCap.toString(), 2).toLocaleString()}`}
+              label={artistCoinDetails.marketCap}
+              value={`$${artistCoin.marketCap.toLocaleString()}`}
               hasTooltip
-              tooltipContent={tooltipContent.marketCap}
+              tooltipContent={artistCoinDetails.tooltips.marketCap}
               variant='block'
             />
           ) : null}
 
           {artistCoin?.fdv ? (
             <TokenInfoRow
-              label={messages.fdv}
-              value={`$${new FixedDecimal(artistCoin.fdv.toString(), 2).toLocaleString()}`}
+              label={artistCoinDetails.fdv}
+              value={`$${artistCoin.fdv.toLocaleString()}`}
               hasTooltip
-              tooltipContent={tooltipContent.fdv}
+              tooltipContent={artistCoinDetails.tooltips.fdv}
               variant='block'
             />
           ) : null}
 
           {artistCoin?.price ? (
             <TokenInfoRow
-              label={messages.price}
+              label={artistCoinDetails.price}
               value={formatCurrencyWithSubscript(artistCoin.price)}
               hasTooltip
-              tooltipContent={tooltipContent.price}
+              tooltipContent={artistCoinDetails.tooltips.price}
               variant='block'
             />
           ) : null}
 
           {artistCoin?.liquidity ? (
             <TokenInfoRow
-              label={messages.liquidity}
-              value={`$${new FixedDecimal(artistCoin.liquidity.toString(), 2).toLocaleString()}`}
+              label={artistCoinDetails.liquidity}
+              value={`$${artistCoin.liquidity.toLocaleString()}`}
               hasTooltip
-              tooltipContent={tooltipContent.liquidity}
+              tooltipContent={artistCoinDetails.tooltips.liquidity}
               variant='block'
             />
           ) : null}
 
           {artistCoin?.circulatingSupply ? (
             <TokenInfoRow
-              label={messages.circulatingSupply}
-              value={new FixedDecimal(
-                artistCoin.circulatingSupply.toString(),
-                0
-              ).toLocaleString()}
+              label={artistCoinDetails.circulatingSupply}
+              value={artistCoin.circulatingSupply.toLocaleString()}
               hasTooltip
-              tooltipContent={tooltipContent.circulatingSupply}
+              tooltipContent={artistCoinDetails.tooltips.circulatingSupply}
               variant='block'
             />
           ) : null}
