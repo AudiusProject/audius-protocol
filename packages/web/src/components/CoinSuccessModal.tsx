@@ -63,8 +63,9 @@ export const CoinSuccessModal = () => {
                 p='m'
                 gap='m'
                 w='100%'
-                borderRadius='s'
+                borderRadius='m'
                 border='default'
+                shadow='flat'
                 backgroundColor='surface1'
               >
                 <Flex alignItems='center' gap='m' w='100%'>

@@ -304,7 +304,7 @@ export const LaunchpadPage = () => {
         ticker: formValues.coinSymbol,
         logoUri: launchCoinResponse.logoUri,
         amountUi: formValues.receiveAmount || '0',
-        amountUsd: formValues.receiveAmount || '0'
+        amountUsd: formValues.usdcValue || '0'
       })
     }
   }, [
