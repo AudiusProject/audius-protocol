@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { TokenInfo } from '@audius/common/store'
-import { sanitizeNumericInput } from '@audius/common/utils'
+import {
+  sanitizeNumericInput,
+  formatTokenInputWithSmartDecimals
+} from '@audius/common/utils'
 import { Flex, Text, TextInput, TextInputSize } from '@audius/harmony'
 
 import { StaticTokenDisplay } from './StaticTokenDisplay'
@@ -40,9 +43,12 @@ export const OutputTokenSection = ({
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
 
-  // Sync local state with prop changes
+  // Sync local state with prop changes and apply smart decimal formatting
   useEffect(() => {
-    setLocalAmount(amount || '')
+    const formattedAmount = amount
+      ? formatTokenInputWithSmartDecimals(amount)
+      : ''
+    setLocalAmount(formattedAmount)
   }, [amount])
 
   const debouncedOnAmountChange = useDebouncedCallback(
@@ -54,8 +60,9 @@ export const OutputTokenSection = ({
   const handleTextChange = useCallback(
     (text: string) => {
       const sanitizedText = sanitizeNumericInput(text)
-      setLocalAmount(sanitizedText)
-      debouncedOnAmountChange(sanitizedText)
+      const formattedText = formatTokenInputWithSmartDecimals(sanitizedText)
+      setLocalAmount(formattedText)
+      debouncedOnAmountChange(formattedText)
     },
     [debouncedOnAmountChange]
   )

@@ -53,6 +53,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     white: primitives.special.white,
     primary: primitives.primary.p300,
     gradient: primitives.special.gradient,
+    artistCoin: primitives.special.coinGradient,
 
     // Legacy compatibility
     accent: primitives.secondary.s300

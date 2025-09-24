@@ -30,12 +30,12 @@ export const BuySellModalScreen = () => {
           <Stack.Screen
             name='ConfirmSwapScreen'
             component={ConfirmSwapScreen}
-            options={{ gestureEnabled: false }}
+            options={{ gestureEnabled: false, headerLeft: () => null }}
           />
           <Stack.Screen
             name='TransactionResultScreen'
             component={TransactionResultScreen}
-            options={{ gestureEnabled: false }}
+            options={{ gestureEnabled: false, headerLeft: () => null }}
           />
         </Stack.Navigator>
       </BottomSheetModalProvider>

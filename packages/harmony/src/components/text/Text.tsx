@@ -42,6 +42,7 @@ export const Text = forwardRef(
       ellipses,
       maxLines,
       lineHeight,
+      userSelect,
       ...other
     } = props
 
@@ -97,6 +98,7 @@ export const Text = forwardRef(
         WebkitLineClamp: `${maxLines}`,
         WebkitBoxOrient: 'vertical'
       }),
+      ...(userSelect && { userSelect: `${userSelect} !important` }),
       unicodeBidi: 'isolate'
     }
 

@@ -6,6 +6,7 @@ import {
   useWalletAudioBalance
 } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
+import { Chain } from '@audius/common/models'
 import { AUDIO } from '@audius/fixed-decimal'
 import {
   Artwork,
@@ -15,6 +16,7 @@ import {
   IconWallet,
   LoadingSpinner,
   Paper,
+  Pill,
   Text,
   TextLink,
   TokenAmountInput
@@ -27,6 +29,7 @@ import { useFormImageUrl } from 'hooks/useFormImageUrl'
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
 
 import { ArtistCoinsSubmitRow } from '../components/ArtistCoinsSubmitRow'
+import { LaunchpadBuyModal } from '../components/LaunchpadBuyModal'
 import type { PhasePageProps, SetupFormValues } from '../components/types'
 import { AMOUNT_OF_STEPS } from '../constants'
 import { getLatestConnectedWallet } from '../utils'
@@ -34,20 +37,21 @@ import { FIELDS } from '../validation'
 
 const messages = {
   stepInfo: `STEP 3 of ${AMOUNT_OF_STEPS}`,
-  title: 'Buy Your Coin Early',
-  optional: 'OPTIONAL',
+  title: 'Claim Your Share First',
+  optional: 'optional',
   description:
     'Before your coin goes live, you have the option to buy some at the lowest price.',
   youPay: 'You Pay',
   youReceive: 'You Receive',
   valueInUSDC: 'Value',
   hintMessage:
-    "Buying an amount now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches a graduation market cap.",
+    "Buying shares now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches it's graduation market cap (500K AUDIO).",
   back: 'Back',
   errors: {
     quoteError: 'Failed to get a quote. Please try again.',
     valueTooHigh: 'Value is too high. Please enter a lower value.',
-    insufficientBalance: 'Insufficient $AUDIO balance.'
+    insufficientBalance: 'Insufficient $AUDIO balance.',
+    transactionFailed: 'Transaction failed. Please try again.'
   },
   createCoin: 'Create Coin',
   max: 'MAX',
@@ -61,7 +65,11 @@ const FORM_INPUT_DECIMALS = 8
 
 const INPUT_DEBOUNCE_TIME = 400
 
-export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
+export const BuyCoinPage = ({
+  onContinue,
+  onBack,
+  submitError
+}: PhasePageProps & { submitError: boolean }) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
   const { values, setFieldValue, errors, validateForm } =
     useFormikContext<SetupFormValues>()
@@ -77,9 +85,10 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false)
   const { data: audioBalance } = useWalletAudioBalance({
-    address: connectedWallet!.address,
-    chain: connectedWallet!.chain
+    address: connectedWallet?.address ?? '',
+    chain: connectedWallet?.chain ?? Chain.Sol
   })
   const { audioBalanceString } = useMemo(() => {
     if (!audioBalance) {
@@ -116,6 +125,10 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
   // When quote comes back, update our inputs with the new values
   useEffect(() => {
     if (firstBuyQuoteData) {
+      setFieldValue(
+        FIELDS.usdcValue,
+        firstBuyQuoteData.usdcAmountUiString ?? '0.00'
+      )
       if (isReceiveAmountChanging) {
         setFieldValue(
           FIELDS.receiveAmount,
@@ -191,8 +204,21 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
     },
     [setFieldValue, debouncedReceiveAmountChange]
   )
+
+  const submitFooterErrorText = firstBuyQuoteError
+    ? messages.errors.quoteError
+    : submitError
+      ? messages.errors.transactionFailed
+      : undefined
+
   return (
     <>
+      {isBuyModalOpen ? (
+        <LaunchpadBuyModal
+          isOpen={isBuyModalOpen}
+          onClose={() => setIsBuyModalOpen(false)}
+        />
+      ) : null}
       <Flex
         direction='column'
         alignItems='center'
@@ -208,28 +234,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
               <Text variant='heading' size='l' color='default'>
                 {messages.title}
               </Text>
-              <Flex
-                alignItems='center'
-                justifyContent='center'
-                ph='s'
-                pv='xs'
-                backgroundColor='accent'
-                borderRadius='l'
-              >
-                <Text
-                  variant='label'
-                  size='xs'
-                  css={(theme) => ({
-                    color:
-                      theme.type === 'day'
-                        ? theme.color.text.staticWhite
-                        : theme.color.text.white
-                  })}
-                  textTransform='uppercase'
-                >
-                  {messages.optional}
-                </Text>
-              </Flex>
+              <Pill variant='primary'>{messages.optional}</Pill>
             </Flex>
             <Text variant='body' size='l' color='subdued'>
               {messages.description}
@@ -246,7 +251,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
                 <Flex gap='s'>
                   <TextLink
                     variant='visible'
-                    // TODO: onclick show modals
+                    onClick={() => setIsBuyModalOpen(true)}
                   >
                     {messages.buyAudio}
                   </TextLink>
@@ -337,7 +342,7 @@ export const BuyCoinPage = ({ onContinue, onBack }: PhasePageProps) => {
         onBack={handleBack}
         submit
         continueText={messages.createCoin}
-        errorText={firstBuyQuoteError ? messages.errors.quoteError : undefined}
+        errorText={submitFooterErrorText}
       />
     </>
   )

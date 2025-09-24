@@ -34,6 +34,7 @@ BEGIN
   JOIN chat_blast ON chat_blast.blast_id = blast_id_param
     AND chat_blast.audience = 'remixer_audience'
     AND og.owner_id = chat_blast.from_user_id
+    AND t.owner_id != chat_blast.from_user_id
     AND (
       chat_blast.audience_content_id IS NULL
       OR (
@@ -63,9 +64,9 @@ BEGIN
   -- coin_holder_audience
   SELECT chat_blast.blast_id, sol_user_balances.user_id AS to_user_id
   FROM chat_blast
-  JOIN artist_coins 
+  JOIN artist_coins
     ON artist_coins.user_id = chat_blast.from_user_id
-  JOIN sol_user_balances 
+  JOIN sol_user_balances
     ON sol_user_balances.mint = artist_coins.mint
     AND sol_user_balances.balance > 0
   WHERE chat_blast.blast_id = blast_id_param

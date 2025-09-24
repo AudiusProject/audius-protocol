@@ -19,10 +19,13 @@ import { zIndex } from '../../utils/zIndex'
 import { BuySellFlow } from './BuySellFlow'
 import { Screen } from './types'
 
+export const WALLET_GUIDE_URL = 'https://help.audius.co/product/wallet-guide'
+
 export const BuySellModal = () => {
   const { isOpen, onClose, data } = useBuySellModal()
   const { ticker } = data
   const { onOpen: openAddCashModal } = useAddCashModal()
+  const [resetState, setResetState] = useState<(() => void) | null>(null)
 
   const [modalScreen, setModalScreen] = useState<Screen>('input')
   const [isFlowLoading, setIsFlowLoading] = useState(false)
@@ -46,29 +49,33 @@ export const BuySellModal = () => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      onClosed={resetState ?? undefined}
       size='medium'
       zIndex={zIndex.BUY_SELL_MODAL}
+      dismissOnClickOutside={modalScreen !== 'confirm'}
     >
       <ModalHeader
         onClose={onClose}
         showDismissButton={!isFlowLoading && modalScreen !== 'success'}
       >
         <ModalTitle title={title} />
-        <PlainButton
-          size='default'
-          iconLeft={IconQuestionCircle}
-          onClick={() => {
-            window.open('https://help.audius.co/product/wallet-guide', '_blank')
-          }}
-          css={(theme) => ({
-            position: 'absolute',
-            top: theme.spacing.xl,
-            right: theme.spacing.xl,
-            zIndex: zIndex.BUY_SELL_MODAL + 1
-          })}
-        >
-          {buySellMessages.help}
-        </PlainButton>
+        {modalScreen === 'input' && !isFlowLoading && (
+          <PlainButton
+            size='default'
+            iconLeft={IconQuestionCircle}
+            onClick={() => {
+              window.open(WALLET_GUIDE_URL, '_blank')
+            }}
+            css={(theme) => ({
+              position: 'absolute',
+              top: theme.spacing.xl,
+              right: theme.spacing.xl,
+              zIndex: zIndex.BUY_SELL_MODAL + 1
+            })}
+          >
+            {buySellMessages.help}
+          </PlainButton>
+        )}
       </ModalHeader>
       <ModalContent>
         <BuySellFlow
@@ -77,6 +84,7 @@ export const BuySellModal = () => {
           onScreenChange={setModalScreen}
           onLoadingStateChange={setIsFlowLoading}
           initialTicker={ticker}
+          setResetState={setResetState}
         />
       </ModalContent>
       {modalScreen !== 'success' && !isFlowLoading && (

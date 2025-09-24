@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import {
   getUserCoinQueryKey,
+  getUserQueryKey,
   useCurrentAccountUser,
   useQueryContext
 } from '~/api'
@@ -246,6 +247,11 @@ export const useSwapTokens = () => {
           }
         )
       }
+
+      // Invalidate user query to ensure user data is fresh after swap
+      queryClient.invalidateQueries({
+        queryKey: getUserQueryKey(user?.user_id)
+      })
     },
     onMutate: () => {
       return { status: SwapStatus.SENDING_TRANSACTION }

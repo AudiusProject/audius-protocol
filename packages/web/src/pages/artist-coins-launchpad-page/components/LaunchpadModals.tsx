@@ -1,26 +1,21 @@
-import { useEffect, useRef } from 'react'
-
-import { musicConfettiActions } from '@audius/common/store'
+import { useSendTokensModal } from '@audius/common/store'
 import {
-  Artwork,
-  Button,
   Flex,
   Hint,
   IconInfo,
-  IconX,
   LoadingSpinner,
   Modal,
   ModalContent,
   ModalHeader,
-  Paper,
+  ModalTitle,
   Text,
   TextLink
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
 
 import { AddressTile } from 'components/address-tile'
-import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
+import { LaunchCoinErrorMetadata } from 'hooks/useLaunchCoin'
+import { env } from 'services/env'
 
 import { SetupFormValues } from './types'
 
@@ -28,25 +23,26 @@ const messages = {
   awaitingConfirmation: 'Awaiting Confirmation',
   launchingCoinDescription: (numTxs: number) =>
     `You have ${numTxs} transactions to sign. Please don't close this page.`,
-  congratsTitle: '🎉 Congrats!',
-  title: 'Create Your Artist Coin',
-  congratsDescription:
-    'Congrats on launching your artist coin on Audius! Time to share the good news with your community of fans.',
-  purchaseSummary: 'Purchase Summary',
-  address: 'Coin Address',
   addressTitle: 'Coin Address',
-  shareToX: 'Share to X',
   insufficientBalanceTitle: 'Check your wallet balance',
   insufficientBalanceDescription:
     "You'll need to add funds to your wallet before you can continue.",
-  solAmount: '0.02 SOL',
+  solAmount: '0.03 SOL',
   solDescription: ' — required to create your coin',
   audioDescription:
     '• Extra AUDIO if you want to make an initial buy of your coin (optional).',
   hintText:
     'Add SOL to your connected wallet, or send AUDIO from your Audius wallet',
   learnHowToFund: 'Learn how to fund your wallet',
-  sendAudio: 'Send AUDIO'
+  sendAudio: 'Send AUDIO',
+  errorMessages: {
+    notInAudiusBody:
+      "It's live on the blockchain but not showing in Audius yet. Use the address below to view it and check back later once it's connected.",
+    yourCoinIsLive: 'YOUR COIN IS LIVE! 🎉',
+    unknownErrorDescription: (coinLaunched: boolean) =>
+      `Something unexpected went wrong ${coinLaunched ? 'but your coin is live on the blockchain' : ''}`,
+    unknownErrorTitle: 'Something went wrong'
+  }
 }
 
 const LoadingState = ({ numTxs }: { numTxs: number }) => (
@@ -74,170 +70,131 @@ const LoadingState = ({ numTxs }: { numTxs: number }) => (
   </ModalContent>
 )
 
-const SuccessState = ({
-  coin
+/**
+ * Rare edge case modal where the SDK call to add the coin to Audius fails
+ */
+const CoinNotInAudiusState = ({
+  onClose,
+  mintAddress
 }: {
-  coin: {
-    mint?: string
-    name?: string
-    ticker?: string
-    logoUri?: string
-    amountUi: string
-    amountUsd: string
-  }
+  onClose: () => void
+  mintAddress: string
+}) => (
+  <>
+    <ModalHeader onClose={onClose}>
+      <ModalTitle title={messages.errorMessages.yourCoinIsLive} />
+    </ModalHeader>
+    <ModalContent>
+      <Flex column gap='2xl'>
+        <Text variant='body' size='l' color='default'>
+          {messages.errorMessages.notInAudiusBody}
+        </Text>
+        <Flex column gap='s'>
+          <Text variant='label' size='l' color='subdued'>
+            {messages.addressTitle}
+          </Text>
+          <AddressTile address={mintAddress} />
+        </Flex>
+      </Flex>
+    </ModalContent>
+  </>
+)
+
+/**
+ * Rare edge case modal where an uncaught error crashed the tan-query useLaunchCoin mutation
+ */
+const UnknownErrorState = ({
+  errorMetadata,
+  mintAddress,
+  onClose
+}: {
+  errorMetadata?: LaunchCoinErrorMetadata
+  mintAddress: string | undefined
+  onClose: () => void
 }) => {
-  const { mint, name, ticker, logoUri, amountUi, amountUsd } = coin
-
-  const dispatch = useDispatch()
-  const hasShownConfettiRef = useRef(false)
-
-  useEffect(() => {
-    if (!hasShownConfettiRef.current) {
-      dispatch(musicConfettiActions.show())
-      hasShownConfettiRef.current = true
-    }
-  }, [dispatch])
-
   return (
     <>
-      <ConnectedMusicConfetti />
-      <ModalHeader showDismissButton>
-        <Flex justifyContent='center'>
-          <Text variant='label' size='xl' color='default' strength='strong'>
-            {messages.congratsTitle}
-          </Text>
-        </Flex>
+      <ModalHeader onClose={onClose}>
+        <ModalTitle title={messages.errorMessages.unknownErrorTitle} />
       </ModalHeader>
       <ModalContent>
-        <Flex column alignItems='center' justifyContent='center' gap='2xl'>
-          {/* Congratulatory Message */}
+        <Flex column gap='2xl'>
           <Text variant='body' size='l' color='default'>
-            {messages.congratsDescription}
+            {messages.errorMessages.unknownErrorDescription(
+              errorMetadata?.poolCreateConfirmed ?? false
+            )}
           </Text>
-
-          {/* Purchase Summary */}
-          <Flex column gap='m' w='100%'>
-            <Text
-              variant='label'
-              size='s'
-              color='subdued'
-              css={{ textTransform: 'uppercase' }}
-            >
-              {messages.purchaseSummary}
-            </Text>
-            <Paper
-              p='l'
-              gap='l'
-              column
-              w='100%'
-              borderRadius='m'
-              border='default'
-              backgroundColor='surface1'
-              css={{
-                boxShadow: 'none'
-              }}
-            >
-              <Flex alignItems='center' gap='m' w='100%'>
-                <Artwork src={logoUri} w='48px' h='48px' hex borderWidth={0} />
-
-                <Flex column gap='xs' flex={1}>
-                  <Text variant='title' size='m' color='default'>
-                    {name}
-                  </Text>
-                  <Flex
-                    alignItems='center'
-                    justifyContent='space-between'
-                    w='100%'
-                  >
-                    <Flex alignItems='center' gap='xs'>
-                      <Text variant='body' size='s' color='default'>
-                        {amountUi}
-                      </Text>
-                      <Text variant='body' size='s' color='subdued'>
-                        ${ticker}
-                      </Text>
-                    </Flex>
-                    <Text variant='body' size='s' color='default'>
-                      ${amountUsd}
-                    </Text>
-                  </Flex>
-                </Flex>
-              </Flex>
-            </Paper>
-          </Flex>
-
-          {/* Contract Address */}
-          <Flex column gap='m' w='100%'>
-            <Text
-              variant='label'
-              size='s'
-              color='subdued'
-              css={{ textTransform: 'uppercase' }}
-            >
-              {messages.addressTitle}
-            </Text>
-            <AddressTile address={mint} />
-          </Flex>
-
-          {/* X Share Button */}
-          <Button
-            variant='secondary'
-            fullWidth
-            onClick={() => {
-              // TODO: Implement share to X
-            }}
-            iconLeft={IconX}
-          >
-            {messages.shareToX}
-          </Button>
+          {mintAddress ? (
+            <Flex column gap='s'>
+              <Text variant='label' size='l' color='subdued'>
+                {messages.addressTitle}
+              </Text>
+              <AddressTile address={mintAddress} />
+            </Flex>
+          ) : null}
         </Flex>
       </ModalContent>
     </>
   )
 }
 
-const ErrorState = () => <ModalContent>TODO: error state</ModalContent>
+const ErrorState = ({
+  errorMetadata,
+  mintAddress,
+  onClose
+}: {
+  errorMetadata?: LaunchCoinErrorMetadata
+  mintAddress: string | undefined
+  onClose: () => void
+}) => {
+  if (errorMetadata?.poolCreateConfirmed && mintAddress) {
+    return <CoinNotInAudiusState onClose={onClose} mintAddress={mintAddress} />
+  }
+  return (
+    <UnknownErrorState
+      errorMetadata={errorMetadata}
+      mintAddress={mintAddress}
+      onClose={onClose}
+    />
+  )
+}
 
 export const LaunchpadSubmitModal = ({
   isPending,
-  isSuccess,
   isError,
   isOpen,
   onClose,
   mintAddress,
-  logoUri
+  errorMetadata
 }: {
   isPending: boolean
-  isSuccess: boolean
   isError: boolean
   isOpen: boolean
   onClose: () => void
   mintAddress: string | undefined
-  logoUri: string | undefined
+  errorMetadata?: LaunchCoinErrorMetadata
 }) => {
   const { values } = useFormikContext<SetupFormValues>()
-  const { coinName, coinSymbol, receiveAmount, payAmount } = values
-  const coin = {
-    mint: mintAddress,
-    name: coinName,
-    ticker: coinSymbol,
-    logoUri,
-    amountUi: receiveAmount,
-    amountUsd: receiveAmount
-  }
+  const { payAmount } = values
   const numTxs = payAmount ? 2 : 1
   return (
     <Modal
       isOpen={isOpen}
+      size={isError ? 'small' : undefined}
       onClose={() => {
-        if (isSuccess || isError) {
+        if (isError) {
           onClose()
         }
       }}
     >
       {isPending ? <LoadingState numTxs={numTxs} /> : null}
-      {isSuccess ? <SuccessState coin={coin} /> : null}
-      {isError ? <ErrorState /> : null}
+      {isError ? (
+        <ErrorState
+          errorMetadata={errorMetadata}
+          mintAddress={mintAddress || errorMetadata?.coinMetadata?.mint}
+          onClose={onClose}
+        />
+      ) : null}
     </Modal>
   )
 }
@@ -249,17 +206,19 @@ export const InsufficientBalanceModal = ({
   isOpen: boolean
   onClose: () => void
 }) => {
+  const { onOpen: openSendTokensModal } = useSendTokensModal()
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size='small'>
+      <ModalHeader showDismissButton>
+        <Flex justifyContent='center'>
+          <Text variant='label' size='xl' strength='strong'>
+            {messages.insufficientBalanceTitle}
+          </Text>
+        </Flex>
+      </ModalHeader>
       <ModalContent>
-        <ModalHeader showDismissButton>
-          <Flex justifyContent='center'>
-            <Text variant='label' size='xl' strength='strong'>
-              {messages.insufficientBalanceTitle}
-            </Text>
-          </Flex>
-        </ModalHeader>
-        <Flex column gap='xl' pt='xl'>
+        <Flex column gap='xl'>
           <Text variant='body' size='l' color='default'>
             {messages.insufficientBalanceDescription}
           </Text>
@@ -294,7 +253,10 @@ export const InsufficientBalanceModal = ({
                 <TextLink
                   showUnderline
                   onClick={() => {
-                    /* TODO: DESIGN TO PROVIDE LINK */
+                    openSendTokensModal({
+                      mint: env.WAUDIO_MINT_ADDRESS,
+                      isOpen: true
+                    })
                   }}
                   css={({ color }) => ({ color: color.icon.default })}
                 >

@@ -1,8 +1,17 @@
 import { useMemo } from 'react'
 
-import { useConnectedWallets, useWalletAudioBalances } from '@audius/common/api'
+import {
+  QUERY_KEYS,
+  QueryContextType,
+  fetchCoinTickerAvailability,
+  useQueryContext,
+  useConnectedWallets,
+  useWalletAudioBalance
+} from '@audius/common/api'
+import { Chain } from '@audius/common/models'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { AUDIO } from '@audius/fixed-decimal'
+import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -15,7 +24,8 @@ export const FIELDS = {
   coinSymbol: 'coinSymbol',
   coinImage: 'coinImage',
   payAmount: 'payAmount',
-  receiveAmount: 'receiveAmount'
+  receiveAmount: 'receiveAmount',
+  usdcValue: 'usdcValue'
 }
 
 const MAX_COIN_SYMBOL_LENGTH = 10
@@ -23,7 +33,9 @@ const MAX_COIN_SYMBOL_LENGTH = 10
 export const coinSymbolErrorMessages = {
   badCharacterError: 'Please only use letters and numbers',
   symbolTooLong: 'Coin symbol is too long (max 10 characters)',
-  missingSymbolError: 'Please enter a coin symbol'
+  missingSymbolError: 'Please enter a coin symbol',
+  tickerTakenError: 'Symbol unavailable.',
+  unknownError: 'An unknown error occurred.'
 }
 
 const coinSymbolSchema = z.object({
@@ -67,15 +79,52 @@ export const firstBuyMessages = {
 export const setupFormSchema = ({
   walletMax,
   payAmountMax = Infinity,
-  receiveAmountMax = Infinity
+  receiveAmountMax = Infinity,
+  queryContext,
+  queryClient
 }: {
   walletMax: number
   payAmountMax?: number
   receiveAmountMax?: number
+  queryContext: QueryContextType
+  queryClient: QueryClient
 }) =>
   z.object({
     [FIELDS.coinName]: coinNameSchema.shape.coinName,
-    [FIELDS.coinSymbol]: coinSymbolSchema.shape.coinSymbol,
+    [FIELDS.coinSymbol]: coinSymbolSchema.shape.coinSymbol.superRefine(
+      async (ticker, context) => {
+        // Only validate if ticker has at least 2 characters and passes basic format validation
+        if (ticker && ticker.length >= 2) {
+          try {
+            const result = await queryClient.fetchQuery({
+              queryKey: [QUERY_KEYS.coinByTicker, ticker],
+              queryFn: async () =>
+                await fetchCoinTickerAvailability(ticker, queryContext)
+            })
+            const isAvailable = result.available
+
+            if (!isAvailable) {
+              context.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: coinSymbolErrorMessages.tickerTakenError,
+                fatal: true
+              })
+              return z.NEVER
+            }
+          } catch (error: any) {
+            // Log the error for debugging
+            console.error('Ticker validation error:', error)
+            // For other errors, show unknown error
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: coinSymbolErrorMessages.unknownError
+            })
+            return z.NEVER
+          }
+        }
+        return z.NEVER
+      }
+    ),
     [FIELDS.coinImage]: coinImageSchema.shape.coinImage,
     [FIELDS.payAmount]: z
       .string()
@@ -113,6 +162,8 @@ export const setupFormSchema = ({
   })
 
 export const useLaunchpadFormSchema = () => {
+  const queryClient = useQueryClient()
+  const queryContext = useQueryContext()
   const { data: connectedWallets } = useConnectedWallets()
   const { data: firstBuyQuoteData } = useLaunchpadConfig()
 
@@ -130,26 +181,22 @@ export const useLaunchpadFormSchema = () => {
     () => getLatestConnectedWallet(connectedWallets),
     [connectedWallets]
   )
-  const { data: audioBalanceArr } = useWalletAudioBalances({
-    wallets: connectedWallet
-      ? [{ address: connectedWallet?.address, chain: connectedWallet?.chain }]
-      : []
+  const { data: audioBalance } = useWalletAudioBalance({
+    address: connectedWallet?.address ?? '',
+    chain: connectedWallet?.chain ?? Chain.Sol
   })
   const { audioBalanceNumber } = useMemo(() => {
-    if (!audioBalanceArr || !audioBalanceArr[0].balance) {
+    if (!audioBalance) {
       return { audioBalanceString: '0.00', audioBalanceNumber: 0 }
     }
     return {
-      audioBalanceString: AUDIO(audioBalanceArr[0].balance).toLocaleString(
-        'en-US',
-        {
-          maximumFractionDigits: 2,
-          roundingMode: 'trunc'
-        }
-      ),
-      audioBalanceNumber: Number(AUDIO(audioBalanceArr[0].balance).toFixed(2))
+      audioBalanceString: AUDIO(audioBalance).toLocaleString('en-US', {
+        maximumFractionDigits: 2,
+        roundingMode: 'trunc'
+      }),
+      audioBalanceNumber: Number(AUDIO(audioBalance).toFixed(2))
     }
-  }, [audioBalanceArr])
+  }, [audioBalance])
 
   return useMemo(() => {
     return {
@@ -157,11 +204,19 @@ export const useLaunchpadFormSchema = () => {
         setupFormSchema({
           walletMax: audioBalanceNumber,
           payAmountMax: Math.ceil(maxAudioInputAmount),
-          receiveAmountMax: Math.floor(maxTokenOutputAmount) // Floor here because the value is something like 250,000,000.0000970
+          receiveAmountMax: Math.floor(maxTokenOutputAmount), // Floor here because the value is something like 250,000,000.0000970
+          queryContext,
+          queryClient
         })
       ),
       maxPayAmount: Math.ceil(maxAudioInputAmount),
       maxReceiveAmount: Math.floor(maxTokenOutputAmount)
     }
-  }, [audioBalanceNumber, maxAudioInputAmount, maxTokenOutputAmount])
+  }, [
+    audioBalanceNumber,
+    maxAudioInputAmount,
+    maxTokenOutputAmount,
+    queryClient,
+    queryContext
+  ])
 }

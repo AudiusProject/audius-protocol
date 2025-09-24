@@ -805,13 +805,21 @@ function* signUp() {
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
           yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
-          yield* call(
-            waitForValue,
-            getFollowIds,
-            null,
-            (value: ID[]) => value.length > 0
-          )
-          yield* put(signOnActions.followArtists())
+          // Check if user has selected artists to follow
+          const selectedUserIds = yield* select(getFollowIds)
+          if (selectedUserIds && selectedUserIds.length > 0) {
+            // User has selected artists, wait for them and follow
+            yield* call(
+              waitForValue,
+              getFollowIds,
+              null,
+              (value: ID[]) => value.length > 0
+            )
+            yield* put(signOnActions.followArtists())
+          } else {
+            // User skipped artist selection, just follow default artists
+            yield* put(signOnActions.followArtists())
+          }
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
         },

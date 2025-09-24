@@ -7,7 +7,6 @@ export const coinDetailsMessages = {
   coinInfo: {
     loading: 'Loading...',
     createdBy: 'Created By',
-    whatIs: (title: string) => `What is ${title}?`,
     description1: (title: string) =>
       `${title} is a community token on the Audius platform. You can use ${title} for tipping artists, participating in community activities, and engaging with the decentralized music ecosystem.`,
     description2: (title: string) =>
@@ -27,11 +26,17 @@ export const coinDetailsMessages = {
   },
   coinInsights: {
     title: 'Insights',
-    pricePerCoin: 'Price per coin',
+    pricePerCoin: 'Price',
     holdersOnAudius: 'Holders on Audius',
     uniqueHolders: 'Unique Holders',
     volume24hr: 'Volume (24hr)',
-    totalTransfers: 'Total Transfers'
+    totalTransfers: 'Total Transfers',
+    unableToLoad: 'Unable to load insights',
+    graduated: 'Graduated',
+    preGraduation:
+      'Until graduation, the price of this coin is tied to the controlled distribution of supply.',
+    postGraduation:
+      'This coin has graduated. The price is determined by the open market.'
   },
   coinLeaderboard: {
     title: 'Members Leaderboard',
@@ -60,6 +65,33 @@ export const coinDetailsMessages = {
   overflowMenu: {
     copyCoinAddress: 'Copy Coin Address',
     openDexscreener: 'Open Dexscreener',
+    details: 'Details',
     copiedToClipboard: 'Copied Coin Address To Clipboard!'
+  },
+  artistCoinDetails: {
+    title: 'Artist Coin Details',
+    details: 'Details',
+    coinAddress: 'Coin Address',
+    onChainDescription: 'On-Chain Description',
+    totalSupply: 'Total Supply',
+    marketCap: 'Market Cap',
+    fdv: 'Fully Diluted Valuation',
+    price: 'Current Price',
+    liquidity: 'Liquidity',
+    circulatingSupply: 'Circulating Supply',
+    close: 'Close',
+    copied: 'Copied to clipboard!',
+    tooltips: {
+      totalSupply:
+        'The total number of your artist coins that will ever exist. This amount is fixed and never changes.',
+      marketCap:
+        'The current total value of all your artist coins in circulation, calculated by multiplying the current price by the total supply.',
+      fdv: 'The theoretical market cap if all tokens were in circulation, calculated by multiplying the current price by the total supply.',
+      price: 'The current price of a single artist coin in USD.',
+      liquidity:
+        'The amount of funds available for trading your artist coin, which affects how easily it can be bought or sold.',
+      circulatingSupply:
+        'The number of artist coins currently available for trading, excluding any tokens that are locked or reserved.'
+    }
   }
 }

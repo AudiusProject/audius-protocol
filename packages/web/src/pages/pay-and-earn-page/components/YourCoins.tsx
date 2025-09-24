@@ -19,7 +19,6 @@ import { useBuySellModal } from '@audius/common/store'
 import {
   Box,
   Button,
-  Divider,
   Flex,
   Paper,
   Text,
@@ -104,11 +103,6 @@ const YourCoinsSkeleton = () => {
             <Skeleton width='100px' height='24px' />
           </Flex>
         </Flex>
-      </Flex>
-      <Divider />
-      <Flex gap='m' p='xl' flex={1} direction='column'>
-        <Skeleton width='180px' height='28px' />
-        <Skeleton width='300px' height='22px' />
       </Flex>
     </Paper>
   )
@@ -240,60 +234,63 @@ export const YourCoins = () => {
     <Paper column shadow='far' borderRadius='l' css={{ overflow: 'hidden' }}>
       <YourCoinsHeader isLoading={isLoadingCoins} />
       <Flex column>
-        {isLoadingCoins || !currentUserId ? <YourCoinsSkeleton /> : null}
-        <Box
-          css={{
-            display: 'grid',
-            gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
-            gap: '0'
-          }}
-        >
-          {allCoins.map((item, index) => {
-            const key = typeof item === 'string' ? item : item.mint
-            const isLastItem = index === allCoins.length - 1
-            const isOddCount = !isSingleColumn && allCoins.length % 2 === 1
-            const shouldSpanFullWidth = isOddCount && isLastItem
-            const isLastInRow = isSingleColumn ? true : index % 2 === 1
-            const isLastRow =
-              index >= allCoins.length - (isSingleColumn ? 1 : 2)
+        {isLoadingCoins || !currentUserId ? (
+          <YourCoinsSkeleton />
+        ) : (
+          <Box
+            css={{
+              display: 'grid',
+              gridTemplateColumns: isSingleColumn ? '1fr' : '1fr 1fr',
+              gap: '0'
+            }}
+          >
+            {allCoins.map((item, index) => {
+              const key = typeof item === 'string' ? item : item.mint
+              const isLastItem = index === allCoins.length - 1
+              const isOddCount = !isSingleColumn && allCoins.length % 2 === 1
+              const shouldSpanFullWidth = isOddCount && isLastItem
+              const isLastInRow = isSingleColumn ? true : index % 2 === 1
+              const isLastRow =
+                index >= allCoins.length - (isSingleColumn ? 1 : 2)
 
-            // Use helper functions for cleaner logic
-            const shouldHaveRightBorder = shouldShowRightBorder(
-              index,
-              isSingleColumn,
-              shouldSpanFullWidth,
-              isOddCount,
-              allCoins.length
-            )
+              // Use helper functions for cleaner logic
+              const shouldHaveRightBorder = shouldShowRightBorder(
+                index,
+                isSingleColumn,
+                shouldSpanFullWidth,
+                isOddCount,
+                allCoins.length
+              )
 
-            const itemStyles = getCoinItemStyles(
-              shouldSpanFullWidth,
-              shouldHaveRightBorder,
-              color.border.default
-            )
+              const itemStyles = getCoinItemStyles(
+                shouldSpanFullWidth,
+                shouldHaveRightBorder,
+                color.border.default
+              )
 
-            return (
-              <Fragment key={key}>
-                <Box css={itemStyles}>
-                  {item === 'audio-coin' ? (
-                    <AudioCoinCard />
-                  ) : (
-                    <CoinCardWithBalance coin={item as UserCoin} />
+              return (
+                <Fragment key={key}>
+                  <Box css={itemStyles}>
+                    {item === 'audio-coin' ? (
+                      <AudioCoinCard />
+                    ) : (
+                      <CoinCardWithBalance coin={item as UserCoin} />
+                    )}
+                  </Box>
+                  {/* Horizontal divider after each row except the last */}
+                  {!isLastRow && isLastInRow && (
+                    <Box
+                      css={{
+                        gridColumn: '1 / -1',
+                        borderBottom: `1px solid ${color.border.default}`
+                      }}
+                    />
                   )}
-                </Box>
-                {/* Horizontal divider after each row except the last */}
-                {!isLastRow && isLastInRow && (
-                  <Box
-                    css={{
-                      gridColumn: '1 / -1',
-                      borderBottom: `1px solid ${color.border.default}`
-                    }}
-                  />
-                )}
-              </Fragment>
-            )
-          })}
-        </Box>
+                </Fragment>
+              )
+            })}
+          </Box>
+        )}
       </Flex>
     </Paper>
   )

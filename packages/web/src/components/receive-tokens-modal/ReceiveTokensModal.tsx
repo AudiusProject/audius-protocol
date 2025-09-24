@@ -1,22 +1,21 @@
 import { useCallback, useContext } from 'react'
 
 import {
-  useArtistCoin,
-  useTokenBalance,
-  transformArtistCoinToTokenInfo
+  transformArtistCoinToTokenInfo,
+  useArtistCoin
 } from '@audius/common/api'
-import { useUserbank } from '@audius/common/hooks'
+import { useFormattedTokenBalance, useUserbank } from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import { useReceiveTokensModal } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Button,
-  Flex,
-  IconError,
-  Text,
-  LoadingSpinner,
   Divider,
+  Flex,
   Hint,
+  IconError,
+  LoadingSpinner,
+  Text,
   useMedia
 } from '@audius/harmony'
 
@@ -29,34 +28,51 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 const DIMENSIONS = 160
+const LOADING_HEIGHT = 400
 
 export const ReceiveTokensModal = () => {
-  const { isOpen, onClose, data } = useReceiveTokensModal()
   const { toast } = useContext(ToastContext)
   const { isMobile } = useMedia()
+  const { isOpen, onClose, data } = useReceiveTokensModal()
   const { mint } = data ?? {}
-
-  const { data: coin } = useArtistCoin(mint ?? '')
-  const { data: tokenBalance } = useTokenBalance({ mint: mint ?? '' })
-  const { userBankAddress, wallet } = useUserbank(mint)
+  const { data: coin } = useArtistCoin(mint)
+  const { tokenBalanceFormatted: balance } = useFormattedTokenBalance(
+    mint ?? ''
+  )
+  const { userBankAddress, loading: userBankLoading } = useUserbank(mint)
   const tokenInfo = coin ? transformArtistCoinToTokenInfo(coin) : undefined
-  const balance = tokenBalance?.balance?.toString()
 
   const handleCopy = useCallback(() => {
     copyToClipboard(userBankAddress ?? '')
     toast(walletMessages.receiveTokensCopied)
   }, [userBankAddress, toast])
 
-  if (wallet === null) {
+  if (userBankLoading || !userBankAddress) {
     return (
       <ResponsiveModal
         isOpen={isOpen}
         onClose={onClose}
-        size='l'
+        size='m'
         dismissOnClickOutside
       >
-        <Flex justifyContent='center' alignItems='center' p='xl' w='100%'>
-          <LoadingSpinner h='2xl' />
+        <Flex
+          direction='column'
+          justifyContent='center'
+          alignItems='center'
+          p='xl'
+          w='100%'
+          h={LOADING_HEIGHT}
+          gap='l'
+        >
+          <LoadingSpinner size='2xl' color='subdued' />
+          <Flex column gap='xs' alignItems='center'>
+            <Text variant='heading' size='l'>
+              {walletMessages.receiveTokensLoadingTitle}
+            </Text>
+            <Text variant='title' size='l' strength='weak'>
+              {walletMessages.receiveTokensLoadingSubtitle}
+            </Text>
+          </Flex>
         </Flex>
       </ResponsiveModal>
     )
@@ -101,9 +117,7 @@ export const ReceiveTokensModal = () => {
             alignItems='center'
             justifyContent='center'
           >
-            {userBankAddress ? (
-              <QRCodeComponent value={userBankAddress} />
-            ) : null}
+            <QRCodeComponent value={userBankAddress} />
           </Flex>
           <Flex column gap='xl' h={DIMENSIONS} justifyContent='center' flex={1}>
             <Text variant='body' size='l'>
@@ -113,7 +127,7 @@ export const ReceiveTokensModal = () => {
           </Flex>
         </Flex>
 
-        {userBankAddress ? <AddressTile address={userBankAddress} /> : null}
+        <AddressTile address={userBankAddress} />
 
         {isMobile ? hint : null}
 

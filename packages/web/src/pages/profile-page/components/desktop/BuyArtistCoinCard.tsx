@@ -33,12 +33,13 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
   }
   return (
     <Paper
-      direction='column'
+      column
       gap='s'
       ph='m'
       pv='s'
       onClick={handleCardClick}
       css={{ cursor: 'pointer' }}
+      border='default'
     >
       <Flex gap='s' alignItems='center'>
         <TokenIcon logoURI={artistCoin.logoUri} size='xl' hex />
@@ -49,7 +50,7 @@ export const BuyArtistCoinCard = ({ mint }: { mint: string }) => {
       <Text variant='body' size='s'>
         {messages.cardBody}
       </Text>
-      <Button size='small' onClick={handleBuyCoins}>
+      <Button size='small' onClick={handleBuyCoins} color='coinGradient'>
         {messages.buyCoins}
       </Button>
     </Paper>

@@ -1,20 +1,26 @@
 import { Flex, Skeleton } from '@audius/harmony'
 
 export const YouPaySkeleton = () => (
-  <Flex direction='column' gap='s'>
-    <Flex justifyContent='space-between' alignItems='flex-start'>
-      <Skeleton w='100px' h='24px' />
-      <Skeleton w='160px' h='24px' />
+  <Flex direction='column' gap='m'>
+    <Flex justifyContent='space-between' alignItems='center'>
+      <Skeleton w='80px' h='28px' />
+      <Skeleton w='140px' h='20px' />
     </Flex>
-    <Skeleton w='100%' h='64px' />
+    <Flex alignItems='center' gap='s'>
+      <Skeleton w='100%' h='64px' />
+      <Skeleton w='60px' h='64px' />
+      <Skeleton w='48px' h='48px' />
+    </Flex>
   </Flex>
 )
 
 export const YouReceiveSkeleton = () => (
-  <Flex direction='column' gap='s'>
-    <Skeleton w='120px' h='24px' />
-    <Skeleton w='100%' h='64px' />
-    <Skeleton w='100%' h='64px' />
+  <Flex direction='column' gap='m'>
+    <Skeleton w='120px' h='28px' />
+    <Flex alignItems='center' gap='s'>
+      <Skeleton w='100%' h='64px' />
+      <Skeleton w='60px' h='64px' />
+    </Flex>
   </Flex>
 )
 

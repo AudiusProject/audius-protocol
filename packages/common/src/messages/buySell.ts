@@ -4,6 +4,7 @@ import { formatTokenPrice } from '../api/tan-query/jupiter/utils'
 
 export const buySellMessages = {
   title: 'BUY / SELL',
+  buyAudioTitle: 'Buy $AUDIO',
   buy: 'Buy',
   sell: 'Sell',
   convert: 'Convert',
@@ -32,6 +33,7 @@ export const buySellMessages = {
   sellSuccess: 'Successfully sold AUDIO!',
   transactionSuccess: 'Transaction successful!',
   transactionFailed: 'Transaction failed. Please try again.',
+  transactionCancelled: 'Transaction cancelled',
   insufficientUSDC:
     "You don't have the available balance required to complete this purchase.",
   insufficientAUDIOForSale:

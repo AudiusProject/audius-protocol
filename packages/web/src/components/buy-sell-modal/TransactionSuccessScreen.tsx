@@ -18,9 +18,10 @@ type TransactionSuccessScreenProps = {
   receiveTokenInfo: TokenInfo
   payAmount: number
   receiveAmount: number
-  pricePerBaseToken: number
+  pricePerBaseToken?: number
   baseTokenSymbol: string
   onDone: () => void
+  hideUSDCTooltip?: boolean
 }
 
 export const TransactionSuccessScreen = (
@@ -33,7 +34,8 @@ export const TransactionSuccessScreen = (
     receiveAmount,
     pricePerBaseToken,
     baseTokenSymbol,
-    onDone
+    onDone,
+    hideUSDCTooltip
   } = props
 
   // Follow same pattern as ConfirmSwapScreen - call hooks first
@@ -50,9 +52,10 @@ export const TransactionSuccessScreen = (
   })
 
   const isReceivingBaseToken = receiveTokenInfo.symbol === baseTokenSymbol
-  const priceLabel = isReceivingBaseToken
-    ? messages.priceEach(pricePerBaseToken)
-    : undefined
+  const priceLabel =
+    isReceivingBaseToken && pricePerBaseToken
+      ? messages.priceEach(pricePerBaseToken)
+      : undefined
 
   if (!formattedPayAmount || !formattedReceiveAmount) {
     return null
@@ -71,6 +74,7 @@ export const TransactionSuccessScreen = (
           title={messages.youPaid}
           tokenInfo={payTokenInfo}
           amount={formattedPayAmount}
+          hideUSDCTooltip={hideUSDCTooltip}
         />
         <SwapBalanceSection
           title={messages.youReceived}

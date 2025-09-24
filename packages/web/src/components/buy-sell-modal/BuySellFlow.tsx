@@ -35,6 +35,7 @@ import { ConfirmSwapScreen } from './ConfirmSwapScreen'
 import { ConvertTab } from './ConvertTab'
 import { SellTab } from './SellTab'
 import { TransactionSuccessScreen } from './TransactionSuccessScreen'
+import { SwapFormSkeleton } from './components/SwapSkeletons'
 
 type BuySellFlowProps = {
   onClose: () => void
@@ -42,6 +43,7 @@ type BuySellFlowProps = {
   onScreenChange: (screen: Screen) => void
   onLoadingStateChange?: (isLoading: boolean) => void
   initialTicker?: string
+  setResetState: (resetState: () => void) => void
 }
 
 export const BuySellFlow = (props: BuySellFlowProps) => {
@@ -50,7 +52,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     openAddCashModal,
     onScreenChange,
     onLoadingStateChange,
-    initialTicker
+    initialTicker,
+    setResetState
   } = props
   const { toast } = useContext(ToastContext)
   const { isEnabled: isArtistCoinsEnabled } = useFlag(FeatureFlags.ARTIST_COINS)
@@ -115,7 +118,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   const {
     getCurrentTabTokens,
     handleInputTokenChange: handleInputTokenChangeInternal,
-    handleOutputTokenChange: handleOutputTokenChangeInternal
+    handleOutputTokenChange: handleOutputTokenChangeInternal,
+    handleSwapDirection
   } = useTokenStates(selectedPair)
 
   // Get current tab's token symbols
@@ -131,6 +135,11 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
 
   const handleOutputTokenChange = (symbol: string) => {
     handleOutputTokenChangeInternal(symbol, activeTab)
+    resetTransactionData()
+  }
+
+  const handleChangeSwapDirection = () => {
+    handleSwapDirection(activeTab)
     resetTransactionData()
   }
 
@@ -175,10 +184,8 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }, [availableTokens, baseTokenSymbol, quoteTokenSymbol, hasPositiveBalance])
 
   const availableOutputTokensForConvert = useMemo(() => {
-    return availableTokens.filter(
-      (t) => t.symbol !== quoteTokenSymbol && t.symbol !== baseTokenSymbol
-    )
-  }, [availableTokens, quoteTokenSymbol, baseTokenSymbol])
+    return availableTokens.filter((t) => t.symbol !== baseTokenSymbol)
+  }, [availableTokens, baseTokenSymbol])
 
   // Create current token pair based on selected base and quote tokens
   const currentTokenPair = useCurrentTokenPair({
@@ -378,6 +385,22 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     setHasAttemptedSubmit(false)
   }, [activeTab])
 
+  useEffect(() => {
+    setResetState(() => {
+      resetTransactionData()
+      resetSuccessDisplayData()
+      setCurrentScreen('input')
+      // Clear all tab input values on completion
+      setTabInputValues({ buy: '', sell: '', convert: '' })
+    })
+  }, [
+    setResetState,
+    resetTransactionData,
+    resetSuccessDisplayData,
+    setCurrentScreen,
+    setTabInputValues
+  ])
+
   const isTransactionInvalid = !transactionData?.isValid
 
   const displayErrorMessage = useMemo(() => {
@@ -420,7 +443,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
   }
 
   if (tokensLoading) {
-    return <ModalLoading noText />
+    return <SwapFormSkeleton />
   }
 
   return (
@@ -475,6 +498,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
               availableOutputTokens={availableOutputTokensForConvert}
               onInputTokenChange={handleInputTokenChange}
               onOutputTokenChange={handleOutputTokenChange}
+              onChangeSwapDirection={handleChangeSwapDirection}
             />
           ) : null}
 
@@ -528,17 +552,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
         style={{ display: currentScreen === 'success' ? 'flex' : 'none' }}
       >
         {currentScreen === 'success' && successDisplayData ? (
-          <TransactionSuccessScreen
-            {...successDisplayData}
-            onDone={() => {
-              onClose()
-              resetTransactionData()
-              resetSuccessDisplayData()
-              setCurrentScreen('input')
-              // Clear all tab input values on completion
-              setTabInputValues({ buy: '', sell: '', convert: '' })
-            }}
-          />
+          <TransactionSuccessScreen {...successDisplayData} onDone={onClose} />
         ) : null}
       </Flex>
     </>

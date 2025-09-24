@@ -92,6 +92,8 @@ export const Screen = (props: ScreenProps) => {
     navigation.setOptions(
       removeUndefined({
         header,
+        headerShown: header ? true : undefined,
+        gestureEnabled: header ? false : undefined,
         headerLeft: topbarLeft === undefined ? undefined : () => topbarLeft,
         headerRight: topbarRight
           ? () => topbarRight

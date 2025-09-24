@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { HashId } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { SLIPPAGE_BPS, useCurrentAccountUser, useSwapTokens } from '~/api'
+import {
+  SLIPPAGE_BPS,
+  useArtistCoin,
+  useCurrentAccountUser,
+  useSwapTokens
+} from '~/api'
 import { SwapStatus } from '~/api/tan-query/jupiter/types'
+import { TQTrack } from '~/api/tan-query/models'
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
+import { isContentTokenGated } from '~/models'
 
 import type {
   BuySellTab,
@@ -38,6 +46,11 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
   const [isRetrying, setIsRetrying] = useState(false)
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSwapDataRef = useRef<any>(null)
+
+  const { data: baseCoin } = useArtistCoin(selectedPair.baseToken.address ?? '')
+  const { data: quoteCoin } = useArtistCoin(
+    selectedPair.quoteToken.address ?? ''
+  )
 
   const MAX_RETRIES = 3
   const RETRY_DELAY = 2000
@@ -89,6 +102,38 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       // Invalidate general user coins queries
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.userCoins]
+      })
+      // Invalidate artist coin members queries (leaderboard)
+      if (baseCoin?.mint) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.artistCoinMembers, baseCoin?.mint]
+        })
+      }
+      if (quoteCoin?.mint) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.artistCoinMembers, quoteCoin?.mint]
+        })
+      }
+
+      // Invalidate track queries to provide track access if the user has traded the artist coin
+      const baseOwnerId = baseCoin?.ownerId
+        ? HashId.parse(baseCoin?.ownerId)
+        : null
+      const quoteOwnerId = quoteCoin?.ownerId
+        ? HashId.parse(quoteCoin?.ownerId)
+        : null
+
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          return (
+            query.queryKey[0] === QUERY_KEYS.track &&
+            ((query.queryKey[1] as TQTrack)?.owner_id === baseOwnerId ||
+              (query.queryKey[1] as TQTrack)?.owner_id === quoteOwnerId) &&
+            isContentTokenGated(
+              (query.queryKey[1] as TQTrack)?.stream_conditions
+            )
+          )
+        }
       })
     }
     if (user?.spl_wallet) {
