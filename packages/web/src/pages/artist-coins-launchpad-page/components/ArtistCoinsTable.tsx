@@ -4,15 +4,10 @@ import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
 import { useBuySellModal } from '@audius/common/store'
-import {
-  CURRENCY_FORMAT_MAX,
-  formatCurrencyWithMax,
-  formatCurrencyWithSubscript
-} from '@audius/common/utils'
+import { formatCurrencyWithSubscript, formatCount } from '@audius/common/utils'
 import {
   Button,
   Flex,
-  formatCount,
   IconSearch,
   LoadingSpinner,
   Paper,
@@ -130,7 +125,8 @@ const renderVolume24hCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
   return (
     <Text variant='body' size='m'>
-      {formatCurrencyWithMax(coin.v24hUSD, CURRENCY_FORMAT_MAX)}
+      {walletMessages.dollarSign}
+      {formatCount(coin.v24hUSD, 2)}
     </Text>
   )
 }
