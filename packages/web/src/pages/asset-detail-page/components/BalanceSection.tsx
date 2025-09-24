@@ -1,3 +1,5 @@
+import { useCallback, useState } from 'react'
+
 import {
   useArtistCoin,
   useTokenBalance,
@@ -23,11 +25,19 @@ import {
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useBuySellRegionSupport } from 'components/buy-sell-modal'
+import Drawer from 'components/drawer/Drawer'
 import { componentWithErrorBoundary } from 'components/error-wrapper/componentWithErrorBoundary'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+import { zIndex } from 'utils/zIndex'
+
+const messages = {
+  openTheApp: 'Open The App',
+  drawerDescription:
+    "You'll need to make this purchase in the app or on the web."
+}
 
 type BalanceStateProps = {
   ticker: string
@@ -220,8 +230,16 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
   const { onOpen: openReceiveTokensModal } = useReceiveTokensModal()
   const { onOpen: openSendTokensModal } = useSendTokensModal()
-
   const isMobile = useIsMobile()
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false)
+
+  const onOpenMobileDrawer = useCallback(() => {
+    setIsMobileDrawerOpen(true)
+  }, [setIsMobileDrawerOpen])
+
+  const onCloseMobileDrawer = useCallback(() => {
+    setIsMobileDrawerOpen(false)
+  }, [setIsMobileDrawerOpen])
 
   // Handler functions with account requirements - defined before early return
   const handleBuySell = useRequiresAccountCallback(() => {
@@ -272,7 +290,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
           <ZeroBalanceState
             ticker={ticker}
             logoURI={logoURI}
-            onBuy={handleAddCash}
+            onBuy={isMobile ? onOpenMobileDrawer : handleAddCash}
             onReceive={handleReceive}
             isBuySellSupported={isBuySellSupported}
           />
@@ -280,12 +298,37 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
           <HasBalanceState
             ticker={ticker}
             logoURI={logoURI}
-            onBuy={handleBuySell}
+            onBuy={isMobile ? onOpenMobileDrawer : handleBuySell}
             onSend={handleSend}
             onReceive={handleReceive}
             mint={mint}
             isBuySellSupported={isBuySellSupported}
           />
+        )}
+        {isMobile && (
+          <Drawer
+            zIndex={zIndex.BUY_SELL_MODAL}
+            isOpen={isMobileDrawerOpen}
+            onClose={onCloseMobileDrawer}
+            shouldClose={!isMobileDrawerOpen}
+          >
+            <Flex direction='column' p='l' pb='2xl' w='100%'>
+              <Box pv='s'>
+                <Text
+                  variant='label'
+                  size='xl'
+                  strength='strong'
+                  color='subdued'
+                  textAlign='center'
+                >
+                  {messages.openTheApp}
+                </Text>
+              </Box>
+              <Box pv='l'>
+                <Text>{messages.drawerDescription}</Text>
+              </Box>
+            </Flex>
+          </Drawer>
         )}
       </Flex>
     </Paper>
