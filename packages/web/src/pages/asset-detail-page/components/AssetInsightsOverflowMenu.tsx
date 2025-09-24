@@ -1,7 +1,8 @@
-import { useContext, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
+import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
 import { route } from '@audius/common/utils'
 import {
   PopupMenu,
@@ -12,8 +13,12 @@ import {
   IconKebabHorizontal,
   IconInfo
 } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 
+import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
+import { push } from 'utils/navigation'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
 
@@ -31,9 +36,12 @@ type AssetInsightsOverflowMenuProps = {
 export const AssetInsightsOverflowMenu = ({
   mint
 }: AssetInsightsOverflowMenuProps) => {
+  const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
   const { data: artistCoin } = useArtistCoin(mint)
+  const isMobile = useIsMobile()
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [isMobileOverflowOpen, setIsMobileOverflowOpen] = useState(false)
 
   const onCopyCoinAddress = () => {
     if (artistCoin?.mint) {
@@ -53,23 +61,36 @@ export const AssetInsightsOverflowMenu = ({
   }
 
   const onOpenDetails = () => {
-    setIsDetailsModalOpen(true)
+    if (isMobile) {
+      dispatch(
+        push(COIN_DETAIL_ROUTE.replace(':ticker', artistCoin?.ticker ?? ''))
+      )
+    } else {
+      setIsDetailsModalOpen(true)
+    }
   }
+  const onOpenMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(true)
+  }, [setIsMobileOverflowOpen])
+
+  const onCloseMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(false)
+  }, [setIsMobileOverflowOpen])
 
   const menuItems: PopupMenuItem[] = [
     {
       text: messages.copyCoinAddress,
-      icon: <IconCopy />,
+      icon: <IconCopy color='default' />,
       onClick: onCopyCoinAddress
     },
     {
       text: messages.openDexscreener,
-      icon: <IconExternalLink />,
+      icon: <IconExternalLink color='default' />,
       onClick: onOpenDexscreener
     },
     {
       text: messages.details,
-      icon: <IconInfo />,
+      icon: <IconInfo color='default' />,
       onClick: onOpenDetails
     }
   ]
@@ -77,6 +98,31 @@ export const AssetInsightsOverflowMenu = ({
   // Don't render if no artist coin data
   if (!artistCoin?.mint) {
     return null
+  }
+
+  if (isMobile) {
+    return (
+      <>
+        <IconButton
+          icon={IconKebabHorizontal}
+          onClick={onOpenMobileOverflow}
+          aria-label='More options'
+        />
+        <ActionDrawer
+          actions={menuItems.map((item) => ({
+            text: item.text as string,
+            icon: item.icon,
+            onClick: (e) => {
+              // @ts-ignore - Element vs HTMLElement
+              item.onClick?.(e)
+              onCloseMobileOverflow()
+            }
+          }))}
+          isOpen={isMobileOverflowOpen}
+          onClose={onCloseMobileOverflow}
+        />
+      </>
+    )
   }
 
   return (

@@ -55,6 +55,7 @@ import { ArtistCoinsExplorePage } from 'pages/artist-coins-explore-page/ArtistCo
 import { LaunchpadPage } from 'pages/artist-coins-launchpad-page'
 import { MobileArtistCoinsSortPage } from 'pages/artist-coins-sort-page/MobileArtistCoinsSortPage'
 import { AssetDetailPage } from 'pages/asset-detail-page/AssetDetailPage'
+import { ArtistCoinDetailsPage } from 'pages/asset-detail-page/components/mobile/ArtistCoinDetailsPage'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import CollectionPage from 'pages/collection-page/CollectionPage'
@@ -152,6 +153,7 @@ const {
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
   LEADERBOARD_USERS_ROUTE,
+  COIN_DETAIL_ROUTE,
   TRENDING_GENRES,
   APP_REDIRECT,
   TRACK_ID_PAGE,
@@ -951,6 +953,12 @@ const WebPlayer = (props) => {
                 path={LEADERBOARD_USERS_ROUTE}
                 isMobile={isMobile}
                 component={LeaderboardPage}
+              />
+              <MobileRoute
+                exact
+                path={COIN_DETAIL_ROUTE}
+                isMobile={isMobile}
+                component={ArtistCoinDetailsPage}
               />
               <MobileRoute
                 exact

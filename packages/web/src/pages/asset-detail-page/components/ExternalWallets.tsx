@@ -29,7 +29,9 @@ import {
 import { UserCoinAccount } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 
+import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import {
@@ -55,7 +57,9 @@ const WalletRow = ({
 }: WalletRowProps) => {
   const { toast } = useContext(ToastContext)
   const [isRemovingWallet, setIsRemovingWallet] = useState(false)
+  const isMobile = useIsMobile()
   const queryClient = useQueryClient()
+  const [isMobileOverflowOpen, setIsMobileOverflowOpen] = useState(false)
   const { data: currentUserId } = useCurrentUserId()
   // For connected wallets we want to use the root wallet address, for in-app wallets the owner will be us and not the user so we need to use the token account address
   const address = isInAppWallet ? account : owner
@@ -65,6 +69,14 @@ const WalletRow = ({
   }, [address, toast])
 
   const { mutateAsync: removeConnectedWalletAsync } = useRemoveConnectedWallet()
+
+  const onOpenMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(true)
+  }, [setIsMobileOverflowOpen])
+
+  const onCloseMobileOverflow = useCallback(() => {
+    setIsMobileOverflowOpen(false)
+  }, [setIsMobileOverflowOpen])
 
   const handleRemove = useCallback(async () => {
     try {
@@ -88,13 +100,13 @@ const WalletRow = ({
       [
         {
           text: messages.copy,
-          icon: <IconCopy />,
+          icon: <IconCopy color='default' />,
           onClick: copyAddressToClipboard
         },
         !isInAppWallet
           ? {
               text: messages.remove,
-              icon: <IconTrash />,
+              icon: <IconTrash color='default' />,
               onClick: handleRemove
             }
           : null
@@ -121,28 +133,51 @@ const WalletRow = ({
           {Math.trunc(balance / Math.pow(10, decimals)).toLocaleString()}
         </Text>
       </Flex>
-      <Flex
-        css={{
-          marginLeft: 'auto',
-          flexBasis: 0
-        }}
-      >
-        <PopupMenu
-          items={items}
-          aria-disabled={isRemovingWallet}
-          renderTrigger={(ref, trigger) => (
-            <IconButton
-              ref={ref}
-              icon={IconKebabHorizontal}
-              size='s'
-              color='subdued'
-              disabled={isRemovingWallet}
-              onClick={() => trigger()}
-              aria-label={messages.options}
-            />
-          )}
-        />
-      </Flex>
+      {isMobile ? (
+        <>
+          <IconButton
+            icon={IconKebabHorizontal}
+            onClick={onOpenMobileOverflow}
+            aria-label='More options'
+          />
+          <ActionDrawer
+            actions={items.map((item) => ({
+              text: item.text as string,
+              icon: item.icon,
+              onClick: (e) => {
+                // @ts-ignore - Element vs HTMLElement
+                item.onClick?.(e)
+                onCloseMobileOverflow()
+              }
+            }))}
+            isOpen={isMobileOverflowOpen}
+            onClose={onCloseMobileOverflow}
+          />
+        </>
+      ) : (
+        <Flex
+          css={{
+            marginLeft: 'auto',
+            flexBasis: 0
+          }}
+        >
+          <PopupMenu
+            items={items}
+            aria-disabled={isRemovingWallet}
+            renderTrigger={(ref, trigger) => (
+              <IconButton
+                ref={ref}
+                icon={IconKebabHorizontal}
+                size='s'
+                color='subdued'
+                disabled={isRemovingWallet}
+                onClick={() => trigger()}
+                aria-label={messages.options}
+              />
+            )}
+          />
+        </Flex>
+      )}
     </Flex>
   )
 }
