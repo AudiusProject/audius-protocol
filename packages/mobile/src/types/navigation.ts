@@ -5,7 +5,7 @@ import type {
 } from '@audius/common/store'
 
 export type BuySellScreenParams = {
-  initialTab?: 'buy' | 'sell'
+  initialTab?: 'buy' | 'sell' | 'convert'
   coinTicker?: string
 }
 
