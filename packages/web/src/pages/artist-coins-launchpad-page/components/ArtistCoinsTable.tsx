@@ -125,7 +125,7 @@ const renderVolume24hCell = (cellInfo: CoinCell) => {
   return (
     <Text variant='body' size='m'>
       {walletMessages.dollarSign}
-      {formatCount(coin.v24hUSD)}
+      {coin.v24hUSD.toFixed(2)}
     </Text>
   )
 }
