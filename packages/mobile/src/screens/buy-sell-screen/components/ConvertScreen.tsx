@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 
 import {
   transformArtistCoinsToTokenInfoMap,
@@ -10,7 +10,14 @@ import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 import { getCurrencyDecimalPlaces } from '@audius/common/utils'
 
-import { Box, Flex, Skeleton } from '@audius/harmony-native'
+import {
+  Box,
+  Flex,
+  IconButton,
+  IconTransaction,
+  Skeleton,
+  Divider
+} from '@audius/harmony-native'
 import { InputTokenSection } from 'app/components/buy-sell/InputTokenSection'
 import { OutputTokenSection } from 'app/components/buy-sell/OutputTokenSection'
 
@@ -51,7 +58,7 @@ const SwapFormSkeleton = () => (
   </Flex>
 )
 
-type BuyScreenProps = {
+type ConvertScreenProps = {
   tokenPair: TokenPair
   onTransactionDataChange?: (data: {
     inputAmount: number
@@ -64,20 +71,34 @@ type BuyScreenProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
-  onOutputTokenChange?: (token: TokenInfo) => void
+  availableInputTokens?: TokenInfo[]
+  availableOutputTokens?: TokenInfo[]
+  onInputTokenChange?: (symbol: string) => void
+  onOutputTokenChange?: (symbol: string) => void
+  onChangeSwapDirection?: () => void
 }
 
-export const BuyScreen = ({
+export const ConvertScreen = ({
   tokenPair,
   onTransactionDataChange,
   error,
   errorMessage,
   initialInputValue,
   onInputValueChange,
-  onOutputTokenChange
-}: BuyScreenProps) => {
+  availableInputTokens,
+  availableOutputTokens,
+  onInputTokenChange,
+  onOutputTokenChange,
+  onChangeSwapDirection
+}: ConvertScreenProps) => {
+  const { baseToken, quoteToken } = tokenPair
+
+  // Use tokens from the tokenPair prop instead of local state
+  const selectedInputToken = baseToken
+  const selectedOutputToken = quoteToken
+
   const { data: tokenPriceData, isPending: isTokenPriceLoading } =
-    useArtistCoin(tokenPair?.baseToken?.address)
+    useArtistCoin(selectedOutputToken?.address ?? '')
 
   const tokenPrice = tokenPriceData?.price?.toString() ?? null
 
@@ -97,8 +118,8 @@ export const BuyScreen = ({
     handleOutputAmountChange,
     handleMaxClick
   } = useTokenSwapForm({
-    inputToken: tokenPair?.quoteToken,
-    outputToken: tokenPair?.baseToken,
+    inputToken: selectedInputToken,
+    outputToken: selectedOutputToken,
     onTransactionDataChange,
     initialInputValue,
     onInputValueChange
@@ -109,6 +130,54 @@ export const BuyScreen = ({
     return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
   }, [coins])
 
+  const totalAvailableTokens = useMemo(() => {
+    return [...(availableOutputTokens ?? []), ...artistCoins].filter(
+      (token, index, arr) =>
+        arr.findIndex((t) => t.symbol === token.symbol) === index
+    ) // Remove duplicates
+  }, [availableOutputTokens, artistCoins])
+
+  // Filter out the currently selected input token from available output tokens
+  const filteredAvailableOutputTokens = useMemo(() => {
+    return totalAvailableTokens.filter(
+      (token) => token.symbol !== selectedInputToken?.symbol
+    )
+  }, [totalAvailableTokens, selectedInputToken?.symbol])
+
+  const handleInputTokenChange = useCallback(
+    (token: TokenInfo) => {
+      onInputTokenChange?.(token.symbol)
+
+      // If there are only 2 total available tokens, automatically set the other token
+      if (totalAvailableTokens.length === 2) {
+        const otherToken = totalAvailableTokens.find(
+          (t) => t.symbol !== token.symbol
+        )
+        if (otherToken) {
+          onOutputTokenChange?.(otherToken.symbol)
+        }
+      }
+    },
+    [onInputTokenChange, onOutputTokenChange, totalAvailableTokens]
+  )
+
+  const handleOutputTokenChange = useCallback(
+    (token: TokenInfo) => {
+      onOutputTokenChange?.(token.symbol)
+
+      // If there are only 2 total available tokens, automatically set the other token
+      if (totalAvailableTokens.length === 2) {
+        const otherToken = totalAvailableTokens.find(
+          (t) => t.symbol !== token.symbol
+        )
+        if (otherToken) {
+          onInputTokenChange?.(otherToken.symbol)
+        }
+      }
+    },
+    [onInputTokenChange, onOutputTokenChange, totalAvailableTokens]
+  )
+
   // Track if an exchange rate has ever been successfully fetched
   const hasRateEverBeenFetched = useRef(false)
   if (currentExchangeRate !== null) {
@@ -116,8 +185,6 @@ export const BuyScreen = ({
   }
 
   if (!tokenPair) return null
-
-  const { baseToken, quoteToken } = tokenPair
 
   // Show initial loading state if balance is loading,
   // OR if exchange rate is loading AND we've never fetched a rate before.
@@ -133,16 +200,36 @@ export const BuyScreen = ({
         <>
           <InputTokenSection
             title={buySellMessages.youPay}
-            tokenInfo={quoteToken}
+            tokenInfo={selectedInputToken}
             amount={inputAmount}
             onAmountChange={handleInputAmountChange}
             onMaxClick={handleMaxClick}
             availableBalance={availableBalance}
             error={error}
             errorMessage={errorMessage}
+            availableTokens={availableInputTokens}
+            onTokenChange={handleInputTokenChange}
           />
+
+          {/* Swap Direction Divider */}
+          <Flex alignItems='center' justifyContent='center' gap='s' w='100%'>
+            <Flex flex={1}>
+              <Divider />
+            </Flex>
+            <IconButton
+              icon={IconTransaction}
+              size='s'
+              color='subdued'
+              onPress={onChangeSwapDirection}
+              iconStyle={{ transform: [{ rotate: '90deg' }] }}
+            />
+            <Flex flex={1}>
+              <Divider />
+            </Flex>
+          </Flex>
+
           <OutputTokenSection
-            tokenInfo={baseToken}
+            tokenInfo={selectedOutputToken}
             amount={outputAmount}
             onAmountChange={handleOutputAmountChange}
             availableBalance={0}
@@ -150,8 +237,8 @@ export const BuyScreen = ({
             tokenPrice={tokenPrice}
             isTokenPriceLoading={isTokenPriceLoading}
             tokenPriceDecimalPlaces={decimalPlaces}
-            availableTokens={artistCoins}
-            onTokenChange={onOutputTokenChange}
+            availableTokens={filteredAvailableOutputTokens}
+            onTokenChange={handleOutputTokenChange}
           />
         </>
       )}

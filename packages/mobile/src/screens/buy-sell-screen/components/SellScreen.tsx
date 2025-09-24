@@ -1,11 +1,6 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useRef } from 'react'
 
-import {
-  transformArtistCoinsToTokenInfoMap,
-  useArtistCoin,
-  useArtistCoins
-} from '@audius/common/api'
-import { useOwnedTokens } from '@audius/common/hooks'
+import { useArtistCoin } from '@audius/common/api'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
 import { useTokenSwapForm } from '@audius/common/store'
 
@@ -67,6 +62,8 @@ type SellScreenProps = {
   errorMessage?: string
   initialInputValue?: string
   onInputValueChange?: (value: string) => void
+  onInputTokenChange?: (token: TokenInfo) => void
+  availableInputTokens?: TokenInfo[]
 }
 
 export const SellScreen = ({
@@ -75,7 +72,9 @@ export const SellScreen = ({
   error,
   errorMessage,
   initialInputValue,
-  onInputValueChange
+  onInputValueChange,
+  onInputTokenChange,
+  availableInputTokens
 }: SellScreenProps) => {
   const { data: tokenPriceData } = useArtistCoin(tokenPair?.baseToken?.address)
 
@@ -105,19 +104,6 @@ export const SellScreen = ({
     hasRateEverBeenFetched.current = true
   }
 
-  const { data: coins } = useArtistCoins()
-  const allAvailableTokens: TokenInfo[] = useMemo(() => {
-    return Object.values(transformArtistCoinsToTokenInfoMap(coins ?? []))
-  }, [coins])
-
-  // Use the owned tokens hook to get filtered tokens
-  const { ownedTokens } = useOwnedTokens(allAvailableTokens)
-
-  // For sell screen:
-  // - "You Sell" section (input): Should show only tokens the user owns
-  // - "You Receive" section (output): Should show all available tokens (but only USDC in practice)
-  const availableInputTokens = ownedTokens
-
   if (!tokenPair) return null
 
   // Extract the tokens from the pair
@@ -145,6 +131,7 @@ export const SellScreen = ({
             error={error}
             errorMessage={errorMessage}
             availableTokens={availableInputTokens}
+            onTokenChange={onInputTokenChange}
           />
           <OutputTokenSection
             tokenInfo={quoteToken}
