@@ -495,12 +495,10 @@ export const transferFromUserBank = async ({
       // Check if the ATA already exists and has a non-zero balance; if so, skip creating it
       let shouldCreateAta = true
       try {
-        const destAccount = await getAccount(connection, destination)
-        if (destAccount.amount > BigInt(0)) {
+        const info = await connection.getAccountInfo(destination)
+        if (info) {
           shouldCreateAta = false
-          console.debug(
-            `Destination ATA ${destination.toBase58()} exists with non-zero balance (${destAccount.amount}). Skipping creation.`
-          )
+          console.debug(`Destination ATA ${destination.toBase58()} exists`)
         }
       } catch (e) {
         // Account doesn't exist yet – we'll proceed to create it below
