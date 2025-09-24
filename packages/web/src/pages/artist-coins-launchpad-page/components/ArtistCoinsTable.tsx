@@ -44,7 +44,10 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
     return null
   }
 
-  const assetDetailUrl = ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker)
+  const urlTicker = coin.ticker.startsWith('$')
+    ? coin.ticker.slice(1)
+    : coin.ticker
+  const assetDetailUrl = ASSET_DETAIL_PAGE.replace(':ticker', urlTicker)
 
   return (
     <Flex
@@ -362,7 +365,10 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     (e: React.MouseEvent<HTMLTableRowElement>, rowInfo: any) => {
       const coin = rowInfo.original
       if (coin?.ticker) {
-        navigate(ASSET_DETAIL_PAGE.replace(':ticker', coin.ticker))
+        const urlTicker = coin.ticker.startsWith('$')
+          ? coin.ticker.slice(1)
+          : coin.ticker
+        navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker))
       }
     },
     [navigate]

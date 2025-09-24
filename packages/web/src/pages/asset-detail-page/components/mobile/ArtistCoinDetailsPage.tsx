@@ -40,7 +40,7 @@ export const ArtistCoinDetailsPage = () => {
   const location = useLocation()
   // Locations should be in the format /coins/:ticker/details (COIN_DETAIL_ROUTE)
   const ticker = location.pathname.split('/')[2]
-  const { data: artistCoin } = useArtistCoinByTicker({ ticker: ticker ?? '' })
+  const { data: artistCoin } = useArtistCoinByTicker({ ticker: `$${ticker}` })
   const { spacing } = useTheme()
 
   return (

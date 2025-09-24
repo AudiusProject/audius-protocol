@@ -13,12 +13,11 @@ import {
   IconKebabHorizontal,
   IconInfo
 } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { push } from 'utils/navigation'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
 
@@ -36,7 +35,7 @@ type AssetInsightsOverflowMenuProps = {
 export const AssetInsightsOverflowMenu = ({
   mint
 }: AssetInsightsOverflowMenuProps) => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { toast } = useContext(ToastContext)
   const { data: artistCoin } = useArtistCoin(mint)
   const isMobile = useIsMobile()
@@ -62,9 +61,12 @@ export const AssetInsightsOverflowMenu = ({
 
   const onOpenDetails = () => {
     if (isMobile) {
-      dispatch(
-        push(COIN_DETAIL_ROUTE.replace(':ticker', artistCoin?.ticker ?? ''))
-      )
+      if (artistCoin?.ticker) {
+        const urlTicker = artistCoin?.ticker.startsWith('$')
+          ? artistCoin?.ticker.slice(1)
+          : artistCoin?.ticker
+        navigate(COIN_DETAIL_ROUTE.replace(':ticker', urlTicker))
+      }
     } else {
       setIsDetailsModalOpen(true)
     }

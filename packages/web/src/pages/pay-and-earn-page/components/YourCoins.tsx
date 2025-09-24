@@ -26,8 +26,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import type { CSSObject } from '@emotion/react'
-import { useDispatch } from 'react-redux'
-import { push } from 'redux-first-history'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { ownedCoinsFilter } from '~/utils'
 import { roundedHexClipPath } from '~harmony/icons/SVGDefs'
 
@@ -167,15 +166,16 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
 }
 
 const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
-  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const tokenSymbol = coin.ticker
 
   const handleCoinClick = useCallback(
     (ticker: string) => {
-      dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', ticker)))
+      const urlTicker = ticker.startsWith('$') ? ticker.slice(1) : ticker
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker))
     },
-    [dispatch]
+    [navigate]
   )
 
   const {

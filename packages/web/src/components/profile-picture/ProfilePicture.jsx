@@ -56,7 +56,10 @@ const ProfilePicture = ({
 
   const handleCoinClick = () => {
     if (ownedCoin?.ticker) {
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ownedCoin.ticker))
+      const urlTicker = ownedCoin.ticker.startsWith('$')
+        ? ownedCoin.ticker.slice(1)
+        : ownedCoin.ticker
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker))
     }
   }
 

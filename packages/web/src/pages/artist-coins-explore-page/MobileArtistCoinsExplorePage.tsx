@@ -146,7 +146,8 @@ export const MobileArtistCoinsExplorePage: React.FC = () => {
 
   const handleCoinPress = useCallback(
     (ticker: string) => {
-      navigate(ASSET_DETAIL_PAGE.replace(':ticker', ticker))
+      const urlTicker = ticker.startsWith('$') ? ticker.slice(1) : ticker
+      navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker))
     },
     [navigate]
   )

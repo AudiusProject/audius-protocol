@@ -69,9 +69,10 @@ export const ArtistCoinHoverCard = ({
   const handleClick = useCallback(() => {
     onClick?.()
     onClose?.()
-    navigate(
-      ASSET_DETAIL_PAGE.replace(':ticker', artistCoinBadge?.ticker ?? '')
-    )
+    const urlTicker = artistCoinBadge?.ticker.startsWith('$')
+      ? artistCoinBadge?.ticker.slice(1)
+      : artistCoinBadge?.ticker
+    navigate(ASSET_DETAIL_PAGE.replace(':ticker', urlTicker ?? ''))
   }, [onClick, onClose, navigate, artistCoinBadge?.ticker])
 
   // Don't render if we don't have the basic coin info

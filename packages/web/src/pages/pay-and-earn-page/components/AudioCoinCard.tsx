@@ -25,7 +25,7 @@ export const AudioCoinCard = () => {
   const isLoading = isAudioBalanceLoading || isAudioPriceLoading
 
   const handleCoinClick = useCallback(() => {
-    dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER)))
+    dispatch(push(ASSET_DETAIL_PAGE.replace(':ticker', AUDIO_TICKER.slice(1))))
   }, [dispatch])
 
   return (
