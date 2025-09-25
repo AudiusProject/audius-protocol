@@ -10,6 +10,7 @@ import {
   Flex,
   HexagonalIcon,
   Skeleton,
+  spacing,
   Text
 } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -100,21 +101,40 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
         justifyContent='space-between'
         alignItems='center'
       >
-        <Flex row alignItems='center' gap='l'>
+        <Flex row alignItems='center' gap='l' style={{ flexShrink: 1 }}>
           {isLoading ? <HexagonalSkeleton /> : renderIcon()}
           <Flex column gap='xs'>
             {isLoading ? (
               <CoinCardSkeleton />
             ) : (
               <>
-                <Text variant='heading' size='s'>
-                  {coinData?.name}
-                </Text>
-                <Flex row alignItems='center' gap='xs'>
+                {coinData?.name ? (
+                  <Text
+                    variant='heading'
+                    size='s'
+                    numberOfLines={1}
+                    ellipsizeMode='tail'
+                  >
+                    {coinData?.name}
+                  </Text>
+                ) : null}
+                <Flex
+                  row
+                  alignItems='center'
+                  gap='xs'
+                  style={{ maxWidth: '100%' }}
+                >
                   <Text variant='title' size='l'>
                     {balance}
                   </Text>
-                  <Text variant='title' size='l' color='subdued'>
+                  <Text
+                    variant='title'
+                    size='l'
+                    color='subdued'
+                    numberOfLines={1}
+                    ellipsizeMode='tail'
+                    style={{ flexShrink: 1 }}
+                  >
                     {coinData?.ticker}
                   </Text>
                 </Flex>
@@ -122,7 +142,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
             )}
           </Flex>
         </Flex>
-        <Flex row alignItems='center' gap='m'>
+        <Flex row alignItems='center' gap='m' ml={spacing.unit22}>
           {!isLoading && showUserBalance ? (
             <Text variant='title' size='l' color='default'>
               {formattedHeldValue ?? dollarValue}
