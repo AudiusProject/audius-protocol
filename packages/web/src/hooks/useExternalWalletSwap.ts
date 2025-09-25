@@ -124,9 +124,15 @@ export const useExternalWalletSwap = () => {
     onSuccess: (result, params) => {
       if (!result.isError) {
         // Update external wallet balances optimistically
+        // NOTE: invalidate queries does not work here, need to manually update the balances
 
+        // Check for AUDIO as an edge case since it's stored in a different query hook
+        const isSpendingAudio =
+          params.inputToken.address === env.WAUDIO_MINT_ADDRESS
+        const isReceivingAudio =
+          params.outputToken.address === env.WAUDIO_MINT_ADDRESS
         // Update input token balance (subtract the amount spent)
-        if (result.inputAmount) {
+        if (result.inputAmount && !isSpendingAudio) {
           const inputTokenQueryKey = getExternalWalletBalanceQueryKey({
             walletAddress: params.walletAddress,
             mint: params.inputToken.address
@@ -145,7 +151,7 @@ export const useExternalWalletSwap = () => {
         }
 
         // Update output token balance (add the amount received)
-        if (result.outputAmount) {
+        if (result.outputAmount && !isReceivingAudio) {
           const outputTokenQueryKey = getExternalWalletBalanceQueryKey({
             walletAddress: params.walletAddress,
             mint: params.outputToken.address
@@ -169,12 +175,7 @@ export const useExternalWalletSwap = () => {
           )
         }
 
-        // AUDIO balance is stored in a different query hook
-        const isSpendingAudio =
-          params.inputToken.address === env.WAUDIO_MINT_ADDRESS
-        const isReceivingAudio =
-          params.outputToken.address === env.WAUDIO_MINT_ADDRESS
-
+        // Handle AUDIO separately since it's stored in a different query hook
         if (isSpendingAudio || isReceivingAudio) {
           // Update the wallet AUDIO balance based on the swap direction
           const queryKey = getWalletAudioBalanceQueryKey({
