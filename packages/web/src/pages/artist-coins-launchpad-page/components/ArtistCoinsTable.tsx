@@ -161,8 +161,9 @@ const renderBuyCell = (
   return (
     <Flex pr='s' justifyContent='flex-end'>
       <Button
-        variant='tertiary'
+        variant='secondary'
         size='small'
+        hoverColor='coinGradient'
         onClick={(e) => {
           e.stopPropagation()
           handleBuy(coin.ticker ?? '')

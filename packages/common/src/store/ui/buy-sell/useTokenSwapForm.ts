@@ -210,7 +210,7 @@ export const useTokenSwapForm = ({
   // Use validation from our composed hook
   const error = swapValidation.error
   useEffect(() => {
-    if (error && !formikErrors.inputAmount) {
+    if (error) {
       setFieldError('inputAmount', error)
     }
     // Clear error
