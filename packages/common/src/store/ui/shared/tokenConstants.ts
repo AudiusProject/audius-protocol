@@ -11,7 +11,7 @@ const BASE_TOKEN_METADATA = {
     symbol: 'AUDIO',
     name: 'Audius Coin',
     decimals: 8,
-    logoURI: TokenAUDIOPng
+    logoURI: TokenAUDIOPng as string
   },
   SOL: {
     chainId: 101,

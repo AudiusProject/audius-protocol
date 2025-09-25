@@ -1,5 +1,5 @@
 import {
-  useArtistCoins,
+  useArtistOwnedCoin,
   useArtistCoinMembersCount,
   useCurrentAccountUser,
   useCurrentUserId
@@ -357,11 +357,8 @@ const RemixCreatorsMessageField = () => {
 const CoinHoldersMessageField = () => {
   const { data: currentUserId } = useCurrentUserId()
   const [{ value: targetAudience }] = useField(TARGET_AUDIENCE_FIELD)
-  const { data: coins } = useArtistCoins({
-    owner_id: [currentUserId ?? 0],
-    limit: 1
-  })
-  const coinSymbol = coins?.[0]?.ticker ?? ''
+  const { data: coin } = useArtistOwnedCoin(currentUserId)
+  const coinSymbol = coin?.ticker ?? ''
   const { isEnabled: isArtistCoinEnabled } = useFeatureFlag(
     FeatureFlags.ARTIST_COINS
   )

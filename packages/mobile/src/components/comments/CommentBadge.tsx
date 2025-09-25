@@ -1,6 +1,6 @@
 import { useSupporter } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
-import { useIsCoinHolder } from '@audius/common/hooks'
+import { useIsCoinMember } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -46,7 +46,7 @@ export const CommentBadge = ({
     // Read only, relying on prefetch in commentsContext
     { enabled: false }
   )
-  const { isCoinHolder } = useIsCoinHolder(commentUserId, artistId)
+  const { isCoinHolder } = useIsCoinMember(commentUserId, artistId)
 
   const isTopSupporter = supporter?.rank === 1
 

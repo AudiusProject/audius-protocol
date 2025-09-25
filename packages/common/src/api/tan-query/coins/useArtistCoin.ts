@@ -2,7 +2,7 @@ import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { AnyAction, Dispatch } from 'redux'
 
-import { coinWithParsedOwnerIdFromSDK, Coin } from '~/adapters/coin'
+import { coinFromSdk, Coin } from '~/adapters/coin'
 
 import { getArtistCoinsBatcher } from '../batchers/getArtistCoinsBatcher'
 import { QUERY_KEYS } from '../queryKeys'
@@ -50,7 +50,7 @@ export const useArtistCoin = <TResult = Coin | undefined>(
         dispatch
       )
 
-      const parsedCoin = coinWithParsedOwnerIdFromSDK(coin)
+      const parsedCoin = coinFromSdk(coin)
 
       // Prime the ticker query key if we have coin data with ticker
       if (parsedCoin?.ticker) {

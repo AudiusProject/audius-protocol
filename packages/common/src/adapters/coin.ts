@@ -20,7 +20,7 @@ export type Coin = Omit<CoinSDK, 'ownerId'> & {
 /**
  * Converts a SDK `Coin` response to internal CoinMetadata
  */
-export const coinFromSDK = (input: CoinSDK | Coin): CoinMetadata => ({
+export const coinMetadataFromCoin = (input: CoinSDK | Coin): CoinMetadata => ({
   mint: input.mint,
   name: input.name ?? null,
   ticker: input.ticker ?? null,
@@ -31,9 +31,7 @@ export const coinFromSDK = (input: CoinSDK | Coin): CoinMetadata => ({
 /**
  * Converts a SDK `Coin` response to Coin, parsing ownerId from HashId string to number
  */
-export const coinWithParsedOwnerIdFromSDK = (
-  input: CoinSDK
-): Coin | undefined => {
+export const coinFromSdk = (input: CoinSDK): Coin | undefined => {
   const decodedOwnerId = HashId.parse(input.ownerId)
   if (!decodedOwnerId) {
     return undefined
@@ -50,13 +48,13 @@ export const coinWithParsedOwnerIdFromSDK = (
  * Converts a list of SDK `Coin` responses to CoinMetadata list
  */
 export const coinMetadataListFromSDK = (input?: CoinSDK[]): CoinMetadata[] =>
-  input ? input.map(coinFromSDK).filter(removeNullable) : []
+  input ? input.map(coinMetadataFromCoin).filter(removeNullable) : []
 
 /**
  * Converts a list of SDK `Coin` responses to Coin list (with parsed ownerId)
  */
 export const coinListFromSDK = (input?: CoinSDK[]): Coin[] =>
-  input ? input.map(coinWithParsedOwnerIdFromSDK).filter(removeNullable) : []
+  input ? input.map(coinFromSdk).filter(removeNullable) : []
 
 /**
  * Creates a map of coins keyed by ticker symbol
@@ -68,7 +66,7 @@ export const coinMapFromSDK = (
 
   if (input) {
     input.forEach((coin) => {
-      const coinMetadata = coinFromSDK(coin)
+      const coinMetadata = coinMetadataFromCoin(coin)
       if (coinMetadata.ticker) {
         coinMap[coinMetadata.ticker] = coinMetadata
       }

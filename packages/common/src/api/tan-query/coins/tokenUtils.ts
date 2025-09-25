@@ -1,4 +1,4 @@
-import { Coin, coinFromSDK, type CoinMetadata } from '~/adapters'
+import { Coin, coinMetadataFromCoin, type CoinMetadata } from '~/adapters'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 /**
@@ -15,7 +15,7 @@ const coinMetadataToTokenInfo = (coin: CoinMetadata): TokenInfo => ({
 })
 
 export const transformArtistCoinToTokenInfo = (artistCoin: Coin): TokenInfo => {
-  const coinMetadata = coinFromSDK(artistCoin)
+  const coinMetadata = coinMetadataFromCoin(artistCoin)
   return coinMetadataToTokenInfo(coinMetadata)
 }
 
@@ -25,7 +25,7 @@ export const transformArtistCoinsToTokenInfoMap = (
   const tokenMap: Record<string, TokenInfo> = {}
 
   artistCoins.forEach((coin) => {
-    const coinMetadata = coinFromSDK(coin)
+    const coinMetadata = coinMetadataFromCoin(coin)
     const ticker = coinMetadata.ticker || ''
     if (ticker) {
       tokenMap[ticker] = coinMetadataToTokenInfo(coinMetadata)

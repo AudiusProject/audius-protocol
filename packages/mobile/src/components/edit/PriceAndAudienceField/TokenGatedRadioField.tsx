@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 
-import { useArtistCoins, useCurrentUserId } from '@audius/common/api'
+import { useArtistOwnedCoin, useCurrentUserId } from '@audius/common/api'
 import { priceAndAudienceMessages } from '@audius/common/messages'
 import {
   isContentTokenGated,
@@ -30,14 +30,9 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
   const { spacing } = useTheme()
 
   const { data: userId } = useCurrentUserId()
-  const { data: coins } = useArtistCoins(
-    {
-      owner_id: userId ? [userId] : undefined
-    },
-    {
-      enabled: !!userId
-    }
-  )
+  const { data: coin } = useArtistOwnedCoin(userId, {
+    enabled: !!userId
+  })
 
   const setFields = useSetEntityAvailabilityFields()
   const [{ value: streamConditions }] =
@@ -58,9 +53,9 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
     if (selected) {
       const tokenGate =
         selectedToken ||
-        (coins?.length
+        (coin
           ? {
-              token_mint: coins[0].mint,
+              token_mint: coin.mint,
               token_amount: 1
             }
           : undefined)
@@ -74,10 +69,9 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
         })
       }
     }
-  }, [selected, selectedToken, coins, setFields])
+  }, [selected, selectedToken, coin, setFields])
 
-  const selectedCoin =
-    coins?.find((coin) => coin.mint === selectedToken?.token_mint) || coins?.[0]
+  const selectedCoin = coin
 
   return (
     <ExpandableRadio
