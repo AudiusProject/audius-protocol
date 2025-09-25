@@ -222,7 +222,9 @@ const WalletEmptyState = () => {
         fullWidth
         variant='secondary'
         size='small'
-        onClick={openAppKitModal}
+        onClick={() => {
+          openAppKitModal()
+        }}
       >
         {walletMessages.linkedWallets.addWallet}
       </Button>
@@ -282,7 +284,9 @@ export const LinkedWallets = () => {
             <Button
               variant='secondary'
               size='small'
-              onClick={openAppKitModal}
+              onClick={() => {
+                openAppKitModal()
+              }}
               isLoading={isConnectingWallets}
               disabled={isConnectingWallets || isAtOrAboveLimit}
             >

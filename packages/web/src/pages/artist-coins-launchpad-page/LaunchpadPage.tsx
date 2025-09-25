@@ -183,7 +183,7 @@ const LaunchpadPageContent = ({
   const handleSplashContinue = useCallback(async () => {
     // Switch to Solana network to prioritize SOL wallets
     await appkitModal.switchNetwork(solana)
-    openAppKitModal()
+    openAppKitModal('solana')
   }, [openAppKitModal])
 
   const handleSetupContinue = useCallback(() => {

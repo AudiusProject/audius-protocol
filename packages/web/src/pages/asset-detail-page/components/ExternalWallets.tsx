@@ -254,7 +254,9 @@ export const ExternalWallets = ({ mint }: ExternalWalletsProps) => {
         <Button
           variant='secondary'
           size='small'
-          onClick={openAppKitModal}
+          onClick={() => {
+            openAppKitModal()
+          }}
           isLoading={isConnectingWallets}
           disabled={isConnectingWallets}
           fullWidth
