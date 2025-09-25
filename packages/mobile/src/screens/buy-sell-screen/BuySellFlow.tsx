@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useTokenPair, useTokens } from '@audius/common/api'
+import { useArtistCoin, useTokenPair, useTokens } from '@audius/common/api'
 import { useBuySellAnalytics, useOwnedTokens } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
 import type { BuySellTab, TokenInfo } from '@audius/common/store'
@@ -213,6 +213,15 @@ export const BuySellFlow = ({
     selectedPair: safeSelectedPair
   })
 
+  const { data: outputCoin } = useArtistCoin(
+    swapTokens.outputTokenInfo?.address
+  )
+  const pricePerBaseToken = useMemo(() => {
+    return outputCoin?.price !== 0
+      ? (outputCoin?.price ?? 0)
+      : (outputCoin?.dynamicBondingCurve.priceUSD ?? 0)
+  }, [outputCoin])
+
   // Use shared tabs array logic
   const tabs = useBuySellTabsArray()
 
@@ -235,7 +244,8 @@ export const BuySellFlow = ({
         navigation.navigate('ConfirmSwapScreen', {
           confirmationData: confirmationScreenData,
           activeTab,
-          selectedPair: safeSelectedPair
+          selectedPair: safeSelectedPair,
+          pricePerBaseToken
         })
       }
     }
