@@ -1,13 +1,14 @@
 import {
-  QUERY_KEYS,
   getWalletAudioBalanceQueryKey,
   useQueryContext
 } from '@audius/common/api'
 import { Chain, ErrorLevel, Feature } from '@audius/common/models'
+import { getExternalWalletBalanceQueryKey } from '@audius/common/src/api/tan-query/wallets/useExternalWalletBalance'
 import {
   getJupiterQuoteByMintWithRetry,
   jupiterInstance
 } from '@audius/common/src/services/Jupiter'
+import { AUDIO, FixedDecimal, type AudioWei } from '@audius/fixed-decimal'
 import { SwapRequest } from '@jup-ag/api'
 import type { Provider as SolanaProvider } from '@reown/appkit-adapter-solana/react'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -24,7 +25,7 @@ type ExternalWalletSwapParams = {
   isAMM: boolean
 }
 export const useExternalWalletSwap = () => {
-  const { audiusSdk } = useQueryContext()
+  const { audiusSdk, env } = useQueryContext()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (params: ExternalWalletSwapParams) => {
@@ -92,6 +93,7 @@ export const useExternalWalletSwap = () => {
         return {
           signature: txSignature,
           inputAmount: inputAmountUi,
+          outputAmount: quote.outputAmount.uiAmount,
           progress: hookProgress,
           isError: false
         }
@@ -115,19 +117,95 @@ export const useExternalWalletSwap = () => {
           }
         })
 
+        // We return the values here instead of throwing because we want to know if the error was due to a user cancellation or not
         return { progress: hookProgress, isError: true }
       }
     },
     onSuccess: (result, params) => {
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.externalWalletBalance]
-      })
-      queryClient.invalidateQueries({
-        queryKey: getWalletAudioBalanceQueryKey({
-          address: params.walletAddress,
-          chain: Chain.Sol
-        })
-      })
+      if (!result.isError) {
+        // Update external wallet balances optimistically
+
+        // Update input token balance (subtract the amount spent)
+        if (result.inputAmount) {
+          const inputTokenQueryKey = getExternalWalletBalanceQueryKey({
+            walletAddress: params.walletAddress,
+            mint: params.inputToken.address
+          })
+
+          queryClient.setQueryData(
+            inputTokenQueryKey,
+            (oldBalance: FixedDecimal | undefined) => {
+              if (!oldBalance) return oldBalance
+              const currentAmount = Number(oldBalance.toString())
+              const inputAmount = result.inputAmount!
+              const newAmount = Math.max(0, currentAmount - inputAmount) // Ensure non-negative
+              return new FixedDecimal(newAmount, oldBalance.decimalPlaces)
+            }
+          )
+        }
+
+        // Update output token balance (add the amount received)
+        if (result.outputAmount) {
+          const outputTokenQueryKey = getExternalWalletBalanceQueryKey({
+            walletAddress: params.walletAddress,
+            mint: params.outputToken.address
+          })
+
+          queryClient.setQueryData(
+            outputTokenQueryKey,
+            (oldBalance: FixedDecimal | undefined) => {
+              if (!oldBalance) {
+                // If no previous balance, create a new FixedDecimal with the output amount
+                return new FixedDecimal(
+                  result.outputAmount!,
+                  params.outputToken.decimals
+                )
+              }
+              const currentAmount = Number(oldBalance.toString())
+              const outputAmount = result.outputAmount!
+              const newAmount = currentAmount + outputAmount
+              return new FixedDecimal(newAmount, oldBalance.decimalPlaces)
+            }
+          )
+        }
+
+        // AUDIO balance is stored in a different query hook
+        const isSpendingAudio =
+          params.inputToken.address === env.WAUDIO_MINT_ADDRESS
+        const isReceivingAudio =
+          params.outputToken.address === env.WAUDIO_MINT_ADDRESS
+
+        if (isSpendingAudio || isReceivingAudio) {
+          // Update the wallet AUDIO balance based on the swap direction
+          const queryKey = getWalletAudioBalanceQueryKey({
+            address: params.walletAddress,
+            chain: Chain.Sol
+          })
+
+          queryClient.setQueryData(
+            queryKey,
+            (oldBalance: AudioWei | undefined) => {
+              const currentBalance = oldBalance ?? AUDIO(0).value
+              let newBalance = currentBalance
+
+              // If spending AUDIO (input token), subtract the input amount
+              if (isSpendingAudio && result.inputAmount) {
+                const inputAmountAudio = AUDIO(result.inputAmount).value
+                newBalance = AUDIO(newBalance - inputAmountAudio).value
+              }
+
+              // If receiving AUDIO (output token), add the output amount
+              if (isReceivingAudio && result.outputAmount) {
+                const outputAmountAudio = AUDIO(result.outputAmount).value
+                newBalance = AUDIO(newBalance + outputAmountAudio).value
+              }
+
+              // Ensure balance doesn't go negative
+              return newBalance >= 0 ? newBalance : AUDIO(0).value
+            }
+          )
+        }
+      }
     }
   })
 }
