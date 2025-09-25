@@ -13,6 +13,7 @@ import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
 
 import { useArtistCoin } from './useArtistCoin'
+import { formatNumberCommas } from '~/utils'
 
 const DEFAULT_PAGE_SIZE = 20
 
@@ -96,11 +97,13 @@ export const useArtistCoinMembers = <TResult = CoinMember[]>(
         return {
           userId: HashId.parse(member.userId),
           balance: member.balance,
-          // TODO: ideally this is a selector using logic from useTokenAmountFormatting
-          balanceLocaleString: balanceFD.toLocaleString('en-US', {
-            maximumFractionDigits: 0,
-            roundingMode: 'trunc'
-          })
+          // Need formatNumberCommas for mobile :(
+          balanceLocaleString: formatNumberCommas(
+            balanceFD.toLocaleString('en-US', {
+              maximumFractionDigits: 0,
+              roundingMode: 'trunc'
+            })
+          )
         }
       })
 
