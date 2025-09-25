@@ -105,7 +105,7 @@ const LaunchpadPageContent = ({
       })
 
       const walletBalanceLamports = balanceData.balanceLamports
-      return walletBalanceLamports > MIN_SOL_BALANCE
+      return walletBalanceLamports >= MIN_SOL_BALANCE
     },
     [queryClient, queryContext]
   )

@@ -1,7 +1,8 @@
-import { Coin } from '@audius/sdk'
 import { QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { AnyAction, Dispatch } from 'redux'
+
+import { coinFromSdk, Coin } from '~/adapters/coin'
 
 import { getArtistCoinsBatcher } from '../batchers/getArtistCoinsBatcher'
 import { QUERY_KEYS } from '../queryKeys'
@@ -49,15 +50,17 @@ export const useArtistCoin = <TResult = Coin | undefined>(
         dispatch
       )
 
+      const parsedCoin = coinFromSdk(coin)
+
       // Prime the ticker query key if we have coin data with ticker
-      if (coin?.ticker) {
+      if (parsedCoin?.ticker) {
         queryClient.setQueryData(
-          getArtistCoinByTickerQueryKey(coin.ticker),
-          coin.mint
+          getArtistCoinByTickerQueryKey(parsedCoin.ticker),
+          parsedCoin.mint
         )
       }
 
-      return coin
+      return parsedCoin
     },
     ...options,
     ...entityCacheOptions,

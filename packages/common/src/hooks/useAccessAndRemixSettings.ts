@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 
-import { useArtistCoins, useCurrentUserId } from '~/api/'
+import { useArtistOwnedCoin, useCurrentUserId } from '~/api/'
 import { getSupportedUserCollections } from '~/store/collectibles/selectors'
 import { CommonState } from '~/store/reducers'
 
@@ -25,11 +25,9 @@ export const useHasNoCollectibles = () => {
 
 export const useHasNoTokens = () => {
   const { data: userId } = useCurrentUserId()
-  const { data: coins, isLoading } = useArtistCoins({
-    owner_id: userId ? [userId] : undefined
-  })
+  const { data: coin, isLoading } = useArtistOwnedCoin(userId)
 
-  return !isLoading && coins?.length === 0
+  return !isLoading && !coin
 }
 
 /**

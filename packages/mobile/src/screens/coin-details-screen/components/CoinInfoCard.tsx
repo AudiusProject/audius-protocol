@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
 import { shortenSPLAddress } from '@audius/common/utils'
-import type { Coin } from '@audius/sdk'
-import { decodeHashId } from '@audius/sdk'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Image, Linking } from 'react-native'
 
@@ -31,13 +30,10 @@ const overflowMessages = coinDetailsMessages.overflowMenu
 
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
-
-  const userId = coin?.ownerId
-    ? (decodeHashId(coin.ownerId) ?? undefined)
-    : undefined
+  const { ownerId } = coin ?? {}
 
   const { source } = useCoverPhoto({
-    userId,
+    userId: ownerId,
     size: WidthSizes.SIZE_640
   })
 

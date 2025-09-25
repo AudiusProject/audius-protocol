@@ -1,7 +1,7 @@
+import type { Coin } from '@audius/common/adapters'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { createCoinMetrics, type MetricData } from '@audius/common/utils'
-import type { Coin } from '@audius/sdk'
 
 import {
   Flex,

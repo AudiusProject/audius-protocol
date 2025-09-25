@@ -21,6 +21,10 @@ import {
   jupiterInstance,
   getJupiterQuoteByMintWithRetry
 } from '~/services/Jupiter'
+import {
+  INTERNAL_TRANSFER_MEMO_STRING,
+  MEMO_PROGRAM_ID
+} from '~/services/audius-backend/solana'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -32,6 +36,8 @@ import {
   SwapTokensResult,
   UserBankManagedTokenInfo
 } from './types'
+
+const USDC_MINT_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
 export async function addTransferFromUserBankInstructions({
   tokenInfo,
@@ -82,6 +88,15 @@ export async function addTransferFromUserBankInstructions({
     })
 
   instructions.push(secpTransferInstruction, transferInstruction)
+  if (tokenInfo.mintAddress === USDC_MINT_ADDRESS) {
+    instructions.push(
+      new TransactionInstruction({
+        keys: [{ pubkey: ata, isSigner: false, isWritable: true }],
+        programId: MEMO_PROGRAM_ID,
+        data: Buffer.from(INTERNAL_TRANSFER_MEMO_STRING)
+      })
+    )
+  }
   return ata
 }
 
