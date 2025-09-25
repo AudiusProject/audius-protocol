@@ -1,4 +1,8 @@
-import { HashId, type Coin as CoinSDK } from '@audius/sdk'
+import {
+  HashId,
+  type Coin as CoinSDK,
+  type UserCoin as UserCoinSdk
+} from '@audius/sdk'
 
 import { ID } from '~/models'
 import { removeNullable } from '~/utils/typeUtils'
@@ -14,6 +18,11 @@ export type CoinMetadata = {
 
 // Define a full coin model with ownerId converted to number
 export type Coin = Omit<CoinSDK, 'ownerId'> & {
+  ownerId: ID
+}
+
+// Define a UserCoin model with ownerId converted to number
+export type UserCoin = Omit<UserCoinSdk, 'ownerId'> & {
   ownerId: ID
 }
 
@@ -51,10 +60,32 @@ export const coinMetadataListFromSDK = (input?: CoinSDK[]): CoinMetadata[] =>
   input ? input.map(coinMetadataFromCoin).filter(removeNullable) : []
 
 /**
+ * Converts a SDK `UserCoin` response to UserCoin, parsing ownerId from HashId string to number
+ */
+export const userCoinFromSdk = (input: UserCoinSdk): UserCoin | undefined => {
+  const decodedOwnerId = HashId.parse(input.ownerId)
+  if (!decodedOwnerId) {
+    return undefined
+  }
+
+  const { ownerId: _ignored, ...rest } = input
+  return {
+    ...rest,
+    ownerId: decodedOwnerId
+  }
+}
+
+/**
  * Converts a list of SDK `Coin` responses to Coin list (with parsed ownerId)
  */
 export const coinListFromSDK = (input?: CoinSDK[]): Coin[] =>
   input ? input.map(coinFromSdk).filter(removeNullable) : []
+
+/**
+ * Converts a list of SDK `UserCoin` responses to UserCoin list (with parsed ownerId)
+ */
+export const userCoinListFromSDK = (input?: UserCoinSdk[]): UserCoin[] =>
+  input ? input.map(userCoinFromSdk).filter(removeNullable) : []
 
 /**
  * Creates a map of coins keyed by ticker symbol
