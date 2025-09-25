@@ -139,6 +139,7 @@ const DesktopArtistCoinsExplorePage = () => {
                   alignItems='center'
                   border='default'
                   borderRadius='m'
+                  css={{ overflow: 'hidden' }}
                 >
                   <Text variant='body' size='s'>
                     {messages.required}
