@@ -44,7 +44,7 @@ const messages = {
   launchYourOwn: 'Launch Your Own Artist Coin!',
   required: 'Required',
   checklistItems: [
-    'Launch Your Coin',
+    'Launch your Coin',
     'Start collecting trading fees',
     'Offer exclusive perks to your fans'
   ],
