@@ -8,7 +8,7 @@ import { TokenInfo } from '~/store/ui/buy-sell/types'
  */
 const coinMetadataToTokenInfo = (coin: CoinMetadata): TokenInfo => ({
   symbol: coin.ticker ?? '',
-  name: coin.ticker ?? '',
+  name: (coin.name || coin.ticker?.replace(/^\$/, '')) ?? '',
   decimals: coin.decimals ?? 8,
   balance: null, // This would come from user's wallet state
   address: coin.mint,

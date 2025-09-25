@@ -5,6 +5,7 @@ import { removeNullable } from '~/utils/typeUtils'
 // Define a cleaner coin model without UI dependencies
 export type CoinMetadata = {
   mint: string
+  name: string | null
   ticker: string | null
   logoUri: string | null
   decimals: number | null
@@ -15,6 +16,7 @@ export type CoinMetadata = {
  */
 export const coinFromSDK = (input: Coin): CoinMetadata => ({
   mint: input.mint,
+  name: input.name ?? null,
   ticker: input.ticker ?? null,
   logoUri: input.logoUri ?? null,
   decimals: input.decimals ?? null
