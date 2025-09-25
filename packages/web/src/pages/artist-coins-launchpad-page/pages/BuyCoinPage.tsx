@@ -47,7 +47,7 @@ const messages = {
   youReceive: 'You Receive',
   valueInUSDC: 'Value',
   hintMessage:
-    "Buying shares now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches it's graduation market cap (500K AUDIO).",
+    "Buying now makes sure you can get in at the lowest price before others beat you to it. You'll still receive your vested coins over time after your coin reaches its graduation market cap (1M $AUDIO).",
   back: 'Back',
   errors: {
     quoteError: 'Failed to get a quote. Please try again.',
@@ -200,12 +200,19 @@ export const BuyCoinPage = ({
     async (payAmount: string) => {
       const payAmountNumber = parseFloat(payAmount)
       // NOTE: unfortunately with the way this form is set up its easier to manually validate max values here (not using formik errors field)
-      if (payAmount && payAmountNumber <= maxAudioInputAmount) {
+      if (
+        payAmount &&
+        payAmountNumber <= maxAudioInputAmount &&
+        payAmountNumber > 0
+      ) {
         setIsReceiveAmountChanging(true)
         getFirstBuyQuote({ audioUiInputAmount: payAmount })
+      } else {
+        setFieldValue(FIELDS.usdcValue, '')
+        setFieldValue(FIELDS.receiveAmount, '')
       }
     },
-    [getFirstBuyQuote, maxAudioInputAmount],
+    [getFirstBuyQuote, maxAudioInputAmount, setFieldValue],
     INPUT_DEBOUNCE_TIME
   )
 
@@ -213,12 +220,19 @@ export const BuyCoinPage = ({
     async (receiveAmount: string) => {
       const receiveAmountNumber = parseFloat(receiveAmount)
       // NOTE: unfortunately with the way this form is set up its easier to manually validate max values here (not using formik errors field)
-      if (receiveAmount && receiveAmountNumber <= maxTokenOutputAmount) {
+      if (
+        receiveAmount &&
+        receiveAmountNumber <= maxTokenOutputAmount &&
+        receiveAmountNumber > 0
+      ) {
         setIsPayAmountChanging(true)
         getFirstBuyQuote({ tokenUiOutputAmount: receiveAmount })
+      } else {
+        setFieldValue(FIELDS.payAmount, '')
+        setFieldValue(FIELDS.usdcValue, '')
       }
     },
-    [getFirstBuyQuote, maxTokenOutputAmount],
+    [getFirstBuyQuote, maxTokenOutputAmount, setFieldValue],
     INPUT_DEBOUNCE_TIME
   )
 
@@ -397,7 +411,7 @@ export const BuyCoinPage = ({
                   <LoadingSpinner size='s' css={{ display: 'inline-block' }} />
                 ) : (
                   <Text variant='body' size='m' color='default'>
-                    ${firstBuyQuoteData?.usdcAmountUiString ?? '0.00'}
+                    ${values[FIELDS.usdcValue] || '0.00'}
                   </Text>
                 )}
               </Flex>

@@ -258,7 +258,7 @@ export const TrackScreenDetailsTile = ({
 
   const isTokenGated = isContentTokenGated(streamConditions)
   const { data: token } = useArtistCoin(
-    (streamConditions as TokenGatedConditions).token_gate?.token_mint,
+    (streamConditions as TokenGatedConditions)?.token_gate?.token_mint,
     { enabled: isTokenGated }
   )
 

@@ -102,7 +102,7 @@ const CoinNotInAudiusState = ({ mintAddress }: { mintAddress: string }) => (
           <Text variant='label' size='l' color='subdued'>
             {messages.addressTitle}
           </Text>
-          <AddressTile address={mintAddress} />
+          <AddressTile address={mintAddress} shorten />
         </Flex>
       </Flex>
     </ModalContent>
@@ -138,7 +138,7 @@ const UnknownErrorState = ({
               <Text variant='label' size='l' color='subdued'>
                 {messages.addressTitle}
               </Text>
-              <AddressTile address={mintAddress} />
+              <AddressTile address={mintAddress} shorten />
             </Flex>
           ) : null}
         </Flex>

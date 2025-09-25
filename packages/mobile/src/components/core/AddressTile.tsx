@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 
+import { shortenSPLAddress } from '@audius/common/utils'
 import { Text, IconCopy, Flex, IconButton } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
@@ -30,8 +31,8 @@ export const AddressTile = ({ address, analytics }: AddressTileProps) => {
   return (
     <Flex row border='default' borderRadius='s' backgroundColor='surface1'>
       <Flex pv='l' ph='xl' flex={1}>
-        <Text variant='body' numberOfLines={1} ellipsizeMode='middle'>
-          {address}
+        <Text variant='body'>
+          {address ? shortenSPLAddress(address, 8) : ''}
         </Text>
       </Flex>
       <Flex

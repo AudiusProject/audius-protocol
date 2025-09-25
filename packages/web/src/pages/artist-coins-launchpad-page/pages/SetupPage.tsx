@@ -32,7 +32,7 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isProcessingImage, setIsProcessingImage] = useState(false)
   const [imageError, setImageError] = useState<string | null>(null)
-  const { handleSubmit, setFieldValue, values, errors, touched, isValid } =
+  const { handleSubmit, setFieldValue, values, errors, touched } =
     useFormikContext<SetupFormValues>()
 
   const imageUrl = useFormImageUrl(values.coinImage)
@@ -151,7 +151,7 @@ export const SetupPage = ({ onContinue, onBack }: PhasePageProps) => {
       <ArtistCoinsSubmitRow
         onContinue={handleContinue}
         onBack={handleBack}
-        isValid={isValid}
+        isValid={!errors.coinName && !errors.coinSymbol && !errors.coinImage}
       />
     </>
   )
