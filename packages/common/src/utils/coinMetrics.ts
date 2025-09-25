@@ -68,8 +68,7 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
     createMetric(
       formatCount(coin.holder),
       messages.uniqueHolders,
-      ((coin.holder - coin.uniqueWalletHistory24h) /
-        coin.uniqueWalletHistory24h) *
+      (coin.uniqueWallet24h / Math.max(coin.holder - coin.uniqueWallet24h, 1)) *
         100
     ),
     createMetric(
