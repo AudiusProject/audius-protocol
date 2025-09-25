@@ -31,6 +31,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { env } from 'app/services/env'
 
 import { GradientText, TokenIcon, Screen } from '../../components/core'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
 
 type CoinRowProps = {
   coin: Coin
@@ -214,6 +215,7 @@ export const ArtistCoinsExploreScreen = () => {
           )}
         </ScrollView>
       </Paper>
+      <PlayBarChin />
     </Screen>
   )
 }

@@ -10,6 +10,11 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { SelectionItemList } from '../list-selection-screen/SelectionItemList'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
+import { playerSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
+
+const { getHasTrack } = playerSelectors
 
 const sortOptions = [
   {
@@ -54,6 +59,7 @@ const directionOptions: Array<{
 export const ArtistCoinSortScreen = () => {
   const navigation = useNavigation()
   const { params } = useRoute<'ArtistCoinSort'>()
+  const hasTrack = useSelector(getHasTrack)
 
   const { initialSortMethod, initialSortDirection } = params
 
@@ -112,7 +118,7 @@ export const ArtistCoinSortScreen = () => {
             onChange={handleSortOptionChange}
           />
         </Flex>
-        <Flex ph='l'>
+        <Flex ph='l' pb={hasTrack ? '3xl' : '0'}>
           <Button variant='primary' fullWidth onPress={handleBackPress}>
             {walletMessages.done}
           </Button>
