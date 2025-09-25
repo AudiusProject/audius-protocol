@@ -60,6 +60,7 @@ const shouldShowRightBorder = (
 const getCoinItemStyles = (
   shouldSpanFullWidth: boolean,
   shouldHaveRightBorder: boolean,
+  shouldHaveTopBorder: boolean,
   borderColor: string
 ): CSSObject => {
   const baseStyles: CSSObject = {
@@ -69,6 +70,9 @@ const getCoinItemStyles = (
 
   if (shouldSpanFullWidth) {
     baseStyles.gridColumn = '1 / -1'
+    if (shouldHaveTopBorder) {
+      baseStyles.borderTop = `1px solid ${borderColor}`
+    }
   } else if (shouldHaveRightBorder) {
     baseStyles.borderRight = `1px solid ${borderColor}`
     baseStyles.paddingRight = '0'
@@ -266,6 +270,7 @@ export const YourCoins = () => {
               const itemStyles = getCoinItemStyles(
                 shouldSpanFullWidth,
                 shouldHaveRightBorder,
+                shouldSpanFullWidth, // Add top border when spanning full width (odd count last item)
                 color.border.default
               )
 
