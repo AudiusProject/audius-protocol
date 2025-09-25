@@ -17,6 +17,8 @@ import {
   LoadingSpinner,
   Paper,
   Pill,
+  Radio,
+  RadioGroup,
   Text,
   TextLink,
   TokenAmountInput
@@ -40,7 +42,7 @@ const messages = {
   title: 'Claim Your Share First',
   optional: 'optional',
   description:
-    'Before your coin goes live, you have the option to buy some at the lowest price.',
+    'Before your coin goes live, do you want to buy some at the lowest price?',
   youPay: 'You Pay',
   youReceive: 'You Receive',
   valueInUSDC: 'Value',
@@ -57,7 +59,11 @@ const messages = {
   max: 'MAX',
   audioBalance: (balance: string) => `${balance} $AUDIO`,
   buyAudio: 'Buy $AUDIO',
-  audioInputLabel: 'AUDIO'
+  audioInputLabel: 'AUDIO',
+  radios: {
+    no: 'No, thanks.',
+    yes: 'Yes, I want to buy my coin.'
+  }
 }
 
 // Not to be confused with AUDIO_DECIMALS - this is the amount of decimal places the input will alow you to enter
@@ -75,8 +81,15 @@ export const BuyCoinPage = ({
   submitButtonText?: string
 }) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
-  const { values, setFieldValue, errors, validateForm } =
-    useFormikContext<SetupFormValues>()
+  const {
+    values,
+    setFieldValue,
+    errors,
+    touched,
+    validateForm,
+    setFieldError,
+    setFieldTouched
+  } = useFormikContext<SetupFormValues>()
   const { data: launchpadConfig } = useLaunchpadConfig()
   const { maxTokenOutputAmount, maxAudioInputAmount } = launchpadConfig ?? {
     maxTokenOutputAmount: Infinity,
@@ -162,6 +175,22 @@ export const BuyCoinPage = ({
     onContinue?.()
   }
 
+  const handleRadioChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newValue = event.target.value
+    console.log('newValue', newValue)
+    setFieldValue(FIELDS.wantsToBuy, newValue)
+
+    // If user selects "no", reset the first buy form fields and their errors
+    if (newValue === 'no') {
+      setFieldValue(FIELDS.payAmount, '')
+      setFieldValue(FIELDS.receiveAmount, '')
+      setFieldValue(FIELDS.usdcValue, '')
+    }
+    await validateForm()
+  }
+
   const handleMaxClick = () => {
     setFieldValue(FIELDS.payAmount, audioBalanceString)
     debouncedPayAmountChange(audioBalanceString)
@@ -209,6 +238,10 @@ export const BuyCoinPage = ({
     [setFieldValue, debouncedReceiveAmountChange]
   )
 
+  console.log('errors', errors)
+  console.log('values', values)
+  console.log('touched', touched)
+
   const submitFooterErrorText =
     submitErrorText ||
     (firstBuyQuoteError ? messages.errors.quoteError : undefined)
@@ -243,98 +276,134 @@ export const BuyCoinPage = ({
             </Text>
           </Flex>
 
-          <Flex direction='column' gap='xl'>
-            {/* You Pay Section */}
-            <Flex direction='column' gap='s'>
-              <Flex alignItems='center' justifyContent='space-between' w='100%'>
-                <Text variant='heading' size='s' color='default'>
-                  {messages.youPay}
-                </Text>
-                <Flex gap='s'>
-                  <TextLink
-                    variant='visible'
-                    onClick={() => setIsBuyModalOpen(true)}
-                  >
-                    {messages.buyAudio}
-                  </TextLink>
-                  <Flex gap='xs'>
-                    <IconWallet color='subdued' />
-                    <Text variant='body' size='m' color='subdued'>
-                      {messages.audioBalance(audioBalanceString)}
-                    </Text>
+          {/* Radio Buttons */}
+          <RadioGroup
+            name='wantsToBuy'
+            value={values[FIELDS.wantsToBuy] ?? ''}
+            onChange={handleRadioChange}
+            gap='xl'
+          >
+            <Flex as='label' alignItems='center' gap='s'>
+              <Radio
+                value='no'
+                error={
+                  !!errors[FIELDS.wantsToBuy] && touched[FIELDS.wantsToBuy]
+                }
+              />
+              <Text variant='title' size='l' strength='weak'>
+                {messages.radios.no}
+              </Text>
+            </Flex>
+            <Flex as='label' alignItems='center' gap='s'>
+              <Radio
+                value='yes'
+                error={
+                  !!errors[FIELDS.wantsToBuy] && touched[FIELDS.wantsToBuy]
+                }
+              />
+              <Text variant='title' size='l' strength='weak'>
+                {messages.radios.yes}
+              </Text>
+            </Flex>
+          </RadioGroup>
+
+          {values[FIELDS.wantsToBuy] === 'yes' ? (
+            <>
+              {/* You Pay Section */}
+              <Flex direction='column' gap='s'>
+                <Flex
+                  alignItems='center'
+                  justifyContent='space-between'
+                  w='100%'
+                >
+                  <Text variant='heading' size='s' color='default'>
+                    {messages.youPay}
+                  </Text>
+                  <Flex gap='s'>
+                    <TextLink
+                      variant='visible'
+                      onClick={() => setIsBuyModalOpen(true)}
+                    >
+                      {messages.buyAudio}
+                    </TextLink>
+                    <Flex gap='xs'>
+                      <IconWallet color='subdued' />
+                      <Text variant='body' size='m' color='subdued'>
+                        {messages.audioBalance(audioBalanceString)}
+                      </Text>
+                    </Flex>
                   </Flex>
                 </Flex>
+                <Flex gap='s' w='100%'>
+                  <TokenAmountInput
+                    label={messages.youPay}
+                    tokenLabel={messages.audioInputLabel}
+                    decimals={FORM_INPUT_DECIMALS}
+                    value={values[FIELDS.payAmount] ?? ''}
+                    onChange={handlePayAmountChange}
+                    placeholder='0.00'
+                    hideLabel
+                    disabled={isPayAmountChanging}
+                    endIcon={<IconAUDIO />}
+                    error={!!errors[FIELDS.payAmount]}
+                    helperText={errors[FIELDS.payAmount]}
+                  />
+                  <Button
+                    variant='secondary'
+                    size='large'
+                    onClick={handleMaxClick}
+                  >
+                    {messages.max}
+                  </Button>
+                </Flex>
               </Flex>
-              <Flex gap='s' w='100%'>
-                <TokenAmountInput
-                  label={messages.youPay}
-                  tokenLabel={messages.audioInputLabel}
-                  decimals={FORM_INPUT_DECIMALS}
-                  value={values[FIELDS.payAmount] ?? ''}
-                  onChange={handlePayAmountChange}
-                  placeholder='0.00'
-                  hideLabel
-                  disabled={isPayAmountChanging}
-                  endIcon={<IconAUDIO />}
-                  error={!!errors[FIELDS.payAmount]}
-                  helperText={errors[FIELDS.payAmount]}
-                />
-                <Button
-                  variant='secondary'
-                  size='large'
-                  onClick={handleMaxClick}
-                >
-                  {messages.max}
-                </Button>
-              </Flex>
-            </Flex>
 
-            {/* You Receive Section */}
-            <Flex direction='column' gap='s'>
-              <Text variant='heading' size='s' color='default'>
-                {messages.youReceive}
-              </Text>
-              <TokenAmountInput
-                label={messages.youReceive}
-                tokenLabel={`$${values[FIELDS.coinSymbol]}`}
-                decimals={6}
-                value={values[FIELDS.receiveAmount] ?? ''}
-                onChange={handleReceiveAmountChange}
-                placeholder='0'
-                hideLabel
-                disabled={isReceiveAmountChanging}
-                endIcon={
-                  imageUrl ? (
-                    <Artwork
-                      src={imageUrl}
-                      hex={true}
-                      w='xl'
-                      h='xl'
-                      borderWidth={0}
-                    />
-                  ) : null
-                }
-                error={!!errors[FIELDS.receiveAmount]}
-                helperText={errors[FIELDS.receiveAmount]}
-              />
-            </Flex>
-
-            {/* USDC Value */}
-            <Flex w='100%' alignItems='center' gap='xs'>
-              <Text variant='body' size='m' color='subdued'>
-                {messages.valueInUSDC}
-              </Text>
-              {isFirstBuyQuotePending ? (
-                <LoadingSpinner size='s' css={{ display: 'inline-block' }} />
-              ) : (
-                <Text variant='body' size='m' color='default'>
-                  ${firstBuyQuoteData?.usdcAmountUiString ?? '0.00'}
+              {/* You Receive Section */}
+              <Flex direction='column' gap='s'>
+                <Text variant='heading' size='s' color='default'>
+                  {messages.youReceive}
                 </Text>
-              )}
-            </Flex>
-          </Flex>
+                <TokenAmountInput
+                  label={messages.youReceive}
+                  tokenLabel={`$${values[FIELDS.coinSymbol]}`}
+                  decimals={6}
+                  value={values[FIELDS.receiveAmount] ?? ''}
+                  onChange={handleReceiveAmountChange}
+                  placeholder='0'
+                  hideLabel
+                  disabled={isReceiveAmountChanging}
+                  endIcon={
+                    imageUrl ? (
+                      <Artwork
+                        src={imageUrl}
+                        hex={true}
+                        w='xl'
+                        h='xl'
+                        borderWidth={0}
+                      />
+                    ) : null
+                  }
+                  error={!!errors[FIELDS.receiveAmount]}
+                  helperText={errors[FIELDS.receiveAmount]}
+                />
+              </Flex>
 
-          <Hint>{messages.hintMessage}</Hint>
+              {/* USDC Value */}
+              <Flex w='100%' alignItems='center' gap='xs'>
+                <Text variant='body' size='m' color='subdued'>
+                  {messages.valueInUSDC}
+                </Text>
+                {isFirstBuyQuotePending ? (
+                  <LoadingSpinner size='s' css={{ display: 'inline-block' }} />
+                ) : (
+                  <Text variant='body' size='m' color='default'>
+                    ${firstBuyQuoteData?.usdcAmountUiString ?? '0.00'}
+                  </Text>
+                )}
+              </Flex>
+              <Hint>{messages.hintMessage}</Hint>
+            </>
+          ) : null}
         </Paper>
       </Flex>
       <ArtistCoinsSubmitRow

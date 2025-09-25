@@ -486,7 +486,7 @@ export const LaunchpadPage = () => {
   )
 
   // Redirect if user is not verified or already has an artist coin
-  if (!isVerified || hasExistingArtistCoin) {
+  if (!isVerified) {
     return <Navigate to={route.COINS_EXPLORE_PAGE} replace />
   }
 
@@ -498,7 +498,8 @@ export const LaunchpadPage = () => {
         coinImage: null as File | null,
         payAmount: '',
         receiveAmount: '',
-        usdcValue: ''
+        usdcValue: '',
+        wantsToBuy: undefined
       }}
       validationSchema={validationSchema}
       validateOnMount={true}

@@ -25,7 +25,8 @@ export const FIELDS = {
   coinImage: 'coinImage',
   payAmount: 'payAmount',
   receiveAmount: 'receiveAmount',
-  usdcValue: 'usdcValue'
+  usdcValue: 'usdcValue',
+  wantsToBuy: 'wantsToBuy'
 }
 
 const MAX_COIN_SYMBOL_LENGTH = 10
@@ -89,77 +90,95 @@ export const setupFormSchema = ({
   queryContext: QueryContextType
   queryClient: QueryClient
 }) =>
-  z.object({
-    [FIELDS.coinName]: coinNameSchema.shape.coinName,
-    [FIELDS.coinSymbol]: coinSymbolSchema.shape.coinSymbol.superRefine(
-      async (ticker, context) => {
-        // Only validate if ticker has at least 2 characters and passes basic format validation
-        if (ticker && ticker.length >= 2) {
-          try {
-            const result = await queryClient.fetchQuery({
-              queryKey: [QUERY_KEYS.coinByTicker, ticker],
-              queryFn: async () =>
-                await fetchCoinTickerAvailability(ticker, queryContext)
-            })
-            const isAvailable = result.available
+  z
+    .object({
+      [FIELDS.coinName]: coinNameSchema.shape.coinName,
+      [FIELDS.coinSymbol]: coinSymbolSchema.shape.coinSymbol.superRefine(
+        async (ticker, context) => {
+          // Only validate if ticker has at least 2 characters and passes basic format validation
+          if (ticker && ticker.length >= 2) {
+            try {
+              const result = await queryClient.fetchQuery({
+                queryKey: [QUERY_KEYS.coinByTicker, ticker],
+                queryFn: async () =>
+                  await fetchCoinTickerAvailability(ticker, queryContext)
+              })
+              const isAvailable = result.available
 
-            if (!isAvailable) {
+              if (!isAvailable) {
+                context.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: coinSymbolErrorMessages.tickerTakenError,
+                  fatal: true
+                })
+                return z.NEVER
+              }
+            } catch (error: any) {
+              // Log the error for debugging
+              console.error('Ticker validation error:', error)
+              // For other errors, show unknown error
               context.addIssue({
                 code: z.ZodIssueCode.custom,
-                message: coinSymbolErrorMessages.tickerTakenError,
-                fatal: true
+                message: coinSymbolErrorMessages.unknownError
               })
               return z.NEVER
             }
-          } catch (error: any) {
-            // Log the error for debugging
-            console.error('Ticker validation error:', error)
-            // For other errors, show unknown error
+          }
+          return z.NEVER
+        }
+      ),
+      [FIELDS.coinImage]: coinImageSchema.shape.coinImage,
+      [FIELDS.wantsToBuy]: z.enum(['yes', 'no'], {
+        required_error: 'Please select an option'
+      }),
+      [FIELDS.payAmount]: z.string().optional(),
+      [FIELDS.receiveAmount]: z.string().optional()
+    })
+    .superRefine((values, context) => {
+      // Only validate buy fields if user wants to buy
+      if (values.wantsToBuy === 'yes') {
+        // Validate payAmount
+        if (
+          values.payAmount &&
+          values.payAmount !== '' &&
+          typeof values.payAmount === 'string'
+        ) {
+          const payAmountNumber = parseFloat(values.payAmount.replace(/,/g, ''))
+          if (payAmountNumber > walletMax) {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: coinSymbolErrorMessages.unknownError
+              message: firstBuyMessages.insufficientBalance,
+              path: [FIELDS.payAmount]
             })
-            return z.NEVER
+          }
+          if (payAmountNumber > payAmountMax) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: firstBuyMessages.maxAudioError(payAmountMax),
+              path: [FIELDS.payAmount]
+            })
           }
         }
-        return z.NEVER
+
+        // Validate receiveAmount
+        if (
+          values.receiveAmount &&
+          values.receiveAmount !== '' &&
+          typeof values.receiveAmount === 'string'
+        ) {
+          const receiveAmountNumber = parseFloat(
+            values.receiveAmount.replace(/,/g, '')
+          )
+          if (receiveAmountNumber > receiveAmountMax) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: firstBuyMessages.maxTokenError(receiveAmountMax),
+              path: [FIELDS.receiveAmount]
+            })
+          }
+        }
       }
-    ),
-    [FIELDS.coinImage]: coinImageSchema.shape.coinImage,
-    [FIELDS.payAmount]: z
-      .string()
-      .refine(
-        (value) => {
-          if (value === undefined || value === '') return true
-          return parseFloat(value.replace(/,/g, '')) <= walletMax
-        },
-        {
-          message: firstBuyMessages.insufficientBalance
-        }
-      )
-      .refine(
-        (value) => {
-          if (value === undefined || value === '') return true
-          return parseFloat(value.replace(/,/g, '')) <= payAmountMax
-        },
-        {
-          message: firstBuyMessages.maxAudioError(payAmountMax)
-        }
-      )
-      .optional(),
-    [FIELDS.receiveAmount]: z
-      .string()
-      .optional()
-      .refine(
-        (value) => {
-          if (value === undefined || value === '') return true
-          return parseFloat(value.replace(/,/g, '')) <= receiveAmountMax
-        },
-        {
-          message: firstBuyMessages.maxTokenError(receiveAmountMax)
-        }
-      )
-  })
+    })
 
 export const useLaunchpadFormSchema = () => {
   const queryClient = useQueryClient()

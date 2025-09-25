@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import { useSendTokensModal } from '@audius/common/store'
 import { wAUDIO } from '@audius/fixed-decimal'
 import {
@@ -185,6 +187,24 @@ export const LaunchpadSubmitModal = ({
   const { payAmount } = values
   const payAmountNumber = Number(wAUDIO(payAmount).value)
 
+  // State to manage delayed error display
+  const [showError, setShowError] = useState(false)
+
+  // This is a workaround.
+  // There's a few times where isError gets set to true but we're closing the modal at the same time
+  // This state "flashes" while the modal closes since the modal has a transition animation
+  // So to work around it, I added a small delay to show the error state
+  useEffect(() => {
+    if (isError && !isPending) {
+      const timer = setTimeout(() => {
+        setShowError(true)
+      }, 300)
+      return () => clearTimeout(timer)
+    } else if (isPending || !isError) {
+      setShowError(false)
+    }
+  }, [isError, isPending])
+
   const isFirstBuyRetry =
     errorMetadata?.requestedFirstBuy && errorMetadata?.poolCreateConfirmed
   const isSDKCoinError =
@@ -194,7 +214,7 @@ export const LaunchpadSubmitModal = ({
   const numTxs = payAmount && payAmountNumber > 0 && !isFirstBuyRetry ? 2 : 1
 
   // Keep track of current state in a string so we avoid overlapping states
-  const currentState = isPending ? 'pending' : isError ? 'error' : 'closed'
+  const currentState = isPending ? 'pending' : showError ? 'error' : 'pending'
   return (
     <Modal
       isOpen={isOpen}
