@@ -423,8 +423,12 @@ export const LaunchpadPage = () => {
 
       setIsModalOpen(true)
       const audioAmountBigNumber = formValues.payAmount
-        ? wAUDIO(formValues.payAmount).value.toString()
+        ? wAUDIO(formValues.payAmount).value
         : undefined
+      const initialBuyAmountAudio =
+        audioAmountBigNumber && audioAmountBigNumber > 0
+          ? audioAmountBigNumber.toString()
+          : undefined
 
       // Check if we've already attempted to submit and need to retry the first buy transaction instead of creating a new pool
       if (isFirstBuyError) {
@@ -469,7 +473,7 @@ export const LaunchpadPage = () => {
             formValues.coinSymbol
           ),
           walletPublicKey: connectedWallet.address,
-          initialBuyAmountAudio: audioAmountBigNumber
+          initialBuyAmountAudio
         })
       }
     },
