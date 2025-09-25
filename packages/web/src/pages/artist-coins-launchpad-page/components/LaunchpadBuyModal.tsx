@@ -136,7 +136,9 @@ const FormInputStep = ({
                   />
                   <Text variant='body' size='m' strength='strong'>
                     {buySellMessages.formattedAvailableBalance(
-                      availableBalance.toLocaleString(),
+                      availableBalance.toLocaleString('en-US', {
+                        maximumFractionDigits: 4
+                      }),
                       values.selectedInputToken.symbol,
                       !!values.selectedInputToken.isStablecoin
                     )}
