@@ -32,7 +32,7 @@ export type CoinCardProps = {
   name: string
   symbol: string
   balance: string
-  heldValue?: number | null
+  heldValue?: string | null
   dollarValue: string
   loading?: boolean
   onClick?: () => void
@@ -64,12 +64,6 @@ export const CoinCard = ({
     }
     return icon
   }
-
-  const formattedHeldValue = heldValue
-    ? heldValue >= 1
-      ? `$${formatCount(heldValue, 2)}`
-      : formatCurrencyWithSubscript(heldValue)
-    : null
 
   return (
     <Flex
@@ -108,7 +102,7 @@ export const CoinCard = ({
       <Flex alignItems='center' gap='m'>
         {!loading && (
           <Text variant='title' size='l' color='default'>
-            {formattedHeldValue ?? dollarValue}
+            {heldValue ?? dollarValue}
           </Text>
         )}
         {onClick ? <IconCaretRight size='l' color='subdued' /> : null}

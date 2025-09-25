@@ -180,10 +180,9 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
   const {
     tokenBalanceFormatted,
     tokenDollarValue,
-    tokenBalance,
     isTokenBalanceLoading,
     isTokenPriceLoading,
-    tokenPrice
+    formattedHeldValue
   } = useFormattedTokenBalance(coin.mint)
 
   const { data: coinData, isPending: coinsDataLoading } = useArtistCoin(
@@ -198,7 +197,7 @@ const CoinCardWithBalance = ({ coin }: { coin: UserCoin }) => {
       icon={coinData?.logoUri}
       symbol={tokenSymbol ?? ''}
       balance={tokenBalanceFormatted || ''}
-      heldValue={tokenPrice ? Number(tokenPrice) * Number(tokenBalance) : null}
+      heldValue={formattedHeldValue}
       dollarValue={tokenDollarValue || ''}
       loading={isLoading}
       name={coinData?.name ?? ''}

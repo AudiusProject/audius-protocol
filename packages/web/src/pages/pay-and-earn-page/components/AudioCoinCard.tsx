@@ -21,8 +21,7 @@ export const AudioCoinCard = () => {
     audioDollarValue,
     isAudioBalanceLoading,
     isAudioPriceLoading,
-    audioBalance,
-    audioPrice
+    formattedHeldValue
   } = useFormattedAudioBalance()
 
   const isLoading = isAudioBalanceLoading || isAudioPriceLoading
@@ -40,7 +39,7 @@ export const AudioCoinCard = () => {
       icon={<IconTokenAUDIO width={DIMENSIONS} height={DIMENSIONS} hex />}
       symbol={AUDIO_TICKER}
       balance={audioBalanceFormatted ?? ''}
-      heldValue={audioPrice ? Number(audioPrice) * Number(audioBalance) : null}
+      heldValue={formattedHeldValue}
       dollarValue={audioDollarValue ?? ''}
       loading={isLoading}
       name={COIN_NAME}
