@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { Coin } from '@audius/common/adapters'
 import { useArtistCoins } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
 import { ASSET_DETAIL_PAGE } from '@audius/common/src/utils/route'
@@ -19,12 +20,7 @@ import {
   spacing,
   Text
 } from '@audius/harmony'
-import {
-  GetCoinsSortMethodEnum,
-  GetCoinsSortDirectionEnum,
-  Coin,
-  HashId
-} from '@audius/sdk'
+import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
 import moment from 'moment'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Cell } from 'react-table'
@@ -42,7 +38,7 @@ type CoinCell = Cell<Coin>
 
 const renderTokenNameCell = (cellInfo: CoinCell) => {
   const coin = cellInfo.row.original
-  const ownerId = HashId.parse(coin.ownerId)
+  const { ownerId } = coin
 
   if (!coin || !coin.ticker) {
     return null

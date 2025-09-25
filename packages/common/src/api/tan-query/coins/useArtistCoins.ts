@@ -1,11 +1,11 @@
 import {
   Id,
-  Coin,
   GetCoinsSortMethodEnum,
   GetCoinsSortDirectionEnum
 } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { coinListFromSDK, Coin } from '~/adapters/coin'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils/typeUtils'
 
@@ -54,17 +54,18 @@ export const useArtistCoins = <TResult = Coin[]>(
       })
 
       const coins = response?.data
+      const parsedCoins = coinListFromSDK(coins)
 
       // Prime individual coin data for each mint
-      if (coins) {
-        coins.forEach((coin) => {
+      if (parsedCoins) {
+        parsedCoins.forEach((coin) => {
           if (coin.mint) {
             queryClient.setQueryData(getArtistCoinQueryKey(coin.mint), coin)
           }
         })
       }
 
-      return coins
+      return parsedCoins
     },
     ...options,
     enabled: options?.enabled !== false

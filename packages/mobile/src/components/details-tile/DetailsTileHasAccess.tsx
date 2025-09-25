@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import { useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
@@ -11,7 +12,6 @@ import {
 import type { AccessConditions, User } from '@audius/common/models'
 import type { PurchaseableContentType } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import type { Coin } from '@audius/sdk'
 import type { ViewStyle } from 'react-native'
 import { Image, View } from 'react-native'
 

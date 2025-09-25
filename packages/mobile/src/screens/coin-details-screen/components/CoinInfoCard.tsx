@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
-import type { Coin } from '@audius/sdk'
-import { decodeHashId } from '@audius/sdk'
 import { Image, Linking } from 'react-native'
 
 import {
@@ -26,13 +25,10 @@ const messages = coinDetailsMessages.coinInfo
 
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
-
-  const userId = coin?.ownerId
-    ? (decodeHashId(coin.ownerId) ?? undefined)
-    : undefined
+  const { ownerId } = coin ?? {}
 
   const { source } = useCoverPhoto({
-    userId,
+    userId: ownerId,
     size: WidthSizes.SIZE_640
   })
 

@@ -1,4 +1,4 @@
-import { Coin } from '@audius/sdk'
+import { Coin } from '~/adapters/coin'
 
 import { formatCurrencyWithSubscript, formatCount } from './decimal'
 

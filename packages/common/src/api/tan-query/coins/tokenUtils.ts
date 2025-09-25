@@ -1,6 +1,4 @@
-import type { Coin } from '@audius/sdk'
-
-import { coinFromSDK, type CoinMetadata } from '~/adapters'
+import { Coin, coinFromSDK, type CoinMetadata } from '~/adapters'
 import { TokenInfo } from '~/store/ui/buy-sell/types'
 
 /**
