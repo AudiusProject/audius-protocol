@@ -68,7 +68,9 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
     createMetric(
       formatCount(coin.holder),
       messages.uniqueHolders,
-      coin.uniqueWallet24hChangePercent
+      ((coin.holder - coin.uniqueWalletHistory24h) /
+        coin.uniqueWalletHistory24h) *
+        100
     ),
     createMetric(
       `${Math.round((coin.dynamicBondingCurve?.curveProgress ?? 0) * 100)}%`,
