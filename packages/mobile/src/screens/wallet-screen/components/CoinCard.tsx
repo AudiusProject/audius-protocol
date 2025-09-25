@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { useArtistCoin } from '@audius/common/api'
 import { useFeatureFlag, useFormattedTokenBalance } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
-import { formatCount, formatCurrencyWithSubscript } from '@audius/common/utils'
 import { Image, TouchableOpacity } from 'react-native'
 
 import {
@@ -69,8 +68,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
     tokenDollarValue: dollarValue,
     isTokenBalanceLoading,
     isTokenPriceLoading,
-    tokenBalance,
-    tokenPrice
+    formattedHeldValue
   } = useFormattedTokenBalance(mint)
 
   const isLoading =
@@ -92,15 +90,6 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
     }
     return icon
   }
-
-  const heldValue = tokenPrice
-    ? Number(tokenPrice) * Number(tokenBalance)
-    : null
-  const formattedHeldValue = heldValue
-    ? heldValue >= 1
-      ? `$${formatCount(heldValue, 2)}`
-      : formatCurrencyWithSubscript(heldValue)
-    : null
 
   return (
     <TouchableOpacity onPress={onPress}>
