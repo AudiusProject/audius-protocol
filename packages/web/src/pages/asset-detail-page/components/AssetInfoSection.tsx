@@ -31,6 +31,7 @@ import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { env } from 'services/env'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { push } from 'utils/navigation'
+import { HashId } from '@audius/sdk'
 
 const messages = coinDetailsMessages.coinInfo
 const overflowMessages = coinDetailsMessages.overflowMenu
@@ -109,7 +110,8 @@ type BannerSectionProps = {
 const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const theme = useTheme()
-  const { ownerId } = coin ?? {}
+  const { ownerId: ownerIdString } = coin ?? {}
+  const ownerId = HashId.parse(ownerIdString)
 
   const { data: owner } = useUser(ownerId)
   const { image: coverPhoto } = useCoverPhoto({
@@ -180,6 +182,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const { toast } = useContext(ToastContext)
 
   const { data: coin, isLoading } = useArtistCoin(mint)
+
   const { data: currentUserId } = useCurrentUserId()
   const { data: userCoins } = useUserCoins({ userId: currentUserId })
   const userToken = useMemo(
