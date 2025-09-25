@@ -122,6 +122,8 @@ export const useExternalWalletSwap = () => {
       }
     },
     onSuccess: (result, params) => {
+      // NOTE: due to how we are catching errors in the function, this onSuccess will still run on a handled error
+      // (since we're still returning a result no matter what)
       if (!result.isError) {
         // Update external wallet balances optimistically
         // NOTE: invalidate queries does not work here, need to manually update the balances
