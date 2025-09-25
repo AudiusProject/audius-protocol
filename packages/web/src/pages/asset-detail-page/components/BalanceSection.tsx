@@ -149,7 +149,7 @@ const HasBalanceState = ({
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
-    tokenDollarValue,
+    formattedHeldValue,
     isTokenBalanceLoading,
     isTokenPriceLoading
   } = useFormattedTokenBalance(mint)
@@ -177,7 +177,7 @@ const HasBalanceState = ({
             </Text>
           </Flex>
           <Text variant='heading' size='s' color='subdued'>
-            {tokenDollarValue}
+            {formattedHeldValue}
           </Text>
         </Flex>
       </Flex>

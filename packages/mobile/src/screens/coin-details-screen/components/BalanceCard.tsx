@@ -71,14 +71,8 @@ const HasBalanceState = ({
   onReceive,
   mint
 }: BalanceStateProps & { mint: string }) => {
-  const {
-    tokenBalanceFormatted,
-    tokenDollarValue
-    // isTokenBalanceLoading,
-    // isTokenPriceLoading
-  } = useFormattedTokenBalance(mint)
-
-  //   const isLoading = isTokenBalanceLoading || isTokenPriceLoading
+  const { tokenBalanceFormatted, formattedHeldValue } =
+    useFormattedTokenBalance(mint)
 
   return (
     <Flex column gap='l' w='100%'>
@@ -94,7 +88,7 @@ const HasBalanceState = ({
             </Text>
           </Flex>
           <Text variant='heading' size='s' color='subdued'>
-            {tokenDollarValue}
+            {formattedHeldValue}
           </Text>
         </Flex>
       </Flex>
