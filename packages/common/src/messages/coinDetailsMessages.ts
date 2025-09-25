@@ -31,6 +31,7 @@ export const coinDetailsMessages = {
     uniqueHolders: 'Unique Holders',
     volume24hr: 'Volume (24hr)',
     totalTransfers: 'Total Transfers',
+    marketCap: 'Market Cap',
     unableToLoad: 'Unable to load insights',
     graduated: 'Graduated',
     preGraduation:
