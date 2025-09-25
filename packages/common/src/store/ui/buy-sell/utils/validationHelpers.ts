@@ -54,7 +54,8 @@ export const validateMinimumAmount = (
 
   try {
     const amount = new FixedDecimal(value, decimals)
-    const minAmount = new FixedDecimal(min, decimals)
+    // The UI displays this value up to 2 decimal places. To prevent confusion we round this number up
+    const minAmount = new FixedDecimal(min, decimals).round(2)
 
     if (amount.value < minAmount.value) {
       return messages.minAmount(min, tokenSymbol)
