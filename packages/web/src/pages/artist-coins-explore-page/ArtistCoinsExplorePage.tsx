@@ -116,7 +116,7 @@ const DesktopArtistCoinsExplorePage = () => {
           </Box>
         </Flex>
 
-        <Paper p='xl' gap='xl'>
+        <Paper p='xl' gap='xl' border='default' borderRadius='m'>
           <Flex gap='xl' w='100%' wrap='wrap'>
             <Flex
               column
