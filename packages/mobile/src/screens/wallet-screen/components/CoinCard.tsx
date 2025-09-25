@@ -115,7 +115,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
                     numberOfLines={1}
                     ellipsizeMode='tail'
                   >
-                    {coinData?.name}
+                    {coinData.name}
                   </Text>
                 ) : null}
                 <Flex
