@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { shortenSPLAddress } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
 
-import { shortenSPLAddress } from '@audius/common/utils'
 import { Text, IconCopy, Flex, IconButton } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { make, track as trackEvent } from 'app/services/analytics'
