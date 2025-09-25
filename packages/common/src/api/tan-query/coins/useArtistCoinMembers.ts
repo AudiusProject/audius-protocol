@@ -8,12 +8,12 @@ import {
 
 import { useQueryContext } from '~/api/tan-query/utils'
 import { ID } from '~/models'
+import { formatNumberCommas } from '~/utils'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey } from '../types'
 
 import { useArtistCoin } from './useArtistCoin'
-import { formatNumberCommas } from '~/utils'
 
 const DEFAULT_PAGE_SIZE = 20
 
