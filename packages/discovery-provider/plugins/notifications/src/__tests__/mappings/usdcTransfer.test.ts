@@ -22,6 +22,7 @@ import {
   createUSDCUserBank,
   CreateUSDCTransaction
 } from '../../utils/populateDB'
+import { PublicKey } from '@solana/web3.js'
 
 describe('USDC Transfer', () => {
   let processor: Processor
@@ -73,17 +74,12 @@ describe('USDC Transfer', () => {
   })
 
   test('isInternalTransfer returns true when token owners match (mocked RPC)', async () => {
-    type MinimalOwner = { toString: () => string }
-    type MinimalAccount = { owner: MinimalOwner }
-    type GetAccountFn = (c: unknown, p: unknown) => Promise<MinimalAccount>
     const mockedSplToken = jest.requireMock('@solana/spl-token') as unknown as {
-      getAccount: unknown
+      getAccount: jest.MockedFunction<() => Promise<{ owner: PublicKey }>>
     }
-    const mockedGetAccount =
-      mockedSplToken.getAccount as unknown as jest.MockedFunction<GetAccountFn>
-    mockedGetAccount
-      .mockResolvedValueOnce({ owner: { toString: () => 'OWNER_1' } })
-      .mockResolvedValueOnce({ owner: { toString: () => 'OWNER_1' } })
+    const mockedGetAccount = mockedSplToken.getAccount
+    mockedGetAccount.mockResolvedValueOnce({ owner: new PublicKey('OWNER_1') })
+    mockedGetAccount.mockResolvedValueOnce({ owner: new PublicKey('OWNER_1') })
 
     process.env.NOTIFICATIONS_SOLANA_RPC = 'https://dummy.unused'
 
@@ -114,5 +110,6 @@ describe('USDC Transfer', () => {
     const result = await transfer.isInternalTransfer()
     expect(result).toBe(true)
     expect(mockedGetAccount).toHaveBeenCalledTimes(2)
+    expect(sendTransactionalEmailSpy).toHaveBeenCalledTimes(0)
   })
 })
