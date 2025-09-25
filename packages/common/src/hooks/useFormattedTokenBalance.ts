@@ -7,7 +7,8 @@ import {
   getTokenDecimalPlaces,
   formatCurrencyWithSubscript,
   isNullOrUndefined,
-  formatCount
+  formatCount,
+  formatNumberCommas
 } from '../utils'
 
 type UseFormattedTokenBalanceReturn = {
@@ -54,10 +55,13 @@ export const useFormattedTokenBalance = (
     // FixedDecimal can't format with more decimals than it was constructed with
     const maxFractionDigits = Math.min(decimalPlaces, tokenBalance?.decimals)
 
-    return balance.toLocaleString(locale, {
-      maximumFractionDigits: maxFractionDigits,
-      roundingMode: 'trunc'
-    })
+    // Need formatNumberCommas for mobile :(
+    return formatNumberCommas(
+      balance.toLocaleString(locale, {
+        maximumFractionDigits: maxFractionDigits,
+        roundingMode: 'trunc'
+      })
+    )
   }, [balance, hasFetchedTokenBalance, locale, tokenBalance?.decimals])
 
   // Calculate dollar value of user's mint balance

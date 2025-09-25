@@ -9,7 +9,7 @@ import {
 } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
-import { Paper, Flex, Text, Button } from '@audius/harmony-native'
+import { Paper, Flex, Text, Button, spacing } from '@audius/harmony-native'
 import { TokenIcon } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -93,7 +93,15 @@ const HasBalanceState = ({
               {title}
             </Text>
           </Flex>
-          <Text variant='heading' size='s' color='subdued'>
+          <Text
+            variant='heading'
+            size='s'
+            color='subdued'
+            style={{
+              lineHeight: spacing.unit7,
+              transform: [{ translateY: -spacing.unitHalf }]
+            }}
+          >
             {tokenDollarValue}
           </Text>
         </Flex>
