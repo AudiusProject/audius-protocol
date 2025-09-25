@@ -27,6 +27,7 @@ export * from './tan-query/coins/useUserCoins'
 export * from './tan-query/coins/useArtistCoinMembersCount'
 export * from './tan-query/coins/useUserCreatedCoins'
 export * from './tan-query/coins/useArtistCoins'
+export * from './tan-query/coins/useArtistOwnedCoin'
 export * from './tan-query/coins/useFirstBuyQuote'
 export * from './tan-query/coins/tokenUtils'
 

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import React, { useCallback } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import { useFeatureFlag, useStreamConditionsEntity } from '@audius/common/hooks'
 import {
   FollowSource,
@@ -22,7 +23,6 @@ import {
   gatedContentSelectors
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import type { Coin } from '@audius/sdk'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

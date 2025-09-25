@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useArtistCoins, useCurrentUserId } from '@audius/common/api'
+import { useArtistOwnedCoin, useCurrentUserId } from '@audius/common/api'
 import { useAccessAndRemixSettings, useHasNoTokens } from '@audius/common/hooks'
 import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { useField } from 'formik'
@@ -29,9 +29,7 @@ type TokenGatedRadioFieldProps = {
 export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
   const { isRemix, isUpload, isInitiallyUnlisted, isAlbum } = props
   const { data: userId } = useCurrentUserId()
-  const { data: coins } = useArtistCoins({
-    owner_id: userId ? [userId] : undefined
-  })
+  const { data: coin } = useArtistOwnedCoin(userId)
 
   const [, , { setValue: setStreamConditionsValue }] =
     useField<AccessAndSaleFormValues[typeof STREAM_CONDITIONS]>(
@@ -40,16 +38,16 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
 
   const handleSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (coins?.length && e.target.checked) {
+      if (coin && e.target.checked) {
         setStreamConditionsValue({
           token_gate: {
-            token_mint: coins[0].mint,
+            token_mint: coin.mint,
             token_amount: 1
           }
         })
       }
     },
-    [coins, setStreamConditionsValue]
+    [coin, setStreamConditionsValue]
   )
 
   const hasNoTokens = useHasNoTokens()
@@ -62,8 +60,8 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
   return (
     <ModalRadioItem
       icon={
-        coins?.[0]?.logoUri ? (
-          <TokenIcon logoURI={coins?.[0]?.logoUri} hex h={24} w={24} />
+        coin?.logoUri ? (
+          <TokenIcon logoURI={coin.logoUri} hex h={24} w={24} />
         ) : (
           <IconArtistCoin />
         )
@@ -74,7 +72,7 @@ export const TokenGatedRadioField = (props: TokenGatedRadioFieldProps) => {
       onChange={handleSelect}
       description={
         <TokenGatedDescription
-          tokenName={coins?.[0]?.ticker ?? coins?.[0]?.mint ?? ''}
+          tokenName={coin?.ticker ?? coin?.mint ?? ''}
           hasTokens={!hasNoTokens}
           isUpload={true}
         />

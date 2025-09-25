@@ -1,13 +1,7 @@
-import {
-  Id,
-  Coin,
-  GetCoinsSortMethodEnum,
-  GetCoinsSortDirectionEnum
-} from '@audius/sdk'
+import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { ID } from '~/models'
-import { removeNullable } from '~/utils/typeUtils'
+import { coinListFromSDK, Coin } from '~/adapters/coin'
 
 import { QUERY_KEYS } from '../queryKeys'
 import { QueryKey, SelectableQueryOptions } from '../types'
@@ -16,7 +10,6 @@ import { useQueryContext } from '../utils/QueryContext'
 import { getArtistCoinQueryKey } from './useArtistCoin'
 
 export type UseArtistCoinsParams = {
-  owner_id?: ID[]
   limit?: number
   offset?: number
   sortMethod?: GetCoinsSortMethodEnum
@@ -39,13 +32,7 @@ export const useArtistCoins = <TResult = Coin[]>(
     queryFn: async () => {
       const sdk = await audiusSdk()
 
-      // Encode owner_id params to match API expectations
-      const encodedOwnerIds = params.owner_id
-        ?.map((id) => Id.parse(id))
-        .filter(removeNullable)
-
       const response = await sdk.coins.getCoins({
-        ownerId: encodedOwnerIds,
         limit: params.limit,
         offset: params.offset,
         sortMethod: params.sortMethod,
@@ -54,17 +41,18 @@ export const useArtistCoins = <TResult = Coin[]>(
       })
 
       const coins = response?.data
+      const parsedCoins = coinListFromSDK(coins)
 
       // Prime individual coin data for each mint
-      if (coins) {
-        coins.forEach((coin) => {
+      if (parsedCoins) {
+        parsedCoins.forEach((coin) => {
           if (coin.mint) {
             queryClient.setQueryData(getArtistCoinQueryKey(coin.mint), coin)
           }
         })
       }
 
-      return coins
+      return parsedCoins
     },
     ...options,
     enabled: options?.enabled !== false

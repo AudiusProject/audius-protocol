@@ -1,4 +1,4 @@
-import { useArtistCoins, useCurrentUserId } from '@audius/common/api'
+import { useArtistOwnedCoin, useCurrentUserId } from '@audius/common/api'
 import { Flex, makeResponsiveStyles } from '@audius/harmony'
 
 import gift from 'assets/fonts/emojis/gift.png'
@@ -97,12 +97,10 @@ type SplashPageProps = {
 export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
   const styles = useStyles()
   const { data: currentUserId } = useCurrentUserId()
-  const { data: userCoins } = useArtistCoins({
-    owner_id: currentUserId ? [currentUserId] : undefined
-  })
+  const { data: userCoin } = useArtistOwnedCoin(currentUserId)
 
   // Hide the launch panel if user already has an artist coin
-  const hasArtistCoin = userCoins && userCoins.length > 0
+  const hasArtistCoin = !!userCoin
 
   return (
     <Flex css={styles.container}>

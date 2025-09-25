@@ -6,6 +6,7 @@ import React, {
   ChangeEvent
 } from 'react'
 
+import { Coin } from '@audius/common/adapters'
 import {
   useArtistCoins,
   GetCoinsSortMethodEnum,
@@ -26,7 +27,6 @@ import {
   TextInput,
   TextInputSize
 } from '@audius/harmony'
-import { HashId, type Coin } from '@audius/sdk'
 import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useDebounce } from 'react-use'
@@ -45,7 +45,7 @@ type CoinRowProps = {
 }
 
 const CoinRow = ({ coin, onPress }: CoinRowProps) => {
-  const ownerId = HashId.parse(coin.ownerId)
+  const { ownerId } = coin
 
   return (
     <Flex ph='l' pv='s' alignItems='center' gap='s' onClick={onPress}>

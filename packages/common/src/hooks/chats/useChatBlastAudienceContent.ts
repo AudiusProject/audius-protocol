@@ -9,7 +9,7 @@ import {
   usePurchasersCount,
   useRemixersCount,
   useTrack,
-  useArtistCoins
+  useArtistOwnedCoin
 } from '~/api'
 import {
   getChatBlastAudienceDescription,
@@ -54,11 +54,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
-  const { data: coins } = useArtistCoins({
-    owner_id: [user?.user_id ?? 0],
-    limit: 1
-  })
-  const coinSymbol = coins?.[0]?.ticker ?? ''
+  const { data: coin } = useArtistOwnedCoin(user?.user_id)
+  const coinSymbol = coin?.ticker ?? ''
   const { data: coinHoldersCount } = useArtistCoinMembersCount({
     enabled: audience === ChatBlastAudience.COIN_HOLDERS
   })

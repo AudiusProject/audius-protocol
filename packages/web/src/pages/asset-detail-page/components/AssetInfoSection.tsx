@@ -21,7 +21,6 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
@@ -110,14 +109,11 @@ type BannerSectionProps = {
 const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const theme = useTheme()
+  const { ownerId } = coin ?? {}
 
-  const userId = coin?.ownerId
-    ? (decodeHashId(coin.ownerId) ?? undefined)
-    : undefined
-
-  const { data: owner } = useUser(userId)
+  const { data: owner } = useUser(ownerId)
   const { image: coverPhoto } = useCoverPhoto({
-    userId,
+    userId: ownerId,
     size: WidthSizes.SIZE_640
   })
 
@@ -167,7 +163,7 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
           {messages.createdBy}
         </Text>
 
-        {userId && <UserTokenBadge userId={userId} />}
+        {ownerId && <UserTokenBadge userId={ownerId} />}
       </Flex>
     </Flex>
   )

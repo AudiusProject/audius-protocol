@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 
+import type { Coin } from '@audius/common/adapters'
 import {
   useArtistCoins,
   GetCoinsSortMethodEnum,
   GetCoinsSortDirectionEnum
 } from '@audius/common/api'
 import { walletMessages } from '@audius/common/messages'
-import type { Coin } from '@audius/sdk'
-import { HashId } from '@audius/sdk'
 import { useRoute } from '@react-navigation/native'
 import { ImageBackground, ScrollView, TouchableOpacity } from 'react-native'
 import { useDebounce } from 'react-use'
@@ -39,7 +38,7 @@ type CoinRowProps = {
 }
 
 const CoinRow = ({ coin, onPress }: CoinRowProps) => {
-  const ownerId = HashId.parse(coin.ownerId)
+  const { ownerId } = coin
 
   return (
     <TouchableOpacity onPress={onPress}>
