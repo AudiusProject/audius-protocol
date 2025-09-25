@@ -5,6 +5,7 @@ export type SetupFormValues = {
   payAmount: string
   receiveAmount: string
   usdcValue: string
+  wantsToBuy: 'yes' | 'no'
 }
 
 export type PhasePageProps = {

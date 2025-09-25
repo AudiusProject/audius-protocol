@@ -502,7 +502,8 @@ export const LaunchpadPage = () => {
         coinImage: null as File | null,
         payAmount: '',
         receiveAmount: '',
-        usdcValue: ''
+        usdcValue: '',
+        wantsToBuy: 'no'
       }}
       validationSchema={validationSchema}
       validateOnMount={true}
