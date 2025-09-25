@@ -8,8 +8,7 @@ import {
   useTheme,
   ColorTheme,
   Box,
-  IconArtistCoin,
-  Theme
+  IconArtistCoin
 } from '@audius/harmony'
 
 import Rectangle from 'assets/img/dogEarRectangle.svg'
@@ -56,14 +55,8 @@ const getColor = (type: DogEarType, color: ColorTheme['day']) => {
 export const DogEar = (props: DogEarProps) => {
   const { type, className, borderOffset = 1 } = props
   const Icon = getIcon(type)
-  const { spacing, color, type: themeType } = useTheme()
+  const { spacing, color } = useTheme()
   const tagColor = getColor(type, color)
-
-  const themeGradientMap: Record<Theme, string> = {
-    day: 'coinGradient',
-    dark: 'coinGradientDark',
-    matrix: 'coinGradientMatrix'
-  }
 
   return (
     <Box
@@ -88,7 +81,7 @@ export const DogEar = (props: DogEarProps) => {
           height: '100%',
           color: tagColor,
           ...(type === DogEarType.TOKEN_GATED && {
-            fill: `url(#${themeGradientMap[themeType]})`,
+            fill: `url(#coinGradient)`,
             '& path:nth-child(1)': {
               fill: 'inherit'
             }
