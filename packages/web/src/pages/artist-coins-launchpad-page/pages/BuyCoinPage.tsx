@@ -81,15 +81,8 @@ export const BuyCoinPage = ({
   submitButtonText?: string
 }) => {
   // Use Formik context to manage form state, including payAmount and receiveAmount
-  const {
-    values,
-    setFieldValue,
-    errors,
-    touched,
-    validateForm,
-    setFieldError,
-    setFieldTouched
-  } = useFormikContext<SetupFormValues>()
+  const { values, setFieldValue, errors, touched, validateForm } =
+    useFormikContext<SetupFormValues>()
   const { data: launchpadConfig } = useLaunchpadConfig()
   const { maxTokenOutputAmount, maxAudioInputAmount } = launchpadConfig ?? {
     maxTokenOutputAmount: Infinity,
