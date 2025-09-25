@@ -1,18 +1,39 @@
-import { expect, jest, test } from '@jest/globals'
-import { Processor } from '../../main'
-import * as sendEmailFns from '../../email/notifications/sendEmail'
-import { USDCTransfer } from '../../processNotifications/mappers/usdcTransfer'
-import type { NotificationRow } from '../../types/dn'
-import type { USDCTransferNotification } from '../../types/notifications'
+const getAccountInfoMock: jest.MockedFunction<
+  (pubkey: unknown) => Promise<{ data: Buffer } | null>
+> = jest.fn()
 
-jest.mock('@solana/web3.js', () => ({
-  Connection: jest.fn().mockImplementation(() => ({})),
-  PublicKey: jest.fn().mockImplementation((v: string) => v)
-}))
+jest.mock('@solana/web3.js', () => {
+  const actual = jest.requireActual('@solana/web3.js') as Record<
+    string,
+    unknown
+  >
+  class MockConnection {
+    getAccountInfo = getAccountInfoMock
+  }
+  class MockPublicKey {
+    private _v: string
+    constructor(v: string) {
+      this._v = String(v)
+    }
+    toString() {
+      return this._v
+    }
+  }
+  return Object.assign({}, actual, {
+    Connection: MockConnection,
+    PublicKey: MockPublicKey
+  })
+})
 
 jest.mock('@solana/spl-token', () => ({
-  getAccount: jest.fn()
+  AccountLayout: { decode: jest.fn() }
 }))
+
+import { expect, jest, test } from '@jest/globals'
+import { Processor } from '../../main'
+// no direct import of USDCTransfer needed for these tests
+import * as sendEmailFns from '../../email/notifications/sendEmail'
+import {} from '@solana/web3.js'
 
 import {
   createUsers,
@@ -34,6 +55,7 @@ describe('USDC Transfer', () => {
   beforeEach(async () => {
     const setup = await setupTest()
     processor = setup.processor
+    process.env.NOTIFICATIONS_SOLANA_RPC = 'https://dummy.unused'
   })
 
   afterEach(async () => {
@@ -73,43 +95,93 @@ describe('USDC Transfer', () => {
     })
   })
 
-  test('isInternalTransfer returns true when token owners match (mocked RPC)', async () => {
-    const mockedSplToken = jest.requireMock('@solana/spl-token') as unknown as {
-      getAccount: jest.MockedFunction<() => Promise<{ owner: PublicKey }>>
-    }
-    const mockedGetAccount = mockedSplToken.getAccount
-    mockedGetAccount.mockResolvedValueOnce({ owner: new PublicKey('OWNER_1') })
-    mockedGetAccount.mockResolvedValueOnce({ owner: new PublicKey('OWNER_1') })
+  test('when token owners match, no notification is sent', async () => {
+    getAccountInfoMock
+      .mockResolvedValueOnce({ data: Buffer.from([]) })
+      .mockResolvedValueOnce({ data: Buffer.from([]) })
 
-    process.env.NOTIFICATIONS_SOLANA_RPC = 'https://dummy.unused'
-
-    const notification: NotificationRow & {
-      data: USDCTransferNotification
-      user_ids: number[]
-    } = {
-      specifier: '1',
-      group_id: 'g1',
-      type: 'usdc_transfer',
-      timestamp: new Date(Date.now()),
-      user_ids: [1],
-      data: {
-        user_id: 1,
-        signature: 'sig',
-        change: -100,
-        receiver_account: 'ReceiverATA111111111111111111111111111111',
-        user_bank: 'UserBankATA1111111111111111111111111111111'
+    const splToken = jest.requireMock('@solana/spl-token') as {
+      AccountLayout: {
+        decode: jest.Mock<(data: Buffer) => { owner: PublicKey }>
       }
     }
+    splToken.AccountLayout.decode
+      .mockImplementationOnce(() => ({ owner: new PublicKey('OWNER_1') }))
+      .mockImplementationOnce(() => ({ owner: new PublicKey('OWNER_1') }))
 
-    const transfer = new USDCTransfer(
-      processor.discoveryDB,
-      processor.identityDB,
-      notification
-    )
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }])
+    await createUSDCUserBank(processor.discoveryDB, [
+      {
+        ethereum_address: '0x1',
+        bank_account: '0x123',
+        signature: '4'
+      }
+    ])
+    await CreateUSDCTransaction(processor.discoveryDB, [
+      {
+        transaction_type: 'transfer',
+        method: 'send',
+        user_bank: '0x123',
+        tx_metadata: 'RECEIVER_1',
+        slot: 5,
+        signature: '5',
+        change: '100',
+        balance: '100'
+      }
+    ])
+    await setUserEmailAndSettings(processor.identityDB, 'live', 1)
 
-    const result = await transfer.isInternalTransfer()
-    expect(result).toBe(true)
-    expect(mockedGetAccount).toHaveBeenCalledTimes(2)
+    const pending = processor.listener.takePending()
+    expect(pending?.appNotifications).toHaveLength(1)
+    await processor.appNotificationsProcessor.process(pending.appNotifications)
+
+    expect(getAccountInfoMock).toHaveBeenCalledTimes(2)
+    expect(splToken.AccountLayout.decode).toHaveBeenCalledTimes(2)
     expect(sendTransactionalEmailSpy).toHaveBeenCalledTimes(0)
+  })
+
+  test('when token owners do not match, a notification is sent', async () => {
+    getAccountInfoMock
+      .mockResolvedValueOnce({ data: Buffer.from([]) })
+      .mockResolvedValueOnce({ data: Buffer.from([]) })
+
+    const splToken = jest.requireMock('@solana/spl-token') as {
+      AccountLayout: {
+        decode: jest.Mock<(data: Buffer) => { owner: PublicKey }>
+      }
+    }
+    splToken.AccountLayout.decode
+      .mockImplementationOnce(() => ({ owner: new PublicKey('OWNER_1') }))
+      .mockImplementationOnce(() => ({ owner: new PublicKey('OWNER_2') }))
+
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }])
+    await createUSDCUserBank(processor.discoveryDB, [
+      {
+        ethereum_address: '0x1',
+        bank_account: '0x123',
+        signature: '4'
+      }
+    ])
+    await CreateUSDCTransaction(processor.discoveryDB, [
+      {
+        transaction_type: 'transfer',
+        method: 'send',
+        user_bank: '0x123',
+        tx_metadata: 'RECEIVER_2',
+        slot: 5,
+        signature: '5',
+        change: '100',
+        balance: '100'
+      }
+    ])
+    await setUserEmailAndSettings(processor.identityDB, 'live', 1)
+
+    const pending = processor.listener.takePending()
+    expect(pending?.appNotifications).toHaveLength(1)
+    await processor.appNotificationsProcessor.process(pending.appNotifications)
+
+    expect(getAccountInfoMock).toHaveBeenCalledTimes(2)
+    expect(splToken.AccountLayout.decode).toHaveBeenCalledTimes(2)
+    expect(sendTransactionalEmailSpy).toHaveBeenCalledTimes(1)
   })
 })

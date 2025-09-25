@@ -12,7 +12,7 @@ import {
   formatUSDCWeiToUSDString
 } from '../../utils/format'
 import { Connection, PublicKey } from '@solana/web3.js'
-import { getAccount } from '@solana/spl-token'
+import { AccountLayout } from '@solana/spl-token'
 
 type USDCTransferRow = Omit<NotificationRow, 'data'> & {
   data: USDCTransferNotification
@@ -53,18 +53,24 @@ export class USDCTransfer extends BaseNotification<USDCTransferRow> {
 
       const connection = new Connection(rpcEndpoint, 'confirmed')
 
-      const [userBankAccount, receiverAccount] = await Promise.all([
-        getAccount(connection, new PublicKey(this.userBank)),
-        getAccount(connection, new PublicKey(this.receiverAccount))
+      const [userBankRaw, receiverRaw] = await Promise.all([
+        connection.getAccountInfo(new PublicKey(this.userBank)),
+        connection.getAccountInfo(new PublicKey(this.receiverAccount))
       ])
-
-      const userBankOwner = userBankAccount.owner?.toString()
-      const receiverOwner = receiverAccount.owner?.toString()
-
-      if (userBankOwner && receiverOwner) {
-        return userBankOwner === receiverOwner
-      }
-      return false
+      if (!userBankRaw || !receiverRaw) return false
+      const userBankAccount = AccountLayout.decode(userBankRaw.data)
+      const receiverAccount = AccountLayout.decode(receiverRaw.data)
+      const userBankOwner = (
+        userBankAccount.owner instanceof PublicKey
+          ? userBankAccount.owner
+          : new PublicKey(userBankAccount.owner)
+      ).toString()
+      const receiverOwner = (
+        receiverAccount.owner instanceof PublicKey
+          ? receiverAccount.owner
+          : new PublicKey(receiverAccount.owner)
+      ).toString()
+      return userBankOwner === receiverOwner
     } catch (e) {
       logger.warn('Failed to determine internal USDC transfer', e)
       return false
