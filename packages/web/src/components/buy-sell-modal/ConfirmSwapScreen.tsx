@@ -9,10 +9,10 @@ import {
   TokenPair,
   useTokenAmountFormatting
 } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
-import { formatCurrencyWithSubscript } from '@audius/common/utils'
 
 const messages = {
   ...baseMessages,

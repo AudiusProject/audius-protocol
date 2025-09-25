@@ -262,7 +262,8 @@ export const BuySellFlow = ({
     handleShowConfirmation,
     confirmationScreenData,
     navigation,
-    safeSelectedPair
+    safeSelectedPair,
+    pricePerBaseToken
   ])
 
   useEffect(() => {

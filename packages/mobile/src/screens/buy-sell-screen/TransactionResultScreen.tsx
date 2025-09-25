@@ -3,6 +3,7 @@ import React from 'react'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { SuccessDisplayData } from '@audius/common/store'
 import { useTokenAmountFormatting } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 
 import {
   Button,
@@ -20,7 +21,6 @@ import {
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { SwapBalanceSection } from '../../components/buy-sell'
-import { formatCurrencyWithSubscript } from '@audius/common/utils'
 
 const messages = {
   ...baseMessages,

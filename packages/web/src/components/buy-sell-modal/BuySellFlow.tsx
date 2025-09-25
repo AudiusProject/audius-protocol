@@ -369,7 +369,6 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
       ? (outputCoin?.price ?? 0)
       : (outputCoin?.dynamicBondingCurve.priceUSD ?? 0)
   }, [outputCoin])
-  console.log('pricePerBaseToken', pricePerBaseToken)
 
   const isTransactionInvalid = !transactionData?.isValid
 
