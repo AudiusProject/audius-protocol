@@ -490,7 +490,7 @@ export const LaunchpadPage = () => {
   )
 
   // Redirect if user is not verified or already has an artist coin
-  if (!isVerified) {
+  if (!isVerified || hasExistingArtistCoin) {
     return <Navigate to={route.COINS_EXPLORE_PAGE} replace />
   }
 

@@ -102,7 +102,7 @@ export const SplashPage = ({ onContinue, isPending }: SplashPageProps) => {
   })
 
   // Hide the launch panel if user already has an artist coin
-  const hasArtistCoin = false && userCoins && userCoins.length > 0
+  const hasArtistCoin = userCoins && userCoins.length > 0
 
   return (
     <Flex css={styles.container}>
