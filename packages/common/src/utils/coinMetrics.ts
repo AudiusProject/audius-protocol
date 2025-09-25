@@ -80,11 +80,7 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
       coin.v24hChangePercent
     ),
 
-    createMetric(
-      formatCount(coin.trade24h),
-      messages.totalTransfers,
-      coin.trade24hChangePercent
-    )
+    createMetric(formatCount(coin.trade24h), messages.totalTransfers)
   ]
 
   return potentialMetrics.filter(
