@@ -8,7 +8,7 @@ import {
   useConnectedWallets,
   useWalletAudioBalance
 } from '@audius/common/api'
-import { Chain } from '@audius/common/models'
+import { Chain, ErrorLevel, Feature } from '@audius/common/models'
 import { MAX_HANDLE_LENGTH } from '@audius/common/services'
 import { AUDIO } from '@audius/fixed-decimal'
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
@@ -16,6 +16,7 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useLaunchpadConfig } from 'hooks/useLaunchpadConfig'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { getLatestConnectedWallet } from './utils'
 
@@ -74,7 +75,8 @@ export const firstBuyMessages = {
   maxAudioError: (payAmountMax: number) =>
     `The max AUDIO amount is ${payAmountMax.toLocaleString()}`,
   maxTokenError: (receiveAmountMax: number) =>
-    `The max available is ${receiveAmountMax.toLocaleString()}`
+    `The max available is ${receiveAmountMax.toLocaleString()}`,
+  minAmountError: 'Amount must be greater than 0'
 }
 
 export const setupFormSchema = ({
@@ -114,8 +116,17 @@ export const setupFormSchema = ({
                 return z.NEVER
               }
             } catch (error: any) {
-              // Log the error for debugging
-              console.error('Ticker validation error:', error)
+              // This should rarely happen, and likely not a fatal error
+              reportToSentry({
+                error:
+                  error instanceof Error ? error : new Error(error as string),
+                name: 'Launchpad Ticker Validation Error',
+                feature: Feature.ArtistCoins,
+                level: ErrorLevel.Warning,
+                additionalInfo: {
+                  ticker
+                }
+              })
               // For other errors, show unknown error
               context.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -144,6 +155,13 @@ export const setupFormSchema = ({
           typeof values.payAmount === 'string'
         ) {
           const payAmountNumber = parseFloat(values.payAmount.replace(/,/g, ''))
+          if (payAmountNumber <= 0) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: firstBuyMessages.minAmountError,
+              path: [FIELDS.payAmount]
+            })
+          }
           if (payAmountNumber > walletMax) {
             context.addIssue({
               code: z.ZodIssueCode.custom,

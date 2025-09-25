@@ -268,7 +268,7 @@ export const BuyCoinPage = ({
               {messages.stepInfo}
             </Text>
             <Flex alignItems='center' gap='s'>
-              <Text variant='heading' size='l' color='default'>
+              <Text variant='heading' size='l'>
                 {messages.title}
               </Text>
               <Pill variant='primary'>{messages.optional}</Pill>
