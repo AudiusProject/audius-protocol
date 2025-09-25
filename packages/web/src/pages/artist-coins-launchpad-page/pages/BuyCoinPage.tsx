@@ -179,7 +179,6 @@ export const BuyCoinPage = ({
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const newValue = event.target.value
-    console.log('newValue', newValue)
     setFieldValue(FIELDS.wantsToBuy, newValue)
 
     // If user selects "no", reset the first buy form fields and their errors
@@ -251,10 +250,6 @@ export const BuyCoinPage = ({
     },
     [setFieldValue, debouncedReceiveAmountChange]
   )
-
-  console.log('errors', errors)
-  console.log('values', values)
-  console.log('touched', touched)
 
   const submitFooterErrorText =
     submitErrorText ||
