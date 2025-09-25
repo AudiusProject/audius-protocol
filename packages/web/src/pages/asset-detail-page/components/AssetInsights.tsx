@@ -121,7 +121,7 @@ const GraduationProgressMetricRowComponent = ({
         <Text variant='title' size='m' color='subdued'>
           {metric.label}
         </Text>
-        <Tooltip text={tooltipContent}>
+        <Tooltip text={tooltipContent} mount='body'>
           <IconInfo size='s' color='subdued' />
         </Tooltip>
       </Flex>

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import {
   useArtistCoin,
@@ -9,9 +9,10 @@ import {
 import { useDiscordOAuthLink } from '@audius/common/hooks'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
-import { route } from '@audius/common/utils'
+import { route, shortenSPLAddress } from '@audius/common/utils'
 import {
   Flex,
+  IconCopy,
   IconDiscord,
   IconExternalLink,
   IconGift,
@@ -24,13 +25,16 @@ import { decodeHashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
+import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { UserTokenBadge } from 'components/user-token-badge/UserTokenBadge'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { env } from 'services/env'
+import { copyToClipboard } from 'utils/clipboardUtil'
 import { push } from 'utils/navigation'
 
 const messages = coinDetailsMessages.coinInfo
+const overflowMessages = coinDetailsMessages.overflowMenu
 
 const BANNER_HEIGHT = 120
 
@@ -199,6 +203,7 @@ const { REWARDS_PAGE } = route
 
 export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const dispatch = useDispatch()
+  const { toast } = useContext(ToastContext)
 
   const { data: coin, isLoading } = useArtistCoin(mint)
   const { data: currentUserId } = useCurrentUserId()
@@ -223,6 +228,11 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const handleBrowseRewards = useCallback(() => {
     dispatch(push(REWARDS_PAGE))
   }, [dispatch])
+
+  const handleCopyAddress = useCallback(() => {
+    copyToClipboard(mint)
+    toast(overflowMessages.copiedToClipboard)
+  }, [mint, toast])
 
   if (isLoading || !coin) {
     return <AssetInfoSectionSkeleton />
@@ -331,6 +341,25 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
           </Flex>
         </Flex>
       ) : null}
+
+      <Flex
+        alignItems='center'
+        justifyContent='space-between'
+        alignSelf='stretch'
+        p='l'
+        borderTop='default'
+      >
+        <PlainButton
+          onClick={handleCopyAddress}
+          iconLeft={IconCopy}
+          variant='default'
+        >
+          {overflowMessages.copyCoinAddress}
+        </PlainButton>
+        <Text variant='body' size='m' color='subdued'>
+          {shortenSPLAddress(mint)}
+        </Text>
+      </Flex>
     </Paper>
   )
 }
