@@ -9,12 +9,13 @@ import {
   IconReceive,
   IconSparkles
 } from '@audius/harmony-native'
-import CoinGateDogEarRectangle from 'app/assets/images/coinGateDogEarRectangle.svg'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
+
+import { CoinGradientDogEarSvg } from './CoinGradientDogEarSvg'
 
 const useStyles = makeStyles(({ spacing }) => ({
   container: {
@@ -94,7 +95,7 @@ export const DogEar = (props: DogEarProps) => {
   return (
     <View style={[styles.container, borderOffsetStyle, style]}>
       {type === DogEarType.TOKEN_GATED ? (
-        <CoinGateDogEarRectangle style={styles.rectangle} />
+        <CoinGradientDogEarSvg style={styles.rectangle} />
       ) : (
         <DogEarRectangle fill={colors[0]} style={styles.rectangle} />
       )}

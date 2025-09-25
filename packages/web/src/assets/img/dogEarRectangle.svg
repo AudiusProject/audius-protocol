@@ -22,10 +22,5 @@
       <stop stop-color="white"/>
       <stop offset="1" stop-color="white" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="coinGradient" gradientTransform="rotate(-5)">
-      <stop stop-color="#CC0FE0" offset="-4.82%" />
-      <stop stop-color="#7E1BCC" offset="49.8%" />
-      <stop stop-color="#1BA1F1" offset="104.43%" />
-    </linearGradient>
   </defs>
 </svg>
