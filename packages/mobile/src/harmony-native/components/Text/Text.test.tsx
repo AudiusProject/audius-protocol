@@ -39,3 +39,37 @@ test('it renders color correctly', () => {
     color: '#C2C0CC'
   })
 })
+
+test('it detects subscript characters and applies adjustments', () => {
+  // Test with subscript characters (₀₁₂₃₄₅₆₇₈₉)
+  render(<Text>Price: $0.0₄68352</Text>)
+
+  const textElement = screen.getByText(/Price: \$0\.0₄68352/i)
+
+  // Should have transform property for translateY
+  expect(textElement).toHaveStyle({
+    transform: [{ translateY: expect.any(Number) }]
+  })
+})
+
+test('it does not apply subscript adjustments for normal text', () => {
+  render(<Text>Normal text without subscripts</Text>)
+
+  const textElement = screen.getByText(/Normal text without subscripts/i)
+
+  // Should not have transform property
+  expect(textElement).not.toHaveStyle({
+    transform: [{ translateY: expect.any(Number) }]
+  })
+})
+
+test('it handles mixed content with and without subscripts', () => {
+  render(<Text>Price: $0.0₄68352 and $1.23</Text>)
+
+  const textElement = screen.getByText(/Price: \$0\.0₄68352 and \$1\.23/i)
+
+  // Should still apply adjustments since subscripts are present
+  expect(textElement).toHaveStyle({
+    transform: [{ translateY: expect.any(Number) }]
+  })
+})
