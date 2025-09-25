@@ -41,24 +41,20 @@ const AssetInfoSectionSkeleton = () => {
     <Paper
       borderRadius='l'
       shadow='far'
-      direction='column'
+      column
       alignItems='flex-start'
+      border='default'
     >
       {/* Banner skeleton */}
       <Flex
-        direction='column'
+        column
         alignItems='flex-start'
         alignSelf='stretch'
+        border='default'
         h={BANNER_HEIGHT}
         css={{ backgroundColor: theme.color.neutral.n100 }}
       >
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          alignSelf='stretch'
-          p='l'
-          gap='s'
-        >
+        <Flex column alignItems='flex-start' alignSelf='stretch' p='l' gap='s'>
           <Skeleton width='80px' height='16px' />
           <Flex
             alignItems='center'
@@ -75,15 +71,9 @@ const AssetInfoSectionSkeleton = () => {
       </Flex>
 
       {/* Content skeleton */}
-      <Flex
-        direction='column'
-        alignItems='flex-start'
-        alignSelf='stretch'
-        p='xl'
-        gap='l'
-      >
+      <Flex column alignItems='flex-start' alignSelf='stretch' p='xl' gap='l'>
         <Skeleton width='200px' height='24px' />
-        <Flex direction='column' gap='m'>
+        <Flex column gap='m'>
           <Skeleton width='100%' height='20px' />
           <Skeleton width='90%' height='20px' />
           <Skeleton width='100%' height='20px' />
@@ -130,19 +120,13 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
   if (isLoading || !coin || !owner) {
     return (
       <Flex
-        direction='column'
+        column
         alignItems='flex-start'
         alignSelf='stretch'
         h={BANNER_HEIGHT}
         css={{ backgroundColor: theme.color.neutral.n100 }}
       >
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          alignSelf='stretch'
-          p='l'
-          gap='s'
-        >
+        <Flex column alignItems='flex-start' alignSelf='stretch' p='l' gap='s'>
           <Skeleton width='80px' height='16px' />
           <Flex
             alignItems='center'
@@ -162,7 +146,7 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
 
   return (
     <Flex
-      direction='column'
+      column
       alignItems='flex-start'
       alignSelf='stretch'
       h={BANNER_HEIGHT}
@@ -174,13 +158,7 @@ const BannerSection = ({ mint }: BannerSectionProps) => {
         position: 'relative'
       }}
     >
-      <Flex
-        direction='column'
-        alignItems='flex-start'
-        alignSelf='stretch'
-        p='l'
-        gap='s'
-      >
+      <Flex column alignItems='flex-start' alignSelf='stretch' p='l' gap='s'>
         <Text variant='label' size='m' color='staticWhite' shadow='emphasis'>
           {messages.createdBy}
         </Text>
@@ -238,20 +216,15 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
     <Paper
       borderRadius='l'
       shadow='far'
-      direction='column'
+      column
       alignItems='flex-start'
+      border='default'
     >
       <BannerSection mint={mint} />
 
       {coin.description ? (
-        <Flex
-          direction='column'
-          alignItems='flex-start'
-          alignSelf='stretch'
-          p='xl'
-          gap='l'
-        >
-          <Flex direction='column' gap='m'>
+        <Flex column alignItems='flex-start' alignSelf='stretch' p='xl' gap='l'>
+          <Flex column gap='m'>
             {descriptionParagraphs.map((paragraph) => {
               if (paragraph.trim() === '') {
                 return null
