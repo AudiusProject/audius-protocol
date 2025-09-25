@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
+import { SLIPPAGE_BPS } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import {
@@ -9,6 +9,7 @@ import {
   TokenPair,
   useTokenAmountFormatting
 } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
@@ -16,7 +17,7 @@ import { SwapBalanceSection } from './SwapBalanceSection'
 const messages = {
   ...baseMessages,
   priceEach: (price: number) => {
-    const formatted = formatUSDCValue(price, { includeDollarSign: true })
+    const formatted = formatCurrencyWithSubscript(price)
     return `(${formatted} ea.)`
   }
 }
@@ -96,11 +97,11 @@ export const ConfirmSwapScreen = (props: ConfirmSwapScreenProps) => {
   }
 
   return (
-    <Flex direction='column' gap='l'>
-      <Text variant='body' size='m' textAlign='center'>
+    <Flex column gap='l'>
+      <Text variant='body' size='m'>
         {messages.confirmReview}
       </Text>
-      <Flex direction='column' gap='xl'>
+      <Flex column gap='xl'>
         <SwapBalanceSection
           title={messages.youPay}
           tokenInfo={payTokenInfo}

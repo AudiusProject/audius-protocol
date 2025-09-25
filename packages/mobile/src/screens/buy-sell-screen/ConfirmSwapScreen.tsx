@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { formatUSDCValue, SLIPPAGE_BPS } from '@audius/common/api'
+import { SLIPPAGE_BPS } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import type { TokenInfo, TokenPair } from '@audius/common/store'
@@ -11,6 +11,7 @@ import {
   useSwapDisplayData,
   useTokenAmountFormatting
 } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 
 import {
   Button,
@@ -35,7 +36,7 @@ import { PoweredByJupiter } from './components/PoweredByJupiter'
 const messages = {
   ...baseMessages,
   priceEach: (price: number) => {
-    const formatted = formatUSDCValue(price, { includeDollarSign: true })
+    const formatted = formatCurrencyWithSubscript(price)
     return `(${formatted} ea.)`
   },
   loadingTitle: 'Transaction in Progress',
@@ -164,10 +165,10 @@ export const ConfirmSwapScreen = ({ route }: ConfirmSwapScreenProps) => {
         activeTab,
         inputToken: swapTokens.inputToken,
         outputToken: swapTokens.outputToken,
-        inputAmount: swapResult?.inputAmount || payAmount,
-        outputAmount: swapResult?.outputAmount || receiveAmount,
+        inputAmount: swapResult?.inputAmount ?? payAmount,
+        outputAmount: swapResult?.outputAmount ?? receiveAmount,
         exchangeRate,
-        signature: swapResult?.signature || ''
+        signature: swapResult?.signature ?? ''
       })
 
       navigation.navigate('TransactionResultScreen', {
