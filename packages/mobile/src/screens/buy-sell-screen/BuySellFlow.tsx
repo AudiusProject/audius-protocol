@@ -218,7 +218,7 @@ export const BuySellFlow = ({
   )
   const pricePerBaseToken = useMemo(() => {
     return outputCoin?.price !== 0
-      ? (outputCoin?.price ?? 0)
+      ? outputCoin?.price
       : (outputCoin?.dynamicBondingCurve.priceUSD ?? 0)
   }, [outputCoin])
 
