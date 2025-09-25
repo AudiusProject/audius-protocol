@@ -90,8 +90,9 @@ export const AssetLeaderboardCard = ({ mint }: AssetLeaderboardCardProps) => {
     <Paper
       borderRadius='l'
       shadow='far'
-      direction='column'
+      column
       alignItems='flex-start'
+      border='default'
     >
       <Flex alignItems='center' gap='xs' pv='l' ph='xl'>
         <Text variant='heading' size='s' color='heading'>

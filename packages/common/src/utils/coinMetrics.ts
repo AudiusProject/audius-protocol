@@ -17,6 +17,7 @@ const messages = {
   uniqueHolders: 'Unique Holders',
   volume24hr: 'Volume (24hr)',
   totalTransfers: 'Total Transfers',
+  marketCap: 'Market Cap',
   graduationProgress: 'Graduation Progress'
 }
 
@@ -61,6 +62,10 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
       coin.priceChange24hPercent
     ),
     createMetric(
+      formatCurrencyWithSubscript(coin.marketCap),
+      messages.marketCap
+    ),
+    createMetric(
       formatCount(coin.holder),
       messages.uniqueHolders,
       coin.uniqueWallet24hChangePercent
@@ -74,6 +79,7 @@ export const createCoinMetrics = (coin: Coin): MetricData[] => {
       messages.volume24hr,
       coin.v24hChangePercent
     ),
+
     createMetric(
       formatCount(coin.trade24h),
       messages.totalTransfers,

@@ -49,7 +49,10 @@ export const useTokenBalance = ({
   const isAudio = mint === env.WAUDIO_MINT_ADDRESS
 
   // For AUDIO, we need to use the useAudioBalance hook since it includes ETH audio. useUserCoin is only SOL AUDIO
-  const audioTokenQuery = useAudioBalance({ userId }, { enabled: isAudio })
+  const audioTokenQuery = useAudioBalance(
+    { userId, includeConnectedWallets: includeExternalWallets },
+    { enabled: isAudio }
+  )
 
   // Artist coins query
   const userCoinQuery = useUserCoin(

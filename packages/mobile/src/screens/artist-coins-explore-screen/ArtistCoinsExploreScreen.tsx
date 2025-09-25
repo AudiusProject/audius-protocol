@@ -26,6 +26,7 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage.webp'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { env } from 'app/services/env'
@@ -214,6 +215,7 @@ export const ArtistCoinsExploreScreen = () => {
           )}
         </ScrollView>
       </Paper>
+      <PlayBarChin />
     </Screen>
   )
 }
