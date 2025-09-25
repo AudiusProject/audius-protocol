@@ -67,7 +67,8 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
     tokenBalanceFormatted: balance,
     tokenDollarValue: dollarValue,
     isTokenBalanceLoading,
-    isTokenPriceLoading
+    isTokenPriceLoading,
+    formattedHeldValue
   } = useFormattedTokenBalance(mint)
 
   const isLoading =
@@ -124,7 +125,7 @@ export const CoinCard = ({ mint, showUserBalance = true }: CoinCardProps) => {
         <Flex row alignItems='center' gap='m'>
           {!isLoading && showUserBalance ? (
             <Text variant='title' size='l' color='default'>
-              {dollarValue}
+              {formattedHeldValue ?? dollarValue}
             </Text>
           ) : null}
         </Flex>

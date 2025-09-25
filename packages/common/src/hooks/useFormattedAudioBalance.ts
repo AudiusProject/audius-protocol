@@ -3,7 +3,12 @@ import { useMemo } from 'react'
 import { AUDIO, FixedDecimal } from '@audius/fixed-decimal'
 
 import { useArtistCoin, useAudioBalance, useQueryContext } from '~/api'
-import { formatAudioBalance, isNullOrUndefined } from '~/utils'
+import {
+  formatAudioBalance,
+  formatCount,
+  formatCurrencyWithSubscript,
+  isNullOrUndefined
+} from '~/utils'
 
 type UseFormattedAudioBalanceReturn = {
   audioBalance: bigint | null
@@ -12,6 +17,8 @@ type UseFormattedAudioBalanceReturn = {
   audioPrice: string | null
   audioDollarValue: string
   isAudioPriceLoading: boolean
+  heldValue: number | null
+  formattedHeldValue: string | null
 }
 
 export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
@@ -40,12 +47,24 @@ export const useFormattedAudioBalance = (): UseFormattedAudioBalanceReturn => {
     return `$${totalValue.toFixed(2)} ($${Number(new FixedDecimal(audioPrice).toString()).toFixed(4)})`
   }, [audioBalance, audioPrice])
 
+  const heldValue =
+    audioPrice && audioBalance
+      ? Number(audioPrice) * Number(audioBalance)
+      : null
+  const formattedHeldValue = heldValue
+    ? heldValue >= 1
+      ? `$${formatCount(heldValue, 2)}`
+      : formatCurrencyWithSubscript(heldValue)
+    : null
+
   return {
     audioBalance,
     audioBalanceFormatted,
     isAudioBalanceLoading,
     audioPrice,
     audioDollarValue,
-    isAudioPriceLoading
+    isAudioPriceLoading,
+    heldValue,
+    formattedHeldValue
   }
 }

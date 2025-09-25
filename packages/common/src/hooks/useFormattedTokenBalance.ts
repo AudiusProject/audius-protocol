@@ -6,7 +6,8 @@ import { useTokenBalance, useArtistCoin } from '../api'
 import {
   getTokenDecimalPlaces,
   formatCurrencyWithSubscript,
-  isNullOrUndefined
+  isNullOrUndefined,
+  formatCount
 } from '../utils'
 
 type UseFormattedTokenBalanceReturn = {
@@ -16,6 +17,8 @@ type UseFormattedTokenBalanceReturn = {
   tokenPrice: string | null
   tokenDollarValue: string
   isTokenPriceLoading: boolean
+  heldValue: number | null
+  formattedHeldValue: string | null
 }
 
 /**
@@ -65,12 +68,22 @@ export const useFormattedTokenBalance = (
     return formatCurrencyWithSubscript(priceNumber)
   }, [tokenPrice])
 
+  const heldValue =
+    tokenPrice && balance ? Number(tokenPrice) * Number(balance) : null
+  const formattedHeldValue = heldValue
+    ? heldValue >= 1
+      ? `$${formatCount(heldValue, 2)}`
+      : formatCurrencyWithSubscript(heldValue)
+    : null
+
   return {
     tokenBalance: balance ?? null,
     tokenBalanceFormatted,
     isTokenBalanceLoading,
     tokenPrice: tokenPrice?.toString() ?? null,
     tokenDollarValue,
-    isTokenPriceLoading
+    isTokenPriceLoading,
+    heldValue,
+    formattedHeldValue
   }
 }
