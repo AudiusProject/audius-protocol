@@ -56,7 +56,7 @@ export const coinDetailsMessages = {
     newWalletConnected: 'New Wallet Successfully Connected!',
     error: 'Something went wrong. Please try again.',
     walletAlreadyAdded: 'No new wallets selected to connect.',
-    builtIn: 'Built-In',
+    builtIn: 'Built-In Wallet',
     toasts: {
       walletRemoved: 'Wallet removed successfully!',
       error: 'Error removing wallet'
