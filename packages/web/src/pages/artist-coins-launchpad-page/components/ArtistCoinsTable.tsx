@@ -161,11 +161,9 @@ const renderBuyCell = (
   return (
     <Flex pr='xl' justifyContent='flex-end'>
       <Button
-        variant='tertiary'
+        variant='secondary'
         size='small'
-        css={{
-          boxShadow: '0 0 0 1px inset var(--harmony-border-default) !important'
-        }}
+        hoverColor='coinGradient'
         onClick={(e) => {
           e.stopPropagation()
           handleBuy(coin.ticker ?? '')
