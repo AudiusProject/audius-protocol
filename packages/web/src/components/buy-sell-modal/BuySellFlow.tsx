@@ -365,7 +365,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     swapTokens.outputTokenInfo?.address
   )
   const pricePerBaseToken = useMemo(() => {
-    return outputCoin?.price !== 0
+    return !!outputCoin?.price
       ? outputCoin?.price
       : (outputCoin?.dynamicBondingCurve.priceUSD ?? 0)
   }, [outputCoin])
