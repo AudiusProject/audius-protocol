@@ -386,7 +386,14 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
 
   if (isPending) {
     return (
-      <Paper w='100%' justifyContent='center' alignItems='center' p='4xl'>
+      <Paper
+        w='100%'
+        justifyContent='center'
+        alignItems='center'
+        p='4xl'
+        border='default'
+        borderRadius='m'
+      >
         <LoadingSpinner
           style={{ height: spacing.unit8, width: spacing.unit8 }}
         />
@@ -403,6 +410,8 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
         alignItems='center'
         p='4xl'
         gap='l'
+        border='default'
+        borderRadius='m'
       >
         <IconSearch size='2xl' color='default' />
         <Text variant='heading' size='m'>
@@ -416,7 +425,7 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
   }
 
   return (
-    <Flex ref={tableRef}>
+    <Flex ref={tableRef} border='default' borderRadius='m'>
       <Table
         columns={columns}
         data={coins}

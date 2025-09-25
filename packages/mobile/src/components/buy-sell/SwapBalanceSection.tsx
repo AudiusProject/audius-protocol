@@ -1,5 +1,3 @@
-import React from 'react'
-
 import type { TokenInfo } from '@audius/common/store'
 
 import { CryptoBalanceSection } from './CryptoBalanceSection'

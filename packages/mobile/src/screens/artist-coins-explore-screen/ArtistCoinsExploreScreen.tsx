@@ -25,6 +25,7 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import imageSearchHeaderBackground from 'app/assets/images/imageCoinsBackgroundImage.webp'
+import { PlayBarChin } from 'app/components/core/PlayBarChin'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { env } from 'app/services/env'
@@ -164,7 +165,7 @@ export const ArtistCoinsExploreScreen = () => {
         <Header searchValue={searchValue} setSearchValue={setSearchValue} />
       )}
     >
-      <Paper mh='l' mt='xl'>
+      <Paper mh='l' mv='xl' border='default' borderRadius='m' flex={1}>
         <Flex
           row
           ph='l'
@@ -201,7 +202,7 @@ export const ArtistCoinsExploreScreen = () => {
           ) : shouldShowNoCoinsContent ? (
             <NoCoinsContent />
           ) : (
-            <Flex pt='s' pb='4xl'>
+            <Flex pt='s'>
               {coins.map((coin) => (
                 <CoinRow
                   key={coin.mint}
@@ -213,6 +214,7 @@ export const ArtistCoinsExploreScreen = () => {
           )}
         </ScrollView>
       </Paper>
+      <PlayBarChin />
     </Screen>
   )
 }

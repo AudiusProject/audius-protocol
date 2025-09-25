@@ -154,14 +154,8 @@ const SendTokensInput = ({
     )
   }
 
-  // Format balance for display
-  const formattedBalance = new FixedDecimal(
-    currentBalance,
-    tokenInfo.decimals
-  ).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+  // Use the pre-formatted balance from the tokenBalance hook
+  const formattedBalance = tokenBalance?.balanceLocaleString ?? '0.00'
 
   return (
     <Flex direction='column' gap='xl' p='xl'>

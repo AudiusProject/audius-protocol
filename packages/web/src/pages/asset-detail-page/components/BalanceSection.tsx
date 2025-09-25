@@ -149,7 +149,7 @@ const HasBalanceState = ({
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
-    tokenDollarValue,
+    formattedHeldValue,
     isTokenBalanceLoading,
     isTokenPriceLoading
   } = useFormattedTokenBalance(mint)
@@ -177,7 +177,7 @@ const HasBalanceState = ({
             </Text>
           </Flex>
           <Text variant='heading' size='s' color='subdued'>
-            {tokenDollarValue}
+            {formattedHeldValue}
           </Text>
         </Flex>
       </Flex>
@@ -283,7 +283,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
   const logoURI = coin.logoUri
 
   return (
-    <Paper ph='xl' pv='l'>
+    <Paper ph='xl' pv='l' border='default'>
       <Flex column gap='l' w='100%'>
         {!tokenBalance?.balance ||
         Number(tokenBalance.balance.toString()) === 0 ? (
@@ -340,7 +340,7 @@ export const BalanceSection = componentWithErrorBoundary(
   {
     name: 'BalanceSection',
     fallback: (
-      <Paper ph='xl' pv='l'>
+      <Paper ph='xl' pv='l' border='default'>
         <Flex column gap='l' w='100%'>
           <Text variant='body' size='m' color='subdued'>
             {walletMessages.errors.unableToLoadBalance}

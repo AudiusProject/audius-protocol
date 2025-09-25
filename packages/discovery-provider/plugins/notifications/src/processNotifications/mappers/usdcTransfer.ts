@@ -11,6 +11,8 @@ import {
   formatProfileUrl,
   formatUSDCWeiToUSDString
 } from '../../utils/format'
+import { Connection, PublicKey } from '@solana/web3.js'
+import { AccountLayout } from '@solana/spl-token'
 
 type USDCTransferRow = Omit<NotificationRow, 'data'> & {
   data: USDCTransferNotification
@@ -19,6 +21,7 @@ type USDCTransferRow = Omit<NotificationRow, 'data'> & {
 export class USDCTransfer extends BaseNotification<USDCTransferRow> {
   userId: number
   amount: string
+  userBank: string
   receiverAccount: string
   signature: string
 
@@ -33,8 +36,44 @@ export class USDCTransfer extends BaseNotification<USDCTransferRow> {
       )
       this.receiverAccount = this.notification.data.receiver_account
       this.signature = this.notification.data.signature
+      this.userBank = this.notification.data.user_bank
     } catch (e) {
       logger.error('Unable to initialize USDCTransfer notification', e)
+    }
+  }
+
+  // Detect if this is a transfer between two user bank accounts
+  async isInternalTransfer() {
+    try {
+      const rpcEndpoint = process.env.NOTIFICATIONS_SOLANA_RPC
+      if (!rpcEndpoint) {
+        logger.warn('SOLANA_RPC is not set')
+        return false
+      }
+
+      const connection = new Connection(rpcEndpoint, 'confirmed')
+
+      const [userBankRaw, receiverRaw] = await Promise.all([
+        connection.getAccountInfo(new PublicKey(this.userBank)),
+        connection.getAccountInfo(new PublicKey(this.receiverAccount))
+      ])
+      if (!userBankRaw || !receiverRaw) return false
+      const userBankAccount = AccountLayout.decode(userBankRaw.data)
+      const receiverAccount = AccountLayout.decode(receiverRaw.data)
+      const userBankOwner = (
+        userBankAccount.owner instanceof PublicKey
+          ? userBankAccount.owner
+          : new PublicKey(userBankAccount.owner)
+      ).toString()
+      const receiverOwner = (
+        receiverAccount.owner instanceof PublicKey
+          ? receiverAccount.owner
+          : new PublicKey(receiverAccount.owner)
+      ).toString()
+      return userBankOwner === receiverOwner
+    } catch (e) {
+      logger.warn('Failed to determine internal USDC transfer', e)
+      return false
     }
   }
 
@@ -45,6 +84,13 @@ export class USDCTransfer extends BaseNotification<USDCTransferRow> {
       logger.error(`Could not find user for notification ${this.userId}`)
       return
     }
+    if (await this.isInternalTransfer()) {
+      logger.info(
+        `Skipping internal USDC transfer from ${this.userBank} to ${this.receiverAccount}`
+      )
+      return
+    }
+
     // Get the user's notification setting from identity service
     const userNotificationSettings = await buildUserNotificationSettings(
       this.identityDB,

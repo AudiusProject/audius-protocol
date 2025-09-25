@@ -31,6 +31,7 @@ export type CoinCardProps = {
   name: string
   symbol: string
   balance: string
+  heldValue?: string | null
   dollarValue: string
   loading?: boolean
   onClick?: () => void
@@ -41,6 +42,7 @@ export const CoinCard = ({
   name,
   symbol,
   balance,
+  heldValue,
   dollarValue,
   loading = false,
   onClick
@@ -99,7 +101,7 @@ export const CoinCard = ({
       <Flex alignItems='center' gap='m'>
         {!loading && (
           <Text variant='title' size='l' color='default'>
-            {dollarValue}
+            {heldValue ?? dollarValue}
           </Text>
         )}
         {onClick ? <IconCaretRight size='l' color='subdued' /> : null}

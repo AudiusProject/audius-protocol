@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react'
 
 import { walletMessages } from '@audius/common/messages'
+import { playerSelectors } from '@audius/common/store'
 import { GetCoinsSortMethodEnum, GetCoinsSortDirectionEnum } from '@audius/sdk'
+import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
 import { Button, Flex, IconSortDown, IconSortUp } from '@audius/harmony-native'
@@ -10,6 +12,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
 import { SelectionItemList } from '../list-selection-screen/SelectionItemList'
+
+const { getHasTrack } = playerSelectors
 
 const sortOptions = [
   {
@@ -54,6 +58,7 @@ const directionOptions: Array<{
 export const ArtistCoinSortScreen = () => {
   const navigation = useNavigation()
   const { params } = useRoute<'ArtistCoinSort'>()
+  const hasTrack = useSelector(getHasTrack)
 
   const { initialSortMethod, initialSortDirection } = params
 
@@ -112,7 +117,7 @@ export const ArtistCoinSortScreen = () => {
             onChange={handleSortOptionChange}
           />
         </Flex>
-        <Flex ph='l'>
+        <Flex ph='l' pb={hasTrack ? '3xl' : '0'}>
           <Button variant='primary' fullWidth onPress={handleBackPress}>
             {walletMessages.done}
           </Button>

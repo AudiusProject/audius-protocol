@@ -82,7 +82,8 @@ export const AudioHoverCard = ({
   const { data: tokenBalance } = useTokenBalance({
     mint: env.WAUDIO_MINT_ADDRESS,
     userId,
-    enabled: isHovered
+    enabled: isHovered,
+    includeExternalWallets: true
   })
 
   const formattedBalance = tokenBalance

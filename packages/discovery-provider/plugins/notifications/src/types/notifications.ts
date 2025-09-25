@@ -286,6 +286,7 @@ export type USDCTransferNotification = {
   signature: string
   change: number
   receiver_account: string
+  user_bank: string
 }
 
 export type USDCWithdrawalNotification = {

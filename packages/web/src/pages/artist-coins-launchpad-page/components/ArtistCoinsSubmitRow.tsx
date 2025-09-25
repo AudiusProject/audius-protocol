@@ -39,14 +39,16 @@ export const ArtistCoinsSubmitRow = ({
   cancelText = defaultMessages.cancel,
   backIcon = false,
   submit = false,
+  isValid: isValidProp,
   errorText
 }: ArtistCoinsSubmitRowProps) => {
   const { color, spacing } = useTheme()
-  const { isValid } = useFormikContext()
+  const { isValid: isEntireFormValid } = useFormikContext()
+  const isFormValid = isValidProp ?? isEntireFormValid
   const [showError, setShowError] = useState(false)
 
-  const handleCreate = () => {
-    if (!isValid) {
+  const handleCTAClick = () => {
+    if (!isFormValid) {
       setShowError(true)
       return
     }
@@ -89,14 +91,14 @@ export const ArtistCoinsSubmitRow = ({
           <Button
             variant='primary'
             size='default'
-            onClick={handleCreate}
+            onClick={handleCTAClick}
             disabled={isLoading}
             type={submit ? 'submit' : 'button'}
           >
             {continueText}
           </Button>
         </Flex>
-        {errorText || (showError && !isValid) ? (
+        {errorText || (showError && !isFormValid) ? (
           <Flex alignItems='center' gap='xs'>
             <IconError color='danger' size='s' />
             <Text color='danger' size='s' variant='body'>

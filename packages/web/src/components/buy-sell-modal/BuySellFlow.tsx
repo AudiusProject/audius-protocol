@@ -4,7 +4,8 @@ import {
   useCurrentAccountUser,
   useUserCoins,
   useTokens,
-  useTokenPair
+  useTokenPair,
+  useArtistCoin
 } from '@audius/common/api'
 import { useBuySellAnalytics } from '@audius/common/hooks'
 import { buySellMessages as messages } from '@audius/common/messages'
@@ -360,6 +361,15 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     setTabInputValues
   ])
 
+  const { data: outputCoin } = useArtistCoin(
+    swapTokens.outputTokenInfo?.address
+  )
+  const pricePerBaseToken = useMemo(() => {
+    return outputCoin?.price
+      ? outputCoin?.price
+      : (outputCoin?.dynamicBondingCurve.priceUSD ?? 0)
+  }, [outputCoin])
+
   const isTransactionInvalid = !transactionData?.isValid
 
   const displayErrorMessage = useMemo(() => {
@@ -502,6 +512,7 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
             isConfirming={isConfirmButtonLoading}
             activeTab={activeTab}
             selectedPair={safeSelectedPair}
+            pricePerBaseToken={pricePerBaseToken}
           />
         ) : null}
       </Flex>

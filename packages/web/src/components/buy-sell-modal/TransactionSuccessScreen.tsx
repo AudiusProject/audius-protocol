@@ -1,6 +1,6 @@
-import { formatUSDCValue } from '@audius/common/api'
 import { buySellMessages as baseMessages } from '@audius/common/messages'
 import { useTokenAmountFormatting, TokenInfo } from '@audius/common/store'
+import { formatCurrencyWithSubscript } from '@audius/common/utils'
 import { Button, CompletionCheck, Flex, Text } from '@audius/harmony'
 
 import { SwapBalanceSection } from './SwapBalanceSection'
@@ -8,7 +8,7 @@ import { SwapBalanceSection } from './SwapBalanceSection'
 const messages = {
   ...baseMessages,
   priceEach: (price: number) => {
-    const formatted = formatUSDCValue(price, { includeDollarSign: true })
+    const formatted = formatCurrencyWithSubscript(price)
     return `(${formatted} ea.)`
   }
 }

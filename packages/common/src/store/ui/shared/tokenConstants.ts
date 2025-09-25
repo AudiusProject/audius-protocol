@@ -1,3 +1,5 @@
+import TokenAUDIOPng from '@audius/harmony/src/assets/icons/TokenAUDIO.png'
+
 import { JupiterTokenListing } from '../buy-audio/types'
 
 /**
@@ -9,14 +11,13 @@ const BASE_TOKEN_METADATA = {
     symbol: 'AUDIO',
     name: 'Audius Coin',
     decimals: 8,
-    logoURI:
-      'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM/logo.png'
+    logoURI: TokenAUDIOPng
   },
   SOL: {
     chainId: 101,
     address: 'So11111111111111111111111111111111111111112',
     symbol: 'SOL',
-    name: 'Wrapped SOL',
+    name: 'Solana',
     decimals: 9,
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'
