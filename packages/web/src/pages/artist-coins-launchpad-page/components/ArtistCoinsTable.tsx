@@ -52,7 +52,7 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
   return (
     <Flex
       pl='xl'
-      gap='xl'
+      gap='s'
       alignItems='center'
       justifyContent='space-between'
       w='100%'
@@ -159,7 +159,7 @@ const renderBuyCell = (
   const coin = cellInfo.row.original
 
   return (
-    <Flex pr='xl' justifyContent='flex-end'>
+    <Flex pr='s' justifyContent='flex-end'>
       <Button
         variant='secondary'
         size='small'
@@ -181,8 +181,8 @@ const tableColumnMap = {
     Header: 'Coin',
     accessor: 'name',
     Cell: renderTokenNameCell,
-    width: 300,
-    minWidth: 300,
+    width: 150,
+    minWidth: 150,
     disableSortBy: true,
     align: 'left'
   },
@@ -193,7 +193,8 @@ const tableColumnMap = {
     Cell: renderPriceCell,
     disableSortBy: false,
     align: 'right',
-    width: 100,
+    width: 50,
+    minWidth: 50,
     sorter: numericSorter('price')
   },
   volume24h: {
@@ -203,6 +204,8 @@ const tableColumnMap = {
     Cell: renderVolume24hCell,
     disableSortBy: false,
     align: 'right',
+    width: 40,
+    minWidth: 40,
     sorter: numericSorter('v24hUSD')
   },
   marketCap: {
@@ -212,7 +215,8 @@ const tableColumnMap = {
     Cell: renderMarketCapCell,
     disableSortBy: false,
     align: 'right',
-    width: 80,
+    width: 50,
+    minWidth: 50,
     sorter: numericSorter('marketCap')
   },
   createdDate: {
@@ -222,7 +226,8 @@ const tableColumnMap = {
     Cell: renderCreatedDateCell,
     disableSortBy: false,
     align: 'right',
-    width: 80,
+    width: 40,
+    minWidth: 40,
     sorter: dateSorter('createdAt')
   },
   holders: {
@@ -232,7 +237,8 @@ const tableColumnMap = {
     Cell: renderHoldersCell,
     disableSortBy: false,
     align: 'right',
-    width: 80,
+    width: 40,
+    minWidth: 40,
     sorter: numericSorter('holder')
   },
   buy: {
@@ -241,7 +247,8 @@ const tableColumnMap = {
     Cell: renderBuyCell,
     disableSortBy: true,
     align: 'right',
-    width: 80
+    width: 30,
+    minWidth: 30
   }
 }
 
