@@ -31,6 +31,7 @@ const DEFAULT_MAX_RETRY_COUNT = 120
 export const RECOVERY_MEMO_STRING = 'Recover Withdrawal'
 export const WITHDRAWAL_MEMO_STRING = 'Withdrawal'
 export const PREPARE_WITHDRAWAL_MEMO_STRING = 'Prepare Withdrawal'
+export const INTERNAL_TRANSFER_MEMO_STRING = 'Internal Transfer'
 
 /**
  * Memo program V1

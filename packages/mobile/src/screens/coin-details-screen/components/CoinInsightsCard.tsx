@@ -10,7 +10,8 @@ import {
   IconButton,
   Paper,
   Text,
-  IconKebabHorizontal
+  IconKebabHorizontal,
+  spacing
 } from '@audius/harmony-native'
 import { TooltipInfoIcon } from 'app/components/buy-sell/TooltipInfoIcon'
 import { useDrawer } from 'app/hooks/useDrawer'
@@ -109,7 +110,14 @@ const MetricRow = ({ metric, coin }: { metric: MetricData; coin?: Coin }) => {
       w='100%'
     >
       <Flex column alignItems='flex-start' flex={1}>
-        <Text variant='heading' size='xl'>
+        <Text
+          variant='heading'
+          size='xl'
+          style={{
+            lineHeight: spacing.unit13,
+            transform: [{ translateY: -spacing.unitHalf }]
+          }}
+        >
           {metric.value}
         </Text>
         <Text variant='title' size='m' color='subdued'>

@@ -4,6 +4,8 @@ import type { Coin } from '@audius/common/adapters'
 import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
+import { shortenSPLAddress } from '@audius/common/utils'
+import Clipboard from '@react-native-clipboard/clipboard'
 import { Image, Linking } from 'react-native'
 
 import {
@@ -11,6 +13,7 @@ import {
   Divider,
   Flex,
   HexagonalIcon,
+  IconCopy,
   IconExternalLink,
   IconGift,
   Paper,
@@ -19,9 +22,11 @@ import {
 } from '@audius/harmony-native'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 import { env } from 'app/services/env'
 
 const messages = coinDetailsMessages.coinInfo
+const overflowMessages = coinDetailsMessages.overflowMenu
 
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
@@ -147,6 +152,7 @@ const CoinDescriptionSection = ({ coin }: { coin: Coin }) => {
 export const CoinInfoCard = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const navigation = useNavigation()
+  const { toast } = useToast()
 
   const handleLearnMore = useCallback(() => {
     // Open the coin website in browser
@@ -158,6 +164,11 @@ export const CoinInfoCard = ({ mint }: { mint: string }) => {
   const handleBrowseRewards = useCallback(() => {
     navigation.navigate('RewardsScreen')
   }, [navigation])
+
+  const handleCopyAddress = useCallback(() => {
+    Clipboard.setString(mint)
+    toast({ content: overflowMessages.copiedToClipboard, type: 'info' })
+  }, [mint, toast])
 
   if (isLoading || !coin) {
     return null
@@ -186,6 +197,22 @@ export const CoinInfoCard = ({ mint }: { mint: string }) => {
         >
           {isWAudio ? messages.browseRewards : messages.learnMore}
         </PlainButton>
+      </Flex>
+      <Divider style={{ width: '100%' }} />
+      <Flex
+        direction='row'
+        w='100%'
+        ph='xl'
+        pv='l'
+        justifyContent='space-between'
+        alignItems='center'
+      >
+        <PlainButton onPress={handleCopyAddress} iconLeft={IconCopy}>
+          {overflowMessages.copyCoinAddress}
+        </PlainButton>
+        <Text variant='body' size='m' color='subdued'>
+          {shortenSPLAddress(mint)}
+        </Text>
       </Flex>
     </Paper>
   )

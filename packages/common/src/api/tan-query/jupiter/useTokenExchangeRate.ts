@@ -276,6 +276,7 @@ export const useTokenExchangeRate = (
         }
       }
     },
+    enabled: !!params.inputMint && !!params.outputMint,
     ...options
   })
 }
