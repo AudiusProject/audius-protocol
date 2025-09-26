@@ -185,7 +185,15 @@ export const ConvertTab = ({
               color='subdued'
               onClick={onChangeSwapDirection}
               aria-label='Swap token direction'
-              css={{ transform: 'rotate(90deg)' }}
+              css={{
+                transform: 'rotate(90deg)',
+                '&:hover svg': {
+                  transform: 'rotate(90deg) scale(1.1)'
+                },
+                '&:active svg': {
+                  transform: 'rotate(90deg) scale(0.98)'
+                }
+              }}
             />
             <Divider />
           </Flex>
