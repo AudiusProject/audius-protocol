@@ -40,6 +40,7 @@ type InputTokenSectionProps = {
   tokenPriceDecimalPlaces?: number
   availableTokens?: TokenInfo[]
   onTokenChange?: (token: TokenInfo) => void
+  hideTokenDisplay?: boolean
 }
 
 export const InputTokenSection = ({
@@ -54,7 +55,8 @@ export const InputTokenSection = ({
   error,
   errorMessage,
   availableTokens,
-  onTokenChange
+  onTokenChange,
+  hideTokenDisplay = false
 }: InputTokenSectionProps) => {
   const { symbol, isStablecoin } = tokenInfo
   const [localAmount, setLocalAmount] = useState(amount || '')
@@ -140,7 +142,7 @@ export const InputTokenSection = ({
             />
           </Flex>
 
-          {shouldDisplayTokenDropdown ? (
+          {!hideTokenDisplay && shouldDisplayTokenDropdown ? (
             <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
               <TokenDropdown
                 selectedToken={tokenInfo}
@@ -148,11 +150,11 @@ export const InputTokenSection = ({
                 onTokenChange={onTokenChange}
               />
             </Flex>
-          ) : (
+          ) : !hideTokenDisplay ? (
             <Flex css={(theme) => ({ minWidth: theme.spacing.unit15 })}>
               <StaticTokenDisplay tokenInfo={tokenInfo} />
             </Flex>
-          )}
+          ) : null}
 
           {onMaxClick ? (
             <Button variant='secondary' size='large' onClick={onMaxClick}>
