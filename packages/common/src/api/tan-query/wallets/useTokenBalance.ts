@@ -124,12 +124,6 @@ export const useTokenBalance = ({
 
   if (isUsdc) return usdcQuery
 
-  console.log({
-    isAudio,
-    totalBalance: audioTokenQuery.totalBalance,
-    includeExternalWallets
-  })
-
   if (isAudio) {
     return {
       data: {
