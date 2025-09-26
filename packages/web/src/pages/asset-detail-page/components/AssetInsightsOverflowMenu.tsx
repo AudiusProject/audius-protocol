@@ -79,7 +79,7 @@ export const AssetInsightsOverflowMenu = ({
   }
 
   const onShareToX = () => {
-    if (!artistCoin?.ticker || !artistCoin?.mint) return
+    if (!artistCoin?.ticker || !artistCoin?.mint || !artist?.handle) return
 
     const isArtistOwner = currentUserId === artistCoin.ownerId
     const coinUrl =
@@ -93,7 +93,7 @@ export const AssetInsightsOverflowMenu = ({
       ? messages.shareToXArtistCopy(artistCoin.ticker)
       : messages.shareToXUserCopy(
           artistCoin.ticker,
-          artist?.handle ?? 'artist',
+          artist.handle,
           artistCoin.mint,
           coinUrl
         )
