@@ -21,6 +21,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
@@ -31,7 +32,6 @@ import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { env } from 'services/env'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { push } from 'utils/navigation'
-import { HashId } from '@audius/sdk'
 
 const messages = coinDetailsMessages.coinInfo
 const overflowMessages = coinDetailsMessages.overflowMenu
