@@ -589,7 +589,22 @@ export enum Name {
   // Android App Lifecycle
   ANDROID_APP_RESTART_HEARTBEAT = 'Android App: Restart Due to Heartbeat',
   ANDROID_APP_RESTART_STALE = 'Android App: Restart Due to Stale Time',
-  ANDROID_APP_RESTART_FORCE_QUIT = 'Android App: Restart Due to Force Quit'
+  ANDROID_APP_RESTART_FORCE_QUIT = 'Android App: Restart Due to Force Quit',
+
+  // Artist Coin Launchpad
+  LAUNCHPAD_PAGE_VIEW = 'Launchpad: Page View',
+  LAUNCHPAD_SPLASH_CONTINUE = 'Launchpad: Splash Continue',
+  LAUNCHPAD_WALLET_CONNECTED = 'Launchpad: Wallet Connected',
+  LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE = 'Launchpad: Wallet Insufficient Balance',
+  LAUNCHPAD_SETUP_CONTINUE = 'Launchpad: Setup Continue',
+  LAUNCHPAD_REVIEW_CONTINUE = 'Launchpad: Review Continue',
+  LAUNCHPAD_COIN_CREATION_STARTED = 'Launchpad: Coin Creation Started',
+  LAUNCHPAD_COIN_CREATION_SUCCESS = 'Launchpad: Coin Creation Success',
+  LAUNCHPAD_COIN_CREATION_FAILURE = 'Launchpad: Coin Creation Failure',
+  LAUNCHPAD_FIRST_BUY_STARTED = 'Launchpad: First Buy Started',
+  LAUNCHPAD_FIRST_BUY_SUCCESS = 'Launchpad: First Buy Success',
+  LAUNCHPAD_FIRST_BUY_FAILURE = 'Launchpad: First Buy Failure',
+  LAUNCHPAD_FIRST_BUY_RETRY = 'Launchpad: First Buy Retry'
 }
 
 type PageView = {
@@ -2851,6 +2866,96 @@ export type AndroidAppRestartForceQuit = {
   eventName: Name.ANDROID_APP_RESTART_FORCE_QUIT
 }
 
+// Artist Coin Launchpad
+export type LaunchpadSplashContinue = {
+  eventName: Name.LAUNCHPD_SPLASH_GET_STARTED
+}
+
+export type LaunchpadWalletConnected = {
+  eventName: Name.LAUNCHPAD_WALLET_CONNECTED
+  walletAddress: string
+  walletBalance: number
+}
+
+export type LaunchpadWalletInsufficientBalance = {
+  eventName: Name.LAUNCHPAD_WALLET_INSUFFICIENT_BALANCE
+  walletAddress: string
+  walletBalance: number
+  requiredBalance: number
+}
+
+export type LaunchpadSetupContinue = {
+  eventName: Name.LAUNCHPAD_SETUP_CONTINUE
+  coinName: string
+  coinSymbol: string
+  hasImage: boolean
+  wantsToBuy: 'yes' | 'no'
+  payAmount?: string
+}
+
+export type LaunchpadReviewContinue = {
+  eventName: Name.LAUNCHPAD_REVIEW_CONTINUE
+  coinName: string
+  coinSymbol: string
+  payAmount?: string
+  receiveAmount?: string
+}
+
+export type LaunchpadCoinCreationStarted = {
+  eventName: Name.LAUNCHPAD_COIN_CREATION_STARTED
+  coinName: string
+  coinSymbol: string
+  walletAddress: string
+  initialBuyAmount?: string
+}
+
+export type LaunchpadCoinCreationSuccess = {
+  eventName: Name.LAUNCHPAD_COIN_CREATION_SUCCESS
+  coinName: string
+  coinSymbol: string
+  mintAddress: string
+  initialBuyAmount?: string
+}
+
+export type LaunchpadCoinCreationFailure = {
+  eventName: Name.LAUNCHPAD_COIN_CREATION_FAILURE
+  coinName: string
+  coinSymbol: string
+  error: string
+  stage: 'pool_creation' | 'coin_metadata' | 'first_buy'
+}
+
+export type LaunchpadFirstBuyStarted = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_STARTED
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+  receiveAmount: string
+}
+
+export type LaunchpadFirstBuySuccess = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_SUCCESS
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+  receiveAmount: string
+}
+
+export type LaunchpadFirstBuyFailure = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_FAILURE
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+  error: string
+}
+
+export type LaunchpadFirstBuyRetry = {
+  eventName: Name.LAUNCHPAD_FIRST_BUY_RETRY
+  coinSymbol: string
+  mintAddress: string
+  payAmount: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -3234,3 +3339,16 @@ export type AllTrackingEvents =
   | AndroidAppRestartHeartbeat
   | AndroidAppRestartStale
   | AndroidAppRestartForceQuit
+  | LaunchpadPageView
+  | LaunchpadSplashContinue
+  | LaunchpadWalletConnected
+  | LaunchpadWalletInsufficientBalance
+  | LaunchpadSetupContinue
+  | LaunchpadReviewContinue
+  | LaunchpadCoinCreationStarted
+  | LaunchpadCoinCreationSuccess
+  | LaunchpadCoinCreationFailure
+  | LaunchpadFirstBuyStarted
+  | LaunchpadFirstBuySuccess
+  | LaunchpadFirstBuyFailure
+  | LaunchpadFirstBuyRetry

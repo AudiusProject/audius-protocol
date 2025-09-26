@@ -275,7 +275,7 @@ export const LaunchpadPage = () => {
 
   // TODO (PE-6821) This is temporarily disabled to allow for testing
   const isVerified = true // currentUser?.is_verified ?? false
-  const hasExistingArtistCoin = (createdCoins?.length ?? 0) > 0
+  const hasExistingArtistCoin = false // (createdCoins?.length ?? 0) > 0
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { toast } = useContext(ToastContext)
