@@ -354,7 +354,7 @@ export const LaunchpadPage = () => {
       openCoinSuccessModal({
         mint: launchCoinResponse.newMint,
         name: formValues.coinName,
-        ticker: formValues.coinSymbol,
+        ticker: formValues.coinSymbol.toUpperCase(),
         logoUri: launchCoinResponse.logoUri,
         amountUi: formValues.receiveAmount || '0',
         amountUsd: formValues.usdcValue || '0'
