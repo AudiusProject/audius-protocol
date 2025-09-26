@@ -12,7 +12,7 @@ arrayref = "0.3.6"
 num-derive = "0.3.3"
 num-traits = "0.2.14"
 num_enum = "0.5.1"
-solana-program = "=1.8.14"
+solana-program = "=1.16.27"
 thiserror = "1.0.25"
 borsh = "0.9.0"
 spl-token = { version = "=3.2.0", features = ["no-entrypoint"] }
@@ -20,9 +20,9 @@ bs58 = "0.4.0"
 claimable-tokens = { path = "../../claimable-tokens/program", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]
-solana-program-test = "=1.8.14"
-solana-sdk = "=1.8.14"
-libsecp256k1 = "0.5.0"
+solana-program-test = "=1.16.27"
+solana-sdk = "=1.16.27"
+libsecp256k1 = "0.6.0"
 rand = "0.8.3"
 rand_073 = { package = "rand", version = "0.7.3" }
 sha3 = "0.9.1"
