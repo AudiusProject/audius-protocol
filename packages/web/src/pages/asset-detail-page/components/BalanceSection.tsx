@@ -154,6 +154,7 @@ const HasBalanceState = ({
   mint,
   isBuySellSupported
 }: BalanceStateProps & { mint: string; isBuySellSupported: boolean }) => {
+  const isManagerMode = useIsManagedAccount()
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
@@ -191,8 +192,12 @@ const HasBalanceState = ({
       </Flex>
       <Flex direction='column' gap='s'>
         <Tooltip
-          disabled={isBuySellSupported}
-          text={walletMessages.buySellNotSupported}
+          disabled={isBuySellSupported && !isManagerMode}
+          text={
+            isManagerMode
+              ? walletMessages.buySellNotSupportedManagerMode
+              : walletMessages.buySellNotSupported
+          }
           color='secondary'
           placement='top'
           shouldWrapContent={false}
@@ -202,14 +207,19 @@ const HasBalanceState = ({
               variant='secondary'
               fullWidth
               onClick={onBuy}
-              disabled={!isBuySellSupported}
+              disabled={!isBuySellSupported || isManagerMode}
             >
               {walletMessages.buySell}
             </Button>
           </Box>
         </Tooltip>
         <Flex gap='s'>
-          <Button variant='secondary' fullWidth onClick={onSend}>
+          <Button
+            disabled={isManagerMode}
+            variant='secondary'
+            fullWidth
+            onClick={onSend}
+          >
             {walletMessages.send}
           </Button>
           <Button variant='secondary' fullWidth onClick={onReceive}>

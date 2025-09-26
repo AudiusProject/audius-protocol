@@ -80,6 +80,7 @@ const HasBalanceState = ({
   onReceive,
   mint
 }: BalanceStateProps & { mint: string }) => {
+  const isManagerMode = useIsManagedAccount()
   const { tokenBalanceFormatted, formattedHeldValue } =
     useFormattedTokenBalance(mint)
 
@@ -110,10 +111,20 @@ const HasBalanceState = ({
         </Flex>
       </Flex>
       <Flex column gap='s'>
-        <Button variant='secondary' fullWidth onPress={onBuy}>
+        <Button
+          disabled={isManagerMode}
+          variant='secondary'
+          fullWidth
+          onPress={onBuy}
+        >
           {walletMessages.buySell}
         </Button>
-        <Button variant='secondary' fullWidth onPress={onSend}>
+        <Button
+          disabled={isManagerMode}
+          variant='secondary'
+          fullWidth
+          onPress={onSend}
+        >
           {walletMessages.send}
         </Button>
         <Button variant='secondary' fullWidth onPress={onReceive}>
