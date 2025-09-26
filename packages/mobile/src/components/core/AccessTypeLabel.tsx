@@ -11,9 +11,10 @@ import {
   IconReceive,
   IconSparkles,
   IconCollectible,
-  IconArtistCoin,
-  IconCoinGatedLabel
+  IconArtistCoin
 } from '@audius/harmony-native'
+
+import { CoinGatedLabelSvg } from './CoinGatedLabelSvg'
 
 type AccessTypeLabelProps = {
   type?: AccessType
@@ -87,7 +88,7 @@ export const AccessTypeLabel = (props: AccessTypeLabelProps) => {
   if (type === AccessType.TOKEN_GATED) {
     return (
       <Flex direction='row' gap='xs' alignItems='center'>
-        <IconCoinGatedLabel />
+        <CoinGatedLabelSvg />
       </Flex>
     )
   }
