@@ -102,6 +102,7 @@ const ZeroBalanceState = ({
         border='default'
         direction='column'
         gap='xs'
+        shadow='flat'
       >
         <Text variant='heading' size='s'>
           {walletMessages.becomeMemberTitle}
