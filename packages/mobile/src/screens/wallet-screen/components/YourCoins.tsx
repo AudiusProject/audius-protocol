@@ -5,10 +5,10 @@ import {
   useQueryContext,
   useUserCoins
 } from '@audius/common/api'
-import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { buySellMessages, walletMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
-import { useBuySellModal } from '@audius/common/store'
+import { AUDIO_TICKER } from '@audius/common/store'
 import { ownedCoinsFilter } from '@audius/common/utils'
 import { TouchableOpacity } from 'react-native'
 
@@ -18,8 +18,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { CoinCard, CoinCardSkeleton, HexagonalSkeleton } from './CoinCard'
 
 const messages = {
-  ...buySellMessages,
-  managedAccount: "You can't do that as a managed user"
+  ...buySellMessages
 }
 
 const YourCoinsSkeleton = () => {
@@ -33,17 +32,15 @@ const YourCoinsSkeleton = () => {
   )
 }
 
-const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
-  const { onOpen: openBuySellModal } = useBuySellModal()
-  const isManagedAccount = useIsManagedAccount()
+const YourCoinsHeader = () => {
+  const navigation = useNavigation()
 
-  const handleBuySellClick = useCallback(() => {
-    if (isManagedAccount) {
-      // TODO: Add toast for mobile
-    } else {
-      openBuySellModal()
-    }
-  }, [isManagedAccount, openBuySellModal])
+  const handleBuySell = useCallback(() => {
+    navigation.navigate('BuySell', {
+      initialTab: 'buy',
+      coinTicker: AUDIO_TICKER
+    })
+  }, [navigation])
 
   return (
     <Flex
@@ -57,7 +54,7 @@ const YourCoinsHeader = ({ isLoading }: { isLoading: boolean }) => {
       <Text variant='heading' size='s' color='heading'>
         {messages.coins}
       </Text>
-      <Button variant='secondary' size='small' onPress={handleBuySellClick}>
+      <Button variant='secondary' size='small' onPress={handleBuySell}>
         {messages.buySell}
       </Button>
     </Flex>
@@ -115,7 +112,7 @@ export const YourCoins = () => {
 
   return (
     <Paper>
-      <YourCoinsHeader isLoading={isLoadingCoins} />
+      <YourCoinsHeader />
       <Flex column>
         {isLoadingCoins || !currentUserId ? (
           <YourCoinsSkeleton />
