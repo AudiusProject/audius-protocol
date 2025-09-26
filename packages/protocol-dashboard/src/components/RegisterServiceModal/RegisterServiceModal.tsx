@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Box, Flex, Text } from '@audius/harmony'
-import { ButtonType, TabSlider } from '@audius/stems'
+import { ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 import clsx from 'clsx'
 
@@ -32,8 +32,6 @@ import styles from './RegisterServiceModal.module.css'
 
 const messages = {
   registerNode: 'Register Node',
-  ctaCn: 'Register Creator Node',
-  ctaDn: 'Register Discovery Node',
   staking: 'Stake',
   stakingPlaceholder: `200,000 ${TICKER}`,
   dpEndpointPlaceholder: 'https://discoverynode.audius.co',
@@ -50,26 +48,16 @@ const messages = {
 type RegisterServiceModalProps = {
   isOpen: boolean
   onClose: () => void
-  defaultServiceType?: ServiceType
   defaultEndpoint?: string
   defaultDelegateOwnerWallet?: string
 }
 
-const tabOptions = [
-  { key: ServiceType.DiscoveryProvider, text: 'Discovery Node' },
-  { key: ServiceType.ContentNode, text: 'Content Node' }
-]
-
 const RegisterServiceModal = ({
   isOpen,
   onClose,
-  defaultServiceType,
   defaultEndpoint,
   defaultDelegateOwnerWallet
 }: RegisterServiceModalProps) => {
-  const [selectedTab, setSelectedTab] = useState(
-    defaultServiceType || ServiceType.DiscoveryProvider
-  )
   const { wallet } = useAccount()
   const serviceInfo = useServiceInfo()
   const { user } = useAccountUser()
@@ -109,10 +97,7 @@ const RegisterServiceModal = ({
     availableStake = activeStake.sub(usedStake)
   }
 
-  const selectedServiceInfo =
-    selectedTab === ServiceType.DiscoveryProvider
-      ? serviceInfo.discoveryProvider
-      : serviceInfo.contentNode
+  const selectedServiceInfo = serviceInfo.contentNode
 
   // Our calculated min stake is the service type min stake MINUS
   // the "unused/available" stake we have in the system already.
@@ -154,21 +139,11 @@ const RegisterServiceModal = ({
     }
   }, [
     isOpen,
-    selectedTab,
     selectedServiceInfo,
     setStakingBN,
     setStakingAmount,
     calculatedMinStakeRef
   ])
-
-  const onSelectTab = useCallback(
-    (selectedKey) => {
-      if (selectedKey === selectedTab) return
-      setSelectedTab(selectedKey)
-      setEndpoint(defaultEndpoint || '')
-    },
-    [setSelectedTab, setEndpoint, selectedTab, defaultEndpoint]
-  )
 
   const onUpdateStaking = useCallback(
     (value: string) => {
@@ -195,8 +170,13 @@ const RegisterServiceModal = ({
     useRegisterService(!isConfirmModalOpen)
 
   const onConfirm = useCallback(() => {
-    registerService(selectedTab, endpoint, stakingBN, delegateOwnerWallet)
-  }, [registerService, selectedTab, endpoint, stakingBN, delegateOwnerWallet])
+    registerService(
+      ServiceType.ContentNode,
+      endpoint,
+      stakingBN,
+      delegateOwnerWallet
+    )
+  }, [registerService, endpoint, stakingBN, delegateOwnerWallet])
 
   useEffect(() => {
     if (status === Status.Success) {
@@ -224,10 +204,7 @@ const RegisterServiceModal = ({
     />
   )
   const bottomBox = (
-    <NewService
-      serviceType={selectedTab}
-      delegateOwnerWallet={delegateOwnerWallet || user?.wallet}
-    />
+    <NewService delegateOwnerWallet={delegateOwnerWallet || user?.wallet} />
   )
 
   const min = calculatedMinStake
@@ -250,29 +227,19 @@ const RegisterServiceModal = ({
       isCloseable={true}
       dismissOnClickOutside={!isConfirmModalOpen}
     >
-      <Box mt='xl'>
+      <Box mt='xl' mb='xl'>
         <InfoBox
           description={messages.learnMoreNode}
           ctaHref={REGISTER_NODE_DOCS_URL}
           ctaText={messages.runningAudiusNode}
         />
       </Box>
-      <TabSlider
-        className={styles.tabSliderContainer}
-        options={tabOptions}
-        selected={selectedTab}
-        onSelectOption={onSelectTab}
-      />
       <Box css={{ maxWidth: 480 }}>
         <TextField
           value={endpoint}
           onChange={setEndpoint}
           label={messages.endpoint}
-          placeholder={
-            selectedTab === ServiceType.DiscoveryProvider
-              ? messages.dpEndpointPlaceholder
-              : messages.cnEndpointPlaceholder
-          }
+          placeholder={messages.cnEndpointPlaceholder}
           className={styles.input}
         />
         <TextField
@@ -319,11 +286,7 @@ const RegisterServiceModal = ({
       </Box>
       <Button
         isDisabled={!canSubmit}
-        text={
-          selectedTab === ServiceType.DiscoveryProvider
-            ? messages.ctaDn
-            : messages.ctaCn
-        }
+        text={messages.registerNode}
         type={ButtonType.PRIMARY}
         onClick={onRegister}
       />

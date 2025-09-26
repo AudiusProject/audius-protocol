@@ -343,7 +343,6 @@ const NodeOverview = ({
                     delegateOwnerWallet || health?.delegateOwnerWallet || ''
                   }
                   defaultEndpoint={endpoint}
-                  defaultServiceType={serviceType}
                 />
               </Box>
             )}
