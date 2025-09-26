@@ -50,7 +50,11 @@ export const useTokenBalance = ({
 
   // For AUDIO, we need to use the useAudioBalance hook since it includes ETH audio. useUserCoin is only SOL AUDIO
   const audioTokenQuery = useAudioBalance(
-    { userId, includeConnectedWallets: includeExternalWallets },
+    {
+      userId,
+      includeConnectedWallets: includeExternalWallets,
+      includeStaked: true
+    },
     { enabled: isAudio }
   )
 
