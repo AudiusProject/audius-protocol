@@ -65,7 +65,7 @@ export const UserLink = (props: UserLinkProps) => {
         display: 'inline-flex',
         verticalAlign: 'middle'
       }}
-      hideArtistCoinBadge
+      hideArtistCoinBadge={hideArtistCoinBadge}
     />
   )
 
