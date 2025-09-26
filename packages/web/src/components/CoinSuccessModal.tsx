@@ -31,7 +31,7 @@ export const CoinSuccessModal = () => {
   const handleShareToX = () => {
     if (!coinData?.ticker) return
 
-    const shareText = `My artist coin $${coinData.ticker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`
+    const shareText = `My artist coin ${coinData.ticker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
     window.open(shareUrl, '_blank')
   }
