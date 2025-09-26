@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
+import { useArtistOwnedCoin } from '@audius/common/api'
 import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty
 } from '@audius/common/assets'
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   Name,
   SquareSizes,
@@ -13,6 +15,7 @@ import {
   CoverPhotoSizes,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconArtistBadge as BadgeArtist,
@@ -34,6 +37,7 @@ import { ArtistRecommendationsDropdown } from 'components/artist-recommendations
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Skeleton from 'components/skeleton/Skeleton'
 import SubscribeButton from 'components/subscribe-button/SubscribeButton'
+import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -41,6 +45,7 @@ import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 
+import { BuyArtistCoinButton } from './BuyArtistCoinButton'
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
 import { SocialLink } from './SocialLink'
@@ -215,6 +220,14 @@ const ProfileHeader = ({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })
+
+  // Artist coin detection
+  const { data: artistCoin, isPending: isArtistCoinLoading } =
+    useArtistOwnedCoin(userId)
+  const { isEnabled: isArtistCoinsEnabled } = useFeatureFlag(
+    FeatureFlags.ARTIST_COINS
+  )
+
   const record = useRecord()
 
   const onGoToInstagram = useCallback(() => {
@@ -470,6 +483,15 @@ const ProfileHeader = ({
             artistId={userId}
             onClose={onCloseArtistRecommendations}
           />
+
+          {/* Artist coin buy button or tip button */}
+          {mode !== 'owner' &&
+            !isArtistCoinLoading &&
+            (isArtistCoinsEnabled && artistCoin?.mint ? (
+              <BuyArtistCoinButton userId={userId} />
+            ) : (
+              <TipAudioButton />
+            ))}
         </div>
       )}
       {mode === 'owner' && !isEditing && <UploadButton />}
