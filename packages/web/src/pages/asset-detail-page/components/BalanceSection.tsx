@@ -5,7 +5,10 @@ import {
   useTokenBalance,
   useUSDCBalance
 } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
+import {
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
   useAddCashModal,
@@ -87,6 +90,7 @@ const ZeroBalanceState = ({
   onReceive,
   isBuySellSupported
 }: BalanceStateProps & { isBuySellSupported: boolean }) => {
+  const isManagerMode = useIsManagedAccount()
   return (
     <>
       <Flex gap='s' alignItems='center'>
@@ -112,8 +116,12 @@ const ZeroBalanceState = ({
       </Paper>
       <Flex gap='s'>
         <Tooltip
-          disabled={isBuySellSupported}
-          text={walletMessages.buySellNotSupported}
+          disabled={isBuySellSupported && !isManagerMode}
+          text={
+            isManagerMode
+              ? walletMessages.buySellNotSupportedManagerMode
+              : walletMessages.buySellNotSupported
+          }
           color='secondary'
           placement='top'
           shouldWrapContent={false}
@@ -123,7 +131,7 @@ const ZeroBalanceState = ({
               variant='primary'
               fullWidth
               onClick={onBuy}
-              disabled={!isBuySellSupported}
+              disabled={!isBuySellSupported || isManagerMode}
             >
               {walletMessages.buy}
             </Button>

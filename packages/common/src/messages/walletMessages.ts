@@ -91,6 +91,7 @@ export const walletMessages = {
   send: 'Send',
   receive: 'Receive',
   buySellNotSupported: 'This is not supported in your region',
+  buySellNotSupportedManagerMode: 'This is not supported as a manager',
 
   // ReceiveTokensModal messages
   receiveTokensTitle: 'receive',

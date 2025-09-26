@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useTokenBalance, useArtistCoin } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
+import {
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
 import {
   receiveTokensModalActions,
@@ -29,6 +32,7 @@ const ZeroBalanceState = ({
   onBuy,
   onReceive
 }: BalanceStateProps) => {
+  const isManagerMode = useIsManagedAccount()
   return (
     <Flex column gap='l' w='100%'>
       <Flex row gap='s' alignItems='center'>
@@ -52,7 +56,12 @@ const ZeroBalanceState = ({
         <Text>{messages.hintDescription(title)}</Text>
       </Paper>
       <Flex column gap='s'>
-        <Button variant='primary' fullWidth onPress={onBuy}>
+        <Button
+          disabled={isManagerMode}
+          variant='primary'
+          fullWidth
+          onPress={onBuy}
+        >
           {walletMessages.buy}
         </Button>
         <Button variant='secondary' fullWidth onPress={onReceive}>
