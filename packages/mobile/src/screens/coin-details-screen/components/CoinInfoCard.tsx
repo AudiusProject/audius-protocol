@@ -1,18 +1,17 @@
 import { useCallback } from 'react'
 
 import type { Coin } from '@audius/common/adapters'
-import { useArtistCoin, useUser } from '@audius/common/api'
+import { useArtistCoin } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
 import { shortenSPLAddress } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Image, Linking, Pressable } from 'react-native'
+import { Image, Linking } from 'react-native'
 
 import {
   Box,
   Divider,
   Flex,
-  HexagonalIcon,
   IconCopy,
   IconExternalLink,
   IconGift,
@@ -20,7 +19,9 @@ import {
   PlainButton,
   Text
 } from '@audius/harmony-native'
+import { ProfilePicture } from 'app/components/core'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'
+import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { env } from 'app/services/env'
@@ -31,30 +32,18 @@ const overflowMessages = coinDetailsMessages.overflowMenu
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const { ownerId } = coin ?? {}
-  const navigation = useNavigation()
 
-  const { data: owner } = useUser(ownerId)
   const { source } = useCoverPhoto({
     userId: ownerId,
     size: WidthSizes.SIZE_640
   })
-
-  const handlePressArtist = useCallback(() => {
-    if (owner?.handle) {
-      navigation.navigate('Profile', { handle: owner.handle })
-    }
-  }, [navigation, owner?.handle])
 
   if (isLoading || !coin) {
     // TODO: Add loading state
     return null
   }
 
-  const logoURI = coin.logoUri
-  const name = coin.ticker
-
   const bannerHeight = 120
-  const iconSize = 24
 
   return (
     <Flex h={bannerHeight}>
@@ -98,32 +87,21 @@ const BannerSection = ({ mint }: { mint: string }) => {
           {messages.createdBy}
         </Text>
 
-        <Pressable onPress={handlePressArtist}>
+        {ownerId && (
           <Flex
             row
             alignItems='center'
             gap='xs'
+            ph='s'
             p='xs'
             backgroundColor='white'
             borderRadius='circle'
             border='default'
           >
-            <HexagonalIcon size={iconSize}>
-              <Image
-                source={{ uri: logoURI }}
-                style={{
-                  width: iconSize,
-                  height: iconSize
-                }}
-              />
-            </HexagonalIcon>
-            <Flex alignItems='center' gap='xs'>
-              <Text variant='body' size='l'>
-                {name}
-              </Text>
-            </Flex>
+            <ProfilePicture userId={ownerId} size='small' />
+            <UserLink userId={ownerId} size='l' />
           </Flex>
-        </Pressable>
+        )}
       </Flex>
     </Flex>
   )
