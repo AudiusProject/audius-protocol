@@ -21,6 +21,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
+import { HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import Skeleton from 'components/skeleton/Skeleton'
@@ -109,7 +110,8 @@ type BannerSectionProps = {
 const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const theme = useTheme()
-  const { ownerId } = coin ?? {}
+  const { ownerId: ownerIdString } = coin ?? {}
+  const ownerId = HashId.parse(ownerIdString)
 
   const { data: owner } = useUser(ownerId)
   const { image: coverPhoto } = useCoverPhoto({
@@ -180,6 +182,7 @@ export const AssetInfoSection = ({ mint }: AssetInfoSectionProps) => {
   const { toast } = useContext(ToastContext)
 
   const { data: coin, isLoading } = useArtistCoin(mint)
+
   const { data: currentUserId } = useCurrentUserId()
   const { data: userCoins } = useUserCoins({ userId: currentUserId })
   const userToken = useMemo(
