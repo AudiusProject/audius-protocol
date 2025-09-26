@@ -5,7 +5,10 @@ import {
   useTokenBalance,
   useUSDCBalance
 } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
+import {
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { walletMessages } from '@audius/common/messages'
 import {
   useAddCashModal,
@@ -87,6 +90,7 @@ const ZeroBalanceState = ({
   onReceive,
   isBuySellSupported
 }: BalanceStateProps & { isBuySellSupported: boolean }) => {
+  const isManagerMode = useIsManagedAccount()
   return (
     <>
       <Flex gap='s' alignItems='center'>
@@ -113,8 +117,12 @@ const ZeroBalanceState = ({
       </Paper>
       <Flex gap='s'>
         <Tooltip
-          disabled={isBuySellSupported}
-          text={walletMessages.buySellNotSupported}
+          disabled={isBuySellSupported && !isManagerMode}
+          text={
+            isManagerMode
+              ? walletMessages.buySellNotSupportedManagerMode
+              : walletMessages.buySellNotSupported
+          }
           color='secondary'
           placement='top'
           shouldWrapContent={false}
@@ -124,7 +132,7 @@ const ZeroBalanceState = ({
               variant='primary'
               fullWidth
               onClick={onBuy}
-              disabled={!isBuySellSupported}
+              disabled={!isBuySellSupported || isManagerMode}
             >
               {walletMessages.buy}
             </Button>
@@ -152,6 +160,7 @@ const HasBalanceState = ({
   isBuySellSupported: boolean
   coinName: string
 }) => {
+  const isManagerMode = useIsManagedAccount()
   const { motion } = useTheme()
   const {
     tokenBalanceFormatted,
@@ -197,8 +206,12 @@ const HasBalanceState = ({
       </Flex>
       <Flex direction='column' gap='s'>
         <Tooltip
-          disabled={isBuySellSupported}
-          text={walletMessages.buySellNotSupported}
+          disabled={isBuySellSupported && !isManagerMode}
+          text={
+            isManagerMode
+              ? walletMessages.buySellNotSupportedManagerMode
+              : walletMessages.buySellNotSupported
+          }
           color='secondary'
           placement='top'
           shouldWrapContent={false}
@@ -208,14 +221,19 @@ const HasBalanceState = ({
               variant='secondary'
               fullWidth
               onClick={onBuy}
-              disabled={!isBuySellSupported}
+              disabled={!isBuySellSupported || isManagerMode}
             >
               {walletMessages.buySell}
             </Button>
           </Box>
         </Tooltip>
         <Flex gap='s'>
-          <Button variant='secondary' fullWidth onClick={onSend}>
+          <Button
+            disabled={isManagerMode}
+            variant='secondary'
+            fullWidth
+            onClick={onSend}
+          >
             {walletMessages.send}
           </Button>
           <Button variant='secondary' fullWidth onClick={onReceive}>

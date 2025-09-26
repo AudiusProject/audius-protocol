@@ -1,7 +1,10 @@
 import { useCallback } from 'react'
 
 import { useTokenBalance, useArtistCoin } from '@audius/common/api'
-import { useFormattedTokenBalance } from '@audius/common/hooks'
+import {
+  useFormattedTokenBalance,
+  useIsManagedAccount
+} from '@audius/common/hooks'
 import { coinDetailsMessages, walletMessages } from '@audius/common/messages'
 import {
   receiveTokensModalActions,
@@ -29,6 +32,7 @@ const ZeroBalanceState = ({
   onBuy,
   onReceive
 }: BalanceStateProps) => {
+  const isManagerMode = useIsManagedAccount()
   return (
     <Flex column gap='l' w='100%'>
       <Flex row gap='s' alignItems='center'>
@@ -52,7 +56,12 @@ const ZeroBalanceState = ({
         <Text>{messages.hintDescription(title)}</Text>
       </Paper>
       <Flex column gap='s'>
-        <Button variant='primary' fullWidth onPress={onBuy}>
+        <Button
+          disabled={isManagerMode}
+          variant='primary'
+          fullWidth
+          onPress={onBuy}
+        >
           {walletMessages.buy}
         </Button>
         <Button variant='secondary' fullWidth onPress={onReceive}>
@@ -72,6 +81,7 @@ const HasBalanceState = ({
   mint,
   coinName
 }: BalanceStateProps & { mint: string; coinName: string }) => {
+  const isManagerMode = useIsManagedAccount()
   const { tokenBalanceFormatted, formattedHeldValue } =
     useFormattedTokenBalance(mint)
 
@@ -109,10 +119,20 @@ const HasBalanceState = ({
         </Flex>
       </Flex>
       <Flex column gap='s'>
-        <Button variant='secondary' fullWidth onPress={onBuy}>
+        <Button
+          disabled={isManagerMode}
+          variant='secondary'
+          fullWidth
+          onPress={onBuy}
+        >
           {walletMessages.buySell}
         </Button>
-        <Button variant='secondary' fullWidth onPress={onSend}>
+        <Button
+          disabled={isManagerMode}
+          variant='secondary'
+          fullWidth
+          onPress={onSend}
+        >
           {walletMessages.send}
         </Button>
         <Button variant='secondary' fullWidth onPress={onReceive}>
