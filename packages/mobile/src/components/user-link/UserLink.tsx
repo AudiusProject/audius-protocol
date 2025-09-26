@@ -11,10 +11,10 @@ import Animated, {
 
 import type { IconSize, TextLinkProps } from '@audius/harmony-native'
 import { Flex, TextLink, useTheme } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
 import { UserBadges } from '../user-badges'
-import { useNavigation } from 'app/hooks/useNavigation'
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
