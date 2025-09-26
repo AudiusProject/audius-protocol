@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useCurrentUserId, useUser } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { COIN_DETAIL_ROUTE } from '@audius/common/src/utils/route'
 import { formatTickerForUrl, route } from '@audius/common/utils'
@@ -11,7 +11,8 @@ import {
   IconExternalLink,
   IconButton,
   IconKebabHorizontal,
-  IconInfo
+  IconInfo,
+  IconX
 } from '@audius/harmony'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
@@ -20,6 +21,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { copyToClipboard } from '../../../utils/clipboardUtil'
+import { openXLink } from '../../../utils/xShare'
 
 import { ArtistCoinDetailsModal } from './ArtistCoinDetailsModal'
 
@@ -38,6 +40,8 @@ export const AssetInsightsOverflowMenu = ({
   const navigate = useNavigate()
   const { toast } = useContext(ToastContext)
   const { data: artistCoin } = useArtistCoin(mint)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: artist } = useUser(artistCoin?.ownerId)
   const isMobile = useIsMobile()
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [isMobileOverflowOpen, setIsMobileOverflowOpen] = useState(false)
@@ -73,6 +77,29 @@ export const AssetInsightsOverflowMenu = ({
       setIsDetailsModalOpen(true)
     }
   }
+
+  const onShareToX = () => {
+    if (!artistCoin?.ticker || !artistCoin?.mint) return
+
+    const isArtistOwner = currentUserId === artistCoin.ownerId
+    const coinUrl =
+      window.location.origin +
+      route.COIN_DETAIL_ROUTE.replace(
+        ':ticker',
+        formatTickerForUrl(artistCoin.ticker)
+      )
+
+    const shareText = isArtistOwner
+      ? messages.shareToXArtistCopy(artistCoin.ticker)
+      : messages.shareToXUserCopy(
+          artistCoin.ticker,
+          artist?.handle ?? 'artist',
+          artistCoin.mint,
+          coinUrl
+        )
+
+    openXLink(coinUrl, shareText)
+  }
   const onOpenMobileOverflow = useCallback(() => {
     setIsMobileOverflowOpen(true)
   }, [setIsMobileOverflowOpen])
@@ -96,6 +123,11 @@ export const AssetInsightsOverflowMenu = ({
       text: messages.details,
       icon: <IconInfo color='default' />,
       onClick: onOpenDetails
+    },
+    {
+      text: messages.shareToX,
+      icon: <IconX color='default' />,
+      onClick: onShareToX
     }
   ]
 

@@ -67,7 +67,17 @@ export const coinDetailsMessages = {
     copyCoinAddress: 'Copy Coin Address',
     openDexscreener: 'Open Dexscreener',
     details: 'Details',
-    copiedToClipboard: 'Copied Coin Address To Clipboard!'
+    copiedToClipboard: 'Copied Coin Address To Clipboard!',
+    shareToX: 'Share to X',
+    shareToXArtistCopy: (coinTicker: string) =>
+      `My artist coin $${coinTicker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`,
+    shareToXUserCopy: (
+      coinTicker: string,
+      artistHandle: string,
+      coinAddress: string,
+      coinUrl: string
+    ) =>
+      `Check out @${artistHandle}'s artist coin ${coinTicker} on @Audius: ${coinUrl}\n\n${coinAddress}`
   },
   artistCoinDetails: {
     title: 'Artist Coin Details',
