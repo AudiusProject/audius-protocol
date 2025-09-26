@@ -16,6 +16,7 @@ import Animated, {
 import { useTheme } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
+import { useStatusBarStyle } from 'app/hooks/useStatusBarStyle'
 
 import { SearchResults } from '../search-screen/search-results/SearchResults'
 import {
@@ -40,6 +41,9 @@ export const SCROLL_FACTOR = Platform.OS === 'ios' ? 1 : 3
 const SearchExploreContent = () => {
   const { spacing, motion } = useTheme()
   const { params } = useExploreRoute<'SearchExplore'>()
+
+  // Set status bar to light content for dark header
+  useStatusBarStyle('light-content')
 
   // Get state from context
   const [, setCategory] = useSearchCategory()
