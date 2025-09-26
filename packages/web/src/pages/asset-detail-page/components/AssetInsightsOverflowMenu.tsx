@@ -90,12 +90,11 @@ export const AssetInsightsOverflowMenu = ({
       )
 
     const shareText = isArtistOwner
-      ? messages.shareToXArtistCopy(artistCoin.ticker)
+      ? messages.shareToXArtistCopy(artistCoin.ticker, artistCoin.mint)
       : messages.shareToXUserCopy(
           artistCoin.ticker,
           artist.handle,
-          artistCoin.mint,
-          coinUrl
+          artistCoin.mint
         )
 
     openXLink(coinUrl, shareText)

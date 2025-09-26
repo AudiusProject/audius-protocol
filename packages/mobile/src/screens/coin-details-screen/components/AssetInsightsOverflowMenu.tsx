@@ -56,12 +56,11 @@ export const AssetInsightsOverflowMenu = () => {
     const coinUrl = `https://audius.co${route.COIN_DETAIL_ROUTE.replace(':ticker', formatTickerForUrl(artistCoin.ticker))}`
 
     const shareText = isArtistOwner
-      ? messages.shareToXArtistCopy(artistCoin.ticker)
+      ? messages.shareToXArtistCopy(artistCoin.ticker, artistCoin.mint)
       : messages.shareToXUserCopy(
           artistCoin.ticker,
           artist.handle,
-          artistCoin.mint,
-          coinUrl
+          artistCoin.mint
         )
 
     const xShareUrl = makeXShareUrl(coinUrl, shareText)

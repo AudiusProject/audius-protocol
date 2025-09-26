@@ -69,15 +69,14 @@ export const coinDetailsMessages = {
     details: 'Details',
     copiedToClipboard: 'Copied Coin Address To Clipboard!',
     shareToX: 'Share to X',
-    shareToXArtistCopy: (coinTicker: string) =>
-      `My artist coin ${coinTicker} is live on @AudiusProject. Be the first to buy and unlock my exclusive fan club:`,
+    shareToXArtistCopy: (coinTicker: string, coinAddress: string) =>
+      `My artist coin ${coinTicker} is live on @Audius. Be the first to buy and unlock my exclusive fan club!\n\n${coinAddress}\n`,
     shareToXUserCopy: (
       coinTicker: string,
       artistHandle: string,
-      coinAddress: string,
-      coinUrl: string
+      coinAddress: string
     ) =>
-      `Check out @${artistHandle}'s artist coin ${coinTicker} on @Audius: ${coinUrl}\n\n${coinAddress}`
+      `Check out @${artistHandle}'s artist coin ${coinTicker} on @Audius!\n\n${coinAddress}\n`
   },
   artistCoinDetails: {
     title: 'Artist Coin Details',
