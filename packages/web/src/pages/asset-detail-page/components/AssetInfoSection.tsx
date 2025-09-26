@@ -110,8 +110,9 @@ type BannerSectionProps = {
 const BannerSection = ({ mint }: BannerSectionProps) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const theme = useTheme()
-  const { ownerId: ownerIdString } = coin ?? {}
-  const ownerId = HashId.parse(ownerIdString)
+  const { ownerId: ownerIdRaw } = coin ?? {}
+  const ownerId =
+    typeof ownerIdRaw === 'string' ? HashId.parse(ownerIdRaw) : ownerIdRaw
 
   const { data: owner } = useUser(ownerId)
   const { image: coverPhoto } = useCoverPhoto({

@@ -345,21 +345,22 @@ export const BuySellFlow = (props: BuySellFlowProps) => {
     setHasAttemptedSubmit(false)
   }, [activeTab])
 
-  useEffect(() => {
-    setResetState(() => {
-      resetTransactionData()
-      resetSuccessDisplayData()
-      setCurrentScreen('input')
-      // Clear all tab input values on completion
-      setTabInputValues({ buy: '', sell: '', convert: '' })
-    })
+  const resetFunction = useCallback(() => {
+    resetTransactionData()
+    resetSuccessDisplayData()
+    setCurrentScreen('input')
+    // Clear all tab input values on completion
+    setTabInputValues({ buy: '', sell: '', convert: '' })
   }, [
-    setResetState,
     resetTransactionData,
     resetSuccessDisplayData,
     setCurrentScreen,
     setTabInputValues
   ])
+
+  useEffect(() => {
+    setResetState(() => resetFunction)
+  }, [setResetState, resetFunction])
 
   const { data: outputCoin } = useArtistCoin(
     swapTokens.outputTokenInfo?.address
