@@ -93,7 +93,6 @@ export const Screen = (props: ScreenProps) => {
       removeUndefined({
         header,
         headerShown: header ? true : undefined,
-        gestureEnabled: header ? false : undefined,
         headerLeft: topbarLeft === undefined ? undefined : () => topbarLeft,
         headerRight: topbarRight
           ? () => topbarRight
