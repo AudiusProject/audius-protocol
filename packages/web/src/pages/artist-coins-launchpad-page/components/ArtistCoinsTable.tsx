@@ -121,6 +121,7 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
             ellipses
             fullWidth
             hideArtistCoinBadge
+            popover
           />
         ) : (
           <Skeleton h='24px' w='100px' />
