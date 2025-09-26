@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react'
 
 import { useFocusEffect } from '@react-navigation/native'
+import type { StatusBarProps } from 'react-native-bars'
 import { StatusBar as RNStatusBar, NavigationBar } from 'react-native-bars'
 
 /**
@@ -10,8 +11,8 @@ import { StatusBar as RNStatusBar, NavigationBar } from 'react-native-bars'
 export const useStatusBarStyle = (
   barStyle: 'light-content' | 'dark-content'
 ) => {
-  const statusBarEntryRef = useRef<any>(null)
-  const navigationBarEntryRef = useRef<any>(null)
+  const statusBarEntryRef = useRef<StatusBarProps | null>(null)
+  const navigationBarEntryRef = useRef<StatusBarProps | null>(null)
 
   useFocusEffect(
     useCallback(() => {
