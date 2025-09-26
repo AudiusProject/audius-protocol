@@ -21,6 +21,9 @@ export const NODES = '/nodes'
 export const SERVICES = '/services' // deprecated
 export const SERVICES_TITLE = 'Services Overview'
 
+export const NODES_VALIDATORS = '/nodes/validators'
+export const NODES_VALIDATORS_TITLE = 'Validators'
+
 export const NODES_DISCOVERY = '/nodes/discovery-node'
 export const SERVICES_DISCOVERY_PROVIDER = '/services/discovery-node' // deprecated
 export const SERVICES_DISCOVERY_PROVIDER_TITLE = 'Discovery Nodes'
@@ -137,6 +140,7 @@ const routeTitles = {
   [NODES_CONTENT_NODE]: SERVICES_CONTENT_NODE_TITLE,
   [NODES_CONTENT]: SERVICES_CONTENT_TITLE,
   [NODES_DISCOVERY_NODE]: SERVICES_DISCOVERY_PROVIDER_NODE_TITLE,
+  [NODES_VALIDATORS]: NODES_VALIDATORS_TITLE,
   [API]: API_TITLE,
   [API_LEADERBOARD]: API_LEADERBOARD_TITLE
 }
