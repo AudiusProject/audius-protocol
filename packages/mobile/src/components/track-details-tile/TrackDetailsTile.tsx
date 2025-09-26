@@ -18,7 +18,6 @@ import {
   Flex,
   IconArtistCoin,
   IconCart,
-  IconCoinGatedLabel,
   IconCollectible,
   IconSparkles
 } from '@audius/harmony-native'
@@ -29,6 +28,7 @@ import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
+import { CoinGatedLabelSvg } from '../core/CoinGatedLabelSvg'
 import { TrackImage } from '../image/TrackImage'
 import { TrackDogEar } from '../track/TrackDogEar'
 
@@ -154,7 +154,7 @@ export const TrackDetailsTile = ({
           {showLabel ? (
             <View style={styles.streamContentLabelContainer}>
               {isTokenGated ? (
-                <IconCoinGatedLabel height={28} width={108} />
+                <CoinGatedLabelSvg style={{ height: 28, width: 108 }} />
               ) : (
                 <>
                   <IconComponent
