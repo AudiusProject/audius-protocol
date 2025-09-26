@@ -1,6 +1,7 @@
-import { HashId, Id, UserCoin as UserCoinSdk } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
+import { userCoinListFromSDK, type UserCoin } from '~/adapters/coin'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from '../queryKeys'
@@ -13,9 +14,7 @@ export interface UseUserCoinsParams {
   offset?: number
 }
 
-export type UserCoin = Omit<UserCoinSdk, 'ownerId'> & {
-  ownerId: ID
-}
+export type { UserCoin }
 
 export const useUserCoins = <TResult = UserCoin[]>(
   params: UseUserCoinsParams,
@@ -33,10 +32,7 @@ export const useUserCoins = <TResult = UserCoin[]>(
         offset: params.offset
       })
       if (response.data) {
-        return response.data.map((coinFromSDK) => ({
-          ...coinFromSDK,
-          ownerId: HashId.parse(coinFromSDK.ownerId)
-        })) as UserCoin[]
+        return userCoinListFromSDK(response.data)
       }
       return []
     },

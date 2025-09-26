@@ -152,8 +152,13 @@ const HasBalanceState = ({
   onSend,
   onReceive,
   mint,
-  isBuySellSupported
-}: BalanceStateProps & { mint: string; isBuySellSupported: boolean }) => {
+  isBuySellSupported,
+  coinName
+}: BalanceStateProps & {
+  mint: string
+  isBuySellSupported: boolean
+  coinName: string
+}) => {
   const isManagerMode = useIsManagedAccount()
   const { motion } = useTheme()
   const {
@@ -167,25 +172,33 @@ const HasBalanceState = ({
 
   return (
     <>
-      <Flex gap='s' alignItems='center'>
-        <TokenIcon logoURI={logoURI} />
-        <Flex
-          direction='column'
-          gap='xs'
-          css={{
-            opacity: isLoading ? 0 : 1,
-            transition: `opacity ${motion.expressive}`
-          }}
-        >
-          <Flex gap='xs'>
-            <Text variant='heading' size='l' color='default'>
-              {tokenBalanceFormatted}
+      <Flex alignItems='center' justifyContent='space-between' flex={1}>
+        <Flex alignItems='center' gap='l'>
+          <TokenIcon logoURI={logoURI} />
+          <Flex
+            direction='column'
+            gap='2xs'
+            flex={1}
+            css={{
+              opacity: isLoading ? 0 : 1,
+              transition: `opacity ${motion.expressive}`
+            }}
+          >
+            <Text variant='heading' size='s'>
+              {coinName}
             </Text>
-            <Text variant='heading' size='l' color='subdued'>
-              {ticker}
-            </Text>
+            <Flex gap='xs' alignItems='center'>
+              <Text variant='title' size='l'>
+                {tokenBalanceFormatted}
+              </Text>
+              <Text variant='title' size='l' color='subdued'>
+                {ticker}
+              </Text>
+            </Flex>
           </Flex>
-          <Text variant='heading' size='s' color='subdued'>
+        </Flex>
+        <Flex alignItems='center' gap='m'>
+          <Text variant='title' size='l' color='default'>
             {formattedHeldValue}
           </Text>
         </Flex>
@@ -299,6 +312,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
 
   const ticker = coin.ticker ?? ''
   const logoURI = coin.logoUri
+  const coinName = coin.name ?? ''
 
   return (
     <Paper ph='xl' pv='l' border='default'>
@@ -321,6 +335,7 @@ const BalanceSectionContent = ({ mint }: AssetDetailProps) => {
             onReceive={handleReceive}
             mint={mint}
             isBuySellSupported={isBuySellSupported}
+            coinName={coinName}
           />
         )}
         {isMobile && (

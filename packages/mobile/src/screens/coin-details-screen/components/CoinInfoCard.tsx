@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
 import type { Coin } from '@audius/common/adapters'
-import { useArtistCoin } from '@audius/common/api'
+import { useArtistCoin, useUser } from '@audius/common/api'
 import { coinDetailsMessages } from '@audius/common/messages'
 import { WidthSizes } from '@audius/common/models'
 import { shortenSPLAddress } from '@audius/common/utils'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Image, Linking } from 'react-native'
+import { Image, Linking, Pressable } from 'react-native'
 
 import {
   Box,
@@ -31,11 +31,19 @@ const overflowMessages = coinDetailsMessages.overflowMenu
 const BannerSection = ({ mint }: { mint: string }) => {
   const { data: coin, isLoading } = useArtistCoin(mint)
   const { ownerId } = coin ?? {}
+  const navigation = useNavigation()
 
+  const { data: owner } = useUser(ownerId)
   const { source } = useCoverPhoto({
     userId: ownerId,
     size: WidthSizes.SIZE_640
   })
+
+  const handlePressArtist = useCallback(() => {
+    if (owner?.handle) {
+      navigation.navigate('Profile', { handle: owner.handle })
+    }
+  }, [navigation, owner?.handle])
 
   if (isLoading || !coin) {
     // TODO: Add loading state
@@ -90,30 +98,32 @@ const BannerSection = ({ mint }: { mint: string }) => {
           {messages.createdBy}
         </Text>
 
-        <Flex
-          row
-          alignItems='center'
-          gap='xs'
-          p='xs'
-          backgroundColor='white'
-          borderRadius='circle'
-          border='default'
-        >
-          <HexagonalIcon size={iconSize}>
-            <Image
-              source={{ uri: logoURI }}
-              style={{
-                width: iconSize,
-                height: iconSize
-              }}
-            />
-          </HexagonalIcon>
-          <Flex alignItems='center' gap='xs'>
-            <Text variant='body' size='l'>
-              {name}
-            </Text>
+        <Pressable onPress={handlePressArtist}>
+          <Flex
+            row
+            alignItems='center'
+            gap='xs'
+            p='xs'
+            backgroundColor='white'
+            borderRadius='circle'
+            border='default'
+          >
+            <HexagonalIcon size={iconSize}>
+              <Image
+                source={{ uri: logoURI }}
+                style={{
+                  width: iconSize,
+                  height: iconSize
+                }}
+              />
+            </HexagonalIcon>
+            <Flex alignItems='center' gap='xs'>
+              <Text variant='body' size='l'>
+                {name}
+              </Text>
+            </Flex>
           </Flex>
-        </Flex>
+        </Pressable>
       </Flex>
     </Flex>
   )

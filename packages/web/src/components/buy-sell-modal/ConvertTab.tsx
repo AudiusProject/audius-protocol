@@ -16,7 +16,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
-import { SwapFormSkeleton } from './components/SwapSkeletons'
+import { TabContentSkeleton } from './components/SwapSkeletons'
 import { ConvertTabProps } from './types'
 
 export const ConvertTab = ({
@@ -160,7 +160,7 @@ export const ConvertTab = ({
   return (
     <Flex direction='column' gap='xl'>
       {isInitialLoading ? (
-        <SwapFormSkeleton />
+        <TabContentSkeleton />
       ) : (
         <>
           <InputTokenSection

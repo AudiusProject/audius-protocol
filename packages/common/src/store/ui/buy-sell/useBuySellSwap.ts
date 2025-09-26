@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { HashId } from '@audius/sdk'
 import { useQueryClient } from '@tanstack/react-query'
 
 import {
@@ -116,12 +115,8 @@ export const useBuySellSwap = (props: UseBuySellSwapProps) => {
       }
 
       // Invalidate track queries to provide track access if the user has traded the artist coin
-      const baseOwnerId = baseCoin?.ownerId
-        ? HashId.parse(baseCoin?.ownerId)
-        : null
-      const quoteOwnerId = quoteCoin?.ownerId
-        ? HashId.parse(quoteCoin?.ownerId)
-        : null
+      const baseOwnerId = baseCoin?.ownerId ?? null
+      const quoteOwnerId = quoteCoin?.ownerId ?? null
 
       queryClient.invalidateQueries({
         predicate: (query) => {
