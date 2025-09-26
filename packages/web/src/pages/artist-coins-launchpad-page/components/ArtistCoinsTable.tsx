@@ -52,12 +52,31 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
   return (
     <Flex
       pl='xl'
-      gap='s'
+      gap='l'
       alignItems='center'
-      justifyContent='space-between'
+      justifyContent='flex-start'
       w='100%'
     >
-      <Flex gap='s' alignItems='center' w='100%' css={{ overflow: 'hidden' }}>
+      <Flex justifyContent='flex-end' css={{ flex: '0 0 2ch' }}>
+        <Text
+          variant='body'
+          size='s'
+          strength='strong'
+          css={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          {cellInfo.row.index + 1}
+        </Text>
+      </Flex>
+      <Flex
+        gap='m'
+        alignItems='center'
+        css={{
+          overflow: 'hidden',
+          flex: '0 0 clamp(80px, 24ch, 180px)',
+          minWidth: 'clamp(80px, 24ch, 180px)',
+          maxWidth: 'clamp(80px, 24ch, 180px)'
+        }}
+      >
         <TokenIcon
           logoURI={coin.logoUri}
           size='xl'
@@ -86,7 +105,14 @@ const renderTokenNameCell = (cellInfo: CoinCell) => {
           </TextLink>
         </Flex>
       </Flex>
-      <Flex w='100%' justifyContent='flex-start' css={{ overflow: 'hidden' }}>
+      <Flex
+        justifyContent='flex-start'
+        css={{
+          overflow: 'hidden',
+          flex: '1 1 0',
+          minWidth: '140px'
+        }}
+      >
         {ownerId ? (
           <UserLink
             userId={ownerId}
@@ -178,10 +204,9 @@ const renderBuyCell = (
 const tableColumnMap = {
   tokenName: {
     id: 'tokenName',
-    Header: 'Coin',
+    Header: () => <Flex css={{ paddingLeft: spacing.unit6 }}>Coin</Flex>,
     accessor: 'name',
     Cell: renderTokenNameCell,
-    width: 150,
     minWidth: 150,
     disableSortBy: true,
     align: 'left'
@@ -305,25 +330,25 @@ export const ArtistCoinsTable = ({ searchQuery }: ArtistCoinsTableProps) => {
     const updateColumnVisibility = () => {
       if (tableRef.current) {
         const width = tableRef.current.offsetWidth
-        if (width < 550) {
+        if (width < 728) {
           setHiddenColumns([
             tableColumnMap.volume24h.id,
             tableColumnMap.marketCap.id,
             tableColumnMap.createdDate.id,
             tableColumnMap.holders.id
           ])
-        } else if (width < 650) {
+        } else if (width < 866) {
           setHiddenColumns([
             tableColumnMap.marketCap.id,
             tableColumnMap.createdDate.id,
             tableColumnMap.holders.id
           ])
-        } else if (width < 720) {
+        } else if (width < 972) {
           setHiddenColumns([
             tableColumnMap.createdDate.id,
             tableColumnMap.holders.id
           ])
-        } else if (width < 790) {
+        } else if (width < 1074) {
           setHiddenColumns([tableColumnMap.holders.id])
         } else {
           setHiddenColumns(null)
