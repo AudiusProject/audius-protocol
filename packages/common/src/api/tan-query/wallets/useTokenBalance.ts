@@ -30,6 +30,7 @@ export const useTokenBalance = ({
   isPolling,
   pollingInterval = 1000,
   includeExternalWallets = true,
+  includeStaked = true,
   walletAddress,
   ...queryOptions
 }: {
@@ -37,6 +38,7 @@ export const useTokenBalance = ({
   userId?: ID
   isPolling?: boolean
   includeExternalWallets?: boolean
+  includeStaked?: boolean
   pollingInterval?: number
   walletAddress?: string
 } & QueryOptions) => {
@@ -53,7 +55,7 @@ export const useTokenBalance = ({
     {
       userId,
       includeConnectedWallets: includeExternalWallets,
-      includeStaked: true
+      includeStaked
     },
     { enabled: isAudio }
   )
@@ -121,6 +123,13 @@ export const useTokenBalance = ({
   })
 
   if (isUsdc) return usdcQuery
+
+  console.log({
+    isAudio,
+    totalBalance: audioTokenQuery.totalBalance,
+    includeExternalWallets
+  })
+
   if (isAudio) {
     return {
       data: {
