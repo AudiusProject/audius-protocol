@@ -95,7 +95,15 @@ const HasBalanceState = ({
           </Flex>
         </Flex>
         <Flex row alignItems='center' gap='m' ml={spacing.unit22}>
-          <Text variant='title' size='l' color='default'>
+          <Text
+            variant='title'
+            size='l'
+            color='default'
+            style={{
+              lineHeight: spacing.unit7,
+              transform: [{ translateY: -spacing.unitHalf }]
+            }}
+          >
             {formattedHeldValue}
           </Text>
         </Flex>
