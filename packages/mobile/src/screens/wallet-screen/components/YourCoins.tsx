@@ -6,10 +6,11 @@ import {
   useUserCoins
 } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { buySellMessages } from '@audius/common/messages'
+import { buySellMessages, walletMessages } from '@audius/common/messages'
 import { FeatureFlags } from '@audius/common/services'
 import { AUDIO_TICKER } from '@audius/common/store'
 import { ownedCoinsFilter } from '@audius/common/utils'
+import { TouchableOpacity } from 'react-native'
 
 import { Box, Button, Divider, Flex, Paper, Text } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -48,6 +49,25 @@ const TokensHeader = () => {
   )
 }
 
+const DiscoverArtistCoinsCard = ({ onPress }: { onPress: () => void }) => {
+  return (
+    <TouchableOpacity onPress={onPress}>
+      <Flex
+        p='l'
+        pl='xl'
+        row
+        h={96}
+        justifyContent='space-between'
+        alignItems='center'
+      >
+        <Text variant='heading' size='s' numberOfLines={1}>
+          {walletMessages.artistCoins.title}
+        </Text>
+      </Flex>
+    </TouchableOpacity>
+  )
+}
+
 export const YourCoins = () => {
   const { data: currentUserId } = useCurrentUserId()
   const navigation = useNavigation()
@@ -70,13 +90,22 @@ export const YourCoins = () => {
 
   // Show audio coin card when no coins are available
   const showAudioCoin = filteredCoins.length === 0
-  const cards = showAudioCoin ? ['audio-coin' as const] : filteredCoins
+  const baseCards = showAudioCoin ? ['audio-coin' as const] : filteredCoins
+
+  // Add discover artist coins card at the end if feature is enabled
+  const cards = isArtistCoinsEnabled
+    ? [...baseCards, 'discover-artist-coins' as const]
+    : baseCards
 
   const handleBuySell = useCallback(() => {
     navigation.navigate('BuySell', {
       initialTab: 'buy',
       coinTicker: AUDIO_TICKER
     })
+  }, [navigation])
+
+  const handleDiscoverArtistCoins = useCallback(() => {
+    navigation.navigate('ArtistCoinsExplore')
   }, [navigation])
 
   return (
@@ -88,7 +117,9 @@ export const YourCoins = () => {
         ) : (
           cards.map((item) => (
             <Box key={typeof item === 'string' ? item : item.mint}>
-              {item === 'audio-coin' ? (
+              {item === 'discover-artist-coins' ? (
+                <DiscoverArtistCoinsCard onPress={handleDiscoverArtistCoins} />
+              ) : item === 'audio-coin' ? (
                 <CoinCard mint={env.WAUDIO_MINT_ADDRESS} />
               ) : (
                 <CoinCard mint={item.mint} />
