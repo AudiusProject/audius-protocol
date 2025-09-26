@@ -69,33 +69,33 @@ const HasBalanceState = ({
   onBuy,
   onSend,
   onReceive,
-  mint
-}: BalanceStateProps & { mint: string }) => {
+  mint,
+  coinName
+}: BalanceStateProps & { mint: string; coinName: string }) => {
   const { tokenBalanceFormatted, formattedHeldValue } =
     useFormattedTokenBalance(mint)
 
   return (
     <Flex column gap='l' w='100%'>
-      <Flex row gap='s' alignItems='center'>
-        <TokenIcon logoURI={logoURI} size={64} />
-        <Flex column gap='xs'>
-          <Flex row gap='xs'>
-            <Text variant='heading' size='l' color='default'>
-              {tokenBalanceFormatted}
+      <Flex row alignItems='center' justifyContent='space-between'>
+        <Flex row alignItems='center' gap='l' style={{ flexShrink: 1 }}>
+          <TokenIcon logoURI={logoURI} size={64} />
+          <Flex column gap='2xs'>
+            <Text variant='heading' size='s'>
+              {coinName}
             </Text>
-            <Text variant='heading' size='l' color='subdued'>
-              {title}
-            </Text>
+            <Flex row gap='xs' alignItems='center'>
+              <Text variant='title' size='l'>
+                {tokenBalanceFormatted}
+              </Text>
+              <Text variant='title' size='l' color='subdued'>
+                {title}
+              </Text>
+            </Flex>
           </Flex>
-          <Text
-            variant='heading'
-            size='s'
-            color='subdued'
-            style={{
-              lineHeight: spacing.unit7,
-              transform: [{ translateY: -spacing.unitHalf }]
-            }}
-          >
+        </Flex>
+        <Flex row alignItems='center' gap='m' ml={spacing.unit22}>
+          <Text variant='title' size='l' color='default'>
             {formattedHeldValue}
           </Text>
         </Flex>
@@ -143,6 +143,7 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
 
   const title = coin.ticker ?? ''
   const logoURI = coin.logoUri
+  const coinName = coin.name ?? ''
 
   return (
     <Paper p='l' border='default' borderRadius='l' shadow='far'>
@@ -162,6 +163,7 @@ export const BalanceCard = ({ mint }: { mint: string }) => {
           onSend={handleSend}
           onReceive={handleReceive}
           mint={mint}
+          coinName={coinName}
         />
       )}
     </Paper>
