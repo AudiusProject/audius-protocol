@@ -9,7 +9,7 @@ import { Flex } from '@audius/harmony'
 
 import { InputTokenSection } from './components/InputTokenSection'
 import { OutputTokenSection } from './components/OutputTokenSection'
-import { SwapFormSkeleton } from './components/SwapSkeletons'
+import { TabContentSkeleton } from './components/SwapSkeletons'
 import type { SellTabProps } from './types'
 
 export const SellTab = ({
@@ -84,7 +84,7 @@ export const SellTab = ({
   return (
     <Flex direction='column' gap='xl'>
       {isInitialLoading ? (
-        <SwapFormSkeleton />
+        <TabContentSkeleton />
       ) : (
         <>
           <InputTokenSection
