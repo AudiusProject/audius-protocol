@@ -211,13 +211,13 @@ export const LinkedWallets = () => {
       {/* Header Section */}
       <Flex gap='xl' p='l'>
         <Flex row alignItems='center' gap='s'>
-          <Text variant='heading' size='m' color='heading'>
+          <Text variant='heading' size='s' color='heading'>
             {hasWallets
               ? walletMessages.linkedWallets.titleHasWallets
               : walletMessages.linkedWallets.titleNoWallets}
           </Text>
           {hasWallets && !isLoading ? (
-            <Text variant='heading' size='m' color='subdued'>
+            <Text variant='heading' size='s' color='subdued'>
               {walletMessages.linkedWallets.count(walletCount)}
             </Text>
           ) : null}

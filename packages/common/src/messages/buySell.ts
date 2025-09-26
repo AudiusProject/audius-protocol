@@ -41,7 +41,7 @@ export const buySellMessages = {
   modalSuccessTitle: 'SUCCESS!',
   transactionComplete: 'Your transaction is complete!',
   done: 'Done',
-  yourCoins: 'Your Coins',
+  coins: 'Coins',
   buySell: 'Buy/Sell',
   emptyAmount: 'Please enter an amount',
   insufficientBalance: (symbol: string) => `Insufficient ${symbol} balance`,
