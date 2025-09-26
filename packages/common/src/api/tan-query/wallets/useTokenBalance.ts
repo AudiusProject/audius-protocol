@@ -30,6 +30,7 @@ export const useTokenBalance = ({
   isPolling,
   pollingInterval = 1000,
   includeExternalWallets = true,
+  includeStaked = true,
   walletAddress,
   ...queryOptions
 }: {
@@ -37,6 +38,7 @@ export const useTokenBalance = ({
   userId?: ID
   isPolling?: boolean
   includeExternalWallets?: boolean
+  includeStaked?: boolean
   pollingInterval?: number
   walletAddress?: string
 } & QueryOptions) => {
@@ -50,7 +52,11 @@ export const useTokenBalance = ({
 
   // For AUDIO, we need to use the useAudioBalance hook since it includes ETH audio. useUserCoin is only SOL AUDIO
   const audioTokenQuery = useAudioBalance(
-    { userId, includeConnectedWallets: includeExternalWallets },
+    {
+      userId,
+      includeConnectedWallets: includeExternalWallets,
+      includeStaked
+    },
     { enabled: isAudio }
   )
 
@@ -117,6 +123,7 @@ export const useTokenBalance = ({
   })
 
   if (isUsdc) return usdcQuery
+
   if (isAudio) {
     return {
       data: {

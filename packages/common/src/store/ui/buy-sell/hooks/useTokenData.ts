@@ -36,6 +36,7 @@ export const useTokenData = ({
   } = useTokenBalance({
     mint: inputToken.address,
     includeExternalWallets: false,
+    includeStaked: false,
     enabled: !externalWalletAddress
   })
 
