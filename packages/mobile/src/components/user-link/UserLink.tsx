@@ -11,6 +11,7 @@ import Animated, {
 
 import type { IconSize, TextLinkProps } from '@audius/harmony-native'
 import { Flex, TextLink, useTheme } from '@audius/harmony-native'
+import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 
 import { UserBadges } from '../user-badges'
@@ -37,6 +38,7 @@ export const UserLink = (props: UserLinkProps) => {
     hideArtistCoinBadge,
     ...other
   } = props
+  const navigation = useNavigation()
   const { data: userName } = useUser(userId, {
     select: (user) => user?.name
   })
@@ -62,6 +64,10 @@ export const UserLink = (props: UserLinkProps) => {
         if (!disabled) {
           animatedPressed.value = withTiming(0, motion.press)
         }
+      }}
+      onPress={() => {
+        if (disabled) return
+        navigation.push('Profile', { id: userId })
       }}
     >
       <AnimatedFlex
